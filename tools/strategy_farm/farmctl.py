@@ -24938,6 +24938,7 @@ def mark_work_item_priority_track(
     reason: str,
     *,
     dry_run: bool = False,
+    value: bool = True,
 ) -> dict[str, Any]:
     """Set ``payload.priority_track = true`` on exactly one PENDING work item.
 
@@ -24974,7 +24975,9 @@ def mark_work_item_priority_track(
                 return {"applied": False, "reason": "payload_json_invalid", "work_item_id": wid}
             if not isinstance(payload, dict):
                 return {"applied": False, "reason": "payload_not_object", "work_item_id": wid}
-            already = payload.get("priority_track") is True
+            # ``value=False`` (CEO 2026-09-07): reversible single-row unset - same
+            # queue-order-only contract, refused when the row is not marked.
+            already = (payload.get("priority_track") is True) if value else (payload.get("priority_track") is not True)
             mark = {
                 "marked_at_utc": utc_now(),
                 "reason": note,
@@ -24992,9 +24995,10 @@ def mark_work_item_priority_track(
                 "mark": mark,
             }
             if dry_run or already:
-                result["reason"] = "already_priority_track" if already else "dry_run"
+                result["reason"] = ("already_priority_track" if value else "not_priority_track") if already else "dry_run"
                 return result
-            payload["priority_track"] = True
+            payload["priority_track"] = bool(value)
+            mark["value"] = bool(value)
             marks = payload.get("priority_track_marks")
             if not isinstance(marks, list):
                 marks = []
@@ -37510,7 +37514,13 @@ def main(argv: list[str] | None = None) -> int:
                 dry_run=args.dry_run,
             ))
         elif args.unset:
-            print_json({"applied": False, "reason": "unset_requires_program_id"})
+            print_json(mark_work_item_priority_track(
+                root,
+                args.work_item_id,
+                args.reason,
+                dry_run=args.dry_run,
+                value=False,
+            ))
         else:
             print_json(mark_work_item_priority_track(
                 root,
