@@ -1,0 +1,115 @@
+{
+  "schema": "qm.diversity-backlog-collision-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-07T13:50:46Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "c9706b7c3fb4a16e5059ebb4505ccf3acc164179",
+  "selected_candidate": {
+    "ea_id": "QM5_34008",
+    "ea_label": "QM5_34008_multicurrency-basket-dispersion-hedger",
+    "asset_class": "fx",
+    "mechanism": "market_neutral_cross_sectional_dispersion",
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "USDJPY.DWX"
+    ],
+    "build_task_id": "c97b5cdc-8d55-404e-9ec0-47496d1a75f6",
+    "build_task_status": "pending",
+    "compile_work_item_id": "1c77fcf2-39ef-47f6-a448-5dd1457bce03",
+    "compile_status": "pending",
+    "compile_verdict": null,
+    "compile_claimed_by": null,
+    "compile_activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "mq5_sha256": "7203979e4a508dee2a5e041c57538e29b8bb107dbdf0cf0d53b0d76c977266ae",
+    "classification": "existing_source_hash_bound_compile_work_do_not_duplicate"
+  },
+  "tester_admission": {
+    "active_threshold": 7,
+    "observed_active_count": 7,
+    "saturated": true,
+    "cpu_ceiling_pct": 97.0,
+    "cpu_samples_pct": [
+      75.5917784465956,
+      67.1672603721892,
+      73.5351103026655,
+      84.9868661807924,
+      82.5430079086636
+    ],
+    "cpu_average_pct": 76.76480464218646,
+    "cpu_maximum_pct": 84.9868661807924,
+    "cpu_percentage_clears_ceiling": true,
+    "stop_basis": "active_governed_tester_count_at_saturation_threshold"
+  },
+  "active_work_items_at_saturation": [
+    {
+      "id": "f625d9aa-da34-44bb-aa9f-0eda284f3f32",
+      "phase": "Q10_NEWS",
+      "ea_id": "QM5_11167",
+      "symbol": "XAUUSD.DWX",
+      "claimed_by": "T2"
+    },
+    {
+      "id": "4bfc0c7d-797e-42c0-808a-13e396ac9648",
+      "phase": "Q04",
+      "ea_id": "QM5_11377",
+      "symbol": "USDJPY.DWX",
+      "claimed_by": "T10"
+    },
+    {
+      "id": "269d3d80-00a2-5de5-bbb5-d02d0114bd60",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41324",
+      "symbol": "USDJPY.DWX",
+      "claimed_by": "T1"
+    },
+    {
+      "id": "cae8cc86-589d-4981-8e51-825863426563",
+      "phase": "Q04",
+      "ea_id": "QM5_41102",
+      "symbol": "XTIUSD.DWX",
+      "claimed_by": "T4"
+    },
+    {
+      "id": "c9c32cc7-a630-5228-b86f-cfc2d235b267",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41345",
+      "symbol": "XAUUSD.DWX",
+      "claimed_by": "T6"
+    },
+    {
+      "id": "32357e50-afd6-577d-b381-f6aeaa69e003",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41347",
+      "symbol": "XAUUSD.DWX",
+      "claimed_by": "T8"
+    },
+    {
+      "id": "2003311e-5698-5798-8b08-fdc04d3fa076",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41305",
+      "symbol": "XTIUSD.DWX",
+      "claimed_by": "T9"
+    }
+  ],
+  "mutations": {
+    "farm_rows_created": 0,
+    "farm_rows_claimed": 0,
+    "farm_rows_advanced": 0,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "tester_launched": false,
+    "generated_mq5_written": false,
+    "framework_input_pin_audit_applicable": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
