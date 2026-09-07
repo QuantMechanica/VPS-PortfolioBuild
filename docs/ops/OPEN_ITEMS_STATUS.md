@@ -1166,3 +1166,10 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 - **B′ (934e6104 APPROVED, 4d8fd0820a):** criterion sealed, 12 admissible; **wave-1 release 07:16Z: a909ee18 (11196 H4) + f625d9aa (11167 D1)** stamped with the B marker and footnote, taint hold inactive, claim when XAUUSD frees (priority_track). 10 rows need wave 2 (review-only successors without sealed run plan; runner-abort holds) → Codex P92. Reload chunk 58 9/10 (T3 on a Q07 cell).
 - **Panel:** OWNER re-attached the v2 light canary at 08:50 Prague (clean init); feedback "Einheitsbrei" → **v3 Astra 4bdcbb91** (design research with references, tabular grid, de-DE numbers, PERFORMANCE section from deal history, fail-inert). Panel standard recorded in memory.
 - FTMO demo: flat, 0 halt, governor live. Fleet 100 census/h, 10 workers, D: 58 GB.
+
+## Addendum 2026-09-07 08:15Z — B′ wave 2 done (11/12 released), first adjudication running, panel v3 re-attached, census prescreen burst
+
+- **B′:** wave 2 (253814f1 APPROVED) released 9 more rows (8 window successors with contract-v3 plans + 10771); 11/12 admissible rows now carry the B marker; 745671a4 deferred (missing Q07 evidence → regeneration ticket). 11167/XAUUSD Q10_NEWS adjudicating on T2 since 07:18Z; 11196 next on XAUUSD.
+- **Panel v3** (4bdcbb91 APPROVED, EX5 9d55ea09): OWNER re-attached at 09:42 Prague, clean init; awaiting OWNER verdict before the 7-sleeve + governor rollout.
+- **Census metric burst 08:0xZ:** 146 OPT_CENSUS rows closed `SKIPPED_PRESCREEN` within 15 min (prescreen_admission contract receipt) — a prescreen sweep, not measurements; the 10-min "census_done" line counts them. 10700/XAUUSD closed Q14 KEEP_INCUMBENT at 07:26Z; pipeline_state (hourly task, next 08:23Z) will show whether it counts as the 13th pair.
+- Fleet 10 workers, RAM 22 GB, D: 66 GB; FTMO demo flat, 0 halt.
