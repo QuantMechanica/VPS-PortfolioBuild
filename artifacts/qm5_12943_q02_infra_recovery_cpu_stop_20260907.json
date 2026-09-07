@@ -1,0 +1,77 @@
+{
+  "schema": "qm.paced-infra-recovery-cpu-stop/v1",
+  "ea_id": "QM5_12943",
+  "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+  "asset_class": "fx",
+  "target_symbol": "EURUSD.DWX",
+  "target_phase": "Q02",
+  "source_work_item_id": "2b04b129-89e8-4489-8653-5dac22f8439a",
+  "source_work_item_status": "failed",
+  "source_work_item_verdict": "INFRA_FAIL",
+  "source_work_item_payload_sha256": "c52e2760ec952231931bdfa8994e292d25be4b518227d70166e6d812c361f7ef",
+  "diagnosis": {
+    "verdict_reason": "worker_crashed_handling_item",
+    "failure_class": "SH3_SPAWN_REFUSAL_WRITE_CONSTRAINT",
+    "traceback_terminal": "sqlite3.IntegrityError: CHECK constraint failed: sh3_enforced=0 OR status<>'failed' OR (COALESCE(NULLIF(verdict_taxonomy,''),NULLIF(json_extract(payload_json,'$.verdict_taxonomy'),''))) IS NOT NULL",
+    "strategy_failure": false,
+    "history_failure": false,
+    "binary_failure": false,
+    "fix_commit": "c1fe07e30fe27d92233ecae64773ca974abf3493",
+    "fix_summary": "record_work_item_spawn_refusal now writes verdict_taxonomy=infra in both the column and payload before committing an INFRA_FAIL spawn refusal",
+    "recovery_path_commit": "b63bf8b6e8",
+    "recovery_path_summary": "farmctl accepts an authenticated append-only same-binary Q02 retry for this worker-crash signature"
+  },
+  "identity": {
+    "mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "source_expected_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "same_binary": true,
+    "setfile_sha256": "8e1604e168b117a130a92285d3892352151c85a5c49965e71a9345fadd726586",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "magic_slot": 6,
+    "registry_status": "active"
+  },
+  "framework_input_pin_audit": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": []
+  },
+  "collision_check": {
+    "open_q02_work_items_before_admission": 0,
+    "matching_open_agent_tasks": 0,
+    "matching_open_source_tasks": 0
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-07T02:35:10.7038826Z",
+    "method": "Windows Get-Counter \\Processor(_Total)\\% Processor Time, one-second interval",
+    "samples_pct": [
+      89.96063438122339,
+      88.71411307476117,
+      80.56856688907531,
+      97.07202667076294,
+      82.52044592863335
+    ],
+    "average_pct": 87.76715738889123,
+    "maximum_pct": 97.07202667076294,
+    "ceiling_pct": 97.0,
+    "requires_average_and_maximum_strictly_below_ceiling": true,
+    "clears_ceiling": false
+  },
+  "outcome": {
+    "enqueue_attempted": false,
+    "q02_successor_created": false,
+    "tester_launched": false,
+    "reason": "BACKTEST_CPU_CEILING",
+    "source_row_preserved": true
+  },
+  "resume_command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12943 --phase Q02 --from-work-item-id 2b04b129-89e8-4489-8653-5dac22f8439a --append-only-rerun-of 2b04b129-89e8-4489-8653-5dac22f8439a --rerun-reason 'same-binary retry after SH3 spawn-refusal taxonomy fix c1fe07e30f; source worker crash authenticated and current EX5 unchanged' --expected-current-ex5-sha256 95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
