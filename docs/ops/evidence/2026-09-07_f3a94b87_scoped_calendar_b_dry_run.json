@@ -1,0 +1,1444 @@
+{
+  "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+  "candidate_manifest_sha256": "5f28c2f3bba94c0c7b78dbff93aba0e2dc22bb8cfbe0b1ec484b5a24ed69366a",
+  "counts": {
+    "EXCLUDED": 47
+  },
+  "declarations_sha256": "190a1da82a474191f339114a4e0e32c5f9cf665c9d2e244193bb761f9f23334a",
+  "pending_q10_news_count": 47,
+  "priority_row": "a909ee18-9f16-4706-967e-daa080b6f720",
+  "priority_row_included": true,
+  "rows": [
+    {
+      "assessment_sha256": "ccf12689f3bb9594678ade101a5daddd4418300527e7636538a4b2a4cb8106bb",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "EUR"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10847",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "GDAXI.DWX",
+      "symbols": [
+        "GDAXI.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "49a059da-82ab-4835-9c46-f18ba9b94dcf"
+    },
+    {
+      "assessment_sha256": "513b872900e9282880e4b8c027b7fc6251d04dcb571d572ee0451e2b89ae8138",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_12989",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "1cff016c-d25c-4723-a892-6bc53bfafa0b"
+    },
+    {
+      "assessment_sha256": "ca2d6bf68ed73376ea46d9e5191cec04d979b28fa9bd9f94132c8c6333bd8083",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 1762,
+      "declared_exclusion_ids_sample": [
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-0093b7c4ebd8813e",
+        "E1B3-00a7c6acade8a24f",
+        "E1B3-00e88e57e2bebb62",
+        "E1B3-00ec2386c0bcb1e3",
+        "E1B3-01303e4ce7995683",
+        "E1B3-0137202ca4660f75",
+        "E1B3-015a0cefbf1c099b"
+      ],
+      "declared_exclusion_ids_sha256": "166183385baa1590732e752ef8b50c586a8135188a993771b5ec454502a12532",
+      "ea_id": "QM5_11129",
+      "exposure_class_count": 2849,
+      "input_manifest_sha256": "cb76b7199f942d1d53cc3d0001bea0b73972c0960df07d5d848c2a81faf0687b",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "SP500.DWX",
+      "symbols": [
+        "SP500.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "745671a4-02e4-4df5-b5e1-e25f0e41ca0e"
+    },
+    {
+      "assessment_sha256": "d558a527f2d8804d5f632946846d2f17c3f4e49ec4a830c4064631cadb7e3988",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_13128",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "aa80274f-fb46-4432-b47e-6fb2bf28c9a2"
+    },
+    {
+      "assessment_sha256": "d3bc90c589fa5f389bc20379ea0c5c7f9501e8d029ac3cdd710bfd321249cfd8",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "EUR"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10815",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "GDAXI.DWX",
+      "symbols": [
+        "GDAXI.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "57d8bacd-2805-45a6-ac51-156e22bb3a65"
+    },
+    {
+      "assessment_sha256": "c14eabb4a6ff126210842dd7a98bc55cfd0fddc4eb0bedbec35d8dc9a2e41950",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "EUR",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_1567",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "EURUSD.DWX",
+      "symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "2604a1f0-4f58-4597-89ef-432af9093131"
+    },
+    {
+      "assessment_sha256": "80afe601c1a634fb790dd2c0b89118ee1e96d5ec1abaf3d2c45fe1caf21b1966",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "AUD",
+        "CAD",
+        "CHF",
+        "EUR",
+        "GBP",
+        "JPY",
+        "NZD",
+        "USD"
+      ],
+      "declared_exclusion_count": 9008,
+      "declared_exclusion_ids_sample": [
+        "E1B3-00089bde8a87ab7a",
+        "E1B3-00115c424c889e72",
+        "E1B3-001638ce52e6bc61",
+        "E1B3-001ac02ca1481039",
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-00272e479fd99d7c",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-003299965b1a3c95",
+        "E1B3-003852eb72de2c49",
+        "E1B3-0038ac9079847fe2"
+      ],
+      "declared_exclusion_ids_sha256": "b9dc5c24da2987194adeae94052774543f95f4f110aa3ed9952e6886b3cbbe11",
+      "ea_id": "QM5_12580",
+      "exposure_class_count": 10243,
+      "input_manifest_sha256": "623662b36b8e8c50eb616e4bf295bf6d8b675a58658054f6abdd754e727c0b45",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP",
+        "NON_USD_EXPOSURE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "AUDUSD.DWX",
+      "symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "aece4bcc-62aa-4f8e-937e-5f81c071a4d0"
+    },
+    {
+      "assessment_sha256": "00f9771843482a70b0126008e85a4dc9f543b473b95ea9e51949474da80cd846",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "EUR",
+        "GBP",
+        "JPY",
+        "USD"
+      ],
+      "declared_exclusion_count": 6035,
+      "declared_exclusion_ids_sample": [
+        "E1B3-00115c424c889e72",
+        "E1B3-001638ce52e6bc61",
+        "E1B3-001ac02ca1481039",
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-003852eb72de2c49",
+        "E1B3-0038ac9079847fe2",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-004c427b52538d79",
+        "E1B3-007185b5270435b0"
+      ],
+      "declared_exclusion_ids_sha256": "6a3f5c53bb70d46ec816f0839eadcde2ce485d849c9d78e71653e1457e53fcb1",
+      "ea_id": "QM5_11147",
+      "exposure_class_count": 7272,
+      "input_manifest_sha256": "6ec28b346f7faebd725b89bb455cb7b34fcfa5aceef89ac17d80e516a71315c5",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP",
+        "NON_USD_EXPOSURE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "SP500.DWX",
+      "symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "SP500.DWX",
+        "UK100.DWX",
+        "USDJPY.DWX",
+        "WS30.DWX",
+        "XAUUSD.DWX",
+        "XTIUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "06b9c0f8-f6c1-47f8-a40d-2dc94893db7c"
+    },
+    {
+      "assessment_sha256": "dffd3d958cddf77948cd079ad1375859919bfb45b6583315170f4842cd255311",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "AUD",
+        "JPY",
+        "USD"
+      ],
+      "declared_exclusion_count": 3487,
+      "declared_exclusion_ids_sample": [
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-0093b7c4ebd8813e",
+        "E1B3-009fb790d9d0fc1f",
+        "E1B3-00a7c6acade8a24f",
+        "E1B3-00c21b39fc895060",
+        "E1B3-00e88e57e2bebb62",
+        "E1B3-00ec2386c0bcb1e3",
+        "E1B3-00fd21925d50b852"
+      ],
+      "declared_exclusion_ids_sha256": "cbd16df651f0e11b623711b43cf1ff0df86755969b9ffc9f56ffa667943d169d",
+      "ea_id": "QM5_13059",
+      "exposure_class_count": 4681,
+      "input_manifest_sha256": "14f104080d4710927b1af78d9a9cc54207347ebce8ee787c80eb19158638708d",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP",
+        "NON_USD_EXPOSURE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+      "symbols": [
+        "AUDJPY.DWX",
+        "XTIUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "86cccb8a-2d49-4539-a4a0-c45f530dc6ba"
+    },
+    {
+      "assessment_sha256": "8d841859e5a865ce0bc648b7c2d1c382a43e6dddaaa4f23829404ff51e075ff2",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "EUR"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_13301",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "GDAXI.DWX",
+      "symbols": [
+        "GDAXI.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "84c6e9e9-76a8-4cd4-87b4-647d7fad3c1a"
+    },
+    {
+      "assessment_sha256": "6b6dfd6fde6fdf92d8ae6855bb39b43e45be2579a94503939f710e9a85204b4d",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_12567",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "7bbeef66-becf-4bd3-aa5c-1d00bde262d8"
+    },
+    {
+      "assessment_sha256": "2e14bc805203996e0afa0af88525e2e720780a1c957ce0f20ccecf802386fd57",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_1556",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "d81d9ea8-b802-4c38-8fc9-8bdbab6ef75c"
+    },
+    {
+      "assessment_sha256": "9fb13ebe4daa516bd0425e7effa819e5f86529e270d1377bdb8238c88bd8d249",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "GBP",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10939",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "GBPUSD.DWX",
+      "symbols": [
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "9639a773-b913-40a2-b12f-128a027aec98"
+    },
+    {
+      "assessment_sha256": "b0beb7bce47b6a5f7f34ea460a087682a7889ac5458fd88dbb7b00c4389eecbc",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "JPY",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_11476",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "USDJPY.DWX",
+      "symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "08fe4173-07d9-47e1-97e9-a76b1159ad94"
+    },
+    {
+      "assessment_sha256": "f81eb7013b66e89bc0c2e8625727e182112d6ab901164eba99860daedbd5343c",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "AUD",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_12831",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+      "symbols": [
+        "AUDUSD.DWX",
+        "XTIUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "84608819-5253-4df0-871c-6eb4750c3435"
+    },
+    {
+      "assessment_sha256": "eb07318158317e4db926e75a957186be1314a25019adb4c2c38d38bdabfbea39",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "CAD",
+        "USD"
+      ],
+      "declared_exclusion_count": 2865,
+      "declared_exclusion_ids_sample": [
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-003299965b1a3c95",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-0091ba92c60b89c7",
+        "E1B3-0093b7c4ebd8813e",
+        "E1B3-0098cc40cd76b689",
+        "E1B3-009a1bb7eba2f2ad",
+        "E1B3-00a7c6acade8a24f",
+        "E1B3-00d0f381d8d7d6a8"
+      ],
+      "declared_exclusion_ids_sha256": "d8ec7d1fba6f6462b6de49d55bdb0f693191994a387c97d5ad42bd696660974a",
+      "ea_id": "QM5_11422",
+      "exposure_class_count": 3951,
+      "input_manifest_sha256": "8c82f55b1a815940bf69c942045e14cfab6723b3621c86738cd719e03c114d2e",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP",
+        "NON_USD_EXPOSURE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "USDCAD.DWX",
+      "symbols": [
+        "USDCAD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "d712832c-b41b-471c-a986-79f7f17f8dfb"
+    },
+    {
+      "assessment_sha256": "ee81cc34c42369fd677ca9e388b5b4cbef6d4b3d18cbba6cb0c8cdef10b2edea",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_1556",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "72992810-aaf1-4fa8-9c12-c778bda0ae87"
+    },
+    {
+      "assessment_sha256": "3ef8c352019ced16578b2ee550e8e4535aa9fed137699d526510aa96bd24fd1b",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10569",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "70171429-8d84-49bd-8082-7034c924dbf4"
+    },
+    {
+      "assessment_sha256": "aed22032749063c2d68c0c37202ca65ea14d69e888e5dc38a2f38e71421e5fd2",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10569",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "e8ec3223-886a-400b-ba1b-096a82cebd9f"
+    },
+    {
+      "assessment_sha256": "4b5ff7372961f6aae332f463ee5008e3694ec8096742d89b74c1137c6670ef1d",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10513",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "cec67ad5-2ca5-4d84-b347-a0c370415329"
+    },
+    {
+      "assessment_sha256": "5bc5289eda81d92d9c5e3d55eb359580ca031399d1ad9adbf724f6979280e6f9",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "58ae0036-5bc4-4711-8bfa-eb3465af298b"
+    },
+    {
+      "assessment_sha256": "be704ef1b1585b928e1eb283ccd4c8383e06d9cc5f1f9f8ec3dcbf09abc0d543",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "9f691044-d481-4f69-8823-267d80fff89d"
+    },
+    {
+      "assessment_sha256": "90fc7342558cc408e218af0dbe89fdd3edbeb9710b26d22abbdf103ab27cfa53",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "9b69d492-82df-4703-9350-fea30afac98f"
+    },
+    {
+      "assessment_sha256": "a2102f454eec32218f4247feb6838f4eb77129fef7ce2ade1404e0f22d9c1964",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "f3f1cedc-c0d6-4485-917c-7f3b98957453"
+    },
+    {
+      "assessment_sha256": "83512ee8051035b4763df06e02eccecc0b0f008c29d609705c38a55ab16aae3b",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "15e7deca-13e8-4760-9e8e-5918040f948d"
+    },
+    {
+      "assessment_sha256": "2684e3f33f6cd2276200c24ec2df996af3398b84445e2117ebc4905a28b27f33",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "42c8debd-ca2a-4618-8aaf-b9c3ee379f61"
+    },
+    {
+      "assessment_sha256": "79276b86663cb959d150f49516c003d6c507860aad3be6f88acf38244b938a1b",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "a8e36fba-36e7-419a-9d2b-5b3116cbdde2"
+    },
+    {
+      "assessment_sha256": "cbdc9334c4227f179e44aebcbe75cd2675f12719d2a1a9fe4696ae13609b226c",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "120d68ff-bf61-4b16-abf8-1867aee53bb3"
+    },
+    {
+      "assessment_sha256": "da7444ac6831ea7596ec0cab62bc4749a39742442c83710e0fdf233374dc84f4",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10692",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "NDX.DWX",
+      "symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "60ce66e6-8c40-493a-aa8f-40c8714a3e85"
+    },
+    {
+      "assessment_sha256": "6915c46955f31677c1b54f03606eee929e19b8d271bc4cda10700d5f1de2f644",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10145",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "SP500.DWX",
+      "symbols": [
+        "SP500.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "bd840961-23a1-4fea-99ce-2e285c0d1914"
+    },
+    {
+      "assessment_sha256": "0a3378ceed4630c1cec54b28973686afb607c8b66fc0908dbd745842d5bb528e",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10513",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "9d3f470e-5071-4398-86c7-7de4be979c3d"
+    },
+    {
+      "assessment_sha256": "77db2e7a0afdb2970dea91050b9d75577c2f1466f9e4489fd71a9f7cd2fbe017",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10513",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "d3312a9e-038a-4ab8-b392-0dbdfa2728e0"
+    },
+    {
+      "assessment_sha256": "cc4d3e5fe3ed8be53440e4eba4134daaa7dc0476287ebabcbd8c151880dd46ca",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10513",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "1d9a2d26-4407-4554-acbb-4e4c258f0b04"
+    },
+    {
+      "assessment_sha256": "9e71fbcd142bdd94537c701d4c717a98a74dbc6d6728fd0d79cd043e8d87699f",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_1567",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAGUSD.DWX",
+      "symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "0f7f63e4-9244-4c60-8610-ea068c5fc64e"
+    },
+    {
+      "assessment_sha256": "065aa309367f8fa86e6c163dea7f1d2e80567a3b7d17c2889fa286fca8602aae",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "GBP",
+        "JPY"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_1567",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "GBPJPY.DWX",
+      "symbols": [
+        "GBPJPY.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "fb127697-b89e-4d52-9bd5-0d92d95e9125"
+    },
+    {
+      "assessment_sha256": "c224d061625f3bb9bda2d4e45f8b3ea58c94c96a527c67e797eddc54e2569bd5",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "GBP",
+        "NZD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_1567",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "GBPNZD.DWX",
+      "symbols": [
+        "GBPNZD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "10449264-8fa1-47f5-a3d7-adb28cee934d"
+    },
+    {
+      "assessment_sha256": "9c81f101785fca71bd0ecdabc8092cc5c51c40739afa4c699d1e86092b2b0b51",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "GBP",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_12474",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "GBPUSD.DWX",
+      "symbols": [
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "83826f05-3d85-4cac-8177-e3f7cd25c7e8"
+    },
+    {
+      "assessment_sha256": "c6b0e45e41115453a8be9190c725ecc370cb7de8fcb1245f511a9d6e3cc3b02b",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10569",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "2641d5cf-6e1c-43d1-92b2-05c9d6f54d82"
+    },
+    {
+      "assessment_sha256": "aa39ab386d5f4ee23bc1b1bbaccaccafbd88a675fae4d7c62f0193f325f9c454",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "CAD",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10476",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "USDCAD.DWX",
+      "symbols": [
+        "USDCAD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "b6bdac29-b608-4016-9394-2be6f34cc9a3"
+    },
+    {
+      "assessment_sha256": "df7bcc5a805badbded9a3286c25309baef6a4fc4474b5bbb4cdad0c2994c29e8",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 1762,
+      "declared_exclusion_ids_sample": [
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-0093b7c4ebd8813e",
+        "E1B3-00a7c6acade8a24f",
+        "E1B3-00e88e57e2bebb62",
+        "E1B3-00ec2386c0bcb1e3",
+        "E1B3-01303e4ce7995683",
+        "E1B3-0137202ca4660f75",
+        "E1B3-015a0cefbf1c099b"
+      ],
+      "declared_exclusion_ids_sha256": "166183385baa1590732e752ef8b50c586a8135188a993771b5ec454502a12532",
+      "ea_id": "QM5_10771",
+      "exposure_class_count": 2849,
+      "input_manifest_sha256": "75a93a3ee2b2e1b93be7441d6cb94fa4f26ff0111a052a5c1dfe9a302824ed62",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP",
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113"
+    },
+    {
+      "assessment_sha256": "55917265474166fc1e8d0b6452ba2f7ffec7f6f4373375584f8a3584cf217bb7",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "JPY",
+        "USD"
+      ],
+      "declared_exclusion_count": 2517,
+      "declared_exclusion_ids_sample": [
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-0093b7c4ebd8813e",
+        "E1B3-00a7c6acade8a24f",
+        "E1B3-00e88e57e2bebb62",
+        "E1B3-00ec2386c0bcb1e3",
+        "E1B3-01303e4ce7995683",
+        "E1B3-0137202ca4660f75",
+        "E1B3-015a0cefbf1c099b"
+      ],
+      "declared_exclusion_ids_sha256": "3e7a26d88dacf93bf2299776fe6852cda4cddc7a25142c90c716e0cd452797a3",
+      "ea_id": "QM5_11179",
+      "exposure_class_count": 3712,
+      "input_manifest_sha256": "3d5fa9e0e05e58c4b9d28caa2f8eeb299f574ca706c9e9515e33d98491e33a27",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP",
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "USDJPY.DWX",
+      "symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "a6e2cc8b-7b7b-4e64-9764-4cf39046dd1c"
+    },
+    {
+      "assessment_sha256": "93227ea447747cd273209913deee5d4c8e545c805d07a5ea5b1a470bc5654150",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "JPY",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10771",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "USDJPY.DWX",
+      "symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "9a85fb74-4c31-4a74-8e8c-c332cf1b802e"
+    },
+    {
+      "assessment_sha256": "0e93b4961f6c5a0494722449e696da75a784e3797240635c5b19e276624c2e1f",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_1230",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "bb02b701-0d7c-4de7-82b2-87d917f8dd1b"
+    },
+    {
+      "assessment_sha256": "5f6d74e88d971dec012aec25c9c7a00f70bdd468d622c4a926f696ffe4d7de05",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "EUR",
+        "NZD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_10148",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "EURNZD.DWX",
+      "symbols": [
+        "EURNZD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "8b233bbf-4ed6-4c27-a3d2-5e940c9248ab"
+    },
+    {
+      "assessment_sha256": "46acb97b12d1aeeff00652ef556114d2812da59990bf3edcb231b6a74b6643e8",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "CHF",
+        "USD"
+      ],
+      "declared_exclusion_count": 0,
+      "declared_exclusion_ids_sample": [],
+      "declared_exclusion_ids_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "ea_id": "QM5_9573",
+      "exposure_class_count": 0,
+      "input_manifest_sha256": null,
+      "reasons": [
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME",
+        "NON_USD_EXPOSURE",
+        "SEALED_Q10_WINDOW_UNAVAILABLE"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "USDCHF.DWX",
+      "symbols": [
+        "USDCHF.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": null,
+      "window_to_utc": null,
+      "work_item_id": "e0cbdd1a-1cfe-4bbe-8ebe-a4b4c26d151f"
+    },
+    {
+      "assessment_sha256": "e06cf2e4c86df839285ad7d9c615cda8c496771ac05d9a16712a4a94bb9d01bf",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 1762,
+      "declared_exclusion_ids_sample": [
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-0093b7c4ebd8813e",
+        "E1B3-00a7c6acade8a24f",
+        "E1B3-00e88e57e2bebb62",
+        "E1B3-00ec2386c0bcb1e3",
+        "E1B3-01303e4ce7995683",
+        "E1B3-0137202ca4660f75",
+        "E1B3-015a0cefbf1c099b"
+      ],
+      "declared_exclusion_ids_sha256": "166183385baa1590732e752ef8b50c586a8135188a993771b5ec454502a12532",
+      "ea_id": "QM5_11167",
+      "exposure_class_count": 2849,
+      "input_manifest_sha256": "1c5ec5a3734731c038955d038b84f0838001b758fb2247e4c443721e86b6e248",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "f625d9aa-da34-44bb-aa9f-0eda284f3f32"
+    },
+    {
+      "assessment_sha256": "da58f504b7fe72a23d001f141171febebbe3484a7bad72e7d799d733f500f671",
+      "binding_sha256": "b12615d82d51516443133c0725739ae18d24646aa11b6c825d29879cf690f559",
+      "currencies": [
+        "USD"
+      ],
+      "declared_exclusion_count": 1762,
+      "declared_exclusion_ids_sample": [
+        "E1B3-001eff42bc5eab2a",
+        "E1B3-001f4b5268d251c6",
+        "E1B3-002ee0466c7b257e",
+        "E1B3-003053580628ceef",
+        "E1B3-0040b2563a823ca7",
+        "E1B3-0093b7c4ebd8813e",
+        "E1B3-00a7c6acade8a24f",
+        "E1B3-00e88e57e2bebb62",
+        "E1B3-00ec2386c0bcb1e3",
+        "E1B3-01303e4ce7995683",
+        "E1B3-0137202ca4660f75",
+        "E1B3-015a0cefbf1c099b"
+      ],
+      "declared_exclusion_ids_sha256": "166183385baa1590732e752ef8b50c586a8135188a993771b5ec454502a12532",
+      "ea_id": "QM5_11196",
+      "exposure_class_count": 2849,
+      "input_manifest_sha256": "4b19a4dd62f51e04cbb8e15769106fd459674385ec5e10bf1e4b8d3f36a4b45e",
+      "reasons": [
+        "DECLARED_EXCLUSION_OVERLAP",
+        "INTRADAY_OR_UNKNOWN_TIMEFRAME"
+      ],
+      "schema": "qm.news-calendar-scoped-row-assessment/v1",
+      "symbol": "XAUUSD.DWX",
+      "symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "EXCLUDED",
+      "window_from_utc": "2019-01-01T00:00:00+00:00",
+      "window_to_utc": "2026-01-01T00:00:00+00:00",
+      "work_item_id": "a909ee18-9f16-4706-967e-daa080b6f720"
+    }
+  ],
+  "schema": "qm.news-calendar-scoped-consumer-b-dry-run/v1"
+}

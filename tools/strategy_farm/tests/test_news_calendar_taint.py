@@ -40,7 +40,7 @@ def db():
     conn.row_factory = sqlite3.Row
     conn.executescript('''
         CREATE TABLE work_items(id TEXT PRIMARY KEY,phase TEXT,status TEXT,
-          ea_id TEXT,symbol TEXT,payload_json TEXT);
+          ea_id TEXT,symbol TEXT,setfile_path TEXT,payload_json TEXT);
         CREATE TABLE work_item_holds(work_item_id TEXT PRIMARY KEY,
           hold_code TEXT,reason TEXT,active INTEGER,release_on_restart INTEGER,
           created_at TEXT,updated_at TEXT,released_at TEXT,release_note TEXT);
@@ -52,8 +52,9 @@ def db():
 
 
 def insert(conn, item_id='news', phase='Q10_NEWS', status='pending'):
-    conn.execute('INSERT INTO work_items VALUES(?,?,?,?,?,?)',
-                 (item_id, phase, status, 'QM5_9999', 'EURUSD.DWX', '{}'))
+    conn.execute('INSERT INTO work_items VALUES(?,?,?,?,?,?,?)',
+                 (item_id, phase, status, 'QM5_9999', 'EURUSD.DWX',
+                  'QM5_9999_EURUSD_D1.set', '{}'))
     conn.commit()
 
 
@@ -184,6 +185,60 @@ def test_mutation_requires_transaction(db, inputs):
     insert(db)
     with pytest.raises(ValueError, match='transaction required'):
         taint.synchronize(db, policy, pin, apply=True)
+
+
+def test_scoped_marker_waits_for_explicit_row_release(db, inputs, monkeypatch):
+    policy, _, pin = inputs
+    insert(db)
+    db.execute('BEGIN IMMEDIATE')
+    taint.synchronize(db, policy, pin, apply=True)
+    db.commit()
+    marker = {
+        'schema': taint.scoped_b.MARKER_SCHEMA,
+        'footnote': taint.scoped_b.FOOTNOTE,
+        'decision_id': 'OWNER-DEC-FIXTURE',
+        'binding_sha256': 'b' * 64,
+        'assessment_sha256': 'c' * 64,
+    }
+    monkeypatch.setattr(taint.scoped_b, 'load_activation', lambda *a, **k: object())
+    monkeypatch.setattr(taint.scoped_b, 'marker_for', lambda *a, **k: marker)
+    monkeypatch.setattr(taint.scoped_b, 'marker_valid', lambda *a, **k: True)
+    db.execute('BEGIN IMMEDIATE')
+    returned = taint.release_scoped_item(
+        db, 'news', pin, adjudicated_at='2026-09-07T05:00:00+00:00'
+    )
+    assert returned == marker
+    assert db.execute("SELECT status FROM work_items WHERE id='news'").fetchone()[0] == 'pending'
+    assert hold_rows(db)[0]['active'] == 0
+    assert taint.guard_claim(db, 'news', pin) is None
+    db.commit()
+    payload = json.loads(db.execute(
+        "SELECT payload_json FROM work_items WHERE id='news'"
+    ).fetchone()[0])
+    assert payload[taint.scoped_b.MARKER_KEY] == marker
+    assert db.execute(
+        "SELECT count(*) FROM events WHERE event='news_calendar_scoped_b_release'"
+    ).fetchone()[0] == 1
+
+
+def test_synchronize_never_auto_releases_valid_scoped_marker(db, inputs, monkeypatch):
+    policy, _, pin = inputs
+    insert(db)
+    db.execute("UPDATE work_items SET payload_json=? WHERE id='news'", (
+        json.dumps({taint.scoped_b.MARKER_KEY: {
+            'schema': taint.scoped_b.MARKER_SCHEMA,
+        }}),
+    ))
+    db.execute("INSERT INTO work_item_holds VALUES('news',?,?,?,?,?,?,?,?)",
+               (taint.HOLD, 'tainted', 1, 0, 'old', 'old', None, None))
+    db.commit()
+    monkeypatch.setattr(taint.scoped_b, 'load_activation', lambda *a, **k: object())
+    monkeypatch.setattr(taint.scoped_b, 'marker_valid', lambda *a, **k: True)
+    db.execute('BEGIN IMMEDIATE')
+    rows = taint.synchronize(db, policy, pin, apply=True)
+    db.commit()
+    assert rows[0]['action'] == 'AWAIT_SCOPED_OWNER_RELEASE'
+    assert hold_rows(db)[0]['active'] == 1
 
 
 def init_farm(root):

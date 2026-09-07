@@ -21,7 +21,9 @@ from typing import Any
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from tools.strategy_farm import book_build_guard, gate_manifest, rebaseline_census
+from tools.strategy_farm import (
+    book_build_guard, gate_manifest, news_calendar_scoped_activation, rebaseline_census,
+)
 
 
 TARGET_QUALIFIED_PAIRS = 25
@@ -365,13 +367,22 @@ def _raw_v4_stage_progress(
     """
 
     by_pair: dict[tuple[str, str], dict[str, dict[str, Any]]] = defaultdict(dict)
+    scoped_news: dict[tuple[str, str], dict[str, Any]] = {}
     for row in rows:
+        key = _pair_key(row)
+        if key is not None and str(row.get("phase") or "").upper() == "Q10_NEWS":
+            marker = news_calendar_scoped_activation.marker_from_payload(row.get("payload_json"))
+            if marker is not None:
+                prior = scoped_news.get(key)
+                if prior is None or str(marker.get("adjudicated_at") or "") >= str(
+                    prior.get("adjudicated_at") or ""
+                ):
+                    scoped_news[key] = marker
         if str(row.get("gate_contract_version") or "").strip().lower() != "v4":
             continue
         stage = str(row.get("phase") or "").strip().upper()
         if stage not in _V4_STAGE_OUTCOMES:
             continue
-        key = _pair_key(row)
         if key is None:
             continue
         item = by_pair[key].setdefault(stage, {
@@ -431,7 +442,7 @@ def _raw_v4_stage_progress(
                         "completed_at": created_iso,
                     }
 
-    all_keys = set(by_pair) | set(news_chosen)
+    all_keys = set(by_pair) | set(news_chosen) | set(scoped_news)
     reservoir_keys = {
         key for key, stages in by_pair.items()
         if (stages.get("Q09") or {}).get("valid_done")
@@ -465,12 +476,20 @@ def _raw_v4_stage_progress(
             "in_q09_reservoir": key in reservoir_keys,
             "news_chosen": key in news_chosen,
             "news_choice": news_chosen.get(key),
+            "calendar_scope_limited": key in scoped_news,
+            "calendar_scope_footnote": (
+                scoped_news[key].get("footnote") if key in scoped_news else None
+            ),
+            "calendar_scope_binding_sha256": (
+                scoped_news[key].get("binding_sha256") if key in scoped_news else None
+            ),
             **{stage.lower(): stage_view(stages, stage) for stage in _PROGRESS_STAGES},
         })
 
     reservoir = {
         "q09_pass_pairs": len(reservoir_keys),
         "news_chosen_pairs": len(reservoir_keys & set(news_chosen)),
+        "calendar_scope_limited_pairs": len(scoped_news),
         "q11_pass_pairs": sum(
             bool((by_pair.get(key, {}).get("Q11") or {}).get("valid_done"))
             for key in reservoir_keys

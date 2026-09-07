@@ -953,12 +953,19 @@ def _render_path_to_25(contract: dict) -> str:
             return f"{state} · {verdict}"
         return state
 
+    def q10_state(pair: dict) -> str:
+        chosen = "chosen" if pair.get("news_chosen") else "—"
+        if pair.get("calendar_scope_limited"):
+            footnote = pair.get("calendar_scope_footnote") or "Kalender scope-begrenzt"
+            return f"{chosen} · {footnote}"
+        return chosen
+
     pair_rows = "".join(
         '<tr>'
         f'<td class="mc-mono">{e(pair.get("ea_id"))}</td>'
         f'<td class="mc-mono">{e(pair.get("symbol"))}</td>'
         f'<td>{"PASS" if pair.get("in_q09_reservoir") else "—"}</td>'
-        f'<td>{"chosen" if pair.get("news_chosen") else "—"}</td>'
+        f'<td>{e(q10_state(pair))}</td>'
         f'<td>{e(pair_state(pair, "q11"))}</td>'
         f'<td>{e(pair_state(pair, "q12"))}</td>'
         f'<td>{e(pair_state(pair, "q13"))}</td>'
@@ -999,6 +1006,7 @@ def _render_path_to_25(contract: dict) -> str:
     <div class="mc-p25-frontier"><span>Q09-Reservoir</span>
       <b>{_int(reservoir.get("q09_pass_pairs"))}</b><span>PASS</span>
       <b>{_int(reservoir.get("news_chosen_pairs"))}</b><span>Q10 chosen</span>
+      <b>{_int(reservoir.get("calendar_scope_limited_pairs"))}</b><span>Kalender scope-begrenzt</span>
       <b>{_int(reservoir.get("q11_pass_pairs"))}</b><span>Q11 PASS</span>
       <b>{_int(reservoir.get("q12_valid_pairs"))}</b><span>Q12 valid</span>
       <b>{_int(reservoir.get("q13_valid_pairs"))}</b><span>Q13 valid</span>

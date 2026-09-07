@@ -1,0 +1,52 @@
+{
+  "schema": "qm.news-calendar-scoped-consumer-b-activation/v1",
+  "enabled": true,
+  "decision": {
+    "id": "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907",
+    "receipt_id": "e1259d10-5bf7-48d4-8059-594159e98445",
+    "evidence": "docs/ops/evidence/2026-09-07_counter-path-calendar-taint-20260907_e1259d10_execution.md"
+  },
+  "candidate": {
+    "manifest_path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024800Z_e1d34_continuation/candidate/manifest.json",
+    "manifest_sha256": "5f28c2f3bba94c0c7b78dbff93aba0e2dc22bb8cfbe0b1ec484b5a24ed69366a",
+    "declarations_path": "D:/QM/reports/news_calendar/repair_e1a/20260907T024800Z_e1d34_continuation/candidate/declared_inadmissible_ranges.json",
+    "declarations_sha256": "190a1da82a474191f339114a4e0e32c5f9cf665c9d2e244193bb761f9f23334a",
+    "calendar_files": {
+      "news_calendar_2015_2025.csv": "ff13a32f836f0b081544d1743a6ca1346669b9fbd2772881b8d160625ea3d2ea",
+      "forex_factory_calendar_clean.csv": "505fc45a73144071b96ff4440cbb9fb3b1ba374c3adaa7285f70849a59975beb"
+    }
+  },
+  "admissibility": {
+    "phase": "Q10_NEWS",
+    "timeframes": ["D1"],
+    "impact": "HIGH",
+    "permitted_currencies": ["USD"],
+    "symbol_currency_overrides": {
+      "NDX.DWX": ["USD"],
+      "SP500.DWX": ["USD"],
+      "WS30.DWX": ["USD"],
+      "XAUUSD.DWX": ["USD"],
+      "XAGUSD.DWX": ["USD"],
+      "XTIUSD.DWX": ["USD"],
+      "XNGUSD.DWX": ["USD"],
+      "GDAXI.DWX": ["EUR"],
+      "UK100.DWX": ["GBP"]
+    },
+    "declaration_wildcards_for_high": ["ALL", "ALL_HIGH", "ALL_UNRESOLVED", "ALL_RATE_AND_NONRATE"],
+    "require_sealed_q10_window": true,
+    "release_mode": "OWNER_ROW_BY_ROW"
+  },
+  "counter_marker": {
+    "schema": "qm.news-calendar-scoped-counter-marker/v1",
+    "payload_key": "news_calendar_scoped_consumer_b",
+    "footnote": "Kalender scope-begrenzt"
+  },
+  "readjudication": {
+    "ticket_id": "NEWS-CALENDAR-B-READJUDICATE-AFTER-FULL-SEAL-20260907",
+    "trigger": "OWNER criteria decision B-prime or a measured full-scope calendar seal",
+    "mode": "APPEND_ONLY_RERUN",
+    "overwrite_existing_verdicts": false,
+    "full_scope_seal_evidence": "docs/ops/evidence/2026-09-07_news_calendar_e1d34_continuation.json",
+    "full_scope_seal_sha256": "1fd956ffca746eb989dd832a3419094035eb9b585b0c41409d8af7017ca59976"
+  }
+}

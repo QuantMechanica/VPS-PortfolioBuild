@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import json
 import sqlite3
 from pathlib import Path
 
@@ -29,12 +30,13 @@ def _insert(
     version: str = "v3",
     symbol: str = "EURUSD.DWX",
     updated: str = "2026-08-23T10:00:00Z",
+    payload: str = "{}",
 ) -> None:
     status = "failed" if verdict in {"INFRA_FAIL", "INVALID", "SUPERSEDED"} else "done"
     con.execute(
         "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         (row_id, "backtest", phase, ea, symbol, "x.set", status, verdict, 0,
-         None, None, None, "{}", updated, updated, version),
+         None, None, None, payload, updated, updated, version),
     )
 
 
@@ -44,7 +46,12 @@ def _fixture(path: Path) -> Path:
         for phase in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08"):
             _insert(con, f"mixed-{phase}", "QM5_900001", phase, "PASS")
         _insert(con, "mixed-v3-q10", "QM5_900001", "Q10", "PASS")
-        _insert(con, "mixed-v4-news", "QM5_900001", "Q10_NEWS", "PASS", version="v4")
+        marker = json.dumps({"news_calendar_scoped_consumer_b": {
+            "schema": "qm.news-calendar-scoped-counter-marker/v1",
+            "footnote": "Kalender scope-begrenzt", "binding_sha256": "b" * 64,
+        }})
+        _insert(con, "mixed-v4-news", "QM5_900001", "Q10_NEWS", "PASS",
+                version="v4", payload=marker)
         _insert(con, "mixed-v4-q17", "QM5_900001", "Q17", "PASS", version="v4")
 
         for phase in ("Q02", "Q03", "Q04", "Q05", "Q06", "Q07", "Q08"):
@@ -121,6 +128,8 @@ def test_contract_resolution_planner_holes_stop_and_tooltips(
     assert "(v3:" not in v4_terminal["title"] and "(v4:" not in v4_terminal["title"]
     # The v3 Incumbent must NOT be mislabelled into the v4 Q10 (News) column.
     assert "mixed-v3-q10" not in v4_news["title"]
+    assert "Kalender scope-begrenzt" in v4_news["title"]
+    assert data["calendar_scope_limited_pairs"] == 1
 
     # QM5_900002 has Q02..Q08 PASS plus an informational Q09_PORTFOLIO row.
     # Under v4 the first missing prerequisite after Q08 is Q09 (Baseline Full
@@ -174,6 +183,7 @@ def test_contract_resolution_planner_holes_stop_and_tooltips(
     assert re.search(r"\bP[0-9]", rendered) is None
     assert "verdict=INFRA_FAIL" in rendered
     assert "work_item_id=infra-q02" in rendered
+    assert "Kalender scope-begrenzt" in rendered
 
 
 def test_detail_page_gate_labels_keep_contract_provenance(
@@ -191,6 +201,7 @@ def test_detail_page_gate_labels_keep_contract_provenance(
     assert "Q11 Incumbent Full-History Confirmation (v3:Q10)" in rendered
     assert "Q10_NEWS" in rendered
     assert "(v4:Q10_NEWS)" not in rendered
+    assert "Kalender scope-begrenzt" in rendered
     assert "Q17 Live Burn-In DXZ" in rendered
     assert "(v4:Q17)" not in rendered
 

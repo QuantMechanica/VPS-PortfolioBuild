@@ -76,7 +76,13 @@ def _fixture_db(path: Path) -> Path:
             add(f"{ea}-{gate}", gate, ea, verdict=verdict)
 
     add("news-locked", "Q10_NEWS", "QM5_910001", verdict="CONFIG_LOCKED")
-    add("news-chosen-reservoir", "Q10_NEWS", "QM5_900000", verdict="CONFIG_LOCKED")
+    scoped_payload = json.dumps({"news_calendar_scoped_consumer_b": {
+        "schema": "qm.news-calendar-scoped-counter-marker/v1",
+        "footnote": "Kalender scope-begrenzt", "binding_sha256": "b" * 64,
+        "adjudicated_at": "2026-09-07T05:00:00+00:00",
+    }})
+    add("news-chosen-reservoir", "Q10_NEWS", "QM5_900000", verdict="CONFIG_LOCKED",
+        payload=scoped_payload)
     add("news-review", "Q10_NEWS", "QM5_910002", verdict="REVIEW_REQUIRED")
     add("news-open", "Q10_NEWS", "QM5_910003", status="active", verdict=None,
         created_at=now, updated_at=now)
@@ -142,6 +148,7 @@ def test_path_to_25_metrics_fixture_is_complete_and_read_only(
     assert metrics["reservoir"] == {
         "q09_pass_pairs": 25,
         "news_chosen_pairs": 1,
+        "calendar_scope_limited_pairs": 1,
         "q11_pass_pairs": 25,
         "q12_valid_pairs": 25,
         "q13_valid_pairs": 25,
@@ -154,6 +161,10 @@ def test_path_to_25_metrics_fixture_is_complete_and_read_only(
     assert metrics["raw_stage_counts"]["Q14"] == {
         "started_pairs": 25, "open_pairs": 1, "valid_done_pairs": 24,
     }
+    scoped_pair = next(row for row in metrics["pair_progress"]
+                       if row["ea_id"] == "QM5_900000")
+    assert scoped_pair["calendar_scope_limited"] is True
+    assert scoped_pair["calendar_scope_footnote"] == "Kalender scope-begrenzt"
     assert metrics["completion_rates"]["stages"]["Q14"] == {
         "completed_pairs": 24, "pairs_per_day": 3.429,
     }
@@ -205,6 +216,7 @@ def _render_metrics() -> dict:
         },
         "reservoir": {
             "q09_pass_pairs": 53, "news_chosen_pairs": 4,
+            "calendar_scope_limited_pairs": 1,
             "q11_pass_pairs": 3, "q12_valid_pairs": 0,
             "q13_valid_pairs": 0, "q14_terminal_rows": 0,
         },
@@ -240,6 +252,8 @@ def _render_metrics() -> dict:
         "pair_progress": [{
             "ea_id": "QM5_900001", "symbol": "EURUSD.DWX",
             "in_q09_reservoir": True, "news_chosen": True,
+            "calendar_scope_limited": True,
+            "calendar_scope_footnote": "Kalender scope-begrenzt",
             "q11": {"state": "DONE", "latest_verdict": "PASS"},
             "q12": {"state": "OPEN", "latest_verdict": None},
             "q13": {"state": "NOT_STARTED", "latest_verdict": None},
@@ -256,6 +270,7 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
         "generated_at": "2026-08-23T10:00:00+00:00",
         "path_to_25": metrics,
     })
+    assert "chosen · Kalender scope-begrenzt" in cockpit
     heartbeat = heartbeat_snapshot.render_markdown({
         "ts": "2026-08-23T10:00:00+00:00",
         "flags": [],

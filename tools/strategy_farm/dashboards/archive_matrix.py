@@ -37,6 +37,7 @@ if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 
 import gate_manifest  # noqa: E402
+import news_calendar_scoped_activation  # noqa: E402
 import operator_surfaces  # noqa: E402
 import rebaseline_census  # noqa: E402
 from phase_ids import advancement_table, phase_label, phase_qid  # noqa: E402
@@ -396,14 +397,15 @@ def collect(db: Path = DB) -> dict:
     skipped_phase: Counter = Counter()
     dropped_relic: Counter = Counter()
     rows_seen = 0
+    scoped_pairs: set[tuple[str, str]] = set()
 
     have_identity = any(
         str(row[1]) == "ex5_sha256" for row in conn.execute("PRAGMA table_info(work_items)")
     )
     identity_expr = "ex5_sha256" if have_identity else "NULL AS ex5_sha256"
-    for wid, ea, sym, phase, verdict, tax, upd, evidence, contract_version, ex5_sha in conn.execute(
+    for wid, ea, sym, phase, verdict, tax, upd, evidence, contract_version, ex5_sha, payload in conn.execute(
         "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, updated_at, "
-        f"evidence_path, gate_contract_version, {identity_expr} FROM work_items_clean"
+        f"evidence_path, gate_contract_version, {identity_expr}, payload_json FROM work_items_clean"
     ):
         rows_seen += 1
         if not ea:
@@ -413,11 +415,14 @@ def collect(db: Path = DB) -> dict:
             dropped_relic[symbol] += 1
             continue
         v = (verdict or "").upper()
+        scope_marker = news_calendar_scoped_activation.marker_from_payload(payload)
+        if scope_marker is not None:
+            scoped_pairs.add((ea, symbol))
         display = phase_label(phase, contract_version, include_name=True)
         all_items[ea].append({"id": wid, "symbol": symbol, "phase": phase, "verdict": v,
                               "tax": tax or "unknown", "upd": upd or "",
                               "evidence": evidence or "", "contract_version": contract_version,
-                              "phase_label": display})
+                              "phase_label": display, "calendar_scope_marker": scope_marker})
         pair_for_work_item[wid] = (ea, symbol)
         gate = resolved_gate(phase, contract_version)
         if gate not in column_ids:
@@ -426,7 +431,8 @@ def collect(db: Path = DB) -> dict:
         key = (ea, symbol, gate)
         item = {"upd": upd or "", "verdict": v, "tax": tax or "unknown", "id": wid,
                 "phase_label": display, "gate": gate,
-                "ex5_sha256": str(ex5_sha or "").strip().lower()}
+                "ex5_sha256": str(ex5_sha or "").strip().lower(),
+                "calendar_scope_marker": scope_marker}
         cur = latest.get(key)
         if cur is None or (item["upd"], wid) > (cur["upd"], cur["id"]):
             latest[key] = item
@@ -600,6 +606,7 @@ def collect(db: Path = DB) -> dict:
             "rows_seen": rows_seen, "skipped_phase": skipped_phase,
             "dropped_relic": dropped_relic, "untested_targets": untested_targets,
             "held_items": len(held),
+            "calendar_scope_limited_pairs": len(scoped_pairs),
             "cards_with_targets": len(targets),
             "identity_cells": identity_cells, "stale_cells": stale_cells,
             "identity_coverage_pct": round(100.0 * identity_cells / len(latest), 2) if latest else 0.0,
@@ -632,6 +639,9 @@ def _cell(
         parts.append(f"action={action}")
     if action_reason:
         parts.append(action_reason)
+    marker = (item or {}).get("calendar_scope_marker")
+    if marker:
+        parts.append(str(marker.get("footnote") or "Kalender scope-begrenzt"))
     return {"symbol_index": symbol_index, "state": state, "title": " · ".join(parts),
             "action": action, "gate": resolved}
 
@@ -755,6 +765,8 @@ def runs_for_ea(ea_id: str, db: Path = DB) -> list[dict]:
                             "verdict": (verdict or "").upper(), "tax": tax or "unknown",
                             "upd": upd or "", "evidence": evidence or "",
                             "reason": _reason_of(payload),
+                            "calendar_scope_marker":
+                                news_calendar_scoped_activation.marker_from_payload(payload),
                             "contract_version": contract_version,
                             "phase_label": phase_label(
                                 phase, contract_version, include_name=True
@@ -1152,6 +1164,7 @@ def render_backtests_section(items: list[dict]) -> str:
         gate_display = it.get("phase_label") or phase_label(
             it.get("phase"), it.get("contract_version"), include_name=True
         )
+        scope_note = (it.get("calendar_scope_marker") or {}).get("footnote")
         rows.append(
             f'<tr><td class="bt-v">{e((it.get("upd") or "")[:16].replace("T", " "))}</td>'
             f'<td class="bt-v">{e(gate_display)}</td>'
@@ -1161,7 +1174,8 @@ def render_backtests_section(items: list[dict]) -> str:
             f'<td class="bt-v" style="color:var(--text-4)">{e(it.get("tax") or "")}</td>'
             f'<td>{links} {ev_link}</td>'
             f'<td class="bt-v" style="color:var(--text-4)">{e(it["id"][:8])}</td>'
-            f'<td class="bt-reason">{e((it.get("reason") or "")[:220])}</td></tr>')
+            f'<td class="bt-reason">{e((it.get("reason") or "")[:220])}'
+            f'{(" · " + e(scope_note)) if scope_note else ""}</td></tr>')
     return (f'<div class="bt-wrap"><h2 class="acc-title">All backtests · {fmt(len(items))} '
             f'stored runs, {fmt(have)} with a native MT5 report</h2>'
             '<div class="bt-note">Every stored run for this EA, newest first — superseded '
@@ -1466,6 +1480,14 @@ def render_matrix_page(data: dict) -> str:
             'No typed EX5 identity is present, so fallback (a) applies: latest verdict wins.</div>'
         )
 
+    scoped_count = int(data.get("calendar_scope_limited_pairs", 0))
+    scoped_notice = (
+        f'<div class="warn"><b>Kalender scope-begrenzt.</b> {fmt(scoped_count)} Q10-Paare '
+        'tragen den maschinenlesbaren B-Bindungsmarker; ihre Ergebnisse bleiben bei einem '
+        'spaeteren B-prime/full-scope seal append-only neu zu adjudizieren.</div>'
+        if scoped_count else ""
+    )
+
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <title>Strategy Archive Matrix</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -1478,6 +1500,7 @@ over <code>farm_state.sqlite</code> · <a href="strategies.html">Strategy Archiv
 <a href="cockpit.html">Mission Control</a></div>
 </header>
 {identity_notice}
+{scoped_notice}
 <div class="warn">Gate columns, order and bands are loaded from the active manifest;
 historical rows retain their contract provenance.</div>
 <div class="legend">{legend}</div>

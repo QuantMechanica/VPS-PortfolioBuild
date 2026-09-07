@@ -12,6 +12,11 @@ import re
 import sqlite3
 import sys
 
+try:
+    from tools.strategy_farm import news_calendar_scoped_activation as scoped_b
+except ModuleNotFoundError:
+    import news_calendar_scoped_activation as scoped_b
+
 if __name__ == '__main__':
     sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
@@ -74,7 +79,25 @@ def _content_sha(manifest):
     return value
 
 
-def decision(item, policy, pin_manifest):
+def _scoped_marker_present(item):
+    try:
+        payload = json.loads(item.get('payload_json') or '{}')
+    except (TypeError, ValueError):
+        return False
+    return isinstance(payload, dict) and scoped_b.MARKER_KEY in payload
+
+
+def _scoped_marker_allows(item, activation=None):
+    if item.get('phase') != 'Q10_NEWS' or not _scoped_marker_present(item):
+        return False
+    try:
+        activation = activation or scoped_b.load_activation()
+        return scoped_b.marker_valid(item, activation)
+    except (OSError, ValueError, TypeError, KeyError, scoped_b.ActivationError):
+        return False
+
+
+def decision(item, policy, pin_manifest, *, scoped_activation=None):
     if item['phase'] not in PHASES or item['status'] != 'pending':
         return None
     if policy.get('error'):
@@ -87,14 +110,17 @@ def decision(item, policy, pin_manifest):
     try:
         pinned = _content_sha(pin_manifest)
         if pinned in taints:
+            # B is an authenticated row-level counter-path, never a global untaint.
+            if _scoped_marker_allows(item, scoped_activation):
+                return None
             return f'PINNED_CALENDAR_TAINTED:{pinned}; diagnostic={taints[pinned]}'
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
         return f'CALENDAR_TAINT_IDENTITY_UNAVAILABLE:{exc}'
     return None
 
 
-def inspect(conn, policy, pin_manifest, *, item_id=None):
-    sql = "SELECT id,phase,status,ea_id,symbol,payload_json FROM work_items WHERE phase IN ('Q09_NEWS','Q10_NEWS') AND status='pending'"
+def inspect(conn, policy, pin_manifest, *, item_id=None, scoped_activation=None):
+    sql = "SELECT id,phase,status,ea_id,symbol,setfile_path,payload_json FROM work_items WHERE phase IN ('Q09_NEWS','Q10_NEWS') AND status='pending'"
     params = ()
     if item_id is not None:
         sql += ' AND id=?'
@@ -103,7 +129,7 @@ def inspect(conn, policy, pin_manifest, *, item_id=None):
     result = []
     for row in conn.execute(sql, params):
         item = dict(row)
-        reason = decision(item, policy, pin_manifest)
+        reason = decision(item, policy, pin_manifest, scoped_activation=scoped_activation)
         hold = conn.execute('SELECT * FROM work_item_holds WHERE work_item_id=?', (item['id'],)).fetchone()
         action = 'NONE'
         if reason:
@@ -112,7 +138,8 @@ def inspect(conn, policy, pin_manifest, *, item_id=None):
             else:
                 action = 'HOLD'
         elif hold and hold['active'] and hold['hold_code'] == HOLD and not policy.get('error'):
-            action = 'RELEASE'
+            action = ('AWAIT_SCOPED_OWNER_RELEASE'
+                      if _scoped_marker_allows(item, scoped_activation) else 'RELEASE')
         result.append({k:item[k] for k in ('id','phase','ea_id','symbol')} | {
             'reason':reason, 'action':action,
             'other_hold':hold['hold_code'] if hold and hold['hold_code'] != HOLD else None})
@@ -142,6 +169,72 @@ def synchronize(conn, policy, pin_manifest, *, item_id=None, apply=False):
         conn.execute('INSERT INTO events(ts,entity_type,entity_id,event,detail_json) VALUES(?,?,?,?,?)',
                      (now,'work_item',row['id'],'news_calendar_taint_'+row['action'].lower(),json.dumps(row,sort_keys=True)))
     return rows
+
+
+def release_scoped_item(conn, item_id, pin_manifest, *, config_path=None, adjudicated_at=None):
+    """Stamp and release exactly one OWNER-adjudicated B row.
+
+    The caller owns the write transaction.  This path never changes status,
+    verdict, evidence, or any hold other than this module's active taint hold.
+    """
+    if not conn.in_transaction:
+        raise ValueError('transaction required for scoped row release')
+    policy = load_policy(CONFIG)
+    if policy.get('error') or not policy.get('enabled'):
+        raise ValueError('valid activated taint policy required')
+    try:
+        pinned = _content_sha(pin_manifest)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise ValueError(f'calendar pin unavailable: {exc}') from exc
+    tainted = {entry['sha256'] for entry in policy['tainted']}
+    if pinned not in tainted:
+        raise ValueError('scoped release is only valid for the declared tainted pin')
+    row = conn.execute(
+        'SELECT id,phase,status,ea_id,symbol,setfile_path,payload_json FROM work_items WHERE id=?',
+        (item_id,),
+    ).fetchone()
+    if row is None:
+        raise ValueError('work item not found')
+    item = dict(row)
+    hold = conn.execute(
+        'SELECT * FROM work_item_holds WHERE work_item_id=? AND active=1', (item_id,)
+    ).fetchone()
+    if hold is None or hold['hold_code'] != HOLD:
+        raise ValueError('active NEWS_CALENDAR_TAINTED hold required')
+    activation = scoped_b.load_activation(
+        scoped_b.CONFIG if config_path is None else Path(config_path)
+    )
+    now = adjudicated_at or dt.datetime.now(dt.timezone.utc).isoformat()
+    marker = scoped_b.marker_for(item, activation, adjudicated_at=now)
+    try:
+        payload = json.loads(item.get('payload_json') or '{}')
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'payload JSON invalid: {exc}') from exc
+    if not isinstance(payload, dict):
+        raise ValueError('payload JSON must be an object')
+    if scoped_b.MARKER_KEY in payload:
+        raise ValueError('append-only marker already exists')
+    payload[scoped_b.MARKER_KEY] = marker
+    conn.execute('UPDATE work_items SET payload_json=? WHERE id=?',
+                 (json.dumps(payload, sort_keys=True, separators=(',', ':')), item_id))
+    note = (f"OWNER row-by-row B release; decision={marker['decision_id']}; "
+            f"binding_sha256={marker['binding_sha256']}; "
+            f"assessment_sha256={marker['assessment_sha256']}")
+    changed = conn.execute(
+        '''UPDATE work_item_holds SET active=0,updated_at=?,released_at=?,release_note=?
+           WHERE work_item_id=? AND hold_code=? AND active=1''',
+        (now, now, note, item_id, HOLD),
+    ).rowcount
+    if changed != 1:
+        raise ValueError('scoped hold release race')
+    detail = {'work_item_id': item_id, 'decision_id': marker['decision_id'],
+              'binding_sha256': marker['binding_sha256'],
+              'assessment_sha256': marker['assessment_sha256'],
+              'footnote': marker['footnote']}
+    conn.execute('INSERT INTO events(ts,entity_type,entity_id,event,detail_json) VALUES(?,?,?,?,?)',
+                 (now, 'work_item', item_id, 'news_calendar_scoped_b_release',
+                  json.dumps(detail, sort_keys=True)))
+    return marker
 
 
 def guard_claim(conn, item_id, pin_manifest, *, config_path=None):
