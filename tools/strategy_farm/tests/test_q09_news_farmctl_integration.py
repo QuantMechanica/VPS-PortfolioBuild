@@ -266,6 +266,143 @@ def test_q09_enqueue_installs_explicit_plan_hold_before_row_is_claimable(tmp_pat
     assert q09_id not in claimable
 
 
+def test_append_only_successor_accepts_canonically_superseded_unsealed_pending_news_row(
+    tmp_path: Path,
+) -> None:
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "QM5_9999_demo_EURUSD.DWX_D1_backtest.set"
+    q08_path = tmp_path / "q08.json"
+    q09_path = tmp_path / "q09.json"
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    q08_path.write_text('{"verdict":"PASS"}\n', encoding="utf-8")
+    q09_path.write_text(json.dumps({
+        "phase": "Q09", "verdict": "PASS", "ea_id": 9999,
+        "symbol": "EURUSD.DWX", "history_from": "2017.01.01",
+        "history_to": "2025.12.31",
+    }), encoding="utf-8")
+    with farmctl.connect(tmp_path) as conn:
+        _insert_work_item(
+            conn,
+            item_id="q08-exact",
+            phase="Q08",
+            verdict="PASS",
+            evidence_path=q08_path,
+            setfile_path=setfile,
+        )
+        _insert_work_item(
+            conn,
+            item_id="q09-pass",
+            phase=str(farmctl.prev_phase(NEWS_PHASE)),
+            verdict="PASS",
+            evidence_path=q09_path,
+            setfile_path=setfile,
+            payload={"promoted_from_work_item": "q08-exact"},
+        )
+        conn.execute(
+            "UPDATE work_items SET data_window_start='2017.01.01',"
+            "data_window_end='2025.12.31' WHERE id='q09-pass'"
+        )
+        _insert_work_item(
+            conn,
+            item_id="q10-old",
+            phase=NEWS_PHASE,
+            verdict=None,
+            evidence_path=q08_path,
+            setfile_path=setfile,
+            status="pending",
+            payload={"promoted_from_work_item": "q09-pass"},
+        )
+        schema.add_dependency(
+            conn,
+            child_work_item_id="q10-old",
+            dependency_role="Q08_INPUT",
+            parent_work_item_id="q08-exact",
+            parent_evidence_sha256=_sha(q08_path),
+            required_verdicts=["PASS"],
+        )
+        schema.hold_until_plan_bound(conn, "q10-old", now="2026-07-29T00:00:00Z")
+        conn.execute(
+            """
+            INSERT INTO work_item_supersedes(
+              work_item_id,superseded_by_work_item_id,reason,source_encoding,
+              evidence_path,recorded_by,recorded_at
+            ) VALUES('q10-old',NULL,'bad immutable dependency',
+                     'fixture:prior-review',NULL,'codex','2026-07-29T00:00:00Z')
+            """
+        )
+        old_before = conn.execute(
+            "SELECT * FROM work_items WHERE id='q10-old'"
+        ).fetchone()
+        old_hold_before = conn.execute(
+            "SELECT * FROM work_item_holds WHERE work_item_id='q10-old'"
+        ).fetchone()
+        conn.commit()
+
+    bindings = {
+        "artifact_sha256": {
+            "expected_ex5_sha256": "a" * 64,
+            "expected_mq5_sha256": "b" * 64,
+            "expected_setfile_sha256": _sha(setfile),
+        },
+        "expected_symbol": "EURUSD.DWX",
+        "expected_period": "D1",
+        "expected_expert": r"QM\QM5_9999_demo",
+    }
+    with (
+        mock.patch.object(farmctl, "_ea_build_artifact_failure", return_value=None),
+        mock.patch.object(
+            farmctl, "_expected_current_execution_bindings",
+            return_value=(True, bindings),
+        ),
+    ):
+        result = farmctl.enqueue_cascade_backtest_for_ea(
+            tmp_path,
+            "QM5_9999",
+            NEWS_PHASE,
+            predecessor_work_item_id="q09-pass",
+            append_only_rerun_of="q10-old",
+            rerun_reason="seal exact Q09 predecessor window",
+            scoped_q10_window_seal=True,
+        )
+
+    assert result["enqueued"] is True
+    successor_id = result["created"][0]["id"]
+    assert result["created"][0]["superseded_pending_work_item_id"] == "q10-old"
+    with farmctl.connect(tmp_path) as conn:
+        old_after = conn.execute(
+            "SELECT * FROM work_items WHERE id='q10-old'"
+        ).fetchone()
+        old_hold_after = conn.execute(
+            "SELECT * FROM work_item_holds WHERE work_item_id='q10-old'"
+        ).fetchone()
+        successor = conn.execute(
+            "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+            (successor_id,),
+        ).fetchone()
+        successor_dependency = conn.execute(
+            "SELECT parent_work_item_id FROM work_item_dependencies "
+            "WHERE child_work_item_id=? AND dependency_role='Q08_INPUT'",
+            (successor_id,),
+        ).fetchone()
+        supersede = conn.execute(
+            "SELECT superseded_by_work_item_id FROM work_item_supersedes "
+            "WHERE work_item_id='q10-old' "
+            "AND source_encoding='farmctl:append_only_pending_unsealed'"
+        ).fetchone()
+    assert tuple(old_after) == tuple(old_before)
+    assert tuple(old_hold_after) == tuple(old_hold_before)
+    assert tuple(successor[:2]) == ("pending", None)
+    successor_payload = json.loads(successor[2])
+    assert successor_payload["append_only_rerun_of_work_item"] == "q10-old"
+    assert successor_payload["promoted_from_work_item"] == "q09-pass"
+    assert successor_payload["q09_activation_state"] == farmctl.Q09_ACTIVATION_AWAITING_PLAN
+    assert successor_payload["scoped_review_only"] is True
+    assert successor_payload["terminal_claimable"] is False
+    assert successor_payload["scoped_q10_window_seal"]["source_work_item_id"] == "q09-pass"
+    assert successor_dependency[0] == "q08-exact"
+    assert supersede[0] == successor_id
+
+
 def test_repair_activates_schema_before_running_repair(tmp_path: Path) -> None:
     fake_repair = types.ModuleType("repair")
     fake_repair.run_all = lambda: {"repaired": True}

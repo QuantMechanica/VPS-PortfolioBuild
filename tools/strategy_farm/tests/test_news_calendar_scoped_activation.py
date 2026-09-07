@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -127,3 +128,85 @@ def test_candidate_hash_drift_refuses_activation(tmp_path: Path):
                        encoding="utf-8")
     with pytest.raises(scoped.ActivationError, match="SHA-256 mismatch"):
         scoped.load_activation(config)
+
+
+def test_dry_run_ignores_canonically_superseded_pending_rows(tmp_path: Path):
+    config, item, _ = _fixture(tmp_path)
+    activation = scoped.load_activation(config)
+    db = tmp_path / "farm.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.executescript(
+            """
+            CREATE TABLE work_items(
+              id TEXT,ea_id TEXT,symbol TEXT,phase TEXT,status TEXT,
+              setfile_path TEXT,payload_json TEXT,created_at TEXT
+            );
+            CREATE TABLE work_item_supersedes(work_item_id TEXT);
+            """
+        )
+        columns = (
+            item["id"], item["ea_id"], item["symbol"], item["phase"],
+            item["status"], item["setfile_path"], item["payload_json"],
+            "2026-09-07T00:00:00Z",
+        )
+        conn.execute("INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?)", columns)
+        conn.execute("INSERT INTO work_item_supersedes VALUES(?)", (item["id"],))
+        result = scoped.dry_run(conn, activation)
+    assert result["pending_q10_news_count"] == 0
+    assert result["rows"] == []
+
+
+def test_scoped_q09_pass_window_seal_is_authenticated_and_review_only(tmp_path: Path):
+    config, item, _ = _fixture(tmp_path)
+    activation = scoped.load_activation(config)
+    q09_evidence = _json(tmp_path / "q09-pass.json", {
+        "phase": "Q09", "verdict": "PASS", "ea_id": 9999,
+        "symbol": "NDX.DWX", "history_from": "2024.01.01",
+        "history_to": "2024.01.31",
+    })
+    material = {
+        "schema": "qm.scoped-q10-window-seal/v1",
+        "source_work_item_id": "q09-pass",
+        "source_phase": "Q09",
+        "source_verdict": "PASS",
+        "source_evidence_path": str(q09_evidence),
+        "source_evidence_sha256": _sha(q09_evidence),
+        "ea_id": item["ea_id"],
+        "symbol": item["symbol"],
+        "setfile_path": item["setfile_path"],
+        "window_from_utc": "2024-01-01T00:00:00+00:00",
+        "window_to_utc": "2024-02-01T00:00:00+00:00",
+        "scope": "NEWS_CALENDAR_SCOPED_CONSUMER_B_ONLY",
+        "terminal_claimable": False,
+    }
+    seal = dict(material)
+    seal["seal_sha256"] = hashlib.sha256(scoped._canonical(material)).hexdigest()
+    item["payload_json"] = json.dumps({
+        "promoted_from_work_item": "q09-pass",
+        "scoped_q10_window_seal": seal,
+        "scoped_review_only": True,
+        "terminal_claimable": False,
+    })
+    assessment = scoped.assess_work_item(item, activation)
+    assert assessment["verdict"] == "ADMISSIBLE"
+    assert assessment["window_from_utc"] == "2024-01-01T00:00:00+00:00"
+    assert assessment["window_to_utc"] == "2024-02-01T00:00:00+00:00"
+
+    tampered = json.loads(item["payload_json"])
+    tampered["scoped_q10_window_seal"]["window_to_utc"] = "2024-03-01T00:00:00+00:00"
+    item["payload_json"] = json.dumps(tampered)
+    refused = scoped.assess_work_item(item, activation)
+    assert refused["verdict"] == "EXCLUDED"
+    assert "SCOPED_Q10_WINDOW_SEAL_INVALID" in refused["reasons"]
+
+    tampered = json.loads(json.dumps({
+        "promoted_from_work_item": "q09-pass",
+        "scoped_q10_window_seal": seal,
+        "scoped_review_only": True,
+        "terminal_claimable": False,
+    }))
+    tampered["scoped_review_only"] = False
+    item["payload_json"] = json.dumps(tampered)
+    refused = scoped.assess_work_item(item, activation)
+    assert refused["verdict"] == "EXCLUDED"
+    assert "SCOPED_Q10_WINDOW_SEAL_INVALID" in refused["reasons"]

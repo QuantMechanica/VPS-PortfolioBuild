@@ -18138,6 +18138,102 @@ def _q08_input_for_news_predecessor(
     return row
 
 
+def _scoped_q10_window_seal_from_q09_pass(
+    predecessor: sqlite3.Row,
+    rerun_target: sqlite3.Row | None,
+) -> tuple[dict[str, Any] | None, str]:
+    """Authenticate a Consumer-B-only window from one exact Q09 PASS.
+
+    This is not an executable NEWS run plan. It binds the immutable Q09
+    aggregate that proved the full baseline window. The successor remains
+    under the ordinary sealed-plan hold and cannot be claimed by a terminal.
+    """
+    if rerun_target is None:
+        return None, "scoped_q10_window_seal_target_missing"
+    if (
+        str(predecessor["phase"] or "").upper() != _BASELINE_FULL_RUN_PHASE
+        or predecessor["status"] != "done"
+        or predecessor["verdict"] != "PASS"
+        or rerun_target["phase"] != _NEWS_PHASE
+        or rerun_target["status"] != "pending"
+        or rerun_target["verdict"] is not None
+        or rerun_target["claimed_by"]
+    ):
+        return None, "scoped_q10_window_seal_requires_q09_pass_and_unclaimed_pending_target"
+    if any(
+        str(predecessor[key] or "") != str(rerun_target[key] or "")
+        for key in ("ea_id", "symbol", "setfile_path")
+    ):
+        return None, "scoped_q10_window_seal_identity_mismatch"
+    try:
+        predecessor_payload = json.loads(str(predecessor["payload_json"] or "{}"))
+        target_payload = json.loads(str(rerun_target["payload_json"] or "{}"))
+    except json.JSONDecodeError:
+        return None, "scoped_q10_window_seal_payload_invalid"
+    predecessor_payload = predecessor_payload if isinstance(predecessor_payload, dict) else {}
+    target_payload = target_payload if isinstance(target_payload, dict) else {}
+    predecessor_q08 = str(predecessor_payload.get("promoted_from_work_item") or "")
+    target_source = str(target_payload.get("promoted_from_work_item") or "")
+    if target_source not in {str(predecessor["id"]), predecessor_q08}:
+        return None, "scoped_q10_window_seal_exact_lineage_mismatch"
+    if any(target_payload.get(key) for key in (
+        "q09_run_plan_path", "q09_run_plan_file_sha256", "q09_input_manifest_sha256",
+    )):
+        return None, "scoped_q10_window_seal_target_already_bound"
+    evidence_path = Path(str(predecessor["evidence_path"] or ""))
+    if not evidence_path.is_file():
+        return None, "scoped_q10_window_seal_q09_evidence_missing"
+    try:
+        evidence = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None, "scoped_q10_window_seal_q09_evidence_invalid"
+    start_text = str(predecessor["data_window_start"] or "")
+    end_text = str(predecessor["data_window_end"] or "")
+    if (
+        not isinstance(evidence, dict)
+        or evidence.get("phase") != _BASELINE_FULL_RUN_PHASE
+        or evidence.get("verdict") != "PASS"
+        or str(evidence.get("symbol") or "") != str(predecessor["symbol"])
+        or str(evidence.get("ea_id") or "")
+        != str(predecessor["ea_id"]).removeprefix("QM5_")
+        or str(evidence.get("history_from") or "") != start_text
+        or str(evidence.get("history_to") or "") != end_text
+    ):
+        return None, "scoped_q10_window_seal_q09_evidence_contradiction"
+    try:
+        start = dt.datetime.strptime(start_text, "%Y.%m.%d").replace(
+            tzinfo=dt.timezone.utc
+        )
+        end = dt.datetime.strptime(end_text, "%Y.%m.%d").replace(
+            tzinfo=dt.timezone.utc
+        ) + dt.timedelta(days=1)
+    except ValueError:
+        return None, "scoped_q10_window_seal_q09_window_invalid"
+    if start >= end:
+        return None, "scoped_q10_window_seal_q09_window_reversed"
+    material = {
+        "schema": "qm.scoped-q10-window-seal/v1",
+        "source_work_item_id": str(predecessor["id"]),
+        "source_phase": _BASELINE_FULL_RUN_PHASE,
+        "source_verdict": "PASS",
+        "source_evidence_path": str(evidence_path.resolve()),
+        "source_evidence_sha256": _sha256_file(evidence_path),
+        "ea_id": str(predecessor["ea_id"]),
+        "symbol": str(predecessor["symbol"]),
+        "setfile_path": str(predecessor["setfile_path"]),
+        "window_from_utc": start.isoformat(),
+        "window_to_utc": end.isoformat(),
+        "scope": "NEWS_CALENDAR_SCOPED_CONSUMER_B_ONLY",
+        "terminal_claimable": False,
+    }
+    material["seal_sha256"] = hashlib.sha256(
+        (
+            json.dumps(material, sort_keys=True, separators=(",", ":")) + "\n"
+        ).encode("utf-8")
+    ).hexdigest()
+    return material, ""
+
+
 def _q08_input_row_for_news_promotion(
     conn: sqlite3.Connection, work_item: sqlite3.Row
 ) -> sqlite3.Row | None:
@@ -29119,6 +29215,7 @@ def enqueue_cascade_backtest_for_ea(
     expected_current_ex5_sha256: str | None = None,
     q09_anchor_binding: dict[str, Any] | None = None,
     force_expanded_news_matrix: bool = False,
+    scoped_q10_window_seal: bool = False,
 ) -> dict[str, Any]:
     """Requeue or create a cascade work_item from the prior PASS phase.
 
@@ -29127,11 +29224,12 @@ def enqueue_cascade_backtest_for_ea(
     idempotent and avoids duplicate EA/symbol/phase rows.
 
     ``predecessor_work_item_id`` narrows the operation to one exact predecessor.
-    When ``append_only_rerun_of`` is also supplied, the cited terminal phase row
-    is preserved and a new pending row is inserted instead of using the legacy
-    in-place requeue branch. This is the governed path for evidence-invalid
-    historical verdicts: raw pipeline facts remain immutable until a separately
-    reviewed adjudication overlay supersedes them.
+    When ``append_only_rerun_of`` is also supplied, the cited phase row is
+    preserved and a new pending row is inserted instead of using the legacy
+    in-place requeue branch. Terminal rows use the ordinary evidence-invalid
+    verdict path. A pending Q10 row is accepted only for the explicitly scoped,
+    non-claimable Consumer-B window-seal path. Raw pipeline facts remain
+    immutable until a separately reviewed adjudication overlay supersedes them.
     """
     phase_token = str(phase or "").strip().upper()
     replacement_setfile = str(replacement_setfile or "").strip() or None
@@ -29231,6 +29329,20 @@ def enqueue_cascade_backtest_for_ea(
             "ea_id": ea_id,
             "phase": phase,
         }
+    if scoped_q10_window_seal and (
+        phase_token != _NEWS_PHASE
+        or not predecessor_work_item_id
+        or not append_only_rerun_of
+    ):
+        return {
+            "enqueued": False,
+            "reason": (
+                "scoped_q10_window_seal_requires_Q10_NEWS_exact_predecessor_"
+                "and_append_only_target"
+            ),
+            "ea_id": ea_id,
+            "phase": phase,
+        }
     if q09_anchor_binding and (
         phase_token != _BASELINE_FULL_RUN_PHASE
         or not predecessor_work_item_id
@@ -29315,6 +29427,22 @@ def enqueue_cascade_backtest_for_ea(
             q08_evidence_sha256: str | None = None
             q08_input_work_item: sqlite3.Row | None = None
             q10_dependency_context: dict[str, Any] | None = None
+            scoped_window_seal: dict[str, Any] | None = None
+            if scoped_q10_window_seal:
+                scoped_target = conn.execute(
+                    "SELECT * FROM work_items WHERE id=?",
+                    (str(append_only_rerun_of),),
+                ).fetchone()
+                scoped_window_seal, scoped_reason = (
+                    _scoped_q10_window_seal_from_q09_pass(prev, scoped_target)
+                )
+                if scoped_window_seal is None:
+                    skipped.append({
+                        "id": str(append_only_rerun_of),
+                        "symbol": prev["symbol"],
+                        "reason": scoped_reason,
+                    })
+                    continue
             if phase in {_NEWS_PHASE, _NEWS_PORTFOLIO_PHASE}:
                 q08_input_work_item = _q08_input_for_news_predecessor(conn, prev)
                 q08_evidence_sha256 = (
@@ -29322,7 +29450,7 @@ def enqueue_cascade_backtest_for_ea(
                     if q08_input_work_item is not None
                     else None
                 )
-                if not q08_evidence_sha256:
+                if not q08_evidence_sha256 and scoped_window_seal is None:
                     skipped.append({
                         "id": prev["id"],
                         "symbol": prev["symbol"],
@@ -29347,6 +29475,12 @@ def enqueue_cascade_backtest_for_ea(
                     "requeued_at": now,
                 },
             )
+            if scoped_window_seal is not None:
+                payload.update({
+                    "scoped_q10_window_seal": scoped_window_seal,
+                    "scoped_review_only": True,
+                    "terminal_claimable": False,
+                })
             if q09_anchor_binding:
                 try:
                     payload.update(_validated_q09_anchor_payload(
@@ -29428,6 +29562,29 @@ def enqueue_cascade_backtest_for_ea(
                     "SELECT * FROM work_items WHERE id=?",
                     (str(append_only_rerun_of),),
                 ).fetchone()
+                try:
+                    rerun_target_payload = json.loads(
+                        str(rerun_target["payload_json"] or "{}")
+                    ) if rerun_target is not None else {}
+                except json.JSONDecodeError:
+                    rerun_target_payload = {}
+                if not isinstance(rerun_target_payload, dict):
+                    rerun_target_payload = {}
+                pending_unsealed_news_target = bool(
+                    rerun_target
+                    and phase == _NEWS_PHASE
+                    and rerun_target["status"] == "pending"
+                    and rerun_target["verdict"] is None
+                    and not rerun_target["claimed_by"]
+                    and not rerun_target_payload.get("q09_run_plan_path")
+                    and not rerun_target_payload.get("q09_run_plan_file_sha256")
+                    and not rerun_target_payload.get("q09_input_manifest_sha256")
+                    and scoped_window_seal is not None
+                    and conn.execute(
+                        "SELECT 1 FROM q09_news_tests WHERE work_item_id=?",
+                        (str(rerun_target["id"]),),
+                    ).fetchone() is None
+                )
                 predecessor_timeframe = _detect_ea_period(
                     ea_id, prev["setfile_path"]
                 ).upper()
@@ -29446,8 +29603,13 @@ def enqueue_cascade_backtest_for_ea(
                         replacement_setfile
                         or rerun_target["setfile_path"] == prev["setfile_path"]
                     )
-                    and rerun_target["status"] in {"done", "failed"}
-                    and rerun_target["verdict"] is not None
+                    and (
+                        (
+                            rerun_target["status"] in {"done", "failed"}
+                            and rerun_target["verdict"] is not None
+                        )
+                        or pending_unsealed_news_target
+                    )
                     and not rerun_target["claimed_by"]
                 )
                 if not target_matches:
@@ -29528,7 +29690,7 @@ def enqueue_cascade_backtest_for_ea(
                 open_row = conn.execute(
                     """
                     SELECT id, status FROM work_items
-                    WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
+                    WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=? AND id<>?
                       AND status IN ('pending','active')
                       AND NOT EXISTS (
                         SELECT 1 FROM work_item_supersedes s
@@ -29536,7 +29698,10 @@ def enqueue_cascade_backtest_for_ea(
                       )
                     ORDER BY created_at ASC LIMIT 1
                     """,
-                    (ea_id, phase, prev["symbol"], effective_setfile_path),
+                    (
+                        ea_id, phase, prev["symbol"], effective_setfile_path,
+                        str(rerun_target["id"]),
+                    ),
                 ).fetchone()
                 if open_row:
                     skipped.append({
@@ -29624,12 +29789,13 @@ def enqueue_cascade_backtest_for_ea(
                     try:
                         conn.execute(insert_sql, insert_args)
                         if phase in {_NEWS_PHASE, _NEWS_PORTFOLIO_PHASE}:
-                            _add_q08_input_dependency(
-                                conn,
-                                child_work_item_id=wid,
-                                q08_work_item=q08_input_work_item,
-                                evidence_sha256=str(q08_evidence_sha256),
-                            )
+                            if q08_input_work_item is not None and q08_evidence_sha256:
+                                _add_q08_input_dependency(
+                                    conn,
+                                    child_work_item_id=wid,
+                                    q08_work_item=q08_input_work_item,
+                                    evidence_sha256=str(q08_evidence_sha256),
+                                )
                             if phase == _NEWS_PHASE:
                                 _mark_q09_awaiting_sealed_plan(
                                     conn,
@@ -29655,6 +29821,40 @@ def enqueue_cascade_backtest_for_ea(
                         continue
                     else:
                         conn.execute("RELEASE q09_contract_append_only_enqueue")
+                if pending_unsealed_news_target:
+                    supersede_reason = (
+                        "append-only Q10 sealed-window successor from the exact "
+                        "Q09 PASS predecessor; source row preserved"
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO work_item_supersedes(
+                          work_item_id,superseded_by_work_item_id,reason,
+                          source_encoding,evidence_path,recorded_by,recorded_at
+                        ) VALUES(?,?,?,'farmctl:append_only_pending_unsealed',NULL,?,?)
+                        """,
+                        (
+                            str(rerun_target["id"]), wid, supersede_reason,
+                            os.environ.get("QM_AGENT_ID", "controller"), now,
+                        ),
+                    )
+                    conn.execute(
+                        """
+                        INSERT INTO events(ts,entity_type,entity_id,event,detail_json)
+                        VALUES(?,'work_item',?,'work_item_superseded',?)
+                        """,
+                        (
+                            now,
+                            str(rerun_target["id"]),
+                            json.dumps({
+                                "superseded_by_work_item_id": wid,
+                                "reason": supersede_reason,
+                                "source_encoding": (
+                                    "farmctl:append_only_pending_unsealed"
+                                ),
+                            }, sort_keys=True),
+                        ),
+                    )
                 if replacement_binding:
                     conn.execute(
                         """
@@ -29699,6 +29899,10 @@ def enqueue_cascade_backtest_for_ea(
                     "symbol": prev["symbol"],
                     "setfile_path": effective_setfile_path,
                     "rerun_of_work_item_id": str(append_only_rerun_of),
+                    "superseded_pending_work_item_id": (
+                        str(rerun_target["id"])
+                        if pending_unsealed_news_target else None
+                    ),
                 })
                 continue
             if existing:
@@ -35124,6 +35328,14 @@ def build_parser() -> argparse.ArgumentParser:
             "executable key/value parameters must be identical"
         ),
     )
+    enqueue_bt.add_argument(
+        "--scoped-q10-window-seal",
+        action="store_true",
+        help=(
+            "append a non-claimable Consumer-B review successor whose window "
+            "is authenticated from the exact Q09 PASS aggregate"
+        ),
+    )
     first_q02 = sub.add_parser(
         "intake-first-q02",
         help=(
@@ -35785,6 +35997,7 @@ def main(argv: list[str] | None = None) -> int:
                 expected_current_ex5_sha256=args.expected_current_ex5_sha256,
                 q09_anchor_binding=q09_anchor_binding,
                 force_expanded_news_matrix=args.force_expanded_news_matrix,
+                scoped_q10_window_seal=args.scoped_q10_window_seal,
             ))
         elif args.review_task_id:
             print_json(enqueue_backtest(root, args.review_task_id, args.phase))

@@ -266,7 +266,62 @@ def _currencies(symbols: list[str], activation: Activation) -> list[str]:
     return sorted(result)
 
 
-def _sealed_window(payload: Mapping[str, Any]) -> tuple[dt.datetime, dt.datetime, str]:
+def _sealed_window(
+    payload: Mapping[str, Any], item: Mapping[str, Any]
+) -> tuple[dt.datetime, dt.datetime, str]:
+    scoped = payload.get("scoped_q10_window_seal")
+    if isinstance(scoped, dict):
+        seal_sha = str(scoped.get("seal_sha256") or "")
+        material = dict(scoped)
+        material.pop("seal_sha256", None)
+        if (
+            scoped.get("schema") != "qm.scoped-q10-window-seal/v1"
+            or scoped.get("scope") != "NEWS_CALENDAR_SCOPED_CONSUMER_B_ONLY"
+            or scoped.get("source_phase") != "Q09"
+            or scoped.get("source_verdict") != "PASS"
+            or scoped.get("terminal_claimable") is not False
+            or payload.get("scoped_review_only") is not True
+            or payload.get("terminal_claimable") is not False
+            or not HEX.fullmatch(seal_sha)
+            or _sha(_canonical(material)) != seal_sha
+            or str(payload.get("promoted_from_work_item") or "")
+            != str(scoped.get("source_work_item_id") or "")
+            or str(item.get("ea_id") or "") != str(scoped.get("ea_id") or "")
+            or str(item.get("symbol") or "") != str(scoped.get("symbol") or "")
+            or str(item.get("setfile_path") or "")
+            != str(scoped.get("setfile_path") or "")
+        ):
+            raise ActivationError("scoped Q10 window seal invalid")
+        evidence_path, evidence_raw = _read_bound(
+            scoped.get("source_evidence_path"),
+            scoped.get("source_evidence_sha256"),
+            "scoped Q09 PASS evidence",
+        )
+        del evidence_path
+        evidence = _strict_bytes(evidence_raw)
+        if (
+            not isinstance(evidence, dict)
+            or evidence.get("phase") != "Q09"
+            or evidence.get("verdict") != "PASS"
+            or str(evidence.get("ea_id") or "")
+            != str(scoped.get("ea_id") or "").removeprefix("QM5_")
+            or str(evidence.get("symbol") or "") != str(scoped.get("symbol") or "")
+        ):
+            raise ActivationError("scoped Q09 PASS evidence contradicts seal")
+        try:
+            start = e1c.utc(scoped.get("window_from_utc"))
+            end = e1c.utc(scoped.get("window_to_utc"))
+            evidence_start = dt.datetime.strptime(
+                str(evidence.get("history_from") or ""), "%Y.%m.%d"
+            ).replace(tzinfo=dt.timezone.utc)
+            evidence_end = dt.datetime.strptime(
+                str(evidence.get("history_to") or ""), "%Y.%m.%d"
+            ).replace(tzinfo=dt.timezone.utc) + dt.timedelta(days=1)
+        except (e1c.ScopeError, ValueError) as exc:
+            raise ActivationError(f"scoped Q10 window seal invalid: {exc}") from exc
+        if start != evidence_start or end != evidence_end or start >= end:
+            raise ActivationError("scoped Q10 window contradicts Q09 PASS evidence")
+        return start, end, str(scoped["source_evidence_sha256"])
     plan_value = payload.get("q09_run_plan_path")
     plan_sha = payload.get("q09_run_plan_file_sha256")
     input_sha = payload.get("q09_input_manifest_sha256")
@@ -336,7 +391,7 @@ def assess_work_item(item: Mapping[str, Any], activation: Activation) -> dict[st
     if currencies and (set(currencies) - permitted or set(currencies) != permitted):
         reasons.append("NON_USD_EXPOSURE")
     try:
-        start, end, input_manifest_sha = _sealed_window(payload)
+        start, end, input_manifest_sha = _sealed_window(payload, item)
     except ActivationError as exc:
         reasons.append(str(exc).upper().replace(" ", "_"))
 
@@ -439,7 +494,9 @@ def dry_run(connection: sqlite3.Connection, activation: Activation) -> dict[str,
     connection.row_factory = sqlite3.Row
     rows = connection.execute(
         "SELECT id,ea_id,symbol,phase,status,setfile_path,payload_json,created_at "
-        "FROM work_items WHERE phase='Q10_NEWS' AND status='pending' ORDER BY created_at,id"
+        "FROM work_items WHERE phase='Q10_NEWS' AND status='pending' "
+        "AND NOT EXISTS (SELECT 1 FROM work_item_supersedes s "
+        "WHERE s.work_item_id=work_items.id) ORDER BY created_at,id"
     ).fetchall()
     assessments = [assess_work_item(dict(row), activation) for row in rows]
     counts: dict[str, int] = {}
