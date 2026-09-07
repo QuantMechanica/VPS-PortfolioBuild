@@ -61,7 +61,8 @@ bool ComputeSmoothedHA(const int shift,
    const int seed = (strategy_ha_seed_bars < 20 ? 20 : strategy_ha_seed_bars);
 
    const int oldest = shift + seed;
-   if(Bars(_Symbol, (ENUM_TIMEFRAMES)_Period) <= oldest + pre + 2)
+   MqlRates oldest_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, oldest + pre + 2, oldest_bar))
       return false;
 
    const int keep = post + 3;
@@ -198,9 +199,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!ComputeSmoothedHA(1, ha_o, ha_c, ha_h, ha_l, color_here, color_prev))
       return false;
 
-   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
-   const double high1  = iHigh(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
-   const double low1   = iLow(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, signal_bar))
+      return false;
+   const double close1 = signal_bar.close;
+   const double high1  = signal_bar.high;
+   const double low1   = signal_bar.low;
    const double ema1   = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_period, 1, PRICE_CLOSE);
    const double atr14  = QM_ATR(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_atr_period, 1);
 
@@ -302,7 +306,10 @@ bool Strategy_ExitSignal()
    if(!ComputeSmoothedHA(1, ha_o, ha_c, ha_h, ha_l, color_here, color_prev))
       return false;
 
-   const double close1 = iClose(_Symbol, (ENUM_TIMEFRAMES)_Period, 1);
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, signal_bar))
+      return false;
+   const double close1 = signal_bar.close;
    const double ema1   = QM_EMA(_Symbol, (ENUM_TIMEFRAMES)_Period, strategy_ema_period, 1, PRICE_CLOSE);
    if(close1 <= 0.0 || ema1 <= 0.0)
       return false;
@@ -380,17 +387,6 @@ void OnTick()
       return;
 
    const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now))
-      return;
-
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
-      return;
-
    if(QM_FrameworkHandleFridayClose())
       return;
 
@@ -412,6 +408,17 @@ void OnTick()
          QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
       }
    }
+
+   if(Strategy_NewsFilterHook(broker_now))
+      return;
+
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
 
    if(!QM_IsNewBar())
       return;
