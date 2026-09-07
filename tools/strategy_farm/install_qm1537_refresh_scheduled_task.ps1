@@ -28,27 +28,11 @@ if (-not (Test-Path -LiteralPath $runner -PathType Leaf)) {
 
 # The Windows trigger supplies cadence only. The runner verifies days 1-3,
 # weekend eligibility, and the authoritative first native XAG D1 bar itself.
-$taskCommand = 'cmd.exe /d /c ""C:\Python311\python.exe" "C:\QM\repo\tools\strategy_farm\qm1537_monthly_sleeve_refresh.py" >> "D:\QM\reports\state\qm1537_refresh.log" 2>&1"'
-$taskArguments = @(
-    '/Create',
-    '/TN', $taskName,
-    '/TR', $taskCommand,
-    '/SC', 'MONTHLY',
-    '/D', '1,2,3',
-    '/ST', '05:30',
-    '/RU', $RunAs,
-    '/RL', 'HIGHEST'
-)
-
-function Format-CommandArgument {
-    param([Parameter(Mandatory = $true)][string]$Value)
-    if ($Value -match '[\s"]') {
-        return '"' + ($Value -replace '"', '\"') + '"'
-    }
-    return $Value
-}
-
-$display = 'schtasks.exe ' + (($taskArguments | ForEach-Object { Format-CommandArgument ([string]$_) }) -join ' ')
+# schtasks /SC MONTHLY accepts a single /D value only ("Invalid value for /D option"
+# on 2026-09-07 for 1,2,3), so the trigger is built as a CIM monthly trigger with
+# DaysOfMonth 1,2,3 via Register-ScheduledTask (CEO fix 2026-09-07, task 447f4995).
+$actionArgs = '/d /c ""' + $python + '" "' + $runner + '" >> "' + $log + '" 2>&1"'
+$display = "Register-ScheduledTask -TaskName $taskName -Action (cmd.exe $actionArgs) -Trigger (Monthly DaysOfMonth 1,2,3 at 05:30 local, $expectedTimeZone) -Principal ($RunAs, RunLevel Highest)"
 
 if (-not $Apply) {
     Write-Output 'DRY_RUN: no scheduled task was registered.'
@@ -61,8 +45,54 @@ if ($OwnerReleaseId -notmatch '^OWNER-DEC-[A-Z0-9][A-Z0-9-]+$') {
 }
 
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $log) | Out-Null
-& "$env:SystemRoot\System32\schtasks.exe" @taskArguments
-if ($LASTEXITCODE -ne 0) {
-    throw "schtasks registration failed with exit code $LASTEXITCODE"
+$startBoundary = (Get-Date -Format 'yyyy-MM-dd') + 'T05:30:00'
+$escapedArgs = [System.Security.SecurityElement]::Escape($actionArgs)
+$escapedDescription = [System.Security.SecurityElement]::Escape("QM5_1537 monthly sleeve calendar refresh (create-only, stops in REVIEW). Release: " + $OwnerReleaseId)
+if ($RunAs -eq 'SYSTEM') {
+    $principalXml = '<Principal id="Author"><UserId>S-1-5-18</UserId><RunLevel>HighestAvailable</RunLevel></Principal>'
+} else {
+    $principalXml = '<Principal id="Author"><UserId>' + $RunAs + '</UserId><LogonType>S4U</LogonType><RunLevel>HighestAvailable</RunLevel></Principal>'
 }
+# Task Scheduler XML: monthly calendar trigger on days 1-3 (schtasks /D accepts one day only).
+$workDir = 'C:' + [char]92 + 'QM' + [char]92 + 'repo'
+$taskXml = @"
+<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <RegistrationInfo><Description>$escapedDescription</Description></RegistrationInfo>
+  <Triggers>
+    <CalendarTrigger>
+      <StartBoundary>$startBoundary</StartBoundary>
+      <Enabled>true</Enabled>
+      <ScheduleByMonth>
+        <DaysOfMonth><Day>1</Day><Day>2</Day><Day>3</Day></DaysOfMonth>
+        <Months><January/><February/><March/><April/><May/><June/><July/><August/><September/><October/><November/><December/></Months>
+      </ScheduleByMonth>
+    </CalendarTrigger>
+  </Triggers>
+  <Principals>$principalXml</Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT2H</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>cmd.exe</Command>
+      <Arguments>$escapedArgs</Arguments>
+      <WorkingDirectory>$workDir</WorkingDirectory>
+    </Exec>
+  </Actions>
+</Task>
+"@
+Register-ScheduledTask -TaskName $taskName -Xml $taskXml -Force | Out-Null
 Write-Output "REGISTERED: $taskName under release $OwnerReleaseId"
