@@ -1,0 +1,86 @@
+{
+  "schema_version": "qm.fx-cointegration-q02-hard-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-07T04:01:31.5907809Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "6cbfe69dce26785b3a265e2ec6dc33aae3653ddc",
+  "mission": "grow_certified_v5_portfolio_with_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unbuilt_relationship_count": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "q02_work_item": {
+    "id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at": "2026-08-29T12:08:11+00:00",
+    "updated_at": "2026-08-29T12:08:11+00:00",
+    "same_identity_open_count": 1,
+    "active_hold_count": 0,
+    "priority_track": true,
+    "queue_interpretation": "Existing canonical handoff; duplicate append is forbidden."
+  },
+  "capacity_sample": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      99.12,
+      99.12,
+      98.34,
+      98.35,
+      99.22
+    ],
+    "cpu_average_percent": 98.83,
+    "cpu_maximum_percent": 99.22,
+    "cpu_ceiling_hit": true,
+    "free_physical_memory_gib": 29.863,
+    "total_physical_memory_gib": 63.12,
+    "active_work_item_count": 6,
+    "factory_tester_slots": [
+      "T2",
+      "T5",
+      "T7",
+      "T8",
+      "T10"
+    ]
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "pacer_guard": {
+    "mq5_generated_or_edited": false,
+    "pre_compile_pin_audit_required": false,
+    "compile_enqueue_attempted": false,
+    "refusal_triggered": false,
+    "reason": "No source write and hard CPU ceiling bound before any build or enqueue action."
+  },
+  "mutations": {
+    "new_card_created": false,
+    "ea_source_changed": false,
+    "compile_enqueued": false,
+    "q02_row_appended": false,
+    "q02_row_reprioritized": false,
+    "manual_dispatch_started": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "disposition": "NON_DUPLICATE_HARD_CPU_STOP_COMMITTED"
+}
