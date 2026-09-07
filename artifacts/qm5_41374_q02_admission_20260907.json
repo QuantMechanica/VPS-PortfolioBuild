@@ -1,0 +1,64 @@
+{
+  "schema": "qm.q02_admission_handoff/v1",
+  "recorded_date": "2026-09-07",
+  "ea": {
+    "ea_id": "QM5_41374",
+    "ea_label": "QM5_41374_xtixng-weffdiv-rv",
+    "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41374_xtixng-weffdiv-rv\\QM5_41374_xtixng-weffdiv-rv.mq5",
+    "source_sha256": "3b3e9c48acff2e5f2e8747553ae768292f4c3ccb2f83fcd3330928de5041476c",
+    "backtest_setfile_count": 3,
+    "backtest_risk_mode": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    }
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:\\QM\\repo\\framework\\EAs\\QM5_41374_xtixng-weffdiv-rv\\QM5_41374_xtixng-weffdiv-rv.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "hit_count": 0,
+    "hits": [],
+    "ran_before_enqueue_compile": true
+  },
+  "compile": {
+    "work_item_id": "5621eafd-50aa-4974-93fc-be10f053b99d",
+    "status_at_handoff": "pending",
+    "activation_hold_released": true,
+    "verdict": null,
+    "compiled": false,
+    "failed": false,
+    "ex5_present": false,
+    "compile_evidence_present": false,
+    "release_receipt": "artifacts/qm5_41374_compile_release_20260907.json",
+    "released_at_utc": "2026-09-07T00:43:21+00:00"
+  },
+  "cpu_ceiling": {
+    "threshold_percent": 97.0,
+    "stop_triggered": true,
+    "source": "Windows Processor(_Total) % Processor Time, five one-second observations",
+    "observations": [
+      {"at_utc": "2026-09-07T00:45:09.8162092Z", "cpu_load_percent": 97.2},
+      {"at_utc": "2026-09-07T00:45:10.8415337Z", "cpu_load_percent": 99.3},
+      {"at_utc": "2026-09-07T00:45:11.8446976Z", "cpu_load_percent": 95.6},
+      {"at_utc": "2026-09-07T00:45:12.8480447Z", "cpu_load_percent": 92.0},
+      {"at_utc": "2026-09-07T00:45:13.8506237Z", "cpu_load_percent": 95.0}
+    ]
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_id": null,
+    "reason": "CPU_CEILING_STOP_AND_SUMMARIZE_COMPILE_PENDING"
+  },
+  "validation": {
+    "reference_tests": "6/6 PASS",
+    "card_schema_lint": "PASS",
+    "framework_input_pin_audit": "PASS"
+  },
+  "prohibited_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
+

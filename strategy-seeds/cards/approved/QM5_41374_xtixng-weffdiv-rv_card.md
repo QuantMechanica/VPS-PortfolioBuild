@@ -70,8 +70,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+q01_status: COMPILE_PENDING_CPU_CEILING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a completed-week XTI/XNG body-range-efficiency divergence fade outside the certified XAU/SP500/NDX/XNG book. Verify synchronized OHLC, independent efficiencies, strict outer-tercile divergence, high-efficiency body-sign fade, durable weekly attempt, aggregate fixed risk, atomic repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -221,4 +221,5 @@ manifests, `T_Live`, AutoTrading, or live use.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-07 | initial weekly efficiency-divergence card | G0 | APPROVED; build pending |
+| v1 build | 2026-09-07 | audited source-only build and compile handoff | Q01 | COMPILE_PENDING; Q02 stopped at CPU ceiling |
 

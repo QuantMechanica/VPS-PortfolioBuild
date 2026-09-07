@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "5621eafd-50aa-4974-93fc-be10f053b99d"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260907T004321_065800Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260907T004307Z_8be98539.sqlite",
+    "reused": false,
+    "sha256": "aaec50541368ebd186d165db00a21fbf20fc51ff9f0ee58b2fb04cfb579d4a6d"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "3b3e9c48acff2e5f2e8747553ae768292f4c3ccb2f83fcd3330928de5041476c",
+      "ea_id": "QM5_41374",
+      "ea_label": "QM5_41374_xtixng-weffdiv-rv",
+      "expected_mq5_sha256": "3b3e9c48acff2e5f2e8747553ae768292f4c3ccb2f83fcd3330928de5041476c",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41374_xtixng-weffdiv-rv\\QM5_41374_xtixng-weffdiv-rv.mq5",
+      "work_item_id": "5621eafd-50aa-4974-93fc-be10f053b99d"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-07T00:43:21+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "5621eafd-50aa-4974-93fc-be10f053b99d",
+  "work_item_id_selectors": [
+    "5621eafd-50aa-4974-93fc-be10f053b99d"
+  ]
+}
