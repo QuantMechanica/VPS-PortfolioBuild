@@ -1,0 +1,58 @@
+{
+  "created_at_utc": "2026-09-07T11:40:33Z",
+  "error": {
+    "message": "LF/final-newline contract failed: C:\\Windows\\TEMP\\qm1537-refresh-dry-0edjfwyn\\QM5_1537_monthly_sleeves_v2.manifest.json",
+    "type": "RefreshError"
+  },
+  "inputs": {
+    "expected_calendar": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v2.csv",
+      "sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78"
+    },
+    "native_export": {
+      "first_host_bar_epoch": 1788220800,
+      "first_host_bar_utc": "2026-09-01T00:00:00Z",
+      "input_bundle_sha256": "8A8AC4466A77AC064804947F0CAEF5C29BA4F0997A53FF3CACD38A84FB4F21E4",
+      "path": "D:\\QM\\reports\\qm1537_native_d1\\20260907T095525Z_qm1537_native_d1\\export_receipt.json",
+      "sha256": "BE8DE77CE812C7BB345BB180629DCC07DB39689F252EA2838E1D1581AF4756FE",
+      "valid_exports": 37
+    },
+    "prior_calendar": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v1.csv",
+      "sha256": "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B"
+    }
+  },
+  "mode": "DRY_RUN",
+  "month_key": 202609,
+  "outputs": {},
+  "owner_review": {
+    "reattach_instructions": [],
+    "required": false,
+    "state": "NOT_APPLICABLE_DRY_RUN"
+  },
+  "run_id": "20260907T114033-0fd77aededa7",
+  "safety": {
+    "autotrading_changed": false,
+    "chart_changed": false,
+    "existing_calendar_overwritten": false,
+    "existing_preset_overwritten": false,
+    "t1_t10_accessed": false,
+    "t_export_only": true,
+    "t_live_accessed": false,
+    "terminal_data_written": false
+  },
+  "schedule": {
+    "days_of_month": [
+      1,
+      2,
+      3
+    ],
+    "local_time": "05:30",
+    "observed_local": "2026-09-07T13:40:33+02:00",
+    "timezone": "Europe/Berlin",
+    "window_candidate": false
+  },
+  "schema": "qm.qm1537-monthly-sleeve-refresh/v1",
+  "status": "FAIL",
+  "verification": {}
+}

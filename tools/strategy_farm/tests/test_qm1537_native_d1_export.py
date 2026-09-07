@@ -37,10 +37,29 @@ def test_validate_output_rejects_duplicate_time(tmp_path):
         exporter.validate_output(path, "XAUUSD.DWX")
 
 
+def test_validate_output_uses_requested_month_floor(tmp_path):
+    path = tmp_path / "XAUUSD.DWX_D1.csv"
+    write_d1(path, 300)
+    with pytest.raises(ValueError, match="incomplete"):
+        exporter.validate_output(path, "XAUUSD.DWX", exporter.MIN_LAST_EPOCH + 86400)
+
+
 def test_outside_staging_refuses_before_process_or_write(tmp_path, monkeypatch):
     monkeypatch.setattr(exporter.boot, "scan_terminal_processes", lambda: pytest.fail("process API reached"))
     with pytest.raises(ValueError, match="new QM5_1537 staging child"):
         exporter.run(tmp_path / "outside", 300)
+
+
+def test_dynamic_range_refuses_future_before_process_or_write(tmp_path, monkeypatch):
+    monkeypatch.setattr(exporter.boot, "scan_terminal_processes", lambda: pytest.fail("process API reached"))
+    future = int(dt.datetime.now(dt.timezone.utc).timestamp()) + exporter.MAX_FUTURE_SKEW_SECONDS + 1
+    with pytest.raises(ValueError, match="future"):
+        exporter.run(
+            tmp_path / "outside",
+            300,
+            minimum_last_epoch=future - 1,
+            to_epoch=future,
+        )
 
 
 def test_owned_match_requires_exact_path_config_and_fresh_process():
@@ -60,4 +79,5 @@ def test_mql_is_exact_universe_create_only_read_only_profile():
     assert "ArraySize(canonical)!=37" in source
     assert "FileIsExist(filename)" in source
     assert "CopyRates(native,PERIOD_D1" in source
+    assert "InpTo>TimeTradeServer()+172800" in source
     assert not any(__import__("re").search(pattern, source) for pattern in exporter.boot.FORBIDDEN_MQL_TOKENS)

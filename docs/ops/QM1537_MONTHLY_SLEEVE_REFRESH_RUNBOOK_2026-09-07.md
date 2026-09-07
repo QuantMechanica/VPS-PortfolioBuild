@@ -17,6 +17,19 @@ day for which the native XAG D1 month bar exists. The proposed scheduler
 definition is
 `tools/strategy_farm/config/qm1537_monthly_sleeve_refresh.task.json`.
 
+## Runner and registration boundary
+
+The reviewed entry point is
+`python tools/strategy_farm/qm1537_monthly_sleeve_refresh.py`. It derives the
+Europe/Berlin month key, skips weekends and dates outside days 1–3, and then
+binds the final first-trading-day decision to the first native XAG D1 bar in
+the new export. A completed month is an idempotent no-op with a new receipt.
+
+`tools/strategy_farm/install_qm1537_refresh_scheduled_task.ps1` prints the
+`schtasks.exe` registration command by default. `-Apply` additionally requires
+an `OWNER-DEC-*` release id. The task remains **NOT REGISTERED** until that
+separate CEO release.
+
 ## Staging procedure
 
 1. Confirm the dedicated `T_Export` lane is idle and configured for
@@ -38,6 +51,12 @@ definition is
    prior calendar, preset, manifest, source declaration, and binary.
 7. Stop in REVIEW. OWNER review and re-attach are required because the pinned
    calendar identity changed. An agent never toggles AutoTrading.
+
+Every invocation writes a create-only receipt below
+`docs/ops/evidence/<date>_qm1537_refresh_<month>/`. Normal successful runs stage
+only new versioned repository calendar/source/manifest/preset files and an
+install-candidate receipt; they do not copy anything into an MT5 terminal data
+directory.
 
 On any defect, publish a failure receipt and retain the prior fail-closed
 configuration. Never weaken the news freshness ceiling or any Q gate.

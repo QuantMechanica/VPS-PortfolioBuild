@@ -379,35 +379,89 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         if source_declaration is None:
             source_declaration = output.with_suffix(".sources.csv")
         source_declaration = source_declaration.resolve()
-        legacy_bundle = None
+        source_fields = [
+            "calendar_row", "month_key", "host_symbol", "source",
+            "source_bundle_sha256", "row_sha256",
+        ]
         source_rows: list[dict[str, object]] = []
         raw_lines = output.read_bytes().splitlines(keepends=True)
         with output.open(encoding="ascii", newline="") as handle:
             combined_rows = list(csv.DictReader(handle))
         if len(raw_lines) != len(combined_rows) + 1:
             raise ValueError("calendar physical row count mismatch")
-        for index, row in enumerate(combined_rows, start=1):
-            month = int(row["month_key"])
-            legacy_bundle = legacy_bundle or combined_rows[0]["input_bundle_sha256"]
-            source = ("native_dwx_d1" if row["input_bundle_sha256"] == bundle_sha
-                      else "custom_history")
-            if source == "custom_history" and row["input_bundle_sha256"] != legacy_bundle:
-                raise ValueError("v1 legacy rows contain more than one source bundle")
-            if source == "native_dwx_d1" and row["input_bundle_sha256"] != bundle_sha:
+        prior_source_path = append_v1.with_suffix(".sources.csv")
+        prior_source_bytes = b""
+        legacy_count = len(legacy_rows)
+        if prior_source_path.is_file():
+            prior_source_bytes = prior_source_path.read_bytes()
+            if not prior_source_bytes.endswith(b"\n"):
+                raise ValueError("prior source declaration must end with LF")
+            with prior_source_path.open(encoding="ascii", newline="") as handle:
+                reader = csv.DictReader(handle)
+                if reader.fieldnames != source_fields:
+                    raise ValueError("prior source declaration header mismatch")
+                prior_rows = list(reader)
+            if len(prior_rows) != legacy_count:
+                raise ValueError("prior source declaration row count mismatch")
+            for index, (declaration, row) in enumerate(
+                zip(prior_rows, combined_rows[:legacy_count]), start=1
+            ):
+                if (
+                    int(declaration["calendar_row"]) != index
+                    or int(declaration["month_key"]) != int(row["month_key"])
+                    or declaration["host_symbol"] != row["host_symbol"]
+                    or declaration["source_bundle_sha256"] != row["input_bundle_sha256"]
+                    or declaration["row_sha256"] != sha256_bytes(raw_lines[index])
+                    or declaration["source"] not in {"custom_history", "native_dwx_d1"}
+                ):
+                    raise ValueError(f"prior source declaration mismatch at row {index}")
+                source_rows.append(dict(declaration))
+        else:
+            legacy_bundle = combined_rows[0]["input_bundle_sha256"]
+            for index, row in enumerate(combined_rows[:legacy_count], start=1):
+                if row["input_bundle_sha256"] != legacy_bundle:
+                    raise ValueError(
+                        "legacy calendar has multiple bundles but no source declaration"
+                    )
+                source_rows.append({
+                    "calendar_row": index,
+                    "month_key": int(row["month_key"]),
+                    "host_symbol": row["host_symbol"],
+                    "source": "custom_history",
+                    "source_bundle_sha256": row["input_bundle_sha256"],
+                    "row_sha256": sha256_bytes(raw_lines[index]),
+                })
+
+        appended_source_rows: list[dict[str, object]] = []
+        for index, row in enumerate(combined_rows[legacy_count:], start=legacy_count + 1):
+            if row["input_bundle_sha256"] != bundle_sha:
                 raise ValueError("native appended row bundle mismatch")
-            source_rows.append({
+            declaration = {
                 "calendar_row": index,
-                "month_key": month,
+                "month_key": int(row["month_key"]),
                 "host_symbol": row["host_symbol"],
-                "source": source,
+                "source": "native_dwx_d1",
                 "source_bundle_sha256": row["input_bundle_sha256"],
                 "row_sha256": sha256_bytes(raw_lines[index]),
+            }
+            appended_source_rows.append(declaration)
+            source_rows.append({
+                **declaration,
             })
         source_declaration.parent.mkdir(parents=True, exist_ok=True)
-        with source_declaration.open("w", encoding="ascii", newline="") as handle:
-            writer = csv.DictWriter(handle, fieldnames=list(source_rows[0]), lineterminator="\n")
-            writer.writeheader()
-            writer.writerows(source_rows)
+        if prior_source_bytes:
+            from io import StringIO
+            buffer = StringIO(newline="")
+            writer = csv.DictWriter(buffer, fieldnames=source_fields, lineterminator="\n")
+            writer.writerows(appended_source_rows)
+            source_declaration.write_bytes(
+                prior_source_bytes + buffer.getvalue().encode("ascii")
+            )
+        else:
+            with source_declaration.open("w", encoding="ascii", newline="") as handle:
+                writer = csv.DictWriter(handle, fieldnames=source_fields, lineterminator="\n")
+                writer.writeheader()
+                writer.writerows(source_rows)
         source_declaration_sha = sha256_file(source_declaration)
         total_rows = len(combined_rows)
 
@@ -444,11 +498,13 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             "path": str(source_declaration),
             "sha256": source_declaration_sha,
             "policy": "row input_bundle_sha256 selects custom_history or native_dwx_d1",
-            "sources": ["custom_history", "native_dwx_d1"],
+            "sources": sorted({str(row["source"]) for row in source_rows}),
         }
     manifest_output.parent.mkdir(parents=True, exist_ok=True)
     manifest_output.write_text(
-        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
     return manifest
 

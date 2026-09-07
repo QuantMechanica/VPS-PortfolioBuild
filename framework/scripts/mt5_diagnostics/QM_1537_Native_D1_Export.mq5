@@ -20,7 +20,7 @@ bool WaitConnected()
 
 bool ExportOne(const string canonical,const string native)
   {
-   if(InpFrom>=InpTo || InpFrom<D'2022.01.01' || InpTo>D'2027.01.01' ||
+   if(InpFrom>=InpTo || InpFrom<D'2022.01.01' || InpTo>TimeTradeServer()+172800 ||
       InpMinimumLast<InpFrom || InpMinimumLast>=InpTo)
      { Print("REFUSED_RANGE"); return false; }
    const string filename=InpOutputDir+"\\"+canonical+"_D1.csv";

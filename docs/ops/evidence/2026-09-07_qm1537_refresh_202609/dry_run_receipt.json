@@ -1,0 +1,91 @@
+{
+  "created_at_utc": "2026-09-07T11:41:00Z",
+  "inputs": {
+    "expected_calendar": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v2.csv",
+      "sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78"
+    },
+    "native_export": {
+      "first_host_bar_epoch": 1788220800,
+      "first_host_bar_utc": "2026-09-01T00:00:00Z",
+      "input_bundle_sha256": "8A8AC4466A77AC064804947F0CAEF5C29BA4F0997A53FF3CACD38A84FB4F21E4",
+      "path": "D:\\QM\\reports\\qm1537_native_d1\\20260907T095525Z_qm1537_native_d1\\export_receipt.json",
+      "sha256": "BE8DE77CE812C7BB345BB180629DCC07DB39689F252EA2838E1D1581AF4756FE",
+      "valid_exports": 37
+    },
+    "prior_calendar": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v1.csv",
+      "sha256": "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B"
+    }
+  },
+  "mode": "DRY_RUN",
+  "month_key": 202609,
+  "outputs": {
+    "expected_calendar_verified": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v2.csv",
+    "production_artifacts_written": false
+  },
+  "owner_review": {
+    "reattach_instructions": [],
+    "required": false,
+    "state": "NOT_APPLICABLE_DRY_RUN"
+  },
+  "run_id": "20260907T114100-9f46d2965426",
+  "safety": {
+    "autotrading_changed": false,
+    "chart_changed": false,
+    "existing_calendar_overwritten": false,
+    "existing_preset_overwritten": false,
+    "t1_t10_accessed": false,
+    "t_export_only": true,
+    "t_live_accessed": false,
+    "terminal_data_written": false
+  },
+  "schedule": {
+    "days_of_month": [
+      1,
+      2,
+      3
+    ],
+    "local_time": "05:30",
+    "observed_local": "2026-09-07T13:41:00+02:00",
+    "timezone": "Europe/Berlin",
+    "window_candidate": false
+  },
+  "schema": "qm.qm1537-monthly-sleeve-refresh/v1",
+  "status": "PASS",
+  "verification": {
+    "appended_row_count": 21,
+    "calendar_sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78",
+    "input_bundle_sha256": "8A8AC4466A77AC064804947F0CAEF5C29BA4F0997A53FF3CACD38A84FB4F21E4",
+    "prefix": {
+      "appended_bytes": 5040,
+      "preserved": true,
+      "prior_bytes": 834341,
+      "prior_sha256": "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B"
+    },
+    "ranking_contract_sha256": "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007",
+    "reproduction": {
+      "actual_sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78",
+      "byte_exact": true,
+      "expected_sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78",
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v2.csv"
+    },
+    "row_count": 3567,
+    "source_declaration_sha256": "C1F3B0A7899A649ABDCA80F515E711CC3AC1B751369718BD7358F94F1372A79C",
+    "target_row": {
+      "asof_epoch": "1788220800",
+      "contract_sha256": "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007",
+      "host_rank": "0",
+      "host_symbol": "XAGUSD.DWX",
+      "host_vol_pct": "65.176691414218",
+      "input_bundle_sha256": "8A8AC4466A77AC064804947F0CAEF5C29BA4F0997A53FF3CACD38A84FB4F21E4",
+      "month_key": "202609",
+      "schema_version": "qm1537.monthly_sleeve.v1",
+      "selected": "1",
+      "selected_1": "XAGUSD.DWX",
+      "selected_2": "XNGUSD.DWX",
+      "selected_3": "XTIUSD.DWX",
+      "valid_count": "37"
+    }
+  }
+}

@@ -9,6 +9,15 @@
     "local_time": "05:30",
     "first_trading_day_only": true
   },
+  "execution": {
+    "command": "C:/Python311/python.exe C:/QM/repo/tools/strategy_farm/qm1537_monthly_sleeve_refresh.py",
+    "installer": "tools/strategy_farm/install_qm1537_refresh_scheduled_task.ps1",
+    "log": "D:/QM/reports/state/qm1537_refresh.log",
+    "run_as": ["SYSTEM", "qm-admin"],
+    "registration_default": "PRINT_ONLY",
+    "apply_authority": "OWNER_DEC_RELEASE_REQUIRED",
+    "first_trading_day_logic": "runner binds local days 1-3/weekend eligibility to first native XAG D1 month bar"
+  },
   "scope": {
     "ea_id": 1537,
     "host_symbol": "XAGUSD.DWX",

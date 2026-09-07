@@ -33,7 +33,10 @@ UNIVERSE = (
 )
 NATIVE_BY_CANONICAL = {symbol: symbol.removesuffix(".DWX") for symbol in UNIVERSE}
 HEADER = ["time", "open", "high", "low", "close", "tickvol", "spread"]
-MIN_LAST_EPOCH = 1788220800  # 2026-09-01 00:00:00 UTC
+DEFAULT_FROM_EPOCH = 1672531200  # 2023-01-01 00:00:00 UTC
+DEFAULT_TO_EPOCH = 1788825600  # 2026-09-08 00:00:00 UTC (fixture-compatible default)
+MIN_LAST_EPOCH = 1788220800  # 2026-09-01 00:00:00 UTC (fixture-compatible default)
+MAX_FUTURE_SKEW_SECONDS = 2 * 86400
 
 
 def sha256_file(path: Path) -> str:
@@ -44,7 +47,7 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest().upper()
 
 
-def validate_output(path: Path, canonical: str) -> dict:
+def validate_output(path: Path, canonical: str, minimum_last_epoch: int = MIN_LAST_EPOCH) -> dict:
     rows = 0
     first = last = prior = None
     with path.open(encoding="utf-8-sig", newline="") as handle:
@@ -66,7 +69,7 @@ def validate_output(path: Path, canonical: str) -> dict:
             first = epoch if first is None else first
             last = prior = epoch
             rows += 1
-    if rows < 270 or last is None or last < MIN_LAST_EPOCH:
+    if rows < 270 or last is None or last < minimum_last_epoch:
         raise ValueError(f"D1 export incomplete: {path} rows={rows} last={last}")
     return {
         "slot": UNIVERSE.index(canonical),
@@ -113,11 +116,22 @@ if ($r.ReturnValue -ne 0) {{ throw 'Owned export termination failed' }}
 """)
 
 
-def run(out: Path, timeout: int = 1200) -> dict:
+def run(
+    out: Path,
+    timeout: int = 1200,
+    *,
+    minimum_last_epoch: int = MIN_LAST_EPOCH,
+    to_epoch: int = DEFAULT_TO_EPOCH,
+) -> dict:
     out = out.resolve()
     boot._safe_tag(out.name)
     if not 300 <= timeout <= 1800:
         raise ValueError("export timeout must be 300..1800 seconds")
+    now_epoch = int(dt.datetime.now(dt.timezone.utc).timestamp())
+    if not DEFAULT_FROM_EPOCH <= minimum_last_epoch < to_epoch:
+        raise ValueError("export range must satisfy from <= minimum_last < to")
+    if to_epoch > now_epoch + MAX_FUTURE_SKEW_SECONDS:
+        raise ValueError("export end is more than two days in the future")
     if STAGING.resolve() not in out.parents or out.exists():
         raise ValueError("run must use a new QM5_1537 staging child")
     terminal = ROOT / "terminal64.exe"
@@ -140,8 +154,8 @@ def run(out: Path, timeout: int = 1200) -> dict:
         "schema": "qm.qm1537-native-dwx-d1-export/v1",
         "production_write": False,
         "mechanism": "ftmo_m1_bootstrap StartUp; exact dedicated T_Export lane",
-        "requested_range": {"from_epoch": 1672531200, "to_epoch": 1788825600},
-        "minimum_last_epoch": MIN_LAST_EPOCH,
+        "requested_range": {"from_epoch": DEFAULT_FROM_EPOCH, "to_epoch": to_epoch},
+        "minimum_last_epoch": minimum_last_epoch,
         "account_class": "Darwinex-Live",
         "symbol_mapping": NATIVE_BY_CANONICAL,
         "bootstrap": boot.file_binding(Path(boot.__file__)),
@@ -169,7 +183,8 @@ def run(out: Path, timeout: int = 1200) -> dict:
         marker_name = f"QM1537_NATIVE_D1_COMPLETE_{run_tag}.txt"
         preset = ROOT / "MQL5/Presets" / f"QM1537_NATIVE_D1_{run_tag}.set"
         boot.atomic_write_text(preset, "\n".join([
-            "InpFrom=1672531200", "InpTo=1788825600", f"InpMinimumLast={MIN_LAST_EPOCH}",
+            f"InpFrom={DEFAULT_FROM_EPOCH}", f"InpTo={to_epoch}",
+            f"InpMinimumLast={minimum_last_epoch}",
             f"InpOutputDir={output_rel}", f"InpCompletion={marker_name}", "",
         ]))
         login, server = boot.load_dxz_factory_login()
@@ -220,7 +235,9 @@ def run(out: Path, timeout: int = 1200) -> dict:
             for canonical in UNIVERSE:
                 path = output_dir / f"{canonical}_D1.csv"
                 try:
-                    result["exports"].append(validate_output(path, canonical))
+                    result["exports"].append(
+                        validate_output(path, canonical, minimum_last_epoch)
+                    )
                 except (OSError, ValueError, KeyError) as exc:
                     result["exports"].append({"canonical_symbol": canonical, "path": str(path), "error": str(exc)})
             valid = [item for item in result["exports"] if "error" not in item]
@@ -239,8 +256,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--timeout", type=int, default=1200)
+    parser.add_argument("--minimum-last-epoch", type=int, default=MIN_LAST_EPOCH)
+    parser.add_argument("--to-epoch", type=int, default=DEFAULT_TO_EPOCH)
     args = parser.parse_args()
-    result = run(args.out, args.timeout)
+    result = run(
+        args.out,
+        args.timeout,
+        minimum_last_epoch=args.minimum_last_epoch,
+        to_epoch=args.to_epoch,
+    )
     print(json.dumps({"status": result["status"], "valid_exports": sum("error" not in x for x in result["exports"]),
                       "receipt": str(args.out / "export_receipt.json")}))
     raise SystemExit(0 if result["status"] == "PASS" else 2)
