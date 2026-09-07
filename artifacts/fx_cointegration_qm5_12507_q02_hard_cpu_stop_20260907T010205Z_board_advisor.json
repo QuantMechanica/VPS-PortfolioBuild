@@ -1,0 +1,107 @@
+{
+  "schema_version": "qm.fx-cointegration-q02-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-07T01:02:05.2401541Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "2ad646439e6e14251aed5cfbb2580d552d7f5b0d",
+  "mission": "grow_certified_v5_portfolio_with_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "unbuilt_qualifying_candidate_count": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "capacity_sample": {
+    "sampling_method": "Get-CimInstance Win32_Processor LoadPercentage, processor-average, five sequential one-second readings",
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      100.0,
+      99.0,
+      97.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 99.2,
+    "cpu_maximum_percent": 100.0,
+    "cpu_ceiling_hit": true,
+    "free_physical_memory_gib": 29.892,
+    "total_physical_memory_gib": 63.12,
+    "active_work_item_count_at_reread": 8,
+    "pending_work_item_count_at_reread": 10026,
+    "factory_terminals_at_preceding_snapshot": [
+      "T1",
+      "T2",
+      "T3",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "t_live_excluded": true
+  },
+  "q02_work_item": {
+    "id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "evidence_path": null,
+    "parent_task_id": "47e96b62-0ece-40a2-a22b-13704bd24e46",
+    "created_at": "2026-08-29T12:08:11+00:00",
+    "updated_at": "2026-08-29T12:08:11+00:00",
+    "queue_interpretation": "Already enqueued exactly once; the CPU ceiling forbids manual dispatch and a second Q02 append would be duplicate work."
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifacts": {
+    "mq5": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+      "sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.ex5",
+      "sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa"
+    },
+    "basket_manifest": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+      "sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56"
+    },
+    "logical_backtest_setfile": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+      "sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+    }
+  },
+  "pacer_build_guard": {
+    "source_generated_or_edited": false,
+    "pin_audit_required_this_wake": false,
+    "compile_enqueue_attempted": false,
+    "reason": "The CPU ceiling stopped the mission before any source write or build boundary."
+  },
+  "mutations": {
+    "new_card_created": false,
+    "ea_source_changed": false,
+    "compile_enqueued": false,
+    "q02_row_appended": false,
+    "q02_row_reprioritized": false,
+    "manual_dispatch_started": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "disposition": "NON_DUPLICATE_CPU_CEILING_STOP_COMMITTED"
+}
