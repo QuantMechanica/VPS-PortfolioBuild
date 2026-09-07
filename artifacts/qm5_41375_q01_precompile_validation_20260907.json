@@ -4,7 +4,7 @@
   "ea_id": "QM5_41375",
   "ea_label": "QM5_41375_wti-wmom1",
   "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41375_wti-wmom1\\QM5_41375_wti-wmom1.mq5",
-  "source_sha256": "7f4f925499cf55c633232ecd1d1ce003f3f0ab21ec71a5d7d70fa2f35f186a28",
+  "source_sha256": "875a66563537528559b84baa264049cbb92d9b2b059f8022a171e755045d8314",
   "pacer_build_guard": {
     "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41375_wti-wmom1/QM5_41375_wti-wmom1.mq5\"",
     "exit_code": 0,
@@ -12,14 +12,20 @@
     "predicate": "EA_FRAMEWORK_INPUT_PINNED",
     "hit_count": 0,
     "hits": [],
-    "ran_before_any_compile_enqueue": true
+    "ran_before_any_compile_enqueue": true,
+    "rerun_after_symbol-literal_repair": {
+      "exit_code": 0,
+      "ok": true,
+      "hit_count": 0,
+      "hits": []
+    }
   },
   "reference_tests": {
     "command": "python framework/EAs/QM5_41375_wti-wmom1/docs/test_weekly_momentum_reference.py",
     "result": "12/12 PASS"
   },
   "card_schema_lint": {
-    "result": "PASS",
+    "result": "PASS_AFTER_SYMBOL_INPUT_REPAIR",
     "ml_hits": [],
     "missing_sections": []
   },
@@ -35,6 +41,13 @@
     "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
     "detail": "terminal64 processes are alive; use the governed compile queue"
   },
-  "q01_status": "IMPLEMENTED_AWAITING_GOVERNED_COMPILE",
+  "compile_predecessor": {
+    "work_item_id": "a70f78d9-141a-4b9f-9165-dd38aa31a3bf",
+    "compiler_result": "PASS_0_ERRORS_0_WARNINGS",
+    "build_check_result": "FAIL",
+    "failure_class": "EA_SYMBOL_HARDCODED",
+    "repair": "strategy_symbol now has an empty source default and must be supplied by the factory setfile"
+  },
+  "q01_status": "REPAIRED_AWAITING_GOVERNED_COMPILE_SUCCESSOR",
   "q02_status": "NOT_ENQUEUED"
 }

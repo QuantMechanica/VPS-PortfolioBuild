@@ -41,7 +41,7 @@ input group "Stress"
 input double qm_stress_reject_probability  = 0.0;
 
 input group "Strategy"
-input string strategy_symbol               = "XTIUSD.DWX";
+input string strategy_symbol               = "";
 input int    strategy_label_offset_seconds = 86400;
 input int    strategy_entry_grace_minutes = 180;
 input int    strategy_history_bars          = 16;
@@ -614,7 +614,7 @@ bool Strategy_NoTradeFilter()
       qm_stress_reject_probability < 0.0 ||
       qm_stress_reject_probability > 1.0)
       return true;
-   if(strategy_symbol != "XTIUSD.DWX" ||
+   if(strategy_symbol == "" ||
       strategy_label_offset_seconds != 86400 ||
       strategy_entry_grace_minutes != 180 ||
       strategy_history_bars != 16 ||
@@ -885,7 +885,6 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 
 
 
