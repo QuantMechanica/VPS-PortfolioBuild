@@ -3,6 +3,7 @@
 #property description "QM5_11421 ohlc-daily-squeeze-reversal-d1 — OHLC squeeze reversal (D1, pending-stop)"
 
 #include <QM/QM_Common.mqh>
+#include <QM/QM_ChartPanel.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA — QM5_11421 ohlc-daily-squeeze-reversal-d1
@@ -47,6 +48,8 @@ input group "QuantMechanica V5 Framework"
 input int    qm_ea_id                   = 11421;
 input int    qm_magic_slot_offset       = 0;
 input uint   qm_rng_seed                = 42;
+input bool   qm_show_chart_panel        = true;
+input string qm_panel_build_hash        = "UNBOUND";
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -76,6 +79,41 @@ input double strategy_sl_cap_pips       = 80.0;   // hard cap on stop distance (
 input int    strategy_pending_ttl_bars  = 1;      // pending order lives this many D1 bars before auto-expiry
 input double strategy_spread_cap_pips   = 25.0;   // skip only a genuinely WIDE spread (fail-open on .DWX zero spread)
 input bool   strategy_enable_long       = true;   // mirror LONG squeeze (descending closes); SHORT always on
+
+CQMChartPanel g_qm_signature_panel;
+
+void QM11421_RefreshChartPanel()
+  {
+   if(!g_qm_signature_panel.Ready())
+      return;
+
+   QMChartPanelSnapshot snapshot;
+   if(!g_qm_news_active)
+      snapshot.news_state = "OFF";
+   else if(!g_qm_news_loaded || !g_qm_news_available)
+      snapshot.news_state = "FAIL";
+   else if(!g_qm_news_cache_valid)
+      snapshot.news_state = "READY";
+   else
+      snapshot.news_state = g_qm_news_cache_verdict ? "OPEN" : "BLOCK";
+
+   snapshot.friday_state = !qm_friday_close_enabled ? "OFF" :
+                            (QM_FrameworkFridayCloseNow(TimeCurrent()) ? "CLOSE" : "OK");
+   snapshot.governor_state = g_qm_ks_halted ? "HALT" : "ARMED";
+   snapshot.environment = (MQLInfoInteger(MQL_TESTER) != 0) ? "ENV TESTER" : "ENV LIVE";
+   if(g_qm_risk_mode == QM_RISK_MODE_PERCENT)
+     {
+      snapshot.risk_mode = "RISK_PERCENT";
+      snapshot.risk_per_trade = DoubleToString(g_qm_risk_percent, 4);
+     }
+   else
+     {
+      snapshot.risk_mode = "RISK_FIXED";
+      snapshot.risk_per_trade = DoubleToString(g_qm_risk_fixed, 2);
+     }
+   snapshot.heartbeat_state = g_qm_fw_initialized ? "OK" : "STALE";
+   g_qm_signature_panel.Refresh(snapshot);
+  }
 
 // -----------------------------------------------------------------------------
 // Helpers (pure OHLC geometry — structural reads, // perf-allowed exceptions).
@@ -288,12 +326,26 @@ int OnInit()
                                              "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
       return INIT_FAILED;
 
+   if(g_qm_signature_panel.Initialize(ChartID(),
+                                       qm_ea_id,
+                                       "ohlc-daily-squeeze-reversal-d1",
+                                       QM_FrameworkMagic(),
+                                       qm_panel_build_hash,
+                                       qm_show_chart_panel))
+     {
+      if(EventSetTimer(5))
+         g_qm_fw_timer_active = true;
+      else
+         g_qm_signature_panel.Shutdown();
+     }
+
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
    return INIT_SUCCEEDED;
   }
 
 void OnDeinit(const int reason)
   {
+   g_qm_signature_panel.Shutdown();
    QM_LogEvent(QM_INFO, "DEINIT", StringFormat("{\"reason\":%d}", reason));
    QM_FrameworkShutdown();
   }
@@ -356,6 +408,7 @@ void OnTick()
 void OnTimer()
   {
    QM_FrameworkOnTimer();
+   QM11421_RefreshChartPanel();
   }
 
 void OnTradeTransaction(const MqlTradeTransaction &trans,
