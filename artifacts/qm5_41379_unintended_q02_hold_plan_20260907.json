@@ -1,0 +1,29 @@
+{
+  "hold_code": "PACER_Q02_CPU_CEILING_STOP",
+  "mode": "plan",
+  "reason": "Unintended record-build auto-enqueue after PACER sample max 97.7% breached the binding 97% CPU ceiling",
+  "release_condition": "Fresh five-sample CPU window strictly below 97% and explicit OWNER-paced continuation",
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": null,
+  "targets": [
+    {
+      "claimable": true,
+      "hold": null,
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-09-07T05:19:34+00:00",
+        "ea_id": "QM5_41379",
+        "id": "cbdc6809-d507-4d0f-9a27-a709dc5aa46c",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "pending",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-09-07T05:19:34+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "would_insert": 1,
+  "would_supersede": 0
+}

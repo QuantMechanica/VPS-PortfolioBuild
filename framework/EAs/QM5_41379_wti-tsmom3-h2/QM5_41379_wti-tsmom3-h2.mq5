@@ -570,7 +570,7 @@ bool Strategy_NoTradeFilter()
       qm_stress_reject_probability < 0.0 ||
       qm_stress_reject_probability > 1.0)
       return true;
-   if(strategy_symbol != "XTIUSD.DWX" ||
+   if(strategy_symbol == "" ||
       strategy_return_months != 3 ||
       strategy_hold_months != 2 ||
       strategy_rebalance_month_parity != 1 ||

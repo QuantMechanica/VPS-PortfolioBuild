@@ -90,3 +90,19 @@ correlation waiver.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-09-07 | Initial build from approved card | PACER guarded build |
+| v2 | 2026-09-07 | Q01 compile repair | Removed redundant trading-logic symbol literal; governed compile and build check PASS with zero errors/warnings |
+| v3 | 2026-09-07 | Q02 CPU stop | 97.7% sample breached ceiling; unintended auto-enqueue row was held unclaimable before dispatch |
+
+## 11. Q01 And Q02 Status
+
+Q01 PASS: reference vectors 13/13, card/SPEC lint PASS, PACER framework-input
+pin audit zero hits, governed compile work item
+`106fef27-0c57-4585-a64c-b9019e4d99bf` `COMPILE_OK`, zero compiler errors or
+warnings, and build check PASS.
+
+Q02 did not run. A five-sample admission window measured
+`97.7, 87.0, 89.8, 94.7, 79.0` percent; the maximum breached the binding 97%
+ceiling. Build-task recording unexpectedly auto-appended Q02 row
+`cbdc6809-d507-4d0f-9a27-a709dc5aa46c`; governed hold
+`PACER_Q02_CPU_CEILING_STOP` immediately made it non-restart, unclaimable, and
+undispatched.
