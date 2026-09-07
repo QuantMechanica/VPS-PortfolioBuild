@@ -235,6 +235,18 @@ COMMIT_RESERVATION_SECONDS = 300
 # 2026-08-10: factory_mutation_lock_busy declines were fully silent, hiding a
 # wedged restart window behind an idle-looking fleet for 40 minutes.
 _UNCLAIMED_DECLINE_LOG_LAST: dict[str, float] = {}
+# A full negative claim pass can walk thousands of ordered candidates even when
+# no row is admissible for this terminal.  Workers poll every two seconds, so a
+# process-local negative-result memo avoids repeating that identical walk while
+# preserving the canonical selector on every miss.  PRAGMA data_version makes
+# any committed DB change an immediate miss; resource/file buckets cover the
+# non-DB inputs which most often unblock an idle queue.  The hard 8-second cap
+# keeps time-only transitions (cooldowns, drain expiry, process exit) below the
+# <15 second claim-latency contract even if their state has no durable write.
+IDLE_CLAIM_CACHE_TTL_SECONDS_ENV = "QM_IDLE_CLAIM_CACHE_TTL_SECONDS"
+IDLE_CLAIM_CACHE_MAX_TTL_SECONDS = 8.0
+IDLE_CLAIM_CACHE_RESOURCE_BUCKET_GB = 2.0
+_IDLE_CLAIM_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
 ORDINARY_COMMIT_RESERVATION_GB = 8.0
 WATCHDOG_RESET_BLOCK_FILENAME = "WATCHDOG_RESET_PENDING.json"
 # Multi-symbol real-tick jobs need materially more launch headroom than ordinary
@@ -4116,6 +4128,183 @@ def _detect_history_lock_storm(
     return None
 
 
+def _idle_claim_cache_ttl_seconds(
+    environ: Mapping[str, str] | None = None,
+) -> float:
+    """Return the bounded negative-claim memo TTL; zero is the kill switch."""
+
+    source = os.environ if environ is None else environ
+    raw = source.get(IDLE_CLAIM_CACHE_TTL_SECONDS_ENV)
+    if raw is None:
+        return IDLE_CLAIM_CACHE_MAX_TTL_SECONDS
+    try:
+        value = float(str(raw).strip())
+    except (TypeError, ValueError):
+        return IDLE_CLAIM_CACHE_MAX_TTL_SECONDS
+    if not math.isfinite(value) or value <= 0.0:
+        return 0.0
+    return min(value, IDLE_CLAIM_CACHE_MAX_TTL_SECONDS)
+
+
+def _idle_claim_cache_stat_token(path: Path) -> tuple[bool, int, int] | None:
+    """Cheap file identity token; ambiguity disables the optimization."""
+
+    try:
+        stat = path.stat()
+    except FileNotFoundError:
+        return (False, 0, 0)
+    except OSError:
+        return None
+    return (True, int(stat.st_mtime_ns), int(stat.st_size))
+
+
+def _idle_claim_cache_resource_bucket(value: float) -> int | None:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(numeric) or numeric < 0.0:
+        return None
+    return math.floor(numeric / IDLE_CLAIM_CACHE_RESOURCE_BUCKET_GB)
+
+
+def _idle_claim_cache_key(root: Path, terminal: str) -> tuple[str, str]:
+    try:
+        normalized_root = str(Path(root).resolve()).casefold()
+    except OSError:
+        normalized_root = str(Path(root).absolute()).casefold()
+    return normalized_root, str(terminal).strip().upper()
+
+
+def _idle_claim_cache_probe(root: Path, terminal: str) -> dict[str, Any] | None:
+    """Fingerprint inputs that can make a previous negative claim stale.
+
+    The persistent farmctl poller is essential: a new SQLite connection's
+    ``data_version`` starts from an unrelated local value and cannot prove that
+    no commit occurred.  Poller identity is included so a reopened poller can
+    never match an entry created by its predecessor.
+    """
+
+    if _idle_claim_cache_ttl_seconds() <= 0.0:
+        return None
+    db_path = Path(root) / farmctl.DB_REL
+    if not db_path.is_file():
+        return None
+    try:
+        db_file = str(db_path.resolve())
+    except OSError:
+        return None
+    data_version = farmctl._claim_order_data_version(db_file)
+    poller = farmctl._CLAIM_ORDER_POLLERS.get((db_file, threading.get_ident()))
+    if data_version is None or poller is None:
+        return None
+
+    state_paths = (
+        Path(root) / "state" / DRAIN_STATE_FILENAME,
+        Path(root) / "state" / WATCHDOG_RESET_BLOCK_FILENAME,
+        custom_history_gate.activation_path(Path(root)),
+    )
+    state_tokens = tuple(_idle_claim_cache_stat_token(path) for path in state_paths)
+    if any(token is None for token in state_tokens):
+        return None
+
+    free_ram_gb = _free_ram_gb()
+    commit_headroom_gb = _commit_headroom_gb()
+    free_ram_bucket = _idle_claim_cache_resource_bucket(free_ram_gb)
+    commit_bucket = _idle_claim_cache_resource_bucket(commit_headroom_gb)
+    if free_ram_bucket is None or commit_bucket is None:
+        return None
+    qm_environment = tuple(
+        sorted(
+            (str(name), str(value))
+            for name, value in os.environ.items()
+            if str(name).upper().startswith("QM_")
+        )
+    )
+
+    return {
+        "key": _idle_claim_cache_key(root, terminal),
+        "fingerprint": (
+            db_file.casefold(),
+            id(poller),
+            int(data_version),
+            free_ram_bucket,
+            commit_bucket,
+            state_tokens,
+            qm_environment,
+            bool(_RAM_LATCH_COMPILE_ONLY),
+        ),
+        "free_ram_gb": free_ram_gb,
+        "commit_headroom_gb": commit_headroom_gb,
+    }
+
+
+def _idle_claim_cache_hit(
+    probe: dict[str, Any] | None,
+    *,
+    monotonic: Any = time.monotonic,
+) -> bool:
+    if probe is None:
+        return False
+    key = probe["key"]
+    entry = _IDLE_CLAIM_CACHE.get(key)
+    if entry is None:
+        return False
+    if (
+        entry.get("fingerprint") != probe.get("fingerprint")
+        or float(monotonic()) >= float(entry.get("expires_monotonic", 0.0))
+    ):
+        _IDLE_CLAIM_CACHE.pop(key, None)
+        return False
+    return True
+
+
+def _remember_idle_claim_cache(
+    probe: dict[str, Any] | None,
+    *,
+    monotonic: Any = time.monotonic,
+) -> None:
+    if probe is None:
+        return
+    ttl = _idle_claim_cache_ttl_seconds()
+    if ttl <= 0.0:
+        return
+    _IDLE_CLAIM_CACHE[probe["key"]] = {
+        "fingerprint": probe["fingerprint"],
+        "expires_monotonic": float(monotonic()) + ttl,
+    }
+
+
+def _invalidate_idle_claim_cache(root: Path, terminal: str | None = None) -> None:
+    """Forget negative decisions after local lifecycle changes."""
+
+    root_key = _idle_claim_cache_key(root, terminal or "")[0]
+    if terminal is not None:
+        _IDLE_CLAIM_CACHE.pop((root_key, str(terminal).strip().upper()), None)
+        return
+    for key in [candidate for candidate in _IDLE_CLAIM_CACHE if candidate[0] == root_key]:
+        _IDLE_CLAIM_CACHE.pop(key, None)
+
+
+def _idle_no_pending_result(*, cache_hit: bool) -> dict[str, Any]:
+    """Stable no-claim envelope shared by empty-queue and memo fast paths."""
+
+    return {
+        "claimed": False,
+        "reason": "no_pending_claimable",
+        "history_skipped": [],
+        "launch_cooldown_skipped": [],
+        "multisymbol_ram_skipped": [],
+        "ram_class_skipped": [],
+        "census_lane_protection_skipped": [],
+        "multisymbol_commit_skipped": [],
+        "terminal_avoid_skipped": [],
+        "longrun_cap_skipped": [],
+        "recovery_capped": [],
+        "idle_claim_cache_hit": cache_hit,
+    }
+
+
 def _claim_queue_may_need_mutation(root: Path, terminal: str) -> bool:
     """Avoid an fsynced global lock when the claim queue is plainly empty.
 
@@ -4372,20 +4561,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     # Read before opening the claim transaction. Cached stat-bound results keep
     # idle worker polling cheap; every actual spawn performs an uncached re-read.
     calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
-    if calendar_preflight.get("ok") and not _claim_queue_may_need_mutation(root, terminal):
-        return {
-            "claimed": False,
-            "reason": "no_pending_claimable",
-            "history_skipped": [],
-            "launch_cooldown_skipped": [],
-            "multisymbol_ram_skipped": [],
-            "ram_class_skipped": [],
-            "census_lane_protection_skipped": [],
-            "multisymbol_commit_skipped": [],
-            "terminal_avoid_skipped": [],
-            "longrun_cap_skipped": [],
-            "recovery_capped": [],
-        }
+    idle_cache_probe = None
+    if calendar_preflight.get("ok"):
+        idle_cache_probe = _idle_claim_cache_probe(root, terminal)
+        if _idle_claim_cache_hit(idle_cache_probe):
+            return _idle_no_pending_result(cache_hit=True)
+        if not _claim_queue_may_need_mutation(root, terminal):
+            _remember_idle_claim_cache(idle_cache_probe)
+            return _idle_no_pending_result(cache_hit=False)
 
     # A completed runner can publish a valid summary and then lose the final
     # SQLite write to sustained fleet contention.  _finish_work_item reports
@@ -5767,6 +5950,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
             host_total_gb=drain_host_total_gb,
             multisym_ids=multisym_ids,
         )
+    if claim_result.get("reason") == "no_pending_claimable":
+        # Probe after every read/write and drain post-process.  A scan which
+        # repaired a row or advanced drain state therefore records the new
+        # identity, never the stale pre-scan one.
+        _remember_idle_claim_cache(_idle_claim_cache_probe(root, terminal))
+        claim_result["idle_claim_cache_hit"] = False
+    else:
+        _invalidate_idle_claim_cache(root, terminal)
     return claim_result
 
 
@@ -11339,14 +11530,20 @@ def run_loop(root: Path, terminal: str, timeout_seconds: int) -> int:
                     "at_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                 }), flush=True)
                 try:
-                    result = _run_claimed_item(
-                        root,
-                        item,
-                        terminal,
-                        timeout_seconds,
-                        prestage_controller=prestage_controller,
-                        prestage_adoption=prestage_adoption,
-                    )
+                    try:
+                        result = _run_claimed_item(
+                            root,
+                            item,
+                            terminal,
+                            timeout_seconds,
+                            prestage_controller=prestage_controller,
+                            prestage_adoption=prestage_adoption,
+                        )
+                    finally:
+                        # A local completion/requeue can change process, report,
+                        # or cooldown state in addition to its SQLite row.  Never
+                        # carry a pre-run negative decision into the next poll.
+                        _invalidate_idle_claim_cache(root, terminal)
                 except sqlite3.OperationalError as exc:
                     if not _is_sqlite_locked(exc):
                         raise

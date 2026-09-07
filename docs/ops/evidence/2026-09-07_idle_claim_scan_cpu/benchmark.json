@@ -1,0 +1,117 @@
+{
+  "cache_disabled": {
+    "cache_hits": 0,
+    "calls": 5,
+    "cpu_ms_mean": 1271.875,
+    "cpu_ms_median": 703.125,
+    "cpu_ms_p95": 2265.625,
+    "samples": [
+      {
+        "cache_hit": false,
+        "cpu_ms": 2265.625,
+        "index": 1,
+        "wall_ms": 2996.459
+      },
+      {
+        "cache_hit": false,
+        "cpu_ms": 703.125,
+        "index": 2,
+        "wall_ms": 927.945
+      },
+      {
+        "cache_hit": false,
+        "cpu_ms": 578.125,
+        "index": 3,
+        "wall_ms": 634.125
+      },
+      {
+        "cache_hit": false,
+        "cpu_ms": 625.0,
+        "index": 4,
+        "wall_ms": 764.907
+      },
+      {
+        "cache_hit": false,
+        "cpu_ms": 2187.5,
+        "index": 5,
+        "wall_ms": 3020.731
+      }
+    ],
+    "wall_ms_mean": 1668.833,
+    "wall_ms_median": 927.945,
+    "wall_ms_p95": 3020.731
+  },
+  "cache_enabled_hits": {
+    "cache_hits": 5,
+    "calls": 5,
+    "cpu_ms_mean": 3.125,
+    "cpu_ms_median": 0.0,
+    "cpu_ms_p95": 15.625,
+    "samples": [
+      {
+        "cache_hit": true,
+        "cpu_ms": 0.0,
+        "index": 1,
+        "wall_ms": 1.484
+      },
+      {
+        "cache_hit": true,
+        "cpu_ms": 0.0,
+        "index": 2,
+        "wall_ms": 0.971
+      },
+      {
+        "cache_hit": true,
+        "cpu_ms": 0.0,
+        "index": 3,
+        "wall_ms": 1.279
+      },
+      {
+        "cache_hit": true,
+        "cpu_ms": 0.0,
+        "index": 4,
+        "wall_ms": 1.094
+      },
+      {
+        "cache_hit": true,
+        "cpu_ms": 15.625,
+        "index": 5,
+        "wall_ms": 0.874
+      }
+    ],
+    "wall_ms_mean": 1.14,
+    "wall_ms_median": 1.094,
+    "wall_ms_p95": 1.484
+  },
+  "cache_ttl_seconds": 8.0,
+  "claim_latency_upper_bound_seconds": 10.0,
+  "clone_db_sha256_after": "1d5bd3769556d25daa6385476ef0bbf05672ce0e55a5ba74dc9b71c4a3a6bea3",
+  "clone_db_sha256_before": "1d5bd3769556d25daa6385476ef0bbf05672ce0e55a5ba74dc9b71c4a3a6bea3",
+  "clone_db_sha256_unchanged": true,
+  "fixture": "online_backup; zero-free-RAM; no candidate admissible; no spawn",
+  "iterations": 5,
+  "median_cpu_reduction_percent": 100.0,
+  "projected_idle_worker_cpu_one_core_percent": {
+    "cache_disabled": 24.014,
+    "cache_enabled_steady_state": 7.876,
+    "method": "median process CPU per full negative pass divided by full-pass wall + 2 s poll cadence (disabled), or + 8 s memo lifetime (enabled)",
+    "reduction_percent": 67.205
+  },
+  "queue_counts": {
+    "active": 8,
+    "done": 82565,
+    "failed": 49132,
+    "pending": 9047
+  },
+  "schema": "qm.idle-claim-cache-benchmark/v1",
+  "source_db": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "source_open_mode": "sqlite_uri_mode_ro_query_only",
+  "status": "PASS",
+  "terminal": "T_BENCH",
+  "warmup": {
+    "cache_hit": false,
+    "cpu_ms": 2093.75,
+    "index": 1,
+    "wall_ms": 2612.381
+  }
+}
