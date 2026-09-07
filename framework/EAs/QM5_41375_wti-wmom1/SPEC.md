@@ -74,4 +74,5 @@ realized correlation.
 | Version | Date | Gate | Status |
 |---|---|---|---|
 | v0 | 2026-09-07 | G0 | approved source and card |
-| v1 | 2026-09-07 | Q01 | implementation awaiting validation |
+| v1 | 2026-09-07 | Q01 | implementation and deterministic reference validation |
+| v2 | 2026-09-07 | Q01/Q02 | governed compile/build-check PASS; fixed-risk Q02 enqueued as `e9ebd527-13f3-4913-8bf5-13dc8d7c229a` |

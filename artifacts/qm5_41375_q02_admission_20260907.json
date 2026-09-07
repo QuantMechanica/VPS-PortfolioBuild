@@ -1,0 +1,64 @@
+{
+  "schema": "qm.q02-admission-handoff/v1",
+  "recorded_date": "2026-09-07",
+  "ea": {
+    "ea_id": "QM5_41375",
+    "ea_label": "QM5_41375_wti-wmom1",
+    "source_sha256": "875a66563537528559b84baa264049cbb92d9b2b059f8022a171e755045d8314",
+    "ex5_sha256": "e839bc71a36918687619d0997c094c7062d2c873e4a5d9ddf12d0f7f79b4d482",
+    "setfile_sha256": "2402f9a0a36fa452a61ad7961dc9c7e5aee8728fa84937787423d9137cd54be7"
+  },
+  "pacer_build_guard": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": [],
+    "rerun_after_source_repair": true
+  },
+  "compile": {
+    "failed_predecessor_work_item_id": "a70f78d9-141a-4b9f-9165-dd38aa31a3bf",
+    "failed_predecessor_class": "EA_SYMBOL_HARDCODED",
+    "repair": "removed the source literal; factory setfile now supplies strategy_symbol",
+    "successor_work_item_id": "9349c325-5440-48bc-bd4d-6f22ad8ad728",
+    "verdict": "COMPILE_OK",
+    "compiler_errors": 0,
+    "compiler_warnings": 0,
+    "build_check": "PASS",
+    "setfile_count": 1,
+    "release_receipt": "artifacts/qm5_41375_compile_release_20260907.json"
+  },
+  "cpu_admission": {
+    "threshold_percent": 97.0,
+    "stop_triggered": false,
+    "observations": [
+      {"at_utc": "2026-09-07T01:44:31.4880000Z", "cpu_load_percent": 27.2},
+      {"at_utc": "2026-09-07T01:44:32.4890000Z", "cpu_load_percent": 28.3},
+      {"at_utc": "2026-09-07T01:44:33.4890000Z", "cpu_load_percent": 31.3},
+      {"at_utc": "2026-09-07T01:44:34.4900000Z", "cpu_load_percent": 28.2},
+      {"at_utc": "2026-09-07T01:44:35.4900000Z", "cpu_load_percent": 28.9}
+    ]
+  },
+  "q02": {
+    "enqueued": true,
+    "work_item_id": "e9ebd527-13f3-4913-8bf5-13dc8d7c229a",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "status": "ENQUEUED_PENDING",
+    "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\receipts\\first_q02_intake\\9349c325-5440-48bc-bd4d-6f22ad8ad728_e9ebd527-13f3-4913-8bf5-13dc8d7c229a.json",
+    "receipt_sha256": "84c5a4206d4829e86bf72f5c4ccdcc2aa54a8fad22358a4f6e004c6680f25855"
+  },
+  "validation": {
+    "reference_tests": "12/12 PASS",
+    "card_schema_lint": "PASS",
+    "build_guardrails": "PASS",
+    "framework_input_pin_audit": "PASS"
+  },
+  "prohibited_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}

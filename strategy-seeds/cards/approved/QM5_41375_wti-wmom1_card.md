@@ -51,9 +51,9 @@ r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 parameters_to_test: "Locked Q02 baseline only: exact D1; 16-bar history buffer; 3-5 immediately completed week sessions; strict nonzero ln(final close/first open) sign continuation; 180-minute entry grace; 3.5*ATR(20,D1) frozen stop; 10-day stale repair; 1500-point spread ceiling."
 review_focus: "Falsify the source-horizon pure one-week WTI momentum stream outside the certified XAU/SP500/NDX/XNG book. Verify exact prior completed week, first open/final close, sign-only continuation, no low-volatility or body/range gate, consumed weekly attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -297,15 +297,16 @@ realized correlation with the certified book.
 
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
-| v1 | 2026-09-07 | initial pure one-week WTI momentum card | G0 | APPROVED; build pending |
+| v1 | 2026-09-07 | initial pure one-week WTI momentum card | G0 | APPROVED |
+| v2 | 2026-09-07 | Q01 governed compile/build-check and first Q02 intake | Q01/Q02 | PASS; ENQUEUED_PENDING `e9ebd527-13f3-4913-8bf5-13dc8d7c229a` |
 
 ## Pipeline Phase Status
 
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-07 | APPROVED | `decisions/2026-09-07_qm5_41375_wti_pure_one_week_momentum_g0.md` |
-| Q01 Build Validation | 2026-09-07 | PENDING | branch build pending |
-| Q02 Baseline Screening | 2026-09-07 | NOT_ENQUEUED | requires Q01 PASS and fresh CPU check |
+| Q01 Build Validation | 2026-09-07 | PASS | governed compile successor `9349c325-5440-48bc-bd4d-6f22ad8ad728`; 0 errors/0 warnings; build check PASS |
+| Q02 Baseline Screening | 2026-09-07 | ENQUEUED_PENDING | exact XTIUSD.DWX D1 fixed-risk row `e9ebd527-13f3-4913-8bf5-13dc8d7c229a` |
 
 ## Safety Boundary
 
