@@ -1173,3 +1173,8 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 - **Panel v3** (4bdcbb91 APPROVED, EX5 9d55ea09): OWNER re-attached at 09:42 Prague, clean init; awaiting OWNER verdict before the 7-sleeve + governor rollout.
 - **Census metric burst 08:0xZ:** 146 OPT_CENSUS rows closed `SKIPPED_PRESCREEN` within 15 min (prescreen_admission contract receipt) — a prescreen sweep, not measurements; the 10-min "census_done" line counts them. 10700/XAUUSD closed Q14 KEEP_INCUMBENT at 07:26Z; pipeline_state (hourly task, next 08:23Z) will show whether it counts as the 13th pair.
 - Fleet 10 workers, RAM 22 GB, D: 66 GB; FTMO demo flat, 0 halt.
+
+## Addendum 2026-09-07 08:20Z — ZÄHLER 13/25: QM5_10700/XAUUSD.DWX ist das 13. Paar
+
+- pipeline_state 08:12:48Z: `qualified_pairs 13`, `distinct_eas 13`; 10700/XAUUSD `frontier_class COMPLETE`, contiguous valid gate Q14 (chain: Q10_NEWS CONFIG_LOCKED 04.09 → Q11 PASS → Q12 NO_FILTER_CHANGE 07:05Z → Q13 NO_PARAMETER_CHANGE 07:16Z → Q14 KEEP_INCUMBENT 07:26Z). public funnel-stats may lag until the hourly snapshot.
+- Refutation rule stays 1/5 (no refutation today). Baseline for the loop moves 12 → 13.
