@@ -927,6 +927,41 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907",
+      "todo_id": "QM-TODO-20260907-COUNTER-PATH-CALENDAR-TAINT",
+      "priority": 90,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Adopt Option B: activate the scoped news-calendar consumer B for Q10_NEWS adjudication; lift the taint hold only for rows B adjudicates (declared exclusions stay held); footnote every pair counted this way as 'calendar scope-limited' in cockpit, OPEN_ITEMS and the Vault; open the re-adjudication-after-full-seal ticket. No repin, no calendar publish, no T_Live/AutoTrading, no threshold change.",
+          "allowed_actions": [
+            "Enqueue one Codex ops ticket with exact acceptance criteria (consumer B activation config + taint-policy lift scope + counter footnote + re-adjudication ticket)",
+            "Integrate the Codex branch (tests, Codex co-author trailer)",
+            "farmctl release-hold row by row for B-admissible Q10_NEWS rows (append-only, never a verdict overwrite); mark-priority-track on 11196/XAUUSD",
+            "Update OPEN_ITEMS, the receipts file and the Vault"
+          ],
+          "acceptance": [
+            "Consumer B active only for declared-admissible rows; excluded rows remain held",
+            "Every counted pair carries the scope-limited footnote in all OWNER surfaces",
+            "Re-adjudication ticket exists and is bound to the full-scope seal",
+            "No repin, publish, threshold or stored-verdict change"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Record Option A: wait for the full-scope seal (E1-D2-D4), keep the taint hold, add the OWNER to-do for the Wednesday 2026-09-09 08:00 resubmission; no code change.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, the receipts file and the Vault",
+            "owner_todos.py add for the resubmission"
+          ],
+          "acceptance": [
+            "Taint hold unchanged",
+            "Resubmission to-do exists with due 2026-09-09"
+          ]
+        }
+      }
     }
   ]
 }
