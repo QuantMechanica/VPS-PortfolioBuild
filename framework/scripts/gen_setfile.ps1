@@ -13,6 +13,8 @@ param(
     [double]$RiskPercent = 0,
     [double]$PortfolioWeight = 1.0,
     [string]$OutputDirectory,
+    [ValidatePattern('^s20[0-9]{6}-[0-9]{3}$')]
+    [string]$VersionTag,
     [string]$ProvenanceTemplatePath,
     [ValidatePattern('^[0-9a-f]{64}$')]
     [string]$BuildHash
@@ -612,8 +614,22 @@ if (-not [string]::IsNullOrWhiteSpace($OutputDirectory)) {
 }
 New-Item -ItemType Directory -Path $setsFolder -Force | Out-Null
 
-$fileName = "${EaSlug}_${Symbol}_${TF}_${Env}.set"
+$setVersion = if ([string]::IsNullOrWhiteSpace($VersionTag)) {
+    "s$((Get-Date).ToUniversalTime().ToString('yyyyMMdd'))-001"
+}
+else {
+    $VersionTag
+}
+$fileName = if ([string]::IsNullOrWhiteSpace($VersionTag)) {
+    "${EaSlug}_${Symbol}_${TF}_${Env}.set"
+}
+else {
+    "${EaSlug}_${Symbol}_${TF}_${Env}_${VersionTag}.set"
+}
 $targetPath = Join-Path $setsFolder $fileName
+if (-not [string]::IsNullOrWhiteSpace($VersionTag) -and (Test-Path -LiteralPath $targetPath)) {
+    throw "VERSIONED_SETFILE_ALREADY_EXISTS: $targetPath"
+}
 
 if ($Env -eq 'backtest') {
     if ($RiskFixed -le 0) {
@@ -655,7 +671,7 @@ $lines = @(
     "; ea_id:        $eaId",
     "; ea_slug:      $eaSlugOnly",
     "; ea_version:   v5.0",
-    "; set_version:  s$($today.Replace('-', ''))-001",
+    "; set_version:  $setVersion",
     "; symbol:       $Symbol",
     "; timeframe:    $TF",
     "; environment:  $Env",
@@ -712,7 +728,11 @@ else {
     }
 }
 
-if ($Env -eq 'live' -and -not ($lines | Where-Object { $_ -match '^strategy_[A-Za-z0-9_]+\s*=' })) {
+$strategyAssignmentLines = @($lines | Where-Object { $_ -match '^strategy_[A-Za-z0-9_]+\s*=' })
+if ($eaInputDefaults.strategy.Count -gt 0 -and $strategyAssignmentLines.Count -eq 0) {
+    throw "SETFILE_DECLARED_STRATEGY_PARAMS_MISSING: $EaSlug $Symbol $TF $Env declares strategy_* inputs but would materialize none."
+}
+if ($Env -eq 'live' -and $strategyAssignmentLines.Count -eq 0) {
     throw "LIVE_SETFILE_STRATEGY_PARAMS_MISSING: $EaSlug $Symbol $TF would produce a live setfile without explicit strategy_* params."
 }
 

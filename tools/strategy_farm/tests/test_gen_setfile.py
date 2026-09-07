@@ -120,3 +120,89 @@ def test_missing_card_falls_back_to_strategy_input_defaults(tmp_path: Path) -> N
     assert "strategy_signal_tf=PERIOD_M30" not in content
     assert content.count("strategy_variant_id=TPO_VA80_ROT_BASELINE") == 1
     assert 'strategy_variant_id="TPO_VA80_ROT_BASELINE"' not in content
+
+
+def test_versioned_output_is_create_only_and_records_version(tmp_path: Path) -> None:
+    pwsh = shutil.which("pwsh")
+    if not pwsh:
+        pytest.skip("PowerShell 7 is required for gen_setfile.ps1")
+
+    repo = tmp_path / "repo"
+    script_dir = repo / "framework" / "scripts"
+    ea_slug = "QM5_99997_versioned-fixture"
+    ea_dir = repo / "framework" / "EAs" / ea_slug
+    registry_dir = repo / "framework" / "registry"
+    script_dir.mkdir(parents=True)
+    ea_dir.mkdir(parents=True)
+    registry_dir.mkdir(parents=True)
+    shutil.copy2(GEN_SETFILE, script_dir / GEN_SETFILE.name)
+
+    (ea_dir / f"{ea_slug}.mq5").write_text(
+        'input int strategy_period = 21;\n', encoding="utf-8"
+    )
+    (registry_dir / "magic_numbers.csv").write_text(
+        "ea_id,symbol,status,symbol_slot\n"
+        "99997,XAUUSD.DWX,active,4\n",
+        encoding="utf-8",
+    )
+    version = "s20260907-001"
+    command = (
+        pwsh,
+        "-NoProfile",
+        "-NonInteractive",
+        "-File",
+        str(script_dir / GEN_SETFILE.name),
+        "-EaSlug",
+        ea_slug,
+        "-Symbol",
+        "XAUUSD.DWX",
+        "-TF",
+        "H1",
+        "-Env",
+        "backtest",
+        "-VersionTag",
+        version,
+    )
+    env = os.environ.copy()
+    env["QM_STRATEGY_FARM_ROOT"] = str(tmp_path / "empty-farm")
+
+    first = subprocess.run(
+        command,
+        cwd=repo,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert first.returncode == 0, first.stderr or first.stdout
+    target = ea_dir / "sets" / f"{ea_slug}_XAUUSD.DWX_H1_backtest_{version}.set"
+    content = target.read_text(encoding="utf-8")
+    assert "; set_version:  s20260907-001" in content
+    assert "strategy_period=21" in content
+
+    second = subprocess.run(
+        command,
+        cwd=repo,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    assert second.returncode != 0
+    assert "VERSIONED_SETFILE_ALREADY_EXISTS" in (second.stderr + second.stdout)
+
+
+def test_declared_strategy_guard_applies_to_every_environment() -> None:
+    source = GEN_SETFILE.read_text(encoding="utf-8-sig")
+    guard = re.search(
+        r"if \(\$eaInputDefaults\.strategy\.Count -gt 0 "
+        r"-and \$strategyAssignmentLines\.Count -eq 0\) \{"
+        r"(?P<body>.*?)\n\}",
+        source,
+        re.DOTALL,
+    )
+    assert guard is not None
+    assert "SETFILE_DECLARED_STRATEGY_PARAMS_MISSING" in guard.group("body")
+    assert "$Env -eq" not in guard.group(0)

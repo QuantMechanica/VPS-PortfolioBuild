@@ -1,0 +1,37 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        10928
+; ea_slug:      grimes-yoyo-break
+; ea_version:   v5.0
+; set_version:  s20260907-001
+; symbol:       XAUUSD.DWX
+; timeframe:    M30
+; environment:  backtest
+; magic_slot:   4
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-09-07
+;==========================================================
+qm_ea_id=10928
+qm_magic_slot_offset=4
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10928_grimes-yoyo-break.md
+strategy_atr_period=20
+strategy_compression_bars=12
+strategy_min_closes_within=8
+strategy_within_atr_mult=0.60
+strategy_min_crossings=4
+strategy_max_range_atr_mult=2.20
+strategy_breakout_atr_mult=0.15
+strategy_stop_buffer_atr_mult=0.20
+strategy_max_stop_atr_mult=3.00
+strategy_target_r_mult=2.00
+strategy_breakeven_r_mult=1.00
+strategy_time_exit_bars=16
+strategy_block_final_hours=3
+strategy_spread_cap_fraction=0.08

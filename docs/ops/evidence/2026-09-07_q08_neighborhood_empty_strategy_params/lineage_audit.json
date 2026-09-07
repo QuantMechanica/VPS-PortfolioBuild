@@ -1,0 +1,1092 @@
+{
+  "counts": {
+    "cohort": 18,
+    "own_invalid_verdict": 8,
+    "prepared_not_enqueued": 2,
+    "reference_rerun": 10
+  },
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "database_data_version": 2,
+  "generated_at_utc": "2026-09-07T12:57:41.275528+00:00",
+  "root_cause": "Historical generator output lacked explicit strategy assignments. Q07 and Q08 were byte-bound to those files; MT5 used compiled defaults, so execution was behavior-equivalent while explicit lineage was incomplete. Q08.5 correctly failed closed. This is not a neighborhood-reader misbinding.",
+  "rows": [
+    {
+      "action": "EXISTING_SUCCESSOR_NO_DUPLICATE_ENQUEUE",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8c0de140-37bb-4f43-b811-98c00d1c2839\\QM5_10287\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "fcb9e40bcfc4ddd152734c5730cab83ca49bf75c73b4ad37e2ff41007546d878",
+        "mq5_sha256": "d2860b749bfbc06a5de7d02efd095f4153fead238f4dd6fdcbc38dc6f557ba4a",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_10287_cinar-ichimoku\\\\sets\\\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "bec3bf9900528fb5b1b1fbad489749292819d26fab141d044f7ad05846813978",
+        "strategy_param_count": 0,
+        "trades": 235
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 1,
+      "created_at": "2026-09-02T10:15:22+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 6,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\QM5_10287_cinar-ichimoku.mq5",
+        "mq5_sha256": "d2860b749bfbc06a5de7d02efd095f4153fead238f4dd6fdcbc38dc6f557ba4a",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "c258e8dec51dc377b8c752a0ad1451581ae54a93e5664821d0fdb79ac25bd184",
+        "strategy_param_count": 6
+      },
+      "ea_id": "QM5_10287",
+      "id": "8c0de140-37bb-4f43-b811-98c00d1c2839",
+      "prepared_replacement": null,
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\89ff6993-4a49-4d6a-9df3-9f669c0cea90\\QM5_10287\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "89ff6993-4a49-4d6a-9df3-9f669c0cea90",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_q06_stress_harsh_seed42.set",
+          "sha256": "2821a57392614ddc8369028353a34e74d5f561cb95565fe7bf70c67a974d2c74",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [
+        {
+          "id": "5901ae3b-8725-4126-841e-d2dcec30184b",
+          "replacement_setfile_path": null,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set",
+          "setfile_sha256": "c258e8dec51dc377b8c752a0ad1451581ae54a93e5664821d0fdb79ac25bd184",
+          "status": "pending",
+          "verdict": null,
+          "verdict_reason": null
+        }
+      ],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-04T05:32:19+00:00",
+      "verdict": "INVALID"
+    },
+    {
+      "action": "EXISTING_SUCCESSOR_NO_DUPLICATE_ENQUEUE",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\32c48193-4013-4763-a119-860f77a8bf5c\\QM5_1230\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "52e05c77f94ae8cb2b2c8f84ad60992a01728eb6493874caae89a92bd64fdf60",
+        "mq5_sha256": "4c50e902ab722f86c281541280df598c5a27886b2ac82074bc5edd9e6c45d629",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_1230_carver-dynvol-mav\\\\sets\\\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "2fe1b2581e42e6609c4f1f69517959305c07833ddfa23072b46b6b00b2cb8363",
+        "strategy_param_count": 0,
+        "trades": 113
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 2,
+      "created_at": "2026-09-02T10:15:23+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 10,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\QM5_1230_carver-dynvol-mav.mq5",
+        "mq5_sha256": "4c50e902ab722f86c281541280df598c5a27886b2ac82074bc5edd9e6c45d629",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "9f62953bcf9676e1a025badcae9cdf461fa9771a1daa48997b991b6da14197c0",
+        "strategy_param_count": 10
+      },
+      "ea_id": "QM5_1230",
+      "id": "32c48193-4013-4763-a119-860f77a8bf5c",
+      "prepared_replacement": null,
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\277599c8-3c42-47c2-9373-50a05aea60ca\\QM5_1230\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "277599c8-3c42-47c2-9373-50a05aea60ca",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_q06_stress_harsh_seed42.set",
+          "sha256": "cbc92b23146aa83a44338f10ae9a059529e61eaaddf3cfb94082b0eb08a15e59",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [
+        {
+          "id": "b429d45f-44ea-4b7f-ab5b-bb13f093b3b3",
+          "replacement_setfile_path": null,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+          "setfile_sha256": "9f62953bcf9676e1a025badcae9cdf461fa9771a1daa48997b991b6da14197c0",
+          "status": "done",
+          "verdict": "FAIL_SOFT",
+          "verdict_reason": "FAIL_SOFT"
+        }
+      ],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-04T06:08:25+00:00",
+      "verdict": "INVALID"
+    },
+    {
+      "action": "EXISTING_SUCCESSOR_NO_DUPLICATE_ENQUEUE",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\02cf605e-c90a-43ef-ab56-a5bcba7d636b\\QM5_11179\\Q08\\USDJPY_DWX\\aggregate.json",
+        "ex5_sha256": "8fe714193162102c5c77890e10396d3d4d12f85319fdfac0fc4513857fda63ac",
+        "mq5_sha256": "b7bb219d1be80c228f31b188ee4ee1417045f51861d05bce1e47eb9d4518a2ca",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_11179_ft001-ema-ha\\\\sets\\\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set",
+        "setfile_sha256": "7ef786c24e0c792be57acfb758d86205d58378c25e272140dc1ef7ec43643e9b",
+        "strategy_param_count": 0,
+        "trades": 594
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 3,
+      "created_at": "2026-09-04T20:14:23+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 10,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\QM5_11179_ft001-ema-ha.mq5",
+        "mq5_sha256": "b7bb219d1be80c228f31b188ee4ee1417045f51861d05bce1e47eb9d4518a2ca",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set",
+        "setfile_sha256": "ca173ee6a44376f291ee6accfcb28565463227e0e3af6abfca25ba3bf8df91fb",
+        "strategy_param_count": 10
+      },
+      "ea_id": "QM5_11179",
+      "id": "02cf605e-c90a-43ef-ab56-a5bcba7d636b",
+      "prepared_replacement": null,
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2\\QM5_11179\\Q07\\USDJPY_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set",
+        "db_setfile_sha256": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2\\QM5_11179\\Q07\\USDJPY_DWX\\aggregate.json",
+          "current_file_sha256": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2\\QM5_11179\\20260904_184028\\summary.json",
+          "trades": 583,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2"
+        },
+        "id": "72170342-6e7b-405e-9167-e61dd3932ec2",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_q06_stress_harsh_seed42.set",
+          "sha256": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [
+        {
+          "id": "40a802ca-63bc-4252-bdb7-1bfb3f130a99",
+          "replacement_setfile_path": null,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set",
+          "setfile_sha256": "ca173ee6a44376f291ee6accfcb28565463227e0e3af6abfca25ba3bf8df91fb",
+          "status": "done",
+          "verdict": "FAIL_SOFT",
+          "verdict_reason": "FAIL_SOFT"
+        }
+      ],
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-04T22:01:26+00:00",
+      "verdict": "INVALID"
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\40a802ca-63bc-4252-bdb7-1bfb3f130a99\\QM5_11179\\Q08\\USDJPY_DWX\\aggregate.json",
+        "ex5_sha256": "8fe714193162102c5c77890e10396d3d4d12f85319fdfac0fc4513857fda63ac",
+        "mq5_sha256": "b7bb219d1be80c228f31b188ee4ee1417045f51861d05bce1e47eb9d4518a2ca",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set",
+        "setfile_sha256": "ca173ee6a44376f291ee6accfcb28565463227e0e3af6abfca25ba3bf8df91fb",
+        "strategy_param_count": 10,
+        "trades": 594
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 4,
+      "created_at": "2026-09-04T23:29:58+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 10,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\QM5_11179_ft001-ema-ha.mq5",
+        "mq5_sha256": "b7bb219d1be80c228f31b188ee4ee1417045f51861d05bce1e47eb9d4518a2ca",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set",
+        "setfile_sha256": "ca173ee6a44376f291ee6accfcb28565463227e0e3af6abfca25ba3bf8df91fb",
+        "strategy_param_count": 10
+      },
+      "ea_id": "QM5_11179",
+      "id": "40a802ca-63bc-4252-bdb7-1bfb3f130a99",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2\\QM5_11179\\Q07\\USDJPY_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_backtest.set",
+        "db_setfile_sha256": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2\\QM5_11179\\Q07\\USDJPY_DWX\\aggregate.json",
+          "current_file_sha256": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2\\QM5_11179\\20260904_184028\\summary.json",
+          "trades": 583,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\72170342-6e7b-405e-9167-e61dd3932ec2"
+        },
+        "id": "72170342-6e7b-405e-9167-e61dd3932ec2",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_USDJPY.DWX_M5_q06_stress_harsh_seed42.set",
+          "sha256": "c24250809b523e3b63afc35838e6e5c07a4e3df7db2f391497c3ff0f3488d05e",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-05T05:32:09+00:00",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\1da1645c-7c69-43d9-8617-f55040122bdc\\QM5_10148\\Q08\\EURNZD_DWX\\aggregate.json",
+        "ex5_sha256": "f3aa1652bb9d316c85e9d23e8bfd0c13c5f27fa1f8d85170ac1f5b3714a800c2",
+        "mq5_sha256": "11f614d6ea92156b9f3d41779875fbb5d5bc0eb8a8539b9ca69ae0c0c846dfec",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal\\sets\\QM5_10148_tii-signal_EURNZD.DWX_D1_backtest.set",
+        "setfile_sha256": "ffe0a57e4a6fa0a192b386de6f6b5136a55bffad132345490fbf7b196ac0af3b",
+        "strategy_param_count": 6,
+        "trades": 29
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 5,
+      "created_at": "2026-09-04T23:58:46+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 6,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal\\QM5_10148_tii-signal.mq5",
+        "mq5_sha256": "11f614d6ea92156b9f3d41779875fbb5d5bc0eb8a8539b9ca69ae0c0c846dfec",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal\\sets\\QM5_10148_tii-signal_EURNZD.DWX_D1_backtest.set",
+        "setfile_sha256": "ffe0a57e4a6fa0a192b386de6f6b5136a55bffad132345490fbf7b196ac0af3b",
+        "strategy_param_count": 6
+      },
+      "ea_id": "QM5_10148",
+      "id": "1da1645c-7c69-43d9-8617-f55040122bdc",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\bad1b2f7-5f19-40e7-90a5-880551e84d27\\QM5_10148\\Q07\\EURNZD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal\\sets\\QM5_10148_tii-signal_EURNZD.DWX_D1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "bad1b2f7-5f19-40e7-90a5-880551e84d27",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10148_tii-signal\\sets\\QM5_10148_tii-signal_EURNZD.DWX_D1_q06_stress_harsh_seed42.set",
+          "sha256": "4149a49edb5d3ab50d1a60a0a8636134a08e90c054005eb99c2a3fac212b5f0a",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "EURNZD.DWX",
+      "updated_at": "2026-09-05T09:18:47+00:00",
+      "verdict": "PASS"
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": null,
+        "ex5_sha256": "fcb9e40bcfc4ddd152734c5730cab83ca49bf75c73b4ad37e2ff41007546d878",
+        "mq5_sha256": "d2860b749bfbc06a5de7d02efd095f4153fead238f4dd6fdcbc38dc6f557ba4a",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "c258e8dec51dc377b8c752a0ad1451581ae54a93e5664821d0fdb79ac25bd184",
+        "strategy_param_count": 6,
+        "trades": null
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 6,
+      "created_at": "2026-09-04T23:58:48+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 6,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\QM5_10287_cinar-ichimoku.mq5",
+        "mq5_sha256": "d2860b749bfbc06a5de7d02efd095f4153fead238f4dd6fdcbc38dc6f557ba4a",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "c258e8dec51dc377b8c752a0ad1451581ae54a93e5664821d0fdb79ac25bd184",
+        "strategy_param_count": 6
+      },
+      "ea_id": "QM5_10287",
+      "id": "5901ae3b-8725-4126-841e-d2dcec30184b",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\89ff6993-4a49-4d6a-9df3-9f669c0cea90\\QM5_10287\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "89ff6993-4a49-4d6a-9df3-9f669c0cea90",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10287_cinar-ichimoku\\sets\\QM5_10287_cinar-ichimoku_XAUUSD.DWX_D1_q06_stress_harsh_seed42.set",
+          "sha256": "2821a57392614ddc8369028353a34e74d5f561cb95565fe7bf70c67a974d2c74",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "pending",
+      "successors": [],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T02:38:37+00:00",
+      "verdict": null
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\ee8b7d55-4721-444d-8578-f44a27c049d9\\QM5_10771\\Q08\\USDJPY_DWX\\aggregate.json",
+        "ex5_sha256": "8ffa566891bd48e08d75641569003461f0f74bc41d9f91185d248c2b16fc36e8",
+        "mq5_sha256": "304abbf3839ccabf8d0c41074b9aa8b2068ca2503e9b9c8b74396fb8dc553b79",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_USDJPY.DWX_H1_backtest.set",
+        "setfile_sha256": "276dcd73ead14360876dbfa1f9aa30a7c1e65b7725f3456f4b44548b2b0e4048",
+        "strategy_param_count": 13,
+        "trades": 281
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 7,
+      "created_at": "2026-09-04T23:58:50+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 13,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\QM5_10771_tv-trail-hunter.mq5",
+        "mq5_sha256": "304abbf3839ccabf8d0c41074b9aa8b2068ca2503e9b9c8b74396fb8dc553b79",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_USDJPY.DWX_H1_backtest.set",
+        "setfile_sha256": "276dcd73ead14360876dbfa1f9aa30a7c1e65b7725f3456f4b44548b2b0e4048",
+        "strategy_param_count": 13
+      },
+      "ea_id": "QM5_10771",
+      "id": "ee8b7d55-4721-444d-8578-f44a27c049d9",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\c367a6ca-bb10-44bb-bc2c-9d892ebdad9c\\QM5_10771\\Q07\\USDJPY_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_USDJPY.DWX_H1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "c367a6ca-bb10-44bb-bc2c-9d892ebdad9c",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_USDJPY.DWX_H1_q06_stress_harsh_seed42.set",
+          "sha256": "0a662dc123061e8c5443395dd2b159eef41a8de52e0fe2920d56065d0e2c7d11",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-05T06:24:06+00:00",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\49b55905-ba64-4d44-94e1-61009b9fb727\\QM5_10771\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "8ffa566891bd48e08d75641569003461f0f74bc41d9f91185d248c2b16fc36e8",
+        "mq5_sha256": "304abbf3839ccabf8d0c41074b9aa8b2068ca2503e9b9c8b74396fb8dc553b79",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_XAUUSD.DWX_H1_backtest.set",
+        "setfile_sha256": "d5accd9bb90582c56234f87fe4dc017b30c01e1d1d0412800cc105a7841f27b4",
+        "strategy_param_count": 13,
+        "trades": 283
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 8,
+      "created_at": "2026-09-04T23:58:52+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 13,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\QM5_10771_tv-trail-hunter.mq5",
+        "mq5_sha256": "304abbf3839ccabf8d0c41074b9aa8b2068ca2503e9b9c8b74396fb8dc553b79",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_XAUUSD.DWX_H1_backtest.set",
+        "setfile_sha256": "d5accd9bb90582c56234f87fe4dc017b30c01e1d1d0412800cc105a7841f27b4",
+        "strategy_param_count": 13
+      },
+      "ea_id": "QM5_10771",
+      "id": "49b55905-ba64-4d44-94e1-61009b9fb727",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\710e48b8-7830-4590-9d60-0105b5f41fdf\\QM5_10771\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_XAUUSD.DWX_H1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\710e48b8-7830-4590-9d60-0105b5f41fdf\\QM5_10771\\Q07\\XAUUSD_DWX\\aggregate.json",
+          "current_file_sha256": "4cb2931680ee92a9d215a365f6cc721a7ebefebe9cd147757f54f4fc6851b760",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "4cb2931680ee92a9d215a365f6cc721a7ebefebe9cd147757f54f4fc6851b760",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_XAUUSD.DWX_H1_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "4cb2931680ee92a9d215a365f6cc721a7ebefebe9cd147757f54f4fc6851b760",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\710e48b8-7830-4590-9d60-0105b5f41fdf\\QM5_10771\\20260817_143537\\summary.json",
+          "trades": 260,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\710e48b8-7830-4590-9d60-0105b5f41fdf"
+        },
+        "id": "710e48b8-7830-4590-9d60-0105b5f41fdf",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10771_tv-trail-hunter\\sets\\QM5_10771_tv-trail-hunter_XAUUSD.DWX_H1_q06_stress_harsh_seed42.set",
+          "sha256": "4cb2931680ee92a9d215a365f6cc721a7ebefebe9cd147757f54f4fc6851b760",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T03:39:11+00:00",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": null,
+        "ex5_sha256": "bceec80d71d65ab10a06beeaa625c4e2daac0843736849da3d9113c24df0060b",
+        "mq5_sha256": "1af41ff9254e8a0adfba2c4fcdcb72ccf440a2901292f6c76f0e105728767de2",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10848_tv-mtf-ambush\\sets\\QM5_10848_tv-mtf-ambush_GDAXI.DWX_H1_backtest.set",
+        "setfile_sha256": "91062aeb40134d78def39799443b6b0497d3bcf65474899a5996a7dd970f2c75",
+        "strategy_param_count": 12,
+        "trades": null
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 9,
+      "created_at": "2026-09-04T23:58:54+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 0,
+        "mq5_path": null,
+        "mq5_sha256": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10848_tv-mtf-ambush\\sets\\QM5_10848_tv-mtf-ambush_GDAXI.DWX_H1_backtest.set",
+        "setfile_sha256": "91062aeb40134d78def39799443b6b0497d3bcf65474899a5996a7dd970f2c75",
+        "strategy_param_count": 12
+      },
+      "ea_id": "QM5_10848",
+      "id": "c8d8c2c7-7287-41d8-98ab-57606bec09f5",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\923997c7-067d-49f8-ad15-f15bb628519f\\QM5_10848\\Q07\\GDAXI_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10848_tv-mtf-ambush\\sets\\QM5_10848_tv-mtf-ambush_GDAXI.DWX_H1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "923997c7-067d-49f8-ad15-f15bb628519f",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10848_tv-mtf-ambush\\sets\\QM5_10848_tv-mtf-ambush_GDAXI.DWX_H1_q06_stress_harsh_seed42.set",
+          "sha256": "80a6b067380b69d935ecb1d7bef0ef614dbd9f2f6e6285c2491973c937ed316a",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "pending",
+      "successors": [],
+      "symbol": "GDAXI.DWX",
+      "updated_at": "2026-09-04T23:58:54+00:00",
+      "verdict": null
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": null,
+        "ex5_sha256": "e3dea054cce04aba5aec82ceb9a8a0a530acc43c6b4d3783ee5f70d89064a66e",
+        "mq5_sha256": "5839af64779d2640f6290d4c1e02033327e4027d4e42fa6a8532e8f33b0b9d6c",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\sets\\QM5_11132_tm-cum-rsi2_NDX.DWX_D1_backtest.set",
+        "setfile_sha256": "f5abdb8a1fa20d33f42d695d9ef946eba8aa83e2562421a2957bece42c4566e1",
+        "strategy_param_count": 9,
+        "trades": null
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 10,
+      "created_at": "2026-09-04T23:58:56+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 0,
+        "mq5_path": null,
+        "mq5_sha256": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\sets\\QM5_11132_tm-cum-rsi2_NDX.DWX_D1_backtest.set",
+        "setfile_sha256": "f5abdb8a1fa20d33f42d695d9ef946eba8aa83e2562421a2957bece42c4566e1",
+        "strategy_param_count": 9
+      },
+      "ea_id": "QM5_11132",
+      "id": "169d5dda-f119-4f87-8c06-c9623733265c",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\9275f769-2c6d-4cfd-a598-40cf68921c0d\\QM5_11132\\Q07\\NDX_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\sets\\QM5_11132_tm-cum-rsi2_NDX.DWX_D1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "9275f769-2c6d-4cfd-a598-40cf68921c0d",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11132_tm-cum-rsi2\\sets\\QM5_11132_tm-cum-rsi2_NDX.DWX_D1_q06_stress_harsh_seed42.set",
+          "sha256": "97cc52addebb7904176abc5977aa62c70ce56be203c952747420a1ddaa2573ad",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "pending",
+      "successors": [],
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-04T23:58:56+00:00",
+      "verdict": null
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\b429d45f-44ea-4b7f-ab5b-bb13f093b3b3\\QM5_1230\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "52e05c77f94ae8cb2b2c8f84ad60992a01728eb6493874caae89a92bd64fdf60",
+        "mq5_sha256": "4c50e902ab722f86c281541280df598c5a27886b2ac82074bc5edd9e6c45d629",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "9f62953bcf9676e1a025badcae9cdf461fa9771a1daa48997b991b6da14197c0",
+        "strategy_param_count": 10,
+        "trades": 113
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 11,
+      "created_at": "2026-09-04T23:58:57+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 10,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\QM5_1230_carver-dynvol-mav.mq5",
+        "mq5_sha256": "4c50e902ab722f86c281541280df598c5a27886b2ac82074bc5edd9e6c45d629",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+        "setfile_sha256": "9f62953bcf9676e1a025badcae9cdf461fa9771a1daa48997b991b6da14197c0",
+        "strategy_param_count": 10
+      },
+      "ea_id": "QM5_1230",
+      "id": "b429d45f-44ea-4b7f-ab5b-bb13f093b3b3",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\277599c8-3c42-47c2-9373-50a05aea60ca\\QM5_1230\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "277599c8-3c42-47c2-9373-50a05aea60ca",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1230_carver-dynvol-mav\\sets\\QM5_1230_carver-dynvol-mav_XAUUSD.DWX_D1_q06_stress_harsh_seed42.set",
+          "sha256": "cbc92b23146aa83a44338f10ae9a059529e61eaaddf3cfb94082b0eb08a15e59",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T05:51:26+00:00",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": null,
+        "ex5_sha256": "2f1b0fa01640cca16f766194e42f50057784c1df1efd792180750876e27d0d6b",
+        "mq5_sha256": "7f5e0f2a2cc5542de3a7a4501d66edbc9997dd6f7feaa2bab38e59b093c7cfa6",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_NDX.DWX_H4_backtest.set",
+        "setfile_sha256": "5ee58f6fc88348183619ec56f84f8e3474e50a467c6ae8ceef9f476be14dc42b",
+        "strategy_param_count": 10,
+        "trades": null
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 12,
+      "created_at": "2026-09-04T23:58:59+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 0,
+        "mq5_path": null,
+        "mq5_sha256": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_NDX.DWX_H4_backtest.set",
+        "setfile_sha256": "5ee58f6fc88348183619ec56f84f8e3474e50a467c6ae8ceef9f476be14dc42b",
+        "strategy_param_count": 10
+      },
+      "ea_id": "QM5_9573",
+      "id": "7aaf7760-476c-4599-be92-4dae0a50c6df",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\0598961b-124c-447a-b611-038aa50e1bdc\\QM5_9573\\Q07\\NDX_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_NDX.DWX_H4_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "0598961b-124c-447a-b611-038aa50e1bdc",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_NDX.DWX_H4_q06_stress_harsh_seed42.set",
+          "sha256": "f4bc2b786388af62c080cdd17074ec443accbbce26a587f4df62779a1f213acd",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "pending",
+      "successors": [],
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-04T23:58:59+00:00",
+      "verdict": null
+    },
+    {
+      "action": "REFERENCE_ROW_OR_ALREADY_REPAIRED_NO_ACTION",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8646a920-8eac-4895-b2bc-4d410b66bfd4\\QM5_9573\\Q08\\USDCHF_DWX\\aggregate.json",
+        "ex5_sha256": "2f1b0fa01640cca16f766194e42f50057784c1df1efd792180750876e27d0d6b",
+        "mq5_sha256": "7f5e0f2a2cc5542de3a7a4501d66edbc9997dd6f7feaa2bab38e59b093c7cfa6",
+        "q08_5_error": null,
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_USDCHF.DWX_H4_backtest.set",
+        "setfile_sha256": "8211a6582630a7c143396fec001223e9876798ddafdec437b19f5afc257ec05c",
+        "strategy_param_count": 10,
+        "trades": 169
+      },
+      "cohort_membership": "DEFECT_REFERENCE_IN_RERUN_REASON",
+      "cohort_order": 13,
+      "created_at": "2026-09-04T23:59:01+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 10,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\QM5_9573_brooks-ib-breakout-failure-h4.mq5",
+        "mq5_sha256": "7f5e0f2a2cc5542de3a7a4501d66edbc9997dd6f7feaa2bab38e59b093c7cfa6",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_USDCHF.DWX_H4_backtest.set",
+        "setfile_sha256": "8211a6582630a7c143396fec001223e9876798ddafdec437b19f5afc257ec05c",
+        "strategy_param_count": 10
+      },
+      "ea_id": "QM5_9573",
+      "id": "8646a920-8eac-4895-b2bc-4d410b66bfd4",
+      "prepared_replacement": null,
+      "producer_cause": "row references an earlier empty-set defect; its own sealed baseline is full or pending",
+      "q07_predecessor": {
+        "assessment": "same predecessor reused by governed append-only rerun",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\3eeab0ff-13ce-4367-ad6e-b57060ffd005\\QM5_9573\\Q07\\USDCHF_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_USDCHF.DWX_H4_backtest.set",
+        "db_setfile_sha256": null,
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": null,
+        "id": "3eeab0ff-13ce-4367-ad6e-b57060ffd005",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9573_brooks-ib-breakout-failure-h4\\sets\\QM5_9573_brooks-ib-breakout-failure-h4_USDCHF.DWX_H4_q06_stress_harsh_seed42.set",
+          "sha256": "d3e1786c7d26026249781fa5263933d9b88db9d1b4217fd51b70a9181db6777d",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "USDCHF.DWX",
+      "updated_at": "2026-09-05T09:21:14+00:00",
+      "verdict": "FAIL_SOFT"
+    },
+    {
+      "action": "EXISTING_SUCCESSOR_NO_DUPLICATE_ENQUEUE",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\b280892a-18ec-4375-841e-eb360aba5ee1\\QM5_11196\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "d3b1aef0507d9997fcb1f28d6f499c5cbebe82e19ca70f261cc43d06a6ca6710",
+        "mq5_sha256": "61e1d2896c1cd39035046439da014a22f23505916fea261c01d971201b3f229d",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_11196_ft-heracles\\\\sets\\\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set",
+        "setfile_sha256": "1b0a80e1cf9cfa827090d3da4d0bf1d325379e27a163382335fe5fd80b36e51f",
+        "strategy_param_count": 0,
+        "trades": 656
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 14,
+      "created_at": "2026-09-05T18:15:33+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 19,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\QM5_11196_ft-heracles.mq5",
+        "mq5_sha256": "61e1d2896c1cd39035046439da014a22f23505916fea261c01d971201b3f229d",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set",
+        "setfile_sha256": "1b0a80e1cf9cfa827090d3da4d0bf1d325379e27a163382335fe5fd80b36e51f",
+        "strategy_param_count": 0
+      },
+      "ea_id": "QM5_11196",
+      "id": "b280892a-18ec-4375-841e-eb360aba5ee1",
+      "prepared_replacement": null,
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6\\QM5_11196\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set",
+        "db_setfile_sha256": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6\\QM5_11196\\Q07\\XAUUSD_DWX\\aggregate.json",
+          "current_file_sha256": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6\\QM5_11196\\20260905_165127\\summary.json",
+          "trades": 658,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6"
+        },
+        "id": "42154e17-73a6-49ec-93ab-ce47d0e4e6e6",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_q06_stress_harsh_seed42.set",
+          "sha256": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [
+        {
+          "id": "a79887e3-7f60-40f6-a2a8-0d7785acf400",
+          "replacement_setfile_path": null,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set",
+          "setfile_sha256": "1b0a80e1cf9cfa827090d3da4d0bf1d325379e27a163382335fe5fd80b36e51f",
+          "status": "done",
+          "verdict": "INVALID",
+          "verdict_reason": "q08_8.5_neighborhood:neighborhood_evidence_lineage_invalid:baseline_setfile_defect:empty_strategy_params"
+        },
+        {
+          "id": "9ec3b856-2040-4870-9f36-797ccb122102",
+          "replacement_setfile_path": "framework/EAs/QM5_11196_ft-heracles/sets/QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest_s20260906-001.set",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest_s20260906-001.set",
+          "setfile_sha256": "7cc424d2334be3835815fdbfbf874fc2cabffcdc15d689b64830cffce9c3bf6b",
+          "status": "done",
+          "verdict": "PASS",
+          "verdict_reason": ""
+        }
+      ],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-05T18:46:55+00:00",
+      "verdict": "INVALID"
+    },
+    {
+      "action": "EXISTING_SUCCESSOR_NO_DUPLICATE_ENQUEUE",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\60f98a58-5f06-4862-8908-16a8efe8332e\\QM5_11015\\Q08\\EURUSD_DWX\\aggregate.json",
+        "ex5_sha256": "f6ded69ea84b99aa587a913fc5653d8a7fe80583275994fdc9f0cbe9b3b7ffaf",
+        "mq5_sha256": "6ea891d158711cbbafea1bf4d9960e72caee83aff1df16068a91a0f02723d75d",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_11015_the5ers-weekly-ny\\\\sets\\\\QM5_11015_the5ers-weekly-ny_EURUSD.DWX_H1_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11015_the5ers-weekly-ny\\sets\\QM5_11015_the5ers-weekly-ny_EURUSD.DWX_H1_backtest.set",
+        "setfile_sha256": "72e9a371f80053fd0e98b1b0b33e01ab8fb02dd013dc7b53cab1d78fa32dc63b",
+        "strategy_param_count": 0,
+        "trades": 122
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 15,
+      "created_at": "2026-09-06T00:55:23+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 11,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11015_the5ers-weekly-ny\\QM5_11015_the5ers-weekly-ny.mq5",
+        "mq5_sha256": "6ea891d158711cbbafea1bf4d9960e72caee83aff1df16068a91a0f02723d75d",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11015_the5ers-weekly-ny\\sets\\QM5_11015_the5ers-weekly-ny_EURUSD.DWX_H1_backtest.set",
+        "setfile_sha256": "aa66394560638c37c1a94e6799f250505d67e6f93166101d348862c7f0f8b981",
+        "strategy_param_count": 11
+      },
+      "ea_id": "QM5_11015",
+      "id": "60f98a58-5f06-4862-8908-16a8efe8332e",
+      "prepared_replacement": null,
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\0060d528-098d-48be-a05a-f6ee9f597bf0\\QM5_11015\\Q07\\EURUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11015_the5ers-weekly-ny\\sets\\QM5_11015_the5ers-weekly-ny_EURUSD.DWX_H1_backtest.set",
+        "db_setfile_sha256": "39a6b90c6127109cd177fb1171513d474c8585fe8e5795828d2a48900533a65f",
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\0060d528-098d-48be-a05a-f6ee9f597bf0\\QM5_11015\\Q07\\EURUSD_DWX\\aggregate.json",
+          "current_file_sha256": "39a6b90c6127109cd177fb1171513d474c8585fe8e5795828d2a48900533a65f",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "39a6b90c6127109cd177fb1171513d474c8585fe8e5795828d2a48900533a65f",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11015_the5ers-weekly-ny\\sets\\QM5_11015_the5ers-weekly-ny_EURUSD.DWX_H1_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "39a6b90c6127109cd177fb1171513d474c8585fe8e5795828d2a48900533a65f",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\0060d528-098d-48be-a05a-f6ee9f597bf0\\QM5_11015\\20260905_214619\\summary.json",
+          "trades": 111,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\0060d528-098d-48be-a05a-f6ee9f597bf0"
+        },
+        "id": "0060d528-098d-48be-a05a-f6ee9f597bf0",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11015_the5ers-weekly-ny\\sets\\QM5_11015_the5ers-weekly-ny_EURUSD.DWX_H1_q06_stress_harsh_seed42.set",
+          "sha256": "39a6b90c6127109cd177fb1171513d474c8585fe8e5795828d2a48900533a65f",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [
+        {
+          "id": "34d0e1ba-8c74-4b84-94ef-5f0681d4a60c",
+          "replacement_setfile_path": null,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11015_the5ers-weekly-ny\\sets\\QM5_11015_the5ers-weekly-ny_EURUSD.DWX_H1_backtest.set",
+          "setfile_sha256": "aa66394560638c37c1a94e6799f250505d67e6f93166101d348862c7f0f8b981",
+          "status": "done",
+          "verdict": "INFRA_FAIL",
+          "verdict_reason": "q08_degenerate_neighborhood_baseline"
+        }
+      ],
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-06T04:54:37+00:00",
+      "verdict": "INVALID"
+    },
+    {
+      "action": "PREPARED_APPEND_ONLY_RERUN_NOT_ENQUEUED",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\906b7644-c9ce-4b4c-925a-a11054a95226\\QM5_11179\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "8fe714193162102c5c77890e10396d3d4d12f85319fdfac0fc4513857fda63ac",
+        "mq5_sha256": "b7bb219d1be80c228f31b188ee4ee1417045f51861d05bce1e47eb9d4518a2ca",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_11179_ft001-ema-ha\\\\sets\\\\QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_backtest.set",
+        "setfile_sha256": "a9503fe8a40e654641805ced9880c268c20361de13537c57776266d6bf1e838e",
+        "strategy_param_count": 0,
+        "trades": 753
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 16,
+      "created_at": "2026-09-06T17:05:42+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 10,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\QM5_11179_ft001-ema-ha.mq5",
+        "mq5_sha256": "b7bb219d1be80c228f31b188ee4ee1417045f51861d05bce1e47eb9d4518a2ca",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_backtest.set",
+        "setfile_sha256": "a9503fe8a40e654641805ced9880c268c20361de13537c57776266d6bf1e838e",
+        "strategy_param_count": 0
+      },
+      "ea_id": "QM5_11179",
+      "id": "906b7644-c9ce-4b4c-925a-a11054a95226",
+      "prepared_replacement": {
+        "path": "framework/EAs/QM5_11179_ft001-ema-ha/sets/QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_backtest_s20260907-001.set",
+        "sha256": "2feb770d23934ee4e2bec219350577e7119cb15a7dbd19d702c7789379493484",
+        "strategy_param_count": 10
+      },
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\88a7cb34-450b-4f2f-8509-1c4de2aef239\\QM5_11179\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_backtest.set",
+        "db_setfile_sha256": "becb00144e91f9340c020c06a0341b796e7a81d9efee8312e1098785a3bca513",
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\88a7cb34-450b-4f2f-8509-1c4de2aef239\\QM5_11179\\Q07\\XAUUSD_DWX\\aggregate.json",
+          "current_file_sha256": "becb00144e91f9340c020c06a0341b796e7a81d9efee8312e1098785a3bca513",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "becb00144e91f9340c020c06a0341b796e7a81d9efee8312e1098785a3bca513",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "becb00144e91f9340c020c06a0341b796e7a81d9efee8312e1098785a3bca513",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\88a7cb34-450b-4f2f-8509-1c4de2aef239\\QM5_11179\\20260906_150003\\summary.json",
+          "trades": 738,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\88a7cb34-450b-4f2f-8509-1c4de2aef239"
+        },
+        "id": "88a7cb34-450b-4f2f-8509-1c4de2aef239",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11179_ft001-ema-ha\\sets\\QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_q06_stress_harsh_seed42.set",
+          "sha256": "becb00144e91f9340c020c06a0341b796e7a81d9efee8312e1098785a3bca513",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-06T18:04:45+00:00",
+      "verdict": "INVALID"
+    },
+    {
+      "action": "EXISTING_SUCCESSOR_NO_DUPLICATE_ENQUEUE",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\a79887e3-7f60-40f6-a2a8-0d7785acf400\\QM5_11196\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "d3b1aef0507d9997fcb1f28d6f499c5cbebe82e19ca70f261cc43d06a6ca6710",
+        "mq5_sha256": "61e1d2896c1cd39035046439da014a22f23505916fea261c01d971201b3f229d",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_11196_ft-heracles\\\\sets\\\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set",
+        "setfile_sha256": "1b0a80e1cf9cfa827090d3da4d0bf1d325379e27a163382335fe5fd80b36e51f",
+        "strategy_param_count": 0,
+        "trades": 656
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 17,
+      "created_at": "2026-09-06T17:37:33+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 19,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\QM5_11196_ft-heracles.mq5",
+        "mq5_sha256": "61e1d2896c1cd39035046439da014a22f23505916fea261c01d971201b3f229d",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set",
+        "setfile_sha256": "1b0a80e1cf9cfa827090d3da4d0bf1d325379e27a163382335fe5fd80b36e51f",
+        "strategy_param_count": 0
+      },
+      "ea_id": "QM5_11196",
+      "id": "a79887e3-7f60-40f6-a2a8-0d7785acf400",
+      "prepared_replacement": null,
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6\\QM5_11196\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest.set",
+        "db_setfile_sha256": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6\\QM5_11196\\Q07\\XAUUSD_DWX\\aggregate.json",
+          "current_file_sha256": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6\\QM5_11196\\20260905_165127\\summary.json",
+          "trades": 658,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\42154e17-73a6-49ec-93ab-ce47d0e4e6e6"
+        },
+        "id": "42154e17-73a6-49ec-93ab-ce47d0e4e6e6",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_q06_stress_harsh_seed42.set",
+          "sha256": "d9eb1ea4f945a912fc3c5fc0da72b42629f8c899477f5013021294f8e9b02d9d",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [
+        {
+          "id": "9ec3b856-2040-4870-9f36-797ccb122102",
+          "replacement_setfile_path": "framework/EAs/QM5_11196_ft-heracles/sets/QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest_s20260906-001.set",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11196_ft-heracles\\sets\\QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest_s20260906-001.set",
+          "setfile_sha256": "7cc424d2334be3835815fdbfbf874fc2cabffcdc15d689b64830cffce9c3bf6b",
+          "status": "done",
+          "verdict": "PASS",
+          "verdict_reason": ""
+        }
+      ],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-06T19:03:23+00:00",
+      "verdict": "INVALID"
+    },
+    {
+      "action": "PREPARED_APPEND_ONLY_RERUN_NOT_ENQUEUED",
+      "baseline_at_q08": {
+        "aggregate_path": "D:\\QM\\reports\\work_items\\2cdb6a16-de65-4ef8-91aa-e45ba4d0704a\\QM5_10928\\Q08\\XAUUSD_DWX\\aggregate.json",
+        "ex5_sha256": "e587f079a3f17664af2a08adda6128ee53dcf6e0793d3cd23c44b34c85c45e53",
+        "mq5_sha256": "e8e96020086fa67ca0999fa24ae61d88a71038bffe5a215ddc3eef85fc7fa0a8",
+        "q08_5_error": "ValueError('baseline setfile has no strategy parameters: C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_10928_grimes-yoyo-break\\\\sets\\\\QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_backtest.set')",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10928_grimes-yoyo-break\\sets\\QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_backtest.set",
+        "setfile_sha256": "6a148b04f6605fc437b8fa69eb195c43f90d499cbb0cb77bf688de5a2e1f6623",
+        "strategy_param_count": 0,
+        "trades": 39
+      },
+      "cohort_membership": "OWN_INVALID_VERDICT",
+      "cohort_order": 18,
+      "created_at": "2026-09-07T01:55:55+00:00",
+      "current_artifacts": {
+        "declared_strategy_input_count": 14,
+        "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10928_grimes-yoyo-break\\QM5_10928_grimes-yoyo-break.mq5",
+        "mq5_sha256": "e8e96020086fa67ca0999fa24ae61d88a71038bffe5a215ddc3eef85fc7fa0a8",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10928_grimes-yoyo-break\\sets\\QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_backtest.set",
+        "setfile_sha256": "6a148b04f6605fc437b8fa69eb195c43f90d499cbb0cb77bf688de5a2e1f6623",
+        "strategy_param_count": 0
+      },
+      "ea_id": "QM5_10928",
+      "id": "2cdb6a16-de65-4ef8-91aa-e45ba4d0704a",
+      "prepared_replacement": {
+        "path": "framework/EAs/QM5_10928_grimes-yoyo-break/sets/QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_backtest_s20260907-001.set",
+        "sha256": "b11f79a849689ba642e0d94b42d7fea1f45640be958c31c531ef05fff648f8e5",
+        "strategy_param_count": 14
+      },
+      "producer_cause": "historical pre-395eb5fc84 gen_setfile missing-card path emitted card_defaults_source=not_found and no strategy assignments",
+      "q07_predecessor": {
+        "assessment": "explicit Q07 seed artifact is also parameter-empty; retained execution summaries show source/deployed identity binding where report retention is available. Compiled EA defaults therefore made mechanics behavior-equivalent despite incomplete lineage",
+        "db_evidence_path": "D:\\QM\\reports\\work_items\\b3b83c7c-0e6e-4553-9fdf-ca4241c6771d\\QM5_10928\\Q07\\XAUUSD_DWX\\aggregate.json",
+        "db_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10928_grimes-yoyo-break\\sets\\QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_backtest.set",
+        "db_setfile_sha256": "237ef3bb6969b1dac8d5859c2c574322146b0181a326e8a6a6b1497e9af9c9c4",
+        "db_status": "done",
+        "db_verdict": "PASS",
+        "execution": {
+          "aggregate_path": "D:\\QM\\reports\\work_items\\b3b83c7c-0e6e-4553-9fdf-ca4241c6771d\\QM5_10928\\Q07\\XAUUSD_DWX\\aggregate.json",
+          "current_file_sha256": "237ef3bb6969b1dac8d5859c2c574322146b0181a326e8a6a6b1497e9af9c9c4",
+          "current_strategy_param_count": 0,
+          "deployed_setfile_sha256_at_run": "237ef3bb6969b1dac8d5859c2c574322146b0181a326e8a6a6b1497e9af9c9c4",
+          "seed": 42,
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10928_grimes-yoyo-break\\sets\\QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_q06_stress_harsh_seed42.set",
+          "setfile_sha256_at_run": "237ef3bb6969b1dac8d5859c2c574322146b0181a326e8a6a6b1497e9af9c9c4",
+          "source_matches_deployed": true,
+          "stable_during_run": true,
+          "summary_path": "D:\\QM\\reports\\work_items\\b3b83c7c-0e6e-4553-9fdf-ca4241c6771d\\QM5_10928\\20260907_010955\\summary.json",
+          "trades": 36,
+          "verdict": "PASS",
+          "work_item_report_root": "D:\\QM\\reports\\work_items\\b3b83c7c-0e6e-4553-9fdf-ca4241c6771d"
+        },
+        "id": "b3b83c7c-0e6e-4553-9fdf-ca4241c6771d",
+        "retained_seed42_artifact": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10928_grimes-yoyo-break\\sets\\QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_q06_stress_harsh_seed42.set",
+          "sha256": "237ef3bb6969b1dac8d5859c2c574322146b0181a326e8a6a6b1497e9af9c9c4",
+          "strategy_param_count": 0
+        }
+      },
+      "status": "done",
+      "successors": [],
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-07T02:08:04+00:00",
+      "verdict": "INVALID"
+    }
+  ],
+  "schema": "qm.q08_empty_strategy_params_audit.v1",
+  "selection": {
+    "payload_token": "baseline_setfile_defect:empty_strategy_params",
+    "sealed_ids": [
+      "8c0de140-37bb-4f43-b811-98c00d1c2839",
+      "32c48193-4013-4763-a119-860f77a8bf5c",
+      "02cf605e-c90a-43ef-ab56-a5bcba7d636b",
+      "40a802ca-63bc-4252-bdb7-1bfb3f130a99",
+      "1da1645c-7c69-43d9-8617-f55040122bdc",
+      "5901ae3b-8725-4126-841e-d2dcec30184b",
+      "ee8b7d55-4721-444d-8578-f44a27c049d9",
+      "49b55905-ba64-4d44-94e1-61009b9fb727",
+      "c8d8c2c7-7287-41d8-98ab-57606bec09f5",
+      "169d5dda-f119-4f87-8c06-c9623733265c",
+      "b429d45f-44ea-4b7f-ab5b-bb13f093b3b3",
+      "7aaf7760-476c-4599-be92-4dae0a50c6df",
+      "8646a920-8eac-4895-b2bc-4d410b66bfd4",
+      "b280892a-18ec-4375-841e-eb360aba5ee1",
+      "60f98a58-5f06-4862-8908-16a8efe8332e",
+      "906b7644-c9ce-4b4c-925a-a11054a95226",
+      "a79887e3-7f60-40f6-a2a8-0d7785acf400",
+      "2cdb6a16-de65-4ef8-91aa-e45ba4d0704a"
+    ],
+    "since_utc": "2026-09-04T00:00:00+00:00"
+  }
+}
