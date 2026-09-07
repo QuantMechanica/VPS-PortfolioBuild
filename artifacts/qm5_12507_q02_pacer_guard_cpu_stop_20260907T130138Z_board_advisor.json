@@ -1,0 +1,89 @@
+{
+  "schema_version": "qm.fx-cointegration-q02-pacer-stop/v1",
+  "recorded_at_utc": "2026-09-07T13:01:38+00:00",
+  "branch": "agents/board-advisor",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_approved_cointegration_card",
+    "approved_cointegration_cards_checked": 134,
+    "unbuilt_approved_cointegration_cards": 0,
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "source_type": "GitHub script",
+    "source_pointer": "https://github.com/je-suis-tm/quant-trading/blob/master/Pair%20trading%20backtest.py",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "work_item_status": "pending",
+    "work_item_attempt_count": 0,
+    "work_item_claimed_by": null,
+    "priority_track": true,
+    "duplicate_work_item_created": false
+  },
+  "anchor_state": {
+    "QM5_12532": {
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02_verdict": "PASS",
+      "later_terminal_gate": "Q05 FAIL"
+    },
+    "QM5_12533": {
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02_verdict": "PASS",
+      "later_terminal_gate": "Q04 FAIL"
+    }
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5\"",
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": [],
+    "result": "PASS"
+  },
+  "build_identity": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "cpu_ceiling": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "binding_factory_terminal_ceiling": 7,
+    "running_factory_terminal_count": 8,
+    "running_factory_terminals": [
+      "T2",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "ceiling_hit": true,
+    "t_live_observed_but_excluded": true,
+    "ftmo_terminal_observed_but_excluded": true
+  },
+  "action": {
+    "q02_enqueued": false,
+    "compile_enqueued": false,
+    "priority_mutated": false,
+    "manual_mt5_dispatch_started": false,
+    "terminal_process_mutated": false,
+    "stop_reason": "binding_paced_fleet_cpu_ceiling"
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
