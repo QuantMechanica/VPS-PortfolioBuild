@@ -1,0 +1,98 @@
+{
+ "schema": "qm.scoped-b-release-receipt/v1",
+ "at_utc": "2026-09-07T07:12:45+00:00",
+ "actor": "claude-session-018mXkPPkaHQ2fPuduPCBcWc",
+ "decisions": [
+  "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907",
+  "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907"
+ ],
+ "pin_manifest": "D:\\QM\\data\\news_calendar\\q09_bundles\\q09cal-20150101-20260809-0bb19b5bb9790b76\\manifest.json",
+ "rows": [
+  {
+   "work_item_id": "a909ee18-9f16-4706-967e-daa080b6f720",
+   "released": true,
+   "detail": {
+    "schema": "qm.news-calendar-scoped-counter-marker/v1",
+    "decision_id": "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907",
+    "decision_receipt_id": "617abd80-f0d9-49b4-b817-e82abf0ad381",
+    "binding_sha256": "069b467f8db31ebb398ac173783ada3a2dd3de5af21f9943475631c72ed259f5",
+    "candidate_manifest_sha256": "5f28c2f3bba94c0c7b78dbff93aba0e2dc22bb8cfbe0b1ec484b5a24ed69366a",
+    "declarations_sha256": "190a1da82a474191f339114a4e0e32c5f9cf665c9d2e244193bb761f9f23334a",
+    "assessment_sha256": "c16a714cc3c3ab94eb3a203e892c5d7dd82f3379333357f71c201577926ef7de",
+    "adjudicated_at": "2026-09-07T07:12:47.099638+00:00",
+    "footnote": "Kalender scope-begrenzt",
+    "readjudication_ticket_id": "235e5119-061d-406a-a58c-4d7d6cd3535a",
+    "readjudication_trigger": "a later improved calendar pin or a measured full-scope calendar seal",
+    "append_only_readjudication": true
+   }
+  },
+  {
+   "work_item_id": "f625d9aa-da34-44bb-aa9f-0eda284f3f32",
+   "released": true,
+   "detail": {
+    "schema": "qm.news-calendar-scoped-counter-marker/v1",
+    "decision_id": "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907",
+    "decision_receipt_id": "617abd80-f0d9-49b4-b817-e82abf0ad381",
+    "binding_sha256": "069b467f8db31ebb398ac173783ada3a2dd3de5af21f9943475631c72ed259f5",
+    "candidate_manifest_sha256": "5f28c2f3bba94c0c7b78dbff93aba0e2dc22bb8cfbe0b1ec484b5a24ed69366a",
+    "declarations_sha256": "190a1da82a474191f339114a4e0e32c5f9cf665c9d2e244193bb761f9f23334a",
+    "assessment_sha256": "34332b699768b2e6a1e92abf0df42334c6eee2f7f8d7dc555f7269900dd7a251",
+    "adjudicated_at": "2026-09-07T07:12:48.319555+00:00",
+    "footnote": "Kalender scope-begrenzt",
+    "readjudication_ticket_id": "235e5119-061d-406a-a58c-4d7d6cd3535a",
+    "readjudication_trigger": "a later improved calendar pin or a measured full-scope calendar seal",
+    "append_only_readjudication": true
+   }
+  },
+  {
+   "work_item_id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "745671a4-02e4-4df5-b5e1-e25f0e41ca0e",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "c18cf1fa-60c0-498e-82db-637fc8320f58",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "ca96d7bf-51e0-4417-a5c6-94546e9d9946",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "f15ac955-9dbb-4f39-9a9e-8eb142f11138",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "136b0e0f-7896-4e0c-b34b-47991cc49342",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "450fb9f6-9797-496d-937e-9bddc5f292a8",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "abea4df5-c03b-494a-a025-37747d0a1e32",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "6d528b09-59d8-4c2f-bfb2-a1102e8ae12c",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  },
+  {
+   "work_item_id": "b6e02932-d34d-4fea-8f3c-f977c8efe7eb",
+   "released": false,
+   "error": "ValueError: active NEWS_CALENDAR_TAINTED hold required"
+  }
+ ]
+}
