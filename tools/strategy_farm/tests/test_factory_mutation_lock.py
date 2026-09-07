@@ -32,6 +32,18 @@ def _write_old_lock(path: Path, *, pid: int = 999_999) -> bytes:
     return payload
 
 
+def _write_fresh_lock(path: Path, *, pid: int = 999_999) -> bytes:
+    record = {
+        "pid": pid,
+        "owner": "fresh-orphaned-pytest-owner",
+        "nonce": "b" * 32,
+        "created_at": dt.datetime.now(dt.UTC).isoformat(),
+    }
+    payload = (json.dumps(record, sort_keys=True) + "\n").encode("utf-8")
+    path.write_bytes(payload)
+    return payload
+
+
 def test_python_lock_record_has_nonce_bound_identity(tmp_path: Path) -> None:
     path = tmp_path / "FACTORY_MUTATION.lock"
     telemetry = tmp_path / "holds.jsonl"
@@ -152,6 +164,31 @@ def test_orphan_lock_self_heals_and_appends_evidence(
     assert audit["lock_record"]["nonce"] == "a" * 32
     assert audit["reaper_owner"] == "pytest-successor"
     assert not path.exists()
+
+
+@pytest.mark.skipif(os.name != "nt", reason="production content-CAS uses Windows handles")
+def test_fresh_dead_owner_reaps_without_waiting_for_age_threshold(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    path = tmp_path / "FACTORY_MUTATION.lock"
+    evidence_path = tmp_path / "mutation_lock_reaps.jsonl"
+    original = _write_fresh_lock(path)
+    monkeypatch.setattr(mutation_lock, "_pid_identity_state", lambda *_: "dead")
+
+    with FactoryMutationLock(
+        path,
+        owner="pytest-immediate-successor",
+        stale_reap_seconds=120,
+        reap_evidence_path=evidence_path,
+    ) as lock:
+        assert lock.reap_status == "reaped"
+        assert lock._record_bytes != original
+
+    audit = json.loads(evidence_path.read_text(encoding="utf-8").splitlines()[0])
+    assert audit["pid_state"] == "dead"
+    assert audit["lock_age_seconds"] < 120
+    assert audit["reap_trigger"] == "owner_pid_liveness"
 
 
 @pytest.mark.skipif(os.name != "nt", reason="production content-CAS uses Windows handles")

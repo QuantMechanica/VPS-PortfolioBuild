@@ -206,6 +206,68 @@ function Get-FactoryTerminalFromCommandLine {
     if ($CommandLine -match '--terminal\s+(T(?:[1-9]|10))\b') { return $matches[1].ToUpperInvariant() }
     return $null
 }
+$claimLockProtectionSeconds = 180
+function Get-ClaimLockHolderSnapshot {
+    # The Python lock denies sharing while live, so prefer its record when it is
+    # readable and otherwise use the bounded ACQUIRED/RELEASED journal.  This is
+    # a one-way safety input: a false positive can only retain an idle cache.
+    $lockPath = Join-Path $FarmRoot 'state\FACTORY_MUTATION.lock'
+    if (-not (Test-Path -LiteralPath $lockPath -PathType Leaf)) { return $null }
+    try {
+        $record = [System.IO.File]::ReadAllText($lockPath) | ConvertFrom-Json -ErrorAction Stop
+        if ([string]$record.owner -match '^terminal_worker\.claim_atomic:(T(?:[1-9]|10))$') {
+            return [pscustomobject]@{
+                terminal = $matches[1].ToUpperInvariant()
+                pid = [int]$record.pid
+                owner = [string]$record.owner
+                nonce = [string]$record.nonce
+                source = 'lock_record'
+            }
+        }
+    } catch {}
+
+    $journal = 'D:\QM\reports\state\factory_mutation_lock_holds.jsonl'
+    if (-not (Test-Path -LiteralPath $journal -PathType Leaf)) { return $null }
+    $released = @{}
+    $journalLines = @(Get-Content -LiteralPath $journal -Tail 512 -ErrorAction SilentlyContinue)
+    [array]::Reverse($journalLines)
+    foreach ($line in $journalLines) {
+        try { $event = $line | ConvertFrom-Json -ErrorAction Stop } catch { continue }
+        if ([string]$event.lock_path -ne $lockPath) { continue }
+        $nonce = [string]$event.nonce
+        if (-not $nonce) { continue }
+        if ([string]$event.event -eq 'RELEASED') { $released[$nonce] = $true; continue }
+        if ([string]$event.event -ne 'ACQUIRED' -or $released.ContainsKey($nonce)) { continue }
+        if ([string]$event.owner -notmatch '^terminal_worker\.claim_atomic:(T(?:[1-9]|10))$') { return $null }
+        try {
+            $observedAt = [DateTimeOffset]::Parse([string]$event.timestamp_utc).UtcDateTime
+            $ageSeconds = ([DateTime]::UtcNow - $observedAt).TotalSeconds
+            $ownerPid = [int]$event.pid
+        } catch { return $null }
+        if ($ageSeconds -lt 0 -or $ageSeconds -gt $claimLockProtectionSeconds -or $ownerPid -le 0) { return $null }
+        return [pscustomobject]@{
+            terminal = $matches[1].ToUpperInvariant()
+            pid = $ownerPid
+            owner = [string]$event.owner
+            nonce = $nonce
+            source = 'recent_unreleased_hold_journal'
+        }
+    }
+    return $null
+}
+function Protect-ClaimLockHolder {
+    param([hashtable]$Protected)
+    $holder = Get-ClaimLockHolderSnapshot
+    if ($null -eq $holder) { return }
+    $process = Get-CimInstance Win32_Process -Filter "ProcessId=$($holder.pid)" -ErrorAction SilentlyContinue
+    if ($null -eq $process -or $process.Name -notin @('python.exe','pythonw.exe')) { return }
+    $terminalName = Get-FactoryTerminalFromCommandLine $process.CommandLine
+    if ($terminalName -ne $holder.terminal -or $process.CommandLine -notmatch 'terminal_worker\.py') { return }
+    if (-not $Protected.ContainsKey($terminalName)) {
+        $Protected[$terminalName] = $true
+        Log "LOCK_HOLDER_PROTECTED terminal=$terminalName pid=$($holder.pid) owner=$($holder.owner) source=$($holder.source)"
+    }
+}
 function Get-ProtectedFactoryTerminals {
     $terms = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
     $probe = @'
@@ -365,6 +427,7 @@ Log "TRIGGER: D: free ${free}GB < ${LowWaterGB}GB -> purge tester caches"
 $protectedTerminals = @(Get-ProtectedFactoryTerminals)
 $protectedLookup = @{}
 foreach ($t in $protectedTerminals) { $protectedLookup[$t.ToUpperInvariant()] = $true }
+Protect-ClaimLockHolder -Protected $protectedLookup
 $idlePlan = Get-IdleCacheCandidatePlan -Root $Mt5Root `
     -ProtectedTerminals $protectedLookup -ProtectedTargets $protectedTargetLookup
 [long]$minimumIdleReclaimBytes = [long]($MinimumIdleReclaimGB * 1GB)
@@ -400,11 +463,19 @@ Disable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction Silentl
 # guarantees 0 survivors so the respawn can't over-provision on top of stragglers.
 function Kill-FactoryProcs {
     param([hashtable]$Protected)
+    # Re-check inside every kill pass because a worker may enter claim_atomic
+    # after the initial active/terminal snapshot and before teardown begins.
+    Protect-ClaimLockHolder -Protected $Protected
     @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
         Where-Object CommandLine -match 'terminal_worker\.py') | ForEach-Object {
             $tname = Get-FactoryTerminalFromCommandLine $_.CommandLine
             if ($tname -and -not $Protected.ContainsKey($tname)) {
-                Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+                # Close the per-process observation-to-kill window as far as the
+                # lock protocol permits. A newly observed owner is preserved.
+                Protect-ClaimLockHolder -Protected $Protected
+                if (-not $Protected.ContainsKey($tname)) {
+                    Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+                }
             }
         }
     # ONLY idle factory T1-T10 terminals — NEVER active/running protected terminals,

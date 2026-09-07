@@ -609,10 +609,15 @@ class FactoryMutationLock:
             record, created_at, age_seconds = _parse_lock_record(expected, now=now)
         except ValueError:
             return "invalid_record"
-        if age_seconds < self.stale_reap_seconds:
-            return "not_stale"
-
         pid_state = _pid_identity_state(int(record["pid"]), created_at)
+        # A local PID identity is stronger evidence than elapsed wall time.  In
+        # particular, maintenance may terminate a worker milliseconds after it
+        # wrote this record.  Do not leave the whole fleet waiting for the
+        # ordinary age threshold when that exact owner is already provably gone.
+        # The threshold remains the fallback gate whenever liveness cannot yet
+        # establish an orphan (including a live or permission-protected PID).
+        if pid_state not in {"dead", "reused"} and age_seconds < self.stale_reap_seconds:
+            return "not_stale"
         if pid_state not in {"dead", "reused"}:
             return f"pid_{pid_state}"
 
@@ -646,6 +651,11 @@ class FactoryMutationLock:
                 "lock_age_seconds": round(age_seconds, 3),
                 "stale_threshold_seconds": self.stale_reap_seconds,
                 "pid_state": pid_state,
+                "reap_trigger": (
+                    "owner_pid_liveness"
+                    if age_seconds < self.stale_reap_seconds
+                    else "stale_age_and_owner_pid_liveness"
+                ),
                 "reason": (
                     "owner_pid_reused"
                     if pid_state == "reused"

@@ -65,3 +65,19 @@ def test_idle_purge_sizes_candidates_before_any_factory_teardown() -> None:
     assert "[double]$MinimumIdleReclaimGB = 1.0" in source
     assert preflight < threshold < stop
     assert "factory left running" in source[threshold:stop]
+
+
+def test_idle_purge_protects_worker_holding_claim_mutation_lock() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    helper = source[source.index("function Get-ClaimLockHolderSnapshot"):]
+    kill = source[source.index("function Kill-FactoryProcs"):]
+
+    assert "^terminal_worker\\.claim_atomic:" in helper
+    assert "factory_mutation_lock_holds.jsonl" in helper
+    assert "$claimLockProtectionSeconds = 180" in source
+    assert "[array]::Reverse($journalLines)" in helper
+    assert "Select-Object -Reverse" not in helper
+    assert "ProcessId=$($holder.pid)" in helper
+    assert "terminal_worker\\.py" in helper
+    assert "LOCK_HOLDER_PROTECTED" in helper
+    assert kill.index("Protect-ClaimLockHolder -Protected $Protected") < kill.index("Stop-Process -Id $_.ProcessId")
