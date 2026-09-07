@@ -31,8 +31,17 @@ int  g_qm_fw_magic_slot       = 0;
 int  g_qm_fw_magic            = 0;
 bool g_qm_fw_timer_active     = false;
 bool g_qm_fw_initialized      = false;
+bool g_qm_fw_chartui_suppressed = false;
 bool g_qm_fw_friday_close_enabled = true;
 int  g_qm_fw_friday_close_hour_broker = 21;
+
+bool QM_FrameworkSetChartUISuppressed(const bool suppressed)
+  {
+   if(g_qm_fw_initialized)
+      return false;
+   g_qm_fw_chartui_suppressed = suppressed;
+   return true;
+  }
 
 // Fail-closed input contracts must also be diagnosable.  A bare
 // INIT_PARAMETERS_INCORRECT leaves the tester journal unable to distinguish a
@@ -331,13 +340,14 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
    g_qm_fw_friday_close_enabled = friday_close_enabled;
    g_qm_fw_friday_close_hour_broker = MathMin(23, MathMax(0, friday_close_hour_broker));
 
-   if(!QM_ChartUI_Init(ea_id, slug))
+   if(!g_qm_fw_chartui_suppressed && !QM_ChartUI_Init(ea_id, slug))
       return false;
 
    // FW6 2026-05-23 — initialise equity snapshot stream (Q08 sub-gate input).
    QM_EquityStreamInit();
 
-   if(qm_chartui_enabled && MQLInfoInteger(MQL_TESTER) == 0)
+   if(!g_qm_fw_chartui_suppressed && qm_chartui_enabled &&
+      MQLInfoInteger(MQL_TESTER) == 0)
      {
       EventSetTimer(1);
       g_qm_fw_timer_active = true;
@@ -985,7 +995,8 @@ void QM_FrameworkOnTimer()
   {
    if(!g_qm_fw_initialized)
       return;
-   QM_ChartUI_Refresh();
+   if(!g_qm_fw_chartui_suppressed)
+      QM_ChartUI_Refresh();
   }
 
 bool QM_FrameworkSymbolPrice(const string symbol, double &price)
@@ -1864,7 +1875,8 @@ void QM_FrameworkShutdown()
       g_qm_fw_timer_active = false;
      }
 
-   QM_ChartUI_Shutdown();
+   if(!g_qm_fw_chartui_suppressed)
+      QM_ChartUI_Shutdown();
    QM_IndicatorsShutdown();
    QM_EquityStreamShutdown();
    if(g_qm_fw_initialized && InpQMSimCommissionPerLot > 0.0 && g_qm_sim_closed_deals > 0)

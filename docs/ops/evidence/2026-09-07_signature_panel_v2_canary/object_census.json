@@ -1,0 +1,38 @@
+{
+  "schema": "qm.signature-panel-object-census/v1",
+  "task_id": "b020c337-ee9f-47f2-9c33-f6cf0ab4afea",
+  "method": "source-lifecycle census; runtime chart census requires OWNER re-attach",
+  "before": {
+    "legacy_namespace": "QM5_UI_11421_*",
+    "legacy_renderer_enabled_by_framework": true,
+    "signature_namespace": "QM_SIG_11421_<magic>_*",
+    "signature_v1_logical_object_count": 10,
+    "overlap_possible": true
+  },
+  "after": {
+    "legacy_namespace": "QM5_UI_11421_*",
+    "legacy_renderer_suppressed_when_qm_show_chart_panel_true": true,
+    "expected_legacy_object_count": 0,
+    "signature_namespace": "QM_SIG_11421_<magic>_*",
+    "signature_v2_logical_object_count": 22,
+    "signature_objects": [
+      "bg",
+      "rail",
+      "brand",
+      "line_00..line_17",
+      "footer"
+    ],
+    "shutdown_deletes_all_signature_objects": true,
+    "overlap_possible": false
+  },
+  "verification": {
+    "framework_suppression_set_before_init": true,
+    "legacy_init_guarded": true,
+    "legacy_refresh_guarded": true,
+    "legacy_shutdown_guarded": true,
+    "panel_refresh_from_ontimer_only": true,
+    "panel_calls_from_ontick": 0,
+    "focused_tests": "4 passed",
+    "runtime_after_census": "PENDING_OWNER_REATTACH"
+  }
+}

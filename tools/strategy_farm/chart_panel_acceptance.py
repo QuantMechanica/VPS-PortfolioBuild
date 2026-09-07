@@ -13,6 +13,7 @@ import subprocess
 
 REPO = Path("C:/QM/repo")
 HEADER = REPO / "framework/include/QM/QM_ChartPanel.mqh"
+SCHEME = REPO / "framework/include/QM/QM_ChartScheme.mqh"
 PROBE = REPO / "framework/tests/mql5/QM_ChartPanel_compile_probe.mq5"
 
 
@@ -22,37 +23,55 @@ def sha256(path: Path) -> str:
 
 def static_acceptance() -> dict:
     header = HEADER.read_text(encoding="utf-8")
+    scheme = SCHEME.read_text(encoding="utf-8")
     probe = PROBE.read_text(encoding="utf-8")
-    combined = header + probe
+    combined = header + scheme + probe
     checks = {
         "ascii_only": all(ord(char) < 128 for char in combined),
         "no_trade_calls": not re.search(
             r"\b(?:OrderSend|OrderSendAsync|CTrade|PositionClose|PositionModify)\b", header
         ),
         "no_ontick": not re.search(r"\bvoid\s+OnTick\s*\(", header),
-        "tester_inert_unless_visual": all(
-            token in header for token in ("MQL_TESTER", "MQL_VISUAL_MODE")
-        ),
+        "tester_inert": "MQL_TESTER" in header and "MQL_VISUAL_MODE" not in header,
         "timer_fixture": all(
             token in probe for token in ("EventSetTimer(5)", "OnTimer()", "EventKillTimer()")
         ),
         "required_fields": all(
             token in header
             for token in (
-                "EA ", "MAGIC ", "NEWS ", "FRI ", "GOV ", "RISK / EXPOSURE",
-                "OPEN ", "HB ", "BUILD ", "_Symbol", "_Period",
+                "TRADING ", "MAGIC ", "NEWS ", "FRI ", "GOV ", "KS ",
+                "RISK ", "ROOM DAILY ", "EXPOSURE SL ", "POS ", "ORD ",
+                "NEXT BAR ", "LAST SIGNAL ", "LAST TRADE ", "HEALTH HB ",
+                "CAL ", "LICENSE ", "BUILD ", "_Symbol", "_Period",
             )
         ),
         "object_namespace": '"QM_SIG_"' in header,
-        "brand_tokens": all(
-            token in header for token in ("C'15,23,42'", "C'41,84,212'", "C'16,185,129'")
+        "light_brand_tokens": all(
+            token in scheme
+            for token in ("C'255,255,255'", "C'41,84,212'", "C'5,150,105'", "C'239,68,68'")
         ),
+        "scheme_snapshot_restore": all(
+            token in scheme
+            for token in (
+                "QM_ChartScheme_Apply", "QM_ChartScheme_Restore",
+                "CHART_COLOR_BACKGROUND", "CHART_COLOR_FOREGROUND",
+                "CHART_COLOR_GRID", "CHART_COLOR_CHART_UP",
+                "CHART_COLOR_CHART_DOWN", "CHART_COLOR_CANDLE_BULL",
+                "CHART_COLOR_CANDLE_BEAR", "CHART_COLOR_BID",
+                "CHART_COLOR_ASK", "CHART_COLOR_VOLUME", "CHART_MODE",
+                "CHART_SCALE", "CHART_SHOW_GRID",
+            )
+        ),
+        "max_22_rows": "line < 18" in header,
+        "market_safe_support": "Support: MQL5 comments/messages" in header,
     }
     return {
         "status": "PASS" if all(checks.values()) else "FAIL",
         "checks": checks,
         "header": str(HEADER),
         "header_sha256": sha256(HEADER),
+        "scheme": str(SCHEME),
+        "scheme_sha256": sha256(SCHEME),
         "probe": str(PROBE),
         "probe_sha256": sha256(PROBE),
     }
@@ -68,10 +87,12 @@ def native_compile(metaeditor: Path, artifact_root: Path) -> dict:
 
     source = root / "MQL5/Experts/QM_ChartPanel_compile_probe.mq5"
     include = root / "MQL5/Include/QM/QM_ChartPanel.mqh"
+    scheme = root / "MQL5/Include/QM/QM_ChartScheme.mqh"
     source.parent.mkdir(parents=True)
     include.parent.mkdir(parents=True)
     shutil.copy2(PROBE, source)
     shutil.copy2(HEADER, include)
+    shutil.copy2(SCHEME, scheme)
 
     command = [
         str(metaeditor.resolve()),

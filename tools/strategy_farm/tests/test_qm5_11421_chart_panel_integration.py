@@ -12,13 +12,23 @@ def test_signature_panel_is_presentation_only_and_lifecycle_bound():
     text = SOURCE.read_text(encoding="utf-8")
     assert '#include <QM/QM_ChartPanel.mqh>' in text
     assert 'input bool   qm_show_chart_panel        = true;' in text
+    assert 'input bool   qm_apply_chart_scheme      = true;' in text
     assert 'input string qm_panel_build_hash        = "UNBOUND";' in text
     assert text.index("QM_FrameworkDeclareExecutionContract") < text.index(
+        "g_qm_signature_panel.Initialize"
+    )
+    assert text.index("QM_FrameworkSetChartUISuppressed") < text.index(
+        "QM_FrameworkInit"
+    )
+    assert text.index("QM_ChartScheme_Apply") < text.index(
         "g_qm_signature_panel.Initialize"
     )
     assert "EventSetTimer(5)" in text
     assert text.index("g_qm_signature_panel.Shutdown();") < text.index(
         'QM_LogEvent(QM_INFO, "DEINIT"'
+    )
+    assert text.index("g_qm_signature_panel.Shutdown();") < text.index(
+        "QM_ChartScheme_Restore"
     )
     assert text.count("g_qm_signature_panel.Refresh(snapshot)") == 1
     refresh_call = text.index("QM11421_RefreshChartPanel();")
@@ -33,5 +43,19 @@ def test_snapshot_uses_existing_framework_governance_state():
         "g_qm_news_active", "g_qm_news_available", "g_qm_news_cache_verdict",
         "QM_FrameworkFridayCloseNow", "g_qm_ks_halted", "g_qm_risk_mode",
         "g_qm_risk_percent", "g_qm_risk_fixed", "g_qm_fw_initialized",
+        "g_qm_ks_day_start_equity", "g_qm_ks_daily_loss_halt_pct",
+        "TERMINAL_CONNECTED", "TERMINAL_TRADE_ALLOWED", "QM_NewsNextBlockStart",
     ):
         assert token in text
+
+
+def test_signature_panel_suppresses_legacy_surface_when_enabled():
+    text = SOURCE.read_text(encoding="utf-8")
+    common = (
+        Path(__file__).resolve().parents[3]
+        / "framework/include/QM/QM_Common.mqh"
+    ).read_text(encoding="utf-8")
+    assert "QM_FrameworkSetChartUISuppressed(qm_show_chart_panel)" in text
+    assert "g_qm_fw_chartui_suppressed" in common
+    assert "!g_qm_fw_chartui_suppressed && !QM_ChartUI_Init" in common
+    assert "if(!g_qm_fw_chartui_suppressed)\n      QM_ChartUI_Refresh();" in common
