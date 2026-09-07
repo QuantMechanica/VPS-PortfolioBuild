@@ -26046,6 +26046,32 @@ _Q02_EXECUTION_BINDING_KEYS = (
     "expected_expert",
 )
 
+Q02_STALE_BINDING_REBIND_SCHEMA = "qm.q02-stale-binding-rebind/v1"
+Q02_STALE_BINDING_REBIND_RECEIPT_SCHEMA = (
+    "qm.q02-stale-binding-rebind-receipt/v1"
+)
+Q02_STALE_BINDING_REBIND_SOURCE_ENCODING = "farmctl:rebind-q02/v1"
+
+_Q02_REBIND_STABLE_EXTRA_PAYLOAD_KEYS = {
+    "custom_history_archive_admission",
+    "defer_reason",
+    "launch_not_before_utc",
+    "native_q02_pass_work_item_id",
+    "priority_reason",
+    "q02_cohort_size",
+    "q02_fanout_canary",
+    "q02_fanout_canary_index",
+    "q02_fanout_policy",
+    "recovery_class",
+    "strategy_params_required",
+    "target_symbols",
+    "target_timeframe",
+    "timeout_min",
+    "universe_expansion",
+    "universe_expansion_owner_decision",
+    "universe_expansion_priority",
+}
+
 _FRESH_Q02_SEED_PROVENANCE_KEYS = (
     "enqueued_at_utc",
     "enqueued_by",
@@ -26065,6 +26091,668 @@ _FRESH_Q02_SEED_PROVENANCE_KEYS = (
     "risk_fixed",
     "risk_percent",
 )
+
+
+def _q02_rebind_refusal(
+    reason: str,
+    source_work_item_id: str,
+    *,
+    apply: bool,
+    **detail: Any,
+) -> dict[str, Any]:
+    return {
+        "schema": Q02_STALE_BINDING_REBIND_SCHEMA,
+        "ok": False,
+        "eligible": False,
+        "would_enqueue": False,
+        "applied": False,
+        "dry_run": not apply,
+        "reason": reason,
+        "source_work_item_id": source_work_item_id,
+        **detail,
+    }
+
+
+def _q02_rebind_single_bound_sha256(
+    role: str,
+    values: Mapping[str, Any],
+) -> tuple[str | None, dict[str, Any] | None]:
+    present = {
+        name: str(value).strip().lower()
+        for name, value in values.items()
+        if value is not None and str(value).strip()
+    }
+    if not present:
+        return None, {"reason": f"source_{role}_sha256_missing"}
+    invalid = {
+        name: value
+        for name, value in present.items()
+        if not re.fullmatch(r"[0-9a-f]{64}", value)
+    }
+    if invalid:
+        return None, {
+            "reason": f"source_{role}_sha256_invalid",
+            "invalid_bindings": invalid,
+        }
+    distinct = sorted(set(present.values()))
+    if len(distinct) != 1:
+        return None, {
+            "reason": f"source_{role}_sha256_conflict",
+            "bindings": present,
+        }
+    return distinct[0], None
+
+
+def _q02_rebind_compile_provenance(
+    conn: sqlite3.Connection,
+    *,
+    ea_id: str,
+    expected_ex5_sha256: str,
+    expected_mq5_sha256: str,
+) -> tuple[dict[str, Any] | None, list[dict[str, Any]]]:
+    """Find a PASS/PASS compile record bound to the exact current source/binary."""
+    rows = conn.execute(
+        """
+        SELECT * FROM work_items
+        WHERE ea_id=? AND lower(kind)='compile' AND upper(phase)='COMPILE_EA'
+          AND lower(status)='done' AND upper(COALESCE(verdict,''))='COMPILE_OK'
+          AND lower(COALESCE(ex5_sha256,''))=?
+        ORDER BY updated_at DESC, created_at DESC, id DESC
+        """,
+        (ea_id, expected_ex5_sha256),
+    ).fetchall()
+    rejected: list[dict[str, Any]] = []
+    for row in rows:
+        work_item_id = str(row["id"])
+        checks: dict[str, bool] = {}
+        try:
+            payload = json.loads(row["payload_json"] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            payload = None
+        compile_result = (
+            payload.get("compile_result")
+            if isinstance(payload, dict)
+            and isinstance(payload.get("compile_result"), dict)
+            else {}
+        )
+        evidence_path = Path(str(row["evidence_path"] or ""))
+        evidence: dict[str, Any] | None = None
+        if evidence_path.is_file():
+            try:
+                loaded = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+                evidence = loaded if isinstance(loaded, dict) else None
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                evidence = None
+        candidate_recheck = (
+            evidence.get("candidate_recheck")
+            if isinstance(evidence, dict)
+            and isinstance(evidence.get("candidate_recheck"), dict)
+            else {}
+        )
+        payload_mq5 = str(
+            (payload or {}).get("mq5_sha256")
+            or compile_result.get("mq5_sha256")
+            or ""
+        ).strip().lower()
+        evidence_mq5 = str(candidate_recheck.get("mq5_sha256") or "").strip().lower()
+        checks.update({
+            "payload_object": isinstance(payload, dict),
+            "payload_success": compile_result.get("success") is True,
+            "payload_compile_result": str(
+                compile_result.get("compile_result") or ""
+            ).upper() == "PASS",
+            "payload_build_check_result": str(
+                compile_result.get("build_check_result") or ""
+            ).upper() == "PASS",
+            "payload_ex5_sha256": str(
+                compile_result.get("ex5_sha256") or ""
+            ).lower() == expected_ex5_sha256,
+            "row_mq5_sha256": str(row["mq5_sha256"] or "").lower()
+            == expected_mq5_sha256,
+            "payload_mq5_sha256": payload_mq5 == expected_mq5_sha256,
+            "evidence_object": isinstance(evidence, dict),
+            "evidence_schema": bool(
+                evidence
+                and evidence.get("schema_version") == "qm.compile-ea-evidence/v1"
+            ),
+            "evidence_work_item_id": bool(
+                evidence and str(evidence.get("work_item_id") or "") == work_item_id
+            ),
+            "evidence_ea_id": bool(
+                evidence and str(evidence.get("ea_id") or "").upper() == ea_id
+            ),
+            "evidence_phase": bool(
+                evidence
+                and str(evidence.get("phase") or "").upper() == "COMPILE_EA"
+            ),
+            "evidence_success": bool(evidence and evidence.get("success") is True),
+            "evidence_compile_result": bool(
+                evidence
+                and str(evidence.get("compile_result") or "").upper() == "PASS"
+            ),
+            "evidence_build_check_result": bool(
+                evidence
+                and str(evidence.get("build_check_result") or "").upper() == "PASS"
+            ),
+            "evidence_ex5_sha256": bool(
+                evidence
+                and str(evidence.get("ex5_sha256") or "").lower()
+                == expected_ex5_sha256
+            ),
+            "candidate_recheck_eligible": candidate_recheck.get("eligible") is True,
+            "evidence_mq5_sha256": evidence_mq5 == expected_mq5_sha256,
+        })
+        if all(checks.values()):
+            assert evidence is not None
+            return {
+                "work_item_id": work_item_id,
+                "evidence_path": str(evidence_path),
+                "evidence_sha256": _sha256_file(evidence_path),
+                "completed_at": evidence.get("completed_at") or row["updated_at"],
+                "build_id": row["build_id"],
+                "include_closure_sha256": row["include_closure_sha256"],
+            }, rejected
+        rejected.append({
+            "work_item_id": work_item_id,
+            "failed_checks": sorted(key for key, value in checks.items() if not value),
+            "evidence_path": str(evidence_path),
+        })
+    return None, rejected
+
+
+def rebind_q02_stale_ex5(
+    root: Path,
+    old_work_item_id: str,
+    *,
+    expected_current_ex5_sha256: str | None,
+    reason: str | None,
+    apply: bool = False,
+    receipt_dir: str | os.PathLike[str] | None = None,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Append a Q02 successor when only its bound EX5 became stale.
+
+    Dry-run is the default and opens the farm database read-only. The source row
+    and its verdict are never updated. Apply creates one pending successor and
+    records the predecessor in ``work_item_supersedes`` in one transaction.
+    """
+    source_id = str(old_work_item_id or "").strip()
+    audit_reason = str(reason or "").strip()
+    expected_ex5 = str(expected_current_ex5_sha256 or "").strip().lower()
+    code_root = Path(repo_root or CANONICAL_REPO_ROOT).resolve()
+    if not source_id:
+        return _q02_rebind_refusal(
+            "old_work_item_id_required", source_id, apply=apply
+        )
+    if not audit_reason:
+        return _q02_rebind_refusal("reason_required", source_id, apply=apply)
+    if not re.fullmatch(r"[0-9a-f]{64}", expected_ex5):
+        return _q02_rebind_refusal(
+            "expected_current_ex5_sha256_invalid",
+            source_id,
+            apply=apply,
+            expected_current_ex5_sha256=expected_ex5,
+        )
+    if not db_path(root).is_file():
+        return _q02_rebind_refusal(
+            "farm_database_missing",
+            source_id,
+            apply=apply,
+            database=str(db_path(root)),
+        )
+
+    if apply:
+        init_db(root)
+        conn = connect(root)
+    else:
+        conn = sqlite3.connect(
+            f"file:{db_path(root).as_posix()}?mode=ro", uri=True
+        )
+        conn.row_factory = sqlite3.Row
+    receipt_path: Path | None = None
+    receipt_written = False
+    try:
+        if apply:
+            conn.execute("BEGIN IMMEDIATE")
+        source = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+        if source is None:
+            return _q02_rebind_refusal(
+                "source_work_item_missing", source_id, apply=apply
+            )
+        ea_id = str(source["ea_id"] or "").strip().upper()
+        symbol = str(source["symbol"] or "").strip()
+        phase = str(source["phase"] or "").strip().upper()
+        status = str(source["status"] or "").strip().lower()
+        verdict = str(source["verdict"] or "").strip().upper()
+        source_observed = {
+            "kind": source["kind"],
+            "phase": source["phase"],
+            "status": source["status"],
+            "verdict": source["verdict"],
+            "claimed_by": source["claimed_by"],
+        }
+        status_ok = (status == "pending" and not verdict) or (
+            status in {"done", "failed"} and verdict == "INFRA_FAIL"
+        )
+        if (
+            str(source["kind"] or "").lower() != "backtest"
+            or phase not in {value.upper() for value in Q02_READ_PHASES}
+            or not status_ok
+            or bool(source["claimed_by"])
+        ):
+            return _q02_rebind_refusal(
+                "source_not_eligible_q02_pending_or_terminal_infra_fail",
+                source_id,
+                apply=apply,
+                ea_id=ea_id,
+                symbol=symbol,
+                observed=source_observed,
+            )
+        try:
+            source_payload = json.loads(source["payload_json"] or "{}")
+        except (TypeError, json.JSONDecodeError):
+            source_payload = None
+        if not isinstance(source_payload, dict):
+            return _q02_rebind_refusal(
+                "source_payload_invalid", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+            )
+
+        existing_supersession = conn.execute(
+            "SELECT * FROM work_item_supersedes WHERE work_item_id=? LIMIT 1",
+            (source_id,),
+        ).fetchone()
+        if existing_supersession is not None:
+            return _q02_rebind_refusal(
+                "source_already_superseded", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                supersession=_row_to_dict(existing_supersession),
+            )
+        existing_successor = conn.execute(
+            """
+            SELECT id,status,verdict FROM work_items
+            WHERE json_extract(payload_json, '$.q02_stale_binding_rebind_of')=?
+            ORDER BY created_at,id LIMIT 1
+            """,
+            (source_id,),
+        ).fetchone()
+        if existing_successor is not None:
+            return _q02_rebind_refusal(
+                "rebind_successor_already_exists", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                successor=_row_to_dict(existing_successor),
+            )
+
+        source_identity = source_payload.get("artifact_identity")
+        if not isinstance(source_identity, dict):
+            source_identity = {}
+        source_ex5, source_ex5_error = _q02_rebind_single_bound_sha256(
+            "ex5",
+            {
+                "column": source["ex5_sha256"],
+                "expected_ex5_sha256": source_payload.get("expected_ex5_sha256"),
+                "expected_current_ex5_sha256": source_payload.get(
+                    "expected_current_ex5_sha256"
+                ),
+                "artifact_identity": source_identity.get("ex5_sha256"),
+            },
+        )
+        if source_ex5_error:
+            return _q02_rebind_refusal(
+                str(source_ex5_error.pop("reason")), source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol, **source_ex5_error,
+            )
+        if source_ex5 == expected_ex5:
+            return _q02_rebind_refusal(
+                "source_ex5_binding_already_current", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol, ex5_sha256=source_ex5,
+            )
+
+        requal_set_identity = source_payload.get("requalification_setfile_identity")
+        if not isinstance(requal_set_identity, dict):
+            requal_set_identity = {}
+        source_setfile_sha, source_setfile_error = (
+            _q02_rebind_single_bound_sha256(
+                "setfile",
+                {
+                    "column": source["setfile_sha256"],
+                    "expected_setfile_sha256": source_payload.get(
+                        "expected_setfile_sha256"
+                    ),
+                    "artifact_identity": source_identity.get("setfile_sha256"),
+                    "requalification_setfile_identity": requal_set_identity.get(
+                        "sha256"
+                    ),
+                },
+            )
+        )
+        if source_setfile_error:
+            return _q02_rebind_refusal(
+                str(source_setfile_error.pop("reason")), source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol, **source_setfile_error,
+            )
+
+        source_setfile_path = Path(str(source["setfile_path"] or ""))
+        if (
+            source_setfile_path.parent.name.casefold() != "sets"
+            or not source_setfile_path.parent.parent.name.startswith(f"{ea_id}_")
+        ):
+            return _q02_rebind_refusal(
+                "source_setfile_not_bound_to_exact_ea_directory",
+                source_id, apply=apply, ea_id=ea_id, symbol=symbol,
+                setfile_path=str(source_setfile_path),
+            )
+        source_ea_dir_name = source_setfile_path.parent.parent.name
+        canonical_setfile_path = (
+            code_root / "framework" / "EAs" / source_ea_dir_name
+            / "sets" / source_setfile_path.name
+        )
+        if not canonical_setfile_path.is_file():
+            return _q02_rebind_refusal(
+                "canonical_setfile_missing", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                setfile_path=str(canonical_setfile_path),
+            )
+        canonical_setfile_sha = _sha256_file(canonical_setfile_path).lower()
+        if canonical_setfile_sha != source_setfile_sha:
+            return _q02_rebind_refusal(
+                "source_setfile_changed", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                setfile_path=str(canonical_setfile_path),
+                source_setfile_sha256=source_setfile_sha,
+                canonical_setfile_sha256=canonical_setfile_sha,
+            )
+
+        identity, identity_error = _first_q02_ea_identity(code_root, ea_id)
+        if identity_error:
+            identity_reason = str(identity_error.pop("reason"))
+            return _q02_rebind_refusal(
+                identity_reason, source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol, **identity_error,
+            )
+        assert identity is not None
+        ea_dir = Path(identity["ea_dir"])
+        if ea_dir.name != source_ea_dir_name:
+            return _q02_rebind_refusal(
+                "source_ea_directory_not_active_registry_identity",
+                source_id, apply=apply, ea_id=ea_id, symbol=symbol,
+                source_ea_directory=source_ea_dir_name,
+                active_ea_directory=ea_dir.name,
+            )
+        canonical_ex5_path = ea_dir / f"{ea_dir.name}.ex5"
+        ex5_files = sorted(ea_dir.glob("*.ex5"))
+        if (
+            not canonical_ex5_path.is_file()
+            or len(ex5_files) != 1
+            or ex5_files[0].resolve() != canonical_ex5_path.resolve()
+        ):
+            return _q02_rebind_refusal(
+                "canonical_ex5_not_exactly_one", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                expected_ex5_path=str(canonical_ex5_path),
+                ex5_files=[str(path) for path in ex5_files],
+            )
+        canonical_ex5_sha = _sha256_file(canonical_ex5_path).lower()
+        if canonical_ex5_sha != expected_ex5:
+            return _q02_rebind_refusal(
+                "canonical_ex5_sha256_mismatch", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                expected_current_ex5_sha256=expected_ex5,
+                canonical_ex5_sha256=canonical_ex5_sha,
+                ex5_path=str(canonical_ex5_path),
+            )
+        canonical_mq5_path = ea_dir / f"{ea_dir.name}.mq5"
+        mq5_files = sorted(ea_dir.glob("*.mq5"))
+        if (
+            not canonical_mq5_path.is_file()
+            or len(mq5_files) != 1
+            or mq5_files[0].resolve() != canonical_mq5_path.resolve()
+        ):
+            return _q02_rebind_refusal(
+                "canonical_mq5_not_exactly_one", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                expected_mq5_path=str(canonical_mq5_path),
+                mq5_files=[str(path) for path in mq5_files],
+            )
+        canonical_mq5_sha = _sha256_file(canonical_mq5_path).lower()
+        compile_record, rejected_compile_records = _q02_rebind_compile_provenance(
+            conn,
+            ea_id=ea_id,
+            expected_ex5_sha256=expected_ex5,
+            expected_mq5_sha256=canonical_mq5_sha,
+        )
+        if compile_record is None:
+            return _q02_rebind_refusal(
+                "current_ex5_has_no_pass_bound_compile_record",
+                source_id, apply=apply, ea_id=ea_id, symbol=symbol,
+                current_ex5_sha256=expected_ex5,
+                current_mq5_sha256=canonical_mq5_sha,
+                rejected_compile_records=rejected_compile_records,
+            )
+
+        recorded_period = str(
+            source_payload.get("expected_period")
+            or source_payload.get("host_timeframe")
+            or source_payload.get("target_timeframe")
+            or ""
+        ).strip().upper()
+        detected_period = _detect_ea_period(ea_id, canonical_setfile_path).upper()
+        if recorded_period and recorded_period != detected_period:
+            return _q02_rebind_refusal(
+                "source_timeframe_binding_conflict", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol,
+                recorded_timeframe=recorded_period,
+                setfile_timeframe=detected_period,
+            )
+        timeframe = recorded_period or detected_period
+        open_sibling = conn.execute(
+            """
+            SELECT id,status FROM work_items
+            WHERE ea_id=? AND phase IN ('Q02','P2') AND symbol=? AND id<>?
+              AND status IN ('pending','active')
+              AND NOT EXISTS (
+                SELECT 1 FROM work_item_supersedes s
+                WHERE s.work_item_id=work_items.id
+              )
+            ORDER BY created_at,id LIMIT 1
+            """,
+            (ea_id, symbol, source_id),
+        ).fetchone()
+        if open_sibling is not None:
+            return _q02_rebind_refusal(
+                "unsuperseded_open_q02_sibling_exists",
+                source_id, apply=apply, ea_id=ea_id, symbol=symbol,
+                sibling=_row_to_dict(open_sibling),
+            )
+
+        now = utc_now()
+        payload_keys = (
+            _Q02_APPEND_ONLY_STABLE_PAYLOAD_KEYS
+            | _Q02_REBIND_STABLE_EXTRA_PAYLOAD_KEYS
+        )
+        successor_payload = {
+            key: source_payload[key]
+            for key in payload_keys
+            if key in source_payload
+        }
+        successor_payload.update({
+            "append_only_rebind": True,
+            "artifact_identity": {
+                "ex5_sha256": expected_ex5,
+                "mq5_sha256": canonical_mq5_sha,
+                "setfile_sha256": canonical_setfile_sha,
+            },
+            "enqueued_at_utc": now,
+            "enqueued_by": "farmctl.rebind-q02",
+            "expected_current_ex5_sha256": expected_ex5,
+            "expected_ex5_sha256": expected_ex5,
+            "expected_expert": source_payload.get("expected_expert")
+            or f"QM\\{ea_dir.name}",
+            "expected_mq5_sha256": canonical_mq5_sha,
+            "expected_period": timeframe,
+            "expected_setfile_sha256": canonical_setfile_sha,
+            "expected_symbol": source_payload.get("expected_symbol")
+            or source_payload.get("host_symbol")
+            or symbol,
+            "historical_work_item_preserved": True,
+            "q02_stale_binding_rebind": True,
+            "q02_stale_binding_rebind_of": source_id,
+            "rebind_compile_completed_at": compile_record["completed_at"],
+            "rebind_compile_evidence_path": compile_record["evidence_path"],
+            "rebind_compile_evidence_sha256": compile_record["evidence_sha256"],
+            "rebind_compile_work_item_id": compile_record["work_item_id"],
+            "rebind_reason": audit_reason,
+            "rebind_source_ex5_sha256": source_ex5,
+            "rebind_source_payload_sha256": hashlib.sha256(
+                str(source["payload_json"] or "{}").encode("utf-8")
+            ).hexdigest(),
+            "rebind_source_setfile_path": str(source_setfile_path),
+            "rebind_source_setfile_sha256": source_setfile_sha,
+            "rebind_source_status": source["status"],
+            "rebind_source_verdict": source["verdict"],
+        })
+        preview = {
+            "schema": Q02_STALE_BINDING_REBIND_SCHEMA,
+            "ok": True,
+            "eligible": True,
+            "would_enqueue": True,
+            "applied": False,
+            "dry_run": not apply,
+            "ea_id": ea_id,
+            "phase": phase,
+            "symbol": symbol,
+            "timeframe": timeframe,
+            "source_work_item_id": source_id,
+            "source_status": source["status"],
+            "source_verdict": source["verdict"],
+            "source_ex5_sha256": source_ex5,
+            "current_ex5_sha256": expected_ex5,
+            "setfile_path": str(canonical_setfile_path),
+            "setfile_sha256": canonical_setfile_sha,
+            "mq5_sha256": canonical_mq5_sha,
+            "compile_work_item_id": compile_record["work_item_id"],
+            "compile_evidence_path": compile_record["evidence_path"],
+            "compile_evidence_sha256": compile_record["evidence_sha256"],
+        }
+        if not apply:
+            return preview
+
+        successor_id = str(uuid.uuid4())
+        receipt_base = (
+            Path(receipt_dir)
+            if receipt_dir is not None
+            else root / "artifacts" / "receipts" / "q02_stale_binding_rebind"
+        )
+        receipt_path = receipt_base / f"{source_id}_{successor_id}.json"
+        if receipt_path.exists():
+            return _q02_rebind_refusal(
+                "receipt_path_exists", source_id, apply=apply,
+                ea_id=ea_id, symbol=symbol, receipt_path=str(receipt_path),
+            )
+        receipt = {
+            "schema": Q02_STALE_BINDING_REBIND_RECEIPT_SCHEMA,
+            "recorded_at": now,
+            "recorded_by": "farmctl.rebind-q02",
+            "reason": audit_reason,
+            "predecessor": {
+                "work_item_id": source_id,
+                "status": source["status"],
+                "verdict": source["verdict"],
+                "ex5_sha256": source_ex5,
+                "setfile_path": str(source_setfile_path),
+                "setfile_sha256": source_setfile_sha,
+                "preserved": True,
+            },
+            "successor": {
+                "work_item_id": successor_id,
+                "status": "pending",
+                "verdict": None,
+                "ea_id": ea_id,
+                "phase": phase,
+                "symbol": symbol,
+                "timeframe": timeframe,
+                "ex5_path": str(canonical_ex5_path),
+                "ex5_sha256": expected_ex5,
+                "mq5_path": str(canonical_mq5_path),
+                "mq5_sha256": canonical_mq5_sha,
+                "setfile_path": str(canonical_setfile_path),
+                "setfile_sha256": canonical_setfile_sha,
+            },
+            "compile_provenance": compile_record,
+        }
+        conn.execute(
+            """
+            INSERT INTO work_items
+              (id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+               attempt_count,parent_task_id,evidence_path,claimed_by,payload_json,
+               created_at,updated_at,gate_contract_version,ex5_sha256,
+               setfile_sha256,mq5_sha256,include_closure_sha256,build_id,
+               data_window_start,data_window_end,news_calendar_sha256,
+               verdict_taxonomy,sh3_enforced)
+            VALUES (?,?,?,?,?,?,'pending',NULL,0,?,NULL,NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,1)
+            """,
+            (
+                successor_id, source["kind"], source["phase"], ea_id, symbol,
+                str(canonical_setfile_path), source["parent_task_id"],
+                json.dumps(successor_payload, sort_keys=True), now, now,
+                source["gate_contract_version"] or ACTIVE_GATE_CONTRACT_VERSION,
+                expected_ex5, canonical_setfile_sha, canonical_mq5_sha,
+                compile_record["include_closure_sha256"], compile_record["build_id"],
+                source["data_window_start"], source["data_window_end"],
+                source["news_calendar_sha256"], "open",
+            ),
+        )
+        conn.execute(
+            """
+            INSERT INTO work_item_supersedes
+              (work_item_id,superseded_by_work_item_id,reason,source_encoding,
+               evidence_path,recorded_by,recorded_at)
+            VALUES (?,?,?,?,?,?,?)
+            """,
+            (
+                source_id, successor_id, audit_reason,
+                Q02_STALE_BINDING_REBIND_SOURCE_ENCODING, str(receipt_path),
+                "farmctl.rebind-q02", now,
+            ),
+        )
+        event(conn, "work_item", successor_id, "q02_stale_binding_rebound", {
+            "source_work_item_id": source_id,
+            "source_status": source["status"],
+            "source_verdict": source["verdict"],
+            "ea_id": ea_id,
+            "symbol": symbol,
+            "old_ex5_sha256": source_ex5,
+            "new_ex5_sha256": expected_ex5,
+            "setfile_sha256": canonical_setfile_sha,
+            "compile_work_item_id": compile_record["work_item_id"],
+            "receipt_path": str(receipt_path),
+        })
+        _write_json_atomic(receipt_path, receipt)
+        receipt_written = True
+        receipt_sha256 = _sha256_file(receipt_path)
+        conn.commit()
+        return {
+            **preview,
+            "would_enqueue": False,
+            "applied": True,
+            "dry_run": False,
+            "successor_work_item_id": successor_id,
+            "receipt_path": str(receipt_path),
+            "receipt_sha256": receipt_sha256,
+        }
+    except Exception:
+        if apply:
+            conn.rollback()
+        if receipt_written and receipt_path is not None:
+            try:
+                receipt_path.unlink()
+            except OSError:
+                pass
+        raise
+    finally:
+        conn.close()
 
 
 def _q02_fixed_risk_contract(setfile_path: str) -> tuple[bool, dict[str, Any]]:
@@ -35272,6 +35960,36 @@ def build_parser() -> argparse.ArgumentParser:
     harness_pp.add_argument("--to-date", default="2024.01.10")
     harness_pp.add_argument("--timeout-seconds", type=int, default=600)
 
+    rebind_q02 = sub.add_parser(
+        "rebind-q02",
+        help=(
+            "Append a Q02 successor when only the EX5 binding became stale; "
+            "dry-run unless --apply"
+        ),
+    )
+    rebind_q02.add_argument("--old-work-item-id", required=True)
+    rebind_q02.add_argument("--expected-current-ex5-sha256", required=True)
+    rebind_q02.add_argument(
+        "--reason",
+        required=True,
+        help="Durable operator reason recorded in the successor and receipt",
+    )
+    rebind_q02_mode = rebind_q02.add_mutually_exclusive_group()
+    rebind_q02_mode.add_argument(
+        "--apply",
+        action="store_true",
+        help="Append the successor; default is a read-only dry run",
+    )
+    rebind_q02_mode.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Explicitly select the default read-only validation mode",
+    )
+    rebind_q02.add_argument(
+        "--receipt-dir",
+        help="Optional receipt directory (primarily for isolated verification)",
+    )
+
     requeue_false_invalid = sub.add_parser(
         "requeue-false-invalid-setfile",
         help=(
@@ -35592,6 +36310,8 @@ def _command_mutates_state(args: argparse.Namespace) -> bool:
     if args.command == "enqueue-compile":
         return bool(args.apply or (not args.from_file and not args.repair_successor_of))
     if args.command == "requeue-false-invalid-setfile":
+        return bool(args.apply)
+    if args.command == "rebind-q02":
         return bool(args.apply)
     if args.command == "enqueue-news-expansions":
         return bool(args.apply)
@@ -36025,6 +36745,19 @@ def main(argv: list[str] | None = None) -> int:
             expected_current_ex5_sha256=args.expected_current_ex5_sha256,
             reconcile_noncanonical_setfile=args.reconcile_noncanonical_setfile,
         ))
+    elif args.command == "rebind-q02":
+        rebind_result = rebind_q02_stale_ex5(
+            root,
+            args.old_work_item_id,
+            expected_current_ex5_sha256=args.expected_current_ex5_sha256,
+            reason=args.reason,
+            apply=args.apply,
+            receipt_dir=args.receipt_dir,
+            repo_root=CANONICAL_REPO_ROOT,
+        )
+        print_json(rebind_result)
+        if not rebind_result.get("ok", False):
+            return 2
     elif args.command == "intake-first-q02":
         print_json(intake_first_q02(
             root,
