@@ -1152,3 +1152,11 @@ Beide OWNER-Freigaben (MNT020-RECOMPILE, MNT006-CANARY) sind ausgeführt und im 
 ## Addendum 2026-09-07 05:40Z — OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907 = YES
 
 - Receipt 617abd80 (chat), execution task bb814520 (Claude lane, IN_PROGRESS), record `docs/ops/evidence/2026-09-07_calendar-criteria-b-prime-20260907_617abd80_execution.md`. Codex ticket: criterion "measured + declared residuals" in the calendar gate contract, consumer B beyond D1 for USD-only exposure, new dry run; then row-by-row release (11196/XAUUSD first). Window-seal ticket for the nine D1/USD rows runs in parallel.
+
+## Addendum 2026-09-07 05:55Z — Demo terminal restarted by the OWNER (07:30 Prague): all sleeves on the installed binaries; 11421 panel one-off abnormal termination; panel v2 + B′ commissioned
+
+- 07:30:19 Prague terminal exit/restart (OWNER); 07:30:39–42 all nine EAs + collector reloaded from the profile → the four alias builds (10706/11910/1537/21505) and the 11421 panel build now run; INIT_OK 05:32–05:33Z for all sleeves (native calendar self-tests emitted by the new builds; governor self-test healthy, 224 events/7d, next HIGH = BoE Bailey speech). **OWNER to-do FTMO-REATTACH-4-TODAY closed.** Account flat, 0 halt.
+- **11421 panel build: one `Abnormal termination` at 07:31:55 (first attach after restart), immediate re-attach INIT_OK.** Root cause + fail-inert guard added to the Astra panel v2 ticket (b020c337) — a panel failure must never take an EA down.
+- OWNER feedback on the canary (double overlay, wrong chart scheme, missing information) → **Panel v2**: step 1 Codex spec 203f9d3c (information architecture + legacy-overlay retirement), step 2 Astra b020c337 (+ amendment c4ae19ed: **light scheme, MT5 "Color on White" base**), canary rebuild artifact-only for the demo.
+- **OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907 = YES** (receipt 617abd80, task bb814520, Codex 934e6104 P93); window-seal ticket 3ba316bc for the nine D1/USD rows in progress.
+- Wave-1 intakes: 23 open; batch stopped on my 60 GB disk floor (D: 56.8 GB, purge LowWater 150 handles caches) — floor lowered to 50 GB for the next batches.
