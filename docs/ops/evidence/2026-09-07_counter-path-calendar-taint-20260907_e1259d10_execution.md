@@ -24,3 +24,5 @@ Consumer B active only for declared-admissible rows; excluded rows remain held; 
 - Consumer B dry run after the seal: 31 non-superseded pending rows, **0 admissible** — the eight successors are excluded solely by `DECLARED_EXCLUSION_OVERLAP`. Under the D1-only rule nothing is releasable; the B′ criteria implementation (934e6104, OWNER YES 617abd80) decides whether declared residuals make them admissible. No hold released.
 
 ## Progress 2026-09-07 07:20Z — continued under B′ (task bb814520): 2 rows released (11196, 11167), 10 pending wave 2 — see the B′ record.
+
+## Progress 16:23Z — see the B′ record: 11167 adjudication void (pre-sv build, guard), card OWNER-DEC-Q09-LEGACY-LOGGER-SAMPLE-20260907 minted; counter path continues on post-sv rows (10145/SP500, 10513/XAUUSD prioritised).
