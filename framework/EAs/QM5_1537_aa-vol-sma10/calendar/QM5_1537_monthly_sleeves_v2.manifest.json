@@ -1,0 +1,779 @@
+{
+  "append_only": {
+    "appended_from_month": 202501,
+    "appended_row_count": 21,
+    "appended_to_month": 202609,
+    "legacy_calendar_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v1.csv",
+    "legacy_prefix_bytes": 834341,
+    "legacy_prefix_sha256": "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B"
+  },
+  "calendar_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v2.csv",
+  "calendar_sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78",
+  "coverage": {
+    "from_month": 201710,
+    "to_month": 202609
+  },
+  "generated_at_utc": "2026-09-07T10:01:15.222352+00:00",
+  "generator": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\tools\\build_monthly_sleeve_calendar.py",
+  "history_root": null,
+  "input_bundle_sha256": "8A8AC4466A77AC064804947F0CAEF5C29BA4F0997A53FF3CACD38A84FB4F21E4",
+  "inputs": [
+    {
+      "bytes": 73302,
+      "canonical_symbol": "XAUUSD.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "XAUUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\XAUUSD.DWX_D1.csv",
+      "rows": 950,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "524AA9C33238C9CC547D92D4C8071D61187132E1A07EC09A9AA300DD5E7318D4",
+      "slot": 0
+    },
+    {
+      "bytes": 65019,
+      "canonical_symbol": "XAGUSD.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "XAGUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\XAGUSD.DWX_D1.csv",
+      "rows": 950,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "F815FEAE4EB0747532CA237234C6BD18FE1E84DB5F3337BFB3430D5A03411C66",
+      "slot": 1
+    },
+    {
+      "bytes": 60511,
+      "canonical_symbol": "XNGUSD.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "XNGUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\XNGUSD.DWX_D1.csv",
+      "rows": 950,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "96DCFD3A8CE7D50AD9F34C9143CE6D96DAF72ADA6E6B3F6D1BCB0A1B052B345A",
+      "slot": 2
+    },
+    {
+      "bytes": 64688,
+      "canonical_symbol": "XTIUSD.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "XTIUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\XTIUSD.DWX_D1.csv",
+      "rows": 950,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "E3FB4A430A2C304DBD9743E047C81D8AE4AAC8C17AD514244DC198AE8B999CC6",
+      "slot": 3
+    },
+    {
+      "bytes": 77131,
+      "canonical_symbol": "NDX.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "NDX",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\NDX.DWX_D1.csv",
+      "rows": 952,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "98F70D84F608FBB0F60C5CAA268654569C7C8C91201C00372CE815C9CB2EDAF0",
+      "slot": 4
+    },
+    {
+      "bytes": 76582,
+      "canonical_symbol": "WS30.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "WS30",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\WS30.DWX_D1.csv",
+      "rows": 952,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "47406232FA5862115E8C43FC42D7098DEDA664FA44EEB65D78683FDF6C7B4DC5",
+      "slot": 5
+    },
+    {
+      "bytes": 74962,
+      "canonical_symbol": "GDAXI.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "GDAXI",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\GDAXI.DWX_D1.csv",
+      "rows": 936,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "DAC9E5768D2485E124B2F07358EEF38B4BDFDAD40158FF5D6C8B864355A52057",
+      "slot": 6
+    },
+    {
+      "bytes": 72049,
+      "canonical_symbol": "UK100.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "UK100",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\UK100.DWX_D1.csv",
+      "rows": 930,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "67EAE39C5BD03E7082FF1452061F33620B3978838C7653EB2DB1B8552B7564AF",
+      "slot": 7
+    },
+    {
+      "bytes": 72741,
+      "canonical_symbol": "SP500.DWX",
+      "first_epoch": 1672704000,
+      "last_epoch": 1788739200,
+      "native_symbol": "SP500",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\SP500.DWX_D1.csv",
+      "rows": 952,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "4E2FB02B5E90DFA47224EEA29797916E69E60645AD12065D99EFEAD631CB9E05",
+      "slot": 8
+    },
+    {
+      "bytes": 61998,
+      "canonical_symbol": "AUDCAD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "AUDCAD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\AUDCAD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "21D81018ABE8823DF403659C8A32A53F6938878B49C44A26620457071F00E1EB",
+      "slot": 9
+    },
+    {
+      "bytes": 61424,
+      "canonical_symbol": "AUDCHF.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "AUDCHF",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\AUDCHF.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "2700ED3B1BFB1488570393D5722D0C2BF23B8BC7567D31892477ABC9F9AF8224",
+      "slot": 10
+    },
+    {
+      "bytes": 67103,
+      "canonical_symbol": "AUDJPY.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "AUDJPY",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\AUDJPY.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "059D615CA3A3228E94461D5F87E3E8FA9BD2360323DA7A5295509FC575E62679",
+      "slot": 11
+    },
+    {
+      "bytes": 61629,
+      "canonical_symbol": "AUDNZD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "AUDNZD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\AUDNZD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "62D2639FBD4BECC4FA5C0458D8227459CD834CB43F768B58A79EFDCFB92007A1",
+      "slot": 12
+    },
+    {
+      "bytes": 61361,
+      "canonical_symbol": "AUDUSD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "AUDUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\AUDUSD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "D15CF9FE4819AA346924D592A4C699AFBA2C907E7D9E298D4750EC4E4F4BD94F",
+      "slot": 13
+    },
+    {
+      "bytes": 61259,
+      "canonical_symbol": "CADCHF.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "CADCHF",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\CADCHF.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "BA79DFC9ADB30F2260EB00E6872017D65FAF091FEC90DE90264148C95BCAB5A1",
+      "slot": 14
+    },
+    {
+      "bytes": 69369,
+      "canonical_symbol": "CADJPY.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "CADJPY",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\CADJPY.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "AF6EF0DD5EB4164F55C78824DC422042A11BD81E80AECBC9AFB1BB9857E0E22C",
+      "slot": 15
+    },
+    {
+      "bytes": 69759,
+      "canonical_symbol": "CHFJPY.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "CHFJPY",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\CHFJPY.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "FB7A88E3876462208DC1A7D5024F70EC413C705CDD1B1505EDECA513BD7ECD23",
+      "slot": 16
+    },
+    {
+      "bytes": 62053,
+      "canonical_symbol": "EURAUD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "EURAUD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\EURAUD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "EA5E16EC4EF97541571C1424691075FE179CBAA98DB01748C7E3FC06CF1B2696",
+      "slot": 17
+    },
+    {
+      "bytes": 62056,
+      "canonical_symbol": "EURCAD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "EURCAD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\EURCAD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "5AAE11BFFDD3F75A74CC4271A20791190081EA5B3F47DC9770B2C3D377577225",
+      "slot": 18
+    },
+    {
+      "bytes": 61336,
+      "canonical_symbol": "EURCHF.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "EURCHF",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\EURCHF.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "FF5116C56BBC4E5D7B76E925926FB25E34764B031CBB93DC9D4B6F08C374B2DC",
+      "slot": 19
+    },
+    {
+      "bytes": 61219,
+      "canonical_symbol": "EURGBP.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "EURGBP",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\EURGBP.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "079D615EB943C8C2A8B34245AAEA46B27CAA854F067DE4E68A029467C4A75DAF",
+      "slot": 20
+    },
+    {
+      "bytes": 69730,
+      "canonical_symbol": "EURJPY.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "EURJPY",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\EURJPY.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "C020FAD63BD8A6D05366CFC0BB6DD74B13F3CB51964A8A4D51D77B6634D873F4",
+      "slot": 21
+    },
+    {
+      "bytes": 62182,
+      "canonical_symbol": "EURNZD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "EURNZD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\EURNZD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "252A29AAC5DE1C6B2D02560AE5BF4F1197D4946E460E1E6411B45FD3C13C96E5",
+      "slot": 22
+    },
+    {
+      "bytes": 61369,
+      "canonical_symbol": "EURUSD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "EURUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\EURUSD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "FC9AD47F85CCD5C738E97923C76CB3C267322618D320529D1E5CF2AB0BD598AA",
+      "slot": 23
+    },
+    {
+      "bytes": 62250,
+      "canonical_symbol": "GBPAUD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "GBPAUD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\GBPAUD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "C67440C25F4C3EC7D7F789251022D374FD0D8DF67298E0611DE9DB3AB033DE8F",
+      "slot": 24
+    },
+    {
+      "bytes": 62479,
+      "canonical_symbol": "GBPCAD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "GBPCAD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\GBPCAD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "50D7ADF40BB18345A2BDBD2ACAA8CFAACA3670855F4C6415D809F241CAE07287",
+      "slot": 25
+    },
+    {
+      "bytes": 61826,
+      "canonical_symbol": "GBPCHF.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "GBPCHF",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\GBPCHF.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "78675EF549215C65A937D3A00C416F3DFC18D601423ECACD6787DEB5F9F7B76E",
+      "slot": 26
+    },
+    {
+      "bytes": 70187,
+      "canonical_symbol": "GBPJPY.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "GBPJPY",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\GBPJPY.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "1BC7584000EEDA88753EE9C9675311E5A2DED213B65A4F96B7D0246066026C87",
+      "slot": 27
+    },
+    {
+      "bytes": 61902,
+      "canonical_symbol": "GBPNZD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "GBPNZD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\GBPNZD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "E39EA3A3EDEE3BA91D306CF444A212BC4FD08DE31EF8D4C054A1A8C69B42F8E5",
+      "slot": 28
+    },
+    {
+      "bytes": 61630,
+      "canonical_symbol": "GBPUSD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "GBPUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\GBPUSD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "88212738B85CD74B306D0F802D8D89EFCBB6CD58294E5F4ED7049D1FE65BC13D",
+      "slot": 29
+    },
+    {
+      "bytes": 61454,
+      "canonical_symbol": "NZDCAD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "NZDCAD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\NZDCAD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "21D74710A28A3D63C0908C5C7265EA8319D7EFB24D2BC8C05B67220E53501C77",
+      "slot": 30
+    },
+    {
+      "bytes": 61262,
+      "canonical_symbol": "NZDCHF.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "NZDCHF",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\NZDCHF.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "6DB1FCEB3C089702FB7DBD25CE9A72A7E3C814127EC912969EBDF99CEF4B75ED",
+      "slot": 31
+    },
+    {
+      "bytes": 65622,
+      "canonical_symbol": "NZDJPY.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "NZDJPY",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\NZDJPY.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "C83BE1D141B148AD65302AC60B9CA17C7B8EBC0DB37B18FC10EDC27DB8EA28CE",
+      "slot": 32
+    },
+    {
+      "bytes": 57225,
+      "canonical_symbol": "NZDUSD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "NZDUSD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\NZDUSD.DWX_D1.csv",
+      "rows": 892,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "AB820B71C4E9F71E5C0011F82CD6E0662D0158151514E1A990D451C81F536B3C",
+      "slot": 33
+    },
+    {
+      "bytes": 61394,
+      "canonical_symbol": "USDCAD.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "USDCAD",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\USDCAD.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "6746C7E2F16E7E4DB5E64B5226EE607F7BE3E29214423D6C5AE4D75E88450201",
+      "slot": 34
+    },
+    {
+      "bytes": 61250,
+      "canonical_symbol": "USDCHF.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "USDCHF",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\USDCHF.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "D12FF19D1D2CE5B940E0AE0800997F221E87C09709F7F3EB401A51C99C08C526",
+      "slot": 35
+    },
+    {
+      "bytes": 69459,
+      "canonical_symbol": "USDJPY.DWX",
+      "first_epoch": 1672617600,
+      "last_epoch": 1788739200,
+      "native_symbol": "USDJPY",
+      "path": "D:\\QM\\mt5\\T_Export\\MQL5\\Files\\QM\\1537_native_d1\\20260907T095525Z_qm1537_native_d1\\USDJPY.DWX_D1.csv",
+      "rows": 955,
+      "schema": [
+        "time",
+        "open",
+        "high",
+        "low",
+        "close",
+        "tickvol",
+        "spread"
+      ],
+      "sha256": "B77C32416CA19B22704CC95A2786959C50E290FA8CE9E84CDBFE512F9866ACE7",
+      "slot": 36
+    }
+  ],
+  "native_export_receipt": {
+    "path": "D:\\QM\\reports\\qm1537_native_d1\\20260907T095525Z_qm1537_native_d1\\export_receipt.json",
+    "sha256": "BE8DE77CE812C7BB345BB180629DCC07DB39689F252EA2838E1D1581AF4756FE"
+  },
+  "ranking_contract_payload": "schema=qm1537.monthly_sleeve.v1|min_daily_bars=270|vol_lookback_days=252|annualization_days=252|top_n=3|tie_break=basket_slot_ascending|evaluation=first_host_d1_bar_of_calendar_month|universe=XAUUSD.DWX,XAGUSD.DWX,XNGUSD.DWX,XTIUSD.DWX,NDX.DWX,WS30.DWX,GDAXI.DWX,UK100.DWX,SP500.DWX,AUDCAD.DWX,AUDCHF.DWX,AUDJPY.DWX,AUDNZD.DWX,AUDUSD.DWX,CADCHF.DWX,CADJPY.DWX,CHFJPY.DWX,EURAUD.DWX,EURCAD.DWX,EURCHF.DWX,EURGBP.DWX,EURJPY.DWX,EURNZD.DWX,EURUSD.DWX,GBPAUD.DWX,GBPCAD.DWX,GBPCHF.DWX,GBPJPY.DWX,GBPNZD.DWX,GBPUSD.DWX,NZDCAD.DWX,NZDCHF.DWX,NZDJPY.DWX,NZDUSD.DWX,USDCAD.DWX,USDCHF.DWX,USDJPY.DWX",
+  "ranking_contract_sha256": "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007",
+  "row_count": 3567,
+  "row_source_declaration": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\calendar\\QM5_1537_monthly_sleeves_v2.sources.csv",
+    "policy": "row input_bundle_sha256 selects custom_history or native_dwx_d1",
+    "sha256": "C1F3B0A7899A649ABDCA80F515E711CC3AC1B751369718BD7358F94F1372A79C",
+    "sources": [
+      "custom_history",
+      "native_dwx_d1"
+    ]
+  },
+  "schema_version": "qm1537.monthly_sleeve.v1"
+}

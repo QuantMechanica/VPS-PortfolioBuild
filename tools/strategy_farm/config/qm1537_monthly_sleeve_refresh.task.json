@@ -1,0 +1,40 @@
+{
+  "schema": "qm.proposed-scheduled-task/v1",
+  "task_name": "QM_MonthlySleeveCalendar_Refresh",
+  "status": "PROPOSED_NOT_REGISTERED",
+  "registration_authority": "CEO_RELEASE_REQUIRED",
+  "schedule": {
+    "timezone": "Europe/Berlin",
+    "days_of_month": [1, 2, 3],
+    "local_time": "05:30",
+    "first_trading_day_only": true
+  },
+  "scope": {
+    "ea_id": 1537,
+    "host_symbol": "XAGUSD.DWX",
+    "source_lane": "T_Export",
+    "source_server": "Darwinex-Live",
+    "universe_size": 37,
+    "lookback_returns": 252,
+    "top_n": 3,
+    "tie_break": "basket_slot_ascending",
+    "evaluation": "first_host_d1_bar_of_calendar_month"
+  },
+  "behavior": [
+    "export and hash native D1 through the first host D1 bar of the new month",
+    "fail closed unless all 37 series pass completeness and integrity",
+    "append exactly one XAG host row for the new month",
+    "produce versioned calendar, manifest, source declaration, preset, and install candidate",
+    "require OWNER review and re-attach before the new identity is active"
+  ],
+  "forbidden": [
+    "task registration without CEO release",
+    "T_Live access",
+    "T1-T10 access",
+    "AutoTrading mutation",
+    "chart attachment",
+    "Q-gate or threshold changes",
+    "overwriting an existing calendar or preset version"
+  ],
+  "runbook": "docs/ops/QM1537_MONTHLY_SLEEVE_REFRESH_RUNBOOK_2026-09-07.md"
+}

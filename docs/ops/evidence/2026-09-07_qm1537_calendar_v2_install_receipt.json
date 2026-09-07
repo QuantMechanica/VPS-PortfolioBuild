@@ -1,0 +1,56 @@
+{
+  "schema": "qm.qm1537-calendar-v2-demo-install/v1",
+  "installed_at_utc": "2026-09-07T10:07:39Z",
+  "status": "STAGED_REATTACH_REQUIRED",
+  "terminal_data_dir": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850",
+  "terminal_class": "FTMO-Demo; non-T_Live; non-T1-T10",
+  "autotrading_changed": false,
+  "chart_changed": false,
+  "files": [
+    {
+      "role": "calendar_common_root",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/QM5_1537_monthly_sleeves_v2.csv",
+      "sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78"
+    },
+    {
+      "role": "calendar_common_namespaced",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/QM/calendars/QM5_1537_monthly_sleeves_v2.csv",
+      "sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78"
+    },
+    {
+      "role": "calendar_manifest",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/QM/calendars/QM5_1537_monthly_sleeves_v2.manifest.json",
+      "sha256": "1F1A5FE21C4FC26838461D87D262AF5D9E471ED9EB4C7F49526F9267A43BCF73"
+    },
+    {
+      "role": "row_source_declaration",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/QM/calendars/QM5_1537_monthly_sleeves_v2.sources.csv",
+      "sha256": "C1F3B0A7899A649ABDCA80F515E711CC3AC1B751369718BD7358F94F1372A79C"
+    },
+    {
+      "role": "load_dialog_preset",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Presets/QM5_1537_XAGUSD_D1_live_trial_s20260907-002.set",
+      "sha256": "47E4FBE5CC90C2DDB895975D32AC105FDA38772BA0452D88DD73C1B89590387C"
+    },
+    {
+      "role": "profile_preset",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Profiles/Presets/QM_FTMO_M13/QM5_1537_XAGUSD_D1_live_trial_s20260907-002.set",
+      "sha256": "47E4FBE5CC90C2DDB895975D32AC105FDA38772BA0452D88DD73C1B89590387C"
+    },
+    {
+      "role": "demo_binary",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Experts/QM_FTMO/QM5_1537_aa-vol-sma10.ex5",
+      "sha256": "16D66A0F7B86F6F8C9240280712D32914A9A3BBB004BAA1EA1A242CB4E9FF5EB"
+    },
+    {
+      "role": "preinstall_binary_backup",
+      "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Experts/QM_FTMO/_pre_calendar_v2_20260907/QM5_1537_aa-vol-sma10.ex5",
+      "sha256": "5C1D3A60E78C01162BE4A2CA2F86D060E33F773418DE4061C306FB5B632D92CE"
+    }
+  ],
+  "factory_ex5": {
+    "path": "C:/QM/repo/framework/EAs/QM5_1537_aa-vol-sma10/QM5_1537_aa-vol-sma10.ex5",
+    "sha256": "142A019E773A493DEF0640722EFB9D591D094650B35A69D5DE39F6AF3A048106",
+    "modified": false
+  }
+}

@@ -50,10 +50,10 @@ input double strategy_atr_sl_mult         = 2.5;
 input bool   strategy_enable_short        = false;
 input int    strategy_max_spread_points   = 0;
 input string strategy_sleeve_calendar_schema = "qm1537.monthly_sleeve.v1";
-input string strategy_sleeve_calendar_file = "QM5_1537_monthly_sleeves_v1.csv";
-input string strategy_sleeve_calendar_sha256 = "401E0D91E2428DAB4ABFF17C1DF651F1C7BC716B7160B71A06D1A3ECA9B5288B";
+input string strategy_sleeve_calendar_file = "QM5_1537_monthly_sleeves_v2.csv";
+input string strategy_sleeve_calendar_sha256 = "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78";
 input string strategy_sleeve_contract_sha256 = "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007";
-input string strategy_sleeve_input_bundle_sha256 = "B177F13D49B91B2235D9B2C1013AE46F9F2BD9798D2CBA00922AACD760E41862";
+input string strategy_sleeve_input_bundle_sha256 = "8A8AC4466A77AC064804947F0CAEF5C29BA4F0997A53FF3CACD38A84FB4F21E4";
 // OWNER Hard Rule 2026-09-06 (symbols are inputs, never code literals): the
 // calendar/registry name of the host symbol. Empty = chart symbol (factory: the
 // custom symbol XAGUSD.DWX). On a broker account whose chart is the plain name

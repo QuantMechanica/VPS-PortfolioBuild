@@ -13,6 +13,10 @@ LOADER = EA_DIR / "QM5_1537_MonthlySleeveCalendar.mqh"
 CALENDAR = EA_DIR / "calendar" / "QM5_1537_monthly_sleeves_v1.csv"
 MANIFEST = EA_DIR / "calendar" / "QM5_1537_monthly_sleeves_v1.manifest.json"
 EQUIVALENCE = EA_DIR / "calendar" / "QM5_1537_equivalence_201807_202212.json"
+CALENDAR_V2 = EA_DIR / "calendar" / "QM5_1537_monthly_sleeves_v2.csv"
+MANIFEST_V2 = EA_DIR / "calendar" / "QM5_1537_monthly_sleeves_v2.manifest.json"
+SOURCES_V2 = EA_DIR / "calendar" / "QM5_1537_monthly_sleeves_v2.sources.csv"
+LIVE_TRIAL_V2 = EA_DIR / "sets" / "QM5_1537_XAGUSD_D1_live_trial_s20260907-002.set"
 
 
 def _sha(path: Path) -> str:
@@ -83,3 +87,41 @@ def test_every_ranking_input_is_part_of_runtime_contract_payload() -> None:
     assert "basket_slot_ascending" in loader
     assert "first_host_d1_bar_of_calendar_month" in loader
     assert "req.symbol_slot = qm_magic_slot_offset" in source
+
+
+def test_v2_is_exact_v1_prefix_with_native_xag_continuation() -> None:
+    manifest = json.loads(MANIFEST_V2.read_text(encoding="utf-8"))
+    v1 = CALENDAR.read_bytes()
+    v2 = CALENDAR_V2.read_bytes()
+    assert v2.startswith(v1)
+    assert manifest["append_only"]["legacy_prefix_bytes"] == len(v1)
+    assert manifest["append_only"]["legacy_prefix_sha256"] == _sha(CALENDAR)
+    assert _sha(CALENDAR_V2) == manifest["calendar_sha256"]
+    assert _sha(SOURCES_V2) == manifest["row_source_declaration"]["sha256"]
+    with CALENDAR_V2.open(encoding="ascii", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    xag_new = [row for row in rows if row["host_symbol"] == "XAGUSD.DWX"
+               and 202501 <= int(row["month_key"]) <= 202609]
+    assert len(xag_new) == 21
+    assert [int(row["month_key"]) for row in xag_new] == [
+        year * 100 + month
+        for year, months in ((2025, range(1, 13)), (2026, range(1, 10)))
+        for month in months
+    ]
+    assert all(int(row["valid_count"]) == 37 for row in xag_new)
+    assert all(row["input_bundle_sha256"] == manifest["input_bundle_sha256"] for row in xag_new)
+
+
+def test_v2_default_and_live_trial_pins_are_fail_closed() -> None:
+    manifest = json.loads(MANIFEST_V2.read_text(encoding="utf-8"))
+    source = SOURCE.read_text(encoding="utf-8-sig")
+    loader = LOADER.read_text(encoding="utf-8-sig")
+    preset = LIVE_TRIAL_V2.read_text(encoding="utf-8-sig")
+    for text in (source, preset):
+        assert "QM5_1537_monthly_sleeves_v2.csv" in text
+        assert manifest["calendar_sha256"] in text
+        assert manifest["input_bundle_sha256"] in text
+        assert manifest["ranking_contract_sha256"] in text
+    assert "runtime_calendar_native_row_bundle_mismatch" in loader
+    assert "qm_news_stale_max_hours=336" in preset
+    assert "RISK_FIXED=0" in preset and "RISK_PERCENT=0.3125" in preset

@@ -8,6 +8,7 @@
 #define QM1537_SLEEVE_SCHEMA     "qm1537.monthly_sleeve.v1"
 #define QM1537_SLEEVE_TIE_BREAK  "basket_slot_ascending"
 #define QM1537_SLEEVE_EVALUATION "first_host_d1_bar_of_calendar_month"
+#define QM1537_LEGACY_INPUT_BUNDLE "B177F13D49B91B2235D9B2C1013AE46F9F2BD9798D2CBA00922AACD760E41862"
 
 bool   g_qm1537_calendar_ready = false;
 string g_qm1537_calendar_error = "not_loaded";
@@ -279,7 +280,8 @@ bool Strategy_LoadBoundMonthlySleeveCalendar()
          continue;
       if(schema != QM1537_SLEEVE_SCHEMA ||
          contract_sha != expected_contract_sha ||
-         bundle_sha != expected_bundle_sha)
+         (bundle_sha != expected_bundle_sha &&
+          bundle_sha != QM1537_LEGACY_INPUT_BUNDLE))
         {
          FileClose(handle);
          return QM1537_CalendarFail("runtime_calendar_row_binding_mismatch");
@@ -304,6 +306,15 @@ bool Strategy_LoadBoundMonthlySleeveCalendar()
       const double host_vol_pct = StringToDouble(host_vol_text);
       const long asof_epoch = StringToInteger(asof_text);
       const string host_name = QM1537_HostSymbol();
+      // v2 is an exact v1 byte prefix plus XAG-only continuation rows.  The
+      // file SHA binds every row; this additional check prevents a continued
+      // XAG row from being mislabeled as the sealed custom-history bundle.
+      if(host_name == "XAGUSD.DWX" && month_key >= 202501 &&
+         bundle_sha != expected_bundle_sha)
+        {
+         FileClose(handle);
+         return QM1537_CalendarFail("runtime_calendar_native_row_bundle_mismatch");
+        }
       const bool host_listed = (selected_1 == host_name ||
                                 selected_2 == host_name ||
                                 selected_3 == host_name);

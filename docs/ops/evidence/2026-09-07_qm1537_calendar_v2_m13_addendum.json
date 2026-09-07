@@ -1,0 +1,25 @@
+{
+  "schema": "qm.ftmo-m13-manifest-addendum/v1",
+  "status": "REVIEW_REATTACH_REQUIRED",
+  "base_manifest": {
+    "path": "tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json",
+    "sha256": "D0E918CA0E8916DDAF03B9C25B7390987BBC71207FDED3677F98517D77C1CB5E"
+  },
+  "sleeve": {
+    "ea_id": 1537,
+    "host_symbol": "XAGUSD.DWX",
+    "declared_source_change": "custom_history through the sealed v1 prefix; native_dwx_d1 for XAG host months 2025-01 through 2026-09",
+    "calendar_file": "QM5_1537_monthly_sleeves_v2.csv",
+    "calendar_sha256": "EB9AE48AB607FA30C454CABBB43798A9D1C4EF4B2042187DCABC5940ED96AE78",
+    "contract_sha256": "314634871498688C3784984B8EA3DF35716996ACBEDC63623396FBC31D188007",
+    "native_input_bundle_sha256": "8A8AC4466A77AC064804947F0CAEF5C29BA4F0997A53FF3CACD38A84FB4F21E4",
+    "preset": "QM5_1537_XAGUSD_D1_live_trial_s20260907-002.set",
+    "preset_sha256": "47E4FBE5CC90C2DDB895975D32AC105FDA38772BA0452D88DD73C1B89590387C",
+    "demo_ex5_sha256": "16D66A0F7B86F6F8C9240280712D32914A9A3BBB004BAA1EA1A242CB4E9FF5EB"
+  },
+  "authority": {
+    "attachment_authorized": false,
+    "autotrading_authorized": false,
+    "owner_reattach_required": true
+  }
+}

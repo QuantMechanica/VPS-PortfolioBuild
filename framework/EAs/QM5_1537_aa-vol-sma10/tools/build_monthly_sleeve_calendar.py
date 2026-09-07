@@ -181,6 +181,63 @@ def load_universe(
     return result
 
 
+def load_native_export_receipt(
+    receipt_path: Path, universe: tuple[str, ...] = UNIVERSE
+) -> tuple[dict[str, DailySeries], list[dict[str, object]], str]:
+    """Load and verify the immutable, governed native-Darwinex CSV receipt."""
+    receipt_path = receipt_path.resolve()
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    if receipt.get("schema") != "qm.qm1537-native-dwx-d1-export/v1":
+        raise ValueError("native export receipt schema mismatch")
+    if receipt.get("status") != "PASS" or receipt.get("account_class") != "Darwinex-Live":
+        raise ValueError("native export receipt is not a Darwinex-Live PASS")
+    exports = receipt.get("exports")
+    if not isinstance(exports, list) or len(exports) != len(universe):
+        raise ValueError("native export receipt does not bind exactly 37 exports")
+
+    by_symbol = {str(row.get("canonical_symbol")): row for row in exports}
+    if set(by_symbol) != set(universe):
+        raise ValueError("native export receipt universe mismatch")
+    series_by_symbol: dict[str, DailySeries] = {}
+    inputs: list[dict[str, object]] = []
+    for slot, symbol in enumerate(universe):
+        item = by_symbol[symbol]
+        if item.get("slot") != slot or item.get("native_symbol") != symbol.removesuffix(".DWX"):
+            raise ValueError(f"native mapping/slot mismatch for {symbol}")
+        path = Path(str(item["path"])).resolve()
+        if sha256_file(path) != str(item["sha256"]).upper():
+            raise ValueError(f"native export hash mismatch for {symbol}")
+        times: list[int] = []
+        closes: list[float] = []
+        with path.open(encoding="utf-8-sig", newline="") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames != ["time", "open", "high", "low", "close", "tickvol", "spread"]:
+                raise ValueError(f"native D1 schema mismatch for {symbol}")
+            for row in reader:
+                times.append(int(row["time"]))
+                closes.append(float(row["close"]))
+        if len(times) < MIN_DAILY_BARS or len(times) != int(item["rows"]):
+            raise ValueError(f"native D1 row count invalid for {symbol}")
+        if any(right <= left for left, right in zip(times, times[1:])):
+            raise ValueError(f"native D1 timestamps invalid for {symbol}")
+        if any(not math.isfinite(value) or value <= 0.0 for value in closes):
+            raise ValueError(f"native D1 close invalid for {symbol}")
+        if times[0] != int(item["first_epoch"]) or times[-1] != int(item["last_epoch"]):
+            raise ValueError(f"native D1 receipt boundary mismatch for {symbol}")
+        series_by_symbol[symbol] = DailySeries(
+            symbol=symbol,
+            path=path,
+            file_sha256=str(item["sha256"]).upper(),
+            times=tuple(times),
+            closes=tuple(closes),
+        )
+        inputs.append(dict(item))
+    bundle_sha = str(receipt.get("input_bundle_sha256", "")).upper()
+    if len(bundle_sha) != 64:
+        raise ValueError("native export receipt input bundle SHA missing")
+    return series_by_symbol, inputs, bundle_sha
+
+
 def input_manifest_rows(
     series_by_symbol: dict[str, DailySeries], universe: tuple[str, ...] = UNIVERSE
 ) -> list[dict[str, object]]:
@@ -257,9 +314,16 @@ def build(args: argparse.Namespace) -> dict[str, object]:
         raise ValueError("--universe must be an exact permutation of the governed universe")
     contract_payload = ranking_contract_payload(universe)
     contract_sha = sha256_bytes(contract_payload.encode("utf-8"))
-    series = load_universe(history_root, universe)
-    inputs = input_manifest_rows(series, universe)
-    bundle_sha = input_bundle_sha256(inputs)
+    append_v1 = getattr(args, "append_v1", None)
+    native_receipt = getattr(args, "native_export_receipt", None)
+    if bool(append_v1) != bool(native_receipt):
+        raise ValueError("--append-v1 and --native-export-receipt must be supplied together")
+    if native_receipt:
+        series, inputs, bundle_sha = load_native_export_receipt(native_receipt, universe)
+    else:
+        series = load_universe(history_root, universe)
+        inputs = input_manifest_rows(series, universe)
+        bundle_sha = input_bundle_sha256(inputs)
     rows = list(
         iter_calendar_rows(
             series,
@@ -270,31 +334,118 @@ def build(args: argparse.Namespace) -> dict[str, object]:
             contract_sha,
         )
     )
+    host_symbol = getattr(args, "host_symbol", None)
+    if host_symbol:
+        if host_symbol not in universe:
+            raise ValueError("--host-symbol must be in the governed universe")
+        rows = [row for row in rows if row["host_symbol"] == host_symbol]
     if not rows:
         raise ValueError("calendar generation produced zero rows")
 
     output.parent.mkdir(parents=True, exist_ok=True)
     fieldnames = list(rows[0])
-    with output.open("w", encoding="ascii", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
-        writer.writeheader()
+    legacy_bytes = b""
+    if append_v1:
+        append_v1 = append_v1.resolve()
+        legacy_bytes = append_v1.read_bytes()
+        if not legacy_bytes.endswith(b"\n"):
+            raise ValueError("append-only v1 calendar must end with LF")
+        with append_v1.open(encoding="ascii", newline="") as handle:
+            legacy_rows = list(csv.DictReader(handle))
+        if not legacy_rows or list(legacy_rows[0]) != fieldnames:
+            raise ValueError("append-only v1 calendar header mismatch")
+        legacy_keys = {(int(row["month_key"]), row["host_symbol"]) for row in legacy_rows}
+        appended_keys = {(int(row["month_key"]), str(row["host_symbol"])) for row in rows}
+        overlap = legacy_keys & appended_keys
+        if overlap:
+            raise ValueError(f"append-only host/month keys overlap v1 rows: {sorted(overlap)[:3]}")
+        from io import StringIO
+        buffer = StringIO(newline="")
+        writer = csv.DictWriter(buffer, fieldnames=fieldnames, lineterminator="\n")
         writer.writerows(rows)
+        output.write_bytes(legacy_bytes + buffer.getvalue().encode("ascii"))
+    else:
+        with output.open("w", encoding="ascii", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
     calendar_sha = sha256_file(output)
+
+    source_declaration = None
+    source_declaration_sha = None
+    total_rows = len(rows)
+    if append_v1:
+        source_declaration = getattr(args, "source_declaration_output", None)
+        if source_declaration is None:
+            source_declaration = output.with_suffix(".sources.csv")
+        source_declaration = source_declaration.resolve()
+        legacy_bundle = None
+        source_rows: list[dict[str, object]] = []
+        raw_lines = output.read_bytes().splitlines(keepends=True)
+        with output.open(encoding="ascii", newline="") as handle:
+            combined_rows = list(csv.DictReader(handle))
+        if len(raw_lines) != len(combined_rows) + 1:
+            raise ValueError("calendar physical row count mismatch")
+        for index, row in enumerate(combined_rows, start=1):
+            month = int(row["month_key"])
+            legacy_bundle = legacy_bundle or combined_rows[0]["input_bundle_sha256"]
+            source = ("native_dwx_d1" if row["input_bundle_sha256"] == bundle_sha
+                      else "custom_history")
+            if source == "custom_history" and row["input_bundle_sha256"] != legacy_bundle:
+                raise ValueError("v1 legacy rows contain more than one source bundle")
+            if source == "native_dwx_d1" and row["input_bundle_sha256"] != bundle_sha:
+                raise ValueError("native appended row bundle mismatch")
+            source_rows.append({
+                "calendar_row": index,
+                "month_key": month,
+                "host_symbol": row["host_symbol"],
+                "source": source,
+                "source_bundle_sha256": row["input_bundle_sha256"],
+                "row_sha256": sha256_bytes(raw_lines[index]),
+            })
+        source_declaration.parent.mkdir(parents=True, exist_ok=True)
+        with source_declaration.open("w", encoding="ascii", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=list(source_rows[0]), lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(source_rows)
+        source_declaration_sha = sha256_file(source_declaration)
+        total_rows = len(combined_rows)
 
     manifest: dict[str, object] = {
         "schema_version": SCHEMA_VERSION,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "generator": str(Path(__file__).resolve()),
-        "history_root": str(history_root),
+        "history_root": str(history_root) if not native_receipt else None,
         "ranking_contract_payload": contract_payload,
         "ranking_contract_sha256": contract_sha,
         "input_bundle_sha256": bundle_sha,
         "calendar_path": str(output),
         "calendar_sha256": calendar_sha,
-        "coverage": {"from_month": args.from_month, "to_month": args.to_month},
-        "row_count": len(rows),
+        "coverage": ({"from_month": int(combined_rows[0]["month_key"]),
+                       "to_month": args.to_month} if append_v1 else
+                     {"from_month": args.from_month, "to_month": args.to_month}),
+        "row_count": total_rows,
         "inputs": inputs,
     }
+    if append_v1:
+        manifest["append_only"] = {
+            "legacy_calendar_path": str(append_v1),
+            "legacy_prefix_bytes": len(legacy_bytes),
+            "legacy_prefix_sha256": sha256_bytes(legacy_bytes),
+            "appended_from_month": args.from_month,
+            "appended_to_month": args.to_month,
+            "appended_row_count": len(rows),
+        }
+        manifest["native_export_receipt"] = {
+            "path": str(native_receipt.resolve()),
+            "sha256": sha256_file(native_receipt.resolve()),
+        }
+        manifest["row_source_declaration"] = {
+            "path": str(source_declaration),
+            "sha256": source_declaration_sha,
+            "policy": "row input_bundle_sha256 selects custom_history or native_dwx_d1",
+            "sources": ["custom_history", "native_dwx_d1"],
+        }
     manifest_output.parent.mkdir(parents=True, exist_ok=True)
     manifest_output.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
@@ -322,6 +473,22 @@ def parser() -> argparse.ArgumentParser:
     )
     result.add_argument("--from-month", type=int, default=201710)
     result.add_argument("--to-month", type=int, default=202612)
+    result.add_argument(
+        "--host-symbol",
+        help="Limit generated rows to one governed host (used for append-only host recovery).",
+    )
+    result.add_argument(
+        "--append-v1", type=Path,
+        help="Preserve this v1 file as an exact byte prefix and append generated rows.",
+    )
+    result.add_argument(
+        "--native-export-receipt", type=Path,
+        help="Governed qm.qm1537-native-dwx-d1-export/v1 receipt used for appended rows.",
+    )
+    result.add_argument(
+        "--source-declaration-output", type=Path,
+        help="Per-row source declaration sidecar for append-only mixed-source calendars.",
+    )
     result.add_argument(
         "--universe",
         help="Comma-separated exact permutation of the governed universe (default: canonical order).",
