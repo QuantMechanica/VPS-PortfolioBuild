@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 10,
+  "revision": 11,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -316,7 +316,7 @@
     },
     {
       "category": "Pipeline/News-Kalender",
-      "cost_of_wait": "Pro Tag 0 Zaehlerfortschritt: 47 Q10_NEWS-Zeilen + 11196/XAUUSD (Q02-Q09 PASS, DSR V2 bestanden) warten im Kalender-Taint-Hold; der Zaehler bleibt strukturell bei 12/25, unabhaengig vom Fabrikdurchsatz. Vollsiegel (E1-D2-D4 bei Codex) braucht Tage: AUD/CAD-M5-Exporte, Nicht-USD-Anker, 2.591 unverifizierte Zeilen, Kandidat neu bauen. Fruehester ehrlicher Termin Mittwoch 09.09.",
+      "cost_of_wait": "Pro Tag 0 Zaehlerfortschritt: 47 Q10_NEWS-Zeilen + 11196/XAUUSD (Q02-Q09 PASS) warten im Kalender-Taint-Hold; Zaehler strukturell 12/25. NEU 03:05Z: das Vollsiegel ist mit Datenarbeit allein nicht erreichbar (E1-D2/D3/D4 fail-closed gemessen) - Warten hat keinen Endpunkt, solange die Gate-Kriterien deklarierte Residuen nicht zulassen.",
       "created_at_utc": "2026-09-07T02:28:53Z",
       "depends_on": [],
       "due": "2026-09-09",
@@ -324,12 +324,14 @@
         "docs/ops/OWNER_VORLAGE_2026-09-07_counter_path_calendar_taint.md",
         "docs/ops/evidence/2026-09-07_news_calendar_e1d_full_scope_seal.md",
         "docs/ops/evidence/2026-09-06_dsr-single-config-declaration-20260906_5bf3bf5e_execution.md",
-        "docs/ops/OWNER_VORLAGE_2026-09-05_news_calendar_defect.md"
+        "docs/ops/OWNER_VORLAGE_2026-09-05_news_calendar_defect.md",
+        "docs/ops/evidence/2026-09-07_news_calendar_e1d2_m5_exports.md",
+        "docs/ops/evidence/2026-09-07_news_calendar_e1d34_continuation.md"
       ],
       "id": "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907",
       "no_effect": "Option A (Empfehlung heute): Vollsiegel abwarten, Q10_NEWS bleibt im Taint-Hold, Wiedervorlage Mittwoch 09.09. 08:00 als To-Do; E1-D2-D4 laufen weiter; kein Code, kein Repin.",
       "question": "Zaehler-Pfad: Soll der scoped news-calendar consumer B (seit 05.09. implementiert, inaktiv) fuer die Q10_NEWS-Adjudikation AKTIVIERT und die so passierten D1/USD-Paare als zaehlbar akzeptiert werden (Option B, Fussnote 'Kalender scope-begrenzt', Re-Adjudikation nach Vollsiegel) - oder warten wir auf das Vollsiegel (Option A)?",
-      "recommendation": "NEIN heute = Option A (Vollsiegel abwarten, E1-D2-D4 laufen), mit fester Wiedervorlage Mittwoch 09.09. 08:00. Liefert E1-D3/D4 bis dahin keinen Vollsiegel-Dry-Run, empfehle ich B fuer die D1-USD-Teilmenge als eigenen JA-Entscheid. Zwei Tage Wartezeit sind billiger als eine Zaehlung, die nach dem Repin neu angefasst werden muss.",
+      "recommendation": "JA = Option B jetzt (Nachtrag 03:05Z): E1-D2/D3/D4 zeigen, dass ein gemessenes Vollsiegel unter den heutigen Gate-Kriterien nicht erreichbar ist (1.865 Event-by-Event-Zeilen ohne offiziellen Zeitplan; Footprint-Instants jenseits der Fabrik-History, die am 31.12.2024 endet). Warten (A) wartet auf ein unerreichbares Siegel. B zaehlt nur die D1/USD-Teilmenge mit deklarierten Ausschluessen, Fussnote 'Kalender scope-begrenzt', Re-Adjudikation nach einem spaeteren Kriterienbeschluss (B', eigene Karte auf Wunsch).",
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Option B: genau EIN Claude-Auftrag - Codex-Ticket (scoped consumer B aktivieren; Taint-Policy-Lift nur fuer B-adjudizierte Zeilen, alle anderen bleiben im Hold; Zaehler-Fussnote in Cockpit/OPEN_ITEMS/Vault; Re-Adjudikationspflicht nach Vollsiegel als Ticket), zeilenweise Freigabe der 47+1 Zeilen append-only, priority_track auf 11196. Kein Repin, kein Kalender-Publish, kein T_Live, kein Gate-Schwellenwert. Reversibel (Policy zurueck auf inaktiv; Evidenz bleibt)."

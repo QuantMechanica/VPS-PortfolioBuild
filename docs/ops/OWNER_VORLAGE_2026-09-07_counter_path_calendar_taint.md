@@ -55,3 +55,28 @@ Dokumentation (Vault/OPEN_ITEMS), Wiedervorlage Mittwoch 09.09. 08:00 als To-Do,
 
 B ist reversibel: Policy wieder auf „inaktiv", freigegebene Zeilen bleiben als Evidenz erhalten (append-only), Zähler-Fußnote
 bleibt bis zur Re-Adjudikation. Verdikte werden nie überschrieben.
+
+## Nachtrag 03:05Z — E1-D2/D3/D4 gemessen: das „Vollsiegel" ist mit Datenarbeit allein NICHT erreichbar
+
+Codex hat beide Folgeaufträge in der Nacht abgeschlossen (ehrlich, fail-closed, 75 Tests):
+- **E1-D2:** AUDUSD/USDCAD-M5-Exporte über die governed `T_Export`-Lane erzeugt (kein T1–T10/T_Live berührt). Die
+  Footprint-Prüfungen scheitern trotzdem: **sechs der sieben AUD/CAD-Instants liegen 2025, die Fabrik-Custom-History endet
+  am 31.12.2024** — dort kann kein Tick-Footprint existieren. Gate 6.5 gesamt: 27 PASS / 24 FAIL_FOOTPRINT, davon ein
+  Großteil außerhalb der History.
+- **E1-D3/D4:** alle neun angefragten offiziellen Instants ingestiert (58 Anker), Kandidat auf aktuellen Hashes neu gebaut
+  (Input-Drift 0), Detektor-Zeilen adjudiziert: **39 Klassen / 726 Zeilen** sind über offizielle Zeitpläne ankerbar,
+  **40 Klassen / 1 865 Zeilen sind Event-by-Event-Einträge ohne offiziellen Zeitplan** und bleiben strukturell „deklariert".
+  GBP/AUD-2026-H1-Exporte tragen gemischte Offsets (DST-Regime) und bleiben ausgeschlossen. Gates 6.1/6.2/6.5/6.7 FAIL,
+  Ingress REFUSED, kein Repin.
+
+**Was das heißt:** Ein Kalender, bei dem alle acht Gates *gemessen* PASS sind, ist nicht durch mehr Datenarbeit erreichbar:
+1 865 Zeilen haben keine offizielle Quelle, und Footprints jenseits der History gibt es nicht. Option A („warten") würde
+auf ein Siegel warten, das es unter den heutigen Gate-Kriterien nicht geben kann.
+
+**Geänderte Empfehlung:** **JA = Option B jetzt** — scoped consumer B aktivieren, Zählung nur für die D1/USD-Teilmenge mit
+deklarierten Ausschlüssen, Fußnote „Kalender scope-begrenzt", Re-Adjudikation, sobald ein Kriterienbeschluss (Option B')
+das Siegel mit *deklarierten* Residuen zulässt. Alternativ B': die Gate-Kriterien so fassen, dass strukturell unankerbare
+Event-by-Event-Klassen und Instants außerhalb der History als deklarierte Residuen zulässig sind — das ist eine
+Kriterienänderung (ROT), die ich dir als eigene Karte vorlege, wenn du sie willst. Evidenz:
+`docs/ops/evidence/2026-09-07_news_calendar_e1d2_m5_exports.md`, `…_e1d34_continuation.md`.
+
