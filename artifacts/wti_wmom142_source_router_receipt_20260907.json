@@ -1,0 +1,38 @@
+{
+  "schema": "qm.source-router-receipt/v1",
+  "recorded_date": "2026-09-07",
+  "source": {
+    "title": "Weekly Momentum in the Commodity Futures Market",
+    "authors": "Kyung Yoon Kwon; Jangkoo Kang; Jaesun Yun",
+    "doi": "10.1016/j.frl.2019.101306",
+    "accepted_manuscript_url": "https://pure.strath.ac.uk/ws/portalfiles/portal/91110414/Kwon_etal_FRL_2019_Weekly_momentum_in_the_commodity_futures_market.pdf"
+  },
+  "fresh_routes": [
+    {
+      "url": "https://doi.org/10.1016/j.frl.2019.101306",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists"
+    },
+    {
+      "url": "https://pure.strath.ac.uk/ws/portalfiles/portal/91110414/Kwon_etal_FRL_2019_Weekly_momentum_in_the_commodity_futures_market.pdf",
+      "status": "PERMISSION_REQUIRED",
+      "lead_status": "DEFERRED:SOURCE_POLICY",
+      "adapter": "generic",
+      "adapter_state": "ROUTER_ONLY",
+      "reason": "generic runtime retrieval is disabled until a cryptographic OWNER authorization verifier exists"
+    }
+  ],
+  "retained_complete_read_evidence": {
+    "status": "REUSED_GOVERNED_LOCAL_RECORD",
+    "pdf_pages_read": 20,
+    "pdf_sha256": "D768279A0B0F601216FFFA5C48A534939822E7C29B039169ADF0CA817B222F2C",
+    "records": [
+      "strategy-seeds/sources/KWON-KANG-YUN-WTI-WMOM1-2026/source.md",
+      "strategy-seeds/sources/KWON-KANG-YUN-WTI-WMOM42-2026/source.md"
+    ]
+  },
+  "policy_boundary": "No alternate proxy, browser, cached mirror, authentication, or access-control bypass was attempted. The new extraction uses only the already-governed complete-read record."
+}
