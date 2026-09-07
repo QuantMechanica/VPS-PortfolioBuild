@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "Jose A. Villar; Frederick L. Joutz; David J. Ramberg; John E. Parsons; Ana-Maria Fuertes; Joelle Miffre; Georgios Rallis",
+    "mechanic": "one synchronized completed week; each leg body-to-range efficiency abs(close-open)/(high-low); strict one above two-thirds and other below one-third; fade the high-efficiency leg body direction with opposite companion; equal-notional XTI XNG pair; one-week hold",
+    "slug": "xtixng-weffdiv-rv",
+    "strategy_id": "AI-CODEX-XTIXNG-WEFFDIV-RV-20260907_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 1,
+  "generated_at_utc": "2026-09-07T00:31:29+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4854,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1467,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "INPUT_ERROR_FAIL_CLOSED"
+}
