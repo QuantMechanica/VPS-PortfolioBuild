@@ -43,3 +43,7 @@ Q08 reruns end PASS or FAIL (not INVALID); old INVALID rows preserved; no thresh
 - Defects surfaced and fixed on the way (all APPROVED): producer window on append-only reruns (acf3637b / b2b3d35d65), 11196 replacement set (e638e0de), governed `--replacement-setfile` (9ecdd2f9 / e73af54859), producer/aggregator EA-identity format (Claude 866e3f2d78 + Codex adversarial hardening a430c1aeda, 4bf2eb39). Queue lever used: `mark-priority-track` on both rows (XAUUSD symbol serialization).
 - Consequence for the counter: 11167/XAUUSD is out (FAIL_SOFT); 11196/XAUUSD continues (Q08 PASS → pump cascade to Q09; see OPEN_ITEMS for the follow-up). Counter stays 12/25 until the chain reaches its terminal Q14 pair.
 - Sweep list of the remaining DSR-V2-INVALID rows (11015 etc.) = Q14 proposal per the OWNER card; not part of this execution.
+
+## Acceptance 2026-09-07 00:12Z — independent (Sonnet) review: ACCEPT, no caveat
+
+Verified read-only: both rows terminal with real verdicts (PASS / FAIL_SOFT), 8.2 `DSR_V2_COMPUTED` on both (dsr_p 0.00551 / 0.000855), `dsr_context_status=SEALED`, replacement set sha bound on 9ec3b856, five predecessor rows untouched (updated_at before 23:01Z), `gate_manifest.v4.json` and `q08_davey/aggregate.py` without commits since 16:00Z, fixes limited to identity normalization / plumbing, no T_Live or AutoTrading action, Q09 successor 6b6a3913 present. Task 8fe2bac0 closed **APPROVED** by the Orchestrator.
