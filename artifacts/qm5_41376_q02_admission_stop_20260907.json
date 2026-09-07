@@ -1,0 +1,64 @@
+{
+  "schema": "qm.q02-admission-handoff/v1",
+  "recorded_date": "2026-09-07",
+  "ea": {
+    "ea_id": "QM5_41376",
+    "ea_label": "QM5_41376_wti-wmom42",
+    "source_sha256": "29c6f03bbd55eb4f983de072ef1cadd0bf5b82c4b441c3fea8ae599c51beed6a",
+    "ex5_sha256": "4ec3ccd584a5c695bce6d790f9cd7d22c981a129abb1cd86fb5dbdf416f5c392",
+    "setfile_sha256": "bc9f92e23d5d14e6cac73b5b99c3db7a4078744b26395bc295f90f0bbc7f7998"
+  },
+  "pacer_build_guard": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "compile": {
+    "work_item_id": "f3543037-49ae-4def-bc3b-2ee09977207e",
+    "verdict": "COMPILE_OK",
+    "compiler_errors": 0,
+    "compiler_warnings": 0,
+    "build_check": "PASS",
+    "setfile_count": 1,
+    "release_receipt": "artifacts/qm5_41376_compile_release_20260907.json"
+  },
+  "q02_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "compile_work_item_id": "f3543037-49ae-4def-bc3b-2ee09977207e",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "cpu_admission": {
+    "threshold_percent": 97.0,
+    "maximum_percent": 99.8,
+    "terminal64_count": 7,
+    "stop_triggered": true,
+    "observations": [
+      {"at_utc": "2026-09-07T02:29:27.3495338Z", "cpu_load_percent": 90.5},
+      {"at_utc": "2026-09-07T02:29:29.3794778Z", "cpu_load_percent": 97.5},
+      {"at_utc": "2026-09-07T02:29:31.3824590Z", "cpu_load_percent": 96.9},
+      {"at_utc": "2026-09-07T02:29:33.3871761Z", "cpu_load_percent": 91.7},
+      {"at_utc": "2026-09-07T02:29:35.4091186Z", "cpu_load_percent": 99.8}
+    ]
+  },
+  "q02": {
+    "enqueued": false,
+    "status": "CPU_CEILING_STOP_NOT_ENQUEUED",
+    "reason": "binding instruction requires immediate stop when backtest CPU ceiling is hit"
+  },
+  "validation": {
+    "reference_tests": "10/10 PASS",
+    "card_schema_lint": "PASS",
+    "framework_input_pin_audit": "PASS"
+  },
+  "prohibited_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}

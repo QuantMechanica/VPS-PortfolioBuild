@@ -74,3 +74,4 @@ twelve-month clock, not this weekly formation/hold contract.
 |---|---|---|---|
 | v0 | 2026-09-07 | G0 | approved source and card |
 | v1 | 2026-09-07 | Q01 | implementation and deterministic reference validation |
+| v2 | 2026-09-07 | Q01/Q02 | governed compile/build-check PASS; Q02 stopped before enqueue at CPU ceiling |

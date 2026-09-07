@@ -52,8 +52,8 @@ r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q02
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q02_status: CPU_CEILING_STOP_NOT_ENQUEUED
 parameters_to_test: "Locked Q02 baseline only: exact D1; 40-bar history buffer; four consecutive completed 3-5-session weeks; exclude t-1; strict nonzero ln(final close of t-2/first open of t-4) sign continuation; 180-minute entry grace; 3.5*ATR(20,D1) frozen stop; 10-day stale repair; 1500-point spread ceiling."
 review_focus: "Falsify the source-horizon CMOM4,2 WTI stream outside the certified XAU/SP500/NDX/XNG book. Verify exact t-4..t-2 endpoints, complete exclusion of t-1, no magnitude or volatility gate, durable weekly attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -264,8 +264,8 @@ Q02 alone measures density/economics; Q09 alone measures book correlation.
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-07 | APPROVED | `decisions/2026-09-07_qm5_41376_wti_skipped_week_three_week_momentum_g0.md` |
-| Q01 Build Validation | — | PENDING | governed compile required |
-| Q02 Baseline Screening | — | NOT_ENQUEUED | exact XTIUSD.DWX D1 fixed-risk row only |
+| Q01 Build Validation | 2026-09-07 | PASS | governed compile `f3543037-49ae-4def-bc3b-2ee09977207e`; 0 errors/0 warnings; build check PASS |
+| Q02 Baseline Screening | 2026-09-07 | CPU_CEILING_STOP_NOT_ENQUEUED | fresh sample reached 99.8% against 97% ceiling |
 
 ## Safety Boundary
 
