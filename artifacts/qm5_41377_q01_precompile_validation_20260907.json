@@ -1,0 +1,49 @@
+{
+  "schema": "qm.q01-precompile-validation/v1",
+  "recorded_date": "2026-09-07",
+  "ea_id": "QM5_41377",
+  "ea_label": "QM5_41377_wti-wmom142-agree",
+  "source_sha256": "44aa5465aa6631e5b47cd7c8749d8a6371d01281fdccb73cbf5768531d53e44c",
+  "card_sha256": "ee788674d7b9b5140208d1c84ba4870f96b913318f9d234b105e75b8a3b262f2",
+  "setfile_sha256": "e5bd3dd57446f6af9839b95d0af3e08e6e1f598dbadb1e58b36f2787424dece3",
+  "card": "strategy-seeds/cards/approved/QM5_41377_wti-wmom142-agree_card.md",
+  "setfile": "framework/EAs/QM5_41377_wti-wmom142-agree/sets/QM5_41377_wti-wmom142-agree_XTIUSD.DWX_D1_backtest.set",
+  "validation": {
+    "reference_tests": {
+      "command": "python -m unittest framework/EAs/QM5_41377_wti-wmom142-agree/docs/test_weekly_momentum_agreement_reference.py",
+      "result": "12/12 PASS"
+    },
+    "card_schema_lint": {
+      "command": "python framework/scripts/skill_card_schema_lint.py --card strategy-seeds/cards/approved/QM5_41377_wti-wmom142-agree_card.md",
+      "result": "PASS",
+      "ml_hits": []
+    },
+    "pacer_framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41377_wti-wmom142-agree/QM5_41377_wti-wmom142-agree.mq5",
+      "exit_code": 0,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "hits": []
+    },
+    "magic_resolver": {
+      "csv_rows_for_ea": 1,
+      "resolver_occurrences": 1,
+      "magic": 413770000,
+      "row_count_before": 18160,
+      "row_count_after": 18161,
+      "result": "PASS_NO_DROP"
+    },
+    "setfile_build_hash_state": "PENDING_GOVERNED_COMPILE"
+  },
+  "risk_contract": {
+    "environment": "backtest",
+    "RISK_FIXED": 1000.0,
+    "RISK_PERCENT": 0.0
+  },
+  "prohibited_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
