@@ -8,3 +8,9 @@
 1. Codex ticket (high): T_Export D1 download + export of the 37 symbols (receipt), builder extension with per-row source declaration, calendar v2 + manifest, preset re-pin (append-only set version), demo install (Common/Files + presets) with receipt and the 3-line OWNER instruction, refresh rule, sibling audit (21505 and other calendar/plan-driven sleeves).
 2. After integration: verify sha chain, demo install, OWNER re-attach → EA logs MONTHLY_SLEEVE_STATE ready=true for 202609.
 3. OPEN_ITEMS + M13 manifest + Vault; task → REVIEW → independent acceptance → APPROVED.
+
+## Progress 2026-09-07 10:40Z — step 1 delivered (Codex b2b405b0 APPROVED, e5d7330a41)
+
+- Native Darwinex D1 for 37/37 symbols via T_Export (receipt BE8DE77C…); calendar v2 (sha EB9AE48A…) = v1 byte prefix + 21 XAG rows 2025-01..2026-09 with declared source per row; ranking contract unchanged; September row ready (rank 0, valid 37, top-3 XAGUSD/XNGUSD/XTIUSD).
+- Demo staged: EX5 16D66A0F installed (factory 142A019E untouched), v2 in both Common/Files paths, preset `QM5_1537_XAGUSD_D1_live_trial_s20260907-002.set`; M13 addendum; refresh runbook `QM5_1537_MONTHLY_SLEEVE_REFRESH_RUNBOOK_2026-09-07.md` + task JSON (not registered yet).
+- Step 2 = OWNER re-attach with the new preset → expect `MONTHLY_SLEEVE_STATE month=202609 ready=true valid_count=37`; then register the monthly refresh task (CEO) and close.
