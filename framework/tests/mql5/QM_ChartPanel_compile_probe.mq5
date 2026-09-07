@@ -11,6 +11,8 @@ CQMChartPanel g_signature_panel;
 
 int OnInit()
   {
+   if(!QM_PanelFormatterSelfTest())
+      return INIT_FAILED;
    if(InpApplyScheme)
       QM_ChartScheme_Apply(ChartID());
    if(!g_signature_panel.Initialize(ChartID(), 99999, "compile-probe", 99999001,
@@ -28,7 +30,7 @@ void OnTimer()
    state.news_state = "OPEN";
    state.news_detail = "LIVE MT5 NATIVE";
    state.friday_state = "OK";
-   state.friday_countdown = "01:00:00";
+   state.friday_countdown = "01:00";
    state.governor_state = "UNBOUND";
    state.governor_reason = "PROBE";
    state.kill_switch_state = "ARMED";
@@ -53,4 +55,11 @@ void OnDeinit(const int reason)
    g_signature_panel.Shutdown();
    if(InpApplyScheme)
       QM_ChartScheme_Restore(ChartID());
+  }
+
+void OnTradeTransaction(const MqlTradeTransaction &trans,
+                        const MqlTradeRequest &request,
+                        const MqlTradeResult &result)
+  {
+   g_signature_panel.InvalidatePerformance();
   }

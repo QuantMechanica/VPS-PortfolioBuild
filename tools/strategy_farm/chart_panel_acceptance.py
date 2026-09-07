@@ -39,10 +39,12 @@ def static_acceptance() -> dict:
         "required_fields": all(
             token in header
             for token in (
-                "TRADING ", "MAGIC ", "NEWS ", "FRI ", "GOV ", "KS ",
-                "RISK ", "ROOM DAILY ", "EXPOSURE SL ", "POS ", "ORD ",
-                "NEXT BAR ", "LAST SIGNAL ", "LAST TRADE ", "HEALTH HB ",
-                "CAL ", "LICENSE ", "BUILD ", "_Symbol", "_Period",
+                "STATE | MAY I TRADE?", "PERFORMANCE | THIS MAGIC",
+                "RISK / ROOM", "POSITION / ORDERS | THIS MAGIC", "NEXT",
+                "HEALTH", "IDENTITY", "Trading", "News", "Governor",
+                "Kill switch", "Next-trade risk", "Open risk to SL",
+                "Next decision", "Last signal", "Last trade", "Heartbeat",
+                "Calendar", "Build / license", "MAGIC ", "_Symbol", "_Period",
             )
         ),
         "object_namespace": '"QM_SIG_"' in header,
@@ -62,8 +64,18 @@ def static_acceptance() -> dict:
                 "CHART_SCALE", "CHART_SHOW_GRID",
             )
         ),
-        "max_22_rows": "line < 18" in header,
-        "market_safe_support": "Support: MQL5 comments/messages" in header,
+        "tabular_grid": all(token in header for token in (
+            "ANCHOR_RIGHT_UPPER", "MakeSection", "MakeRow", "QM_PANEL_ROWS",
+        )),
+        "de_de_formatters": all(token in header for token in (
+            "QM_PanelFormatNumber", '"100.000,00"', '"0,31 %"',
+            "QM_PanelMoney", "QM_PanelPips", "QM_PanelDateTime",
+        )),
+        "performance_cache": all(token in header for token in (
+            "QM_PANEL_REFRESH_SECONDS", "m_performance_dirty",
+            "InvalidatePerformance", "QM_PanelBuildPerformance",
+        )),
+        "market_safe_support": "Support: MQL5 comments/messages" in combined,
     }
     return {
         "status": "PASS" if all(checks.values()) else "FAIL",

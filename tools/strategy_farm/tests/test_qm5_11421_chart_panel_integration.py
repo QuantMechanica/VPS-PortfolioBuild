@@ -49,6 +49,13 @@ def test_snapshot_uses_existing_framework_governance_state():
         assert token in text
 
 
+def test_performance_cache_invalidated_by_trade_transaction():
+    text = SOURCE.read_text(encoding="utf-8")
+    transaction = text[text.index("void OnTradeTransaction"):]
+    assert "g_qm_signature_panel.InvalidatePerformance();" in transaction
+    assert "g_qm_signature_panel.Refresh(snapshot)" not in transaction
+
+
 def test_signature_panel_suppresses_legacy_surface_when_enabled():
     text = SOURCE.read_text(encoding="utf-8")
     common = (

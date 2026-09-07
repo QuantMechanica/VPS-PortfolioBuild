@@ -1,0 +1,21 @@
+{
+  "schema": "qm.signature-panel-object-census/v3",
+  "task_id": "4bdcbb91-075f-4e93-b4b6-294c0d5776ab",
+  "ea_id": 11421,
+  "legacy_prefix": "QM5_UI_11421_",
+  "legacy_expected_enabled_count": 0,
+  "signature_prefix": "QM_SIG_11421_<magic>_",
+  "signature_expected_count": 87,
+  "breakdown": {
+    "shell_objects": 5,
+    "section_objects": 14,
+    "label_value_cells": 68
+  },
+  "wide_layout_minimum_chart_pixels": 1200,
+  "wide_panel_pixels": [1090, 550],
+  "narrow_panel_pixels": [548, 970],
+  "shutdown": "ObjectsDeleteAll(chart_id, owned_prefix)",
+  "runtime_after_census": "PENDING_OWNER_REATTACH",
+  "verified_by": "static construction count and native compile",
+  "ok": true
+}

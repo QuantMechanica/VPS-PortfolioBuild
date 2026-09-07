@@ -165,9 +165,9 @@ void QM11421_RefreshChartPanel()
       const double pip = _Point * ((_Digits == 3 || _Digits == 5) ? 10.0 : 1.0);
       const double spread = pip > 0.0 ? (tick.ask - tick.bid) / pip : 0.0;
       spread_allows = (spread <= strategy_spread_cap_pips || spread == 0.0);
-      snapshot.spread_state = StringFormat("%s %.2f/%.2f pip",
-         spread_allows ? "PASS" : "BLOCK",
-         spread, strategy_spread_cap_pips);
+      snapshot.spread_state = (spread_allows ? "PASS " : "BLOCK ") +
+                              QM_PanelPips(spread) + "/" +
+                              QM_PanelPips(strategy_spread_cap_pips);
      }
    else
       snapshot.spread_state = "N/A";
@@ -176,14 +176,14 @@ void QM11421_RefreshChartPanel()
    if(g_qm_risk_mode == QM_RISK_MODE_PERCENT)
      {
       snapshot.risk_mode = "RISK_PERCENT";
-      snapshot.risk_per_trade = DoubleToString(g_qm_risk_percent, 4);
-      snapshot.effective_risk = snapshot.risk_per_trade + "%";
+      snapshot.risk_per_trade = QM_PanelPercent(g_qm_risk_percent);
+      snapshot.effective_risk = QM_PanelPercent(g_qm_risk_percent * PORTFOLIO_WEIGHT);
      }
    else
      {
       snapshot.risk_mode = "RISK_FIXED";
-      snapshot.risk_per_trade = DoubleToString(g_qm_risk_fixed, 2);
-      snapshot.effective_risk = "$" + snapshot.risk_per_trade;
+      snapshot.risk_per_trade = QM_PanelMoney(g_qm_risk_fixed);
+      snapshot.effective_risk = QM_PanelMoney(g_qm_risk_fixed * PORTFOLIO_WEIGHT);
      }
    const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
    if(g_qm_ks_day_start_equity > 0.0 && g_qm_ks_daily_loss_halt_pct > 0.0)
@@ -191,8 +191,8 @@ void QM11421_RefreshChartPanel()
       const double floor = g_qm_ks_day_start_equity *
                            (1.0 - g_qm_ks_daily_loss_halt_pct / 100.0);
       const double room = MathMax(0.0, equity - floor);
-      snapshot.daily_room = StringFormat("$%.2f / %.2f%%", room,
-         equity > 0.0 ? room / equity * 100.0 : 0.0);
+      snapshot.daily_room = QM_PanelMoney(room) + " | " +
+         QM_PanelPercent(equity > 0.0 ? room / equity * 100.0 : 0.0);
      }
    else
       snapshot.daily_room = "N/A (anchor unavailable)";
@@ -551,6 +551,7 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
                         const MqlTradeResult &result)
   {
    QM_FrameworkOnTradeTransaction(trans, request, result);
+   g_qm_signature_panel.InvalidatePerformance();
   }
 
 double OnTester()
