@@ -1,0 +1,110 @@
+{
+  "generatedUtc": "2026-09-07T14:29:18.382Z",
+  "base": "http://127.0.0.1:8772",
+  "checks": {
+    "staticHtml": true,
+    "staticTokenOrder": true,
+    "staticSinglePalette": true,
+    "staticExposure": true,
+    "staticLf": true,
+    "styleOrder": true,
+    "heroCopy": true,
+    "heroActions": true,
+    "navigation": true,
+    "evidenceLabels": true,
+    "contrastAA": true,
+    "reducedMotionDefault": true,
+    "reducedMotionOverride": true,
+    "touchTargets": true,
+    "responsive": true,
+    "archiveRows": true,
+    "routes": true,
+    "runtimeErrors": true
+  },
+  "staticAudit": {
+    "htmlFiles": 3369,
+    "archiveDetailPages": 3339,
+    "missingTokenLinks": [],
+    "badStyleOrder": [],
+    "oldFontFiles": [],
+    "oldBlueFiles": [],
+    "exposureFiles": [],
+    "shellHexFiles": [],
+    "crlfFiles": []
+  },
+  "home": {
+    "title": "The Quantitative Edge.",
+    "eyebrow": "SYSTEMATIC - TESTED OPENLY",
+    "stylesheets": [
+      "/css2",
+      "/quantmechanica-design-tokens.css",
+      "/quantmechanica-components.css",
+      "/style.css",
+      "/review-style.css"
+    ],
+    "styleOrder": true,
+    "fontStack": "Inter, \"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif",
+    "primaryCount": 1,
+    "secondaryTextLinkCount": 1,
+    "primaryBackground": "rgb(8, 114, 71)",
+    "desktopOverflow": false,
+    "navItemCount": 6,
+    "illustrativeLabels": 9,
+    "reducedMotion": true,
+    "funnelControl": {
+      "text": "Play funnel",
+      "disabled": false,
+      "height": 44
+    },
+    "funnelTime": 0,
+    "contrastRatios": {
+      "carbonOnSurface": 17.410761813966648,
+      "slateOnSurface": 4.909461501210779,
+      "slateOnCloud": 4.5715764224043145,
+      "greenDarkOnSurface": 5.985913026477798,
+      "surfaceOnGreenDark": 5.985913026477798,
+      "positiveOnSurface": 5.3531149332799215,
+      "negativeOnSurface": 5.2546207006728425,
+      "warningOnSurface": 4.968342589959457
+    }
+  },
+  "motion": {
+    "before": 0,
+    "afterPlay": 0.6833000000000001,
+    "pausedAt": 0.6833000000000001,
+    "afterWait": 0.6833000000000001,
+    "label": "Play funnel",
+    "disabled": false
+  },
+  "mobile": {
+    "overflow": false,
+    "undersized": []
+  },
+  "archive": {
+    "rows": 3339,
+    "overflow": false,
+    "tokenFirst": [
+      "/css2",
+      "/quantmechanica-design-tokens.css",
+      "/quantmechanica-components.css"
+    ]
+  },
+  "detail": {
+    "title": "AB CD Harmonic Completion",
+    "navVisible": true,
+    "scrollY": 0,
+    "overflow": false
+  },
+  "blog": {
+    "title": "How we ask better questions.",
+    "overflow": false
+  },
+  "statuses": {
+    "/": 200,
+    "/strategies/": 200,
+    "/strategies/ab-cd-harmonic-completion-048895.html": 200,
+    "/blog": 200
+  },
+  "errors": [],
+  "pass": true
+}
