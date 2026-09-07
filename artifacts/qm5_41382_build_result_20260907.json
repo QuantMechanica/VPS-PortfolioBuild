@@ -1,0 +1,68 @@
+{
+  "schema_version": "qm.ea-build-result/v1",
+  "recorded_date": "2026-09-07",
+  "ea_id": "QM5_41382",
+  "ea_label": "QM5_41382_wti-tsmom6-h2",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "strategy_identity": {
+    "formation_months": 6,
+    "holding_months": 2,
+    "decision_month_parity": "odd",
+    "source_id": "MOP-WTI-TSMOM6-H2-2026"
+  },
+  "q01": {
+    "status": "PASS",
+    "work_item_id": "2ba18bd3-a6f3-485f-bf5f-a7ace6af202d",
+    "terminal": "T10",
+    "compile_result": "COMPILE_OK",
+    "compiler_errors": 0,
+    "compiler_warnings": 0,
+    "strict_build_check": "PASS",
+    "strict_build_check_failures": 0,
+    "strict_build_check_nonfailing_warnings": 3,
+    "reference_vectors": 13,
+    "reference_vectors_status": "PASS",
+    "card_lint_status": "PASS",
+    "pacer_framework_input_pin_hits": 0
+  },
+  "hashes": {
+    "source_sha256": "a41a4e389bc1f8a4cef1dd5deadc3e7b01c08df140a9f85b962f9299d281078f",
+    "card_sha256": "bce40cc392f20e62c81899fad34603638541440b7b74c62514b4fb000e281380",
+    "setfile_sha256": "4477ba3e6860ed87024b1ade858881cdba695d6509316319e30196c17ece0cd4",
+    "ex5_sha256": "abc2506190d4cb987b45fa7e5ba91a4b08f1f669e2abbe6d0561a8aea9b6f2ad",
+    "ex5_size_bytes": 439912,
+    "compile_evidence_sha256": "5440b4587776cb35bb0c4293e05bf4633a48bf5eb70a2d7cf74481b3e81790ba",
+    "strict_build_report_sha256": "9dde33bc226352fe61a96c9f9d651ca14234efa3250eda2be144f91cf7383fc5"
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "setfile_environment": "backtest"
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING",
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [99.7, 100.0, 100.0, 99.4, 99.8],
+    "cpu_max_percent": 100.0,
+    "admitted": false,
+    "work_item_created": false
+  },
+  "compile_intake_note": {
+    "initial_bound_setfile_attempt": "REFUSED_WITHOUT_MUTATION",
+    "initial_refusal_reason": "BOUND_SETFILE_HASH_EXISTS",
+    "held_predecessor_work_item_id": "25e63e1b-3a8e-4edc-87a6-5869a7878f80",
+    "held_predecessor_timeframe": "H2",
+    "held_predecessor_released": false,
+    "held_predecessor_compiled": false,
+    "successor_timeframe": "D1",
+    "source_repair_authority": "router_ops_issue:e9944090-1e0f-4dea-af90-e74f8079d1c8"
+  },
+  "safety": {
+    "t_live_used": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false,
+    "manual_backtest_run": false
+  }
+}

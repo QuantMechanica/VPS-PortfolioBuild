@@ -48,9 +48,9 @@ r1_track_record: PASS_WITH_WTI_SPECIFIC_EFFICACY_UNPROVEN
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_BUILD
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02_NOT_ENQUEUED_CPU_CEILING
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 parameters_to_test: "Locked Q02 baseline only: D1; seven consecutive completed month-end closes; exact six-month log-return sign; odd-month decisions; two-month hold; 300 D1 bars; 3.5*ATR(20,D1) frozen stop; 70-day stale repair; 1500-point spread ceiling."
 review_focus: "Falsify the source-bounded WTI k=6,h=2 stream. Verify seven exact completed-month endpoints, odd-month-only attempts, no even-month rollover, fixed risk, frozen stop, and next-odd-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -208,5 +208,5 @@ live manifests, portfolio-gate changes, admission, and correlation waivers.
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-07 | APPROVED | `decisions/2026-09-07_qm5_41382_wti_tsmom6_h2_g0.md` |
-| Q01 Build Validation | 2026-09-07 | PENDING | Build not yet compiled. |
-| Q02 Baseline Screening | 2026-09-07 | NOT_ENQUEUED | Requires Q01 PASS and fresh CPU admission. |
+| Q01 Build Validation | 2026-09-07 | PASS | Work item `2ba18bd3-a6f3-485f-bf5f-a7ace6af202d`: `COMPILE_OK`, compiler zero errors/warnings, strict build check PASS with three nonfailing card-resolution advisories; PACER audit and deterministic reference vectors PASS. |
+| Q02 Baseline Screening | 2026-09-07 | NOT_ENQUEUED_CPU_CEILING | Fresh CPU samples `[99.7, 100.0, 100.0, 99.4, 99.8]`; maximum 100.0% breached the binding 97% ceiling, so no Q02 work item was created. |
