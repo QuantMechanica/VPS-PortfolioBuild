@@ -47,9 +47,9 @@ expected_pf: 1.01
 expected_dd_pct: 35.0
 risk_class: high
 ml_required: false
-r1_track_record: PASS_WITH_TIME_SERIES_PORT_RISK
+r1_track_record: PASS
 r2_mechanical: PASS
-r3_data_available: PASS_WITH_CONTINUOUS_CFD_BASIS_RISK
+r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: Q01
 q01_status: PENDING
