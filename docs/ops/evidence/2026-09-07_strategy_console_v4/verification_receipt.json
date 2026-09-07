@@ -1,0 +1,66 @@
+{
+  "schema": "qm.strategy-console-v4.verification/v1",
+  "task_id": "bb036699-87e0-4172-b00a-de49a14ab6b7",
+  "checked_at_utc": "2026-09-07T19:14:41Z",
+  "reviewer": "codex",
+  "implementation_model": "gpt-6-astra",
+  "source": {
+    "canonical_path": "C:/QM/repo/framework/EAs/QM5_11421_ohlc-daily-squeeze-reversal-d1/QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+    "canonical_sha256": "0162bd0e54060688e9390d16aa6b10c89dc3d000a23a707783aad02a578b143e",
+    "artifact_path": "D:/QM/ftmo/compile_probe_console_v4_20260907_1913Z/MQL5/Experts/QM_FTMO/QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+    "artifact_sha256": "0162bd0e54060688e9390d16aa6b10c89dc3d000a23a707783aad02a578b143e",
+    "matches": true
+  },
+  "header_compile": {
+    "root": "D:/QM/ftmo/compile_probe_console_v4_header_20260907_1904Z",
+    "result": "0 errors, 0 warnings, 889 ms elapsed, cpu='X64 Regular'",
+    "log_sha256": "4690a0a9402d51652b5bb4a472623def2c21e3044da0de32e1a60eeb483f64ba",
+    "ex5_sha256": "b349448b42371a9177d06d8b3d634684996b52d6ae69054f6a2d90e499b92a6e",
+    "ex5_bytes": 47240,
+    "runtime_self_tests_executed": false
+  },
+  "canary_compile": {
+    "root": "D:/QM/ftmo/compile_probe_console_v4_20260907_1913Z",
+    "result": "0 errors, 0 warnings, 3823 ms elapsed, cpu='X64 Regular'",
+    "log_path": "D:/QM/ftmo/compile_probe_console_v4_20260907_1913Z/MQL5/Experts/QM_FTMO/QM5_11421_ohlc-daily-squeeze-reversal-d1.log",
+    "log_sha256": "f14e296e701bd1623d37085694ac6e2dfa75065ac77845af98c25b66fee47d6b",
+    "ex5_sha256": "5be0846344014fee1b87036e496cc6573cd13986cf840b7732afd40610895614",
+    "ex5_bytes": 492130
+  },
+  "static_acceptance": {
+    "verdict": "PASS",
+    "checks_passed": 21,
+    "checks_total": 21,
+    "color_tokens_matching": 24,
+    "color_tokens_total": 24
+  },
+  "focused_tests": {
+    "verdict": "PASS",
+    "passed": 8,
+    "failed": 0,
+    "files": [
+      "tools/strategy_farm/tests/test_chart_panel_acceptance.py",
+      "tools/strategy_farm/tests/test_qm5_11421_chart_panel_integration.py"
+    ]
+  },
+  "guardrails": {
+    "max_news_stale_hours": 336,
+    "artifact_source": {"verdict": "PASS", "files_checked": 1, "findings": 0},
+    "artifact_preset": {"verdict": "PASS", "files_checked": 1, "findings": 0},
+    "canary_directory": {"verdict": "PASS", "files_checked": 30, "findings": 0}
+  },
+  "trading_path_equivalence": {
+    "baseline_commit": "db44a0983a",
+    "verdict": "PASS",
+    "method": "focused test extracts and byte-compares Strategy_NoTradeFilter, Strategy_EntrySignal, Strategy_ExitSignal, and the OnTick trading body"
+  },
+  "runtime": {
+    "terminal_started_or_restarted": false,
+    "ea_attached_by_agent": false,
+    "live_screenshot_captured": false,
+    "live_object_census_captured": false,
+    "self_test_journal_observed": false,
+    "status": "PENDING_OWNER_REATTACH"
+  },
+  "verdict": "REVIEW_READY"
+}

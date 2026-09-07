@@ -1,18 +1,20 @@
 #ifndef QM_CHARTSCHEME_MQH
 #define QM_CHARTSCHEME_MQH
 
-// QuantMechanica light chart scheme. Presentation only: no trade operations.
+#include <QM/QM_DesignTokens.mqh>
+
+// QuantMechanica chart tokens. Presentation only; exact snapshot restoration.
 
 #define QM_SCHEME_BG       C'255,255,255'
-#define QM_SCHEME_SURFACE  C'248,250,252'
-#define QM_SCHEME_SECTION  C'237,242,247'
-#define QM_SCHEME_BORDER   C'203,213,225'
-#define QM_SCHEME_TEXT     C'15,23,42'
-#define QM_SCHEME_MUTED    C'71,85,105'
-#define QM_SCHEME_STEEL    C'41,84,212'
-#define QM_SCHEME_EMERALD  C'5,150,105'
-#define QM_SCHEME_AMBER    C'217,119,6'
-#define QM_SCHEME_RED      C'239,68,68'
+#define QM_SCHEME_SURFACE  QM_COLOR_SURFACE
+#define QM_SCHEME_SECTION  QM_COLOR_CLOUD
+#define QM_SCHEME_BORDER   QM_COLOR_BORDER
+#define QM_SCHEME_TEXT     QM_COLOR_CARBON
+#define QM_SCHEME_MUTED    QM_COLOR_SLATE
+#define QM_SCHEME_STEEL    QM_COLOR_SIGNAL_BLUE
+#define QM_SCHEME_EMERALD  QM_COLOR_CANDLE_UP
+#define QM_SCHEME_AMBER    QM_COLOR_WARNING
+#define QM_SCHEME_RED      QM_COLOR_CANDLE_DOWN
 
 struct QMChartSchemeSnapshot
   {
@@ -36,13 +38,15 @@ struct QMChartSchemeSnapshot
    long show_grid;
    long show_bid;
    long show_ask;
+   long show_volumes;
+   long show_last;
   };
 
 QMChartSchemeSnapshot g_qm_chart_scheme_snapshot;
 
 bool QM_ChartScheme_Apply(const long chart_id)
   {
-   if(MQLInfoInteger(MQL_TESTER) != 0 || chart_id < 0)
+   if(MQLInfoInteger(MQL_TESTER) != 0 || MQLInfoInteger(MQL_OPTIMIZATION) != 0 || chart_id < 0)
       return false;
    if(g_qm_chart_scheme_snapshot.applied)
       return (g_qm_chart_scheme_snapshot.chart_id == chart_id);
@@ -66,6 +70,8 @@ bool QM_ChartScheme_Apply(const long chart_id)
    g_qm_chart_scheme_snapshot.show_grid = ChartGetInteger(chart_id, CHART_SHOW_GRID, 0);
    g_qm_chart_scheme_snapshot.show_bid = ChartGetInteger(chart_id, CHART_SHOW_BID_LINE, 0);
    g_qm_chart_scheme_snapshot.show_ask = ChartGetInteger(chart_id, CHART_SHOW_ASK_LINE, 0);
+   g_qm_chart_scheme_snapshot.show_volumes = ChartGetInteger(chart_id, CHART_SHOW_VOLUMES, 0);
+   g_qm_chart_scheme_snapshot.show_last = ChartGetInteger(chart_id, CHART_SHOW_LAST_LINE, 0);
    g_qm_chart_scheme_snapshot.applied = true;
 
    bool ok = true;
@@ -76,7 +82,7 @@ bool QM_ChartScheme_Apply(const long chart_id)
    ok = ChartSetInteger(chart_id, CHART_COLOR_CHART_DOWN, QM_SCHEME_RED) && ok;
    ok = ChartSetInteger(chart_id, CHART_COLOR_CANDLE_BULL, QM_SCHEME_EMERALD) && ok;
    ok = ChartSetInteger(chart_id, CHART_COLOR_CANDLE_BEAR, QM_SCHEME_RED) && ok;
-   ok = ChartSetInteger(chart_id, CHART_COLOR_CHART_LINE, QM_SCHEME_TEXT) && ok;
+   ok = ChartSetInteger(chart_id, CHART_COLOR_CHART_LINE, QM_COLOR_SIGNAL_BLUE) && ok;
    ok = ChartSetInteger(chart_id, CHART_COLOR_VOLUME, QM_SCHEME_STEEL) && ok;
    ok = ChartSetInteger(chart_id, CHART_COLOR_BID, QM_SCHEME_STEEL) && ok;
    ok = ChartSetInteger(chart_id, CHART_COLOR_ASK, QM_SCHEME_STEEL) && ok;
@@ -86,7 +92,9 @@ bool QM_ChartScheme_Apply(const long chart_id)
    ok = ChartSetInteger(chart_id, CHART_SCALE, 3) && ok;
    ok = ChartSetInteger(chart_id, CHART_SHOW_GRID, false) && ok;
    ok = ChartSetInteger(chart_id, CHART_SHOW_BID_LINE, true) && ok;
-   ok = ChartSetInteger(chart_id, CHART_SHOW_ASK_LINE, true) && ok;
+   ok = ChartSetInteger(chart_id, CHART_SHOW_ASK_LINE, false) && ok;
+   ok = ChartSetInteger(chart_id, CHART_SHOW_LAST_LINE, false) && ok;
+   ok = ChartSetInteger(chart_id, CHART_SHOW_VOLUMES, CHART_VOLUME_HIDE) && ok;
    if(!ok)
      {
       QM_ChartScheme_Restore(chart_id);
@@ -119,6 +127,8 @@ void QM_ChartScheme_Restore(const long chart_id)
    ChartSetInteger(chart_id, CHART_SHOW_GRID, g_qm_chart_scheme_snapshot.show_grid);
    ChartSetInteger(chart_id, CHART_SHOW_BID_LINE, g_qm_chart_scheme_snapshot.show_bid);
    ChartSetInteger(chart_id, CHART_SHOW_ASK_LINE, g_qm_chart_scheme_snapshot.show_ask);
+   ChartSetInteger(chart_id, CHART_SHOW_LAST_LINE, g_qm_chart_scheme_snapshot.show_last);
+   ChartSetInteger(chart_id, CHART_SHOW_VOLUMES, g_qm_chart_scheme_snapshot.show_volumes);
    ChartRedraw(chart_id);
    g_qm_chart_scheme_snapshot.applied = false;
   }

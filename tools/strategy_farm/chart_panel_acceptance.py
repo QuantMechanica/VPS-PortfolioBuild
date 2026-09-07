@@ -21,72 +21,74 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+INCLUDE_ROOT = REPO / "framework/include/QM"
+DEPENDENCIES = (
+    "QM_ChartPanel.mqh", "QM_ChartScheme.mqh", "QM_DesignTokens.mqh",
+    "QM_ConsoleModel.mqh", "QM_ConsoleData.mqh", "QM_StrategyConsole.mqh",
+)
+TOKEN_JSON = REPO / "docs/design/qm_implementation_package_v1.0/website/quantmechanica-design-tokens.json"
+
+
+def token_color_mapping() -> list[dict]:
+    tokens = json.loads(TOKEN_JSON.read_text(encoding="utf-8"))["color"]
+    text = (INCLUDE_ROOT / "QM_DesignTokens.mqh").read_text(encoding="utf-8")
+    rows = []
+    for key, expected in tokens.items():
+        constant = "QM_COLOR_" + re.sub(r"(?<!^)(?=[A-Z])", "_", key).upper()
+        match = re.search(rf"#define\s+{constant}\s+C'([0-9,]+)'", text)
+        actual = "#" + "".join(f"{int(v):02X}" for v in match.group(1).split(",")) if match else None
+        rows.append({"json_token": f"color.{key}", "constant": constant,
+                     "value": expected, "actual": actual, "matches": actual == expected})
+    return rows
+
+
 def static_acceptance() -> dict:
-    header = HEADER.read_text(encoding="utf-8")
-    scheme = SCHEME.read_text(encoding="utf-8")
+    sources = {name: (INCLUDE_ROOT / name).read_text(encoding="utf-8") for name in DEPENDENCIES}
+    renderer = sources["QM_StrategyConsole.mqh"]
+    model = sources["QM_ConsoleModel.mqh"]
+    data = sources["QM_ConsoleData.mqh"]
+    header = sources["QM_ChartPanel.mqh"]
+    scheme = sources["QM_ChartScheme.mqh"]
     probe = PROBE.read_text(encoding="utf-8")
-    combined = header + scheme + probe
+    combined = "".join(sources.values()) + probe
     checks = {
-        "ascii_only": all(ord(char) < 128 for char in combined),
-        "no_trade_calls": not re.search(
-            r"\b(?:OrderSend|OrderSendAsync|CTrade|PositionClose|PositionModify)\b", header
-        ),
-        "no_ontick": not re.search(r"\bvoid\s+OnTick\s*\(", header),
-        "tester_inert": "MQL_TESTER" in header and "MQL_VISUAL_MODE" not in header,
-        "timer_fixture": all(
-            token in probe for token in ("EventSetTimer(5)", "OnTimer()", "EventKillTimer()")
-        ),
-        "required_fields": all(
-            token in header
-            for token in (
-                "STATE | MAY I TRADE?", "PERFORMANCE | THIS MAGIC",
-                "RISK / ROOM", "POSITION / ORDERS | THIS MAGIC", "NEXT",
-                "HEALTH", "IDENTITY", "Trading", "News", "Governor",
-                "Kill switch", "Next-trade risk", "Open risk to SL",
-                "Next decision", "Last signal", "Last trade", "Heartbeat",
-                "Calendar", "Build / license", "MAGIC ", "_Symbol", "_Period",
-            )
-        ),
+        "ascii_only": combined.isascii(),
+        "no_trade_calls": not re.search(r"\b(?:OrderSend|OrderSendAsync|CTrade|PositionClose|PositionModify)\s*\(", combined),
+        "pure_snapshot_renderer": not re.search(
+            r"\b(?:HistorySelect|HistoryDealGet\w*|PositionGet\w*|OrderGet\w*|OrderCalcProfit|AccountInfo\w*|QM_News\w*|QM_FTMO\w*|Strategy_\w*)\s*\(", renderer),
+        "structured_states": "const QM_ConsoleSnapshot &snapshot" in renderer and
+            "QM_ConsoleGateState" in model and "StringToUpper" not in renderer,
+        "no_ontick": not re.search(r"\bvoid\s+OnTick\s*\(", combined),
+        "tester_optimization_inert": all("MQL_TESTER" in sources[name] and "MQL_OPTIMIZATION" in sources[name]
+            for name in ("QM_ChartPanel.mqh", "QM_StrategyConsole.mqh", "QM_ConsoleData.mqh", "QM_ChartScheme.mqh")),
+        "timer_fixture": all(token in probe for token in ("EventSetTimer(5)", "OnTimer()", "EventKillTimer()")),
+        "required_hierarchy": all(token in renderer for token in (
+            '"Quant"', '"Mechanica"', '"STRATEGY CONSOLE"', '"FILTER GATE"', '"RISK"',
+            '"LIVE"', '"Today  "', '"Week  "', '"PERFORMANCE | THIS EA"', '"(c) QuantMechanica"')),
+        "no_obsolete_product_copy": not any(token in renderer for token in (
+            "LOGIN", "LICENSE", "Support:", "Heartbeat", "debug")),
+        "three_modes": all(token in renderer + model for token in (
+            "QM_CONSOLE_FULL", "QM_CONSOLE_COMPACT", "QM_CONSOLE_MINIMAL", "QM_ConsoleNextMode")),
+        "view_event_timer_only": "CHARTEVENT_OBJECT_CLICK" in renderer and
+            "Render(" not in renderer.split("void OnChartEvent", 1)[1].split("void Render", 1)[0],
         "object_namespace": '"QM_SIG_"' in header,
-        "light_brand_tokens": all(
-            token in scheme
-            for token in ("C'255,255,255'", "C'41,84,212'", "C'5,150,105'", "C'239,68,68'")
-        ),
-        "scheme_snapshot_restore": all(
-            token in scheme
-            for token in (
-                "QM_ChartScheme_Apply", "QM_ChartScheme_Restore",
-                "CHART_COLOR_BACKGROUND", "CHART_COLOR_FOREGROUND",
-                "CHART_COLOR_GRID", "CHART_COLOR_CHART_UP",
-                "CHART_COLOR_CHART_DOWN", "CHART_COLOR_CANDLE_BULL",
-                "CHART_COLOR_CANDLE_BEAR", "CHART_COLOR_BID",
-                "CHART_COLOR_ASK", "CHART_COLOR_VOLUME", "CHART_MODE",
-                "CHART_SCALE", "CHART_SHOW_GRID",
-            )
-        ),
-        "tabular_grid": all(token in header for token in (
-            "ANCHOR_RIGHT_UPPER", "MakeSection", "MakeRow", "QM_PANEL_ROWS",
-        )),
-        "de_de_formatters": all(token in header for token in (
-            "QM_PanelFormatNumber", '"100.000,00"', '"0,31 %"',
-            "QM_PanelMoney", "QM_PanelPips", "QM_PanelDateTime",
-        )),
-        "performance_cache": all(token in header for token in (
-            "QM_PANEL_REFRESH_SECONDS", "m_performance_dirty",
-            "InvalidatePerformance", "QM_PanelBuildPerformance",
-        )),
-        "market_safe_support": "Support: MQL5 comments/messages" in combined,
+        "update_in_place": "ObjectFind" in renderer and "RemoveUnused" in renderer and "m_used" in renderer,
+        "single_redraw_per_cycle": renderer.split("void Render", 1)[1].split("void Shutdown", 1)[0].count("ChartRedraw(") == 1,
+        "dynamic_live": "if(ArraySize(lines)==0) return y;" in renderer and '"NONE"' not in renderer,
+        "de_de_en_us_formatters": all(token in data for token in (
+            '"100.000,00"', '"100,000.00"', '"0,31 %"', '"0.31 %"', "QM_PanelFormatterSelfTest")),
+        "self_test_probe": "QM_ConsoleSnapshotSelfTest()" in probe and "QM_PanelFormatterSelfTest()" in probe,
+        "history_hard_minimum": "now_ms-m_last_scan_ms>=QM_PANEL_REFRESH_SECONDS*1000" in data and
+            "m_dirty ||" not in data and "#define QM_PANEL_REFRESH_SECONDS 30" in data,
+        "broker_aware_risk": "OrderCalcProfit(" in data and "UNPRICED" in data,
+        "all_color_tokens_match": all(row["matches"] for row in token_color_mapping()),
+        "scheme_snapshot_restore": all(scheme.count(prop) >= 3 for prop in (
+            "CHART_COLOR_BACKGROUND", "CHART_COLOR_CANDLE_BULL", "CHART_COLOR_CANDLE_BEAR",
+            "CHART_COLOR_BID", "CHART_SHOW_GRID", "CHART_SHOW_VOLUMES", "CHART_SHOW_LAST_LINE")),
     }
-    return {
-        "status": "PASS" if all(checks.values()) else "FAIL",
-        "checks": checks,
-        "header": str(HEADER),
-        "header_sha256": sha256(HEADER),
-        "scheme": str(SCHEME),
-        "scheme_sha256": sha256(SCHEME),
-        "probe": str(PROBE),
-        "probe_sha256": sha256(PROBE),
-    }
+    return {"status": "PASS" if all(checks.values()) else "FAIL", "checks": checks,
+            "files": {name: sha256(INCLUDE_ROOT / name) for name in DEPENDENCIES},
+            "token_mapping": token_color_mapping(), "probe_sha256": sha256(PROBE)}
 
 
 def native_compile(metaeditor: Path, artifact_root: Path) -> dict:
@@ -103,8 +105,8 @@ def native_compile(metaeditor: Path, artifact_root: Path) -> dict:
     source.parent.mkdir(parents=True)
     include.parent.mkdir(parents=True)
     shutil.copy2(PROBE, source)
-    shutil.copy2(HEADER, include)
-    shutil.copy2(SCHEME, scheme)
+    for name in DEPENDENCIES:
+        shutil.copy2(INCLUDE_ROOT / name, include.parent / name)
 
     command = [
         str(metaeditor.resolve()),

@@ -51,6 +51,13 @@ input uint   qm_rng_seed                = 42;
 input bool   qm_show_chart_panel        = true;
 input bool   qm_apply_chart_scheme      = true;
 input string qm_panel_build_hash        = "UNBOUND";
+input QM_ConsoleMode qm_dashboard_mode  = QM_CONSOLE_FULL;
+input int    qm_visual_scale            = 100; // 80-150, presentation only
+input QM_ConsoleLocale qm_number_locale = QM_LOCALE_DE_DE;
+input bool   qm_show_active_range       = true;
+input bool   qm_show_strategy_levels    = true;
+input bool   qm_show_trade_levels       = true;
+input bool   qm_show_trade_markers      = true;
 
 input group "Risk"
 input double RISK_PERCENT               = 0.0;
@@ -82,163 +89,150 @@ input double strategy_spread_cap_pips   = 25.0;   // skip only a genuinely WIDE 
 input bool   strategy_enable_long       = true;   // mirror LONG squeeze (descending closes); SHORT always on
 
 CQMChartPanel g_qm_signature_panel;
-datetime g_qm_panel_next_block = 0;
-datetime g_qm_panel_next_block_checked = 0;
-QM_NewsBlockStartResult g_qm_panel_next_block_result = QM_NEWS_BLOCKSTART_DATA_ERROR;
-
-string QM11421_FridayCountdown()
+// EA identity comes from the registered source filename, not renderer copy.
+string QM11421_ConsoleStrategyName()
   {
-   if(!qm_friday_close_enabled)
-      return "OFF";
-   const datetime now = TimeCurrent();
-   MqlDateTime parts;
-   TimeToStruct(now, parts);
-   const datetime day_start = now - parts.hour * 3600 - parts.min * 60 - parts.sec;
-   int days_ahead = (5 - parts.day_of_week + 7) % 7;
-   datetime target = day_start + days_ahead * 86400 +
-                     qm_friday_close_hour_broker * 3600;
-   if(target <= now)
-      target += 7 * 86400;
-   return QM_PanelDuration((long)(target - now));
+   string name=MQLInfoString(MQL_PROGRAM_NAME);
+   const string prefix="QM5_"+IntegerToString(qm_ea_id)+"_";
+   if(StringFind(name,prefix)==0) name=StringSubstr(name,StringLen(prefix));
+   string words[]; const int count=StringSplit(name,'-',words);
+   string title="";
+   for(int i=0;i<count;++i)
+     {
+      string word=words[i];
+      if(i==count-1 && word=="d1") continue; // registered slug suffix, not chart identity
+      if(word=="ohlc") word="OHLC";
+      else if(StringLen(word)>0)
+        { string first=StringSubstr(word,0,1); StringToUpper(first); word=first+StringSubstr(word,1); }
+      title+=(title==""?"":" ")+word;
+     }
+   return title;
   }
 
 void QM11421_RefreshChartPanel()
   {
-   if(!g_qm_signature_panel.Ready())
-      return;
+   if(!g_qm_signature_panel.Ready()) return;
+   QM_ConsoleSnapshot snapshot; snapshot.Reset();
+   snapshot.strategy_name=QM11421_ConsoleStrategyName();
+   snapshot.timeframe=QM_PanelTimeframeName((ENUM_TIMEFRAMES)_Period);
+   snapshot.symbol=_Symbol; snapshot.environment=QM_PanelEnvironment(); snapshot.version="5.0";
+   snapshot.state=QM_CONSOLE_WAITING_SETUP;
+   snapshot.reason="Squeeze evaluated on the next D1 bar";
+   const datetime now=TimeCurrent();
+   const datetime bar=iTime(_Symbol,PERIOD_D1,0);
+   const datetime next=bar+PeriodSeconds(PERIOD_D1);
+   snapshot.next_event=bar>0 && next>now?
+      "Next D1 evaluation in "+QM_PanelDuration((long)(next-now))+" | "+QM_PanelDateTime(next)+" BT":
+      "Next D1 evaluation on a fresh market quote";
 
-   QMChartPanelSnapshot snapshot;
-   snapshot.trading_state = "YES";
-   snapshot.trading_reason = "ALLOW";
-   if(!g_qm_news_active)
-     {
-      snapshot.news_state = "OFF";
-      snapshot.news_detail = "gate disabled";
-     }
+   const bool terminal_ready=TerminalInfoInteger(TERMINAL_CONNECTED) &&
+      TerminalInfoInteger(TERMINAL_TRADE_ALLOWED) && MQLInfoInteger(MQL_TRADE_ALLOWED) &&
+      AccountInfoInteger(ACCOUNT_TRADE_ALLOWED) && AccountInfoInteger(ACCOUNT_TRADE_EXPERT);
+   const bool contract_ready=g_qm_runtime_execution_state!=QM_RUNTIME_EXECUTION_REQUIRED_BLOCKED;
+   QM_ConsoleAddGate(snapshot,"execution","Execution",!terminal_ready?"Permission off":
+      (!contract_ready?"Contract blocked":"Permission open"),
+      terminal_ready && contract_ready?QM_GATE_PASS:QM_GATE_BLOCK);
+
+   QM_ConsoleGateState news=QM_GATE_WAIT;
+   string news_reason="Awaiting quote";
+   if(!g_qm_news_active) { news=QM_GATE_OFF; news_reason="Disabled"; }
    else if(!g_qm_news_loaded || !g_qm_news_available)
+     { news=QM_GATE_ERROR; news_reason="Calendar unavailable"; }
+   else if(g_qm_news_cache_valid && g_qm_news_cache_symbol==_Symbol)
      {
-      snapshot.news_state = "FAIL";
-      snapshot.news_detail = "calendar unavailable";
+      const long age=(long)(TimeGMT()-g_qm_news_cache_wall_utc);
+      if(age<0 || age>=60) { news=QM_GATE_STALE; news_reason="Quote cache stale"; }
+      else { news=g_qm_news_cache_verdict?QM_GATE_PASS:QM_GATE_BLOCK;
+             news_reason=g_qm_news_cache_verdict?"Native MT5 clear":"Native MT5 blackout"; }
      }
-   else if(!g_qm_news_cache_valid)
+   QM_ConsoleAddGate(snapshot,"news","News",news_reason,news);
+   QM_ConsoleAddGate(snapshot,"kill","Kill switch",g_qm_ks_halted?"Halted":"Armed",
+      g_qm_ks_halted?QM_GATE_BLOCK:QM_GATE_PASS);
+   // Read-only calendar arithmetic; no flatten operation is called for display.
+   MqlDateTime clock; TimeToStruct(now,clock);
+   const bool friday=qm_friday_close_enabled && clock.day_of_week==5 &&
+      clock.hour>=qm_friday_close_hour_broker;
+   QM_ConsoleAddGate(snapshot,"friday","Friday",!qm_friday_close_enabled?"Disabled":
+      (friday?"Close boundary":"Before close"),
+      !qm_friday_close_enabled?QM_GATE_OFF:(friday?QM_GATE_BLOCK:QM_GATE_PASS));
+
+   const double ask=SymbolInfoDouble(_Symbol,SYMBOL_ASK);
+   const double bid=SymbolInfoDouble(_Symbol,SYMBOL_BID);
+   const double pip=SqueezePipFactor();
+   const bool quote=ask>0.0 && bid>0.0 && pip>0.0;
+   const double spread=quote?(ask-bid)/pip:0.0;
+   // Same fail-open predicate as Strategy_NoTradeFilter (including disabled cap).
+   const bool spread_block=quote && spread>0.0 && strategy_spread_cap_pips>0.0 && spread>strategy_spread_cap_pips;
+   QM_ConsoleAddGate(snapshot,"spread","Spread",quote?QM_PanelPips(spread):"No valid quote",
+      !quote?QM_GATE_WARN:(strategy_spread_cap_pips<=0.0?QM_GATE_OFF:(spread_block?QM_GATE_BLOCK:QM_GATE_PASS)));
+
+   const double equity=AccountInfoDouble(ACCOUNT_EQUITY);
+   double next_risk=(g_qm_risk_mode==QM_RISK_MODE_PERCENT?
+      equity*g_qm_risk_percent/100.0:g_qm_risk_fixed)*g_qm_risk_portfolio_weight;
+   const double cap=g_qm_risk_mode==QM_RISK_MODE_PERCENT && g_qm_risk_per_trade_cap_pct>0.0?
+      equity*g_qm_risk_per_trade_cap_pct/100.0:g_qm_risk_per_trade_cap_money;
+   if(cap>0.0) next_risk=MathMin(next_risk,cap);
+   // The canary declares the legacy DXZ contract: no governor is bound.
+   // This future-bound branch reads the existing immutable client only; the
+   // renderer never invokes it and no governor/room is implied while unbound.
+   if(QM_RuntimeExecutionGovernorRequired())
      {
-      snapshot.news_state = "READY";
-      snapshot.news_detail = "awaiting gate verdict";
+      double scale=0.0; string reason="";
+      const bool allows=QM_FTMO_ReadGovernorScale(g_qm_runtime_execution_contract.governor_policy_id,
+         g_qm_runtime_execution_contract.challenge_instance_id,
+         g_qm_runtime_execution_contract.governor_heartbeat_max_age_seconds,scale,reason);
+      QM_ConsoleAddGate(snapshot,"governor","Governor",allows?"Entry open":"Entry locked",
+         allows?QM_GATE_PASS:QM_GATE_BLOCK);
+      next_risk=allows?next_risk*scale:0.0;
      }
+   QM_ConsoleAddLine(snapshot.risk,"Next trade",QM_PanelPercent(equity>0.0?next_risk/equity*100.0:0.0)+
+      " | "+QM_PanelMoney(next_risk));
+   g_qm_signature_panel.Populate(snapshot);
+   QM_ConsoleAddLine(snapshot.risk,"Stop basis","Prior range x "+QM_PanelFormatNumber(strategy_sl_range_mult,2)+
+      " | cap "+QM_PanelPips(strategy_sl_cap_pips));
+
+   const bool capacity=snapshot.positions==0 && snapshot.pending_orders==0;
+   QM_ConsoleAddGate(snapshot,"capacity","Capacity",capacity?"One slot free":"Slot occupied",
+      capacity?QM_GATE_PASS:QM_GATE_BLOCK);
+   QM_ConsoleAddGate(snapshot,"squeeze","Squeeze","On D1 close",QM_GATE_WAIT);
+
+   if(snapshot.positions>0)
+     { snapshot.state=QM_CONSOLE_POSITION_ACTIVE; snapshot.reason="Position managed by fixed SL / TP";
+       snapshot.next_event="Next event: SL / TP or Friday close"; }
+   else if(snapshot.pending_orders>0)
+     { snapshot.state=QM_CONSOLE_WAITING_TRIGGER; snapshot.reason="Pending stop armed; no additional entry";
+       snapshot.next_event="Next event: trigger, expiry or D1 re-evaluation"; }
    else
-     {
-      snapshot.news_state = g_qm_news_cache_verdict ? "OPEN" : "BLOCK";
-      snapshot.news_detail = (MQLInfoInteger(MQL_TESTER) != 0)
-                             ? "TESTER FILE" : "LIVE MT5 NATIVE";
-     }
+      for(int i=0;i<ArraySize(snapshot.gates);++i)
+        {
+         const QM_ConsoleGateState state=snapshot.gates[i].state;
+         if(state==QM_GATE_BLOCK || state==QM_GATE_ERROR || state==QM_GATE_STALE ||
+            (snapshot.gates[i].key=="news" && state==QM_GATE_WAIT))
+           {
+            snapshot.state=state==QM_GATE_ERROR?QM_CONSOLE_ERROR:QM_CONSOLE_BLOCKED;
+            snapshot.reason=snapshot.gates[i].label+" - "+snapshot.gates[i].reason;
+            if(snapshot.gates[i].key=="news") snapshot.next_event="Next news check on a fresh market quote";
+            break;
+           }
+        }
 
-   datetime next_block = 0;
-   const datetime now = TimeCurrent();
-   if(g_qm_panel_next_block_checked <= 0 ||
-      now - g_qm_panel_next_block_checked >= 60)
+   // The prior OHLC range is meaningful only for an actionable pending setup.
+   // Use its setup bar, not today's unrelated range or a historical catalogue.
+   for(int i=0;i<ArraySize(snapshot.exposure);++i)
      {
-      g_qm_panel_next_block_result = QM_NewsNextBlockStart(
-         _Symbol, now, now + 7 * 86400, qm_news_temporal,
-         qm_news_compliance, g_qm_panel_next_block);
-      g_qm_panel_next_block_checked = now;
-     }
-   next_block = g_qm_panel_next_block;
-   if(g_qm_panel_next_block_result == QM_NEWS_BLOCKSTART_FOUND)
-      snapshot.news_detail += " | next HIGH event/name unavailable in " +
-                              QM_PanelDuration((long)(next_block - now));
-   else if(g_qm_panel_next_block_result == QM_NEWS_BLOCKSTART_DATA_ERROR)
-      snapshot.news_detail += " | next event query unavailable";
-
-   snapshot.friday_state = !qm_friday_close_enabled ? "OFF" :
-                             (QM_FrameworkFridayCloseNow(TimeCurrent()) ? "CLOSE" : "OK");
-   snapshot.friday_countdown = QM11421_FridayCountdown();
-   snapshot.governor_state = "UNBOUND";
-   snapshot.governor_reason = "legacy execution contract";
-   snapshot.kill_switch_state = g_qm_ks_halted
-                                ? "HALTED: " + QM_KillSwitchHaltReason()
-                                : "ARMED";
-
-   MqlTick tick;
-   bool spread_allows = true;
-   if(SymbolInfoTick(_Symbol, tick) && tick.ask >= tick.bid)
-     {
-      const double pip = _Point * ((_Digits == 3 || _Digits == 5) ? 10.0 : 1.0);
-      const double spread = pip > 0.0 ? (tick.ask - tick.bid) / pip : 0.0;
-      spread_allows = (spread <= strategy_spread_cap_pips || spread == 0.0);
-      snapshot.spread_state = (spread_allows ? "PASS " : "BLOCK ") +
-                              QM_PanelPips(spread) + "/" +
-                              QM_PanelPips(strategy_spread_cap_pips);
-     }
-   else
-      snapshot.spread_state = "N/A";
-   snapshot.session_state = "N/A (no session gate)";
-
-   if(g_qm_risk_mode == QM_RISK_MODE_PERCENT)
-     {
-      snapshot.risk_mode = "RISK_PERCENT";
-      snapshot.risk_per_trade = QM_PanelPercent(g_qm_risk_percent);
-      snapshot.effective_risk = QM_PanelPercent(g_qm_risk_percent * PORTFOLIO_WEIGHT);
-     }
-   else
-     {
-      snapshot.risk_mode = "RISK_FIXED";
-      snapshot.risk_per_trade = QM_PanelMoney(g_qm_risk_fixed);
-      snapshot.effective_risk = QM_PanelMoney(g_qm_risk_fixed * PORTFOLIO_WEIGHT);
-     }
-   const double equity = AccountInfoDouble(ACCOUNT_EQUITY);
-   if(g_qm_ks_day_start_equity > 0.0 && g_qm_ks_daily_loss_halt_pct > 0.0)
-     {
-      const double floor = g_qm_ks_day_start_equity *
-                           (1.0 - g_qm_ks_daily_loss_halt_pct / 100.0);
-      const double room = MathMax(0.0, equity - floor);
-      snapshot.daily_room = QM_PanelMoney(room) + " | " +
-         QM_PanelPercent(equity > 0.0 ? room / equity * 100.0 : 0.0);
-     }
-   else
-      snapshot.daily_room = "N/A (anchor unavailable)";
-   snapshot.total_room = "N/A (governor unbound)";
-   snapshot.last_signal = "N/A (strategy hook absent)";
-   snapshot.calendar_health = !g_qm_news_active ? "OFF" :
-      (!g_qm_news_available ? "UNAVAILABLE" :
-       ((MQLInfoInteger(MQL_TESTER) != 0 ? "TESTER FILE" : "LIVE MT5 NATIVE") +
-        " OK"));
-   snapshot.heartbeat_state = g_qm_fw_initialized ? "OK" : "STALE";
-   snapshot.build_version = "5.0";
-   snapshot.support_line = "Support: MQL5 comments/messages";
-
-   if(!TerminalInfoInteger(TERMINAL_CONNECTED))
-     {
-      snapshot.trading_state = "NO";
-      snapshot.trading_reason = "CONNECTION_DOWN";
-     }
-   else if(!TerminalInfoInteger(TERMINAL_TRADE_ALLOWED))
-     {
-      snapshot.trading_state = "NO";
-      snapshot.trading_reason = "AUTOTRADING_DISABLED";
-     }
-   else if(g_qm_ks_halted)
-     {
-      snapshot.trading_state = "NO";
-      snapshot.trading_reason = QM_KillSwitchHaltReason();
-     }
-   else if(g_qm_news_active && (!g_qm_news_available ||
-           !g_qm_news_cache_valid || !g_qm_news_cache_verdict))
-     {
-      snapshot.trading_state = "NO";
-      snapshot.trading_reason = !g_qm_news_available ?
-                                "NEWS_CALENDAR_UNAVAILABLE" :
-                                (!g_qm_news_cache_valid ? "NEWS_VERDICT_PENDING" :
-                                 "NEWS_BLACKOUT");
-     }
-   else if(!spread_allows)
-     {
-      snapshot.trading_state = "NO";
-      snapshot.trading_reason = "SPREAD_BLOCK";
-     }
-   else if(QM_FrameworkFridayCloseNow(now))
-     {
-      snapshot.trading_state = "NO";
-      snapshot.trading_reason = "FRIDAY_FLAT";
+      const QM_ConsoleExposure item=snapshot.exposure[i];
+      if(!item.pending || item.symbol!=_Symbol) continue;
+      const int shift=iBarShift(_Symbol,PERIOD_D1,item.opened,false);
+      if(shift>=0)
+        {
+         snapshot.range_start=iTime(_Symbol,PERIOD_D1,shift+1);
+         snapshot.range_end=iTime(_Symbol,PERIOD_D1,shift)+PeriodSeconds(PERIOD_D1);
+         snapshot.range_high=iHigh(_Symbol,PERIOD_D1,shift+1);
+         snapshot.range_low=iLow(_Symbol,PERIOD_D1,shift+1);
+         snapshot.active_range=snapshot.range_start>0 && snapshot.range_high>snapshot.range_low &&
+            snapshot.range_low>0.0;
+        }
+      break;
      }
    g_qm_signature_panel.Refresh(snapshot);
   }
@@ -431,8 +425,9 @@ int QM_PendingTTLSeconds()
 
 int OnInit()
   {
-   if(!QM_FrameworkSetChartUISuppressed(qm_show_chart_panel))
-      return INIT_FAILED;
+   // This canary has one visualization owner, including when visualization is off.
+   // A renderer/suppression failure never aborts EA initialization.
+   QM_FrameworkSetChartUISuppressed(true);
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
                         RISK_PERCENT,
@@ -456,20 +451,29 @@ int OnInit()
                                              "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"))
       return INIT_FAILED;
 
-   if(qm_apply_chart_scheme)
-      QM_ChartScheme_Apply(ChartID());
-
-   if(g_qm_signature_panel.Initialize(ChartID(),
-                                       qm_ea_id,
-                                       "ohlc-daily-squeeze-reversal-d1",
-                                       QM_FrameworkMagic(),
-                                       qm_panel_build_hash,
-                                       qm_show_chart_panel))
+   // Full optimization/tester bypass: do not even evaluate presentation inputs
+   // or identity while the non-visual strategy path is running.
+   if(MQLInfoInteger(MQL_TESTER)==0 && MQLInfoInteger(MQL_OPTIMIZATION)==0)
      {
-      if(EventSetTimer(5))
-         g_qm_fw_timer_active = true;
-      else
-         g_qm_signature_panel.Shutdown();
+      g_qm_console_locale=qm_number_locale;
+      if(qm_show_chart_panel && qm_apply_chart_scheme)
+         QM_ChartScheme_Apply(ChartID());
+
+      if(g_qm_signature_panel.Initialize(ChartID(),
+                                          qm_ea_id,
+                                          QM11421_ConsoleStrategyName(),
+                                          QM_FrameworkMagic(),
+                                          qm_panel_build_hash,
+                                          qm_show_chart_panel,
+                                          qm_dashboard_mode,qm_visual_scale,
+                                          qm_show_active_range,qm_show_strategy_levels,
+                                          qm_show_trade_levels,qm_show_trade_markers))
+        {
+         if(EventSetTimer(5))
+            g_qm_fw_timer_active = true;
+         else
+            g_qm_signature_panel.Shutdown();
+        }
      }
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{}");
@@ -552,6 +556,11 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
   {
    QM_FrameworkOnTradeTransaction(trans, request, result);
    g_qm_signature_panel.InvalidatePerformance();
+  }
+
+void OnChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam)
+  {
+   g_qm_signature_panel.OnChartEvent(id,sparam);
   }
 
 double OnTester()

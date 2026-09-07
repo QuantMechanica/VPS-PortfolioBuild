@@ -1,0 +1,57 @@
+{
+  "schema": "qm.strategy-console-v4.install/v1",
+  "task_id": "bb036699-87e0-4172-b00a-de49a14ab6b7",
+  "installed_at_utc": "2026-09-07T19:08:26Z",
+  "terminal": {
+    "data_dir": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850",
+    "origin": "C:/Program Files/FTMO Global Markets MT5 Terminal",
+    "login": "1514536732",
+    "server": "FTMO-Demo",
+    "pid_before": 21056,
+    "pid_after": 21056,
+    "started": false,
+    "restarted": false,
+    "chart_attached": false
+  },
+  "expert": {
+    "artifact_path": "D:/QM/ftmo/compile_probe_console_v4_20260907_1913Z/MQL5/Experts/QM_FTMO/QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+    "installed_path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Experts/QM_FTMO/QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+    "artifact_sha256": "5be0846344014fee1b87036e496cc6573cd13986cf840b7732afd40610895614",
+    "installed_sha256": "5be0846344014fee1b87036e496cc6573cd13986cf840b7732afd40610895614",
+    "bytes": 492130,
+    "matches": true
+  },
+  "preset": {
+    "artifact_path": "D:/QM/ftmo/compile_probe_console_v4_20260907_1913Z/MQL5/Presets/QM5_11421_EURUSD_D1_live_trial.set",
+    "installed_path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Presets/QM5_11421_EURUSD_D1_live_trial.set",
+    "artifact_sha256": "556044b6b3b50003d77604e5358dd9578462eeec8764ba4be10187649d689a50",
+    "installed_sha256": "556044b6b3b50003d77604e5358dd9578462eeec8764ba4be10187649d689a50",
+    "bytes": 1514,
+    "matches": true,
+    "dashboard_mode": "FULL",
+    "visual_scale": 100,
+    "number_locale": "de-DE",
+    "panel_build_hash": "5be08463",
+    "risk_fixed": 0.0,
+    "risk_percent": 0.3125,
+    "contract": "live-trial demo preset; backtest fixed-risk rule is not applicable"
+  },
+  "backup": {
+    "directory": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Experts/QM_FTMO/_pre_console_v4_11421_20260907_1907Z",
+    "expert_sha256": "9d55ea09263be14a6781b64a60d66f8956eaded7eff36f42e136b705b92f4b22",
+    "preset_sha256": "82d970a4ad78b6197edd259e6e0de7534af276f7bbaf7ee47a08d86a781ffe4d"
+  },
+  "safety": {
+    "framework_ex5_path": "C:/QM/repo/framework/EAs/QM5_11421_ohlc-daily-squeeze-reversal-d1/QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+    "framework_ex5_sha256_before": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+    "framework_ex5_sha256_after": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+    "framework_ex5_unchanged": true,
+    "common_ini_sha256_before": "1182df4536b181b1a071191452dbcab91f9b7b994f14522f64fa3a7c76336eb8",
+    "common_ini_sha256_after": "1182df4536b181b1a071191452dbcab91f9b7b994f14522f64fa3a7c76336eb8",
+    "autotrading_setting_observed": 1,
+    "autotrading_changed": false,
+    "t_live_touched": false,
+    "t1_t10_touched": false
+  },
+  "verdict": "HASH_MATCH_SAFE_INSTALL"
+}

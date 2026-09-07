@@ -1,0 +1,75 @@
+#ifndef QM_DESIGNTOKENS_MQH
+#define QM_DESIGNTOKENS_MQH
+
+// Cross-platform source: quantmechanica-design-tokens.json, version 1.0.
+// Web-only geometry is retained as constants; native MT5 uses square objects.
+#define QM_COLOR_CARBON C'23,26,33'
+#define QM_COLOR_INK C'15,23,42'
+#define QM_COLOR_QUANT_GREEN C'10,138,91'
+#define QM_COLOR_QUANT_GREEN_DARK C'8,114,71'
+#define QM_COLOR_SLATE C'103,113,133'
+#define QM_COLOR_MUTED C'139,149,167'
+#define QM_COLOR_CLOUD C'245,247,249'
+#define QM_COLOR_SURFACE C'255,255,255'
+#define QM_COLOR_BORDER C'220,226,232'
+#define QM_COLOR_BORDER_STRONG C'200,208,218'
+#define QM_COLOR_SIGNAL_BLUE C'59,108,246'
+#define QM_COLOR_SIGNAL_BLUE_SOFT C'234,241,255'
+#define QM_COLOR_POSITIVE C'11,122,83'
+#define QM_COLOR_POSITIVE_SOFT C'232,246,240'
+#define QM_COLOR_NEGATIVE C'184,69,77'
+#define QM_COLOR_NEGATIVE_SOFT C'252,235,236'
+#define QM_COLOR_WARNING C'153,101,21'
+#define QM_COLOR_WARNING_SOFT C'255,244,214'
+#define QM_COLOR_DISABLED C'161,169,183'
+#define QM_COLOR_DISABLED_SOFT C'238,241,244'
+#define QM_COLOR_CANDLE_UP C'14,159,122'
+#define QM_COLOR_CANDLE_DOWN C'240,84,94'
+#define QM_COLOR_RANGE_BORDER C'107,143,216'
+#define QM_COLOR_RANGE_FILL C'237,243,255'
+#define QM_BRAND_MASTER "QuantMechanica"
+#define QM_BRAND_MODULE "Strategy Console"
+#define QM_BRAND_LINE "Systematic. Tested openly."
+#define QM_CAMPAIGN_LINE "The Quantitative Edge."
+#define QM_FONT_WEB "Inter, Segoe UI, Helvetica Neue, Arial, sans-serif"
+#define QM_WEIGHT_DISPLAY 700
+#define QM_WEIGHT_HEADING 650
+#define QM_WEIGHT_BODY 400
+#define QM_SPACE_4 4
+#define QM_SPACE_8 8
+#define QM_SPACE_12 12
+#define QM_SPACE_16 16
+#define QM_SPACE_24 24
+#define QM_SPACE_32 32
+#define QM_SPACE_48 48
+#define QM_SPACE_64 64
+#define QM_SPACE_96 96
+#define QM_SPACE_128 128
+#define QM_RADIUS_CONTROL 8
+#define QM_RADIUS_CARD 16
+#define QM_RADIUS_LARGE 24
+#define QM_RADIUS_PILL 999
+#define QM_LAYOUT_CONTENT_MAX 1240
+#define QM_LAYOUT_TEXT_MAX_CH 66
+#define QM_LAYOUT_NAV_HEIGHT 64
+#define QM_BREAKPOINT_SM 640
+#define QM_BREAKPOINT_MD 900
+#define QM_BREAKPOINT_LG 1200
+#define QM_STATUS_PASS_FG QM_COLOR_QUANT_GREEN_DARK
+#define QM_STATUS_PASS_BG QM_COLOR_POSITIVE_SOFT
+#define QM_STATUS_BLOCK_FG QM_COLOR_NEGATIVE
+#define QM_STATUS_BLOCK_BG QM_COLOR_NEGATIVE_SOFT
+#define QM_STATUS_WARN_FG QM_COLOR_WARNING
+#define QM_STATUS_WARN_BG QM_COLOR_WARNING_SOFT
+#define QM_STATUS_INFO_FG QM_COLOR_SIGNAL_BLUE
+#define QM_STATUS_INFO_BG QM_COLOR_SIGNAL_BLUE_SOFT
+#define QM_STATUS_OFF_FG QM_COLOR_SLATE
+#define QM_STATUS_OFF_BG QM_COLOR_DISABLED_SOFT
+
+// Native typography mapping prescribed by guideline 6, not a new web token.
+#define QM_FONT_UI "Segoe UI"
+#define QM_FONT_UI_BOLD "Segoe UI Semibold"
+#define QM_FONT_FALLBACK "Arial"
+#define QM_CONSOLE_WIDTH 544
+
+#endif

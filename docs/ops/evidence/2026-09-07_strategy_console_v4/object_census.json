@@ -1,0 +1,37 @@
+{
+  "schema": "qm.strategy-console-v4.object-census/v1",
+  "task_id": "bb036699-87e0-4172-b00a-de49a14ab6b7",
+  "namespace": "QM_SIG_*",
+  "method": "deterministic source-derived count; live chart not attached during this run",
+  "flat_state": {
+    "assumptions": {
+      "gates": 7,
+      "risk_rows": 3,
+      "live_rows": 0,
+      "performance_rows": 11,
+      "exposures": 0,
+      "active_range": false
+    },
+    "full": 85,
+    "compact": 16,
+    "minimal": 7,
+    "legacy_qm_chartui": 0
+  },
+  "dynamic_formula": {
+    "full_live_section_increment": "2 + (3 * live_row_count)",
+    "active_range_increment": "1 range object when enabled, plus 2 direct range labels when strategy labels are enabled",
+    "exposure_increment": "1-3 valid direct price labels per matching ticket, plus 1 marker for a non-pending position when markers are enabled",
+    "compact_and_minimal_exposure_overlay": "overlay inputs remain independently controlled by the four visibility inputs"
+  },
+  "ownership": {
+    "single_panel_guard": "QM_FrameworkSetChartUISuppressed(true) precedes console initialization",
+    "update_policy": "ObjectFind/ObjectCreate only when absent; stale owned names removed after render",
+    "redraw_policy": "one ChartRedraw per render cycle",
+    "failure_policy": "delete owned namespace and disable renderer; trading remains unaffected"
+  },
+  "runtime_observation": {
+    "status": "PENDING_OWNER_REATTACH",
+    "observed_counts": null,
+    "screenshot": null
+  }
+}
