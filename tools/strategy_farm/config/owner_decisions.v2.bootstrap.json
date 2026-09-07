@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 11,
+  "revision": 12,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -335,6 +335,29 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Option B: genau EIN Claude-Auftrag - Codex-Ticket (scoped consumer B aktivieren; Taint-Policy-Lift nur fuer B-adjudizierte Zeilen, alle anderen bleiben im Hold; Zaehler-Fussnote in Cockpit/OPEN_ITEMS/Vault; Re-Adjudikationspflicht nach Vollsiegel als Ticket), zeilenweise Freigabe der 47+1 Zeilen append-only, priority_track auf 11196. Kein Repin, kein Kalender-Publish, kein T_Live, kein Gate-Schwellenwert. Reversibel (Policy zurueck auf inaktiv; Evidenz bleibt)."
+    },
+    {
+      "category": "Pipeline/News-Kalender",
+      "cost_of_wait": "Consumer B (dein JA von heute) laesst unter den heutigen Kriterien 0 von 47 Zeilen zu; 11196/XAUUSD ist H4 und bleibt ausgeschlossen. Ohne B-prime bleibt jeder Intraday-USD-Kandidat ohne Endpunkt; nur die 9 D1/USD-Zeilen laufen nach dem Fenster-Siegel. Pro Tag 0 Zaehlerfortschritt fuer Intraday-Paare.",
+      "created_at_utc": "2026-09-07T05:22:14Z",
+      "depends_on": [
+        "OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907"
+      ],
+      "due": "2026-09-08",
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-07_calendar_criteria_b_prime.md",
+        "docs/ops/evidence/2026-09-07_f3a94b87_scoped_calendar_b_activation.md",
+        "docs/ops/evidence/2026-09-07_f3a94b87_scoped_calendar_b_dry_run.json",
+        "docs/ops/evidence/2026-09-07_news_calendar_e1d34_continuation.md",
+        "docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md"
+      ],
+      "id": "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907",
+      "no_effect": "Kriterien unveraendert (alle acht Gates muessen gemessen PASS sein); Consumer B bleibt D1-only. Die 9 D1/USD-Zeilen laufen nach dem Fenster-Siegel; 11196 und alle Intraday-Zeilen bleiben im Hold; Dokumentation.",
+      "question": "B-prime (ROT, Gate-Kriterium): Darf der E1-D3/D4-Kandidatenkalender (USD-08:30-ET-Zeilen aus dem nativen MT5-Export korrigiert, Manifest 5f28c2f3..., Bindung b12615d8...) als Adjudikationsbasis fuer Q10_NEWS gelten fuer USD-exponierte Zeilen ALLER Timeframes, mit deklarierten Residuen fuer Nicht-USD-Klassen und Event-by-Event-Eintraege ohne offiziellen Zeitplan (betroffene Zeilen bleiben gehalten) - statt der heutigen Regel 'alle acht Gates gemessen PASS'?",
+      "recommendation": "JA. Gemessen wird weiter alles Messbare; deklariert nur, was nachweislich nicht messbar ist (1.865 Event-by-Event-Zeilen ohne Quelle, Footprints jenseits der History bis 2024-12-31). Jede so adjudizierte Zeile traegt Marker + Fussnote 'Kalender scope-begrenzt' und wird bei einem besseren Kalender append-only neu adjudiziert (Ticket 235e5119). Damit wird 11196/XAUUSD (H4, USD-exponiert) adjudizierbar.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: Codex-Ticket (Kriterium 'measured + declared residual' im Kalender-Gate-Vertrag formalisieren; Consumer-B-Zulaessigkeit auf alle Timeframes bei USD-only-Exposition erweitern, Nicht-USD-Klassen je Zeile deklariert = Zeile bleibt gehalten; Tests; neuer Dry-Run), danach zeilenweise Freigabe append-only (11196 zuerst), Fussnote bleibt, Re-Adjudikationsticket bleibt gebunden. Kein Repin des Produktionsbundles, kein Publish, kein T_Live, keine Q-Gate-Schwelle."
     }
   ]
 }

@@ -962,6 +962,40 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-CALENDAR-CRITERIA-B-PRIME-20260907",
+      "todo_id": "QM-TODO-20260907-CALENDAR-CRITERIA-B-PRIME",
+      "priority": 91,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Adopt B-prime: formalize 'measured gates + declared residuals' as the full-scope admission criterion in the calendar gate contract; extend consumer B admissibility beyond D1 for USD-only exposure (rows with non-USD exposure stay held); rerun the dry run; release admissible rows row by row (11196/XAUUSD first) with marker + footnote; keep the re-adjudication ticket bound. No production repin/publish, no T_Live/AutoTrading, no Q-gate threshold change.",
+          "allowed_actions": [
+            "Enqueue one Codex ops ticket with exact acceptance criteria",
+            "Integrate the Codex branch (tests, LF check, Codex co-author trailer); worker reload if the claim guard changes",
+            "news_calendar_taint release_scoped_item / farmctl release-hold row by row for admissible rows (append-only)",
+            "Update OPEN_ITEMS, the receipts file and the Vault"
+          ],
+          "acceptance": [
+            "Criterion recorded in the gate contract with the exact residual classes",
+            "Consumer B admits USD-only rows of any timeframe and still refuses non-USD-exposed rows",
+            "Released rows carry the marker + footnote; first adjudications end PASS/FAIL (not INVALID)",
+            "No production repin/publish/threshold/verdict change"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Keep the current criterion; consumer B stays D1-only; document; the nine D1/USD rows proceed after the window seal.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, the receipts file and the Vault"
+          ],
+          "acceptance": [
+            "No criterion change",
+            "Intraday rows remain held"
+          ]
+        }
+      }
     }
   ]
 }
