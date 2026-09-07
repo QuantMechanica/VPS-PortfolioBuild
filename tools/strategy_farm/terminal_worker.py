@@ -88,6 +88,7 @@ NEWS_RUNNER_SPAWN_ABORT_HOLD_REASON = (
     "bound news runner disappeared before durable completion; exact process "
     "identity review required before retry"
 )
+WORK_ITEM_REPORTS_ROOT = Path(r"D:\QM\reports\work_items")
 
 
 def _is_early_run_smoke_phase(phase: object) -> bool:
@@ -7185,7 +7186,7 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
             summary_path = Path(str(exact_evidence))
         else:
             summary_path = (
-                Path(r"D:\QM\reports\work_items")
+                WORK_ITEM_REPORTS_ROOT
                 / str(item["id"])
                 / str(item["ea_id"])
                 / phase
@@ -8030,7 +8031,7 @@ def _finish_work_item(
                     conn.execute(
                         """
                         UPDATE work_items
-                        SET status='failed', verdict='INFRA_FAIL', attempt_count=?,
+                        SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra', attempt_count=?,
                             evidence_path=?, claimed_by=NULL,
                             payload_json=?, updated_at=?
                         WHERE id=?
@@ -8246,6 +8247,7 @@ def _finish_work_item(
                     }
                 # Transient cap exhausted -> real INFRA_FAIL for manual attention.
                 payload["final_failure"] = "shared_bases_history_lock_transient_cap_exhausted"
+                payload["verdict_taxonomy"] = "infra"
                 farmctl._ensure_verdict_reason(payload)
                 storm_log_path = payload.get("transient_infra_evidence_path")
                 evidence_path = (
@@ -8256,7 +8258,7 @@ def _finish_work_item(
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+                    SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra', claimed_by=NULL,
                         evidence_path=?, payload_json=?, updated_at=?
                     WHERE id=?
                     """,
@@ -8336,11 +8338,18 @@ def _finish_work_item(
                 conn.execute(
                     """
                     UPDATE work_items
-                    SET status='failed', verdict=?, claimed_by=NULL,
+                    SET status='failed', verdict=?, verdict_taxonomy=?, claimed_by=NULL,
                         evidence_path=?, payload_json=?, updated_at=?
                     WHERE id=?
                     """,
-                    (verdict, evidence_path, json.dumps(payload, sort_keys=True), now, item_id),
+                    (
+                        verdict,
+                        payload["verdict_taxonomy"],
+                        evidence_path,
+                        json.dumps(payload, sort_keys=True),
+                        now,
+                        item_id,
+                    ),
                 )
                 status = "failed"
             conn.commit()
@@ -8511,9 +8520,26 @@ def _clear_stale_preflight_payload(payload: dict[str, Any], now: str) -> bool:
     return True
 
 
-def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, Any]) -> dict[str, Any]:
+def _normalize_preflight_failure(failure: object) -> dict[str, Any]:
+    """Return one JSON-safe failure mapping before any writer dereferences it."""
+
+    if isinstance(failure, Mapping):
+        normalized = dict(failure)
+        reason = str(normalized.get("reason") or "preflight_failed").strip()
+        normalized["reason"] = reason or "preflight_failed"
+        normalized.setdefault("detail", None)
+        return normalized
+    detail = str(failure or "").strip()
+    return {
+        "reason": detail or "preflight_failed",
+        "detail": detail or None,
+    }
+
+
+def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: object) -> dict[str, Any]:
+    failure = _normalize_preflight_failure(failure)
     now = farmctl.utc_now()
-    report_root = Path(r"D:\QM\reports\work_items") / str(item["id"])
+    report_root = WORK_ITEM_REPORTS_ROOT / str(item["id"])
     evidence_dir = report_root / str(item["ea_id"]) / str(item["phase"])
     evidence_dir.mkdir(parents=True, exist_ok=True)
     evidence_path = evidence_dir / "preflight_failure.json"
@@ -8523,6 +8549,7 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
         "preflight_failure": failure,
         "report_root": str(report_root),
         "verdict_reason": failure.get("reason") or "preflight_failed",
+        "verdict_taxonomy": "infra",
     })
     evidence = {
         "created_at": now,
@@ -8533,6 +8560,7 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
         "setfile_path": item["setfile_path"],
         "symbol": item["symbol"],
         "verdict": "INFRA_FAIL",
+        "verdict_taxonomy": "infra",
     }
     evidence_path.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
@@ -8541,7 +8569,7 @@ def _fail_work_item_preflight(root: Path, item: sqlite3.Row, failure: dict[str, 
             conn.execute(
                 """
                 UPDATE work_items
-                SET status='failed', verdict='INFRA_FAIL', evidence_path=?,
+                SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra', evidence_path=?,
                     claimed_by=NULL, payload_json=?, updated_at=?
                 WHERE id=?
                 """,
@@ -11932,7 +11960,7 @@ def _fail_item_after_worker_crash(root: Path, item: sqlite3.Row, terminal: str, 
         cur = conn.execute(
             """
             UPDATE work_items
-            SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+            SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra', claimed_by=NULL,
                 evidence_path=?, payload_json=?, updated_at=?
             WHERE id=? AND status='active'
             """,

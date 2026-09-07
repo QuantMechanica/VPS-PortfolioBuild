@@ -1,0 +1,29 @@
+{
+  "artifact_type": "preflight_failure_sh3_repair_receipt",
+  "schema_version": 1,
+  "task_id": "05016e99-4c3d-4175-b92e-25cd8a18ac3b",
+  "recorded_at_utc": "2026-09-07T18:44:06Z",
+  "result": "REVIEW",
+  "incident_rows_observed": 5,
+  "production_rows_mutated": 0,
+  "governed_verdict": "INFRA_FAIL",
+  "governed_taxonomy": "infra",
+  "literal_failed_writer_audit": {
+    "terminal_worker.py": 5,
+    "farmctl.py": 4,
+    "writers_missing_taxonomy": 0
+  },
+  "verification": {
+    "pytest_passed": 91,
+    "pytest_failed": 0,
+    "stale_sha_replayed_against_sh3": true,
+    "legacy_string_normalized": true,
+    "worker_loop_continuity_proved": true
+  },
+  "operational_actions": {
+    "terminal_started": false,
+    "terminal_stopped": false,
+    "worker_restarted": false,
+    "queue_replayed": false
+  }
+}

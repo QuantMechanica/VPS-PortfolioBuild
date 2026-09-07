@@ -11908,6 +11908,7 @@ def _detect_active_age_timeout(
         payload.update({
             "reason_classes": reason_classes,
             "verdict_reason": "ACTIVE_TIMEOUT",
+            "verdict_taxonomy": "infra",
             "timeout_min": timeout_min,
             "inner_budget_min": inner_budget_min,
             "absolute_ceiling_min": absolute_ceiling_min,
@@ -11926,7 +11927,7 @@ def _detect_active_age_timeout(
         con.execute(
             """
             UPDATE work_items
-            SET status='failed', verdict='INFRA_FAIL', claimed_by=NULL,
+            SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra', claimed_by=NULL,
                 evidence_path=?, payload_json=?, updated_at=?
             WHERE id=? AND status='active'
             """,
@@ -13544,9 +13545,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 final_payload = _ensure_verdict_reason(
                     {**updated_payload, "final_failure": f"{fast_failure}_retries_exhausted"}
                 )
+                final_payload["verdict_taxonomy"] = "infra"
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', "
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra', "
                         "evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
                         (_evidence_unavailable_sentinel(f"{fast_failure}_retries_exhausted"),
                          json.dumps(final_payload, sort_keys=True),
@@ -13576,9 +13578,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 final_payload = _ensure_verdict_reason(
                     {**payload, "final_failure": "retries_exhausted", "terminal_stopped_on_release": terminal_stopped}
                 )
+                final_payload["verdict_taxonomy"] = "infra"
                 with connect(root) as conn2:
                     conn2.execute(
-                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', "
+                        "UPDATE work_items SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra', "
                         "evidence_path=?, payload_json=?, updated_at=? WHERE id=?",
                         (_evidence_unavailable_sentinel("timeout_retries_exhausted"),
                          json.dumps(final_payload, sort_keys=True),
