@@ -1,0 +1,77 @@
+{
+  "schema": "qm.paced-infra-recovery-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-07T16:21:55.2663054Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "fc6c6f99b1ee8fd05aa6c613ee715a08b747c897",
+  "ea_id": "QM5_12943",
+  "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+  "asset_class": "fx",
+  "target_symbol": "EURUSD.DWX",
+  "target_timeframe": "H1",
+  "target_phase": "Q02",
+  "source_work_item": {
+    "id": "2b04b129-89e8-4489-8653-5dac22f8439a",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "claimed_by": null,
+    "verdict_reason": "worker_crashed_handling_item",
+    "expected_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2"
+  },
+  "diagnosis": {
+    "failure_class": "SH3_SPAWN_REFUSAL_WRITE_CONSTRAINT",
+    "strategy_failure": false,
+    "history_failure": false,
+    "binary_failure": false,
+    "fix_commit": "c1fe07e30fe27d92233ecae64773ca974abf3493",
+    "recovery_path_commit": "b63bf8b6e8"
+  },
+  "identity": {
+    "mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "same_binary_as_source_work_item": true,
+    "setfile_sha256": "8e1604e168b117a130a92285d3892352151c85a5c49965e71a9345fadd726586",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "portfolio_weight": 1.0
+  },
+  "collision_check_after_refusal": {
+    "open_q02_work_items": 0,
+    "source_row_preserved": true
+  },
+  "cpu_admission": {
+    "sampled_at_utc": "2026-09-07T16:21:55.2663054Z",
+    "method": "Win32_PerfFormattedData_PerfOS_Processor PercentProcessorTime, five samples one second apart",
+    "samples_pct": [80.0, 80.0, 97.0, 92.0, 97.0],
+    "average_pct": 89.2,
+    "maximum_pct": 97.0,
+    "ceiling_pct": 97.0,
+    "requires_average_and_maximum_strictly_below_ceiling": true,
+    "clears_ceiling": false
+  },
+  "fleet_snapshot_after_refusal": {
+    "sampled_at_utc": "2026-09-07T16:22:21+00:00",
+    "running_governed_terminals": ["T4", "T6", "T7", "T8", "T9"],
+    "running_governed_terminal_count": 5,
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "pacer_build_guard": {
+    "mq5_written_or_edited": false,
+    "enqueue_compile_attempted": false,
+    "framework_input_pin_audit_required_this_wake": false,
+    "reason": "No generated source write and no compile enqueue boundary was entered."
+  },
+  "outcome": {
+    "enqueue_command_entered": false,
+    "q02_successor_created": false,
+    "tester_launched": false,
+    "reason": "BACKTEST_CPU_CEILING"
+  },
+  "resume_command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12943 --phase Q02 --from-work-item-id 2b04b129-89e8-4489-8653-5dac22f8439a --append-only-rerun-of 2b04b129-89e8-4489-8653-5dac22f8439a --rerun-reason 'same-binary retry after SH3 spawn-refusal taxonomy fix c1fe07e30f; source worker crash authenticated and current EX5 unchanged' --expected-current-ex5-sha256 95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
