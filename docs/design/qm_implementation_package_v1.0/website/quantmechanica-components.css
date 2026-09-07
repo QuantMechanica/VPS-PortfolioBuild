@@ -1,0 +1,146 @@
+/* QuantMechanica website component baseline v1.0
+   This is intentionally restrained. Extend components before inventing new visual grammar. */
+
+* { box-sizing: border-box; }
+
+html {
+  color: var(--qm-carbon);
+  background: var(--qm-surface);
+  font-family: var(--qm-font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  color: var(--qm-slate);
+  background: var(--qm-surface);
+}
+
+.qm-container {
+  width: min(calc(100% - 40px), var(--qm-content-max));
+  margin-inline: auto;
+}
+
+.qm-eyebrow {
+  margin: 0 0 var(--qm-space-3);
+  color: var(--qm-slate);
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: .11em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.qm-display {
+  max-width: 12ch;
+  margin: 0;
+  color: var(--qm-carbon);
+  font-size: clamp(48px, 6.2vw, 82px);
+  font-weight: 700;
+  letter-spacing: -.045em;
+  line-height: .98;
+}
+
+.qm-display-accent { color: var(--qm-green); }
+
+.qm-lead {
+  max-width: var(--qm-text-max);
+  color: var(--qm-slate);
+  font-size: clamp(17px, 1.5vw, 20px);
+  line-height: 1.55;
+}
+
+.qm-section {
+  padding-block: clamp(72px, 9vw, 128px);
+}
+
+.qm-section--soft { background: var(--qm-cloud); }
+
+.qm-card {
+  border: 1px solid var(--qm-border);
+  border-radius: var(--qm-radius-card);
+  background: var(--qm-surface);
+}
+
+.qm-button-primary {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  border: 1px solid var(--qm-green);
+  border-radius: var(--qm-radius-pill);
+  color: #fff;
+  background: var(--qm-green);
+  font: 650 14px/1 var(--qm-font-sans);
+  text-decoration: none;
+  transition: background var(--qm-transition-fast), border-color var(--qm-transition-fast);
+}
+
+.qm-button-primary:hover {
+  border-color: var(--qm-green-dark);
+  background: var(--qm-green-dark);
+}
+
+.qm-link {
+  color: var(--qm-green-dark);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.qm-status {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: var(--qm-radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .01em;
+}
+
+.qm-status--pass  { color: var(--qm-green-dark); background: var(--qm-positive-soft); }
+.qm-status--block { color: var(--qm-negative); background: var(--qm-negative-soft); }
+.qm-status--warn  { color: var(--qm-warning); background: var(--qm-warning-soft); }
+.qm-status--info  { color: var(--qm-info); background: var(--qm-info-soft); }
+.qm-status--off   { color: var(--qm-slate); background: var(--qm-disabled-soft); }
+
+/* Marketing and platform charts share one semantic grammar. */
+.qm-chart {
+  --up: var(--qm-candle-up);
+  --down: var(--qm-candle-down);
+  --current-price: var(--qm-current-price);
+  --range-border: var(--qm-range-border);
+  --range-fill: var(--qm-range-fill);
+  background: var(--qm-surface);
+}
+
+.qm-proof-number {
+  color: var(--qm-carbon);
+  font-size: clamp(42px, 5vw, 72px);
+  font-weight: 650;
+  letter-spacing: -.035em;
+  line-height: 1;
+}
+
+.qm-proof-label {
+  margin-top: var(--qm-space-2);
+  color: var(--qm-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+@media (max-width: 899px) {
+  .qm-container { width: min(calc(100% - 32px), var(--qm-content-max)); }
+  .qm-section { padding-block: 72px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

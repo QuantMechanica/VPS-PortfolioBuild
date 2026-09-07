@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "name": "QuantMechanica Design System",
+    "version": "1.0",
+    "date": "2026-09-07"
+  },
+  "brand": {
+    "master": "QuantMechanica",
+    "module": "Strategy Console",
+    "brandLine": "Systematic. Tested openly.",
+    "campaignLine": "The Quantitative Edge."
+  },
+  "color": {
+    "carbon": "#171A21",
+    "ink": "#0F172A",
+    "quantGreen": "#0A8A5B",
+    "quantGreenDark": "#087247",
+    "slate": "#677185",
+    "muted": "#8B95A7",
+    "cloud": "#F5F7F9",
+    "surface": "#FFFFFF",
+    "border": "#DCE2E8",
+    "borderStrong": "#C8D0DA",
+    "signalBlue": "#3B6CF6",
+    "signalBlueSoft": "#EAF1FF",
+    "positive": "#0B7A53",
+    "positiveSoft": "#E8F6F0",
+    "negative": "#B8454D",
+    "negativeSoft": "#FCEBEC",
+    "warning": "#996515",
+    "warningSoft": "#FFF4D6",
+    "disabled": "#A1A9B7",
+    "disabledSoft": "#EEF1F4",
+    "candleUp": "#0E9F7A",
+    "candleDown": "#F0545E",
+    "rangeBorder": "#6B8FD8",
+    "rangeFill": "#EDF3FF"
+  },
+  "typography": {
+    "fontSans": "Inter, Segoe UI, Helvetica Neue, Arial, sans-serif",
+    "displayWeight": 700,
+    "headingWeight": 650,
+    "bodyWeight": 400
+  },
+  "spacingPx": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96,
+    128
+  ],
+  "radiusPx": {
+    "control": 8,
+    "card": 16,
+    "large": 24,
+    "pill": 999
+  },
+  "layout": {
+    "contentMaxPx": 1240,
+    "textMaxCh": 66,
+    "navHeightPx": 64,
+    "breakpointsPx": {
+      "sm": 640,
+      "md": 900,
+      "lg": 1200
+    }
+  },
+  "status": {
+    "pass": {
+      "fg": "#087247",
+      "bg": "#E8F6F0"
+    },
+    "block": {
+      "fg": "#B8454D",
+      "bg": "#FCEBEC"
+    },
+    "warn": {
+      "fg": "#996515",
+      "bg": "#FFF4D6"
+    },
+    "info": {
+      "fg": "#3B6CF6",
+      "bg": "#EAF1FF"
+    },
+    "off": {
+      "fg": "#677185",
+      "bg": "#EEF1F4"
+    }
+  }
+}

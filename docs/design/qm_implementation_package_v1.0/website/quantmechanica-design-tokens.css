@@ -1,0 +1,57 @@
+/* QuantMechanica Design System v1.0
+   Canonical website tokens. Keep semantic colors aligned with QMDesignTokens.mqh. */
+
+:root {
+  --qm-carbon: #171A21;
+  --qm-ink: #0F172A;
+  --qm-green: #0A8A5B;
+  --qm-green-dark: #087247;
+  --qm-slate: #677185;
+  --qm-muted: #8B95A7;
+  --qm-cloud: #F5F7F9;
+  --qm-surface: #FFFFFF;
+  --qm-border: #DCE2E8;
+  --qm-border-strong: #C8D0DA;
+
+  --qm-info: #3B6CF6;
+  --qm-info-soft: #EAF1FF;
+  --qm-positive: #0B7A53;
+  --qm-positive-soft: #E8F6F0;
+  --qm-negative: #B8454D;
+  --qm-negative-soft: #FCEBEC;
+  --qm-warning: #996515;
+  --qm-warning-soft: #FFF4D6;
+  --qm-disabled: #A1A9B7;
+  --qm-disabled-soft: #EEF1F4;
+
+  --qm-candle-up: #0E9F7A;
+  --qm-candle-down: #F0545E;
+  --qm-range-border: #6B8FD8;
+  --qm-range-fill: #EDF3FF;
+  --qm-current-price: #3B6CF6;
+
+  --qm-font-sans: Inter, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  --qm-space-1: 4px;
+  --qm-space-2: 8px;
+  --qm-space-3: 12px;
+  --qm-space-4: 16px;
+  --qm-space-6: 24px;
+  --qm-space-8: 32px;
+  --qm-space-12: 48px;
+  --qm-space-16: 64px;
+  --qm-space-24: 96px;
+  --qm-space-32: 128px;
+
+  --qm-radius-control: 8px;
+  --qm-radius-card: 16px;
+  --qm-radius-large: 24px;
+  --qm-radius-pill: 999px;
+
+  --qm-content-max: 1240px;
+  --qm-text-max: 66ch;
+  --qm-nav-height: 64px;
+
+  --qm-transition-fast: 140ms ease;
+  --qm-transition-ui: 200ms ease;
+}
