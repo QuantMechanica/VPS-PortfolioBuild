@@ -1,0 +1,71 @@
+{
+  "schema": "qm.q02-admission-handoff/v1",
+  "recorded_date": "2026-09-07",
+  "ea": {
+    "ea_id": "QM5_41378",
+    "ea_label": "QM5_41378_wti-wmom265",
+    "source_sha256": "8d621c6f64affedd75dd61305e2828c88370513a192d96d35f5dac8e0241fed0",
+    "ex5_sha256": "cc4fce1985c6ba799af47f60e30c8ea9be8b9f6b2108c8250d61d7571f3cb108",
+    "setfile_sha256": "615b95008bf78117d89164a8011c4ced7cfeed5a3eb5760c2ef95db1e143b483"
+  },
+  "pacer_build_guard": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "compile": {
+    "work_item_id": "0d883e95-9a9d-440d-a7e7-55c03b2ded47",
+    "verdict": "COMPILE_OK",
+    "compiler_errors": 0,
+    "compiler_warnings": 0,
+    "build_check": "PASS",
+    "setfile_count": 1,
+    "evidence_path": "D:/QM/reports/work_items/0d883e95-9a9d-440d-a7e7-55c03b2ded47/QM5_41378/COMPILE_EA/compile_evidence.json",
+    "release_receipt": "artifacts/qm5_41378_compile_release_20260907.json"
+  },
+  "q02_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "compile_work_item_id": "0d883e95-9a9d-440d-a7e7-55c03b2ded47",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "setfile_sha256": "615b95008bf78117d89164a8011c4ced7cfeed5a3eb5760c2ef95db1e143b483"
+  },
+  "cpu_admission": {
+    "sampling_cadence_seconds": 1,
+    "threshold_percent": 97.0,
+    "samples": [
+      {"sample": 1, "sampled_at_utc": "2026-09-07T04:32:54.5465841Z", "cpu_percent": 84.297},
+      {"sample": 2, "sampled_at_utc": "2026-09-07T04:32:56.5911580Z", "cpu_percent": 88.677},
+      {"sample": 3, "sampled_at_utc": "2026-09-07T04:32:58.5972117Z", "cpu_percent": 75.034},
+      {"sample": 4, "sampled_at_utc": "2026-09-07T04:33:00.6053144Z", "cpu_percent": 87.623},
+      {"sample": 5, "sampled_at_utc": "2026-09-07T04:33:02.6458561Z", "cpu_percent": 95.185}
+    ],
+    "average_percent": 86.163,
+    "maximum_percent": 95.185,
+    "nonlive_terminal64_count": 7,
+    "ceiling_hit": false
+  },
+  "q02": {
+    "enqueued": true,
+    "status": "ENQUEUED",
+    "work_item_id": "d4ac61bc-4b49-4eed-98ef-93b488d5e749",
+    "priority_boost": false,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/0d883e95-9a9d-440d-a7e7-55c03b2ded47_d4ac61bc-4b49-4eed-98ef-93b488d5e749.json",
+    "receipt_sha256": "6b0265d8cd5965d137e434c266b40fed99763a46109a748763daa84cbeaa6419"
+  },
+  "validation": {
+    "reference_tests": "14/14 PASS",
+    "card_schema_lint": "PASS",
+    "framework_input_pin_audit": "PASS"
+  },
+  "prohibited_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}

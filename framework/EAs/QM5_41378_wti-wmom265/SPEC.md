@@ -46,3 +46,18 @@ alone measures density and economics; Q09 alone may measure correlation.
 
 This build is branch-only and non-live. It excludes portfolio-gate changes,
 portfolio admission, live manifests, `T_Live`, AutoTrading, and deployment.
+
+## Validation Record
+
+- 2026-09-07: 14/14 deterministic reference checks PASS.
+- 2026-09-07: mandatory pre-compile PACER input-pin audit PASS with zero
+  `EA_FRAMEWORK_INPUT_PINNED` findings on source SHA-256
+  `8d621c6f64affedd75dd61305e2828c88370513a192d96d35f5dac8e0241fed0`.
+- 2026-09-07: governed compile work item
+  `0d883e95-9a9d-440d-a7e7-55c03b2ded47` completed `COMPILE_OK`; compiler
+  errors/warnings 0/0 and framework build check PASS. Binary SHA-256 is
+  `cc4fce1985c6ba799af47f60e30c8ea9be8b9f6b2108c8250d61d7571f3cb108`.
+- 2026-09-07: first-Q02 admission dry run PASS after binding
+  `strategy_symbol=XTIUSD.DWX` in the fixed-risk preset. A five-sample CPU
+  window peaked at 95.185%, below the 97% ceiling. Q02 work item
+  `d4ac61bc-4b49-4eed-98ef-93b488d5e749` was enqueued without a priority boost.

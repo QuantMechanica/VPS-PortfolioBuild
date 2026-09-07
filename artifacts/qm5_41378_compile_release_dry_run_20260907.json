@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "8d621c6f64affedd75dd61305e2828c88370513a192d96d35f5dac8e0241fed0",
+      "ea_id": "QM5_41378",
+      "ea_label": "QM5_41378_wti-wmom265",
+      "expected_mq5_sha256": "8d621c6f64affedd75dd61305e2828c88370513a192d96d35f5dac8e0241fed0",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41378_wti-wmom265\\QM5_41378_wti-wmom265.mq5",
+      "work_item_id": "0d883e95-9a9d-440d-a7e7-55c03b2ded47"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "0d883e95-9a9d-440d-a7e7-55c03b2ded47",
+  "work_item_id_selectors": [
+    "0d883e95-9a9d-440d-a7e7-55c03b2ded47"
+  ]
+}
