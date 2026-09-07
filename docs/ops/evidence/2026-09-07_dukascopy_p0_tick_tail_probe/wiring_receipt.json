@@ -1,0 +1,101 @@
+{
+  "authority_task_id": "a7e1333c-9b06-45de-a6be-f14477b5f78b",
+  "bindings": {
+    "history_ranges": {
+      "m1_rows": 37,
+      "path": "C:/QM/repo/docs/ops/evidence/2026-09-02_dukascopy_p0_history_ranges.csv",
+      "sha256": "023f955337a24c16e47e354ca9ce431ace0bd2660d62cfcdc3a36b6e95ba0c4b"
+    },
+    "owner_approved_archive_manifest": {
+      "archive_years": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "path": "D:/QM/strategy_farm/artifacts/ops/custom_history_custom_history_variant_a_20260809/archive_manifest_owner_approved.json",
+      "sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06"
+    },
+    "symbol_matrix": {
+      "path": "C:/QM/repo/framework/registry/dwx_symbol_matrix.csv",
+      "rows": 37,
+      "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+    }
+  },
+  "claim_contract": {
+    "allowed_terminals": [
+      "T1"
+    ],
+    "completion_verdict": "REVIEW_REQUIRED",
+    "contract": "qm.dwx-tick-tail-probe-work-item/v1",
+    "diagnostic_non_admission": true,
+    "ea_id": "QM_DIAG_DWX_TICK_TAIL",
+    "kind": "diagnostic",
+    "phase": "Q00"
+  },
+  "generated_at_utc": "2026-09-07T18:14:40Z",
+  "implementation_files": [
+    {
+      "path": "framework/scripts/mt5_diagnostics/QM_DWX_Tick_Tail_Probe.mq5",
+      "sha256": "da5fb64ba6ba78f166de879b9fd2ff5bb175e0839526d6cdfb649ad6e7a0ea60"
+    },
+    {
+      "path": "framework/scripts/mt5_diagnostics/dwx_tick_tail_probe.py",
+      "sha256": "7af3e50d4385816057f7e06f26723bf56e66ed41efc2e21b0aa1806b9696ee61"
+    },
+    {
+      "path": "tools/strategy_farm/dwx_tick_tail_probe_work_item.py",
+      "sha256": "54fcb52a1dbbdf18d6c03dbbce8a7140c1a4e8ed9fc62e77b09568ac84cb86a3"
+    },
+    {
+      "path": "tools/strategy_farm/farmctl.py",
+      "sha256": "71f7b5a46fd1df3da8cc8e27d6270d506efedc2c29e790e12e93d84c26658b0b"
+    },
+    {
+      "path": "tools/strategy_farm/terminal_worker.py",
+      "sha256": "643509e244e7df04e8c621640ddbc541ebd4981b090b2eaf02987e6ff42cfac3"
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_dwx_tick_tail_probe.py",
+      "sha256": "4209f9917543beb0273975537fb818927ebcf3db71dbaf9a46bacc9449f0b4d5"
+    }
+  ],
+  "production_run": {
+    "factory_off_observed": true,
+    "open_diagnostic_q00_rows_after_dry_run": 0,
+    "reason": "New claim wiring requires review; first production invocation is OWNER-controlled.",
+    "splice_output_created": false,
+    "status": "NOT_RUN_BY_DESIGN",
+    "terminal64_started": false
+  },
+  "schema_version": "qm.dwx-tick-tail-probe-wiring-receipt/v1",
+  "status": "READY_FOR_OWNER_RUN",
+  "verification": {
+    "dry_run": {
+      "apply": false,
+      "dispatch_binding_sha256": "d6416a78ae1518c0e809691deabf825a5ae8a0c522555710ee30ea648b0360ee",
+      "manifest_selection": "PASS_37_SYMBOLS",
+      "stamp": "20260907_180940"
+    },
+    "metaeditor_compile": {
+      "errors": 0,
+      "ex5_sha256": "d1af5ebd5ddd9086d34608bbafd02ca40f11402788f5804f95a80ef110503d3c",
+      "exit_code": 1,
+      "warnings": 0
+    },
+    "py_compile": "PASS",
+    "pytest_adjacent": {
+      "passed": 56,
+      "status": "PASS"
+    },
+    "pytest_focused": {
+      "passed": 10,
+      "status": "PASS"
+    }
+  }
+}

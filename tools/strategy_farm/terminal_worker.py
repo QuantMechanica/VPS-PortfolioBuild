@@ -824,6 +824,9 @@ def _work_item_history_symbols(
         payload_symbols = payload.get(field)
         if isinstance(payload_symbols, list):
             symbols.extend(payload_symbols)
+    diagnostic_symbols = payload.get("diagnostic_history_symbols")
+    if isinstance(diagnostic_symbols, list):
+        symbols.extend(diagnostic_symbols)
 
     is_basket = (
         str(payload.get("portfolio_scope") or "").strip().lower() == "basket"
@@ -7176,6 +7179,22 @@ def _verify_and_record_staged_ex5(payload: dict[str, Any]) -> dict[str, Any] | N
 
 def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> tuple[Path, dict[str, Any]] | None:
     phase = str(item["phase"])
+    if farmctl._is_dwx_tick_tail_probe_item(item, payload):
+        exact_evidence = payload.get("phase_evidence_path")
+        if exact_evidence:
+            summary_path = Path(str(exact_evidence))
+        else:
+            summary_path = (
+                Path(r"D:\QM\reports\work_items")
+                / str(item["id"])
+                / str(item["ea_id"])
+                / phase
+                / "summary.json"
+            )
+        if not summary_path.is_file():
+            return None
+        summary = _load_fresh_summary(summary_path, payload)
+        return (summary_path, summary) if summary is not None else None
     if phase in farmctl.REAL_PHASE_RUNNER_PHASES:
         exact_evidence = payload.get("phase_evidence_path")
         if exact_evidence:
@@ -7794,6 +7813,118 @@ def _requeue_for_monitor_budget_review(conn, item, payload, now, classification)
             "hold_code": monitor_budget.HOLD_CODE, "attempt": int(item["attempt_count"] or 0)}
 
 
+def _finish_dwx_tick_tail_probe(
+    conn: sqlite3.Connection,
+    item: sqlite3.Row,
+    payload: dict[str, Any],
+    exit_code: int | None,
+    now: str,
+) -> dict[str, Any]:
+    """Classify the read-only utility without emitting a pipeline verdict."""
+
+    try:
+        from tools.strategy_farm import dwx_tick_tail_probe_work_item as _probe_item
+    except ModuleNotFoundError:
+        import dwx_tick_tail_probe_work_item as _probe_item
+
+    payload["diagnostic_wrapper_exit_code"] = exit_code
+    summary_data = _find_work_item_summary_data(item, payload)
+    summary_path: Path | None = summary_data[0] if summary_data else None
+    summary: dict[str, Any] | None = summary_data[1] if summary_data else None
+    validation: dict[str, Any] | None = None
+    reason = "diagnostic_summary_missing_or_stale"
+    if summary is not None:
+        try:
+            validation = _probe_item.validate_summary(
+                summary,
+                payload,
+                str(item["id"]),
+                verify_files=True,
+            )
+            if exit_code != 0:
+                reason = f"diagnostic_wrapper_exit_code_{exit_code}"
+                validation = None
+            else:
+                reason = "governed_tick_tail_probe_requires_review"
+        except (OSError, TypeError, ValueError) as exc:
+            reason = f"diagnostic_summary_invalid:{exc}"
+
+    if validation is not None:
+        status = "done"
+        verdict = "REVIEW_REQUIRED"
+        taxonomy = "review"
+        evidence_path = str(validation["evidence_path"])
+        payload["diagnostic_result"] = {
+            **validation,
+            "summary_path": str(summary_path),
+            "summary_sha256": _sha256_file(summary_path),
+        }
+    else:
+        status = "failed"
+        verdict = "INFRA_FAIL"
+        taxonomy = "infra"
+        evidence_path = (
+            str(summary_path)
+            if summary_path is not None
+            else farmctl._evidence_unavailable_sentinel(reason)
+        )
+        payload["diagnostic_result"] = {
+            "valid": False,
+            "summary_path": str(summary_path) if summary_path is not None else None,
+            "error": reason,
+        }
+    payload.update(
+        {
+            "no_gate_verdict": True,
+            "verdict_reason": reason,
+            "verdict_taxonomy": taxonomy,
+            "diagnostic_completed_at_utc": now,
+        }
+    )
+    cursor = conn.execute(
+        """
+        UPDATE work_items
+        SET status=?, verdict=?, verdict_taxonomy=?, evidence_path=?,
+            claimed_by=NULL, payload_json=?, updated_at=?
+        WHERE id=? AND status='active' AND upper(claimed_by)=upper(?)
+        """,
+        (
+            status,
+            verdict,
+            taxonomy,
+            evidence_path,
+            json.dumps(payload, sort_keys=True),
+            now,
+            str(item["id"]),
+            str(item["claimed_by"] or ""),
+        ),
+    )
+    if cursor.rowcount != 1:
+        conn.rollback()
+        return {"finished": False, "reason": "diagnostic_claim_changed"}
+    farmctl.event(
+        conn,
+        "work_item",
+        str(item["id"]),
+        "diagnostic_finished",
+        {
+            "status": status,
+            "verdict": verdict,
+            "reason": reason,
+            "evidence_path": evidence_path,
+        },
+    )
+    conn.commit()
+    return {
+        "finished": True,
+        "status": status,
+        "verdict": verdict,
+        "reason": reason,
+        "evidence_path": evidence_path,
+        "aggregate": None,
+    }
+
+
 def _finish_work_item(
     root: Path,
     item_id: str,
@@ -7811,6 +7942,10 @@ def _finish_work_item(
                 payload.update(runtime_payload_updates)
             if item["kind"] == farmctl.HARNESS_WORK_ITEM_KIND:
                 return _finish_harness_work_item(conn, item, payload, exit_code, now, item_id)
+            if farmctl._is_dwx_tick_tail_probe_item(item, payload):
+                return _finish_dwx_tick_tail_probe(
+                    conn, item, payload, exit_code, now
+                )
             summary_data = _find_work_item_summary_data(item, payload)
             if summary_data and not _q09_sidecar_matches(
                 root, item, summary_data[0], summary_data[1]
@@ -10476,6 +10611,153 @@ def _record_unspawned_terminal_state(
     return bool(_with_post_claim_sqlite_retry(_write))
 
 
+def _run_claimed_dwx_tick_tail_probe(
+    root: Path,
+    row: sqlite3.Row,
+    terminal: str,
+    timeout_seconds: int,
+) -> dict[str, Any]:
+    """Run the exact T1 diagnostic without EA staging or gate advancement."""
+
+    try:
+        from tools.strategy_farm import dwx_tick_tail_probe_work_item as _probe_item
+    except ModuleNotFoundError:
+        import dwx_tick_tail_probe_work_item as _probe_item
+
+    payload = _json_loads(row["payload_json"])
+    try:
+        _probe_item.validate_payload(payload, terminal=terminal, verify_files=True)
+    except (OSError, TypeError, ValueError) as exc:
+        return {
+            "action": "diagnostic_preflight_failed",
+            "item_id": str(row["id"]),
+            **_fail_work_item_preflight(
+                root,
+                row,
+                {"reason": "diagnostic_payload_invalid", "detail": str(exc)},
+            ),
+        }
+
+    existing_pid = payload.get("pid")
+    if existing_pid:
+        identity = _bound_runner_identity(payload)
+        if identity.get("alive"):
+            payload["adopted_active_child_at_iso"] = farmctl.utc_now()
+            payload["claimed_by_worker_pid"] = os.getpid()
+            if not _record_active_payload(
+                root, str(row["id"]), payload, terminal=terminal
+            ):
+                return {"action": "missing_item", "item_id": str(row["id"])}
+            existing_spawn = {
+                key: payload.get(key)
+                for key in (
+                    "pid",
+                    "process_creation_key",
+                    "process_image_path",
+                    "process_started_at_epoch",
+                    "log_path",
+                    "report_root",
+                    "phase_evidence_path",
+                    "ea_dir_name",
+                    "phase_runner",
+                )
+            }
+            try:
+                inner_timeout = int(payload.get("timeout_seconds") or 0)
+            except (TypeError, ValueError):
+                inner_timeout = 0
+            return _monitor_spawned_work_item(
+                root,
+                dict(row),
+                terminal,
+                existing_spawn,
+                payload,
+                max(timeout_seconds, inner_timeout),
+                adopted=True,
+            )
+        if _find_work_item_summary_data(row, payload) is not None:
+            return {
+                "action": "finished",
+                "item_id": str(row["id"]),
+                **_finish_work_item(root, str(row["id"]), 0),
+            }
+        return {
+            "action": "finished",
+            "item_id": str(row["id"]),
+            **_finish_work_item(root, str(row["id"]), None),
+        }
+
+    calendar_preflight = farmctl._news_calendar_preflight(use_cache=True)
+    if not calendar_preflight.get("ok"):
+        return {
+            "action": "calendar_preflight_deferred",
+            "item_id": str(row["id"]),
+            **_defer_news_calendar_preflight(
+                root, row, terminal, calendar_preflight
+            ),
+        }
+
+    _acquire_launch_slot(terminal)
+    spawn = farmctl._spawn_work_item_runner(root, row, terminal)
+    now = farmctl.utc_now()
+    if not spawn.get("spawned"):
+        if spawn.get("calendar_preflight_blocked"):
+            return {
+                "action": "calendar_preflight_deferred",
+                "item_id": str(row["id"]),
+                **_defer_news_calendar_preflight(
+                    root,
+                    row,
+                    terminal,
+                    spawn.get("news_calendar_preflight") or {},
+                ),
+            }
+        return {
+            "action": "spawn_failed",
+            "item_id": str(row["id"]),
+            "reason": spawn.get("reason"),
+            "refusal_evidence": farmctl.record_work_item_spawn_refusal(
+                root, row, terminal, spawn, failed_at=now
+            ),
+        }
+
+    payload.update(
+        {
+            "started_at_iso": now,
+            "pid": spawn["pid"],
+            "process_creation_key": spawn.get("process_creation_key"),
+            "process_image_path": spawn.get("process_image_path"),
+            "process_started_at_epoch": spawn.get("process_started_at_epoch"),
+            "job_object_assigned": spawn.get("job_object_assigned"),
+            "job_object_mode": spawn.get("job_object_mode"),
+            "job_object_registry_key": spawn.get("job_object_registry_key"),
+            "process_started_suspended": spawn.get("process_started_suspended"),
+            "primary_thread_resumed": spawn.get("primary_thread_resumed"),
+            "log_path": spawn["log_path"],
+            "report_root": spawn["report_root"],
+            "phase_evidence_path": spawn["phase_evidence_path"],
+            "ea_dir_name": spawn["ea_dir_name"],
+            "terminal": terminal,
+            "phase_runner": spawn["phase_runner"],
+            "timeout_seconds": spawn["timeout_seconds"],
+            "diagnostic_wrapper": True,
+        }
+    )
+    if not _record_active_payload(
+        root, str(row["id"]), payload, terminal=terminal
+    ):
+        farmctl._stop_pid_tree(spawn["pid"])
+        return {"action": "missing_item", "item_id": str(row["id"])}
+    return _monitor_spawned_work_item(
+        root,
+        dict(row),
+        terminal,
+        spawn,
+        payload,
+        max(timeout_seconds, int(spawn["timeout_seconds"])),
+    )
+
+
 def _run_claimed_item(
     root: Path,
     item: dict[str, Any],
@@ -10505,6 +10787,13 @@ def _run_claimed_item(
             farmctl.REPO_ROOT,
             row,
             terminal,
+        )
+    if farmctl._is_dwx_tick_tail_probe_item(row):
+        # This utility is not an EA: skip setfile/EX5 staging, strategy history
+        # copying, and every pipeline completion path. Its wrapper performs a
+        # read-only full-topology isolation audit before and after the probe.
+        return _run_claimed_dwx_tick_tail_probe(
+            root, row, terminal, timeout_seconds
         )
     preflight_failure = _work_item_preflight_failure(row)
     if preflight_failure:
