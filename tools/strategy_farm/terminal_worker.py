@@ -2383,6 +2383,7 @@ def _drain_scan_candidate(
     try:
         with farmctl.connect(root) as conn:
             conn.row_factory = sqlite3.Row
+            census_pending = _opt_census_cells_claimable_in_txn(conn)
             for item in conn.execute(_priority_pending_query()).fetchall():
                 payload = _json_loads(item["payload_json"])
                 if payload.get("priority_track") is not True:
@@ -2391,6 +2392,18 @@ def _drain_scan_candidate(
                     item, payload, free_ram_gb, host_total_gb, multisym_ids
                 )
                 if candidate is None:
+                    continue
+                # A drain may not park census work for a heavy row that the
+                # census-first rule would still refuse after all short jobs end.
+                # Use the projected free RAM; no admission threshold is relaxed.
+                if _census_first_defers_heavy_candidate(
+                    reservation_gb=candidate["reservation_gb"],
+                    free_ram_gb=free_ram_gb + max(0.0, releasable_short_ram_gb or 0.0),
+                    census_cells_claimable=census_pending,
+                    is_priority_tracked_lineage_rerun=_is_priority_tracked_lineage_rerun(payload),
+                    is_compile=str(item["phase"]).upper() == farmctl.COMPILE_EA_PHASE,
+                    enabled=_census_first_ram_priority_enabled(),
+                ):
                     continue
                 if releasable_short_ram_gb is None:
                     return candidate, True, ""
@@ -2632,7 +2645,18 @@ def _drain_run_postprocess(
             new_long_run_active = bool(
                 set(facts["long_run_active_ids"]) - opened_long_run_ids
             )
-            if active is not None and (
+            census_conflict = active is not None and any(
+                str(row.get("item_id")) == active_item_id
+                for row in claim_result.get("census_lane_protection_skipped", [])
+            )
+            if census_conflict:
+                # The armed row cannot run while the drain itself prevents the
+                # protected census from draining its queue: release coordination,
+                # not either safety rule. A cooldown prevents immediate rearming.
+                new_state, events = _drain_abandon(
+                    state, now_epoch=now_epoch, reason="census_lane_protection_conflict"
+                )
+            elif active is not None and (
                 new_long_run_active or not facts["armed_row_pending"]
             ):
                 # WINNABILITY abandon (2026-09-03, CEO; revised): an open drain

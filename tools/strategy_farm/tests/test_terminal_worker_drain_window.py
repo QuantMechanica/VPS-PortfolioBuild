@@ -49,6 +49,45 @@ def _cand(item_id="IDX1", reservation=44.0, floor=14.0, ea_id="E"):
     }
 
 
+def test_scan_never_parks_census_for_census_protected_heavy_row(tmp_path, monkeypatch):
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(conn, "heavy", "Q02", symbol="GDAXI.DWX", status="pending",
+                   payload={"priority_track": True})
+        conn.commit()
+    monkeypatch.setattr(tw, "_opt_census_cells_claimable_in_txn", lambda conn: True)
+    monkeypatch.setenv("QM_CENSUS_FIRST_RAM_PRIORITY", "1")
+    # 50 GB would meet the drained floor (44 + 4) but not the census band (44 + 16).
+    result = tw._drain_scan_candidate(root, free_ram_gb=40.0, host_total_gb=80.0,
+                                     multisym_ids=_FZ, releasable_short_ram_gb=10.0)
+    assert result[0] is None
+    monkeypatch.setenv("QM_CENSUS_FIRST_RAM_PRIORITY", "0")
+    result = tw._drain_scan_candidate(root, free_ram_gb=40.0, host_total_gb=80.0,
+                                     multisym_ids=_FZ, releasable_short_ram_gb=10.0)
+    assert result[0]["item_id"] == "heavy"
+
+
+def test_postprocess_abandons_census_drain_deadlock(tmp_path, monkeypatch):
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = 20_000_000.0
+    state = {"version": 1, "tracker": {}, "cooldown_until_epoch": 0,
+             "active": {"item_id": "heavy", "ea_id": "E", "reservation_gb": 32,
+                        "floor_gb": 14, "opened_epoch": now - 60,
+                        "long_run_ids_at_open": []}}
+    assert tw._write_drain_state_atomic(root, state)
+    monkeypatch.setattr(tw, "_drain_active_ram_facts", lambda *a, **kw: {
+        "long_run_active_ids": [], "armed_row_pending": True,
+        "releasable_short_ram_gb": 0, "long_run_ram_gb": 0})
+    tw._drain_run_postprocess(root, "T1", {
+        "claimed": False, "census_lane_protection_skipped": [{"item_id": "heavy"}]},
+        now_epoch=now, free_ram_gb=41, host_total_gb=63, multisym_ids=_FZ)
+    result = tw._load_drain_state(root)
+    assert result["active"] is None
+    assert result["cooldown_until_epoch"] > now
+
+
 # --- pure qualification predicate ----------------------------------------
 
 def test_predicate_winnable_heavy_priority_qualifies():
