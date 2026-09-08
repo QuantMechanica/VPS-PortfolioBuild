@@ -20,7 +20,7 @@ REPARSE = 0x400
 COMPRESSED = 0x800
 
 
-def candidates(mt5_root: Path, *, now: float) -> list[dict]:
+def candidates(mt5_root: Path, *, now: float, minimum_bytes: int = 10 * 1024**2) -> list[dict]:
     result = []
     for n in range(1, 11):
         root = mt5_root / f'T{n}'
@@ -30,7 +30,7 @@ def candidates(mt5_root: Path, *, now: float) -> list[dict]:
             try:
                 s = path.stat(follow_symlinks=False)
                 if (s.st_file_attributes & (REPARSE | COMPRESSED) or s.st_nlink != 1
-                    or s.st_size < 10 * 1024**2 or now - s.st_mtime < 48 * 3600
+                    or s.st_size < minimum_bytes or now - s.st_mtime < 48 * 3600
                     or not path.resolve().is_relative_to(root.resolve())):
                     continue
                 result.append({'path': str(path), 'bytes': s.st_size, 'mtime_ns': s.st_mtime_ns})
@@ -91,12 +91,14 @@ def main() -> int:
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--target-free-gib', type=float, default=150)
     parser.add_argument('--max-logical-gib', type=float, default=40)
+    parser.add_argument('--min-report-mib', type=float, default=10,
+                        help='Minimum old HTML report size (>=0.5 MiB); safety predicates unchanged')
     parser.add_argument('--include-closed-ndx-import', action='store_true',
                         help='Also compress the exact old NDX import staging binary, never an HCC/TKC history')
     args = parser.parse_args()
-    if os.name != 'nt' or not 0 < args.max_logical_gib <= 80:
+    if os.name != 'nt' or not 0 < args.max_logical_gib <= 80 or not 0.5 <= args.min_report_mib <= 1024:
         raise RuntimeError('Windows and a bounded <=80 GiB batch required')
-    rows = candidates(Path('D:/QM/mt5'), now=time.time())
+    rows = candidates(Path('D:/QM/mt5'), now=time.time(), minimum_bytes=int(args.min_report_mib * 1024**2))
     if args.include_closed_ndx_import:
         path = Path('D:/QM/mt5/T8/MQL5/Files/ndx_import/NDX.DWX.tick.bin')
         if path.is_file():
