@@ -331,6 +331,7 @@ framework/EAs/QM5_41350_wti-adf-ljungbox-agree-tr/QM5_41350_wti-adf-ljungbox-agr
 framework/EAs/QM5_41351_wti-adf-bds-agree-tr/QM5_41351_wti-adf-bds-agree-tr.mq5 -text
 framework/EAs/QM5_41352_wti-adf-vr-agree-tr/QM5_41352_wti-adf-vr-agree-tr.mq5 -text
 framework/EAs/QM5_41354_wti-adf-mkendall-agree-tr/QM5_41354_wti-adf-mkendall-agree-tr.mq5 -text
+framework/EAs/QM5_10269_gawd-wma30-trend/QM5_10269_gawd-wma30-trend.mq5 -text
 framework/EAs/QM5_11196_ft-heracles/sets/QM5_11196_ft-heracles_XAUUSD.DWX_H4_backtest_s20260906-001.set -text
 framework/EAs/QM5_10928_grimes-yoyo-break/sets/QM5_10928_grimes-yoyo-break_XAUUSD.DWX_M30_backtest_s20260907-001.set -text
 framework/EAs/QM5_11179_ft001-ema-ha/sets/QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_backtest_s20260907-001.set -text

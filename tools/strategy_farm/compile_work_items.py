@@ -2326,6 +2326,30 @@ ML_PREDICATE_SOURCE_REPAIR_REGISTRATIONS = {'router_ops_issue:690fc42a-ab37-4c25
 BACKLOG_SOURCE_REPAIR_REGISTRATIONS.update(ML_PREDICATE_SOURCE_REPAIR_REGISTRATIONS)
 
 
+# Paced fleet task 2cd23795 (2026-09-08): the June QM5_10269 binary embeds a
+# resolver from before its forex magic rows were added.  Bind the rebuild to
+# the exact framework-conformance repair and immutable root-cause receipt.
+QM5_10269_STALE_RESOLVER_REBUILD_AUTHORITY = (
+    "router_triage_failure:2cd23795-b866-4ba8-b1c0-8c7d13ef5fcf:QM5_10269"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_10269_STALE_RESOLVER_REBUILD_AUTHORITY
+] = {
+    "ea_id": "10269",
+    "ea_label": "QM5_10269_gawd-wma30-trend",
+    "source_sha256": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-08_qm5_10269_stale_resolver_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "f6fc799cea7e784028b753fc4cdec0e0e7bbdff57114b727d5f5590ae6164a6d"
+    ),
+}
+
+
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
     return [{"path": binding.get("evidence_path", BACKLOG_SOURCE_REPAIR_EVIDENCE),

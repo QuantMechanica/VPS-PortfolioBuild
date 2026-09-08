@@ -1,0 +1,38 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "2cd23795-b866-4ba8-b1c0-8c7d13ef5fcf",
+  "mode": "paced_fleet_authorized_enqueue",
+  "source_branch": "agents/board-advisor",
+  "repair": "Rebuild the June binary against the current magic resolver; restore first-statement MAE sampling, entry-only central news gating, request zero-initialization, and permit the valid zero-spread DWX tester state without changing the WMA30 strategy.",
+  "root_cause": {
+    "journal_finding": "EA_MAGIC_NOT_REGISTERED: ea_id=10269 slot=6 magic=102690006",
+    "source_work_item_id": "138e5d99-97e1-4d75-83ff-5ef8bea16940",
+    "old_ex5_sha256": "13e0f1e170447b6a951a19f617b8f8534337bc428219467d48f0d7a57cb8680c",
+    "current_resolver_sha256": "b6d4a9f331279e314d687be522f0cefcee4cbde0ab9542176d75c9fccdfde8d4",
+    "current_resolver_contains_magic_102690006": true,
+    "active_magic_row_count": 13
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_10269_gawd-wma30-trend/QM5_10269_gawd-wma30-trend.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "registrations": [
+    {
+      "ea_id": "10269",
+      "ea_label": "QM5_10269_gawd-wma30-trend",
+      "source_sha256": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+      "predecessors": [],
+      "superseded_predecessors": []
+    }
+  ],
+  "source_q02_rows_preserved": [
+    "9a0ced77-9871-4368-b153-e2a877b4a750",
+    "c246db5e-4425-4cb8-82d9-fe48deaa1c5a",
+    "138e5d99-97e1-4d75-83ff-5ef8bea16940"
+  ],
+  "compile_enqueue_applied": false,
+  "q02_enqueue_applied": false,
+  "live_or_portfolio_mutation": false
+}
