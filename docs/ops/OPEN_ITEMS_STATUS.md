@@ -1,5 +1,17 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 08.09., 14:12Z — OWNER Option A beschlossen, Legacy-Logger-Canary bereit:**
+> Receipt `821096ac-8f7f-4c28-b0ce-63a09e959de1`, Code `07af95fcf1`, 124 Tests PASS.
+> Exakte archivierte Pre-Control-Binaries statt mtime-Ausnahme; nur 11167 aktiviert,
+> deklarierte `legacy_no_sv`-Authentifizierung durch Smoke, Q09-Receipts und Aggregate.
+> Neuer append-only Q10_NEWS-Canary `6797ed1c-597a-4d44-82f9-7379d45b5e06`:
+> Plan automatisch gebunden, B′-Kalender-Scope separat authentifiziert/freigegeben,
+> priorisiert und pending. Altes `f625d9aa` bleibt REVIEW_REQUIRED.
+> **Offen:** native Selection-/Holdout-Abnahme, danach 11196 und weitere registrierte
+> Alt-Binaries; vollständiger Gate-Abschluss. Kein weiterer Owner-Entscheid nötig,
+> keine Live-/AutoTrading-/Risiko-Änderung. Detail und eindeutiger Fortsetzungspunkt:
+> `docs/ops/evidence/2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md`.
+
 > **Nachtrag 19:30Z (07.09.) - OFF-Tick 19:30Z: STRATEGY CONSOLE v4 ABGENOMMEN (bb036699 APPROVED, 8cfde7742c), OWNER-Re-Attach offen:** Astra hat das OWNER-Paket in den V5-Rahmen portiert: `QM_DesignTokens.mqh` (24/24 Tokens = Paket-JSON), `QM_ConsoleModel/ConsoleData/StrategyConsole.mqh`, `QM_ChartPanel.mqh` als Adapter; Hierarchie Wordmark -> STRATEGY CONSOLE -> Titel aus der registrierten EA-Identitaet -> State-Card -> Filter Gate (nur echte Gates; kein Governor-Gate, solange 11421 auf dem Legacy-DXZ-Vertrag laeuft) -> Risk (ohne erfundene DD-Raeume) -> LIVE nur bei Exposure -> Today/Week + PERFORMANCE-Tabelle (OWNER 09:00Z) -> Footer; Modi FULL/COMPACT/MINIMAL + View-Button (OnChartEvent, nur Praesentation); de-DE Standard, en-US per Input. Compile 0E/0W (Header + Canary, FTMO-MetaEditor), 8 Tests, Trading-Pfad-Aequivalenz gegen db44a0983a PASS, Demo-Install Hash-Match 5be08463 (beide Orte), Fabrik-EX5 9dd7facd unveraendert, AutoTrading/T_Live/T1-T10 unberuehrt; Objekt-Zensus rechnerisch (FULL 85 Objekte), Live-Zensus + Screenshots nach OWNER-Re-Attach. Fabrik weiter AUS (Flag OFF_IN_PROGRESS); Codex-Slot 1 aktiv (21:29 lokal).
 
 > **Nachtrag 18:58Z (07.09.) - OFF-Tick 18:55Z: 05016e99 + a7e1333c APPROVED (beide gehen mit dem naechsten Factory_ON live):** SH3-Preflight-Writer-Fix (e358c9e3cd: Failure-Normalisierung, verdict_taxonomy=infra, alle status='failed'-Writer auditiert, Regression mit migriertem SH3-Schema) und die governed T1-Tick-Tail-Probe-Route (db44a0983a: Diagnostic-Work-Item Q00, T1-only, read-only MQL5, Isolation/Archiv-Audit, 37-Zeilen-CSV) - 13 fokussierte Tests auf board-advisor gruen. Da die Fabrik aus ist, laden die frischen Worker beim ON den neuen terminal_worker (Idle-Claim-Memo 8c53213e + SH3-Fix + Probe-Route) - kein separater Staffel-Reload noetig. Erster Probe-Lauf = CEO nach ON. Codex-Slot 1 weiter aktiv; Flag OFF_IN_PROGRESS unveraendert; FTMO-Demo sauber.

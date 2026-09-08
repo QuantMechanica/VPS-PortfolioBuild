@@ -84,5 +84,29 @@ vor/nach Kennzeichnung; nur die geänderten Evidenz-Hashes dürfen abweichen.
 5. Vollständiges terminales Gate-Ergebnis separat abnehmen. Ein bestandener
    Infrastrukturtest ist kein bestandenes Strategie-Gate.
 
+## Native Canary eingereiht, 16:12 Wien
+
+- Implementierungs-Commit: `07af95fcf1`.
+- Neuer Work-Item: `6797ed1c-597a-4d44-82f9-7379d45b5e06`, angelegt 14:09:36 UTC.
+- Genau ein append-only Rerun des alten `f625d9aa`; `priority_track=true` übernommen.
+- Autoseal hat um 14:10:33 UTC regulär den neuen 8-Zellen-v3-Plan gebunden.
+- Plan-Datei SHA: `347afa7c2f81b1cfb735136c96ecc7d93891e7e7ac9d35f305cf01eb35183157`.
+- Input-Manifest SHA: `fa59dfd82b7bc554608122cb15eb691bd0d17fef7bc4255d6da23bee3682f420`.
+- Separater Kalender-B′-Guard wurde für diese neue Zeile frisch ausgewertet:
+  `ADMISSIBLE`, nur USD-Exposure, D1, 2019-01-01 bis 2026-01-01 exklusiv.
+- Assessment SHA: `b7400acdfa5db93b4863931e2b89ef53aab046de5b90621b329b661ac3b01c4f`.
+- Unter Factory-Mutationslock und Transaktion wurden über die kanonischen
+  `synchronize(..., item_id=...)` / `release_scoped_item(...)`-Funktionen nur diese
+  Zeile und ihr Kalender-Hold behandelt. Frischer Marker + Fußnote um 14:12:23 UTC;
+  `status`, `verdict`, `evidence_path` blieben unverändert. Kein fremder Hold entfernt.
+- Die Backup-API lieferte den wiederverwendeten gültigen Governance-Anker
+  `D:/QM/strategy_farm/state/backups/farm_state_before_news_calendar_taint_20260908T134821Z_c6de486b.sqlite`,
+  SHA `7df7991d0c91a73e3bdb98693df15b9ecb554f453dd49835e596539f1e3816b6`;
+  dies ist kein behaupteter neu erstellter 14:12-Snapshot.
+
+Der Canary war bei der Kontrolle um 14:12:40 UTC **pending**, Plan gebunden,
+Kalender-Hold inaktiv, regulärer freier Tester noch ausständig. Schritte 1–2 oben
+sind damit erledigt; Schritte 3–5 bleiben offen. Keine weiteren Binaries aktiviert.
+
 Kein Rebuild, Repin, Publish, T_Live-/FTMO-Chartwechsel, AutoTrading-, Konto-,
 Order- oder Risiko-Eingriff. Keine historische Evidenz gelöscht oder umgeschrieben.

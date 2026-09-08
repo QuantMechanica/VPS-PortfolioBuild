@@ -28,3 +28,20 @@ Criterion recorded with exact residual classes; B admits USD-only rows of any ti
 - f625d9aa (QM5_11167/XAUUSD, T2 07:18–16:00Z): verdict `REVIEW_REQUIRED`, reason_codes `cell_execution_failed`, 8/8 cells `TransientCellError` — `run_smoke.ps1:3009 Required fresh structured logger sample was not authenticated` after `logger row is missing 'sv'`. The EX5 (built 2026-07-14) predates the P1 evidence-integrity control 6e92c80626 (2026-07-20) that added the `sv` field to `QM_Logger.mqh`; the Q09 v3 selection runner (`-RequireFreshLoggerSample`, since 2026-08-04) refuses such samples. Not a strategy, calendar or scope defect; the scoped-B marker + footnote are on the row.
 - Scope: 10 of 54 pending Q10_NEWS rows are pre-sv builds (10148, 10476, 10771×2, 11179, 11196, 1230×2, 12474, 9573); of the 11 released B′ rows, 3 pending are pre-sv (10771, 11196, 1230), 7 are post-sv and adjudicable.
 - Actions: 11196 (a909ee18) taken off the priority track (new single-row `mark-priority-track --unset`, fc6c6f99b1); f15ac955 (10145/SP500) and 136b0e0f (10513/XAUUSD) marked priority so the B′ path continues on post-sv builds; OWNER Vorlage + card **OWNER-DEC-Q09-LEGACY-LOGGER-SAMPLE-20260907** (recommendation A: declared legacy authentication for pre-sv builds in the selection run only). B′ acceptance "first adjudications end PASS/FAIL" is therefore still open; the next adjudication comes from a post-sv row.
+
+## Progress 2026-09-08 14:12Z — OWNER chose A; one new legacy canary
+
+- Actual chat approval A recorded as receipt `821096ac-8f7f-4c28-b0ce-63a09e959de1`.
+- Code `07af95fcf1` implements exact Git-archived EX5/OWNER-receipt-bound fresh
+  legacy authentication; no file-mtime exception, fabricated sv, or threshold change.
+  Selection and holdout retain separate fresh archive/capture evidence and residual labels.
+- 124 regression tests passed; native evidence acceptance remains OPEN.
+- New 11167 append-only Q10_NEWS row `6797ed1c-597a-4d44-82f9-7379d45b5e06` has its
+  own sealed v3 plan. Old `f625d9aa` remains untouched REVIEW_REQUIRED.
+- The new row separately passed B′ assessment
+  `b7400acdfa5db93b4863931e2b89ef53aab046de5b90621b329b661ac3b01c4f` and received a
+  fresh scoped-B marker through `release_scoped_item`, 14:12:23Z; no pin publication.
+- 11196 remains deliberately unprioritized and disabled in the legacy allowlist
+  until the 11167 native authentication canary succeeds. No further OWNER choice needed.
+- Continue from `2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md`;
+  do not enqueue a duplicate implementation task or mark the native acceptance complete.
