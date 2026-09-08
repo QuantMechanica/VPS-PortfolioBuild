@@ -1,0 +1,70 @@
+{
+  "schema": "qm.paced-fleet-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-08T22:46:16.2422719Z",
+  "branch": "agents/board-advisor",
+  "head_observed": "1334607199180fdc717e9e74d70d684c6923ce68",
+  "mission": "new commodity/energy sleeve card, build, and Q02 enqueue",
+  "outcome": "HARD_CPU_AND_ACTIVE_TESTER_CEILING_STOP",
+  "selected_edge": {
+    "slug": "wti-tsmom10-h2",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "sign of the exact prior ten completed broker-month WTI log return, evaluated only at odd-month boundaries and held for one fixed non-overlapping two-month package",
+    "source_family": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250, DOI 10.1016/j.jfineco.2011.11.003",
+    "dedup_observation": "Fresh read-only scan found no wti-tsmom10-h2, tsmom10, ten-month momentum, or strategy_return_months=10 identity in registry/card/build stores. Exact WTI family siblings cover horizons 1 through 9 and 12 months; other hits were capacity receipts only."
+  },
+  "capacity_admission": {
+    "cpu_sampler": "Win32_Processor.LoadPercentage; five samples approximately three seconds apart",
+    "cpu_samples_pct": [93.0, 100.0, 100.0, 100.0, 97.0],
+    "cpu_average_pct": 98.0,
+    "cpu_maximum_pct": 100.0,
+    "cpu_ceiling_pct": 97.0,
+    "cpu_permit": false,
+    "active_tester_rows": 9,
+    "active_tester_threshold_exclusive": 7,
+    "tester_drain_permit": false,
+    "running_factory_terminals": ["T1", "T5", "T6", "T7", "T8", "T9", "T10"],
+    "d_drive_free_gib": 86.999
+  },
+  "active_work_items": [
+    {"terminal": "T7", "phase": "Q04", "ea_id": "QM5_1006", "symbol": "EURUSD.DWX", "work_item_id": "30acec5a-f6a1-4424-973e-b988d37ef67e"},
+    {"terminal": "T4", "phase": "Q04", "ea_id": "QM5_10294", "symbol": "NZDJPY.DWX", "work_item_id": "89e0f69b-543e-48b0-8990-c9f3ec631157"},
+    {"terminal": "T8", "phase": "Q04", "ea_id": "QM5_10485", "symbol": "GBPUSD.DWX", "work_item_id": "ce9bd435-2b5b-4b3d-b19e-529437fef286"},
+    {"terminal": "T9", "phase": "Q04", "ea_id": "QM5_10972", "symbol": "GBPUSD.DWX", "work_item_id": "57ec8f4b-cf9d-42d8-94b9-f85c74aa9ec9"},
+    {"terminal": "T1", "phase": "Q04", "ea_id": "QM5_11172", "symbol": "EURUSD.DWX", "work_item_id": "1fb859a6-68de-4160-9b9e-ff4095ab27d2"},
+    {"terminal": "T2", "phase": "OPT_CENSUS", "ea_id": "QM5_41301", "symbol": "XAUUSD.DWX", "work_item_id": "4a39a1e8-ad49-55ab-be87-19d82c4c2100"},
+    {"terminal": "T10", "phase": "OPT_CENSUS", "ea_id": "QM5_41302", "symbol": "XAUUSD.DWX", "work_item_id": "44c568a2-aef6-51ac-a732-d0934fea01bf"},
+    {"terminal": "T5", "phase": "OPT_CENSUS", "ea_id": "QM5_41324", "symbol": "USDJPY.DWX", "work_item_id": "e12645a0-2c1f-51cc-9295-b149187074a3"},
+    {"terminal": "T6", "phase": "OPT_CENSUS", "ea_id": "QM5_41345", "symbol": "XAUUSD.DWX", "work_item_id": "af117171-037c-50b1-a7e0-83b6ed913346"}
+  ],
+  "actions_refused": [
+    "source_claim",
+    "strategy_card_creation",
+    "source_approval_creation",
+    "ea_id_allocation",
+    "magic_allocation",
+    "mq5_generation",
+    "pacer_input_pin_audit",
+    "compile_enqueue",
+    "compile",
+    "manual_backtest",
+    "q02_enqueue",
+    "dispatch",
+    "terminal_control"
+  ],
+  "pacer_guard": {
+    "generated_mq5_written": false,
+    "source_pin_audit_required": false,
+    "framework_input_pin_finding": null,
+    "compile_enqueued": false,
+    "q02_enqueued": false
+  },
+  "safety": {
+    "farm_db_mutated": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
