@@ -1,0 +1,136 @@
+{
+  "schema_version": "qm.fx-cointegration-q02-drain-window-stop/v1",
+  "recorded_at_utc": "2026-09-08T12:21:59.8857884Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "6dd33bb530caf6d9e75d06608ff127bd6d529b11",
+  "mission": "grow_certified_v5_portfolio_with_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "frontier_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "unbuilt_relationship_count": 0,
+    "runtime_approved_cointegration_cards_without_ea_directory": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "q02_work_item": {
+    "id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "evidence_path": null,
+    "created_at": "2026-08-29T12:08:11+00:00",
+    "updated_at": "2026-08-29T12:08:11+00:00",
+    "priority_track": true,
+    "priority_track_dry_run_reason": "already_priority_track",
+    "active_hold_count": 0,
+    "same_identity_open_count": 1,
+    "canonical_eligible_queue_position_one_based": 148,
+    "canonical_eligible_pending_count": 5479,
+    "basket_symbol_count": 4,
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX"
+    ],
+    "queue_interpretation": "Existing authenticated priority Q02 lineage; duplicate append, redundant priority mutation, manual claim, or drain-owner bypass is forbidden."
+  },
+  "capacity_sample": {
+    "cpu_sampled_at_utc": "2026-09-08T12:21:59.8857884Z",
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      81.963143,
+      92.857698,
+      90.685132,
+      79.404863,
+      69.090929
+    ],
+    "cpu_average_percent": 82.800353,
+    "cpu_maximum_percent": 92.857698,
+    "admission_rule": "average < 97 and maximum < 97",
+    "cpu_ceiling_hit": false,
+    "free_physical_memory_gib": 42.195,
+    "total_physical_memory_gib": 63.12,
+    "active_work_item_count": 0,
+    "running_factory_terminal_count": 0,
+    "terminal_worker_count": 9,
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "ram_admission": {
+    "commit_class": "heavy_or_unknown_multisymbol",
+    "reservation_gib": 44.0,
+    "post_reservation_floor_gib": 14.0,
+    "normal_required_available_gib": 58.0,
+    "binding": true,
+    "reservation_source": "flat",
+    "drain_owner": {
+      "ea_id": "QM5_12512",
+      "work_item_id": "acbad967-bf94-4565-9e51-db193de01bf9",
+      "reservation_gib": 32.0,
+      "floor_gib": 14.0,
+      "opened_at_utc": "2026-09-08T12:04:39+00:00"
+    }
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "authenticated_package": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+  },
+  "checks": {
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5\"",
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea QM5_12507_pair-coint-z --json",
+      "verdict": "BASKET_OK",
+      "manifest_symbol_count": 4,
+      "violation_count": 0
+    }
+  },
+  "pacer_guard": {
+    "mq5_generated_or_edited": false,
+    "pre_compile_pin_audit_required": false,
+    "read_only_pin_audit_passed": true,
+    "compile_enqueue_attempted": false,
+    "refusal_triggered": false,
+    "reason": "No source write; the existing authenticated binary and Q02 lineage were preserved."
+  },
+  "mutations": {
+    "new_card_created": false,
+    "ea_source_changed": false,
+    "compile_enqueued": false,
+    "q02_row_appended": false,
+    "q02_row_reprioritized": false,
+    "manual_dispatch_started": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "disposition": "NON_DUPLICATE_DRAIN_WINDOW_STOP_COMMITTED"
+}
