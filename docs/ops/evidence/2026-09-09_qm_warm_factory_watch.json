@@ -1,0 +1,414 @@
+{
+  "schema": "qm.real-ea-warm-factory-watch/v1",
+  "at_utc": "2026-09-08T22:15:44.370438+00:00",
+  "observer": {
+    "path": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_fixture\\factory_watch_20260909.jsonl",
+    "sha256": "bc3956c301b1cd162ad3422225d4dd6969ccacd4e8a7ff257312bc13e25201ff",
+    "samples": 25,
+    "from_utc": "2026-09-08T22:07:44.793516+00:00",
+    "to_utc": "2026-09-08T22:13:44.777192+00:00",
+    "errors": [],
+    "recognized_post_engine_stalls_over_60s": [],
+    "completed_queue_items_during_window": [
+      {
+        "id": "0b5d2b5c-9497-544a-b28d-278940202cdb",
+        "ea_id": "QM5_41324",
+        "phase": "OPT_CENSUS",
+        "verdict": "MEASURED",
+        "updated_at": "2026-09-08T22:08:58+00:00"
+      },
+      {
+        "id": "8161f7f3-91cd-42bd-a219-f92111d96f0b",
+        "ea_id": "QM5_11823",
+        "phase": "Q04",
+        "verdict": "FAIL",
+        "updated_at": "2026-09-08T22:09:40+00:00"
+      },
+      {
+        "id": "c82ccdd6-9c20-4c5b-9349-986d00b2a2fd",
+        "ea_id": "QM5_10293",
+        "phase": "Q04",
+        "verdict": "FAIL",
+        "updated_at": "2026-09-08T22:10:16+00:00"
+      },
+      {
+        "id": "7069510b-1c6c-41cd-b67d-aeb7e08be0b5",
+        "ea_id": "QM5_11340",
+        "phase": "Q04",
+        "verdict": "FAIL",
+        "updated_at": "2026-09-08T22:10:27+00:00"
+      },
+      {
+        "id": "2deccb64-757e-5ee7-81b1-c8c01ef00d2c",
+        "ea_id": "QM5_41345",
+        "phase": "OPT_CENSUS",
+        "verdict": "MEASURED",
+        "updated_at": "2026-09-08T22:11:26+00:00"
+      },
+      {
+        "id": "89547944-f50a-5da6-bca4-881de01708c4",
+        "ea_id": "QM5_41302",
+        "phase": "OPT_CENSUS",
+        "verdict": "MEASURED",
+        "updated_at": "2026-09-08T22:11:50+00:00"
+      },
+      {
+        "id": "8e93883d-04d7-4413-b9c0-847957a9033e",
+        "ea_id": "QM5_10294",
+        "phase": "Q04",
+        "verdict": "FAIL",
+        "updated_at": "2026-09-08T22:11:52+00:00"
+      },
+      {
+        "id": "818c041a-7806-5cac-81fd-d986d4f7e167",
+        "ea_id": "QM5_41163",
+        "phase": "OPT_CENSUS",
+        "verdict": "MEASURED",
+        "updated_at": "2026-09-08T22:13:04+00:00"
+      },
+      {
+        "id": "6ba180b7-08a9-5682-9010-3d15bf1dccb3",
+        "ea_id": "QM5_41301",
+        "phase": "OPT_CENSUS",
+        "verdict": "MEASURED",
+        "updated_at": "2026-09-08T22:13:24+00:00"
+      },
+      {
+        "id": "04857a0d-a0bf-5e7f-964a-2c818efef940",
+        "ea_id": "QM5_41324",
+        "phase": "OPT_CENSUS",
+        "verdict": "MEASURED",
+        "updated_at": "2026-09-08T22:13:24+00:00"
+      }
+    ]
+  },
+  "post_close_hash_checked_files": 4,
+  "t11_processes": [],
+  "mcp_original_config_restored": true,
+  "worker_policy": [
+    "T1",
+    "T2",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7",
+    "T8",
+    "T9",
+    "T10"
+  ],
+  "protected_live_processes": [
+    {
+      "pid": 15464,
+      "exe": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+      "created_epoch": 1788812805.4032197
+    },
+    {
+      "pid": 31728,
+      "exe": "C:\\QM\\mt5\\T_Live\\MT5_Base\\terminal64.exe",
+      "created_epoch": 1788710010.3726614
+    }
+  ],
+  "t11_reservation": {
+    "terminal": "T11",
+    "reserved_by": "codex-report-latency-20260908",
+    "reason": "Owner-authorized real QM cold/warm native report and logger parity qualification",
+    "created_at_utc": "2026-09-08T21:39:40.367843+00:00",
+    "until_utc": "2026-09-08T23:39:40.367843+00:00"
+  },
+  "reservation_disposition": "Own T11 diagnostic lease left to natural expiry; T11 remains excluded from worker policy. Avoid rewriting other live reservations for an unnecessary cleanup.",
+  "factory_snapshot": {
+    "schema": "qm.backtest-tail-observation/v1",
+    "at_utc": "2026-09-08T22:15:44.438615+00:00",
+    "terminals": [
+      {
+        "terminal": "T1",
+        "work_item_id": null,
+        "phase": null,
+        "processes": [],
+        "agent_log_path": "D:\\QM\\mt5\\T1\\Tester\\Agent-127.0.0.1-3003\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905596.3266168,
+        "engine_markers": [
+          "CS\t0\t00:13:14.455\tTester\tfinal balance 97897.99 USD",
+          "CS\t0\t00:13:14.548\tTester\tXAUUSD.DWX,Daily: 90678424 ticks, 257 bars generated. Environment synchronized in 0:00:00.025. Test passed in 0:01:57.481 (including ticks preprocessing 0:00:07.063).",
+          "CS\t0\t00:13:14.548\tTester\ttest Experts\\QM\\QM5_41301_tsm-meanret-opt.ex5 on XAUUSD.DWX,Daily thread finished",
+          "CS\t0\t00:13:16.234\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T2",
+        "work_item_id": "d2abb57f-77ec-54f9-ba4c-df36636723ed",
+        "phase": "OPT_CENSUS",
+        "processes": [
+          {
+            "pid": 20080,
+            "name": "metatester64.exe",
+            "created_at_epoch": 1788905738.5174208,
+            "cpu_seconds": 4.9375,
+            "read_bytes": 40999788,
+            "write_bytes": 1297,
+            "memory_bytes": 86740992
+          },
+          {
+            "pid": 38788,
+            "name": "terminal64.exe",
+            "created_at_epoch": 1788905729.4228573,
+            "cpu_seconds": 7.921875,
+            "read_bytes": 256905112,
+            "write_bytes": 173664,
+            "memory_bytes": 215019520
+          }
+        ],
+        "ea_id": "QM5_41324",
+        "ini_path": "D:\\QM\\reports\\work_items\\d2abb57f-77ec-54f9-ba4c-df36636723ed\\QM5_41324\\20260908_221525\\raw\\run_01\\tester.ini",
+        "ini_created_epoch": 1788905726.2197013,
+        "expert": "QM\\QM5_41324_balke-gmt3-range-breakout-path25-opt",
+        "symbol": "USDJPY.DWX",
+        "period": "H1",
+        "model": "4",
+        "report_path": "D:\\QM\\mt5\\T2\\QM5_41324_USDJPY_DWX_20260908_221525_run_01.htm",
+        "report_exists": false,
+        "agent_log_path": "D:\\QM\\mt5\\T2\\Tester\\Agent-127.0.0.1-3000\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905739.0595918,
+        "engine_markers": [],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T3",
+        "work_item_id": "2d7aa7aa-a2b8-4745-8ec3-db9758d9856e",
+        "phase": "Q04",
+        "processes": [
+          {
+            "pid": 18672,
+            "name": "terminal64.exe",
+            "created_at_epoch": 1788905740.6600113,
+            "cpu_seconds": 2.671875,
+            "read_bytes": 138984972,
+            "write_bytes": 7758,
+            "memory_bytes": 116027392
+          }
+        ],
+        "ea_id": "QM5_11729",
+        "ini_path": "D:\\QM\\reports\\work_items\\2d7aa7aa-a2b8-4745-8ec3-db9758d9856e\\QM5_11729\\20260908_221540\\raw\\run_01\\tester.ini",
+        "ini_created_epoch": 1788905740.5324316,
+        "expert": "QM\\QM5_11729_tc-m5-s17-ema-macd-psar-stddev",
+        "symbol": "AUDUSD.DWX",
+        "period": "M5",
+        "model": "4",
+        "report_path": "D:\\QM\\mt5\\T3\\QM5_11729_AUDUSD_DWX_20260908_221540_run_01.htm",
+        "report_exists": false,
+        "agent_log_path": "D:\\QM\\mt5\\T3\\Tester\\Agent-127.0.0.1-3004\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905718.7571561,
+        "engine_markers": [
+          "CS\t0\t00:15:17.946\tTester\tfinal balance 40226.07 USD",
+          "CS\t0\t00:15:17.978\tTester\tAUDUSD.DWX,M5: 20495541 ticks, 74457 bars generated. Environment synchronized in 0:00:00.018. Test passed in 0:01:10.676 (including ticks preprocessing 0:00:01.328).",
+          "CS\t0\t00:15:17.980\tTester\ttest Experts\\QM\\QM5_11729_tc-m5-s17-ema-macd-psar-stddev.ex5 on AUDUSD.DWX,M5 thread finished",
+          "CS\t0\t00:15:18.739\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T4",
+        "work_item_id": "583e5d29-c730-535f-add5-8b2d6a11d365",
+        "phase": "OPT_CENSUS",
+        "processes": [],
+        "ea_id": "QM5_41301",
+        "agent_log_path": "D:\\QM\\mt5\\T4\\Tester\\Agent-127.0.0.1-3000\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788904847.283622,
+        "engine_markers": [
+          "CS\t0\t00:00:45.866\tTester\tfinal balance 101605.92 USD",
+          "CS\t0\t00:00:45.936\tTester\tXAUUSD.DWX,Daily: 90678424 ticks, 257 bars generated. Environment synchronized in 0:00:00.020. Test passed in 0:03:16.314 (including ticks preprocessing 0:00:06.469).",
+          "CS\t0\t00:00:45.937\tTester\ttest Experts\\QM\\QM5_41345_xau-weekly-tsmom-opt.ex5 on XAUUSD.DWX,Daily thread finished",
+          "CS\t0\t00:00:47.202\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T5",
+        "work_item_id": "e49341e5-ff47-4ceb-8f5a-c33ce996f357",
+        "phase": "Q04",
+        "processes": [],
+        "ea_id": "QM5_10294",
+        "ini_path": "D:\\QM\\reports\\work_items\\e49341e5-ff47-4ceb-8f5a-c33ce996f357\\QM5_10294\\20260908_221349\\raw\\run_01\\tester.ini",
+        "ini_created_epoch": 1788905629.8513398,
+        "expert": "QM\\QM5_10294_cinar-cfo",
+        "symbol": "NZDCHF.DWX",
+        "period": "D1",
+        "model": "4",
+        "report_path": "D:\\QM\\mt5\\T5\\QM5_10294_NZDCHF_DWX_20260908_221349_run_01.htm",
+        "report_exists": true,
+        "report_size_bytes": 150644,
+        "report_mtime_epoch": 1788905729.8741767,
+        "agent_log_path": "D:\\QM\\mt5\\T5\\Tester\\Agent-127.0.0.1-3003\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905729.068996,
+        "engine_markers": [
+          "CS\t0\t00:15:27.308\tTester\tfinal balance 94333.07 USD",
+          "CS\t0\t00:15:27.358\tTester\tNZDCHF.DWX,Daily: 21612250 ticks, 259 bars generated. Environment synchronized in 0:00:01.014. Test passed in 0:01:20.109 (including ticks preprocessing 0:00:04.640).",
+          "CS\t0\t00:15:27.359\tTester\ttest Experts\\QM\\QM5_10294_cinar-cfo.ex5 on NZDCHF.DWX,Daily thread finished",
+          "CS\t0\t00:15:29.015\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T6",
+        "work_item_id": "ac0f3944-9611-4518-a34f-8fc2c2ac6953",
+        "phase": "Q04",
+        "processes": [],
+        "ea_id": "QM5_10293",
+        "ini_path": "D:\\QM\\reports\\work_items\\ac0f3944-9611-4518-a34f-8fc2c2ac6953\\QM5_10293\\20260908_221319\\raw\\run_01\\tester.ini",
+        "ini_created_epoch": 1788905599.8929398,
+        "expert": "QM\\QM5_10293_cinar-bop",
+        "symbol": "NZDJPY.DWX",
+        "period": "D1",
+        "model": "4",
+        "report_path": "D:\\QM\\mt5\\T6\\QM5_10293_NZDJPY_DWX_20260908_221319_run_01.htm",
+        "report_exists": true,
+        "report_size_bytes": 336412,
+        "report_mtime_epoch": 1788905729.0319,
+        "agent_log_path": "D:\\QM\\mt5\\T6\\Tester\\Agent-127.0.0.1-3000\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905728.1881945,
+        "engine_markers": [
+          "CS\t0\t00:15:26.564\tTester\tfinal balance 97740.99 USD",
+          "CS\t0\t00:15:26.648\tTester\tNZDJPY.DWX,Daily: 33940824 ticks, 260 bars generated. Environment synchronized in 0:00:01.626. Test passed in 0:01:52.107 (including ticks preprocessing 0:00:07.562).",
+          "CS\t0\t00:15:26.649\tTester\ttest Experts\\QM\\QM5_10293_cinar-bop.ex5 on NZDJPY.DWX,Daily thread finished",
+          "CS\t0\t00:15:28.119\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T7",
+        "work_item_id": "73ea9410-c68b-52d8-90f3-2fd4529a903d",
+        "phase": "OPT_CENSUS",
+        "processes": [
+          {
+            "pid": 29356,
+            "name": "terminal64.exe",
+            "created_at_epoch": 1788905571.6996171,
+            "cpu_seconds": 21.5,
+            "read_bytes": 239702916,
+            "write_bytes": 161719,
+            "memory_bytes": 200249344
+          },
+          {
+            "pid": 30672,
+            "name": "metatester64.exe",
+            "created_at_epoch": 1788905591.7349002,
+            "cpu_seconds": 146.765625,
+            "read_bytes": 511277450,
+            "write_bytes": 49282,
+            "memory_bytes": 3387883520
+          }
+        ],
+        "ea_id": "QM5_41302",
+        "ini_path": "D:\\QM\\reports\\work_items\\73ea9410-c68b-52d8-90f3-2fd4529a903d\\QM5_41302\\20260908_221247\\raw\\run_01\\tester.ini",
+        "ini_created_epoch": 1788905568.0648067,
+        "expert": "QM\\QM5_41302_mql5-ichimoku-opt",
+        "symbol": "XAUUSD.DWX",
+        "period": "D1",
+        "model": "4",
+        "report_path": "D:\\QM\\mt5\\T7\\QM5_41302_XAUUSD_DWX_20260908_221247_run_01.htm",
+        "report_exists": false,
+        "agent_log_path": "D:\\QM\\mt5\\T7\\Tester\\Agent-127.0.0.1-3001\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905592.2958543,
+        "engine_markers": [
+          "CS\t0\t00:11:39.263\tTester\tfinal balance 103139.52 USD",
+          "CS\t0\t00:11:39.374\tTester\tXAUUSD.DWX,Daily: 143502206 ticks, 258 bars generated. Test passed in 0:04:39.257 (including ticks preprocessing 0:00:11.047).",
+          "CS\t0\t00:11:39.374\tTester\ttest Experts\\QM\\QM5_41302_mql5-ichimoku-opt.ex5 on XAUUSD.DWX,Daily thread finished",
+          "CS\t0\t00:11:42.366\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T8",
+        "work_item_id": "da86299d-ada0-5801-a160-5f1c9b8270fe",
+        "phase": "OPT_CENSUS",
+        "processes": [
+          {
+            "pid": 3400,
+            "name": "terminal64.exe",
+            "created_at_epoch": 1788905545.9592783,
+            "cpu_seconds": 26.9375,
+            "read_bytes": 224402968,
+            "write_bytes": 205664,
+            "memory_bytes": 192974848
+          },
+          {
+            "pid": 36700,
+            "name": "metatester64.exe",
+            "created_at_epoch": 1788905557.3328912,
+            "cpu_seconds": 180.328125,
+            "read_bytes": 374894434,
+            "write_bytes": 197492,
+            "memory_bytes": 2220564480
+          }
+        ],
+        "ea_id": "QM5_41345",
+        "ini_path": "D:\\QM\\reports\\work_items\\da86299d-ada0-5801-a160-5f1c9b8270fe\\QM5_41345\\20260908_221223\\raw\\run_01\\tester.ini",
+        "ini_created_epoch": 1788905543.590163,
+        "expert": "QM\\QM5_41345_xau-weekly-tsmom-opt",
+        "symbol": "XAUUSD.DWX",
+        "period": "D1",
+        "model": "4",
+        "report_path": "D:\\QM\\mt5\\T8\\QM5_41345_XAUUSD_DWX_20260908_221223_run_01.htm",
+        "report_exists": false,
+        "agent_log_path": "D:\\QM\\mt5\\T8\\Tester\\Agent-127.0.0.1-3002\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905730.1739619,
+        "engine_markers": [],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T9",
+        "work_item_id": null,
+        "phase": null,
+        "processes": [],
+        "agent_log_path": "D:\\QM\\mt5\\T9\\Tester\\Agent-127.0.0.1-3004\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905597.973878,
+        "engine_markers": [
+          "CS\t0\t00:13:13.483\tTester\tfinal balance 90178.88 USD",
+          "CS\t0\t00:13:13.564\tTester\tUSDJPY.DWX,H1: 36780136 ticks, 6132 bars generated. Environment synchronized in 0:00:00.018. Test passed in 0:02:18.253 (including ticks preprocessing 0:00:02.719).",
+          "CS\t0\t00:13:13.565\tTester\ttest Experts\\QM\\QM5_41324_balke-gmt3-range-breakout-path25-opt.ex5 on USDJPY.DWX,H1 thread finished",
+          "CS\t0\t00:13:17.939\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T10",
+        "work_item_id": null,
+        "phase": null,
+        "processes": [],
+        "agent_log_path": "D:\\QM\\mt5\\T10\\Tester\\Agent-127.0.0.1-3001\\logs\\20260909.log",
+        "agent_log_mtime_epoch": 1788905577.8549285,
+        "engine_markers": [
+          "CS\t0\t00:12:51.428\tTester\tfinal balance 104792.92 USD",
+          "CS\t0\t00:12:51.505\tTester\tUSDCAD.DWX,Daily: 26419439 ticks, 241 bars generated. Environment synchronized in 0:00:00.019. Test passed in 0:01:05.447 (including ticks preprocessing 0:00:01.796).",
+          "CS\t0\t00:12:51.506\tTester\ttest Experts\\QM\\QM5_41163_williams-18ma-outside-bar-entry-d1-opt.ex5 on USDCAD.DWX,Daily thread finished",
+          "CS\t0\t00:12:57.827\tServer\tMetaTester 5 stopped"
+        ],
+        "matching_engine_finished": false,
+        "engine_finished_epoch": null
+      },
+      {
+        "terminal": "T11",
+        "work_item_id": null,
+        "phase": null,
+        "processes": []
+      },
+      {
+        "terminal": "T12",
+        "work_item_id": null,
+        "phase": null,
+        "processes": []
+      }
+    ]
+  }
+}

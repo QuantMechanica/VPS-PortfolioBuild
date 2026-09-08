@@ -1,0 +1,613 @@
+{
+  "schema": "qm.real-ea-warm-acceptance/v1",
+  "collected_at_utc": "2026-09-08T22:13:49.760101+00:00",
+  "ea": "QM5_10012_rw-fx-intraday-seas",
+  "ex5_sha256": "7235ca08884367a70f0740c83e0eeb7c6d7db6324aaa402f6b7680eef9aa091b",
+  "model": 4,
+  "cohorts": [
+    {
+      "name": "original_with_native_tick_gap",
+      "cold": {
+        "a": {
+          "session": "qm10012_colda2",
+          "report": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\qm10012_colda2_cold.htm",
+          "validation": {
+            "settings": {
+              "Expert": "QM5_10012_rw-fx-intraday-seas",
+              "Symbol": "EURUSD.DWX",
+              "Period": "M30 (2025.01.06 - 2025.01.11)",
+              "Currency": "USD"
+            },
+            "native_inputs_checked": 31,
+            "sha256": "b2d66e9d92e6cc70d447827665146d441f042b227d6592a9c47b21d1f63fff65"
+          },
+          "all_html_rows": 104,
+          "all_html_cells_sha256": "2fe7a3991dce165eec90e711609c762e9a4a58bf9d694319a2259e87b6615679",
+          "metadata": {
+            "Expert:": "QM5_10012_rw-fx-intraday-seas",
+            "Symbol:": "EURUSD.DWX",
+            "Period:": "M30 (2025.01.06 - 2025.01.11)",
+            "Currency:": "USD",
+            "Initial Deposit:": "100000",
+            "Leverage:": "1:100",
+            "History Quality:": "100% real ticks",
+            "Bars:": "240",
+            "Ticks:": "567919",
+            "Total Net Profit:": "-1514.09",
+            "Gross Profit:": "1579.29",
+            "Gross Loss:": "-3093.38",
+            "Total Trades:": "5",
+            "Total Deals:": "10",
+            "all_inputs": [
+              "qm_chartui_enabled=true",
+              "qm_chartui_corner=0",
+              "InpQMSimCommissionPerLot=0.0",
+              "qm_ea_id=10012",
+              "qm_magic_slot_offset=0",
+              "qm_rng_seed=42",
+              "Risk=",
+              "RISK_PERCENT=0",
+              "RISK_FIXED=1000",
+              "PORTFOLIO_WEIGHT=1",
+              "News=",
+              "qm_news_temporal=3",
+              "qm_news_compliance=1",
+              "qm_news_stale_max_hours=336",
+              "qm_news_min_impact=high",
+              "qm_news_mode_legacy=0",
+              "qm_friday_close_enabled=true",
+              "qm_friday_close_hour_broker=21",
+              "Stress=",
+              "qm_stress_reject_probability=0.0",
+              "Strategy=",
+              "strategy_selected_ny_slot=19",
+              "strategy_direction=1",
+              "strategy_selected_observations=300",
+              "strategy_min_observations=300",
+              "strategy_hold_bars=4",
+              "strategy_atr_period=14",
+              "strategy_atr_sl_mult=0.8",
+              "strategy_atr_tp_mult=0.8",
+              "strategy_max_spread_atr_frac=0.25",
+              "strategy_rollover_flat_slot=34"
+            ]
+          },
+          "logger": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_colda2\\logger_0.bin",
+          "logger_raw_sha256": "1cbad941d1cc70bd9779275170a8370698bf0dd5bb6f7c0e982b221980540f23",
+          "logger_events": 25,
+          "logger_normalized_sha256": "c97e917523c4b05c668db30fc7ace25f33e61d7db331733246ed7bee1611cf90",
+          "native": {
+            "ticks": 567919,
+            "bars": 240,
+            "engine_seconds": 50.3,
+            "native_trade_messages": 30,
+            "trade_stream_sha256": "6f661440dc64210fe931104832a8604aad09d6c15ee653c3e4268ca6ce3b1802",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_fixture\\acceptance_2026-09-09_qm_warm_ea_parity\\qm10012_colda2_Agent-127.0.0.1-3004_cold_window.txt",
+            "sha256": "c38e5da7f90bed5c1ef3ebd82febb39d8baa283a9d75e92c7219a2419684c292",
+            "tick_gap_warnings": [
+              "CS\t3\t23:46:25.709\tTicks\tEURUSD.DWX : 2025.01.10 23:59 - real ticks absent for 1 minutes out of 1430 total minute bars within a day",
+              "CS\t3\t23:46:25.709\tTicks\tEURUSD.DWX : 2025.01.06 00:00 - 2025.01.11 00:00  real ticks absent for 1 minutes of 7155 total minute bars, every tick generation used"
+            ],
+            "legacy_timestamp_window_recovery": true,
+            "cold_timeline": {
+              "before_engine_seconds": 15.871562910079959,
+              "engine_seconds": 50.3,
+              "engine_finish_to_first_report_byte_seconds": 1.3053760528564453
+            }
+          },
+          "complete_observed_seconds": 67.97876238822937
+        },
+        "b": {
+          "session": "qm10012_coldb",
+          "report": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\qm10012_coldb_cold.htm",
+          "validation": {
+            "settings": {
+              "Expert": "QM5_10012_rw-fx-intraday-seas",
+              "Symbol": "EURUSD.DWX",
+              "Period": "M30 (2025.01.06 - 2025.01.11)",
+              "Currency": "USD"
+            },
+            "native_inputs_checked": 31,
+            "sha256": "5e722f304b9e3032e5f4e569e8c7676a18019f3cad87a46ff00d14432286e726"
+          },
+          "all_html_rows": 104,
+          "all_html_cells_sha256": "56525c4f6deafb50578578180d34d29282f780c5865e3c7896595a0411791160",
+          "metadata": {
+            "Expert:": "QM5_10012_rw-fx-intraday-seas",
+            "Symbol:": "EURUSD.DWX",
+            "Period:": "M30 (2025.01.06 - 2025.01.11)",
+            "Currency:": "USD",
+            "Initial Deposit:": "100000",
+            "Leverage:": "1:100",
+            "History Quality:": "100% real ticks",
+            "Bars:": "240",
+            "Ticks:": "567919",
+            "Total Net Profit:": "-757.76",
+            "Gross Profit:": "788.34",
+            "Gross Loss:": "-1546.1",
+            "Total Trades:": "5",
+            "Total Deals:": "10",
+            "all_inputs": [
+              "qm_chartui_enabled=true",
+              "qm_chartui_corner=0",
+              "InpQMSimCommissionPerLot=0.0",
+              "qm_ea_id=10012",
+              "qm_magic_slot_offset=0",
+              "qm_rng_seed=42",
+              "Risk=",
+              "RISK_PERCENT=0",
+              "RISK_FIXED=500",
+              "PORTFOLIO_WEIGHT=1",
+              "News=",
+              "qm_news_temporal=3",
+              "qm_news_compliance=1",
+              "qm_news_stale_max_hours=336",
+              "qm_news_min_impact=high",
+              "qm_news_mode_legacy=0",
+              "qm_friday_close_enabled=true",
+              "qm_friday_close_hour_broker=21",
+              "Stress=",
+              "qm_stress_reject_probability=0.0",
+              "Strategy=",
+              "strategy_selected_ny_slot=19",
+              "strategy_direction=1",
+              "strategy_selected_observations=300",
+              "strategy_min_observations=300",
+              "strategy_hold_bars=4",
+              "strategy_atr_period=14",
+              "strategy_atr_sl_mult=0.8",
+              "strategy_atr_tp_mult=0.8",
+              "strategy_max_spread_atr_frac=0.25",
+              "strategy_rollover_flat_slot=34"
+            ]
+          },
+          "logger": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldb\\logger_delta_0.jsonl",
+          "logger_raw_sha256": "c3b2ef9f8dd7239309ed504865899b5228cdbd9d252c9cbf0f705e3d33520a76",
+          "logger_events": 25,
+          "logger_normalized_sha256": "f4f927fead4653cb9068860c2d910ff756e5c405f0ed28775a50200c26b0d1e8",
+          "native": {
+            "ticks": 567919,
+            "bars": 240,
+            "engine_seconds": 48.674,
+            "native_trade_messages": 30,
+            "trade_stream_sha256": "e77fa58d820c7a6fb0ec0bcfe80f0f252a1d8bb7b9c1509c6dbe90a38045b2dc",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_fixture\\acceptance_2026-09-09_qm_warm_ea_parity\\qm10012_coldb_Agent-127.0.0.1-3004_cold_window.txt",
+            "sha256": "4ad5b175a0038573d1cad814cf108d435d29bf4771d00e10e80ba0bd43e40629",
+            "tick_gap_warnings": [
+              "CS\t3\t23:49:34.181\tTicks\tEURUSD.DWX : 2025.01.10 23:59 - real ticks absent for 1 minutes out of 1430 total minute bars within a day",
+              "CS\t3\t23:49:34.181\tTicks\tEURUSD.DWX : 2025.01.06 00:00 - 2025.01.11 00:00  real ticks absent for 1 minutes of 7155 total minute bars, every tick generation used"
+            ],
+            "legacy_timestamp_window_recovery": true,
+            "cold_timeline": {
+              "before_engine_seconds": 16.317592645645142,
+              "engine_seconds": 48.674,
+              "engine_finish_to_first_report_byte_seconds": 1.7469160556793213
+            }
+          },
+          "complete_observed_seconds": 67.2398111820221
+        }
+      },
+      "warm": [
+        {
+          "name": "warm1",
+          "arm": "a",
+          "run_id": "7683285162636699160",
+          "resident_terminal_pid": 10088,
+          "quiesced_agent_pids": [
+            16328
+          ],
+          "all_html_cells_equal": true,
+          "all_order_fields_equal": true,
+          "all_deal_fields_equal": true,
+          "all_logger_fields_equal_except_wall_clock_millis": true,
+          "native_execution_equal": true,
+          "native": {
+            "ticks": 567919,
+            "bars": 240,
+            "engine_seconds": 35.673,
+            "native_trade_messages": 30,
+            "trade_stream_sha256": "6f661440dc64210fe931104832a8604aad09d6c15ee653c3e4268ca6ce3b1802",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldb\\warm1\\Agent-127.0.0.1-3000_journal_delta.bin",
+            "sha256": "beb470190837eae4a8f91f8e26e2ce5145d72eb43caeefd395595837d29f1991",
+            "tick_gap_warnings": [
+              "CS\t3\t23:51:04.682\tTicks\tEURUSD.DWX : 2025.01.10 23:59 - real ticks absent for 1 minutes out of 1430 total minute bars within a day",
+              "CS\t3\t23:51:04.682\tTicks\tEURUSD.DWX : 2025.01.06 00:00 - 2025.01.11 00:00  real ticks absent for 1 minutes of 7155 total minute bars, every tick generation used"
+            ],
+            "legacy_timestamp_window_recovery": false
+          },
+          "logger_raw_sha256": "9e8235fb0c5fed7a434d28e8a03908fc1715b52207f5a908e34a23e9b1de1010",
+          "report_sha256": "d8e3117a0b88ef59886ad854538e1e71ce6988f6eca2d0423dce4b8acce1d731",
+          "complete_evidence_seconds": 40.436999999918044,
+          "native_export_seconds": 3.530999999959022,
+          "paired_seconds_saved": 27.541762388311327
+        },
+        {
+          "name": "warm2",
+          "arm": "b",
+          "run_id": "7683285660326797434",
+          "resident_terminal_pid": 10088,
+          "quiesced_agent_pids": [
+            25020
+          ],
+          "all_html_cells_equal": true,
+          "all_order_fields_equal": true,
+          "all_deal_fields_equal": true,
+          "all_logger_fields_equal_except_wall_clock_millis": true,
+          "native_execution_equal": true,
+          "native": {
+            "ticks": 567919,
+            "bars": 240,
+            "engine_seconds": 38.513,
+            "native_trade_messages": 30,
+            "trade_stream_sha256": "e77fa58d820c7a6fb0ec0bcfe80f0f252a1d8bb7b9c1509c6dbe90a38045b2dc",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldb\\warm2\\Agent-127.0.0.1-3005_journal_delta.bin",
+            "sha256": "c6b8cc54287be808fa39615a4aec7704085a425ac84ee3be094a49aced176719",
+            "tick_gap_warnings": [
+              "CS\t3\t23:53:04.365\tTicks\tEURUSD.DWX : 2025.01.10 23:59 - real ticks absent for 1 minutes out of 1430 total minute bars within a day",
+              "CS\t3\t23:53:04.365\tTicks\tEURUSD.DWX : 2025.01.06 00:00 - 2025.01.11 00:00  real ticks absent for 1 minutes of 7155 total minute bars, every tick generation used"
+            ],
+            "legacy_timestamp_window_recovery": false
+          },
+          "logger_raw_sha256": "07aefd3ec6fefd751487a9054aba366ccab83ca5b678be512b489e778618f7f2",
+          "report_sha256": "232eabaa30dee262fecadf752657f04d86e5216497e2e8ddd4211cea3432b46f",
+          "complete_evidence_seconds": 43.3910000002943,
+          "native_export_seconds": 3.2029999997466803,
+          "paired_seconds_saved": 23.848811181727797
+        },
+        {
+          "name": "warm3",
+          "arm": "a",
+          "run_id": "7683286430143688132",
+          "resident_terminal_pid": 10088,
+          "quiesced_agent_pids": [
+            38472
+          ],
+          "all_html_cells_equal": true,
+          "all_order_fields_equal": true,
+          "all_deal_fields_equal": true,
+          "all_logger_fields_equal_except_wall_clock_millis": true,
+          "native_execution_equal": true,
+          "native": {
+            "ticks": 567919,
+            "bars": 240,
+            "engine_seconds": 48.575,
+            "native_trade_messages": 30,
+            "trade_stream_sha256": "6f661440dc64210fe931104832a8604aad09d6c15ee653c3e4268ca6ce3b1802",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldb\\warm3\\Agent-127.0.0.1-3004_journal_delta.bin",
+            "sha256": "fc1ade25cfea0bea8e42d024bd7dfab7dd1149364d53a2953105681fe3311e8d",
+            "tick_gap_warnings": [
+              "CS\t3\t23:56:12.421\tTicks\tEURUSD.DWX : 2025.01.10 23:59 - real ticks absent for 1 minutes out of 1430 total minute bars within a day",
+              "CS\t3\t23:56:12.421\tTicks\tEURUSD.DWX : 2025.01.06 00:00 - 2025.01.11 00:00  real ticks absent for 1 minutes of 7155 total minute bars, every tick generation used"
+            ],
+            "legacy_timestamp_window_recovery": false
+          },
+          "logger_raw_sha256": "001124870ee98b62c72e46e2bd506e5958584c9e4d44cffdafed77e9fb244bd5",
+          "report_sha256": "d8e3117a0b88ef59886ad854538e1e71ce6988f6eca2d0423dce4b8acce1d731",
+          "complete_evidence_seconds": 52.65599999995902,
+          "native_export_seconds": 2.858999999705702,
+          "paired_seconds_saved": 15.322762388270348
+        }
+      ],
+      "has_native_tick_gap_warnings": true,
+      "all_comparisons_pass": true,
+      "median_paired_seconds_saved": 23.848811181727797
+    },
+    {
+      "name": "clean_diagnostic_window",
+      "cold": {
+        "c": {
+          "session": "qm10012_coldc",
+          "report": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\qm10012_coldc_cold.htm",
+          "validation": {
+            "settings": {
+              "Expert": "QM5_10012_rw-fx-intraday-seas",
+              "Symbol": "EURUSD.DWX",
+              "Period": "M30 (2025.01.06 - 2025.01.10)",
+              "Currency": "USD"
+            },
+            "native_inputs_checked": 31,
+            "sha256": "b9d86974595f10edafe005a514dd9f5a60ae3bad86bde7827e49a110f626e4bd"
+          },
+          "all_html_rows": 100,
+          "all_html_cells_sha256": "9103d6ef707a116c61bbaa6a8bebf52d0d22a11894f95003c827ba884ed54c59",
+          "metadata": {
+            "Expert:": "QM5_10012_rw-fx-intraday-seas",
+            "Symbol:": "EURUSD.DWX",
+            "Period:": "M30 (2025.01.06 - 2025.01.10)",
+            "Currency:": "USD",
+            "Initial Deposit:": "100000",
+            "Leverage:": "1:100",
+            "History Quality:": "100% real ticks",
+            "Bars:": "192",
+            "Ticks:": "451882",
+            "Total Net Profit:": "-514.63",
+            "Gross Profit:": "1579.29",
+            "Gross Loss:": "-2093.92",
+            "Total Trades:": "4",
+            "Total Deals:": "8",
+            "all_inputs": [
+              "qm_chartui_enabled=true",
+              "qm_chartui_corner=0",
+              "InpQMSimCommissionPerLot=0.0",
+              "qm_ea_id=10012",
+              "qm_magic_slot_offset=0",
+              "qm_rng_seed=42",
+              "Risk=",
+              "RISK_PERCENT=0",
+              "RISK_FIXED=1000",
+              "PORTFOLIO_WEIGHT=1",
+              "News=",
+              "qm_news_temporal=3",
+              "qm_news_compliance=1",
+              "qm_news_stale_max_hours=336",
+              "qm_news_min_impact=high",
+              "qm_news_mode_legacy=0",
+              "qm_friday_close_enabled=true",
+              "qm_friday_close_hour_broker=21",
+              "Stress=",
+              "qm_stress_reject_probability=0.0",
+              "Strategy=",
+              "strategy_selected_ny_slot=19",
+              "strategy_direction=1",
+              "strategy_selected_observations=300",
+              "strategy_min_observations=300",
+              "strategy_hold_bars=4",
+              "strategy_atr_period=14",
+              "strategy_atr_sl_mult=0.8",
+              "strategy_atr_tp_mult=0.8",
+              "strategy_max_spread_atr_frac=0.25",
+              "strategy_rollover_flat_slot=34"
+            ]
+          },
+          "logger": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldc\\logger_delta_1.jsonl",
+          "logger_raw_sha256": "e6696dda8cb2356c31d13d5b3c2187c7e75726f44a73b40c2c371b8388bad8a8",
+          "logger_events": 21,
+          "logger_normalized_sha256": "b49008609a5aacbcf34ab4d5c802351974b5cf51c86f7278190ecf3b97d8a2bf",
+          "native": {
+            "ticks": 451882,
+            "bars": 192,
+            "engine_seconds": 38.596,
+            "native_trade_messages": 24,
+            "trade_stream_sha256": "b9c954163dcaa678a2cc322cbecd0fae831618095bb655bcf13c5d2f715b057d",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldc\\Agent-127.0.0.1-3001_journal_delta.bin",
+            "sha256": "ef75b8463c6dd7aa27959652477a87a3188196a9e62478c9fc590cfb30398b84",
+            "tick_gap_warnings": [],
+            "legacy_timestamp_window_recovery": false,
+            "cold_timeline": {
+              "before_engine_seconds": 15.37222285652161,
+              "engine_seconds": 38.596,
+              "engine_finish_to_first_report_byte_seconds": 1.6848444938659668
+            }
+          },
+          "complete_observed_seconds": 56.156638622283936
+        },
+        "d": {
+          "session": "qm10012_coldd",
+          "report": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\qm10012_coldd_cold.htm",
+          "validation": {
+            "settings": {
+              "Expert": "QM5_10012_rw-fx-intraday-seas",
+              "Symbol": "EURUSD.DWX",
+              "Period": "M30 (2025.01.06 - 2025.01.10)",
+              "Currency": "USD"
+            },
+            "native_inputs_checked": 31,
+            "sha256": "fcab35216e71d1144b3bff7213a3c2c81eee11f0787dda615dfb54571bfb9eb8"
+          },
+          "all_html_rows": 100,
+          "all_html_cells_sha256": "2e4c123c3ecb5c1d3b95fef5e38b82b1069392657e579808265e69ceff53d578",
+          "metadata": {
+            "Expert:": "QM5_10012_rw-fx-intraday-seas",
+            "Symbol:": "EURUSD.DWX",
+            "Period:": "M30 (2025.01.06 - 2025.01.10)",
+            "Currency:": "USD",
+            "Initial Deposit:": "100000",
+            "Leverage:": "1:100",
+            "History Quality:": "100% real ticks",
+            "Bars:": "192",
+            "Ticks:": "451882",
+            "Total Net Profit:": "-258.62",
+            "Gross Profit:": "788.34",
+            "Gross Loss:": "-1046.96",
+            "Total Trades:": "4",
+            "Total Deals:": "8",
+            "all_inputs": [
+              "qm_chartui_enabled=true",
+              "qm_chartui_corner=0",
+              "InpQMSimCommissionPerLot=0.0",
+              "qm_ea_id=10012",
+              "qm_magic_slot_offset=0",
+              "qm_rng_seed=42",
+              "Risk=",
+              "RISK_PERCENT=0",
+              "RISK_FIXED=500",
+              "PORTFOLIO_WEIGHT=1",
+              "News=",
+              "qm_news_temporal=3",
+              "qm_news_compliance=1",
+              "qm_news_stale_max_hours=336",
+              "qm_news_min_impact=high",
+              "qm_news_mode_legacy=0",
+              "qm_friday_close_enabled=true",
+              "qm_friday_close_hour_broker=21",
+              "Stress=",
+              "qm_stress_reject_probability=0.0",
+              "Strategy=",
+              "strategy_selected_ny_slot=19",
+              "strategy_direction=1",
+              "strategy_selected_observations=300",
+              "strategy_min_observations=300",
+              "strategy_hold_bars=4",
+              "strategy_atr_period=14",
+              "strategy_atr_sl_mult=0.8",
+              "strategy_atr_tp_mult=0.8",
+              "strategy_max_spread_atr_frac=0.25",
+              "strategy_rollover_flat_slot=34"
+            ]
+          },
+          "logger": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldd\\logger_delta_2.jsonl",
+          "logger_raw_sha256": "07b053004dc2872852e593b489c0d004c4142c40c2fde6b728a383dcc1ab192a",
+          "logger_events": 21,
+          "logger_normalized_sha256": "a3b0a6c73d99699bd2a8dbea458c19a3bbac81ea62f623519199e5890c45b039",
+          "native": {
+            "ticks": 451882,
+            "bars": 192,
+            "engine_seconds": 44.758,
+            "native_trade_messages": 24,
+            "trade_stream_sha256": "dac5aacd4f417518a746fc07312e90a6897e94523c4d2892e8b48324d8712ec1",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldd\\Agent-127.0.0.1-3003_journal_delta.bin",
+            "sha256": "0d2bdb6978ba75175eba427a39471693644b73bc8ba514554188c53aa5b48380",
+            "tick_gap_warnings": [],
+            "legacy_timestamp_window_recovery": false,
+            "cold_timeline": {
+              "before_engine_seconds": 47.32243074607849,
+              "engine_seconds": 44.758,
+              "engine_finish_to_first_report_byte_seconds": 2.144115447998047
+            }
+          },
+          "complete_observed_seconds": 94.72786092758179
+        }
+      },
+      "warm": [
+        {
+          "name": "clean1",
+          "arm": "c",
+          "run_id": "7683290262752533723",
+          "resident_terminal_pid": 16104,
+          "quiesced_agent_pids": [
+            25572
+          ],
+          "all_html_cells_equal": true,
+          "all_order_fields_equal": true,
+          "all_deal_fields_equal": true,
+          "all_logger_fields_equal_except_wall_clock_millis": true,
+          "native_execution_equal": true,
+          "native": {
+            "ticks": 451882,
+            "bars": 192,
+            "engine_seconds": 36.162,
+            "native_trade_messages": 24,
+            "trade_stream_sha256": "b9c954163dcaa678a2cc322cbecd0fae831618095bb655bcf13c5d2f715b057d",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldd\\clean1\\Agent-127.0.0.1-3003_journal_delta.bin",
+            "sha256": "896009c6e1d935234f6aa31c75725f6daa78daec6a0c40189a24c282f2b9f389",
+            "tick_gap_warnings": [],
+            "legacy_timestamp_window_recovery": false
+          },
+          "logger_raw_sha256": "a5f53acf697f2ea704955b3b1925d420c86fa9289a23198042ba8c2e639eca68",
+          "report_sha256": "04ea0344694c4c07505a4cb9b5a7960d26af1fcef9bde5e2a24b0200311f02d7",
+          "complete_evidence_seconds": 41.07899999991059,
+          "native_export_seconds": 3.3909999998286366,
+          "paired_seconds_saved": 15.077638622373343
+        },
+        {
+          "name": "clean2",
+          "arm": "d",
+          "run_id": "7683290565267254752",
+          "resident_terminal_pid": 16104,
+          "quiesced_agent_pids": [
+            13612
+          ],
+          "all_html_cells_equal": true,
+          "all_order_fields_equal": true,
+          "all_deal_fields_equal": true,
+          "all_logger_fields_equal_except_wall_clock_millis": true,
+          "native_execution_equal": true,
+          "native": {
+            "ticks": 451882,
+            "bars": 192,
+            "engine_seconds": 37.85,
+            "native_trade_messages": 24,
+            "trade_stream_sha256": "dac5aacd4f417518a746fc07312e90a6897e94523c4d2892e8b48324d8712ec1",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldd\\clean2\\Agent-127.0.0.1-3002_journal_delta.bin",
+            "sha256": "2d0cd000c15018d75276d6436bae5d0fa0ccc38abd0d8ea988ad7135fc79ab45",
+            "tick_gap_warnings": [],
+            "legacy_timestamp_window_recovery": false
+          },
+          "logger_raw_sha256": "ea6b0ef6fc71566bb197a6868de213d01e0ece4009c2a76574b2db1c64f0c7ad",
+          "report_sha256": "42417ef8f83a40fa2c0a35727d6ccdf754f0dc75ebc0e440b489ddecb8846839",
+          "complete_evidence_seconds": 43.75,
+          "native_export_seconds": 4.359999999869615,
+          "paired_seconds_saved": 50.97786092758179
+        },
+        {
+          "name": "clean3",
+          "arm": "c",
+          "run_id": "7683290907374264174",
+          "resident_terminal_pid": 16104,
+          "quiesced_agent_pids": [
+            16348
+          ],
+          "all_html_cells_equal": true,
+          "all_order_fields_equal": true,
+          "all_deal_fields_equal": true,
+          "all_logger_fields_equal_except_wall_clock_millis": true,
+          "native_execution_equal": true,
+          "native": {
+            "ticks": 451882,
+            "bars": 192,
+            "engine_seconds": 44.708,
+            "native_trade_messages": 24,
+            "trade_stream_sha256": "b9c954163dcaa678a2cc322cbecd0fae831618095bb655bcf13c5d2f715b057d",
+            "source": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\qm10012_coldd\\clean3\\Agent-127.0.0.1-3005_journal_delta.bin",
+            "sha256": "25ef477f5d7b141f3a3764b12aff7861a607783102be9ef797b7bacc4051f19e",
+            "tick_gap_warnings": [],
+            "legacy_timestamp_window_recovery": false
+          },
+          "logger_raw_sha256": "8a2cf82ed3699d86b12ffe1f3233500eeb396793b06f36d9f209d820b9d76153",
+          "report_sha256": "04ea0344694c4c07505a4cb9b5a7960d26af1fcef9bde5e2a24b0200311f02d7",
+          "complete_evidence_seconds": 49.54700000025332,
+          "native_export_seconds": 3.3279999997466803,
+          "paired_seconds_saved": 6.609638622030616
+        }
+      ],
+      "has_native_tick_gap_warnings": false,
+      "all_comparisons_pass": true,
+      "median_paired_seconds_saved": 15.077638622373343
+    }
+  ],
+  "post_close_data_verification": [
+    {
+      "relative": "bases/Custom/history/EURUSD.DWX/2024.hcc",
+      "destination": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\bases\\Custom\\history\\EURUSD.DWX\\2024.hcc",
+      "sha256": "5ff6126b9ed5e12e6a9f0dcbf2ab7ffbcfe3b2c6c7e80d4db261c026e0425be0",
+      "size_bytes": 22288473,
+      "source": "D:\\QM\\mt5\\T11\\bases\\Custom\\history\\EURUSD.DWX\\2024.hcc",
+      "source_and_private_copy_sha256_equal": true
+    },
+    {
+      "relative": "bases/Custom/history/EURUSD.DWX/2025.hcc",
+      "destination": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\bases\\Custom\\history\\EURUSD.DWX\\2025.hcc",
+      "sha256": "c5c806d345d65e1b1c8cbc4230b0e00a7a85f4b46f208b907b07f40a1c462ae4",
+      "size_bytes": 20571204,
+      "source": "D:\\QM\\mt5\\T11\\bases\\Custom\\history\\EURUSD.DWX\\2025.hcc",
+      "source_and_private_copy_sha256_equal": true
+    },
+    {
+      "relative": "bases/Custom/ticks/EURUSD.DWX/202412.tkc",
+      "destination": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\bases\\Custom\\ticks\\EURUSD.DWX\\202412.tkc",
+      "sha256": "f9ae8ea2a5dc907740cf5452dd6eb6c18c95274aabb9999119de98c86799f9d2",
+      "size_bytes": 6165360,
+      "source": "D:\\QM\\mt5\\T11\\bases\\Custom\\ticks\\EURUSD.DWX\\202412.tkc",
+      "source_and_private_copy_sha256_equal": true
+    },
+    {
+      "relative": "bases/Custom/ticks/EURUSD.DWX/202501.tkc",
+      "destination": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\bases\\Custom\\ticks\\EURUSD.DWX\\202501.tkc",
+      "sha256": "a61582fda83289e98807cc7d5f33ee8bc8ba8c39b3c4e5a1da70dbb6bb86254d",
+      "size_bytes": 7270178,
+      "source": "D:\\QM\\mt5\\T11\\bases\\Custom\\ticks\\EURUSD.DWX\\202501.tkc",
+      "source_and_private_copy_sha256_equal": true
+    }
+  ],
+  "all_comparisons_pass": true,
+  "factory_warm_enabled": false,
+  "gate_admission": false,
+  "limitations": [
+    "One older QM EA binary, one symbol/timeframe; not current framework or cross-EA coverage.",
+    "Two unique setfiles, two date windows; no 20-cell qualification or failure/recovery coverage.",
+    "Factory load varies; engine duration also varies. Cold observation excludes later logger capture; warm timing includes export and writer quiescence.",
+    "Main terminal stays resident; tester agents are stopped after complete validated reports for fresh logger isolation.",
+    "Shared FILE_COMMON/news sidecars are not a production isolation contract; fixture refuses existing active/pending same-EA factory jobs.",
+    "Original cohort uses one native generated-tick fallback minute despite HTML 100% real ticks. Clean window is diagnostic only, not a data repair or strategy result."
+  ]
+}

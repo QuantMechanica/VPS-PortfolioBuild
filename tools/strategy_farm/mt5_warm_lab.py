@@ -62,6 +62,10 @@ def validate_call(method: str, params: dict) -> None:
         raise ValueError('Only tester allowlist or MCP discovery is permitted')
     if params['name'] == 'tester_run_backtest':
         arguments = params.get('arguments', {})
+        if Path(arguments.get('config_path', '')).name.startswith('QM_lab_qm10012_'):
+            from tools.strategy_farm.mt5_qm_warm_fixture import validate_run
+            validate_run(arguments)
+            return
         if set(arguments) != {'config_path', 'wait'} or arguments['wait'] is not False:
             raise ValueError('Only non-blocking fixed-fixture runs are permitted')
         ini = Path(arguments['config_path']).resolve()
@@ -312,7 +316,7 @@ def relaunch_probe() -> None:
         print(json.dumps(result), flush=True)
 
 
-def start() -> None:
+def start(fixture: str = 'moving-average') -> None:
     admitted()
     if any(c.laddr and c.laddr.port == PORT for c in psutil.net_connections(kind='tcp')):
         raise RuntimeError('Lab port already occupied')
@@ -324,20 +328,27 @@ def start() -> None:
     if text.count('http://127.0.0.1:22346/mcp') != 1:
         raise RuntimeError('Unexpected original MCP config')
     text = text.replace('http://127.0.0.1:22346/mcp', ENDPOINT)
-    assistant.write_text(text, encoding='utf-16')
     ini = SESSION / 'cold.ini'
     cold_name = 'warmcold.htm' if SESSION.name == 'warm20260908' else SESSION.name + '_cold.htm'
-    ini.write_text('[Tester]\nExpert=Examples\\Moving Average\\Moving Average\n'
+    config_text = ('[Tester]\nExpert=Examples\\Moving Average\\Moving Average\n'
                    'Symbol=EURUSD\nPeriod=M5\nModel=4\nExecutionMode=0\nOptimization=0\n'
                    'FromDate=2026.09.01\nToDate=2026.09.05\nDeposit=100000\nCurrency=USD\n'
                    'Leverage=100\nUseLocal=1\nUseRemote=0\nUseCloud=0\nVisual=0\n'
-                   f'Replace=1\nReplaceReport=1\nShutdownTerminal=0\nReport={cold_name}\n', encoding='utf-16')
+                   f'Replace=1\nReplaceReport=1\nShutdownTerminal=0\nReport={cold_name}\n')
+    if fixture != 'moving-average':
+        from tools.strategy_farm.mt5_qm_warm_fixture import cold_config, write_preflight
+        config_text = cold_config(fixture, cold_name)
+        write_preflight(SESSION)
+    ini.write_text(config_text, encoding='utf-16')
     if (ROOT / cold_name).exists():
         raise RuntimeError('Never overwrite an existing report')
+    save('cold_journal_offsets.json', {str(p): p.stat().st_size
+         for p in ROOT.glob('Tester/**/logs/*.log')})
     started = time.time()
     command = (f"$p=Start-Process -FilePath '{ROOT / 'terminal64.exe'}' -ArgumentList "
                f"'/portable','/config:{ini}' -WindowStyle Hidden -PassThru; $p.Id")
     try:
+        assistant.write_text(text, encoding='utf-16')
         launch = subprocess.run(['powershell.exe', '-NoProfile', '-Command', command],
                                 capture_output=True, text=True, check=True)
         process = psutil.Process(int(launch.stdout.strip()))
@@ -408,12 +419,13 @@ def main() -> None:
     parser.add_argument('--hidden', action='store_true')
     parser.add_argument('--from-date', choices=['2026.09.01', '2026.09.02'], default='2026.09.01')
     parser.add_argument('--session', default='warm20260908')
+    parser.add_argument('--fixture', choices=['moving-average', 'qm10012_a', 'qm10012_b', 'qm10012_c', 'qm10012_d'], default='moving-average')
     args = parser.parse_args()
     if not re.fullmatch('[a-z0-9_]{1,40}', args.session):
         parser.error('Session must be a bounded lab-local name')
     SESSION = ROOT / 'experiments' / args.session
     if args.action == 'start':
-        start()
+        start(args.fixture)
     elif args.action == 'close':
         close()
     elif args.action == 'benchmark':
