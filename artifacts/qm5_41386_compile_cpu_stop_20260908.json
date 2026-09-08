@@ -1,0 +1,47 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-08T15:35:12.3480087Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41386",
+  "ea_label": "QM5_41386_wti-tsmom7-h2",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "compile_work_item_id": "6544472e-c255-42f2-adc5-8d47c4b5c1f9",
+  "compile_state": "pending_activation_hold",
+  "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+  "source_sha256": "cd95d72de470bc44c848b92ed73609d683a98145f3f1fe4b27f66669e1421ce8",
+  "pacer_input_pin_audit": {
+    "ok": true,
+    "hit_count": 0,
+    "hits": []
+  },
+  "cpu_admission": {
+    "samples_pct": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      99.812591
+    ],
+    "average_pct": 99.962518,
+    "maximum_pct": 100.0,
+    "ceiling_pct": 97.0,
+    "rule": "average_and_maximum_must_be_strictly_below_ceiling",
+    "admitted": false
+  },
+  "disk_free_gb": 118.379,
+  "actions_refused": [
+    "release_compile_activation_hold",
+    "governed_compile_claim",
+    "manual_compile",
+    "manual_backtest",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
