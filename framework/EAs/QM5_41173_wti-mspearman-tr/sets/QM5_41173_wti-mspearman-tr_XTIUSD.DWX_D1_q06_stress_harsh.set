@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41173
+; ea_slug:      wti-mspearman-tr
+; ea_version:   v5.0
+; set_version:  s20260908-stress-harsh
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   92c4b44fe0dd3b7ac9d545e4a6b7bbc06bd7befc1e6fdc4aef6931c37427b08f
+; author:       Development
+; date:         2026-09-08
+;==========================================================
+qm_ea_id=41173
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_endpoint_count=13
+strategy_min_abs_score=104
+strategy_history_bars_d1=900
+strategy_entry_grace_minutes=180
+strategy_endpoint_stale_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500
