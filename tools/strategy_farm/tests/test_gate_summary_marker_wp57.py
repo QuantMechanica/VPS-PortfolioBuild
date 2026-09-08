@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import time
+import hashlib
 from pathlib import Path
 
 from framework.scripts import q05_stress_medium as q05
@@ -19,6 +20,15 @@ IDENTITY = {
     "terminal": "T2",
     "runs": [{"status": "OK", "total_trades": 20}],
 }
+
+
+def test_child_failure_diagnostics_are_unique_and_hash_bound(tmp_path):
+    message = "run_smoke.ps1: Cannot bind argument to parameter TesterLogTail\n"
+    first = q05._persist_child_output(tmp_path, "Q05", 1001, "EURUSD.DWX", message)
+    second = q05._persist_child_output(tmp_path, "Q05", 1001, "EURUSD.DWX", message)
+    assert first["runner_log_path"] != second["runner_log_path"]
+    assert Path(first["runner_log_path"]).read_text() == message
+    assert first["runner_log_sha256"] == hashlib.sha256(message.encode()).hexdigest()
 
 
 def _old_identity_summary(tmp_path: Path) -> Path:

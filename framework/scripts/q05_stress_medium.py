@@ -26,6 +26,7 @@ import re
 import subprocess
 import sys
 import time
+import uuid
 from pathlib import Path
 
 if __package__ in (None, ""):
@@ -305,6 +306,17 @@ def _summary_matches_run(
     )
 
 
+def _persist_child_output(report_root: Path, phase: str, ea_id: int, symbol: str, output: str) -> dict:
+    """Keep child diagnostics even when no summary could be published."""
+    folder = report_root / f"QM5_{ea_id}" / phase / re.sub(r"[^A-Za-z0-9_-]", "_", symbol)
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / f"run_smoke_{time.time_ns()}_{uuid.uuid4().hex[:12]}.log"
+    data = output.encode("utf-8", errors="replace")
+    with path.open("xb") as handle:
+        handle.write(data)
+    return {"runner_log_path": str(path), "runner_log_sha256": hashlib.sha256(data).hexdigest()}
+
+
 def _summary_from_run_smoke_output(
         output_text: str, *, started_at: float, ea_id: int,
         ea_expert: str, symbol: str, period: str, terminal: str) -> Path | None:
@@ -531,6 +543,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
         exit_code = 124
         output_text = _text_from_completed_process(exc)
+    child_log = _persist_child_output(report_root, GATE_NAME, ea_id, symbol, output_text)
     summary = _select_run_summary(
         output_text,
         report_root,
@@ -611,6 +624,7 @@ def run_stress_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "timeout_detail": timeout_detail,
         "timeout_sec": timeout_sec,
         "runner_timeout_sec": runner_timeout_sec,
+        **child_log,
         "summary_path": str(summary) if summary else None,
         "report_path": report_metrics.get("report_path") if report_metrics else None,
         "metric_source": "summary_json" if summary else ("report_htm" if report_metrics else None),

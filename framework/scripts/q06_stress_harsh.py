@@ -34,7 +34,7 @@ from framework.scripts.q05_stress_medium import (
     _text_from_completed_process, summary_invalid_reason, MIN_TRADES, PF_FLOOR,
     DD_PCT_MAX, STARTING_EQUITY, DEFAULT_TIMEOUT_SEC, RUNNER_HEADROOM_SEC,
     _basket_tester_overrides, _load_summary, _summary_report_path,
-    _summary_provenance, _report_input_value,
+    _summary_provenance, _report_input_value, _persist_child_output,
 )
 from framework.scripts.gen_stress_setfile import stress_setfile_text
 
@@ -140,6 +140,7 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         timeout_detail = f"subprocess_timeout_after={exc.timeout}s"
         exit_code = 124
         output_text = _text_from_completed_process(exc)
+    child_log = _persist_child_output(report_root, GATE_NAME, ea_id, symbol, output_text)
     summary = _select_run_summary(
         output_text,
         report_root,
@@ -245,6 +246,7 @@ def run_harsh_backtest(*, ea_id: int, ea_expert: str, symbol: str,
         "timeout_detail": timeout_detail,
         "timeout_sec": timeout_sec,
         "runner_timeout_sec": runner_timeout_sec,
+        **child_log,
         "summary_path": str(summary) if summary else None,
         "report_path": report_metrics.get("report_path") if report_metrics else None,
         "metric_source": "summary_json" if summary else ("report_htm" if report_metrics else None),
