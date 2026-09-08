@@ -1,0 +1,53 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-08T19:32:27.0491766Z",
+  "branch": "agents/board-advisor",
+  "head_observed": "686f1d44b03979bbcc25f46250e0bd3db0ab0c76",
+  "mission": "new commodity/energy sleeve card, build, and Q02 enqueue",
+  "provisional_edge": {
+    "slug": "wti-tsmom10-h2",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "sign of the exact prior ten completed broker-month WTI log return, evaluated at odd-month boundaries and held for one fixed non-overlapping two-month package",
+    "source_family": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250, DOI 10.1016/j.jfineco.2011.11.003",
+    "dedup_observation": "Read-only scan of 4,868 EA-registry rows and 846 repo-approved cards found no wti-tsmom10-h2, ten-month momentum, or strategy_return_months=10 identity. Exact family siblings already cover formation horizons 1 through 9 and 12 months. This observation is provisional because the CPU stop preceded governed allocation and card creation."
+  },
+  "cpu_admission": {
+    "sampler": "Get-Counter \\Processor(_Total)\\% Processor Time; five one-second samples",
+    "samples_pct": [
+      98.071,
+      88.214,
+      96.095,
+      92.980,
+      91.211
+    ],
+    "average_pct": 93.314,
+    "maximum_pct": 98.071,
+    "ceiling_pct": 97.0,
+    "rule": "average_and_maximum_must_be_strictly_below_ceiling",
+    "admitted": false
+  },
+  "host_snapshot": {
+    "disk_d_free_gib": 111.145,
+    "terminal64_and_metatester64_process_count": 14
+  },
+  "actions_refused": [
+    "source_approval_creation",
+    "strategy_card_creation",
+    "ea_id_allocation",
+    "magic_allocation",
+    "mq5_generation",
+    "pacer_input_pin_audit",
+    "compile_enqueue",
+    "manual_compile",
+    "manual_backtest",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
