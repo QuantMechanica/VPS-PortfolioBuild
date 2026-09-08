@@ -2172,6 +2172,58 @@ function Update-PostEngineWatchState {
         stalled = (($NowUtc - $since).TotalSeconds -ge $GraceSeconds) }
 }
 
+function Test-NativeReportRescueAdmission {
+    param($Policy, [string]$TerminalName, [double]$IdleSeconds, [bool]$Attempted,
+          [datetime]$NowUtc = ([datetime]::UtcNow))
+    if ($Attempted -or $null -eq $Policy -or $IdleSeconds -lt 60) { return $false }
+    try {
+        return ($Policy.schema -ceq 'qm.native-report-rescue/v1' -and
+            $Policy.enabled -eq $true -and $TerminalName -cin @($Policy.terminals) -and
+            $NowUtc -lt [datetime]::Parse($Policy.expires_at_utc).ToUniversalTime())
+    } catch { return $false }
+}
+
+function Invoke-NativeReportRescue {
+    param([string]$TerminalRoot, [string]$TerminalName, $TerminalProcess,
+          [string]$IniPath, [string]$ReportPath, $Observation, [double]$IdleSeconds)
+    # One optional, bounded helper. It exports native HTML only, authenticates
+    # exact run/build/inputs and atomically publishes without overwriting. The
+    # normal latch, all quality checks and writer/logger quiescence still apply.
+    $repoRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+    $runDirectory = Split-Path -Parent $IniPath
+    $requestPath = Join-Path $runDirectory 'native_report_rescue_request.json'
+    $outputPath = Join-Path $runDirectory 'native_report_rescue_result.json'
+    $errorPath = Join-Path $runDirectory 'native_report_rescue_stderr.txt'
+    foreach ($path in @($requestPath, $outputPath, $errorPath)) {
+        if (Test-Path -LiteralPath $path) { throw 'Native rescue never overwrites existing evidence' }
+    }
+    $owner = Get-Process -Id $PID
+    [ordered]@{
+        terminal = $TerminalName; terminal_root = $TerminalRoot
+        terminal_pid = $TerminalProcess.Id
+        terminal_created_utc = $TerminalProcess.StartTime.ToUniversalTime().ToString('o')
+        owner_pid = $PID; owner_created_utc = $owner.StartTime.ToUniversalTime().ToString('o')
+        work_item_id = $env:QM_WORK_ITEM_ID
+        expected_ex5_sha256 = $normalizedExpectedExpertSha256
+        ini_path = $IniPath; report_path = $ReportPath
+        observation = $Observation; idle_seconds = $IdleSeconds
+    } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $requestPath -Encoding UTF8
+    $python = (Get-Command python -ErrorAction Stop).Source
+    $helper = Start-Process -FilePath $python -ArgumentList @('-m', 'tools.strategy_farm.mt5_report_rescue', '--request', ('"{0}"' -f $requestPath)) `
+        -WorkingDirectory $repoRoot -WindowStyle Hidden -PassThru `
+        -RedirectStandardOutput $outputPath -RedirectStandardError $errorPath
+    try {
+        if (-not $helper.WaitForExit(30000)) {
+            Stop-Process -Id $helper.Id -Force -ErrorAction SilentlyContinue
+            Write-Warning 'Native report rescue exceeded 30 seconds; normal finalization/retry remains in charge'
+        } else {
+            Write-Host ("run_smoke.stage=native_report_rescue_returned helper_exit={0} evidence='{1}'" -f $helper.ExitCode, $outputPath)
+        }
+    } finally {
+        if (-not $helper.HasExited) { Stop-Process -Id $helper.Id -Force -ErrorAction SilentlyContinue }
+    }
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -2218,6 +2270,18 @@ function Start-TesterRun {
     $postEngineEvidencePath = $null
     $engineFinishedLogged = $false
     $reportFirstByteLogged = $false
+    $nativeRescueAttempted = $false
+    $nativeRescuePolicy = $null
+    $rescuePolicyPath = Join-Path $PSScriptRoot '..\registry\mt5_native_report_rescue.json'
+    try {
+        if (Test-Path -LiteralPath $rescuePolicyPath) {
+            $nativeRescuePolicy = Get-Content -LiteralPath $rescuePolicyPath -Raw | ConvertFrom-Json
+        }
+    } catch { Write-Warning 'Invalid native rescue policy; original finalization continues unchanged' }
+    if (Test-NativeReportRescueAdmission -Policy $nativeRescuePolicy -TerminalName $TerminalName -IdleSeconds 60 -Attempted $false) {
+        Write-Host ("run_smoke.stage=native_report_rescue_canary_armed terminal={0} expires='{1}' policy_sha256={2}" -f `
+            $TerminalName, $nativeRescuePolicy.expires_at_utc, (Get-FileHash -LiteralPath $rescuePolicyPath -Algorithm SHA256).Hash)
+    }
     $deadline = (Get-Date).ToUniversalTime().AddSeconds($TimeoutSec)
     while ((Get-Date).ToUniversalTime() -lt $deadline) {
         if ($childTerminal.HasExited) {
@@ -2343,6 +2407,27 @@ function Start-TesterRun {
                 if ($null -ne $postEngineObservation -and -not $engineFinishedLogged) {
                     $engineFinishedLogged = $true
                     Write-Host ("run_smoke.stage=engine_finished_waiting_report utc={0:o} elapsed_seconds={1} agent_pid={2} journal='{3}'" -f $postNow, $runClock.Elapsed.TotalSeconds.ToString('F3', [Globalization.CultureInfo]::InvariantCulture), $postEngineObservation.agent_pid, $postEngineObservation.journal_path)
+                }
+                if ($null -ne $postEngineState -and -not $nativeRescueAttempted -and
+                    $postEngineState.idle_seconds -ge 60 -and ($deadline - $postNow).TotalSeconds -gt 35) {
+                    # Expiring T1-only canary: changes take effect for a new
+                    # runner, never by injecting commands into an active owner.
+                    if (Test-NativeReportRescueAdmission -Policy $nativeRescuePolicy -TerminalName $TerminalName `
+                        -IdleSeconds $postEngineState.idle_seconds -Attempted $nativeRescueAttempted) {
+                        $nativeRescueAttempted = $true
+                        Write-Host ("run_smoke.stage=native_report_rescue_attempt terminal={0} idle_seconds={1}" -f $TerminalName, $postEngineState.idle_seconds)
+                        try {
+                            Invoke-NativeReportRescue -TerminalRoot $terminalRootForBomb -TerminalName $TerminalName `
+                                -TerminalProcess $childTerminal -IniPath $IniPath -ReportPath $ReportPath `
+                                -Observation $postEngineObservation -IdleSeconds $postEngineState.idle_seconds
+                        } catch {
+                            Write-Warning ("Native report rescue unavailable; normal finalization continues: {0}" -f $_.Exception.Message)
+                        }
+                        # Re-observe/latch through the unchanged path, not the
+                        # stale pre-export observation. Failure does not reset
+                        # or shorten the original 600-second idle budget.
+                        continue
+                    }
                 }
                 if ($null -ne $postEngineState -and $postEngineState.stalled) {
                     $postEngineEvidencePath = Join-Path (Split-Path -Parent $IniPath) 'post_engine_stall.json'

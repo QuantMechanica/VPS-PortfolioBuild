@@ -229,7 +229,7 @@ def _benchmark(name: str, hidden: bool, from_date: str) -> None:
     ini.parent.mkdir(parents=True, exist_ok=True)
     config = (SESSION / 'cold.ini').read_text(encoding='utf-16')
     config = config.replace('FromDate=2026.09.01', f'FromDate={from_date}')
-    ini.write_text(config.replace('Report=warmcold.htm', f'Report={report.name}'), encoding='utf-16')
+    ini.write_text(re.sub(r'(?m)^Report=.*$', f'Report={report.name}', config), encoding='utf-16')
     offsets = {str(p): p.stat().st_size for p in ROOT.glob('Tester/**/logs/*.log')}
     (runroot / 'journal_offsets.json').write_text(json.dumps(offsets, indent=2))
     started = time.time()
@@ -283,8 +283,8 @@ def relaunch_probe() -> None:
         report = ROOT / 'warmrelaunch.htm'
         if ini.exists() or report.exists():
             raise ValueError('Probe output already exists')
-        ini.write_text((SESSION / 'cold.ini').read_text(encoding='utf-16').replace(
-            'Report=warmcold.htm', 'Report=warmrelaunch.htm'), encoding='utf-16')
+        ini.write_text(re.sub(r'(?m)^Report=.*$', 'Report=warmrelaunch.htm',
+            (SESSION / 'cold.ini').read_text(encoding='utf-16')), encoding='utf-16')
         logs = {str(p): p.stat().st_size for p in ROOT.glob('Tester/**/logs/*.log')}
         started = time.time()
         command = (f"$p=Start-Process -FilePath '{ROOT / 'terminal64.exe'}' -ArgumentList "
@@ -326,12 +326,13 @@ def start() -> None:
     text = text.replace('http://127.0.0.1:22346/mcp', ENDPOINT)
     assistant.write_text(text, encoding='utf-16')
     ini = SESSION / 'cold.ini'
+    cold_name = 'warmcold.htm' if SESSION.name == 'warm20260908' else SESSION.name + '_cold.htm'
     ini.write_text('[Tester]\nExpert=Examples\\Moving Average\\Moving Average\n'
                    'Symbol=EURUSD\nPeriod=M5\nModel=4\nExecutionMode=0\nOptimization=0\n'
                    'FromDate=2026.09.01\nToDate=2026.09.05\nDeposit=100000\nCurrency=USD\n'
                    'Leverage=100\nUseLocal=1\nUseRemote=0\nUseCloud=0\nVisual=0\n'
-                   'Replace=1\nReplaceReport=1\nShutdownTerminal=0\nReport=warmcold.htm\n', encoding='utf-16')
-    if (ROOT / 'warmcold.htm').exists():
+                   f'Replace=1\nReplaceReport=1\nShutdownTerminal=0\nReport={cold_name}\n', encoding='utf-16')
+    if (ROOT / cold_name).exists():
         raise RuntimeError('Never overwrite an existing report')
     started = time.time()
     command = (f"$p=Start-Process -FilePath '{ROOT / 'terminal64.exe'}' -ArgumentList "
@@ -345,7 +346,7 @@ def start() -> None:
                   'terminal_sha256': sha(ROOT / 'terminal64.exe'),
                   'endpoint': ENDPOINT, 'mode': 'EXPERIMENT_ONLY_NO_GATE_ADMISSION'}
         save('session.json', record)
-        subprocess.Popen(['python', '-m', 'tools.strategy_farm.mt5_warm_lab', 'watchdog'],
+        subprocess.Popen(['python', '-m', 'tools.strategy_farm.mt5_warm_lab', 'watchdog', '--session', SESSION.name],
                          cwd=Path(__file__).resolve().parents[2],
                          creationflags=subprocess.CREATE_NO_WINDOW,
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -354,7 +355,7 @@ def start() -> None:
         first = None
         for _ in range(240):
             fenced_process(record)
-            report = ROOT / 'warmcold.htm'
+            report = ROOT / cold_name
             size = report.stat().st_size if report.exists() else 0
             if size and first is None:
                 first = time.time() - started
@@ -400,12 +401,17 @@ def close() -> None:
 
 
 def main() -> None:
+    global SESSION
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action', choices=['start', 'discover', 'close', 'watchdog', 'benchmark', 'relaunch-probe'])
     parser.add_argument('--name', default='pilot1')
     parser.add_argument('--hidden', action='store_true')
     parser.add_argument('--from-date', choices=['2026.09.01', '2026.09.02'], default='2026.09.01')
+    parser.add_argument('--session', default='warm20260908')
     args = parser.parse_args()
+    if not re.fullmatch('[a-z0-9_]{1,40}', args.session):
+        parser.error('Session must be a bounded lab-local name')
+    SESSION = ROOT / 'experiments' / args.session
     if args.action == 'start':
         start()
     elif args.action == 'close':

@@ -6,7 +6,7 @@ $source = Join-Path $PSScriptRoot '..\run_smoke.ps1'
 $tokens = $null; $errors = $null
 $ast = [System.Management.Automation.Language.Parser]::ParseFile($source, [ref]$tokens, [ref]$errors)
 if (@($errors).Count) { throw ($errors | Out-String) }
-foreach ($name in @('Get-TesterLogTailText', 'Get-TesterPostEngineObservation', 'Update-PostEngineWatchState')) {
+foreach ($name in @('Get-TesterLogTailText', 'Get-TesterPostEngineObservation', 'Update-PostEngineWatchState', 'Test-NativeReportRescueAdmission')) {
     $f = $ast.Find({param($n) $n -is [System.Management.Automation.Language.FunctionDefinitionAst] -and $n.Name -eq $name}, $true)
     if (-not $f) { throw "Missing $name" }
     Invoke-Expression $f.Extent.Text
@@ -23,6 +23,15 @@ try {
         if ($before -ne (Get-FileHash -LiteralPath $path).Hash) { throw 'Journal modified' }
     }
     $now = [datetime]'2026-09-08T14:00:00Z'
+    $policy = [pscustomobject]@{ schema='qm.native-report-rescue/v1'; enabled=$true;
+        terminals=@('T1'); expires_at_utc='2026-09-09T22:00:00Z' }
+    if (-not (Test-NativeReportRescueAdmission -Policy $policy -TerminalName T1 -IdleSeconds 60 -Attempted $false -NowUtc $now)) { throw 'Qualified canary not admitted' }
+    if (Test-NativeReportRescueAdmission -Policy $policy -TerminalName T2 -IdleSeconds 600 -Attempted $false -NowUtc $now) { throw 'Foreign terminal admitted' }
+    if (Test-NativeReportRescueAdmission -Policy $policy -TerminalName T1 -IdleSeconds 59 -Attempted $false -NowUtc $now) { throw 'Early export intervention' }
+    if (Test-NativeReportRescueAdmission -Policy $policy -TerminalName T1 -IdleSeconds 600 -Attempted $true -NowUtc $now) { throw 'Repeated rescue' }
+    if (Test-NativeReportRescueAdmission -Policy $policy -TerminalName T1 -IdleSeconds 600 -Attempted $false -NowUtc $now.AddDays(2)) { throw 'Expired canary' }
+    $policy.enabled = $false
+    if (Test-NativeReportRescueAdmission -Policy $policy -TerminalName T1 -IdleSeconds 600 -Attempted $false -NowUtc $now) { throw 'Disabled canary' }
     $obs = [pscustomobject]@{ agent_pid=10; agent_started_at_utc='start'; journal_path='journal';
         journal_bytes=100; journal_mtime_ticks=20; dispatcher_bytes=90; dispatcher_mtime_ticks=30; agent_cpu_seconds=40.0 }
     $state = Update-PostEngineWatchState -Previous $null -Observation $obs -ReportExists $false -NowUtc $now

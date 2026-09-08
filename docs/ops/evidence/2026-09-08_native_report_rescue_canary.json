@@ -1,0 +1,62 @@
+{
+  "schema": "qm.native-report-rescue-acceptance/v1",
+  "scope": "T1 export-recovery canary; factory warm reuse NOT enabled",
+  "policy_path": "framework/registry/mt5_native_report_rescue.json",
+  "expires_at_utc": "2026-09-09T22:00:00+00:00",
+  "targeted_tests_passed": 69,
+  "lab": {
+    "session": "D:\\QM\\mt5\\T11\\latency_lab_20260908\\experiments\\warmrollout_20260908",
+    "fixtures": "Native EURUSD M5 Moving Average, real ticks, date A-B-A",
+    "all_native_html_cells_equal_to_own_cold_reference": true,
+    "a_table_rows": 295,
+    "warm_run_to_native_html_seconds": [5.765, 4.125, 3.922],
+    "evidence": ["native_auto_tab_a.json", "native_html_aba.json", "native_html_control_probe.json"],
+    "closed_at_utc": "2026-09-08T21:16:45.348238+00:00",
+    "mcp_configuration_restored": true,
+    "t11_reservation_released": true,
+    "actual_qm_ea_warm_qualification_complete": false
+  },
+  "real_qm_report_parser_fixture": {
+    "ea": "QM5_41163",
+    "symbol": "USDCAD.DWX",
+    "period": "D1",
+    "year": 2024,
+    "native_inputs": 37,
+    "report_sha256": "9cba93f770d2cdef89a0314bc2c344bcaf244503872d0ca5fe2b12754f9d3ae7",
+    "exact_setfile_validation": "PASS",
+    "scope": "Read-only parser qualification; not a QM warm run"
+  },
+  "first_factory_canary_run": {
+    "work_item_id": "9aa91157-e7aa-5c8b-a170-b2394ce832d2",
+    "ea": "QM5_41301",
+    "terminal": "T1",
+    "terminal_pid": 13780,
+    "canary_armed_in_canonical_runner_log": true,
+    "native_engine_finished_at_local": "2026-09-08T23:27:42.878+02:00",
+    "report_first_byte_at_utc": "2026-09-08T21:27:45.0049351Z",
+    "engine_to_report_first_byte_seconds": 2.1269351,
+    "report_size_bytes": 125380,
+    "report_sha256": "ed923afe41120c8ec7331a3e55067bc553a07fcb877aab73b0c69bac2e5f6238",
+    "logger_events": 446,
+    "logger_bytes": 156735,
+    "logger_sha256": "021c245d3d10e735581bcadf970ab72cde187a92eaa398b4ab8b12c2de1d76dd",
+    "run_smoke_result": "PASS",
+    "factory_status": "done",
+    "factory_verdict": "MEASURED",
+    "native_rescue_attempted": false,
+    "production_rescue_speedup_proven": false,
+    "runner_log": "D:\\QM\\strategy_farm\\logs\\work_item_9aa91157-e7aa-5c8b-a170-b2394ce832d2.log",
+    "summary": "D:\\QM\\reports\\work_items\\9aa91157-e7aa-5c8b-a170-b2394ce832d2\\QM5_41301\\20260908_212331\\summary.json"
+  },
+  "observation": {
+    "path": "D:\\QM\\reports\\diagnostics\\native_rescue_canary_20260908_2324.jsonl",
+    "sha256": "8cb7c6b1dd5d1a89f00687076a8c82af8c9605ac134a11b074f5da8c828a3662",
+    "started_at_utc": "2026-09-08T21:23:11.955381+00:00",
+    "finished_at_utc": "2026-09-08T21:28:12.005099+00:00",
+    "interval_seconds": 15,
+    "recognized_post_engine_stalls_over_60_seconds": 0,
+    "observer_errors": 0
+  },
+  "protected_live_pids_unchanged": [15464, 31728],
+  "quality_gates_or_real_tick_model_changed": false
+}

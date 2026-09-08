@@ -1,0 +1,10 @@
+{
+  "schema": "qm.native-report-rescue/v1",
+  "enabled": true,
+  "terminals": ["T1"],
+  "terminal_sha256": "bd1d438bc7563a57ba4496dbde994eac207d1ab71c8864e5093bfe721dd960ab",
+  "expires_at_utc": "2026-09-09T22:00:00+00:00",
+  "minimum_idle_seconds": 60,
+  "maximum_helper_seconds": 30,
+  "reason": "T11 native HTML A-B-A cell parity proven; bounded T1-only recovery canary. Factory warm reuse remains disabled. All normal gates, real ticks and logger capture remain required."
+}
