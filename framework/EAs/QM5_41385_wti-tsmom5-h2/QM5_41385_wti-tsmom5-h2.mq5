@@ -9,8 +9,8 @@
 // -----------------------------------------------------------------------------
 // Source lineage: Moskowitz, Ooi & Pedersen (2012) monthly own-return trend.
 // At the first processed D1 bar of each eligible odd broker month:
-//   1. derive five consecutive completed WTI month-end closes from D1;
-//   2. calculate the exact five-month return ln(C[4] / C[0]);
+//   1. derive six consecutive completed WTI month-end closes from D1;
+//   2. calculate the exact five-month return ln(C[5] / C[0]);
 //   3. buy a positive return or sell a negative return;
 //   4. preserve the package through the intervening even-month transition.
 // The non-overlapping odd-month phase, CFD mapping, ATR stop, and fixed-dollar
@@ -44,7 +44,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input string strategy_symbol                   = "XTIUSD.DWX";
-input int    strategy_return_months            = 4;
+input int    strategy_return_months            = 5;
 input int    strategy_hold_months              = 2;
 input int    strategy_rebalance_month_parity   = 1;
 input int    strategy_history_bars_d1          = 300;
@@ -331,7 +331,7 @@ bool Strategy_AreConsecutiveMonths(const int &month_keys[],
 bool Strategy_LoadMonthlyCloses(double &closes[])
   {
    ArrayResize(closes, 0);
-   if(strategy_return_months != 4 ||
+   if(strategy_return_months != 5 ||
       strategy_history_bars_d1 != 300)
       return false;
 
@@ -391,7 +391,7 @@ bool Strategy_LoadMonthlyCloses(double &closes[])
      }
 
    const int required_closes = strategy_return_months + 1;
-   if(required_closes != 5 ||
+   if(required_closes != 6 ||
       month_count < required_closes)
       return false;
 
@@ -420,18 +420,18 @@ void Strategy_ResetCachedState()
    g_cache_state_reason = "not_evaluated";
   }
 
-bool Strategy_FourMonthReturnSignal(const double &closes[],
+bool Strategy_FiveMonthReturnSignal(const double &closes[],
                                    int &signal)
   {
    signal = 0;
-   if(strategy_return_months != 4 ||
-      ArraySize(closes) != 5)
+   if(strategy_return_months != 5 ||
+      ArraySize(closes) != 6)
      {
       g_cache_state_reason = "bad_five_month_contract";
       return false;
      }
 
-   for(int i = 0; i < 5; ++i)
+   for(int i = 0; i < 6; ++i)
      {
       if(closes[i] <= 0.0 ||
          !MathIsValidNumber(closes[i]))
@@ -441,7 +441,7 @@ bool Strategy_FourMonthReturnSignal(const double &closes[],
         }
      }
 
-   const double endpoint_ratio = closes[4] / closes[0];
+   const double endpoint_ratio = closes[5] / closes[0];
    if(endpoint_ratio <= 0.0 ||
       !MathIsValidNumber(endpoint_ratio))
      {
@@ -456,7 +456,7 @@ bool Strategy_FourMonthReturnSignal(const double &closes[],
      }
 
    double chained_return = 0.0;
-   for(int i = 0; i < 4; ++i)
+   for(int i = 0; i < 5; ++i)
      {
       const double monthly_return =
          MathLog(closes[i + 1] / closes[i]);
@@ -496,7 +496,7 @@ bool Strategy_LoadSignalState(int &signal)
       g_cache_state_reason = "invalid_monthly_history";
       return false;
      }
-   return Strategy_FourMonthReturnSignal(monthly_closes,
+   return Strategy_FiveMonthReturnSignal(monthly_closes,
                                         signal);
   }
 
@@ -572,7 +572,7 @@ bool Strategy_NoTradeFilter()
       qm_stress_reject_probability > 1.0)
       return true;
    if(strategy_symbol == "" ||
-      strategy_return_months != 4 ||
+      strategy_return_months != 5 ||
       strategy_hold_months != 2 ||
       strategy_rebalance_month_parity != 1 ||
       strategy_history_bars_d1 != 300)
@@ -822,5 +822,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 

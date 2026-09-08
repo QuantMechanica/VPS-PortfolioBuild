@@ -8,7 +8,7 @@
 
 ## 1. Strategy Logic
 
-On the first D1 bar of each odd broker month, reconstruct five consecutive
+On the first D1 bar of each odd broker month, reconstruct six consecutive
 completed WTI month-end closes and follow the sign of the exact five-month log
 return. Hold one package through the intervening even month, then close and
 reconsider at the next odd-month boundary. Equality or invalid state consumes
@@ -19,7 +19,7 @@ the period flat; every entry has a frozen `3.5*ATR(20,D1)` stop and no target.
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
 | `strategy_symbol` | `XTIUSD.DWX` | locked | Exact WTI carrier |
-| `strategy_return_months` | `4` | `[4]` | Exact formation intervals |
+| `strategy_return_months` | `5` | `[5]` | Exact formation intervals |
 | `strategy_hold_months` | `2` | `[2]` | Fixed package clock |
 | `strategy_rebalance_month_parity` | `1` | `[1]` | Odd-month epoch |
 | `strategy_history_bars_d1` | `300` | `[300]` | Bounded D1 history |
@@ -68,9 +68,9 @@ This mission creates only the backtest set. It does not authorize live use.
 
 ## 8. Non-Duplicate Boundary
 
-`QM5_20280` renews the same five-month direction monthly. `QM5_20281` uses
+Monthly-renewal WTI siblings use a different lifecycle. `QM5_20281` uses
 the same bimonthly clock but a twelve-month formation. `QM5_41379` through
-`QM5_41382` use three-, one-, nine-, and six-month formations. This identity
+`QM5_41384` use three-, one-, nine-, six-, four-, and two-month formations. This identity
 combines the exact five-month endpoints with the fixed odd-month two-month
 lifecycle.
 
@@ -96,10 +96,6 @@ or correlation waiver.
 
 ## 11. Q01 And Q02 Status
 
-Q01 passed on 2026-09-08: the PACER audit returned zero
-`EA_FRAMEWORK_INPUT_PINNED` findings, all 13 deterministic reference vectors
-passed, and governed compile work item
-`2560324d-2582-45cd-8ed7-63bf439589ca` returned `COMPILE_OK` with zero compiler
-errors or warnings. The first-Q02 dry run was eligible, but Q02 was not
-enqueued because a fresh five-sample window reached 99.221850%, above the
-binding 97% CPU ceiling.
+Q01 is pending the mandatory PACER audit, deterministic reference vectors,
+and governed strict compile. Q02 remains blocked on Q01 and the binding CPU
+ceiling.
