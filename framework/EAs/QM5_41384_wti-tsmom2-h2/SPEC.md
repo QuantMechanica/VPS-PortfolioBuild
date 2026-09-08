@@ -96,7 +96,9 @@ or correlation waiver.
 
 ## 11. Q01 And Q02 Status
 
-Q01 is pending the mandatory PACER input-pin audit, deterministic reference
-vectors, resolver verification, and governed strict compile. Q02 must not be
-enqueued before Q01 passes and a fresh five-sample CPU window remains strictly
-below the binding 97% ceiling.
+Q01 passed: the PACER input-pin audit returned zero findings, all 13
+deterministic reference vectors passed, the resolver retained the unique
+`413840000` assignment, and governed compile work item
+`6a063c3e-c161-4069-90fe-2bbefc258f08` returned `COMPILE_OK` with zero compiler
+errors and warnings. Q02 was not enqueued because T10 recorded 98.3% and 97.3%
+CPU against the binding 97% ceiling.

@@ -1,0 +1,68 @@
+{
+  "ea_id": "QM5_41384",
+  "ea_dir": "framework/EAs/QM5_41384_wti-tsmom2-h2",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41384_wti-tsmom2-h2\\QM5_41384_wti-tsmom2-h2.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41384_wti-tsmom2-h2\\QM5_41384_wti-tsmom2-h2.ex5",
+  "magic_base": 413840000,
+  "symbols_registered": ["XTIUSD.DWX"],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41384_wti-tsmom2-h2\\sets\\QM5_41384_wti-tsmom2-h2_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41384_wti-tsmom2-h2\\SPEC.md",
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "smoke_result": "q01_reference_vectors_pass_13",
+  "smoke_report_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41384_wti-tsmom2-h2\\docs\\test_tsmom2_h2_reference.py",
+  "blocked_reason": "Q02_NOT_ENQUEUED_CPU_CEILING",
+  "open_questions": [
+    "Q02 must establish at least five completed positions per full post-warm-up year and positive governed economics.",
+    "Q09 alone may establish realized decorrelation from the certified book."
+  ],
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "6a063c3e-c161-4069-90fe-2bbefc258f08",
+    "terminal": "T10",
+    "mq5_sha256": "5b81bb16c6097eedc76858716bf9b441379033f900a122e3baab7dfab042d880",
+    "ex5_sha256": "01c5f5e685589b7da9eed68a0426cd8c38718e11d05784823189ee1a7325feb0",
+    "setfile_sha256": "8b67c1ec178363567f0f82cc8fea8f7e677b9f8dcf55381ce1810548b3cf3cca"
+  },
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "validations": {
+    "reference_tests": "PASS_13",
+    "strategy_card_schema": "PASS_NO_ISSUES",
+    "prohibited_ml_scan": "PASS_NO_HITS",
+    "pacer_framework_input_pin_audit": "PASS_ZERO_HITS",
+    "magic_resolver": "PASS_NO_DROP",
+    "setfile_validation": "PASS_1_RISK_FIXED_BACKTEST_ONLY"
+  },
+  "capacity_admission": {
+    "evidence_source": "D:\\QM\\strategy_farm\\logs\\terminal_worker_T10.log",
+    "observations": [
+      {"timestamp_utc": "2026-09-08T12:48:04.974424+00:00", "cpu_percent": 98.3},
+      {"timestamp_utc": "2026-09-08T12:49:27.860871+00:00", "cpu_percent": 97.3}
+    ],
+    "cpu_ceiling_percent": 97.0,
+    "rule": "Stop when the backtest CPU ceiling is hit.",
+    "admitted": false
+  },
+  "q02": {
+    "status": "NOT_ENQUEUED_CPU_CEILING",
+    "work_item_id": null,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "priority_boost": false
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "live_manifest_touched": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "q02_enqueued": false,
+    "t_live_touched": false
+  }
+}
