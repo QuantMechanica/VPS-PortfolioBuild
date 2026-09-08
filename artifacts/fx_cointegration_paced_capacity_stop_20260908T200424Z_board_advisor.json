@@ -1,0 +1,89 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-08T20:04:24Z",
+  "recorded_at_local": "2026-09-08T22:04:24+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "afd7c51ba05f74b4061b2722ae76e499141ed296",
+  "outcome": "PACED_BACKTEST_CAPACITY_STOP",
+  "frontier": {
+    "unbuilt_approved_fx_cointegration_pairs": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "fallback": {
+      "ea_id": "QM5_12507",
+      "slug": "pair-coint-z",
+      "pair": ["EURUSD.DWX", "GBPUSD.DWX"],
+      "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+      "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "verdict": null,
+      "priority_track": true,
+      "exact_open_row_count": 1,
+      "duplicate_enqueue_refused": true
+    }
+  },
+  "pacer_build_guard": {
+    "source_generated_or_edited": false,
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5\"",
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "result": "PASS"
+  },
+  "build_identity": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity": {
+    "active_work_item_count": 10,
+    "paced_active_row_ceiling": 7,
+    "active_row_ceiling_hit": true,
+    "running_factory_terminal_count": 9,
+    "running_factory_terminals": ["T1", "T2", "T3", "T4", "T5", "T7", "T8", "T9", "T10"],
+    "binding_factory_terminal_ceiling": 7,
+    "terminal_ceiling_hit": true,
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [76.141350, 71.294836, 71.291309, 88.087617, 85.513080],
+    "cpu_average_percent": 78.465638,
+    "cpu_maximum_percent": 88.087617,
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_percent_ceiling_hit": false,
+    "free_physical_memory_gib": 30.601,
+    "total_physical_memory_gib": 63.120,
+    "active_work_items": [
+      {"terminal": "T4", "phase": "Q04", "ea_id": "QM5_10801", "symbol": "GBPUSD.DWX", "id": "e07d374e-e394-4040-96b6-208fdfe5c9cd"},
+      {"terminal": "T6", "phase": "Q04", "ea_id": "QM5_10855", "symbol": "EURUSD.DWX", "id": "065d8355-9d04-4fc6-adf2-95d4b0cf4e2d"},
+      {"terminal": "T8", "phase": "Q04", "ea_id": "QM5_11182", "symbol": "EURUSD.DWX", "id": "f6435ac8-da90-4314-b15b-5fe6711f72d8"},
+      {"terminal": "T10", "phase": "Q08", "ea_id": "QM5_41158", "symbol": "XTIUSD.DWX", "id": "ed38c5b7-cf11-4591-897f-e2aec1e6a1d8"},
+      {"terminal": "T9", "phase": "OPT_CENSUS", "ea_id": "QM5_41163", "symbol": "USDCAD.DWX", "id": "879defb7-75de-515f-90da-5f7bf3a0bed5"},
+      {"terminal": "T2", "phase": "Q07", "ea_id": "QM5_41182", "symbol": "XTIUSD.DWX", "id": "d9410460-f890-4619-920a-50415c166bec"},
+      {"terminal": "T3", "phase": "OPT_CENSUS", "ea_id": "QM5_41301", "symbol": "XAUUSD.DWX", "id": "809e9a09-54a5-5376-ac01-779507d62ba1"},
+      {"terminal": "T7", "phase": "OPT_CENSUS", "ea_id": "QM5_41302", "symbol": "XAUUSD.DWX", "id": "7235d7cc-6b09-53f3-88a1-ca2e6189445b"},
+      {"terminal": "T1", "phase": "OPT_CENSUS", "ea_id": "QM5_41324", "symbol": "USDJPY.DWX", "id": "2bbde7bc-6739-5f41-8a2e-c34a5178eb33"},
+      {"terminal": "T5", "phase": "OPT_CENSUS", "ea_id": "QM5_41345", "symbol": "XAUUSD.DWX", "id": "dfef51a5-b8b7-54e2-ab5c-805b3522bdf8"}
+    ]
+  },
+  "mutations": {
+    "mq5_written_or_edited": false,
+    "compile_command_run": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "farm_state_changed": false,
+    "terminal_process_changed": false,
+    "portfolio_gate_changed": false,
+    "t_live_changed": false,
+    "autotrading_changed": false
+  }
+}
