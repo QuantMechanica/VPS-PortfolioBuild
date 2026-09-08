@@ -1,0 +1,79 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-08T13:45:52.7827805Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "51c069fd1b6547b77f04234cb09db757ca0908ff",
+  "mission": "grow_certified_v5_portfolio_with_new_forex_sleeves",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "frontier_context": {
+    "latest_complete_reconciliation": "docs/research/FX_COINTEGRATION_QM5_12507_Q02_DRAIN_WINDOW_STOP_20260908T122159Z.md",
+    "latest_complete_unbuilt_relationship_count": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "fallback_ea_id": "QM5_12507",
+    "fallback_logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "fallback_q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "fallback_q02_status": "pending",
+    "fallback_q02_attempt_count": 0,
+    "fallback_q02_claimed_by": null,
+    "fallback_q02_verdict": null,
+    "duplicate_q02_appended": false
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-09-08T13:45:52.7827805Z",
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "cpu_samples_percent": [
+      63.873902,
+      62.2238,
+      58.012252,
+      59.383155,
+      57.078609
+    ],
+    "cpu_average_percent": 60.114344,
+    "cpu_maximum_percent": 63.873902,
+    "active_work_item_count": 10,
+    "running_factory_terminal_count": 10,
+    "paced_fleet_active_tester_ceiling": 7,
+    "ceiling_hit": true,
+    "ceiling_reason": "active_work_item_and_factory_terminal_count",
+    "free_physical_memory_gib": 25.11,
+    "total_physical_memory_gib": 63.12,
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": []
+  },
+  "active_work_items": [
+    {"terminal":"T1","phase":"OPT_CENSUS","ea_id":"QM5_41324","symbol":"USDJPY.DWX","work_item_id":"945832b9-41be-586a-849e-1d4c06502968"},
+    {"terminal":"T2","phase":"OPT_CENSUS","ea_id":"QM5_41301","symbol":"XAUUSD.DWX","work_item_id":"a50a0f1e-2d14-5a0e-af3b-ed3869309947"},
+    {"terminal":"T3","phase":"Q04","ea_id":"QM5_11182","symbol":"GBPUSD.DWX","work_item_id":"14b04e51-fe83-48b8-b3f9-9002d6518b16"},
+    {"terminal":"T4","phase":"OPT_CENSUS","ea_id":"QM5_41163","symbol":"USDCAD.DWX","work_item_id":"f203872e-74a2-5ba7-b3be-75d7ade1e231"},
+    {"terminal":"T5","phase":"OPT_CENSUS","ea_id":"QM5_41345","symbol":"XAUUSD.DWX","work_item_id":"a3d38366-b734-58cb-9a27-f0e2cc71256e"},
+    {"terminal":"T6","phase":"Q04","ea_id":"QM5_41134","symbol":"XTIUSD.DWX","work_item_id":"7cc74af7-9da6-4aa8-84a0-e26d3edf800d"},
+    {"terminal":"T7","phase":"Q02","ea_id":"QM5_10269","symbol":"GBPUSD.DWX","work_item_id":"138e5d99-97e1-4d75-83ff-5ef8bea16940"},
+    {"terminal":"T8","phase":"OPT_CENSUS","ea_id":"QM5_41305","symbol":"XTIUSD.DWX","work_item_id":"9638572a-f886-520c-98a9-52a12bb90d7f"},
+    {"terminal":"T9","phase":"Q04","ea_id":"QM5_41137","symbol":"XTIUSD.DWX","work_item_id":"cae12fd1-a131-43ad-a324-1a6aa2e70d5f"},
+    {"terminal":"T10","phase":"OPT_CENSUS","ea_id":"QM5_41302","symbol":"XAUUSD.DWX","work_item_id":"3239d5e7-010a-5e5f-b4e6-bb80d2a921f9"}
+  ],
+  "pacer_guard": {
+    "mq5_generated_or_edited": false,
+    "pre_compile_pin_audit_required": false,
+    "compile_enqueue_attempted": false,
+    "refusal_triggered": false,
+    "reason": "Hard capacity stop occurred before source generation."
+  },
+  "mutations": {
+    "new_card_created": false,
+    "ea_source_changed": false,
+    "compile_enqueued": false,
+    "q02_row_appended": false,
+    "q02_row_reprioritized": false,
+    "manual_dispatch_started": false,
+    "terminal_control_attempted": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
