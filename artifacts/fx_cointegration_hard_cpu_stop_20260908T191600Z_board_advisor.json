@@ -1,0 +1,72 @@
+{
+  "schema_version": "1.0",
+  "recorded_at_utc": "2026-09-08T19:16:00Z",
+  "recorded_at_local": "2026-09-08T21:16:00+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "fe1c047183b4eab2af22f9c521a2d855b76f9fc6",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "cpu": {
+    "sample_interval_seconds": 2,
+    "samples_percent": [
+      99.170736,
+      96.210773,
+      86.053,
+      94.144807,
+      95.951821
+    ],
+    "average_percent": 94.306227,
+    "maximum_percent": 99.170736,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_crossed": true
+  },
+  "memory": {
+    "free_physical_gib": 34.017,
+    "total_physical_gib": 63.12
+  },
+  "farm": {
+    "active_work_item_count": 7,
+    "paced_active_row_ceiling": 7,
+    "running_factory_terminals": ["T4", "T5", "T6", "T8", "T9", "T10"],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "active_work_items": [
+      {"terminal": "T5", "phase": "Q04", "ea_id": "QM5_10800", "symbol": "GBPUSD.DWX", "id": "6485801c-c797-4197-b6bb-1ce60d4e4003"},
+      {"terminal": "T9", "phase": "Q04", "ea_id": "QM5_11458", "symbol": "USDCAD.DWX", "id": "eb5d3d30-b493-4513-ac0b-347a8183d0da"},
+      {"terminal": "T8", "phase": "Q07", "ea_id": "QM5_41158", "symbol": "XTIUSD.DWX", "id": "2c3757b4-1bbc-46c6-b19b-f1c5423b4127"},
+      {"terminal": "T4", "phase": "Q03", "ea_id": "QM5_41184", "symbol": "XTIUSD.DWX", "id": "9a185bd5-a60f-4889-bab5-441afe314696"},
+      {"terminal": "T10", "phase": "OPT_CENSUS", "ea_id": "QM5_41301", "symbol": "XAUUSD.DWX", "id": "d8759e94-f8a5-5669-b5f9-048000e3fc0f"},
+      {"terminal": "T6", "phase": "OPT_CENSUS", "ea_id": "QM5_41302", "symbol": "XAUUSD.DWX", "id": "5fb609cc-e84b-578d-8771-f565f2b62f58"},
+      {"terminal": "T7", "phase": "OPT_CENSUS", "ea_id": "QM5_41345", "symbol": "XAUUSD.DWX", "id": "3c785d1b-7753-5e09-ad6f-827d3460368b"}
+    ]
+  },
+  "frontier": {
+    "unbuilt_approved_fx_cointegration_pairs": 0,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "fallback": {
+      "ea_id": "QM5_12507",
+      "slug": "pair-coint-z",
+      "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+      "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "phase": "Q02",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "verdict": null,
+      "priority_track": true,
+      "duplicate_enqueue_refused": true
+    }
+  },
+  "mutations": {
+    "mq5_written_or_edited": false,
+    "framework_input_audit_required": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "farm_state_changed": false,
+    "portfolio_gate_changed": false,
+    "t_live_changed": false,
+    "autotrading_changed": false
+  }
+}
