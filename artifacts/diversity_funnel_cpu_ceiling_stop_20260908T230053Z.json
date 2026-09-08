@@ -1,0 +1,58 @@
+{
+  "schema": "qm.paced-fleet-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-08T23:00:53.7688405Z",
+  "branch": "agents/board-advisor",
+  "head_observed": "bfb22f34b51625c737b78b6c6a346e2b12944e30",
+  "mission": "diversity-first V5 strategy-farm funnel advancement",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "capacity_admission": {
+    "cpu_sampler": "Win32_Processor.LoadPercentage; five samples one second apart",
+    "cpu_samples_pct": [90.0, 93.0, 91.0, 90.0, 100.0],
+    "cpu_average_pct": 92.8,
+    "cpu_maximum_pct": 100.0,
+    "cpu_ceiling_pct": 97.0,
+    "admission_rule": "average < 97.0 and maximum < 97.0",
+    "cpu_permit": false,
+    "active_work_item_count": 8,
+    "running_factory_terminals": ["T3", "T4", "T5", "T6", "T7", "T8", "T9"]
+  },
+  "active_work_items": [
+    {"terminal": "T5", "phase": "Q04", "ea_id": "QM5_10295", "symbol": "GBPJPY.DWX", "work_item_id": "add6735b-bfda-492f-8045-d1844e215071"},
+    {"terminal": "T4", "phase": "Q04", "ea_id": "QM5_10302", "symbol": "EURUSD.DWX", "work_item_id": "5710f1d3-9397-4217-a61d-f4422b1eab22"},
+    {"terminal": "T7", "phase": "Q04", "ea_id": "QM5_10443", "symbol": "USDJPY.DWX", "work_item_id": "a7f5cbfa-0a15-45ba-8fb1-560eae1875e9"},
+    {"terminal": "T3", "phase": "Q04", "ea_id": "QM5_10554", "symbol": "GBPUSD.DWX", "work_item_id": "2c12c29f-bb82-48b0-90ec-b0d160517547"},
+    {"terminal": "T8", "phase": "OPT_CENSUS", "ea_id": "QM5_41163", "symbol": "USDCAD.DWX", "work_item_id": "9fc36567-d563-5730-82fe-ee97312ad4ce"},
+    {"terminal": "T9", "phase": "OPT_CENSUS", "ea_id": "QM5_41301", "symbol": "XAUUSD.DWX", "work_item_id": "ee4f9c15-15db-5c5d-a231-c47e06cfc5b3"},
+    {"terminal": "T10", "phase": "OPT_CENSUS", "ea_id": "QM5_41302", "symbol": "XAUUSD.DWX", "work_item_id": "e6117f96-eef9-5e69-a640-d0a59b48e25d"},
+    {"terminal": "T6", "phase": "OPT_CENSUS", "ea_id": "QM5_41345", "symbol": "XAUUSD.DWX", "work_item_id": "0810c107-22a5-52a5-840c-faed342024ca"}
+  ],
+  "actions_refused": [
+    "backlog_ranking",
+    "farm_claim",
+    "strategy_card_creation",
+    "ea_id_allocation",
+    "magic_allocation",
+    "mq5_generation",
+    "compile_enqueue",
+    "compile",
+    "manual_backtest",
+    "q02_enqueue",
+    "dispatch",
+    "terminal_control"
+  ],
+  "pacer_guard": {
+    "generated_mq5_written": false,
+    "source_pin_audit_required": false,
+    "framework_input_pin_finding": null,
+    "compile_enqueued": false,
+    "q02_enqueued": false
+  },
+  "safety": {
+    "farm_db_mutated": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
