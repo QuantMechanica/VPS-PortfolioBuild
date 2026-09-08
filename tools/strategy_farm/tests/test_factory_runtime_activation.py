@@ -155,7 +155,7 @@ def _build_repo(
             "authorized_work_item_ids": list(restart_hold_ids),
         },
         "worker_policy": {
-            "disabled_terminals": [],
+            "disabled_terminals": ["T11", "T12"],
             "expected_worker_count": 10,
             "expected_terminals": list(fra.WORKER_TERMINALS),
         },
@@ -292,10 +292,19 @@ def test_rejects_missing_release_authorization_key(
             "expected_terminals": list(fra.WORKER_TERMINALS),
         },
         {
-            "disabled_terminals": [],
+            "disabled_terminals": ["T11", "T12"],
             "expected_worker_count": 10,
             "expected_terminals": list(fra.WORKER_TERMINALS[:-1]),
         },
+        *(
+            {
+                "disabled_terminals": disabled,
+                "expected_worker_count": 10,
+                "expected_terminals": list(fra.WORKER_TERMINALS),
+            }
+            for disabled in ([], ["T11"], ["T12", "T11"],
+                             ["T11", "T12", "T5"], ["T11", "T12", "T12"])
+        ),
     ],
 )
 def test_runtime_decision_rejects_non_exact_ten_worker_policy(
@@ -471,7 +480,7 @@ def test_schema_and_template_pin_structural_restart_and_source_contracts() -> No
     }
     assert properties["worker_policy"]["properties"]["disabled_terminals"][
         "const"
-    ] == []
+    ] == ["T11", "T12"]
     assert properties["worker_policy"]["properties"]["expected_worker_count"][
         "const"
     ] == 10
@@ -479,9 +488,14 @@ def test_schema_and_template_pin_structural_restart_and_source_contracts() -> No
         "const"
     ] == list(fra.WORKER_TERMINALS)
     assert template["worker_policy"] == {
-        "disabled_terminals": [],
+        "disabled_terminals": ["T11", "T12"],
         "expected_worker_count": 10,
         "expected_terminals": list(fra.WORKER_TERMINALS),
+    }
+    assert fra.INERT_TERMINALS == ("T11", "T12")
+    assert set(fra.INERT_TERMINALS).isdisjoint(fra.WORKER_TERMINALS)
+    assert set(fra.INERT_TERMINALS + fra.WORKER_TERMINALS) == {
+        f"T{n}" for n in range(1, 13)
     }
     assert set(properties["source_bindings"]["required"]) == set(
         fra.SOURCE_BINDING_PATHS

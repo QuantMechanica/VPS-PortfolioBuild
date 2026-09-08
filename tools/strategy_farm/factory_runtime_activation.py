@@ -86,6 +86,7 @@ WORKER_TERMINALS = (
     "T9",
     "T10",
 )
+INERT_TERMINALS = ("T11", "T12")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
 GIT_OID_RE = re.compile(r"[0-9a-f]{40}")
 WORK_ITEM_ID_RE = re.compile(r"[0-9a-fA-F-]{36}")
@@ -484,7 +485,7 @@ def _validate_runtime_activation_artifacts(
         raise RuntimeActivationError("runtime decision restart-hold set mismatch")
     worker_policy = payload.get("worker_policy")
     if not isinstance(worker_policy, dict) or worker_policy != {
-        "disabled_terminals": [],
+        "disabled_terminals": list(INERT_TERMINALS),
         "expected_worker_count": 10,
         "expected_terminals": list(WORKER_TERMINALS),
     }:

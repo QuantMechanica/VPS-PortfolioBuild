@@ -598,12 +598,13 @@ def test_restart_release_rejects_disabled_terminal_drift_under_live_lock(
         )
 
 
-def test_restart_release_accepts_empty_disabled_policy_matching_declared_empty_set(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+@pytest.mark.parametrize("disabled_rows", [(), ("T11", "T12")])
+def test_restart_release_accepts_disabled_policy_matching_declared_exact_set(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, disabled_rows: tuple[str, ...]
 ) -> None:
     disabled = tmp_path / "disabled_terminals.txt"
-    disabled.write_bytes(b"")
-    runtime = _runtime_authorization(disabled_terminals=())
+    disabled.write_text("".join(f"{row}\n" for row in disabled_rows), encoding="utf-8")
+    runtime = _runtime_authorization(disabled_terminals=disabled_rows)
     record = _factory_on_lock_record(nonce="known-nonce", runtime_authorization=runtime)
     record["disabled_terminals_sha256"] = mc.sha256_file(disabled)
     lock_path = tmp_path / "FACTORY_MUTATION.lock"
@@ -617,6 +618,27 @@ def test_restart_release_accepts_empty_disabled_policy_matching_declared_empty_s
         runtime_authorization=runtime,
     )
     assert payload["disabled_terminals_sha256"] == mc.sha256_file(disabled)
+
+
+def test_restart_release_rejects_inert_cohort_omitted_from_authorization_even_with_equal_hash(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    disabled = tmp_path / "disabled_terminals.txt"
+    disabled.write_text("T11\nT12\n", encoding="utf-8")
+    runtime = _runtime_authorization(disabled_terminals=())
+    record = _factory_on_lock_record(nonce="known-nonce", runtime_authorization=runtime)
+    record["disabled_terminals_sha256"] = mc.sha256_file(disabled)
+    lock_path = tmp_path / "FACTORY_MUTATION.lock"
+    lock_path.write_text(json.dumps(record), encoding="utf-8")
+    monkeypatch.setattr(mc, "DEFAULT_DISABLED_TERMINALS", disabled)
+    _mock_valid_factory_parent(monkeypatch, record)
+
+    with pytest.raises(RuntimeError, match="changed under Factory_ON lock"):
+        mc._validate_canonical_factory_on_lock(
+            lock_path,
+            expected_nonce="known-nonce",
+            runtime_authorization=runtime,
+        )
 
 
 def test_restart_release_fails_closed_without_declared_disabled_terminal_list(

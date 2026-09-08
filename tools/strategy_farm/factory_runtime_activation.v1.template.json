@@ -22,7 +22,7 @@
   "authorized_work_item_ids": []
  },
  "worker_policy": {
-  "disabled_terminals": [],
+  "disabled_terminals": ["T11", "T12"],
   "expected_worker_count": 10,
   "expected_terminals": [
    "T1",

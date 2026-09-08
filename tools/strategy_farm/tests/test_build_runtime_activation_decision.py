@@ -231,7 +231,7 @@ def test_builder_self_verifies_candidate_and_preserves_crlf_normalization(
     decision = json.loads(decision_path.read_text(encoding="utf-8"))
     assert decision["decision_id"] == "OWNER_GO_001"
     assert decision["worker_policy"] == {
-        "disabled_terminals": [],
+        "disabled_terminals": ["T11", "T12"],
         "expected_worker_count": 10,
         "expected_terminals": list(fra.WORKER_TERMINALS),
     }
