@@ -1,0 +1,35 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41167
+; ea_slug:      wti-coxstuart-tr
+; ea_version:   v5.0
+; set_version:  s20260908-stress-harsh
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  q06_stress_harsh
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   a39aad69c08cbc886413c8248284a60c69d2d23bff27457c185e97f4ff8a748b
+; author:       Development
+; date:         2026-09-08
+;==========================================================
+qm_ea_id=41167
+qm_magic_slot_offset=0
+qm_rng_seed=17
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_endpoint_count=14
+strategy_pair_count=7
+strategy_signs_required=5
+strategy_history_bars_d1=900
+strategy_entry_grace_minutes=180
+strategy_endpoint_stale_days=10
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=40
+strategy_max_spread_points=1500
