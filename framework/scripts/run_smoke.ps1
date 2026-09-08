@@ -430,7 +430,11 @@ function Get-TesterLogCurrentRunText {
     param(
         [Parameter(Mandatory = $false)]
         [AllowNull()]
-        [string]$TesterLogTail
+        [string]$TesterLogTail,
+        [string]$ExpectedExpert = "",
+        [string]$ExpectedSymbol = "",
+        [string]$ExpectedFromDate = "",
+        [string]$ExpectedToDate = ""
     )
 
     if ([string]::IsNullOrWhiteSpace($TesterLogTail)) {
@@ -441,12 +445,23 @@ function Get-TesterLogCurrentRunText {
     # therefore contain a previous EA's OnInit failure before the current run.
     # The last test-start marker begins the only journal section relevant to
     # the report we are classifying.
-    $matches = [regex]::Matches(
-        $TesterLogTail,
-        "(?im)^.*\btesting of Experts\\.*\.ex5\s+from\s+.*\bstarted with inputs:\s*$"
-    )
+    $startPattern = "(?im)^.*\btesting of Experts\\.*\.ex5\s+from\s+.*\bstarted with inputs:\s*$"
+    if (-not [string]::IsNullOrWhiteSpace($ExpectedExpert) -and
+        -not [string]::IsNullOrWhiteSpace($ExpectedSymbol) -and
+        -not [string]::IsNullOrWhiteSpace($ExpectedFromDate) -and
+        -not [string]::IsNullOrWhiteSpace($ExpectedToDate)) {
+        $expertPattern = [regex]::Escape($ExpectedExpert)
+        $symbolPattern = [regex]::Escape($ExpectedSymbol)
+        $fromPattern = [regex]::Escape($ExpectedFromDate)
+        $toPattern = [regex]::Escape($ExpectedToDate)
+        $startPattern = "(?im)^.*\b${symbolPattern},[^\r\n]*:\s+testing of Experts\\${expertPattern}\.ex5\s+from\s+${fromPattern}\s+00:00\s+to\s+${toPattern}\s+00:00\s+started with inputs:\s*$"
+    }
+    $matches = [regex]::Matches($TesterLogTail, $startPattern)
     if ($matches.Count -eq 0) {
-        return $TesterLogTail
+        # Never attribute an older run from the shared daily tester journal to
+        # the current item.  The full copied journal remains durable evidence,
+        # but an unauthenticated section cannot drive ONINIT_FAILED.
+        return ""
     }
 
     return $TesterLogTail.Substring($matches[$matches.Count - 1].Index)
@@ -3051,7 +3066,12 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             $testerLogPath = Join-Path $runDir $testerLog.Name
             Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
             $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 120
-            $testerLogTail = Get-TesterLogCurrentRunText -TesterLogTail $testerLogTail
+            $testerLogTail = Get-TesterLogCurrentRunText `
+                -TesterLogTail $testerLogTail `
+                -ExpectedExpert $Expert `
+                -ExpectedSymbol $Symbol `
+                -ExpectedFromDate $fromDate `
+                -ExpectedToDate $toDate
         }
         $failureHints = New-Object System.Collections.Generic.List[string]
         if (Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail) {
@@ -3241,7 +3261,12 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         $testerLogPath = Join-Path $runDir $testerLog.Name
         Copy-Item -LiteralPath $testerLog.FullName -Destination $testerLogPath -Force
         $testerLogTail = Get-TesterLogTailText -TesterLogPath $testerLogPath -LineCount 800
-        $testerLogTail = Get-TesterLogCurrentRunText -TesterLogTail $testerLogTail
+        $testerLogTail = Get-TesterLogCurrentRunText `
+            -TesterLogTail $testerLogTail `
+            -ExpectedExpert $Expert `
+            -ExpectedSymbol $Symbol `
+            -ExpectedFromDate $fromDate `
+            -ExpectedToDate $toDate
     }
 
     $onInitFailure = $false

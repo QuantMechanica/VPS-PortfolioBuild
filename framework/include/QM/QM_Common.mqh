@@ -223,6 +223,15 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
                                                 const QM_NewsTemporalMode news_temporal,
                                                 const QM_NewsComplianceProfile news_compliance)
   {
+   // Arm the structured logger before any fail-closed validation.  Several
+   // valid rejection paths (most notably a stale embedded magic resolver)
+   // happen before magic resolution, and historically left only a tester
+   // journal Print() line.  Initialising with magic=0 makes those OnInit
+   // refusals durable in the per-EA log collected by run_smoke; the resolved
+   // magic is installed below once it has been authenticated.
+   const string slug = QM_FrameworkSlug(ea_id);
+   QM_LoggerInit(ea_id, slug, _Symbol, (ENUM_TIMEFRAMES)_Period, 0);
+
    const bool legacy_armed = (g_qm_runtime_execution_initialization_started &&
                               g_qm_runtime_execution_state == QM_RUNTIME_EXECUTION_LEGACY_UNDECLARED);
    const bool v3_armed = (g_qm_runtime_execution_initialization_started &&
@@ -231,26 +240,44 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
    if(!legacy_armed && !v3_armed)
      {
       QM_RuntimeExecutionBlock("FRAMEWORK_CORE_WITHOUT_ARM_REFUSED");
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"runtime_state_not_armed\"}");
       return false;
      }
    if(ea_id <= 0)
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"ea_id_non_positive\"}");
       return false;
+     }
    // FW3 2026-05-23: central seeded RNG must initialize before any module
    // that consumes randomness (trade-rejection hook, jitter, tie-breaks).
    QM_SeedReset(rng_seed);
    if(portfolio_weight <= 0.0 || portfolio_weight > 1.0)
      {
       Print(EA_INPUT_PORTFOLIO_WEIGHT_OUT_OF_RANGE);
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"portfolio_weight_out_of_range\"}");
       return false;
      }
    if(!QM_FrameworkValidateRiskInputs(risk_percent, risk_fixed))
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"risk_inputs_invalid\"}");
       return false;
+     }
 
    g_qm_fw_ea_id = ea_id;
    g_qm_fw_magic_slot = magic_slot_offset;
    g_qm_fw_magic = QM_MagicChecked(ea_id, magic_slot_offset, _Symbol);
    if(g_qm_fw_magic <= 0)
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  StringFormat("{\"reason\":\"magic_resolution_failed\",\"slot\":%d,\"symbol\":\"%s\"}",
+                               magic_slot_offset, QM_LoggerEscapeJson(_Symbol)));
       return false;
+     }
+   QM_LoggerSetMagic(g_qm_fw_magic);
    ArrayResize(g_qm_fw_magic_contexts, 0);
    g_qm_q08_trade_log = "";
    if(g_qm_q08_fh != INVALID_HANDLE)
@@ -260,9 +287,6 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
      }
    ArrayResize(g_qm_q08_mae_states, 0);
    ArrayResize(g_qm_q08_mae_closed, 0);
-
-   const string slug = QM_FrameworkSlug(ea_id);
-   QM_LoggerInit(ea_id, slug, _Symbol, (ENUM_TIMEFRAMES)_Period, g_qm_fw_magic);
 
    // FW7 2026-05-23 — default to single-symbol guard. Basket / portfolio EAs
    // must call QM_SymbolGuardInit({...}) AFTER QM_FrameworkInit to override
