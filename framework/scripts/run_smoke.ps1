@@ -1708,17 +1708,45 @@ function Get-TesterLogTailText {
     param(
         [Parameter(Mandatory = $true)]
         [string]$TesterLogPath,
-        [int]$LineCount = 800
+        [int]$LineCount = 800,
+        [ValidateRange(1024, 8388608)]
+        [int]$MaxBytes = 2097152
     )
 
     if (-not (Test-Path -LiteralPath $TesterLogPath -PathType Leaf)) {
         return ""
     }
-    $logBytes = [System.IO.File]::ReadAllBytes($TesterLogPath)
-    if ($logBytes.Length -ge 2 -and $logBytes[0] -eq 0xFF -and $logBytes[1] -eq 0xFE) {
-        return ((Get-Content -LiteralPath $TesterLogPath -Encoding Unicode | Select-Object -Last $LineCount) -join [Environment]::NewLine)
+    # Journals can be several GB. The previous ReadAllBytes + Get-Content read
+    # the whole file twice just to obtain its last 800 lines. Bound both IO and
+    # memory, keep the journal untouched, and permit an active writer/rotation.
+    $stream = [System.IO.File]::Open($TesterLogPath, [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete)
+    try {
+        $prefix = New-Object byte[] 4
+        $prefixLength = $stream.Read($prefix, 0, 4)
+        $unicode = ($prefixLength -ge 2) -and (($prefix[0] -eq 0xFF -and $prefix[1] -eq 0xFE) -or $prefix[1] -eq 0)
+        $length = $stream.Length
+        $offset = [Math]::Max([long]0, $length - $MaxBytes)
+        if ($unicode) { $offset -= $offset % 2 }
+        [void]$stream.Seek($offset, [System.IO.SeekOrigin]::Begin)
+        $buffer = New-Object byte[] ([int]($length - $offset))
+        $read = 0
+        while ($read -lt $buffer.Length) {
+            $count = $stream.Read($buffer, $read, $buffer.Length - $read)
+            if ($count -eq 0) { break }
+            $read += $count
+        }
+        $encoding = if ($unicode) { [System.Text.Encoding]::Unicode } else { [System.Text.Encoding]::UTF8 }
+        $text = $encoding.GetString($buffer, 0, $read).TrimStart([char]0xFEFF)
+        if ($offset -gt 0) {
+            # A partial first record must not become a fake decisive marker.
+            $newline = $text.IndexOf("`n")
+            $text = if ($newline -ge 0) { $text.Substring($newline + 1) } else { "" }
+        }
+        return (($text -split '\r?\n' | Select-Object -Last $LineCount) -join [Environment]::NewLine)
+    } finally {
+        $stream.Dispose()
     }
-    return ((Get-Content -LiteralPath $TesterLogPath | Select-Object -Last $LineCount) -join [Environment]::NewLine)
 }
 
 function Test-TesterReportHasCompleteMetrics {
@@ -2073,6 +2101,77 @@ function Remove-TesterJournalBombArtifacts {
     return @($results)
 }
 
+function Get-TesterPostEngineObservation {
+    param([string]$TerminalRoot, [datetime]$StartedAfter, [string]$Expert,
+          [string]$Symbol, [string]$Period)
+    # Completion is NOT a report and never authorizes PASS. Only freshly spawned,
+    # exact-root agents and a current-run native completion record qualify for
+    # a bounded infrastructure-stall timer. No recursive journal traversal.
+    $agents = @(Get-Process -Name metatester64 -ErrorAction SilentlyContinue | Where-Object {
+        $_.Path -ieq (Join-Path $TerminalRoot 'metatester64.exe') -and
+        $_.StartTime.ToUniversalTime() -ge $StartedAfter.ToUniversalTime().AddSeconds(-1)
+    })
+    if ($agents.Count -ne 1) { return $null }
+    $displayPeriod = switch ($Period.ToUpperInvariant()) { 'D1' { 'Daily' }; 'W1' { 'Weekly' }; 'MN1' { 'Monthly' }; default { $Period } }
+    $record = "test Experts\$($Expert -replace '\.ex5$','').ex5 on $Symbol,$displayPeriod thread finished"
+    $testerRoot = Join-Path $TerminalRoot 'Tester'
+    $dates = @($StartedAfter.ToString('yyyyMMdd'), (Get-Date).ToString('yyyyMMdd')) | Select-Object -Unique
+    foreach ($directory in @(Get-ChildItem -LiteralPath $testerRoot -Directory -Filter 'Agent-*' -ErrorAction SilentlyContinue)) {
+        foreach ($date in $dates) {
+            $path = Join-Path $directory.FullName "logs\$date.log"
+            if (-not (Test-Path -LiteralPath $path -PathType Leaf)) { continue }
+            $file = Get-Item -LiteralPath $path
+            if ($file.LastWriteTimeUtc -lt $StartedAfter.ToUniversalTime()) { continue }
+            $text = Get-TesterLogTailText -TesterLogPath $path -LineCount 80 -MaxBytes 65536
+            $lines = @($text -split '\r?\n' | Where-Object { $_.Trim().Length -gt 0 })
+            # Require this to be the last native record: newer work/shutdown
+            # invalidates it, and the timestamp itself (not mtime) must be fresh.
+            if ($lines.Count -eq 0 -or -not $lines[-1].EndsWith($record, [StringComparison]::OrdinalIgnoreCase)) { continue }
+            $fields = $lines[-1] -split "`t"
+            if ($fields.Count -lt 5) { continue }
+            $finishedAt = [datetime]::MinValue
+            if (-not [datetime]::TryParseExact("$date $($fields[2])", 'yyyyMMdd HH:mm:ss.fff',
+                [Globalization.CultureInfo]::InvariantCulture, [Globalization.DateTimeStyles]::None, [ref]$finishedAt)) { continue }
+            if ($finishedAt -lt $StartedAfter -or $finishedAt -gt (Get-Date).AddSeconds(2)) { continue }
+            if ($text -notmatch 'Test passed in ') { continue }
+            $dispatcher = Join-Path $testerRoot "logs\$date.log"
+            $dispatcherItem = Get-Item -LiteralPath $dispatcher -ErrorAction SilentlyContinue
+            return [pscustomobject]@{
+                agent_pid = $agents[0].Id
+                agent_started_at_utc = $agents[0].StartTime.ToUniversalTime().ToString('o')
+                agent_cpu_seconds = $agents[0].TotalProcessorTime.TotalSeconds
+                engine_finished_at_local = $finishedAt.ToString('o')
+                journal_path = $path
+                journal_bytes = $file.Length
+                journal_mtime_ticks = $file.LastWriteTimeUtc.Ticks
+                dispatcher_bytes = $(if ($dispatcherItem) { $dispatcherItem.Length } else { 0 })
+                dispatcher_mtime_ticks = $(if ($dispatcherItem) { $dispatcherItem.LastWriteTimeUtc.Ticks } else { 0 })
+                decisive_tail = $text
+            }
+        }
+    }
+    return $null
+}
+
+function Update-PostEngineWatchState {
+    param($Previous, $Observation, [bool]$ReportExists, [datetime]$NowUtc,
+          [int]$GraceSeconds = 600)
+    if ($ReportExists -or $null -eq $Observation) { return $null }
+    $identity = '{0}|{1}|{2}|{3}|{4}|{5}|{6}' -f $Observation.agent_pid,
+        $Observation.agent_started_at_utc, $Observation.journal_path,
+        $Observation.journal_bytes, $Observation.journal_mtime_ticks,
+        $Observation.dispatcher_bytes, $Observation.dispatcher_mtime_ticks
+    $since = $NowUtc
+    if ($null -ne $Previous -and $Previous.identity -ceq $identity -and
+        [Math]::Abs($Observation.agent_cpu_seconds - $Previous.cpu_seconds) -le 0.10) {
+        $since = $Previous.since_utc
+    }
+    return [pscustomobject]@{ identity = $identity; since_utc = $since
+        cpu_seconds = $Observation.agent_cpu_seconds
+        idle_seconds = ($NowUtc - $since).TotalSeconds
+        stalled = (($NowUtc - $since).TotalSeconds -ge $GraceSeconds) }
+}
+
 function Start-TesterRun {
     param(
         [Parameter(Mandatory = $true)]
@@ -2087,6 +2186,7 @@ function Start-TesterRun {
 
     $args = @("/portable", "/config:$IniPath")
     $spawnStartedAfter = Get-Date
+    $runClock = [System.Diagnostics.Stopwatch]::StartNew()
     Write-Host ("run_smoke.stage=terminal_start exe='{0}' args='{1}' timeout_seconds={2}" -f $TerminalExe, ([string]::Join(' ', $args)), $TimeoutSec)
     $proc = Start-Process -FilePath $TerminalExe -ArgumentList $args -PassThru -WindowStyle Hidden
     $childTerminal = Wait-TerminalSpawn -TerminalExe $TerminalExe -IniPath $IniPath -TerminalName $TerminalName -StartedAfter $spawnStartedAfter
@@ -2110,6 +2210,14 @@ function Start-TesterRun {
     $metaTesterWaitLogged = $false
     $metaTesterLastPollUtc = $null
     $metaTesterPollSeconds = 5
+    $engineIdentity = Get-TesterIniEvidence -Path $IniPath
+    $postEngineState = $null
+    $postEngineObservation = $null
+    $postEngineLastPollUtc = [datetime]::MinValue
+    $postEngineStall = $false
+    $postEngineEvidencePath = $null
+    $engineFinishedLogged = $false
+    $reportFirstByteLogged = $false
     $deadline = (Get-Date).ToUniversalTime().AddSeconds($TimeoutSec)
     while ((Get-Date).ToUniversalTime() -lt $deadline) {
         if ($childTerminal.HasExited) {
@@ -2157,6 +2265,10 @@ function Start-TesterRun {
         if (-not [string]::IsNullOrWhiteSpace($ReportPath) -and (Test-Path -LiteralPath $ReportPath -PathType Leaf)) {
             $sizeBefore = (Get-Item -LiteralPath $ReportPath).Length
             if ($sizeBefore -gt 0) {
+                if (-not $reportFirstByteLogged) {
+                    $reportFirstByteLogged = $true
+                    Write-Host ("run_smoke.stage=report_first_byte utc={0:o} elapsed_seconds={1} bytes={2} report='{3}'" -f (Get-Date).ToUniversalTime(), $runClock.Elapsed.TotalSeconds.ToString('F3', [Globalization.CultureInfo]::InvariantCulture), $sizeBefore, $ReportPath)
+                }
                 Start-Sleep -Milliseconds 500
                 $sizeAfter = if (Test-Path -LiteralPath $ReportPath -PathType Leaf) { (Get-Item -LiteralPath $ReportPath).Length } else { 0 }
                 if ($sizeAfter -eq $sizeBefore -and (Test-TesterReportSafeToLatch -ReportPath $ReportPath)) {
@@ -2215,6 +2327,41 @@ function Start-TesterRun {
                 }
             }
         }
+        # The computation timeout may be two hours. Once the exact current
+        # engine has finished, a missing report plus ten minutes of unchanged
+        # agent CPU and both journals is a different, bounded INFRA failure.
+        # An existing report keeps the original full finalization contract.
+        $postNow = (Get-Date).ToUniversalTime()
+        if (-not $childTerminal.HasExited -and ($postNow - $postEngineLastPollUtc).TotalSeconds -ge 15) {
+            $postEngineLastPollUtc = $postNow
+            try {
+                $postEngineObservation = Get-TesterPostEngineObservation -TerminalRoot $terminalRootForBomb `
+                    -StartedAfter $spawnStartedAfter -Expert $engineIdentity.expert `
+                    -Symbol $engineIdentity.symbol -Period $engineIdentity.period
+                $postEngineState = Update-PostEngineWatchState -Previous $postEngineState `
+                    -Observation $postEngineObservation -ReportExists ([bool]($ReportPath -and (Test-Path -LiteralPath $ReportPath))) -NowUtc $postNow
+                if ($null -ne $postEngineObservation -and -not $engineFinishedLogged) {
+                    $engineFinishedLogged = $true
+                    Write-Host ("run_smoke.stage=engine_finished_waiting_report utc={0:o} elapsed_seconds={1} agent_pid={2} journal='{3}'" -f $postNow, $runClock.Elapsed.TotalSeconds.ToString('F3', [Globalization.CultureInfo]::InvariantCulture), $postEngineObservation.agent_pid, $postEngineObservation.journal_path)
+                }
+                if ($null -ne $postEngineState -and $postEngineState.stalled) {
+                    $postEngineEvidencePath = Join-Path (Split-Path -Parent $IniPath) 'post_engine_stall.json'
+                    [ordered]@{ schema = 'qm.post-engine-stall/v1'; detected_at_utc = $postNow.ToString('o')
+                        ini = $engineIdentity; terminal_pid = $childTerminal.Id; report_path = $ReportPath
+                        report_exists = $false; idle_seconds = $postEngineState.idle_seconds
+                        observation = $postEngineObservation; disposition = 'INFRA timeout; never gate PASS'
+                    } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $postEngineEvidencePath -Encoding UTF8
+                    $postEngineStall = $true
+                    Write-Host ("run_smoke.stage=post_engine_report_stalled utc={0:o} idle_seconds={1} evidence='{2}'" -f $postNow, $postEngineState.idle_seconds.ToString('F1', [Globalization.CultureInfo]::InvariantCulture), $postEngineEvidencePath)
+                    break
+                }
+            } catch {
+                # Optional observation must not abort good tests or shorten their
+                # deadline when identity/IO cannot be established.
+                $postEngineState = $null
+                Write-Warning ("Post-engine observation unavailable: {0}" -f $_.Exception.Message)
+            }
+        }
         Start-Sleep -Milliseconds 500
     }
 
@@ -2250,11 +2397,13 @@ function Start-TesterRun {
     if ($logBombHit) {
         $loggedExitCode = "<log_bomb_killed>"
     }
-    Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2} valid_report_latched={3} log_bomb={4}" -f $childTerminal.Id, $loggedExitCode, $timedOut, $latchedReport, [bool]$logBombHit)
+    Write-Host ("run_smoke.stage=terminal_exit terminal_pid={0} exit_code={1} timed_out={2} valid_report_latched={3} log_bomb={4} utc={5:o} elapsed_seconds={6}" -f $childTerminal.Id, $loggedExitCode, $timedOut, $latchedReport, [bool]$logBombHit, (Get-Date).ToUniversalTime(), $runClock.Elapsed.TotalSeconds.ToString('F3', [Globalization.CultureInfo]::InvariantCulture))
 
     return [pscustomobject]@{
         exit_code = $(if ($finished) { $childTerminal.ExitCode } elseif ($latchedReport) { 0 } else { $null })
         timed_out = $timedOut
+        post_engine_stall = $postEngineStall
+        post_engine_evidence_path = $postEngineEvidencePath
         terminal_pid = $childTerminal.Id
         valid_report_latched = $latchedReport
         log_bomb = [bool]$logBombHit
@@ -3018,6 +3167,27 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         continue
     }
 
+    if ($runExec.post_engine_stall) {
+        # This is a completed computation whose native export failed, not a
+        # computation timeout. Use the EXISTING bounded report-missing retry
+        # budget (Runs+2, at most 10), retaining the failed attempt and proof.
+        # Only a later independently valid native report can satisfy a run.
+        $runResults += [pscustomobject]@{
+            run = $runName
+            status = 'FAIL'
+            failure = 'REPORT_MISSING'
+            failure_hints = @('REPORT_EXPORT_STALLED')
+            error = "REPORT_EXPORT_STALLED: current engine completed, native report absent, no agent/journal progress for 600 seconds."
+            exit_code = $null
+            report_source_path = $sourceReportPath
+            report_canonical_path = $reportHtmPath
+            report_size_bytes = 0
+            tester_log_path = $runExec.post_engine_evidence_path
+            post_engine_evidence_path = $runExec.post_engine_evidence_path
+        }
+        Write-Host ("run_smoke.stage=post_engine_report_retry run={0} attempt={1} max_attempts={2} evidence='{3}'" -f $runName, $i, $maxRunAttempts, $runExec.post_engine_evidence_path)
+        continue
+    }
     if ($runExec.timed_out) {
         $lingeringMeta = @(Get-MetaTesterProcessesForTerminalRoot -TerminalRoot $terminalRoot)
         foreach ($metaProc in $lingeringMeta) {
@@ -3042,6 +3212,7 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
             report_canonical_path = $reportHtmPath
             report_size_bytes = 0
             tester_log_path = $null
+            post_engine_evidence_path = $runExec.post_engine_evidence_path
         }
         continue
     }
