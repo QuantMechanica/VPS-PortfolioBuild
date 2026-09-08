@@ -158,7 +158,9 @@ def test_factory_on_builds_exact_non_live_task_and_worker_expectations() -> None
     assert owner_decision["worker_policy"]["t5_quarantine_lifted"] is True
     assert preparation_terminals == owner_decision["worker_policy"]["expected_terminals"]
     assert len(preparation_terminals) == owner_decision["worker_policy"]["expected_worker_count"] == 10
-    assert disabled_terminals == []
+    # The fleet now has twelve identities; T11/T12 are provisioned inert
+    # canaries, not additional enabled workers. Keep the ten-worker contract.
+    assert disabled_terminals == ["T11", "T12"]
     assert worker_terminals == [f"T{index}" for index in range(1, 11)]
     assert len(worker_terminals) == 10
     assert "invalid disabled-terminal rows" in source
@@ -181,7 +183,11 @@ def test_factory_on_builds_exact_non_live_task_and_worker_expectations() -> None
     assert "$alreadyOnWorkers.observed_count -eq $expectWorkers" in source[
         already_on:already_on_exit
     ]
-    assert "Exactly T1-T10 must be present" in source
+    assert "Exactly the enabled factory cohort must be present" in source
+    assert set(worker_terminals).isdisjoint(disabled_terminals)
+    assert sorted(worker_terminals + disabled_terminals) == sorted(
+        f"T{index}" for index in range(1, 13)
+    )
 
 
 def test_factory_on_reads_and_preserves_the_runtime_restart_hold_plan() -> None:
