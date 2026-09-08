@@ -5,9 +5,9 @@
     "slug": "wti-tsmom7-h2",
     "strategy_id": "MOP-TSMOM-2012_XTI_K7H2_S37"
   },
-  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "error": null,
   "exit_code": 3,
-  "generated_at_utc": "2026-09-08T15:17:53+00:00",
+  "generated_at_utc": "2026-09-08T15:20:28+00:00",
   "matches": [
     {
       "match_type": "fuzzy",
@@ -67,11 +67,11 @@
       "status": "OK"
     },
     {
-      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
-      "count": null,
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
       "detail": null,
       "label": "strategy_wiki",
-      "status": "MISSING_ROOT"
+      "status": "OK"
     }
   ],
   "tool_version": "2.0.0",
