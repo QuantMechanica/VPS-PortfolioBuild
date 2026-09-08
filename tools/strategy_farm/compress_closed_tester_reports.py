@@ -124,7 +124,7 @@ def main() -> int:
     print('SELECTED', len(selected), flush=True)
     if not args.apply:
         return 0
-    for row in selected:
+    for index, row in enumerate(selected, 1):
         if shutil.disk_usage('D:/').free / 1024**3 >= args.target_free_gib:
             break
         try:
@@ -133,8 +133,11 @@ def main() -> int:
             if getattr(exc, 'winerror', None) not in (2, 3, 32, 33):
                 publish(); raise
             receipt['skipped'].append({'path': row['path'], 'error': str(exc)})
-        publish()
-        print('VERIFIED', len(receipt['verified']), 'FREE_GIB', round(receipt['free_after_gib'], 2), flush=True)
+        # Avoid quadratic JSON rewrite/console I/O for thousands of small
+        # files. Verification remains per-file; checkpoint every 25 targets.
+        if index % 25 == 0:
+            publish()
+            print('VERIFIED', len(receipt['verified']), 'FREE_GIB', round(receipt['free_after_gib'], 2), flush=True)
     receipt['finished_at'] = dt.datetime.now(dt.UTC).isoformat(); publish()
     return 0
 
