@@ -3,16 +3,16 @@
 ; ea_id:        41259
 ; ea_slug:      wti-mwasser-shift-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   01e68240f18356964813aa53f21512ad3a3337b8662924d67edb707bddbbad0b
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41259
 qm_magic_slot_offset=0

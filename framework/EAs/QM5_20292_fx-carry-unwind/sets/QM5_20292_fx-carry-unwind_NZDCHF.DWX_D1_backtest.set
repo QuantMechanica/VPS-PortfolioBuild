@@ -3,16 +3,16 @@
 ; ea_id:        20292
 ; ea_slug:      fx-carry-unwind
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       NZDCHF.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   be658b3b2c8b9efae3bac7b31a203f982e0848e754eedf92b7977133187e16df
+; build_hash:   a1ae63f24147d06febecdcf9deb8bdd9acc85fafe8c5d2c2762051e576c36a22
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20292
 qm_magic_slot_offset=4

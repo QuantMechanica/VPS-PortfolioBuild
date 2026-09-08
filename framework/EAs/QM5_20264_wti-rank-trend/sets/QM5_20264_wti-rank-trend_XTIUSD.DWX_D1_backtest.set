@@ -3,16 +3,16 @@
 ; ea_id:        20264
 ; ea_slug:      wti-rank-trend
 ; ea_version:   v5.0
-; set_version:  s20260807-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   66435551e6cacd6e82e118e678219d092f0959c94eb135fff5a8b501f7da296d
+; build_hash:   ccc0900fcbbafcec3f086ebef5d6322208d1d2c6c647b9930083e02a4b6133cb
 ; author:       Development
-; date:         2026-08-07
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20264
 qm_magic_slot_offset=0

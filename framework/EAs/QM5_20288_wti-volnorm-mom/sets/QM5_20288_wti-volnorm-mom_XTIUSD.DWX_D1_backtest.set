@@ -3,16 +3,16 @@
 ; ea_id:        20288
 ; ea_slug:      wti-volnorm-mom
 ; ea_version:   v5.0
-; set_version:  s20260812-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   de0bc99f9d36fa1fbb8fa33a26a0fd453e43063dc07da02109b734282e9e4b01
+; build_hash:   3d2a7e2ee0759651d88a15e0b7bc965f901bdbf8b14570afc42f25b161aec3a0
 ; author:       Development
-; date:         2026-08-12
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20288
 qm_magic_slot_offset=0

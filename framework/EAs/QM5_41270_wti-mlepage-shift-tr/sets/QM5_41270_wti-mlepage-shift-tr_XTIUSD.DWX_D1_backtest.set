@@ -3,16 +3,16 @@
 ; ea_id:        41270
 ; ea_slug:      wti-mlepage-shift-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a99f279339753dd00851e922c7303a5a45761a51b45cffcd302c5be4eec74644
+; build_hash:   999725fe31d57f8e7c17f48cf1a137adad53ab8fc0b21f50bc38c77d2d69a1f1
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41270
 qm_magic_slot_offset=0

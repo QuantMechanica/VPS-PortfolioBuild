@@ -3,7 +3,7 @@
 ; ea_id:        41077
 ; ea_slug:      xauxag-wretr-rv
 ; ea_version:   v5.0
-; set_version:  s20260830-stress-harsh
+; set_version:  s20260902-stress-harsh
 ; symbol:       QM5_41077_XAU_XAG_WRETR_RV_D1
 ; host_symbol:  XAUUSD.DWX
 ; timeframe:    D1
@@ -13,7 +13,7 @@
 ; portfolio_weight: 1
 ; build_hash:   961ebf885088f8dc026c6111c47e7028da50045506d0b56cbc81548da7cd674a
 ; author:       Development
-; date:         2026-08-30
+; date:         2026-09-02
 ;==========================================================
 qm_ea_id=41077
 qm_magic_slot_offset=0

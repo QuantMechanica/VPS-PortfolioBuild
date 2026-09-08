@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   4eb388dcf8e882ae9fa846fbd0dc855d52766acf44e1b3d93bd251fe0af1dce3
 ; author:       Development
 ; date:         2026-08-31
 ;==========================================================
@@ -37,4 +37,3 @@ strategy_max_hold_days=40
 strategy_xau_max_spread_points=1500
 strategy_xag_max_spread_points=500
 strategy_deviation_points=20
-

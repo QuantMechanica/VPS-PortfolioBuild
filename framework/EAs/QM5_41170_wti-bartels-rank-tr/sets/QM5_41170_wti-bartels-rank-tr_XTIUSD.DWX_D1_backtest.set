@@ -3,16 +3,16 @@
 ; ea_id:        41170
 ; ea_slug:      wti-bartels-rank-tr
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   53d4a45145f21f1b89c44b5def8116996fd58d6603b2ed18aa74befa78d6c435
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41170
 qm_magic_slot_offset=0

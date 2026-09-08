@@ -3,16 +3,16 @@
 ; ea_id:        41107
 ; ea_slug:      wti-minside-body-mom
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   455b68c238e408d022b920e6b0662e68f64218d79d91804089006cfb4eb8701d
+; build_hash:   8315ef887ebc23502f512a405ef1079ebfbd9c26133f84bd9d769ffa4750219e
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41107
 qm_magic_slot_offset=0

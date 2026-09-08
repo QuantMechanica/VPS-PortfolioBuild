@@ -3,16 +3,16 @@
 ; ea_id:        41275
 ; ea_slug:      wti-mqndisp-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cf99e6404568b5ea7efdf1042d05d98c03d59c1e16e8eaf85f61cbd977a02edb
+; build_hash:   6d45cdda1929b9a7163244a2f074e7ab01c606c2f866e2f6e6eaf88a4d34713a
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41275
 qm_magic_slot_offset=0
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=ea_input_defaults
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41275_wti-mqndisp-tr.md
 strategy_month_sessions_min=17
 strategy_month_sessions_max=23
 strategy_close_count=17

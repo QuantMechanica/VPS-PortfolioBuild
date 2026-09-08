@@ -3,16 +3,16 @@
 ; ea_id:        41261
 ; ea_slug:      wti-mab-scale-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9593a0f0497e5af156a48caad9222d9099d774d6e2ceb66239bb5ada8a3d6b0a
+; build_hash:   788f176e550b71f5b0a0a4b447a3a83bde421556c85944e8a75d982678916a85
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41261
 qm_magic_slot_offset=0

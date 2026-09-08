@@ -3,16 +3,16 @@
 ; ea_id:        20285
 ; ea_slug:      wti-huber-mom
 ; ea_version:   v5.0
-; set_version:  s20260812-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7dd6384e2121627f6ed19af046b06b79b922ecb17012d94e60a4086595f047e3
+; build_hash:   3d3d070b2077c04785ae59b54eb1bb98ed44272c0975b5e24f7ed7efa78bebca
 ; author:       Development
-; date:         2026-08-12
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20285
 qm_magic_slot_offset=0

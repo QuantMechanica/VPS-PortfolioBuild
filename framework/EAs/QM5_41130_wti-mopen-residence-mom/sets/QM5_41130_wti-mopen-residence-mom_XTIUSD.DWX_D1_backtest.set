@@ -3,16 +3,16 @@
 ; ea_id:        41130
 ; ea_slug:      wti-mopen-residence-mom
 ; ea_version:   v5.0
-; set_version:  s20260825-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   16cd1c9d94cb94f6f37eafa54c93647848f2149651ce76be4d3d764e74851d02
+; build_hash:   177cbcbc4d95ec9f43eb50db13b25b1357753e6a187113930e1869fa6f0c544c
 ; author:       Development
-; date:         2026-08-25
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41130
 qm_magic_slot_offset=0

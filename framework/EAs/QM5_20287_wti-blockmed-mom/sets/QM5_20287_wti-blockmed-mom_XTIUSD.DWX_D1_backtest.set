@@ -3,16 +3,16 @@
 ; ea_id:        20287
 ; ea_slug:      wti-blockmed-mom
 ; ea_version:   v5.0
-; set_version:  s20260812-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   70d7dbee4e216221fda680080d04f83e273acc11f79cffec3471c47d97a4797a
+; build_hash:   efdcbebce22b5b0e619e7e0a6152011b084f53b62a84a75be5a345daa45c7ece
 ; author:       Development
-; date:         2026-08-12
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20287
 qm_magic_slot_offset=0

@@ -3,16 +3,16 @@
 ; ea_id:        41132
 ; ea_slug:      wti-mweekday-med-mom
 ; ea_version:   v5.0
-; set_version:  s20260825-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d477f6c85b32e377b693f836a96ee92b47b71047a1daa36c6e5591d66ed6a9e3
+; build_hash:   21ff782edae2bce62a50e6376f2b413d1df15f1dd88bdfecd89e6a605bc65861
 ; author:       Development
-; date:         2026-08-25
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41132
 qm_magic_slot_offset=0

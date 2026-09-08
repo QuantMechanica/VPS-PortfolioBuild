@@ -3,7 +3,7 @@
 ; ea_id:        41061
 ; ea_slug:      wti-week-nr7-brk
 ; ea_version:   v5.0
-; set_version:  s20260819-stress-harsh
+; set_version:  s20260902-stress-harsh
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  q06_stress_harsh
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   d87d4f7921fa3835e727f67b4d05b5d9f05d5cd08e70997996612daf13815fad
 ; author:       Development
-; date:         2026-08-19
+; date:         2026-09-02
 ;==========================================================
 qm_ea_id=41061
 qm_magic_slot_offset=0

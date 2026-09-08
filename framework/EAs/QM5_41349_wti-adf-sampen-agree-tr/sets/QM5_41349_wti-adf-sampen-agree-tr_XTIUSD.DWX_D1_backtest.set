@@ -3,16 +3,16 @@
 ; ea_id:        41349
 ; ea_slug:      wti-adf-sampen-agree-tr
 ; ea_version:   v5.0
-; set_version:  s20260905-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   46ee193723324413c897666164fbae1553977c3beaac3d2c64f3190e82fc5495
 ; author:       Development
-; date:         2026-09-05
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41349
 qm_magic_slot_offset=0

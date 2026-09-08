@@ -3,16 +3,16 @@
 ; ea_id:        20282
 ; ea_slug:      wti-madcap-mom
 ; ea_version:   v5.0
-; set_version:  s20260811-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6377c85f3a9f84b18a32653cd33925a60228a682adea6ef21ba94057ffca416f
+; build_hash:   715d6e8bad9036145aca1be4c55c19e8b07b66eec4101b647a70ea9cac4cf900
 ; author:       Development
-; date:         2026-08-11
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20282
 qm_magic_slot_offset=0

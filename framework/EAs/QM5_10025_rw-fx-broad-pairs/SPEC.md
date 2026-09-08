@@ -46,6 +46,7 @@ Exit occurs when the signed z-score crosses the configured mean-reversion exit b
 | `strategy_time_stop_bars` | `15` | positive int | Maximum H4 bars before improvement test. |
 | `strategy_min_improve_frac` | `0.25` | `0.0..1.0` | Required z-score improvement by time stop. |
 | `strategy_max_spread_points` | `50` | positive int | Maximum broker spread in points for each basket symbol. |
+| `strategy_debug` | `false` | bool | Default-off, month-bounded recovery diagnostics; enabled only in an evidence-specific setfile. |
 
 ## 3. Symbol Universe
 
@@ -84,3 +85,4 @@ The Strategy Card requires true two-leg spread execution. The foreign partner op
 | Version | Date | Change | Build task |
 |---|---|---|---|
 | v5.0-r3 | 2026-08-07 | Freeze monthly beta and restore signed mean-cross/correlation exits during stale-review rebuild. | `71d862ed-21b8-4337-8986-c1366dd692dc` |
+| v5.0-r4 | 2026-09-02 | Add default-off monthly pair-selection and first-signal diagnostics after bound USDJPY Q02 produced zero trades; no strategy mechanics changed. | zero-trades recovery |

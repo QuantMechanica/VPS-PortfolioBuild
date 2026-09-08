@@ -3,16 +3,16 @@
 ; ea_id:        41317
 ; ea_slug:      wti-mkpss-tr
 ; ea_version:   v5.0
-; set_version:  s20260902-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   4f0b6c0e1be7b1a0bad18dbdebe01a2157be2656a2bff0d22d153e07146038d6
 ; author:       Development
-; date:         2026-09-02
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41317
 qm_magic_slot_offset=0

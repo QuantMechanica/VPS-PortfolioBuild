@@ -3,16 +3,16 @@
 ; ea_id:        12929
 ; ea_slug:      brooks-expanded-micro-channel-h1
 ; ea_version:   v5.0
-; set_version:  s20260821-001
+; set_version:  s20260831-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   945fa5208b22ec045bd48de2993c4e999937c45fa8408d386e35347ffa8c7bad
+; build_hash:   36179cb59d89e3b2ce066c10a5cb5a921ac0116d55b63ddd8b362774c9d05bb1
 ; author:       Development
-; date:         2026-08-21
+; date:         2026-08-31
 ;==========================================================
 qm_ea_id=12929
 qm_magic_slot_offset=12

@@ -3,16 +3,16 @@
 ; ea_id:        20292
 ; ea_slug:      fx-carry-unwind
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       NZDJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6eb40e473cee75274dd79337f0c05817c332b1f1914feca2c1b22579e9a99cfd
+; build_hash:   699b9e1e550915de04cbad9beb633970598352b0becfb2b6e22293f7b7921b5f
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20292
 qm_magic_slot_offset=5

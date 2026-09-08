@@ -1,18 +1,18 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        20300
 ; ea_slug:      wti-max-regime
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bd86bf77154c31bb25f2138ee98352d1cea2837d8031d6256f2bd66ad1ef6e40
+; build_hash:   1e0b2bfb19b32b0827af7850b4e0ade378d9c49d7fdd908d0723d59f036e7c31
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20300
 qm_magic_slot_offset=0

@@ -3,16 +3,16 @@
 ; ea_id:        20290
 ; ea_slug:      wti-skew-prem
 ; ea_version:   v5.0
-; set_version:  s20260812-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3ec8d436e41e77e1b8674c6f8c491a37a083e584f7f09cd86985ff1b9153b8c3
+; build_hash:   d8b22111e81d43a95211eae1c1e595b30f1e1973c4c89d017f506ddc2174ac97
 ; author:       Development
-; date:         2026-08-12
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20290
 qm_magic_slot_offset=0

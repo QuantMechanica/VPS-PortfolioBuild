@@ -3,16 +3,16 @@
 ; ea_id:        41311
 ; ea_slug:      wti-msampen-tr
 ; ea_version:   v5.0
-; set_version:  s20260902-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   7104dc7bd8647242572e88dd01eaadea2a664ed2ace173fd0427a85a7d99863b
 ; author:       Development
-; date:         2026-09-02
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41311
 qm_magic_slot_offset=0

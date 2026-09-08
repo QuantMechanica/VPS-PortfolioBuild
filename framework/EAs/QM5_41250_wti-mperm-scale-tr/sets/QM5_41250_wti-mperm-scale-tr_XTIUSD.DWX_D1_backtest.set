@@ -3,16 +3,16 @@
 ; ea_id:        41250
 ; ea_slug:      wti-mperm-scale-tr
 ; ea_version:   v5.0
-; set_version:  s20260831-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0d410722178029c0a8ce155c2eaffe09a4d6e99665bdd7c11965c4c784ecbfdd
+; build_hash:   02bcc80ba94236391c290fc785e51e611c6031b679de670d3422b2293a096060
 ; author:       Development
-; date:         2026-08-31
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41250
 qm_magic_slot_offset=0

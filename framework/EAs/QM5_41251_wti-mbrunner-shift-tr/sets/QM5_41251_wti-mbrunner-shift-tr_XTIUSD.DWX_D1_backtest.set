@@ -3,16 +3,16 @@
 ; ea_id:        41251
 ; ea_slug:      wti-mbrunner-shift-tr
 ; ea_version:   v5.0
-; set_version:  s20260831-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8ca67845ae2a6b1ef8469fc7dcdcc7f1181f0d1ab9e22babd7d25f8da20164de
+; build_hash:   385ca0df1f07c2aa9298966fddaf99ca2cfd07524866828f6ebe37645602b974
 ; author:       Development
-; date:         2026-08-31
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41251
 qm_magic_slot_offset=0

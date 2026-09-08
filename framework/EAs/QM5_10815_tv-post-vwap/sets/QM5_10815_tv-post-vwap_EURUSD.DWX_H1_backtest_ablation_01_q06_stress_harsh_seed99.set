@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f01f3f0aedb16460220dcf1889a8f7693c68a94d2329bc24267efa0ef028d18d
+; build_hash:   0ead97f6c84a9e211a9c6ede7056a0aa617caed10ec69c384f5db76b8dd7667f
 ; author:       Development
 ; date:         2026-07-20
 ;==========================================================
@@ -34,7 +34,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 01 of QM5_10815_tv-post-vwap_EURUSD.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 01 of QM5_10815_tv-post-vwap_EURUSD.DWX_H1_backtest (perturb=Ã‚Â±25%) ---
 strategy_atr_period=15
 strategy_volume_lookback=17
 strategy_vwap_stretch_atr=0.505493

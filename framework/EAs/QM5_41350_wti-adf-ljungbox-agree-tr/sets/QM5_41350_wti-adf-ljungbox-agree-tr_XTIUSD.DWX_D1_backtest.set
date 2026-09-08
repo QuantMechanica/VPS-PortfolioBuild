@@ -3,16 +3,16 @@
 ; ea_id:        41350
 ; ea_slug:      wti-adf-ljungbox-agree-tr
 ; ea_version:   v5.0
-; set_version:  s20260905-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   dd77cd97990e6b498b4c419b36b59d43e4c0052ec3aced2edcc2b499582fbe03
+; build_hash:   e5cb70a8456589feb32a1dcb5c6f9e6ea3a23d095573d7b81abc2b61458200f8
 ; author:       Development
-; date:         2026-09-05
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41350
 qm_magic_slot_offset=0

@@ -10,7 +10,8 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; author:       Claude CEO
+; build_hash:   0dbcca55a0dd06f735c70c939291c9a64f626444eb67f10a200ca21aadd77b04
+; author:       Development
 ; date:         2026-09-02
 ;==========================================================
 qm_ea_id=41305
@@ -18,16 +19,6 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_rng_seed=42
-; Parent-exact framework gates remain active for this derivative.
-qm_news_temporal=3
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41305_brent-nov-fade-opt.md
 strategy_entry_month=11
@@ -35,8 +26,6 @@ strategy_atr_period=20
 strategy_atr_sl_mult=2.25
 strategy_max_hold_days=1
 strategy_max_spread_points=1200
-
-; DL-089 pattern measurement surface (neutral control defaults)
 opt_pp_buy1=0
 opt_pp_buy2=0
 opt_pp_buy3=0

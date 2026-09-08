@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b14a8883ab3da3b76c72e526b2de041216bff05752079300b4759dbc1ec84bde
+; build_hash:   8694a15dd643333eaae27d90324831cc140edd228152e5d17d9d62663e996647
 ; author:       Development
 ; date:         2026-05-31
 ;==========================================================
@@ -32,7 +32,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 02 of QM5_10700_tv-liq-break_GBPUSD.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 02 of QM5_10700_tv-liq-break_GBPUSD.DWX_H1_backtest (perturb=Ã‚Â±25%) ---
 strategy_contraction_lookback=12
 strategy_liquidity_length=15
 strategy_atr_period=15

@@ -19,6 +19,10 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; Pin the existing EA defaults required by its news-specific setup contract.
+qm_news_temporal=0
+qm_news_compliance=0
+qm_news_mode_legacy=0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_release_hhmm_ny=1030

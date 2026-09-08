@@ -3,31 +3,24 @@
 ; ea_id:        41177
 ; ea_slug:      xauxag-mwilcoxon-shift-rv
 ; ea_version:   v5.0
-; set_version:  s20260827-001
+; set_version:  s20260903-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   a4ffb72f8907d79118ea6e4fccab8ff1e24194e77499dc4c14b3d6fea8159224
 ; author:       Development
-; date:         2026-08-27
+; date:         2026-09-03
 ;==========================================================
 qm_ea_id=41177
 qm_magic_slot_offset=1
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_endpoint_count=12
 strategy_block_size=6

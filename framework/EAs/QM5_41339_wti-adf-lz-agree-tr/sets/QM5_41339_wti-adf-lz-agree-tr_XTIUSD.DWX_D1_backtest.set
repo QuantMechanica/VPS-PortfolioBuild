@@ -3,16 +3,16 @@
 ; ea_id:        41339
 ; ea_slug:      wti-adf-lz-agree-tr
 ; ea_version:   v5.0
-; set_version:  s20260905-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c31af31ec717f944e78b4cfb3db76aff1c7cd22c2f04dc1e8bce7928786187fb
 ; author:       Development
-; date:         2026-09-05
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41339
 qm_magic_slot_offset=0

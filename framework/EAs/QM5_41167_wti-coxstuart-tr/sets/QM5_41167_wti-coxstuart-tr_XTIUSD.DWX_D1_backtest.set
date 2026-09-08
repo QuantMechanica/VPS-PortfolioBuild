@@ -3,16 +3,16 @@
 ; ea_id:        41167
 ; ea_slug:      wti-coxstuart-tr
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   46d0ac78b12d22aed4ef411e6540fecca46c4d61ec59e8c4789f2b40e2fdfa85
+; build_hash:   a39aad69c08cbc886413c8248284a60c69d2d23bff27457c185e97f4ff8a748b
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41167
 qm_magic_slot_offset=0

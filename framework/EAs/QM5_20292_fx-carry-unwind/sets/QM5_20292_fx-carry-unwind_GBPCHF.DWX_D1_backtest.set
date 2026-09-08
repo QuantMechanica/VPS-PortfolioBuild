@@ -3,16 +3,16 @@
 ; ea_id:        20292
 ; ea_slug:      fx-carry-unwind
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       GBPCHF.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f5724919d9982bb67ad453aa6f71fc1ed363bc999382d34b620bda2ff3560447
+; build_hash:   c59184d772f514b8e897b690b1c2e44924967376700cba4247a039b75381bbdc
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20292
 qm_magic_slot_offset=2

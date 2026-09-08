@@ -3,16 +3,16 @@
 ; ea_id:        20289
 ; ea_slug:      wti-rsj-rev
 ; ea_version:   v5.0
-; set_version:  s20260812-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   3f7a851ad99f8c58ed0822eca6a65b3215626a1f69f08cf3eeeb5eca68c57ec4
+; build_hash:   9cb5a55f98b9e1916b0056b9472b10beed994d8523f0f244cfc535dbd9883289
 ; author:       Development
-; date:         2026-08-12
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20289
 qm_magic_slot_offset=0

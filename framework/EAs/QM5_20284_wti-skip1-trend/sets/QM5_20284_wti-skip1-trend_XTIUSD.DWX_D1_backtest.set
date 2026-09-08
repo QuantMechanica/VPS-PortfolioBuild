@@ -3,16 +3,16 @@
 ; ea_id:        20284
 ; ea_slug:      wti-skip1-trend
 ; ea_version:   v5.0
-; set_version:  s20260811-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b17cccee3122ab3d800cfbaa781054575cd1155c9a5eb4fa0dbefac94afc282e
+; build_hash:   eafd335464339bf976a1f51d5f091c11c3d39bcc9a517bc9415b7ff6dac37265
 ; author:       Development
-; date:         2026-08-11
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20284
 qm_magic_slot_offset=0

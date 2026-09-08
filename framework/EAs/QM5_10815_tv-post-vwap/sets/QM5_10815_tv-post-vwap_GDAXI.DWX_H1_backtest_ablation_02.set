@@ -10,7 +10,7 @@
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9f85627ae2ae302d43ef921178217aa501d1b17f0cad4f30cf6ef2ee74ca5c4e
+; build_hash:   119dcb70ba800995d1fab3c9878e34711863d792ae2fdf2578650a652f18755d
 ; author:       Development
 ; date:         2026-06-05
 ;==========================================================
@@ -46,7 +46,7 @@ strategy_session_filter=true
 strategy_session_start_hour=7
 strategy_session_end_hour=21
 strategy_max_spread_points=0
-; --- ablation child 02 of QM5_10815_tv-post-vwap_GDAXI.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 02 of QM5_10815_tv-post-vwap_GDAXI.DWX_H1_backtest (perturb=Ã‚Â±25%) ---
 strategy_atr_period=12
 strategy_volume_lookback=19
 strategy_vwap_stretch_atr=0.503532

@@ -3,16 +3,16 @@
 ; ea_id:        12929
 ; ea_slug:      brooks-expanded-micro-channel-h1
 ; ea_version:   v5.0
-; set_version:  s20260821-001
+; set_version:  s20260831-001
 ; symbol:       UK100.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f8d267c89b760b0d00599a2d56382f11f8e9fa2ef01b77144b7d19610406916a
+; build_hash:   8e1d590d607cb015d43308a894b88052a6b58810003637f326f95b56a7456dbf
 ; author:       Development
-; date:         2026-08-21
+; date:         2026-08-31
 ;==========================================================
 qm_ea_id=12929
 qm_magic_slot_offset=3

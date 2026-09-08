@@ -3,16 +3,16 @@
 ; ea_id:        41271
 ; ea_slug:      wti-msiegel-tukey-scale-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5b9cbd7b0a54a0298605601123c3184bb7ca896221ddd47c8361799843a41a6f
+; build_hash:   35926192b328b1138bfcd52944c4f7c202b98f2aa69091d737be908cebec257c
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41271
 qm_magic_slot_offset=0

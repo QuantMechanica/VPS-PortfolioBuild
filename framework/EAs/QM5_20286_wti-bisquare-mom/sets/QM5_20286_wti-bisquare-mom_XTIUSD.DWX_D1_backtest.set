@@ -3,16 +3,16 @@
 ; ea_id:        20286
 ; ea_slug:      wti-bisquare-mom
 ; ea_version:   v5.0
-; set_version:  s20260812-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2f1d5b46581b2b5c203f2eea6740e9cc3b4bf3021221db43f736d8c87bba5559
+; build_hash:   687061e477dbdf2f1d2f71598ff0a65e46c0a5ec9a2ac41683639b072cfe7202
 ; author:       Development
-; date:         2026-08-12
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20286
 qm_magic_slot_offset=0

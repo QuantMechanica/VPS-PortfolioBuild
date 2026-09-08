@@ -223,10 +223,14 @@ void Strategy_DetectDecisionClockOnNewBar()
          Strategy_DateKeyForTime(broker_now))
       return;
 
-   const int current_month = Strategy_MonthKeyForTime(current_session);
-   const int previous_month = Strategy_MonthKeyForTime(previous_session);
+   // The framework calendar helper owns the monthly cadence and its rollover
+   // semantics; the normalized labels above remain the card's session guard.
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int previous_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
    if(current_month <= 0 || previous_month <= 0 ||
-      Strategy_NextMonthKey(previous_month) != current_month)
+      current_month == previous_month)
       return;
 
    g_decision_bar = true;

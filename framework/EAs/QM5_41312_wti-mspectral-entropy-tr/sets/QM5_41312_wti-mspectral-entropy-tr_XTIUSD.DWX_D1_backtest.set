@@ -3,16 +3,16 @@
 ; ea_id:        41312
 ; ea_slug:      wti-mspectral-entropy-tr
 ; ea_version:   v5.0
-; set_version:  s20260902-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   5a730da0a62e28377b24fc1de79332174953f646e42bc9222de25c2a6b08aee4
 ; author:       Development
-; date:         2026-09-02
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41312
 qm_magic_slot_offset=0
@@ -23,7 +23,7 @@ PORTFOLIO_WEIGHT=1
 ; card_defaults_source=ea_input_defaults
 strategy_month_returns=48
 strategy_dft_bins=24
-strategy_total_power_floor=1e-24
+strategy_total_power_floor=0.000000000000000000000001
 strategy_probability_tolerance=0.0000000001
 strategy_entropy_lower_tolerance=0.000000000001
 strategy_entropy_upper_tolerance=0.0000000001

@@ -3,16 +3,16 @@
 ; ea_id:        41108
 ; ea_slug:      wti-mrange-expansion-mom
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b76eac2b9efc7a36365fab4fac2b01628926743889884ad4b24668fc4c1abb51
+; build_hash:   ee27facf97d0aa0782829ed63293736f1446e50ea3478d0d6af4a015e80493e6
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41108
 qm_magic_slot_offset=0

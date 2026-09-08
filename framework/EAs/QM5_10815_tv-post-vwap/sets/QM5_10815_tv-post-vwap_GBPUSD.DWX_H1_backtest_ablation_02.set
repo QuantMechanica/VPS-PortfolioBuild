@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   481823c9ac35df78966a18026822de70c3ce1e00edca8b8049aae056db50d42a
+; build_hash:   9324347ee5e7dda2dd7e848245e199abfbe7f9edc3cd22f26077133bf28dcdb1
 ; author:       Development
 ; date:         2026-06-05
 ;==========================================================
@@ -32,7 +32,7 @@ qm_filter_volatility_compression_ratio=0.75
 qm_filter_volatility_expansion_ratio=1.25
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found
-; --- ablation child 02 of QM5_10815_tv-post-vwap_GBPUSD.DWX_H1_backtest (perturb=±25%) ---
+; --- ablation child 02 of QM5_10815_tv-post-vwap_GBPUSD.DWX_H1_backtest (perturb=Ã‚Â±25%) ---
 strategy_atr_period=17
 strategy_volume_lookback=21
 strategy_vwap_stretch_atr=0.552773

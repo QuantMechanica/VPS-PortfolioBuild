@@ -3,16 +3,16 @@
 ; ea_id:        41277
 ; ea_slug:      wti-msndisp-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b975a52a750834432b072e64254b80364e717fc39f31f5c96386d598f7860261
+; build_hash:   b20b87db047f5650b3de347f9393db313784933313563db979915140d844bfd7
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41277
 qm_magic_slot_offset=0

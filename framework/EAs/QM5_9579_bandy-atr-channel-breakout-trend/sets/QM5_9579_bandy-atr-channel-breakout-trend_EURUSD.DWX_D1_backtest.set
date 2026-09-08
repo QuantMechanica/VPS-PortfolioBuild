@@ -3,22 +3,24 @@
 ; ea_id:        9579
 ; ea_slug:      bandy-atr-channel-breakout-trend
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260906-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   6
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   dde31d552fb197f3d16f311353b553d7956cb90a5b84ef2efb79cddf1f7fdd44
+; build_hash:   4dc665caa99365a5dadcc81b45ffa519f8a2e8b856ca384198b8d384f893aef7
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=9579
 qm_magic_slot_offset=6
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_9579_bandy-atr-channel-breakout-trend.md
 strategy_atr_period=14
 strategy_sma_period=20
 strategy_channel_mult=1.5

@@ -3,31 +3,24 @@
 ; ea_id:        41179
 ; ea_slug:      xtixng-mcoxstuart-rv
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260905-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1372f474e5ae36e240e862e49ceca0c440a047f1debade66aa4930c68faf71cb
 ; author:       Development
-; date:         2026-08-27
+; date:         2026-09-05
 ;==========================================================
 qm_ea_id=41179
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xng_symbol=XNGUSD.DWX
 strategy_endpoint_count=14
 strategy_pair_count=7

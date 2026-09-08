@@ -3,16 +3,16 @@
 ; ea_id:        41258
 ; ea_slug:      wti-menergy-shift-tr
 ; ea_version:   v5.0
-; set_version:  s20260831-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   4e563681cea317e7ac763d74bad9faae34b60f6193646a1b9ca09214712abdf9
+; build_hash:   2378d9f05334edd1081fb690961749a0878c96b0beeb7e04000160c720031ca3
 ; author:       Development
-; date:         2026-08-31
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41258
 qm_magic_slot_offset=0

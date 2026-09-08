@@ -10,6 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
+; build_hash:   b5750b512d319fb73f1ffc061dca4101e68317c689b557301821fd59cedded19
 ; author:       Development
 ; date:         2026-09-03
 ;==========================================================
@@ -18,7 +19,8 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params copied from parent QM5_10815 GDAXI.DWX H1 backtest set
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41334_tv-post-vwap-opt.md
 strategy_atr_period=14
 strategy_volume_lookback=20
 strategy_vwap_stretch_atr=0.50

@@ -10,6 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
+; build_hash:   306cbfa3d444ddb4f3ce0e7634e51f01cd6e7c1ced4583a611c7f49069f0151e
 ; author:       Development
 ; date:         2026-09-03
 ;==========================================================
@@ -18,7 +19,8 @@ qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params copied from parent QM5_10700 XAUUSD.DWX H1 backtest set
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41333_tv-liq-break-opt.md
 strategy_contraction_lookback=10
 strategy_liquidity_length=20
 strategy_atr_period=20

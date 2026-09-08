@@ -3,16 +3,16 @@
 ; ea_id:        21516
 ; ea_slug:      wti-decoup-trend
 ; ea_version:   v5.0
-; set_version:  s20260814-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d0f04dc85ba227ca8099c45a80c2a683f9575033c7e9570f6e6a6465b8bdecb6
+; build_hash:   8ccf7027e9ecfa7e81d3628c4dd579f979d64f3fb5648593f0d19fc6a365612a
 ; author:       Development
-; date:         2026-08-14
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=21516
 qm_magic_slot_offset=0

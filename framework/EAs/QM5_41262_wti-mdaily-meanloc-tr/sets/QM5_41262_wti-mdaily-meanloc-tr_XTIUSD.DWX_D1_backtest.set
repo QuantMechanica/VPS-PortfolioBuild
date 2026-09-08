@@ -3,16 +3,16 @@
 ; ea_id:        41262
 ; ea_slug:      wti-mdaily-meanloc-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   c2aa687183f015dddb7ba4bda6bd7ae6b710952732aee1b0763e0ce180f7d232
+; build_hash:   ea04a475096a942c71ede585a832cc198a9fa82cb064a1efc64646dbcf60718f
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41262
 qm_magic_slot_offset=0

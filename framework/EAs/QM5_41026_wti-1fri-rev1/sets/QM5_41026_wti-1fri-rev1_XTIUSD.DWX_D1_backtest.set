@@ -3,33 +3,22 @@
 ; ea_id:        41026
 ; ea_slug:      wti-1fri-rev1
 ; ea_version:   v5.0
-; set_version:  s20260816-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ed2d0030b6756cadbdeeabe0fbd7f268532e6d4a946db7f925c8850750cb4e0c
+; build_hash:   021d12043a0fc0db982462cb925672d67f3438dc84c85737a8869c02e441d2a9
 ; author:       Development
-; date:         2026-08-16
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41026
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Native-price structural signal; both news axes are intentionally OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; Friday close is the ordinary lifecycle exit at broker hour 21.
-qm_friday_close_enabled=true
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\wti-1fri-rev1_card.md
 strategy_entry_dow=5

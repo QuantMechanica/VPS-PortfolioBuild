@@ -3,16 +3,16 @@
 ; ea_id:        41102
 ; ea_slug:      wti-mrange-migrate-mom
 ; ea_version:   v5.0
-; set_version:  s20260822-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   2994499ffcab874aec123124b2c6a5ee6dc9cc122063d40e3814c8459446fa31
+; build_hash:   d84ad3f2acf74c9ee9762a10e74e65ff461689d223a99209dbce49a04ae27932
 ; author:       Development
-; date:         2026-08-22
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41102
 qm_magic_slot_offset=0

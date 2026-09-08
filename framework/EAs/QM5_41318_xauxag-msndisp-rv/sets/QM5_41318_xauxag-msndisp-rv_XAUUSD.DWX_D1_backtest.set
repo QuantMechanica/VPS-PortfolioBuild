@@ -3,23 +3,23 @@
 ; ea_id:        41318
 ; ea_slug:      xauxag-msndisp-rv
 ; ea_version:   v5.0
-; set_version:  s20260903-001
+; set_version:  s20260902-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   42e9dc5d908a9f208e75f140c562a8bc4fec9a71729688c1e3f29c1e59095aac
 ; author:       Development
-; date:         2026-09-03
+; date:         2026-09-02
 ;==========================================================
 qm_ea_id=41318
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Component validation artifact only; never enqueue as standalone Q02.
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
 strategy_xag_symbol=XAGUSD.DWX
 strategy_month_sessions_min=17

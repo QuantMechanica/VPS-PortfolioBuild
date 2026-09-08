@@ -3,16 +3,16 @@
 ; ea_id:        20259
 ; ea_slug:      xng-mom-vote
 ; ea_version:   v5.0
-; set_version:  s20260807-001
+; set_version:  s20260906-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   065e8e22b848db751a692256602899e271f244b5342a188823f8a69107d8fe1a
+; build_hash:   8412794561b64ef508516152dd9d29bac870c63989fe08c05eef81f8130ea7ac
 ; author:       Development
-; date:         2026-08-07
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20259
 qm_magic_slot_offset=0

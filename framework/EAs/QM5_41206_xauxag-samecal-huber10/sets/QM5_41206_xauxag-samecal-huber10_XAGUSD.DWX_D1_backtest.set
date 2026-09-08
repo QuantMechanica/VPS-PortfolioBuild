@@ -3,16 +3,16 @@
 ; ea_id:        41206
 ; ea_slug:      xauxag-samecal-huber10
 ; ea_version:   v5.0
-; set_version:  s20260829-001
+; set_version:  s20260906-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cce997eaf642f99f64411b47faa60c8331b53019905d26571ca14d1bcb571145
+; build_hash:   13b1e5c1b038c0125ef4fcc70b0791ffd7aa96095ce3505268136a83508c9c15
 ; author:       Development
-; date:         2026-08-29
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41206
 qm_magic_slot_offset=1

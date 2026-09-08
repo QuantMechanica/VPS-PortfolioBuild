@@ -3,16 +3,16 @@
 ; ea_id:        41124
 ; ea_slug:      wti-mrms-coherence-mom
 ; ea_version:   v5.0
-; set_version:  s20260825-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   102709abba7e41a88e9f9418664fc3c9d6c58b557738469c3e6b9a9f7864bbdd
+; build_hash:   719ef3ce39cbdb05541e5c5d6f5d96480f019d8efdceca15771a193a93ad031e
 ; author:       Development
-; date:         2026-08-25
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41124
 qm_magic_slot_offset=0

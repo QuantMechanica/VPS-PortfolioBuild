@@ -3,32 +3,25 @@
 ; ea_id:        10850
 ; ea_slug:      tv-bbmr-long
 ; ea_version:   v5.0
-; set_version:  s20260606-001
+; set_version:  s20260901-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a49ffde384a990b2cdab92e32d5d8e532387ea4cf0aa65eda3f35c7307fb0a4c
+; build_hash:   b83b8d8b54e065ea8cca09b75f2d18fa46225835192b8575857d11897053e7e1
 ; author:       Development
-; date:         2026-06-06
+; date:         2026-09-01
 ;==========================================================
+qm_ea_id=10850
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10850_tv-bbmr-long.md
+strategy_sma_period=20
+strategy_band_deviation=2.0
+strategy_stop_loss_pct=1.5
+strategy_spread_guard_pct=15.0

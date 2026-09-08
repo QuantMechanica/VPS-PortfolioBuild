@@ -3,16 +3,16 @@
 ; ea_id:        20292
 ; ea_slug:      fx-carry-unwind
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       GBPJPY.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d11c9f2bfa0f18061d67d9d4b852280a0c57f055443a0d5fb821f4fb88ad45db
+; build_hash:   fd564a57894ece711ac2c7f441ac51acd795ca5f90043c88e183270f1ed6608b
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20292
 qm_magic_slot_offset=3

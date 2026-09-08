@@ -3,16 +3,16 @@
 ; ea_id:        20248
 ; ea_slug:      xng-vr-window
 ; ea_version:   v5.0
-; set_version:  s20260806-001
+; set_version:  s20260906-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   38c98d5ab7fd3614eb690280ad8c59f449385168011252ae4eb101c4d4959804
+; build_hash:   47d18951d2d3f9a4f6738b512df8dda43e6f881bbc89e7ed600186186a808544
 ; author:       Development
-; date:         2026-08-06
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20248
 qm_magic_slot_offset=0

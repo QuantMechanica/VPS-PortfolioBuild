@@ -3,16 +3,16 @@
 ; ea_id:        20299
 ; ea_slug:      xng-vov-regime
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5fc0adae40a54f4413e05dc39b42203a11d17e97371ebbc778863cfb437c9d10
+; build_hash:   316906b49c3507027494e0dc3e5ef264455d22338303b9063038c58338b224b5
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20299
 qm_magic_slot_offset=0

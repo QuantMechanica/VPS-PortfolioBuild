@@ -3,16 +3,16 @@
 ; ea_id:        20256
 ; ea_slug:      wti-vr6-mom
 ; ea_version:   v5.0
-; set_version:  s20260807-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   182d23b7991500919fce5826602f2eceada92d2a4a8f1f76a14ebde88083cb72
+; build_hash:   0954bdd8b47a457867d91f7b251ed12f48600d27634e7f9fb7ad63af67a244f4
 ; author:       Development
-; date:         2026-08-07
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20256
 qm_magic_slot_offset=0

@@ -1,0 +1,33 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41056
+; ea_slug:      energy-rev18
+; ea_version:   v5.0
+; set_version:  s20260906-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   1
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   77378846ee8a0637e80578af1b9342adad17b9bfcca69810ca009880c65c8e5e
+; author:       Development
+; date:         2026-09-06
+;==========================================================
+qm_ea_id=41056
+qm_magic_slot_offset=1
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_reversal_months=18
+strategy_history_bars=520
+strategy_max_boundary_gap_days=10
+strategy_signal_epsilon=0.000000000001
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=35
+strategy_xti_max_spread_pts=1500
+strategy_xng_max_spread_pts=3000
+strategy_deviation_points=20

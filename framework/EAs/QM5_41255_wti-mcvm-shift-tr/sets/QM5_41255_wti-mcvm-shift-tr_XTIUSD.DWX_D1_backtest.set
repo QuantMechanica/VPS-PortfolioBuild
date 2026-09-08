@@ -3,16 +3,16 @@
 ; ea_id:        41255
 ; ea_slug:      wti-mcvm-shift-tr
 ; ea_version:   v5.0
-; set_version:  s20260831-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   924e9b97db9d0c4c9fb500642b3c87e2d1b3c47bb781d9fe732119fe2536059d
+; build_hash:   df8204eb34beb7d52cfb80486545552e430a9cf4e432ea3a89c3f31eedddc77b
 ; author:       Development
-; date:         2026-08-31
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41255
 qm_magic_slot_offset=0

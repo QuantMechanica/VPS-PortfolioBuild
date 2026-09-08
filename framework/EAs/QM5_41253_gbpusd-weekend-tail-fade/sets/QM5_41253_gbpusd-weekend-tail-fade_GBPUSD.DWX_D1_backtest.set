@@ -3,16 +3,16 @@
 ; ea_id:        41253
 ; ea_slug:      gbpusd-weekend-tail-fade
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   7d295a814b0d0879073f78ccf83cc1a73884fc657cc818e01d9fda2e9a5156ca
+; build_hash:   9d1a76360213a21876d1b6cecef402672d3b7292fe6391a642f95b13054fbd25
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41253
 qm_magic_slot_offset=0

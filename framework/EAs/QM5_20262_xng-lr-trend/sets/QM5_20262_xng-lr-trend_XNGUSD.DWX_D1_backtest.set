@@ -3,16 +3,16 @@
 ; ea_id:        20262
 ; ea_slug:      xng-lr-trend
 ; ea_version:   v5.0
-; set_version:  s20260807-001
+; set_version:  s20260906-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a9af8d8412163ff5bf05f76a2c0b40e2402a13638d2484c08c18e356de3c64fb
+; build_hash:   242a10f36fcc3339ebbecb9d8c08160d42bbe416aea992d835b2a968b1a02877
 ; author:       Development
-; date:         2026-08-07
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20262
 qm_magic_slot_offset=0

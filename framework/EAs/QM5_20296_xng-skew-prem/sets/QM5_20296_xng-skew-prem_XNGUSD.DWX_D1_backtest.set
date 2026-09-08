@@ -1,18 +1,18 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        20296
 ; ea_slug:      xng-skew-prem
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   79f7ebcd1d69b20b648da4d6d2994510daf5d57b162d7ef81c685d4ba1e48663
+; build_hash:   0e8360054a353f3b025b6174319a9d63e718d2511a357cda4b66048de145e849
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20296
 qm_magic_slot_offset=0

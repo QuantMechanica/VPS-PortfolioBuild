@@ -3,16 +3,16 @@
 ; ea_id:        41213
 ; ea_slug:      xauxag-samecal-signscore
 ; ea_version:   v5.0
-; set_version:  s20260830-001
+; set_version:  s20260906-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   17dfe9c5fffdf153a805fd7cb7ee20fc3fe20eb96ae7035b35c101f4e2705b39
+; build_hash:   cbf9d48cf203a14a6ead824c815b797ab694b3e1a560191268a1aece31b54ffb
 ; author:       Development
-; date:         2026-08-30
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41213
 qm_magic_slot_offset=1

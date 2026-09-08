@@ -1,18 +1,18 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        21522
 ; ea_slug:      wti-lowdb-trend
 ; ea_version:   v5.0
-; set_version:  s20260814-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f32829607fe15a564e22145395079df39ea35bc8727d5652e44d62fcdaded4d0
+; build_hash:   81c9068443326c300bbc7107f7eb22de0afbc7caea406c36ecac7d7badf33fd9
 ; author:       Development
-; date:         2026-08-14
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=21522
 qm_magic_slot_offset=0

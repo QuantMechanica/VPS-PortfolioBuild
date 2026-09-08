@@ -3,16 +3,16 @@
 ; ea_id:        20298
 ; ea_slug:      wti-vov-regime
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0caa25b450f3c84ff38fd6a7724808afeeb8c73853cbaf215e280ba6971c73dd
+; build_hash:   226718835d967e83bad930aa06d11f539d2fd370577ef875c32af7005f7aa6c8
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20298
 qm_magic_slot_offset=0

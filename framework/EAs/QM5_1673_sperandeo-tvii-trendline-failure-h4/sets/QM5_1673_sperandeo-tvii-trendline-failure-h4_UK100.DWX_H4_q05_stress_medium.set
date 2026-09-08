@@ -3,16 +3,16 @@
 ; ea_id:        1673
 ; ea_slug:      sperandeo-tvii-trendline-failure-h4
 ; ea_version:   v5.0
-; set_version:  s20260819-stress-med
+; set_version:  s20260902-stress-med
 ; symbol:       UK100.DWX
 ; timeframe:    H4
 ; environment:  q05_stress_medium
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   6ff96ab71b131a42a54577c7a6b5bcbc788331bb8871d4959b14d53291126f63
+; build_hash:   55172a72518afbce22d9a773893e0757f2fa6848dcf793f6655291fd1244c1c2
 ; author:       Development
-; date:         2026-08-19
+; date:         2026-09-02
 ;==========================================================
 qm_ea_id=1673
 qm_magic_slot_offset=3

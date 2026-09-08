@@ -78,31 +78,21 @@ bool Strategy_IsHostChart()
    return (_Symbol == g_symbol && _Period == PERIOD_D1);
   }
 
-int Strategy_DateKeyForTime(const datetime value)
+bool Strategy_LabelMatchesMonthKey(const datetime value,
+                                   const int month_key)
   {
-   if(value <= 0)
-      return 0;
-
-   MqlDateTime parts;
-   ZeroMemory(parts);
-   if(!TimeToStruct(value, parts) || parts.year < 1900 ||
-      parts.mon < 1 || parts.mon > 12 ||
-      parts.day < 1 || parts.day > 31)
-      return 0;
-   return parts.year * 10000 + parts.mon * 100 + parts.day;
-  }
-
-int Strategy_MonthKeyForTime(const datetime value)
-  {
-   if(value <= 0)
-      return 0;
+   const int target_year = month_key / 100;
+   const int target_month = month_key % 100;
+   if(value <= 0 || target_year < 1900 ||
+      target_month < 1 || target_month > 12)
+      return false;
 
    MqlDateTime parts;
    ZeroMemory(parts);
    if(!TimeToStruct(value, parts) || parts.year < 1900 ||
       parts.mon < 1 || parts.mon > 12)
-      return 0;
-   return parts.year * 100 + parts.mon;
+      return false;
+   return (parts.year == target_year && parts.mon == target_month);
   }
 
 int Strategy_PreviousMonthKey(const int month_key)
@@ -159,23 +149,9 @@ datetime Strategy_NormalizedLabel(const datetime raw_label,
    return raw_label + (datetime)label_offset;
   }
 
-int Strategy_CurrentNormalizedMonthKey()
+int Strategy_CurrentCalendarMonthKey()
   {
-   MqlRates current_bar;
-   ZeroMemory(current_bar);
-   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar))
-      return 0;
-
-   const datetime broker_now = TimeCurrent();
-   const int label_offset =
-      Strategy_LabelOffsetSeconds(current_bar.time, broker_now);
-   const datetime normalized =
-      Strategy_NormalizedLabel(current_bar.time, label_offset);
-   if(label_offset < 0 || normalized <= 0 ||
-      Strategy_DateKeyForTime(normalized) !=
-         Strategy_DateKeyForTime(broker_now))
-      return 0;
-   return Strategy_MonthKeyForTime(normalized);
+   return QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
   }
 
 void Strategy_ResetDecisionState()
@@ -196,11 +172,8 @@ void Strategy_DetectDecisionClockOnNewBar()
    Strategy_ResetDecisionState();
 
    MqlRates current_bar;
-   MqlRates previous_bar;
    ZeroMemory(current_bar);
-   ZeroMemory(previous_bar);
-   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar) ||
-      !QM_ReadBar(_Symbol, PERIOD_D1, 1, previous_bar))
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 0, current_bar))
       return;
 
    const datetime broker_now = TimeCurrent();
@@ -209,17 +182,10 @@ void Strategy_DetectDecisionClockOnNewBar()
    if(label_offset < 0)
       return;
 
-   const datetime current_session =
-      Strategy_NormalizedLabel(current_bar.time, label_offset);
-   const datetime previous_session =
-      Strategy_NormalizedLabel(previous_bar.time, label_offset);
-   if(current_session <= previous_session ||
-      Strategy_DateKeyForTime(current_session) !=
-         Strategy_DateKeyForTime(broker_now))
-      return;
-
-   const int current_month = Strategy_MonthKeyForTime(current_session);
-   const int previous_month = Strategy_MonthKeyForTime(previous_session);
+   const int current_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
+   const int previous_month =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 1);
    if(current_month <= 0 || previous_month <= 0 ||
       Strategy_NextMonthKey(previous_month) != current_month)
       return;
@@ -303,20 +269,21 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
 
       const datetime deal_time =
          (datetime)HistoryDealGetInteger(deal_ticket, DEAL_TIME);
-      if(Strategy_MonthKeyForTime(deal_time) == month_key)
+      if(deal_time >= month_start && deal_time <= now)
          return true;
-     }
+      }
    return false;
   }
 
-void Strategy_LoadAttemptState(const datetime reference_time)
+void Strategy_LoadAttemptState()
   {
    g_last_attempt_month_key = 0;
    if(g_attempt_state_key == "" ||
       !GlobalVariableCheck(g_attempt_state_key))
       return;
 
-   const int current_month_key = Strategy_MonthKeyForTime(reference_time);
+   const int current_month_key =
+      QM_CalendarPeriodKey(PERIOD_MN1, _Symbol, 0);
    const double stored = GlobalVariableGet(g_attempt_state_key);
    const int stored_month_key = (int)MathRound(stored);
    if(current_month_key > 0 && MathIsValidNumber(stored) &&
@@ -349,7 +316,14 @@ void Strategy_CloseExpiredPositions()
       return;
 
    const datetime now = TimeCurrent();
-   const int current_month_key = Strategy_CurrentNormalizedMonthKey();
+   const int current_month_key = Strategy_CurrentCalendarMonthKey();
+   MqlDateTime current_month_parts;
+   ZeroMemory(current_month_parts);
+   current_month_parts.year = current_month_key / 100;
+   current_month_parts.mon = current_month_key % 100;
+   current_month_parts.day = 1;
+   const datetime current_month_start =
+      StructToTime(current_month_parts);
    const long hold_seconds =
       (long)MathMax(1, strategy_max_hold_days) * 86400L;
 
@@ -366,18 +340,18 @@ void Strategy_CloseExpiredPositions()
       const double volume = PositionGetDouble(POSITION_VOLUME);
       const double open_price = PositionGetDouble(POSITION_PRICE_OPEN);
       const double stop_price = PositionGetDouble(POSITION_SL);
-      const int opened_month_key = Strategy_MonthKeyForTime(opened);
 
       bool should_close =
          (owned_count != 1 || current_month_key <= 0 ||
+          current_month_start <= 0 ||
           (position_type != POSITION_TYPE_BUY &&
            position_type != POSITION_TYPE_SELL) ||
-          opened <= 0 || opened > now || opened_month_key <= 0 ||
+          opened <= 0 || opened > now ||
           volume <= 0.0 || !MathIsValidNumber(volume) ||
           open_price <= 0.0 || !MathIsValidNumber(open_price) ||
           stop_price <= 0.0 || !MathIsValidNumber(stop_price));
 
-      if(!should_close && opened_month_key != current_month_key)
+      if(!should_close && opened < current_month_start)
          should_close = true;
       if(!should_close && (long)(now - opened) >= hold_seconds)
          should_close = true;
@@ -408,7 +382,7 @@ bool Strategy_CompletedMonthReturn(const MqlRates &rates[],
      {
       const datetime normalized =
          Strategy_NormalizedLabel(rates[index].time, label_offset);
-      if(Strategy_MonthKeyForTime(normalized) != target_month_key)
+      if(!Strategy_LabelMatchesMonthKey(normalized, target_month_key))
          continue;
       if(first_index < 0)
          first_index = index;
@@ -419,16 +393,14 @@ bool Strategy_CompletedMonthReturn(const MqlRates &rates[],
       last_index + 1 >= count)
       return false;
 
-   const int previous_month_key =
-      Strategy_MonthKeyForTime(
+   if(!Strategy_LabelMatchesMonthKey(
          Strategy_NormalizedLabel(rates[first_index - 1].time,
-                                  label_offset));
-   const int following_month_key =
-      Strategy_MonthKeyForTime(
+                                  label_offset),
+         Strategy_PreviousMonthKey(target_month_key)) ||
+      !Strategy_LabelMatchesMonthKey(
          Strategy_NormalizedLabel(rates[last_index + 1].time,
-                                  label_offset));
-   if(previous_month_key != Strategy_PreviousMonthKey(target_month_key) ||
-      following_month_key != Strategy_NextMonthKey(target_month_key))
+                                  label_offset),
+         Strategy_NextMonthKey(target_month_key)))
       return false;
 
    if(rates[first_index - 1].time >= rates[first_index].time ||
@@ -437,9 +409,10 @@ bool Strategy_CompletedMonthReturn(const MqlRates &rates[],
 
    for(int index = first_index; index <= last_index; ++index)
      {
-      if(Strategy_MonthKeyForTime(
+      if(!Strategy_LabelMatchesMonthKey(
             Strategy_NormalizedLabel(rates[index].time,
-                                     label_offset)) != target_month_key)
+                                     label_offset),
+            target_month_key))
          return false;
       if(index > first_index &&
          rates[index - 1].time >= rates[index].time)
@@ -580,7 +553,8 @@ bool Strategy_LoadArctangentSignal(
    if(!TimeToStruct(normalized_decision, decision_parts) ||
       decision_parts.year - strategy_history_years < 1900 ||
       decision_parts.mon < 1 || decision_parts.mon > 12 ||
-      decision_parts.year * 100 + decision_parts.mon != decision_month_key)
+      decision_parts.year != decision_month_key / 100 ||
+      decision_parts.mon != decision_month_key % 100)
       return false;
 
    MqlRates rates[];
@@ -853,17 +827,17 @@ int OnInit()
       return INIT_PARAMETERS_INCORRECT;
      }
 
-   g_attempt_state_key =
-      StringFormat("QM5_41238_SAMECAL_ARCTAN5_MONTH_ATTEMPT_%d",
-                   QM_FrameworkMagic());
-   Strategy_LoadAttemptState(TimeCurrent());
-
    string warmup_symbols[1];
    warmup_symbols[0] = g_symbol;
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols,
-                          PERIOD_D1,
-                          strategy_history_bars_d1);
+                           PERIOD_D1,
+                           strategy_history_bars_d1);
+
+   g_attempt_state_key =
+      StringFormat("QM5_41238_SAMECAL_ARCTAN5_MONTH_ATTEMPT_%d",
+                   QM_FrameworkMagic());
+   Strategy_LoadAttemptState();
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
@@ -958,5 +932,3 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
-

@@ -3,35 +3,24 @@
 ; ea_id:        10815
 ; ea_slug:      tv-post-vwap
 ; ea_version:   v5.0
-; set_version:  s20260605-001
+; set_version:  s20260903-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   dab984d3bf89c81cd307bcfce23cf3d09f98c786775d41bccab0414ce17e6254
+; build_hash:   0d5357e77bbd2c14cf9a55c9a55572bb77bba23ad96ae3465135c5fa2f2a7aac
 ; author:       Development
-; date:         2026-06-05
+; date:         2026-09-03
 ;==========================================================
+qm_ea_id=10815
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=framework/EAs/QM5_10815_tv-post-vwap/SPEC.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_10815_tv-post-vwap.md
 strategy_atr_period=14
 strategy_volume_lookback=20
 strategy_vwap_stretch_atr=0.50

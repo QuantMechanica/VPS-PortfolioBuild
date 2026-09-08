@@ -3,35 +3,24 @@
 ; ea_id:        41074
 ; ea_slug:      wti-wstreak3-mom
 ; ea_version:   v5.0
-; set_version:  s20260820-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b5de7f994a0be406fddbf10cfab08bd951ec6048de55a84f4f75aa2426089184
+; build_hash:   4acd496ee063c5be767948ab8150e45c5bde18b90a53272d1700ddbf27a6ce0d
 ; author:       Development
-; date:         2026-08-20
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41074
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; Native-price structural signal; both news axes are intentionally OFF.
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-; Full broker-week hold; Friday flattening is intentionally disabled.
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; strategy-specific params from approved card; no optimization surface.
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41074_wti-wstreak3-mom_card.md
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_entry_grace_minutes=180
 strategy_history_bars=50
 strategy_required_weeks=5

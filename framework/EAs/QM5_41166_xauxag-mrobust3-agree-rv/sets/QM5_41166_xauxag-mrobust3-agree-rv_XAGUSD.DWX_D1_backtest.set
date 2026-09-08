@@ -3,16 +3,16 @@
 ; ea_id:        41166
 ; ea_slug:      xauxag-mrobust3-agree-rv
 ; ea_version:   v5.0
-; set_version:  s20260827-001
+; set_version:  s20260905-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   33d3f4e6512d62df593408948f12c3c491a8e51d69278a3e9ff1ac2588b10441
+; build_hash:   5ccb62309647daeed880d10b08d5dd009bfe2b3349a4a1a2331fb02758df2ec4
 ; author:       Development
-; date:         2026-08-27
+; date:         2026-09-05
 ;==========================================================
 qm_ea_id=41166
 qm_magic_slot_offset=1

@@ -3,16 +3,16 @@
 ; ea_id:        41254
 ; ea_slug:      wti-chow-break-tr
 ; ea_version:   v5.0
-; set_version:  s20260831-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   767b02e7069313a3bc8ab14139ebbfbc949c8738493517d31ce7120c2a574164
 ; author:       Development
-; date:         2026-08-31
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41254
 qm_magic_slot_offset=0

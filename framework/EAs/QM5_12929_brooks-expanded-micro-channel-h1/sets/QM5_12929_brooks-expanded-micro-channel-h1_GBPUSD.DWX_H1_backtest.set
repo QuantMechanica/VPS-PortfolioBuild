@@ -3,16 +3,16 @@
 ; ea_id:        12929
 ; ea_slug:      brooks-expanded-micro-channel-h1
 ; ea_version:   v5.0
-; set_version:  s20260821-001
+; set_version:  s20260831-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   31cc0ef39ef60a052bfb43f587f61cba321288d2ad9a82fcc5c3a5cb16f523d0
+; build_hash:   f09240b7e4b1bd5601a3255e03e4d3045806209ea1b0d946179d0c8740d6ef90
 ; author:       Development
-; date:         2026-08-21
+; date:         2026-08-31
 ;==========================================================
 qm_ea_id=12929
 qm_magic_slot_offset=7

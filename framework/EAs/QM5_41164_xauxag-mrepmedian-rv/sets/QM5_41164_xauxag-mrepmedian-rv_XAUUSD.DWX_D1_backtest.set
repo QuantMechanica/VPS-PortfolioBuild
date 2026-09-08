@@ -3,16 +3,16 @@
 ; ea_id:        41164
 ; ea_slug:      xauxag-mrepmedian-rv
 ; ea_version:   v5.0
-; set_version:  s20260827-001
+; set_version:  s20260905-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   35c4b358b652cc8e45006ab8cb7cf4934201495aa049973a6237ef1fb78947bc
+; build_hash:   be25f7fd484789a2ce72ee5dbcfa3ae5aed182bdfe3cf0943266e04de232c10d
 ; author:       Development
-; date:         2026-08-27
+; date:         2026-09-05
 ;==========================================================
 qm_ea_id=41164
 qm_magic_slot_offset=0

@@ -42,6 +42,7 @@ input double strategy_atr_sl_mult        = 2.0;
 input int    strategy_time_stop_bars     = 15;
 input double strategy_min_improve_frac   = 0.25;
 input int    strategy_max_spread_points  = 50;
+input bool   strategy_debug              = false;
 
 #define STRATEGY_SYMBOL_COUNT 7
 string g_symbols[STRATEGY_SYMBOL_COUNT] = {
@@ -61,6 +62,15 @@ double  g_entry_abs_z = 0.0;
 datetime g_entry_bar_time = 0;
 bool    g_state_ready = false;
 bool    g_pair_corr_breached = false;
+bool    g_diag_signal_latched = false;
+string  g_last_stats_reject = "";
+string  g_last_prepare_reject = "";
+
+void Strategy_DebugEvent(const string event_name, const string payload)
+  {
+   if(strategy_debug)
+      QM_LogEvent(QM_INFO, event_name, payload);
+  }
 
 int Strategy_SymbolIndex(const string symbol)
   {
@@ -232,6 +242,7 @@ bool Strategy_SpreadStats(const int host_index,
                           double &z,
                           double &sigma)
   {
+   g_last_stats_reject = "";
    beta = 1.0;
    corr = 0.0;
    adf_t = 0.0;
@@ -245,39 +256,70 @@ bool Strategy_SpreadStats(const int host_index,
    double y[];
    double x[];
    if(!Strategy_ReadLogs(g_symbols[host_index], g_symbols[partner_index], bars, y, x))
+     {
+      g_last_stats_reject = "READ_LOGS";
       return false;
+     }
 
    if(!Strategy_EstimateOLS(y, x, formation, beta))
+     {
+      g_last_stats_reject = "OLS";
       return false;
+     }
    if(!Strategy_Correlation(y, x, formation + 1, corr))
+     {
+      g_last_stats_reject = "CORRELATION";
       return false;
+     }
 
    double spread[];
    ArrayResize(spread, bars);
-   for(int i = 0; i < bars; ++i)
+   if(ArraySize(spread) < bars)
+     {
+      g_last_stats_reject = "SPREAD_BUFFER";
+      return false;
+     }
+   for(int i = 0; i < ArraySize(spread); ++i)
       spread[i] = y[i] - beta * x[i];
 
    if(full_formation && !Strategy_ADFProxy(spread, formation, adf_t))
+     {
+      g_last_stats_reject = "ADF_PROXY";
       return false;
+     }
 
    double sum = 0.0;
    for(int i = 0; i < zbars; ++i)
+     {
+      if(i >= ArraySize(spread))
+         return false;
       sum += spread[i];
+     }
    const double mean = sum / (double)zbars;
 
    double var = 0.0;
    for(int i = 0; i < zbars; ++i)
      {
+      if(i >= ArraySize(spread))
+         return false;
       const double d = spread[i] - mean;
       var += d * d;
      }
 
    sigma = MathSqrt(var / MathMax(1, zbars - 1));
    if(sigma <= 0.0 || !MathIsValidNumber(sigma))
+     {
+      g_last_stats_reject = "SIGMA";
       return false;
+     }
 
    z = (spread[0] - mean) / sigma;
-   return MathIsValidNumber(z);
+   if(!MathIsValidNumber(z))
+     {
+      g_last_stats_reject = "Z_INVALID";
+      return false;
+     }
+   return true;
   }
 
 bool Strategy_SelectedSpreadState(const int host_index,
@@ -306,17 +348,25 @@ bool Strategy_SelectedSpreadState(const int host_index,
 
    double spread[];
    ArrayResize(spread, bars);
-   for(int i = 0; i < bars; ++i)
+   if(ArraySize(spread) < bars)
+      return false;
+   for(int i = 0; i < ArraySize(spread); ++i)
       spread[i] = y[i] - frozen_beta * x[i];
 
    double sum = 0.0;
    for(int i = 0; i < zbars; ++i)
+     {
+      if(i >= ArraySize(spread))
+         return false;
       sum += spread[i];
+     }
    const double mean = sum / (double)zbars;
 
    double var = 0.0;
    for(int i = 0; i < zbars; ++i)
      {
+      if(i >= ArraySize(spread))
+         return false;
       const double d = spread[i] - mean;
       var += d * d;
      }
@@ -351,6 +401,11 @@ bool Strategy_SelectMonthlyPair(const int host_index)
    int best_partner = -1;
    double best_corr = -DBL_MAX;
    double best_beta = 1.0;
+   double best_adf_t = 0.0;
+   int qualified_count = 0;
+   int stats_reject_count = 0;
+   int corr_reject_count = 0;
+   int adf_reject_count = 0;
    for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
      {
       if(i == host_index)
@@ -358,22 +413,83 @@ bool Strategy_SelectMonthlyPair(const int host_index)
 
       double beta = 1.0, corr = 0.0, adf_t = 0.0, z = 0.0, sigma = 0.0;
       if(!Strategy_SpreadStats(host_index, i, true, beta, corr, adf_t, z, sigma))
+        {
+         ++stats_reject_count;
+         Strategy_DebugEvent(
+            "PAIR_SELECTION_CANDIDATE",
+            StringFormat("{\"month_key\":%d,\"host\":\"%s\",\"partner\":\"%s\",\"outcome\":\"STATS_REJECT\",\"reason\":\"%s\"}",
+                         month_key,
+                         g_symbols[host_index],
+                         g_symbols[i],
+                         g_last_stats_reject));
          continue;
+        }
       if(corr < strategy_min_corr)
+        {
+         ++corr_reject_count;
+         Strategy_DebugEvent(
+            "PAIR_SELECTION_CANDIDATE",
+            StringFormat("{\"month_key\":%d,\"host\":\"%s\",\"partner\":\"%s\",\"outcome\":\"CORR_REJECT\",\"corr\":%.8f,\"adf_t\":%.8f,\"beta\":%.8f}",
+                         month_key,
+                         g_symbols[host_index],
+                         g_symbols[i],
+                         corr,
+                         adf_t,
+                         beta));
          continue;
+        }
       if(adf_t > strategy_adf_t_max)
+        {
+         ++adf_reject_count;
+         Strategy_DebugEvent(
+            "PAIR_SELECTION_CANDIDATE",
+            StringFormat("{\"month_key\":%d,\"host\":\"%s\",\"partner\":\"%s\",\"outcome\":\"ADF_REJECT\",\"corr\":%.8f,\"adf_t\":%.8f,\"beta\":%.8f}",
+                         month_key,
+                         g_symbols[host_index],
+                         g_symbols[i],
+                         corr,
+                         adf_t,
+                         beta));
          continue;
+        }
+      ++qualified_count;
+      Strategy_DebugEvent(
+         "PAIR_SELECTION_CANDIDATE",
+         StringFormat("{\"month_key\":%d,\"host\":\"%s\",\"partner\":\"%s\",\"outcome\":\"QUALIFIED\",\"corr\":%.8f,\"adf_t\":%.8f,\"beta\":%.8f,\"z\":%.8f}",
+                      month_key,
+                      g_symbols[host_index],
+                      g_symbols[i],
+                      corr,
+                      adf_t,
+                      beta,
+                      z));
       if(corr > best_corr)
         {
          best_corr = corr;
          best_partner = i;
          best_beta = beta;
+         best_adf_t = adf_t;
         }
      }
 
    g_selected_partner = best_partner;
    g_selected_beta = best_beta;
    g_selected_month_key = month_key;
+   g_diag_signal_latched = false;
+   const string selected_symbol = (best_partner >= 0) ? g_symbols[best_partner] : "";
+   Strategy_DebugEvent(
+      "PAIR_SELECTION",
+      StringFormat("{\"month_key\":%d,\"host\":\"%s\",\"selected_partner\":\"%s\",\"qualified\":%d,\"stats_rejects\":%d,\"corr_rejects\":%d,\"adf_rejects\":%d,\"selected_corr\":%.8f,\"selected_adf_t\":%.8f,\"selected_beta\":%.8f}",
+                   month_key,
+                   g_symbols[host_index],
+                   selected_symbol,
+                   qualified_count,
+                   stats_reject_count,
+                   corr_reject_count,
+                   adf_reject_count,
+                   (best_partner >= 0) ? best_corr : 0.0,
+                   (best_partner >= 0) ? best_adf_t : 0.0,
+                   (best_partner >= 0) ? best_beta : 0.0));
    return (g_selected_partner >= 0);
   }
 
@@ -482,6 +598,7 @@ void Strategy_DisableSelectedPair()
    g_current_sigma = 0.0;
    g_pair_corr_breached = false;
    g_state_ready = false;
+   g_diag_signal_latched = false;
   }
 
 int Strategy_ClosePair(const int host_index, const int partner_index, const QM_ExitReason reason)
@@ -544,16 +661,23 @@ bool Strategy_OpenPartnerLeg(const int symbol_index,
                              const double weight_sum,
                              const string reason)
   {
+   g_last_prepare_reject = "";
    const string symbol = g_symbols[symbol_index];
    if(symbol == _Symbol || !QM_SymbolAssertOrLog(symbol))
+     {
+      g_last_prepare_reject = "PARTNER_SYMBOL";
       return false;
+     }
 
    const double entry = buy_leg ? SymbolInfoDouble(symbol, SYMBOL_ASK)
                                  : SymbolInfoDouble(symbol, SYMBOL_BID);
    const double stop_dist = Strategy_StopDistance(symbol);
    const double point = SymbolInfoDouble(symbol, SYMBOL_POINT);
    if(entry <= 0.0 || stop_dist <= 0.0 || point <= 0.0 || weight_sum <= 0.0)
+     {
+      g_last_prepare_reject = "PARTNER_QUOTE_OR_STOP";
       return false;
+     }
 
    QM_BasketOrderRequest breq;
    breq.symbol = symbol;
@@ -568,29 +692,47 @@ bool Strategy_OpenPartnerLeg(const int symbol_index,
    QM_RiskMode risk_mode;
    double risk_value;
    if(!Strategy_RiskForWeight(weight, weight_sum, risk_mode, risk_value))
+     {
+      g_last_prepare_reject = "PARTNER_RISK_MODE";
       return false;
+     }
 
    const double sl_points = stop_dist / point;
    breq.lots = QM_LotsForRisk(symbol, sl_points, risk_mode, risk_value);
    if(breq.lots <= 0.0)
+     {
+      g_last_prepare_reject = "PARTNER_LOTS";
       return false;
+     }
 
    ulong ticket = 0;
-   return QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket);
+   if(!QM_BasketOpenPosition(qm_ea_id, qm_news_mode_legacy, 20, breq, ticket))
+     {
+      g_last_prepare_reject = "PARTNER_ORDER";
+      return false;
+     }
+   return true;
   }
 
 bool Strategy_PreparePair(const int spread_direction, QM_EntryRequest &host_req)
   {
+   g_last_prepare_reject = "";
    const int host_index = Strategy_SymbolIndex(_Symbol);
    const int partner_index = g_selected_partner;
    if(host_index < 0 || partner_index < 0 || Strategy_HasPairPosition(host_index, partner_index))
+     {
+      g_last_prepare_reject = "PAIR_IDENTITY_OR_ALREADY_OPEN";
       return false;
+     }
 
    const double host_weight = 1.0;
    const double partner_weight = -g_selected_beta;
    const double weight_sum = MathAbs(host_weight) + MathAbs(partner_weight);
    if(weight_sum <= 0.0)
+     {
+      g_last_prepare_reject = "PAIR_WEIGHT";
       return false;
+     }
 
    const bool buy_host = (spread_direction * host_weight > 0.0);
    const bool buy_partner = (spread_direction * partner_weight > 0.0);
@@ -602,7 +744,10 @@ bool Strategy_PreparePair(const int spread_direction, QM_EntryRequest &host_req)
    const double host_stop_dist = Strategy_StopDistance(_Symbol);
    const int host_digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    if(host_entry <= 0.0 || host_stop_dist <= 0.0)
+     {
+      g_last_prepare_reject = "HOST_QUOTE_OR_STOP";
       return false;
+     }
 
    // Prepare the host before opening the partner so a local data defect cannot
    // leave an orphan. The partner is sent first; a failed partner aborts.
@@ -681,20 +826,52 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
    if(g_pair_corr_breached)
       return false;
-   if(Strategy_NoTradeFilter())
-      return false;
-   if(Strategy_NewsFilterHook(TimeCurrent()))
-      return false;
 
    int spread_direction = 0;
    if(g_current_z > strategy_entry_z)
       spread_direction = -1;
    else if(g_current_z < -strategy_entry_z)
       spread_direction = 1;
+
+   const bool signal_candidate = (spread_direction != 0);
+   const bool first_signal_bar = (signal_candidate && !g_diag_signal_latched);
+   if(!signal_candidate)
+      g_diag_signal_latched = false;
    else
+      g_diag_signal_latched = true;
+
+   if(first_signal_bar)
+      Strategy_DebugEvent(
+         "PAIR_SIGNAL_CANDIDATE",
+         StringFormat("{\"host\":\"%s\",\"partner\":\"%s\",\"z\":%.8f,\"corr\":%.8f,\"beta\":%.8f,\"direction\":%d}",
+                      _Symbol,
+                      g_symbols[g_selected_partner],
+                      g_current_z,
+                      g_current_corr,
+                      g_selected_beta,
+                      spread_direction));
+
+   if(Strategy_NoTradeFilter())
+     {
+      if(first_signal_bar)
+         Strategy_DebugEvent("PAIR_SIGNAL_REJECT", "{\"reason\":\"NO_TRADE_FILTER\"}");
+      return false;
+     }
+   if(Strategy_NewsFilterHook(TimeCurrent()))
+     {
+      if(first_signal_bar)
+         Strategy_DebugEvent("PAIR_SIGNAL_REJECT", "{\"reason\":\"NEWS_FILTER\"}");
+      return false;
+     }
+   if(!signal_candidate)
       return false;
 
-   return Strategy_PreparePair(spread_direction, req);
+   const bool prepared = Strategy_PreparePair(spread_direction, req);
+   if(!prepared && first_signal_bar)
+      Strategy_DebugEvent(
+         "PAIR_SIGNAL_REJECT",
+         StringFormat("{\"reason\":\"%s\"}", g_last_prepare_reject));
+   return prepared;
   }
 
 // Trade Management
@@ -821,6 +998,19 @@ int OnInit()
                           PERIOD_H4,
                           MathMax(strategy_formation_bars + 1,
                                   strategy_zscore_bars + 1));
+
+   Strategy_DebugEvent(
+      "STRATEGY_DIAG_INIT",
+      StringFormat("{\"host\":\"%s\",\"timeframe\":\"H4\",\"formation_bars\":%d,\"zscore_bars\":%d,\"min_corr\":%.8f,\"adf_t_max\":%.8f,\"entry_z\":%.8f,\"exit_z\":%.8f,\"risk_fixed\":%.8f,\"risk_percent\":%.8f}",
+                   _Symbol,
+                   strategy_formation_bars,
+                   strategy_zscore_bars,
+                   strategy_min_corr,
+                   strategy_adf_t_max,
+                   strategy_entry_z,
+                   strategy_exit_z,
+                   RISK_FIXED,
+                   RISK_PERCENT));
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_10025\",\"ea\":\"rw-fx-broad-pairs\"}");
    return INIT_SUCCEEDED;

@@ -3,16 +3,16 @@
 ; ea_id:        20304
 ; ea_slug:      wti-jumpbeta-reg
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   71d047967e5eebe60f42c89af7c9cb094e269743f790f790d2163f0d9b3e5dc3
+; build_hash:   0207c9feeea0fb13c2dc4f3acc92d16d27113213ff57398aa471cfdba55eb825
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20304
 qm_magic_slot_offset=0

@@ -1,0 +1,45 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        36002
+; ea_slug:      nnfx-kijunsen-absolute-strength-damiani
+; ea_version:   v5.0
+; set_version:  s20260905-stress-med
+; symbol:       EURUSD.DWX
+; timeframe:    D1
+; environment:  q05_stress_medium
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   cdbd1688f73081cb2f69e6211f8db73fb84d40b0b903208fef60151b1af6e7b7
+; author:       Development
+; date:         2026-09-05
+;==========================================================
+qm_ea_id=36002
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.0000
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_36002_nnfx-kijunsen-absolute-strength-damiani.md
+strategy_kijun_period=26
+strategy_tenkan_period=9
+strategy_senkou_period=52
+strategy_aso_period=10
+strategy_aroon_period=25
+strategy_aroon_threshold=70.0
+strategy_damiani_vis_period=13
+strategy_damiani_sed_period=40
+strategy_damiani_threshold=1.40
+strategy_atr_period=14
+strategy_sl_atr_mult=1.00
+strategy_tp_atr_mult=1.00
+strategy_tp1_fraction=0.50
+strategy_be_buffer_pips=1
+strategy_spread_atr_mult=1.80
+strategy_daily_loss_halt_pct=2.0
+strategy_daily_hard_stop_pct=2.5
+strategy_total_dd_halt_pct=5.0
+strategy_risk_percent=1.0
+strategy_per_trade_risk_cap_pct=1.0
+strategy_slippage_ticks=3

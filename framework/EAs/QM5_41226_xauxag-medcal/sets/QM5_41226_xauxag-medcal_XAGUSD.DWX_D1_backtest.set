@@ -3,16 +3,16 @@
 ; ea_id:        41226
 ; ea_slug:      xauxag-medcal
 ; ea_version:   v5.0
-; set_version:  s20260830-001
+; set_version:  s20260906-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   530edbe1fd5ff0b339f8c5a6ed9831c580e21325b4265ca48c1d3fe8ae92f78b
+; build_hash:   ecebcc79736717e5435e26f50e0545e2f0af452d281b2d3dc6e2cb35d57c7961
 ; author:       Development
-; date:         2026-08-30
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41226
 qm_magic_slot_offset=1

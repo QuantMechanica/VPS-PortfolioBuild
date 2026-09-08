@@ -3,16 +3,16 @@
 ; ea_id:        21527
 ; ea_slug:      wti-fallcorr-tr
 ; ea_version:   v5.0
-; set_version:  s20260815-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   23049318eff85b884968ee17f78e40bf431059e58f62bc9b779351021aac51a5
+; build_hash:   19b3e8953a5ea93691d61205a89042dd09591cb29ff2c5a5da05d9cc58dc166d
 ; author:       Development
-; date:         2026-08-15
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=21527
 qm_magic_slot_offset=0

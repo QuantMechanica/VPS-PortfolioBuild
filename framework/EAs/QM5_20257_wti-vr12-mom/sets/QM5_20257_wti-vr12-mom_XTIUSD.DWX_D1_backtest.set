@@ -3,16 +3,16 @@
 ; ea_id:        20257
 ; ea_slug:      wti-vr12-mom
 ; ea_version:   v5.0
-; set_version:  s20260807-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   fb537cb8a896901a7fe6f10753270f04478f9f66a62877206b8362f3f8ca7d15
+; build_hash:   71c77c33ab5b73cb1813722607ede6bc05d3cebb46b256848fbfa1ab9dea96a5
 ; author:       Development
-; date:         2026-08-07
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20257
 qm_magic_slot_offset=0

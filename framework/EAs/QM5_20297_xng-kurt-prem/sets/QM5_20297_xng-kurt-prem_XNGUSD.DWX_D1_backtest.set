@@ -1,18 +1,18 @@
-﻿;==========================================================
+;==========================================================
 ; QM5 Set File
 ; ea_id:        20297
 ; ea_slug:      xng-kurt-prem
 ; ea_version:   v5.0
-; set_version:  s20260813-001
+; set_version:  s20260906-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f139c073df89f4fb3fe0f9041137f1339beebdff63f96b299fdd506850222781
+; build_hash:   c14f2dcfe15aa58431e48d24c98826b175c4894751f802aff4d5666b1ff0c223
 ; author:       Development
-; date:         2026-08-13
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=20297
 qm_magic_slot_offset=0

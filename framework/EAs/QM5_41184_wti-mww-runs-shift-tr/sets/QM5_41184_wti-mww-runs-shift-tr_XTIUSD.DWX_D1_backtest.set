@@ -3,31 +3,24 @@
 ; ea_id:        41184
 ; ea_slug:      wti-mww-runs-shift-tr
 ; ea_version:   v5.0
-; set_version:  s20260827-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   06b377a66a13af2f3abf662f642ac6ff37b8a26bcd27468b38a707702b9e9d99
 ; author:       Development
-; date:         2026-08-27
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41184
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_rng_seed=42
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_endpoint_count=10
 strategy_block_size=5
 strategy_max_label_runs=6

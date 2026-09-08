@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   247baf5638cc28f252821e65fe9935a28e825816c9716ba4015014665db82610
 ; author:       Development
 ; date:         2026-09-06
 ;==========================================================
@@ -19,7 +19,8 @@ qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; strategy-specific params from the approved card
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xng_symbol=XNGUSD.DWX
 strategy_history_bars_d1=30
 strategy_min_week_sessions=3

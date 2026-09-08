@@ -3,16 +3,16 @@
 ; ea_id:        41267
 ; ea_slug:      wti-mmood-scale-tr
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f972c8c1424c9a3ec23260581e7d97c4b0129a6c3b9626e3e94cdc3d72431e5a
+; build_hash:   ad55d309f2d81100cad117b2e82a844ef382a6c3582a11f21eea3f2403fe3aae
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41267
 qm_magic_slot_offset=0

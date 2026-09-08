@@ -3,16 +3,16 @@
 ; ea_id:        41114
 ; ea_slug:      wti-mhalfagree-mom
 ; ea_version:   v5.0
-; set_version:  s20260825-001
+; set_version:  s20260906-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   61ead2935395a791071fe20e75ebd54c5a8d54e214ad445a22f812f5be4ed170
+; build_hash:   3e85807651ea89a815b692f67003ec4aef2674a9793c65725f9f819a60173e7f
 ; author:       Development
-; date:         2026-08-25
+; date:         2026-09-06
 ;==========================================================
 qm_ea_id=41114
 qm_magic_slot_offset=0
