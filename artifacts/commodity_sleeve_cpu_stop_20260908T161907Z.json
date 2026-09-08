@@ -1,0 +1,49 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-08T16:19:07.4904492Z",
+  "branch": "agents/board-advisor",
+  "head_observed": "182fe5a6db4be1611f26118ab1ed3620674df263",
+  "mission": "new commodity/energy sleeve card, build, and Q02 enqueue",
+  "provisional_edge": {
+    "slug": "wti-tsmom8-h2",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "sign of exact prior eight completed broker-month WTI log return, evaluated at odd-month boundaries and held for a fixed two-month package",
+    "source_family": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250",
+    "dedup_observation": "Registry review found built two-month-hold WTI siblings at 1, 2, 3, 4, 5, 6, 7, 9, and 12 months, but no exact eight-month formation identity. No governed identity was allocated before the stop."
+  },
+  "cpu_admission": {
+    "samples_pct": [
+      99.902,
+      100.0,
+      99.708,
+      98.927,
+      95.418
+    ],
+    "average_pct": 98.791,
+    "maximum_pct": 100.0,
+    "ceiling_pct": 97.0,
+    "rule": "average_and_maximum_must_be_strictly_below_ceiling",
+    "admitted": false
+  },
+  "disk_free_gb": 123.302,
+  "actions_refused": [
+    "source_approval_creation",
+    "strategy_card_creation",
+    "ea_id_allocation",
+    "magic_allocation",
+    "mq5_generation",
+    "pacer_input_pin_audit",
+    "compile_enqueue",
+    "q02_enqueue",
+    "manual_compile",
+    "manual_backtest",
+    "terminal_control"
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
