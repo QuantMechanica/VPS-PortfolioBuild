@@ -145,6 +145,7 @@ def _summary_provenance(summary_path: Path | None, setfile: Path | None = None) 
         "ex5_sha256": binary_source.get("sha256"),
         "set_sha256": set_source.get("sha256") or _sha256_path(setfile),
         "report_sha256": run.get("report_sha256") or _sha256_path(report_path),
+        "report_path": str(report_path) if report_path else None,
     }
     return {key: str(value) for key, value in values.items() if value}
 

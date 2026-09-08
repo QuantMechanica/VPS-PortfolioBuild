@@ -31,6 +31,19 @@ def test_child_failure_diagnostics_are_unique_and_hash_bound(tmp_path):
     assert first["runner_log_sha256"] == hashlib.sha256(message.encode()).hexdigest()
 
 
+def test_summary_provenance_retains_native_report_path_with_its_hash(tmp_path):
+    report = tmp_path / "native.htm"
+    report.write_bytes(b"native report")
+    digest = hashlib.sha256(report.read_bytes()).hexdigest()
+    summary = tmp_path / "summary.json"
+    summary.write_text(json.dumps({"runs": [{"report_canonical_path": str(report),
+                                              "report_sha256": digest}]}))
+    proof = q05._summary_provenance(summary)
+    assert proof["report_path"] == str(report)
+    assert proof["report_sha256"] == digest
+    assert "ex5_sha256" not in proof
+
+
 def _old_identity_summary(tmp_path: Path) -> Path:
     summary = tmp_path / "summary.json"
     summary.parent.mkdir(parents=True, exist_ok=True)
