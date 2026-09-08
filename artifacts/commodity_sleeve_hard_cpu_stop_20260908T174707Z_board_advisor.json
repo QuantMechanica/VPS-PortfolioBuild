@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.0",
+  "recorded_at_utc": "2026-09-08T17:47:07.4902204Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "752f5c6ec9",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "mission": "one new structural low-frequency commodity or energy card, branch build, and paced Q02 enqueue",
+  "admission": {
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [97.0, 96.0, 91.0, 91.0, 94.0],
+    "cpu_average_percent": 93.8,
+    "cpu_maximum_percent": 97.0,
+    "cpu_permit": false,
+    "tester_drain_active_threshold": 7,
+    "active_work_items": 7,
+    "tester_drain_permit": false,
+    "free_physical_memory_gib": 2.629,
+    "total_physical_memory_gib": 63.12,
+    "d_drive_free_gib": 105.419
+  },
+  "farm_db": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "open_mode": "ro_immutable_snapshot",
+    "active_rows": [
+      {
+        "terminal": "T1",
+        "phase": "Q08",
+        "ea_id": "QM5_41159",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "c3f1d79d-8b84-4aae-82d4-3fad6d0b7f4d"
+      },
+      {
+        "terminal": "T2",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41301",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "c2762d16-a860-54bc-8919-cc6ba325b89d"
+      },
+      {
+        "terminal": "T4",
+        "phase": "Q07",
+        "ea_id": "QM5_41167",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "869da083-b271-4ce6-a054-966163939a6c"
+      },
+      {
+        "terminal": "T5",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41324",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "cd0faaec-62db-5190-91b1-851bc1e5f441"
+      },
+      {
+        "terminal": "T6",
+        "phase": "Q02",
+        "ea_id": "QM5_11240",
+        "symbol": "GBPUSD.DWX",
+        "work_item_id": "a529dfae-c0c4-414d-a651-b512917cabd6"
+      },
+      {
+        "terminal": "T7",
+        "phase": "Q02",
+        "ea_id": "QM5_41254",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "87dfa429-4c3c-46e8-a8da-1f1fb6485d8a"
+      },
+      {
+        "terminal": "T9",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41345",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "4cedaf7a-a5c9-527f-8cce-03af58ad0195"
+      }
+    ]
+  },
+  "actions_refused": [
+    "strategy_selection",
+    "source_approval",
+    "strategy_card_creation",
+    "ea_identity_allocation",
+    "ea_source_write",
+    "framework_input_pin_audit",
+    "compile_enqueue",
+    "compile",
+    "manual_backtest",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "pacer_guard": {
+    "generated_mq5_written": false,
+    "source_pin_audit_required": false,
+    "framework_input_pin_finding": null,
+    "compile_enqueued": false,
+    "q02_enqueued": false
+  },
+  "safety": {
+    "farm_db_mutated": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
