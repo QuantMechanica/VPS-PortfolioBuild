@@ -1,0 +1,98 @@
+{
+  "schema_version": "1.0",
+  "recorded_at_utc": "2026-09-08T16:30:28.3375125Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "002ff8885a6535b10512fdc8675816b1e1f07484",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "admission": {
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [
+      100.0,
+      99.6133,
+      94.149625,
+      72.602095,
+      63.303906
+    ],
+    "cpu_average_percent": 85.933785,
+    "cpu_maximum_percent": 100.0,
+    "cpu_permit": false,
+    "tester_drain_active_threshold": 7,
+    "active_work_items": 7,
+    "tester_drain_permit": false,
+    "d_drive_free_gib": 122.571
+  },
+  "farm_db": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "open_mode": "ro",
+    "quick_check": "ok",
+    "active_rows": [
+      {
+        "terminal": "T1",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41301",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "f66211a5-64dd-58a3-9cee-3dffcd72b0e5"
+      },
+      {
+        "terminal": "T10",
+        "phase": "Q10_NEWS",
+        "ea_id": "QM5_11167",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "6797ed1c-597a-4d44-82f9-7379d45b5e06"
+      },
+      {
+        "terminal": "T2",
+        "phase": "Q04",
+        "ea_id": "QM5_41158",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "308de21d-ec5a-40be-8deb-73cbc01b6ec4"
+      },
+      {
+        "terminal": "T4",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41345",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "46258e3e-73e9-5587-a241-1b906f62a218"
+      },
+      {
+        "terminal": "T7",
+        "phase": "Q05",
+        "ea_id": "QM5_41167",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "ac702827-1f2c-40f6-adf9-41c94e00b469"
+      },
+      {
+        "terminal": "T8",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41305",
+        "symbol": "XTIUSD.DWX",
+        "work_item_id": "5cacea73-113c-5437-95dd-2e138a0361e4"
+      },
+      {
+        "terminal": "T9",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41324",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "7221ea8e-693f-5f68-be49-9a543a8bb5f9"
+      }
+    ]
+  },
+  "actions_refused": [
+    "strategy_card_ranking",
+    "farm_claim",
+    "ea_source_write",
+    "framework_input_pin_audit",
+    "compile_enqueue",
+    "compile",
+    "smoke",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "safety": {
+    "farm_db_mutated": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "deploy_manifest_touched": false
+  }
+}
