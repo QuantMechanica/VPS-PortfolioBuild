@@ -1,0 +1,24 @@
+{
+  "status": "PASS",
+  "utc": "2026-09-07T22:17:43.610083+00:00",
+  "fresh_runtime_keys": 44,
+  "loaded_roundtrip_keys": 45,
+  "all_non_visual_inputs_unchanged": true,
+  "candidate_equals_native_roundtrip": true,
+  "only_differences": {
+    "qm_panel_build_hash": [
+      "9d55ea09",
+      "b91f81a2"
+    ],
+    "qm_design_version": [
+      null,
+      "2"
+    ]
+  },
+  "expert_trading_permission": 1,
+  "roundtrip_file": "D:\\QM\\console_design_20260907\\ftmo_11421_design2_loaded_verified_2218Z.set",
+  "roundtrip_sha256": "4d5297b30f79c56e5cfc20cf16dfafdd0acea7d72cc1e250a7041ffa23e48447",
+  "risk_percent": "0.3125",
+  "risk_fixed": "0.0",
+  "portfolio_weight": "1.0"
+}

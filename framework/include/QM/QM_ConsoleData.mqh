@@ -3,8 +3,22 @@
 
 #include <QM/QM_ConsoleModel.mqh>
 
-// Read-only data producer. Existing v3 closed-trade accounting is retained.
+// Read-only producer. Ownership follows the entry magic + position identifier,
+// not the magic of a closing deal (manual and governor exits can differ).
 #define QM_PANEL_REFRESH_SECONDS 30
+
+struct QMPanelDeal
+  {
+   ulong position_id;
+   long magic;
+   datetime when;
+   ENUM_DEAL_ENTRY entry;
+   ENUM_DEAL_REASON reason;
+   double profit;
+   double swap;
+   double commission;
+   double fee;
+  };
 
 struct QMPanelTrade
   {
@@ -13,6 +27,7 @@ struct QMPanelTrade
    datetime close_time;
    ENUM_DEAL_REASON close_reason;
    bool has_exit;
+   bool ownership_conflict;
   };
 
 struct QMPanelPerformance
@@ -24,6 +39,8 @@ struct QMPanelPerformance
    int closed_week;
    double today_net;
    double week_net;
+   double today_gross;
+   double week_gross;
    int closed_total;
    int wins;
    int losses;
@@ -175,13 +192,28 @@ int QM_PanelFindTrade(QMPanelTrade &trades[], const ulong position_id)
       if(trades[i].position_id == position_id)
          return i;
    const int index = ArraySize(trades);
-   ArrayResize(trades, index + 1);
+   if(ArrayResize(trades,index+1)!=index+1) return -1;
    trades[index].position_id = position_id;
    trades[index].pnl = 0.0;
    trades[index].close_time = 0;
    trades[index].close_reason = DEAL_REASON_CLIENT;
    trades[index].has_exit = false;
+   trades[index].ownership_conflict = false;
    return index;
+  }
+
+int QM_PanelTradeIndex(const QMPanelTrade &trades[],const ulong position_id)
+  {
+   for(int i=0;i<ArraySize(trades);++i)
+      if(trades[i].position_id==position_id) return i;
+   return -1;
+  }
+
+bool QM_PanelIdentifierInSnapshot(const ulong &open_ids[],const ulong position_id)
+  {
+   for(int i=0;i<ArraySize(open_ids);++i)
+      if(open_ids[i]==position_id) return true;
+   return false;
   }
 
 bool QM_PanelPositionIdentifierOpen(const ulong position_id)
@@ -218,6 +250,7 @@ void QM_PanelResetPerformance(QMPanelPerformance &stats)
    stats.closed_today = 0;
    stats.closed_since_attach = 0;
    stats.closed_week=0; stats.today_net=0.0; stats.week_net=0.0;
+   stats.today_gross=0.0; stats.week_gross=0.0;
    stats.closed_total = 0;
    stats.wins = 0;
    stats.losses = 0;
@@ -243,14 +276,17 @@ void QM_PanelResetPerformance(QMPanelPerformance &stats)
    stats.account_today_pnl = 0.0;
   }
 
-bool QM_PanelBuildPerformance(const long magic, const datetime attached_at,
-                              const double start_equity,
-                              QMPanelPerformance &stats)
+// Pure aggregation over a read-only snapshot; also used by native fixtures.
+// Day/week cashflow uses each deal's broker timestamp, including entry costs
+// and partial exits. Counts refer to completely closed position identifiers.
+// DD is the closed-position NET curve only, never reconstructed equity DD.
+bool QM_PanelAggregatePerformance(const QMPanelDeal &deals[],const ulong &open_ids[],
+                                  const long magic,const datetime now,
+                                  const datetime attached_at,const double start_equity,
+                                  QMPanelPerformance &stats)
   {
    QM_PanelResetPerformance(stats);
-   const datetime now = TimeCurrent();
-   if(!HistorySelect(0, now))
-      return false;
+   if(now<=0) { stats.error="N/A (broker clock unavailable)"; return false; }
 
    MqlDateTime day;
    TimeToStruct(now, day);
@@ -260,38 +296,40 @@ bool QM_PanelBuildPerformance(const long magic, const datetime attached_at,
    const datetime today_start = StructToTime(day);
    const datetime week_start=today_start-(day.day_of_week==0 ? 6 : day.day_of_week-1)*86400;
    QMPanelTrade trades[];
-   const int deals_total = HistoryDealsTotal();
+   const int deals_total = ArraySize(deals);
+   // Establish ownership first. OUT deals alone cannot establish provenance.
    for(int i = 0; i < deals_total; ++i)
      {
-      const ulong deal = HistoryDealGetTicket(i);
-      if(deal == 0)
-         continue;
-      const long type = HistoryDealGetInteger(deal, DEAL_TYPE);
-      if(type != DEAL_TYPE_BUY && type != DEAL_TYPE_SELL)
-         continue;
-      const datetime when = (datetime)HistoryDealGetInteger(deal, DEAL_TIME);
-      const double value = HistoryDealGetDouble(deal, DEAL_PROFIT) +
-                           HistoryDealGetDouble(deal, DEAL_SWAP) +
-                           HistoryDealGetDouble(deal, DEAL_COMMISSION) +
-                           HistoryDealGetDouble(deal, DEAL_FEE);
+      if(deals[i].position_id>0 && deals[i].magic==magic && deals[i].when<=now &&
+         (deals[i].entry==DEAL_ENTRY_IN || deals[i].entry==DEAL_ENTRY_INOUT))
+         if(QM_PanelFindTrade(trades,deals[i].position_id)<0)
+           { stats.error="N/A (history allocation failed)"; return false; }
+     }
+   for(int i = 0; i < deals_total; ++i)
+     {
+      const QMPanelDeal deal=deals[i];
+      const datetime when=deal.when;
+      if(when>now) continue;
+      const double value=deal.profit+deal.swap+deal.commission+deal.fee;
+      if(!MathIsValidNumber(value))
+        { QM_PanelResetPerformance(stats); stats.error="N/A (invalid deal value)"; return false; }
       if(when >= today_start)
          stats.account_today_pnl += value;
-      if((long)HistoryDealGetInteger(deal, DEAL_MAGIC) != magic)
-         continue;
-      if(when>=today_start) stats.today_net+=value;
-      if(when>=week_start) stats.week_net+=value;
-      const ulong position_id = (ulong)HistoryDealGetInteger(deal, DEAL_POSITION_ID);
-      const int index = QM_PanelFindTrade(trades, position_id);
+      const int index=QM_PanelTradeIndex(trades,deal.position_id);
+      if(index<0) continue;
+      if(deal.magic!=magic && (deal.entry==DEAL_ENTRY_IN || deal.entry==DEAL_ENTRY_INOUT))
+         trades[index].ownership_conflict=true;
+      if(when>=today_start) { stats.today_net+=value; stats.today_gross+=deal.profit; }
+      if(when>=week_start) { stats.week_net+=value; stats.week_gross+=deal.profit; }
       trades[index].pnl += value;
-      const long entry = HistoryDealGetInteger(deal, DEAL_ENTRY);
+      const ENUM_DEAL_ENTRY entry=deal.entry;
       if(entry == DEAL_ENTRY_OUT || entry == DEAL_ENTRY_OUT_BY || entry == DEAL_ENTRY_INOUT)
         {
          trades[index].has_exit = true;
          if(when >= trades[index].close_time)
            {
             trades[index].close_time = when;
-            trades[index].close_reason =
-               (ENUM_DEAL_REASON)HistoryDealGetInteger(deal, DEAL_REASON);
+            trades[index].close_reason=deal.reason;
            }
         }
      }
@@ -299,15 +337,23 @@ bool QM_PanelBuildPerformance(const long magic, const datetime attached_at,
    QMPanelTrade closed[];
    for(int i = 0; i < ArraySize(trades); ++i)
      {
-      if(!trades[i].has_exit || QM_PanelPositionIdentifierOpen(trades[i].position_id))
+      if(trades[i].ownership_conflict)
+        {
+         QM_PanelResetPerformance(stats);
+         stats.error="N/A (mixed-magic netting history)";
+         return false;
+        }
+      if(!trades[i].has_exit || QM_PanelIdentifierInSnapshot(open_ids,trades[i].position_id))
          continue;
       const int index = ArraySize(closed);
-      ArrayResize(closed, index + 1);
+      if(ArrayResize(closed,index+1)!=index+1)
+        { QM_PanelResetPerformance(stats); stats.error="N/A (history allocation failed)"; return false; }
       closed[index] = trades[i];
      }
    for(int i = 0; i < ArraySize(closed) - 1; ++i)
       for(int j = i + 1; j < ArraySize(closed); ++j)
-         if(closed[j].close_time < closed[i].close_time)
+         if(closed[j].close_time < closed[i].close_time ||
+            (closed[j].close_time==closed[i].close_time && closed[j].position_id<closed[i].position_id))
            {
             QMPanelTrade swap = closed[i];
             closed[i] = closed[j];
@@ -358,8 +404,6 @@ bool QM_PanelBuildPerformance(const long magic, const datetime attached_at,
       peak = MathMax(peak, curve);
       stats.max_drawdown_money = MathMax(stats.max_drawdown_money, peak - curve);
      }
-   const double final_curve = curve + QM_PanelFloatingForMagic(magic);
-   stats.max_drawdown_money = MathMax(stats.max_drawdown_money, peak - final_curve);
    stats.max_drawdown_percent = start_equity > 0.0
       ? stats.max_drawdown_money / start_equity * 100.0 : 0.0;
    stats.current_win_streak = run_wins;
@@ -380,6 +424,69 @@ bool QM_PanelBuildPerformance(const long magic, const datetime attached_at,
    stats.valid = true;
    stats.error = "";
    return true;
+  }
+
+bool QM_PanelBuildPerformance(const long magic,const datetime attached_at,
+                              const double start_equity,QMPanelPerformance &stats)
+  {
+   QM_PanelResetPerformance(stats);
+   const datetime now=TimeCurrent();
+   if(!HistorySelect(0,now)) return false;
+   const int count=HistoryDealsTotal();
+   QMPanelDeal deals[];
+   if(ArrayResize(deals,count)!=count) { stats.error="N/A (history allocation failed)"; return false; }
+   int collected=0;
+   for(int i=0;i<count;++i)
+     {
+      const ulong ticket=HistoryDealGetTicket(i);
+      if(ticket==0) { stats.error="N/A (incomplete deal history)"; return false; }
+      const long type=HistoryDealGetInteger(ticket,DEAL_TYPE);
+      if(type!=DEAL_TYPE_BUY && type!=DEAL_TYPE_SELL) continue;
+      QMPanelDeal item;
+      item.position_id=(ulong)HistoryDealGetInteger(ticket,DEAL_POSITION_ID);
+      item.magic=(long)HistoryDealGetInteger(ticket,DEAL_MAGIC);
+      item.when=(datetime)HistoryDealGetInteger(ticket,DEAL_TIME);
+      item.entry=(ENUM_DEAL_ENTRY)HistoryDealGetInteger(ticket,DEAL_ENTRY);
+      item.reason=(ENUM_DEAL_REASON)HistoryDealGetInteger(ticket,DEAL_REASON);
+      item.profit=HistoryDealGetDouble(ticket,DEAL_PROFIT);
+      item.swap=HistoryDealGetDouble(ticket,DEAL_SWAP);
+      item.commission=HistoryDealGetDouble(ticket,DEAL_COMMISSION);
+      item.fee=HistoryDealGetDouble(ticket,DEAL_FEE);
+      deals[collected++]=item;
+     }
+   ArrayResize(deals,collected);
+   // Standalone balance/commission records without position provenance are
+   // not guessed into this EA; trade-deal commission, swap and fee are included.
+   ulong open_ids[];
+   const int positions=PositionsTotal();
+   if(ArrayResize(open_ids,positions)!=positions)
+     { stats.error="N/A (position snapshot allocation failed)"; return false; }
+   int open_count=0;
+   for(int i=0;i<positions;++i)
+     {
+      const ulong ticket=PositionGetTicket(i);
+      if(ticket>0 && PositionSelectByTicket(ticket))
+         open_ids[open_count++]=(ulong)PositionGetInteger(POSITION_IDENTIFIER);
+     }
+   ArrayResize(open_ids,open_count);
+   return QM_PanelAggregatePerformance(deals,open_ids,magic,now,attached_at,start_equity,stats);
+  }
+
+string QM_PanelProfitFactorText(const QMPanelPerformance &stats)
+  {
+   if(stats.closed_total==0 || (stats.gross_profit==0.0 && stats.gross_loss==0.0)) return "N/A";
+   return stats.profit_factor_infinite?"INF":QM_PanelFormatNumber(stats.profit_factor,2);
+  }
+
+string QM_PanelWinRateText(const QMPanelPerformance &stats)
+  {
+   return stats.closed_total>0?QM_PanelPercent((double)stats.wins/stats.closed_total*100.0):"N/A";
+  }
+
+string QM_PanelSLRiskText(const double money,const int unpriced,const double equity)
+  {
+   if(unpriced>0) return "UNPRICED - "+IntegerToString(unpriced)+" missing SL / contract";
+   return (equity>0.0?QM_PanelPercent(money/equity*100.0):"N/A")+" | "+QM_PanelMoney(money);
   }
 
 
@@ -459,8 +566,8 @@ public:
          QM_PanelBuildPerformance(m_magic,m_attached,m_start_equity,m_stats);
          m_last_scan_ms=now_ms; m_scanned=true; m_dirty=false;
         }
-      double open_risk=0.0;
-      int unpriced=0;
+      double open_risk=0.0,pending_risk=0.0;
+      int unpriced=0,pending_unpriced=0;
       for(int i=PositionsTotal()-1;i>=0;--i)
         {
          const ulong ticket=PositionGetTicket(i);
@@ -482,37 +589,53 @@ public:
          if(ticket==0 || !OrderSelect(ticket) || (long)OrderGetInteger(ORDER_MAGIC)!=m_magic) continue;
          const ENUM_ORDER_TYPE type=(ENUM_ORDER_TYPE)OrderGetInteger(ORDER_TYPE);
          const datetime expiry=(datetime)OrderGetInteger(ORDER_TIME_EXPIRATION);
-         if(type<ORDER_TYPE_BUY_LIMIT || type>ORDER_TYPE_SELL_STOP_LIMIT ||
-            OrderGetDouble(ORDER_VOLUME_CURRENT)<=0.0 || (expiry>0 && expiry<=TimeCurrent())) continue;
-         ++snapshot.pending_orders;
-         AddExposure(snapshot,ticket,true);
+          if(type<ORDER_TYPE_BUY_LIMIT || type>ORDER_TYPE_SELL_STOP_LIMIT ||
+             OrderGetDouble(ORDER_VOLUME_CURRENT)<=0.0 || (expiry>0 && expiry<=TimeCurrent())) continue;
+          ++snapshot.pending_orders;
+          const bool buy=type==ORDER_TYPE_BUY_LIMIT || type==ORDER_TYPE_BUY_STOP || type==ORDER_TYPE_BUY_STOP_LIMIT;
+          const double sl=OrderGetDouble(ORDER_SL);
+          double projected=0.0;
+          if(sl<=0.0 || !OrderCalcProfit(buy?ORDER_TYPE_BUY:ORDER_TYPE_SELL,
+             OrderGetString(ORDER_SYMBOL),OrderGetDouble(ORDER_VOLUME_CURRENT),
+             OrderGetDouble(ORDER_PRICE_OPEN),sl,projected)) ++pending_unpriced;
+          else pending_risk+=MathMax(0.0,-projected);
+          AddExposure(snapshot,ticket,true);
         }
       if(ArraySize(snapshot.exposure)>3)
          QM_ConsoleAddLine(snapshot.live,"Additional exposure",IntegerToString(ArraySize(snapshot.exposure)-3)+" more");
       const double equity=AccountInfoDouble(ACCOUNT_EQUITY);
-      QM_ConsoleAddLine(snapshot.risk,"Open exposure",unpriced>0?
-         "UNPRICED - "+IntegerToString(unpriced)+" missing SL / contract":
-         QM_PanelPercent(equity>0.0?open_risk/equity*100.0:0.0)+" | "+QM_PanelMoney(open_risk),
+      // Entry-to-SL price risk, excluding future slippage and commission. This
+      // is not current-equity-to-stop drawdown and not an FTMO loss allowance.
+      QM_ConsoleAddLine(snapshot.risk,"Position SL risk",QM_PanelSLRiskText(open_risk,unpriced,equity),
          unpriced>0?QM_GATE_WARN:QM_GATE_NA);
+      if(snapshot.pending_orders>0)
+         QM_ConsoleAddLine(snapshot.risk,"Pending SL risk",QM_PanelSLRiskText(pending_risk,pending_unpriced,equity),
+            pending_unpriced>0?QM_GATE_WARN:QM_GATE_NA);
       if(!m_stats.valid)
         {
-         snapshot.today="N/A - history unavailable"; snapshot.week=snapshot.today;
+         snapshot.today=m_stats.error; snapshot.week=snapshot.today;
          QM_ConsoleAddLine(snapshot.performance,"History",m_stats.error,QM_GATE_WARN);
          return;
         }
-      snapshot.today=IntegerToString(m_stats.closed_today)+" trades | "+QM_PanelMoney(m_stats.today_net,true);
-      snapshot.week=IntegerToString(m_stats.closed_week)+" trades | "+QM_PanelMoney(m_stats.week_net,true);
-      const double win_rate=m_stats.closed_total>0?(double)m_stats.wins/m_stats.closed_total*100.0:0.0;
+      snapshot.today=IntegerToString(m_stats.closed_today)+" closed | net "+QM_PanelMoney(m_stats.today_net,true);
+      snapshot.week=IntegerToString(m_stats.closed_week)+" closed | net "+QM_PanelMoney(m_stats.week_net,true);
       const double net_pct=m_start_equity>0.0?m_stats.net_profit/m_start_equity*100.0:0.0;
-      QM_ConsoleAddLine(snapshot.performance,"Trades today / attach / all",StringFormat("%d / %d / %d",m_stats.closed_today,m_stats.closed_since_attach,m_stats.closed_total));
-      QM_ConsoleAddLine(snapshot.performance,"Wins / losses | win rate",StringFormat("%d / %d | %s",m_stats.wins,m_stats.losses,QM_PanelPercent(win_rate)));
-      QM_ConsoleAddLine(snapshot.performance,"Net P/L | attach equity",QM_PanelMoney(m_stats.net_profit,true)+" | "+QM_PanelPercent(net_pct,true),m_stats.net_profit<0.0?QM_GATE_BLOCK:QM_GATE_PASS);
-      QM_ConsoleAddLine(snapshot.performance,"Gross profit / loss",QM_PanelMoney(m_stats.gross_profit,true)+" / "+QM_PanelMoney(m_stats.gross_loss));
-      QM_ConsoleAddLine(snapshot.performance,"Profit factor / expectancy",(m_stats.profit_factor_infinite?"INF":QM_PanelFormatNumber(m_stats.profit_factor,2))+" / "+QM_PanelMoney(m_stats.expectancy,true));
-      QM_ConsoleAddLine(snapshot.performance,"Average win / loss",QM_PanelMoney(m_stats.average_win,true)+" / "+QM_PanelMoney(m_stats.average_loss));
-      QM_ConsoleAddLine(snapshot.performance,"Max drawdown | attach equity",QM_PanelMoney(m_stats.max_drawdown_money)+" | "+QM_PanelPercent(m_stats.max_drawdown_percent));
+      QM_ConsoleAddLine(snapshot.performance,"History scope","Closed positions | available history");
+      QM_ConsoleAddLine(snapshot.performance,"Closed today / attach / all",StringFormat("%d / %d / %d",m_stats.closed_today,m_stats.closed_since_attach,m_stats.closed_total));
+      QM_ConsoleAddLine(snapshot.performance,"Wins / losses | win rate",StringFormat("%d / %d | %s",m_stats.wins,m_stats.losses,QM_PanelWinRateText(m_stats)));
+      QM_ConsoleAddLine(snapshot.performance,"Net closed P/L | attach equity",QM_PanelMoney(m_stats.net_profit,true)+" | "+
+         (m_start_equity>0.0?QM_PanelPercent(net_pct,true):"N/A"),
+         m_stats.net_profit<0.0?QM_GATE_BLOCK:(m_stats.net_profit>0.0?QM_GATE_PASS:QM_GATE_NA));
+      QM_ConsoleAddLine(snapshot.performance,"Winning / losing net P/L",QM_PanelMoney(m_stats.gross_profit,true)+" / "+QM_PanelMoney(m_stats.gross_loss));
+      QM_ConsoleAddLine(snapshot.performance,"Profit factor / expectancy",QM_PanelProfitFactorText(m_stats)+" / "+
+         (m_stats.closed_total>0?QM_PanelMoney(m_stats.expectancy,true):"N/A"));
+      QM_ConsoleAddLine(snapshot.performance,"Average win / loss",(m_stats.wins>0?QM_PanelMoney(m_stats.average_win,true):"N/A")+" / "+
+         (m_stats.losses>0?QM_PanelMoney(m_stats.average_loss):"N/A"));
+      QM_ConsoleAddLine(snapshot.performance,"Closed-trade DD | attach equity",m_stats.closed_total>0?
+         QM_PanelMoney(m_stats.max_drawdown_money)+" | "+(m_start_equity>0.0?QM_PanelPercent(m_stats.max_drawdown_percent):"N/A"):"N/A");
       QM_ConsoleAddLine(snapshot.performance,"Streaks now / longest",StringFormat("W%d L%d / W%d L%d",m_stats.current_win_streak,m_stats.current_loss_streak,m_stats.longest_win_streak,m_stats.longest_loss_streak));
-      QM_ConsoleAddLine(snapshot.performance,"Best / worst",QM_PanelMoney(m_stats.best_trade,true)+" / "+QM_PanelMoney(m_stats.worst_trade));
+      QM_ConsoleAddLine(snapshot.performance,"Best / worst",m_stats.closed_total>0?
+         QM_PanelMoney(m_stats.best_trade,true)+" / "+QM_PanelMoney(m_stats.worst_trade):"N/A");
       QM_ConsoleAddLine(snapshot.performance,"Last closed trade",m_stats.closed_total>0?QM_PanelMoney(m_stats.last_trade,true)+" | "+QM_PanelDateTime(m_stats.last_trade_time)+" BT":"No closed trades");
       QM_ConsoleAddLine(snapshot.performance,"Account balance / equity",QM_PanelMoney(AccountInfoDouble(ACCOUNT_BALANCE))+" / "+QM_PanelMoney(equity));
      }

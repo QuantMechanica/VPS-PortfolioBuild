@@ -3,7 +3,7 @@
 #property description "QM5_11421 ohlc-daily-squeeze-reversal-d1 — OHLC squeeze reversal (D1, pending-stop)"
 
 #include <QM/QM_Common.mqh>
-#include <QM/QM_ChartPanel.mqh>
+#include <QM/QM_ChartPanelCompare.mqh>
 
 // =============================================================================
 // QuantMechanica V5 EA — QM5_11421 ohlc-daily-squeeze-reversal-d1
@@ -52,6 +52,7 @@ input bool   qm_show_chart_panel        = true;
 input bool   qm_apply_chart_scheme      = true;
 input string qm_panel_build_hash        = "UNBOUND";
 input QM_ConsoleMode qm_dashboard_mode  = QM_CONSOLE_FULL;
+input QM_ConsoleDesign qm_design_version = QM_DESIGN_2; // 01/02 also switches in-chart without EA restart
 input int    qm_visual_scale            = 100; // 80-150, presentation only
 input QM_ConsoleLocale qm_number_locale = QM_LOCALE_DE_DE;
 input bool   qm_show_active_range       = true;
@@ -88,7 +89,7 @@ input int    strategy_pending_ttl_bars  = 1;      // pending order lives this ma
 input double strategy_spread_cap_pips   = 25.0;   // skip only a genuinely WIDE spread (fail-open on .DWX zero spread)
 input bool   strategy_enable_long       = true;   // mirror LONG squeeze (descending closes); SHORT always on
 
-CQMChartPanel g_qm_signature_panel;
+CQMChartPanelCompare g_qm_signature_panel;
 // EA identity comes from the registered source filename, not renderer copy.
 string QM11421_ConsoleStrategyName()
   {
@@ -107,6 +108,60 @@ string QM11421_ConsoleStrategyName()
       title+=(title==""?"":" ")+word;
      }
    return title;
+  }
+
+// Pure presentation projection of an ALREADY observed news verdict. Expiry is
+// not an admission failure: the live trading path re-evaluates on cache miss.
+bool QM11421_ConsoleNewsKeyMatches(const string symbol,const datetime bar,
+   const int temporal,const int compliance,const string cached_symbol,const datetime cached_bar,
+   const int cached_temporal,const int cached_compliance)
+  {
+   return bar>0 && cached_symbol==symbol && cached_bar==bar &&
+      cached_temporal==temporal && cached_compliance==compliance;
+  }
+
+QM_ConsoleGateState QM11421_ConsoleNewsObservation(const bool enabled,const bool observable,
+   const bool cache_valid,const bool key_matches,const datetime observed_at,
+   const datetime wall_now,const bool verdict,string &reason)
+  {
+   if(!enabled) { reason="Disabled"; return QM_GATE_OFF; }
+   if(!observable) { reason="Legacy verdict not observed"; return QM_GATE_WAIT; }
+   if(!cache_valid || observed_at<=0) { reason="No verdict observed yet"; return QM_GATE_WAIT; }
+   if(!key_matches) { reason="Context changed; recheck on tick"; return QM_GATE_WAIT; }
+   const long age=(long)(wall_now-observed_at);
+   if(age<0) { reason="Clock changed; verdict unverified"; return QM_GATE_STALE; }
+   if(age>=60) { reason="Last verdict expired; recheck on tick"; return QM_GATE_STALE; }
+   // A false live verdict may mean blackout OR unavailable native Calendar.
+   // The existing boolean cache cannot distinguish those causes honestly.
+   reason=verdict?"Last check clear":"Last check blocked";
+   return verdict?QM_GATE_PASS:QM_GATE_BLOCK;
+  }
+
+void QM11421_ConsoleGateAlerts(QM_ConsoleSnapshot &snapshot)
+  {
+   snapshot.alert_reason=""; snapshot.alert_state=QM_GATE_NA;
+   // Genuine admission blocks outrank observation warnings regardless of the
+   // visual gate order. A stale news row must not hide a real kill/Friday block.
+   for(int priority=0;priority<2;++priority)
+      for(int i=0;i<ArraySize(snapshot.gates);++i)
+        {
+         const QM_ConsoleGate gate=snapshot.gates[i];
+         if(gate.key=="capacity") continue; // already explained by exposure state
+         const bool blocked=gate.state==QM_GATE_BLOCK || gate.state==QM_GATE_ERROR;
+         const bool unverified=gate.state==QM_GATE_STALE || gate.state==QM_GATE_WARN ||
+            (gate.key=="news" && gate.state==QM_GATE_WAIT);
+         if((priority==0 && !blocked) || (priority==1 && !unverified)) continue;
+         snapshot.alert_state=gate.state;
+         snapshot.alert_reason=gate.label+" - "+gate.reason;
+         if(snapshot.positions==0 && snapshot.pending_orders==0)
+           {
+            if(blocked) snapshot.state=gate.state==QM_GATE_ERROR?QM_CONSOLE_ERROR:QM_CONSOLE_BLOCKED;
+            snapshot.reason=snapshot.alert_reason;
+            if(gate.key=="news") snapshot.next_event="Next news check on a fresh market quote";
+           }
+         else snapshot.alert_reason=(blocked?"Entry warning: ":"Entry check: ")+snapshot.alert_reason;
+         return;
+        }
   }
 
 void QM11421_RefreshChartPanel()
@@ -133,18 +188,20 @@ void QM11421_RefreshChartPanel()
       (!contract_ready?"Contract blocked":"Permission open"),
       terminal_ready && contract_ready?QM_GATE_PASS:QM_GATE_BLOCK);
 
-   QM_ConsoleGateState news=QM_GATE_WAIT;
-   string news_reason="Awaiting quote";
-   if(!g_qm_news_active) { news=QM_GATE_OFF; news_reason="Disabled"; }
-   else if(!g_qm_news_loaded || !g_qm_news_available)
-     { news=QM_GATE_ERROR; news_reason="Calendar unavailable"; }
-   else if(g_qm_news_cache_valid && g_qm_news_cache_symbol==_Symbol)
-     {
-      const long age=(long)(TimeGMT()-g_qm_news_cache_wall_utc);
-      if(age<0 || age>=60) { news=QM_GATE_STALE; news_reason="Quote cache stale"; }
-      else { news=g_qm_news_cache_verdict?QM_GATE_PASS:QM_GATE_BLOCK;
-             news_reason=g_qm_news_cache_verdict?"Native MT5 clear":"Native MT5 blackout"; }
-     }
+   // Mirror the EA's actual axis/legacy routing and the complete live cache key.
+   // CSV loaded/available flags do not represent native Calendar health.
+   const bool two_axis=qm_news_temporal!=QM_NEWS_TEMPORAL_OFF || qm_news_compliance!=QM_NEWS_COMPLIANCE_NONE;
+   const QM_NewsTemporalMode temporal=two_axis?qm_news_temporal:QM_NewsLegacyTemporal(qm_news_mode_legacy);
+   const QM_NewsComplianceProfile compliance=two_axis?qm_news_compliance:QM_NewsLegacyCompliance(qm_news_mode_legacy);
+   const bool legacy_news_only=!two_axis && qm_news_mode_legacy==QM_NEWS_NEWS_ONLY;
+   const bool news_enabled=legacy_news_only || temporal!=QM_NEWS_TEMPORAL_OFF || compliance!=QM_NEWS_COMPLIANCE_NONE;
+   const datetime cache_bar=iTime(_Symbol,(ENUM_TIMEFRAMES)_Period,0);
+   const bool news_key_matches=QM11421_ConsoleNewsKeyMatches(_Symbol,cache_bar,temporal,compliance,
+      g_qm_news_cache_symbol,g_qm_news_cache_bar_time,g_qm_news_cache_temporal,g_qm_news_cache_compliance);
+   string news_reason="";
+   const QM_ConsoleGateState news=QM11421_ConsoleNewsObservation(news_enabled,!legacy_news_only,
+      g_qm_news_cache_valid,news_key_matches,g_qm_news_cache_wall_utc,TimeGMT(),
+      g_qm_news_cache_verdict,news_reason);
    QM_ConsoleAddGate(snapshot,"news","News",news_reason,news);
    QM_ConsoleAddGate(snapshot,"kill","Kill switch",g_qm_ks_halted?"Halted":"Armed",
       g_qm_ks_halted?QM_GATE_BLOCK:QM_GATE_PASS);
@@ -202,19 +259,7 @@ void QM11421_RefreshChartPanel()
    else if(snapshot.pending_orders>0)
      { snapshot.state=QM_CONSOLE_WAITING_TRIGGER; snapshot.reason="Pending stop armed; no additional entry";
        snapshot.next_event="Next event: trigger, expiry or D1 re-evaluation"; }
-   else
-      for(int i=0;i<ArraySize(snapshot.gates);++i)
-        {
-         const QM_ConsoleGateState state=snapshot.gates[i].state;
-         if(state==QM_GATE_BLOCK || state==QM_GATE_ERROR || state==QM_GATE_STALE ||
-            (snapshot.gates[i].key=="news" && state==QM_GATE_WAIT))
-           {
-            snapshot.state=state==QM_GATE_ERROR?QM_CONSOLE_ERROR:QM_CONSOLE_BLOCKED;
-            snapshot.reason=snapshot.gates[i].label+" - "+snapshot.gates[i].reason;
-            if(snapshot.gates[i].key=="news") snapshot.next_event="Next news check on a fresh market quote";
-            break;
-           }
-        }
+   QM11421_ConsoleGateAlerts(snapshot);
 
    // The prior OHLC range is meaningful only for an actionable pending setup.
    // Use its setup bar, not today's unrelated range or a historical catalogue.
@@ -229,6 +274,9 @@ void QM11421_RefreshChartPanel()
          snapshot.range_end=iTime(_Symbol,PERIOD_D1,shift)+PeriodSeconds(PERIOD_D1);
          snapshot.range_high=iHigh(_Symbol,PERIOD_D1,shift+1);
          snapshot.range_low=iLow(_Symbol,PERIOD_D1,shift+1);
+         const int digits=(int)SymbolInfoInteger(_Symbol,SYMBOL_DIGITS);
+         snapshot.range_high_text=QM_PanelFormatNumber(snapshot.range_high,digits);
+         snapshot.range_low_text=QM_PanelFormatNumber(snapshot.range_low,digits);
          snapshot.active_range=snapshot.range_start>0 && snapshot.range_high>snapshot.range_low &&
             snapshot.range_low>0.0;
         }
@@ -467,7 +515,8 @@ int OnInit()
                                           qm_show_chart_panel,
                                           qm_dashboard_mode,qm_visual_scale,
                                           qm_show_active_range,qm_show_strategy_levels,
-                                          qm_show_trade_levels,qm_show_trade_markers))
+                                          qm_show_trade_levels,qm_show_trade_markers,
+                                          qm_design_version,qm_apply_chart_scheme))
         {
          if(EventSetTimer(5))
             g_qm_fw_timer_active = true;
@@ -561,6 +610,16 @@ void OnTradeTransaction(const MqlTradeTransaction &trans,
 void OnChartEvent(const int id,const long &lparam,const double &dparam,const string &sparam)
   {
    g_qm_signature_panel.OnChartEvent(id,sparam);
+   // An explicit display retry may be the first successful renderer startup.
+   // Resume the normal observer only after it is ready. Failed displays never
+   // restart on a timer, and the click itself reads no quote/history/snapshot.
+   if(!g_qm_fw_timer_active && g_qm_signature_panel.Ready())
+     {
+      if(EventSetTimer(5))
+         g_qm_fw_timer_active=true;
+      else
+         g_qm_signature_panel.Shutdown();
+     }
   }
 
 double OnTester()

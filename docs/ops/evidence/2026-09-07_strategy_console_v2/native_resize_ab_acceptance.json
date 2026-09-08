@@ -1,0 +1,132 @@
+{
+  "status": "PASS",
+  "scope": "supplied calibrated full-frame native presentation A/B evidence only",
+  "trading_strategy_certified": false,
+  "issues": [],
+  "captures": [
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_QA\\qa_612.csv",
+      "serial": "612",
+      "design": "V2",
+      "census_status": "PASS",
+      "objects": 73,
+      "plot_dimensions": [
+        872,
+        347
+      ],
+      "screenshot_calibrated": true,
+      "png_dimensions": [
+        928,
+        370
+      ],
+      "png_sha256": "33da6e244c3287f4771d00ef99901fd10b08159e8229dd76f74a770f4eea7d36",
+      "native_suites": [
+        "formatter:1",
+        "model:1",
+        "data:11",
+        "news:24",
+        "chart_geometry:PASS",
+        "chart_property_roundtrip:PASS",
+        "chart_zoom_roundtrip:PASS",
+        "compare_start_failure_rollback:PASS",
+        "compare_render_failure_recovery:PASS"
+      ]
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_QA\\qa_613.csv",
+      "serial": "613",
+      "design": "V1",
+      "census_status": "PASS",
+      "objects": 41,
+      "plot_dimensions": [
+        872,
+        347
+      ],
+      "screenshot_calibrated": true,
+      "png_dimensions": [
+        928,
+        370
+      ],
+      "png_sha256": "61db36504d85e943fc4971e11a33e5cdc906bff18fc9723de6106d3edef732dc",
+      "native_suites": [
+        "formatter:1",
+        "model:1",
+        "data:11",
+        "news:24",
+        "chart_geometry:PASS",
+        "chart_property_roundtrip:PASS",
+        "chart_zoom_roundtrip:PASS",
+        "compare_start_failure_rollback:PASS",
+        "compare_render_failure_recovery:PASS"
+      ]
+    },
+    {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_QA\\qa_614.csv",
+      "serial": "614",
+      "design": "V2",
+      "census_status": "PASS",
+      "objects": 73,
+      "plot_dimensions": [
+        872,
+        347
+      ],
+      "screenshot_calibrated": true,
+      "png_dimensions": [
+        928,
+        370
+      ],
+      "png_sha256": "33da6e244c3287f4771d00ef99901fd10b08159e8229dd76f74a770f4eea7d36",
+      "native_suites": [
+        "formatter:1",
+        "model:1",
+        "data:11",
+        "news:24",
+        "chart_geometry:PASS",
+        "chart_property_roundtrip:PASS",
+        "chart_zoom_roundtrip:PASS",
+        "compare_start_failure_rollback:PASS",
+        "compare_render_failure_recovery:PASS"
+      ]
+    }
+  ],
+  "limits": [
+    "No trading authorization or proof of trade absence.",
+    "Only objects recorded in the allowlisted census are inventoried.",
+    "PNG framing, CRC and dimensions are checked; image pixels are not decoded.",
+    "Full-frame extent relies on native guard-validated client calibration metadata.",
+    "Native failed-start recovery proof does not cover every chart-property restoration failure.",
+    "Fixture configuration and cached quote are compared, not a serialized full strategy snapshot."
+  ],
+  "reference_context": {
+    "chart_id": "41774365623703",
+    "init_run_id": "41774365623703_1788829254_2095473406",
+    "scenario": "3",
+    "mode": "0",
+    "mode_name": "QM_CONSOLE_FULL",
+    "requested_mode": "0",
+    "scale": "100",
+    "chart_width": "872",
+    "chart_height": "347",
+    "dpi": "96",
+    "fixture_bar": "1788825600",
+    "prefix": "QM_QA_",
+    "panel_name": "QM_QA_bg",
+    "expert_name": "QM_Console_Visual_QA",
+    "qa_trade_allowed": "0",
+    "terminal_trade_allowed": "1",
+    "cached_bid": "1.16260",
+    "quote_observed_at": "2026.09.08 02:02:43 BT",
+    "screenshot_calibrated": "1",
+    "screenshot_width": "928",
+    "screenshot_height": "370"
+  },
+  "compared_chart_properties": 26,
+  "protected_chart_properties": [
+    "CHART_AUTOSCROLL",
+    "CHART_DRAG_TRADE_LEVELS",
+    "CHART_SCALE",
+    "CHART_SHOW_TRADE_HISTORY",
+    "CHART_SHOW_TRADE_LEVELS"
+  ],
+  "v2_png_bytes_equal": true
+}

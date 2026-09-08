@@ -1,0 +1,243 @@
+{
+  "status": "PASS",
+  "utc": "2026-09-07T22:22:23.839386+00:00",
+  "pid_unchanged": true,
+  "pid": 15464,
+  "login": 1514536732,
+  "server": "FTMO-Demo",
+  "positions": 0,
+  "orders": 0,
+  "balance": 100000,
+  "equity": 100000,
+  "global_autotrading": true,
+  "other_ftmo_expert_binaries_unchanged": 9,
+  "binary_changes": {
+    "QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5": [
+      "5be0846344014fee1b87036e496cc6573cd13986cf840b7732afd40610895614",
+      "b91f81a27a622f4e1d82c9ba43eeedc890e6a72e4d229a6e5ad413e943abe162"
+    ]
+  },
+  "common_ini_unchanged": true,
+  "factory_ex5_unchanged": true,
+  "recent_ea_events": [
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:16:53.906Z",
+      "ts_broker": "2026-09-08T01:16:53",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "DEINIT",
+      "payload": {
+        "reason": 1
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:16:53.906Z",
+      "ts_broker": "2026-09-08T01:16:53",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "DEINIT",
+      "payload": {
+        "duration_ms": 0
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:27.953Z",
+      "ts_broker": "2026-09-08T01:18:26",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "SYMBOL_GUARD_INIT",
+      "payload": {
+        "mode": "single",
+        "symbol": "EURUSD"
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:27.953Z",
+      "ts_broker": "2026-09-08T01:18:26",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "NEWS_LIVE_CALENDAR_SELFTEST",
+      "payload": {
+        "healthy": true,
+        "window7d_total": 227,
+        "min_impact": "HIGH",
+        "next_high_impact": "USD 10-Year Note Auction",
+        "next_time_srv": "2026.09.09 20:00"
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.890Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "NEWS_CALENDAR_LOADED",
+      "payload": {
+        "hash": "04A06BC26EBB842E6D98701D55BC510B9BF4129C3D9F1464EA3CC7680ADE7324",
+        "rows": 97431,
+        "modified_utc": "2026.09.07 05:32:17"
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "KS_STATE_RESTORED_ANCHOR",
+      "payload": {
+        "day_start_equity": 100000
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "KILL_SWITCH_INIT",
+      "payload": {
+        "ea_id": 11421,
+        "magic": 114210000,
+        "daily_loss_halt_pct": 3,
+        "portfolio_dd_halt_pct": 0,
+        "per_trade_risk_cap_pct": 1,
+        "manual_halt_file": "QM\\halt\\11421.halt",
+        "portfolio_dd_signal_file": "QM\\halt\\portfolio_dd.signal"
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "KS_BASELINE_LOADED",
+      "payload": {
+        "path": "QM\\baselines\\QM5_11421_EURUSD.json",
+        "n": 92,
+        "mean": 45.2001,
+        "std": 666.0277,
+        "hash": "fa11fdb323b4ea83e38cb5650ce06aff45b19ed27925caaee685681f69855873"
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "EQUITY_STREAM_STATE_RESTORED",
+      "payload": {
+        "period": "day",
+        "key": 20260908,
+        "start_equity": 100000
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "EQUITY_STREAM_STATE_RESTORED",
+      "payload": {
+        "period": "month",
+        "key": 202609,
+        "start_equity": 100000
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "INIT",
+      "payload": {
+        "magic": 114210000,
+        "symbol": "EURUSD"
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "WARN",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "EXECUTION_CONTRACT",
+      "payload": {
+        "chart_tf": 16408,
+        "friday_mode": 3,
+        "friday_enabled": true,
+        "friday_hour": 21,
+        "declaration": "DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED"
+      }
+    },
+    {
+      "sv": 1,
+      "ts_utc": "2026-09-07T22:18:47.109Z",
+      "ts_broker": "2026-09-08T01:18:46",
+      "level": "INFO",
+      "ea_id": 11421,
+      "slug": "ea-11421",
+      "symbol": "EURUSD",
+      "tf": "D1",
+      "magic": 114210000,
+      "event": "INIT_OK",
+      "payload": {}
+    }
+  ]
+}

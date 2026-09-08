@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "pre_confirm_utc": "2026-09-07T22:18:27.091724+00:00",
+  "pid": 15464,
+  "login": 1514536732,
+  "server": "FTMO-Demo",
+  "chart_id": "40880270757609",
+  "chart_hwnd": 182059870,
+  "positions": 0,
+  "orders": 0,
+  "closed_closes": [
+    1.16268,
+    1.16128,
+    1.16219
+  ],
+  "current_broker_d1": 1788825600,
+  "asc_closes": false,
+  "desc_closes": false,
+  "global_autotrading": true,
+  "expert_autotrading": 1,
+  "verified_preset_sha256": "4d5297b30f79c56e5cfc20cf16dfafdd0acea7d72cc1e250a7041ffa23e48447",
+  "installed_ex5_sha256": "b91f81a27a622f4e1d82c9ba43eeedc890e6a72e4d229a6e5ad413e943abe162",
+  "confirmed_utc": "2026-09-07T22:18:27.207975+00:00",
+  "action": "one controlled same-EA reattach on original FTMO demo EURUSD D1 chart",
+  "terminal_restarted": false
+}

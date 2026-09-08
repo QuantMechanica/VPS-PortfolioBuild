@@ -47,6 +47,21 @@ def test_strategy_paths_are_byte_identical_to_pre_console_commit():
         assert function_body(current, name) == function_body(baseline, name), name
 
 
+def test_explicit_display_recovery_can_resume_observer_without_click_refresh():
+    text = SOURCE.read_text(encoding="utf-8")
+    event = function_body(text, "OnChartEvent")
+    guard = "if(!g_qm_fw_timer_active && g_qm_signature_panel.Ready())"
+    assert event.index("g_qm_signature_panel.OnChartEvent(id,sparam);") < event.index(guard)
+    assert event.index(guard) < event.index("EventSetTimer(5)")
+    assert "g_qm_fw_timer_active=true;" in event
+    assert "else\n         g_qm_signature_panel.Shutdown();" in event
+    for forbidden in ("Refresh(", "QM11421_RefreshChartPanel(", "Initialize(",
+                      "History", "SymbolInfoTick", "OrderSend", "OnInit(", "OnDeinit("):
+        assert forbidden not in event
+    observer = function_body(text, "QM11421_RefreshChartPanel")
+    assert "if(!g_qm_signature_panel.Ready()) return;" in observer
+
+
 def test_snapshot_uses_real_gates_and_does_not_call_strategy_for_display():
     text = SOURCE.read_text(encoding="utf-8")
     producer = function_body(text, "QM11421_RefreshChartPanel")

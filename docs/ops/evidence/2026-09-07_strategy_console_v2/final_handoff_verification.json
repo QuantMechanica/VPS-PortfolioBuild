@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "utc": "2026-09-07T23:39:18.026184+00:00",
+  "pid": 15464,
+  "original_chart_active": true,
+  "qa_chart_closed": true,
+  "no_ea_reinit_after_final_install": true,
+  "positions": 0,
+  "orders": 0,
+  "balance": 100000,
+  "equity": 100000,
+  "global_autotrading": true,
+  "nine_other_experts_unchanged": true,
+  "factory_binary_unchanged": true,
+  "common_ini_unchanged": true,
+  "vault_asset_hashes_verified": 10,
+  "vault_note_relative_links_verified": 7,
+  "vault_note_sha256": "878a18d9ec3227c2371fe259f39a8b32bea5caf9815b1f8714db8fcc74ee4e2d",
+  "known_python_factory_worker_pattern_matches": [],
+  "worker_check_limit": "Known command patterns only; not exhaustive service audit"
+}

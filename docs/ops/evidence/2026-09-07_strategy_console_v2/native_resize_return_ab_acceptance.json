@@ -1,0 +1,35 @@
+{
+  "status": "FAIL",
+  "scope": "supplied calibrated full-frame native presentation A/B evidence only",
+  "trading_strategy_certified": false,
+  "issues": [
+    {
+      "code": "invalid_native_receipt",
+      "detail": "Expected exactly these native suites: ['compare_render_failure_recovery', 'compare_start_failure_rollback', 'initial_start_failure_retry']",
+      "capture": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_QA\\qa_621.csv",
+      "retryable": false
+    },
+    {
+      "code": "invalid_native_receipt",
+      "detail": "Expected exactly these native suites: ['compare_render_failure_recovery', 'compare_start_failure_rollback', 'initial_start_failure_retry']",
+      "capture": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_QA\\qa_622.csv",
+      "retryable": false
+    },
+    {
+      "code": "invalid_native_receipt",
+      "detail": "Expected exactly these native suites: ['compare_render_failure_recovery', 'compare_start_failure_rollback', 'initial_start_failure_retry']",
+      "capture": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_QA\\qa_623.csv",
+      "retryable": false
+    }
+  ],
+  "captures": [],
+  "limits": [
+    "No trading authorization or proof of trade absence.",
+    "Only objects recorded in the allowlisted census are inventoried.",
+    "PNG framing, CRC and dimensions are checked; image pixels are not decoded.",
+    "Full-frame extent relies on native guard-validated client calibration metadata.",
+    "Native failed-start recovery proof does not cover every chart-property restoration failure.",
+    "Initial-start retry proof uses a permanently invalid prefix; it proves safe retry/refusal, not transient capture-failure recovery.",
+    "Fixture configuration and cached quote are compared, not a serialized full strategy snapshot."
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "schema": "qm.final-live-canary-review/v1",
+  "artifact_kind": "live_canary_observation_review",
+  "status": "PASS",
+  "reviewed_utc": "2026-09-07T23:31:14.513738+00:00",
+  "scope": "Independent read-only review of three pinned original-chart observations in Design 02 -> 01 -> 02 order, measured presentation geometry, native screenshots and the available EA lifecycle log.",
+  "synthetic_qa": false,
+  "native_selftests_verified_by_this_review": false,
+  "trading_authorized": false,
+  "strategy_certified": false,
+  "terminal_or_gui_actions_by_reviewer": false,
+  "production_source_or_binary_changes_by_reviewer": false,
+  "binding": {
+    "account_login": "1514536732",
+    "server": "FTMO-Demo",
+    "account_mode": "DEMO",
+    "chart_id": "40880270757609",
+    "hwnd": "182059870",
+    "symbol": "EURUSD",
+    "timeframe": "D1",
+    "expert": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+    "dashboard_prefix": "QM_SIG_11421_114210000_",
+    "overlay_prefix": "QM_CHART_V2_QM_SIG_11421_114210000_",
+    "retry_prefix": "QM_RETRY_QM_SIG_11421_114210000_",
+    "installed_binary_sha256_from_deployment_evidence": "4ff02978ae5d205355f81850fdbad1dac5daf8a8cb4313eaae08c616b1940e0a",
+    "deployment_evidence": "docs/ops/evidence/2026-09-07_strategy_console_v2/final_deployment_confirmation.json",
+    "post_install_evidence": "docs/ops/evidence/2026-09-07_strategy_console_v2/final_post_install_verification.json"
+  },
+  "consumer": {
+    "path": "tools/strategy_farm/console_canary_census.py",
+    "sha256": "e6263c5dcc57745f8ccca80f2a32e0f2cdb4fab1813b9e764fccff79c1c54ade",
+    "test_path": "tools/strategy_farm/tests/test_console_canary_census.py",
+    "test_sha256": "67bd2024305ff1c6c76a5680b9e9793d3453a2baaef4ad557a492a87cd1f1dca",
+    "test_command": "python -B -m pytest -p no:cacheprovider tools/strategy_farm/tests/test_console_canary_census.py tools/strategy_farm/tests/test_console_canary_audit.py -q",
+    "test_result": "142 passed in 3.94s",
+    "final_focused_regression": "All 14 console modules: 814 passed in 17.68s; python -B -m pytest -p no:cacheprovider, no compiler or GUI actions.",
+    "tolerance_physical_pixels": 1,
+    "file_read_stability_and_png_crc_ihdr_checked": true,
+    "original_false_positive_preserved": {
+      "consumer_sha256": "65d991b6ba377d1b48187155477452bbadaaa1ab64dd172e215f1909cc63b04a",
+      "audit_id": "40880270757609_2097024718",
+      "original_status": "FAIL",
+      "original_issue_code": "missing_or_wrong_control",
+      "object_name": "QM_SIG_11421_114210000_footer",
+      "original_expected_text": "© QuantMechanica",
+      "actual_text": "© QuantMechanica  v5.0",
+      "classification": "False-positive validator limitation, not a renderer defect.",
+      "resolution": "The consumer now requires exactly © QuantMechanica  v5.0 for Design 01 and exactly © QuantMechanica for Design 02. These strings are pinned to the actual EA snapshot version 5.0 and renderer sources. No substring or arbitrary version suffix is accepted.",
+      "regression_coverage": "Both valid designs in all three views; eight wrong-design/version/copyright/prefix/suffix variants rejected; source-binding contract added.",
+      "renderer_qa_preset_and_binary_unchanged": true
+    }
+  },
+  "observation_root": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Files/QM_Console_Canary",
+  "observations": [
+    {
+      "audit_id": "40880270757609_2096977265",
+      "observed_utc": "2026-09-07T23:25:58Z",
+      "design": "02",
+      "view": "Full",
+      "consumer_status": "PASS",
+      "issues": [],
+      "objects": 47,
+      "measured_pixel_objects": 46,
+      "measured_labels": 25,
+      "time_price_overlays_not_geometry_checked": 1,
+      "v2_owned_overlay_objects": 10,
+      "live_bid_text": "BID 1.16273",
+      "live_quote_observation_text": "Bid observed 2026.09.08 02:25:51 BT",
+      "files_sha256": {
+        "canary_40880270757609_2096977265.objects.csv": "33e0573e52d2a7807b8b953803655e9760235b8518f46ad17590510699747116",
+        "canary_40880270757609_2096977265.meta.csv": "febc0e8d07820a598154dc487116d075f4f39b4e6247828d52447e9bccb46084",
+        "canary_40880270757609_2096977265.chart.csv": "c91ac65bdab4d81ea083e4af86fe4813e40766f6c52339ee056b91280fecab17",
+        "canary_40880270757609_2096977265.png": "d967baf107bb90bf924a14f0a59f58f344b4bd49cb09239899c491cc74084bda"
+      }
+    },
+    {
+      "audit_id": "40880270757609_2097024718",
+      "observed_utc": "2026-09-07T23:26:45Z",
+      "design": "01",
+      "view": "Full",
+      "consumer_status": "PASS",
+      "issues": [],
+      "objects": 39,
+      "measured_pixel_objects": 39,
+      "measured_labels": 24,
+      "time_price_overlays_not_geometry_checked": 0,
+      "v2_owned_overlay_objects": 0,
+      "files_sha256": {
+        "canary_40880270757609_2097024718.objects.csv": "1d4901ecdfd4327db1c337e0d83dc8dd7331a2d4fa4f0abbc1e23883a4a22deb",
+        "canary_40880270757609_2097024718.meta.csv": "136cd9d2fb40c4d4566083b609352076190a1db9ed9cff894c3f3d3babf166ae",
+        "canary_40880270757609_2097024718.chart.csv": "11a4b9a515f38164238ab3c7b8b14606a7e72f6b217266e93d1df69ed5423e41",
+        "canary_40880270757609_2097024718.png": "7649e26a0eb0fd6aa91dcc4241808449b92027821fdc7697d796401181c78ee4"
+      }
+    },
+    {
+      "audit_id": "40880270757609_2097079703",
+      "observed_utc": "2026-09-07T23:27:40Z",
+      "design": "02",
+      "view": "Full",
+      "consumer_status": "PASS",
+      "issues": [],
+      "objects": 47,
+      "measured_pixel_objects": 46,
+      "measured_labels": 25,
+      "time_price_overlays_not_geometry_checked": 1,
+      "v2_owned_overlay_objects": 10,
+      "live_bid_text": "BID 1.16286",
+      "live_quote_observation_text": "Bid observed 2026.09.08 02:27:36 BT",
+      "files_sha256": {
+        "canary_40880270757609_2097079703.objects.csv": "710dda4ceb3c6885f6dd19697f1f3d264b7a39c3a8717634e0256539aeadfc40",
+        "canary_40880270757609_2097079703.meta.csv": "ad4b5513ec369dc295acb01e1ddd432ef793b7e7d70ea45aaa04662daad2dee0",
+        "canary_40880270757609_2097079703.chart.csv": "d32dd032b53840a8ccdb85999fd23a7b3613ff773005ec33c6f197bb2cd7ff24",
+        "canary_40880270757609_2097079703.png": "9e3909dfa65556a17bce4cd2970276e8c04eb750ee18f04357ca805546829a13"
+      }
+    }
+  ],
+  "shared_capture_checks": {
+    "capture_non_atomic": true,
+    "all_native_read_complete_and_observation_complete": true,
+    "all_native_binding_stable": true,
+    "plot_dimensions": [1187, 380],
+    "calibrated_client_png_dimensions": [1243, 403],
+    "dpi": 96,
+    "measured_chart_or_panel_boundary_issues": [],
+    "measured_label_overlap_issues": [],
+    "true_unicode_copyright_and_design_view_controls_verified": true,
+    "unexpected_retry_objects_by_observation": [[], [], []],
+    "v2_owned_names_and_types_equal_on_return": true,
+    "v2_overlay_orphans_in_v1": [],
+    "live_quote_or_png_byte_identity_required": false,
+    "live_quote_changed_as_expected_between_observations": true
+  },
+  "chart_property_comparison": {
+    "unique_property_counts": [28, 28, 28],
+    "all_28_v2_first_return_values_exactly_equal": true,
+    "v2_roundtrip_mismatches": [],
+    "protected_values_by_observation": {
+      "CHART_SCALE": [3, 3, 3],
+      "CHART_AUTOSCROLL": [1, 1, 1],
+      "CHART_SHOW_TRADE_LEVELS": [1, 1, 1],
+      "CHART_DRAG_TRADE_LEVELS": [1, 1, 1],
+      "CHART_SHOW_TRADE_HISTORY": [1, 1, 1],
+      "CHART_WIDTH_IN_BARS": [149, 149, 149]
+    },
+    "middle_design_differences_only": {
+      "CHART_COLOR_FOREGROUND": [8745319, 2169367, 8745319],
+      "CHART_COLOR_CANDLE_BULL": [16777215, 8036110, 16777215],
+      "CHART_COLOR_VOLUME": [15262428, 16149563, 15262428],
+      "CHART_COLOR_ASK": [10982795, 16149563, 10982795],
+      "CHART_SHOW_BID_LINE": [0, 1, 0],
+      "CHART_FIRST_VISIBLE_BAR": [119, 117, 119],
+      "CHART_SHIFT_SIZE": [19.8653198653198615, 21.2121212121212182, 19.8653198653198615]
+    },
+    "interpretation": "The V1/V2 presentation changes only these recorded style/spacing values. Visible-bar displacement accompanies chart shift; zoom and trade-display controls remain unchanged. This is an observed roundtrip, not a guarantee that a live chart never changes between captures."
+  },
+  "ea_lifecycle_log": {
+    "path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Files/QM/QM5_11421_ea-11421.log",
+    "sha256_at_read": "4a8cab99366e25e5c90c0bf60e0edfb864b490945c9b3cfaaa87adbd138e47e2",
+    "byte_count_at_read": 27782,
+    "parsed_json_rows": 95,
+    "stable_read": true,
+    "reviewed_utc": "2026-09-07T23:31:14.513738+00:00",
+    "cutoff_init_ok_utc": "2026-09-07T23:24:27.375Z",
+    "matching_init_ok_rows": 1,
+    "latest_recorded_event": "INIT_OK",
+    "latest_recorded_event_utc": "2026-09-07T23:24:27.375Z",
+    "events_after_cutoff": [],
+    "init_or_deinit_events_after_cutoff": [],
+    "interpretation": "No EA lifecycle restart is recorded after the final INIT_OK through the read, including the observed V2/V1/V2 switch interval. This is bounded log evidence, not proof of trade absence or complete external process history."
+  },
+  "native_visual_review": {
+    "method": "Direct view_image inspection of the two real desktop captures, without image editing or synthesis.",
+    "images": [
+      {
+        "path": "D:/QM/console_design_20260907/screenshots/design1_final_native.png",
+        "sha256": "e8c9c6b735fb08cdbc901f4a7d4828cb3b672358c5e4d7f3150a73e2044fa18d",
+        "design": "01",
+        "findings": "Header, state/reason/next, risk rows, copyright with version and page navigation are fully visible. The first page shows two gate reasons; remaining content is paginated. No clear clipping or text collision observed."
+      },
+      {
+        "path": "D:/QM/console_design_20260907/screenshots/design2_final_native_return.png",
+        "sha256": "3d3400c05ca213c4600929b756c4d91b39f59f4da7d194ea612fffed95fffc34",
+        "design": "02",
+        "findings": "Flat Overview shows state/reason/next, two risk KPIs, stop basis, Today/Week and the complete copyright/gate-count footer on one page. Chart identity, observed-quote timestamp and current bid label are readable. No clear clipping or text collision observed."
+      }
+    ],
+    "release_blockers": [],
+    "compact_minimal_and_other_tabs": "Not exercised by this review; parent records those controls separately."
+  },
+  "limits": [
+    "These are real live-canary observations and are never relabeled as synthetic QA or native selftests.",
+    "Capture is non-atomic. Live quote, clock, gate state, position and performance values may change during or between observations; identical cached quote or PNG bytes are not required.",
+    "Only allowlisted dashboard, overlay and retry namespaces are inventoried. Native platform annotations and unrelated objects are outside the object census.",
+    "Pixel bounds and label overlaps are checked with one physical pixel tolerance. Time/price overlay geometry is explicitly not checked by the consumer.",
+    "PNG framing, CRC and IHDR are verified automatically. Visual comments come from separately inspected genuine desktop captures, not automatic pixel interpretation.",
+    "The original V1 footer false positive is preserved above. Only the read-only consumer, its tests and this review document were changed; no native recapture or production change was needed.",
+    "Deployment permissions, flat account state, unchanged other EAs and unchanged factory binary are sourced from the linked parent deployment/post-install evidence, not independently reacquired by this reviewer.",
+    "The final build's captured non-UI dependency snapshot is hash-verified elsewhere. Historical v4 Include-to-EX5 binding remains not_attested.",
+    "No strategy robustness, payout likelihood, trading authorization, proof of trade absence, or transient initial-start recovery certification is inferred."
+  ]
+}

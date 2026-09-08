@@ -1,0 +1,29 @@
+{
+  "schema": "qm.console-v2.pre-install-baseline/v1",
+  "observed_utc": "2026-09-07T22:11:00Z",
+  "observed_utc_precision": "approximate; hashes captured in tool output, not an exact operation timestamp",
+  "terminal_pid": 15464,
+  "terminal_exe": "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe",
+  "login": 1514536732,
+  "server": "FTMO-Demo",
+  "target_chart_id": "40880270757609",
+  "target_chart_hwnd": 182059870,
+  "global_autotrading_observed": 1,
+  "expert_autotrading_observed": 1,
+  "common_ini_sha256": "1182df4536b181b1a071191452dbcab91f9b7b994f14522f64fa3a7c76336eb8",
+  "factory_ex5_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+  "runtime_preset": "D:/QM/console_design_20260907/ftmo_11421_runtime_fresh_2201Z.set",
+  "runtime_preset_sha256": "5b71efd984ff16d7d59fdea407d769c52f4dae7fee5dcd59c461f3d914bbd799",
+  "experts": {
+    "QM_FTMO_TrialTelemetry.ex5": "411638a1ae177326070c19b28c849fda36594592279303ce7d96f36bfa458258",
+    "QM5_10706_tv-mon-ls.ex5": "6f290d49defdfe1ec2d4dad93e419a577c703a53ac91de68e7bbfb22984c6bed",
+    "QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5": "5be0846344014fee1b87036e496cc6573cd13986cf840b7732afd40610895614",
+    "QM5_11422_williams-18ma-outside-bar-entry-d1.ex5": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+    "QM5_11910_larry-williams-18ma-2outside-bars-d1.ex5": "ae53f3bcca175e8cddabeee7ebfbe2ecd28cdeab83b5d57dbcc202612c31394d",
+    "QM5_13054_brent-tom-mom.ex5": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+    "QM5_13206_ftmo-account-governor.ex5": "e5e827cd05163de0d0c7919e9e072759efbd91a6b1e464cf9e962e850f4878f6",
+    "QM5_1537_aa-vol-sma10.ex5": "16d66a0f7b86f6f8c9240280712d32914a9a3bbb004baa1ea1a242cb4e9ff5eb",
+    "QM5_20048_wti-preholiday.ex5": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+    "QM5_21505_xag-weekly-lowvol-momentum.ex5": "81386c2dcd80e58d2840fc6941ca066eb276a4650c2bde07da2cb971cad0b24d"
+  }
+}

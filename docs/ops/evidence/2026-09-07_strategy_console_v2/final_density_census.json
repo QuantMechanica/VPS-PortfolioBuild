@@ -1,0 +1,714 @@
+{
+  "status": "PASS",
+  "scope": "native original-chart Compact/Minimal observations only",
+  "results": [
+    {
+      "status": "PASS",
+      "scope": "pinned live canary observation integrity and measured pixel geometry only",
+      "trading_authorized": false,
+      "strategy_certified": false,
+      "native_selftests_verified": false,
+      "tolerance_pixels": 1,
+      "issues": [],
+      "boxes": [
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_accent",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 963,
+          "top": 154,
+          "right": 965,
+          "bottom": 176
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_card",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 963,
+          "top": 154,
+          "right": 1111,
+          "bottom": 176
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_join",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 957,
+          "top": 165,
+          "right": 963,
+          "bottom": 166
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_leader_h",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 951,
+          "top": 165,
+          "right": 957,
+          "bottom": 166
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_leader_v",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 957,
+          "top": 165,
+          "right": 958,
+          "bottom": 166
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_text",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 971,
+          "top": 157,
+          "right": 1034,
+          "bottom": 172
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_context",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 368,
+          "top": 46,
+          "right": 566,
+          "bottom": 59
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_identity",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 368,
+          "top": 26,
+          "right": 452,
+          "bottom": 43
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_observation",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 897,
+          "top": 28,
+          "right": 1080,
+          "bottom": 41
+        },
+        {
+          "name": "QM_SIG_11421_114210000_bg",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 8,
+          "top": 8,
+          "right": 344,
+          "bottom": 222
+        },
+        {
+          "name": "QM_SIG_11421_114210000_design_version",
+          "type_name": "OBJ_BUTTON",
+          "scope": "dashboard",
+          "left": 234,
+          "top": 18,
+          "right": 260,
+          "bottom": 38
+        },
+        {
+          "name": "QM_SIG_11421_114210000_footer",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 22,
+          "top": 198,
+          "right": 127,
+          "bottom": 213
+        },
+        {
+          "name": "QM_SIG_11421_114210000_footer_rule",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 20,
+          "top": 188,
+          "right": 332,
+          "bottom": 189
+        },
+        {
+          "name": "QM_SIG_11421_114210000_gate_counts",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 248,
+          "top": 198,
+          "right": 330,
+          "bottom": 213
+        },
+        {
+          "name": "QM_SIG_11421_114210000_instrument",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 22,
+          "top": 43,
+          "right": 131,
+          "bottom": 58
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_accent",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 20,
+          "top": 64,
+          "right": 23,
+          "bottom": 130
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_bg",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 20,
+          "top": 64,
+          "right": 332,
+          "bottom": 130
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_headline",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 32,
+          "top": 70,
+          "right": 174,
+          "bottom": 90
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_next",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 32,
+          "top": 111,
+          "right": 288,
+          "bottom": 126
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_reason",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 32,
+          "top": 93,
+          "right": 229,
+          "bottom": 108
+        },
+        {
+          "name": "QM_SIG_11421_114210000_summary_divider",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 176,
+          "top": 146,
+          "right": 177,
+          "bottom": 174
+        },
+        {
+          "name": "QM_SIG_11421_114210000_summary_surface",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 20,
+          "top": 138,
+          "right": 332,
+          "bottom": 182
+        },
+        {
+          "name": "QM_SIG_11421_114210000_today",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 30,
+          "top": 161,
+          "right": 101,
+          "bottom": 176
+        },
+        {
+          "name": "QM_SIG_11421_114210000_today_label",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 30,
+          "top": 143,
+          "right": 114,
+          "bottom": 158
+        },
+        {
+          "name": "QM_SIG_11421_114210000_view",
+          "type_name": "OBJ_BUTTON",
+          "scope": "dashboard",
+          "left": 266,
+          "top": 16,
+          "right": 332,
+          "bottom": 40
+        },
+        {
+          "name": "QM_SIG_11421_114210000_week",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 186,
+          "top": 161,
+          "right": 257,
+          "bottom": 176
+        },
+        {
+          "name": "QM_SIG_11421_114210000_week_label",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 186,
+          "top": 143,
+          "right": 267,
+          "bottom": 158
+        },
+        {
+          "name": "QM_SIG_11421_114210000_word_mechanica",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 70,
+          "top": 16,
+          "right": 153,
+          "bottom": 39
+        },
+        {
+          "name": "QM_SIG_11421_114210000_word_quant",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 22,
+          "top": 16,
+          "right": 70,
+          "bottom": 39
+        }
+      ],
+      "time_price_overlays": [
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_line",
+          "type_name": "OBJ_HLINE",
+          "geometry_checked": false
+        }
+      ],
+      "limits": [
+        "Live EA capture is non-atomic; concurrent value changes are not frozen.",
+        "Time/price overlay geometry is not checked.",
+        "PNG chunk framing/CRC/IHDR are checked; compressed pixels are not decoded or visually assessed.",
+        "Full-frame extent relies on the pinned native audit calibration metadata.",
+        "No synthetic QA, native selftest, strategy or trading approval is inferred."
+      ],
+      "metadata": {
+        "schema_version": "1",
+        "artifact_kind": "live_canary_observation",
+        "audit_id": "40880270757609_2097130515",
+        "account_login": "1514536732",
+        "server": "FTMO-Demo",
+        "account_mode": "DEMO",
+        "chart_id": "40880270757609",
+        "hwnd": "182059870",
+        "symbol": "EURUSD",
+        "timeframe": "D1",
+        "expert": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "prefix": "QM_SIG_11421_114210000_",
+        "overlay_prefix": "QM_CHART_V2_QM_SIG_11421_114210000_",
+        "design": "02",
+        "view": "Compact",
+        "plot_width": "1187",
+        "plot_height": "380",
+        "dpi": "96",
+        "object_count": "30",
+        "objects_complete": "1",
+        "properties_complete": "1",
+        "binding_stable": "1",
+        "capture_non_atomic": "1",
+        "screenshot_calibrated": "1",
+        "screenshot_ok": "1",
+        "screenshot_width": "1243",
+        "screenshot_height": "403",
+        "started_utc": "2026.09.07 23:28:31 UTC",
+        "finished_utc": "2026.09.07 23:28:31 UTC",
+        "observation_complete": "1"
+      },
+      "chart_properties": {
+        "CHART_COLOR_BACKGROUND": 16777215,
+        "CHART_COLOR_FOREGROUND": 8745319,
+        "CHART_COLOR_GRID": 15262428,
+        "CHART_COLOR_CHART_UP": 8036110,
+        "CHART_COLOR_CHART_DOWN": 6182128,
+        "CHART_COLOR_CANDLE_BULL": 16777215,
+        "CHART_COLOR_CANDLE_BEAR": 6182128,
+        "CHART_COLOR_CHART_LINE": 16149563,
+        "CHART_COLOR_VOLUME": 15262428,
+        "CHART_COLOR_BID": 16149563,
+        "CHART_COLOR_ASK": 10982795,
+        "CHART_COLOR_LAST": 16149563,
+        "CHART_MODE": 1,
+        "CHART_FOREGROUND": 0,
+        "CHART_SHOW_GRID": 0,
+        "CHART_SHOW_VOLUMES": 0,
+        "CHART_SHOW_BID_LINE": 0,
+        "CHART_SHOW_ASK_LINE": 0,
+        "CHART_SHOW_LAST_LINE": 0,
+        "CHART_SHIFT": 1,
+        "CHART_SCALE": 3,
+        "CHART_AUTOSCROLL": 1,
+        "CHART_SHOW_TRADE_LEVELS": 1,
+        "CHART_DRAG_TRADE_LEVELS": 1,
+        "CHART_SHOW_TRADE_HISTORY": 1,
+        "CHART_FIRST_VISIBLE_BAR": 119,
+        "CHART_WIDTH_IN_BARS": 149,
+        "CHART_SHIFT_SIZE": 19.86531986531986
+      },
+      "plot_dimensions": [
+        1187,
+        380
+      ],
+      "screenshot_dimensions": [
+        1243,
+        403
+      ],
+      "capture_non_atomic": true,
+      "counts": {
+        "objects": 30,
+        "measured_pixel_objects": 29,
+        "measured_labels": 16,
+        "time_price_overlays": 1
+      },
+      "files": {
+        "objects": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097130515.objects.csv",
+          "sha256": "d66ada01f792ce2456f4b2e8a46eefd751108870b0fa9b89ab2ef6bc4bebd094"
+        },
+        "metadata": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097130515.meta.csv",
+          "sha256": "597b302d523b90cfb67676047a3f06ffb3134211f62f490ecef5a6bff1d5d4b5"
+        },
+        "chart": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097130515.chart.csv",
+          "sha256": "7856a324241aac2aad07d8ab9ec67c06d112067b87b9d1a00b6f6a78c7b69fc5"
+        },
+        "png": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097130515.png",
+          "sha256": "77eda1de2497edf35c49615ebfff5ff3b7e285e2a88fdaf339ed15db1fe175d2"
+        }
+      }
+    },
+    {
+      "status": "PASS",
+      "scope": "pinned live canary observation integrity and measured pixel geometry only",
+      "trading_authorized": false,
+      "strategy_certified": false,
+      "native_selftests_verified": false,
+      "tolerance_pixels": 1,
+      "issues": [],
+      "boxes": [
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_accent",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 963,
+          "top": 154,
+          "right": 965,
+          "bottom": 176
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_card",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 963,
+          "top": 154,
+          "right": 1111,
+          "bottom": 176
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_join",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 957,
+          "top": 165,
+          "right": 963,
+          "bottom": 166
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_leader_h",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 951,
+          "top": 165,
+          "right": 957,
+          "bottom": 166
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_leader_v",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "overlay",
+          "left": 957,
+          "top": 165,
+          "right": 958,
+          "bottom": 166
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_text",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 971,
+          "top": 157,
+          "right": 1034,
+          "bottom": 172
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_context",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 336,
+          "top": 46,
+          "right": 534,
+          "bottom": 59
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_identity",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 336,
+          "top": 26,
+          "right": 420,
+          "bottom": 43
+        },
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_observation",
+          "type_name": "OBJ_LABEL",
+          "scope": "overlay",
+          "left": 897,
+          "top": 28,
+          "right": 1080,
+          "bottom": 41
+        },
+        {
+          "name": "QM_SIG_11421_114210000_bg",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 8,
+          "top": 8,
+          "right": 312,
+          "bottom": 172
+        },
+        {
+          "name": "QM_SIG_11421_114210000_design_version",
+          "type_name": "OBJ_BUTTON",
+          "scope": "dashboard",
+          "left": 202,
+          "top": 18,
+          "right": 228,
+          "bottom": 38
+        },
+        {
+          "name": "QM_SIG_11421_114210000_footer",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 22,
+          "top": 148,
+          "right": 127,
+          "bottom": 163
+        },
+        {
+          "name": "QM_SIG_11421_114210000_footer_rule",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 20,
+          "top": 138,
+          "right": 300,
+          "bottom": 139
+        },
+        {
+          "name": "QM_SIG_11421_114210000_gate_counts",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 216,
+          "top": 148,
+          "right": 298,
+          "bottom": 163
+        },
+        {
+          "name": "QM_SIG_11421_114210000_instrument",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 22,
+          "top": 43,
+          "right": 131,
+          "bottom": 58
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_accent",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 20,
+          "top": 64,
+          "right": 23,
+          "bottom": 130
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_bg",
+          "type_name": "OBJ_RECTANGLE_LABEL",
+          "scope": "dashboard",
+          "left": 20,
+          "top": 64,
+          "right": 300,
+          "bottom": 130
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_headline",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 32,
+          "top": 70,
+          "right": 174,
+          "bottom": 90
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_next",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 32,
+          "top": 111,
+          "right": 284,
+          "bottom": 126
+        },
+        {
+          "name": "QM_SIG_11421_114210000_state_reason",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 32,
+          "top": 93,
+          "right": 229,
+          "bottom": 108
+        },
+        {
+          "name": "QM_SIG_11421_114210000_view",
+          "type_name": "OBJ_BUTTON",
+          "scope": "dashboard",
+          "left": 234,
+          "top": 16,
+          "right": 300,
+          "bottom": 40
+        },
+        {
+          "name": "QM_SIG_11421_114210000_word_mechanica",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 70,
+          "top": 16,
+          "right": 153,
+          "bottom": 39
+        },
+        {
+          "name": "QM_SIG_11421_114210000_word_quant",
+          "type_name": "OBJ_LABEL",
+          "scope": "dashboard",
+          "left": 22,
+          "top": 16,
+          "right": 70,
+          "bottom": 39
+        }
+      ],
+      "time_price_overlays": [
+        {
+          "name": "QM_CHART_V2_QM_SIG_11421_114210000_bid_line",
+          "type_name": "OBJ_HLINE",
+          "geometry_checked": false
+        }
+      ],
+      "limits": [
+        "Live EA capture is non-atomic; concurrent value changes are not frozen.",
+        "Time/price overlay geometry is not checked.",
+        "PNG chunk framing/CRC/IHDR are checked; compressed pixels are not decoded or visually assessed.",
+        "Full-frame extent relies on the pinned native audit calibration metadata.",
+        "No synthetic QA, native selftest, strategy or trading approval is inferred."
+      ],
+      "metadata": {
+        "schema_version": "1",
+        "artifact_kind": "live_canary_observation",
+        "audit_id": "40880270757609_2097192203",
+        "account_login": "1514536732",
+        "server": "FTMO-Demo",
+        "account_mode": "DEMO",
+        "chart_id": "40880270757609",
+        "hwnd": "182059870",
+        "symbol": "EURUSD",
+        "timeframe": "D1",
+        "expert": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "prefix": "QM_SIG_11421_114210000_",
+        "overlay_prefix": "QM_CHART_V2_QM_SIG_11421_114210000_",
+        "design": "02",
+        "view": "Minimal",
+        "plot_width": "1187",
+        "plot_height": "380",
+        "dpi": "96",
+        "object_count": "24",
+        "objects_complete": "1",
+        "properties_complete": "1",
+        "binding_stable": "1",
+        "capture_non_atomic": "1",
+        "screenshot_calibrated": "1",
+        "screenshot_ok": "1",
+        "screenshot_width": "1243",
+        "screenshot_height": "403",
+        "started_utc": "2026.09.07 23:29:33 UTC",
+        "finished_utc": "2026.09.07 23:29:33 UTC",
+        "observation_complete": "1"
+      },
+      "chart_properties": {
+        "CHART_COLOR_BACKGROUND": 16777215,
+        "CHART_COLOR_FOREGROUND": 8745319,
+        "CHART_COLOR_GRID": 15262428,
+        "CHART_COLOR_CHART_UP": 8036110,
+        "CHART_COLOR_CHART_DOWN": 6182128,
+        "CHART_COLOR_CANDLE_BULL": 16777215,
+        "CHART_COLOR_CANDLE_BEAR": 6182128,
+        "CHART_COLOR_CHART_LINE": 16149563,
+        "CHART_COLOR_VOLUME": 15262428,
+        "CHART_COLOR_BID": 16149563,
+        "CHART_COLOR_ASK": 10982795,
+        "CHART_COLOR_LAST": 16149563,
+        "CHART_MODE": 1,
+        "CHART_FOREGROUND": 0,
+        "CHART_SHOW_GRID": 0,
+        "CHART_SHOW_VOLUMES": 0,
+        "CHART_SHOW_BID_LINE": 0,
+        "CHART_SHOW_ASK_LINE": 0,
+        "CHART_SHOW_LAST_LINE": 0,
+        "CHART_SHIFT": 1,
+        "CHART_SCALE": 3,
+        "CHART_AUTOSCROLL": 1,
+        "CHART_SHOW_TRADE_LEVELS": 1,
+        "CHART_DRAG_TRADE_LEVELS": 1,
+        "CHART_SHOW_TRADE_HISTORY": 1,
+        "CHART_FIRST_VISIBLE_BAR": 119,
+        "CHART_WIDTH_IN_BARS": 149,
+        "CHART_SHIFT_SIZE": 19.86531986531986
+      },
+      "plot_dimensions": [
+        1187,
+        380
+      ],
+      "screenshot_dimensions": [
+        1243,
+        403
+      ],
+      "capture_non_atomic": true,
+      "counts": {
+        "objects": 24,
+        "measured_pixel_objects": 23,
+        "measured_labels": 12,
+        "time_price_overlays": 1
+      },
+      "files": {
+        "objects": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097192203.objects.csv",
+          "sha256": "e6512ef3849540ab593c4ca4938c77b57968a97ddfa6e5a14db94258ab8a1ea2"
+        },
+        "metadata": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097192203.meta.csv",
+          "sha256": "b9a508199a0512c096ce00badbe6de08b88c90c5fb90f22c55e2661f148393de"
+        },
+        "chart": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097192203.chart.csv",
+          "sha256": "336768e90565e2d8573ec05f637bc72b13419cf8024988bb87280b3fc0ceb4f3"
+        },
+        "png": {
+          "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM_Console_Canary\\canary_40880270757609_2097192203.png",
+          "sha256": "b7dda70f9dac576bfec1da08b6c665c2a6d98dbfb5b44986a7501badf6e2dae0"
+        }
+      }
+    }
+  ]
+}

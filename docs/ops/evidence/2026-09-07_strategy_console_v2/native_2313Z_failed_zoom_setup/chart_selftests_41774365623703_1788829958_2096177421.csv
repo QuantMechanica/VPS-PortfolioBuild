@@ -1,0 +1,4 @@
+"init_run_id","chart_id","suite","status","detail"
+"41774365623703_1788829958_2096177421","41774365623703","chart_geometry","PASS",""
+"41774365623703_1788829958_2096177421","41774365623703","chart_property_roundtrip","PASS",""
+"41774365623703_1788829958_2096177421","41774365623703","chart_zoom_roundtrip","FAIL","zoom_fixture_changed_raster_unstable"

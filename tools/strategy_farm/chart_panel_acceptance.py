@@ -52,7 +52,9 @@ def static_acceptance() -> dict:
     probe = PROBE.read_text(encoding="utf-8")
     combined = "".join(sources.values()) + probe
     checks = {
-        "ascii_only": combined.isascii(),
+        # OWNER explicitly requested the real copyright glyph for the A/B designs.
+        "unicode_display_preserved": '"© QuantMechanica' in renderer and
+            "c>=32&&c!=127" in renderer and "c<=126" not in renderer,
         "no_trade_calls": not re.search(r"\b(?:OrderSend|OrderSendAsync|CTrade|PositionClose|PositionModify)\s*\(", combined),
         "pure_snapshot_renderer": not re.search(
             r"\b(?:HistorySelect|HistoryDealGet\w*|PositionGet\w*|OrderGet\w*|OrderCalcProfit|AccountInfo\w*|QM_News\w*|QM_FTMO\w*|Strategy_\w*)\s*\(", renderer),
@@ -64,17 +66,19 @@ def static_acceptance() -> dict:
         "timer_fixture": all(token in probe for token in ("EventSetTimer(5)", "OnTimer()", "EventKillTimer()")),
         "required_hierarchy": all(token in renderer for token in (
             '"Quant"', '"Mechanica"', '"STRATEGY CONSOLE"', '"FILTER GATE"', '"RISK"',
-            '"LIVE"', '"Today  "', '"Week  "', '"PERFORMANCE | THIS EA"', '"(c) QuantMechanica"')),
+            '"LIVE"', '"Today"', '"Week"', '"PERFORMANCE | THIS EA"', '"© QuantMechanica')),
         "no_obsolete_product_copy": not any(token in renderer for token in (
             "LOGIN", "LICENSE", "Support:", "Heartbeat", "debug")),
         "three_modes": all(token in renderer + model for token in (
             "QM_CONSOLE_FULL", "QM_CONSOLE_COMPACT", "QM_CONSOLE_MINIMAL", "QM_ConsoleNextMode")),
-        "view_event_timer_only": "CHARTEVENT_OBJECT_CLICK" in renderer and
-            "Render(" not in renderer.split("void OnChartEvent", 1)[1].split("void Render", 1)[0],
+        "view_event_cached_snapshot_only": "CHARTEVENT_OBJECT_CLICK" in renderer and
+            "m_last_snapshot" in renderer.split("void OnChartEvent", 1)[1].split("void Render", 1)[0] and
+            not re.search(r"\b(?:Populate|HistorySelect|OrderSend|Strategy_\w*)\s*\(",
+                renderer.split("void OnChartEvent", 1)[1].split("void Render", 1)[0]),
         "object_namespace": '"QM_SIG_"' in header,
         "update_in_place": "ObjectFind" in renderer and "RemoveUnused" in renderer and "m_used" in renderer,
         "single_redraw_per_cycle": renderer.split("void Render", 1)[1].split("void Shutdown", 1)[0].count("ChartRedraw(") == 1,
-        "dynamic_live": "if(ArraySize(lines)==0) return y;" in renderer and '"NONE"' not in renderer,
+        "dynamic_live": "ArraySize(snapshot.live)" in renderer and '"NONE"' not in renderer,
         "de_de_en_us_formatters": all(token in data for token in (
             '"100.000,00"', '"100,000.00"', '"0,31 %"', '"0.31 %"', "QM_PanelFormatterSelfTest")),
         "self_test_probe": "QM_ConsoleSnapshotSelfTest()" in probe and "QM_PanelFormatterSelfTest()" in probe,

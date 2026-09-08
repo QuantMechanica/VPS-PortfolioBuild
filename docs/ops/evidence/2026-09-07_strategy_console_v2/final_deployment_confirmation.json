@@ -1,0 +1,34 @@
+{
+  "status": "PASS",
+  "phase": "immediately_before_final_properties_OK",
+  "utc": "2026-09-07T23:24:05.648112+00:00",
+  "pid": 15464,
+  "login": 1514536732,
+  "server": "FTMO-Demo",
+  "demo": true,
+  "positions": 0,
+  "orders": 0,
+  "balance": 100000,
+  "equity": 100000,
+  "global_autotrading": true,
+  "own_autotrading": 1,
+  "current_bar": 1788825600,
+  "closed_closes": [
+    1.16268,
+    1.16128,
+    1.16219
+  ],
+  "entry_setup": false,
+  "loaded_preset": "D:/QM/console_design_20260907/ftmo_11421_final_loaded_verified_2323Z.set",
+  "loaded_preset_sha256": "e72f9bff239e173f8fdc817f1992fc46ece9480f02ec66725e91042d74d15902",
+  "loaded_keys": 45,
+  "changed_inputs": {
+    "qm_panel_build_hash": [
+      "b91f81a2",
+      "4ff02978"
+    ]
+  },
+  "nonvisual_inputs_unchanged": true,
+  "installed_ex5_sha256": "4ff02978ae5d205355f81850fdbad1dac5daf8a8cb4313eaae08c616b1940e0a",
+  "properties_OK_utc": "2026-09-07T23:24:05.771565+00:00"
+}

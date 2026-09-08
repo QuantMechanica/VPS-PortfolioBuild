@@ -1,0 +1,3 @@
+"init_run_id","chart_id","suite","status","detail"
+"41774365623703_1788829254_2095473406","41774365623703","compare_start_failure_rollback","PASS","prefix=QM_QA_FAIL_88829254_2095473406; derived_v2_length=42; initialized=1; before=1; deleted_label=1; rollback=1; cleanup=1; objects=21/21/0; bid=1.16260/1.16260; quote=2026.09.08 02:00:52 BT/2026.09.08 02:00:52 BT; restore_failure_injected=0"
+"41774365623703_1788829254_2095473406","41774365623703","compare_render_failure_recovery","PASS","prefix=QM_RF_4_2095473406; collision=QM_CHART_V2_QM_RF_4_2095473406identity; initialized=1; injected=1; rejected=1; fault_removed=1; recovered=1; cleanup=1; remaining=0; bid=1.16260/1.16260; quote=2026.09.08 02:00:52 BT/2026.09.08 02:00:52 BT; restore_failure_injected=0"

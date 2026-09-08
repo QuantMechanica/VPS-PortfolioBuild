@@ -52,6 +52,10 @@ struct QM_ConsoleSnapshot
    QM_ConsoleState state;
    string reason;
    string next_event;
+   // Admission warnings remain visible even while a position/order is active.
+   // They are observations only; this snapshot never grants trade permission.
+   string alert_reason;
+   QM_ConsoleGateState alert_state;
    QM_ConsoleGate gates[];
    QM_ConsoleLine risk[];
    QM_ConsoleLine live[];
@@ -66,14 +70,18 @@ struct QM_ConsoleSnapshot
    datetime range_end;
    double range_high;
    double range_low;
+   string range_high_text;
+   string range_low_text;
 
    void Reset()
      {
       strategy_name=""; timeframe=""; symbol=""; environment=""; version="";
       state=QM_CONSOLE_INITIALIZING; reason="Awaiting first observation";
       next_event="Next timer update"; today="N/A"; week="N/A";
+      alert_reason=""; alert_state=QM_GATE_NA;
       positions=0; pending_orders=0; active_range=false;
       range_start=0; range_end=0; range_high=0.0; range_low=0.0;
+      range_high_text=""; range_low_text="";
       ArrayResize(gates,0); ArrayResize(risk,0); ArrayResize(live,0);
       ArrayResize(performance,0); ArrayResize(exposure,0);
      }

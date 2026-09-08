@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "phase": "immediately_before_final_copy",
+  "utc": "2026-09-07T23:22:24.415853+00:00",
+  "pid": 15464,
+  "login": 1514536732,
+  "server": "FTMO-Demo",
+  "demo": true,
+  "positions": 0,
+  "orders": 0,
+  "balance": 100000,
+  "equity": 100000,
+  "global_autotrading": true,
+  "current_bar": 1788825600,
+  "closed_closes": [
+    1.16268,
+    1.16128,
+    1.16219
+  ],
+  "strategy_entry_setup": false,
+  "original_chart": "40880270757609",
+  "original_view": 182059870,
+  "old_binary": "b91f81a27a622f4e1d82c9ba43eeedc890e6a72e4d229a6e5ad413e943abe162",
+  "new_binary": "4ff02978ae5d205355f81850fdbad1dac5daf8a8cb4313eaae08c616b1940e0a",
+  "final_qa_ab": "PASS",
+  "final_qa_init": "41774365623703_1788830429_2096648015"
+}
