@@ -1,0 +1,56 @@
+{
+  "active_work_item_count": 7,
+  "anchor_status": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "q04": "PASS",
+      "q05": "FAIL"
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "q04": "FAIL"
+    }
+  },
+  "branch": "agents/board-advisor",
+  "cpu_average_percent": 97.73825003201162,
+  "cpu_max_percent": 99.2192233068314,
+  "cpu_samples_percent": [
+    97.17111025162379,
+    99.2192233068314,
+    98.92975525677366,
+    97.95446967213205,
+    95.41669167269724
+  ],
+  "fallback": {
+    "attempt_count": 0,
+    "claimed_by": null,
+    "ea_id": "QM5_12507",
+    "phase": "Q02",
+    "status": "pending",
+    "symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "verdict": null,
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251"
+  },
+  "free_memory_gib": 37.303,
+  "observation_head": "6ec26f030a8a252e815a6372a1ec48e4780d308e",
+  "paced_ceiling": 7,
+  "recorded_at_utc": "2026-09-08T16:01:40.6961099Z",
+  "running_factory_terminals": [
+    "T1",
+    "T10",
+    "T2",
+    "T3",
+    "T4",
+    "T7"
+  ],
+  "safety": {
+    "compile_enqueued": false,
+    "ea_source_written": false,
+    "framework_input_pin_audit_required": false,
+    "portfolio_gate_touched": false,
+    "q02_enqueued": false,
+    "t_live_touched": false
+  },
+  "status": "HARD_CPU_CEILING_STOP",
+  "total_memory_gib": 63.12
+}
