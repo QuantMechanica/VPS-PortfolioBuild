@@ -199,8 +199,10 @@ function Test-ReportShowsRealTicks {
 function Get-ReportInvalidReasons {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$Html,
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$TesterLogTail,
         [Parameter(Mandatory = $true)]
         [string]$ExpectedSymbol,
@@ -373,6 +375,7 @@ function Test-TesterLogShowsAccountNotSpecified {
 function Test-TesterLogHasNoHistoryForRun {
     param(
         [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
         [string]$TesterLogTail,
         [Parameter(Mandatory = $true)]
         [string]$ExpectedSymbol,
