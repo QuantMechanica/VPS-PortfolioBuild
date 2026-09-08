@@ -1,0 +1,61 @@
+{
+  "schema": "qm.fx-cointegration-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-08T16:46:36.3712058Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "ca81e2b2b41bfad7692e535dc3a061605f2f626b",
+  "outcome": "STOP_CPU_CEILING",
+  "capacity": {
+    "active_work_item_count": 8,
+    "paced_fleet_ceiling": 7,
+    "cpu_samples_percent": [
+      91.623445,
+      87.029319,
+      91.610841,
+      78.127294,
+      67.980827
+    ],
+    "cpu_average_percent": 83.274345,
+    "cpu_maximum_percent": 91.623445,
+    "free_physical_memory_gib": 25.945,
+    "total_physical_memory_gib": 63.12
+  },
+  "active_work_items": [
+    {"terminal": "T10", "phase": "Q10_NEWS", "ea_id": "QM5_11167", "symbol": "XAUUSD.DWX", "work_item_id": "6797ed1c-597a-4d44-82f9-7379d45b5e06"},
+    {"terminal": "T9", "phase": "Q06", "ea_id": "QM5_41159", "symbol": "XTIUSD.DWX", "work_item_id": "db2b0b58-9ecf-49d8-96ff-e53e01bd95ef"},
+    {"terminal": "T5", "phase": "OPT_CENSUS", "ea_id": "QM5_41163", "symbol": "USDCAD.DWX", "work_item_id": "c19d8c7d-a194-5871-b0e9-9246f9c8e2e6"},
+    {"terminal": "T1", "phase": "Q02", "ea_id": "QM5_41169", "symbol": "XTIUSD.DWX", "work_item_id": "84a8e285-7785-40c4-9b4f-aa8295c7a288"},
+    {"terminal": "T8", "phase": "Q04", "ea_id": "QM5_41170", "symbol": "XTIUSD.DWX", "work_item_id": "d63acf17-06d2-494e-a5e7-3ff62746bd94"},
+    {"terminal": "T2", "phase": "OPT_CENSUS", "ea_id": "QM5_41301", "symbol": "XAUUSD.DWX", "work_item_id": "38ee6089-a366-52e7-8072-81a200dbb925"},
+    {"terminal": "T3", "phase": "OPT_CENSUS", "ea_id": "QM5_41324", "symbol": "USDJPY.DWX", "work_item_id": "ea7aa84a-b0d1-5a26-b1f0-1e5a8ddcd35f"},
+    {"terminal": "T4", "phase": "OPT_CENSUS", "ea_id": "QM5_41345", "symbol": "XAUUSD.DWX", "work_item_id": "b8cbe6f9-0447-591d-ab6f-1ee7a89cacb9"}
+  ],
+  "frontier": {
+    "scan_relationships": 66,
+    "unbuilt_relationships": 0,
+    "approved_runtime_cards_without_ea_directory": 0,
+    "evidence": "docs/research/FX_COINTEGRATION_QM5_12507_Q02_DRAIN_WINDOW_STOP_20260908T122159Z.md"
+  },
+  "anchors": {
+    "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_Q04_FAIL"
+  },
+  "fallback": {
+    "ea_id": "QM5_12507",
+    "slug": "pair-coint-z",
+    "pair": ["EURUSD.DWX", "GBPUSD.DWX"],
+    "timeframe": "H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "action": "NO_DUPLICATE_ENQUEUE"
+  },
+  "pacer_guard": {
+    "generated_mq5_written": false,
+    "source_pin_audit_required": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false
+  },
+  "protected_surfaces_touched": false
+}
