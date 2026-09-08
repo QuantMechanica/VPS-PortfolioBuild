@@ -1,25 +1,25 @@
 #property strict
 #property version   "5.0"
-#property description "QM5_41386 WTI Seven-Month Trend / Two-Month Hold"
+#property description "QM5_41387 WTI Eight-Month Trend / Two-Month Hold"
 
 #include <QM/QM_Common.mqh>
 
 // =============================================================================
-// QM5_41386 - WTI Seven-Month Trend / Two-Month Hold
+// QM5_41387 - WTI Eight-Month Trend / Two-Month Hold
 // -----------------------------------------------------------------------------
 // Source lineage: Moskowitz, Ooi & Pedersen (2012) monthly own-return trend.
 // At the first processed D1 bar of each eligible odd broker month:
-//   1. derive eight consecutive completed WTI month-end closes from D1;
-//   2. calculate the exact seven-month return ln(C[7] / C[0]);
+//   1. derive nine consecutive completed WTI month-end closes from D1;
+//   2. calculate the exact eight-month return ln(C[8] / C[0]);
 //   3. buy a positive return or sell a negative return;
 //   4. preserve the package through the intervening even-month transition.
 // The non-overlapping odd-month phase, CFD mapping, ATR stop, and fixed-dollar
 // sizing are transparent QM mechanizations. Runtime uses XTIUSD.DWX data only.
-// The exact seven-month endpoint pair remains independent of the two-month clock.
+// The exact eight-month endpoint pair remains independent of the two-month clock.
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                    = 41386;
+input int    qm_ea_id                    = 41387;
 input int    qm_magic_slot_offset        = 0;
 input uint   qm_rng_seed                 = 42;
 
@@ -44,7 +44,7 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input string strategy_symbol                   = "XTIUSD.DWX";
-input int    strategy_return_months            = 7;
+input int    strategy_return_months            = 8;
 input int    strategy_hold_months              = 2;
 input int    strategy_rebalance_month_parity   = 1;
 input int    strategy_history_bars_d1          = 300;
@@ -59,7 +59,7 @@ int    g_cache_signal            = 0;
 int    g_cache_month_key         = 0;
 int    g_last_attempt_month_key  = 0;
 string g_attempt_state_key       = "";
-double g_cache_seven_month_return   = 0.0;
+double g_cache_eight_month_return   = 0.0;
 string g_cache_state_reason      = "uninitialized";
 
 bool Strategy_IsHostChart()
@@ -331,7 +331,7 @@ bool Strategy_AreConsecutiveMonths(const int &month_keys[],
 bool Strategy_LoadMonthlyCloses(double &closes[])
   {
    ArrayResize(closes, 0);
-   if(strategy_return_months != 7 ||
+   if(strategy_return_months != 8 ||
       strategy_history_bars_d1 != 300)
       return false;
 
@@ -391,7 +391,7 @@ bool Strategy_LoadMonthlyCloses(double &closes[])
      }
 
    const int required_closes = strategy_return_months + 1;
-   if(required_closes != 8 ||
+   if(required_closes != 9 ||
       month_count < required_closes)
       return false;
 
@@ -416,22 +416,22 @@ void Strategy_ResetCachedState()
   {
    g_cache_signal_valid = false;
    g_cache_signal = 0;
-   g_cache_seven_month_return = 0.0;
+   g_cache_eight_month_return = 0.0;
    g_cache_state_reason = "not_evaluated";
   }
 
-bool Strategy_SevenMonthReturnSignal(const double &closes[],
+bool Strategy_EightMonthReturnSignal(const double &closes[],
                                    int &signal)
   {
    signal = 0;
-   if(strategy_return_months != 7 ||
-      ArraySize(closes) != 8)
+   if(strategy_return_months != 8 ||
+      ArraySize(closes) != 9)
      {
-      g_cache_state_reason = "bad_seven_month_contract";
+      g_cache_state_reason = "bad_eight_month_contract";
       return false;
      }
 
-   for(int i = 0; i < 8; ++i)
+   for(int i = 0; i < 9; ++i)
      {
       if(closes[i] <= 0.0 ||
          !MathIsValidNumber(closes[i]))
@@ -441,22 +441,22 @@ bool Strategy_SevenMonthReturnSignal(const double &closes[],
         }
      }
 
-   const double endpoint_ratio = closes[7] / closes[0];
+   const double endpoint_ratio = closes[8] / closes[0];
    if(endpoint_ratio <= 0.0 ||
       !MathIsValidNumber(endpoint_ratio))
      {
       g_cache_state_reason = "invalid_endpoint_ratio";
       return false;
      }
-   const double seven_month_return = MathLog(endpoint_ratio);
-   if(!MathIsValidNumber(seven_month_return))
+   const double eight_month_return = MathLog(endpoint_ratio);
+   if(!MathIsValidNumber(eight_month_return))
      {
-      g_cache_state_reason = "invalid_seven_month_return";
+      g_cache_state_reason = "invalid_eight_month_return";
       return false;
      }
 
    double chained_return = 0.0;
-   for(int i = 0; i < 7; ++i)
+   for(int i = 0; i < 8; ++i)
      {
       const double monthly_return =
          MathLog(closes[i + 1] / closes[i]);
@@ -468,20 +468,20 @@ bool Strategy_SevenMonthReturnSignal(const double &closes[],
       chained_return += monthly_return;
      }
    if(!MathIsValidNumber(chained_return) ||
-      MathAbs(seven_month_return - chained_return) > 1.0e-10)
+      MathAbs(eight_month_return - chained_return) > 1.0e-10)
      {
       g_cache_state_reason = "endpoint_path_identity_failed";
       return false;
      }
 
-   g_cache_seven_month_return = seven_month_return;
-   if(seven_month_return == 0.0)
+   g_cache_eight_month_return = eight_month_return;
+   if(eight_month_return == 0.0)
      {
-      g_cache_state_reason = "exact_zero_seven_month_return";
+      g_cache_state_reason = "exact_zero_eight_month_return";
       return true;
      }
 
-   signal = (seven_month_return > 0.0) ? 1 : -1;
+   signal = (eight_month_return > 0.0) ? 1 : -1;
    g_cache_state_reason =
       (signal > 0) ? "qualified_long" : "qualified_short";
    return true;
@@ -496,7 +496,7 @@ bool Strategy_LoadSignalState(int &signal)
       g_cache_state_reason = "invalid_monthly_history";
       return false;
      }
-   return Strategy_SevenMonthReturnSignal(monthly_closes,
+   return Strategy_EightMonthReturnSignal(monthly_closes,
                                         signal);
   }
 
@@ -538,11 +538,11 @@ void Strategy_PrepareBimonthlySignal()
       Strategy_LoadSignalState(g_cache_signal);
    QM_LogEvent(QM_INFO,
                "MONTHLY_STATE",
-               StringFormat("{\"month\":%d,\"valid\":%s,\"signal\":%d,\"return_7m\":%.10f,\"state\":\"%s\"}",
+               StringFormat("{\"month\":%d,\"valid\":%s,\"signal\":%d,\"return_8m\":%.10f,\"state\":\"%s\"}",
                             g_cache_month_key,
                             g_cache_signal_valid ? "true" : "false",
                             g_cache_signal,
-                            g_cache_seven_month_return,
+                            g_cache_eight_month_return,
                             g_cache_state_reason));
   }
 
@@ -559,7 +559,7 @@ bool Strategy_MaxHoldExceeded()
 bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsHostChart() ||
-      qm_ea_id != 41386 ||
+      qm_ea_id != 41387 ||
       qm_magic_slot_offset != 0)
       return true;
    if(RISK_PERCENT != 0.0 ||
@@ -572,7 +572,7 @@ bool Strategy_NoTradeFilter()
       qm_stress_reject_probability > 1.0)
       return true;
    if(strategy_symbol == "" ||
-      strategy_return_months != 7 ||
+      strategy_return_months != 8 ||
       strategy_hold_months != 2 ||
       strategy_rebalance_month_parity != 1 ||
       strategy_history_bars_d1 != 300)
@@ -593,7 +593,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.price = 0.0;
    req.sl = 0.0;
    req.tp = 0.0;
-   req.reason = "QM5_41386_WTI_TSMOM7_H2";
+   req.reason = "QM5_41387_WTI_TSMOM8_H2";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
@@ -621,8 +621,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       (g_cache_signal > 0) ? QM_BUY : QM_SELL;
    req.reason =
       (g_cache_signal > 0) ?
-      "TSMOM7_H2_XTI_LONG" :
-      "TSMOM7_H2_XTI_SHORT";
+      "TSMOM8_H2_XTI_LONG" :
+      "TSMOM8_H2_XTI_SHORT";
    const double entry_price =
       QM_EntryMarketPrice(req.type);
    if(entry_price <= 0.0 ||
@@ -725,7 +725,7 @@ int OnInit()
       return INIT_FAILED;
 
    g_attempt_state_key =
-      StringFormat("QM5_41386_BIMONTH_ATTEMPT_%d",
+      StringFormat("QM5_41387_BIMONTH_ATTEMPT_%d",
                    QM_FrameworkMagic());
    if((bool)MQLInfoInteger(MQL_TESTER))
      {
@@ -745,7 +745,7 @@ int OnInit()
 
    QM_LogEvent(QM_INFO,
                "INIT_OK",
-               "{\"card\":\"QM5_41386\",\"ea\":\"wti-tsmom7-h2\"}");
+               "{\"card\":\"QM5_41387\",\"ea\":\"wti-tsmom8-h2\"}");
    return INIT_SUCCEEDED;
   }
 
@@ -822,5 +822,4 @@ double OnTester()
    QM_ChartUI_Refresh();
    return QM_DefaultObjective();
   }
-
 
