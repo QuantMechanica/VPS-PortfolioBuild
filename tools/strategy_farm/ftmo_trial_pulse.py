@@ -458,6 +458,7 @@ def parse_utc_timestamp(value: object) -> datetime | None:
 def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
     seen_magics: set[int] = set()
     errors: list[str] = []
+    resolved_errors: list[dict] = []
     latest_snap: dict | None = None
     latest_ts = ""
     day_anchor_magics: set[int] = set()
@@ -465,6 +466,9 @@ def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
     request_counts: dict[str, int] = {}
     request_event_counts: dict[str, dict[str, int]] = {}
     for lf in QM_DIR.glob("QM5_*.log"):
+        file_errors: list[dict] = []
+        sleeve_states: dict[tuple, tuple[datetime, dict]] = {}
+        latest_init: dict[tuple, datetime] = {}
         try:
             rows = lf.read_text(encoding="utf-8", errors="ignore").splitlines()
         except OSError:
@@ -475,6 +479,16 @@ def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
             except json.JSONDecodeError:
                 continue
             m = int(r.get("magic") or 0)
+            event = str(r.get("event") or "")
+            event_utc = parse_utc_timestamp(r.get("ts_utc"))
+            identity = (r.get("ea_id"), m, r.get("symbol"))
+            if event_utc is not None and event_utc >= activation_utc:
+                if event in {"INIT", "INIT_OK", "SLEEVE_CALENDAR_INIT"}:
+                    latest_init[identity] = max(event_utc, latest_init.get(identity, event_utc))
+                if event == "MONTHLY_SLEEVE_STATE":
+                    previous = sleeve_states.get(identity)
+                    if previous is None or event_utc >= previous[0]:
+                        sleeve_states[identity] = (event_utc, r)
             if m in EXPECTED_MAGICS:
                 seen_magics.add(m)
                 event = str(r.get("event") or "")
@@ -494,17 +508,51 @@ def scan_ea_logs(activation_utc: datetime = ACTIVATION_UTC) -> dict:
                 # same append-only EA files contain failed pre-activation attach
                 # attempts; those are durable history, not current alarms.
                 if event_utc is not None and event_utc >= activation_utc:
-                    errors.append(f"{lf.name}:{r.get('event')}")
+                    file_errors.append(r)
             if r.get("event") == "EQUITY_SNAPSHOT":
                 ts = str(r.get("ts_utc") or "")
                 if ts > latest_ts:
                     latest_ts = ts
                     latest_snap = r.get("payload") or {}
+        # Only an explicit, newer, healthy state for the same EA/magic/symbol
+        # and current month resolves this stateful calendar alarm. Never clear
+        # unrelated errors, FATALs, errors after recovery, or a prior instance's
+        # alarm using stale state. The original append-only log is untouched.
+        current = utc_now().astimezone(PRAGUE_TZ)
+        current_month = current.year * 100 + current.month
+        for row in file_errors:
+            identity = (row.get("ea_id"), int(row.get("magic") or 0), row.get("symbol"))
+            state = sleeve_states.get(identity)
+            recovered = False
+            if row.get("event") == "MONTHLY_SLEEVE_STATE" and row.get("level") == "ERROR" and state:
+                ts, proof = state
+                payload = proof.get("payload") or {}
+                rank = payload.get("host_rank")
+                recovered = (
+                    proof.get("level") == "INFO" and payload.get("ready") is True
+                    and payload.get("reject_reason") == ""
+                    and payload.get("month") == current_month
+                    and payload.get("valid_count") == 37
+                    and isinstance(rank, int) and not isinstance(rank, bool) and 0 <= rank < 37
+                    and payload.get("host") == (row.get("payload") or {}).get("host")
+                    and bool(payload.get("host"))
+                    and ts > parse_utc_timestamp(row.get("ts_utc"))
+                    and ts >= latest_init.get(identity, ts)
+                    and ts <= utc_now()
+                )
+            if recovered:
+                resolved_errors.append({"log": lf.name, "event": row["event"],
+                                        "error_at_utc": row.get("ts_utc"),
+                                        "recovered_at_utc": state[0].isoformat(),
+                                        "month": current_month, "valid_count": 37})
+            else:
+                errors.append(f"{lf.name}:{row.get('event')}")
     latest_request_day = max(request_counts, default=None)
     return {
         "magics_seen": len(seen_magics),
         "magics_missing": sorted(EXPECTED_MAGICS - seen_magics),
         "ea_errors": errors[-10:],
+        "ea_errors_resolved": resolved_errors[-10:],
         "equity_snapshot": latest_snap,
         "equity_snapshot_ts": latest_ts or None,
         "kill_switch_day_anchor_magics": len(day_anchor_magics),
@@ -1009,6 +1057,7 @@ def main() -> int:
         "server_requests_lower_bound": request_count,
         "server_request_day_broker": eas.get("server_request_day_broker"),
         "server_request_events": eas.get("server_request_events"),
+        "ea_errors_resolved": eas.get("ea_errors_resolved", []),
         "alarms": alarms,
         "warns": warns[-10:],
     }
