@@ -1,0 +1,132 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-08T14:47:09.5554635Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "5ba8b1d85b",
+  "mission": "grow_certified_v5_portfolio_with_new_forex_sleeves",
+  "outcome": "HARD_CAPACITY_CEILING_STOP",
+  "frontier": {
+    "research_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "latest_complete_coverage_evidence": "artifacts/fx_cointegration_fallback_audit_cpu_stop_20260902T204902Z_board_advisor.json",
+    "unordered_relationship_count": 66,
+    "represented_relationship_count": 66,
+    "unbuilt_relationship_count": 0,
+    "decision": "No new scan-derived card or EA is eligible because all 66 relationships already have governed ownership."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12507",
+    "relationship": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "same_identity_open_count": 1,
+    "priority_track": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "logical_backtest_setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "dispatch_decision": "Preserve the unique pending logical Q02 row and leave it to governed paced-worker claim order after capacity clears."
+  },
+  "checks": {
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5\"",
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0
+    },
+    "symbol_scope": {
+      "command": "python tools/strategy_farm/validate_symbol_scope.py --ea QM5_12507_pair-coint-z --json",
+      "verdict": "BASKET_OK",
+      "manifest_symbol_count": 4,
+      "violation_count": 0
+    }
+  },
+  "capacity": {
+    "cpu_counter": "\\Processor(_Total)\\% Processor Time",
+    "cpu_sample_interval_seconds": 1,
+    "cpu_samples_percent": [
+      35.569682,
+      40.292759,
+      44.084515,
+      46.531935,
+      43.670709
+    ],
+    "cpu_average_percent": 42.02992,
+    "cpu_maximum_percent": 46.531935,
+    "active_work_item_count": 8,
+    "active_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T5",
+      "T6",
+      "T7",
+      "T9",
+      "T10"
+    ],
+    "paced_fleet_active_tester_ceiling": 7,
+    "free_physical_memory_gib": 7.546,
+    "total_physical_memory_gib": 63.12,
+    "ceiling_hit": true,
+    "ceiling_reasons": [
+      "active_work_item_count_above_paced_tester_ceiling",
+      "free_physical_memory_below_multisymbol_admission_floor"
+    ]
+  },
+  "pacer_build_guard": {
+    "mq5_generated_or_edited": false,
+    "mandatory_post_write_pre_compile_audit_triggered": false,
+    "existing_source_read_only_audit_passed": true,
+    "compile_enqueue_attempted": false,
+    "EA_FRAMEWORK_INPUT_PINNED_finding": false
+  },
+  "mutations": {
+    "new_card_created": false,
+    "ea_source_changed": false,
+    "compile_enqueued": false,
+    "q02_row_appended": false,
+    "q02_row_reprioritized": false,
+    "manual_dispatch_started": false,
+    "terminal_control_attempted": false,
+    "pipeline_verdict_changed": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "resume_contract": "On the next paced wake, re-read work item 547c4fd3-f3fd-4c59-b9dc-654e96521251 and capacity. If it remains the unique pending unclaimed row, do not append a duplicate; let the governed worker claim it only after both tester-count and memory admission gates clear."
+}
