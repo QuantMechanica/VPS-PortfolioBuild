@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "bimonthly-wti-sign-of-exact-two-completed-broker-month-log-return-two-month-hold-odd-month-epoch",
+    "slug": "wti-tsmom2-h2",
+    "strategy_id": "MOP-TSMOM-2012_XTI_K2H2_S35"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-08T12:34:57+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12603_wti-tsmom12m_card.md",
+      "score": 1.0,
+      "slug": "wti-tsmom12m",
+      "source": "card",
+      "strategy_id": ""
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_12804_xng-tsmom12m-atr_card.md",
+      "score": 1.0,
+      "slug": "xng-tsmom12m-atr",
+      "source": "card",
+      "strategy_id": ""
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20055_wti-tsmom3m_card.md",
+      "score": 1.0,
+      "slug": "wti-tsmom3m",
+      "source": "card",
+      "strategy_id": "MOP-TSMOM-2012_XTI_S03"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20056_wti-dual-mom_card.md",
+      "score": 1.0,
+      "slug": "wti-dual-mom",
+      "source": "card",
+      "strategy_id": "MOP-TSMOM-2012_XTI_S04"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20058_xcu-tsmom3m_card.md",
+      "score": 1.0,
+      "slug": "xcu-tsmom3m",
+      "source": "card",
+      "strategy_id": "MOP-TSMOM-2012_XCU_S05"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4864,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1477,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
