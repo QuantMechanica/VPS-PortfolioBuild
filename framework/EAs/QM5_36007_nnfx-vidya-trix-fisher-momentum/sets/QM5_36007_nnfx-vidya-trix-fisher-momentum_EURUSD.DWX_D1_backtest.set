@@ -3,16 +3,16 @@
 ; ea_id:        36007
 ; ea_slug:      nnfx-vidya-trix-fisher-momentum
 ; ea_version:   v5.0
-; set_version:  s20260821-001
+; set_version:  s20260908-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   9c94385c91d9dfea5e3b9026aefe93a8385e0978e09f498b7c68e8c0b1729844
 ; author:       Development
-; date:         2026-08-21
+; date:         2026-09-08
 ;==========================================================
 qm_ea_id=36007
 qm_magic_slot_offset=0
