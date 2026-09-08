@@ -1,0 +1,20 @@
+{
+  "task_id": "099a8cb0-87c5-48d9-a753-d97a6d628251",
+  "build_generation": 0,
+  "ea_id": "QM5_41285",
+  "ea_label": "QM5_41285_xauxag-mjt-rv",
+  "slug": "xauxag-mjt-rv",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41285_xauxag-mjt-rv",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41285_xauxag-mjt-rv\\QM5_41285_xauxag-mjt-rv.mq5",
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "not_run",
+  "blocked_reason": "",
+  "failure_class": "compile_work_item_created_before_build_task_binding",
+  "retry_plan": "Keep the source-hash-bound held compile row, close this mistakenly sequenced build task, then create a fresh build task after governed Q01 completes.",
+  "safety": {
+    "manual_backtest_launched": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false
+  }
+}

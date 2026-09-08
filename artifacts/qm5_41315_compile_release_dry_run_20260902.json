@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "f5e1f805d8adc07e31a2bad2db33c28b2fededd1c54de609871466a06f205e8e",
+      "ea_id": "QM5_41315",
+      "ea_label": "QM5_41315_wti-archlm-tr",
+      "expected_mq5_sha256": "f5e1f805d8adc07e31a2bad2db33c28b2fededd1c54de609871466a06f205e8e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41315_wti-archlm-tr\\QM5_41315_wti-archlm-tr.mq5",
+      "work_item_id": "55010be0-b2d1-415f-b10b-3cae1896f7da"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "55010be0-b2d1-415f-b10b-3cae1896f7da"
+}

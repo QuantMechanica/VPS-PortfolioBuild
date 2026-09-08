@@ -1,0 +1,440 @@
+{
+ "task_id": "386727c4-4a3a-4d40-aada-7be1a9ac7fb5",
+ "build_generation": null,
+ "ea_id": "QM5_41323",
+ "ea_label": "QM5_41323_pp-wedge-opt",
+ "slug": "pp-wedge-opt",
+ "strategy_id": null,
+ "ea_dir": "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt",
+ "mq5_path": "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/QM5_41323_pp-wedge-opt.mq5",
+ "ex5_path": "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/QM5_41323_pp-wedge-opt.ex5",
+ "magic_base": 413230000,
+ "symbols": [
+  "NDX.DWX"
+ ],
+ "symbols_registered": [
+  "NDX.DWX"
+ ],
+ "logical_symbol": "NDX.DWX",
+ "host_symbol": "NDX.DWX",
+ "timeframe": "H4",
+ "setfiles_generated": [
+  "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/sets/QM5_41323_pp-wedge-opt_NDX.DWX_H4_backtest.set"
+ ],
+ "setfile_sha256": {
+  "QM5_41323_pp-wedge-opt_NDX.DWX_H4_backtest.set": "E015AF5878F1325CFA93E0BC397E28E5F86B31CDC27C370BED59477F18637562"
+ },
+ "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/SPEC.md",
+ "build_check_passed": true,
+ "compile_succeeded": true,
+ "smoke_result": "no_separate_smoke_run",
+ "smoke_report_path": null,
+ "smoke_skipped_reason": "No smoke separate from the pipeline was run. The two files named '*_run_smoke.md' under D:/QM/reports/framework/22 for this EA are the two stages (prescreen + full) of the persisted Q02 gate work item 45848add-99ee-5594-bbf1-c001bbcdadac, emitted by framework/scripts/run_smoke.ps1, which is the farm's backtest runner for every gate phase. They are Q02 gate evidence, not a smoke of this build, and both ran the non-shipped opt_census base setfile sha256 9D674254C7147CB8627D7428BF8E05807E378D5CD1F90BBF3CA7244C18C25099. See the q02_gate object for the full binding.",
+ "blocked_reason": "duplicate_build_task_existing_pipeline_work (verbatim from tasks.payload_json.blocked_reason for task 386727c4-4a3a-4d40-aada-7be1a9ac7fb5; tasks.status='blocked'; payload_json.duplicate_build_blocked_at_utc='2026-09-03T01:59:01+00:00'; tasks.updated_at='2026-09-03T01:59:01+00:00'; read read-only from D:/QM/strategy_farm/state/farm_state.sqlite at 2026-09-03T02:20:07Z)",
+ "open_questions": [
+  "build_generation is null: neither compile_evidence.json nor the tasks row nor the work_items row for QM5_41323 carries a build_generation field, so no value can be quoted. The previous artifact's 0 was synthesized.",
+  "compile.status is null: compile_evidence.json has no 'status' key. The verbatim compile-evidence tokens are published under compile.result (compile_result='PASS', compile_reason_class='OK', success=true, no_gate_verdict=true). The farm SQLite phase tokens were read this time and are published verbatim under compile.work_item_status_db / compile.work_item_verdict_db (work_items.status='done', work_items.verdict='COMPILE_OK').",
+  "compile.build_check_warning_codes is null: D:/QM/reports/framework/21/build_check_20260903_013234.json carries an empty generic warnings[] array with no EA scoping, so there is no QM5_41323-bound warning-code list to quote. compile_evidence.build_check_output_tail records 'build_check.warnings=0' for the run that names this EA as its compile target.",
+  "capacity_admission CPU fields, ceilings, rule and admitted are null: no CPU sampling artifact exists for this build and compile_evidence.json records every claim_admission_* field as null. factory_terminal_count and factory_terminals are also null because no factory-wide terminal census was taken; the only terminal fact on disk is compile_evidence.running_terminals_at_worker_start, published verbatim under revision.provenance.capacity. That list does not contain T6, the terminal that actually claimed and ran this compile, so it is a worker-start snapshot of OTHER terminals, not an admission measurement.",
+  "validations build_skill_guard, card_schema_lint, g0_card_lint, dedup_artifact_sha256, density_artifact_sha256, reference_test_sha256, reference_tests, source_packet_sha256, spec_validation, static_guardrails, symbol_scope and setfile_validation are null: no validator artifact naming QM5_41323 exists under D:/QM/reports, D:/QM/strategy_farm/artifacts or C:/QM/repo/artifacts. The direct byte readback of the shipped .set and of the EA input defaults is published as a readback (not a verdict) under revision.provenance.setfile_contract_readback.",
+  "strategy_id is null: the approved card frontmatter carries source_id 72f9fcfa-6c75-5544-80c4-31e15c9817ab, parent_ea_id QM5_11660 and g0_status APPROVED, but no strategy_id key.",
+  "compile_evidence.json sets no_gate_verdict true and verdict_taxonomy 'artifact': the COMPILE_EA row carries no strategy verdict. The strategy verdict that now exists comes from Q02 work item 45848add-99ee-5594-bbf1-c001bbcdadac (PASS) and it was NOT run on the shipped sets/ .set file - see q02_gate.setfile_binding_mismatch.",
+  "Q02 economics are marginal, not clean: profit_factor 1.02 over 377 trades with net profit 1770.97 against a maximum drawdown of 14899.21 (14.24%), i.e. the two-year net gain is about 11.9% of the worst drawdown. The Q02 frequency-coverage block also reports marker_status 'invalid_or_outside_window' with valid_marker_count 0, so the coverage window fell back to the test-window start rather than a measured first-tradable bar. No Q03 row exists; the Q04 probe 0561d9a8-b0fa-4c73-82d6-cdb3663a7de5 is still pending and inherits the same non-shipped setfile.",
+  "The Q02 window is 2021.01.01-2022.12.31 (two years), not full history, and the run_smoke evidence header records requested_year 2024 while the generated tester.ini ran 2021.01.01-2022.12.31; the prescreen stage ran an even shorter 2022.07.01-2022.12.31. The window actually executed is taken from the tester.ini quoted in q02_gate.window, not from the requested_year header field."
+ ],
+ "compile": {
+  "status": null,
+  "result": {
+   "compile_result": "PASS",
+   "compile_reason_class": "OK",
+   "success": true,
+   "no_gate_verdict": true,
+   "verdict_taxonomy": "artifact",
+   "quoted_from": "D:/QM/reports/work_items/b447c827-f550-4761-86b1-2e83bae768e8/QM5_41323/COMPILE_EA/compile_evidence.json"
+  },
+  "work_item_id": "b447c827-f550-4761-86b1-2e83bae768e8",
+  "work_item_status_db": "done",
+  "work_item_verdict_db": "COMPILE_OK",
+  "work_item_attempt_count_db": 0,
+  "work_item_db_read_at_utc": "2026-09-03T02:20:07Z",
+  "terminal": "T6",
+  "started_at": "2026-09-03T01:32:25+00:00",
+  "completed_at": "2026-09-03T01:32:56+00:00",
+  "evidence_path": "D:/QM/reports/work_items/b447c827-f550-4761-86b1-2e83bae768e8/QM5_41323/COMPILE_EA/compile_evidence.json",
+  "evidence_sha256": "4E27B2CB22DB154BA43E6690593DAB975918654A70A97597A66912D2DB409AA3",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260903_013234.json",
+  "build_check_report_sha256": "595DE771839DEA7573AA0E0D4AD986F1FA381D9B49ED4C235CD8BEC0A85E4F1B",
+  "build_check_report_contents": "231 bytes, UTF-8 with BOM. The whole file is: run_tag='20260903_013234', timestamp_utc='2026-09-03T01:32:33.9989125Z', strict=true, failures=[], warnings=[], status='PASS'. It contains NO reference to QM5_41323, no mq5 target path and no file hash - it is a generic run-level PASS.",
+  "build_check_result": "PASS",
+  "build_check_ea_binding": "Indirect. The EA-specific binding is compile_evidence.build_check_output_tail, which for this same run records (path separators normalized to '/' here; the evidence file itself uses backslashes) 'build_check.compile.target=C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/QM5_41323_pp-wedge-opt.mq5', 'build_check.report=D:/QM/reports/framework/21/build_check_20260903_013234.json', 'build_check.result=PASS', 'build_check.failures=0', 'build_check.warnings=0', plus compile_evidence.build_check_exit_code=0. The report file alone does not back an EA-specific PASS.",
+  "build_check_warnings": 0,
+  "build_check_warning_codes": null,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_log": "C:/QM/repo/framework/build/compile/20260903_013236/QM5_41323_pp-wedge-opt.compile.log",
+  "compile_log_sha256": "592378B2D553BD1691DBC8780FC77D7047C7DAD59965814615D0D29BDDDB836E",
+  "compile_log_result_line": "Result: 0 errors, 0 warnings, 5630 ms elapsed, cpu='X64 Regular'",
+  "metaeditor_exit_code": 1,
+  "metaeditor_exit_code_reconciliation": "compile_evidence.build_check_output_tail records 'compile_one.metaeditor_exit_code=1' alongside 'compile_one.result=PASS' and 'compile_one.errors=0'. MetaEditor64 returns the number of compiled files as its exit code, so 1 = one file compiled; the authoritative outcome is the log's 'Result: 0 errors, 0 warnings' line quoted above.",
+  "compile_summary_csv": "D:/QM/reports/compile/20260903_013236/summary.csv",
+  "compile_summary_csv_sha256": "25C6562C424658BA2ED0EAC78C9607120B8328C51891B0F7B6FC284D121BB64A",
+  "failure_classes": [],
+  "mq5_sha256": "9C5972FFE5A22C82400265AB40A4924CCFC25CB4B3799BFE333151C092BDDBD4",
+  "ex5_sha256": "032E7A90A106BE66B378C09465804DC556F59B08C0FF84BB84455A904D722897",
+  "setfile_build_hash": "D7D104329E2151AB3379467337C88B583F8CC80272D3954C19BD5676EE18FCAC",
+  "setfile_sha256_at_generation": "43F54EFC2599FDD5928A4AD4C0AD45CEC47939AD8B31C49FD6E498456A514207",
+  "setfile_sha256_on_disk_now": "E015AF5878F1325CFA93E0BC397E28E5F86B31CDC27C370BED59477F18637562",
+  "setfile_sha256_note": "These two values describe DIFFERENT byte states of the same path and are both correct; neither is published under the other's meaning. The full three-stage derivation, reproduced byte-for-byte, is in revision.provenance.setfile_provenance."
+ },
+ "risk_mode": {
+  "RISK_FIXED": 1000,
+  "RISK_PERCENT": 0,
+  "PORTFOLIO_WEIGHT": 1
+ },
+ "validations": {
+  "approved_card_sha256": "72F8A3CC50BE017359A24A88EF5F1723E9E9105BC8E253BA8AD3682608A48536",
+  "approved_local_card_byte_identical": true,
+  "farm_runtime_card_sha256": "72F8A3CC50BE017359A24A88EF5F1723E9E9105BC8E253BA8AD3682608A48536",
+  "farm_runtime_card_byte_identical": true,
+  "farm_runtime_card_normalization": "None. All three copies are 1535 bytes and hash to 72F8A3CC50BE017359A24A88EF5F1723E9E9105BC8E253BA8AD3682608A48536: D:/QM/strategy_farm/artifacts/cards_approved/QM5_41323_pp-wedge-opt.md, C:/QM/repo/artifacts/cards_approved/QM5_41323_pp-wedge-opt.md and C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/docs/strategy_card.md.",
+  "build_skill_guard": null,
+  "card_schema_lint": null,
+  "g0_card_lint": null,
+  "dedup_artifact_sha256": null,
+  "density_artifact_sha256": null,
+  "reference_test_sha256": null,
+  "reference_tests": null,
+  "source_packet_sha256": null,
+  "spec_sha256": "1943A8822C175D8FB29DF8C1D7D79D0A2E56B11403F498CDFE696C7A0EE6990F",
+  "spec_validation": null,
+  "static_guardrails": null,
+  "symbol_scope": null,
+  "setfile_validation": null,
+  "magic_registry_row": "framework/registry/magic_numbers.csv line 18228 (byte-exact, LF-terminated): 41323,pp-wedge-opt,0,NDX.DWX,413230000,2026-09-03,Codex governed allocator,active",
+  "ea_id_registry_row": "framework/registry/ea_id_registry.csv line 4810 (byte-exact, LF-terminated, including the three trailing empty fields): 41323,pp-wedge-opt,72f9fcfa-6c75-5544-80c4-31e15c9817ab,active,Codex-board-advisor,2026-09-03,,,"
+ },
+ "capacity_admission": {
+  "sampling_method": "Not sampled. No CPU or terminal-count admission artifact exists for this build and compile_evidence.json records claim_admission_mode, claim_admission_commit_headroom_gb, claim_admission_commit_reserved_gb and claim_admission_effective_commit_headroom_gb all as null. The only terminal fact on disk is compile_evidence.running_terminals_at_worker_start, published verbatim and correctly labelled under revision.provenance.capacity.",
+  "sample_interval_seconds": null,
+  "sample_window_utc": {
+   "started_at": null,
+   "ended_at": null
+  },
+  "cpu_samples_percent": null,
+  "cpu_average_percent": null,
+  "cpu_maximum_percent": null,
+  "cpu_ceiling_percent": null,
+  "factory_terminal_count": null,
+  "factory_terminal_ceiling": null,
+  "factory_terminals": null,
+  "rule": null,
+  "admitted": null
+ },
+ "q02_gate": {
+  "work_item_id": "45848add-99ee-5594-bbf1-c001bbcdadac",
+  "phase": "Q02",
+  "kind": "backtest",
+  "ea_id": "QM5_41323",
+  "symbol": "NDX.DWX",
+  "status": "done",
+  "verdict": "PASS",
+  "verdict_taxonomy": "strategy",
+  "gate_contract_version": "v4",
+  "attempt_count": 0,
+  "created_at": "2026-09-03T01:38:46.971749+00:00",
+  "updated_at": "2026-09-03T01:55:27+00:00",
+  "db_read_at_utc": "2026-09-03T02:20:07Z",
+  "db_source": "D:/QM/strategy_farm/state/farm_state.sqlite (sqlite3 URI mode=ro)",
+  "setfile_used": {
+   "path": "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_11660_NDX_DWX_2019_2025/base_setfiles/QM5_41323_pp-wedge-opt_NDX.DWX_H4_9d674254c7147cb8.set",
+   "sha256": "9D674254C7147CB8627D7428BF8E05807E378D5CD1F90BBF3CA7244C18C25099",
+   "size_bytes": 993,
+   "exists": true
+  },
+  "setfile_binding_mismatch": "The Q02 gate did NOT run the shipped set file. It ran the DL-089 opt_census base setfile (993 bytes, 35 lines, LF line endings, sha256 9D674254C7147CB8627D7428BF8E05807E378D5CD1F90BBF3CA7244C18C25099). The shipped file is 982 bytes, 33 lines, CRLF line endings, sha256 E015AF5878F1325CFA93E0BC397E28E5F86B31CDC27C370BED59477F18637562. Verified line by line at revision time: the opt_census file's first 33 lines are identical to the shipped file's 33 lines, then it adds one empty line and the comment line '; DL-089 governed neutral pattern bindings'. All 15 parameter assignments are identical between the two files; the differences are line endings plus two trailing comment/blank lines. Only the ex5 binding is shared with this build result.",
+  "ex5_sha256": "032E7A90A106BE66B378C09465804DC556F59B08C0FF84BB84455A904D722897",
+  "ex5_binding_verified": "Yes. All of the following equal 032E7A90A106BE66B378C09465804DC556F59B08C0FF84BB84455A904D722897, which is the sha256 of the shipped ex5 recomputed from disk in this revision: work_items.ex5_sha256; payload_json.expected_ex5_sha256, expected_current_ex5_sha256 and artifact_identity.ex5_sha256; payload_json.staged_ex5.source_sha256, .pre_run_sha256, .required_sha256 and .preexisting_destination_sha256; summary.json staged_ex5.post_run_sha256; and summary.json execution_identity.expert_binary.deployed.sha256 / .observed_after.sha256 (size_bytes 425338, stable_during_run true).",
+  "mq5_sha256": "9C5972FFE5A22C82400265AB40A4924CCFC25CB4B3799BFE333151C092BDDBD4",
+  "window": {
+   "from_date": "2021.01.01",
+   "to_date": "2022.12.31",
+   "source": "generated_tester_ini",
+   "period": "H4",
+   "model": 4,
+   "tester_ini_path": "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921/raw/run_01/tester.ini",
+   "tester_ini_sha256": "49D8D0CEA306015A3894973D449CE3BC20E695B3A2FDFE476A2CD14EA7421D49",
+   "requested_year_header_field": 2024,
+   "requested_year_note": "The run_smoke evidence header field requested_year=2024 does not describe the executed window. The executed window is the tester.ini window quoted above (2021.01.01-2022.12.31), which matches work_items.data_window_start/data_window_end and payload_json.from_date/to_date.",
+   "work_item_data_window_start": "2021.01.01",
+   "work_item_data_window_end": "2022.12.31"
+  },
+  "economics": {
+   "total_trades": 377,
+   "net_profit": 1770.97,
+   "profit_factor": 1.02,
+   "drawdown": 14899.21,
+   "drawdown_raw": "14 899.21 (14.24%)",
+   "assessment": "Marginal, not negative. Net profit is positive (+1770.97) but profit factor 1.02 over 377 trades is within noise of break-even, and the two-year net gain is about 11.9% of the 14899.21 (14.24%) maximum drawdown. Reported here because the previous artifact reported an unqualified PASS with no economics at all.",
+   "frequency_floor": {
+    "applied": true,
+    "min_trades_required": 10,
+    "rate_per_year": 5,
+    "year_count": 2,
+    "marker_status": "invalid_or_outside_window",
+    "valid_marker_count": 0,
+    "coverage_start_source": "test_window_start_fallback_marker_invalid_or_outside_window",
+    "caveat": "marker_status='invalid_or_outside_window' with valid_marker_count=0: the coverage window fell back to the test-window start instead of a measured first-tradable bar, so the per-year activity criterion is satisfied against a fallback coverage span."
+   }
+  },
+  "evidence": {
+   "work_item_evidence_path": "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921/summary.json",
+   "full_run_summary_json": "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921/summary.json",
+   "full_run_summary_json_sha256": "0EACC64AF035825FC5B8B851AC5DE52018DA8E591F6AF1C4D62E678D6CF464D9",
+   "full_run_report_htm": "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921/raw/run_01/report.htm",
+   "full_run_report_htm_sha256": "B50C2C62E99FF08A948C77218A85F6187E8CC3A88D98503B7CE240C5A3A5595D",
+   "full_run_stage_md": "D:/QM/reports/framework/22/20260903_014921_QM5_41323_T7_NDX_DWX_run_smoke.md",
+   "full_run_stage_md_sha256": "A762B10D63A206CFBE198903498261D877AE65DFD60EA86EEFC9C34EB4842870",
+   "full_run_stage_md_timestamp_utc": "2026-09-03T01:55:25.2364389Z",
+   "prescreen_summary_json": "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014311/summary.json",
+   "prescreen_summary_json_sha256": "EC042EC8A9BE86E8288FCCAE76DA37E2B4DD80651CDA4763DD1E40021DB2E045",
+   "prescreen_stage_md": "D:/QM/reports/framework/22/20260903_014311_QM5_41323_T7_NDX_DWX_run_smoke.md",
+   "prescreen_stage_md_sha256": "1BC2608EE5FCE5670D94B784534B36258873C0F05524E66731DEAF590A312F93",
+   "prescreen_stage_md_timestamp_utc": "2026-09-03T01:45:54.6081673Z",
+   "prescreen_window": "2022.07.01 to 2022.12.31",
+   "prescreen_verdict": "PASS",
+   "prescreen_total_trades": 88,
+   "prescreen_profit_factor": 1.21,
+   "prescreen_note": "The prescreen is payload_json.p2_prescreen_* of the same Q02 work item (p2_run_stage='full' for the later stage). Both stages emit a '*_run_smoke.md' file under D:/QM/reports/framework/22 because run_smoke.ps1 is the farm's backtest runner; neither file is a build smoke.",
+   "compile_evidence_sha256_recorded_by_q02": "4e27b2cb22db154ba43e6690593dab975918654a70a97597a66912d2db409aa3 (payload_json.compile_evidence_sha256; equals the compile evidence sha recomputed in this revision, lowercased)"
+  },
+  "news_calendar": {
+   "status": "OK",
+   "age_hours": 22,
+   "max_age_hours": 336,
+   "primary_path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv",
+   "secondary_path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv"
+  },
+  "downstream_rows": [
+   {
+    "work_item_id": "0561d9a8-b0fa-4c73-82d6-cdb3663a7de5",
+    "phase": "Q04",
+    "kind": "backtest",
+    "status": "pending",
+    "verdict": null,
+    "symbol": "NDX.DWX",
+    "setfile_path": "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_11660_NDX_DWX_2019_2025/base_setfiles/QM5_41323_pp-wedge-opt_NDX.DWX_H4_9d674254c7147cb8.set",
+    "created_at": "2026-09-03T01:57:18+00:00",
+    "note": "Q04 early probe promoted from Q02 (payload promotion_source='pump_q04_early_probe', promoted_from_work_item='45848add-99ee-5594-bbf1-c001bbcdadac', priority_reason='OWNER_P0_DL089_MATRIX_PREREQUISITE'). Still pending; it inherits the same non-shipped opt_census setfile."
+   }
+  ],
+  "q03_rows": [],
+  "q03_note": "No Q03 work item exists for QM5_41323 in work_items as of the db read above."
+ },
+ "safety": {
+  "autotrading_toggled": false,
+  "deploy_manifest_touched": false,
+  "manual_backtest_launched": false,
+  "manual_dispatch_requested": false,
+  "portfolio_gate_touched": false,
+  "t_live_touched": false
+ },
+ "revision": {
+  "revised_at_utc": "2026-09-03T02:20:07Z",
+  "revises_artifact": "C:/QM/repo/artifacts/qm5_41323_build_result_20260903.json",
+  "extra_keys_added": [
+   "q02_gate",
+   "revision",
+   "revision.provenance"
+  ],
+  "method": "Every hash in this file was recomputed from the bytes on disk by hashlib.sha256 at revision time; every quoted token is copied verbatim from the named evidence file or from a read-only sqlite3 URI (mode=ro) query against D:/QM/strategy_farm/state/farm_state.sqlite. No database write, no terminal start, no T_Live access, no git commit. Every path is written with forward slashes and was checked with os.path.exists at write time.",
+  "verifier_problems_addressed": [
+   "1. SETFILE HASH SELF-CONTRADICTION - RESOLVED AND REPRODUCED. The generator hash 43F54EFC... is now proven to be the sha256 of the pre-stamp intermediate that gen_setfile.ps1 writes (LF line endings, UTF-8 without BOM, trailing newline, header line literally '; build_hash:   pending', 892 bytes). See revision.provenance.setfile_provenance for the byte-exact three-stage chain and the two script line references. The artifact no longer publishes one hash under two meanings: compile.setfile_sha256_at_generation and compile.setfile_sha256_on_disk_now are separately named.",
+   "2. SMOKE PASS NOT A SMOKE OF THE SHIPPED CONFIGURATION - FIXED. smoke_result is now 'no_separate_smoke_run', smoke_report_path is null, and the persisted Q02 gate run is published as its own top-level q02_gate object naming work item 45848add-99ee-5594-bbf1-c001bbcdadac, its verdict, the non-shipped setfile it used (path + sha256 + size), the shared ex5 sha256 and the executed window.",
+   "3. SMOKE WINDOW MISMATCH - FIXED. q02_gate.window quotes the executed tester.ini window (2021.01.01-2022.12.31) with its sha256, records the misleading requested_year=2024 header field explicitly, and the prescreen's shorter 2022.07.01-2022.12.31 stage is reported separately under q02_gate.evidence.",
+   "4. STALE / SELECTIVE SMOKE CITATION - FIXED. Both stage reports are now cited with sha256 and timestamp: 20260903_014311 (prescreen, 2026-09-03T01:45:54Z) and 20260903_014921 (full, 2026-09-03T01:55:25Z), together with the full-run summary.json and the 797604-byte report.htm.",
+   "5. CORRUPTED EVIDENCE PATHS IN open_questions - FIXED. Every path in this document is written with forward slashes, so no backslash escape can be interpreted; each cited path was verified with os.path.exists at write time and the check results are in revision.provenance.path_existence_check.",
+   "6. build_check PASS NOT SELF-EVIDENCING - DISCLOSED. compile.build_check_report_contents states the exact 231-byte content and that it contains no QM5_41323 reference, no target path and no file hash; compile.build_check_ea_binding names the only EA-specific binding (compile_evidence.build_check_output_tail) verbatim. compile.build_check_warning_codes is now null.",
+   "7. setfile_validation UNBACKED AND MISSING A CARD CONSTRAINT - FIXED. validations.setfile_validation and validations.symbol_scope are now null (no validator artifact exists). The direct readback, including the third card requirement, is under revision.provenance.setfile_contract_readback: the shipped .set carries no qm_news_stale_max_hours line, and the requirement 'qm_news_stale_max_hours <= 336' is met by the compiled EA input default 'input int    qm_news_stale_max_hours     = 336;' at QM5_41323_pp-wedge-opt.mq5 line 52, not by the set file.",
+   "8. compile.status SYNTHESIZED TOKEN - FIXED. compile.status is null. compile.result quotes compile_evidence keys verbatim (compile_result 'PASS', compile_reason_class 'OK', success true, no_gate_verdict true), and the farm SQLite phase tokens were read this time and are published as compile.work_item_status_db 'done' and compile.work_item_verdict_db 'COMPILE_OK'. The metaeditor_exit_code=1 reconciliation is stated explicitly.",
+   "9. ea_id_registry_row NOT BYTE-EXACT - FIXED. Both registry rows are now read as raw bytes and quoted in full, including the three trailing empty fields of line 4810.",
+   "10. capacity_admission RELABELED NOT MEASURED - FIXED. factory_terminal_count and factory_terminals are null; the underlying list is published under its true name (compile_evidence.running_terminals_at_worker_start) in revision.provenance.capacity, with the explicit note that T6 - the terminal that compiled - is absent from it."
+  ],
+  "provenance": {
+   "setfile_provenance": {
+    "path": "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/sets/QM5_41323_pp-wedge-opt_NDX.DWX_H4_backtest.set",
+    "summary": "One path, three byte states. All three sha256 values below were reproduced byte-for-byte at revision time from the shipped file.",
+    "stage_1_generator_intermediate": {
+     "sha256": "43F54EFC2599FDD5928A4AD4C0AD45CEC47939AD8B31C49FD6E498456A514207",
+     "size_bytes": 892,
+     "encoding": "UTF-8 without BOM, LF line endings, trailing newline",
+     "build_hash_header_line": "; build_hash:   pending",
+     "recorded_as": "compile_evidence.json setfile_generation[0].setfile_sha256 and setfile_generation[0].output_tail",
+     "producer": "framework/scripts/gen_setfile.ps1: line 665 emits the literal '; build_hash:   pending'; line 719 builds $content = ($lines -join \"`n\") + \"`n\"; line 720 writes it with [System.IO.File]::WriteAllText(..., [System.Text.UTF8Encoding]::new($false)); line 722 hashes that file and reports it as setfile_sha256.",
+     "reproduction": "Take the shipped file, replace CRLF with LF, replace the stamped build_hash header line with '; build_hash:   pending' -> 892 bytes -> sha256 43F54EFC2599FDD5928A4AD4C0AD45CEC47939AD8B31C49FD6E498456A514207. Exact match."
+    },
+    "stage_2_build_hash_preimage": {
+     "sha256": "D7D104329E2151AB3379467337C88B583F8CC80272D3954C19BD5676EE18FCAC",
+     "size_bytes": 925,
+     "encoding": "UTF-8 without BOM, CRLF line endings, trailing CRLF",
+     "build_hash_header_line": "; build_hash:   pending",
+     "recorded_as": "the value stamped into the header as '; build_hash:   d7d1043...' and mirrored as compile.setfile_build_hash",
+     "producer": "framework/scripts/build_check.ps1 function Update-SetFileBuildHash (lines 389-424): it reads the lines, builds $normalized = ($lines -join \"`r`n\") + \"`r`n\", sha256-hashes those UTF-8 bytes to get $hash, writes $hash into the '; build_hash:' line and rewrites the file, again CRLF-joined with a trailing CRLF.",
+     "reproduction": "Take the stage-1 content, replace LF with CRLF -> 925 bytes -> sha256 D7D104329E2151AB3379467337C88B583F8CC80272D3954C19BD5676EE18FCAC, which equals the build_hash in the shipped header (case-insensitively) and compile.setfile_build_hash. Exact match."
+    },
+    "stage_3_shipped_on_disk": {
+     "sha256": "E015AF5878F1325CFA93E0BC397E28E5F86B31CDC27C370BED59477F18637562",
+     "size_bytes": 982,
+     "line_count": 33,
+     "encoding": "UTF-8 without BOM, CRLF line endings, trailing CRLF",
+     "build_hash_header_line": "; build_hash:   d7d104329e2151ab3379467337c88b583f8cc80272d3954c19bd5676ee18fcac",
+     "recorded_as": "top-level setfile_sha256 and compile.setfile_sha256_on_disk_now",
+     "committed_as": "git commit cba3d96cbb5f7ef49c4f4f586be9214487113314 'build(QM5_41323): record governed COMPILE_OK', whose only textual change to this file is the single added line '+ ; build_hash:   d7d1043...'. The working tree is clean for framework/EAs/QM5_41323_pp-wedge-opt, so HEAD and disk agree."
+    },
+    "why_they_differ": "The generator recorded the hash of the file as IT wrote it (stage 1). build_check then stamped the build_hash into the header and rewrote the file CRLF-normalized (stage 3). No post-build tampering: the file mtime 2026-09-03T01:32:55Z falls inside the compile window (started_at 01:32:25Z, completed_at 01:32:56Z) precisely because the stamping rewrite is part of that same worker run. The earlier claim that 'the generator recorded a hash that never described the bytes it wrote' is refuted: it described them exactly, one rewrite earlier.",
+    "prior_git_state": {
+     "commit": "9e8a5db32e",
+     "subject": "build(dl089): add four path-to-25 pattern siblings",
+     "blob_sha256_as_stored_lf": "FA4358A69271E12FE71D27D01D44A03A9E2E07DB9649BE081C5234B762E60371",
+     "note": "The pre-compile committed blob is the same file without the build_hash header line."
+    }
+   },
+   "setfile_contract_readback": {
+    "disclaimer": "This is a direct byte readback performed in this revision, NOT a validator verdict. No validator artifact for QM5_41323 exists.",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/sets/QM5_41323_pp-wedge-opt_NDX.DWX_H4_backtest.set",
+    "setfile_sha256": "E015AF5878F1325CFA93E0BC397E28E5F86B31CDC27C370BED59477F18637562",
+    "risk_lines_verbatim": [
+     "RISK_FIXED=1000",
+     "RISK_PERCENT=0",
+     "PORTFOLIO_WEIGHT=1"
+    ],
+    "environment_header_verbatim": "; environment:  backtest",
+    "symbol_header_verbatim": "; symbol:       NDX.DWX",
+    "timeframe_header_verbatim": "; timeframe:    H4",
+    "magic_lines_verbatim": [
+     "qm_ea_id=41323",
+     "qm_magic_slot_offset=0"
+    ],
+    "strategy_lines_verbatim": [
+     "strategy_window=3",
+     "strategy_atr_period=14",
+     "strategy_sl_atr_mult=2.0",
+     "strategy_max_hold_bars=12",
+     "opt_pp_buy1=0",
+     "opt_pp_buy2=0",
+     "opt_pp_buy3=0",
+     "opt_pp_sell1=0",
+     "opt_pp_sell2=0",
+     "opt_pp_sell3=0"
+    ],
+    "card_requirement_verbatim": "Backtests require `RISK_FIXED > 0`, `RISK_PERCENT = 0`, and `qm_news_stale_max_hours <= 336`.",
+    "card_requirement_1_RISK_FIXED_gt_0": "met by the .set line RISK_FIXED=1000",
+    "card_requirement_2_RISK_PERCENT_eq_0": "met by the .set line RISK_PERCENT=0",
+    "card_requirement_3_qm_news_stale_max_hours_le_336": "NOT covered by the .set file: the shipped .set contains zero occurrences of qm_news_stale_max_hours. It is met by the compiled EA input default - C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/QM5_41323_pp-wedge-opt.mq5 line 52 reads 'input int    qm_news_stale_max_hours     = 336;' - and MT5 applies the compiled default for any input a .set does not override. Independently, the Q02 run recorded news_calendar.max_age_hours=336 with age_hours=22 and status='OK'.",
+    "no_live_keys": "No ENV=live marker and no RISK_PERCENT>0 line exists in the shipped .set; the header states '; environment:  backtest' and '; risk_mode:    FIXED'."
+   },
+   "build_task": {
+    "task_id": "386727c4-4a3a-4d40-aada-7be1a9ac7fb5",
+    "kind": "build_ea",
+    "status_db": "blocked",
+    "card_id": "QM5_41323",
+    "created_at": "2026-09-03T01:19:40+00:00",
+    "updated_at": "2026-09-03T01:59:01+00:00",
+    "attempt_count": 3,
+    "blocked_reason_db": "duplicate_build_task_existing_pipeline_work",
+    "last_blocked_reason_db": "duplicate_build_task_existing_pipeline_work",
+    "duplicate_build_blocked_at_utc": "2026-09-03T01:59:01+00:00",
+    "duplicate_pipeline_work_item_count": 2,
+    "duplicate_existing_ex5_path": "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/QM5_41323_pp-wedge-opt.ex5",
+    "prebuild_warnings": [],
+    "db_read_at_utc": "2026-09-03T02:20:07Z"
+   },
+   "compile_rows_disclosure": {
+    "compile_ea_work_item_count_for_this_ea": 1,
+    "rows": [
+     {
+      "work_item_id": "b447c827-f550-4761-86b1-2e83bae768e8",
+      "phase": "COMPILE_EA",
+      "status": "done",
+      "verdict": "COMPILE_OK",
+      "attempt_count": 0,
+      "created_at": "2026-09-03T01:32:04+00:00",
+      "updated_at": "2026-09-03T01:32:56+00:00",
+      "terminal": "T6",
+      "evidence_path": "D:/QM/reports/work_items/b447c827-f550-4761-86b1-2e83bae768e8/QM5_41323/COMPILE_EA/compile_evidence.json"
+     }
+    ],
+    "predecessor_waivers": {
+     "sanctioned_predecessor_ids": [],
+     "source_repair_predecessor_work_item_ids": [],
+     "source_repair_authorized": false,
+     "source_repair_authority": null,
+     "source_repair_waived_reasons": [],
+     "source_repair_stale_open_work_item_ids": [],
+     "force_rebuild_authorized": false,
+     "force_rebuild_waived_reasons": [],
+     "sibling_rebind_authorized": false,
+     "current_compile_ok_work_item_ids": [],
+     "note": "There is exactly ONE COMPILE_EA row for QM5_41323 and it is a first compile: every predecessor / waiver list above is empty, candidate_recheck.reason='ELIGIBLE', and the build-task binding was AUTHORIZED against build task 386727c4-4a3a-4d40-aada-7be1a9ac7fb5 whose status at claim time was recorded as 'pending'. The work-item attempt_count is 0; the tasks-row attempt_count is 3, i.e. the build TASK was picked up three times while only one compile work item was ever produced, and the task now sits blocked as 'duplicate_build_task_existing_pipeline_work'."
+    }
+   },
+   "capacity": {
+    "compile_evidence_running_terminals_at_worker_start": [
+     "T1",
+     "T10",
+     "T2",
+     "T3",
+     "T5",
+     "T8",
+     "T9"
+    ],
+    "label_correction": "This is compile_evidence.running_terminals_at_worker_start verbatim - a snapshot of terminals already running when the compile worker started. It is NOT a factory terminal census and NOT an admission measurement. T6, the terminal that claimed and executed this compile (compile_evidence.terminal_claim='T6'), is absent from the list, which is consistent with the snapshot being taken before T6 was claimed.",
+    "claim_admission_fields_in_evidence": {
+     "claim_admission_mode": null,
+     "claim_admission_commit_headroom_gb": null,
+     "claim_admission_commit_reserved_gb": null,
+     "claim_admission_effective_commit_headroom_gb": null
+    },
+    "commit_reservation_from_work_item_payload": {
+     "commit_reservation_class": "ordinary",
+     "commit_reservation_gb": 8.0,
+     "commit_reservation_until_utc": "2026-09-03T01:37:24+00:00",
+     "claimed_by_worker_pid": 14948,
+     "claimed_at_iso": "2026-09-03T01:32:24+00:00"
+    }
+   },
+   "path_existence_check": {
+    "checked_at_utc": "2026-09-03T02:20:07Z",
+    "all_exist": true,
+    "paths": {
+     "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/sets/QM5_41323_pp-wedge-opt_NDX.DWX_H4_backtest.set": true,
+     "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/QM5_41323_pp-wedge-opt.ex5": true,
+     "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/QM5_41323_pp-wedge-opt.mq5": true,
+     "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/SPEC.md": true,
+     "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41323_pp-wedge-opt.md": true,
+     "C:/QM/repo/artifacts/cards_approved/QM5_41323_pp-wedge-opt.md": true,
+     "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt/docs/strategy_card.md": true,
+     "D:/QM/reports/work_items/b447c827-f550-4761-86b1-2e83bae768e8/QM5_41323/COMPILE_EA/compile_evidence.json": true,
+     "D:/QM/reports/framework/21/build_check_20260903_013234.json": true,
+     "C:/QM/repo/framework/build/compile/20260903_013236/QM5_41323_pp-wedge-opt.compile.log": true,
+     "D:/QM/reports/compile/20260903_013236/summary.csv": true,
+     "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_11660_NDX_DWX_2019_2025/base_setfiles/QM5_41323_pp-wedge-opt_NDX.DWX_H4_9d674254c7147cb8.set": true,
+     "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921/summary.json": true,
+     "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014311/summary.json": true,
+     "D:/QM/reports/framework/22/20260903_014921_QM5_41323_T7_NDX_DWX_run_smoke.md": true,
+     "D:/QM/reports/framework/22/20260903_014311_QM5_41323_T7_NDX_DWX_run_smoke.md": true,
+     "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921/raw/run_01/report.htm": true,
+     "C:/QM/repo/framework/registry/ea_id_registry.csv": true,
+     "C:/QM/repo/framework/registry/magic_numbers.csv": true,
+     "C:/QM/repo/framework/scripts/gen_setfile.ps1": true,
+     "C:/QM/repo/framework/scripts/build_check.ps1": true,
+     "C:/QM/repo/framework/EAs/QM5_41323_pp-wedge-opt": true,
+     "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921/raw/run_01/tester.ini": true,
+     "D:/QM/reports/work_items/45848add-99ee-5594-bbf1-c001bbcdadac/QM5_41323/20260903_014921": true,
+     "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/news_calendar_2015_2025.csv": true,
+     "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/Common/Files/forex_factory_calendar_clean.csv": true,
+     "D:/QM/strategy_farm/state/farm_state.sqlite": true
+    }
+   }
+  }
+ }
+}

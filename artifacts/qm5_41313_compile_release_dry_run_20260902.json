@@ -1,0 +1,19 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "06fa89d735ac3d923edcc73a4eda3cdb726b8402e60532f631e44c04ad035335",
+      "ea_id": "QM5_41313",
+      "ea_label": "QM5_41313_wti-ljungbox-tr",
+      "expected_mq5_sha256": "06fa89d735ac3d923edcc73a4eda3cdb726b8402e60532f631e44c04ad035335",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41313_wti-ljungbox-tr\\QM5_41313_wti-ljungbox-tr.mq5",
+      "work_item_id": "41b8f8b1-67cc-4298-bd43-1fc54cc99b0d"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "41b8f8b1-67cc-4298-bd43-1fc54cc99b0d"
+}

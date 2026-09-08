@@ -1,0 +1,38 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "487b1007-cfb6-40e1-8933-09679602d8a5"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260902T162228Z_95ec7057.sqlite",
+    "sha256": "d5ac87dc32afe248f92e6b8f5341843d5d9d8e7cb28f3f3a88c0f1cb53a0b8e1"
+  },
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "23b2b6c1989a19a74c13c9f12b4990da02c1dceb3be5c2b5b9ea46faaa54288d",
+      "ea_id": "QM5_41314",
+      "ea_label": "QM5_41314_wti-mjb-tr",
+      "expected_mq5_sha256": "23b2b6c1989a19a74c13c9f12b4990da02c1dceb3be5c2b5b9ea46faaa54288d",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41314_wti-mjb-tr\\QM5_41314_wti-mjb-tr.mq5",
+      "work_item_id": "487b1007-cfb6-40e1-8933-09679602d8a5"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-02T16:23:03+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "487b1007-cfb6-40e1-8933-09679602d8a5"
+}

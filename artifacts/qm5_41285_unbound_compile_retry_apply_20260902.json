@@ -1,0 +1,60 @@
+{
+  "applied_at_utc": "2026-09-02T07:31:03.320840+00:00",
+  "applied_count": 1,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_41285_unbound_compile_retry_20260902T072129Z_f8d02237.sqlite",
+    "sha256": "b040d62921f8e044f9dd8f725371fca743e21ca008200b31cbb551229820cbda"
+  },
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / appended / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "build_task_id": "5589bbaa-7b6c-433a-ae64-fad387bca3fc",
+  "classification": "eligible",
+  "eligible": true,
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "hold_reasons": [],
+  "idempotent_noop": false,
+  "mode": "apply",
+  "post": {
+    "build_task_id": "5589bbaa-7b6c-433a-ae64-fad387bca3fc",
+    "classification": "already_applied",
+    "eligible": false,
+    "hold_reasons": [],
+    "idempotent_noop": true,
+    "mode": "dry_run",
+    "predecessor_work_item_id": "e313ef05-f345-477a-9a15-6eed458afb27",
+    "schema_version": "qm.compile-ea-unbound-build-task-retry/v1",
+    "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41285_xauxag-mjt-rv\\QM5_41285_xauxag-mjt-rv.mq5",
+    "source_sha256": "94954df95dc79b7bc2c653df9b4980428295af1a7f05566d58f8a03548519f43",
+    "successor_work_item_id": "e23cfbc8-3f6d-4b27-b369-c6061a6b44a5",
+    "task_binding": {
+      "authorized": true,
+      "build_task_id": "5589bbaa-7b6c-433a-ae64-fad387bca3fc",
+      "build_task_status": "pending",
+      "contract_version": "qm.compile-ea-build-task-binding/v1",
+      "reason": "AUTHORIZED",
+      "requested": true
+    }
+  },
+  "predecessor_preimage_sha256": "e0805da9f88ecd6dd67599d989a152e618fd4ca2720d6ac7622e43be32dac2c6",
+  "predecessor_work_item_id": "e313ef05-f345-477a-9a15-6eed458afb27",
+  "schema_version": "qm.compile-ea-unbound-build-task-retry/v1",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41285_xauxag-mjt-rv\\QM5_41285_xauxag-mjt-rv.mq5",
+  "source_sha256": "94954df95dc79b7bc2c653df9b4980428295af1a7f05566d58f8a03548519f43",
+  "successor_work_item_id": "e23cfbc8-3f6d-4b27-b369-c6061a6b44a5",
+  "task_binding": {
+    "authorized": true,
+    "build_task_id": "5589bbaa-7b6c-433a-ae64-fad387bca3fc",
+    "build_task_status": "pending",
+    "contract_version": "qm.compile-ea-build-task-binding/v1",
+    "reason": "AUTHORIZED",
+    "requested": true
+  },
+  "verification_errors": [],
+  "verification_ok": true
+}

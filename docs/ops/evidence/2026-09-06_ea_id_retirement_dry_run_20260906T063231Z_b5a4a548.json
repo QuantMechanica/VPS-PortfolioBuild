@@ -1,0 +1,75 @@
+{
+  "already_retired_count": 0,
+  "already_retired_ids": [],
+  "applied_count": 0,
+  "applied_magic_row_count": 0,
+  "atomic_writer": "farmctl._write_csv_atomic under one registry lock with exact-byte rollback",
+  "created_at": "2026-09-06T06:32:31+00:00",
+  "deferred_count": 0,
+  "deferred_ids": [],
+  "eligible_count": 0,
+  "evidence": "docs/ops/evidence/2026-09-06_qm5_41319_zero_trades.md",
+  "input_metadata": {
+    "explicit_id_count": 1,
+    "filtered_actions": {},
+    "filtered_non_retire_count": 0,
+    "from_file": null
+  },
+  "limit": 1,
+  "magic_registry": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+  "magic_registry_sha256_after": "f9b344eb7e2fdd41f44430a7d2cb81eb8766400c94ddbbd187936b402ab1a385",
+  "magic_registry_sha256_before": "f9b344eb7e2fdd41f44430a7d2cb81eb8766400c94ddbbd187936b402ab1a385",
+  "mode": "dry_run",
+  "planned_count": 0,
+  "planned_magic_row_count": 0,
+  "planned_or_applied_ids": [],
+  "reason": "Q02 DRAFT_DEFECT zero trades 2018-2026: the locked card needs 60 monthly endpoints (1,200 D1 bars) that the native history cannot supply before the window; card rule requires retirement on zero positions (task 9a94ffeb, review 2026-09-06)",
+  "receipt_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ea_id_retirement_dry_run_20260906T063231Z_b5a4a548.json",
+  "refused": [
+    {
+      "ea_id": "QM5_41319",
+      "reasons": [
+        "ea_directory_exists",
+        "work_items_exist",
+        "magic_rows_exist"
+      ]
+    }
+  ],
+  "refused_count": 1,
+  "registry": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+  "registry_lock": "C:\\QM\\repo\\framework\\registry\\.ea_id_registry.lock",
+  "registry_sha256_after": "57f63fac8a2e42b196c9323ffcdb746cc74573e6bf89c7f880f3ce4601539112",
+  "registry_sha256_before": "57f63fac8a2e42b196c9323ffcdb746cc74573e6bf89c7f880f3ce4601539112",
+  "registry_status_counts_after": {
+    "APPROVED": 1,
+    "DRAFT": 4,
+    "active": 3998,
+    "allocated": 4,
+    "backtest-only": 2,
+    "build_test": 1,
+    "pending": 32,
+    "reserved": 1,
+    "retired": 802
+  },
+  "registry_status_counts_before": {
+    "APPROVED": 1,
+    "DRAFT": 4,
+    "active": 3998,
+    "allocated": 4,
+    "backtest-only": 2,
+    "build_test": 1,
+    "pending": 32,
+    "reserved": 1,
+    "retired": 802
+  },
+  "requested_count": 1,
+  "retire_magic_rows": false,
+  "schema_version": "qm.ea-id-retirement-wave/v2",
+  "target_magic_row_count": 1,
+  "target_magic_status_counts_after": {
+    "active": 1
+  },
+  "target_magic_status_counts_before": {
+    "active": 1
+  }
+}

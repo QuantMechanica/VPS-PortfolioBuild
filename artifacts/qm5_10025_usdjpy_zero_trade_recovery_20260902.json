@@ -1,0 +1,157 @@
+{
+  "schema_version": "qm.zero-trades-recovery/v1",
+  "recorded_at_utc": "2026-09-01T23:44:14+00:00",
+  "date_europe_berlin": "2026-09-02",
+  "branch": "agents/board-advisor",
+  "mission_decision": {
+    "requested_action": "mechanize one unbuilt relationship from the 66-pair FX cointegration scan, otherwise advance an existing forex card",
+    "frontier_evidence": "docs/research/FX_COINTEGRATION_QM5_1257_PREFLIGHT_BLOCKER_2026-09-02.md",
+    "unbuilt_reputable_scan_relationships": 0,
+    "duplicate_card_avoided": true,
+    "anchors": {
+      "QM5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL",
+      "QM5_12533": "Q02 PASS; Q04 FAIL"
+    },
+    "fallback_taken": "advance an existing forex card through Q02 zero-trades recovery"
+  },
+  "target": {
+    "ea_id": "QM5_10025",
+    "ea_label": "QM5_10025_rw-fx-broad-pairs",
+    "method": "monthly frozen OLS/correlation/ADF-proxy market-neutral FX pair selection",
+    "source": "Robot Wealth, Index of Strategies",
+    "source_record_id": "dcbac84f-6ecf-5d21-9630-50faa69306ec",
+    "card_status": "G0 APPROVED; R1-R4 PASS",
+    "host_symbol": "USDJPY.DWX",
+    "timeframe": "H4",
+    "basket_manifest": "framework/EAs/QM5_10025_rw-fx-broad-pairs/basket_manifest.json",
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCHF.DWX",
+      "USDCAD.DWX",
+      "USDJPY.DWX"
+    ],
+    "structural_only": true,
+    "machine_learning": false,
+    "low_frequency": true
+  },
+  "bound_failure": {
+    "work_item_id": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+    "status": "done",
+    "verdict": "ZERO_TRADES",
+    "evidence_path": "D:\\QM\\reports\\work_items\\050dd2ea-e9d0-475f-b5ad-40c2206867ff\\QM5_10025\\20260901_215109\\summary.json",
+    "evidence_sha256": "37084386dd4a8c5e3011c8a86d9cd3c4201a5d5424bccadb29b90455393e0a09",
+    "window": {
+      "from": "2018.07.02",
+      "to": "2022.12.31"
+    },
+    "model": 4,
+    "attempted_runs": 1,
+    "valid_reports": 1,
+    "total_trades": 0,
+    "oninit_failure": false,
+    "all_seven_symbol_histories_synchronized": true,
+    "news_calendar_status": "OK",
+    "logger_event_count": 1412,
+    "old_pair_selection_markers": 0,
+    "old_pair_signal_markers": 0,
+    "old_entry_markers": 0,
+    "old_order_markers": 0,
+    "execution_identity": {
+      "mq5_sha256": "fd0a18d8710dc8bd0d089ab34b9c881de65e971f0916ba540b34c53b2aa120ff",
+      "ex5_sha256": "9bf2691d4af0a57d553711c37ffceadb513b303e710a25f455c8f2e211eecfcc",
+      "setfile_sha256": "2d8a1ba1871c229d00b49458dcbd6dbd152d24c170d76404bace39cdea3be53c"
+    }
+  },
+  "classification": {
+    "harness": "PASS",
+    "setup": "PASS",
+    "first_unresolved_layer": "entry hook",
+    "root_cause": "not yet identified because the bound binary emitted no pair-selection or signal-decision markers",
+    "economic_mechanics_changed": false
+  },
+  "repair": {
+    "strategy_debug_default": false,
+    "strategy_debug_enabled_only_in_usdjpy_evidence_set": true,
+    "bounded_events": [
+      "STRATEGY_DIAG_INIT once",
+      "PAIR_SELECTION_CANDIDATE once per candidate per monthly selection",
+      "PAIR_SELECTION once per monthly selection",
+      "PAIR_SIGNAL_CANDIDATE on the first bar outside the entry band",
+      "PAIR_SIGNAL_REJECT on the corresponding first rejected signal bar"
+    ],
+    "precise_reject_classes": [
+      "history/log read",
+      "OLS/correlation/ADF proxy",
+      "sigma/z-score",
+      "correlation/ADF threshold",
+      "no-trade/news filter",
+      "symbol/quote/stop/risk/lot/order preparation"
+    ],
+    "hardening": "explicit dynamic spread-buffer size checks",
+    "thresholds_changed": false,
+    "universe_changed": false,
+    "risk_changed": false,
+    "entry_or_exit_rules_changed": false
+  },
+  "current_execution_identity": {
+    "mq5_sha256": "49e0c78c0e45fa39b05580216003ee523839b664844a82e3a7d3d943030e069a",
+    "ex5_sha256": "030e7acc63a735a514c5490000eed4d4bf062bf8f6ee8e4da34a601da8f9ba1e",
+    "usdjpy_setfile_sha256": "9567e0f91b1e6892eadc822a2f6ee4f06482a80ba30c50ccfbf4a205d2acda70"
+  },
+  "validation": {
+    "skill_build_ea_guard": "PASS",
+    "metaeditor_strict_compile": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "spec_validator": "PASS 1/1",
+    "symbol_scope": "BASKET_OK; 0 violations",
+    "build_guardrails": "PASS; 0 findings",
+    "basket_work_item_tests": "18 passed",
+    "basket_order_and_manifest_tests": "59 passed; 2 subtests passed",
+    "canonical_build_check_before_buffer_guards": "2 EA_INDICATOR_BUFFER_UNBOUNDED findings",
+    "canonical_build_check_after_buffer_guards": "NOT_RUN: LIVE_FACTORY_AD_HOC_COMPILE_REFUSED while an unrelated governed factory terminal was active"
+  },
+  "q02_handoff": {
+    "work_item_id": "e49888a1-6dbe-45b7-bb4f-29461bbcfb0c",
+    "append_only_rerun_of": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+    "status_at_handoff": "pending",
+    "claimed_by_at_handoff": null,
+    "attempt_count": 0,
+    "priority_track": true,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "timeout_minutes": 450,
+    "gate_contract_version": "v4",
+    "sh3_enforced": true,
+    "rerun_reason": "qm_zero_trades_recovery_default_off_bounded_entry_diagnostics_no_economic_change",
+    "open_usdjpy_q02_rows": 1,
+    "other_open_qm5_10025_hosts": 4,
+    "historical_row_preserved": true,
+    "manual_dispatch": false
+  },
+  "capacity": {
+    "cpu_samples_percent": [
+      64.572076,
+      62.20792,
+      61.253838,
+      64.991402,
+      56.742818
+    ],
+    "cpu_average_percent": 61.953611,
+    "cpu_maximum_percent": 64.991402,
+    "cpu_stop_ceiling_percent": 97,
+    "ceiling_reached": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_terminal_touched": false,
+    "autotrading_toggled": false,
+    "live_authority": false
+  }
+}

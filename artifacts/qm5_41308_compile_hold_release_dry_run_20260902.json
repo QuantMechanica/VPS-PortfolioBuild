@@ -1,0 +1,8 @@
+{
+  "dry_run": true,
+  "hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+  "release_note": "OWNER commodity/energy sleeve mission 2026-09-02: bounded source-fresh Q01 compile for QM5_41308; no backtest or live authority",
+  "released": false,
+  "work_item_id": "bfc98851-3477-4f05-bf48-9636ed10da47",
+  "would_release": true
+}

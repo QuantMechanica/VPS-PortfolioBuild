@@ -1,0 +1,28 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "a4489367-937b-4c80-a765-6819763aea94"
+  ],
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260831T184118Z_804e3565.sqlite",
+    "sha256": "30a012a7ba108b06f1d87fb03c1c169c26f6ea1b1390846d49e2aeb4847af3d8"
+  },
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "b950a49c9ab3eaf7d7b3d4b1c4eafc6e125a54d9aa41d4550452b1ad603dd31e",
+      "ea_id": "QM5_41252",
+      "ea_label": "QM5_41252_wti-css-volshift-tr",
+      "expected_mq5_sha256": "b950a49c9ab3eaf7d7b3d4b1c4eafc6e125a54d9aa41d4550452b1ad603dd31e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41252_wti-css-volshift-tr\\QM5_41252_wti-css-volshift-tr.mq5",
+      "work_item_id": "a4489367-937b-4c80-a765-6819763aea94"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-08-31T18:41:25+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a4489367-937b-4c80-a765-6819763aea94"
+}

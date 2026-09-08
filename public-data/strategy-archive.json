@@ -1,7 +1,7 @@
 {
     "schema_version":  2,
     "$schema_id":  "https://quantmechanica.com/schemas/strategy-archive/v2.json",
-    "generated_at":  "2026-09-02T18:41:08+00:00",
+    "generated_at":  "2026-09-05T12:12:34+00:00",
     "gate_contract_version":  "v4",
     "disclosure":  "terminal_pass_fail_without_metrics",
     "gates":  [
@@ -24,7 +24,7 @@
                   "Q16",
                   "Q17"
               ],
-    "total":  3378,
+    "total":  3398,
     "items":  [
                   {
                       "public_id":  "card_0001e14467cbddcd",
@@ -69,7 +69,10 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "PASS",
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS"
                                         }
                   },
                   {
@@ -88,6 +91,14 @@
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
                                             "Q04":  "FAIL"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_00c57ffb29704de7",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -268,7 +279,8 @@
                                             "Q06":  "PASS",
                                             "Q07":  "PASS",
                                             "Q08":  "PASS",
-                                            "Q09":  "PASS"
+                                            "Q09":  "PASS",
+                                            "Q10":  "PASS"
                                         }
                   },
                   {
@@ -464,6 +476,14 @@
                   },
                   {
                       "public_id":  "card_05630e6fb34ff220",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "FAIL"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_058b8b9970501a5a",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
@@ -688,6 +708,14 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_073459530247aa94",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -1331,7 +1359,9 @@
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
                                             "Q06":  "PASS",
-                                            "Q07":  "PASS"
+                                            "Q07":  "PASS",
+                                            "Q08":  "PASS",
+                                            "Q09":  "PASS"
                                         }
                   },
                   {
@@ -1460,7 +1490,8 @@
                       "public_id":  "card_0e3727fd10a7c5ba",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -1614,7 +1645,9 @@
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
-                                            "Q05":  "PASS"
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS",
+                                            "Q07":  "FAIL"
                                         }
                   },
                   {
@@ -1962,7 +1995,8 @@
                       "public_id":  "card_11f4718b0d42390b",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -2173,6 +2207,14 @@
                                         }
                   },
                   {
+                      "public_id":  "card_13c7b95fda4f5a7e",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_13d216114034bc44",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -2216,7 +2258,7 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
-                                            "Q04":  "FAIL"
+                                            "Q04":  "PASS"
                                         }
                   },
                   {
@@ -2306,7 +2348,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -2641,7 +2684,10 @@
                                             "Q08":  "PASS",
                                             "Q09":  "PASS",
                                             "Q10":  "PASS",
-                                            "Q11":  "PASS"
+                                            "Q11":  "PASS",
+                                            "Q12":  "PASS",
+                                            "Q13":  "PASS",
+                                            "Q14":  "PASS"
                                         }
                   },
                   {
@@ -2820,6 +2866,13 @@
                                         }
                   },
                   {
+                      "public_id":  "card_1a541e8ecc907731",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_1a5b1e5573661c56",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -2876,6 +2929,14 @@
                       "public_id":  "card_1acd21d8d6af3ba6",
                       "gate_coverage":  {
                                             "Q00":  "PASS"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_1aef3708c9902ce8",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -3096,7 +3157,8 @@
                       "public_id":  "card_1d24b5e2b5d160fd",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -3125,7 +3187,10 @@
                       "public_id":  "card_1d97624bab788d9e",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -3146,7 +3211,10 @@
                                             "Q05":  "PASS",
                                             "Q06":  "PASS",
                                             "Q07":  "PASS",
-                                            "Q08":  "FAIL"
+                                            "Q08":  "PASS",
+                                            "Q09":  "PASS",
+                                            "Q10":  "PASS",
+                                            "Q11":  "PASS"
                                         }
                   },
                   {
@@ -3623,7 +3691,11 @@
                       "public_id":  "card_21e84c6380879fc1",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "PASS",
+                                            "Q05":  "FAIL"
                                         }
                   },
                   {
@@ -3807,7 +3879,9 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
-                                            "Q04":  "FAIL"
+                                            "Q04":  "PASS",
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS"
                                         }
                   },
                   {
@@ -4138,7 +4212,8 @@
                       "public_id":  "card_261091ece86fed84",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "FAIL"
                                         }
                   },
                   {
@@ -4216,7 +4291,10 @@
                                             "Q08":  "PASS",
                                             "Q09":  "PASS",
                                             "Q10":  "PASS",
-                                            "Q11":  "PASS"
+                                            "Q11":  "PASS",
+                                            "Q12":  "PASS",
+                                            "Q13":  "PASS",
+                                            "Q14":  "PASS"
                                         }
                   },
                   {
@@ -4398,7 +4476,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -4648,6 +4727,14 @@
                                         }
                   },
                   {
+                      "public_id":  "card_2b778f6d1705a011",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_2b8488e6da2af20d",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -4658,7 +4745,11 @@
                       "public_id":  "card_2b863407f2a1dcd5",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "PASS",
+                                            "Q05":  "FAIL"
                                         }
                   },
                   {
@@ -5251,7 +5342,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -5378,7 +5470,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -6632,7 +6725,9 @@
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
-                                            "Q06":  "PASS"
+                                            "Q06":  "PASS",
+                                            "Q07":  "PASS",
+                                            "Q08":  "FAIL"
                                         }
                   },
                   {
@@ -6799,7 +6894,8 @@
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
-                                            "Q05":  "PASS"
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS"
                                         }
                   },
                   {
@@ -6994,7 +7090,8 @@
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
-                                            "Q05":  "FAIL"
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS"
                                         }
                   },
                   {
@@ -7462,7 +7559,9 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
-                                            "Q04":  "PASS"
+                                            "Q04":  "PASS",
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS"
                                         }
                   },
                   {
@@ -7967,7 +8066,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -8269,7 +8369,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -8828,7 +8929,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -9080,7 +9182,12 @@
                                             "Q06":  "PASS",
                                             "Q07":  "PASS",
                                             "Q08":  "PASS",
-                                            "Q09":  "PASS"
+                                            "Q09":  "PASS",
+                                            "Q10":  "PASS",
+                                            "Q11":  "PASS",
+                                            "Q12":  "PASS",
+                                            "Q13":  "PASS",
+                                            "Q14":  "PASS"
                                         }
                   },
                   {
@@ -9187,7 +9294,9 @@
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
-                                            "Q06":  "PASS"
+                                            "Q06":  "PASS",
+                                            "Q07":  "PASS",
+                                            "Q08":  "FAIL"
                                         }
                   },
                   {
@@ -10098,6 +10207,14 @@
                                         }
                   },
                   {
+                      "public_id":  "card_5c02edf0f8243cb3",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_5c2aad1e812104a2",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -10389,7 +10506,8 @@
                       "public_id":  "card_5e79a6d0b8666cef",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -10517,7 +10635,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -10534,7 +10653,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -11344,7 +11464,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -11353,7 +11474,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -12222,6 +12344,13 @@
                                         }
                   },
                   {
+                      "public_id":  "card_6ea5fb3098585847",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_6ebe327f1eedfd43",
                       "gate_coverage":  {
                                             "Q00":  "PASS"
@@ -12791,6 +12920,14 @@
                                         }
                   },
                   {
+                      "public_id":  "card_72f8a3cc50be0173",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_730494fadbeb852b",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -13031,6 +13168,14 @@
                   },
                   {
                       "public_id":  "card_755e8f9f56a30473",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_7560882b6d6ec45b",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
@@ -13352,7 +13497,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -13424,7 +13570,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -13599,7 +13746,9 @@
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
-                                            "Q06":  "PASS"
+                                            "Q06":  "PASS",
+                                            "Q07":  "PASS",
+                                            "Q08":  "FAIL"
                                         }
                   },
                   {
@@ -13952,7 +14101,11 @@
                       "public_id":  "card_7fcac914a203fb3f",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "PASS",
+                                            "Q05":  "FAIL"
                                         }
                   },
                   {
@@ -13996,7 +14149,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -14449,7 +14603,11 @@
                       "public_id":  "card_8442842eadeb1ed8",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "PASS",
+                                            "Q05":  "FAIL"
                                         }
                   },
                   {
@@ -14747,7 +14905,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -14788,7 +14947,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -14831,7 +14991,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -15011,7 +15172,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -15632,7 +15794,9 @@
                       "gate_coverage":  {
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
-                                            "Q02":  "PASS"
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -16575,7 +16739,8 @@
                       "public_id":  "card_97044652b7cee154",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -16782,7 +16947,7 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
-                                            "Q04":  "FAIL"
+                                            "Q04":  "PASS"
                                         }
                   },
                   {
@@ -16819,7 +16984,8 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
-                                            "Q04":  "PASS"
+                                            "Q04":  "PASS",
+                                            "Q05":  "FAIL"
                                         }
                   },
                   {
@@ -17368,7 +17534,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -17462,7 +17629,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -17680,8 +17848,7 @@
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
                                             "Q06":  "PASS",
-                                            "Q07":  "PASS",
-                                            "Q08":  "FAIL"
+                                            "Q07":  "PASS"
                                         }
                   },
                   {
@@ -18582,7 +18749,9 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
-                                            "Q04":  "PASS"
+                                            "Q04":  "PASS",
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS"
                                         }
                   },
                   {
@@ -19450,7 +19619,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -19690,6 +19860,14 @@
                                         }
                   },
                   {
+                      "public_id":  "card_b4671e4ad13acdc4",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_b4766fe4444bb863",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -19781,7 +19959,10 @@
                       "public_id":  "card_b592f9e2200e5421",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -20432,7 +20613,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -20670,7 +20852,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -20683,8 +20866,7 @@
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
                                             "Q06":  "PASS",
-                                            "Q07":  "PASS",
-                                            "Q08":  "FAIL"
+                                            "Q07":  "PASS"
                                         }
                   },
                   {
@@ -20815,6 +20997,14 @@
                       "gate_coverage":  {
                                             "Q00":  "PASS",
                                             "Q01":  "PASS"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_beb802f50f142b9c",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -21037,7 +21227,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -21170,7 +21361,8 @@
                       "public_id":  "card_c254058ad2609a6b",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -21214,7 +21406,8 @@
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
                                             "Q06":  "PASS",
-                                            "Q07":  "PASS"
+                                            "Q07":  "PASS",
+                                            "Q08":  "FAIL"
                                         }
                   },
                   {
@@ -21543,7 +21736,11 @@
                       "gate_coverage":  {
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
-                                            "Q02":  "PASS"
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "PASS",
+                                            "Q05":  "PASS",
+                                            "Q06":  "PASS"
                                         }
                   },
                   {
@@ -21645,7 +21842,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -21749,7 +21947,10 @@
                                             "Q08":  "PASS",
                                             "Q09":  "PASS",
                                             "Q10":  "PASS",
-                                            "Q11":  "PASS"
+                                            "Q11":  "PASS",
+                                            "Q12":  "PASS",
+                                            "Q13":  "PASS",
+                                            "Q14":  "PASS"
                                         }
                   },
                   {
@@ -22457,6 +22658,14 @@
                                         }
                   },
                   {
+                      "public_id":  "card_ccc54209e0ab24a3",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_cccd2381f9f13f98",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -22757,7 +22966,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -22851,7 +23061,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -23361,6 +23572,13 @@
                                         }
                   },
                   {
+                      "public_id":  "card_d40178c4c2294785",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_d42699868c4b9024",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -23390,8 +23608,7 @@
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
                                             "Q03":  "PASS",
-                                            "Q04":  "PASS",
-                                            "Q05":  "FAIL"
+                                            "Q04":  "PASS"
                                         }
                   },
                   {
@@ -23462,7 +23679,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -23744,6 +23962,14 @@
                                         }
                   },
                   {
+                      "public_id":  "card_d6c2cf15d591656f",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_d6e8c768c4d5bf5c",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -23878,7 +24104,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -24247,6 +24474,13 @@
                                         }
                   },
                   {
+                      "public_id":  "card_db7b603b02daa493",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_db7fdb91cf48fb4e",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -24297,6 +24531,13 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "FAIL"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_dc436206b6176a61",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS"
                                         }
                   },
                   {
@@ -24392,7 +24633,9 @@
                                             "Q06":  "PASS",
                                             "Q07":  "PASS",
                                             "Q08":  "PASS",
-                                            "Q09":  "PASS"
+                                            "Q09":  "PASS",
+                                            "Q10":  "PASS",
+                                            "Q11":  "PASS"
                                         }
                   },
                   {
@@ -24725,6 +24968,13 @@
                                         }
                   },
                   {
+                      "public_id":  "card_e07648364043b3cf",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS"
+                                        }
+                  },
+                  {
                       "public_id":  "card_e07ab9a1141dc5d7",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
@@ -24895,7 +25145,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -25015,7 +25266,8 @@
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
-                                            "Q06":  "FAIL"
+                                            "Q06":  "PASS",
+                                            "Q07":  "FAIL"
                                         }
                   },
                   {
@@ -25563,7 +25815,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -25874,6 +26127,14 @@
                   },
                   {
                       "public_id":  "card_eba8f3eafb1ebd7f",
+                      "gate_coverage":  {
+                                            "Q00":  "PASS",
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
+                                        }
+                  },
+                  {
+                      "public_id":  "card_ebcd57df57fc284a",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
@@ -26607,7 +26868,8 @@
                       "public_id":  "card_f19c5a4e735e95b5",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -26773,7 +27035,10 @@
                                             "Q03":  "PASS",
                                             "Q04":  "PASS",
                                             "Q05":  "PASS",
-                                            "Q06":  "PASS"
+                                            "Q06":  "PASS",
+                                            "Q07":  "PASS",
+                                            "Q08":  "PASS",
+                                            "Q09":  "PASS"
                                         }
                   },
                   {
@@ -26975,7 +27240,8 @@
                       "public_id":  "card_f448bc5cd5856ade",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS"
                                         }
                   },
                   {
@@ -27511,7 +27777,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -27538,7 +27805,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -27579,7 +27847,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {
@@ -27643,7 +27912,11 @@
                       "public_id":  "card_fa8474c9e2f09f66",
                       "gate_coverage":  {
                                             "Q00":  "PASS",
-                                            "Q01":  "PASS"
+                                            "Q01":  "PASS",
+                                            "Q02":  "PASS",
+                                            "Q03":  "PASS",
+                                            "Q04":  "PASS",
+                                            "Q05":  "PASS"
                                         }
                   },
                   {
@@ -27956,7 +28229,8 @@
                                             "Q00":  "PASS",
                                             "Q01":  "PASS",
                                             "Q02":  "PASS",
-                                            "Q03":  "PASS"
+                                            "Q03":  "PASS",
+                                            "Q04":  "FAIL"
                                         }
                   },
                   {

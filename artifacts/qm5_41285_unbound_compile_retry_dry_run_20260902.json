@@ -1,0 +1,29 @@
+{
+  "build_task_id": "5589bbaa-7b6c-433a-ae64-fad387bca3fc",
+  "classification": "eligible",
+  "eligible": true,
+  "hold_reasons": [],
+  "idempotent_noop": false,
+  "invariants": [
+    "the released unbound predecessor remains immutable",
+    "only the exact QM5_41285 source hash and predecessor are selectable",
+    "the successor is bound to the sole open governed build task",
+    "the successor is activation-held, fixed-risk, and carries no gate verdict",
+    "the canonical supersession edge removes only the obsolete queue row"
+  ],
+  "mode": "dry_run",
+  "predecessor_preimage_sha256": "e0805da9f88ecd6dd67599d989a152e618fd4ca2720d6ac7622e43be32dac2c6",
+  "predecessor_work_item_id": "e313ef05-f345-477a-9a15-6eed458afb27",
+  "schema_version": "qm.compile-ea-unbound-build-task-retry/v1",
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41285_xauxag-mjt-rv\\QM5_41285_xauxag-mjt-rv.mq5",
+  "source_sha256": "94954df95dc79b7bc2c653df9b4980428295af1a7f05566d58f8a03548519f43",
+  "successor_work_item_id": null,
+  "task_binding": {
+    "authorized": true,
+    "build_task_id": "5589bbaa-7b6c-433a-ae64-fad387bca3fc",
+    "build_task_status": "pending",
+    "contract_version": "qm.compile-ea-build-task-binding/v1",
+    "reason": "AUTHORIZED",
+    "requested": true
+  }
+}

@@ -1,0 +1,715 @@
+{
+ "task_id": "1edb9118-6c79-4f83-b0cb-2a4469a8e2ec",
+ "build_generation": null,
+ "ea_id": "QM5_41324",
+ "ea_label": "QM5_41324_balke-gmt3-range-breakout-path25-opt",
+ "slug": "balke-gmt3-range-breakout-path25-opt",
+ "strategy_id": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+ "ea_dir": "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt",
+ "mq5_path": "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/QM5_41324_balke-gmt3-range-breakout-path25-opt.mq5",
+ "ex5_path": "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/QM5_41324_balke-gmt3-range-breakout-path25-opt.ex5",
+ "magic_base": 413240000,
+ "symbols": [
+  "USDJPY.DWX"
+ ],
+ "symbols_registered": [
+  "USDJPY.DWX"
+ ],
+ "logical_symbol": "USDJPY.DWX",
+ "host_symbol": "USDJPY.DWX",
+ "timeframe": "H1",
+ "setfiles_generated": [
+  "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/sets/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_backtest.set"
+ ],
+ "setfile_sha256": {
+  "QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_backtest.set": "32243FD4A2A4C7C4A84D9F0DC6F1CDAE66C95216E62F5F21F9B838B972014884"
+ },
+ "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/SPEC.md",
+ "build_check_passed": true,
+ "compile_succeeded": true,
+ "smoke_result": "smoke_of_non_shipped_setfile",
+ "smoke_report_path": "D:/QM/reports/framework/22/20260903_022527_QM5_41324_T7_USDJPY_DWX_run_smoke.md",
+ "smoke_skipped_reason": "No smoke run of the SHIPPED repo set file exists. Two run_smoke evidence documents for QM5_41324 do exist and both were re-checked with os.path.exists at 2026-09-03T02:52:04Z: D:/QM/reports/framework/22/20260903_021854_QM5_41324_T1_USDJPY_DWX_run_smoke.md (1155 bytes, mtime 2026-09-03T02:21:36.294521Z) and D:/QM/reports/framework/22/20260903_022527_QM5_41324_T7_USDJPY_DWX_run_smoke.md (1152 bytes, mtime 2026-09-03T02:34:33.143115Z). Both are titled '# Step 22 Smoke Evidence' and both were produced by framework/scripts/run_smoke.ps1 acting as the runner of Q02 work item 3aacc8f2-1728-597b-859a-5e9e5ef4ffd0 - they are the gate's own evidence documents, not a build-task smoke. Decisive for this field: both ran with setfile_sha256 7c407f6b88fcc99c73145e861589cb191c56533aff02ba4789f95d9e4a2ca986 (the DL-089 census copy), NOT the shipped repo set whose sha256 is 32243fd4a2a4c7c4a84d9f0dc6f1cdae66c95216e62f5f21f9b838b972014884. smoke_report_path names the later, full-window document (run_tag 20260903_022527, terminal T7), which is the one bound to the Q02 row's evidence_path; the earlier prescreen document (run_tag 20260903_021854, terminal T1) is reported under q02_gate.runs. Full detail, including both economics blocks, is in q02_gate.",
+ "blocked_reason": "",
+ "open_questions": [
+  "CARD GOVERNANCE, quoted verbatim from C:/QM/repo/artifacts/cards_approved/QM5_41324_balke-gmt3-range-breakout-path25-opt.md (sha256 D6C2CF15D591656F8A6B03CCA9656C311460D33EB94B319A9643DEAC0FB5264E, body paragraph beginning 'OWNER-authorized fresh DL-089 measurement sibling'): \"No live or pipeline verdict is authorized. Backtests require `RISK_FIXED > 0`, `RISK_PERCENT = 0`, and `qm_news_stale_max_hours <= 336`.\" Consequence for this artifact: it publishes the Q02 row's database verdict and the measured economics as facts, and claims no pipeline verdict of its own (q02_gate.verdict_claim). Note the card's third requirement is met by default, not by the set file: the shipped .set contains no qm_news_stale_max_hours line, and the .mq5 input default at line 65 is 336.",
+  "SMOKE: no smoke run of the shipped repo set file exists. What does exist - re-checked with os.path.exists at 2026-09-03T02:52:04Z - are two run_smoke/v2 evidence documents under D:/QM/reports/framework/22/ and two summary.json files under the Q02 work-item directory, all four produced by framework/scripts/run_smoke.ps1 in its role as the Q02 gate runner. They ran the DL-089 census set (sha256 7c407f6b88fcc99c73145e861589cb191c56533aff02ba4789f95d9e4a2ca986), not the shipped set (sha256 32243fd4a2a4c7c4a84d9f0dc6f1cdae66c95216e62f5f21f9b838b972014884). smoke_result is therefore 'smoke_of_non_shipped_setfile'. The previous revision's claim that 'no run_smoke report and no tester report for this EA exists' was false when it was written and is withdrawn.",
+  "WITHDRAWN NEGATIVE-EXISTENCE CLAIMS: the previous revision asserted (a) that a full os.walk of D:/QM/reports returned exactly two 41324 artifacts and no run_smoke report, and (b) that no directory D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0 existed. Both were false at their own stated observation time: that directory was created 2026-09-03T02:18:54.542065Z and the prescreen summary.json was written 2026-09-03T02:21:38.926726Z. Every existence statement in this revision is backed by an os.path.exists call made at 2026-09-03T02:52:04Z; the full checked path list is in provenance.existence_checks.",
+  "Q02 ECONOMICS are now published because the gate completed. work_items row 3aacc8f2-1728-597b-859a-5e9e5ef4ffd0 reads status='done', verdict='PASS', evidence_path=D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json as of 2026-09-03T02:52:06Z. Two runs are reported separately so the windows cannot be conflated: prescreen 2022.07.01-2022.12.31 (93 trades, net_profit 13138.66, profit_factor 1.33, drawdown 9788.36) and full 2018.07.02-2022.12.31 (888 trades, net_profit 46636.78, profit_factor 1.12, drawdown 21852.77). Every number is copied from summary.json runs[0] under the key names listed in q02_gate.economics.key_map.",
+  "WINDOW MISMATCH inside the Q02 payload: from_year/requested_from_year are 2017 but from_date/expected_from_date are 2018.07.02 and the executed tester.ini window is 2018.07.02-2022.12.31. The calendar year 2017 was never tested. This artifact reports both the payload year fields and the executed dates rather than reconciling them.",
+  "EVIDENCE DEFECT in the full-run summary, reported because it is checkable: frequency_floor.first_tradable_bar names symbol 'XAGUSD.DWX' and all 5 QM_PATTERN_FIRST_TRADABLE_BAR marker lines in the cited tester log belong to other EAs (QM5_41195 on XAGUSD.DWX, QM5_41301 on XAUUSD.DWX); 0 mention 41324. coverage_start and year_count in that block are therefore not QM5_41324 measurements. The PASS is insensitive to it (888 trades vs min_trades_required 5). See q02_gate.frequency_floor_defect.",
+  "validations.setfile_validation and validations.symbol_scope are null. The previous tokens 'PASS_1_RISK_FIXED_BACKTEST_ONLY' and 'SINGLE_SYMBOL_EXACT_USDJPY_DWX_H1' were artifact-author summaries shaped like validator verdicts; no set-file validator or symbol-scope validator artifact exists for QM5_41324 anywhere under D:/QM/reports, D:/QM/strategy_farm/artifacts or C:/QM/repo/artifacts. The underlying observations are kept, as observations, in validations.setfile_validation_basis and validations.symbol_scope_observation.",
+  "compile.status is null. compile_evidence.json has no key named 'status' (checked at 2026-09-03T02:52:04Z: False); it records compile_result 'PASS' and compile_reason_class 'OK' with success true, quoted verbatim under compile.result. The exact-case token COMPILE_OK does not occur in this work item's compile evidence at all (count 0; the single case-insensitive hit is the key name current_compile_ok_work_item_ids, value empty list). It is the work_items.verdict value in farm_state.sqlite and is reported as such under compile.work_item_verdict. A consumer needing one comparable field across the batch should match on compile.work_item_verdict (database taxonomy) or compile.result.compile_result (evidence taxonomy), never on a mixed 'status' field.",
+  "compile.compile_errors and compile.compile_warnings are the JSON strings \"0\", because that is the type compile_evidence.json uses. compile.build_check_failures and compile.build_check_warnings are integers 0 parsed from the verbatim tail lines 'build_check.failures=0' and 'build_check.warnings=0', because compile_evidence.json has no such keys; the parse is declared in compile.build_check_counts_source. compile.include_mirror_guard_ok is likewise derived from a tail line, declared in compile.include_mirror_guard_source.",
+  "build_generation is null. No build-generation counter for QM5_41324 exists anywhere on disk: not in compile_evidence.json, not in framework/registry/ea_id_registry.csv or magic_numbers.csv, not in the approved card, not in SPEC.md, and not in the work_items or tasks rows. The original value 0 was unbacked and has been removed rather than guessed.",
+  "compile.build_check_warning_codes is null. The build_check report has a 'warnings' list (empty) and no key of any name resembling 'warning_codes'. An empty array here would be invented structure, so the field carries null and the real, empty warnings list is quoted under provenance.build_check.report_contents_verbatim.",
+  "compile.setfile_sha256 and compile.setfile_build_hash are null. Neither string occurs in compile_evidence.json (grep count 0 for both). Placing an artifact-author measurement or a self-declared header value inside the 'compile' block would present it as compile-time evidence. Both values are published instead under provenance.setfile.hash_ledger with their true sources and reproduction recipes; the on-disk value also appears at top level under setfile_sha256, whose documented meaning is 'sha256 of the file at this path, recomputed at 2026-09-03T02:52:04Z'.",
+  "build_check_passed is true on the strength of compile_evidence.json, not of the report file. The report build_check_20260903_013407.json (sha256 2BE152A89F51C81C88966EB0892C460B6230DD0F594624A1CBF6B83AC79851A3, 231 bytes) contains exactly 6 keys - run_tag, timestamp_utc, strict, failures [], warnings [], status PASS - and no occurrence of '41324' and no EA or target field. The EA scoping comes from the run, not the report; see provenance.build_check.what_makes_it_ea_scoped.",
+  "capacity_admission is null. No CPU or terminal-count sampling was performed for this artifact and no capacity-sampling record for this build exists on disk. Every claim_admission_* field in compile_evidence.json is null (claim_admission_mode, claim_admission_commit_headroom_gb, claim_admission_commit_reserved_gb, claim_admission_effective_commit_headroom_gb). The only host-state fact in the compile evidence is running_terminals_at_worker_start, mirrored under compile.running_terminals_at_worker_start.",
+  "validations.build_skill_guard, card_schema_lint, g0_card_lint, spec_validation, static_guardrails, dedup_artifact_sha256, density_artifact_sha256, reference_test_sha256, reference_tests and source_packet_sha256 are null: no artifact for any of them exists for QM5_41324 under D:/QM/reports, D:/QM/strategy_farm/artifacts or C:/QM/repo/artifacts. The card's g0_status APPROVED is a frontmatter assertion, not a lint artifact; its authority is the router task and the evidence document cited in validations.g0_authority_evidence.",
+  "The census set file used by the Q02 row is NOT the repo backtest set. It is the LF-normalized repo set plus two extra trailing lines (a blank line and '; DL-089 governed neutral pattern bindings'): 1172 bytes / 39 lines / LF versus 1165 bytes / 37 lines / CRLF. The derivation was re-verified byte-for-byte at 2026-09-03T02:52:04Z (result True) and is recorded under q02_gate.setfile.relation_to_repo_setfile. The census copy is a matrix-service artifact, not an output of this build task, and is therefore absent from setfiles_generated.",
+  "Two line citations from the previous revision were off and are corrected: Update-SetFileBuildHash spans build_check.ps1 lines 389-426 (not 388-424) and the -EALabel set-file scoping block is lines 481-485 (not 483-487). Re-read at 2026-09-03T02:52:04Z. The other citations were re-checked and are exact: Update-SetFileBuildHash call site 535, Invoke-CompileGate 1423, Invoke-SetValidation 1429, gen_setfile.ps1 665, compile_work_items.py 4577 and 4636, SPEC.md 43, mq5 53-54 and 65.",
+  "The top-level strategy_id field is a registry field, not a card field. framework/registry/ea_id_registry.csv has a real 'strategy_id' column (header position 3) and line 4811 carries 6e967762-b26d-59a3-b076-35c17f2e7c36 there; SPEC.md line 5 labels the same value 'Strategy ID'. The approved card frontmatter has no strategy_id key - it uses source_id for the same value. See provenance.identity.",
+  "The safety block is a set of process self-attestations and is labelled as such in safety.verifiability. Read-only inspection cannot confirm or refute them. Two disclosures: the farm_state.sqlite database WAS opened, read-only via sqlite3 URI mode=ro; and no git command was run for this revision, so the git commit metadata under provenance.setfile.rewrite_after_compile_resolved.git_record is an unre-verified carry-over from the previous revision, explicitly marked as such.",
+  "SPEC.md line 43 references opt_param_grid.json (schema qm.opt-param-grid.v1) for the S5 candidate ladders. No such file exists in the EA directory, which contains exactly five files (mq5, ex5, SPEC.md, docs/strategy_card.md, sets/..._USDJPY.DWX_H1_backtest.set). The SPEC reference is unsatisfied.",
+  "DOWNSTREAM: a Q04 row now exists - aeedcbc4-03b8-4642-aba6-638811c18d43, created 2026-09-03T02:36:22+00:00 with promotion_source 'pump_q04_early_probe' and q04_default_probe true, still status='pending' with verdict NULL and evidence_path NULL at 2026-09-03T02:52:06Z. It was created by the pump from the completed Q02 row, not by this build task or this author. No Q03 row exists."
+ ],
+ "compile": {
+  "status": null,
+  "result": {
+   "compile_result": "PASS",
+   "compile_reason_class": "OK",
+   "success": true
+  },
+  "reason_class": "OK",
+  "work_item_verdict": "COMPILE_OK",
+  "work_item_verdict_source": "farm_state.sqlite work_items.verdict for row f221b8aa-39ae-436e-be4e-5ae7da30958d, read read-only (sqlite3 URI mode=ro) at 2026-09-03T02:52:06Z. The exact-case token COMPILE_OK never appears as a value in compile_evidence.json (exact-case count 0; the one case-insensitive hit is the key name candidate_recheck.current_compile_ok_work_item_ids, whose value is an empty list). COMPILE_OK exists only as this database verdict; the compile row's own payload verdict_reason is 'COMPILE_ARTIFACT_READY'.",
+  "work_item_id": "f221b8aa-39ae-436e-be4e-5ae7da30958d",
+  "work_item_status": "done",
+  "terminal": "T10",
+  "evidence_path": "D:/QM/reports/work_items/f221b8aa-39ae-436e-be4e-5ae7da30958d/QM5_41324/COMPILE_EA/compile_evidence.json",
+  "evidence_sha256": "D390A7060350BB216590A44AFF754527BE9A98959A65861EF62CACAE24A53CDB",
+  "evidence_schema_version": "qm.compile-ea-evidence/v1",
+  "started_at": "2026-09-03T01:33:58+00:00",
+  "completed_at": "2026-09-03T01:34:31+00:00",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260903_013407.json",
+  "build_check_report_sha256": "2BE152A89F51C81C88966EB0892C460B6230DD0F594624A1CBF6B83AC79851A3",
+  "build_check_result": "PASS",
+  "build_check_exit_code": 0,
+  "build_check_failures": 0,
+  "build_check_warnings": 0,
+  "build_check_counts_source": "compile_evidence.json has no build_check_failures / build_check_warnings key. Both zeros are parsed from two verbatim lines of compile_evidence.build_check_output_tail: 'build_check.failures=0' and 'build_check.warnings=0'.",
+  "build_check_warning_codes": null,
+  "compile_errors": "0",
+  "compile_warnings": "0",
+  "compile_counts_type_note": "compile_errors and compile_warnings are reproduced with the JSON type compile_evidence.json actually uses: the strings \"0\" and \"0\", not integers. Sibling artifact qm5_41309_build_result_20260902.json publishes integers for the same fields; that is a coercion, this is the verbatim value.",
+  "failure_classes": [],
+  "compile_log": "C:/QM/repo/framework/build/compile/20260903_013409/QM5_41324_balke-gmt3-range-breakout-path25-opt.compile.log",
+  "compile_log_sha256": "7CB76DE6A4875E768F46240879A6EC41DEF4888C74D8BD4424D2E89F65B1735D",
+  "compile_summary": "D:/QM/reports/compile/20260903_013409/summary.csv",
+  "compile_summary_sha256": "D16317882D239CFB201C79C89B8C4A737825B6883D946A886496BD8678D8800C",
+  "include_mirror_guard_ok": true,
+  "include_mirror_guard_source": "not a compile_evidence key either; taken from the verbatim line 'build_check.compile_guard={...\"ok\": true...\"schema_version\": \"qm.include-mirror-guard/v1\"}' inside compile_evidence.build_check_output_tail.",
+  "running_terminals_at_worker_start": [
+   "T2",
+   "T3",
+   "T4",
+   "T5",
+   "T8",
+   "T9"
+  ],
+  "build_task_binding_authorized": true,
+  "build_task_binding_reason": "AUTHORIZED",
+  "build_task_binding_contract_version": "qm.compile-ea-build-task-binding/v1",
+  "build_task_binding_status_at_compile_time": "pending",
+  "mq5_sha256": "62B2B66500485F7A42D3A3E08FA22347C6A8C6ECDEAB71A453F0E64F24E49910",
+  "ex5_sha256": "1DF743B2ECE87F7D0DCAEFB66C750462224AEEAAF8DA6AE70BBC1E080E9A10FA",
+  "setfile_sha256": null,
+  "setfile_build_hash": null,
+  "setfile_sha256_at_generation": "D8BEC481B868477C9F2D09EEA0EF586365A59E49F29FF3A529E846C4B4E53D85",
+  "setfile_hash_attribution": "compile_evidence.json records exactly ONE set-file hash, setfile_generation[0].setfile_sha256 = d8bec481b868477c9f2d09eea0ef586365a59e49f29ff3a529e846c4b4e53d85 (it occurs 2x in the file text), reproduced here as setfile_sha256_at_generation. The working-tree hash and the '; build_hash:' header value are NOT compile-evidence fields (text counts in compile_evidence.json at 2026-09-03T02:52:04Z: 0 and 0); they are artifact-author measurements and are published, with their real sources and reproduction recipes, under provenance.setfile.hash_ledger. compile.setfile_sha256 and compile.setfile_build_hash are therefore null rather than carrying a value this evidence file does not contain."
+ },
+ "risk_mode": {
+  "RISK_FIXED": 1000,
+  "RISK_PERCENT": 0,
+  "PORTFOLIO_WEIGHT": 1
+ },
+ "validations": {
+  "approved_card_path": "C:/QM/repo/artifacts/cards_approved/QM5_41324_balke-gmt3-range-breakout-path25-opt.md",
+  "approved_card_sha256": "D6C2CF15D591656F8A6B03CCA9656C311460D33EB94B319A9643DEAC0FB5264E",
+  "approved_local_card_path": "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/docs/strategy_card.md",
+  "approved_local_card_sha256": "D6C2CF15D591656F8A6B03CCA9656C311460D33EB94B319A9643DEAC0FB5264E",
+  "approved_local_card_byte_identical": true,
+  "farm_runtime_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41324_balke-gmt3-range-breakout-path25-opt.md",
+  "farm_runtime_card_sha256": "D6C2CF15D591656F8A6B03CCA9656C311460D33EB94B319A9643DEAC0FB5264E",
+  "farm_runtime_card_byte_identical": true,
+  "farm_runtime_card_normalization": "None. All three approved-card copies (repo artifacts, EA docs mirror, farm runtime mirror) are 1668 bytes and share sha256 D6C2CF15D591656F8A6B03CCA9656C311460D33EB94B319A9643DEAC0FB5264E recomputed at 2026-09-03T02:52:04Z.",
+  "build_skill_guard": null,
+  "card_schema_lint": null,
+  "g0_card_lint": null,
+  "g0_status_declared": "APPROVED",
+  "g0_authority_declared": "router task 57bc396f-5ac3-4469-aec5-c47d3737b1fd; CEO order 2026-09-03",
+  "g0_authority_evidence": "C:/QM/repo/docs/ops/evidence/2026-09-03_57bc396f_path_to_25_four_siblings.md",
+  "g0_authority_evidence_sha256": "879091C6EF02831E69B64D5EC93AE4F933B800C05F679EB70A9CA077B828F5D3",
+  "parent_ea_id": "QM5_21501",
+  "dedup_artifact_sha256": null,
+  "density_artifact_sha256": null,
+  "reference_test_sha256": null,
+  "reference_tests": null,
+  "source_packet_sha256": null,
+  "spec_sha256": "78834279090AE76923C443170C2772D7081B571B9C2125042EA6CD78667179CD",
+  "spec_validation": null,
+  "static_guardrails": null,
+  "symbol_scope": null,
+  "symbol_scope_observation": "No validator artifact for symbol scoping exists for QM5_41324, so no verdict-shaped token is published. What is observable: the approved card frontmatter says 'target_symbols: [USDJPY.DWX]'; the EA sets directory holds exactly one .set file, for USDJPY.DWX H1; framework/registry/magic_numbers.csv holds exactly one active row for ea_id 41324 (symbol_slot 0, USDJPY.DWX); compile_evidence.candidate_recheck.active_magic_row_count = 1; and the Q02 and Q04 work_items rows both carry symbol='USDJPY.DWX'. The previous token SINGLE_SYMBOL_EXACT_USDJPY_DWX_H1 was an artifact-author summary, not a validator output, and has been removed.",
+  "setfile_validation": null,
+  "setfile_validation_basis": "No set-file validator artifact exists for QM5_41324, so no verdict-shaped token is published. What is observable in the shipped set file itself (1165 bytes, sha256 32243FD4A2A4C7C4A84D9F0DC6F1CDAE66C95216E62F5F21F9B838B972014884, read at 2026-09-03T02:52:04Z): header '; environment:  backtest', '; risk_mode:    FIXED', and the body lines qm_ea_id=41324, qm_magic_slot_offset=0, RISK_FIXED=1000, RISK_PERCENT=0, PORTFOLIO_WEIGHT=1. No live set file exists: the EA directory holds exactly five files (mq5, ex5, SPEC.md, docs/strategy_card.md, sets/..._USDJPY.DWX_H1_backtest.set). The set file does NOT set qm_news_stale_max_hours; the value therefore comes from the .mq5 input default at line 65, 'input int    qm_news_stale_max_hours      = 336;', which satisfies the card's '<= 336' requirement by default rather than by an explicit set-file line. The previous token PASS_1_RISK_FIXED_BACKTEST_ONLY was an artifact-author summary, not a validator output, and has been removed.",
+  "magic_registry_row": "framework/registry/magic_numbers.csv line 18229, verbatim and byte-exact (LF-terminated; header ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status): 41324,balke-gmt3-range-breakout-path25-opt,0,USDJPY.DWX,413240000,2026-09-03,Codex governed allocator,active",
+  "ea_id_registry_row": "framework/registry/ea_id_registry.csv line 4811, verbatim and byte-exact including the three trailing empty columns (LF-terminated; header ea_id,slug,strategy_id,status,owner,created_at,retired_at,retired_reason,retired_evidence): 41324,balke-gmt3-range-breakout-path25-opt,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Codex-board-advisor,2026-09-03,,,",
+  "mq5_ea_id_inputs": "QM5_41324_balke-gmt3-range-breakout-path25-opt.mq5 lines 53-54 declare 'input int    qm_ea_id                   = 41324;' and 'input int    qm_magic_slot_offset       = 0;'."
+ },
+ "capacity_admission": null,
+ "q02_gate": {
+  "work_item_id": "3aacc8f2-1728-597b-859a-5e9e5ef4ffd0",
+  "kind": "backtest",
+  "phase": "Q02",
+  "ea_id": "QM5_41324",
+  "symbol": "USDJPY.DWX",
+  "status": "done",
+  "verdict": "PASS",
+  "verdict_taxonomy": "strategy",
+  "verdict_reason": "",
+  "attempt_count": 0,
+  "claimed_by": null,
+  "evidence_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json",
+  "evidence_path_exists": true,
+  "evidence_sha256": "9B16619C147E0CCFE3C69B532A49D6544FFFA8057FCFD0E6A0CC272F0ED9AA85",
+  "gate_contract_version": "v4",
+  "created_at": "2026-09-03T01:38:48.803099+00:00",
+  "updated_at": "2026-09-03T02:34:35+00:00",
+  "observed_at_utc": "2026-09-03T02:52:06Z",
+  "observation_method": "read-only query on D:/QM/strategy_farm/state/farm_state.sqlite via sqlite3 URI mode=ro; no write. Every report path named in this block was re-checked with os.path.exists at 2026-09-03T02:52:04Z.",
+  "state_change_since_previous_revision": "The previous revision of this artifact (written 2026-09-03T02:24:28.725059Z) reported this row as status=pending, verdict=null, evidence_path=null and economics=null, and asserted that no work-item report directory existed. That was wrong at its own stated observation time and is wrong now: the prescreen report directory was created at 2026-09-03T02:18:54.542065Z and the gate has since completed. The row now reads status='done', verdict='PASS', evidence_path=D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json, updated_at 2026-09-03T02:34:35+00:00. Both false negative-existence claims are withdrawn.",
+  "created_by": "DL-089 matrix service, payload schema qm.dl089-measurement-q02-prerequisite/v1, runner revision dl089-matrix-runner-v2, priority_reason OWNER_P0_DL089_MATRIX_PREREQUISITE, subject_ea_id QM5_21501. Not created by this build task and not enqueued by the author of this artifact.",
+  "runner": {
+   "script": "C:/QM/repo/framework/scripts/run_smoke.ps1",
+   "script_sha256_from_summary": "6c56145be0201ab544aade39bac5ac12301056469b50d3648de04d387049d663",
+   "script_sha256_on_disk_now": "6c56145be0201ab544aade39bac5ac12301056469b50d3648de04d387049d663",
+   "note": "The Q02 gate is executed by framework/scripts/run_smoke.ps1 and its evidence carries evidence_schema 'run_smoke/v2'. That is why two '# Step 22 Smoke Evidence' documents exist for this EA. They are gate evidence, not a build-task smoke of the shipped set file - see smoke_result / smoke_skipped_reason."
+  },
+  "setfile": {
+   "path": "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_21501_USDJPY_DWX_2019_2025/base_setfiles/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_7c407f6b88fcc99c.set",
+   "path_exists": true,
+   "sha256": "7C407F6B88FCC99C73145E861589CB191C56533AFF02BA4789F95D9E4A2CA986",
+   "sha256_matches_row": true,
+   "sha256_matches_payload_expectation": true,
+   "is_the_repo_backtest_set": false,
+   "relation_to_repo_setfile": "Derived, not identical. The census copy is the LF-normalized repo set plus TWO extra trailing lines (an empty line and '; DL-089 governed neutral pattern bindings'). Reproduced byte-exactly at 2026-09-03T02:52:04Z: repo_set.replace(CRLF, LF) + b'\\n; DL-089 governed neutral pattern bindings\\n' == census bytes -> True. Sizes: repo set 1165 bytes / 37 lines / CRLF throughout; census copy 1172 bytes / 39 lines / LF throughout. Both carry the same stamped '; build_hash:   9739042f5a69238e34c80e11c8ba331aaec118c1d387451ba1026dd040dd88e5' header line."
+  },
+  "ex5_sha256": "1DF743B2ECE87F7D0DCAEFB66C750462224AEEAAF8DA6AE70BBC1E080E9A10FA",
+  "ex5_sha256_matches_disk": true,
+  "mq5_sha256": "62B2B66500485F7A42D3A3E08FA22347C6A8C6ECDEAB71A453F0E64F24E49910",
+  "window": {
+   "requested_from_year": 2017,
+   "requested_to_year": 2022,
+   "from_year": 2017,
+   "to_year": 2022,
+   "payload_from_date": "2018.07.02",
+   "payload_to_date": "2022.12.31",
+   "executed_from_date": "2018.07.02",
+   "executed_to_date": "2022.12.31",
+   "expected_period": "H1",
+   "expected_symbol": "USDJPY.DWX",
+   "source": "work_items.payload_json of 3aacc8f2-1728-597b-859a-5e9e5ef4ffd0 for the requested/payload values; the executed values come from summary.json test_window and from the generated tester.ini (D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/tester.ini).",
+   "caveat": "from_year is 2017 but the executed window starts 2018.07.02. The payload itself carries both: from_year=2017 / requested_from_year=2017 alongside from_date='2018.07.02' and expected_from_date='2018.07.02'. The run covered 2018.07.02-2022.12.31, not calendar 2017-2022; work_items.data_window_start='2018.07.02' and data_window_end='2022.12.31' agree with the executed window."
+  },
+  "runs": [
+   {
+    "run_tag": "20260903_021854",
+    "kind": "prescreen",
+    "terminal": "T1",
+    "summary_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_021854/summary.json",
+    "summary_path_exists": true,
+    "summary_sha256": "3555385FFAFE40801E44F0DECC06325D486463771CFC01B42D99B3468DDE217F",
+    "summary_mtime_utc": "2026-09-03T02:21:38.926726Z",
+    "evidence_schema": "run_smoke/v2",
+    "timestamp_utc": "2026-09-03T02:21:36.2701324Z",
+    "result": "PASS",
+    "deterministic": true,
+    "model": 4,
+    "model4_log_marker_detected": true,
+    "reason_classes": [
+     "OK"
+    ],
+    "non_ok_attempts": 0,
+    "oninit_failure_detected": false,
+    "log_bomb_detected": false,
+    "min_trades_required": 5,
+    "from_date": "2022.07.01",
+    "to_date": "2022.12.31",
+    "period": "H1",
+    "symbol": "USDJPY.DWX",
+    "expert": "QM\\QM5_41324_balke-gmt3-range-breakout-path25-opt",
+    "setfile_sha256_used": "7c407f6b88fcc99c73145e861589cb191c56533aff02ba4789f95d9e4a2ca986",
+    "setfile_source_path_used": "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_21501_USDJPY_DWX_2019_2025/base_setfiles/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_7c407f6b88fcc99c.set",
+    "ex5_sha256_used": "1df743b2ece87f7d0dcaefb66c750462224aeeaaf8da6ae70bbc1e080e9a10fa",
+    "economics": {
+     "total_trades": 93,
+     "net_profit": 13138.66,
+     "net_profit_raw": "13 138.66",
+     "profit_factor": 1.33,
+     "profit_factor_raw": "1.33",
+     "drawdown": 9788.36,
+     "drawdown_raw": "9 788.36 (8.38%)",
+     "exit_code": 0,
+     "status": "OK",
+     "real_ticks_marker": true,
+     "report_sha256": "963aa3f37f2bd5b4e8b028f15d5065f5ac293e5062ebc400c08e818c46f89a93",
+     "report_size_bytes": 279344,
+     "report_canonical_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_021854/raw/run_01/report.htm",
+     "report_canonical_path_exists": true
+    },
+    "economics_key_map": "every value above is copied from summary.json runs[0] under exactly these key names: total_trades, net_profit, net_profit_raw, profit_factor, profit_factor_raw, drawdown, drawdown_raw, exit_code, status, real_ticks_marker, report_sha256, report_size_bytes, report_canonical_path. No key name was invented and no value was derived. The percentage inside drawdown_raw is the tester's own text; this artifact does not recompute it.",
+    "news_calendar_status": "OK",
+    "news_calendar_age_hours": 22,
+    "news_calendar_max_age_hours": 336,
+    "tester_ini_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_021854/raw/run_01/tester.ini",
+    "tester_ini_sha256": "6d19be03396bc3acab6c3d73d21048ce1a141f707098ae1698354569c2443315",
+    "run_smoke_evidence_md": "D:/QM/reports/framework/22/20260903_021854_QM5_41324_T1_USDJPY_DWX_run_smoke.md",
+    "run_smoke_evidence_md_sha256": "B221DA7252CA613D05E60BA7B3E357952C9B070B212DCB8E3A8F32C8A91BBBAE"
+   },
+   {
+    "run_tag": "20260903_022527",
+    "kind": "full",
+    "terminal": "T7",
+    "summary_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json",
+    "summary_path_exists": true,
+    "summary_sha256": "9B16619C147E0CCFE3C69B532A49D6544FFFA8057FCFD0E6A0CC272F0ED9AA85",
+    "summary_mtime_utc": "2026-09-03T02:34:35.911154Z",
+    "evidence_schema": "run_smoke/v2",
+    "timestamp_utc": "2026-09-03T02:34:33.1221954Z",
+    "result": "PASS",
+    "deterministic": true,
+    "model": 4,
+    "model4_log_marker_detected": true,
+    "reason_classes": [
+     "OK"
+    ],
+    "non_ok_attempts": 0,
+    "oninit_failure_detected": false,
+    "log_bomb_detected": false,
+    "min_trades_required": 5,
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "period": "H1",
+    "symbol": "USDJPY.DWX",
+    "expert": "QM\\QM5_41324_balke-gmt3-range-breakout-path25-opt",
+    "setfile_sha256_used": "7c407f6b88fcc99c73145e861589cb191c56533aff02ba4789f95d9e4a2ca986",
+    "setfile_source_path_used": "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_21501_USDJPY_DWX_2019_2025/base_setfiles/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_7c407f6b88fcc99c.set",
+    "ex5_sha256_used": "1df743b2ece87f7d0dcaefb66c750462224aeeaaf8da6ae70bbc1e080e9a10fa",
+    "economics": {
+     "total_trades": 888,
+     "net_profit": 46636.78,
+     "net_profit_raw": "46 636.78",
+     "profit_factor": 1.12,
+     "profit_factor_raw": "1.12",
+     "drawdown": 21852.77,
+     "drawdown_raw": "21 852.77 (19.86%)",
+     "exit_code": 0,
+     "status": "OK",
+     "real_ticks_marker": true,
+     "report_sha256": "38aaba015420615a9c3098f4ea035edc4ca597833f5eda1bd39599f58c06a1fe",
+     "report_size_bytes": 2393454,
+     "report_canonical_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/report.htm",
+     "report_canonical_path_exists": true
+    },
+    "economics_key_map": "every value above is copied from summary.json runs[0] under exactly these key names: total_trades, net_profit, net_profit_raw, profit_factor, profit_factor_raw, drawdown, drawdown_raw, exit_code, status, real_ticks_marker, report_sha256, report_size_bytes, report_canonical_path. No key name was invented and no value was derived. The percentage inside drawdown_raw is the tester's own text; this artifact does not recompute it.",
+    "news_calendar_status": "OK",
+    "news_calendar_age_hours": 22,
+    "news_calendar_max_age_hours": 336,
+    "tester_ini_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/tester.ini",
+    "tester_ini_sha256": "990f8cd060fcf0e0c4385e2c6e051e0d61a16fd6cf890237513f7bfcb4dbd405",
+    "run_smoke_evidence_md": "D:/QM/reports/framework/22/20260903_022527_QM5_41324_T7_USDJPY_DWX_run_smoke.md",
+    "run_smoke_evidence_md_sha256": "580DC9664F9C05E700A8AAB5F6FC8F3243951E813E78D562ACE35749D7135985"
+   }
+  ],
+  "economics": {
+   "source": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json",
+   "source_sha256": "9B16619C147E0CCFE3C69B532A49D6544FFFA8057FCFD0E6A0CC272F0ED9AA85",
+   "source_run_tag": "20260903_022527",
+   "window": "2018.07.02 - 2022.12.31",
+   "total_trades": 888,
+   "net_profit": 46636.78,
+   "profit_factor": 1.12,
+   "drawdown": 21852.77,
+   "drawdown_raw": "21 852.77 (19.86%)",
+   "exit_code": 0,
+   "report_sha256": "38aaba015420615a9c3098f4ea035edc4ca597833f5eda1bd39599f58c06a1fe",
+   "result": "PASS",
+   "deterministic": true,
+   "model": 4,
+   "real_ticks_marker": true,
+   "min_trades_required": 5,
+   "key_map": "copied from D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json under exactly these keys: runs[0].total_trades, runs[0].net_profit, runs[0].profit_factor, runs[0].drawdown, runs[0].drawdown_raw, runs[0].exit_code, runs[0].report_sha256, runs[0].real_ticks_marker, plus top-level result, deterministic, model, min_trades_required, from_date, to_date, run_tag. Nothing here is derived or renamed.",
+   "interpretation": "These are positive economics over the executed window and they are reported as measured, not as a verdict of this artifact. The prescreen run over 2022.07.01-2022.12.31 is reported separately under runs[0] (total_trades 93, net_profit 13138.66, profit_factor 1.33, drawdown 9788.36) so that the smaller window cannot be mistaken for the full one."
+  },
+  "frequency_floor_full_run": {
+   "application_reason": "q02_frequency_floor",
+   "applied": true,
+   "calculated_min_trades_required": 5,
+   "coverage_end": "2022.12.31",
+   "coverage_start": "2022.01.12",
+   "coverage_start_source": "pattern_first_tradable_bar",
+   "effective_run_marker_count": 1,
+   "fallback_visible": true,
+   "first_tradable_bar": {
+    "profile_key": "DL089_OPT|0|16408|1|B|S:40",
+    "reference_bar_time": 1641859200,
+    "reference_timeframe": 16408,
+    "required_bars": 3,
+    "source_kind": "tester_log",
+    "source_path": "D:\\QM\\reports\\work_items\\3aacc8f2-1728-597b-859a-5e9e5ef4ffd0\\QM5_41324\\20260903_022527\\raw\\run_01\\20260903.log",
+    "symbol": "XAGUSD.DWX",
+    "tradable_bar_date": "2022.01.12",
+    "tradable_bar_time": 1641945600
+   },
+   "marker_count": 5,
+   "marker_status": "present_consistent",
+   "min_trades_required": 5,
+   "rate_per_year": 5,
+   "schema": "qm.q02-frequency-coverage/v1",
+   "valid_marker_count": 5,
+   "year_count": 1
+  },
+  "frequency_floor_full_run_verbatim_note": "The block above is copied verbatim from D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json, which is why the one path inside it (first_tradable_bar.source_path) carries Windows backslashes instead of this artifact's forward-slash convention. In forward-slash form that path is D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/20260903.log; it was checked with os.path.exists at 2026-09-03T02:52:04Z (result True, 3350034 bytes, mtime 2026-09-03T02:34:26.695343Z).",
+  "frequency_floor_defect": "Reported because it is checkable and it is wrong in the evidence, not because it changes the verdict. frequency_floor.first_tradable_bar in the full-run summary names symbol 'XAGUSD.DWX', which is not this EA's symbol. Its cited source_path is D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/20260903.log, the shared T7 daily terminal log copied into the run directory. That log contains 5 QM_PATTERN_FIRST_TRADABLE_BAR marker lines, carrying symbols XAGUSD.DWX, XAUUSD.DWX, and 0 of them mention 41324. So marker_count 5 / valid_marker_count 5 were harvested from OTHER EAs' runs on the same terminal that day (QM5_41195 on XAGUSD.DWX, QM5_41301 on XAUUSD.DWX), and coverage_start '2022.01.12' with year_count 1 is therefore not derived from a QM5_41324 marker. The gate outcome is insensitive to it here (888 trades against min_trades_required 5), but the coverage figure must not be quoted as a QM5_41324 measurement.",
+  "compile_binding": {
+   "compile_work_item_id": "f221b8aa-39ae-436e-be4e-5ae7da30958d",
+   "compile_evidence_sha256": "D390A7060350BB216590A44AFF754527BE9A98959A65861EF62CACAE24A53CDB",
+   "compile_evidence_sha256_matches_disk": true,
+   "expected_ex5_sha256": "1DF743B2ECE87F7D0DCAEFB66C750462224AEEAAF8DA6AE70BBC1E080E9A10FA",
+   "expected_current_ex5_sha256": "1DF743B2ECE87F7D0DCAEFB66C750462224AEEAAF8DA6AE70BBC1E080E9A10FA",
+   "expected_mq5_sha256": "62B2B66500485F7A42D3A3E08FA22347C6A8C6ECDEAB71A453F0E64F24E49910",
+   "expected_expert": "QM\\QM5_41324_balke-gmt3-range-breakout-path25-opt",
+   "staged_ex5_verified": true,
+   "staged_ex5_pre_run_sha256": "1df743b2ece87f7d0dcaefb66c750462224aeeaaf8da6ae70bbc1e080e9a10fa",
+   "staged_ex5_post_run_sha256": "1df743b2ece87f7d0dcaefb66c750462224aeeaaf8da6ae70bbc1e080e9a10fa",
+   "expert_binary_stable_during_run": true
+  },
+  "prescreen_payload_keys": {
+   "p2_prescreen_done": true,
+   "p2_prescreen_verdict": "PASS",
+   "p2_prescreen_from_date": "2022.07.01",
+   "p2_prescreen_to_date": "2022.12.31",
+   "p2_prescreen_evidence_path": "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_021854/summary.json",
+   "p2_prescreen_evidence_path_exists": true,
+   "p2_run_stage": "full",
+   "run_smoke_exit_code": 0,
+   "smoke_year_count": 5,
+   "note": "These keys sit in the same work_items.payload_json row this artifact quotes for the window. The previous revision cited that row while asserting the gate had no evidence path and no summary; the keys above refute that and are now published."
+  },
+  "downstream_rows_enqueued": {
+   "q03_work_item_ids": [],
+   "q04_work_item_ids": [
+    "aeedcbc4-03b8-4642-aba6-638811c18d43"
+   ],
+   "count_q03_q04": 1,
+   "q04_row": {
+    "id": "aeedcbc4-03b8-4642-aba6-638811c18d43",
+    "phase": "Q04",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "created_at": "2026-09-03T02:36:22+00:00",
+    "updated_at": "2026-09-03T02:36:22+00:00",
+    "evidence_path": null,
+    "setfile_path": "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_21501_USDJPY_DWX_2019_2025/base_setfiles/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_7c407f6b88fcc99c.set",
+    "promotion_source": "pump_q04_early_probe",
+    "promoted_from_work_item": "3aacc8f2-1728-597b-859a-5e9e5ef4ffd0",
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "q02_full_runtime_sec": 557,
+    "q04_default_probe": true
+   },
+   "basis": "select ... from work_items where ea_id='QM5_41324' at 2026-09-03T02:52:06Z returned exactly three rows: the COMPILE_EA row, this Q02 row, and the Q04 row above (created 2026-09-03T02:36:22+00:00, still status='pending' with verdict NULL and evidence_path NULL). No Q03 row exists."
+  },
+  "referenced_q12_work_item": {
+   "id": "65b0f691-1d3a-5382-97d2-c58641cf89ea",
+   "note": "Named as q12_work_item_id in the Q02 payload. It belongs to the PARENT EA QM5_21501, not to QM5_41324. It was not re-read for this revision, so no status is claimed for it here."
+  },
+  "verdict_claim": "This artifact claims no pipeline verdict of its own. It reports, as a database fact, that work_items row 3aacc8f2-1728-597b-859a-5e9e5ef4ffd0 carries status='done' and verdict='PASS' as of 2026-09-03T02:52:06Z, with the measured economics above. The approved card explicitly withholds verdict authority from the build artifact - see open_questions for the verbatim sentence."
+ },
+ "provenance": {
+  "recomputed_at_utc": "2026-09-03T02:52:04Z",
+  "method": "Every hash in this artifact was recomputed from the byte contents of the named file at 2026-09-03T02:52:04Z; every path was checked with os.path.exists immediately before writing (the check list is provenance.existence_checks). Database facts come from read-only sqlite3 URI mode=ro queries executed at 2026-09-03T02:52:06Z. All paths use forward slashes.",
+  "existence_checks": {
+   "checked_at_utc": "2026-09-03T02:52:04Z",
+   "checked_path_count": 30,
+   "all_exist": true,
+   "paths": [
+    "C:/QM/repo/artifacts/cards_approved/QM5_41324_balke-gmt3-range-breakout-path25-opt.md",
+    "C:/QM/repo/docs/ops/evidence/2026-09-03_57bc396f_path_to_25_four_siblings.md",
+    "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/QM5_41324_balke-gmt3-range-breakout-path25-opt.ex5",
+    "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/QM5_41324_balke-gmt3-range-breakout-path25-opt.mq5",
+    "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/SPEC.md",
+    "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/docs/strategy_card.md",
+    "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/sets/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/build/compile/20260903_013409/QM5_41324_balke-gmt3-range-breakout-path25-opt.compile.log",
+    "C:/QM/repo/framework/registry/ea_id_registry.csv",
+    "C:/QM/repo/framework/registry/magic_numbers.csv",
+    "C:/QM/repo/framework/scripts/build_check.ps1",
+    "C:/QM/repo/framework/scripts/gen_setfile.ps1",
+    "C:/QM/repo/framework/scripts/run_smoke.ps1",
+    "C:/QM/repo/tools/strategy_farm/compile_work_items.py",
+    "D:/QM/reports/compile/20260903_013409/summary.csv",
+    "D:/QM/reports/framework/21/build_check_20260903_013407.json",
+    "D:/QM/reports/framework/22/20260903_021854_QM5_41324_T1_USDJPY_DWX_run_smoke.md",
+    "D:/QM/reports/framework/22/20260903_022527_QM5_41324_T7_USDJPY_DWX_run_smoke.md",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_021854/raw/run_01/report.htm",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_021854/raw/run_01/tester.ini",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_021854/summary.json",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/20260903.log",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/report.htm",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/raw/run_01/tester.ini",
+    "D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0/QM5_41324/20260903_022527/summary.json",
+    "D:/QM/reports/work_items/f221b8aa-39ae-436e-be4e-5ae7da30958d/QM5_41324/COMPILE_EA/compile_evidence.json",
+    "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41324_balke-gmt3-range-breakout-path25-opt.md",
+    "D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_21501_USDJPY_DWX_2019_2025/base_setfiles/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_7c407f6b88fcc99c.set",
+    "D:/QM/strategy_farm/state/farm_state.sqlite"
+   ]
+  },
+  "setfile": {
+   "path": "C:/QM/repo/framework/EAs/QM5_41324_balke-gmt3-range-breakout-path25-opt/sets/QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_backtest.set",
+   "on_disk_bytes": 1165,
+   "on_disk_lines": 37,
+   "on_disk_line_endings": "CRLF throughout (37 CRLF, 0 bare LF)",
+   "on_disk_mtime_utc": "2026-09-03T01:34:30.750531Z",
+   "hash_ledger": {
+    "generation_time_lf_pending": {
+     "sha256": "d8bec481b868477c9f2d09eea0ef586365a59e49f29ff3a529e846c4b4e53d85",
+     "meaning": "what gen_setfile.ps1 wrote: UTF-8 without BOM, LF endings, header line '; build_hash:   pending'",
+     "evidence": "compile_evidence.json setfile_generation[0].setfile_sha256 (the only set-file hash that file contains)",
+     "reproduction": "sha256(on_disk_bytes.replace(CRLF, LF) with the stamped '; build_hash:   9739042f5a69238e34c80e11c8ba331aaec118c1d387451ba1026dd040dd88e5' line replaced by '; build_hash:   pending') == d8bec481b868477c9f2d09eea0ef586365a59e49f29ff3a529e846c4b4e53d85 -- recomputed True at 2026-09-03T02:52:04Z; length 1071 bytes"
+    },
+    "stamped_build_hash_crlf_pending": {
+     "sha256": "9739042f5a69238e34c80e11c8ba331aaec118c1d387451ba1026dd040dd88e5",
+     "meaning": "the value written into the '; build_hash:' header line; by construction it is sha256 of the CRLF-normalized file while that line still read 'pending'",
+     "evidence": "framework/scripts/build_check.ps1 function Update-SetFileBuildHash (lines 389-426): it joins the lines with CRLF plus a trailing CRLF, hashes those UTF-8 bytes, and only then substitutes the hash into the build_hash line",
+     "reproduction": "sha256(lf_pending.replace(LF, CRLF)) == 9739042f5a69238e34c80e11c8ba331aaec118c1d387451ba1026dd040dd88e5 -- recomputed True at 2026-09-03T02:52:04Z; length 1108 bytes. This value is NOT present in compile_evidence.json (grep count 0); it is reproduced arithmetically here, so it is no longer a self-declared header value."
+    },
+    "on_disk_now_crlf_stamped": {
+     "sha256": "32243fd4a2a4c7c4a84d9f0dc6f1cdae66c95216e62f5f21f9b838b972014884",
+     "meaning": "the shipped working-tree file exactly as it stands now",
+     "evidence": "recomputed from the set-file path above at 2026-09-03T02:52:04Z",
+     "reproduction": "sha256(open(path,'rb').read()) == 32243fd4a2a4c7c4a84d9f0dc6f1cdae66c95216e62f5f21f9b838b972014884; length 1165 bytes"
+    },
+    "git_blob_lf_stamped": {
+     "sha256": "090b4e69daa595abd6597d6823244e3237ae49acace794d1c1a8f0e71f8775a0",
+     "meaning": "what git stores, because core.autocrlf=true normalizes the CRLF working copy to LF in the index/object store",
+     "evidence": "sha256(on_disk_bytes.replace(CRLF, LF)) == 090b4e69daa595abd6597d6823244e3237ae49acace794d1c1a8f0e71f8775a0, length 1128 bytes, recomputed at 2026-09-03T02:52:04Z. No git command was run for this revision; the value is stated as the arithmetic LF-normalization of the shipped bytes."
+    },
+    "pre_compile_committed_blob_lf_no_build_hash_line": {
+     "sha256": "4c9f04d3c30afdc6c68b74d0ee0c1a02caee7a079c44e663459fbce10ba1991d",
+     "meaning": "the set file as it stood before this compile: LF, with no '; build_hash:' header line at all",
+     "evidence": "removing the '; build_hash:' line from the current LF form yields 1047 bytes with sha256 4c9f04d3c30afdc6c68b74d0ee0c1a02caee7a079c44e663459fbce10ba1991d, recomputed at 2026-09-03T02:52:04Z."
+    }
+   },
+   "rewrite_after_compile_resolved": {
+    "observation": "the set-file mtime 2026-09-03T01:34:30.750531Z is later than the .ex5 mtime 2026-09-03T01:34:21.278001Z, i.e. the shipped set file was rewritten AFTER compilation finished",
+    "generator_identified": "framework/scripts/build_check.ps1, function Update-SetFileBuildHash (lines 389-426), called from Invoke-SetValidation at line 535, which the main flow runs at line 1429 - AFTER Invoke-CompileGate at line 1423, inside the SAME build_check run (run_tag 20260903_013407). The rewrite is a normal, in-run stage of the compile gate, not an unattributed mutation.",
+    "call_chain": [
+     "tools/strategy_farm/compile_work_items.py line 4577: the COMPILE_EA worker runs framework/scripts/gen_setfile.ps1 first and records its stdout plus the resulting sha256 as setfile_generation[0] -> d8bec481b868477c9f2d09eea0ef586365a59e49f29ff3a529e846c4b4e53d85",
+     "tools/strategy_farm/compile_work_items.py line 4636: the same worker then runs framework/scripts/build_check.ps1 -EALabel QM5_41324_balke-gmt3-range-breakout-path25-opt -Strict -CompileWorkItemId f221b8aa-39ae-436e-be4e-5ae7da30958d -ClaimedTerminal T10",
+     "build_check.ps1 line 1423 Invoke-CompileGate -> compile_one writes the .ex5 (mtime 2026-09-03T01:34:21.278001Z) and the compile summary",
+     "build_check.ps1 line 1429 Invoke-SetValidation -> line 535 Update-SetFileBuildHash rewrites the set file to CRLF with the stamped build_hash (mtime 2026-09-03T01:34:30.750531Z)",
+     "build_check.ps1 Write-GateEvidence writes the build_check report (mtime 2026-09-03T01:34:31.678711Z)",
+     "the worker writes compile_evidence.json (mtime 2026-09-03T01:34:31.719818Z)"
+    ],
+    "why_the_two_hashes_differ": "gen_setfile.ps1 emits LF endings and a literal '; build_hash:   pending' placeholder (source line 665); Update-SetFileBuildHash then (a) converts the file to CRLF and (b) replaces 'pending' with the CRLF-form hash. Two byte changes, one run, both reproduced above. The superseded d8bec481 revision is therefore fully reconstructible from the shipped file - it is not lost.",
+    "git_record": {
+     "commit": "2ec12b176e83711c1ca4c524a3b6a41f4faf3523",
+     "subject": "build(QM5_41324): record governed COMPILE_OK",
+     "note": "Carried over from the previous revision, which read it with git show/git log. No git command was run for this revision, so the commit metadata is reported as an unre-verified carry-over; the byte facts it describes (the single added '; build_hash:' line, the .ex5 added as a new binary) are independently reproduced above from the file bytes."
+    }
+   },
+   "generator_scripts": {
+    "gen_setfile_ps1": {
+     "path": "C:/QM/repo/framework/scripts/gen_setfile.ps1",
+     "sha256": "AA7E8F373A45BC4C7519D7538380B84E6B51C2C188C8DD19128BF26D2EEC9535"
+    },
+    "build_check_ps1": {
+     "path": "C:/QM/repo/framework/scripts/build_check.ps1",
+     "sha256": "64C0EA9D34F003A0FDF6D34CAFFB4E9AF4EA72C5CB71358FC32498B4EF6F8640"
+    },
+    "compile_worker": {
+     "path": "C:/QM/repo/tools/strategy_farm/compile_work_items.py",
+     "sha256": "EC6B58E808A1E080285FA6E6A5958C9D38B9932F2D9B87BF660F34B872DE1AF1"
+    },
+    "run_smoke_ps1": {
+     "path": "C:/QM/repo/framework/scripts/run_smoke.ps1",
+     "sha256": "6C56145BE0201AB544AADE39BAC5AC12301056469B50D3648DE04D387049D663"
+    }
+   },
+   "line_citation_corrections": "Two citations in the previous revision were off by a line or two and are corrected here after re-reading build_check.ps1 at 2026-09-03T02:52:04Z: Update-SetFileBuildHash spans lines 389-426 (previously '388-424'), and the -EALabel set-file scoping block is lines 481-485 (previously '483-487'). Re-verified exact: the Update-SetFileBuildHash call site at line 535, Invoke-CompileGate at line 1423, Invoke-SetValidation at line 1429."
+  },
+  "build_check": {
+   "report_path": "D:/QM/reports/framework/21/build_check_20260903_013407.json",
+   "report_sha256": "2BE152A89F51C81C88966EB0892C460B6230DD0F594624A1CBF6B83AC79851A3",
+   "report_bytes": 231,
+   "report_encoding": "UTF-8 with BOM",
+   "report_keys_in_full": [
+    "failures",
+    "run_tag",
+    "status",
+    "strict",
+    "timestamp_utc",
+    "warnings"
+   ],
+   "report_contents_verbatim": {
+    "run_tag": "20260903_013407",
+    "timestamp_utc": "2026-09-03T01:34:07.0542904Z",
+    "strict": true,
+    "failures": [],
+    "warnings": [],
+    "status": "PASS"
+   },
+   "report_contains_ea_reference": false,
+   "what_the_report_does_and_does_not_back": "The report is a generic aggregate gate result: 6 keys, empty failures and warnings lists, status PASS, NO occurrence of the string '41324' (text count 0 at 2026-09-03T02:52:04Z) and no EA, path or target field of any kind. On its own it does not back an EA-scoped build-check PASS.",
+   "what_makes_it_ea_scoped": "The run itself was EA-scoped: the worker invoked build_check.ps1 with -EALabel QM5_41324_balke-gmt3-range-breakout-path25-opt (compile_work_items.py line 4636), and the captured stdout stored in compile_evidence.build_check_output_tail records 'build_check.compile.target=C:\\QM\\repo\\framework\\EAs\\QM5_41324_balke-gmt3-range-breakout-path25-opt\\QM5_41324_balke-gmt3-range-breakout-path25-opt.mq5', 'build_check.result=PASS', 'build_check.failures=0', 'build_check.warnings=0'. Invoke-SetValidation likewise scopes its set-file scan to framework/EAs/<EALabel> when -EALabel is given (build_check.ps1 lines 481-485). The EA-scoped evidence for build_check_passed is therefore the sha-verified compile_evidence.json, not the report file; the report file is cited only as the artifact that run produced.",
+   "warning_codes": "The report has a 'warnings' list (empty) and no key named 'warning_codes' of any kind (text count in the report 0, in compile_evidence.json 0, both at 2026-09-03T02:52:04Z). compile.build_check_warning_codes is null rather than an invented empty list.",
+   "verbatim_quote_backslash_disclosure": "what_makes_it_ea_scoped quotes a stdout line out of compile_evidence.build_check_output_tail exactly as stored, so that one string carries Windows backslashes while every path this artifact states in its own voice uses forward slashes. The forward-slash form of the quoted target is the top-level mq5_path, which was existence-checked at 2026-09-03T02:52:04Z."
+  },
+  "grep_counts": {
+   "compile_evidence_COMPILE_OK_exact_case": 0,
+   "compile_evidence_compile_ok_case_insensitive": 1,
+   "compile_evidence_on_disk_setfile_sha": 0,
+   "compile_evidence_build_hash_value": 0,
+   "compile_evidence_generation_setfile_sha": 2,
+   "compile_evidence_has_status_key": false,
+   "compile_evidence_warning_codes": 0,
+   "build_check_report_41324": 0,
+   "build_check_report_warning_codes": 0,
+   "checked_at_utc": "2026-09-03T02:52:04Z",
+   "note": "Counts are over the raw file text. The single case-insensitive 'compile_ok' hit in compile_evidence.json is the KEY NAME candidate_recheck.current_compile_ok_work_item_ids (value: empty list); the exact-case token COMPILE_OK never appears as a value. That is why compile.work_item_verdict is attributed to the database row and not to the evidence file."
+  },
+  "build_task_row": {
+   "table": "tasks",
+   "id": "1edb9118-6c79-4f83-b0cb-2a4469a8e2ec",
+   "kind": "build_ea",
+   "status": "pending",
+   "card_id": "QM5_41324",
+   "source_id": null,
+   "created_at": "2026-09-03T01:19:44+00:00",
+   "updated_at": "2026-09-03T01:19:44+00:00",
+   "payload_has_blocked_reason_key": false,
+   "payload_blocked_reason_value": null,
+   "payload_top_level_keys": [
+    "card_path",
+    "ea_dir",
+    "ea_id",
+    "frontmatter",
+    "prebuild_warnings",
+    "slug"
+   ],
+   "observed_at_utc": "2026-09-03T02:52:06Z",
+   "observation_method": "sqlite3 'file:<farm_state.sqlite>?mode=ro' (read-only URI), select * from tasks where id=?",
+   "conclusion": "status='pending' and payload_json carries no blocked_reason key, so this build task is NOT blocked as of 2026-09-03T02:52:06Z. The top-level blocked_reason field is therefore the empty string - the not-blocked value in this schema - and not a claim. build_task_status below mirrors the row status verbatim.",
+   "build_task_status": "pending",
+   "attempt_count": null,
+   "attempt_count_note": "The tasks table has no attempt_count column. Its full schema is (id, kind, status, source_id, card_id, payload_json, created_at, updated_at). attempt_count exists only on work_items and is reported per work item under provenance.compile_history and q02_gate."
+  },
+  "compile_history": {
+   "compile_ea_rows_for_this_ea": [
+    {
+     "id": "f221b8aa-39ae-436e-be4e-5ae7da30958d",
+     "phase": "COMPILE_EA",
+     "status": "done",
+     "verdict": "COMPILE_OK",
+     "attempt_count": 0,
+     "claimed_by": null,
+     "created_at": "2026-09-03T01:33:22+00:00",
+     "updated_at": "2026-09-03T01:34:31+00:00",
+     "evidence_path": "D:/QM/reports/work_items/f221b8aa-39ae-436e-be4e-5ae7da30958d/QM5_41324/COMPILE_EA/compile_evidence.json",
+     "verdict_taxonomy": "artifact"
+    }
+   ],
+   "compile_ea_row_count": 1,
+   "predecessors_disclosed": "There are none. A read-only query at 2026-09-03T02:52:06Z over all work_items rows with ea_id='QM5_41324' returned three rows in total (one COMPILE_EA, one Q02, one Q04); the COMPILE_EA row is the only compile row this EA has ever had, its attempt_count is 0, and it succeeded on its first attempt. No earlier or superseded compile row exists.",
+   "sanctioned_predecessor_ids": [],
+   "source_repair_predecessor_work_item_ids": [],
+   "source_repair_authorized": false,
+   "source_repair_authority": null,
+   "source_repair_waived_reasons": [],
+   "source_repair_stale_open_work_item_ids": [],
+   "force_rebuild_authorized": false,
+   "force_rebuild_waived_reasons": [],
+   "sibling_rebind_authorized": false,
+   "current_compile_ok_work_item_ids": [],
+   "bound_setfile_hashes": [],
+   "candidate_recheck_reason": "ELIGIBLE",
+   "waiver_reason": "None. No waiver, no force-rebuild bypass and no source-repair authority was used or needed.",
+   "note": "All waiver/predecessor fields in this block are copied verbatim from compile_evidence.json candidate_recheck; the row facts come from the read-only work_items query at 2026-09-03T02:52:06Z."
+  },
+  "identity": {
+   "strategy_id_value": "6e967762-b26d-59a3-b076-35c17f2e7c36",
+   "where_the_key_name_comes_from": "framework/registry/ea_id_registry.csv header row is 'ea_id,slug,strategy_id,status,owner,created_at,retired_at,retired_reason,retired_evidence', so 'strategy_id' is a real column name in the registry and line 4811 carries this value in it. SPEC.md line 5 labels the same value '**Strategy ID:**'.",
+   "where_it_is_absent": "The approved strategy card frontmatter has NO strategy_id key; it carries the same value under 'source_id'. The top-level strategy_id field of this artifact is therefore a registry/SPEC field, not a card field."
+  },
+  "opt_param_grid_reference": "SPEC.md line 43 references 'opt_param_grid.json' (schema qm.opt-param-grid.v1) for the S5 candidate ladders. No such file exists: the EA directory contains exactly five files - the .mq5, the .ex5, SPEC.md, docs/strategy_card.md and sets/QM5_41324_..._USDJPY.DWX_H1_backtest.set. Re-checked with os.path.exists at 2026-09-03T02:52:04Z.",
+  "verification_window_utc": {
+   "pass_started": "2026-09-03T02:52:04Z",
+   "database_read": "2026-09-03T02:52:06Z",
+   "file_written": "2026-09-03T02:52:06Z",
+   "stamp_semantics": "This artifact was produced by one script run. The timestamp 2026-09-03T02:52:04Z that appears throughout the text is the instant that run started; every hash recomputation and every os.path.exists check happened between 2026-09-03T02:52:04Z and 2026-09-03T02:52:06Z, the moment the file was written. No value in this artifact was measured outside that window, and no value was carried over from an earlier revision except where a field says so explicitly (there is exactly one such field: provenance.setfile.rewrite_after_compile_resolved.git_record)."
+  }
+ },
+ "safety": {
+  "autotrading_toggled": false,
+  "deploy_manifest_touched": false,
+  "manual_backtest_launched": false,
+  "manual_dispatch_requested": false,
+  "portfolio_gate_touched": false,
+  "t_live_touched": false,
+  "statement": "This artifact was produced by reading files and by read-only database queries. The strategy-farm SQLite state database WAS opened, exclusively through the read-only URI 'file:<farm_state.sqlite>?mode=ro'; no INSERT, UPDATE or DELETE was issued. No terminal64.exe or metatester was started, no work item was enqueued or re-enqueued, no deploy manifest was written, and C:/QM/mt5/T_Live was never accessed. No git command was run for this revision.",
+  "verifiability": "These six booleans are process self-attestations by the artifact author. Read-only file inspection cannot confirm or refute them, and this artifact does not present them as file-backed evidence. The externally checkable consequences are: (a) the sole file written by this revision is the artifact itself; (b) the Q02 row reported under q02_gate was created at 2026-09-03T01:38:48.803099+00:00 by the DL-089 matrix service and last updated at 2026-09-03T02:34:35+00:00, both before this revision was written; (c) the Q04 row aeedcbc4-03b8-4642-aba6-638811c18d43 was created at 2026-09-03T02:36:22+00:00 with promotion_source 'pump_q04_early_probe', i.e. by the pump, not by this author."
+ },
+ "revision": {
+  "revised_at_utc": "2026-09-03T02:52:06Z",
+  "revision_number": 3,
+  "artifact_path": "C:/QM/repo/artifacts/qm5_41324_build_result_20260903.json",
+  "supersedes": "the second issue of this artifact at the same path - the file the second verifier refuted - whose mtime was 2026-09-03T02:24:28.725059Z when this pass read it",
+  "write_disclosure": "This third pass generated the file from a single script that recomputes every value; the script was run more than once while its own text was being corrected, so the path carries intermediate writes from this same pass (the file mtime immediately before this final write was 2026-09-03T02:51:36.387352Z). Only the final content of this pass is the revision described here; its exact write instant is provenance.verification_window_utc.file_written, and the values were recomputed on every run rather than carried over.",
+  "schema_basis": "the key set of artifacts/qm5_41309_build_result_20260902.json, preserved in full; three keys are added: q02_gate, provenance and this revision block",
+  "added_keys": [
+   "$.q02_gate",
+   "$.provenance",
+   "$.revision"
+  ],
+  "added_keys_note": "q02_gate and provenance are kept at top level so that a consumer of the 41309 schema finds them where they are documented, and they are declared here so the extension is explicit rather than silent.",
+  "verification_rules_applied": [
+   "every hash recomputed from file bytes at revision time (2026-09-03T02:52:04Z)",
+   "every cited path re-checked with os.path.exists immediately before writing; the list is in provenance.existence_checks",
+   "no negative-existence claim is made without a same-pass os.path.exists check, and the check time is stated",
+   "all paths written with forward slashes",
+   "database facts read only through sqlite3 URI mode=ro at 2026-09-03T02:52:06Z",
+   "no field carries a value its cited evidence file does not contain; unbacked fields are null with a reason in open_questions",
+   "no verdict-shaped token is published unless a validator artifact or a database row backs it verbatim"
+  ],
+  "verifier_problems_addressed": [
+   {
+    "problem": "FALSE NEGATIVE-EXISTENCE CLAIM (blocking): smoke_result / smoke_report_path / smoke_skipped_reason denied that any run_smoke report existed, although D:/QM/reports/framework/22/20260903_021854_QM5_41324_T1_USDJPY_DWX_run_smoke.md existed 172 s before the artifact was written",
+    "resolution": "Withdrawn. Both run_smoke evidence documents are now named, sha-hashed and dated: D:/QM/reports/framework/22/20260903_021854_QM5_41324_T1_USDJPY_DWX_run_smoke.md (B221DA7252CA613D05E60BA7B3E357952C9B070B212DCB8E3A8F32C8A91BBBAE) and D:/QM/reports/framework/22/20260903_022527_QM5_41324_T7_USDJPY_DWX_run_smoke.md (580DC9664F9C05E700A8AAB5F6FC8F3243951E813E78D562ACE35749D7135985). smoke_result is 'smoke_of_non_shipped_setfile' because both ran the census set 7c407f6b88fcc99c73145e861589cb191c56533aff02ba4789f95d9e4a2ca986, not the shipped set 32243fd4a2a4c7c4a84d9f0dc6f1cdae66c95216e62f5f21f9b838b972014884; smoke_report_path names the full-window document. Existence was re-checked at 2026-09-03T02:52:04Z."
+   },
+   {
+    "problem": "FALSE NEGATIVE-EXISTENCE CLAIM (blocking): q02_gate.economics_reason denied that the work-item report directory or any summary file existed, although six files had been written there 02:18:55-02:21:38Z",
+    "resolution": "Withdrawn. The directory D:/QM/reports/work_items/3aacc8f2-1728-597b-859a-5e9e5ef4ffd0 exists (mtime 2026-09-03T02:18:54.542065Z) and now holds two run directories. Both summary.json files are published with path, sha256, size and mtime under q02_gate.runs, and the state change is recorded in q02_gate.state_change_since_previous_revision."
+   },
+   {
+    "problem": "SUPPRESSED ECONOMICS: q02_gate.economics=null and 'Q02 is enqueued and unrun' contradicted a persisted run_smoke/v2 summary carrying measured economics",
+    "resolution": "Fixed. q02_gate.economics now publishes the completed full-window run (2018.07.02-2022.12.31: total_trades 888, net_profit 46636.78, profit_factor 1.12, drawdown 21852.77, exit_code 0, report_sha256 38aaba015420615a9c3098f4ea035edc4ca597833f5eda1bd39599f58c06a1fe) and q02_gate.runs[0] publishes the earlier prescreen window (2022.07.01-2022.12.31: total_trades 93, net_profit 13138.66, profit_factor 1.33, drawdown 9788.36). Each value is attributed to its exact summary.json key in economics_key_map. The windows are stated separately and never merged."
+   },
+   {
+    "problem": "CONTRADICTED BY THE SAME ROW THE ARTIFACT QUOTES: the Q02 payload carries p2_prescreen_done=true, p2_prescreen_verdict='PASS', p2_prescreen_evidence_path, run_smoke_exit_code=0, smoke_year_count=5 and p2_run_stage='full', refuting the artifact's 'no evidence path and no summary'",
+    "resolution": "Fixed. All of those keys are now published verbatim under q02_gate.prescreen_payload_keys, with the evidence path existence-checked at 2026-09-03T02:52:04Z, and the contradicting open_questions entry has been replaced."
+   },
+   {
+    "problem": "MINOR CITATION IMPRECISION: Update-SetFileBuildHash cited as lines 388-424 (actually 389-426) and the -EALabel set-file scoping block as 483-487 (actually 481-485)",
+    "resolution": "Both corrected after re-reading build_check.ps1 at 2026-09-03T02:52:04Z; the correction is also recorded explicitly under provenance.setfile.line_citation_corrections and in open_questions."
+   },
+   {
+    "problem": "Third-pass instruction: build_task_status must equal the tasks row status, and verdict-shaped tokens without a validator artifact must be nulled",
+    "resolution": "provenance.build_task_row.build_task_status is copied verbatim from the tasks row read at 2026-09-03T02:52:06Z ('pending'), and the top-level blocked_reason is the empty string with the row's own payload_has_blocked_reason_key=false beside it. validations.setfile_validation and validations.symbol_scope are now null, with their observational basis kept in setfile_validation_basis and symbol_scope_observation and the reason recorded in open_questions."
+   },
+   {
+    "problem": "Third-pass instruction: quote the approved card's governance sentence verbatim with the card path",
+    "resolution": "Done in open_questions entry 1, quoting C:/QM/repo/artifacts/cards_approved/QM5_41324_balke-gmt3-range-breakout-path25-opt.md (sha256 D6C2CF15D591656F8A6B03CCA9656C311460D33EB94B319A9643DEAC0FB5264E) verbatim, together with the consequence for q02_gate.verdict_claim and the note that the card's news-staleness requirement is met by the .mq5 input default rather than by a set-file line."
+   },
+   {
+    "problem": "Carried forward from the first two passes (re-verified as fixed by the second verifier and unchanged here): set-file hash mis-attribution, the unexplained post-compile rewrite, the census-copy relation, the weakly backed build_check report, the synthesized warning-codes array, the unbacked build_generation, the truncated registry quote, the unverifiable safety block, the strategy_id key name, and the PASS/COMPILE_OK cross-artifact split",
+    "resolution": "All ten remain resolved in this revision and every underlying hash and reproduction was recomputed again at 2026-09-03T02:52:04Z rather than copied: the set-file hash ledger (five hashes), the census derivation (True), the compile-evidence, build_check-report, compile-log, compile-summary, card, SPEC and script hashes."
+   }
+  ],
+  "values_measured_at_utc": "2026-09-03T02:52:04Z"
+ }
+}
