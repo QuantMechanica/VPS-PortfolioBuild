@@ -881,17 +881,33 @@ def _summary_from_log(log_path: Path) -> Path | None:
 def _run_smoke_report_identity(summary_path: Path | None) -> dict:
     if summary_path is None or not summary_path.is_file():
         return {}
-    summary = _load_summary(summary_path)
+    raw = summary_path.read_bytes()
+    try:
+        summary = json.loads(raw.decode("utf-8-sig"))
+    except (UnicodeError, json.JSONDecodeError):
+        return {}
     if not isinstance(summary, dict):
         return {}
+    # terminal_worker adds post-run staging metadata to summary.json AFTER the
+    # phase runner has sealed the aggregate. Reference immutable captured bytes
+    # instead, otherwise the last fold's recorded summary hash always drifts.
+    summary_sha = hashlib.sha256(raw).hexdigest()
+    snapshot_path = summary_path.with_name(f"q04_source_summary_{summary_sha}.json")
+    try:
+        with snapshot_path.open("xb") as handle:
+            handle.write(raw)
+    except FileExistsError:
+        if snapshot_path.read_bytes() != raw:
+            raise ValueError(f"immutable_source_summary_conflict:{snapshot_path}")
     runs = [row for row in (summary.get("runs") or []) if isinstance(row, dict)]
     selected = next(
         (row for row in reversed(runs) if str(row.get("status") or "").upper() == "OK"),
         runs[-1] if runs else None,
     )
     evidence = {
-        "source_summary_path": str(summary_path),
-        "source_summary_sha256": sha256_file(summary_path),
+        "source_summary_path": str(snapshot_path),
+        "source_summary_sha256": summary_sha,
+        "source_summary_original_path": str(summary_path),
     }
     if selected:
         report_raw = selected.get("report_canonical_path") or selected.get("report_source_path")

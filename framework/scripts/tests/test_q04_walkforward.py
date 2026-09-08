@@ -370,7 +370,8 @@ class Q04WalkForwardTests(unittest.TestCase):
             self.assertIn("-AllowMissingRealTicksLogMarker", args)
             self.assertEqual(args[args.index("-FromDate") + 1], "2023.01.01")
             self.assertEqual(args[args.index("-ToDate") + 1], "2023.12.31")
-            self.assertEqual(result["source_summary_path"], str(summary))
+            self.assertEqual(result["source_summary_original_path"], str(summary))
+            self.assertEqual(Path(result["source_summary_path"]).read_bytes(), summary.read_bytes())
             self.assertTrue(Path(result["summary_path"]).is_file())
             self.assertEqual(
                 json.loads(Path(result["summary_path"]).read_text(encoding="utf-8"))[
@@ -427,7 +428,8 @@ class Q04WalkForwardTests(unittest.TestCase):
 
             self.assertEqual(len(calls), 2)
             sleep_mock.assert_called_once()
-            self.assertEqual(result["source_summary_path"], str(summary))
+            self.assertEqual(result["source_summary_original_path"], str(summary))
+            self.assertEqual(Path(result["source_summary_path"]).read_bytes(), summary.read_bytes())
             self.assertTrue(Path(result["summary_path"]).is_file())
             self.assertIn("launch_fault_retry", Path(result["log_path"]).read_text(encoding="utf-8"))
 
