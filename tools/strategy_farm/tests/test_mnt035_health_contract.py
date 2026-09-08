@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+import pytest
 import sys
 from pathlib import Path
 
@@ -133,3 +134,20 @@ def test_run_all_dedupes_task_monitor_echo_of_still_native_fail(monkeypatch, tmp
     assert names.count("mt5_worker_saturation") == 1
     assert "task_monitor_escalation" not in names
     assert result["summary"]["fail"] == 1
+
+
+@pytest.mark.parametrize("transport,status,expected_fail", [("OK", "WARN", 0),
+                                                         ("OK", "FAIL", 1),
+                                                         ("WARN", "WARN", 1)])
+def test_external_alarm_echo_requires_fresh_authoritative_producer(monkeypatch, tmp_path, transport, status, expected_fail):
+    monkeypatch.setattr(health, "ALL_CHECKS", [])
+    monkeypatch.setattr(health, "_connect", lambda: sqlite3.connect(":memory:"))
+    monkeypatch.setattr(health, "HEALTH_FILE", tmp_path / "health.json")
+    monkeypatch.setattr(health, "ALARMS_LOG", tmp_path / "alarms.log")
+    monkeypatch.setattr(health, "_external_health_checks", lambda: [
+        contract.check("ftmo_trial_pulse_surface", transport, source="ftmo_trial_pulse", layer="transport"),
+        contract.check("ftmo_trial_pulse", status, source="ftmo_trial_pulse"),
+        contract.check("task_monitor_escalation", "FAIL", source="task_monitor",
+                       detail="FAIL:ftmo_trial_pulse:historical calendar alarm"),
+    ])
+    assert health.run_all()["summary"]["fail"] == expected_fail

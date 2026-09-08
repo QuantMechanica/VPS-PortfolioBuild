@@ -4731,10 +4731,17 @@ def run_all() -> dict:
             con.close()
 
     native_names = {r.get("name") for r in results}
-    for row in _external_health_checks():
+    external = _external_health_checks()
+    fresh_sources = {r.get("source") for r in external
+                     if r.get("layer") == "transport" and r.get("status") == "OK"}
+    represented_names = native_names | {
+        r.get("name") for r in external
+        if r.get("source") in fresh_sources and r.get("source") != "task_monitor"
+    }
+    for row in external:
         if row.get("source") == "task_monitor" and row.get("name") == "task_monitor_escalation":
             condition = _unwrap_escalation_condition(row.get("detail") or row.get("value"))
-            if condition and condition in native_names:
+            if condition and condition in represented_names:
                 # Already represented by this run's own native check (e.g.
                 # mt5_worker_saturation) -- the sidecar row is an echo of a
                 # farm_health FAIL a prior hourly_monitor cycle read back from
@@ -4742,6 +4749,9 @@ def run_all() -> dict:
                 # condition once instead of once natively + once per echo
                 # layer, and so the next hourly_monitor cycle has nothing
                 # stale left in farm_health to re-wrap.
+                # Fresh external producers also own their current condition:
+                # an old hourly echo must not resurrect a recovered FTMO alarm.
+                # Missing/stale external producers do not erase prior alarms.
                 continue
         results.append(row)
     payload = health_contract.build(
