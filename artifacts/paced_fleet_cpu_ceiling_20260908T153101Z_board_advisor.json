@@ -1,0 +1,59 @@
+{
+  "schema": "qm.paced_fleet.cpu_ceiling_stop.v1",
+  "observed_at_utc": "2026-09-08T15:31:01.7401758Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "488d1086b4b6ff467b9853b6a9af82d85a600e3e",
+  "admission_rule": {
+    "cpu_average_percent_must_be_below": 97.0,
+    "cpu_maximum_percent_must_be_below": 97.0
+  },
+  "cpu": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_count": 5,
+    "approximate_interval_seconds": 1,
+    "samples_percent": [100.0, 100.0, 100.0, 98.342, 99.025],
+    "average_percent": 99.473,
+    "maximum_percent": 100.0,
+    "ceiling_bound": true
+  },
+  "farm_db_read_only_snapshot": {
+    "path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_count": 9,
+    "active_by_phase": {
+      "OPT_CENSUS": 5,
+      "Q02": 1,
+      "Q03": 1,
+      "Q08": 1,
+      "Q10_NEWS": 1
+    },
+    "pending_count": 8478
+  },
+  "stale_candidate_freshness_check": {
+    "ea_id": "QM5_41171",
+    "source_exists": true,
+    "ex5_exists": true,
+    "open_pending_or_active_tasks": 0,
+    "open_pending_or_active_work_items": 0,
+    "disposition": "do_not_reuse_2026-09-05_selection_receipt"
+  },
+  "actions_refused_due_to_ceiling": [
+    "backlog_claim",
+    "ea_source_write",
+    "framework_input_pin_audit",
+    "compile",
+    "q02_enqueue",
+    "dispatch"
+  ],
+  "mutations": {
+    "farm_db": false,
+    "ea_or_registry": false,
+    "pipeline_or_verdict": false,
+    "terminal_or_worker_control": false,
+    "live_or_portfolio": false
+  },
+  "preexisting_worktree_paths_preserved": [
+    "framework/EAs/QM5_41240_wti-samecal-ramsaye5/QM5_41240_wti-samecal-ramsaye5.mq5",
+    "framework/EAs/QM5_41240_wti-samecal-ramsaye5/docs/test_same_calendar_ramsaye_5_reference.py",
+    "docs/ops/evidence/2026-09-08_stranded_infra_sweep_triage.json"
+  ]
+}
