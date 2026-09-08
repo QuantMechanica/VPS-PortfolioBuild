@@ -96,6 +96,10 @@ or correlation waiver.
 
 ## 11. Q01 And Q02 Status
 
-Q01 is pending the mandatory PACER audit, deterministic reference vectors,
-registry/resolver checks, and governed strict compile. Q02 is not enqueued and
-requires a fresh CPU-ceiling admission check after Q01 PASS.
+Q01 passed on 2026-09-08: the PACER audit returned zero
+`EA_FRAMEWORK_INPUT_PINNED` findings, all 13 deterministic reference vectors
+passed, and governed compile work item
+`2560324d-2582-45cd-8ed7-63bf439589ca` returned `COMPILE_OK` with zero compiler
+errors or warnings. The first-Q02 dry run was eligible, but Q02 was not
+enqueued because a fresh five-sample window reached 99.221850%, above the
+binding 97% CPU ceiling.

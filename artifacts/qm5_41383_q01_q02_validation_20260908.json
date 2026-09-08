@@ -1,0 +1,68 @@
+{
+  "schema": "qm.q01-q02-build-validation/v1",
+  "recorded_date": "2026-09-08",
+  "ea_id": "QM5_41383",
+  "ea_label": "QM5_41383_wti-tsmom4-h2",
+  "source_sha256": "5e741d31c4c0dc85addc70d097e5be5c7e1ec8537dd833b4f57c107f334e3498",
+  "ex5_sha256": "b310ab285973cefd7c17c81dec90c371f1dd8301d60955fa05569ae987daccde",
+  "setfile_sha256": "4a7404d91d3ddaa5f8808430f6cca2c75cc0872720fa650bb33f3208ce02fb20",
+  "card_sha256": "d25eefd5347e51c657a647869eeae13f8c0ca3813542bca16b342af32e9a491b",
+  "validation": {
+    "reference_tests": "PASS_13_OF_13",
+    "strategy_card_schema_issues": [],
+    "prohibited_ml_hits": [],
+    "pacer_framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41383_wti-tsmom4-h2/QM5_41383_wti-tsmom4-h2.mq5",
+      "exit_code": 0,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "hits": []
+    },
+    "magic_resolver": {
+      "active_registry_rows": 1,
+      "resolver_occurrences": 1,
+      "magic": 413830000,
+      "result": "PASS_NO_DROP"
+    },
+    "compile": {
+      "work_item_id": "2560324d-2582-45cd-8ed7-63bf439589ca",
+      "terminal": "T10",
+      "verdict": "COMPILE_OK",
+      "errors": 0,
+      "warnings": 0,
+      "build_check": "PASS",
+      "build_check_non_failing_warnings": 3,
+      "compile_evidence_path": "D:\\QM\\reports\\work_items\\2560324d-2582-45cd-8ed7-63bf439589ca\\QM5_41383\\COMPILE_EA\\compile_evidence.json",
+      "compile_evidence_sha256": "77c9982c98b420809493b22773a1657466876757a8abdf78435757dfc3081bc2",
+      "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260908_113751.json",
+      "build_check_report_sha256": "7280ce2e3365b49e01756be045356268e6e7c22d0591c7baf0063e5c45ea0a4c"
+    },
+    "risk_contract": {
+      "environment": "backtest",
+      "RISK_FIXED": 1000.0,
+      "RISK_PERCENT": 0.0,
+      "PORTFOLIO_WEIGHT": 1.0
+    }
+  },
+  "q02_admission": {
+    "dry_run_eligible": true,
+    "dry_run_reason": "ELIGIBLE",
+    "sample_timestamp_utc": "2026-09-08T11:41:20.6366211Z",
+    "sample_interval_seconds": 1,
+    "cpu_samples_percent": [99.221850, 97.010823, 93.879374, 94.923138, 91.017351],
+    "cpu_average_percent": 95.210507,
+    "cpu_maximum_percent": 99.221850,
+    "cpu_ceiling_percent": 97.0,
+    "admitted": false,
+    "status": "NOT_ENQUEUED_CPU_CEILING",
+    "work_item_id": null,
+    "priority_boost": false
+  },
+  "prohibited_scope": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false,
+    "manual_backtest_launched": false
+  }
+}
