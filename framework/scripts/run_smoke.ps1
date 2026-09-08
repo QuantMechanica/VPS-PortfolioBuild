@@ -45,6 +45,9 @@ param(
     # runs, so preserve any prior EA logger before launch and require a fresh,
     # exact-byte sample from this run. Default smoke behavior is unchanged.
     [switch]$RequireFreshLoggerSample,
+    # Does not itself authorize an exception: exact archived EX5 + OWNER
+    # receipt + Q09-v3 scope must also match the bounded policy registry.
+    [string]$LoggerContractVersion,
     # Q04 commission gate: round-trip USD/lot to apply via the tester groups file.
     # 0 (default) = restore the canonical real Darwinex schedule unchanged (Q02/Q03).
     [ValidateRange(0, 1000)]
@@ -1472,9 +1475,21 @@ function Save-QmLoggerDelta {
         [ValidateRange(1, [int]::MaxValue)]
         [int]$EAIdValue,
         [Parameter(Mandatory = $true)]
-        [string]$DestinationPath
+        [string]$DestinationPath,
+        [object]$LegacyAuthorization = $null,
+        [switch]$FreshRequired,
+        [string]$ExpectedSymbol,
+        [string]$ExpectedPeriod
     )
 
+    if ($null -ne $LegacyAuthorization -and
+        (-not $FreshRequired.IsPresent -or $BeforeState.Count -ne 0 -or
+         $LegacyAuthorization.ea_id -ne $EAIdValue -or
+         $LegacyAuthorization.expected_magic -le 0 -or
+         $LegacyAuthorization.symbol -cne $ExpectedSymbol)) {
+        Write-Warning "Structured logger capture skipped: legacy scope/freshness identity failed."
+        return $null
+    }
     $afterState = Get-QmLoggerFileState -TerminalRoot $TerminalRoot -EAIdValue $EAIdValue
     $grownFiles = New-Object System.Collections.Generic.List[object]
 
@@ -1587,6 +1602,7 @@ function Save-QmLoggerDelta {
 
     $requiredFields = @("sv", "ts_utc", "ts_broker", "level", "ea_id", "slug", "symbol", "tf", "magic", "event", "payload")
     $eventCount = 0
+    $legacyEventCount = 0
     foreach ($line in @($deltaText -split "`n")) {
         $candidate = $line.TrimEnd("`r")
         if ([string]::IsNullOrWhiteSpace($candidate)) {
@@ -1599,25 +1615,42 @@ function Save-QmLoggerDelta {
             return $null
         }
         $fieldNames = @($row.PSObject.Properties.Name)
+        $legacyRow = ($fieldNames -notcontains 'sv' -and $null -ne $LegacyAuthorization)
         foreach ($requiredField in $requiredFields) {
+            if ($requiredField -ceq 'sv' -and $legacyRow) { continue }
             if ($fieldNames -notcontains $requiredField) {
                 Write-Warning "Structured logger capture skipped: logger row is missing '$requiredField'."
                 return $null
             }
         }
         try {
-            $rowSchemaVersion = [int]$row.sv
+            # Never add a fabricated sv to the captured row or its byte stream.
+            $rowSchemaVersion = if ($legacyRow) { $null } else { [int]$row.sv }
             $rowEAId = [int]$row.ea_id
         } catch {
             Write-Warning "Structured logger capture skipped: logger schema version or EA id is not an integer."
             return $null
         }
-        if ($rowSchemaVersion -ne 1 -or $rowEAId -ne $EAIdValue -or
+        if ((-not $legacyRow -and $rowSchemaVersion -ne 1) -or $rowEAId -ne $EAIdValue -or
             -not ($row.event -is [string]) -or [string]::IsNullOrWhiteSpace($row.event)) {
             Write-Warning "Structured logger capture skipped: logger row has the wrong schema, EA id, or event."
             return $null
         }
+        if ($legacyRow) {
+            if (-not ($row.ea_id -is [long] -or $row.ea_id -is [int]) -or
+                -not ($row.magic -is [long] -or $row.magic -is [int]) -or
+                $row.magic -ne $LegacyAuthorization.expected_magic -or
+                $row.symbol -cne $ExpectedSymbol -or $row.tf -cne $ExpectedPeriod) {
+                Write-Warning "Structured logger capture skipped: legacy EA/magic/symbol/timeframe mismatch."
+                return $null
+            }
+            $legacyEventCount++
+        }
         $eventCount++
+    }
+    if ($legacyEventCount -gt 0 -and $legacyEventCount -ne $eventCount) {
+        Write-Warning "Structured logger capture skipped: mixed legacy/versioned stream."
+        return $null
     }
     if ($eventCount -le 0) {
         Write-Warning "Structured logger capture skipped: logger delta contained no event rows."
@@ -1640,6 +1673,8 @@ function Save-QmLoggerDelta {
         size_bytes = [long]$deltaBytes.Length
         sha256 = $sampleHash
         event_count = $eventCount
+        logger_sample_authentication = $(if ($legacyEventCount -gt 0) { 'legacy_no_sv' } else { 'schema_v1' })
+        legacy_authorization = $(if ($legacyEventCount -gt 0) { $LegacyAuthorization } else { $null })
     }
 }
 
@@ -2772,6 +2807,21 @@ if ($SetFile) {
 }
 Write-Host ("run_smoke.stage=resolved_setfile setfile='{0}'" -f $SetFile)
 
+$legacyLoggerAuthorization = $null
+if ($RequireFreshLoggerSample.IsPresent -and
+    $LoggerContractVersion -ceq 'q09-news-evidence/v3' -and
+    $DispatchPhase -ceq 'Q10_NEWS' -and $DispatchVersion -ceq 'q09_news_executor_v1' -and
+    $DispatchSubGateHash -cmatch '^[0-9a-f]{16}_(selection|holdout)$' -and
+    $null -ne $normalizedExpectedExpertSha256 -and $SetFile) {
+    $legacyPolicyHelper = Join-Path $PSScriptRoot '..\..\tools\strategy_farm\legacy_logger_policy.py'
+    $legacyPolicyOutput = & python $legacyPolicyHelper --ea-id $EAId `
+        --ex5-sha256 $normalizedExpectedExpertSha256 --symbol $Symbol --setfile $SetFile `
+        --fresh-required --phase $DispatchPhase --dispatch-version $DispatchVersion `
+        --subgate $DispatchSubGateHash --contract-version $LoggerContractVersion
+    if ($LASTEXITCODE -ne 0) { throw 'LEGACY_LOGGER_AUTHENTICATION_REFUSED: policy evidence failed.' }
+    $legacyLoggerAuthorization = ($legacyPolicyOutput -join "`n") | ConvertFrom-Json
+}
+
 $repoRootForEvidence = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..')).Path
 $expertLeaf = Split-Path -Leaf $Expert
 $mq5Path = Join-Path (Join-Path $repoRootForEvidence 'framework\EAs') (Join-Path $expertLeaf "$expertLeaf.mq5")
@@ -3011,7 +3061,10 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
                 -BeforeState $loggerStateBefore `
                 -TerminalRoot $terminalRoot `
                 -EAIdValue $EAId `
-                -DestinationPath $runLoggerSamplePath
+                -DestinationPath $runLoggerSamplePath `
+                -LegacyAuthorization $legacyLoggerAuthorization `
+                -FreshRequired:$RequireFreshLoggerSample.IsPresent `
+                -ExpectedSymbol $Symbol -ExpectedPeriod $Period
             if ($null -ne $loggerCapture) {
                 $loggerCapture | Add-Member -NotePropertyName run -NotePropertyValue $runName
                 $loggerCapture | Add-Member -NotePropertyName capture_mode -NotePropertyValue $(if ($RequireFreshLoggerSample.IsPresent) { "fresh_required" } else { "delta" })
@@ -3509,6 +3562,8 @@ if ($loggerSampleCaptures.Count -gt 0) {
         $loggerSampleEvidence = [ordered]@{
             run = $selectedLoggerCapture.run
             capture_mode = $selectedLoggerCapture.capture_mode
+            logger_sample_authentication = $selectedLoggerCapture.logger_sample_authentication
+            legacy_authorization = $selectedLoggerCapture.legacy_authorization
             path = $loggerSamplePath
             source_path = $selectedLoggerCapture.source_path
             source_offset_start = $selectedLoggerCapture.source_offset_start
@@ -3606,6 +3661,7 @@ $summary = [ordered]@{
     report_export_mode = "relative_with_absolute_fallback"
     logger_sample_path = $loggerSamplePath
     logger_sample = $loggerSampleEvidence
+    logger_sample_authentication = $(if ($null -ne $loggerSampleEvidence) { $loggerSampleEvidence.logger_sample_authentication } else { $null })
     commission_group = [ordered]@{
         commission_per_lot = $CommissionPerLot
         commission_per_side_native = $CommissionPerSideNative
@@ -3651,6 +3707,8 @@ $evidenceLines = @(
     "- report_dir: $reportDir",
     "- report_export_mode: relative_with_absolute_fallback",
     "- logger_sample_jsonl: $loggerSamplePath",
+    "- logger_sample_authentication: $(if ($null -ne $loggerSampleEvidence) { $loggerSampleEvidence.logger_sample_authentication })",
+    "- logger_sample_footnote: $(if ($null -ne $loggerSampleEvidence -and $null -ne $loggerSampleEvidence.legacy_authorization) { $loggerSampleEvidence.legacy_authorization.footnote })",
     "",
     "## Report Chain Evidence"
 )

@@ -236,6 +236,52 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
         }
         Path(spec["receipt_path"]).write_bytes(contract.canonical_json_bytes(receipt))
 
+    def test_legacy_residue_survives_collection_without_changing_adjudication(self) -> None:
+        plan = self.build(output='legacy-declaration', contract_version=contract.SCHEMA_VERSION_V3)
+        self.write_receipts(plan)
+        before = runner.collect_run_plan(Path(plan['plan_path']))['adjudication']
+        spec = plan['cells'][0]
+        receipt_path = Path(spec['receipt_path'])
+        receipt = json.loads(receipt_path.read_text())
+        evidence_path = Path(receipt['evidence_path'])
+        evidence = json.loads(evidence_path.read_text())
+        declaration = {
+            'logger_sample_authentication': 'legacy_no_sv',
+            'logger_sample_footnote': runner.legacy_logger_policy.FOOTNOTE,
+            'legacy_logger_windows': ['selection', 'holdout'],
+        }
+        report = Path(receipt['report_path'])
+        report.write_bytes(contract.canonical_json_bytes(declaration))
+        evidence.update(declaration)
+        evidence['report_sha256'] = contract.sha256_file(report)
+        evidence_path.write_bytes(contract.canonical_json_bytes(evidence))
+        receipt.update(declaration)
+        receipt['report_sha256'] = contract.sha256_file(report)
+        receipt['evidence_sha256'] = contract.sha256_file(evidence_path)
+        receipt_path.write_bytes(contract.canonical_json_bytes(receipt))
+        after = runner.collect_run_plan(Path(plan['plan_path']))['adjudication']
+        def without_hashes(value):
+            if isinstance(value, dict):
+                return {k: without_hashes(v) for k, v in value.items()
+                        if k not in {'evidence_sha256', 'report_sha256', 'evidence_sha256_by_seed'}}
+            if isinstance(value, list):
+                return [without_hashes(v) for v in value]
+            return value
+        for field, value in before.items():
+            if field != 'adjudication_sha256':
+                # Adding the residue changes evidence hashes, not measurements
+                # or economic selection. Those new hashes must NOT be faked.
+                self.assertEqual(without_hashes(after[field]), without_hashes(value))
+        self.assertEqual(after['logger_sample_authentication'], 'legacy_no_sv')
+        self.assertEqual(after['legacy_logger_cell_identities'], [spec['run_identity_sha256']])
+        unsigned = dict(after)
+        unsigned.pop('adjudication_sha256')
+        self.assertEqual(after['adjudication_sha256'], contract.sha256_bytes(contract.canonical_json_bytes(unsigned)))
+        receipt.pop('logger_sample_footnote')
+        receipt_path.write_bytes(contract.canonical_json_bytes(receipt))
+        with self.assertRaisesRegex(runner.RunnerError, 'declaration contradicts'):
+            runner._receipt_to_cell(spec)
+
     def write_receipts(self, plan: dict) -> None:
         for spec in plan["cells"]:
             self.write_receipt(spec)

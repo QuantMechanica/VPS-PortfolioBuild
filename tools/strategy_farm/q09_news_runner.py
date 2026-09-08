@@ -32,11 +32,13 @@ try:
     import q09_news_calendar as calendar_bundle
     import q09_news_schema as news_schema
     import q09_news_seam as seam_reconstruction
+    import legacy_logger_policy
 except ModuleNotFoundError:
     from tools.strategy_farm import q09_news_calendar as calendar_bundle
     from tools.strategy_farm import q09_news_contract as contract
     from tools.strategy_farm import q09_news_schema as news_schema
     from tools.strategy_farm import q09_news_seam as seam_reconstruction
+    from tools.strategy_farm import legacy_logger_policy
 
 try:
     from phase_ids import ACTIVE_GATE_MANIFEST
@@ -1798,7 +1800,20 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
                 raise RunnerError(
                     f"cell news self-report {field} is empty: {receipt_path}"
                 )
+    legacy_declaration = {}
+    if (receipt.get('logger_sample_authentication') is not None
+            or evidence_document.get('logger_sample_authentication') is not None):
+        report_document = _load_json(artifact_paths['report'], 'legacy cell report manifest')
+        for field in ('logger_sample_authentication', 'logger_sample_footnote', 'legacy_logger_windows'):
+            value = receipt.get(field)
+            if (value is None or value != evidence_document.get(field)
+                    or value != report_document.get(field)):
+                raise RunnerError(f'legacy logger declaration contradicts hashed evidence: {field}')
+            legacy_declaration[field] = value
+        if legacy_declaration['logger_sample_authentication'] != 'legacy_no_sv':
+            raise RunnerError('unsupported legacy logger declaration')
     return {
+        **legacy_declaration,
         "arm": spec["arm"],
         "temporal_mode": spec["temporal_mode"],
         "compliance_mode": spec["compliance_mode"],
@@ -2295,6 +2310,18 @@ def _publish_collection(
     destination = output_root.resolve()
     evidence_path = destination / "q09_news_evidence.json"
     aggregate_path = destination / "aggregate.json"
+    legacy_cells = [cell['run_identity_sha256'] for cell in payload.get('cells', [])
+                    if cell.get('logger_sample_authentication') == 'legacy_no_sv']
+    if legacy_cells:
+        # Measurement/adjudication is unchanged. Bind the declared residue
+        # into the NEW aggregate so downstream readers cannot silently lose it.
+        adjudication = dict(adjudication)
+        adjudication['logger_sample_authentication'] = 'legacy_no_sv'
+        adjudication['logger_sample_footnote'] = legacy_logger_policy.FOOTNOTE
+        adjudication['legacy_logger_cell_identities'] = legacy_cells
+        adjudication.pop('adjudication_sha256', None)
+        adjudication['adjudication_sha256'] = contract.sha256_bytes(
+            contract.canonical_json_bytes(adjudication))
     _atomic_write(evidence_path, contract.canonical_json_bytes(payload))
     _atomic_write(aggregate_path, contract.canonical_json_bytes(adjudication))
     return {
@@ -3012,6 +3039,67 @@ def _single_ok_run(summary: Mapping[str, Any]) -> Mapping[str, Any]:
     return ok_runs[0]
 
 
+def _validate_legacy_logger_evidence(
+    summary: Mapping[str, Any], *, logger_path: Path,
+    spec: Mapping[str, Any], input_manifest: Mapping[str, Any],
+    ea_id: int, symbol: str, period: str,
+) -> dict[str, Any] | None:
+    """Authenticate a declared exception again at the consuming boundary."""
+    meta = summary.get('logger_sample') or {}
+    declared = meta.get('logger_sample_authentication') == 'legacy_no_sv'
+    authorization = None
+    if declared:
+        try:
+            authorization = legacy_logger_policy.resolve_authorization(
+                ea_id=ea_id, ex5_sha256=input_manifest['identities']['ex5_sha256'],
+                symbol=symbol, setfile=Path(spec['setfile_path']),
+                fresh_required=meta.get('capture_mode') == 'fresh_required',
+                phase=NEWS_PHASE, dispatch_version='q09_news_executor_v1',
+                subgate=f"{str(spec['run_identity_sha256'])[:16]}_selection",
+                contract_version=input_manifest.get('contract_version', ''),
+            )
+        except (ValueError, OSError, KeyError) as exc:
+            raise RunnerError(f'legacy logger policy authentication failed: {exc}') from exc
+        if (authorization is None or meta.get('legacy_authorization') != authorization
+                or summary.get('logger_sample_authentication') != 'legacy_no_sv'
+                or meta.get('source_offset_start') != 0):
+            raise RunnerError('legacy logger authorization/scope mismatch')
+        archive = Path(str(meta.get('pre_run_archive_manifest_path') or ''))
+        if (not archive.is_file()
+                or contract.sha256_file(archive) != meta.get('pre_run_archive_manifest_sha256')):
+            raise RunnerError('legacy logger pre-run archive binding failed')
+        if _load_json(archive, 'logger pre-run archive').get('ea_id') != ea_id:
+            raise RunnerError('legacy logger pre-run archive EA mismatch')
+    required = {'ts_utc', 'ts_broker', 'level', 'ea_id', 'slug',
+                'symbol', 'tf', 'magic', 'event', 'payload'}
+    legacy_rows = 0
+    with logger_path.open(encoding='utf-8-sig') as handle:
+        for line in handle:
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise RunnerError('invalid structured logger JSON') from exc
+            if not isinstance(row, dict):
+                raise RunnerError('structured logger row is not an object')
+            if 'sv' in row:
+                if declared:
+                    raise RunnerError('mixed legacy/versioned logger stream')
+                continue  # Existing schema-v1 authentication remains in run_smoke.
+            if (not declared or not isinstance(row, dict) or not required.issubset(row)
+                    or type(row['ea_id']) is not int or row['ea_id'] != ea_id
+                    or type(row['magic']) is not int
+                    or row['magic'] != authorization['expected_magic']
+                    or row['symbol'] != symbol or row['tf'] != period
+                    or not isinstance(row['event'], str) or not row['event'].strip()):
+                raise RunnerError('undeclared or identity-invalid legacy logger row')
+            legacy_rows += 1
+    if declared and not legacy_rows:
+        raise RunnerError('declared legacy logger stream has no legacy rows')
+    return authorization
+
+
 def _validate_window_summary(
     summary_path: Path,
     *,
@@ -3084,6 +3172,10 @@ def _validate_window_summary(
         or logger_meta.get("sha256") != contract.sha256_file(logger_path)
     ):
         raise RunnerError("run_smoke logger sample authentication failed")
+    legacy_authorization = _validate_legacy_logger_evidence(
+        summary, logger_path=logger_path, spec=spec, input_manifest=input_manifest,
+        ea_id=ea_id, symbol=symbol, period=period,
+    )
     original, blocked, affected = _logger_entry_counts(
         logger_path, control=str(spec["arm"]) == "CONTROL_OFF"
     )
@@ -3159,6 +3251,10 @@ def _validate_window_summary(
         ),
         "news_calendar": summary.get("news_calendar"),
     }
+    if legacy_authorization is not None:
+        artifacts['logger_sample_authentication'] = 'legacy_no_sv'
+        artifacts['legacy_authorization'] = legacy_authorization
+        artifacts['logger_sample_footnote'] = legacy_logger_policy.FOOTNOTE
     if input_manifest.get("contract_version") == contract.SCHEMA_VERSION_V3:
         artifacts["gross_profit"] = _finite_report_number(
             _report_cell_after(report_path, "Gross Profit"), "gross profit"
@@ -3480,6 +3576,8 @@ def _production_dispatch_cell(
         ]
         if context.get("skip_expert_deploy") is True:
             command.append("-SkipExpertDeploy")
+        if contract_version == contract.SCHEMA_VERSION_V3:
+            command.extend(['-LoggerContractVersion', contract.SCHEMA_VERSION_V3])
         _wait_for_claimed_terminal_exit(Path(str(context["terminal_root"])))
         started_at = datetime.now(timezone.utc).timestamp()
         creationflags = 0x08000000 if sys.platform == "win32" else 0
@@ -3500,6 +3598,12 @@ def _production_dispatch_cell(
             ((completed.stdout or "") + (completed.stderr or "")).encode("utf-8", errors="replace"),
         )
         if completed.returncode != 0:
+            if any(marker in ((completed.stdout or '') + (completed.stderr or ''))
+                   for marker in ('LEGACY_LOGGER_AUTHENTICATION_REFUSED',
+                                  'Required fresh structured logger sample was not authenticated')):
+                # Deterministic authentication refusal must not burn three
+                # identical tester attempts. No failed evidence becomes PASS.
+                raise RunnerError(f'Q09 {window_name} logger authentication refused; no transient retry')
             if completed.returncode == 1:
                 try:
                     summary_path = _latest_summary(run_root, started_at)
@@ -3585,6 +3689,14 @@ def _production_dispatch_cell(
         "windows": artifacts,
         "window_source": manifest.get("window_source"),
     }
+    legacy_windows = [name for name, artifact in artifacts.items()
+                      if artifact.get('logger_sample_authentication') == 'legacy_no_sv']
+    legacy_declaration = ({
+        'logger_sample_authentication': 'legacy_no_sv',
+        'logger_sample_footnote': legacy_logger_policy.FOOTNOTE,
+        'legacy_logger_windows': legacy_windows,
+    } if legacy_windows else {})
+    report_manifest.update(legacy_declaration)
     _write_immutable(report_manifest_path, contract.canonical_json_bytes(report_manifest))
     report_sha = contract.sha256_file(report_manifest_path)
     evidence_path = cell_dir / "cell_evidence.json"
@@ -3616,6 +3728,7 @@ def _production_dispatch_cell(
         "seam_reconstruction": seam,
         "window_source": manifest.get("window_source"),
     }
+    evidence.update(legacy_declaration)
     _write_immutable(evidence_path, contract.canonical_json_bytes(evidence))
     receipt = {
         "schema_version": (
@@ -3642,6 +3755,7 @@ def _production_dispatch_cell(
         "seam_reconstruction": seam,
         "window_source": manifest.get("window_source"),
     }
+    receipt.update(legacy_declaration)
     _write_immutable(
         Path(str(spec["receipt_path"])), contract.canonical_json_bytes(receipt)
     )

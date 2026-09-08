@@ -174,6 +174,50 @@ try {
         3>$null
     Assert-True -Condition ($null -eq $rejected) -Message "Wrong-EA logger rows must be rejected."
 
+    # Approved legacy stream: exact bytes, all other fields and identities;
+    # absolutely no synthesized sv, stale prefix, mixed stream or generic flag.
+    $legacyRoot = Join-Path $tempRoot 'legacy'
+    $legacyDir = Join-Path $legacyRoot 'Tester\Agent-127.0.0.1-3003\MQL5\Files\QM'
+    New-Item -ItemType Directory -Path $legacyDir -Force | Out-Null
+    $legacyPath = Join-Path $legacyDir 'QM5_4242_ea-4242.log'
+    $legacyRow = (New-LoggerRow -EAId $eaId -Event 'ENTRY_ACCEPTED').Replace('"sv":1,', '')
+    $legacyBytes = $utf8.GetBytes($legacyRow + "`r`n")
+    [System.IO.File]::WriteAllBytes($legacyPath, $legacyBytes)
+    $auth = [pscustomobject]@{ea_id=4242; expected_magic=4242; symbol='EURUSD.DWX'}
+    $legacyArgs = @{
+        BeforeState=@{}; TerminalRoot=$legacyRoot; EAIdValue=$eaId
+        DestinationPath=(Join-Path $legacyRoot 'sample.jsonl')
+        LegacyAuthorization=$auth; FreshRequired=$true
+        ExpectedSymbol='EURUSD.DWX'; ExpectedPeriod='H1'
+    }
+    $accepted = Save-QmLoggerDelta @legacyArgs
+    Assert-True ($null -ne $accepted) 'Bound legacy sample should authenticate.'
+    Assert-True ($accepted.logger_sample_authentication -ceq 'legacy_no_sv') 'Missing legacy declaration.'
+    Assert-True ([Convert]::ToBase64String([IO.File]::ReadAllBytes($accepted.path)) -ceq [Convert]::ToBase64String($legacyBytes)) 'Legacy bytes changed or sv invented.'
+    foreach ($bad in @(
+        @{LegacyAuthorization=$null}, @{FreshRequired=$false},
+        @{ExpectedSymbol='GBPUSD.DWX'}, @{ExpectedPeriod='H4'},
+        @{LegacyAuthorization=[pscustomobject]@{ea_id=4242; expected_magic=9999; symbol='EURUSD.DWX'}},
+        @{BeforeState=(Get-QmLoggerFileState -TerminalRoot $legacyRoot -EAIdValue $eaId)}
+    )) {
+        $badArgs = $legacyArgs.Clone()
+        foreach ($key in $bad.Keys) { $badArgs[$key] = $bad[$key] }
+        $rejected = Save-QmLoggerDelta @badArgs 3>$null
+        Assert-True ($null -eq $rejected) 'Wrong scope/identity or stale stream was accepted.'
+    }
+    foreach ($badText in @(
+        $legacyRow.Replace('"level":"INFO",', ''),
+        $legacyRow.Replace('"ea_id":4242', '"ea_id":9999'),
+        $legacyRow.Replace('"magic":4242', '"magic":"4242"'),
+        $legacyRow.Replace('"event":"ENTRY_ACCEPTED"', '"event":""'),
+        ($legacyRow + "`r`n" + (New-LoggerRow -EAId $eaId -Event 'MIXED')),
+        (New-LoggerRow -EAId $eaId -Event 'WRONG_SCHEMA').Replace('"sv":1', '"sv":2')
+    )) {
+        [System.IO.File]::WriteAllBytes($legacyPath, $utf8.GetBytes($badText + "`r`n"))
+        $rejected = Save-QmLoggerDelta @legacyArgs 3>$null
+        Assert-True ($null -eq $rejected) 'Invalid/mixed legacy logger row was accepted.'
+    }
+
     Write-Output "Test-RunSmokeLoggerSample.result=PASS"
 } finally {
     if ((Test-Path -LiteralPath $tempRoot) -and

@@ -1,0 +1,74 @@
+{
+  "schema": "qm.legacy-logger-allowlist/v1",
+  "owner_receipt": {
+    "receipt_id": "821096ac-8f7f-4c28-b0ce-63a09e959de1",
+    "receipt_sha256": "8a16cacebf51d5208d93d86b6d5c3da3b267ce8fc46a2c2cfb28ae11f6ce8558"
+  },
+  "binaries": [
+    {
+      "ea_id": 11167,
+      "ea_label": "QM5_11167_weiss-ichi2-ma",
+      "ex5_sha256": "4b349d21060502bd5f4ce3eb7619b1bed75e7e9630ea74eb7d85b06e4795dd99",
+      "git_commit": "f1b1abd677694ebb1bb9f455af52eda8759efafd",
+      "enabled": true,
+      "rollout": "single append-only canary first"
+    },
+    {
+      "ea_id": 11196,
+      "ea_label": "QM5_11196_ft-heracles",
+      "ex5_sha256": "d3b1aef0507d9997fcb1f28d6f499c5cbebe82e19ca70f261cc43d06a6ca6710",
+      "git_commit": "f1b1abd677694ebb1bb9f455af52eda8759efafd",
+      "enabled": false,
+      "rollout": "enable only after 11167 native canary authentication"
+    },
+    {
+      "ea_id": 10148,
+      "ea_label": "QM5_10148_tii-signal",
+      "ex5_sha256": "f3aa1652bb9d316c85e9d23e8bfd0c13c5f27fa1f8d85170ac1f5b3714a800c2",
+      "git_commit": "f98d908fb3401a6ac2809fffdcf8da6dccb5b34c",
+      "enabled": false
+    },
+    {
+      "ea_id": 10476,
+      "ea_label": "QM5_10476_mql5-pamxa",
+      "ex5_sha256": "8d5fbb91a3ae9e961cddd77c1ce3f59c228a4e019ed49b2eb2559b317e5d034d",
+      "git_commit": "cf2264bb09f1761b5340381647b0c5bb0144235b",
+      "enabled": false
+    },
+    {
+      "ea_id": 10771,
+      "ea_label": "QM5_10771_tv-trail-hunter",
+      "ex5_sha256": "8ffa566891bd48e08d75641569003461f0f74bc41d9f91185d248c2b16fc36e8",
+      "git_commit": "4b651e85a385c4f131f0bf22a12bee50dcd839ed",
+      "enabled": false
+    },
+    {
+      "ea_id": 11179,
+      "ea_label": "QM5_11179_ft001-ema-ha",
+      "ex5_sha256": "8fe714193162102c5c77890e10396d3d4d12f85319fdfac0fc4513857fda63ac",
+      "git_commit": "080171f180f367467e04d8e8e137b85f0a36de2d",
+      "enabled": false
+    },
+    {
+      "ea_id": 1230,
+      "ea_label": "QM5_1230_carver-dynvol-mav",
+      "ex5_sha256": "52e05c77f94ae8cb2b2c8f84ad60992a01728eb6493874caae89a92bd64fdf60",
+      "git_commit": "31ee0e06f2a293d504a3c11d46621cefca406f84",
+      "enabled": false
+    },
+    {
+      "ea_id": 12474,
+      "ea_label": "QM5_12474_gh-dual-thrust",
+      "ex5_sha256": "4295e0a59f30bf32ee14256b48f3b71565e46cb8bd80c937809036cfd03bfdde",
+      "git_commit": "e50260d60e2370ad160283efe29155c0bb679829",
+      "enabled": false
+    },
+    {
+      "ea_id": 9573,
+      "ea_label": "QM5_9573_brooks-ib-breakout-failure-h4",
+      "ex5_sha256": "2f1b0fa01640cca16f766194e42f50057784c1df1efd792180750876e27d0d6b",
+      "git_commit": "88a705300b2b567ee6f6cc0f509a8ab4109d8366",
+      "enabled": false
+    }
+  ]
+}
