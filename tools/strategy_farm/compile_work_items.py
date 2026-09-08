@@ -568,6 +568,19 @@ QM5_36002_Q02_BINARY_RECOVERY_AUTHORITY = (
 QM5_36002_Q02_BINARY_RECOVERY_EA_LABELS = frozenset({
     "QM5_36002_nnfx-kijunsen-absolute-strength-damiani",
 })
+# Exact paced-fleet authority for the QM5_36007 GBPJPY Q02 infrastructure
+# recovery.  The canonical source was hardened after the last binary was
+# emitted, so the remaining GBPJPY cell now fails closed at the compile gate
+# while two sibling FX cells already have economic Q02 verdicts.  This one
+# infra-repair task/label binding permits only an append-only, current-source
+# COMPILE_EA successor; it grants no strategy, backtest, gate-verdict, or
+# cross-EA authority.
+QM5_36007_Q02_STALE_BINARY_REPAIR_AUTHORITY = (
+    "router_q02_infra_repair:dd61cfa6-2ee4-4c0e-b226-b05e848bcb2d"
+)
+QM5_36007_Q02_STALE_BINARY_REPAIR_EA_LABELS = frozenset({
+    "QM5_36007_nnfx-vidya-trix-fisher-momentum",
+})
 # Exact paced-fleet authority for the QM5_41192 XTI/XNG diversity recovery.
 # Its source, card, and fixed-risk basket setfiles still match the sealed Q02
 # receipt, but the untracked compiled binary disappeared while the logical Q02
@@ -2645,6 +2658,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_36002_Q02_BINARY_RECOVERY_AUTHORITY
             and ea_label in QM5_36002_Q02_BINARY_RECOVERY_EA_LABELS
+        )
+        or (
+            authority == QM5_36007_Q02_STALE_BINARY_REPAIR_AUTHORITY
+            and ea_label in QM5_36007_Q02_STALE_BINARY_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY

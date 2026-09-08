@@ -2374,6 +2374,77 @@ def test_qm5_36002_missing_compile_ok_binary_can_append_recovery(
     assert recovery["refused"] == []
 
 
+def test_qm5_36007_q02_stale_binary_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_36007_nnfx-vidya-trix-fisher-momentum"
+
+    assert compile_work_items.QM5_36007_Q02_STALE_BINARY_REPAIR_EA_LABELS == {label}
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_36007_Q02_STALE_BINARY_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_36008_unrelated-d1",
+        compile_work_items.QM5_36007_Q02_STALE_BINARY_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_q02_infra_repair:wrong-task",
+    )
+
+
+def test_qm5_36007_stale_binary_with_q02_history_can_append_compile_recovery(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    label = "QM5_1001_nnfx-vidya-trix-fisher-momentum"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_36007_Q02_STALE_BINARY_REPAIR_EA_LABELS",
+        frozenset({label}),
+    )
+    binary = repo / "framework" / "EAs" / label / f"{label}.ex5"
+    binary.write_bytes(b"stale multi-fx binary fixture")
+    setfile = (
+        repo / "framework" / "EAs" / label / "sets"
+        / f"{label}_EURUSD.DWX_D1_backtest.set"
+    )
+    setfile.parent.mkdir()
+    setfile.write_text("; build_hash: stale\n", encoding="utf-8")
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,"
+            "evidence_path,payload_json,created_at,updated_at) "
+            "VALUES ('failed-q02','backtest','Q02','QM5_1001','GBPJPY.DWX',"
+            "'gbpjpy.set','failed','INFRA_FAIL',0,"
+            "'EVIDENCE_UNAVAILABLE:spawn_refusal:compile_gate:COMPILE_FAILED',"
+            "'{}',?,?)",
+            (now, now),
+        )
+        conn.commit()
+
+    generic = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    recovery = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.QM5_36007_Q02_STALE_BINARY_REPAIR_AUTHORITY
+        ),
+    )
+
+    assert generic["ok"] is False
+    assert generic["enqueued_count"] == 0
+    assert {"EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST"}.issubset(
+        generic["refused"][0]["reasons"]
+    )
+    assert recovery["ok"] is True
+    assert recovery["enqueued_count"] == 1
+    assert recovery["refused"] == []
+
+
 def test_qm5_41192_q02_binary_recovery_authority_is_exact_label_bound() -> None:
     label = "QM5_41192_xtixng-mdaily-hl-rv"
 

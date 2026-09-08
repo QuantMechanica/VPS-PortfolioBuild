@@ -26424,6 +26424,18 @@ def _q02_rebind_compile_provenance(
                 "completed_at": evidence.get("completed_at") or row["updated_at"],
                 "build_id": row["build_id"],
                 "include_closure_sha256": row["include_closure_sha256"],
+                "append_only_source_repair": bool(
+                    (payload or {}).get("append_only_source_repair")
+                ),
+                "source_repair_authorized": bool(
+                    candidate_recheck.get("source_repair_authorized")
+                ),
+                "source_repair_evidence_authority": str(
+                    candidate_recheck.get("source_repair_authority") or ""
+                ),
+                "source_repair_authority": str(
+                    (payload or {}).get("compile_source_repair_authority") or ""
+                ),
             }, rejected
         rejected.append({
             "work_item_id": work_item_id,
@@ -27389,6 +27401,35 @@ def _q02_post_requal_refusal(
     }
 
 
+def _q02_compile_gate_unbound_setfile_source(
+    source: sqlite3.Row,
+    source_payload: Mapping[str, Any],
+    source_setfile_error: Mapping[str, Any],
+) -> bool:
+    """Recognize a Q02 row that never reached the tester or setfile binding.
+
+    This exception is intentionally exact: only the terminal compile-gate
+    sentinel emitted before MT5 launch can explain a missing historical
+    setfile hash.  The caller must additionally authenticate the replacement
+    binary through a source-repair-authorized COMPILE_OK record before it may
+    append a successor.
+    """
+
+    spawn_refusal = source_payload.get("spawn_refusal")
+    return bool(
+        source_setfile_error.get("reason") == "source_setfile_sha256_missing"
+        and str(source["verdict"] or "").upper() == "INFRA_FAIL"
+        and str(source["evidence_path"] or "")
+        == _evidence_unavailable_sentinel(
+            "spawn_refusal:compile_gate:COMPILE_FAILED"
+        )
+        and isinstance(spawn_refusal, Mapping)
+        and str(spawn_refusal.get("phase") or "").upper() == "Q02"
+        and str(spawn_refusal.get("reason") or "")
+        == "compile_gate:COMPILE_FAILED"
+    )
+
+
 def requalify_q02_post_binding(
     root: Path,
     old_work_item_id: str,
@@ -27548,7 +27589,13 @@ def requalify_q02_post_binding(
                 ),
             },
         )
-        if source_setfile_error:
+        compile_gate_unbound_setfile = bool(
+            source_setfile_error
+            and _q02_compile_gate_unbound_setfile_source(
+                source, source_payload, source_setfile_error
+            )
+        )
+        if source_setfile_error and not compile_gate_unbound_setfile:
             source_error_reason = str(source_setfile_error.pop("reason"))
             return _q02_post_requal_refusal(
                 source_error_reason, source_id, apply=apply,
@@ -27659,18 +27706,6 @@ def requalify_q02_post_binding(
             )
         canonical_mq5_sha = _sha256_file(canonical_mq5_path).lower()
         canonical_setfile_sha = _sha256_file(canonical_setfile_path).lower()
-        source_parameters, recovery = _q02_recover_bound_setfile_parameters(
-            code_root, canonical_setfile_path, str(source_setfile_sha)
-        )
-        if source_parameters is None:
-            return _q02_post_requal_refusal(
-                str(recovery.get("reason") or "source_setfile_bytes_unrecoverable"),
-                source_id, apply=apply, ea_id=ea_id, symbol=symbol,
-                current_ex5_sha256=expected_ex5,
-                current_mq5_sha256=canonical_mq5_sha,
-                current_setfile_sha256=canonical_setfile_sha,
-                setfile_recovery=recovery,
-            )
         try:
             current_parameters = _setfile_semantic_parameters(canonical_setfile_path)
         except (OSError, UnicodeError, ValueError) as exc:
@@ -27679,6 +27714,28 @@ def requalify_q02_post_binding(
                 source_id, apply=apply, ea_id=ea_id, symbol=symbol,
                 setfile_path=str(canonical_setfile_path), detail=str(exc),
             )
+        if compile_gate_unbound_setfile:
+            source_parameters = dict(current_parameters)
+            recovery = {
+                "method": "compile_gate_unbound_current_canonical_setfile",
+                "historical_setfile_sha256": None,
+                "current_setfile_sha256": canonical_setfile_sha,
+                "tester_launch_proven_absent": True,
+            }
+        else:
+            source_parameters, recovery = _q02_recover_bound_setfile_parameters(
+                code_root, canonical_setfile_path, str(source_setfile_sha)
+            )
+            if source_parameters is None:
+                return _q02_post_requal_refusal(
+                    str(recovery.get("reason") or
+                        "source_setfile_bytes_unrecoverable"),
+                    source_id, apply=apply, ea_id=ea_id, symbol=symbol,
+                    current_ex5_sha256=expected_ex5,
+                    current_mq5_sha256=canonical_mq5_sha,
+                    current_setfile_sha256=canonical_setfile_sha,
+                    setfile_recovery=recovery,
+                )
         parameter_diff = _q02_parameter_diff(source_parameters, current_parameters)
         compile_record, rejected_compile_records = _q02_rebind_compile_provenance(
             conn,
@@ -27698,6 +27755,20 @@ def requalify_q02_post_binding(
                 parameter_change_count=len(parameter_diff),
                 setfile_recovery=recovery,
                 rejected_compile_records=rejected_compile_records,
+            )
+        if compile_gate_unbound_setfile and not (
+            compile_record.get("append_only_source_repair") is True
+            and compile_record.get("source_repair_authorized") is True
+            and str(compile_record.get("source_repair_authority") or "").strip()
+            == str(
+                compile_record.get("source_repair_evidence_authority") or ""
+            ).strip()
+        ):
+            return _q02_post_requal_refusal(
+                "compile_gate_unbound_setfile_requires_source_repair_compile",
+                source_id, apply=apply, ea_id=ea_id, symbol=symbol,
+                compile_work_item_id=compile_record["work_item_id"],
+                compile_provenance=compile_record,
             )
         parameter_authority: dict[str, Any] | None = None
         if parameter_diff:
@@ -27833,6 +27904,9 @@ def requalify_q02_post_binding(
             "requalification_source_status": source["status"],
             "requalification_source_verdict": source["verdict"],
             "requalification_setfile_recovery": recovery,
+            "requalification_compile_gate_unbound_setfile": (
+                compile_gate_unbound_setfile
+            ),
             "risk_fixed": risk_detail["risk_fixed"],
             "risk_percent": risk_detail["risk_percent"],
         })
@@ -27865,6 +27939,7 @@ def requalify_q02_post_binding(
             "parameter_provenance_required": bool(parameter_diff),
             "parameter_provenance": parameter_authority,
             "setfile_recovery": recovery,
+            "compile_gate_unbound_setfile": compile_gate_unbound_setfile,
             "compile_work_item_id": compile_record["work_item_id"],
             "compile_evidence_path": compile_record["evidence_path"],
             "compile_evidence_sha256": compile_record["evidence_sha256"],
@@ -27919,6 +27994,7 @@ def requalify_q02_post_binding(
             "current_parameters": dict(sorted(current_parameters.items())),
             "parameter_diff": parameter_diff,
             "setfile_recovery": recovery,
+            "compile_gate_unbound_setfile": compile_gate_unbound_setfile,
             "parameter_change_provenance": parameter_authority,
             "compile_provenance": compile_record,
         }

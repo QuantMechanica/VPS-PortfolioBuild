@@ -41,6 +41,7 @@ def _fixture(
     terminal: bool = False,
     parameter_change: bool = False,
     with_authority: bool = False,
+    compile_gate_unbound: bool = False,
 ) -> dict[str, object]:
     root = tmp_path / "farm"
     repo = tmp_path / "repo"
@@ -133,6 +134,11 @@ def _fixture(
             "ex5_sha256": ex5_sha,
         },
     }
+    if with_authority:
+        compile_payload.update({
+            "append_only_source_repair": True,
+            "compile_source_repair_authority": "fixture:input-pin:QM5_9902",
+        })
     source_payload = {
         "expected_current_ex5_sha256": old_ex5_sha,
         "expected_ex5_sha256": old_ex5_sha,
@@ -152,9 +158,22 @@ def _fixture(
             "setfile_sha256": old_setfile_sha,
         },
     }
-    status = "done" if terminal else "pending"
-    verdict = "PASS" if terminal else None
-    taxonomy = "economic" if terminal else "open"
+    if compile_gate_unbound:
+        source_payload.pop("expected_setfile_sha256")
+        source_payload["artifact_identity"].pop("setfile_sha256")
+        source_payload["spawn_refusal"] = {
+            "phase": "Q02",
+            "reason": "compile_gate:COMPILE_FAILED",
+            "terminal": "T1",
+        }
+    status = "failed" if compile_gate_unbound else ("done" if terminal else "pending")
+    verdict = "INFRA_FAIL" if compile_gate_unbound else ("PASS" if terminal else None)
+    taxonomy = "infra" if compile_gate_unbound else ("economic" if terminal else "open")
+    source_evidence = (
+        "EVIDENCE_UNAVAILABLE:spawn_refusal:compile_gate:COMPILE_FAILED"
+        if compile_gate_unbound
+        else ("EVIDENCE_UNAVAILABLE" if terminal else None)
+    )
     with farmctl.connect(root) as conn:
         conn.execute(
             """
@@ -183,9 +202,10 @@ def _fixture(
             """,
             (
                 SOURCE_ID, EA_ID, "EURUSD.DWX", str(setfile_path), status, verdict,
-                "EVIDENCE_UNAVAILABLE" if terminal else None,
+                source_evidence,
                 json.dumps(source_payload), now, now, old_ex5_sha,
-                old_setfile_sha, source_payload["expected_mq5_sha256"], taxonomy,
+                None if compile_gate_unbound else old_setfile_sha,
+                source_payload["expected_mq5_sha256"], taxonomy,
             ),
         )
         conn.commit()
@@ -265,6 +285,52 @@ def test_terminal_predecessor_and_verdict_are_retained(tmp_path: Path) -> None:
         ).fetchone()
     assert tuple(predecessor) == ("done", "PASS")
     assert sidecar[0] == result["successor_work_item_id"]
+
+
+def test_compile_gate_unbound_setfile_requires_source_repair_compile(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(tmp_path, compile_gate_unbound=True)
+
+    result = _call(fixture)
+
+    assert result["ok"] is False
+    assert result["reason"] == (
+        "compile_gate_unbound_setfile_requires_source_repair_compile"
+    )
+
+
+def test_compile_gate_unbound_setfile_can_requalify_after_authorized_compile(
+    tmp_path: Path,
+) -> None:
+    fixture = _fixture(
+        tmp_path,
+        compile_gate_unbound=True,
+        with_authority=True,
+    )
+
+    dry_run = _call(fixture)
+    assert dry_run["eligible"] is True
+    assert dry_run["compile_gate_unbound_setfile"] is True
+    assert dry_run["source_setfile_sha256"] is None
+    assert dry_run["parameter_diff"] == []
+    assert dry_run["setfile_recovery"] == {
+        "method": "compile_gate_unbound_current_canonical_setfile",
+        "historical_setfile_sha256": None,
+        "current_setfile_sha256": fixture["current_setfile_sha"],
+        "tester_launch_proven_absent": True,
+    }
+
+    result = _call(fixture, apply=True)
+    assert result["applied"] is True
+    with farmctl.connect(fixture["root"]) as conn:  # type: ignore[arg-type]
+        successor = conn.execute(
+            "SELECT payload_json,setfile_sha256 FROM work_items WHERE id=?",
+            (result["successor_work_item_id"],),
+        ).fetchone()
+    payload = json.loads(successor["payload_json"])
+    assert payload["requalification_compile_gate_unbound_setfile"] is True
+    assert successor["setfile_sha256"] == fixture["current_setfile_sha"]
 
 
 def test_parameter_change_is_refused_without_hash_bound_authority(tmp_path: Path) -> None:
