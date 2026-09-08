@@ -96,6 +96,10 @@ or correlation waiver.
 
 ## 11. Q01 And Q02 Status
 
-Q01 is pending the mandatory PACER audit, deterministic reference vectors,
-and governed strict compile. Q02 remains blocked on Q01 and the binding CPU
-ceiling.
+Q01 passed: the mandatory PACER audit found zero
+`EA_FRAMEWORK_INPUT_PINNED` hits, all 13 deterministic reference vectors
+passed, and governed compile work item
+`937e946d-39a0-4b92-8a83-ba5e06c330ef` returned `COMPILE_OK` with zero
+compiler errors or warnings. After a fresh five-sample CPU window peaked at
+63.9%, Q02 work item `c1fc79e1-4d3d-485b-a184-f285a46a5aac` was enqueued on
+the fixed-risk XTIUSD.DWX D1 set.

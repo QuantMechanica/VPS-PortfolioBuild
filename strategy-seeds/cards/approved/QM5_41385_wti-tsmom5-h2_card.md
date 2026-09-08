@@ -48,9 +48,9 @@ r1_track_record: PASS_WITH_WTI_SPECIFIC_EFFICACY_UNPROVEN
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: Q01_PENDING
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02_QUEUED
+q01_status: PASS
+q02_status: ENQUEUED
 parameters_to_test: "Locked Q02 baseline only: D1; six consecutive completed month-end closes; exact five-month log-return sign; odd-month decisions; two-month hold; 300 D1 bars; 3.5*ATR(20,D1) frozen stop; 70-day stale repair; 1500-point spread ceiling."
 review_focus: "Falsify the source-bounded WTI k=5,h=2 stream. Verify six exact completed-month endpoints, odd-month-only attempts, no even-month rollover, fixed risk, frozen stop, and next-odd-month exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -209,5 +209,5 @@ live manifests, portfolio-gate changes, admission, and correlation waivers.
 | Phase | Date | Status | Evidence |
 |---|---|---|---|
 | G0 Research Intake | 2026-09-08 | APPROVED | `decisions/2026-09-08_qm5_41385_wti_tsmom5_h2_g0.md` |
-| Q01 Build Validation | 2026-09-08 | NOT_BUILT | deterministic magic allocation and build pending |
-| Q02 Baseline Screening | 2026-09-08 | NOT_ENQUEUED_Q01_PENDING | compile and governed CPU check pending |
+| Q01 Build Validation | 2026-09-08 | PASS | PACER audit zero hits; reference vectors 13/13; governed `COMPILE_OK`, zero compiler errors/warnings; build check PASS. |
+| Q02 Baseline Screening | 2026-09-08 | ENQUEUED | Work item `c1fc79e1-4d3d-485b-a184-f285a46a5aac`; fixed-risk XTIUSD.DWX D1; admission CPU max 63.9% below 97% ceiling. |
