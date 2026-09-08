@@ -76,9 +76,10 @@ def setup() -> None:
     print(json.dumps(manifest), flush=True)
 
 
-def run(name: str, report_subdir: bool) -> None:
+def run(name: str, report_subdir: bool, from_date: str = '2026.09.01') -> None:
     admitted()
     assert name.isalnum() and len(name) <= 24
+    assert from_date in {'2026.09.01', '2026.09.02'}
     assert (ROOT / 'lab_manifest.json').is_file()
     runroot = ROOT / 'experiments' / name
     runroot.mkdir(parents=True, exist_ok=False)
@@ -86,7 +87,7 @@ def run(name: str, report_subdir: bool) -> None:
     ini = runroot / 'tester.ini'
     config = ('[Tester]\nExpert=Examples\\Moving Average\\Moving Average\n'
               'Symbol=EURUSD\nPeriod=M5\nModel=4\nExecutionMode=0\nOptimization=0\n'
-              'FromDate=2026.09.01\nToDate=2026.09.05\nDeposit=100000\nCurrency=USD\n'
+              f'FromDate={from_date}\nToDate=2026.09.05\nDeposit=100000\nCurrency=USD\n'
               'Leverage=100\nUseLocal=1\nUseRemote=0\nUseCloud=0\nVisual=0\n'
               'Replace=1\nReplaceReport=1\nShutdownTerminal=1\n'
               f'Report={report.relative_to(ROOT)}\n')
@@ -102,7 +103,8 @@ def run(name: str, report_subdir: bool) -> None:
     stable = 0
     previous_size = None
     evidence = {'name': name, 'started_at_epoch': started, 'ini_sha256': sha(ini), 'report': str(report),
-                'model': 4, 'quality_scope': 'native EURUSD 2026-09-01..05 M5, sample EA unchanged'}
+                'model': 4, 'fixture_from_date': from_date,
+                'quality_scope': f'native EURUSD {from_date}..2026.09.05 M5, sample EA unchanged'}
     with (runroot / 'observations.jsonl').open('x', encoding='utf-8') as out:
         try:
             while time.time() - started < 300:
@@ -150,8 +152,9 @@ if __name__ == '__main__':
     parser.add_argument('action', choices=['setup', 'run'])
     parser.add_argument('--name', default='baseline1')
     parser.add_argument('--report-subdir', action='store_true')
+    parser.add_argument('--from-date', choices=['2026.09.01', '2026.09.02'], default='2026.09.01')
     args = parser.parse_args()
     if args.action == 'setup':
         setup()
     else:
-        run(args.name, args.report_subdir)
+        run(args.name, args.report_subdir, args.from_date)
