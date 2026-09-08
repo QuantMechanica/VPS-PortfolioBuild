@@ -1,32 +1,38 @@
 ;==========================================================
 ; QM5 Set File
-; ea_id:        41385
-; ea_slug:      wti-tsmom5-h2
+; ea_id:        41132
+; ea_slug:      wti-mweekday-med-mom
 ; ea_version:   v5.0
-; set_version:  s20260908-001
+; set_version:  s20260908-stress-harsh
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
-; environment:  backtest
+; environment:  q06_stress_harsh
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a55c27d7600db8088a6e0130e17ada6013d23c80975ee83539984c8b688587b9
+; build_hash:   21ff782edae2bce62a50e6376f2b413d1df15f1dd88bdfecd89e6a605bc65861
 ; author:       Development
 ; date:         2026-09-08
 ;==========================================================
-qm_ea_id=41385
+qm_ea_id=41132
 qm_magic_slot_offset=0
+qm_rng_seed=7
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+qm_stress_reject_probability=0.1000
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_symbol=XTIUSD.DWX
-strategy_return_months=5
-strategy_hold_months=2
-strategy_rebalance_month_parity=1
-strategy_history_bars_d1=300
+strategy_entry_grace_minutes=180
+strategy_history_bars_d1=45
+strategy_min_month_sessions=17
+strategy_max_month_sessions=23
+strategy_weekday_buckets=5
+strategy_min_bucket_observations=3
+strategy_max_bucket_observations=5
+strategy_numerical_tolerance=0.0000000001
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
-strategy_max_hold_days=70
+strategy_max_hold_days=40
 strategy_max_spread_points=1500
+strategy_deviation_points=20
