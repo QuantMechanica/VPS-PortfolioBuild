@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "ac881fc759dc8e45f89beec0b567b8d5b8b7f93c2acca3d08154e7e04acd04d6",
+      "ea_id": "QM5_41387",
+      "ea_label": "QM5_41387_wti-tsmom8-h2",
+      "expected_mq5_sha256": "ac881fc759dc8e45f89beec0b567b8d5b8b7f93c2acca3d08154e7e04acd04d6",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41387_wti-tsmom8-h2\\QM5_41387_wti-tsmom8-h2.mq5",
+      "work_item_id": "3a5b117d-6d43-48a9-97fd-afb2e6f7adf5"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "3a5b117d-6d43-48a9-97fd-afb2e6f7adf5",
+  "work_item_id_selectors": [
+    "3a5b117d-6d43-48a9-97fd-afb2e6f7adf5"
+  ]
+}
