@@ -2236,6 +2236,32 @@ def chk_disk_free_space(con) -> dict:
                   f"D: free {free_gb:.1f}GB", "")
 
 
+def chk_cold_restart_disk_reserve() -> dict:
+    """Observe full-fleet restart reserve without stopping healthy workers."""
+    try:
+        from resource_headroom import DISK_STOP_GB, DISK_PER_WORKER_GB
+    except ModuleNotFoundError:
+        from tools.strategy_farm.resource_headroom import DISK_STOP_GB, DISK_PER_WORKER_GB
+    # Installed factory capacity is ten; temporary disabled slots must not hide
+    # the space needed to recover the complete fleet. Keep the runtime stop
+    # threshold and admission policy authoritative, not a second looser gate.
+    required = DISK_STOP_GB + 10 * DISK_PER_WORKER_GB
+    warning = required + 2 * DISK_PER_WORKER_GB
+    free = shutil.disk_usage("D:/").free / (1024 ** 3)
+    value = {"free_gib": round(free, 2), "required_gib": required,
+             "margin_gib": round(free - required, 2)}
+    if free < required:
+        detail = f"Full ten-worker cold restart lacks {required - free:.1f}GiB disk reserve"
+    else:
+        detail = f"Full ten-worker cold restart has {free - required:.1f}GiB disk margin"
+    return _check(
+        "cold_restart_disk_reserve", "WARN" if free < warning else "OK",
+        value, warning, detail,
+        "Preserve active work. Recover verified closed-file space before a full restart; "
+        "do not lower the admission floor." if free < warning else "",
+    )
+
+
 def _measure_busy_scratch_writes(
     *,
     mt5_root: Path = MT5_ROOT,
@@ -4532,6 +4558,7 @@ ALL_CHECKS = [
     ("codex_bridge_heartbeat", chk_codex_bridge_heartbeat, True),
     ("agent_lane_heartbeat",   chk_agent_lane_heartbeat,   True),
     ("disk_free_space",        chk_disk_free_space,        True),
+    ("cold_restart_disk_reserve", chk_cold_restart_disk_reserve, False),
     ("disk_scratch_rate_runway", chk_disk_scratch_rate_runway, False),
     ("p_pass_stagnation",      chk_p_pass_stagnation,      True),
     ("phase_infra_graveyard",  chk_phase_infra_graveyard,  True),
