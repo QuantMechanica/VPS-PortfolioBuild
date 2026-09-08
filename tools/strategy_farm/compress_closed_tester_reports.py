@@ -91,10 +91,20 @@ def main() -> int:
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--target-free-gib', type=float, default=150)
     parser.add_argument('--max-logical-gib', type=float, default=40)
+    parser.add_argument('--include-closed-ndx-import', action='store_true',
+                        help='Also compress the exact old NDX import staging binary, never an HCC/TKC history')
     args = parser.parse_args()
     if os.name != 'nt' or not 0 < args.max_logical_gib <= 80:
         raise RuntimeError('Windows and a bounded <=80 GiB batch required')
     rows = candidates(Path('D:/QM/mt5'), now=time.time())
+    if args.include_closed_ndx_import:
+        path = Path('D:/QM/mt5/T8/MQL5/Files/ndx_import/NDX.DWX.tick.bin')
+        if path.is_file():
+            s = path.stat(follow_symlinks=False)
+            if (not s.st_file_attributes & (REPARSE | COMPRESSED) and s.st_nlink == 1
+                and time.time() - s.st_mtime > 48 * 3600
+                and path.resolve() == path):
+                rows.insert(0, {'path': str(path), 'bytes': s.st_size, 'mtime_ns': s.st_mtime_ns})
     selected = []; logical = 0
     for row in rows:
         if logical + row['bytes'] > args.max_logical_gib * 1024**3:
