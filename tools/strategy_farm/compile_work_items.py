@@ -581,6 +581,19 @@ QM5_36007_Q02_STALE_BINARY_REPAIR_AUTHORITY = (
 QM5_36007_Q02_STALE_BINARY_REPAIR_EA_LABELS = frozenset({
     "QM5_36007_nnfx-vidya-trix-fisher-momentum",
 })
+# Exact paced-fleet authority for the QM5_10069 AUDUSD Q02 infrastructure
+# recovery.  The canonical EX5 predates the OWNER-authorized slots 4-12 and
+# therefore cannot resolve the added AUDUSD magic at OnInit, while the current
+# generated resolver contains that exact active mapping.  This one
+# infra-repair task/label binding permits only an append-only, current-source
+# COMPILE_EA successor; it grants no strategy, backtest, gate-verdict, or
+# cross-EA authority.
+QM5_10069_Q02_STALE_RESOLVER_REPAIR_AUTHORITY = (
+    "router_q02_infra_repair:4e3fda2a-4481-4791-942b-6b7bca56ad7f"
+)
+QM5_10069_Q02_STALE_RESOLVER_REPAIR_EA_LABELS = frozenset({
+    "QM5_10069_mql5-hs-rev",
+})
 # Exact paced-fleet authority for the QM5_41192 XTI/XNG diversity recovery.
 # Its source, card, and fixed-risk basket setfiles still match the sealed Q02
 # receipt, but the untracked compiled binary disappeared while the logical Q02
@@ -2686,6 +2699,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_36007_Q02_STALE_BINARY_REPAIR_AUTHORITY
             and ea_label in QM5_36007_Q02_STALE_BINARY_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_10069_Q02_STALE_RESOLVER_REPAIR_AUTHORITY
+            and ea_label in QM5_10069_Q02_STALE_RESOLVER_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY
