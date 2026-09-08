@@ -49,3 +49,18 @@ def test_stale_reset_cleanup_yields_before_dispatch_stall_recheck() -> None:
     # and recreate the same marker in this invocation.
     assert "Write-Output $staleRecord" in handover
     assert "exit 0" in handover
+
+
+def test_missing_capacity_heals_before_protected_progress_and_healthy_floor() -> None:
+    source = WATCHDOG.read_text(encoding="utf-8")
+    condition = "elseif ($nWorkers -lt $ExpectWorkers -and -not $dispatchStalled -and -not $realStall)"
+    refill = source.index(condition)
+    protected = source.index("elseif ($factoryEnabled -and $realStallSuppressedReason)")
+    assert source.index("elseif (-not $factoryEnabled)") < refill
+    assert source.index("elseif ($diskFreeGb -lt 40)") < refill < protected
+    branch = source[refill:protected]
+    assert "Invoke-InteractiveWorkerDedupe" in branch
+    assert "Stop-Process" not in branch
+    assert "Start-ScheduledTask" not in branch
+    assert "Enter-GuardedFactoryReset" not in branch
+    assert "$nWorkers -ge $MinWorkers" not in branch

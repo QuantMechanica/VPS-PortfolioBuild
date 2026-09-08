@@ -17,7 +17,7 @@
 #    - OWNER intent is read from the FACTORY tasks' enable-state
 #      (Factory ON enables Pump/Tick, Factory OFF disables them).
 #      If the factory is intentionally OFF -> do NOTHING.
-#    - If ON and live workers < MinWorkers -> run start_terminal_workers
+#    - If ON and live workers < ExpectWorkers -> run start_terminal_workers
 #      --dedupe (idempotent: fills only the missing slots, never doubles,
 #      never interrupts a running backtest).
 #    - NEVER toggles FACTORY/AI enable-state, NEVER touches T_Live,
@@ -25,7 +25,7 @@
 # =====================================================================
 
 param(
-    [int]$MinWorkers = 8,            # heal when fewer than this many worker daemons are alive
+    [int]$MinWorkers = 10,           # legacy healthy-floor parameter; shortage heals to the capped target
     [int]$ExpectWorkers = 10,
     [int]$StallPendingThreshold = 50 # heal when workers are ALIVE but WEDGED: 0 active +
                                      # >= this many pending + 0 terminal64 = dispatcher stalled
@@ -1002,6 +1002,22 @@ elseif ($diskFreeGb -lt 40) {
     $action = 'noop_disk_low_purge'
     $detail = "D: free ${diskFreeGb}GB < 40GB while factory ON - workers pausing by design; kicking cache purge, NOT respawning"
     try { Start-ScheduledTask -TaskName 'QM_StrategyFarm_TesterCachePurge' -ErrorAction SilentlyContinue } catch {}
+}
+elseif ($nWorkers -lt $ExpectWorkers -and -not $dispatchStalled -and -not $realStall) {
+    # Missing capacity is independent of a protected long-running backtest.
+    # Previously realstall_guarded (or the 8-worker healthy floor) swallowed
+    # this case, leaving 9/10 workers indefinitely. Dedupe is non-destructive;
+    # start_terminal_workers still checks disk/RAM/commit before every refill.
+    # All OFF, session and low-disk guards above remain authoritative.
+    $workersBefore = $nWorkers
+    try {
+        $heal = Invoke-InteractiveWorkerDedupe -PythonExe $py -WorkersBefore $workersBefore -ExpectedWorkers $ExpectWorkers
+        $action = 'worker_dedupe_heal'
+        $detail = "capacity refill: session=$($heal.session_id) workers_before=$workersBefore workers_after=$($heal.workers_after)/$ExpectWorkers; active work preserved"
+    } catch {
+        $action = 'heal_failed'
+        $detail = "capacity refill failed: $_; no full reset attempted"
+    }
 }
 elseif ($factoryEnabled -and $realStallSuppressedReason) {
     $action = 'realstall_guarded'

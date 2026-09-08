@@ -18102,9 +18102,9 @@ def _hourly_db_backup(root: Path) -> str | None:
     finally:
         src_conn.close()
     cutoff = now.timestamp() - 24 * 3600
-    # Preserve the established 24-hour retention sweep for the whole on-box
-    # snapshot family; only cadence detection is intentionally narrowed.
-    for old in backup_dir.glob("farm_state_*.sqlite"):
+    # This producer owns only scheduled snapshots, not governed before-* anchors.
+    # Those anchors have their own retention/evidence lifecycle.
+    for old in _hourly_db_backup_paths(backup_dir):
         try:
             if old.stat().st_mtime < cutoff:
                 old.unlink()
@@ -23601,6 +23601,9 @@ def pump_maintenance(root: Path) -> dict[str, Any]:
     """
 
     started = time.monotonic()
+    # Durability must not depend on a successful metrics refresh. A slow or
+    # failing statistics stage previously prevented the backup from even starting.
+    backup_result = _hourly_db_backup(root)
 
     def _refresh_metrics() -> dict[str, Any]:
         try:
@@ -23617,7 +23620,6 @@ def pump_maintenance(root: Path) -> dict[str, Any]:
             DEAD_ZERO_TRADE_EVENT,
             rolling_hours=DEAD_ZERO_TRADE_EVENT_DEDUPE_HOURS,
         )
-    backup_result = _hourly_db_backup(root)
     wal_checkpoint_result = _wal_checkpoint(root)
     return {
         "maintained_at": utc_now(),

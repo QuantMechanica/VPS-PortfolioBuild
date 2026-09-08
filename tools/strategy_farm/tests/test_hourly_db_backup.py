@@ -1,6 +1,7 @@
 import datetime as dt
 import os
 import sqlite3
+import pytest
 from pathlib import Path
 
 from tools.strategy_farm import farmctl, health
@@ -67,3 +68,31 @@ def test_health_rejects_before_only_snapshot_family(tmp_path: Path, monkeypatch)
 
     assert result["status"] == "FAIL"
     assert "no scheduled" in result["detail"]
+
+
+def test_scheduled_retention_preserves_old_governed_anchor(tmp_path: Path) -> None:
+    backups = tmp_path / "state" / "backups"
+    backups.mkdir(parents=True)
+    make_db(tmp_path / "state" / "farm_state.sqlite")
+    anchor = backups / "farm_state_before_repair_20260901T000000Z.sqlite"
+    anchor.write_bytes(b"governed rollback evidence")
+    age(anchor, 3 * 24 * 60)
+    old_hourly = backups / "farm_state_20260901_0000.sqlite"
+    old_hourly.write_bytes(b"expired scheduled snapshot")
+    age(old_hourly, 3 * 24 * 60)
+    created = farmctl._hourly_db_backup(tmp_path)
+    assert created and Path(created).is_file()
+    assert anchor.read_bytes() == b"governed rollback evidence"
+    assert not old_hourly.exists()
+
+
+def test_backup_precedes_fallible_metrics_refresh(tmp_path: Path, monkeypatch) -> None:
+    calls = []
+    monkeypatch.setattr(farmctl, "_hourly_db_backup", lambda root: calls.append("backup"))
+    def fail_metrics(fn):
+        calls.append("metrics")
+        raise RuntimeError("metrics unavailable")
+    monkeypatch.setattr(farmctl, "_with_sqlite_write_retry", fail_metrics)
+    with pytest.raises(RuntimeError, match="metrics unavailable"):
+        farmctl.pump_maintenance(tmp_path)
+    assert calls == ["backup", "metrics"]
