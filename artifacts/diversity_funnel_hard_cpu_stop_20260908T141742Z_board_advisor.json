@@ -1,0 +1,107 @@
+{
+  "schema": "qm.paced-fleet-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-08T14:17:42.7622212Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "0ac9ecf40daebb08df23c11a2a9904cdc0984013",
+  "outcome": "STOP_BACKTEST_CAPACITY_CEILING",
+  "selection_performed": false,
+  "claim_performed": false,
+  "source_written": false,
+  "framework_input_pin_audit_required": false,
+  "compile_enqueued": false,
+  "q02_enqueued": false,
+  "capacity": {
+    "active_tester_threshold": 7,
+    "active_tester_count": 10,
+    "saturated": true,
+    "cpu_samples_percent": [
+      42.183255,
+      37.489498,
+      35.651975,
+      38.382601,
+      37.733498
+    ],
+    "cpu_average_percent": 38.288165,
+    "cpu_maximum_percent": 42.183255
+  },
+  "active_work_items": [
+    {
+      "terminal": "T1",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41324",
+      "symbol": "USDJPY.DWX",
+      "work_item_id": "945832b9-41be-586a-849e-1d4c06502968"
+    },
+    {
+      "terminal": "T2",
+      "phase": "Q04",
+      "ea_id": "QM5_10144",
+      "symbol": "CHFJPY.DWX",
+      "work_item_id": "c257d21e-1a55-4704-852c-31badfdd4ca8"
+    },
+    {
+      "terminal": "T3",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41302",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "9a46d7e3-efc0-5c3e-8bd4-7904d046ce01"
+    },
+    {
+      "terminal": "T4",
+      "phase": "Q07",
+      "ea_id": "QM5_10163",
+      "symbol": "USDJPY.DWX",
+      "work_item_id": "57469c79-daed-4b1b-a1d2-da0b5291056f"
+    },
+    {
+      "terminal": "T5",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41345",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "a3d38366-b734-58cb-9a27-f0e2cc71256e"
+    },
+    {
+      "terminal": "T6",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41163",
+      "symbol": "USDCAD.DWX",
+      "work_item_id": "b67c17ed-db0e-5e1e-9e26-1b26efe24519"
+    },
+    {
+      "terminal": "T7",
+      "phase": "Q07",
+      "ea_id": "QM5_41132",
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "7869aa55-6d06-4ac2-ad34-87d873283ce7"
+    },
+    {
+      "terminal": "T8",
+      "phase": "Q04",
+      "ea_id": "QM5_41139",
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "c6c5e13e-2b6d-40b6-a1ec-0486e4b42701"
+    },
+    {
+      "terminal": "T9",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41305",
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "594e442e-a631-5c54-a1a4-5a081566c500"
+    },
+    {
+      "terminal": "T10",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41301",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "91322ac5-4ae9-5ef1-9d0a-3b336c2c9ec2"
+    }
+  ],
+  "safety": {
+    "farm_db_mutated": false,
+    "terminal_control_performed": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
