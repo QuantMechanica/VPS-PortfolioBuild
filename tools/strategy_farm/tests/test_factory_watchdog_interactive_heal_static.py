@@ -53,7 +53,7 @@ def test_stale_reset_cleanup_yields_before_dispatch_stall_recheck() -> None:
 
 def test_missing_capacity_heals_before_protected_progress_and_healthy_floor() -> None:
     source = WATCHDOG.read_text(encoding="utf-8")
-    condition = "elseif ($nWorkers -lt $ExpectWorkers -and -not $dispatchStalled -and -not $realStall)"
+    condition = "elseif ($nWorkers -lt $ExpectWorkers -and -not $realStall)"
     refill = source.index(condition)
     protected = source.index("elseif ($factoryEnabled -and $realStallSuppressedReason)")
     assert source.index("elseif (-not $factoryEnabled)") < refill

@@ -1003,12 +1003,14 @@ elseif ($diskFreeGb -lt 40) {
     $detail = "D: free ${diskFreeGb}GB < 40GB while factory ON - workers pausing by design; kicking cache purge, NOT respawning"
     try { Start-ScheduledTask -TaskName 'QM_StrategyFarm_TesterCachePurge' -ErrorAction SilentlyContinue } catch {}
 }
-elseif ($nWorkers -lt $ExpectWorkers -and -not $dispatchStalled -and -not $realStall) {
+elseif ($nWorkers -lt $ExpectWorkers -and -not $realStall) {
     # Missing capacity is independent of a protected long-running backtest.
     # Previously realstall_guarded (or the 8-worker healthy floor) swallowed
     # this case, leaving 9/10 workers indefinitely. Dedupe is non-destructive;
     # start_terminal_workers still checks disk/RAM/commit before every refill.
     # All OFF, session and low-disk guards above remain authoritative.
+    # Even with an idle-dispatch signal, try the missing slot first; a full
+    # fleet can be re-evaluated on the next cycle without interrupting peers.
     $workersBefore = $nWorkers
     try {
         $heal = Invoke-InteractiveWorkerDedupe -PythonExe $py -WorkersBefore $workersBefore -ExpectedWorkers $ExpectWorkers
