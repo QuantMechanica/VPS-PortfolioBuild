@@ -1916,3 +1916,29 @@ logical Q02 row `547c4fd3-f3fd-4c59-b9dc-654e96521251` for
 samples averaged 99.726735% and peaked at 100%, exceeding the binding 97% ceiling;
 factory mutation stopped. Receipt:
 `artifacts/fx_cointegration_qm5_12507_q02_cpu_ceiling_stop_20260909T170136Z_board_advisor.json`.
+
+## Orchestration cycle 2026-09-09T1716Z -- 3 IN_PROGRESS claude tasks unchanged, still gated
+
+Direct `farm_state.sqlite` read on all three `IN_PROGRESS` claude tasks (`bb814520`
+CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE, `3032534e`
+DUKASCOPY-BACKFILL): all correctly remain `IN_PROGRESS`, no live spawn-lease found on
+any of the three keys. `QM5_41394` legs unchanged since the 16:32Z cycle: EURUSD stays
+terminal Q04 `FAIL`; USDJPY still Q03 `pending` (`e89d6f8a`, since 13:09:21Z) and Q04
+`pending` (`bd6f7c72`, since 12:19:47Z); SP500/XAUUSD/XTIUSD still Q02 `pending` since
+`10:52:59Z` (~6h23m unclaimed, queue depth not an orphaned/timed-out claim, so no
+GRUEN re-enqueue basis). Neither `bb814520` nor `dfc60103`'s acceptance ("first
+adjudications end PASS/FAIL") is met yet. `2f717775` (Dukascopy non-FX price_scale
+ticket) still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~15h52m
+unclaimed); no new reprobe this cycle. `farmctl health`: FAIL 15 -- all named FAILs
+match the previously logged, already-tracked chronic set (`codex_zero_activity`,
+`q02_stranded_exhausted_pairs`, `phase_invalid_rate_7d`,
+`agent_task_state_stranded`/`_aging_slo`, `work_item_phase_age_slo`,
+`pending_tail_age`, `q09_sealed_plan_hold_age`/`_autoseal_hold_census`,
+`pending_artifact_binding_drift`, `schtask:QM_EvidenceCohortWatch_Daily_0420`,
+`backup_calendar_continuity`, `live_mt5_uptime` FTMO degraded,
+`ftmo_trial_pulse` review-trigger WARN by design, `task_monitor_escalation`); no new
+incident.
+
+No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
+AutoTrading/gate change. No OWNER-scope work invented. `agent_router.py run` /
+`route-many` / `replenish` not invoked per this task's directive.
