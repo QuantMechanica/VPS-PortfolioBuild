@@ -18313,3 +18313,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41389,xauxag-blockmed-rv,1,XAGUSD.DWX,413890001,2026-09-09,Codex governed allocator,active
 41390,wti-tsmom11-h2,0,XTIUSD.DWX,413900000,2026-09-09,Codex governed allocator,active
 41391,wti-tsmom10-h1,0,XTIUSD.DWX,413910000,2026-09-09,Codex governed allocator,active
+41392,xng-shoulder-wrev,0,XNGUSD.DWX,413920000,2026-09-09,Codex governed allocator,active
