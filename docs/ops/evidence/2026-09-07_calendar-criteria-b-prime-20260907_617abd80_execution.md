@@ -326,3 +326,7 @@ remains `IN_PROGRESS`.
 ## Checked 2026-09-09T16:0xZ (orchestration cycle) -- no change, direct DB read confirms queue depth not stall
 
 Direct read of `work_items` (not the derived summaries in prior entries): `QM5_41394` XAUUSD/SP500/XTIUSD Q02 rows unchanged since 10:52:59Z -- `claimed_by=NULL`, `attempt_count=0` on all three, i.e. genuinely unclaimed/queued, not erroring or retrying. Context: 755 Q02-phase rows are pending farm-wide right now, so this is ordinary queue depth, not a stall specific to this chain -- outside this task's authority to reprioritize (I don't route). No OWNER answer path changed. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T16:06Z (orchestration cycle) -- no change (verbose entries suppressed per 15:5xZ note)
+
+Same gate, direct DB read: still `claimed_by=NULL`/`attempt_count=0`, unchanged since 10:52:59Z. `farmctl health` re-run this cycle: no FAIL on ea_id/registry/mutation-lock/factory-ceremony checks read. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
