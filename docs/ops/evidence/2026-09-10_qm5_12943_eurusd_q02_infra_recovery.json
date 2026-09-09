@@ -1,0 +1,130 @@
+{
+  "schema": "qm.paced_fleet.q02_infra_recovery_attempt.v1",
+  "recorded_at_utc": "2026-09-09T23:29:54+00:00",
+  "closed_at_utc": "2026-09-09T23:43:30.4025287+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_12943",
+  "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+  "strategy_card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12943_robopip-hlhb-trend-catcher-h1.md",
+  "instrument_diversity": {
+    "asset_class": "forex",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "H1",
+    "selection_reason": "Priority-2 recovery of a diverse instrument whose latest pipeline row was an infrastructure failure and which had no open compile, Q02, Q03, or agent task at claim time. QM5_10116 was skipped after the collision preflight found an existing pending compile and Q02 work."
+  },
+  "coordination": {
+    "agent_task_id": "6b00f275-8de3-4242-8f08-3a8841df1b0d",
+    "task_type": "triage_failure",
+    "claimed_lane": "codex:agents/board-advisor",
+    "state_at_enqueue": "IN_PROGRESS",
+    "final_state": "OPS_FIX_REQUIRED"
+  },
+  "predecessor": {
+    "work_item_id": "2b04b129-89e8-4489-8653-5dac22f8439a",
+    "phase": "Q02",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "verdict_reason": "worker_crashed_handling_item",
+    "mt5_spawned": false,
+    "sqlite_busy_error": "database is locked",
+    "failure_signature": "sqlite_integrity_sh3_missing_verdict_taxonomy",
+    "traceback_terminal_line": "sqlite3.IntegrityError: CHECK constraint failed: sh3_enforced=0 OR status<>'failed' OR (COALESCE(NULLIF(verdict_taxonomy,''),NULLIF(json_extract(payload_json,'$.verdict_taxonomy'),''))) IS NOT NULL"
+  },
+  "artifact_bindings": {
+    "mq5_path": "framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/QM5_12943_robopip-hlhb-trend-catcher-h1.mq5",
+    "mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "ex5_path": "framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/QM5_12943_robopip-hlhb-trend-catcher-h1.ex5",
+    "ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "predecessor_ex5_byte_identical": true,
+    "setfile_path": "framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/sets/QM5_12943_robopip-hlhb-trend-catcher-h1_EURUSD.DWX_H1_backtest.set",
+    "setfile_sha256": "8e1604e168b117a130a92285d3892352151c85a5c49965e71a9345fadd726586",
+    "qm_ea_id": 12943,
+    "qm_magic_slot_offset": 6,
+    "magic": 129430006,
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "guard_evidence": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:\\QM\\repo\\framework\\EAs\\QM5_12943_robopip-hlhb-trend-catcher-h1\\QM5_12943_robopip-hlhb-trend-catcher-h1.mq5\"",
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": [],
+    "spec_validation": "PASS",
+    "source_change_required": false,
+    "compile_enqueued": true,
+    "compile_note": "The first same-binary Q02 rerun showed that current dispatch requires a governed COMPILE_EA provenance row. An exact task-bound authority admitted one compile without changing the MQ5. The authority was removed after the strict build check exposed an OWNER-card versus active-registry universe conflict."
+  },
+  "capacity_preflight": {
+    "sampled_at_utc": "2026-09-09T23:29:36.3949290Z",
+    "processor_utility_samples_percent": [
+      62.82883481239047,
+      72.85818618442167,
+      70.30854937116275,
+      73.1067020148123,
+      68.20895364797803
+    ],
+    "average_percent": 69.46224520615304,
+    "maximum_percent": 73.1067020148123,
+    "active_factory_terminals": [
+      "T10",
+      "T2",
+      "T3",
+      "T6",
+      "T9"
+    ],
+    "cpu_ceiling_hit": false
+  },
+  "recovery": {
+    "mode": "append_only_exact_row_rerun",
+    "new_work_item_id": "f322d7b0-173a-4fb8-9784-8d52dbdfef19",
+    "phase": "Q02",
+    "symbol": "EURUSD.DWX",
+    "status_after_enqueue": "pending",
+    "final_status": "failed",
+    "final_verdict": "INFRA_FAIL",
+    "final_reason": "compile_gate:COMPILE_FAILED",
+    "historical_work_item_preserved": true,
+    "same_binary_infra_requalification": true,
+    "authenticated_predecessor_payload_sha256": "c52e2760ec952231931bdfa8994e292d25be4b518227d70166e6d812c361f7ef",
+    "authenticated_traceback_tail_sha256": "da3db5c435f736663f8557d388f1409a65cccd90642f2ed4d1535b4dc4f71fa6"
+  },
+  "compile_attempt": {
+    "work_item_id": "558cb930-d97a-4a91-b1f4-ebbe69b4a01a",
+    "status": "failed",
+    "verdict": "COMPILE_FAIL",
+    "compile_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "FAIL",
+    "failure_class": "EA_SYMBOL_NOT_IN_CARD_UNIVERSE",
+    "generated_ex5_sha256": "ed3b9d2b5168d05b2334bc3750e64d0e5fd477bde1a74b3cd2f6bbab70c99a9b",
+    "evidence_path": "D:\\QM\\reports\\work_items\\558cb930-d97a-4a91-b1f4-ebbe69b4a01a\\QM5_12943\\COMPILE_EA\\compile_evidence.json",
+    "approved_card_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX"
+    ],
+    "unsupported_active_registry_symbols": [
+      "AUDUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "NZDUSD.DWX",
+      "SP500.DWX",
+      "UK100.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX",
+      "WS30.DWX"
+    ],
+    "blocked_action": "No card widening, magic-row retirement, or registry rewrite was attempted because those require the applicable OWNER/governance authority.",
+    "failed_generated_artifacts_cleaned": true,
+    "canonical_ex5_restored_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2"
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
