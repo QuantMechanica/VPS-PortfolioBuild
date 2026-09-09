@@ -356,3 +356,7 @@ download restart, no duplicate ticket. Task remains `IN_PROGRESS`.
 ## Checked 2026-09-09T17:03Z (orchestration cycle) -- no change
 
 2f717775 still APPROVED/unassigned, updated_at=2026-09-09T01:24:20Z (~15h39m unclaimed). No download_bi5.py process running. No new reprobe (quota still critical). No ticket, download restart, or duplicate ticket. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T17:18Z (orchestration cycle) -- no change
+
+2f717775 still APPROVED/unassigned, ~15h54m unclaimed (direct DB read). No new reprobe (weekly quota 86% used/14% remaining). No download restart, no duplicate ticket. Task remains IN_PROGRESS.
