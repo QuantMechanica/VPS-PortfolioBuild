@@ -1528,3 +1528,40 @@ change. `tasklist` still shows 9 concurrent `claude.exe` (the scheduler-pileup d
 flagged repeatedly above remains unfixed and out of this task's scope -- infra repair
 for a future GRÜN-eligible session with a clean tree; today's near-simultaneous
 independent-but-convergent work on `46167bd9` by two sessions is a direct symptom of it).
+
+## Orchestration cycle 2026-09-09T0800Z addendum — pileup root cause identified: zombie processes, not scheduler misconfig
+
+Checked the actual scheduled-task config (`Get-ScheduledTask
+QM_StrategyFarm_ClaudeOrchestration_15min`): `MultipleInstances=IgnoreNew` is already set
+(the fix repeatedly recommended in earlier cycle entries above is already in place) --
+so the pileup is not a scheduler-setting defect. Actual cause, confirmed by process
+inspection: most of the "N concurrent claude.exe" count is **zombie processes from prior
+days**, not legitimate concurrent cycles:
+
+```
+PID    StartTime            CPU-minutes
+2520   2026-09-02 08:52:32  11.4
+10768  2026-09-02 08:52:33  2.2
+14208  2026-09-02 08:52:33  73.7
+5728   2026-09-06 09:54:50  0.9
+4280   2026-09-06 09:54:51  30.2
+31972  2026-09-06 09:57:21  0.3
+12168  2026-09-09 09:45:03  0.3   <- today's legitimate scheduled run
+```
+
+Six of seven processes are days old (up to 7 days) with CPU time far too low for that
+wall-clock age (e.g. PID 2520: 7 days alive, 11.4 CPU-minutes) -- consistent with a
+hang (blocked on a lock/API call/deadlock), not active work. Only one process (12168)
+matches today's actual 09:45 scheduled trigger. The task launcher is
+`pythonw.exe run_agent_orchestration_task.py --agent claude --max-sessions 3` (own
+internal session cap), so these are not simply raw scheduler re-triggers either -- they
+are prior invocations that never exited.
+
+**Not killed this cycle.** Terminating another session's process on a live, unattended
+VPS is a hard-to-reverse action outside a single routed task's scope and this session's
+certainty (cannot fully rule out a legitimately long-running foreground use, however
+unlikely given the CPU/wall-time ratio). Flagging with exact PIDs/ages for OWNER
+decision or a future session with explicit authorization to `Stop-Process` the confirmed
+zombies (2520, 10768, 14208, 5728, 4280, 31972) and monitor whether pileup recurs. This
+finding supersedes the "MultipleInstances IgnoreNew" recommendation in earlier entries
+above -- that setting is already correct and is not the fix needed here.
