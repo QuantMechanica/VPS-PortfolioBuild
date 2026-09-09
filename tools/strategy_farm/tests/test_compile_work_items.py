@@ -1417,6 +1417,71 @@ def test_qm5_41201_compile_fail_repair_authority_is_failure_and_hash_bound() -> 
     )
 
 
+def test_qm5_41186_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
+    label = compile_work_items.QM5_41186_COMPILE_FAIL_REPAIR_EA_LABEL
+    predecessor_id = (
+        compile_work_items.QM5_41186_COMPILE_FAIL_REPAIR_PREDECESSOR_ID
+    )
+    predecessor_payload = {
+        "ea_label": label,
+        "mq5_sha256": (
+            compile_work_items.QM5_41186_COMPILE_FAIL_REJECTED_SOURCE_SHA256
+        ),
+        "verdict_reason": "EA_INDICATOR_BUFFER_UNBOUNDED",
+        "compile_result": {
+            "compile_result": "PASS",
+            "build_check_result": "FAIL",
+            "failure_classes": ["EA_INDICATOR_BUFFER_UNBOUNDED"],
+        },
+    }
+    inventory = {
+        "work_rows": {
+            "41186": [{
+                "id": predecessor_id,
+                "phase": compile_work_items.COMPILE_EA_PHASE,
+                "status": "failed",
+                "verdict": "COMPILE_FAIL",
+                "payload_json": json.dumps(predecessor_payload),
+            }],
+        },
+    }
+    arguments = {
+        "ea_id": "41186",
+        "source_sha": (
+            compile_work_items.QM5_41186_COMPILE_FAIL_REPAIRED_SOURCE_SHA256
+        ),
+        "inventory": inventory,
+    }
+
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41186_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41187_unrelated",
+        compile_work_items.QM5_41186_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_ops_issue:wrong-task",
+        **arguments,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41186_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **{**arguments, "source_sha": "0" * 64},
+    )
+    changed_inventory = json.loads(json.dumps(inventory))
+    changed_inventory["work_rows"]["41186"][0]["status"] = "done"
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41186_COMPILE_FAIL_REPAIR_AUTHORITY,
+        **{**arguments, "inventory": changed_inventory},
+    )
+
+
 def test_qm5_41223_compile_fail_repair_authority_is_failure_and_hash_bound() -> None:
     label = compile_work_items.QM5_41223_COMPILE_FAIL_REPAIR_EA_LABEL
     predecessor_id = (

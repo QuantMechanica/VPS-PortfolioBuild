@@ -197,7 +197,6 @@ bool Strategy_IsHostChart()
 bool Strategy_InputsValid()
   {
    return (qm_ea_id == 41186 && qm_magic_slot_offset == 0 &&
-            qm_rng_seed == 42 &&
             strategy_xng_symbol == "XNGUSD.DWX" &&
             strategy_endpoint_count == 13 &&
             strategy_max_runs == 7 &&
@@ -212,16 +211,11 @@ bool Strategy_InputsValid()
             strategy_xti_max_spread_points == 1500 &&
             strategy_xng_max_spread_points == 3000 &&
             strategy_deviation_points == 20 &&
-            MathAbs(RISK_PERCENT) <= 1.0e-12 &&
-            MathAbs(RISK_FIXED - 1000.0) <= 1.0e-12 &&
-            MathAbs(PORTFOLIO_WEIGHT - 1.0) <= 1.0e-12 &&
-            qm_news_temporal == QM_NEWS_TEMPORAL_OFF &&
-            qm_news_compliance == QM_NEWS_COMPLIANCE_NONE &&
-            qm_news_mode_legacy == QM_NEWS_OFF &&
-            qm_news_stale_max_hours == 336 &&
-            qm_news_min_impact == "high" &&
-            !qm_friday_close_enabled && qm_friday_close_hour_broker == 21 &&
-            MathAbs(qm_stress_reject_probability) <= 1.0e-12);
+            MathIsValidNumber(RISK_FIXED) && RISK_FIXED > 0.0 &&
+            MathIsValidNumber(RISK_PERCENT) && RISK_PERCENT == 0.0 &&
+            MathIsValidNumber(qm_stress_reject_probability) &&
+            qm_stress_reject_probability >= 0.0 &&
+            qm_stress_reject_probability <= 1.0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
@@ -833,9 +827,11 @@ bool Strategy_LoadMonthlyMedianRuns(
    for(int index = 0; index < strategy_endpoint_count; ++index)
      {
       const int reverse_index = strategy_endpoint_count - 1 - index;
-      if(reverse_index < 0 ||
-         reverse_index >= ArraySize(newest_first_ratios) ||
-         reverse_index >= ArraySize(newest_first_times))
+      if(reverse_index < 0)
+         return false;
+      if(reverse_index >= ArraySize(newest_first_ratios))
+         return false;
+      if(reverse_index >= ArraySize(newest_first_times))
          return false;
       chronological_ratios[index] = newest_first_ratios[reverse_index];
       chronological_times[index] = newest_first_times[reverse_index];
@@ -932,6 +928,10 @@ bool Strategy_LoadMonthlyMedianRuns(
    metrics.run_count = 1;
    for(int index = 1; index < sign_count; ++index)
      {
+      if(index < 0)
+         return false;
+      if(index >= ArraySize(signs))
+         return false;
       if(signs[index] != signs[index - 1])
          ++metrics.run_count;
      }

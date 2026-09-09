@@ -692,6 +692,26 @@ QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS = frozenset({
     "QM5_41172_wti-mpettitt-shift-tr",
     "QM5_41191_wti-samecal-srank",
 })
+# Exact append-only authority for the QM5_41186 bounded-buffer and framework-
+# input-pin repair claimed by paced router task 6c679382.  The predecessor
+# compiled with zero errors/warnings but failed its build check solely because
+# two dynamic-array guards were not mechanically visible.  The replacement
+# also removes forbidden equality pins for framework-owned stochastic/news/
+# Friday inputs.  This authority is bound to one label, one failed row, and one
+# repaired source hash; it grants no backtest verdict or cross-EA authority.
+QM5_41186_COMPILE_FAIL_REPAIR_PREDECESSOR_ID = (
+    "78d5f43e-d805-4748-923d-c36c33370b78"
+)
+QM5_41186_COMPILE_FAIL_REPAIR_AUTHORITY = (
+    "router_ops_issue:6c679382-231e-4d33-a518-bbce06fbc433"
+)
+QM5_41186_COMPILE_FAIL_REPAIR_EA_LABEL = "QM5_41186_xtixng-median-runs-rv"
+QM5_41186_COMPILE_FAIL_REJECTED_SOURCE_SHA256 = (
+    "2ae7f7b27f98ed76ea026557565445b3bf1dffddf2921171286bfcca9616b7bc"
+)
+QM5_41186_COMPILE_FAIL_REPAIRED_SOURCE_SHA256 = (
+    "e1fd406fe334d5453bf870d4bec24aa68f14b7d295fd1a19a22dc1acb02cb7c2"
+)
 # Exact append-only authority for the failed QM5_1538 compile repaired under
 # build task b8761494-8807-41d8-b4a0-f1d4141588c4.  The predecessor failed
 # both MetaEditor compilation and the current raw-indicator/CopyBuffer
@@ -1330,6 +1350,53 @@ def _qm5_41201_compile_fail_repair_authorized(
         and payload.get("ea_label") == ea_label
         and str(payload.get("mq5_sha256") or "").lower()
         == QM5_41201_COMPILE_FAIL_REJECTED_SOURCE_SHA256
+        and payload.get("verdict_reason") == "EA_INDICATOR_BUFFER_UNBOUNDED"
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") == "PASS"
+        and compile_result.get("build_check_result") == "FAIL"
+        and compile_result.get("failure_classes")
+        == ["EA_INDICATOR_BUFFER_UNBOUNDED"]
+    )
+
+
+def _qm5_41186_compile_fail_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+) -> bool:
+    """Bind the QM5_41186 repair to one exact failed row and source delta."""
+    if (
+        authority != QM5_41186_COMPILE_FAIL_REPAIR_AUTHORITY
+        or ea_label != QM5_41186_COMPILE_FAIL_REPAIR_EA_LABEL
+        or ea_id != "41186"
+        or str(source_sha or "").lower()
+        != QM5_41186_COMPILE_FAIL_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_41186_COMPILE_FAIL_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    return bool(
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "COMPILE_FAIL"
+        and payload.get("ea_label") == ea_label
+        and str(payload.get("mq5_sha256") or "").lower()
+        == QM5_41186_COMPILE_FAIL_REJECTED_SOURCE_SHA256
         and payload.get("verdict_reason") == "EA_INDICATOR_BUFFER_UNBOUNDED"
         and isinstance(compile_result, dict)
         and compile_result.get("compile_result") == "PASS"
@@ -2515,6 +2582,14 @@ def _source_repair_authorized(
         )
     if authority == QM5_41201_COMPILE_FAIL_REPAIR_AUTHORITY:
         return _qm5_41201_compile_fail_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+        )
+    if authority == QM5_41186_COMPILE_FAIL_REPAIR_AUTHORITY:
+        return _qm5_41186_compile_fail_repair_authorized(
             ea_label,
             authority,
             ea_id=ea_id,
