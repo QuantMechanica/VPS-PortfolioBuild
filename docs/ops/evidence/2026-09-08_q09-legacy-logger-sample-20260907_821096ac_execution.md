@@ -374,3 +374,11 @@ acceptance ("11167 rerun ends PASS/FAIL") stays unmet. `farmctl health`: overall
 hourly purge already active. Spawn lease `agent_task:dfc60103-16e2-5863-80d2-a680a6da2f26`
 reacquired (30 min). No ticket, rebuild, release, or verdict change made here. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T13:59Z (orchestration cycle) — no change (direct DB read)
+
+`QM5_41394` `XAUUSD.DWX` (this task's own 11167 lineage symbol) still `Q02 pending`
+since 10:52:59Z; SP500/XTIUSD also still pending; USDJPY advanced to `Q03 pending`
+(13:09:21Z). This task's acceptance criterion stays unmet. Same gate as `bb814520`
+(see that file for this cycle's fuller note). No ticket, rebuild, release, or verdict
+change made here. Task remains `IN_PROGRESS`.
