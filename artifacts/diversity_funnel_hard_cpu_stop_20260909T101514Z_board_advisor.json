@@ -1,0 +1,24 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "sampled_at_utc": "2026-09-09T10:15:14.5224283Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "30d6dee8771378e797b1cf458443e2b543258ef9",
+  "interval_seconds": 2,
+  "samples_percent": [
+    100.0,
+    100.0,
+    100.0,
+    100.0,
+    100.0
+  ],
+  "average_percent": 100.0,
+  "maximum_percent": 100.0,
+  "ceiling_percent": 97.0,
+  "admitted": false,
+  "stop_stage": "before_farm_db_reconciliation_or_claim",
+  "farm_db_mutated": false,
+  "compile_enqueued": false,
+  "q02_enqueued": false,
+  "tester_dispatched": false,
+  "live_surface_touched": false
+}
