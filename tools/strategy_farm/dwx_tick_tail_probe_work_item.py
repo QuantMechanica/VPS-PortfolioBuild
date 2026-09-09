@@ -316,6 +316,8 @@ def validate_summary(
     receipt_path = Path(str(summary.get("probe_receipt_path") or ""))
     csv_binding = summary.get("tick_tail_csv")
     csv_path = Path(str(csv_binding.get("path") or "")) if isinstance(csv_binding, dict) else Path()
+    price_binding = summary.get("price_scale_csv")
+    price_path = Path(str(price_binding.get("path") or "")) if isinstance(price_binding, dict) else Path()
     expected_schema = [
         "symbol", "last_tick_time_msc", "last_tick_utc", "last_tick_bid",
         "last_tick_ask", "tick_count_last_day", "first_tick_time_msc",
@@ -330,12 +332,22 @@ def validate_summary(
         or not SHA_RE.fullmatch(str(csv_binding.get("sha256") or ""))
     ):
         reasons.append("csv_binding")
+    if (
+        not isinstance(price_binding, dict)
+        or price_binding.get("rows") != 9
+        or price_binding.get("schema") != ["symbol", "digits", "point", "price_scale"]
+        or price_binding.get("source_terminal") != "T1"
+        or not SHA_RE.fullmatch(str(price_binding.get("sha256") or ""))
+    ):
+        reasons.append("price_scale_binding")
     expected_dir = (SPLICE_ROOT / str(payload.get("probe_stamp") or "")).resolve()
     try:
         if receipt_path.resolve() != expected_dir / "probe_receipt.json":
             reasons.append("receipt_scope")
         if csv_path.resolve() != expected_dir / "tick_tail.csv":
             reasons.append("csv_scope")
+        if price_path.resolve() != expected_dir / "price_scale.csv":
+            reasons.append("price_scale_scope")
     except OSError:
         reasons.append("output_scope")
     if verify_files:
@@ -347,6 +359,12 @@ def validate_summary(
             or sha256_file(csv_path) != csv_binding.get("sha256")
         ):
             reasons.append("csv")
+        if (
+            not isinstance(price_binding, dict)
+            or not price_path.is_file()
+            or sha256_file(price_path) != price_binding.get("sha256")
+        ):
+            reasons.append("price_scale_csv")
     if reasons:
         raise ValueError("invalid DWX tick-tail summary: " + ",".join(sorted(set(reasons))))
     return {
@@ -354,6 +372,7 @@ def validate_summary(
         "verdict": "REVIEW_REQUIRED",
         "evidence_path": str(receipt_path),
         "tick_tail_csv": str(csv_path),
+        "price_scale_csv": str(price_path),
     }
 
 

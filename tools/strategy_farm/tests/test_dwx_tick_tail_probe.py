@@ -78,6 +78,8 @@ def test_mql_probe_is_exact_t1_read_only_and_37_symbols(tmp_path: Path) -> None:
     assert "Enabled=1" not in source
     assert "CopyTicks(" in source
     assert "CopyTicksRange(" in source
+    assert "SymbolInfoInteger(symbol,SYMBOL_DIGITS" in source
+    assert "SymbolInfoDouble(symbol,SYMBOL_POINT" in source
 
     custom_write = tmp_path / "custom_write.mq5"
     custom_write.write_text(
@@ -183,6 +185,43 @@ def test_canonical_csv_schema_range_check_and_row_hashes(tmp_path: Path) -> None
             history_ranges_path=ranges,
             now_utc=dt.datetime(2026, 9, 7, tzinfo=UTC),
         )
+
+
+def test_price_scale_receipt_has_exact_nine_t1_sourced_rows(tmp_path: Path) -> None:
+    raw = tmp_path / "price_scale_raw.csv"
+    _write_csv(
+        raw,
+        probe.PRICE_SCALE_HEADER,
+        [
+            {
+                "symbol": symbol,
+                "digits": index % 6,
+                "point": format(10.0 ** -(index % 6), ".12g"),
+                "price_scale": 10 ** (index % 6),
+            }
+            for index, symbol in enumerate(
+                reversed(sorted(probe.PRICE_SCALE_SYMBOLS)), start=1
+            )
+        ],
+    )
+    output = tmp_path / "price_scale.csv"
+    binding = probe.canonicalize_price_scale_probe(raw, output)
+    assert binding["rows"] == 9
+    assert binding["schema"] == ["symbol", "digits", "point", "price_scale"]
+    assert binding["source_terminal"] == "T1"
+    with output.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    assert [row["symbol"] for row in rows] == sorted(probe.PRICE_SCALE_SYMBOLS)
+
+    bad = tmp_path / "bad.csv"
+    _write_csv(bad, probe.PRICE_SCALE_HEADER, [{
+        "symbol": sorted(probe.PRICE_SCALE_SYMBOLS)[0],
+        "digits": 2,
+        "point": "0.01",
+        "price_scale": 10,
+    }])
+    with pytest.raises(ValueError, match="invalid T1 price-scale metadata"):
+        probe.canonicalize_price_scale_probe(bad, tmp_path / "refused.csv")
 
 
 def test_payload_binding_terminal_scope_and_history_expansion() -> None:
@@ -319,6 +358,13 @@ def test_summary_keeps_queue_stamp_separate_from_fresh_run_tag() -> None:
             "sha256": "c" * 64,
             "rows": 37,
             "schema": probe.FINAL_HEADER,
+        },
+        "price_scale_csv": {
+            "path": str(output_dir / "price_scale.csv"),
+            "sha256": "d" * 64,
+            "rows": 9,
+            "schema": probe.PRICE_SCALE_HEADER,
+            "source_terminal": "T1",
         },
         "signed_archive_unchanged": True,
         "error": None,

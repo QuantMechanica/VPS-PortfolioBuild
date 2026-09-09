@@ -37,6 +37,22 @@ def _write_header_m1(path: Path, rows: list[tuple[int, float, int, float]]) -> N
             ])
 
 
+def _write_nonfx_metadata(path: Path) -> None:
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=common.NONFX_METADATA_HEADER, lineterminator="\n")
+        writer.writeheader()
+        for index, symbol in enumerate(sorted(common.NON_FX_INSTRUMENTS), start=1):
+            # Synthetic contract fixtures deliberately do not encode or guess
+            # any broker's actual per-symbol values.
+            digits = index % 6
+            writer.writerow({
+                "symbol": symbol,
+                "digits": digits,
+                "point": format(10.0 ** -digits, ".12g"),
+                "price_scale": 10 ** digits,
+            })
+
+
 def test_symbol_mapping_is_exactly_the_37_row_dwx_universe() -> None:
     assert len(common.CANONICAL_SYMBOLS) == 37
     assert common.canonical_instrument("EURUSD.DWX") == "EURUSD"
@@ -50,6 +66,10 @@ def test_symbol_mapping_is_exactly_the_37_row_dwx_universe() -> None:
     assert common.instrument_url_key("USA500.IDX/USD") == "USA500IDXUSD"
     with pytest.raises(ValueError, match="outside the 37-row"):
         common.canonical_instrument("BTCUSD.DWX")
+    assert common.default_price_scale("EURUSD.DWX") == 100000
+    assert common.default_point_size("EURUSD.DWX") == pytest.approx(0.00001)
+    assert common.default_price_scale("XTIUSD.DWX") is None
+    assert common.default_point_size("XTIUSD.DWX") is None
 
 
 @pytest.mark.parametrize(
@@ -258,6 +278,81 @@ def test_converter_rejects_checksum_drift_and_unproven_cfd_scale(tmp_path: Path)
             symbol="XTIUSD.DWX",
             splice_utc=hour,
             out_dir=tmp_path / "converted",
+            price_scale=1000,
+            point_size=0.001,
+        )
+
+
+def test_nonfx_receipt_supplies_converter_and_reconciler_without_silent_defaults(tmp_path: Path) -> None:
+    metadata = tmp_path / "price_scale.csv"
+    _write_nonfx_metadata(metadata)
+    loaded = common.load_nonfx_instrument_metadata(metadata)
+    assert set(loaded) == set(common.NON_FX_INSTRUMENTS)
+    xti_metadata = loaded["XTIUSD.DWX"]
+
+    hour = dt.datetime(2026, 1, 5, tzinfo=UTC)
+    content = _bi5([(1000, 110002, 110000, 1.0, 1.0)])
+    download_root = tmp_path / "download"
+    raw_path = download_root / "raw" / common.hourly_relative_path("XTIUSD.DWX", hour)
+    common.atomic_write_bytes(raw_path, content)
+    manifest = download_root / "download_manifest.jsonl"
+    common.append_json_line(manifest, {
+        "symbol": "XTIUSD.DWX", "status": "downloaded", "url": "fixture",
+        "hour_utc": common.format_utc(hour),
+        "relative_path": raw_path.relative_to(download_root / "raw").as_posix(),
+        "sha256": common.sha256_file(raw_path), "bytes": len(content),
+    })
+    converted = convert_to_import.convert_symbol(
+        manifest_path=manifest,
+        raw_root=download_root / "raw",
+        symbol="XTIUSD.DWX",
+        splice_utc=hour,
+        out_dir=tmp_path / "converted",
+        instrument_metadata_path=metadata,
+    )
+    assert converted["price_scale"] == xti_metadata["price_scale"]
+    assert converted["point_size"] == pytest.approx(xti_metadata["point_size"])
+    assert converted["instrument_metadata"]["sha256"] == common.sha256_file(metadata)
+    with pytest.raises(ValueError, match="conflicts with governed"):
+        convert_to_import.convert_symbol(
+            manifest_path=manifest,
+            raw_root=download_root / "raw",
+            symbol="XTIUSD.DWX",
+            splice_utc=hour,
+            out_dir=tmp_path / "conflicting",
+            price_scale=int(xti_metadata["price_scale"]) + 1,
+            instrument_metadata_path=metadata,
+        )
+
+    candidate, reference = _overlap_rows(close_delta=0.0)
+    dukascopy = tmp_path / "duk_nonfx.csv"
+    dwx = tmp_path / "dwx_nonfx.csv"
+    _write_header_m1(dukascopy, candidate)
+    _write_header_m1(dwx, reference)
+    reconciled = reconcile_overlap.reconcile_symbol(
+        symbol="XTIUSD.DWX",
+        dukascopy_csv=dukascopy,
+        dwx_csv=dwx,
+        instrument_metadata_path=metadata,
+    )
+    assert reconciled["point_size"] == pytest.approx(xti_metadata["point_size"])
+    assert reconciled["instrument_metadata"]["sha256"] == common.sha256_file(metadata)
+    with pytest.raises(ValueError, match="conflicts with governed"):
+        reconcile_overlap.reconcile_symbol(
+            symbol="XTIUSD.DWX",
+            dukascopy_csv=dukascopy,
+            dwx_csv=dwx,
+            point_size=float(xti_metadata["point_size"]) * 2,
+            instrument_metadata_path=metadata,
+        )
+
+    with pytest.raises(ValueError, match="explicit point_size"):
+        convert_to_import.convert_symbol(
+            manifest_path=manifest,
+            raw_root=download_root / "raw",
+            symbol="XTIUSD.DWX",
+            splice_utc=hour,
+            out_dir=tmp_path / "refused",
             price_scale=1000,
         )
 

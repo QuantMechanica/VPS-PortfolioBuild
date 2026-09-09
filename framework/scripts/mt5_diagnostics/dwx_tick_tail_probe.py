@@ -61,6 +61,11 @@ FINAL_HEADER = [
 ROW_HASH_CONTRACT = "qm.dwx-tick-tail-row/v1"
 SUMMARY_SCHEMA = "qm.dwx-tick-tail-probe-summary/v1"
 RECEIPT_SCHEMA = "qm.dwx-tick-tail-probe-receipt/v1"
+PRICE_SCALE_HEADER = ["symbol", "digits", "point", "price_scale"]
+PRICE_SCALE_SYMBOLS = {
+    "GDAXI.DWX", "NDX.DWX", "SP500.DWX", "UK100.DWX", "WS30.DWX",
+    "XAGUSD.DWX", "XAUUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX",
+}
 FORBIDDEN_CUSTOM_WRITE_TOKENS = (
     r"\bCustomTicks(?:Add|Replace|Delete)\s*\(",
     r"\bCustomRates(?:Update|Replace|Delete)\s*\(",
@@ -272,6 +277,49 @@ def canonicalize_raw_probe(
     }
 
 
+def canonicalize_price_scale_probe(raw_path: Path, output_path: Path) -> dict[str, Any]:
+    rows: list[dict[str, str]] = []
+    with Path(raw_path).open(encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != PRICE_SCALE_HEADER:
+            raise ValueError("raw price-scale schema mismatch")
+        for raw in reader:
+            symbol = str(raw.get("symbol") or "").strip().upper()
+            digits = int(raw["digits"])
+            point = float(raw["point"])
+            price_scale = int(raw["price_scale"])
+            if (
+                symbol not in PRICE_SCALE_SYMBOLS
+                or not 0 <= digits <= 12
+                or not math.isfinite(point)
+                or point <= 0.0
+                or price_scale != 10 ** digits
+            ):
+                raise ValueError(f"invalid T1 price-scale metadata: {symbol!r}")
+            rows.append({
+                "symbol": symbol,
+                "digits": str(digits),
+                "point": format(point, ".12g"),
+                "price_scale": str(price_scale),
+            })
+    rows.sort(key=lambda row: row["symbol"])
+    if len(rows) != 9 or {row["symbol"] for row in rows} != PRICE_SCALE_SYMBOLS:
+        raise ValueError("price-scale output must contain exactly the nine governed non-FX symbols")
+    stream = io.StringIO(newline="")
+    writer = csv.DictWriter(stream, fieldnames=PRICE_SCALE_HEADER, lineterminator="\n")
+    writer.writeheader()
+    writer.writerows(rows)
+    _atomic_write_text(Path(output_path), stream.getvalue())
+    return {
+        "path": str(Path(output_path).resolve()),
+        "sha256": sha256_file(Path(output_path)),
+        "rows": 9,
+        "schema": PRICE_SCALE_HEADER,
+        "source_terminal": "T1",
+        "source_apis": ["SymbolInfoInteger(SYMBOL_DIGITS)", "SymbolInfoDouble(SYMBOL_POINT)"],
+    }
+
+
 def _compact_isolation_audit(root: Path) -> dict[str, Any]:
     activation = custom_history_gate.load_activation(root)
     if not activation or activation.get("enabled") is not True:
@@ -473,6 +521,7 @@ def run(
     identity: dict[str, Any] | None = None
     ini: Path | None = None
     raw_terminal_path: Path | None = None
+    raw_metadata_terminal_path: Path | None = None
     pre_snapshot: dict[str, Any] | None = None
     try:
         pre_audit = _compact_isolation_audit(farm_root)
@@ -533,10 +582,12 @@ def run(
             }
 
             output_rel = f"QM\\dwx_tick_tail\\{out.name}\\tick_tail_raw.csv"
+            metadata_rel = f"QM\\dwx_tick_tail\\{out.name}\\price_scale_raw.csv"
             marker_name = f"QM_DWX_TICK_TAIL_COMPLETE_{out.name}.txt"
             raw_terminal_path = ROOT / "MQL5/Files/QM/dwx_tick_tail" / out.name / "tick_tail_raw.csv"
+            raw_metadata_terminal_path = ROOT / "MQL5/Files/QM/dwx_tick_tail" / out.name / "price_scale_raw.csv"
             marker = ROOT / "MQL5/Files" / marker_name
-            if raw_terminal_path.exists() or marker.exists():
+            if raw_terminal_path.exists() or raw_metadata_terminal_path.exists() or marker.exists():
                 raise ValueError("probe terminal output path already exists")
             preset = ROOT / "MQL5/Presets" / f"QM_DWX_TICK_TAIL_{out.name}.set"
             boot.atomic_write_text(
@@ -544,6 +595,7 @@ def run(
                 "\n".join(
                     [
                         f"InpOutputFile={output_rel}",
+                        f"InpMetadataFile={metadata_rel}",
                         f"InpCompletion={marker_name}",
                         "InpSyncAttempts=90",
                         "",
@@ -645,6 +697,16 @@ def run(
                 )
             except Exception as exc:
                 result["output_error"] = f"{type(exc).__name__}: {exc}"
+        if raw_metadata_terminal_path is not None and raw_metadata_terminal_path.is_file():
+            try:
+                raw_metadata_copy = out / "price_scale_raw.csv"
+                shutil.copyfile(raw_metadata_terminal_path, raw_metadata_copy)
+                result["raw_price_scale_csv"] = boot.file_binding(raw_metadata_copy)
+                result["price_scale_csv"] = canonicalize_price_scale_probe(
+                    raw_metadata_copy, out / "price_scale.csv"
+                )
+            except Exception as exc:
+                result["output_error"] = f"{type(exc).__name__}: {exc}"
 
         result["completed_at_utc"] = boot.utc_now()
         result["status"] = "PASS" if (
@@ -657,6 +719,8 @@ def run(
             )
             and result.get("signed_archive_unchanged") is True
             and (result.get("tick_tail_csv") or {}).get("rows") == 37
+            and (result.get("price_scale_csv") or {}).get("rows") == 9
+            and "metadata_successes=9 metadata_failures=0" in result.get("completion", "")
         ) else "FAIL"
         receipt_path = out / "probe_receipt.json"
         _atomic_write_json(receipt_path, result)
@@ -676,6 +740,7 @@ def run(
             "probe_receipt_path": str(receipt_path),
             "probe_receipt_sha256": sha256_file(receipt_path),
             "tick_tail_csv": result.get("tick_tail_csv"),
+            "price_scale_csv": result.get("price_scale_csv"),
             "signed_archive_unchanged": result.get("signed_archive_unchanged", False),
             "completed_at_utc": result["completed_at_utc"],
             "error": result.get("error") or result.get("output_error") or result.get("post_audit_error"),

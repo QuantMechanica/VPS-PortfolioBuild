@@ -27,6 +27,7 @@ try:
         format_utc,
         hourly_relative_path,
         load_json_lines,
+        load_nonfx_instrument_metadata,
         parse_utc,
         sha256_file,
         utc_msc_to_broker_msc,
@@ -41,6 +42,7 @@ except ImportError:  # direct script execution
         format_utc,
         hourly_relative_path,
         load_json_lines,
+        load_nonfx_instrument_metadata,
         parse_utc,
         sha256_file,
         utc_msc_to_broker_msc,
@@ -137,6 +139,7 @@ def convert_symbol(
     out_dir: Path,
     price_scale: int | None = None,
     point_size: float | None = None,
+    instrument_metadata_path: Path | None = None,
     reconciliation_from_utc: dt.datetime | None = None,
 ) -> dict[str, object]:
     symbol = str(symbol).strip().upper()
@@ -147,8 +150,28 @@ def convert_symbol(
         raise ValueError(f"download manifest is missing: {manifest_path}")
     if not raw_root.is_dir():
         raise ValueError(f"raw download root is missing: {raw_root}")
+    fx_scale = default_price_scale(symbol)
+    metadata_binding = None
+    if fx_scale is None and instrument_metadata_path is not None:
+        metadata_path = Path(instrument_metadata_path).resolve()
+        metadata = load_nonfx_instrument_metadata(metadata_path)[symbol]
+        if price_scale is not None and int(price_scale) != int(metadata["price_scale"]):
+            raise ValueError("explicit price_scale conflicts with governed instrument metadata")
+        if point_size is not None and not math.isclose(
+            float(point_size), float(metadata["point_size"]), rel_tol=0.0, abs_tol=1e-15
+        ):
+            raise ValueError("explicit point_size conflicts with governed instrument metadata")
+        if price_scale is None:
+            price_scale = int(metadata["price_scale"])
+        if point_size is None:
+            point_size = float(metadata["point_size"])
+        metadata_binding = {
+            "path": str(metadata_path),
+            "sha256": sha256_file(metadata_path),
+            "source": "governed T1 SymbolInfo receipt",
+        }
     scale = int(
-        default_price_scale(symbol) or 0
+        fx_scale or 0
         if price_scale is None
         else price_scale
     )
@@ -157,11 +180,11 @@ def convert_symbol(
             f"{symbol} is not an FX pair with a format-authenticated scale; "
             "supply --price-scale from reviewed instrument metadata"
         )
-    effective_point = float(
-        default_point_size(symbol) or (1.0 / scale)
-        if point_size is None
-        else point_size
-    )
+    if fx_scale is None and point_size is None:
+        raise ValueError(
+            f"{symbol} requires explicit point_size from reviewed instrument metadata"
+        )
+    effective_point = float(default_point_size(symbol) if point_size is None else point_size)
     if not math.isfinite(effective_point) or effective_point <= 0:
         raise ValueError("point_size must be finite and positive")
     splice = splice_utc.astimezone(UTC)
@@ -391,6 +414,7 @@ def convert_symbol(
         "append_only_contract": "every emitted source UTC tick is strictly greater than splice_timestamp_utc",
         "price_scale": scale,
         "point_size": effective_point,
+        "instrument_metadata": metadata_binding,
         "download_manifest": {
             "path": str(manifest_path),
             "sha256": sha256_file(manifest_path),
@@ -467,6 +491,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--price-scale", type=int)
     parser.add_argument("--point-size", type=float)
     parser.add_argument(
+        "--instrument-metadata",
+        type=Path,
+        help="exact nine-row governed T1 price_scale.csv receipt",
+    )
+    parser.add_argument(
         "--reconciliation-from-utc",
         help="emit a separate non-importable overlap M1 CSV from this UTC instant",
     )
@@ -480,6 +509,7 @@ def main(argv: list[str] | None = None) -> int:
             out_dir=args.out,
             price_scale=args.price_scale,
             point_size=args.point_size,
+            instrument_metadata_path=args.instrument_metadata,
             reconciliation_from_utc=(
                 parse_utc(args.reconciliation_from_utc)
                 if args.reconciliation_from_utc

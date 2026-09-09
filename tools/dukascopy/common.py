@@ -8,6 +8,7 @@ import datetime as dt
 import hashlib
 import json
 import lzma
+import math
 import os
 import struct
 from dataclasses import dataclass
@@ -180,6 +181,40 @@ def default_price_scale(symbol: str) -> int | None:
 def default_point_size(symbol: str) -> float | None:
     scale = default_price_scale(symbol)
     return None if scale is None else 1.0 / scale
+
+
+NONFX_METADATA_HEADER = ["symbol", "digits", "point", "price_scale"]
+
+
+def load_nonfx_instrument_metadata(path: Path) -> dict[str, dict[str, object]]:
+    """Load the exact nine-row T1 broker-spec receipt; never derive CFD values."""
+    rows: dict[str, dict[str, object]] = {}
+    with Path(path).open(encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != NONFX_METADATA_HEADER:
+            raise ValueError("non-FX instrument metadata schema mismatch")
+        for raw in reader:
+            symbol = str(raw.get("symbol") or "").strip().upper()
+            digits = int(raw["digits"])
+            point = float(raw["point"])
+            price_scale = int(raw["price_scale"])
+            if (
+                symbol not in NON_FX_INSTRUMENTS
+                or symbol in rows
+                or not 0 <= digits <= 12
+                or not math.isfinite(point)
+                or point <= 0.0
+                or price_scale != 10 ** digits
+            ):
+                raise ValueError(f"invalid non-FX instrument metadata row: {symbol!r}")
+            rows[symbol] = {
+                "digits": digits,
+                "point_size": point,
+                "price_scale": price_scale,
+            }
+    if set(rows) != set(NON_FX_INSTRUMENTS) or len(rows) != 9:
+        raise ValueError("non-FX metadata must contain exactly the nine governed symbols")
+    return rows
 
 
 def hourly_url(

@@ -2,6 +2,7 @@
 #property strict
 
 input string InpOutputFile="QM\\dwx_tick_tail\\tick_tail_raw.csv";
+input string InpMetadataFile="QM\\dwx_tick_tail\\price_scale_raw.csv";
 input string InpCompletion="QM_DWX_TICK_TAIL_COMPLETE.txt";
 input int InpSyncAttempts=90;
 
@@ -74,6 +75,45 @@ bool ProbeOne(const string symbol,const int handle)
    return true;
   }
 
+bool ProbeMetadataOne(const string symbol,const int handle)
+  {
+   if(!SymbolSelect(symbol,true))
+     {
+      PrintFormat("METADATA_SYMBOL_SELECT_FAIL symbol=%s err=%d",symbol,GetLastError());
+      return false;
+     }
+   long digits_raw=0;
+   double point=0.0;
+   ResetLastError();
+   if(!SymbolInfoInteger(symbol,SYMBOL_DIGITS,digits_raw))
+     {
+      PrintFormat("SYMBOL_DIGITS_FAIL symbol=%s err=%d",symbol,GetLastError());
+      return false;
+     }
+   ResetLastError();
+   if(!SymbolInfoDouble(symbol,SYMBOL_POINT,point))
+     {
+      PrintFormat("SYMBOL_POINT_FAIL symbol=%s err=%d",symbol,GetLastError());
+      return false;
+     }
+   const int digits=(int)digits_raw;
+   if(digits<0 || digits>12 || point<=0.0)
+     {
+      PrintFormat("SYMBOL_METADATA_INVALID symbol=%s digits=%d point=%.12f",symbol,digits,point);
+      return false;
+     }
+   long price_scale=1;
+   for(int i=0;i<digits;i++) price_scale*=10;
+   if(FileWrite(handle,symbol,digits,DoubleToString(point,digits),price_scale)<=0)
+     {
+      PrintFormat("METADATA_ROW_WRITE_FAIL symbol=%s err=%d",symbol,GetLastError());
+      return false;
+     }
+   PrintFormat("DWX_PRICE_SCALE_OK symbol=%s digits=%d point=%s price_scale=%I64d",
+               symbol,digits,DoubleToString(point,digits),price_scale);
+   return true;
+  }
+
 void OnStart()
   {
    string root=TerminalInfoString(TERMINAL_PATH);
@@ -81,7 +121,7 @@ void OnStart()
    StringToLower(root);
    if(root!="d:\\qm\\mt5\\t1") { Print("WRONG_TERMINAL_REFUSED"); return; }
    if(InpSyncAttempts<1 || InpSyncAttempts>300) { Print("SYNC_ATTEMPTS_REFUSED"); return; }
-   if(FileIsExist(InpOutputFile) || FileIsExist(InpCompletion))
+   if(FileIsExist(InpOutputFile) || FileIsExist(InpMetadataFile) || FileIsExist(InpCompletion))
      { Print("EXISTING_OUTPUT_REFUSED"); return; }
 
    string symbols[]={
@@ -106,13 +146,28 @@ void OnStart()
    FileFlush(handle);
    FileClose(handle);
 
+   string metadata_symbols[]={
+      "GDAXI.DWX","NDX.DWX","SP500.DWX","UK100.DWX","WS30.DWX",
+      "XAGUSD.DWX","XAUUSD.DWX","XNGUSD.DWX","XTIUSD.DWX"};
+   if(ArraySize(metadata_symbols)!=9) { Print("METADATA_UNIVERSE_SIZE_REFUSED"); return; }
+   const int metadata_handle=FileOpen(InpMetadataFile,FILE_WRITE|FILE_CSV|FILE_ANSI,',',CP_UTF8);
+   if(metadata_handle==INVALID_HANDLE)
+     { PrintFormat("METADATA_OUTPUT_OPEN_FAIL path=%s err=%d",InpMetadataFile,GetLastError()); return; }
+   FileWrite(metadata_handle,"symbol","digits","point","price_scale");
+   int metadata_successes=0,metadata_failures=0;
+   for(int i=0;i<ArraySize(metadata_symbols);i++)
+     if(ProbeMetadataOne(metadata_symbols[i],metadata_handle)) metadata_successes++; else metadata_failures++;
+   FileFlush(metadata_handle);
+   FileClose(metadata_handle);
+
    const int marker=FileOpen(InpCompletion,FILE_WRITE|FILE_TXT|FILE_ANSI,0,CP_UTF8);
    if(marker==INVALID_HANDLE)
      { PrintFormat("COMPLETION_OPEN_FAIL err=%d",GetLastError()); return; }
    FileWrite(marker,StringFormat(
-      "successes=%d failures=%d terminal=T1 build=%d",
-      successes,failures,(int)TerminalInfoInteger(TERMINAL_BUILD)));
+      "successes=%d failures=%d terminal=T1 build=%d metadata_successes=%d metadata_failures=%d",
+      successes,failures,(int)TerminalInfoInteger(TERMINAL_BUILD),metadata_successes,metadata_failures));
    FileFlush(marker);
    FileClose(marker);
-   PrintFormat("DWX_TICK_TAIL_COMPLETE successes=%d failures=%d",successes,failures);
+   PrintFormat("DWX_TICK_TAIL_COMPLETE successes=%d failures=%d metadata_successes=%d metadata_failures=%d",
+               successes,failures,metadata_successes,metadata_failures);
   }

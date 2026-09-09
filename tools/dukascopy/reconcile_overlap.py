@@ -20,6 +20,7 @@ try:
         atomic_write_text,
         broker_epoch_seconds_for_utc,
         default_point_size,
+        load_nonfx_instrument_metadata,
         percentile,
         sha256_file,
         us_dst_bounds_utc,
@@ -31,6 +32,7 @@ except ImportError:  # direct script execution
         atomic_write_text,
         broker_epoch_seconds_for_utc,
         default_point_size,
+        load_nonfx_instrument_metadata,
         percentile,
         sha256_file,
         us_dst_bounds_utc,
@@ -227,10 +229,25 @@ def reconcile_symbol(
     dukascopy_csv: Path,
     dwx_csv: Path,
     point_size: float | None = None,
+    instrument_metadata_path: Path | None = None,
     typical_spread_points: float | None = None,
 ) -> dict[str, object]:
     started = time.monotonic()
     symbol = str(symbol).strip().upper()
+    metadata_binding = None
+    if default_point_size(symbol) is None and instrument_metadata_path is not None:
+        metadata_path = Path(instrument_metadata_path).resolve()
+        receipt_point = float(load_nonfx_instrument_metadata(metadata_path)[symbol]["point_size"])
+        if point_size is not None and not math.isclose(
+            float(point_size), receipt_point, rel_tol=0.0, abs_tol=1e-15
+        ):
+            raise ValueError("explicit point_size conflicts with governed instrument metadata")
+        point_size = receipt_point
+        metadata_binding = {
+            "path": str(metadata_path),
+            "sha256": sha256_file(metadata_path),
+            "source": "governed T1 SymbolInfo receipt",
+        }
     effective_point = float(
         default_point_size(symbol) or 0 if point_size is None else point_size
     )
@@ -343,6 +360,7 @@ def reconcile_symbol(
         "dukascopy_coverage": dukascopy_coverage,
         "tick_density_ratio": density_ratio,
         "point_size": effective_point,
+        "instrument_metadata": metadata_binding,
         "typical_spread_points": effective_spread,
         "typical_spread_source": typical_spread_source,
         "close_delta_p95_limit_points": close_limit,
@@ -469,6 +487,7 @@ def _jobs_from_args(args: argparse.Namespace) -> list[dict[str, object]]:
             "dukascopy_csv": str(args.dukascopy_csv),
             "dwx_csv": str(args.dwx_csv),
             "point_size": args.point_size,
+            "instrument_metadata": str(args.instrument_metadata) if args.instrument_metadata else None,
             "typical_spread_points": args.typical_spread_points,
         }]
     return jobs
@@ -481,6 +500,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--dukascopy-csv", type=Path)
     parser.add_argument("--dwx-csv", type=Path)
     parser.add_argument("--point-size", type=float)
+    parser.add_argument(
+        "--instrument-metadata",
+        type=Path,
+        help="exact nine-row governed T1 price_scale.csv receipt",
+    )
     parser.add_argument("--typical-spread-points", type=float)
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args(argv)
@@ -493,6 +517,11 @@ def main(argv: list[str] | None = None) -> int:
                 dwx_csv=Path(str(job["dwx_csv"])),
                 point_size=(
                     float(job["point_size"]) if job.get("point_size") is not None else None
+                ),
+                instrument_metadata_path=(
+                    Path(str(job["instrument_metadata"]))
+                    if job.get("instrument_metadata") is not None
+                    else args.instrument_metadata
                 ),
                 typical_spread_points=(
                     float(job["typical_spread_points"])
