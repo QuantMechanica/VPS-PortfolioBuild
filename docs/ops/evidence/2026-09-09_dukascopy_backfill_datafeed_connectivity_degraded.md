@@ -117,3 +117,18 @@ worth surfacing before more slots are spent on it. Options, undecided:
 No Entscheidungsschlange entry added — this is not blocked on OWNER, just
 slower than planned. Next cycle should re-test at a different hour before
 deciding between options 1-3.
+
+## Re-probe 2026-09-09 ~02:04Z (orchestration cycle, +~35min) — still degraded, no download restarted
+
+Read-only TCP connect probe only (`socket.create_connection`, no HTTP, no
+downloader process launched): 8 attempts to `194.8.15.180:443`, 5s timeout,
+0.5s spacing. Result: 4/8 succeeded (0.04s-3.13s — still elevated vs. the
+sub-second baseline for unaffected hosts), 4/8 timed out at the full 5s. Same
+roughly-50% failure signature as the 01:27-01:32Z measurement, ~35 minutes
+later. This is one more data point at nearly the same hour, not the "different
+time of day" re-test the prior note called for — not conclusive on its own,
+but it does not show recovery either. Disposition unchanged: GRÜN/measurement,
+not escalated, no download restarted, no OWNER decision needed yet. A
+meaningfully later re-test (several hours out, ideally a different UTC
+session) still stands as the next actionable step before choosing between
+options 1-3 above.
