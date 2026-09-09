@@ -360,3 +360,51 @@ yet, so no PASS/FAIL exists. `b66b5ccc` unchanged (`REVIEW`/codex). No action ta
 read: no ticket, rebuild, release, or router state change. All three tasks (`bb814520`,
 `dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS` — genuinely blocked on a terminal
 Q10_NEWS PASS/FAIL for any `QM5_41394` symbol leg, still not reached.
+
+## Orchestration cycle 2026-09-09T~1119Z — `b66b5ccc` closed APPROVED; `46167bd9` acceptance met, moved to REVIEW
+
+Direct DB read confirmed the EURUSD Q02 work item (`58b36f74-a831-4119-943b-8a9924b20179`)
+completed at `09:39:06Z` with `status=done`, `verdict=PASS` — genuine `run_smoke/v2` evidence:
+153 trades, `real_ticks_marker=true`, `deterministic=true`, `news_calendar.status=OK`,
+`logger_sample_authentication=schema_v1`, frequency floor satisfied (25 required, run covers
+5y/2018-2022). This is exactly the observation `b66b5ccc`'s own evidence file said was the only
+thing that could close its remaining acceptance item ("next authorized observation is the
+normal worker's Q02 output; only that report can close the remaining tester-input-echo
+acceptance item"). Closed `b66b5ccc` `REVIEW`→`APPROVED` this cycle (verdict cites the summary.json
+path above); no code change made, pure review-and-close per this contract's
+"Integrate the Codex branch" allowed action.
+
+Re-checked `46167bd9`'s own four acceptance criteria against this: (1) scope measured/documented
+— met, `58ad7cbd20` census; (2) `QM5_11167` rebuilt as new identity from Q02 under current
+template, old identity/evidence untouched — met, `QM5_41394` compiled clean and produced a real
+Q02 verdict, `git diff --exit-code` on the old `QM5_11167` directory still empty per `b66b5ccc`'s
+own preservation check; (3) no threshold/verdict/T_Live change — true, nothing touched outside
+this contract; (4) no claimed continuity between old/new identity verdicts — true, explicit in
+`b66b5ccc`'s record. All four are satisfied by what has already happened, independent of whether
+any `QM5_41394` leg ever reaches Q10_NEWS. Moving `46167bd9` `IN_PROGRESS`→`REVIEW` this cycle
+for independent closeout (`review_required=INDEPENDENT_ORCHESTRATOR_CLOSEOUT` on its own
+contract — this session performs the review-and-transition, not a self-grant to `PASSED`).
+
+**Does not affect `bb814520`/`dfc60103`.** Their acceptance criteria are a different, stricter
+bar — "first adjudications end PASS/FAIL (not INVALID)" at Q10_NEWS specifically, i.e. the
+calendar-echo question this whole chain exists to answer. That remains unreached: the EURUSD leg
+dead-ended at Q04 (strategy FAIL, unrelated to the calendar mechanism, logged at 10:33Z above);
+the four remaining legs (SP500, USDJPY, XAUUSD, XTIUSD) sit at `Q02 pending`, not yet run. Both
+tasks correctly stay `IN_PROGRESS`, tracked in their own evidence files — this entry does not
+change their state.
+
+## Cycle check 2026-09-09T~11:2xZ — b66b5ccc closed APPROVED; four symbol legs still pending Q02
+
+Direct DB read: Codex ticket `b66b5ccc` moved `REVIEW`→`APPROVED` at `11:19:40Z` (genuinely new
+since the 1052Z/11:0xZ checks), verdict: real Q02 worker PASS confirmed for `QM5_41394`/EURUSD
+D1 (`work_item 58b36f74`, 153 trades, `real_ticks_marker=true`, news_calendar OK,
+`logger_sample_authentication=schema_v1`) — resolves the tester-input-echo-pending gap the
+ticket was left open for; both scope-census and rebuild deliverables are now closed on Codex's
+side. This does not change the acceptance gate for any of the three claude tasks: EURUSD already
+dead-ended at Q04 (10:29:26Z, strategy FAIL), and the four other intake symbols (SP500, USDJPY,
+XAUUSD, XTIUSD) — `work_items` `17e576cf…`/`80789556…`/`3b315bc8…`/`53c32094…` — remain
+`status=pending` at Q02, unchanged since `10:52:59Z` creation, not yet claimed/run. No terminal
+Q10_NEWS PASS/FAIL exists on any leg. `b66b5ccc` being `APPROVED` (a Codex-assigned `ops_issue`)
+is not a claude `IN_PROGRESS` task and not actionable under this task's `selected_effect_only`
+scope. No action taken beyond this read: no ticket, rebuild, release, or router state change.
+All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS`.
