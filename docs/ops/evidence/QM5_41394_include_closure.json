@@ -1,0 +1,241 @@
+{
+  "schema": "qm-q09-include-closure/v1",
+  "ea_id": "QM5_41394",
+  "root_source": "framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/QM5_41394_weiss-ichi2-ma-calendar-r1.mq5",
+  "ex5_path": "framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/QM5_41394_weiss-ichi2-ma-calendar-r1.ex5",
+  "ex5_sha256": "68c53b0c6de6ec1675e617b8573d7f6c6e9ef139341369614481e60114623b26",
+  "file_count": 38,
+  "files": [
+    {
+      "origin": "repo",
+      "relative_path": "framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/QM5_41394_weiss-ichi2-ma-calendar-r1.mq5",
+      "sha256": "3e5aae565f2f7faba9082a3ca88719a103f7f5372e228c9e250d00505f335a76",
+      "size_bytes": 14379
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_AccountRiskReservation.mqh",
+      "sha256": "918834ed38754630e0cb2e91473e0a6260be7f716157320f4fe2225889fd2835",
+      "size_bytes": 18458
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_ChartUI.mqh",
+      "sha256": "5d597102945cb562ced4a69181bae10115ebac49b067f96b839c097df07b9efd",
+      "size_bytes": 18343
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_Common.mqh",
+      "sha256": "eee41e2f06ac22b8fa398529e93e24038a3b460113145e7f77fb390decf10b90",
+      "size_bytes": 82365
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_DSTAware.mqh",
+      "sha256": "e5a78c1097ff3622f9066acc25fac41228f049853bca31b19c599e92dc61472f",
+      "size_bytes": 3441
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_Entry.mqh",
+      "sha256": "b455cc835cf9e7fe462ca99aa275994432c8803836a2d409d0ed6b9f8826bc21",
+      "size_bytes": 25824
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_EquityStream.mqh",
+      "sha256": "535da9dc1a0fd016fddeea0ee2c49c14ff01af99288ff9d2f2603548ce01a7ce",
+      "size_bytes": 12286
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_Errors.mqh",
+      "sha256": "3311a156878c140a67374e9c289f0405be6fdb0c00af6701db676165e4eb03d4",
+      "size_bytes": 2577
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_Exit.mqh",
+      "sha256": "2386682cd648a6c77a0b4200992a21ce3c736ace6cbc39106e28422535e3c4a0",
+      "size_bytes": 12764
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_FTMOGovernorClient.mqh",
+      "sha256": "c5bfa6db027ea4d9cdc98a5f3fd0f04c266ccc80b2febe8c84fd32c2a6592da0",
+      "size_bytes": 4651
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_FTMOGovernorPolicy.mqh",
+      "sha256": "76af3d2fc8ec8d0f3ca3ac33204441c36ce4d84b90c2581bdf982b74a067bde9",
+      "size_bytes": 15430
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_Indicators.mqh",
+      "sha256": "50d47f901236ed0a827fd9e74e82e781f52c7c9a45ff3097630b2e497686bca4",
+      "size_bytes": 41608
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_KillSwitch.mqh",
+      "sha256": "f5675dbc9e7fbe99c73d8635c3a859e40fb49edf1f7fca1a79941acb2d84ba92",
+      "size_bytes": 29949
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_KillSwitchKS.mqh",
+      "sha256": "72e876b06e40fbe741590eb78e87c43a7da285901bfd06980b3ab64515262351",
+      "size_bytes": 12478
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_Logger.mqh",
+      "sha256": "dc2d2bcc3100967aee629a9da2e62672cb4c373a800133dea4627b2cb1366dac",
+      "size_bytes": 5940
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_MagicResolver.mqh",
+      "sha256": "89983cdae100836c8b5f7b8f385b5ddbfc67889450e595fccc62bc55542ab5f0",
+      "size_bytes": 627548
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_NewsFilter.mqh",
+      "sha256": "739230a0ba963c11f84d858f5bb8886a8b48a5e84f0be2ded29f8f813f2b6233",
+      "size_bytes": 78382
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_OrderTypes.mqh",
+      "sha256": "78a73c201dae0cd9cc6150850effb80f6341c04f33daa7d64b52f91dafe91545",
+      "size_bytes": 1927
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_PatternPermission.mqh",
+      "sha256": "82ec20e7d6492e0cd3d648000338de292282d1247e1d72e7e6f36e702c41261f",
+      "size_bytes": 43822
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_RiskSizer.mqh",
+      "sha256": "32c6eebb8ffc58656854bd0a34f2124d1d713c91525ac47f3ac62f68532a7575",
+      "size_bytes": 32938
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_RuntimeExecutionContract.mqh",
+      "sha256": "59fa23f3d9af238a967eed49ac76d55fd240261fdb592b847f0a993baa167073",
+      "size_bytes": 11850
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_SeedRNG.mqh",
+      "sha256": "b05c75dfa09937f6c09a863ec82f0a0d92109f05dfec6e3b95537dff64d79f67",
+      "size_bytes": 3402
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_Signals.mqh",
+      "sha256": "e1ed249a2d0ffdd94490a1796fbbf9820b93929faaee47c1cbd6439535dedce8",
+      "size_bytes": 9802
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_StopRules.mqh",
+      "sha256": "aa707e093fc5219a9e8f62fc4b403b85fd71563160f7851b5d8d52f1d95bc0e9",
+      "size_bytes": 8485
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_SymbolGuard.mqh",
+      "sha256": "91fd7b4299e1515488645b4322d2b5a336cf3facd3fc21fe966c4e2fdcb969e7",
+      "size_bytes": 6395
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_TM_Grid.mqh",
+      "sha256": "d3c9b41a4fd8e984b5c5f652a541551c5f135077b0aa7283909edc24d379fc98",
+      "size_bytes": 20133
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_TradeContext.mqh",
+      "sha256": "7788f47f08ef42fcb59c4cbc3e8f40f647cbeee089a58aae542d14f801359e53",
+      "size_bytes": 9666
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM/QM_TradeManagement.mqh",
+      "sha256": "f6e8736bf32966c29628947013005e9f642873025efd352858172efa3dff5ea4",
+      "size_bytes": 28816
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/QM_Branding.mqh",
+      "sha256": "acadbb5f7b087ddb36103f08edabad8fcc9ac10753dbb8c0a8b9284863e16845",
+      "size_bytes": 1733
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/news_rules/5ers.mqh",
+      "sha256": "3642116b0bfc2390982ac96ebe418630255f37ee2e18f846afcf0f6c8948b66c",
+      "size_bytes": 536
+    },
+    {
+      "origin": "repo",
+      "relative_path": "framework/include/news_rules/ftmo.mqh",
+      "sha256": "c2f8dd2821774ec90ea7c4196b951c6f5b84b84a3eea41d9793a5296e8ee00ea",
+      "size_bytes": 623
+    },
+    {
+      "origin": "mt5_stdlib_T1",
+      "relative_path": "MQL5/Include/Object.mqh",
+      "sha256": "dfad4fdb6d1bf47cf43fcbc2882e52979459f17a776f75f250a7c32d0623ab35",
+      "size_bytes": 2036
+    },
+    {
+      "origin": "mt5_stdlib_T1",
+      "relative_path": "MQL5/Include/StdLibErr.mqh",
+      "sha256": "04bb2c47b1b04dceb052e6dba1f85e0330c53abc602f341e2ea95ea1498ab28b",
+      "size_bytes": 683
+    },
+    {
+      "origin": "mt5_stdlib_T1",
+      "relative_path": "MQL5/Include/Trade/DealInfo.mqh",
+      "sha256": "9d6fb4e7d8754eaee761e43943dc49cdc3a32793ee8438119d939ea7bad71880",
+      "size_bytes": 16313
+    },
+    {
+      "origin": "mt5_stdlib_T1",
+      "relative_path": "MQL5/Include/Trade/HistoryOrderInfo.mqh",
+      "sha256": "e88f6be450462a045470315887ef751a4510da65a5115325dc88542743fc52f8",
+      "size_bytes": 20018
+    },
+    {
+      "origin": "mt5_stdlib_T1",
+      "relative_path": "MQL5/Include/Trade/OrderInfo.mqh",
+      "sha256": "d0e479578ef91d2ef1b07ae63d28ae54e15cebb914dd10e5d4510c269a9ca999",
+      "size_bytes": 22087
+    },
+    {
+      "origin": "mt5_stdlib_T1",
+      "relative_path": "MQL5/Include/Trade/PositionInfo.mqh",
+      "sha256": "dd720b755c7f23dcc109fc81bcf0772b907411d545e4a1117421737bb9ff6897",
+      "size_bytes": 15820
+    },
+    {
+      "origin": "mt5_stdlib_T1",
+      "relative_path": "MQL5/Include/Trade/Trade.mqh",
+      "sha256": "96e6781624534377fe7971cba52cca3d62d1b030bc10d5e4ebf3ed8c541399ed",
+      "size_bytes": 69541
+    }
+  ],
+  "generated_at": "2026-09-09T08:59:01Z",
+  "method": "recursive #include parse; <...> vs framework/include then MT5 stdlib, \"...\" vs including file then include root; comments stripped; fail-closed on unresolved includes",
+  "reviewed_by": "generated by build_q09_include_closure.py"
+}
