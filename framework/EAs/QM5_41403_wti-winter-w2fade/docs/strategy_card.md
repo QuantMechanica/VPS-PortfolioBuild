@@ -56,9 +56,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a WTI winter two-week exhaustion fade distinct from the incumbent RSI pullback, monthly winter reversal, split-week continuation, and XNG weekly relatives. Verify anchor-month eligibility, exact adjacent completed-week membership, strict agreement, inverse orientation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -212,6 +212,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-09 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-09 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-09 | NOT_BUILT | pending governed compile |
-| Q02 Baseline Screening | 2026-09-09 | NOT_ENQUEUED | Q01 required |
-
+| Q01 Build Validation | 2026-09-09 | PASS | governed compile `9e86e4c6-04ad-47d2-abe2-ef9601fda53b`; 0 errors, 0 warnings; build check PASS |
+| Q02 Baseline Screening | 2026-09-09 | NOT_ENQUEUED_CPU_CEILING | pre-intake CPU window max 97%; strict ceiling is below 97% |

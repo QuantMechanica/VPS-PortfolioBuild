@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T19:52:37.6309157Z",
+  "recorded_at_local": "2026-09-09T21:52:37.6369874+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "f62956bc8ab1412879c812576b44cc3d15f631dd",
+  "outcome": "STOP_HARD_CPU_CEILING_BEFORE_Q02",
+  "ea_id": "QM5_41403",
+  "ea_label": "QM5_41403_wti-winter-w2fade",
+  "compile": {
+    "work_item_id": "9e86e4c6-04ad-47d2-abe2-ef9601fda53b",
+    "verdict": "COMPILE_OK",
+    "errors": 0,
+    "warnings": 0,
+    "build_check": "PASS",
+    "ex5_sha256": "b5bd89bb111a7f05b0409179b5135fb90ef4726508f939b26cce4a316df45f27"
+  },
+  "capacity": {
+    "cpu_sampler": "Win32_Processor.LoadPercentage; five samples approximately one second apart",
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [90.0, 93.0, 91.0, 97.0, 91.0],
+    "cpu_average_percent": 92.4,
+    "cpu_maximum_percent": 97.0,
+    "cpu_pass": false,
+    "terminal64_or_metatester64_process_count_after_window": 9,
+    "binding_resources": ["whole_host_cpu_maximum"]
+  },
+  "q02": {
+    "enqueued": false,
+    "first_intake_dry_run_reason": "empty_strategy_values:strategy_symbol",
+    "preset_binding_repaired_commit": "f62956bc8ab1412879c812576b44cc3d15f631dd",
+    "retry_refused_before_intake": true,
+    "resume_command_after_fresh_passing_cpu_window": "python tools/strategy_farm/farmctl.py intake-first-q02 --compile-work-item-id 9e86e4c6-04ad-47d2-abe2-ef9601fda53b --apply"
+  },
+  "pacer_guard": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "exit_code": 0,
+    "hit_count": 0,
+    "passed_before_compile_enqueue": true
+  },
+  "safety": {
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "terminal_control_performed": false
+  }
+}
