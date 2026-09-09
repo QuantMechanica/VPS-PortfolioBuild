@@ -417,7 +417,9 @@ function Convert-EAInputValueForSetfile {
 function Add-DefaultsMatchingInputs {
     param(
         [Parameter(Mandatory = $true)]
-        [hashtable]$Target,
+        # Keep the caller's OrderedDictionary by reference. A [hashtable]
+        # conversion creates a copy and silently discards every card default.
+        [System.Collections.IDictionary]$Target,
         [Parameter(Mandatory = $true)]
         [hashtable]$Defaults,
         [Parameter(Mandatory = $true)]

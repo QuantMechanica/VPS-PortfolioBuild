@@ -24,6 +24,42 @@ REPAIRED_Q08_BASELINES = (
 )
 
 
+@pytest.mark.parametrize("shell_name", ["powershell.exe", "pwsh"])
+def test_card_defaults_mutate_ordered_target_and_override_source(tmp_path: Path, shell_name: str) -> None:
+    shell = shutil.which(shell_name)
+    if not shell:
+        pytest.skip(f"{shell_name} unavailable")
+    repo = tmp_path / "repo"
+    label = "QM5_99996_card-defaults-fixture"
+    script = repo / "framework/scripts/gen_setfile.ps1"
+    ea_dir = repo / "framework/EAs" / label
+    registry = repo / "framework/registry/magic_numbers.csv"
+    card = repo / "artifacts/cards_approved" / (label + ".md")
+    for directory in (script.parent, ea_dir, registry.parent, card.parent):
+        directory.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(GEN_SETFILE, script)
+    (ea_dir / (label + ".mq5")).write_text(
+        'input group "News"\ninput int qm_news_temporal = 3;\n'
+        'input uint qm_rng_seed = 42;\ninput string qm_news_min_impact = "high";\n'
+        'input group "Strategy"\ninput int strategy_period = 17;\n', encoding="utf-8")
+    registry.write_text("ea_id,symbol,status,symbol_slot\n99996,EURUSD.DWX,active,0\n", encoding="utf-8")
+    card.write_text(
+        "# Fixture\n\n| param | default |\n| --- | --- |\n"
+        "| qm_news_temporal | 3 |\n| qm_rng_seed | 42 |\n"
+        "| qm_news_min_impact | high |\n| strategy_period | 23 |\n"
+        "| nonexistent_input | 99 |\n", encoding="utf-8")
+    result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-File", str(script),
+        "-EaSlug", label, "-Symbol", "EURUSD.DWX", "-TF", "H1", "-Env", "backtest"],
+        cwd=repo, capture_output=True, text=True, timeout=30, check=False,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    assert result.returncode == 0, result.stderr or result.stdout
+    content = (ea_dir / "sets" / (label + "_EURUSD.DWX_H1_backtest.set")).read_text(encoding="utf-8")
+    for assignment in ("qm_news_temporal=3", "qm_rng_seed=42", "qm_news_min_impact=high", "strategy_period=23"):
+        assert content.splitlines().count(assignment) == 1
+    assert "strategy_period=17" not in content
+    assert "nonexistent_input=" not in content
+
+
 @pytest.mark.parametrize(("ea_slug", "symbol_tf"), REPAIRED_Q08_BASELINES)
 def test_repaired_q08_baseline_materializes_every_strategy_input(
     ea_slug: str, symbol_tf: str
