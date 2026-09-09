@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260909T084815_530564Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260909T084756Z_c3f36e0b.sqlite",
+    "reused": false,
+    "sha256": "e899fb6249653cf15ae003f7c1571f80d6153689f99196069fb9c2d61a816936"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "3e5aae565f2f7faba9082a3ca88719a103f7f5372e228c9e250d00505f335a76",
+      "ea_id": "QM5_41394",
+      "ea_label": "QM5_41394_weiss-ichi2-ma-calendar-r1",
+      "expected_mq5_sha256": "3e5aae565f2f7faba9082a3ca88719a103f7f5372e228c9e250d00505f335a76",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41394_weiss-ichi2-ma-calendar-r1\\QM5_41394_weiss-ichi2-ma-calendar-r1.mq5",
+      "work_item_id": "1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-09T08:48:15+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e",
+  "work_item_id_selectors": [
+    "1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e"
+  ]
+}

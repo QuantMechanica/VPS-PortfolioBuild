@@ -10,27 +10,16 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   1c90d2cd141a766439c4c3949736820fca22729e83ef6d5e919558c38182af98
 ; author:       Development
 ; date:         2026-09-09
 ;==========================================================
 qm_ea_id=41394
 qm_magic_slot_offset=0
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=3
-qm_news_compliance=1
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=1
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
-; Q09 bundle path/hash inputs are declared by current QM_NewsFilter.mqh and
-; intentionally default empty outside sealed Q09/Q10 executions.
-; strategy-specific params from the approved card
+; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41394_weiss-ichi2-ma-calendar-r1.md
 strategy_fast_sma_period=9
 strategy_slow_sma_period=26
