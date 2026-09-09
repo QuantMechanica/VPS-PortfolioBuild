@@ -340,3 +340,12 @@ on, not this task's own sv-logger scope. `farmctl health`: FAIL 13/WARN 17/OK 53
 chronic set, none referencing this chain. No action taken beyond the read; this task's own
 acceptance criterion ("11167 rerun ends PASS/FAIL") is still unmet. Task remains
 `IN_PROGRESS`.
+
+## Checked 2026-09-09T11:33Z (orchestration cycle) — b66b5ccc → APPROVED bookkeeping; no new gate result
+
+Same shared gate as `bb814520`: `b66b5ccc` moved `REVIEW`→`APPROVED` (11:19:40Z) confirming
+the already-known EURUSD Q02 PASS — not a new gate result and not this task's own symbol
+(11167/XAUUSD lineage). The four remaining `QM5_41394` legs are still `Q02 status=pending`.
+`2f717775` (this task's own open Codex ticket, non-FX price_scale/point_size — actually
+belongs to `3032534e`, cross-referenced only) not touched. No ticket, rebuild, or release
+made here. Task remains `IN_PROGRESS`, acceptance criterion still unmet.
