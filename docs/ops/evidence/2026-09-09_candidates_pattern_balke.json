@@ -1,0 +1,1155 @@
+{
+  "schema": "qm.candidate-priority-pattern-audit/v1",
+  "observed_at_utc": "2026-09-09T04:29:31.776563+00:00",
+  "purpose": "Read-only prioritization before Sunday 2026-09-13; no queue, live, rule or verdict mutation",
+  "db_read_only": true,
+  "qualified_by_current_census": 16,
+  "q12_evidence_classes": {
+    "qm.dl089-q12-selection-receipt/v1": 14,
+    "qm.optimization-fork-no-change-receipt/v1": 2
+  },
+  "final_pattern_promotions_observed": 0,
+  "qualified": [
+    {
+      "ea_id": "QM5_10700",
+      "symbol": "XAUUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "40e69c26-1ddb-5728-99a1-02b08f83c284",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-07T07:05:29.301853+00:00",
+          "sha256": "17cd45c58cfb47c34a753545f48f47532fbb23850ce3d215b764e9def04ea8fe",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "c06b61bf-3590-588e-ad16-43d4bfa7c75c",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\c06b61bf-3590-588e-ad16-43d4bfa7c75c\\receipt.json",
+          "updated_at": "2026-09-07T07:16:06.090403+00:00",
+          "sha256": "9e83439cfe4054624a6b6a6dc4793fe2dd2a5ddee7086b399b3f2ca0c65f37a0",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "055f166e-7c08-5c72-ae60-01a54e15d9f1",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\055f166e-7c08-5c72-ae60-01a54e15d9f1\\receipt.json",
+          "updated_at": "2026-09-07T07:26:35.147471+00:00",
+          "sha256": "f2052a1b7b7801db8b4c4d48ce8295931c26aaff86278e7d62b2f0baccba5bb6",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "48c41285-5849-534d-aeac-836deb9a9cb8",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\48c41285-5849-534d-aeac-836deb9a9cb8\\receipt.json",
+          "updated_at": "2026-08-25T18:52:56.578345+00:00",
+          "sha256": "b4558d97ee2fae1b1970b4c00a7ca2f21362218bcf86197c04a664ea531ca260",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_DECLARED_PATTERN_SEARCH_ZERO_FILTER_VALID",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q13": {
+          "id": "7bacc182-40f4-5232-ba7f-9e517d2abf75",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\7bacc182-40f4-5232-ba7f-9e517d2abf75\\receipt.json",
+          "updated_at": "2026-08-29T08:05:44.035803+00:00",
+          "sha256": "00805faf99a256d3ad34faacf2a544b16549a01b740a4a46e4925edc0a1268b0",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "b5e18759-1377-5af7-9634-9f66bd293d0c",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\b5e18759-1377-5af7-9634-9f66bd293d0c\\receipt.json",
+          "updated_at": "2026-08-25T19:03:06.038747+00:00",
+          "sha256": "5d39d3696f8411ff667ad9171a0c12227d0ee71ea47011f0f75e738062e57212",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_11910",
+      "symbol": "NZDUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "b764a145-feed-5f6b-a10d-6ad74656d508",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-04T15:18:52.508796+00:00",
+          "sha256": "cc2b0d7b9c0a4926b1203811590cf9f99405cd4bdde54bee234ac001727f58e6",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "0246037b-6a62-5e3f-a0d8-249b40c1e993",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\0246037b-6a62-5e3f-a0d8-249b40c1e993\\receipt.json",
+          "updated_at": "2026-09-04T15:28:53.906817+00:00",
+          "sha256": "2657a8da83d61ed391d8700a936dbe294518b17f685219c731ab0af727825fec",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "e21567f4-e6f9-51e4-8c9a-c3b4ccef3272",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\e21567f4-e6f9-51e4-8c9a-c3b4ccef3272\\receipt.json",
+          "updated_at": "2026-09-04T15:34:10.510023+00:00",
+          "sha256": "2c78f768bdccf84d312b8b9db4d6ebcf41f0b6bd2de7d914b38bcb9d9502bdab",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_11708",
+      "symbol": "EURUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-07T11:20:46.827248+00:00",
+          "sha256": "11e182b0911b56d2d731d4879c2e8fcd7c0b0166dfa7f871f49350a6c24f4e55",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "33b9b9b9-8b28-586a-a12e-0bcad1a4fdf5",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\33b9b9b9-8b28-586a-a12e-0bcad1a4fdf5\\receipt.json",
+          "updated_at": "2026-09-07T11:29:32.647764+00:00",
+          "sha256": "1576fbff30712c9b18c9a0e5e456b2e8d1e19a93832cd1b83a691cb6b21c2d07",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "6502c8cb-db94-58a0-a9e1-ad87f2782242",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\6502c8cb-db94-58a0-a9e1-ad87f2782242\\receipt.json",
+          "updated_at": "2026-09-07T11:39:50.749177+00:00",
+          "sha256": "398c46d2af0cd73d27be58f813cac42f62c37ae0a8d3331dd74ad557fd5adb14",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "c4bc189b-372d-54c9-be45-046ac77b245b",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-02T07:30:04.144107+00:00",
+          "sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "2518ae77-a149-5243-982e-90c094c55b32",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\2518ae77-a149-5243-982e-90c094c55b32\\receipt.json",
+          "updated_at": "2026-09-02T07:31:07.232843+00:00",
+          "sha256": "a0c02f124b11fa98f93c00959dba86c12321bf5252f2f1a288e4d582cf2a0c18",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6\\receipt.json",
+          "updated_at": "2026-09-02T07:31:59.501990+00:00",
+          "sha256": "a3222b5834a475c4c03048aebedaa32d27b036164d7dac4c1418486834a5431f",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_12710",
+      "symbol": "XTIUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "9384656c-b5ac-555c-9c63-ded282ef7ca5",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-05T12:20:01.107556+00:00",
+          "sha256": "0262435e2fc8e023f2ae605ed06166a54241b0129725f64c1f1389fc83e99587",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "88446bc1-ca44-5432-b5d8-65eb01c93bc2",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\88446bc1-ca44-5432-b5d8-65eb01c93bc2\\receipt.json",
+          "updated_at": "2026-09-05T12:29:43.057073+00:00",
+          "sha256": "6bdc764dc8d7e04db5969ee1b3f6263e0fd42152cef95c3f2d6f4e50b6d0a8e3",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "ccd029ae-dee1-5c81-b5b6-e0ecf73c4058",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\ccd029ae-dee1-5c81-b5b6-e0ecf73c4058\\receipt.json",
+          "updated_at": "2026-09-05T12:39:26.518029+00:00",
+          "sha256": "fbd0878600caf73f16dfd9f95f55864864c0eb1045704e56cfb0622757d7ed84",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "09c21c5c-1119-52e7-ac02-8cb3ead754c6",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\09c21c5c-1119-52e7-ac02-8cb3ead754c6\\receipt.json",
+          "updated_at": "2026-08-25T18:52:56.498136+00:00",
+          "sha256": "34f49430863405277302afffcf10872c82ba03b2598340fb8f57f6a450e96722",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_DECLARED_PATTERN_SEARCH_ZERO_FILTER_VALID",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q13": {
+          "id": "b1ce8e01-5c2a-5f91-a03d-46a730baf4b9",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\b1ce8e01-5c2a-5f91-a03d-46a730baf4b9\\receipt.json",
+          "updated_at": "2026-08-25T18:59:36.566469+00:00",
+          "sha256": "cf6977bd14e785e900c6918e168c24b3b46baeb206325d33c1f2f2f4304e0830",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "3078ad67-9a19-56cb-a252-0a112596343a",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\3078ad67-9a19-56cb-a252-0a112596343a\\receipt.json",
+          "updated_at": "2026-08-25T19:03:06.055791+00:00",
+          "sha256": "197de269b326a3fc8d24c5522d8f0bf4eb48303f730e06c525c8a41dd5264c01",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_20048",
+      "symbol": "XTIUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "5a6d1b1c-7c40-5414-abc8-b59421eabf82",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-04T05:48:53.355868+00:00",
+          "sha256": "79f0401e2a15fa057075ca9082e33c00e005ab47242040fd1927f883fc814af7",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "67ecb494-1200-53f7-aa68-01be46761d6d",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\67ecb494-1200-53f7-aa68-01be46761d6d\\receipt.json",
+          "updated_at": "2026-09-04T05:58:57.922775+00:00",
+          "sha256": "aa8158c3391405521d143895308784c308410bfd6648deed141b33b2b80239fc",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "aefddcb5-3ff1-5b19-a0ef-e188555edf37",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\aefddcb5-3ff1-5b19-a0ef-e188555edf37\\receipt.json",
+          "updated_at": "2026-09-04T06:08:23.192183+00:00",
+          "sha256": "ba29acd8b6e3776d5be300c363e0e71678a70af3c9b59c6ecee2af1edb72192a",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_20266",
+      "symbol": "XTIUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "d8739ae2-1ce4-553a-9b59-1335e582614c",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-05T12:19:47.968533+00:00",
+          "sha256": "b3966d118be4ad1c1790f5b16bad6e6935bcac0bce9dbe7fff88dd34826cef4d",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "fd018909-ae7b-556b-a578-fe2139871e1b",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\fd018909-ae7b-556b-a578-fe2139871e1b\\receipt.json",
+          "updated_at": "2026-09-05T12:29:43.052059+00:00",
+          "sha256": "b4e9c5773b6aafb5f37b1206ff219aff4ce7316bd4292b0856432348d7384dad",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "8766f960-9b6b-5710-8dac-cb73c5e6f2c1",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\8766f960-9b6b-5710-8dac-cb73c5e6f2c1\\receipt.json",
+          "updated_at": "2026-09-05T12:39:26.515021+00:00",
+          "sha256": "bf8ff032d8f4eeddbb637758f6d519e6cf28637a07f540399e3a87e5b37ff2fd",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_12849",
+      "symbol": "XTIUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "5c1085ce-b76a-594d-973e-6080e27711b1",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-07T08:26:05.198573+00:00",
+          "sha256": "c04cd5468b8796d7e3f38549cf112fb9ed1404b31938456b26bb88314c55a420",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "31930b34-77fd-5f95-a9a4-946d6f90346e",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\31930b34-77fd-5f95-a9a4-946d6f90346e\\receipt.json",
+          "updated_at": "2026-09-07T08:36:35.727799+00:00",
+          "sha256": "c8f2c5f230df330df20c65c4d04a065b88b38515db472eb70c09000373b8b4c3",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "52ce4862-c560-55b7-84a7-d973b277876d",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\52ce4862-c560-55b7-84a7-d973b277876d\\receipt.json",
+          "updated_at": "2026-09-07T08:46:22.866503+00:00",
+          "sha256": "71cb8bafdf61916abc7bf0d97dc36240c72632455a3fac6d8d34ac16e7ee52be",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_12855",
+      "symbol": "XTIUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-08T16:40:47.790397+00:00",
+          "sha256": "bf14aa8f2a8e01527ee59f12cd4f4f95f306469547e24835ca7f1f456b5fda8d",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "2117006e-e63e-526c-9041-26623ca6ee42",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\2117006e-e63e-526c-9041-26623ca6ee42\\receipt.json",
+          "updated_at": "2026-09-08T16:51:03.019110+00:00",
+          "sha256": "f4e916004f543465d217cab7218b752f4c538792c113fd9c227c7b9554d46896",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "81de081f-ecb2-5311-a7bb-cf881824602b",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\81de081f-ecb2-5311-a7bb-cf881824602b\\receipt.json",
+          "updated_at": "2026-09-08T17:02:21.748992+00:00",
+          "sha256": "52ee6dcd1d7a8b488824aa9b636555f8b4f94d52767ba253c77e379a3f2feae2",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_13054",
+      "symbol": "XTIUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "a5b90e08-cf49-51ac-be59-1d4926da2363",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-03T00:39:03.803872+00:00",
+          "sha256": "72fdfb6f6cc85169e0758dc1ed49d3c954a494aa8a911fcce850c4fc0d42f491",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "83c1e21f-2b8f-5def-818f-b38a8524a8b5",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\83c1e21f-2b8f-5def-818f-b38a8524a8b5\\receipt.json",
+          "updated_at": "2026-09-03T00:49:06.296840+00:00",
+          "sha256": "bce033e32beb7004d62efa3bd7703862292031a460b6183cc07fcfd91c60edc9",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "4aaa524d-c11a-5725-8de7-f1d00d51eca9",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\4aaa524d-c11a-5725-8de7-f1d00d51eca9\\receipt.json",
+          "updated_at": "2026-09-03T00:59:17.329148+00:00",
+          "sha256": "2d2bfe2153ed020b2cda31a3a229878061a3e91b832c5540b56d3a7b95c4080f",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_1537",
+      "symbol": "XAGUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "c41e2606-3af1-5766-9bb7-18de8a763a18",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-03T05:23:50.691679+00:00",
+          "sha256": "5db5bc0f7b6ab2a747389564550e382d6857a2e3778f8005b66c674202534661",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "7206a7a5-1f89-5fa7-a105-0ff674ca6743",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\7206a7a5-1f89-5fa7-a105-0ff674ca6743\\receipt.json",
+          "updated_at": "2026-09-03T05:29:33.039053+00:00",
+          "sha256": "3617db15728401f7595743749fdcffa9750285c45ba981c7dde40268a9f1c450",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "18859f02-5371-5094-a7a5-b63619482545",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\18859f02-5371-5094-a7a5-b63619482545\\receipt.json",
+          "updated_at": "2026-09-03T05:33:47.051859+00:00",
+          "sha256": "d0edd60672a1e210b5c67b8dbe54e90e279b688045a99389db6ab2e1df527748",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_21505",
+      "symbol": "XAGUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "540eadc0-4a99-5f0f-b69b-1601de434ab6",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-04T04:29:23.230707+00:00",
+          "sha256": "13266c8965f9efbb83f6f2d861a13076caff5cb16abf40a8c91aa6f92144c189",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "a201d805-96e0-53dc-a28c-67c44cb27182",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\a201d805-96e0-53dc-a28c-67c44cb27182\\receipt.json",
+          "updated_at": "2026-09-04T04:39:42.079492+00:00",
+          "sha256": "beeec2b7636a9eb03a7aebbcd20ceea41c83db904598b9b3cc629b2020d0eab1",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "aecfbf06-63ef-520b-8943-48b5b1d3769e",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\aecfbf06-63ef-520b-8943-48b5b1d3769e\\receipt.json",
+          "updated_at": "2026-09-04T04:49:23.463461+00:00",
+          "sha256": "fef578ffaae7db5e6433e1427a3c0b87e58648802a8dd543d7e3737077006ac4",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_21507",
+      "symbol": "XAUUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "99e7e9db-d9a7-514c-b78d-c14e98ebec5d",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-05T12:19:39.956328+00:00",
+          "sha256": "44dd7f699b56eadd990f7a191a5f1ac81b915f2dbf0995e0cec6bc6c67d42e28",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "b2baafe8-abae-5a46-b33f-f59285e37c0d",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\b2baafe8-abae-5a46-b33f-f59285e37c0d\\receipt.json",
+          "updated_at": "2026-09-05T12:29:43.047046+00:00",
+          "sha256": "d783abd948c898cdd3a8113beec1f2f66af17f2ca508124b5d27c753bcabcad6",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "c82692b2-bc35-50ae-904f-22c87636fac7",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\c82692b2-bc35-50ae-904f-22c87636fac7\\receipt.json",
+          "updated_at": "2026-09-05T12:39:26.510008+00:00",
+          "sha256": "8da4e8c43630a3661412b0037d2b2ba516d6ba777cc35094957e9430046b27d5",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    },
+    {
+      "ea_id": "QM5_11881",
+      "symbol": "GBPUSD.DWX",
+      "census_valid_through": "Q14",
+      "receipts": {
+        "Q12": {
+          "id": "d824e8cb-8397-5aa3-b6fa-fec9b0c375eb",
+          "verdict": "NO_FILTER_CHANGE",
+          "evidence_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "updated_at": "2026-09-06T09:24:53.596640+00:00",
+          "sha256": "39033dd460433face1a4d6440878a1f864b85130660c2253c14c1449ca4435ee",
+          "schema": "qm.dl089-q12-selection-receipt/v1",
+          "reason": null,
+          "final_selection": {
+            "BUY": [],
+            "SELL": []
+          },
+          "measured_candidate_adjudicated": null
+        },
+        "Q13": {
+          "id": "5ec394d7-43e6-5b28-b3cb-b4c66188643d",
+          "verdict": "NO_PARAMETER_CHANGE",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\5ec394d7-43e6-5b28-b3cb-b4c66188643d\\receipt.json",
+          "updated_at": "2026-09-06T09:35:19.979866+00:00",
+          "sha256": "f33f3317e6b331c7995b57f0304a80b1a5af245a7c828e7db87ccc02f1f0ff3e",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "EXPLICIT_ZERO_TRIAL_PARAMETER_CONTRACT",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        },
+        "Q14": {
+          "id": "4ef22728-44bb-5478-bba1-433024d89207",
+          "verdict": "KEEP_INCUMBENT",
+          "evidence_path": "D:\\QM\\reports\\optimization_fork\\4ef22728-44bb-5478-bba1-433024d89207\\receipt.json",
+          "updated_at": "2026-09-06T09:44:50.219296+00:00",
+          "sha256": "6bb692b26d1ff9b9facc903653c1dd8e5124da57807357a59c5bb21ec7e73f8f",
+          "schema": "qm.optimization-fork-no-change-receipt/v1",
+          "reason": "NO_CHALLENGER_BOTH_UPSTREAM_STAGES_NO_CHANGE",
+          "final_selection": null,
+          "measured_candidate_adjudicated": false
+        }
+      }
+    }
+  ],
+  "near_terminal_candidates": [
+    {
+      "ea_id": "QM5_10403",
+      "symbol": "XAUUSD.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_10145",
+      "symbol": "XAUUSD.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "ECON_FAIL"
+    },
+    {
+      "ea_id": "QM5_13013",
+      "symbol": "NDX.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_9641",
+      "symbol": "WS30.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_11660",
+      "symbol": "NDX.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_21501",
+      "symbol": "USDJPY.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_11294",
+      "symbol": "GDAXI.DWX",
+      "valid_through": "Q10",
+      "next_gate": "Q11",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_41219",
+      "symbol": "XAUUSD.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    },
+    {
+      "ea_id": "QM5_41221",
+      "symbol": "EURUSD.DWX",
+      "valid_through": "Q11",
+      "next_gate": "Q12",
+      "frontier_class": "OTHER"
+    }
+  ],
+  "programs": [
+    {
+      "subject_ea_id": "QM5_10145",
+      "measurement_ea_id": "QM5_41301",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "4bf4c6afe6d9ecce56a0394ada7cee5428929b03b3816f5229d5ce01afeb09d7",
+      "driver_state": null,
+      "q12": {
+        "id": "5a109261-f52c-5ed8-9dd3-9edec460697a",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 399,
+        "pending/": 686
+      },
+      "active_holds": {
+        "PRESCREEN_SKIPPED": 215
+      },
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-09T04:27:34+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_10403",
+      "measurement_ea_id": "QM5_41322",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "387b08e579fe706da9271aeb7d3f3f550541ce5857a873b23ef36ffff3659ffd",
+      "driver_state": null,
+      "q12": {
+        "id": "559ec02f-af4e-5237-8467-df1683dcb8e8",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 83,
+        "pending/": 1002
+      },
+      "active_holds": {},
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-05T11:31:56+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_10513",
+      "measurement_ea_id": "QM5_41302",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "b473b5fac3b8127e0c4a5c20f04ebdfbbd557d81158c9576aa8704680afc6fd7",
+      "driver_state": null,
+      "q12": {
+        "id": "1c4e28c2-63b0-527d-8ebc-cee9529c89ef",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 289,
+        "done/SKIPPED_EXCLUDED": 270,
+        "active/": 1,
+        "pending/": 525
+      },
+      "active_holds": {
+        "PRESCREEN_SKIPPED": 50
+      },
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-09T04:25:21+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_10706",
+      "measurement_ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX",
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "6dca423c66c4b34ddacbc5a91654be9a4344626b2a543764d9e25fed6b855f31",
+      "driver_state": null,
+      "q12": {
+        "id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 343,
+        "pending/": 742
+      },
+      "active_holds": {
+        "ARTIFACT_BINDING_MISSING": 13,
+        "PRESCREEN_SKIPPED": 650
+      },
+      "artifact_binding_holds": [
+        {
+          "id": "a7482458-c7b3-5726-8833-7fea5508c184",
+          "year": 2019,
+          "arm": "buy_082",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "43c93110-acca-5c0c-8532-ef591082ff45",
+          "year": 2019,
+          "arm": "buy_084",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "b95a682e-2172-554a-a5c1-3618d682e8ed",
+          "year": 2019,
+          "arm": "buy_087",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "ee0a314f-190f-5dcd-87a6-7900dccba658",
+          "year": 2019,
+          "arm": "buy_088",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "cd26ff4f-f82b-59e6-b30a-5e7224391793",
+          "year": 2019,
+          "arm": "buy_089",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "327006ce-769b-5717-a62d-c34808ebd9c7",
+          "year": 2019,
+          "arm": "buy_090",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "58701f59-c825-53e2-ba10-a53067e8c1d6",
+          "year": 2019,
+          "arm": "buy_091",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "3c5fbcbf-cc98-5f35-b64c-a1b594b99ece",
+          "year": 2019,
+          "arm": "buy_092",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "594bd397-2be4-5b9c-b661-9886c4068bb9",
+          "year": 2019,
+          "arm": "buy_094",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "68185e12-22a2-5c76-a338-0f1a6f77075d",
+          "year": 2019,
+          "arm": "buy_098",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "44260d47-4baa-5799-8f02-fc01d35750eb",
+          "year": 2019,
+          "arm": "buy_099",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "11a887ac-a1f3-5174-aae4-66ae55473e0c",
+          "year": 2019,
+          "arm": "sell_003",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "4dc1d723-e11c-5fa5-92be-a561cc771eeb",
+          "year": 2019,
+          "arm": "sell_006",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        }
+      ],
+      "last_measurement": "2026-09-06T00:45:07+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_11294",
+      "measurement_ea_id": "QM5_41347",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11294_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "71b10159a8c6aad05dd73b79986fb619063dc4aa62972f2cb81524507f6066d2",
+      "driver_state": "WF_COMBO_MEASURING",
+      "q12": {
+        "id": "5dec5753-feb0-5e6f-97d8-5393f9595eff",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 80,
+        "done/SKIPPED_PRESCREEN": 1005
+      },
+      "active_holds": {},
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-08T11:30:56+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_11422",
+      "measurement_ea_id": "QM5_41163",
+      "symbol": "USDCAD.DWX",
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "0f0145d2b6f95d2857e42d4d3d19b3f95d19877fd79770789b3cdaae42cfa874",
+      "driver_state": null,
+      "q12": {
+        "id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 595,
+        "pending/": 490
+      },
+      "active_holds": {
+        "PRESCREEN_SKIPPED": 490
+      },
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-09T01:36:54+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_21501",
+      "measurement_ea_id": "QM5_41324",
+      "symbol": "USDJPY.DWX",
+      "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "132fd8845eb28bea7df619231ff0353a15f8004069d008aaf67d1a75cf0af35f",
+      "driver_state": null,
+      "q12": {
+        "id": "65b0f691-1d3a-5382-97d2-c58641cf89ea",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 762,
+        "active/": 1,
+        "pending/": 322
+      },
+      "active_holds": {},
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-09T04:27:24+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_13213",
+      "measurement_ea_id": "QM5_41097",
+      "symbol": "USDJPY.DWX",
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41097_USDJPY_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "a5e2cdb88456f75b66233a183380be2b6a107bb865273c57bbf94935c8e40329",
+      "driver_state": "ENQUEUED",
+      "q12": {
+        "id": "2ea9cd64-2f17-5444-bcff-ad50f4481831",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 858,
+        "pending/": 227
+      },
+      "active_holds": {
+        "ARTIFACT_BINDING_MISSING": 2,
+        "PRESCREEN_SKIPPED": 218
+      },
+      "artifact_binding_holds": [
+        {
+          "id": "5825adc0-c5df-51bc-8f72-a4bd729a4bbe",
+          "year": 2019,
+          "arm": "sell_051",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        },
+        {
+          "id": "e4dae175-c161-5522-960f-1dba60cdca50",
+          "year": 2020,
+          "arm": "buy_008",
+          "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed."
+        }
+      ],
+      "last_measurement": "2026-09-05T11:32:34+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_41219",
+      "measurement_ea_id": "QM5_41346",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "bb42daa8661cc178f250e223501c837940b19c25062f4fde8c3657d2ae331952",
+      "driver_state": "WF_COMBO_MEASURING",
+      "q12": {
+        "id": "b8729132-eb2f-5e15-8ea0-c14fb1c5b383",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 15,
+        "done/SKIPPED_PRESCREEN": 1067,
+        "done/SKIPPED_EXCLUDED": 3
+      },
+      "active_holds": {},
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-07T09:59:13+00:00"
+    },
+    {
+      "subject_ea_id": "QM5_41221",
+      "measurement_ea_id": "QM5_41344",
+      "symbol": "EURUSD.DWX",
+      "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41221_EURUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "8bf5ce3c0166a0c44748e67441511e47e36b0831b77b518e778e14b90b49dd23",
+      "driver_state": "WF_COMBO_MEASURING",
+      "q12": {
+        "id": "e0ab6e2a-87d2-5528-bb57-f35a67299d5c",
+        "status": "pending",
+        "verdict": null
+      },
+      "annual_cells": 1085,
+      "annual_counts": {
+        "done/MEASURED": 7,
+        "done/SKIPPED_PRESCREEN": 1078
+      },
+      "active_holds": {},
+      "artifact_binding_holds": [],
+      "last_measurement": "2026-09-05T18:44:33+00:00"
+    }
+  ],
+  "balke_q12_rows_and_holds": [
+    {
+      "work_item": {
+        "id": "2ea9cd64-2f17-5444-bcff-ad50f4481831",
+        "status": "pending",
+        "verdict": null,
+        "updated_at": "2026-09-01T17:36:39.571068+00:00"
+      },
+      "hold": [
+        {
+          "work_item_id": "2ea9cd64-2f17-5444-bcff-ad50f4481831",
+          "hold_code": "Q12_LEGACY_CENSUS_RECOVERY_REVIEW_PENDING",
+          "reason": "Independent review required before any selector advance; governed annual measurement may continue",
+          "active": 0,
+          "release_on_restart": 0,
+          "created_at": "2026-09-01T17:36:39.571068+00:00",
+          "updated_at": "2026-09-01T17:44:17.623606+00:00",
+          "released_at": "2026-09-01T17:44:17.623606+00:00",
+          "release_note": "Orchestrator reviewed release 2026-09-01 (review 64752aff APPROVED): 599 cells governed verified live, 486-row digest 84fca9a8 preserved, Q12 seal a5d4be2f17 checked. Selector/matrix service unblocked for QM5_41097 Balke program."
+        }
+      ]
+    },
+    {
+      "work_item": {
+        "id": "ed127702-3a08-59fa-888a-c3a0a20a0803",
+        "status": "pending",
+        "verdict": null,
+        "updated_at": "2026-09-03T08:18:22.878604+00:00"
+      },
+      "hold": [
+        {
+          "work_item_id": "ed127702-3a08-59fa-888a-c3a0a20a0803",
+          "hold_code": "Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING",
+          "reason": "DL-089 matrix service is installed on disk; keep old resident generic workers excluded until the governed worker restart loads the routing guard",
+          "active": 1,
+          "release_on_restart": 1,
+          "created_at": "2026-09-03T08:18:34.903994+00:00",
+          "updated_at": "2026-09-05T07:08:38.277287+00:00",
+          "released_at": null,
+          "release_note": null
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "Current-census contiguity is not current-matrix completion: two counted pairs use older zero-declared-search receipts.",
+    "Annual hold/skip counts are separate from measured backtests and from final WF gate completion.",
+    "Structural family/symbol priority is a scheduling hypothesis, not measured portfolio correlation or an economic verdict.",
+    "QP 21501 and 13213 are both Balke-derived; do not count them as independent strategies."
+  ]
+}

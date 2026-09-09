@@ -1,0 +1,953 @@
+{
+  "schema": "qm.candidate-priority-execution/v1",
+  "observed_at_utc": "2026-09-09T05:00:04.752031+00:00",
+  "authority": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+  "code_commit": "71059c2c2f",
+  "database_read_only": true,
+  "queue_events": [
+    {
+      "ts": "2026-09-09T04:39:39+00:00",
+      "entity_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043919Z.sqlite",
+        "backup_sha256": "3edeab337fdf2d093bf4547c71aeb69946174292dda01eaccafec5ebe594c485",
+        "created_at": "2026-08-26T11:25:34.310053+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_10706",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2099-01-01T00:00:00+00:00",
+        "previous_sort_key": "2099-01-01T00:00:00+00:00",
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:00+00:00",
+        "rank_after": 1,
+        "rank_before": 20,
+        "reason": "User-approved candidate prioritization: completion; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "GBPUSD.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:39+00:00",
+      "entity_id": "2ea9cd64-2f17-5444-bcff-ad50f4481831",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043919Z.sqlite",
+        "backup_sha256": "3edeab337fdf2d093bf4547c71aeb69946174292dda01eaccafec5ebe594c485",
+        "created_at": "2026-09-01T17:36:39.571068+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_13213",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2026-08-22T05:54:51.279202+00:00",
+        "previous_sort_key": "2026-08-22T05:54:51.279202+00:00",
+        "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:00+00:00",
+        "rank_after": 2,
+        "rank_before": 1,
+        "reason": "User-approved candidate prioritization: completion; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "USDJPY.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:39+00:00",
+      "entity_id": "b8729132-eb2f-5e15-8ea0-c14fb1c5b383",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043919Z.sqlite",
+        "backup_sha256": "3edeab337fdf2d093bf4547c71aeb69946174292dda01eaccafec5ebe594c485",
+        "created_at": "2026-09-04T04:48:31.904122+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_41219",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2026-08-29T08:12:00+00:00",
+        "previous_sort_key": "2026-08-29T08:12:00+00:00",
+        "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:00+00:00",
+        "rank_after": 3,
+        "rank_before": 6,
+        "reason": "User-approved candidate prioritization: completion; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "XAUUSD.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:39+00:00",
+      "entity_id": "e0ab6e2a-87d2-5528-bb57-f35a67299d5c",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043919Z.sqlite",
+        "backup_sha256": "3edeab337fdf2d093bf4547c71aeb69946174292dda01eaccafec5ebe594c485",
+        "created_at": "2026-09-03T07:18:10.164797+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_41221",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2026-08-29T08:10:00+00:00",
+        "previous_sort_key": "2026-08-29T08:10:00+00:00",
+        "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:00+00:00",
+        "rank_after": 4,
+        "rank_before": 4,
+        "reason": "User-approved candidate prioritization: completion; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "EURUSD.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:39+00:00",
+      "entity_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043919Z.sqlite",
+        "backup_sha256": "3edeab337fdf2d093bf4547c71aeb69946174292dda01eaccafec5ebe594c485",
+        "created_at": "2026-08-26T03:38:07.633417+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_11422",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2099-01-01T00:00:00+00:00",
+        "previous_sort_key": "2099-01-01T00:00:00+00:00",
+        "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:00+00:00",
+        "rank_after": 5,
+        "rank_before": 21,
+        "reason": "User-approved candidate prioritization: completion; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "USDCAD.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:52+00:00",
+      "entity_id": "5183df54-9e70-5625-ae23-092ff1b6e787",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043940Z.sqlite",
+        "backup_sha256": "95f59c754b22c0373ede237bcf900ceb1c1def10ceb99be516bb2e03ec4dd96b",
+        "created_at": "2026-08-31T14:06:38.805480+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_11660",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2026-08-29T08:14:00+00:00",
+        "previous_sort_key": "2026-08-29T08:14:00+00:00",
+        "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:01+00:00",
+        "rank_after": 6,
+        "rank_before": 10,
+        "reason": "User-approved candidate prioritization: coverage; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "NDX.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:52+00:00",
+      "entity_id": "65b0f691-1d3a-5382-97d2-c58641cf89ea",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043940Z.sqlite",
+        "backup_sha256": "95f59c754b22c0373ede237bcf900ceb1c1def10ceb99be516bb2e03ec4dd96b",
+        "created_at": "2026-09-02T22:13:24.132118+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_21501",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2026-08-29T08:09:00+00:00",
+        "previous_sort_key": "2026-08-29T08:09:00+00:00",
+        "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:01+00:00",
+        "rank_after": 7,
+        "rank_before": 7,
+        "reason": "User-approved candidate prioritization: coverage; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "USDJPY.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:52+00:00",
+      "entity_id": "a593158d-fa15-593a-820f-9b3a1844c851",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043940Z.sqlite",
+        "backup_sha256": "95f59c754b22c0373ede237bcf900ceb1c1def10ceb99be516bb2e03ec4dd96b",
+        "created_at": "2026-08-31T22:42:19.990523+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_9641",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": null,
+        "previous_sort_key": "2026-08-31T22:42:19.990523+00:00",
+        "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:01+00:00",
+        "rank_after": 8,
+        "rank_before": 18,
+        "reason": "User-approved candidate prioritization: coverage; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "WS30.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:39:52+00:00",
+      "entity_id": "f9ed7f92-f473-5a71-9933-e28bb74f6ec0",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043940Z.sqlite",
+        "backup_sha256": "95f59c754b22c0373ede237bcf900ceb1c1def10ceb99be516bb2e03ec4dd96b",
+        "created_at": "2026-09-02T22:53:28.524055+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_13013",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": "2026-08-29T08:15:00+00:00",
+        "previous_sort_key": "2026-08-29T08:15:00+00:00",
+        "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2026-08-21T00:00:01+00:00",
+        "rank_after": 9,
+        "rank_before": 11,
+        "reason": "User-approved candidate prioritization: coverage; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "NDX.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:40:03+00:00",
+      "entity_id": "2dad5730-30ed-5ab1-ace1-d5db4ede60db",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043952Z.sqlite",
+        "backup_sha256": "b348707919edbaf48f49eab721bd7a4bdb35204ecb2d5b84d04692b7f1cb8c1d",
+        "created_at": "2026-08-29T14:17:18.365816+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_10706",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": null,
+        "previous_sort_key": "2026-08-29T14:17:18.365816+00:00",
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2099-01-01T00:00:00+00:00",
+        "rank_after": 19,
+        "rank_before": 14,
+        "reason": "User-approved candidate prioritization: non_owner_duplicate_requests; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "GBPUSD.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:40:03+00:00",
+      "entity_id": "ed127702-3a08-59fa-888a-c3a0a20a0803",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043952Z.sqlite",
+        "backup_sha256": "b348707919edbaf48f49eab721bd7a4bdb35204ecb2d5b84d04692b7f1cb8c1d",
+        "created_at": "2026-09-03T08:18:22.878604+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_13213",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": null,
+        "previous_sort_key": "2026-09-03T08:18:22.878604+00:00",
+        "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2099-01-01T00:00:00+00:00",
+        "rank_after": 20,
+        "rank_before": 21,
+        "reason": "User-approved candidate prioritization: non_owner_duplicate_requests; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "USDJPY.DWX"
+      }
+    },
+    {
+      "ts": "2026-09-09T04:40:03+00:00",
+      "entity_id": "f364ed13-9f09-5fa6-b7df-d414e8a13d77",
+      "event": "dl089_queue_order_set",
+      "detail": {
+        "backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_dl089_queue_order_20260909T043952Z.sqlite",
+        "backup_sha256": "b348707919edbaf48f49eab721bd7a4bdb35204ecb2d5b84d04692b7f1cb8c1d",
+        "created_at": "2026-09-01T19:50:34.101102+00:00",
+        "direction": "explicit",
+        "ea_id": "QM5_11422",
+        "owner_decision": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909",
+        "phase": "Q12",
+        "previous_queue_order_at": null,
+        "previous_sort_key": "2026-09-01T19:50:34.101102+00:00",
+        "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+        "program_slots": 8,
+        "queue_order_at": "2099-01-01T00:00:00+00:00",
+        "rank_after": 21,
+        "rank_before": 19,
+        "reason": "User-approved candidate prioritization: non_owner_duplicate_requests; docs/ops/evidence/2026-09-09_candidate_priority_execution.md; queue only; RAM/holds/verdicts preserved.",
+        "symbol": "USDCAD.DWX"
+      }
+    }
+  ],
+  "hold_releases": [
+    {
+      "work_item_id": "5825adc0-c5df-51bc-8f72-a4bd729a4bbe",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:56:58+00:00",
+      "updated_at": "2026-09-09T04:38:46+00:00",
+      "released_at": "2026-09-09T04:38:46+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: exact EX5/MQ5/setfile bytes currently present and match all sealed expected SHA256 values; obsolete missing-artifact hold only. Evidence docs/ops/evidence/2026-09-09_candidate_priority_execution.md; no verdict or configuration change.",
+      "ea_id": "QM5_41097",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "work_item_id": "e4dae175-c161-5522-960f-1dba60cdca50",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:56:58+00:00",
+      "updated_at": "2026-09-09T04:38:46+00:00",
+      "released_at": "2026-09-09T04:38:46+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: exact EX5/MQ5/setfile bytes currently present and match all sealed expected SHA256 values; obsolete missing-artifact hold only. Evidence docs/ops/evidence/2026-09-09_candidate_priority_execution.md; no verdict or configuration change.",
+      "ea_id": "QM5_41097",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "work_item_id": "327006ce-769b-5717-a62d-c34808ebd9c7",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:37+00:00",
+      "released_at": "2026-09-09T04:51:37+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "3c5fbcbf-cc98-5f35-b64c-a1b594b99ece",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:38+00:00",
+      "released_at": "2026-09-09T04:51:38+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "43c93110-acca-5c0c-8532-ef591082ff45",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:38+00:00",
+      "released_at": "2026-09-09T04:51:38+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "44260d47-4baa-5799-8f02-fc01d35750eb",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:39+00:00",
+      "released_at": "2026-09-09T04:51:39+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "58701f59-c825-53e2-ba10-a53067e8c1d6",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:39+00:00",
+      "released_at": "2026-09-09T04:51:39+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "594bd397-2be4-5b9c-b661-9886c4068bb9",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:40+00:00",
+      "released_at": "2026-09-09T04:51:40+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "68185e12-22a2-5c76-a338-0f1a6f77075d",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:40+00:00",
+      "released_at": "2026-09-09T04:51:40+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "a7482458-c7b3-5726-8833-7fea5508c184",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:41+00:00",
+      "released_at": "2026-09-09T04:51:41+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "b95a682e-2172-554a-a5c1-3618d682e8ed",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:42+00:00",
+      "released_at": "2026-09-09T04:51:42+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "cd26ff4f-f82b-59e6-b30a-5e7224391793",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:42+00:00",
+      "released_at": "2026-09-09T04:51:42+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "11a887ac-a1f3-5174-aae4-66ae55473e0c",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T07:01:52+00:00",
+      "updated_at": "2026-09-09T04:51:43+00:00",
+      "released_at": "2026-09-09T04:51:43+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "ee0a314f-190f-5dcd-87a6-7900dccba658",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T06:58:01+00:00",
+      "updated_at": "2026-09-09T04:51:43+00:00",
+      "released_at": "2026-09-09T04:51:43+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "work_item_id": "4dc1d723-e11c-5fa5-92be-a561cc771eeb",
+      "hold_code": "ARTIFACT_BINDING_MISSING",
+      "reason": "Pending optimization census row references a governed artifact path that no longer exists; dispatch must remain fail-closed.",
+      "active": 0,
+      "release_on_restart": 0,
+      "created_at": "2026-08-29T07:01:52+00:00",
+      "updated_at": "2026-09-09T04:51:44+00:00",
+      "released_at": "2026-09-09T04:51:44+00:00",
+      "release_note": "OWNER-DEC-CANDIDATE-PRIORITIES-20260909: binary explicit expected_ex5_path matches row+registration SHA; source/card/base match sealed registration; annual setfile equals exact canonical render from sealed base and declared arm. Obsolete missing-artifact hold only; no rebind/verdict change.",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX"
+    }
+  ],
+  "queue_order": [
+    {
+      "work_item_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "rank": 1,
+      "queue_order_at": "2026-08-21T00:00:00+00:00"
+    },
+    {
+      "work_item_id": "2ea9cd64-2f17-5444-bcff-ad50f4481831",
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "rank": 2,
+      "queue_order_at": "2026-08-21T00:00:00+00:00"
+    },
+    {
+      "work_item_id": "b8729132-eb2f-5e15-8ea0-c14fb1c5b383",
+      "ea_id": "QM5_41219",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "rank": 3,
+      "queue_order_at": "2026-08-21T00:00:00+00:00"
+    },
+    {
+      "work_item_id": "e0ab6e2a-87d2-5528-bb57-f35a67299d5c",
+      "ea_id": "QM5_41221",
+      "symbol": "EURUSD.DWX",
+      "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+      "rank": 4,
+      "queue_order_at": "2026-08-21T00:00:00+00:00"
+    },
+    {
+      "work_item_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "rank": 5,
+      "queue_order_at": "2026-08-21T00:00:00+00:00"
+    },
+    {
+      "work_item_id": "5183df54-9e70-5625-ae23-092ff1b6e787",
+      "ea_id": "QM5_11660",
+      "symbol": "NDX.DWX",
+      "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+      "rank": 6,
+      "queue_order_at": "2026-08-21T00:00:01+00:00"
+    },
+    {
+      "work_item_id": "65b0f691-1d3a-5382-97d2-c58641cf89ea",
+      "ea_id": "QM5_21501",
+      "symbol": "USDJPY.DWX",
+      "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+      "rank": 7,
+      "queue_order_at": "2026-08-21T00:00:01+00:00"
+    },
+    {
+      "work_item_id": "a593158d-fa15-593a-820f-9b3a1844c851",
+      "ea_id": "QM5_9641",
+      "symbol": "WS30.DWX",
+      "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+      "rank": 8,
+      "queue_order_at": "2026-08-21T00:00:01+00:00"
+    },
+    {
+      "work_item_id": "f9ed7f92-f473-5a71-9933-e28bb74f6ec0",
+      "ea_id": "QM5_13013",
+      "symbol": "NDX.DWX",
+      "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+      "rank": 9,
+      "queue_order_at": "2026-08-21T00:00:01+00:00"
+    },
+    {
+      "work_item_id": "fb54cd4e-08af-5762-bac2-0138b8887964",
+      "ea_id": "QM5_20086",
+      "symbol": "EURUSD.DWX",
+      "program_id": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+      "rank": 10,
+      "queue_order_at": "2026-08-29T08:08:00+00:00"
+    },
+    {
+      "work_item_id": "264c5715-dfea-503f-9c98-0315624dfffc",
+      "ea_id": "QM5_21502",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+      "rank": 11,
+      "queue_order_at": "2026-08-29T08:11:00+00:00"
+    },
+    {
+      "work_item_id": "5dec5753-feb0-5e6f-97d8-5393f9595eff",
+      "ea_id": "QM5_11294",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+      "rank": 12,
+      "queue_order_at": "2026-08-29T08:13:00+00:00"
+    },
+    {
+      "work_item_id": "1165f546-375c-5705-bfcd-3040bbbbb46b",
+      "ea_id": "QM5_20086",
+      "symbol": "NDX.DWX",
+      "program_id": "DL089_QM5_20086_NDX_DWX_2019_2025",
+      "rank": 13,
+      "queue_order_at": "2026-08-29T08:16:00+00:00"
+    },
+    {
+      "work_item_id": "5a109261-f52c-5ed8-9dd3-9edec460697a",
+      "ea_id": "QM5_10145",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "rank": 14,
+      "queue_order_at": null
+    },
+    {
+      "work_item_id": "1c4e28c2-63b0-527d-8ebc-cee9529c89ef",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "rank": 15,
+      "queue_order_at": null
+    },
+    {
+      "work_item_id": "559ec02f-af4e-5237-8467-df1683dcb8e8",
+      "ea_id": "QM5_10403",
+      "symbol": "XAUUSD.DWX",
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "rank": 16,
+      "queue_order_at": null
+    },
+    {
+      "work_item_id": "96239586-47c0-5fe2-8ef5-3d29910cc47c",
+      "ea_id": "QM5_10911",
+      "symbol": "GDAXI.DWX",
+      "program_id": "DL089_QM5_10911_GDAXI_DWX_2019_2025",
+      "rank": 17,
+      "queue_order_at": null
+    },
+    {
+      "work_item_id": "19761d0c-3877-587d-a5cd-a8e48291cdf7",
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+      "rank": 18,
+      "queue_order_at": null
+    },
+    {
+      "work_item_id": "2dad5730-30ed-5ab1-ace1-d5db4ede60db",
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "rank": 19,
+      "queue_order_at": "2099-01-01T00:00:00+00:00"
+    },
+    {
+      "work_item_id": "ed127702-3a08-59fa-888a-c3a0a20a0803",
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "rank": 20,
+      "queue_order_at": "2099-01-01T00:00:00+00:00"
+    },
+    {
+      "work_item_id": "f364ed13-9f09-5fa6-b7df-d414e8a13d77",
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "rank": 21,
+      "queue_order_at": "2099-01-01T00:00:00+00:00"
+    }
+  ],
+  "programs": [
+    {
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "measurement_ea_id": "QM5_41097",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41097_USDJPY_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "a5e2cdb88456f75b66233a183380be2b6a107bb865273c57bbf94935c8e40329",
+      "driver_state": "ENQUEUED",
+      "annual": {
+        "declared": 1085,
+        "rows_present": 1085,
+        "status_verdict": {
+          "done/MEASURED": 863,
+          "pending/": 221,
+          "active/": 1
+        },
+        "active_holds": {
+          "PRESCREEN_SKIPPED": 218
+        }
+      },
+      "wf": {}
+    },
+    {
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "measurement_ea_id": "QM5_41161",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "6dca423c66c4b34ddacbc5a91654be9a4344626b2a543764d9e25fed6b855f31",
+      "driver_state": null,
+      "annual": {
+        "declared": 1085,
+        "rows_present": 1085,
+        "status_verdict": {
+          "pending/": 739,
+          "done/MEASURED": 345,
+          "active/": 1
+        },
+        "active_holds": {
+          "PRESCREEN_SKIPPED": 650
+        }
+      },
+      "wf": {}
+    },
+    {
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "measurement_ea_id": "QM5_41163",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "e5f37d9721894cc6a1a6c1a7f168bc41a461aeb368bd809d7043c29376ef61c9",
+      "driver_state": "WF_COMBO_MEASURING",
+      "annual": {
+        "declared": 1085,
+        "rows_present": 1085,
+        "status_verdict": {
+          "done/MEASURED": 595,
+          "pending/": 490
+        },
+        "active_holds": {
+          "PRESCREEN_SKIPPED": 490
+        }
+      },
+      "wf": {
+        "declared": 4,
+        "rows_present": 4,
+        "status_verdict": {
+          "done/MEASURED": 3,
+          "active/": 1
+        },
+        "active_holds": {}
+      }
+    },
+    {
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "measurement_ea_id": "QM5_41346",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "bb42daa8661cc178f250e223501c837940b19c25062f4fde8c3657d2ae331952",
+      "driver_state": "WF_COMBO_MEASURING",
+      "annual": {
+        "declared": 1085,
+        "rows_present": 1085,
+        "status_verdict": {
+          "done/SKIPPED_PRESCREEN": 1067,
+          "done/MEASURED": 15,
+          "done/SKIPPED_EXCLUDED": 3
+        },
+        "active_holds": {}
+      },
+      "wf": {
+        "declared": 4,
+        "rows_present": 4,
+        "status_verdict": {
+          "active/": 1,
+          "done/MEASURED": 3
+        },
+        "active_holds": {}
+      }
+    },
+    {
+      "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+      "measurement_ea_id": "QM5_41344",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41221_EURUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "8bf5ce3c0166a0c44748e67441511e47e36b0831b77b518e778e14b90b49dd23",
+      "driver_state": "WF_COMBO_MEASURING",
+      "annual": {
+        "declared": 1085,
+        "rows_present": 1085,
+        "status_verdict": {
+          "done/SKIPPED_PRESCREEN": 1078,
+          "done/MEASURED": 7
+        },
+        "active_holds": {}
+      },
+      "wf": {
+        "declared": 4,
+        "rows_present": 4,
+        "status_verdict": {
+          "pending/": 4
+        },
+        "active_holds": {}
+      }
+    },
+    {
+      "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+      "measurement_ea_id": "QM5_41324",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "132fd8845eb28bea7df619231ff0353a15f8004069d008aaf67d1a75cf0af35f",
+      "driver_state": null,
+      "annual": {
+        "declared": 1085,
+        "rows_present": 1085,
+        "status_verdict": {
+          "done/MEASURED": 768,
+          "pending/": 317
+        },
+        "active_holds": {}
+      },
+      "wf": {}
+    },
+    {
+      "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+      "measurement_ea_id": "QM5_41306",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "c9e782febbfdf93280d4eab75e28e317f6032f71c6cac0ebfa7efd98b5847453",
+      "driver_state": null,
+      "annual": {
+        "declared": 1085,
+        "rows_present": 2,
+        "status_verdict": {
+          "done/MEASURED": 1,
+          "pending/": 1
+        },
+        "active_holds": {}
+      },
+      "wf": {}
+    }
+  ],
+  "ndx_holds": [
+    {
+      "id": "5183df54-9e70-5625-ae23-092ff1b6e787",
+      "ea_id": "QM5_11660",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "hold_code": "RAM_WINDOW_44GB",
+      "active": 1
+    },
+    {
+      "id": "f9ed7f92-f473-5a71-9933-e28bb74f6ec0",
+      "ea_id": "QM5_13013",
+      "symbol": "NDX.DWX",
+      "status": "pending",
+      "hold_code": "RAM_WINDOW_44GB",
+      "active": 1
+    }
+  ],
+  "active_work": [
+    {
+      "id": "d105ed94-4545-4d1e-82f8-580a383a9c02",
+      "ea_id": "QM5_11808",
+      "symbol": "EURUSD.DWX",
+      "phase": "Q04",
+      "claimed_by": "T3"
+    },
+    {
+      "id": "ee07d23b-d06d-55e2-9276-1c40b35dc4f3",
+      "ea_id": "QM5_41097",
+      "symbol": "USDJPY.DWX",
+      "phase": "OPT_CENSUS",
+      "claimed_by": "T5"
+    },
+    {
+      "id": "b95a682e-2172-554a-a5c1-3618d682e8ed",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX",
+      "phase": "OPT_CENSUS",
+      "claimed_by": "T4"
+    },
+    {
+      "id": "ee4ff9b4-41a3-4e74-b5ec-de548ed47113",
+      "ea_id": "QM5_10771",
+      "symbol": "XAUUSD.DWX",
+      "phase": "Q10_NEWS",
+      "claimed_by": "T7"
+    },
+    {
+      "id": "2c9ade91-674b-5a12-86fb-9cb89209a38d",
+      "ea_id": "QM5_41345",
+      "symbol": "XAUUSD.DWX",
+      "phase": "OPT_CENSUS",
+      "claimed_by": "T8"
+    },
+    {
+      "id": "83e61551-e994-4284-aa17-f486287c6e22",
+      "ea_id": "QM5_41259",
+      "symbol": "XTIUSD.DWX",
+      "phase": "Q02",
+      "claimed_by": "T10"
+    },
+    {
+      "id": "0cd8655f-a211-5925-9b38-bfa23c80e3d6",
+      "ea_id": "QM5_41346",
+      "symbol": "XAUUSD.DWX",
+      "phase": "OPT_CENSUS",
+      "claimed_by": "T6"
+    },
+    {
+      "id": "50046c12-8b4a-597f-9f45-61821dd0a1fd",
+      "ea_id": "QM5_41163",
+      "symbol": "USDCAD.DWX",
+      "phase": "OPT_CENSUS",
+      "claimed_by": "T9"
+    },
+    {
+      "id": "ecf1c889-2713-432a-ab4b-9e5a808f577f",
+      "ea_id": "QM5_41380",
+      "symbol": "XTIUSD.DWX",
+      "phase": "Q06",
+      "claimed_by": "T2"
+    }
+  ],
+  "counted_qualified_pairs": 16,
+  "verification": {
+    "focused_tests_passed": 138,
+    "rollout_tests_passed": 3,
+    "compile_check": "PASS",
+    "diff_check": "PASS",
+    "unrelated_index_changes_preserved": true
+  },
+  "rollout": {
+    "canary_terminal": "T6",
+    "canary_new_pid": 17900,
+    "controller_pid": 7356,
+    "log_path": "D:\\QM\\reports\\state\\candidate_priority_rollout_20260909.log",
+    "maximum_minutes": 60,
+    "spacing_seconds": 150,
+    "tested_worker_sha256": "00e5f2b7b5e823c758b13c5c60b317869a9f3b8fba0c398690b829d75d898fe0",
+    "observed_log": [
+      "{\"event\": \"idle_worker_stopped\", \"at_utc\": \"2026-09-09T04:58:09+00:00\", \"terminal\": \"T10\", \"old_pid\": 28972}",
+      "{\"event\": \"idle_reload_verified\", \"at_utc\": \"2026-09-09T04:58:11+00:00\", \"terminal\": \"T10\", \"old_pid\": 28972, \"new_pid\": 31956, \"worker_sha256\": \"00e5f2b7b5e823c758b13c5c60b317869a9f3b8fba0c398690b829d75d898fe0\"}"
+    ]
+  },
+  "follow_up_verification": {
+    "verified_at_utc": "2026-09-09T05:06:48.209807+00:00",
+    "service_applied": true,
+    "service_deferred": [],
+    "finalized": [
+      {
+        "q12_work_item_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+        "subject_ea_id": "QM5_11422",
+        "symbol": "USDCAD.DWX",
+        "wf_measured": 4,
+        "verdict": "NO_FILTER_CHANGE",
+        "final_selection": {"BUY": [], "SELL": []},
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\q12_selection_receipt.json",
+        "receipt_sha256": "744e6fec163465b8ba5fb76acf4ba0d3c92ed4988c4cb28a4e3da35c3f312601"
+      },
+      {
+        "q12_work_item_id": "b8729132-eb2f-5e15-8ea0-c14fb1c5b383",
+        "subject_ea_id": "QM5_41219",
+        "symbol": "XAUUSD.DWX",
+        "wf_measured": 4,
+        "verdict": "NO_FILTER_CHANGE",
+        "final_selection": {"BUY": [], "SELL": []},
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "receipt_sha256": "8b8fa9cdc970a3c3643f88fe2188f3c29ab77cb7c5721e575ba969b8a25deea7"
+      }
+    ],
+    "eurusd_wf": {"measured": 1, "pending": 3, "q12_status": "pending"},
+    "original_balke_annual": {"measured": 864, "active": 1, "pending": 220, "pending_prescreen_holds": 218, "q12_status": "pending"},
+    "gbpusd_annual_measured": 346,
+    "verified_reloaded_terminals_including_canary": ["T6", "T10", "T8", "T1", "T2"],
+    "rollout_still_running": true,
+    "rollout_error_log_bytes": 0,
+    "factory_off_flag_present": false,
+    "qualified_census_count_not_recomputed": true
+  },
+  "boundaries": [
+    "No EA binary/source/setfile modification",
+    "No live deploy or AutoTrading toggle",
+    "No economic verdict or criterion change",
+    "No test interruption",
+    "No T11/T12 changes",
+    "NDX RAM-window holds retained",
+    "Queue sort keys are not creation or authorization timestamps"
+  ]
+}
