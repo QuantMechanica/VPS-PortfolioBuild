@@ -183,6 +183,31 @@ are possible.
   awareness only. Also reducing the verbosity of further no-op log entries on this task group per
   the note in the calendar-criteria-b-prime evidence file. Task `3032534e` stays IN_PROGRESS.
 
+## Checked 2026-09-09T06:20Z (orchestration cycle) — bounded re-test: degradation now confirmed structural across 3 time windows
+
+- Spawn-lease table re-checked directly (`spawn_leases`): no live lease on `3032534e` (last entry
+  for this key expired 01:32:47Z), so this cycle was clear to act. `2f717775` still
+  `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~4h56m, ninth consecutive check, no
+  change) — not re-duplicated.
+- Ran one bounded 75s application-level re-test (`timeout 75 python tools/dukascopy/download_bi5.py`
+  resuming the same interrupted output root `20260909T032705Z`, identical command/rate/timeout as
+  the original P1 launch and the 02:33Z re-probe) rather than another TCP-only probe, per the
+  02:33-02:36Z note that a bare TCP connect is not a reliable signal for this host. Result: the one
+  attempt reached within the window (`AUDCAD/2025/09/01/08h`) failed with the identical
+  `WinError 10060` (connect timeout) signature. This is now the **third** independent time window
+  showing the same failure class — 01:27-01:32Z, 02:33-02:36Z, 06:20Z, spanning ~5h and multiple
+  UTC hours — satisfying the "different time of day" re-test bar called for by every prior cycle's
+  disposition. Conclusion: the degradation reads as **persistent/structural to this Dukascopy edge
+  IP from this VPS**, not transient time-of-day congestion; option 2 (wait and re-test) is
+  reasonably exhausted. Process terminated cleanly by the bounded `timeout` wrapper; no leftover
+  download process, no data loss (resumable by checksum manifest), no other action taken.
+- Recommendation updated: next actionable step is option 3 (ask Codex to widen retry/backoff
+  tuning once the lane frees up — `2f717775` already queued ahead of it) or option 4 (OWNER
+  awareness that the plan's day-scale estimate does not hold from this VPS/edge IP; a paid
+  alternative data vendor would be a spend decision, ROT-adjacent, not decided here). Still GRÜN
+  territory (measurement + observation only); no OWNER decision forced this cycle. Task `3032534e`
+  stays IN_PROGRESS.
+
 ## Checked 2026-09-09T06:17Z (orchestration cycle) -- no change; pileup persists
 
 2f717775 still APPROVED/unclaimed, updated_at=2026-09-09T01:24:20Z (~4h53m unclaimed). tasklist now shows 9 concurrent claude.exe processes (was 8-9 at 05:48Z) -- QM_StrategyFarm_ClaudeOrchestration_15min pileup confirmed still present, not worsening materially. No scheduled-task or process change made from this routed task (out of scope for a single ops_issue execution ticket; flagging for OWNER/router awareness only, per prior cycle). No duplicate ticket, no download restart, no terminal action. Task stays IN_PROGRESS.

@@ -245,3 +245,9 @@ Aufgabe `dfc60103` bleibt IN_PROGRESS.
 ## Geprueft 2026-09-09T06:17Z (Orchestrierungszyklus) -- keine Aenderung
 
 Weiterhin keine OWNER-Antwort zu OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (G:-Vault weiterhin permission-denied). Kein neuer relevanter Commit seit 05:48Z. Kein neues Ticket, Rebuild, Release. Aufgabe bleibt IN_PROGRESS.
+
+## Geprueft 2026-09-09T06:20Z (Orchestrierungszyklus) -- keine Aenderung; Pileup bestaetigt
+
+Dieser und der 06:17Z-Eintrag stammen aus zwei gleichzeitig laufenden Orchestrierungszyklen (bestaetigt
+9 parallele `claude.exe`-Prozesse) — konkreter Beleg fuer das bereits mehrfach geflaggte Scheduler-Pileup,
+keine neue Handlung ausgeloest. Keine OWNER-Antwort. Aufgabe bleibt IN_PROGRESS.
