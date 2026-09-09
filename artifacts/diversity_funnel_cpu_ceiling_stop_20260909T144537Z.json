@@ -1,0 +1,76 @@
+{
+  "schema_version": "qm.diversity-funnel-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-09T14:45:37.8649390Z",
+  "timezone": "Europe/Berlin",
+  "branch": "agents/board-advisor",
+  "observation_head": "545ece6087ffcd5a6ef2ca775f98f65a80bef074",
+  "outcome": "STOP_CPU_CEILING",
+  "admission_rule": {
+    "cpu_average_must_be_strictly_below_percent": 97.0,
+    "cpu_maximum_must_be_strictly_below_percent": 97.0
+  },
+  "cpu_evidence": {
+    "source": "Win32_PerfFormattedData_PerfOS_Processor Name=_Total",
+    "sample_interval_seconds": 2,
+    "samples_percent": [97.0, 98.0, 100.0, 100.0, 96.0],
+    "average_percent": 98.2,
+    "maximum_percent": 100.0
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py mt5-slots",
+    "scanned_at_utc": "2026-09-09T14:45:38+00:00",
+    "active_governed_testers": [
+      {
+        "terminal": "T1",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41322",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "a9b70c37-0b05-53f0-a8b6-972c1a8122aa"
+      },
+      {
+        "terminal": "T5",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41321",
+        "symbol": "NDX.DWX",
+        "work_item_id": "d194fb7c-b379-55ca-85e5-f14ceab1e3a2"
+      },
+      {
+        "terminal": "T9",
+        "phase": "Q07",
+        "ea_id": "QM5_36002",
+        "symbol": "GBPJPY.DWX",
+        "work_item_id": "a43c9627-42aa-462e-87c2-2c3da8edc30e"
+      },
+      {
+        "terminal": "T10",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41324",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "8502e509-1d7e-5e38-a1f9-331782909428"
+      }
+    ],
+    "active_governed_tester_count": 4,
+    "excluded_non_factory_processes": ["T_Live", "FTMO"]
+  },
+  "disk": {
+    "drive": "D:",
+    "free_bytes": 86427119616,
+    "free_gib": 80.492,
+    "binding": false
+  },
+  "mutations": {
+    "farm_db": false,
+    "claim": false,
+    "mq5": false,
+    "compile": false,
+    "smoke": false,
+    "q02_enqueue": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  },
+  "pacer_input_pin_audit": {
+    "applicable": false,
+    "reason": "no generated mq5 source was written"
+  }
+}
