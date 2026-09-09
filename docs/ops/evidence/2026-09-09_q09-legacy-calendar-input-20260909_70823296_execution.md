@@ -112,6 +112,43 @@ No rebuild, compile, magic reservation, or Q02 enqueue has been performed by any
 session directly — both sessions' allowed first action was exactly "enqueue one Codex
 ops ticket"; the actual rebuild is Codex's capability lane and remains outstanding.
 
+## Checked 2026-09-09T~0900Z (orchestration cycle) — compile queued, hold released; still gated
+
+Codex advanced further since the 0837Z check: source landed (commit `08bbce50e2`,
+`framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/`, ported Weissman 9/26 SMA mechanics
+into the current V5 skeleton, `RISK_FIXED`/`RISK_PERCENT` contract correct, 5 card-declared
+magic slots via `7e11a3e8ca`), and a `COMPILE_EA` work item (`1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e`)
+was enqueued 08:47:36Z. Its `COMPILE_EA_WORKER_ROLLOUT_PENDING` activation hold was released
+08:48:15Z (`docs/ops/evidence/2026-09-09_q09_qm5_41394_compile_release_b66b5ccc.json`,
+factory-mutation-lock-guarded, standard compile-wave release tool — not an action taken by
+this Claude session). Direct DB read confirms the work item is now `status=pending` in the
+normal compile queue (not yet compiled; no Q02 enqueue yet). `b66b5ccc` itself still shows
+`state=IN_PROGRESS`/`assigned_agent=codex` in `agent_tasks` (row `updated_at` stale at
+07:52:47Z, but real commit activity continued past that timestamp — the row timestamp only
+reflects state transitions, not in-flight work).
+
+All three claude tasks (`bb814520`, `dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS`:
+compile has not run yet, so no PASS/FAIL Q10_NEWS verdict is possible this cycle. No action
+taken beyond this read-only check — compile/worker rollout is outside this task's
+`selected_effect_only` authority scope (the contract authorizes exactly one Codex ticket +
+specific farmctl calls, already executed in a prior cycle). No duplicate ticket, no repin,
+no T_Live, no verdict change.
+
+## Checked 2026-09-09T~0850Z (orchestration cycle) — Codex source landed, compile/Q02 still outstanding
+
+`b66b5ccc` (DB: `state=IN_PROGRESS`, `assigned_agent=codex`, `updated_at=07:52:47Z`, no
+artifact_path yet) has advanced since the 08:37Z check: commit `08bbce50e2` ("feat(ea):
+build QM5_41394 calendar rebuild source") ports the Weissman 9/26 SMA mechanics into the
+current V5 template as new identity `QM5_41394` (registry rows `cd86803329`/`7e11a3e8ca`,
+magic slots allocated, `.mq5`/`SPEC.md`/5 symbol setfiles present under
+`framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/`). No `.ex5` yet, and no `work_items`
+row exists for `ea_id=41394` (checked both `COMPILE_EA` and general kinds directly against
+`farm_state.sqlite`) — compile and the single required Q02 enqueue are still outstanding,
+so this task's acceptance criterion is not yet met. No action taken by this Claude session
+beyond verification (compile/Q02-enqueue is Codex's own ticket step, not mine to run ahead
+of it); no duplicate ticket minted. All three tasks (`bb814520`, `dfc60103`, `46167bd9`)
+remain correctly `IN_PROGRESS`.
+
 ## Checked 2026-09-09T08:48Z (orchestration cycle) — Codex drafted source, not yet compiled/Q02'd
 
 `b66b5ccc` still `IN_PROGRESS`/`codex` (DB `updated_at` 07:52:47Z). Filesystem shows real
