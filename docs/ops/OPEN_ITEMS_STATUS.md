@@ -1636,3 +1636,26 @@ No router state change made; no new ticket duplicated. No threshold/verdict/T_Li
 AutoTrading/gate change. No OWNER-scope work invented. Per the suppression note left in all
 three per-task evidence files, no further entry added there this cycle (Q02 still short of a
 verdict, REVIEW not yet closed).
+
+## Orchestration cycle 2026-09-09T1133Z -- 3 IN_PROGRESS claude tasks unchanged; b66b5ccc closed APPROVED, still gated
+
+Direct `farm_state.sqlite` read (not router state alone) on all three `IN_PROGRESS` claude
+tasks (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE, `3032534e`
+DUKASCOPY-BACKFILL): all correctly remain `IN_PROGRESS`, no live spawn-lease on any of the
+three keys. Delta since the last cycle: Codex ticket `b66b5ccc` closed `REVIEW`->`APPROVED`
+at 11:19:40Z, verdict "Real Q02 worker PASS confirmed for rebuilt QM5_41394/EURUSD.DWX D1
+... Scope census + rebuild both delivered per acceptance" -- this is Codex's own ticket
+close, not a Claude action, and it does not by itself satisfy either `bb814520`'s or
+`dfc60103`'s acceptance (both need a Q10_NEWS PASS/FAIL adjudication, which needs Q03-Q09
+first). `QM5_41394` work items unchanged from the prior cycle: EURUSD Q02 PASS -> Q04 FAIL
+(strategy-taxonomy, already logged); SP500/USDJPY/XAUUSD/XTIUSD Q02 still `pending`
+(created 10:52:59Z, no claim yet). `2f717775` (Dukascopy non-FX price_scale ticket) still
+`APPROVED`/unassigned since 01:24:20Z (~10h unclaimed) -- Codex lane still not picking it up;
+no duplicate ticket raised. `farmctl health`: FAIL 14/WARN 19/OK 50, same chronic named set
+(`ks_baseline` 23/24, `ftmo_trial_pulse` review-trigger WARN by design, two
+`task_monitor_escalation` FAILs already tracked); no new incident.
+
+No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
+AutoTrading/gate change. No OWNER-scope work invented. Per the standing suppression note, no
+further per-task evidence-file entry added this cycle (nothing material beyond the b66b5ccc
+close, which is recorded here).
