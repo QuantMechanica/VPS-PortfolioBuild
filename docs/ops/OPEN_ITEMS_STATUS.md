@@ -2075,3 +2075,17 @@ scheduled batches; this sample does not justify proxy/different-egress spend.
 Evidence: `docs/ops/evidence/2026-09-09_dukascopy_p1_hardening_measurement.md`.
 No production import, history mutation, signed-archive change, terminal action,
 Factory action, T_Live/AutoTrading touch, threshold, verdict, or gate change.
+
+## 2026-09-09T19:40Z — RESULT: non-FX price-scale implementation verified; T1 receipt safely deferred
+
+Task `2f717775`: committed the exact-nine-symbol `SYMBOL_DIGITS` / `SYMBOL_POINT`
+metadata sub-probe and strict receipt passthrough into Dukascopy conversion and
+reconciliation (`97c1ea8d50`); 30 focused tests pass and FX behavior is unchanged.
+The single governed work item `ed393d48` remains pending/unclaimed with exact
+source hashes. Its canonical queue rank oscillated 97->94->91->96->93 because
+continuously replenished optimization-frontier cells order ahead of Q00, plus
+normal claim-spacing/commit-headroom holds. No worker/backtest was interrupted,
+no queue ordering was bypassed, and no duplicate work item or guessed broker
+value was created. Evidence and continuation target:
+`docs/ops/evidence/2026-09-09_dukascopy_nonfx_price_scale_probe.md`. Acceptance
+remains open until the existing worker-owned T1 receipt supplies all nine rows.
