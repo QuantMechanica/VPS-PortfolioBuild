@@ -1454,3 +1454,77 @@ task or killing other sessions from inside a routed task; a fix (e.g. `-Multiple
 on the task, or a cycle-level lease alongside the existing per-task lease) is a GRÜN-eligible infra
 repair for a future session with a clean tree, not invented here. No router state change, no
 OWNER-scope work invented.
+
+## Orchestration cycle 2026-09-09T~0800Z — OWNER answer found; unblocking Codex ticket enqueued
+
+After ~15+ cycles of "no OWNER answer" checks against the Vorlage file's `OWNER-Antwort`
+section (which was never the actual answer channel for this decision), the router's own
+task list now carries the answer directly: task `46167bd9-fe1b-5443-bda9-5e8181dcc185`
+(routed 07:37:31Z) has `owner_decision.choice="YES"` for `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`
+(decided_at_utc 2026-09-09T04:18:52Z, receipt `70823296-549a-4fba-8d2d-68ef34607664`,
+Option B staged: rebuild `QM5_11167` only as a new identity from Q02, cohort follow-up
+later). This is new information not present in any prior cycle's checked source
+(`docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md` still has no
+`OWNER-Antwort` section — the answer arrived via Mission Control / the router payload,
+not that file).
+
+Action taken this cycle: exactly one Codex ops ticket enqueued (`agent_router.py enqueue
+ops_issue --priority 85 --decision-bound-agent codex` → task `b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3`,
+state `TODO`) per the execution contract's first allowed action — scope-measurement report
+(pending + released B′ rows vs. the 2026-08-03 boundary `f0102fbcf2`) plus a governed Q02
+rebuild of `QM5_11167` only (new identity, current template, no continuity claim, old
+binary/rows untouched). Full record: `2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`.
+No rebuild/compile performed directly (Codex capability lane); no threshold/verdict/T_Live
+touched; no other cohort member (11196, 10148, 10476, 10771, 11179, 1230, 12474, 9573)
+rebuilt or released. Task `46167bd9` stays `IN_PROGRESS` pending Codex delivery + independent
+review.
+
+**New open item (not actioned, out of this decision's scope):** OWNER's receipt for this
+same decision also asks for tick data to be refreshed **monthly** going forward
+("zusätzlich Monatlich sollen die Tickdaten aktualisiert werden!") — a standing-process
+request distinct from the rebuild-vs-park question and from the existing daily
+`news_calendar_refresh` task. `notes_may_expand_scope=false` on this execution contract, so
+not actioned here; needs its own scoped ticket/decision in a future cycle (which historical
+symbols/timeframes, which data source, retention of the existing tick archive).
+
+Cross-referenced into `dfc60103` and `bb814520`'s files (both were gated on the same
+decision and are now able to proceed once Codex delivers on `b66b5ccc`).
+
+## Orchestration cycle 2026-09-09T0752Z (checked, real progress -- gap found and closed)
+
+Discovered that the OWNER answer for `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` had
+actually arrived at 04:18:52Z (embedded in fresh router task `46167bd9`, `source:
+"Mission Control OWNER receipt"`) -- roughly 20 prior cycles between 03:49Z and 07:19Z
+missed it because they grepped git log / the Vault mirror for a receipt commit instead of
+reading the live `list-tasks --agent claude --state IN_PROGRESS` payload directly. Acted
+on it: minted Codex ticket `5088aa6e-c2ab-4624-b5d7-63c2fad14f68` (pinned `codex`,
+`APPROVED`, priority 88) for stage 1 of the OWNER-approved staged rebuild (Option B,
+"11167 zuerst") -- independently re-verify the pre-2026-08-03 affected scope, then
+rebuild `QM5_11167` as a new identity from Q02 under the current template, no continuity
+claimed with the old Q02-Q09 verdicts, old binary/evidence untouched, scoped to 11167
+only (not the other 8 cohort binaries).
+
+**Correction, same cycle:** `5088aa6e` does not exist in the canonical
+`D:/QM/strategy_farm/state/farm_state.sqlite` -- it was written by calling
+`agent_router.enqueue_task()` directly with `root=Path("C:/QM/repo")` instead of going
+through the CLI (which defaults `root` correctly), so `farmctl.connect(root)` opened a
+stray decoy database at `C:\QM\repo\state\farm_state.sqlite` (pre-existing, untracked,
+unrelated to the live runtime) instead of the real one. The row has been deleted from
+that decoy DB; it never reached the real router or Codex, so no duplicate work was ever
+in flight. A second, concurrent orchestration-cycle session independently reached the
+same conclusion (found the same OWNER-answer gap, same root cause, same fix) and had
+already enqueued the real ticket in the correct DB: **`b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3`**
+(`ops_issue`, priority 85, `assigned_agent=codex`, now `state=IN_PROGRESS`), carrying
+equivalent scope (independent scope re-verification vs. the 2026-08-03 boundary, `QM5_11167`-
+only rebuild as a new identity from Q02, no continuity claim, old binary/rows untouched,
+exactly one new Q02 work_item for the new identity). Both sessions' evidence files
+(`2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md` and this file) now
+correctly point at `b66b5ccc` as the only real ticket. **No second rebuild ticket should be
+enqueued** -- `b66b5ccc` covers the objective and is already in flight with Codex.
+
+All three tasks (`bb814520`, `dfc60103`, `46167bd9`) correctly remain `IN_PROGRESS`,
+gated on `b66b5ccc` completing + independent review. No threshold/verdict/T_Live
+change. `tasklist` still shows 9 concurrent `claude.exe` (the scheduler-pileup defect
+flagged repeatedly above remains unfixed and out of this task's scope -- infra repair
+for a future GRÜN-eligible session with a clean tree; today's near-simultaneous
+independent-but-convergent work on `46167bd9` by two sessions is a direct symptom of it).

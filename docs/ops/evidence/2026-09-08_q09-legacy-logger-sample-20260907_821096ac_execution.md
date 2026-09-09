@@ -278,3 +278,28 @@ Same gate as bb814520 above: no OWNER answer, no live lease, no new ticket/rebui
 ## Checked 2026-09-09T07:19Z -- no change
 
 No OWNER answer to OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (shared gate with `bb814520`). No new ticket, rebuild or release. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T~0800Z -- OWNER answer found; gating decision unblocked
+
+Router task `46167bd9` (routed 07:37:31Z) now carries `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909
+= YES` (decided 04:18:52Z, receipt `70823296-549a-4fba-8d2d-68ef34607664`, Option B staged:
+rebuild `QM5_11167` only as a new identity from Q02; cohort follow-up later). The answer
+never appeared in the Vorlage file's `OWNER-Antwort` section (confirmed still absent) — it
+was only visible directly in the router's `list-tasks` payload for `46167bd9`, which is why
+~15 prior cycles checking the Vorlage file found nothing. Full record:
+`2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`. Codex ticket
+`b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3` enqueued this cycle (verified in `agent_tasks` via
+direct DB read: `state=IN_PROGRESS`, `assigned_agent=codex`) for the scope measurement +
+governed 11167-only rebuild.
+
+Note: a concurrent orchestration-cycle session (confirmed pileup, see
+`OPEN_ITEMS_STATUS.md`) independently worked the same objective and its own evidence file
+claims a second ticket `5088aa6e` — that ID does **not** exist in `agent_tasks` on direct
+re-check (twice). Treating it as an unconfirmed concurrent-session claim, not acted on
+further; `b66b5ccc` is the one verified ticket in flight. See the correction note in
+`46167bd9`'s own execution record for detail.
+
+This task (`dfc60103`) stays gated the same way: its own acceptance criterion ("11167
+rerun ends PASS/FAIL, not REVIEW_REQUIRED cell_execution_failed") is structurally
+unreachable until the rebuild lands. No release, repin, or verdict change this cycle. Task
+remains `IN_PROGRESS`.

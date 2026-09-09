@@ -181,3 +181,21 @@ No OWNER answer to OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (grep for answer
 ## Checked 2026-09-09T07:19Z -- no change
 
 No OWNER answer to OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909; no relevant commit since 07:05Z (`git log --since=2026-09-09T07:05:00Z -- docs/ops/ decisions/` shows only the prior cycle's own log commit); codex ticket `2f717775` still APPROVED/unassigned at 01:24:20Z (~5h55m unclaimed, confirmed via direct state-DB read). No ticket, release, rebuild or terminal action taken. All three tasks (`bb814520`, `dfc60103`, `3032534e`) remain IN_PROGRESS.
+
+## Checked 2026-09-09T~0800Z -- OWNER answer found; gating decision unblocked
+
+The blocking decision now has an answer: router task `46167bd9` (routed 07:37:31Z) carries
+`OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 = YES` (decided 04:18:52Z, receipt
+`70823296-549a-4fba-8d2d-68ef34607664`, Option B staged — rebuild `QM5_11167` only as a
+new identity from Q02; cohort follow-up later). The answer never appeared in the Vorlage
+file's `OWNER-Antwort` section (still absent) — it landed in Mission Control / the router
+payload directly, which is why ~15 prior cycles checking that file found nothing. Full
+execution record: `2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`;
+Codex ticket `b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3` enqueued this cycle for the scope
+measurement + governed 11167 rebuild.
+
+This task (`bb814520`) stays gated: B′'s acceptance criterion "first adjudications end
+PASS/FAIL" is still structurally blocked for the pre-08-03 legacy cohort (including 11196,
+which is off the priority track) until the 11167 rebuild proves the path and a cohort-wide
+follow-up decision is made. No new release, repin, or verdict change this cycle. Task
+remains `IN_PROGRESS`.
