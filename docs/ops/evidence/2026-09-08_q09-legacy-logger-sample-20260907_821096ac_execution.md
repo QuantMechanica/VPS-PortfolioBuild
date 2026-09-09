@@ -166,3 +166,11 @@ laut `QM_NewsFilter.mqh:744` (`QM_NewsInitTesterBundle`) tatsaechlich den gelade
 also kein reines Provenienz-Echo). Erstfassung faelschlich mit Deklarations-Option, im selben
 Zyklus korrigiert (Commits `a65321d94f`/`33dc5a1979`). Aufgabe `dfc60103` bleibt IN_PROGRESS bis
 zur OWNER-Antwort; kein Rebuild ausgefuehrt.
+
+## Geprueft 2026-09-09T03:49:25Z (Orchestrierungszyklus) — keine Aenderung
+
+Erneut auf eine OWNER-Antwort zu `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` geprueft: keine
+gefunden. `G:`-Vault-Laufwerk verweigert weiterhin den Zugriff aus dieser Session (permission
+denied), Vault-Spiegel konnte nicht als Zweitquelle geprueft werden. Kein neues Ticket, kein
+Rebuild, kein Release ausgeloest. Aufgabe `dfc60103` bleibt IN_PROGRESS, gebunden an dieselbe
+OWNER-Entscheidung wie `bb814520`.

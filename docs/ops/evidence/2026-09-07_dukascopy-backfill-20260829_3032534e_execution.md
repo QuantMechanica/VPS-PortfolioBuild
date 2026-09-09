@@ -75,3 +75,13 @@ No router capacity wasted beyond one unrouted ticket row. Lesson for the next cy
 `git log`/re-read the evidence file immediately before enqueueing any new child ticket
 for an already-IN_PROGRESS task, since concurrent orchestration passes on the same task
 are possible.
+
+## Checked 2026-09-09T03:49:25Z (orchestration cycle) — no change, nothing new enqueued
+
+- Re-read this file first per the lesson above, then queried the state DB directly:
+  `2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` is still `APPROVED`, `assigned_agent=None`,
+  `updated_at=2026-09-09T01:24:20Z` — unclaimed by a Codex worker yet, no artifact/verdict.
+  This is expected (I do not route; the router assigns it on its own schedule).
+- No duplicate ticket created. Non-FX `price_scale`/`point_size` wiring and the
+  `--resolve-ip` freshness note remain the two open items before any P1 production download.
+  Task `3032534e` stays IN_PROGRESS pending `2f717775`.
