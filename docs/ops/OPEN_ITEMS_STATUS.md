@@ -1,5 +1,23 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~13:04Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
+> DB-Prüfung ~12 Minuten nach dem 12:52Z-Check bestätigt: `QM5_41394` unverändert — USDJPY.DWX
+> weiterhin `Q04 pending` (`bd6f7c72…`, seit `12:19:47Z`), SP500/XAUUSD/XTIUSD weiterhin
+> `Q02 pending` seit `10:52:59Z`, EURUSD weiterhin `Q04 FAIL` (Sackgasse). Kein Leg hat
+> Q10_NEWS erreicht — `bb814520`/`dfc60103` bleiben korrekt `IN_PROGRESS`. `3032534e`:
+> Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `01:24:20Z` (~11h40m); letzter
+> Reprobe-Zyklus 11:49-11:50Z, Cadence weiterhin nicht fällig, daher kein neuer Reprobe. Spawn-
+> Lease `agent_task:3032534e-eaf0-5b68-b09f-2127ebb315b0` weiterhin abgelaufen (`12:49:38Z`);
+> diese Session reacquired sie nicht (Reacquire läuft nur über den Routing-Pfad, den dieser
+> Auftrag verbietet). `farmctl health` overall=FAIL (15 FAIL/16 WARN/52 OK) — identisches
+> chronisches Set wie 12:52Z (`codex_zero_activity`, `q02_stranded_exhausted_pairs`,
+> `phase_invalid_rate_7d`, `agent_task_state_stranded`, `agent_task_aging_slo`,
+> `work_item_phase_age_slo`, `q09_sealed_plan_hold_age`, `q09_autoseal_hold_census`,
+> `pending_artifact_binding_drift`, Scheduled-Task/Backup-Calendar-FAILs); keine dieser Zeilen
+> betrifft die drei gegatterten Ketten. `git log --since=2026-09-09T12:52:00Z` zeigt nur den
+> Commit des 12:52Z-Zyklus selbst, keinen neuen OWNER-Receipt. Kein Ticket/Rebuild/Release/
+> Router-Zustandswechsel; `agent_router.py run`/`route-many`/`replenish` nicht aufgerufen.
+
 > **Nachtrag 09.09., ~12:52Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
 > DB-Prüfung zwei Minuten nach dem 12:50Z-Check: `QM5_41394` unverändert — USDJPY.DWX weiterhin
 > `Q04 pending` (`bd6f7c72…`), SP500/XAUUSD/XTIUSD weiterhin `Q02 pending` seit `10:52:59Z`,
