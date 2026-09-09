@@ -1,0 +1,41 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41402
+; ea_slug:      xng-winter-w2agree
+; ea_version:   v5.0
+; set_version:  s20260909-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-09-09
+;==========================================================
+qm_ea_id=41402
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_symbol=XNGUSD.DWX
+strategy_label_offset_seconds=86400
+strategy_entry_grace_minutes=180
+strategy_history_bars=24
+strategy_winter_month_1=11
+strategy_winter_month_2=12
+strategy_winter_month_3=1
+strategy_winter_month_4=2
+strategy_winter_month_5=3
+strategy_required_weeks=2
+strategy_min_week_bars=3
+strategy_max_week_bars=5
+strategy_return_epsilon=0.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=10
+strategy_max_spread_points=1500
+
