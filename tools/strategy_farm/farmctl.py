@@ -28133,7 +28133,31 @@ def _q02_execution_symbol_binding(
     row_symbol = str(target["symbol"] or "").strip()
     logical_symbol = str(payload.get("logical_symbol") or "").strip()
     host_symbol = str(payload.get("host_symbol") or "").strip()
+    expected_symbol = str(payload.get("expected_symbol") or "").strip()
     portfolio_scope = str(payload.get("portfolio_scope") or "").strip().lower()
+    basket_symbols = payload.get("basket_symbols")
+    declared_basket_symbols = (
+        [str(symbol).strip() for symbol in basket_symbols]
+        if isinstance(basket_symbols, list)
+        else []
+    )
+    declared_basket_count = payload.get("basket_symbol_count")
+    physical_host_dependency = bool(
+        payload.get("basket_manifest")
+        and not logical_symbol
+        and portfolio_scope != "basket"
+        and host_symbol == row_symbol
+        and expected_symbol == row_symbol
+        and row_symbol in declared_basket_symbols
+        and isinstance(declared_basket_count, int)
+        and declared_basket_count == len(declared_basket_symbols)
+        and declared_basket_count > 0
+    )
+    if physical_host_dependency:
+        return True, {
+            "expected_symbol": row_symbol,
+            "physical_host_dependency": True,
+        }
     is_basket = bool(
         portfolio_scope == "basket"
         or payload.get("basket_manifest")

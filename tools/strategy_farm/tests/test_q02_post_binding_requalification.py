@@ -231,6 +231,46 @@ def _call(fixture: dict[str, object], *, apply: bool = False) -> dict[str, objec
     )
 
 
+def test_physical_host_dependency_manifest_does_not_require_logical_symbol() -> None:
+    row = {"symbol": "USDJPY.DWX"}
+    payload = {
+        "basket_manifest": "basket_manifest.json",
+        "basket_symbol_count": 2,
+        "basket_symbols": ["EURUSD.DWX", "USDJPY.DWX"],
+        "host_symbol": "USDJPY.DWX",
+        "expected_symbol": "USDJPY.DWX",
+    }
+
+    ok, binding = farmctl._q02_execution_symbol_binding(
+        row, payload  # type: ignore[arg-type]
+    )
+
+    assert ok is True
+    assert binding == {
+        "expected_symbol": "USDJPY.DWX",
+        "physical_host_dependency": True,
+    }
+
+
+def test_synthetic_basket_without_logical_symbol_remains_fail_closed() -> None:
+    row = {"symbol": "EURUSD_GBPUSD_BASKET"}
+    payload = {
+        "basket_manifest": "basket_manifest.json",
+        "basket_symbol_count": 2,
+        "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+        "host_symbol": "EURUSD.DWX",
+        "expected_symbol": "EURUSD.DWX",
+    }
+
+    ok, binding = farmctl._q02_execution_symbol_binding(
+        row, payload  # type: ignore[arg-type]
+    )
+
+    assert ok is False
+    assert binding["reason"] == "historical_execution_identity_missing"
+    assert binding["binding"] == "logical_symbol"
+
+
 def test_pending_predecessor_is_superseded_append_only_with_receipt(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
     dry_run = _call(fixture)
