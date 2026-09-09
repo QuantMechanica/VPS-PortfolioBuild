@@ -93,6 +93,20 @@ are possible.
   prior cycle, still unclaimed by a Codex worker. No duplicate ticket created, nothing else actionable
   without the router assigning it. Task `3032534e` stays IN_PROGRESS pending `2f717775`.
 
+## Checked 2026-09-09T04:19Z (orchestration cycle) — no change; ticket now ~3h stale, datafeed retest not yet due
+
+- `2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` still `APPROVED`/`assigned_agent=None`,
+  `updated_at=2026-09-09T01:24:20Z` (~2h55m since last update, unclaimed by a Codex worker across
+  three consecutive checks). Codex's own router-visible `running` count is 0/5 this cycle — worth
+  OWNER/router awareness that this lane may be idle rather than backed up, but this is an
+  observation, not an action I take (I do not route).
+- Datafeed re-test: the 2026-09-09 02:33-02:36Z note explicitly calls for "several hours" before
+  the next application-level retest of the Dukascopy edge (`194.8.15.180`); only ~1h43m has
+  elapsed since then. Not re-tested this cycle to avoid burning another false-negative sample in
+  the same degraded window. No download process started, no production job restarted.
+- No new ticket, release, rerun or OFF-window request. Task `3032534e` stays IN_PROGRESS pending
+  `2f717775` and a later-hour datafeed retest.
+
 ## Checked 2026-09-09T04:18Z (orchestration cycle) — no change, nothing new enqueued
 
 - Re-read this file first, then queried the state DB directly: `2f717775-2bdd-4457-b5b6-e9ecae2a3e4a`
