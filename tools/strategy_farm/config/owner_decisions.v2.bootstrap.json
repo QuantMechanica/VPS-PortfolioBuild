@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 15,
+  "revision": 16,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -412,12 +412,12 @@
         "docs/ops/evidence/2026-09-07_calendar-criteria-b-prime-20260907_617abd80_execution.md"
       ],
       "id": "OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909",
-      "no_effect": "Option C: betroffene Zeilen bleiben dokumentiert ohne Prioritaetsspur geparkt; post-08.03-B'-Zeilen laufen unveraendert weiter.",
-      "question": "Darf q09_news_runner.py::_validate_report_effective_inputs fuer EX5-Builds vor dem 03.08.2026-Commit (f0102fbcf2, git-archiviert, Baudatum exakt geprueft) das Fehlen der drei Kalender-Bundle-Input-Felder (qm_news_calendar_bundle_id/_expected_sha256/_common_relative_path) als deklariertes Residuum akzeptieren (Option A, analog zum sv-Praezedenzfall; alle anderen Effektiv-Input-Pruefungen bleiben scharf) - statt Neubau (B) oder Parken (C)?",
-      "recommendation": "JA (Option A). Gleiche Begruendung wie beim sv-Praezedenzfall: das Residuum ist git-archiviert, exakt baudatumsgebunden und ehrlich deklariert. Schritt 1 (exakter betroffener Scope inkl. bereits freigegebener B'-Zeilen) ist unabhaengig von der Wahl zuerst noetig.",
+      "no_effect": "Option C: betroffene Zeilen bleiben dokumentiert ohne Prioritaetsspur geparkt (dauerhaft REVIEW_REQUIRED); post-08.03-B'-Zeilen laufen unveraendert weiter.",
+      "question": "Es gibt keine belegte Deklarations-Option: qm_news_calendar_bundle_id/_expected_sha256/_common_relative_path steuern in QM_NewsInitTesterBundle() (QM_NewsFilter.mqh:744), welchen Kalender-Bundle der Tester laedt - kein Provenienz-Echo. Ein Alt-Binary ohne diese Inputs kann nicht nachweislich an den versiegelten Bundle gebunden werden. Soll Codex (1) den exakten betroffenen Scope vermessen (alle pending + freigegebenen B'-Zeilen gegen die 03.08.-Grenze, Commit f0102fbcf2) und (2) Option B (Neubau, gestuft mit 11167 zuerst, neue Identitaet ab Q02) vorbereiten - oder gilt bis auf Weiteres Option C (Parken)?",
+      "recommendation": "B, aber gestuft (11167 zuerst). Neubau ist der einzig belegte Weg zu einem echten PASS/FAIL-Verdikt; ein deklariertes Residuum waere hier keine ehrliche Analogie zum sv-Fall, weil die Kalenderbindung selbst unverifizierbar bliebe. Alternativ C, falls der Rebuild-Aufwand jetzt nicht gewollt ist.",
       "severity": "action",
       "status": "OPEN",
-      "yes_effect": "Genau EIN Claude-Auftrag: Codex-Ticket (Scope-Messung gegen die 03.08.-Grenze; Guard-Erweiterung nur fuer exakt git-archivierte Pre-f0102fbcf2-Builds, Tests, Receipt-Feld calendar_input_authentication=legacy_no_bundle_binding + Fussnote), danach ein 11167-Rerun (append-only) und bei PASS/FAIL-Ergebnis Rueckgabe der Prioritaetsspur an 11196. Kein Repin, kein Publish, kein T_Live, keine Schwelle, kein Verdict-Overwrite."
+      "yes_effect": "Genau EIN Claude-Auftrag: Codex-Ticket (Scope-Messung gegen die 03.08.-Grenze; Neubau von QM5_11167 mit aktuellem Template als neue Identitaet ab Q02, kein Bestandsschutz fuer die alten Q02-Q09-Verdikte, altes Binary/alte Zeilen bleiben unveraendert als Evidenz stehen; Kohorte danach nachziehen). Kein Repin, kein Publish, kein T_Live, keine Schwelle, kein Verdict-Overwrite auf bestehenden Zeilen."
     }
   ]
 }
