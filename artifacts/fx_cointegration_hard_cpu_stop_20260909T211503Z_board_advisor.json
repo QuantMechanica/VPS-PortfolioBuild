@@ -1,0 +1,93 @@
+{
+  "artifact_type": "fx_cointegration_hard_cpu_stop",
+  "schema_version": "qm.fx-cointegration-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-09T21:15:03+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "f9d082f6813b09f705a4d3f02654b93edf1df855",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "STOP_HARD_CPU_CEILING",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md",
+    "unordered_relationship_count": 66,
+    "unbuilt_scan_relationship_found": false,
+    "decision": "Do not create a duplicate card or EA; all frozen-scan relationships are already mechanized."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "existing_nonduplicate_continuation": {
+    "ea_id": "QM5_12778",
+    "pair": ["AUDUSD.DWX", "EURJPY.DWX"],
+    "work_item_id": "1ba8f6c7-7725-47c5-b0e5-6a4736c4ad44",
+    "phase": "Q09",
+    "status_from_latest_durable_receipt": "pending",
+    "priority_track": true,
+    "receipt": "artifacts/fx_cointegration_qm5_12778_q09_priority_resume_20260909T192306Z_board_advisor.json",
+    "decision": "Do not duplicate or supersede the already-prioritized continuation."
+  },
+  "capacity": {
+    "sampled_at_local": "2026-09-09T23:14:59+02:00/2026-09-09T23:15:03+02:00",
+    "sampling_method": "Windows Processor(_Total) percent processor time, five one-second samples",
+    "samples_percent": [48.14, 49.18, 54.02, 81.55, 100.0],
+    "average_percent": 66.578,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_rule": "binding when either average or maximum reaches 97 percent",
+    "ceiling_binding": true,
+    "farm_work_items_active": 3,
+    "farm_work_items_active_summary": {
+      "OPT_CENSUS": 3
+    },
+    "mt5_slots_scanned_at_utc": "2026-09-09T21:15:27+00:00",
+    "running_factory_terminals": ["T1"],
+    "terminal64_running_count_including_nonfactory": 3,
+    "active_metatester_processes": [
+      {
+        "terminal": "T1",
+        "pid": 15348
+      }
+    ],
+    "nonfactory_terminals_observed_read_only": ["T_Live", "FTMO"]
+  },
+  "pacer_build_guard": {
+    "mq5_written_or_edited": false,
+    "framework_input_pin_audit_required": false,
+    "compile_command_or_enqueue_attempted": false,
+    "refusal_reason": "CPU ceiling bound before candidate selection, source mutation, build, compile, or Q02 enqueue."
+  },
+  "actions": {
+    "new_card_or_ea_created": false,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_priority_changed": false,
+    "work_item_claimed": false,
+    "compile_enqueued_or_started": false,
+    "backtest_or_terminal_started": false,
+    "terminal_stopped_or_controlled": false
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  }
+}
