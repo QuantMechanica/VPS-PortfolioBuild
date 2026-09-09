@@ -57,9 +57,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q02_work_item_id: 265d8560-fa4e-4148-8324-32ebf164dd96
 force_build: true
 review_focus: "Falsify a winter-only XNG two-week agreement continuation distinct from the incumbent RSI pullback, one-week winter momentum, summer agreement, and SMA winter trend. Verify anchor-month eligibility, exact adjacent completed-week membership, strict agreement, continuation orientation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -211,6 +212,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-09 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-09 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_BUILT | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
-
+| Q01 Build Validation | 2026-09-09 | PASS | governed COMPILE_EA `6d901b7b-ea00-4c55-ae43-c69dd1d9ba98`; compile and build check PASS |
+| Q02 Baseline Screening | 2026-09-09 | ENQUEUED | fixed-risk canary `265d8560-fa4e-4148-8324-32ebf164dd96` |
