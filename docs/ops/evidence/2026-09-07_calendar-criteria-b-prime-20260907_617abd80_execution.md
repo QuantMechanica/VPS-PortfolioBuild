@@ -129,3 +129,11 @@ Criterion recorded with exact residual classes; B admits USD-only rows of any ti
   `repo_dirty_build_guard` blocked by 11 uncommitted files in `C:\QM\repo`, unrelated to this
   task). No new ticket, release, rerun or card minted. Task `bb814520` remains IN_PROGRESS, gated
   on the same pending OWNER decision as `dfc60103`.
+
+## Checked 2026-09-09T05:08Z (orchestration cycle) — no change
+
+- Re-checked for an OWNER answer to `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`: none found
+  (`git log --since=2026-09-09T05:03:00Z` shows only an unrelated candidate-priority docs commit).
+  `G:` Vault drive still permission-denied from this session. No new ticket, release, rerun or
+  card minted. Task `bb814520` remains IN_PROGRESS, gated on the same pending OWNER decision as
+  `dfc60103`.

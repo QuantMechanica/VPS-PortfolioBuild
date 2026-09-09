@@ -147,3 +147,13 @@ are possible.
   changed (ticket still unclaimed, no download process running) so a reprobe would not change the
   actionable state this cycle; deferred to the next cycle rather than spent speculatively. No
   duplicate ticket, no download restart, no terminal action. Task `3032534e` stays IN_PROGRESS.
+
+## Checked 2026-09-09T05:08Z (orchestration cycle) — no change; ticket now ~3h44m unclaimed
+
+- `2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` still `APPROVED`/`assigned_agent=None`,
+  `updated_at=2026-09-09T01:24:20Z` — unchanged across six consecutive checks; no codex-assigned
+  task activity in the state DB since 02:00Z, consistent with the `codex_zero_activity` FAIL and
+  `repo_dirty_build_guard` block (9 uncommitted files in `C:\QM\repo`, unrelated to this task)
+  still showing in this cycle's `farmctl health`. Datafeed reprobe deferred again — no independent
+  signal changed since the last check, so a reprobe would not alter the actionable state. No
+  duplicate ticket, no download restart, no terminal action. Task `3032534e` stays IN_PROGRESS.
