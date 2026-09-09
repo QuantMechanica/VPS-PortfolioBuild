@@ -89,9 +89,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: BUILD_PENDING
-q01_status: PENDING
-q02_status: NOT_STARTED
+pipeline_phase: COMPILE_PENDING_CPU_STOP
+q01_status: COMPILE_PENDING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a monthly XAU/XAG contrarian stream whose signal is the even median of four exact chronological three-change ratio blocks. Verify opposed legs, aggregate fixed risk, atomic lifecycle, and no outright-metal fallback. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -252,5 +252,5 @@ live manifests, `T_Live`, AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-09 | APPROVED_SOURCE | `decisions/2026-09-09_xauxag_monthly_block_median_reversion_source_approval.md` |
 | G0 Research Intake | 2026-09-09 | APPROVED | `decisions/2026-09-09_qm5_41389_xauxag_monthly_block_median_reversion_g0.md` |
-| Q01 Build Validation | — | PENDING | Requires PACER audit, fixtures, resolver, and governed strict compile. |
-| Q02 Baseline Screening | — | NOT_STARTED | Enqueue one logical row only after Q01 and fresh CPU admission. |
+| Q01 Build Validation | 2026-09-09 | COMPILE_PENDING | PACER audit and fixtures passed; governed compile work item `48408a93-4f2d-4615-9b54-fb8738721ab8` remains pending without EX5/verdict. |
+| Q02 Baseline Screening | 2026-09-09 | NOT_ENQUEUED_CPU_CEILING | Five samples averaged 99.5%, max 100.0%, above the strict 97% ceiling. |

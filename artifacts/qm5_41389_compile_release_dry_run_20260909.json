@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "0e8a7dbc6cc02578fc74a475c49649345c563fb9c57c6ef58c6be562c241a9df",
+      "ea_id": "QM5_41389",
+      "ea_label": "QM5_41389_xauxag-blockmed-rv",
+      "expected_mq5_sha256": "0e8a7dbc6cc02578fc74a475c49649345c563fb9c57c6ef58c6be562c241a9df",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41389_xauxag-blockmed-rv\\QM5_41389_xauxag-blockmed-rv.mq5",
+      "work_item_id": "48408a93-4f2d-4615-9b54-fb8738721ab8"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "48408a93-4f2d-4615-9b54-fb8738721ab8",
+  "work_item_id_selectors": [
+    "48408a93-4f2d-4615-9b54-fb8738721ab8"
+  ]
+}

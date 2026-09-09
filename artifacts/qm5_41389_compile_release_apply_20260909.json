@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "48408a93-4f2d-4615-9b54-fb8738721ab8"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260909T031946_417071Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260909T031920Z_83df3301.sqlite",
+    "reused": false,
+    "sha256": "fd06916a239ff24db68235d07ca6f1d9f0a4e25b3f7a461496f2530ec48d5440"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "0e8a7dbc6cc02578fc74a475c49649345c563fb9c57c6ef58c6be562c241a9df",
+      "ea_id": "QM5_41389",
+      "ea_label": "QM5_41389_xauxag-blockmed-rv",
+      "expected_mq5_sha256": "0e8a7dbc6cc02578fc74a475c49649345c563fb9c57c6ef58c6be562c241a9df",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41389_xauxag-blockmed-rv\\QM5_41389_xauxag-blockmed-rv.mq5",
+      "work_item_id": "48408a93-4f2d-4615-9b54-fb8738721ab8"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-09T03:19:46+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "48408a93-4f2d-4615-9b54-fb8738721ab8",
+  "work_item_id_selectors": [
+    "48408a93-4f2d-4615-9b54-fb8738721ab8"
+  ]
+}
