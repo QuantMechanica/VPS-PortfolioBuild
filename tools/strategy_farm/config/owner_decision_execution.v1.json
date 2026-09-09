@@ -1065,6 +1065,41 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909",
+      "todo_id": "QM-TODO-20260909-Q09-LEGACY-CALENDAR-INPUT",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Option A: accept the absence of the three calendar-bundle input fields as a declared residual in _validate_report_effective_inputs for EX5 builds older than commit f0102fbcf2 (2026-08-03, calendar-bundle input introduction); all other effective-input checks (RISK_FIXED/RISK_PERCENT, seed, news temporal/compliance, stale-max) stay strict; receipt field calendar_input_authentication=legacy_no_bundle_binding + footnote. First measure exact affected scope (pending + already-released B' rows) against the 2026-08-03 boundary, then guard change with tests, then one append-only 11167 rerun. No threshold/verdict/T_Live change.",
+          "allowed_actions": [
+            "Enqueue one Codex ops ticket with exact acceptance criteria (scope measurement, guard branch, tests, receipt field)",
+            "Integrate the Codex branch (tests, LF/byte checks, co-author trailer)",
+            "farmctl enqueue-backtest --append-only-rerun-of for 11167; mark-priority-track for 11196 only after a terminal PASS/FAIL",
+            "Update OPEN_ITEMS, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Exact affected scope measured and documented (pending + released B' rows vs the 2026-08-03 boundary)",
+            "Guard accepts the declared residual only for exactly git-archived pre-f0102fbcf2 builds; post-boundary builds unchanged (tests)",
+            "Receipt/footnote carry calendar_input_authentication=legacy_no_bundle_binding",
+            "11167 rerun ends PASS/FAIL (not REVIEW_REQUIRED cell_execution_failed)",
+            "No threshold/verdict/T_Live change"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Option C: park the pre-2026-08-03 Q10_NEWS candidates (documented, no priority track); post-boundary B' rows continue unchanged.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Pre-boundary rows documented as parked",
+            "No guard change"
+          ]
+        }
+      }
     }
   ]
 }

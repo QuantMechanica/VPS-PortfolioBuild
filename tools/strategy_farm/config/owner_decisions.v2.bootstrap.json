@@ -1,6 +1,6 @@
 {
   "schema_version": "qm.owner-decisions/v2",
-  "revision": 14,
+  "revision": 15,
   "maintainer": "Mission Control decision store; OWNER answers are receipts, not execution authority.",
   "updated_at_utc": "2026-09-02T17:47:14Z",
   "items": [
@@ -397,6 +397,27 @@
       "severity": "action",
       "status": "OPEN",
       "yes_effect": "Genau EIN Claude-Auftrag: Codex-Ticket (Guard-Zweig in run_smoke.ps1 nur unter -RequireFreshLoggerSample und nur fuer Builds vor 6e92c80626, Tests mit Pre-/Post-sv-Fixtures, Receipt-Feld + Fussnote), Integration, dann Reruns: 11167 append-only (--append-only-rerun-of f625d9aa), 11196 Prioritaetsspur zurueck, uebrige Pre-sv-Zeilen in Freigabe-Reihenfolge. Kein Repin, kein Publish, kein T_Live, keine Schwelle, kein Verdict-Overwrite."
+    },
+    {
+      "category": "Pipeline/Evidenz-Integritaet",
+      "cost_of_wait": "Jeder Pre-03.08-Build bleibt im B'-Zaehlerpfad strukturell unpassierbar; jeder Claim-Versuch verbrennt einen mehrstuendigen Tester-Slot ohne Endpunkt. 11167 hat bereits zwei solche Slots verbraucht (07.09. 07:18-16:00Z, 08.09. 14:40-15:15Z). 11196 bleibt von der Prioritaetsspur genommen.",
+      "created_at_utc": "2026-09-09T00:56:41Z",
+      "depends_on": [
+        "OWNER-DEC-Q09-LEGACY-LOGGER-SAMPLE-20260907"
+      ],
+      "due": "2026-09-11",
+      "evidence": [
+        "docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md",
+        "docs/ops/evidence/2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md",
+        "docs/ops/evidence/2026-09-07_calendar-criteria-b-prime-20260907_617abd80_execution.md"
+      ],
+      "id": "OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909",
+      "no_effect": "Option C: betroffene Zeilen bleiben dokumentiert ohne Prioritaetsspur geparkt; post-08.03-B'-Zeilen laufen unveraendert weiter.",
+      "question": "Darf q09_news_runner.py::_validate_report_effective_inputs fuer EX5-Builds vor dem 03.08.2026-Commit (f0102fbcf2, git-archiviert, Baudatum exakt geprueft) das Fehlen der drei Kalender-Bundle-Input-Felder (qm_news_calendar_bundle_id/_expected_sha256/_common_relative_path) als deklariertes Residuum akzeptieren (Option A, analog zum sv-Praezedenzfall; alle anderen Effektiv-Input-Pruefungen bleiben scharf) - statt Neubau (B) oder Parken (C)?",
+      "recommendation": "JA (Option A). Gleiche Begruendung wie beim sv-Praezedenzfall: das Residuum ist git-archiviert, exakt baudatumsgebunden und ehrlich deklariert. Schritt 1 (exakter betroffener Scope inkl. bereits freigegebener B'-Zeilen) ist unabhaengig von der Wahl zuerst noetig.",
+      "severity": "action",
+      "status": "OPEN",
+      "yes_effect": "Genau EIN Claude-Auftrag: Codex-Ticket (Scope-Messung gegen die 03.08.-Grenze; Guard-Erweiterung nur fuer exakt git-archivierte Pre-f0102fbcf2-Builds, Tests, Receipt-Feld calendar_input_authentication=legacy_no_bundle_binding + Fussnote), danach ein 11167-Rerun (append-only) und bei PASS/FAIL-Ergebnis Rueckgabe der Prioritaetsspur an 11196. Kein Repin, kein Publish, kein T_Live, keine Schwelle, kein Verdict-Overwrite."
     }
   ]
 }
