@@ -594,6 +594,19 @@ QM5_10069_Q02_STALE_RESOLVER_REPAIR_AUTHORITY = (
 QM5_10069_Q02_STALE_RESOLVER_REPAIR_EA_LABELS = frozenset({
     "QM5_10069_mql5-hs-rev",
 })
+# Exact paced-fleet authority for the QM5_10116 USDCAD Q02 infrastructure
+# recovery. The June binary predates the OWNER-authorized slots 4-12 and
+# therefore cannot resolve the added FX magics at OnInit, while the current
+# generated resolver contains those active mappings. This one infra-repair
+# task/label binding permits only an append-only, current-source COMPILE_EA
+# successor; it grants no strategy, backtest, gate-verdict, or cross-EA
+# authority.
+QM5_10116_Q02_STALE_RESOLVER_REPAIR_AUTHORITY = (
+    "router_q02_infra_repair:9c554c55-bf38-4b06-b24f-e5c3c44c8400"
+)
+QM5_10116_Q02_STALE_RESOLVER_REPAIR_EA_LABELS = frozenset({
+    "QM5_10116_tv-multi-ma-exit",
+})
 # Exact paced-fleet authority for the QM5_41192 XTI/XNG diversity recovery.
 # Its source, card, and fixed-risk basket setfiles still match the sealed Q02
 # receipt, but the untracked compiled binary disappeared while the logical Q02
@@ -2703,6 +2716,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_10069_Q02_STALE_RESOLVER_REPAIR_AUTHORITY
             and ea_label in QM5_10069_Q02_STALE_RESOLVER_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_10116_Q02_STALE_RESOLVER_REPAIR_AUTHORITY
+            and ea_label in QM5_10116_Q02_STALE_RESOLVER_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY
