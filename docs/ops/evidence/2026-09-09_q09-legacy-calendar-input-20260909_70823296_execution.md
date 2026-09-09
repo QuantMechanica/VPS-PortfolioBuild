@@ -111,3 +111,15 @@ directly, no router state change this cycle.
 No rebuild, compile, magic reservation, or Q02 enqueue has been performed by any Claude
 session directly — both sessions' allowed first action was exactly "enqueue one Codex
 ops ticket"; the actual rebuild is Codex's capability lane and remains outstanding.
+
+## Checked 2026-09-09T08:48Z (orchestration cycle) — Codex drafted source, not yet compiled/Q02'd
+
+`b66b5ccc` still `IN_PROGRESS`/`codex` (DB `updated_at` 07:52:47Z). Filesystem shows real
+forward motion since the 08:37Z check: `framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/`
+now exists with `QM5_41394_weiss-ichi2-ma-calendar-r1.mq5` + `SPEC.md` (written ~08:39-08:40Z),
+matching the reserved identity from `ea_id_registry.csv` (`3005c768-aa91-5daf-9dd7-500d7bfcb7a6`,
+status `active`/`Development`). No `.ex5` yet, no `work_items` row for `ea_id=41394` yet — compile
+and Q02 enqueue have not landed. No duplicate ticket enqueued, no action taken outside
+observation; this task's own next allowed step (enqueue the Q02 work item) is Codex's per the
+ticket scope, not mine to pre-empt. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain
+correctly `IN_PROGRESS`, gated on this rebuild reaching a Q02 verdict.
