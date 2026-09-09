@@ -303,3 +303,14 @@ This task (`dfc60103`) stays gated the same way: its own acceptance criterion ("
 rerun ends PASS/FAIL, not REVIEW_REQUIRED cell_execution_failed") is structurally
 unreachable until the rebuild lands. No release, repin, or verdict change this cycle. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T09:04Z (orchestration cycle) — QM5_41394 compiled, Q02 queued
+
+`QM5_41394` (the governed new-identity rebuild of `QM5_11167` under decision
+`OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`) compiled successfully: work item
+`1fb4d6f0` is `status=done`, `.ex5` published in commit `99d6330963` (10:53:45Z), and a Q02
+work item `58b36f74` is queued (`status=pending`). Full detail in
+`2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`. This is progress on
+the rebuild this task is gated on, not on this task's own sv-logger scope directly. No
+action taken here beyond the read; Q02 has not run yet, so this task's own acceptance
+criterion is still open. Task remains `IN_PROGRESS`.

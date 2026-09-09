@@ -199,3 +199,12 @@ PASS/FAIL" is still structurally blocked for the pre-08-03 legacy cohort (includ
 which is off the priority track) until the 11167 rebuild proves the path and a cohort-wide
 follow-up decision is made. No new release, repin, or verdict change this cycle. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T09:04Z (orchestration cycle) — rebuild compiled, Q02 queued; still gated
+
+`QM5_41394` (11167's governed rebuild) compiled (`work_items` item `1fb4d6f0`=`done`, `.ex5`
+published commit `99d6330963`) and a Q02 item (`58b36f74`, `status=pending`) is queued —
+detail in `2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`. Q02 has not
+run yet, so no PASS/FAIL adjudication exists for the new identity this cycle. No release,
+repin, ticket, or verdict change made here. Task remains `IN_PROGRESS`, same gate as
+`dfc60103` and `46167bd9`.
