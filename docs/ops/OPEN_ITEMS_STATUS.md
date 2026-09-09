@@ -1,5 +1,14 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 01:07Z — FX-Fallback QM5_41335 in Q02:** Der eingefrorene
+> 66-Paar-Cointegration-Frontier ist vollständig gebaut; 12532/12533 sind nicht
+> Q02-blockiert. Deshalb wurde der explizite Fallback genutzt: der bestehende,
+> APPROVED, niedrigfrequente AUDUSD-D1-Sleeve 41335 ist nach sauberem PACER-Pin-
+> Audit (`hit_count=0`) und COMPILE_OK-Hashbindung als genau ein Q02-Canary
+> `ff75b1c3-4930-419d-a2fe-49bd37eadc4d` eingereiht. Status `pending`, kein
+> Priority-Boost, kein Live-/Portfolio-Eingriff. Detail:
+> `docs/ops/evidence/2026-09-09_fx_funnel_qm5_41335_q02_intake.md`.
+
 > **Nachtrag 08.09., 14:12Z — OWNER Option A beschlossen, Legacy-Logger-Canary bereit:**
 > Receipt `821096ac-8f7f-4c28-b0ce-63a09e959de1`, Code `07af95fcf1`, 124 Tests PASS.
 > Exakte archivierte Pre-Control-Binaries statt mtime-Ausnahme; nur 11167 aktiviert,
