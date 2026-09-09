@@ -61,3 +61,17 @@ CSV result.
   wiring (2f717775), and the endpoint `--resolve-ip` freshness note (e9dea1e3). No download,
   import, OFF window or T_Live/AutoTrading action taken this cycle. Task `3032534e` stays
   IN_PROGRESS.
+
+## Dedup note 2026-09-09 01:2xZ (orchestration cycle)
+
+This cycle independently reached the same non-FX price_scale/point_size finding and
+enqueued a second, near-identical Codex ticket (`0b2bddcf-f7be-467c-8f21-304552a3c8c2`,
+priority 86) before reading the concurrent session's update above. Root cause: shared
+IN_PROGRESS task, two orchestration passes overlapping without checking for an
+already-enqueued child ticket first. Closed `0b2bddcf` `FAILED`/`duplicate_superseded_by_
+2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` before any Codex work started on it (it was still
+`TODO`, unrouted); `2f717775` (already `APPROVED`) is the sole live ticket for this step.
+No router capacity wasted beyond one unrouted ticket row. Lesson for the next cycle:
+`git log`/re-read the evidence file immediately before enqueueing any new child ticket
+for an already-IN_PROGRESS task, since concurrent orchestration passes on the same task
+are possible.
