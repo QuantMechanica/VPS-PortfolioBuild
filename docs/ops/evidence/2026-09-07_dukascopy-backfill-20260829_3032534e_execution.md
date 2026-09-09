@@ -135,3 +135,15 @@ are possible.
   to this ticket). Out of scope for this task (not one of the three assigned tickets; flagged in
   OPEN_ITEMS for router/OWNER awareness only). No ticket touched, no download restart, no terminal
   action. Task `3032534e` stays IN_PROGRESS.
+
+## Checked 2026-09-09T05:03Z (orchestration cycle) — no change; ticket now ~3h39m unclaimed
+
+- `2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` still `APPROVED`/`assigned_agent=None`,
+  `updated_at=2026-09-09T01:24:20Z` — unchanged across five consecutive checks. `repo_dirty_build_guard`
+  is still the plausible root cause: `C:\QM\repo` now shows 11 uncommitted files (same
+  `QM5_41240_wti-samecal-ramsaye5` + `dxz23_execution_contracts.json` set plus staged additions from a
+  concurrent actor's own in-progress work — not touched, not mine to commit). Datafeed reprobe: ~2h27m
+  since the 02:36Z probe, now past the "several hours" bar noted earlier, but no independent signal
+  changed (ticket still unclaimed, no download process running) so a reprobe would not change the
+  actionable state this cycle; deferred to the next cycle rather than spent speculatively. No
+  duplicate ticket, no download restart, no terminal action. Task `3032534e` stays IN_PROGRESS.

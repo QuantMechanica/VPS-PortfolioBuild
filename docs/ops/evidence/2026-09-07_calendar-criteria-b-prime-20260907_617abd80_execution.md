@@ -119,3 +119,13 @@ Criterion recorded with exact residual classes; B admits USD-only rows of any ti
 - No OWNER answer to `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (`G:` Vault still
   permission-denied; no new commit touching the card). No new ticket, release, rerun. Task
   `bb814520` remains IN_PROGRESS.
+
+## Checked 2026-09-09T05:03Z (orchestration cycle) — no change
+
+- Re-checked for an OWNER answer to `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`: none found
+  (`git log --since=2026-09-09T04:48:00Z -- docs/ops/ decisions/` shows only an unrelated research
+  card approval). `G:` Vault drive still returns `False`/inaccessible from this session. `farmctl
+  health` this cycle: FAIL 14/WARN 18/OK 51 — same chronic set (`codex_zero_activity`,
+  `repo_dirty_build_guard` blocked by 11 uncommitted files in `C:\QM\repo`, unrelated to this
+  task). No new ticket, release, rerun or card minted. Task `bb814520` remains IN_PROGRESS, gated
+  on the same pending OWNER decision as `dfc60103`.
