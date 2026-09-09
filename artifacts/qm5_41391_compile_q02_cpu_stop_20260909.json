@@ -1,0 +1,47 @@
+{
+  "schema": "qm.paced-fleet-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-09T05:01:10.0857261Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41391",
+  "ea_label": "QM5_41391_wti-tsmom10-h1",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "compile_work_item_id": "d521089b-7d5f-496e-9be9-643169774f41",
+  "compile_state_at_stop": "pending_unclaimed_activation_hold_released",
+  "compile_verdict": null,
+  "ex5_sha256": null,
+  "source_sha256": "375e491122abf8d59ab840d63f6f48a51856762fb255429dfae6aa380204af40",
+  "pacer_input_pin_audit": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "reference_tests": {
+    "status": "PASS"
+  },
+  "card_schema_lint": {
+    "status": "PASS",
+    "ml_hits": []
+  },
+  "cpu_admission": {
+    "samples_pct": [98.0, 96.0, 100.0, 97.0, 99.0],
+    "average_pct": 98.0,
+    "maximum_pct": 100.0,
+    "ceiling_pct": 97.0,
+    "rule": "average_and_maximum_must_be_strictly_below_ceiling",
+    "admitted": false
+  },
+  "actions_refused_after_stop": [
+    "q02_enqueue",
+    "manual_compile",
+    "manual_backtest",
+    "terminal_control"
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false
+  }
+}
