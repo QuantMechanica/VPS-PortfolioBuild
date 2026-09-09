@@ -2170,3 +2170,17 @@ with 36 tests and a bounded dry-run, still zero admitted and 16 stale closures.
 Cycle evidence: `docs/ops/evidence/ORCHESTRATION_CYCLE_2026-09-09.md`.
 Final farm health FAIL (14 fail / 52 OK / 17 warn); QM5_10260 has one pending Q04,
 no active claim. No routing, terminal change, backtest interruption or main advance.
+
+## 2026-09-10T00:05Z — WINSWEEP stage A live: 420 cells enqueued after staggered worker reload
+
+RESULT: Codex `49af4f08` delivered window_sweep.py + declaration + 71 tests (commit 1b4644149e) and
+refused apply fail-closed because all 10 workers predated the adapter (correct). Orchestrator ran the
+established staggered idle-worker reload (chunk 59 = copy of chunk 58 discipline: one terminal at a
+time, no active claim, no mutation lock, >=150 s spacing; log in the session scratchpad; 10/10
+reloaded 23:26-23:53Z, every worker start newer than the adapter mtime). Then
+`window_sweep.py enqueue --stage A --apply` twice: inserted 420, then 0 (idempotent). All 420 rows
+pending, frontier priority 1 (same as the boosted DL-089 41398 frontier), so both programs
+interleave; nothing deleted or down-prioritised. Ticket closed APPROVED (partial delivery, S5 done
+by orchestrator). Next: first WINSWEEP claim/MEASURED in the hourly watch (`winsweep` line), then
+`window_sweep.py report` and stage-A adjudication per the pre-registered plan; stage B tooling is a
+follow-up ticket after adjudication.

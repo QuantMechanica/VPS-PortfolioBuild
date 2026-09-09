@@ -40,5 +40,6 @@ try:
 except Exception as e: print('counter err',e)
 b=q("select status,count(*) from work_items where ea_id='QM5_41398' and phase like 'OPT_CENSUS%' group by status"); bq=q("select status,coalesce(verdict,'') from work_items where id like '2fc84747%'")
 print('balke41398 census', b, 'q02_baseline', bq)
+ws=q("select status,count(*) from work_items where json_extract(payload_json,'$.cell_key') like 'WINSWEEP%' group by status"); print('winsweep', ws)
 for a in al: print('ALERT', a)
 if not al: print('OK no alerts')
