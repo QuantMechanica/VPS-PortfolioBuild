@@ -1,0 +1,100 @@
+{
+  "schema": "qm.paced-build-q02-stop/v1",
+  "generated_at_utc": "2026-09-09T11:29:03.8348782Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41397",
+  "ea_label": "QM5_41397_wti-seas-surprise-rv",
+  "edge": "WTI just-completed monthly return minus its same-calendar historical mean, standardized by sample volatility and traded contrarian for the next month",
+  "outcome": "SOURCE_CARD_BUILD_COMMITTED_COMPILE_PENDING_Q02_NOT_ENQUEUED_CPU_CEILING",
+  "pacer_source_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41397_wti-seas-surprise-rv/QM5_41397_wti-seas-surprise-rv.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "source_sha256": "9543e61ef08647e3d7832f7cf37952f683768c8af9dfb891d77fa49aafe0059b",
+  "setfile_sha256_at_stop": "26a16b3f2af3a8f621c8ff0f5792b97178ac7834477d517d7dc08a81e5554018",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "reference_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "compile": {
+    "enqueued": true,
+    "work_item_id": "4ba60739-f11b-4000-b2ee-51b952d4fefe",
+    "activation_hold_released": true,
+    "status_at_stop": "pending",
+    "claimed_by": null,
+    "verdict_at_stop": null,
+    "build_check_result": null,
+    "ex5_at_stop": null
+  },
+  "capacity": {
+    "evidence_source": "D:/QM/strategy_farm/logs/terminal_worker_T10.log",
+    "event": "cpu_high_pause",
+    "observations": [
+      {
+        "at_utc": "2026-09-09T11:26:12.144416+00:00",
+        "cpu_load_percent": 98.3,
+        "threshold_percent": 97.0,
+        "hysteresis_latched": true
+      },
+      {
+        "at_utc": "2026-09-09T11:26:34.232886+00:00",
+        "cpu_load_percent": 93.3,
+        "threshold_percent": 90.0,
+        "hysteresis_latched": true
+      },
+      {
+        "at_utc": "2026-09-09T11:26:57.755994+00:00",
+        "cpu_load_percent": 94.9,
+        "threshold_percent": 90.0,
+        "hysteresis_latched": true
+      },
+      {
+        "at_utc": "2026-09-09T11:27:23.248824+00:00",
+        "cpu_load_percent": 96.4,
+        "threshold_percent": 90.0,
+        "hysteresis_latched": true
+      },
+      {
+        "at_utc": "2026-09-09T11:27:47.698435+00:00",
+        "cpu_load_percent": 95.8,
+        "threshold_percent": 90.0,
+        "hysteresis_latched": true
+      }
+    ],
+    "average_percent": 95.74,
+    "maximum_percent": 98.3,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": true,
+    "recovery_threshold_percent": 90.0,
+    "hysteresis_still_latched_at_stop": true,
+    "binding_stop": true
+  },
+  "q02": {
+    "requested": true,
+    "enqueued": false,
+    "work_item_id": null,
+    "blocking_gates": [
+      "BACKTEST_CPU_CEILING_HIT",
+      "STRICT_COMPILE_PASS_EX5_AND_FINAL_SET_BINDING_ABSENT"
+    ]
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_or_worker_control": false,
+    "autotrading_toggled": false,
+    "t_live_observed_read_only": true,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "portfolio_admission_claimed": false,
+    "decorrelation_claimed": false
+  }
+}
