@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "ff9a3bbf5baf08f3d556552e9e8702d05ab5d70edc23fbaab6124182dc3fe197",
+      "ea_id": "QM5_41406",
+      "ea_label": "QM5_41406_wti-summer-w2agree",
+      "expected_mq5_sha256": "ff9a3bbf5baf08f3d556552e9e8702d05ab5d70edc23fbaab6124182dc3fe197",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41406_wti-summer-w2agree\\QM5_41406_wti-summer-w2agree.mq5",
+      "work_item_id": "ee85cdf5-53f6-4d7e-b28d-e13d70719d05"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "ee85cdf5-53f6-4d7e-b28d-e13d70719d05",
+  "work_item_id_selectors": [
+    "ee85cdf5-53f6-4d7e-b28d-e13d70719d05"
+  ]
+}
