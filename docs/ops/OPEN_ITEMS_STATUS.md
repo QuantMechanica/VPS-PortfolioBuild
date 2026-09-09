@@ -1,5 +1,16 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 18:20Z — FX-cointegration Q02 queue guard:** Der
+> sign-aware 66-Paar-Scan bleibt vollständig mechanisiert; `QM5_12532`/`12533`
+> sind längst über Q02 hinaus. Der konkrete Fallback `QM5_12507_pair-coint-z`
+> (EURUSD/GBPUSD H1) besitzt bereits genau eine pending, unclaimed Q02-Zeile
+> `547c4fd3` und ist bereits `priority_track=true`; Dry-Run bestätigte
+> `already_priority_track`, daher weder Duplikat-Enqueue noch Priority-Rewrite.
+> Source-Pin-Audit exit 0 / 0 Findings. Drei aktive Factory-Zeilen; fünf CPU-
+> Samples Ø 74,877095%, max. 94,150163% (<97%). Normale Worker behalten den
+> Claim. Kein EA-/Queue-/Portfolio-/Live-Eingriff. Receipt:
+> `artifacts/fx_cointegration_qm5_12507_q02_queue_guard_20260909T182020Z_board_advisor.json`.
+
 > **Nachtrag 09.09., ~18:03Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
 > `farm_state.sqlite`-Prüfung ~13 Minuten nach dem 17:50Z-Check auf allen drei `IN_PROGRESS`-
 > Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,

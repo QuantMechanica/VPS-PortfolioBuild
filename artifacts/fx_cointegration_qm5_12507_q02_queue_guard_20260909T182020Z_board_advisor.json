@@ -1,0 +1,115 @@
+{
+  "schema_version": "qm.fx-cointegration-q02-queue-guard/v1",
+  "recorded_at_utc": "2026-09-09T18:20:20.7181024Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "4bf86fd2d48c05b98ff85939a0292e9052643f86",
+  "decision": "NO_DUPLICATE_Q02_ENQUEUE",
+  "frontier": {
+    "scan_pair_count": 66,
+    "unbuilt_relationship_count": 0,
+    "new_pair_action": "REFUSED_DUPLICATE",
+    "reputable_method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "reconciliation": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md",
+    "anchors": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "fallback": {
+    "ea_id": "QM5_12507",
+    "slug": "pair-coint-z",
+    "pair": ["EURUSD.DWX", "GBPUSD.DWX"],
+    "timeframe": "H1",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "priority_track": true,
+    "priority_dry_run_reason": "already_priority_track",
+    "duplicate_row_created": false,
+    "priority_rewritten": false,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "artifacts": {
+    "mq5": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+      "sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c"
+    },
+    "ex5": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.ex5",
+      "sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa"
+    },
+    "basket_manifest": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+      "sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56"
+    },
+    "logical_backtest_setfile": {
+      "path": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+      "sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+    }
+  },
+  "capacity": {
+    "active_work_item_count": 3,
+    "active_row_limit": 7,
+    "active_work_items": [
+      {
+        "work_item_id": "4f303145-92f0-42ed-b05c-300b867d8f2b",
+        "ea_id": "QM5_36002",
+        "phase": "Q08",
+        "symbol": "GBPJPY.DWX",
+        "terminal": "T5"
+      },
+      {
+        "work_item_id": "ec26541a-ba3d-5b20-b8f8-5d9043efb721",
+        "ea_id": "QM5_41322",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "terminal": "T10"
+      },
+      {
+        "work_item_id": "b9fb9b18-e7e4-5893-8216-dbc4121c599f",
+        "ea_id": "QM5_41345",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "terminal": "T6"
+      }
+    ],
+    "running_factory_terminals": ["T5", "T6", "T10"],
+    "cpu_samples_percent": [94.150163, 72.957601, 78.524497, 61.644311, 67.108901],
+    "cpu_average_percent": 74.877095,
+    "cpu_maximum_percent": 94.150163,
+    "cpu_hard_ceiling_percent": 97,
+    "ceiling_hit": false,
+    "available_physical_memory_gib": 28.479,
+    "total_physical_memory_gib": 63.12
+  },
+  "pacer_guard": {
+    "source_written": false,
+    "source_checked": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "command_exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "finding_count": 0,
+    "compile_enqueued": false
+  },
+  "mutations": {
+    "card": false,
+    "ea_source": false,
+    "binary": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "registry": false,
+    "queue": false,
+    "priority": false,
+    "hold": false,
+    "claim": false,
+    "terminal": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  }
+}
+
