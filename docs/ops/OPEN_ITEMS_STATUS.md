@@ -1,5 +1,25 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~15:03Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
+> `farm_state.sqlite`-Prüfung ~13 Minuten nach dem 14:50Z-Check auf allen drei `IN_PROGRESS`-
+> Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,
+> `3032534e` DUKASCOPY-BACKFILL): alle drei Spawn-Leases abgelaufen (kein konkurrierender
+> Halter), `QM5_41394`-Legs unverändert — EURUSD.DWX bleibt terminal `Q04 done` (Sackgasse,
+> Strategy-Taxonomie); SP500/XAUUSD/XTIUSD weiterhin `Q02 pending` seit `10:52:59Z`
+> (~4h10m unclaimed); USDJPY.DWX weiterhin `Q03 pending` seit `13:09:21Z` und `Q04 pending`
+> seit `12:19:47Z`. Kein Leg hat `Q10_NEWS` erreicht — `bb814520`/`dfc60103` bleiben korrekt
+> `IN_PROGRESS`. `3032534e`: Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit
+> `01:24:20Z` (~13h39m); kein neuer Reprobe fällig. `farmctl health` overall=FAIL
+> (15 FAIL/16 WARN/52 OK, geprüft 15:03:21Z) — identisches chronisches Set wie beim
+> 14:50Z-Check (`codex_zero_activity`/`codex_auth_broken` weiterhin durch den vorbestehenden
+> `repo_dirty_build_guard` auf `QM5_41240`/`QM5_9727` blockiert, nicht durch diese Aufgaben
+> verursacht; `q02_stranded_exhausted_pairs`, `phase_invalid_rate_7d`, `agent_task_state_stranded`,
+> `agent_task_aging_slo`, `work_item_phase_age_slo`, `pending_tail_age`, `q09_sealed_plan_hold_age`,
+> `q09_autoseal_hold_census`, `pending_artifact_binding_drift`, `backup_calendar_continuity`,
+> zwei `task_monitor_escalation`-Zeilen — keine davon betrifft die drei gegatterten Ketten);
+> keine neue Incidence. Kein Ticket/Rebuild/Release/Router-Zustandswechsel; `agent_router.py
+> run`/`route-many`/`replenish` nicht aufgerufen; kein OWNER-Scope-Auftrag erfunden.
+
 > **Nachtrag 09.09., ~14:50Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
 > `farm_state.sqlite`-Prüfung ~17 Minuten nach dem 14:33Z-Check auf allen drei `IN_PROGRESS`-
 > Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,
