@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T08:01:04.4467048Z",
+  "recorded_at_local": "2026-09-09T10:01:04.4467048+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "a5765f7b84b809275b7d095c530fa92ebfbcb5a3",
+  "outcome": "STOP_HARD_CPU_CEILING",
+  "mission": "Build and enqueue exactly one new low-frequency structural commodity or energy sleeve.",
+  "capacity": {
+    "cpu_sampler": "Win32_Processor.LoadPercentage; five samples approximately one second apart",
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [100.0, 100.0, 100.0, 100.0, 100.0],
+    "cpu_average_percent": 100.0,
+    "cpu_maximum_percent": 100.0,
+    "cpu_pass": false,
+    "terminal64_process_count": 9,
+    "binding_resources": ["whole_host_cpu_average", "whole_host_cpu_maximum"]
+  },
+  "universe_observation": {
+    "prior_frontier_no_longer_available": "wti-tsmom10-h2 is now allocated and built as QM5_41388, so the stale frontier from the 2026-09-09T01:16:10Z stop receipt was not reused.",
+    "candidate_selected": false,
+    "reason": "The binding capacity gate stopped the mission before source approval or candidate allocation."
+  },
+  "refused_actions": [
+    "source_approval",
+    "strategy_card_creation",
+    "ea_id_allocation",
+    "magic_allocation",
+    "mq5_generation",
+    "framework_input_pin_audit",
+    "compile_enqueue",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "pacer_guard": {
+    "mq5_written": false,
+    "input_pin_audit_required": false,
+    "input_pin_finding": null,
+    "reason": "No MQ5 was generated. The required audit_framework_input_pins.py boundary therefore was not entered, and no compile command was issued."
+  },
+  "worktree_preservation": {
+    "preexisting_changes_present": true,
+    "touched_preexisting_changes": false,
+    "receipt_paths_only": [
+      "artifacts/commodity_sleeve_hard_cpu_stop_20260909T080104Z.json",
+      "docs/research/COMMODITY_SLEEVE_HARD_CPU_STOP_20260909T080104Z.md"
+    ]
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_backtest_launched": false
+  },
+  "resume_contract": "On a later paced wake, repeat the five-sample whole-host CPU window. Proceed only when both CPU average and maximum are strictly below 97 percent; then select and revalidate one not-yet-built candidate before source approval, card extraction, deterministic allocation, guarded MQ5 build, mandatory source-pin audit, governed compile, and exactly one Q02 enqueue."
+}
