@@ -1279,3 +1279,30 @@ connect-only checks are not a valid recovery signal here. No production job rest
 Evidence: `docs/ops/evidence/2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md`
 (re-probe section). Disposition unchanged: GRÜN/measurement, no OWNER decision needed;
 next cycle should wait several hours before the next application-level re-test.
+
+## Addendum 2026-09-09 ~02:52Z (orchestration cycle) — repo_dirty_build_guard root cause found (WIP diff, not committed); 3 claude tasks still correctly unchanged
+
+Re-checked all three claude-lane tasks (`bb814520`, `dfc60103`, `3032534e`): no new
+information since the 04:37Z cycle (no OWNER response on `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`,
+no commits in the last 15min anywhere touching it; Dukascopy re-test correctly deferred
+per the prior "wait several hours" disposition). No state change made.
+
+`farmctl health` shows `codex_zero_activity` FAIL (0 codex build activity in 3h, 73
+pending build_ea) and `codex_auth_broken` WARN, both attributed to `repo_dirty_build_guard`
+blocked by 2 uncommitted source files in `C:\QM\repo` (branch `agents/board-advisor`):
+`framework/EAs/QM5_41240_wti-samecal-ramsaye5/QM5_41240_wti-samecal-ramsaye5.mq5` +
+its paired reference test. Inspected the diff: it correctly applies the OWNER symbol-input
+Hard Rule (`60dc378c0f`, 2026-09-06) — drops the hardcoded `g_symbol = "XTIUSD.DWX"`
+literal in favor of `_Symbol` — but it **also removes the `QM_InputRequireDouble/Long/String`
+guardrail checks for `PORTFOLIO_WEIGHT`, `qm_news_temporal`, `qm_news_compliance`,
+`qm_news_mode_legacy`, `qm_news_stale_max_hours`, `qm_news_min_impact`,
+`qm_friday_close_enabled`, `qm_friday_close_hour_broker`** while all eight inputs stay
+declared and live-used in `OnInit`/news-hook code. That is a silent weakening of the
+build-guardrail input-pinning class (CLAUDE.md: never weaken the fail-closed news-gate
+check) bundled into an otherwise-correct compliance edit — not something to commit or
+discard unilaterally from a routine health pass. No action taken on the file; flagging
+only. **Recommended next step (not yet enqueued):** a Codex ops ticket to split the
+change — keep the `g_symbol`→`_Symbol` migration, restore the eight `QM_InputRequire*`
+guardrail lines — then let `repo_dirty_build_guard` clear on its own. Untracked
+`docs/ops/evidence/2026-09-0{8,9}_stranded_infra_sweep_triage.json` in the same tree are
+unrelated evidence artifacts, not source — not a build-guard blocker.
