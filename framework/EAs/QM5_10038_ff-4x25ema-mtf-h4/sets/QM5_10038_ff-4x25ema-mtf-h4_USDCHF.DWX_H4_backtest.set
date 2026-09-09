@@ -3,16 +3,16 @@
 ; ea_id:        10038
 ; ea_slug:      ff-4x25ema-mtf-h4
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260909-001
 ; symbol:       USDCHF.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   11
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   9544272fd95fd919454462bdba78fe9767501987f9722ff7f1e432e493a85134
+; build_hash:   8ef4e02a89fb541e12b4b59eab2deb20afbffecdd22b234fb0c2843c3f88a6ae
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-09
 ;==========================================================
 qm_ea_id=10038
 qm_magic_slot_offset=11

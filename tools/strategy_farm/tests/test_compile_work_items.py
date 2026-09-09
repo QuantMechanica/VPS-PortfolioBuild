@@ -413,6 +413,26 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_10038_q02_stale_magic_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_10038_ff-4x25ema-mtf-h4"
+
+    assert compile_work_items.QM5_10038_Q02_STALE_MAGIC_REPAIR_EA_LABELS == {
+        label
+    }
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_10038_Q02_STALE_MAGIC_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_10039_unrelated-h4",
+        compile_work_items.QM5_10038_Q02_STALE_MAGIC_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_q02_infra_repair:wrong-task",
+    )
+
+
 def test_enqueue_repair_successor_requires_source_delta_and_preserves_predecessor(tmp_path: Path) -> None:
     label = "QM5_1001_compile-fixture-h1"
     repo, root = _fixture(tmp_path, [label])

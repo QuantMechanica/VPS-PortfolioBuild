@@ -3,16 +3,16 @@
 ; ea_id:        10038
 ; ea_slug:      ff-4x25ema-mtf-h4
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260909-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0de3f16ae1504f4442a69735c07f7e2595581d94b34c4abfbddb35fcc1a11f37
+; build_hash:   5d17f098e9558631c5ff1fd8fbc6b91893fc1b351021c1943e1ffa58dd29720e
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-09
 ;==========================================================
 qm_ea_id=10038
 qm_magic_slot_offset=7

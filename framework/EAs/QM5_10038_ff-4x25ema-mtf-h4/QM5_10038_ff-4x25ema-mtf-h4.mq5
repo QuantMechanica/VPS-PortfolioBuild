@@ -203,7 +203,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
-   if(ask <= 0.0 || bid <= 0.0 || ask <= bid)
+   // A zero modeled spread is valid in .DWX tester history; reject only
+   // missing or crossed quotes.
+   if(ask <= 0.0 || bid <= 0.0 || ask < bid)
       return false;
 
    const double stop_dist = strategy_atr_sl_mult * atr;
@@ -319,6 +321,9 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any guard can return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 

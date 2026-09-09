@@ -1,0 +1,92 @@
+{
+  "schema": "qm.paced-fleet-q02-infra-recovery/v1",
+  "recorded_at_utc": "2026-09-09T20:24:00Z",
+  "router_task_id": "3ea90c55-01d4-4ed8-b089-fc8e49441324",
+  "ea": {
+    "ea_id": "QM5_10038",
+    "ea_label": "QM5_10038_ff-4x25ema-mtf-h4",
+    "timeframe": "H4",
+    "diversity_sleeve": "FX multi-timeframe EMA alignment",
+    "active_magic_rows": 13,
+    "recovery_canary_symbol": "AUDUSD.DWX",
+    "recovery_canary_magic_slot": 4
+  },
+  "triage": {
+    "selected_priority": 2,
+    "reason": "No approved build_ea task lacked an existing compiled artifact and downstream work; QM5_10038 had repeated Q02 INFRA_FAIL rows on newly allocated FX slots.",
+    "source_q02_work_item_id": "dbf90687-9584-4794-b935-beeef6f4bdeb",
+    "source_q02_evidence_path": "D:\\QM\\reports\\work_items\\dbf90687-9584-4794-b935-beeef6f4bdeb\\QM5_10038\\20260907_151440\\summary.json",
+    "source_q02_verdict": "INFRA_FAIL",
+    "source_q02_reason": "ONINIT_FAILED",
+    "decisive_tester_log": "D:\\QM\\mt5\\T5\\Tester\\logs\\20260907.log",
+    "decisive_message": "EA_MAGIC_NOT_REGISTERED: ea_id=10038 slot=4 magic=100380004",
+    "stale_mq5_sha256": "528d910b1d204b303f5aedd08cd14b180912eeaf21f7b2266f479c4fada07468",
+    "stale_ex5_sha256": "61833c537bb10b731ea9c63717ccea8b720d91cf8c671fa469d2ebe06a313891",
+    "root_cause": "The June EX5 embedded the pre-expansion magic resolver; magic slots 4 through 12 were registered later and were therefore rejected during OnInit."
+  },
+  "repair": {
+    "strategy_mechanics_changed": false,
+    "source_changes": [
+      "Call QM_FrameworkTrackOpenPositionMae() before every OnTick early-return guard.",
+      "Accept zero modeled spread in .DWX tester history while continuing to reject missing or crossed quotes."
+    ],
+    "current_mq5_sha256": "a2ab7f4f493be1528312f7b649febf7da0e61cebb504a60d0ec280c652fbbb66",
+    "current_ex5_sha256": "bbd1786046941d20cb33f618bf1143c537058aad14f900ede5dcb6428fa1b0b3",
+    "fixed_risk_base_setfiles": 13,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    }
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_10038_ff-4x25ema-mtf-h4/QM5_10038_ff-4x25ema-mtf-h4.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "compile": {
+    "authority": "router_q02_infra_repair:3ea90c55-01d4-4ed8-b089-fc8e49441324",
+    "failed_predecessor_work_item_id": "10acbac1-268d-482e-b956-7e64c062c651",
+    "failed_predecessor_findings": [
+      "EA_Q08_MAE_HOOK_MISSING",
+      "BUILD_CHECK_DWX_ADVISORY_DWX_SPREAD_FAILCLOSED"
+    ],
+    "successful_successor_work_item_id": "d80e2fca-2cf4-40b8-883d-846c5fc2c5d5",
+    "successful_successor_evidence_path": "D:\\QM\\reports\\work_items\\d80e2fca-2cf4-40b8-883d-846c5fc2c5d5\\QM5_10038\\COMPILE_EA\\compile_evidence.json",
+    "successful_successor_evidence_sha256": "ab2a62ad00c70673cb0badc35c08b6b4e4bf5070313aa09b2a400508591f7458",
+    "compile_result": "PASS",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": []
+  },
+  "verification": {
+    "pytest_command": "python -m pytest tools/strategy_farm/tests/test_compile_work_items.py -q",
+    "pytest_result": "82 passed",
+    "diff_check": "PASS",
+    "base_setfile_fixed_risk_audit": "13/13 PASS",
+    "capacity_snapshot": {
+      "cpu_samples_percent": [65.66, 55.56, 57.64, 52.93, 53.23],
+      "cpu_average_percent": 57.01,
+      "cpu_maximum_percent": 65.66,
+      "backtest_cpu_ceiling_percent": 97,
+      "admitted": true
+    }
+  },
+  "q02_requalification": {
+    "contract": "qm.q02-post-binding-requalification/v1",
+    "source_work_item_id": "dbf90687-9584-4794-b935-beeef6f4bdeb",
+    "successor_work_item_id": "5599a328-80cf-465d-bcf1-b4fbfc54843a",
+    "status_at_recording": "pending",
+    "parameter_change_count": 0,
+    "setfile_sha256": "1520f9afb719ef7f357f5a714001511f79873dd17bd40a6ed591e76458607a8d",
+    "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\receipts\\q02_post_binding_requalification\\dbf90687-9584-4794-b935-beeef6f4bdeb_5599a328-80cf-465d-bcf1-b4fbfc54843a.json",
+    "receipt_sha256": "e83580d8ced5e1d77c288cfa9c58a20b27d1aa71654d1fe8a39c1d1f33a06cd4"
+  },
+  "scope": {
+    "live_deploy": false,
+    "autotrading_toggled": false,
+    "portfolio_admission": false,
+    "manifest_authorized": false
+  }
+}
