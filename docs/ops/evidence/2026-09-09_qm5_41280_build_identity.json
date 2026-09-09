@@ -1,0 +1,25 @@
+{
+  "schema": "qm.build-identity/v1",
+  "task_id": "317b4d6a-3338-4603-8006-a4660ad6d5f1",
+  "ea_id": "QM5_41280",
+  "ea_label": "QM5_41280_usdchf-ww-shift-tr",
+  "build_check_passed": true,
+  "compile_work_item_id": "ab67b01f-07e9-4133-8fce-0ebf43d8336f",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\ab67b01f-07e9-4133-8fce-0ebf43d8336f\\QM5_41280\\COMPILE_EA\\compile_evidence.json",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41280_usdchf-ww-shift-tr\\QM5_41280_usdchf-ww-shift-tr.mq5",
+  "mq5_sha256": "75fd627e5961fe144429bfc61162bbd2f724bbbd3fb23d21d894abcdfca7523c",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41280_usdchf-ww-shift-tr\\QM5_41280_usdchf-ww-shift-tr.ex5",
+  "ex5_sha256": "05963c77914ebe36c7c68a0bfa27420a91dea1f7f83fa18e7bc6d543fafd7fe6",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41280_usdchf-ww-shift-tr\\sets\\QM5_41280_usdchf-ww-shift-tr_USDCHF.DWX_D1_backtest.set"
+  ],
+  "framework_input_pin_audit": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "ok": true,
+    "hit_count": 0
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000.0,
+    "RISK_PERCENT": 0.0
+  }
+}
