@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T00:31:08.6129420Z",
+  "recorded_at_local": "2026-09-09T02:31:08.6129420+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "b3b6a6c5179da94b4a0363633a07451172e04b82",
+  "outcome": "STOP_CPU_AND_ACTIVE_TESTER_CEILING",
+  "capacity": {
+    "cpu_sampler": "Win32_Processor.LoadPercentage; five samples approximately one second apart",
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [97.0, 97.0, 100.0, 99.0, 99.0],
+    "cpu_average_percent": 98.4,
+    "cpu_maximum_percent": 100.0,
+    "cpu_pass": false,
+    "active_snapshot_utc": "2026-09-09T00:31:46.691761+00:00",
+    "active_governed_tester_rows": 9,
+    "active_tester_limit_exclusive": 7,
+    "active_tester_pass": false,
+    "d_free_gib": 82.332,
+    "binding_resources": [
+      "whole_host_cpu_average",
+      "whole_host_cpu_maximum",
+      "active_governed_tester_rows"
+    ]
+  },
+  "active_rows": [
+    {"terminal": "T1", "phase": "Q04", "ea_id": "QM5_1443", "symbol": "USDCHF.DWX", "work_item_id": "c5f4fe32-d591-4204-8657-2cc4a10704a5"},
+    {"terminal": "T2", "phase": "Q04", "ea_id": "QM5_9574", "symbol": "EURUSD.DWX", "work_item_id": "8a25ff0f-fc5e-40f5-afb0-7c09bdb51d96"},
+    {"terminal": "T4", "phase": "Q04", "ea_id": "QM5_1066", "symbol": "USDJPY.DWX", "work_item_id": "6a5c0cc9-631c-45ef-b2b8-53d9d93b1527"},
+    {"terminal": "T5", "phase": "OPT_CENSUS", "ea_id": "QM5_41301", "symbol": "XAUUSD.DWX", "work_item_id": "5fc913b6-02ad-52a7-afa1-f59ca0e3e6d0"},
+    {"terminal": "T6", "phase": "OPT_CENSUS", "ea_id": "QM5_41345", "symbol": "XAUUSD.DWX", "work_item_id": "495c42c0-c27e-5377-ade9-86aec76fe0f5"},
+    {"terminal": "T7", "phase": "Q04", "ea_id": "QM5_1386", "symbol": "USDCHF.DWX", "work_item_id": "3425066d-731f-4e81-b032-0eda77b78f1c"},
+    {"terminal": "T8", "phase": "OPT_CENSUS", "ea_id": "QM5_41163", "symbol": "USDCAD.DWX", "work_item_id": "b44a607f-8fa0-5a90-9fd9-9ee4e9de3cb0"},
+    {"terminal": "T9", "phase": "OPT_CENSUS", "ea_id": "QM5_41302", "symbol": "XAUUSD.DWX", "work_item_id": "052363d0-e95d-5f38-a3fe-11c5564f71a2"},
+    {"terminal": "T10", "phase": "OPT_CENSUS", "ea_id": "QM5_41324", "symbol": "USDJPY.DWX", "work_item_id": "97d891c1-85f4-58ce-991f-8e33b5a48a8f"}
+  ],
+  "coordination": {
+    "farm_db": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "backlog_ranked": false,
+    "task_claimed": false,
+    "reason": "Capacity refusal was evaluated before backlog ranking and claiming, avoiding a duplicate or stranded build claim."
+  },
+  "refused_actions": [
+    "build_backlog_ranking",
+    "build_task_claim",
+    "ea_recovery_claim",
+    "strategy_mechanization",
+    "mq5_generation",
+    "framework_input_pin_audit",
+    "compile_enqueue",
+    "smoke_test",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "pacer_build_guard": {
+    "mq5_written": false,
+    "input_pin_audit_required": false,
+    "reason": "The capacity gate refused the mission before any generated MQ5 existed, so the mandatory post-write audit_framework_input_pins.py boundary was not entered."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "farm_db_mutated": false
+  },
+  "resume_contract": "On a later paced wake, repeat the five-sample whole-host CPU window and read-only active-row census. Proceed only when both CPU average and maximum are strictly below 97 percent and active governed tester rows are fewer than seven. Then rank and claim exactly one distinct high-diversity EA through the farm DB. After writing any generated MQ5, run audit_framework_input_pins.py --check-source on its absolute path and refuse every compile enqueue on a nonzero exit or EA_FRAMEWORK_INPUT_PINNED finding."
+}
