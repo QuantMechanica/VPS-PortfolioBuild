@@ -1906,3 +1906,13 @@ No router state change made; no new ticket duplicated. No threshold/verdict/T_Li
 AutoTrading/gate change. No OWNER-scope work invented. Per the standing suppression
 note, no further per-task evidence-file entry added this cycle (nothing material
 beyond what's recorded here).
+
+## FX cointegration fallback 2026-09-09T170136Z -- QM5_12507 Q02 held at hard CPU ceiling
+
+The frozen 66-pair scan remains fully mechanized and both preferred anchors are
+beyond Q02, so the non-duplicate existing-card fallback remains the single pending
+logical Q02 row `547c4fd3-f3fd-4c59-b9dc-654e96521251` for
+`QM5_12507_pair-coint-z` (EURUSD/GBPUSD H1). No second row was created. Five host CPU
+samples averaged 99.726735% and peaked at 100%, exceeding the binding 97% ceiling;
+factory mutation stopped. Receipt:
+`artifacts/fx_cointegration_qm5_12507_q02_cpu_ceiling_stop_20260909T170136Z_board_advisor.json`.
