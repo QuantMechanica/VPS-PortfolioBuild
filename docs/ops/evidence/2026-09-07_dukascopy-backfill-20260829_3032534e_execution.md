@@ -419,3 +419,28 @@ retry-exhausted count before restarting anything, not re-launch a duplicate down
 step after completion: P2 conversion (still blocked on the 9 non-FX symbols' `price_scale`
 review per the 17:18Z entry above) and P3 reconciliation, then P4 per-symbol import. Task
 remains IN_PROGRESS.
+
+## Checked 2026-09-09T19:52Z (orchestration cycle) — codex ticket 2f717775 moved to REVIEW
+
+Codex ticket `2f717775` (governed non-FX `price_scale` probe route, referenced at 17:18Z as
+the P2-conversion blocker for the 9 non-FX symbols) transitioned `IN_PROGRESS` → `REVIEW` at
+19:41:17Z. Verdict: `IMPLEMENTATION_VERIFIED / T1_RECEIPT_DEFERRED` — commit `97c1ea8d50`, 30
+tests pass, source-binding SHA-256 verified against committed bytes. Artifact:
+`docs/ops/evidence/2026-09-09_dukascopy_nonfx_price_scale_probe.md`. The implementation adds a
+distinct MQL5 metadata sub-probe (`SYMBOL_DIGITS`/`SYMBOL_POINT` → `price_scale=10**digits`) for
+exactly the 9 governed non-FX symbols, reusing the existing T1-only diagnostic route
+(`QM_DIAG_DWX_TICK_TAIL`, `diagnostic/Q00`), and wires `common.py`/`convert_to_import.py`/
+`reconcile_overlap.py` to require that receipt.
+
+**Not yet acceptable/closeable:** the governed work item `ed393d48` that must actually run on
+T1 to produce the real `price_scale.csv` + `probe_receipt.json` is still `pending`/unclaimed
+(queue rank ~93 of ~6,500, behind the replenished optimization frontier) — ticket 2f717775's own
+verdict states acceptance remains open until that receipt exists. No broker values have been
+published (correctly deferred, not guessed). Left in REVIEW; not approved/closed this cycle —
+no acceptance criterion of this task or of 2f717775 is newly met yet.
+
+Meanwhile the detached hardened downloader (PID 16480, started 19:19:27Z) continues normally
+and unattended: 4,335/305,287 hours completed, 2,976 downloaded, 1,265 no_data, 94 errors (retry
+churn, no permanent failures), `status=RUNNING`. No action taken/needed — self-monitoring,
+resumable via `hour_ledger.jsonl`. No terminal, T1 import, T_Live/AutoTrading, threshold, or
+verdict action this cycle. Task remains IN_PROGRESS.
