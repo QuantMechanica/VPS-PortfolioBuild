@@ -95,6 +95,24 @@ to close the newer/less-progressed one as a duplicate (`close-review ... --state
 --verdict "duplicate of b66b5ccc"`), not to run the rebuild twice or reserve two separate
 new-identity ea_id/magic slots for the same source EA.
 
+## Checked 2026-09-09T09:04Z (orchestration cycle) — compile done, Q02 pending; still gated
+
+Direct DB read (`work_items WHERE ea_id='QM5_41394'`): compile item `1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e`
+now `status=done` (updated 08:50:34Z); a new Q02 item `58b36f74-a831-4119-943b-8a9924b20179`
+exists (`status=pending`, created 08:54:05Z) — the ticket's step-3 deliverable ("exactly one
+new Q02 work_item for the new identity") is met. Commit `99d6330963` (10:53:45Z, Codex
+co-authored) publishes the `COMPILE_OK` `.ex5` for `framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/`
+plus five hash-bound `RISK_FIXED`-only backtest setfiles. Ticket `b66b5ccc` itself still shows
+`state=IN_PROGRESS`/`assigned_agent=codex` (row `updated_at` stale at 07:52:47Z, `artifact_path`
+still null) — Codex has not yet closed its own ticket to REVIEW.
+
+No action taken by this session: the Q02 item is already queued and will run through the
+normal T1-T10 factory queue; per the "never start terminal64.exe manually / never interrupt
+active backtests" hard rules and this task's `selected_effect_only` scope, nothing further is
+mine to enqueue or trigger. This task (`46167bd9`), `bb814520`, and `dfc60103` remain correctly
+`IN_PROGRESS` — the acceptance criterion (a terminal Q02 PASS/FAIL, or continuing through Q10_NEWS
+for a PASS/FAIL adjudication on the new identity) is not yet reached; Q02 has not run.
+
 ## Checked 2026-09-09T~0837Z (orchestration cycle) — Codex progressing, still gated
 
 `b66b5ccc` (state=IN_PROGRESS, assigned_agent=codex) has produced real forward motion since
@@ -160,6 +178,22 @@ and Q02 enqueue have not landed. No duplicate ticket enqueued, no action taken o
 observation; this task's own next allowed step (enqueue the Q02 work item) is Codex's per the
 ticket scope, not mine to pre-empt. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain
 correctly `IN_PROGRESS`, gated on this rebuild reaching a Q02 verdict.
+
+## Checked 2026-09-09T09:04Z (orchestration cycle) — compile OK, Q02 enqueued
+
+Direct DB read confirms real forward motion since the 0851Z self-correction: compile
+work item `1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e` is now `status=done`/`verdict=COMPILE_OK`
+(`updated_at=08:50:34Z`), `.ex5` present at
+`framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/`, and a fresh Q02 work item
+`58b36f74-a831-4119-943b-8a9924b20179` (EURUSD.DWX, `status=pending`) was enqueued
+08:54:05Z. Ticket `b66b5ccc` still shows `state=IN_PROGRESS`/`assigned_agent=codex` in
+`agent_tasks` (its own row `updated_at` stale at 07:52:47Z — reflects state transitions
+only, consistent with the pattern already noted above). `farmctl health` this cycle:
+FAIL 14/WARN 15/OK 53 — same chronic set, nothing new bearing on this task. No action
+taken beyond this read; Q02 execution and its verdict are the factory's normal path, not
+mine to run ahead of. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain
+correctly `IN_PROGRESS` — acceptance requires the new identity's Q02 (and eventually
+Q10_NEWS) verdict, not yet available.
 
 ## Self-correction 2026-09-09T~0851Z — my own 0850Z entry's "no work_items row" claim was a query bug
 
