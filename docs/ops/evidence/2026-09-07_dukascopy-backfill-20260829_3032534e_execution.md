@@ -19,3 +19,17 @@ Receipt minted 2026-09-07T14:16:34Z (Mission Control). Objective: continue the D
 
 - Governed T1-only diagnostic route (kind `diagnostic`, phase Q00, pseudo EA `QM_DIAG_DWX_TICK_TAIL`, contract `qm.dwx-tick-tail-probe-work-item/v1`, verdict REVIEW_REQUIRED never PASS): worker claims it like any row, wrapper `framework/scripts/mt5_diagnostics/dwx_tick_tail_probe.py` revalidates claim/payload/FACTORY_OFF, audits isolation + signed archive before/after, compiles the read-only `QM_DWX_Tick_Tail_Probe.mq5` with T1's MetaEditor (0E/0W), launches only the exact T1 config with Enabled=0/AllowLiveTrading=0/AllowDllImport=0, writes `D:/QM/reports/dukascopy/splice/<stamp>/tick_tail.csv` (37 rows, per-row sha) + receipt.
 - Next (CEO, after Factory_ON): enqueue the probe row via `tools/strategy_farm/dwx_tick_tail_probe_work_item.py`, let T1 claim it, review the 37-row CSV against the P0 history ranges, then start the P1 night download with the splice timestamps (non-FX price_scale/point_size review still open).
+
+## Step 1 enqueued 2026-09-09 01:05:54Z (orchestration cycle) — probe work item live
+
+Factory confirmed ON (10/10 enabled T-workers alive, no mutation lock). Ran
+`dwx_tick_tail_probe_work_item.py --authority-task-id 3032534e...` dry-run first
+(validated: `read_only=true`, `no_gate_verdict=true`, `diagnostic_non_admission=true`,
+`diagnostic_allowed_terminals=["T1"]`, manifest sha `fe0dd0fd...` unchanged, 37 symbols),
+then `--apply`. Work item **`e29eab1c-044b-48ea-99ec-6eecd3aa3ea2`** created
+(`QM_DIAG_DWX_TICK_TAIL`/`DWX_UNIVERSE`/Q00, status `pending`, stamp `20260909_010542`,
+output `D:\QM\reports\dukascopy\splice\20260909_010542`). T1 claims it through the normal
+worker loop — no manual terminal start. Non-FX `price_scale`/`point_size` review (Codex
+e9dea1e3's open item) and the endpoint `--resolve-ip` freshness note remain outstanding
+before any P1 production download. Task `3032534e` stays IN_PROGRESS pending the probe's
+CSV result.
