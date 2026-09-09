@@ -1,0 +1,47 @@
+{
+  "candidate": {
+    "author": "OpenAI Codex; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly WTI twelve consecutive completed monthly log return signs fixed chronological recency weights one through twelve centered score absolute eighteen continuation one month",
+    "slug": "wti-mrecency-sign-tr",
+    "strategy_id": "AI-CODEX-WTI-MRECENCY-SIGN-TREND-20260909_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-09T15:20:07+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41273_wti-msigned-rank-tr_card.md",
+      "score": 0.5294117647058824,
+      "slug": "wti-msigned-rank-tr",
+      "source": "card",
+      "strategy_id": "AI-CODEX-WTI-MSIGNED-RANK-TREND-20260901_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4880,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1491,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
