@@ -1,0 +1,14 @@
+{
+  "existing_pool_results_unchanged": true,
+  "before_after_admitted": 0,
+  "reason_counts": {
+    "FTMO_Q09_SCOPE_NOT_FTMO": 12,
+    "FTMO_Q09_EVIDENCE_MISSING": 3,
+    "FTMO_Q09_NOT_CONFIG_LOCKED": 1
+  },
+  "current_closure_failures": 16,
+  "calendar_files_hash_verified": true,
+  "tests": "36 passed in 5.22s",
+  "plan_sha256": "774a684fa3f318263fcf3a01bd882235acfe4c551d1ac1dbd2fa83a5c636dba4",
+  "new_work_items": 0
+}

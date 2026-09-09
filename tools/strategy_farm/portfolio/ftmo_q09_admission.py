@@ -123,6 +123,8 @@ def _authenticated_adjudication(row: sqlite3.Row) -> tuple[Mapping[str, Any] | N
         return None, EVIDENCE_UNAUTHENTICATED
     if not isinstance(document, Mapping):
         return None, EVIDENCE_UNAUTHENTICATED
+    if document.get("schema_version") not in q09_contract.SUPPORTED_ADJUDICATION_SCHEMA_VERSIONS:
+        return None, EVIDENCE_UNAUTHENTICATED
     embedded = document.get("adjudication_sha256")
     unsigned = dict(document)
     unsigned.pop("adjudication_sha256", None)
@@ -149,12 +151,27 @@ def _authenticated_adjudication(row: sqlite3.Row) -> tuple[Mapping[str, Any] | N
     return document, None
 
 
-def _selection_viability(raw_rows: list[sqlite3.Row], chosen_temporal: str) -> list[str]:
+def _executed_seeds(document: Mapping[str, Any]) -> tuple[int, ...]:
+    """V3's selector fanout does not create five native executions."""
+    if document.get("schema_version") == q09_contract.ADJUDICATION_SCHEMA_VERSION_V3:
+        expected = {"executed_seed_set": [q09_contract.V3_SEED],
+                    "selector_seed_set": list(q09_contract.SEEDS),
+                    "inert_seed_fanout": True}
+        if document.get("seed_provenance") != expected:
+            raise ValueError("v3_seed_provenance_mismatch")
+        return (q09_contract.V3_SEED,)
+    if document.get("schema_version") != q09_contract.ADJUDICATION_SCHEMA_VERSION:
+        raise ValueError("unsupported_news_adjudication")
+    return q09_contract.SEEDS
+
+
+def _selection_viability(raw_rows: list[sqlite3.Row], chosen_temporal: str,
+                         expected_seeds: tuple[int, ...] = q09_contract.SEEDS) -> list[str]:
     reasons: list[str] = []
-    if len(raw_rows) != len(q09_contract.SEEDS):
-        reasons.append("five_authenticated_ftmo_seeds_required")
+    if len(raw_rows) != len(expected_seeds):
+        reasons.append("contract_native_ftmo_seed_count_mismatch")
     observed_seeds = {int(row["seed"]) for row in raw_rows}
-    if observed_seeds != set(q09_contract.SEEDS):
+    if observed_seeds != set(expected_seeds):
         reasons.append("canonical_ftmo_seed_set_mismatch")
     for row in raw_rows:
         seed = int(row["seed"])
@@ -245,6 +262,12 @@ def evaluate_ftmo_q09_admission(
         result["reason_code"] = error
         return result
     assert document is not None
+    try:
+        expected_seeds = _executed_seeds(document)
+    except ValueError as exc:
+        result["reason_code"] = EVIDENCE_UNAUTHENTICATED
+        result["details"] = [str(exc)]
+        return result
 
     scope = str(row["matrix_scope"] or "")
     target = str(row["target_compliance"] or "")
@@ -268,7 +291,7 @@ def evaluate_ftmo_q09_admission(
         expected_coverage = {
             (temporal, seed)
             for temporal in q09_contract.TEMPORAL_MODES
-            for seed in q09_contract.SEEDS
+            for seed in expected_seeds
         }
         if {(str(cell[0]), int(cell[1])) for cell in coverage} != expected_coverage:
             result["reason_code"] = FTMO_CELLS_INCOMPLETE
@@ -292,7 +315,7 @@ def evaluate_ftmo_q09_admission(
     except sqlite3.DatabaseError:
         result["reason_code"] = FTMO_CELLS_INCOMPLETE
         return result
-    viability_reasons = _selection_viability(list(chosen_cells), chosen_temporal)
+    viability_reasons = _selection_viability(list(chosen_cells), chosen_temporal, expected_seeds)
     if viability_reasons:
         result["reason_code"] = FTMO_CONFIG_NOT_VIABLE
         result["details"] = viability_reasons

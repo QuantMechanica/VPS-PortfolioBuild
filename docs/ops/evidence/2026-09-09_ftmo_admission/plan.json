@@ -1,0 +1,1153 @@
+{
+  "schema": "qm.ftmo-qualification-dry-run/v1",
+  "phase": "Q10_NEWS",
+  "current_calendar": {
+    "config_path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\news_calendar_scoped_consumer_b.v1.json",
+    "config_sha256": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+    "files": [
+      {
+        "role": "manifest",
+        "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260907T024800Z_e1d34_continuation\\candidate\\manifest.json",
+        "sha256": "5f28c2f3bba94c0c7b78dbff93aba0e2dc22bb8cfbe0b1ec484b5a24ed69366a",
+        "hash_matches": true
+      },
+      {
+        "role": "declarations",
+        "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260907T024800Z_e1d34_continuation\\candidate\\declared_inadmissible_ranges.json",
+        "sha256": "190a1da82a474191f339114a4e0e32c5f9cf665c9d2e244193bb761f9f23334a",
+        "hash_matches": true
+      },
+      {
+        "role": "news_calendar_2015_2025.csv",
+        "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260907T024800Z_e1d34_continuation\\candidate\\news_calendar_2015_2025.csv",
+        "sha256": "ff13a32f836f0b081544d1743a6ca1346669b9fbd2772881b8d160625ea3d2ea",
+        "hash_matches": true
+      },
+      {
+        "role": "forex_factory_calendar_clean.csv",
+        "path": "D:\\QM\\reports\\news_calendar\\repair_e1a\\20260907T024800Z_e1d34_continuation\\candidate\\forex_factory_calendar_clean.csv",
+        "sha256": "505fc45a73144071b96ff4440cbb9fb3b1ba374c3adaa7285f70849a59975beb",
+        "hash_matches": true
+      }
+    ],
+    "verified": true,
+    "scope": {
+      "phase": "Q10_NEWS",
+      "timeframe_scope": "ALL_RECOGNIZED",
+      "impact": "HIGH",
+      "permitted_currencies": [
+        "USD"
+      ],
+      "symbol_currency_overrides": {
+        "NDX.DWX": [
+          "USD"
+        ],
+        "SP500.DWX": [
+          "USD"
+        ],
+        "WS30.DWX": [
+          "USD"
+        ],
+        "XAUUSD.DWX": [
+          "USD"
+        ],
+        "XAGUSD.DWX": [
+          "USD"
+        ],
+        "XTIUSD.DWX": [
+          "USD"
+        ],
+        "XNGUSD.DWX": [
+          "USD"
+        ],
+        "GDAXI.DWX": [
+          "EUR"
+        ],
+        "UK100.DWX": [
+          "GBP"
+        ]
+      },
+      "declaration_wildcards_for_high": [
+        "ALL",
+        "ALL_HIGH",
+        "ALL_UNRESOLVED",
+        "ALL_RATE_AND_NONRATE"
+      ],
+      "require_sealed_q10_window": true,
+      "release_mode": "OWNER_ROW_BY_ROW"
+    },
+    "release_mode": "OWNER_ROW_BY_ROW"
+  },
+  "pairs": [
+    {
+      "ea_id": "QM5_10700",
+      "symbol": "XAUUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_10700",
+        "symbol": "XAUUSD.DWX",
+        "q09_news_work_item_id": "bb299ec1-25ff-4ab3-95ec-65906e7cf987",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\0c247960-d1e2-4731-a076-b60843d6aa83\\QM5_10700\\Q10_NEWS\\bb299ec1-25ff-4ab3-95ec-65906e7cf987\\aggregate.json",
+        "aggregate_sha256": "04c58b851f4e7add8f2029321c9e197693e08709f5ec7124c4194b888dc98f89",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.mq5",
+          "sha256": "064d670b736e5125a1def88c10ba00f68fc43253ee904b3d82168d8e2380b850"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.ex5",
+          "sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+          "sha256": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_10700_include_closure.json",
+          "sha256": "b85e3a12f0b01a6974b23b812e48e393c23579bd73e17cb42754df72b8cd8c73"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure EX5 hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997",
+        "ex5_sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+        "include_closure_sha256": "52297279cc37bbb540f1dd1da49fa95fa08500ddf9f210307d133827329c65a6",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\0c247960-d1e2-4731-a076-b60843d6aa83\\QM5_10700\\Q10_NEWS\\bb299ec1-25ff-4ab3-95ec-65906e7cf987\\aggregate.json",
+        "aggregate_sha256": "04c58b851f4e7add8f2029321c9e197693e08709f5ec7124c4194b888dc98f89"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "NO_NEWS_IDENTITY",
+        "FTMO_Q09_EVIDENCE_MISSING",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_10706",
+        "symbol": "GBPUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+          "sha256": "e39ea2ffa324177f347bc20ec84acaf1846e61def5c0ac2c6d89a27980270118"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_10706_include_closure.json",
+          "sha256": "0e2a928442e77c5d815f2ebb31556207c1ed85b2a25c7372793a168ad951aecb"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "NO_NEWS_IDENTITY",
+        "FTMO_Q09_EVIDENCE_MISSING",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_11421",
+        "symbol": "EURUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+          "sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_11421_include_closure.json",
+          "sha256": "10b07b667a9a9ed08204ebb9d8b34ee1f0b7658e486e3895398881b59380a1d9"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_11422",
+        "symbol": "USDCAD.DWX",
+        "q09_news_work_item_id": "74fec478-4823-4d84-a9a1-41319407197d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\21eb42e1-5107-4033-b9f6-a97c1edc15d1\\QM5_11422\\Q10_NEWS\\74fec478-4823-4d84-a9a1-41319407197d\\aggregate.json",
+        "aggregate_sha256": "0ea766456a304004b92fa3da40524138db2765b4fec13c62128cb49b0aefee09",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.mq5",
+          "sha256": "a68b9f02372edd490f2af9ea32efa6606df7c2d8b40e30f3ddac2e2d56cab84e"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+          "sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+          "sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_11422_include_closure.json",
+          "sha256": "a3fbf052f006b46cf0759ed47a7af2945819c8769d5f58de1b30d250506b9172"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+        "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "include_closure_sha256": "0e67f3d1befc33bb86d795dc4d59b8ddc38e8c32be3402cd2c302866618acb3b",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\21eb42e1-5107-4033-b9f6-a97c1edc15d1\\QM5_11422\\Q10_NEWS\\74fec478-4823-4d84-a9a1-41319407197d\\aggregate.json",
+        "aggregate_sha256": "0ea766456a304004b92fa3da40524138db2765b4fec13c62128cb49b0aefee09"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_11881",
+      "symbol": "GBPUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_11881",
+        "symbol": "GBPUSD.DWX",
+        "q09_news_work_item_id": "b715d987-535c-4413-9047-4dcf2cbce6ce",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\dddcd4a5-5fc3-4568-9527-73286819a1a2\\QM5_11881\\Q10_NEWS\\b715d987-535c-4413-9047-4dcf2cbce6ce\\aggregate.json",
+        "aggregate_sha256": "018b0e6bacb963a5fb2541ceb674e3b6fe5341149bb0c32ce417e3288b5315ca",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11881_connors-rsi2-mean-reversion\\QM5_11881_connors-rsi2-mean-reversion.mq5",
+          "sha256": "adf3fac45c2f1923814a79003fa9b81e83c4373ee916295d11da9aa59c7df5b7"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11881_connors-rsi2-mean-reversion\\QM5_11881_connors-rsi2-mean-reversion.ex5",
+          "sha256": "54fa51183ccdd0c303138b282d9d0884f746eae6e8aca48d52fc377407839f1e"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11881_connors-rsi2-mean-reversion\\sets\\QM5_11881_connors-rsi2-mean-reversion_GBPUSD.DWX_D1_backtest.set",
+          "sha256": "7672b835b10ba8caa2d947948052060ec4b65973e8b42eb741b63d94775d7ca5"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_11881_include_closure.json",
+          "sha256": "9317bff9ccbd1e4c6b776bafb6fbf96f0925cf2c18eb877b9d6d410fedc10e40"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "7672b835b10ba8caa2d947948052060ec4b65973e8b42eb741b63d94775d7ca5",
+        "ex5_sha256": "54fa51183ccdd0c303138b282d9d0884f746eae6e8aca48d52fc377407839f1e",
+        "include_closure_sha256": "8ec25306588af58fcc09e34026a030c76a461738f1898fe00703ab4c02c1b2f9",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\dddcd4a5-5fc3-4568-9527-73286819a1a2\\QM5_11881\\Q10_NEWS\\b715d987-535c-4413-9047-4dcf2cbce6ce\\aggregate.json",
+        "aggregate_sha256": "018b0e6bacb963a5fb2541ceb674e3b6fe5341149bb0c32ce417e3288b5315ca"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_12849",
+      "symbol": "XTIUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_12849",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "5f23b9ad-db71-4416-b4b1-6c2f66a4970c",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\c0fda6f1-84f0-49eb-846d-a7f729dcf984\\QM5_12849\\Q10_NEWS\\5f23b9ad-db71-4416-b4b1-6c2f66a4970c\\aggregate.json",
+        "aggregate_sha256": "b30f5fd6ab8e06b9382645fef96993a868f5322b6ec056cb0c8d900011782399",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\QM5_12849_brent-tsmom12m.mq5",
+          "sha256": "d72f373782ce6ae26b702b1d2ffaf75d4e9711712311726aaa19c7b767299af9"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\QM5_12849_brent-tsmom12m.ex5",
+          "sha256": "c9166d7a34d637b6ef8aeb0ea90c72b50675e24f4552704ef96e28b6147f9fe4"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\sets\\QM5_12849_brent-tsmom12m_XTIUSD.DWX_D1_backtest.set",
+          "sha256": "a4851b26dc02faeace0e490873e55da3be76540752dba526f9f13ff9549fa33d"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_12849_include_closure.json",
+          "sha256": "8c0af4a36b202013d346d05b8b27bff47ce622fe9898fbd38acde01c2c307a0b"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "a4851b26dc02faeace0e490873e55da3be76540752dba526f9f13ff9549fa33d",
+        "ex5_sha256": "c9166d7a34d637b6ef8aeb0ea90c72b50675e24f4552704ef96e28b6147f9fe4",
+        "include_closure_sha256": "8c0af4a36b202013d346d05b8b27bff47ce622fe9898fbd38acde01c2c307a0b",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\c0fda6f1-84f0-49eb-846d-a7f729dcf984\\QM5_12849\\Q10_NEWS\\5f23b9ad-db71-4416-b4b1-6c2f66a4970c\\aggregate.json",
+        "aggregate_sha256": "b30f5fd6ab8e06b9382645fef96993a868f5322b6ec056cb0c8d900011782399"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_12855",
+      "symbol": "XTIUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_12855",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "22baed14-42a0-4f9c-9e8b-96631408c523",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "SKIP_DAY",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\d8ffeba1-6fc8-467c-ad6b-e4c280493879\\QM5_12855\\Q10_NEWS\\22baed14-42a0-4f9c-9e8b-96631408c523\\aggregate.json",
+        "aggregate_sha256": "624250e1767b191eb311c581d742b8ade75e0fb0b5dfa9a90a839e8b573f012a",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12855_brent-nov-fade\\QM5_12855_brent-nov-fade.mq5",
+          "sha256": "07c82d1358b1f0d1e9604b5792a15b34fd3678c0728a9c3ece39a059670bdd17"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12855_brent-nov-fade\\QM5_12855_brent-nov-fade.ex5",
+          "sha256": "1e141304275473b0b36160602ec0743635c9ae9ee2e7bbdbe2e7a770fb075f18"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12855_brent-nov-fade\\sets\\QM5_12855_brent-nov-fade_XTIUSD.DWX_D1_backtest.set",
+          "sha256": "3d40f88402717099c7479468b76e3f78e29145ebd5c94b07792a224b733bdd68"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_12855_include_closure.json",
+          "sha256": "b84ee14339c4007a6fc52be917a7d12866309a2e79b418f968c1882771d857db"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "3d40f88402717099c7479468b76e3f78e29145ebd5c94b07792a224b733bdd68",
+        "ex5_sha256": "1e141304275473b0b36160602ec0743635c9ae9ee2e7bbdbe2e7a770fb075f18",
+        "include_closure_sha256": "b84ee14339c4007a6fc52be917a7d12866309a2e79b418f968c1882771d857db",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\d8ffeba1-6fc8-467c-ad6b-e4c280493879\\QM5_12855\\Q10_NEWS\\22baed14-42a0-4f9c-9e8b-96631408c523\\aggregate.json",
+        "aggregate_sha256": "624250e1767b191eb311c581d742b8ade75e0fb0b5dfa9a90a839e8b573f012a"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_13054",
+      "symbol": "XTIUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_13054",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "332b52a7-cdc7-443b-ac6c-c358a3717fbe",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8f760c32-a6d2-4088-9106-d406de466fbb\\QM5_13054\\Q10_NEWS\\332b52a7-cdc7-443b-ac6c-c358a3717fbe\\aggregate.json",
+        "aggregate_sha256": "a3350c86457958812a474cd3859fc9404dd253591ec63390101c54dc74eb3c1c",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.mq5",
+          "sha256": "326b188c2be5160f6e5285060f821b82f64d319d1ae5595e0f6134f86cbd6be3"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.ex5",
+          "sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\sets\\QM5_13054_brent-tom-mom_XTIUSD.DWX_D1_backtest.set",
+          "sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_13054_include_closure.json",
+          "sha256": "7826c523dd8dd474db4e4f1dc8333ed78f83816b14a3bd762d83ba9a68dc6a1c"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V2",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c",
+        "ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+        "include_closure_sha256": "7826c523dd8dd474db4e4f1dc8333ed78f83816b14a3bd762d83ba9a68dc6a1c",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8f760c32-a6d2-4088-9106-d406de466fbb\\QM5_13054\\Q10_NEWS\\332b52a7-cdc7-443b-ac6c-c358a3717fbe\\aggregate.json",
+        "aggregate_sha256": "a3350c86457958812a474cd3859fc9404dd253591ec63390101c54dc74eb3c1c"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "7": 8,
+        "17": 8,
+        "42": 8,
+        "99": 8,
+        "2026": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "NO_NEWS_IDENTITY",
+        "FTMO_Q09_EVIDENCE_MISSING",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_13213",
+        "symbol": "USDJPY.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\QM5_13213_balke-gmt3-range-breakout.mq5",
+          "sha256": "d140d313c3bbcd87ccefacfb2068bf164f9db9edfbe49ba410a83fcd4d79054f"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\QM5_13213_balke-gmt3-range-breakout.ex5",
+          "sha256": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+          "sha256": "0eba1def3309b7ff94fd86fdeb1f71e91bb5ee3c789156fc6df8a6dd8a009c79"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_13213_include_closure.json",
+          "sha256": "a019f50138e7083c9a7cdd3a37f00c19a4494dd443fbb18929a2fb59d379c588"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_1537",
+      "symbol": "XAGUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "q09_news_work_item_id": "463a29c4-2ef0-40d2-baef-fa5a4727f073",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\42b0c995-7fac-415d-a08e-80581da2db33\\QM5_1537\\Q10_NEWS\\463a29c4-2ef0-40d2-baef-fa5a4727f073\\aggregate.json",
+        "aggregate_sha256": "18172c30a3e1c9a56b9586e9672e796c946c9bbb4a0979c0a85d5694cec760c7",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\QM5_1537_aa-vol-sma10.mq5",
+          "sha256": "5254b53974ff7b9b87a1e782152af3fa82444a5efbfbdccc3f7fc8e7d1edd305"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\QM5_1537_aa-vol-sma10.ex5",
+          "sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\sets\\QM5_1537_aa-vol-sma10_XAGUSD.DWX_D1_backtest.set",
+          "sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_1537_include_closure.json",
+          "sha256": "a8c55127e075cfc5621ee38c673edf51a58dd89147d851f501a572913530eb0d"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211",
+        "ex5_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+        "include_closure_sha256": "a8c55127e075cfc5621ee38c673edf51a58dd89147d851f501a572913530eb0d",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\42b0c995-7fac-415d-a08e-80581da2db33\\QM5_1537\\Q10_NEWS\\463a29c4-2ef0-40d2-baef-fa5a4727f073\\aggregate.json",
+        "aggregate_sha256": "18172c30a3e1c9a56b9586e9672e796c946c9bbb4a0979c0a85d5694cec760c7"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_20048",
+      "symbol": "XTIUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_20048",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "79e825cc-a806-49ac-9bc4-96d4c83c915d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\79e825cc-a806-49ac-9bc4-96d4c83c915d\\QM5_20048\\Q10_NEWS\\XTIUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "750c862687afa1fb4756babb710294274d7c8fbdfa0b969e743a1de89c0b2fbd",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\QM5_20048_wti-preholiday.mq5",
+          "sha256": "9f274a1d4652e680de45551a938db5702eb4c0051ed4eb109629566ae929e031"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\QM5_20048_wti-preholiday.ex5",
+          "sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\sets\\QM5_20048_wti-preholiday_XTIUSD.DWX_D1_backtest.set",
+          "sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_20048_include_closure.json",
+          "sha256": "06d89ffdfa7b74d9b886e164f0a640066fe5dcf3c9aacc61ab5f9c5787b3c3af"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "198f387d3bfbbf3e26435be9fcba671b0c992a2f1aacacf990b08a58d9a02e96",
+        "ex5_sha256": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+        "include_closure_sha256": "080f0ae527c3c698281ba45a67c8ee31e629e9858c3fef17f662f1cb5df0684f",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\79e825cc-a806-49ac-9bc4-96d4c83c915d\\QM5_20048\\Q10_NEWS\\XTIUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "750c862687afa1fb4756babb710294274d7c8fbdfa0b969e743a1de89c0b2fbd"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_20266",
+      "symbol": "XTIUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_20266",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "f7b49d75-61ec-42eb-92e7-a3b029bb5df8",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\42e4b18c-4f1b-4c3f-8129-1265fa42dd7b\\QM5_20266\\Q10_NEWS\\f7b49d75-61ec-42eb-92e7-a3b029bb5df8\\aggregate.json",
+        "aggregate_sha256": "5f983383a3e51321f86aef8654ee5acce3174f1797bbc57ef7bcf2d98a97682e",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\QM5_20266_collins-66mom.mq5",
+          "sha256": "26965c9164b887e81e533837eb9b8005a3981d027619b718bcab014ab874394c"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\QM5_20266_collins-66mom.ex5",
+          "sha256": "8760402ac1ba34d9631b125989d13e63a737a0a305f6b3d6b00f3d1b6e128fed"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\sets\\QM5_20266_collins-66mom_XTIUSD.DWX_D1_backtest.set",
+          "sha256": "1e5db116a559198cf26b27c099728b636e3fce05b5cbf899a1fffafbcbe3f6e9"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_20266_include_closure.json",
+          "sha256": "ab8bc571740f82ee9fcd0d41d541a8748dec6f9db0f04eaa1ceba594c43f56a4"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "1e5db116a559198cf26b27c099728b636e3fce05b5cbf899a1fffafbcbe3f6e9",
+        "ex5_sha256": "8760402ac1ba34d9631b125989d13e63a737a0a305f6b3d6b00f3d1b6e128fed",
+        "include_closure_sha256": "ab8bc571740f82ee9fcd0d41d541a8748dec6f9db0f04eaa1ceba594c43f56a4",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\42e4b18c-4f1b-4c3f-8129-1265fa42dd7b\\QM5_20266\\Q10_NEWS\\f7b49d75-61ec-42eb-92e7-a3b029bb5df8\\aggregate.json",
+        "aggregate_sha256": "5f983383a3e51321f86aef8654ee5acce3174f1797bbc57ef7bcf2d98a97682e"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_21505",
+      "symbol": "XAGUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_21505",
+        "symbol": "XAGUSD.DWX",
+        "q09_news_work_item_id": "21859cc5-0c13-481a-a769-b38be9e4fd91",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\f9a94c2d-98a3-4edc-ade5-f9ce5940da41\\QM5_21505\\Q10_NEWS\\21859cc5-0c13-481a-a769-b38be9e4fd91\\aggregate.json",
+        "aggregate_sha256": "d8d52792cacb62f87b6df8157709012de35cd19d8070e0cd4ff23108a2ffe3ad",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.mq5",
+          "sha256": "311deb260e57129d1fb35e5bc2875fc76f755711b2caeb95501e9bfe1bb63887"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+          "sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\sets\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set",
+          "sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_21505_include_closure.json",
+          "sha256": "e9b1a60e47929765de689a592813976d05be744825fca16c9b896426adf219e0"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397",
+        "ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+        "include_closure_sha256": "b396007b7e570542e60aed3e5e0ea431a2f0f59cc93ba465612b046ecf2e36f6",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\f9a94c2d-98a3-4edc-ade5-f9ce5940da41\\QM5_21505\\Q10_NEWS\\21859cc5-0c13-481a-a769-b38be9e4fd91\\aggregate.json",
+        "aggregate_sha256": "d8d52792cacb62f87b6df8157709012de35cd19d8070e0cd4ff23108a2ffe3ad"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_41219",
+      "symbol": "XAUUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_41219",
+        "symbol": "XAUUSD.DWX",
+        "q09_news_work_item_id": "b25eab58-eccb-44d8-84b2-bdebd758aab5",
+        "matrix_scope": "7x4",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\b25eab58-eccb-44d8-84b2-bdebd758aab5\\QM5_41219\\Q10_NEWS\\XAUUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "41e07bb7a15c955487bd79bbe73227f8c6b41c184e13b4d3433952cdca60eec9",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\QM5_41219_cum-rsi2-commodity-requal8.mq5",
+          "sha256": "cd2a0ac6e3f4a677cbb30197e23eaeb8338f06f69d66341eeedfc45cb68746b3"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\QM5_41219_cum-rsi2-commodity-requal8.ex5",
+          "sha256": "e9670141e89249aff7df44a10a2402e2103aa4cecf8d0a35a8cd6d6babedf108"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\sets\\QM5_41219_cum-rsi2-commodity-requal8_XAUUSD.DWX_D1_backtest.set",
+          "sha256": "297081b5b1e8aa70e76246b1cdaafdd38807305c5e8d05db59e5d63998fa180a"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_41219_include_closure.json",
+          "sha256": "f3a06ec498ced9b73309b2abb8b3d1e13f92d13885a7cef38d55c1b192dffa83"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "297081b5b1e8aa70e76246b1cdaafdd38807305c5e8d05db59e5d63998fa180a",
+        "ex5_sha256": "e9670141e89249aff7df44a10a2402e2103aa4cecf8d0a35a8cd6d6babedf108",
+        "include_closure_sha256": "f3a06ec498ced9b73309b2abb8b3d1e13f92d13885a7cef38d55c1b192dffa83",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\b25eab58-eccb-44d8-84b2-bdebd758aab5\\QM5_41219\\Q10_NEWS\\XAUUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "41e07bb7a15c955487bd79bbe73227f8c6b41c184e13b4d3433952cdca60eec9"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 20
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_41221",
+      "symbol": "EURUSD.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_41221",
+        "symbol": "EURUSD.DWX",
+        "q09_news_work_item_id": "b1a60270-b481-4631-a152-e94b1daed18d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8bd4a1be-63fc-48f1-8b06-eaf77c32010f\\QM5_41221\\Q10_NEWS\\b1a60270-b481-4631-a152-e94b1daed18d\\aggregate.json",
+        "aggregate_sha256": "49333fc59607e4f7859750e751e7f6a92bd420d47cf24604255f44b845495b83",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8.mq5",
+          "sha256": "ede8570a029563fadecdfb99b829331903dffa0d2e46a3bb64c6e3cf8af8e91f"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8.ex5",
+          "sha256": "3a3923930ddf97b7249e37e340312f09924775daea930f4fd3c57fc0441931e1"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8\\sets\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8_EURUSD.DWX_D1_backtest.set",
+          "sha256": "ee72ead97a1a8cf2bb1998ad064c52a4a9128c052e365117062b4771666e3bf6"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_41221_include_closure.json",
+          "sha256": "8d8b0802d5b0ef602a95951c6a6fe02e701df8a83c1a0b6c136ae657a2bb6c38"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "ee72ead97a1a8cf2bb1998ad064c52a4a9128c052e365117062b4771666e3bf6",
+        "ex5_sha256": "3a3923930ddf97b7249e37e340312f09924775daea930f4fd3c57fc0441931e1",
+        "include_closure_sha256": "8d8b0802d5b0ef602a95951c6a6fe02e701df8a83c1a0b6c136ae657a2bb6c38",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8bd4a1be-63fc-48f1-8b06-eaf77c32010f\\QM5_41221\\Q10_NEWS\\b1a60270-b481-4631-a152-e94b1daed18d\\aggregate.json",
+        "aggregate_sha256": "49333fc59607e4f7859750e751e7f6a92bd420d47cf24604255f44b845495b83"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    },
+    {
+      "ea_id": "QM5_9641",
+      "symbol": "WS30.DWX",
+      "cost_eligibility": "NOT_ESTABLISHED",
+      "deployment_eligibility": false,
+      "blockers": [
+        "INCLUDE_CLOSURE_NOT_CURRENT",
+        "FTMO_Q09_SCOPE_NOT_FTMO",
+        "TARGET_FTMO_CALENDAR_SCOPE_AND_ROW_RELEASE_REQUIRED",
+        "PROSPECTIVE_WINDOWS_NOT_SEALED",
+        "COST_AND_EXECUTION_ACCEPTANCE_REQUIRED"
+      ],
+      "news_admission": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_9641",
+        "symbol": "WS30.DWX",
+        "q09_news_work_item_id": "c33ba35e-ed26-44b8-9a3b-2fa5f7a44529",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "PRE60_POST60",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\068afd3f-a36e-4a82-ac1a-3c57dc4f5efd\\QM5_9641\\Q10_NEWS\\c33ba35e-ed26-44b8-9a3b-2fa5f7a44529\\aggregate.json",
+        "aggregate_sha256": "1970f376e1836459a0bc302f92ed450b44b6a06ae14fdb6cea6be6a7496f2156",
+        "details": []
+      },
+      "current_files": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9641_bandy-cci-extreme-fade-mr-index\\QM5_9641_bandy-cci-extreme-fade-mr-index.mq5",
+          "sha256": "82dba156ebc91aa4b2000241c1481600ae76410f5d07152ca470ff5df7e0fb5f"
+        },
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9641_bandy-cci-extreme-fade-mr-index\\QM5_9641_bandy-cci-extreme-fade-mr-index.ex5",
+          "sha256": "21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21"
+        },
+        "baseline_setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_9641_bandy-cci-extreme-fade-mr-index\\sets\\QM5_9641_bandy-cci-extreme-fade-mr-index_WS30.DWX_D1_backtest.set",
+          "sha256": "e991aae91a2c0e08afdc56e089854571711faab532125508ca3ec21d36fb50b0"
+        },
+        "include_closure": {
+          "path": "D:\\QM\\reports\\pipeline\\_q09_include_closures\\QM5_9641_include_closure.json",
+          "sha256": "834e71bc7f9b5991c02b61d418a02e06846302738ec36efe37923bea73d2a253"
+        }
+      },
+      "include_closure_current": false,
+      "include_closure_error": "include closure source inventory/hash mismatch",
+      "historical_news_identity": {
+        "contract_version": "Q09_NEWS_V3",
+        "calendar_bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+        "baseline_setfile_sha256": "e991aae91a2c0e08afdc56e089854571711faab532125508ca3ec21d36fb50b0",
+        "ex5_sha256": "21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21",
+        "include_closure_sha256": "ed2c2188af173fade25bcab3773f828d4ca6b0b34798dcc0b9952a8b3e655106",
+        "aggregate_path": "D:\\QM\\reports\\work_items\\068afd3f-a36e-4a82-ac1a-3c57dc4f5efd\\QM5_9641\\Q10_NEWS\\c33ba35e-ed26-44b8-9a3b-2fa5f7a44529\\aggregate.json",
+        "aggregate_sha256": "1970f376e1836459a0bc302f92ed450b44b6a06ae14fdb6cea6be6a7496f2156"
+      },
+      "historical_ex5_matches_current": true,
+      "contract_supported": true,
+      "native_seed_counts": {
+        "17": 8
+      },
+      "source_compatibility": "REQUALIFICATION_REQUIRED",
+      "calendar_identity": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2",
+      "target_plan_contract": "Q09_NEWS_V3",
+      "target_native_configs": 8,
+      "target_native_windows_per_config": 2,
+      "target_native_runs_before_reuse": 16,
+      "native_cost_seconds": null
+    }
+  ],
+  "selected_pairs": [],
+  "requests": [],
+  "new_work_items": 0,
+  "database_mutations": 0,
+  "no_holdout_metrics_read": true,
+  "admitted_count": 0,
+  "role_boundaries": [
+    "source compatibility",
+    "news admission",
+    "cost eligibility",
+    "deployment eligibility"
+  ],
+  "input_bindings": {
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-09_ftmo_acceleration\\intake.json": "4a94e8c9bae73ac8c280da2723ff3591e285a609271cbe0d8a29424457cc0492",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-09_ftmo_shortlist\\comparison.json": "000ff00ac79446013b243a004be889809088e6d47022043b732c9c103b574671",
+    "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\ftmo_acceleration_plan.py": "6706a5e8a1d2418c79fcc62b789b486e83a2077b98e12d8bc9b293499c68addd"
+  }
+}
