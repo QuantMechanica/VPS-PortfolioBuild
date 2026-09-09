@@ -1,0 +1,106 @@
+{
+  "schema": "qm.fx-cointegration-q02-enqueue-evidence/v1",
+  "recorded_at_utc": "2026-09-09T23:43:34.4189285Z",
+  "branch": "agents/board-advisor",
+  "outcome": "EXISTING_FOREX_CARD_ADVANCED",
+  "selection": {
+    "ea_id": "QM5_10025",
+    "slug": "rw-fx-broad-pairs",
+    "host_symbol": "USDCHF.DWX",
+    "timeframe": "H4",
+    "strategy_class": "market-neutral FX cointegration basket",
+    "reason": "The frozen sign-aware 66-pair scan is fully represented by existing cards and EAs, and both preferred anchors already passed Q02. The mission fallback therefore advances one existing approved low-frequency FX card without creating a duplicate identity.",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10025_rw-fx-broad-pairs.md",
+    "research_source": "Robot Wealth",
+    "expected_frequency": "approximately 6 round trips per year per host",
+    "structural_only": true
+  },
+  "frontier_guard": {
+    "scan_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "ownership_evidence": "docs/research/FX_COINTEGRATION_FALLBACK_AUDIT_CPU_STOP_20260902T204902Z.md",
+    "all_66_pair_identities_represented": true,
+    "new_identity_created": false,
+    "anchors": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "q02_status": "done",
+        "q02_verdict": "PASS"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "q02_status": "done",
+        "q02_verdict": "PASS"
+      }
+    ]
+  },
+  "build_guard": {
+    "mq5_written_or_edited": false,
+    "compile_enqueued": false,
+    "canonical_source": "C:/QM/repo/framework/EAs/QM5_10025_rw-fx-broad-pairs/QM5_10025_rw-fx-broad-pairs.mq5",
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_10025_rw-fx-broad-pairs/QM5_10025_rw-fx-broad-pairs.mq5",
+    "audit_exit_code": 0,
+    "audit_ok": true,
+    "audit_predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "audit_hit_count": 0,
+    "operator_correction": {
+      "incorrect_path": "C:/QM/repo/MQL5/Experts/QM/QM5_10025_rw_fx_broad_pairs.mq5",
+      "exit_code": 1,
+      "exact_reason": "INVALID_SOURCE",
+      "mutation_before_correction": false
+    }
+  },
+  "artifacts": {
+    "mq5_sha256": "db7424efcba0a8df90184240e277e1a7546e8030672eec88a4c72a89c32a5a61",
+    "ex5_sha256": "49fcc59b5232531f5fd2e3ba7a0c71f0bac703f54e17f7c92c911e31944d91f1",
+    "setfile_sha256": "571be487c4d8688c79d3b5c0644624ef83579c099d32e856ad2519828567f413",
+    "basket_manifest_sha256": "98237a88f0634810f187a63c6d4585950aac4d5b8f21c157d23f88533691daa0",
+    "compile_work_item_id": "21c7d995-2fd6-44f6-b624-8c5f097c0961",
+    "compile_evidence_sha256": "6a2ca8c03fa628dbb64a67371c3c520312830d3192f1c7ebff880ae313d7fd69"
+  },
+  "risk_contract": {
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "parameter_change_count": 0,
+    "parameter_diff": []
+  },
+  "resource_guard": {
+    "initial_samples_pct": [85.7, 83.6, 78.3, 96.4, 94.0],
+    "initial_average_pct": 87.6,
+    "initial_max_pct": 96.4,
+    "prewrite_samples_pct": [47.5, 51.2, 43.6, 43.8, 46.1],
+    "prewrite_average_pct": 46.4,
+    "prewrite_max_pct": 51.2,
+    "ceiling_pct": 97.0,
+    "ceiling_hit": false
+  },
+  "q02_requalification": {
+    "source_work_item_id": "1a8e8377-a2f3-4533-9ae2-c4bcfc84aff0",
+    "source_status": "done",
+    "source_verdict": "ZERO_TRADES",
+    "source_ex5_sha256": "9bf2691d4af0a57d553711c37ffceadb513b303e710a25f455c8f2e211eecfcc",
+    "successor_work_item_id": "3af8c03c-7772-49fc-bfcd-daca0adcce26",
+    "successor_status_at_verification": "pending",
+    "successor_claimed_by_at_verification": null,
+    "successor_attempt_count_at_verification": 0,
+    "priority_track": true,
+    "open_exact_identity_count": 1,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/q02_post_binding_requalification/1a8e8377-a2f3-4533-9ae2-c4bcfc84aff0_3af8c03c-7772-49fc-bfcd-daca0adcce26.json",
+    "receipt_sha256": "413d611aa3fe508a869cbcbc419eefd04cdc736ac9c74b89533da5bf554b29de",
+    "historical_zero_trade_preserved": true,
+    "zero_trade_reclassified": false
+  },
+  "safety": {
+    "manual_dispatch": false,
+    "tester_launched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false
+  }
+}
