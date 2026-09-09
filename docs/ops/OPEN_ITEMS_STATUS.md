@@ -1,5 +1,24 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~13:18Z (Orchestrierungszyklus) — keine Zustandsänderung:** ~14 Minuten
+> seit dem 13:04Z-Check. `git log --since=2026-09-09T13:04:00Z` zeigt nur den eigenen 13:04Z-
+> Log-Commit und einen fremden Codex-Review-Commit (`fc355cb7dd`, QM5_41280-Build-Review) —
+> kein neuer OWNER-Receipt. `QM5_41394`: USDJPY.DWX-Leg hat eine neue Q03-Zeile (`e89d6f8a…`,
+> `pending`, `13:09:21Z`) neben der bestehenden Q04-Zeile (`bd6f7c72…`, `pending`,
+> `12:19:47Z`) — reine Fabrik-interne Parallelverarbeitung, kein Terminalverdikt. SP500/XAUUSD/
+> XTIUSD unverändert `Q02 pending` seit `10:52:59Z`, EURUSD unverändert `Q04 done`
+> (Strategy-Taxonomie-Sackgasse). Kein Leg hat Q10_NEWS erreicht — `bb814520`/`dfc60103`
+> bleiben korrekt `IN_PROGRESS`. `3032534e`: Codex-Ticket `2f717775` weiterhin
+> `APPROVED`/unassigned seit `01:24:20Z` (~11h54m); kein neuer Reprobe fällig (Cadence-Vorgabe
+> „mehrere Stunden, anderer UTC-Slot" seit dem letzten Reprobe 11:49–11:50Z noch nicht erreicht).
+> `farmctl health` overall=FAIL (15 FAIL/16 WARN/53 OK) — identisches chronisches Set wie beim
+> 13:04Z-Check (`codex_zero_activity`, `q02_stranded_exhausted_pairs`, `phase_invalid_rate_7d`,
+> `agent_task_state_stranded`, `agent_task_aging_slo`, `work_item_phase_age_slo`,
+> `q09_sealed_plan_hold_age`, `q09_autoseal_hold_census`, `pending_artifact_binding_drift`,
+> Scheduled-Task/Backup-Calendar-FAILs); keine dieser Zeilen betrifft die drei gegatterten
+> Ketten. Kein Ticket/Rebuild/Release/Router-Zustandswechsel; `agent_router.py
+> run`/`route-many`/`replenish` nicht aufgerufen.
+
 > **Nachtrag 09.09., ~13:04Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
 > DB-Prüfung ~12 Minuten nach dem 12:52Z-Check bestätigt: `QM5_41394` unverändert — USDJPY.DWX
 > weiterhin `Q04 pending` (`bd6f7c72…`, seit `12:19:47Z`), SP500/XAUUSD/XTIUSD weiterhin
