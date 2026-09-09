@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260909T144852_268174Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260909T144837Z_5659de43.sqlite",
+    "reused": false,
+    "sha256": "35e7f75fdaf3a81aefd235bf9cbf5f4e482c42f921ca648c49d5100c081d6eb5"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "ca14b532f4757d96461d641536996e6914909d066087ebfae98fa0fac21e69bf",
+      "ea_id": "QM5_41399",
+      "ea_label": "QM5_41399_xauxag-medret-rv",
+      "expected_mq5_sha256": "ca14b532f4757d96461d641536996e6914909d066087ebfae98fa0fac21e69bf",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41399_xauxag-medret-rv\\QM5_41399_xauxag-medret-rv.mq5",
+      "work_item_id": "269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-09T14:48:52+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b",
+  "work_item_id_selectors": [
+    "269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b"
+  ]
+}

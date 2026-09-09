@@ -89,9 +89,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: COMPILE_PENDING_CPU_STOP
+q01_status: COMPILE_PENDING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a monthly XAU/XAG contrarian stream whose signal is the ordinary even median of twelve exact individual ratio changes. Verify opposed legs, aggregate fixed risk, atomic lifecycle, and no outright-metal fallback. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -245,8 +245,8 @@ defect. No weak result may be tuned or relabeled.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-09 | APPROVED_SOURCE | `decisions/2026-09-09_xauxag_monthly_median_return_reversion_source_approval.md` |
 | G0 Research Intake | 2026-09-09 | APPROVED | `decisions/2026-09-09_qm5_41399_xauxag_monthly_median_return_reversion_g0.md` |
-| Q01 Build Validation | 2026-09-09 | NOT_BUILT | deterministic magic allocation and build pending |
-| Q02 Baseline Screening | 2026-09-09 | NOT_ENQUEUED_Q01_PENDING | no work item before strict compile/review PASS |
+| Q01 Build Validation | 2026-09-09 | COMPILE_PENDING | governed compile item `269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b`; released source-fresh but unclaimed at CPU stop |
+| Q02 Baseline Screening | 2026-09-09 | NOT_ENQUEUED_CPU_CEILING | five CPU samples reached 100%; Q01 has no compile PASS or `.ex5` |
 
 ## Safety Boundary
 

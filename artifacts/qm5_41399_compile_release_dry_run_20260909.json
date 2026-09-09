@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "ca14b532f4757d96461d641536996e6914909d066087ebfae98fa0fac21e69bf",
+      "ea_id": "QM5_41399",
+      "ea_label": "QM5_41399_xauxag-medret-rv",
+      "expected_mq5_sha256": "ca14b532f4757d96461d641536996e6914909d066087ebfae98fa0fac21e69bf",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41399_xauxag-medret-rv\\QM5_41399_xauxag-medret-rv.mq5",
+      "work_item_id": "269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b",
+  "work_item_id_selectors": [
+    "269fc1ff-f77a-4bf2-b6c1-5a6d715dd51b"
+  ]
+}
