@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "9e86e4c6-04ad-47d2-abe2-ef9601fda53b"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260909T194917_578344Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260909T194906Z_c379125b.sqlite",
+    "reused": false,
+    "sha256": "a48843dd94b46841201d531dd678334081894712aea63ea537cf2b6be8fde278"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "e8e8541e5b73fa88b81436acc6a550252a9ef4fcd3ba3a757fef2d41b781386f",
+      "ea_id": "QM5_41403",
+      "ea_label": "QM5_41403_wti-winter-w2fade",
+      "expected_mq5_sha256": "e8e8541e5b73fa88b81436acc6a550252a9ef4fcd3ba3a757fef2d41b781386f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41403_wti-winter-w2fade\\QM5_41403_wti-winter-w2fade.mq5",
+      "work_item_id": "9e86e4c6-04ad-47d2-abe2-ef9601fda53b"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-09T19:49:17+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "9e86e4c6-04ad-47d2-abe2-ef9601fda53b",
+  "work_item_id_selectors": [
+    "9e86e4c6-04ad-47d2-abe2-ef9601fda53b"
+  ]
+}
