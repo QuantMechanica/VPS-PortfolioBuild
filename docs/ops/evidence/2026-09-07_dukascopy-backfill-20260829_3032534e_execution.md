@@ -166,3 +166,19 @@ are possible.
   re-verified this cycle to avoid redundant repo scans). Datafeed reprobe deferred again for the
   same reason as the last two cycles. No duplicate ticket, no download restart, no terminal
   action. Task `3032534e` stays IN_PROGRESS.
+
+## Checked 2026-09-09T05:48Z (orchestration cycle) — no change; flagging scheduler pileup, not fixing it
+
+- `2f717775` still `APPROVED`/`assigned_agent=None`, `updated_at=2026-09-09T01:24:20Z` (~4h24m
+  unclaimed, eighth consecutive check with no change). No duplicate ticket, no download restart,
+  no terminal action.
+- Cross-task observation (also relevant to `bb814520`/`dfc60103`): `tasklist` shows 8-9 concurrent
+  `claude.exe` processes this cycle (was 7 at 05:35Z per the prior cycle's commit `0457f00d26`),
+  confirming `QM_StrategyFarm_ClaudeOrchestration_15min` is stacking launches rather than skipping
+  when a prior cycle is still running (same class as
+  `project_qm_claude_orchestration_duplicate_session_race_2026-08-23/24`). Given claude weekly
+  quota is at 80% used / 20% remaining (`agent_router.py status`), each redundant stacked cycle
+  spends scarce quota for zero new evidence. Consistent with the prior cycle's own restraint: no
+  scheduled-task or process change made from inside this routed task — flagging for OWNER/router
+  awareness only. Also reducing the verbosity of further no-op log entries on this task group per
+  the note in the calendar-criteria-b-prime evidence file. Task `3032534e` stays IN_PROGRESS.
