@@ -2009,3 +2009,19 @@ preset of QM5_11421 rebuilt 2026-09-08 01:11 (chart-panel-standard work) — NOT
 2026-09-06 manifest -> needs a manifest addendum (OWNER-facing; parked, no ticket while Claude
 weekly quota is 87%/reset 2026-09-10T22Z). Cosmetic `qm_panel_build_hash` drift on chart03
 excluded by name. Hourly watch: `session_tools/hourly_watch_0909.py` (session cron, 1h).
+
+## 2026-09-09T18:20Z — implementation plan commissioned (OWNER: "alles dementsprechend zur Umsetzung planen")
+
+Codex lane was idle (router: codex running 0/5, `codex_zero_activity`) while the Dukascopy chain
+was stalled: ticket `2f717775` (price_scale for 9 non-FX symbols) had sat APPROVED/unassigned
+since 01:24Z without ever running (APPROVED is invisible to routing) -> reset to TODO (GRUEN
+queue-state change, no deletion) and routed. New Codex tickets, all routed IN_PROGRESS 18:18Z:
+`2243207d` P72 FTMO manifest addendum (deployed-vs-sealed hash deviations, 11421 undocumented
+rebuild); `734baee6` P76 health probe `ftmo_launcher_readiness` (distinct FAIL line + 06:00 mail +
+SOP); `f6d18a6e` P85 Dukascopy P1 hardening + re-measurement (decision-bound to 3032534e,
+OWNER-DEC-DUKASCOPY-BACKFILL-20260829). Recipe: `session_tools/enqueue_ftmo_dukascopy_0909.py`.
+Claude lane: 7 REVIEW rows (artifacts all present, no lane head-block) drain after the weekly
+reset 2026-09-10T22Z via Sonnet fan-out (session one-shot scheduled 2026-09-10T22:12Z).
+Balke QM5_41398 (Astra filter matrix): Q02 baseline `2fc84747` PASS; 1,085 OPT_CENSUS cells
+enqueued, 2 MEASURED / 1,083 pending under normal slot scheduling — watched hourly, report at
+completion. Vault mirror: `12 ToDo/AI ToDos/Codex.md` 18:18Z block.

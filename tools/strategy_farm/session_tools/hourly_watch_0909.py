@@ -38,5 +38,7 @@ except Exception as e: print('quota err',e)
 try:
     st=json.load(open('D:/QM/reports/state/pipeline_state.json',encoding='utf-8-sig')); bg=(st.get('operator_surface') or {}).get('book_guard',{}); print('counter', bg.get('qualified_pairs'),'/',bg.get('minimum_qualified_pairs'),'gen',str(st.get('generated_at',''))[:16])
 except Exception as e: print('counter err',e)
+b=q("select status,count(*) from work_items where ea_id='QM5_41398' and phase like 'OPT_CENSUS%' group by status"); bq=q("select status,coalesce(verdict,'') from work_items where id like '2fc84747%'")
+print('balke41398 census', b, 'q02_baseline', bq)
 for a in al: print('ALERT', a)
 if not al: print('OK no alerts')
