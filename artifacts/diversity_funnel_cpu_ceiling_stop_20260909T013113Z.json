@@ -1,0 +1,122 @@
+{
+  "schema": "qm.diversity-funnel-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-09T01:31:13Z",
+  "recorded_at_local": "2026-09-09T03:31:13+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "a0385258d281b48afe9edf5d8ef6960e794cbdc9",
+  "outcome": "stop_before_selection_or_claim",
+  "tester_admission": {
+    "active_threshold": 7,
+    "observed_active_db_count": 10,
+    "saturated": true,
+    "cpu_ceiling_pct": 97.0,
+    "samples_pct": [
+      97.684621,
+      98.78853,
+      97.909401,
+      91.803985,
+      89.746985
+    ],
+    "average_pct": 95.186704,
+    "maximum_pct": 98.78853,
+    "breached_ceiling": true,
+    "stop_basis": "cpu_maximum_not_strictly_below_97_and_active_governed_testers_above_threshold"
+  },
+  "farm_snapshot": {
+    "db_path": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "mode": "read_only",
+    "active_work_items": [
+      {
+        "id": "8ec76542-bd61-5d4c-abbc-14399d44404d",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41302",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T1"
+      },
+      {
+        "id": "2a405a5f-47b2-42aa-9db2-ec83e15decbe",
+        "phase": "Q04",
+        "ea_id": "QM5_1235",
+        "symbol": "EURUSD.DWX",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "0898b17f-8492-4138-9c6b-bf073b2298c9",
+        "phase": "Q04",
+        "ea_id": "QM5_1614",
+        "symbol": "EURUSD.DWX",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "9818ef6c-fcb9-513a-a5df-c7c9eb160c36",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41163",
+        "symbol": "USDCAD.DWX",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "c8033eb7-902b-5a90-8c19-413818b041ea",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41345",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "c45b4d7b-c4bc-5d3c-86e0-19ebb418b40f",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41324",
+        "symbol": "USDJPY.DWX",
+        "claimed_by": "T5"
+      },
+      {
+        "id": "fa4f467e-b9bd-5933-9bc2-57d15d40d38e",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41301",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "067f99a2-5640-4e78-aaa7-26b0a14bb605",
+        "phase": "Q04",
+        "ea_id": "QM5_10297",
+        "symbol": "AUDNZD.DWX",
+        "claimed_by": "T7"
+      },
+      {
+        "id": "e4ad475a-ac6c-48ce-aa8d-25778bc96b51",
+        "phase": "Q04",
+        "ea_id": "QM5_10207",
+        "symbol": "EURUSD.DWX",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "f4935154-b15e-4656-a01d-5b391ebc2d0d",
+        "phase": "Q04",
+        "ea_id": "QM5_10232",
+        "symbol": "EURJPY.DWX",
+        "claimed_by": "T9"
+      }
+    ]
+  },
+  "pacer_build_guard": {
+    "generated_mq5_written": false,
+    "framework_input_pin_audit_applicable": false,
+    "compile_enqueue_attempted": false
+  },
+  "mutations": {
+    "farm_rows_created": 0,
+    "farm_rows_claimed": 0,
+    "farm_rows_advanced": 0,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "tester_launched": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "deploy_manifest_touched": false,
+    "autotrading_toggled": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
