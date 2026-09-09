@@ -116,6 +116,18 @@ are possible.
   taken. No duplicate ticket, no download restart, no terminal touched. Task `3032534e` stays
   IN_PROGRESS pending `2f717775`.
 
+## Checked 2026-09-09T12:03Z (orchestration cycle) — no change, nothing new enqueued
+
+Re-read this file first, then queried the state DB directly: `2f717775-2bdd-4457-b5b6-
+e9ecae2a3e4a` still `APPROVED`, `assigned_agent=None`, `updated_at=2026-09-09T01:24:20Z`
+— unchanged, unclaimed by a Codex worker since 01:24Z (now ~10h39m). Codex router lane
+shows 0/5 running this cycle while 74 build_ea tasks sit pending — `codex_zero_activity`
+FAIL in farmctl health, root-caused there to `repo_dirty_build_guard` (19 uncommitted
+files pre-existing in the canonical checkout, none touched by this task). This is an
+observation for OWNER/router awareness, not an action I take (I do not route or commit
+unrelated dirty files). No duplicate ticket, no download/import/OFF-window action.
+Task `3032534e` stays IN_PROGRESS pending `2f717775` and the Codex lane resuming.
+
 ## Checked 2026-09-09T04:33Z (orchestration cycle) — no change, nothing new enqueued
 
 - `2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` still `APPROVED`/`assigned_agent=None`,
