@@ -2161,3 +2161,12 @@ and incomplete-matrix report pass 71 tests; DL-089 1085-cell plan is identical.
 blocked by all ten workers retaining old code; safe idle rollout is required.
 See `docs/ops/evidence/WINDOW_SWEEP_IMPLEMENTATION_2026-09-09.md` and its exact
 reproduction commands. No active worker/backtest interrupted; no Stage-B enqueue.
+
+RESULT single-pass Codex cycle, 2026-09-09 22:07 UTC: seven assigned tasks handed
+to REVIEW, Codex IN_PROGRESS empty. FTMO C has isolated source and 39 source/oracle
+tests, with binding/retry/native gaps; B compares 16 pairs (7 exposed streams),
+proposes zero roster and preserves native cost gaps; A repairs V3 seed reading
+with 36 tests and a bounded dry-run, still zero admitted and 16 stale closures.
+Cycle evidence: `docs/ops/evidence/ORCHESTRATION_CYCLE_2026-09-09.md`.
+Final farm health FAIL (14 fail / 52 OK / 17 warn); QM5_10260 has one pending Q04,
+no active claim. No routing, terminal change, backtest interruption or main advance.

@@ -1,0 +1,108 @@
+{
+  "checked_at_utc": "2026-09-09T22:05:09.363128+00:00",
+  "ea_id": "QM5_10260",
+  "total_rows": 288,
+  "active_or_pending": [
+    {
+      "id": "a0a0128f-a245-4fab-959f-c4941585dd62",
+      "phase": "Q04",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "updated_at": "2026-09-02T10:12:57+00:00"
+    }
+  ],
+  "counts": [
+    {
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "FAIL",
+      "n": 8
+    },
+    {
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "n": 4
+    },
+    {
+      "phase": "Q02",
+      "status": "done",
+      "verdict": "PASS",
+      "n": 18
+    },
+    {
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "n": 1
+    },
+    {
+      "phase": "Q03",
+      "status": "done",
+      "verdict": "PASS",
+      "n": 117
+    },
+    {
+      "phase": "Q03",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "n": 1
+    },
+    {
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "FAIL",
+      "n": 110
+    },
+    {
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "n": 1
+    },
+    {
+      "phase": "Q04",
+      "status": "done",
+      "verdict": "PASS",
+      "n": 6
+    },
+    {
+      "phase": "Q04",
+      "status": "pending",
+      "verdict": null,
+      "n": 1
+    },
+    {
+      "phase": "Q05",
+      "status": "done",
+      "verdict": "PASS",
+      "n": 6
+    },
+    {
+      "phase": "Q06",
+      "status": "done",
+      "verdict": "PASS",
+      "n": 6
+    },
+    {
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "FAIL",
+      "n": 3
+    },
+    {
+      "phase": "Q07",
+      "status": "done",
+      "verdict": "PASS",
+      "n": 3
+    },
+    {
+      "phase": "Q08",
+      "status": "done",
+      "verdict": "FAIL_HARD",
+      "n": 3
+    }
+  ],
+  "queue_mutations": 0
+}

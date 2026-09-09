@@ -1,0 +1,79 @@
+{
+  "schema": "qm.single-pass-orchestration-receipt/v1",
+  "checked_at_utc": "2026-09-09T22:06:06.219067+00:00",
+  "scheduled_workspace": "C:/QM/worktrees/codex-orchestration-1",
+  "canonical_control_plane": "C:/QM/repo/tools/strategy_farm",
+  "artifact_branch": "agents/board-advisor",
+  "handled_tasks": [
+    {
+      "id": "95b48188-1d1a-461f-96cb-3ceb6a2f0618",
+      "priority": 80,
+      "state": "REVIEW",
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/FLEET_SESSION_CLOCK_AUDIT_2026-09-09.md",
+      "verdict": "PARTIAL_REVIEW: 804-EA inventory verified; placement audit and affected-trade counts remain open",
+      "updated_at": "2026-09-09T21:24:19+00:00"
+    },
+    {
+      "id": "d444a7a8-f998-4ab2-820a-6f7bc017d475",
+      "priority": 88,
+      "state": "REVIEW",
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/BALKE_CLOCK_AUDIT_2026-09-09.md",
+      "verdict": "PARTIAL_REVIEW: baseline traced; QM5_41405 reserved; magic 2e7d5619 and WINSWEEP dependencies",
+      "updated_at": "2026-09-09T21:32:16+00:00"
+    },
+    {
+      "id": "2e7d5619-d79c-4a02-8688-62157abbb9a4",
+      "priority": 75,
+      "state": "REVIEW",
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/2026-09-09_qm5_41405_magic_verified.json",
+      "verdict": "READY_FOR_REVIEW: governed USDJPY slot 0 magic 414050000 verified; commit 448a98e8fa; no build",
+      "updated_at": "2026-09-09T21:44:35+00:00"
+    },
+    {
+      "id": "49af4f08-0d72-460d-959e-7c9a32db4650",
+      "priority": 92,
+      "state": "REVIEW",
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/WINDOW_SWEEP_IMPLEMENTATION_2026-09-09.md",
+      "verdict": "PARTIAL_REVIEW: 71 tests; 420 planned, zero enqueued; safe worker rollout required; 1b4644149e",
+      "updated_at": "2026-09-09T21:47:50+00:00"
+    },
+    {
+      "id": "b7858771-ecdc-4bb5-9d2f-d428a12bc661",
+      "priority": 97,
+      "state": "REVIEW",
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/2026-09-09_ftmo_execution_canary/REVIEW.md",
+      "verdict": "PARTIAL_REVIEW: isolated source, 39 source/oracle tests; binding, retry guard and native M01-M12 open",
+      "updated_at": "2026-09-09T21:53:51+00:00"
+    },
+    {
+      "id": "54729be7-8082-4a8c-afcf-e4497e6d9f4a",
+      "priority": 98,
+      "state": "REVIEW",
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/2026-09-09_ftmo_shortlist/REVIEW.md",
+      "verdict": "REVIEW_WITH_GAPS: 16 pairs, 7 exposed streams verified, Friday oil correction, zero roster; native costs incomplete",
+      "updated_at": "2026-09-09T21:57:43+00:00"
+    },
+    {
+      "id": "83ffadd6-24bc-4dd3-afa0-2843269b1ad9",
+      "priority": 99,
+      "state": "REVIEW",
+      "artifact_path": "C:/QM/repo/docs/ops/evidence/2026-09-09_ftmo_admission/REVIEW.md",
+      "verdict": "REVIEW: V3 seed repair, 36 tests, bounded dry-run; 0 admitted, 16 stale closures; no native enqueue",
+      "updated_at": "2026-09-09T22:04:45+00:00"
+    }
+  ],
+  "in_progress_codex_count": 0,
+  "routing_commands_executed": 0,
+  "loop_or_sleep_cadence_started": false,
+  "live_or_terminal_changes": false,
+  "main_advanced": false,
+  "qm5_10260_queue_artifact": "docs/ops/evidence/2026-09-09_orchestration_cycle_qm5_10260.json",
+  "final_health_artifact": "docs/ops/evidence/2026-09-09_orchestration_cycle_health.json",
+  "task_acceptance": "Artifacts handed to REVIEW; partial deliveries remain explicitly incomplete.",
+  "final_health_overall": "FAIL",
+  "final_health_summary": {
+    "fail": 14,
+    "ok": 52,
+    "warn": 17
+  }
+}
