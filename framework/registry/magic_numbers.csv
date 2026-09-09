@@ -18326,3 +18326,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41398,balke-pattern-repair-opt,0,USDJPY.DWX,413980000,2026-09-09,Codex governed allocator,active
 41399,xauxag-medret-rv,0,XAUUSD.DWX,413990000,2026-09-09,Codex governed allocator,active
 41399,xauxag-medret-rv,1,XAGUSD.DWX,413990001,2026-09-09,Codex governed allocator,active
+41400,wti-mrecency-sign-tr,0,XTIUSD.DWX,414000000,2026-09-09,Codex governed allocator,active
