@@ -1,5 +1,19 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~14:50Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
+> `farm_state.sqlite`-Prüfung ~17 Minuten nach dem 14:33Z-Check auf allen drei `IN_PROGRESS`-
+> Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,
+> `3032534e` DUKASCOPY-BACKFILL): `QM5_41394` unverändert — EURUSD.DWX terminal `Q04 done`
+> (Sackgasse, Strategy-Taxonomie); SP500/XAUUSD/XTIUSD weiterhin `Q02 pending` seit
+> `10:52:59Z` (~3h57m unclaimed); USDJPY.DWX weiterhin `Q03 pending` seit `13:09:21Z`. Kein
+> Leg hat `Q10_NEWS` erreicht — `bb814520`/`dfc60103` bleiben korrekt `IN_PROGRESS`. `3032534e`:
+> Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `01:24:20Z` (~13h26m); Codex-Lane
+> bestätigt 0 `IN_PROGRESS` direkt per SQLite (`agent_tasks` where assigned_agent='codex' and
+> state='IN_PROGRESS'); kein neuer Reprobe fällig (Cadence „mehrere Stunden, anderer UTC-Slot"
+> seit 11:49-11:50Z noch nicht erreicht). Kein Ticket/Rebuild/Release/Router-Zustandswechsel;
+> `agent_router.py run`/`route-many`/`replenish` nicht aufgerufen; kein OWNER-Scope-Auftrag
+> erfunden.
+
 > **Nachtrag 09.09., ~14:33Z (Orchestrierungszyklus) — keine Zustandsänderung:** Alle drei
 > `IN_PROGRESS`-Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103`
 > Q09-LEGACY-LOGGER-SAMPLE, `3032534e` DUKASCOPY-BACKFILL) direkt gegen `farm_state.sqlite`
