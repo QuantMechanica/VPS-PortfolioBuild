@@ -3,14 +3,31 @@
   Verify the current FTMO demo-instrumentation recovery contract read-only.
 
 .DESCRIPTION
-  OWNER ratified FTMO as RUNNING on 2026-08-06. This fail-closed verifier pins
-  the exact deployed Default profile for account 1514165262: AccountMonitor,
-  five attached instrumentation sleeves, and the existing blank XAUUSD chart.
+  Re-pinned 2026-09-09 after the 2026-09-09T16:44Z reboot exposed that this
+  verifier still pinned the obsolete 2026-08-06 contract (AccountMonitor on
+  chart01 + five sleeves chart02-06 + blank chart07 + order.wnd), causing
+  `QM_FTMO_AtLogon` (FTMO_ON.ps1 -> this verifier) to exit 2
+  `profile_contract_failed` on every reboot since the 2026-09-06 governor
+  cutover and leave the FTMO demo terminal not auto-started.
+
+  This fail-closed verifier now pins the FTMO M13 governed-trial Default
+  profile actually deployed for account 1514536732 (login re-pinned from the
+  stale contract's 1514165262 to match deployed `config\common.ini` reality
+  -- see the accompanying orchestration report): the account governor
+  (chart01), eight OWNER-signed trading sleeves (chart02-09), the trial
+  telemetry collector (chart10), and one plain, expert-less chart (chart11).
   It never attaches an EA, enables an expert, edits a profile, or starts MT5.
 
-  The sixth staged XAUUSD/H4 sleeve is deliberately absent from this contract:
-  it was not durably saved in the deployed profile before the host crash. A
-  recovery must reproduce current deployed reality, not infer staged intent.
+  Deployment authority: decision OWNER-DEC-M13-ECONOMIC-TRIAL-20260906,
+  manifest `docs/ops/evidence/2026-09-06_ftmo_demo_governor_manifest.md`.
+  Several sleeve EX5/preset hashes pinned below were rebuilt after that
+  manifest was signed (resolver base-name fix for 10706/11910/21505, a
+  calendar-symbol/v2-calendar rebuild for 1537, and a further,
+  manifest-undocumented rebuild of 11421 on 2026-09-08 for the chart-panel
+  work) and therefore intentionally differ from the manifest's sealed
+  SHA-256 table; this verifier pins DEPLOYED REALITY, not the sealed
+  install receipt. See the 2026-09-09 orchestration report for the full
+  cross-check.
 #>
 [CmdletBinding()]
 param()
@@ -25,21 +42,37 @@ $profileDir = Join-Path $dataDir 'MQL5\Profiles\Charts\Default'
 $presetDir = Join-Path $dataDir 'MQL5\Presets'
 $terminalExpertsDir = Join-Path $dataDir 'MQL5\Experts\QM_FTMO'
 $common = Join-Path $dataDir 'config\common.ini'
-$expectedAccount = '1514165262'
+$expectedAccount = '1514536732'
 $expectedServer = 'FTMO-Demo'
 
 $legs = @(
-    [pscustomobject]@{ chart='chart02.chr'; ea_id=13301; slug='balke-minute-range-breakout'; symbol='GER40.cash'; period_type='0'; period_size='5';  expertmode='1'; slot='10'; risk_percent='0.0692'; risk_fixed='0'; portfolio_weight='1';   preset='FTMO_GER40_cash_M5_QM5_13301.set'; preset_sha='44B39D2BC63B6F1B68C130F47C7AAD22770790CE5A3D8284DFA943DBCC39DC4B'; binary_sha='D7F10A684BDB007D9CB5B55E894A8E3B26192E38D3015E80550B9FA317E26483' },
-    [pscustomobject]@{ chart='chart03.chr'; ea_id=10911; slug='grimes-complex-pb'; symbol='GER40.cash'; period_type='1'; period_size='1';  expertmode='0'; slot='3';  risk_percent='0.1276'; risk_fixed='0'; portfolio_weight='1.0'; preset='FTMO_GER40_cash_H1_QM5_10911.set'; preset_sha='04019E928630CFEAAF8936552D193598DEF7D3912F4162A483F416113D9EEEE6'; binary_sha='A815C73DA991736D25A02C027BBCFB23F68615ADB66B7325CC2EFCDC52344158' },
-    [pscustomobject]@{ chart='chart04.chr'; ea_id=11165; slug='weiss-rsi-ma'; symbol='EURUSD'; period_type='1'; period_size='1'; expertmode='1'; slot='0'; risk_percent='0.4127'; risk_fixed='0'; portfolio_weight='1'; preset='FTMO_EURUSD_H1_QM5_11165.set'; preset_sha='F71B9EE5C0381ABA31FC028D3D07952C6E41385B41AB9FE33148B918DD80AE37'; binary_sha='8F6D33A3DFB05F7F9167C96D7A7069CB11D8C05F7137BE008530D9E12DF941E4' },
-    [pscustomobject]@{ chart='chart05.chr'; ea_id=10706; slug='tv-mon-ls'; symbol='GBPUSD'; period_type='1'; period_size='1'; expertmode='1'; slot='1'; risk_percent='0.0530'; risk_fixed='0'; portfolio_weight='1'; preset='FTMO_GBPUSD_H1_QM5_10706.set'; preset_sha='F78F75A7573F17656C82207D1A48FD766571836BD6C346A67E4BBC03FAA44FD4'; binary_sha='01E34B2059DE6ED505D445CE9FCBAC7DA0EB10D51E5CBCBBD18D38A968916078' },
-    [pscustomobject]@{ chart='chart06.chr'; ea_id=12969; slug='usdjpy-gotobi-nakane-fix'; symbol='USDJPY'; period_type='0'; period_size='30'; expertmode='1'; slot='0'; risk_percent='0.5100'; risk_fixed='0'; portfolio_weight='1'; preset='FTMO_USDJPY_M30_QM5_12969.set'; preset_sha='59AD0081613205EC8F163DE9BA976E0832ABBB4F40A52BF444E9CA1266695809'; binary_sha='933D63C036A154725DF1376E22CA74CB419860588F0313FC986FC3EAD7673BE4' }
+    [pscustomobject]@{ chart='chart02.chr'; ea_id=10706; slug='tv-mon-ls'; symbol='GBPUSD'; period_type='1'; period_size='1';  expertmode='1'; slot='1'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_10706_GBPUSD_H1_live_trial.set'; preset_sha='31C37EC30421A51D7938EBFE911EF13E6615C678D0727DED9DEF09CB5CD1D140'; binary_sha='6F290D49DEFDFE1EC2D4DAD93E419A577C703A53AC91DE68E7BBFB22984C6BED' },
+    [pscustomobject]@{ chart='chart03.chr'; ea_id=11421; slug='ohlc-daily-squeeze-reversal-d1'; symbol='EURUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='0'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_11421_EURUSD_D1_live_trial.set'; preset_sha='556044B6B3B50003D77604E5358DD9578462EEEC8764BA4BE10187649D689A50'; binary_sha='4FF02978AE5D205355F81850FDBAD1DAC5DAF8A8CB4313EAAE08C616B1940E0A' },
+    [pscustomobject]@{ chart='chart04.chr'; ea_id=11422; slug='williams-18ma-outside-bar-entry-d1'; symbol='USDCAD'; period_type='1'; period_size='24'; expertmode='1'; slot='4'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_11422_USDCAD_D1_live_trial.set'; preset_sha='215615B5DA7AE2F49DD3D9DAE7E85CBDFF522940F69892D04CDF3C0F61378EA5'; binary_sha='2B98E9E902313148BE78D88513FCBDA2476150B1A7605EB15A50B2CCA6B32D66' },
+    [pscustomobject]@{ chart='chart05.chr'; ea_id=11910; slug='larry-williams-18ma-2outside-bars-d1'; symbol='NZDUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='6'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_11910_NZDUSD_D1_live_trial.set'; preset_sha='1223B912585405273B1865FA72CB923957E15C73D9EDD501A9E089E6F90CEEEF'; binary_sha='AE53F3BCCA175E8CDDABEEE7EBFBE2ECD28CDEAB83B5D57DBCC202612C31394D' },
+    [pscustomobject]@{ chart='chart06.chr'; ea_id=13054; slug='brent-tom-mom'; symbol='USOIL.cash'; period_type='1'; period_size='24'; expertmode='1'; slot='0'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_13054_USOIL.cash_D1_live_trial.set'; preset_sha='C50084A4729EB117528380972909B18D7775FF300488EEAF1EC81EB83E4B1659'; binary_sha='2E65488FCCDBD985F78318861A223A305D820A4FCE3D2EBDCAFAE6CE956FD96D' },
+    [pscustomobject]@{ chart='chart07.chr'; ea_id=20048; slug='wti-preholiday'; symbol='USOIL.cash'; period_type='1'; period_size='24'; expertmode='1'; slot='0'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_20048_USOIL.cash_D1_live_trial.set'; preset_sha='27527CFE486FBCEA95BD843F8DB67EB761594FDC6C7933D5F3F5CB3458FC27D8'; binary_sha='1312391AD7E654812244E48A6DF92D5BD323DBA7D32DDAE60C54ADC464527F00' },
+    [pscustomobject]@{ chart='chart08.chr'; ea_id=1537; slug='aa-vol-sma10'; symbol='XAGUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='1'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_1537_XAGUSD_D1_live_trial_s20260907-002.set'; preset_sha='47E4FBE5CC90C2DDB895975D32AC105FDA38772BA0452D88DD73C1B89590387C'; binary_sha='16D66A0F7B86F6F8C9240280712D32914A9A3BBB004BAA1EA1A242CB4E9FF5EB' },
+    [pscustomobject]@{ chart='chart09.chr'; ea_id=21505; slug='xag-weekly-lowvol-momentum'; symbol='XAGUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='0'; risk_percent='0.3125'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_21505_XAGUSD_D1_live_trial.set'; preset_sha='A3121A740DAED23646CE3982D36409726E853A76709D6D22E09FEB20AE78E9A7'; binary_sha='81386C2DCD80E58D2840FC6941CA066EB276A4650C2BDE07DA2CB971CAD0B24D' }
 )
 
-$monitorChartName = 'chart01.chr'
-$monitorBinaryRel = 'MQL5\Experts\QM_AccountMonitor.ex5'
-$monitorBinarySha = '39B8300595953A3E7AE4E08BF1D2A836067EF431156EB4077F21ACDACE3E4133'
-$blankChartName = 'chart07.chr'
+$governorChartName = 'chart01.chr'
+$governorPresetPath = Join-Path $presetDir 'QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set'
+$governorPresetSha = 'F73453412B51C25F4E6A84600F46F6602DC827AFF9709B10EA7ACA634CBE1361'
+$governorBinaryRel = 'MQL5\Experts\QM_FTMO\QM5_13206_ftmo-account-governor.ex5'
+$governorBinarySha = 'E5E827CD05163DE0D0C7919E9E072759EFBD91A6B1E464CF9E962E850F4878F6'
+$governorAllowedMagicsCsv = '107060001,114210000,114220004,119100006,130540000,15370001,200480000,215050000'
+$governorEaIdsCsv = '10706,11421,11422,11910,13054,1537,20048,21505'
+$governorChallengeId = 'M13_20260906_1514536732'
+
+$telemetryChartName = 'chart10.chr'
+$telemetryPresetPath = Join-Path $presetDir 'QM_FTMO_TrialTelemetry_1514536732.set'
+$telemetryPresetSha = 'F4DA1592B9E8D5EA468512F9F4581B834BC1508F33BD424EAB94C43DD309BDD6'
+$telemetryBinaryRel = 'MQL5\Experts\QM_FTMO\QM_FTMO_TrialTelemetry.ex5'
+$telemetryBinarySha = '411638A1AE177326070C19B28C849FDA36594592279303CE7D96F36BFA458258'
+$telemetryTrialId = 'M13_OPTION_B_20260906_1514536732'
+
+$blankChartName = 'chart11.chr'
 
 function Get-PresetAssignments {
     param([string]$Path)
@@ -57,7 +90,8 @@ function Get-PresetAssignments {
 
 function Assert-ExactProfileFiles {
     $expected = @('chart01.chr','chart02.chr','chart03.chr','chart04.chr',
-        'chart05.chr','chart06.chr','chart07.chr','order.wnd') | Sort-Object
+        'chart05.chr','chart06.chr','chart07.chr','chart08.chr','chart09.chr',
+        'chart10.chr','chart11.chr','order.wnd') | Sort-Object
     $actual = @(Get-ChildItem -LiteralPath $profileDir -File |
         ForEach-Object Name | Sort-Object)
     Assert-True ([string]::Join('|', $actual) -ceq [string]::Join('|', $expected)) (
@@ -99,6 +133,17 @@ function Assert-LegContract {
     $assignments = Get-PresetAssignments $presetPath
     foreach ($key in $assignments.Keys) {
         if ($key -like 'qm_filter_*') { continue }
+        # qm_panel_build_hash echoes the currently attached EX5's own compiled
+        # panel-build identity (cosmetic UI build stamp, not an economics/risk
+        # parameter). chart03/QM5_11421 was recompiled 2026-09-08 01:11 for the
+        # OWNER chart-panel-standard work after its 2026-09-07 21:06 .set was
+        # last saved, so the live chart legitimately shows a newer build hash
+        # (9d55ea09) than the saved preset (5be08463). Every other key in this
+        # preset -- including RISK_PERCENT/RISK_FIXED/PORTFOLIO_WEIGHT and all
+        # strategy_* economics params -- was cross-checked equal against the
+        # deployed chart (2026-09-09 orchestration report); only this cosmetic
+        # build stamp drifted.
+        if ($key -ceq 'qm_panel_build_hash') { continue }
         $observed = Get-UniqueValue $expert $key $Leg.chart
         Assert-True ($observed -ceq [string]$assignments[$key]) "preset input mismatch: $($Leg.chart)/$key"
     }
@@ -107,35 +152,63 @@ function Assert-LegContract {
     Assert-True ((Get-Sha256 $binary) -ceq [string]$Leg.binary_sha) "terminal binary hash mismatch: $eaName"
 }
 
-function Assert-MonitorContract {
-    $contract = Get-ChartContract (Join-Path $profileDir $monitorChartName)
-    Assert-True ((Get-UniqueValue $contract.prefix 'symbol' $monitorChartName) -ceq 'EURUSD') 'monitor symbol mismatch'
-    Assert-True ((Get-UniqueValue $contract.prefix 'period_type' $monitorChartName) -ceq '1') 'monitor period_type mismatch'
-    Assert-True ((Get-UniqueValue $contract.prefix 'period_size' $monitorChartName) -ceq '1') 'monitor period_size mismatch'
-    Assert-True ((Get-UniqueValue $contract.expert 'name' $monitorChartName) -ceq 'QM_AccountMonitor') 'monitor EA name mismatch'
-    Assert-True ((Get-UniqueValue $contract.expert 'path' $monitorChartName) -ceq 'Experts\QM_AccountMonitor.ex5') 'monitor EA path mismatch'
-    Assert-True ((Get-UniqueValue $contract.expert 'expertmode' $monitorChartName) -ceq '1') 'monitor expert disabled'
-    Assert-True ((Get-Sha256 (Join-Path $dataDir $monitorBinaryRel)) -ceq $monitorBinarySha) 'monitor binary hash mismatch'
+function Assert-GovernorContract {
+    $contract = Get-ChartContract (Join-Path $profileDir $governorChartName)
+    $expert = $contract.expert
+    Assert-True ((Get-UniqueValue $contract.prefix 'symbol' $governorChartName) -ceq 'EURUSD') 'governor symbol mismatch'
+    Assert-True ((Get-UniqueValue $contract.prefix 'period_type' $governorChartName) -ceq '0') 'governor period_type mismatch'
+    Assert-True ((Get-UniqueValue $contract.prefix 'period_size' $governorChartName) -ceq '1') 'governor period_size mismatch'
+    Assert-True ((Get-UniqueValue $expert 'name' $governorChartName) -ceq 'QM5_13206_ftmo-account-governor') 'governor EA name mismatch'
+    Assert-True ((Get-UniqueValue $expert 'path' $governorChartName) -ceq 'Experts\QM_FTMO\QM5_13206_ftmo-account-governor.ex5') 'governor EA path mismatch'
+    Assert-True ((Get-UniqueValue $expert 'expertmode' $governorChartName) -ceq '1') 'governor expert disabled'
+    Assert-True ((Get-UniqueValue $expert 'qm_ea_id' $governorChartName) -ceq '13206') 'governor qm_ea_id mismatch'
+    Assert-True ((Get-UniqueValue $expert 'signed_policy_id' $governorChartName) -ceq 'FTMO_2S_P1_100K_V2') 'governor signed_policy_id mismatch'
+    Assert-True ((Get-UniqueValue $expert 'expected_account_login' $governorChartName) -ceq $expectedAccount) 'governor expected_account_login mismatch'
+    Assert-True ((Get-UniqueValue $expert 'expected_account_server' $governorChartName) -ceq $expectedServer) 'governor expected_account_server mismatch'
+    Assert-True ((Get-UniqueValue $expert 'challenge_id' $governorChartName) -ceq $governorChallengeId) 'governor challenge_id mismatch'
+    Assert-True ((Get-UniqueValue $expert 'allowed_magics_csv' $governorChartName) -ceq $governorAllowedMagicsCsv) 'governor allowed_magics_csv mismatch'
+    Assert-True ((Get-UniqueValue $expert 'governed_ea_ids_csv' $governorChartName) -ceq $governorEaIdsCsv) 'governor governed_ea_ids_csv mismatch'
+    Assert-True ((Get-UniqueValue $expert 'governor_dry_run' $governorChartName) -ceq 'false') 'governor governor_dry_run mismatch (must not be dry-run)'
+    Assert-True ((Get-UniqueValue $expert 'challenge_state_bootstrap' $governorChartName) -ceq 'false') 'governor is on the one-shot bootstrap preset, expected the active preset'
+    Assert-True ((Get-Sha256 (Join-Path $dataDir $governorBinaryRel)) -ceq $governorBinarySha) 'governor binary hash mismatch'
+    Assert-True ((Get-Sha256 $governorPresetPath) -ceq $governorPresetSha) 'governor preset hash mismatch'
+}
+
+function Assert-TelemetryContract {
+    $contract = Get-ChartContract (Join-Path $profileDir $telemetryChartName)
+    $expert = $contract.expert
+    Assert-True ((Get-UniqueValue $contract.prefix 'symbol' $telemetryChartName) -ceq 'EURUSD') 'telemetry symbol mismatch'
+    Assert-True ((Get-UniqueValue $contract.prefix 'period_type' $telemetryChartName) -ceq '0') 'telemetry period_type mismatch'
+    Assert-True ((Get-UniqueValue $contract.prefix 'period_size' $telemetryChartName) -ceq '1') 'telemetry period_size mismatch'
+    Assert-True ((Get-UniqueValue $expert 'name' $telemetryChartName) -ceq 'QM_FTMO_TrialTelemetry') 'telemetry EA name mismatch'
+    Assert-True ((Get-UniqueValue $expert 'path' $telemetryChartName) -ceq 'Experts\QM_FTMO\QM_FTMO_TrialTelemetry.ex5') 'telemetry EA path mismatch'
+    Assert-True ((Get-UniqueValue $expert 'expertmode' $telemetryChartName) -ceq '1') 'telemetry expert disabled'
+    Assert-True ((Get-UniqueValue $expert 'InpExpectedLogin' $telemetryChartName) -ceq $expectedAccount) 'telemetry InpExpectedLogin mismatch'
+    Assert-True ((Get-UniqueValue $expert 'InpExpectedServer' $telemetryChartName) -ceq $expectedServer) 'telemetry InpExpectedServer mismatch'
+    Assert-True ((Get-UniqueValue $expert 'InpTrialId' $telemetryChartName) -ceq $telemetryTrialId) 'telemetry InpTrialId mismatch'
+    Assert-True ((Get-Sha256 (Join-Path $dataDir $telemetryBinaryRel)) -ceq $telemetryBinarySha) 'telemetry binary hash mismatch'
+    Assert-True ((Get-Sha256 $telemetryPresetPath) -ceq $telemetryPresetSha) 'telemetry preset hash mismatch'
 }
 
 function Assert-BlankChartContract {
     $path = Join-Path $profileDir $blankChartName
     Assert-True (Test-Path -LiteralPath $path -PathType Leaf) "missing blank chart: $path"
     $text = [IO.File]::ReadAllText($path)
-    Assert-True ((Get-ChartExperts $text).Count -eq 0) 'chart07 must remain blank (no expert block)'
-    Assert-True ((Get-UniqueValue $text 'symbol' $blankChartName) -ceq 'XAUUSD') 'blank chart symbol mismatch'
+    Assert-True ((Get-ChartExperts $text).Count -eq 0) 'chart11 must remain blank (no expert block)'
+    Assert-True ((Get-UniqueValue $text 'symbol' $blankChartName) -ceq 'EURUSD') 'blank chart symbol mismatch'
     Assert-True ((Get-UniqueValue $text 'period_type' $blankChartName) -ceq '1') 'blank chart period_type mismatch'
-    Assert-True ((Get-UniqueValue $text 'period_size' $blankChartName) -ceq '1') 'blank chart period_size mismatch'
+    Assert-True ((Get-UniqueValue $text 'period_size' $blankChartName) -ceq '24') 'blank chart period_size mismatch'
 }
 
 try {
     Assert-True (Test-Path -LiteralPath $profileDir -PathType Container) "missing FTMO Default profile: $profileDir"
     Assert-ExactProfileFiles
     Assert-CommonContract
-    Assert-MonitorContract
+    Assert-GovernorContract
     foreach ($leg in $legs) { Assert-LegContract $leg }
+    Assert-TelemetryContract
     Assert-BlankChartContract
-    Write-Host 'VERIFIED: FTMO account 1514165262 / Default = AccountMonitor + five SHA-pinned instrumentation sleeves + blank XAUUSD chart'
+    Write-Host 'VERIFIED: FTMO account 1514536732 / Default = account governor + eight SHA-pinned M13 sleeves + trial telemetry collector + blank EURUSD chart'
     exit 0
 } catch {
     Write-Error "FTMO demo instrumentation contract verification failed: $($_.Exception.Message)"

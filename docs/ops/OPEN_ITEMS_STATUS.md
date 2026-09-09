@@ -1990,3 +1990,22 @@ incident.
 No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
 AutoTrading/gate change. No OWNER-scope work invented. `agent_router.py run` /
 `route-many` / `replenish` not invoked per this task's directive.
+
+## 2026-09-09T18:15Z — FTMO demo autostart restored (verifier re-pin, Claude interactive)
+
+RESULT: VPS unclean restart 16:40Z (Kernel-Power 41) + Windows-Update restart 16:42Z, boot
+16:43:53Z. `QM_T_Live_AtLogon` rc=0 (live book RUNNING). `QM_FTMO_AtLogon` rc=2
+`profile_contract_failed` (`live_launcher_events.jsonl` 16:44:50Z): the fail-closed verifier
+`verify_ftmo_demo_instrumentation_contract.ps1` still pinned the 2026-08-06 contract
+(AccountMonitor + 5 sleeves + blank chart, account 1514165262) while the deployed Default
+profile has been the M13 economic-trial book since 2026-09-06 (OWNER-DEC-M13-ECONOMIC-TRIAL:
+governor QM5_13206 + 8 sleeves + telemetry + blank EURUSD chart, account 1514536732). So FTMO
+has had no working autostart since 2026-09-06; OWNER started the terminal by hand 17:47Z
+(trial pulse 8/8 magics). Verifier re-pinned to deployed reality (Sonnet agent, orchestrator
+re-ran: `VERIFIED ...`, rc=0). No terminal, profile, preset, EX5 or task touched.
+DEVIATIONS RECORDED (verifier pins deployed hashes, not the sealed manifest table): EX5 of
+10706/11910/21505/1537 rebuilt post-signature (documented in the manifest itself); EX5 +
+preset of QM5_11421 rebuilt 2026-09-08 01:11 (chart-panel-standard work) — NOT covered by the
+2026-09-06 manifest -> needs a manifest addendum (OWNER-facing; parked, no ticket while Claude
+weekly quota is 87%/reset 2026-09-10T22Z). Cosmetic `qm_panel_build_hash` drift on chart03
+excluded by name. Hourly watch: `session_tools/hourly_watch_0909.py` (session cron, 1h).
