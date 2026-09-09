@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T18:30:30.5086657Z",
+  "recorded_at_local": "2026-09-09T20:30:30.5708470+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "c0859e61d3b7584b2dbbad4fa7243bf44a993dc8",
+  "outcome": "STOP_HARD_CPU_CEILING",
+  "mission": "Build and enqueue exactly one new low-frequency structural commodity or energy sleeve.",
+  "capacity": {
+    "cpu_sampler": "Win32_Processor.LoadPercentage; five samples approximately one second apart",
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [90.0, 100.0, 100.0, 100.0, 83.0],
+    "cpu_average_percent": 94.6,
+    "cpu_maximum_percent": 100.0,
+    "cpu_pass": false,
+    "terminal64_or_metatester64_process_count": 10,
+    "binding_resources": ["whole_host_cpu_maximum"]
+  },
+  "universe_observation": {
+    "registry_frontier_at_observation": 41402,
+    "latest_allocated_slug": "xng-winter-w2agree",
+    "candidate_selected": false,
+    "reason": "The binding capacity gate stopped the mission before source approval, candidate selection, canonical deduplication, or allocation."
+  },
+  "refused_actions": [
+    "source_approval",
+    "strategy_card_creation",
+    "ea_id_allocation",
+    "magic_allocation",
+    "mq5_generation",
+    "framework_input_pin_audit",
+    "compile_enqueue",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "pacer_guard": {
+    "mq5_written": false,
+    "input_pin_audit_required": false,
+    "input_pin_finding": null,
+    "reason": "No MQ5 was generated. The required audit_framework_input_pins.py boundary therefore was not entered, and no compile command was issued."
+  },
+  "worktree_preservation": {
+    "preexisting_changes_present": true,
+    "touched_preexisting_changes": false,
+    "receipt_paths_only": [
+      "artifacts/commodity_sleeve_hard_cpu_stop_20260909T183030Z.json",
+      "docs/research/COMMODITY_SLEEVE_HARD_CPU_STOP_20260909T183030Z.md"
+    ]
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "manual_backtest_launched": false
+  },
+  "previous_receipt": "artifacts/commodity_sleeve_hard_cpu_stop_20260909T120051Z.json",
+  "changed_state": "Since the prior receipt, the repository frontier advanced from QM5_41397 to QM5_41402 and the observed terminal/tester process count changed from eight terminal64 processes to ten terminal64-or-metatester64 processes. The fresh window had a 94.6 percent average but a 100 percent maximum, so the strict maximum ceiling still bound.",
+  "resume_contract": "On a later paced wake, repeat the five-sample whole-host CPU window. Proceed only when both CPU average and maximum are strictly below 97 percent; then select and revalidate one not-yet-built candidate before source approval, card extraction, deterministic allocation, guarded MQ5 build, mandatory source-pin audit, governed compile, and exactly one Q02 enqueue."
+}
