@@ -285,6 +285,25 @@ nominal (claude 5h=16%, weekly=83% used/17% remaining). No terminal Q10_NEWS PAS
 for any acceptance criterion on any of the three tasks. No action taken; no ticket, rebuild,
 release, or router state change. All three tasks remain correctly `IN_PROGRESS`.
 
+## Cycle check 2026-09-09T10:32Z — EURUSD leg terminally FAILed at Q04 (strategy, not calendar defect); no other leg reachable yet
+
+Direct DB read (`work_items WHERE ea_id='QM5_41394'`): `Q04` item `0ed63919-c3a7-4d38-881b-84fb5c2fd2ba`
+(EURUSD.DWX) is now `status=done`/`verdict=FAIL`, `verdict_taxonomy=strategy` (`updated_at=10:29:26Z`,
+`evidence_path=D:\QM\reports\pipeline\QM5_41394\Q04\EURUSD.DWX__0ed63919...\aggregate.json`) — a
+genuine strategy-level rejection, not an infra/calendar-echo defect, so it neither confirms nor
+denies this decision chain's structural question (the calendar-echo proof only runs at Q10_NEWS,
+which EURUSD will never reach now that it FAILed at Q04). Only the EURUSD leg has run; the other
+four intake symbols (SP500, USDJPY, XAUUSD, XTIUSD) have no `work_items` rows yet under
+`QM5_41394` — none have started Q02. `b66b5ccc` unchanged (`REVIEW`/codex,
+`BUILD_PASS_Q02_ADMITTED_TESTER_ECHO_PENDING`, 09:09:18Z).
+
+Consequence: this decision chain's acceptance criteria (a terminal Q10_NEWS PASS/FAIL proving the
+calendar-echo fix on the rebuilt identity) still cannot be reached from the current pipeline state —
+a further symbol leg has to clear Q02-Q09 first, which is the factory's automatic path, not this
+task's `selected_effect_only` authority to trigger. No action taken beyond this read; no ticket,
+rebuild, release, or router state change. All three tasks (`bb814520`, `dfc60103`, `46167bd9`)
+remain correctly `IN_PROGRESS`.
+
 ## Cycle check 2026-09-09T10:33Z — QM5_41394/EURUSD Q04 FAIL (genuinely new; strategy-taxonomy, unrelated to the calendar-echo question)
 
 Direct DB read: `Q04` work item `0ed63919-c3a7-4d38-881b-84fb5c2fd2ba` (QM5_41394/EURUSD)
