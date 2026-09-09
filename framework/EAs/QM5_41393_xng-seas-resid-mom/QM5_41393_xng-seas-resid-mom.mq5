@@ -43,6 +43,7 @@ input group "Stress"
 input double qm_stress_reject_probability  = 0.0;
 
 input group "Strategy"
+input string strategy_symbol               = "";
 input int    strategy_history_years        = 10;
 input int    strategy_min_observations     = 5;
 input double strategy_entry_z              = 0.50;
@@ -52,8 +53,6 @@ input int    strategy_atr_period_d1        = 20;
 input double strategy_atr_sl_mult          = 3.5;
 input int    strategy_max_hold_days        = 40;
 input int    strategy_max_spread_points    = 3000;
-
-const string g_symbol = "XNGUSD.DWX";
 
 int      g_last_attempt_month_key = 0;
 string   g_attempt_state_key      = "";
@@ -77,7 +76,7 @@ string   g_signal_state           = "idle";
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_symbol && _Period == PERIOD_D1);
+   return (_Symbol == strategy_symbol && _Period == PERIOD_D1);
   }
 
 int Strategy_DateKeyForTime(const datetime value)
@@ -241,7 +240,7 @@ void Strategy_DetectDecisionClockOnNewBar()
 
 bool Strategy_IsOwnedPosition()
   {
-   return (PositionGetString(POSITION_SYMBOL) == g_symbol &&
+   return (PositionGetString(POSITION_SYMBOL) == strategy_symbol &&
            (int)PositionGetInteger(POSITION_MAGIC) == QM_FrameworkMagic());
   }
 
@@ -298,7 +297,7 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
       const ulong deal_ticket = HistoryDealGetTicket(index);
       if(deal_ticket == 0 ||
          (int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) != magic ||
-         HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != g_symbol)
+         HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != strategy_symbol)
          continue;
 
       const ENUM_DEAL_ENTRY entry_kind =
@@ -698,8 +697,8 @@ bool Strategy_NoTradeFilter()
   {
    if(!Strategy_IsHostChart())
      {
-      PrintFormat("QM_INPUT_REJECT predicate=host_chart observed_symbol='%s' observed_period=%d required_symbol='XNGUSD.DWX' required_period=%d",
-                  _Symbol, (int)_Period, (int)PERIOD_D1);
+      PrintFormat("QM_INPUT_REJECT predicate=host_chart observed_symbol='%s' observed_period=%d required_symbol='%s' required_period=%d",
+                  _Symbol, (int)_Period, strategy_symbol, (int)PERIOD_D1);
       return true;
      }
 
@@ -814,7 +813,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!SymbolSelect(g_symbol, true) ||
+   if(!SymbolSelect(strategy_symbol, true) ||
       !Strategy_IsHostChart() || qm_ea_id != 41393 ||
       qm_magic_slot_offset != 0)
       return INIT_PARAMETERS_INCORRECT;
@@ -855,7 +854,7 @@ int OnInit()
    Strategy_LoadAttemptState(TimeCurrent());
 
    string warmup_symbols[1];
-   warmup_symbols[0] = g_symbol;
+   warmup_symbols[0] = strategy_symbol;
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols,
                           PERIOD_D1,

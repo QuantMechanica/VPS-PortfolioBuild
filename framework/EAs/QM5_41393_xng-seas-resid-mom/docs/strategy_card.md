@@ -223,8 +223,10 @@ baseline. There is no signal-parameter sweep or fallback estimator.
 
 ## 4. Entry Rules
 
-1. Require exact EA ID `41393`, `XNGUSD.DWX` D1 host, slot 0, magic
-   `413930000`, fixed-risk inputs, both news axes OFF, and Friday close OFF.
+1. Require exact EA ID `41393`, the setfile-bound `XNGUSD.DWX` D1 host, slot
+   0 / magic `413930000`, and fixed-risk mode. Configure both news axes and
+   Friday close OFF for the baseline without equality-pinning those framework
+   inputs in the EA.
 2. Process malformed exposure and prior-month liquidation before entry-only
    gates. Evaluate only after a genuine normalized broker-month transition.
 3. Accept one uniform native or `+1` energy-D1 label convention. Require the
@@ -364,7 +366,7 @@ updates or fits the signal from realized PnL.
 
 | Card rule | V5 module | Implementation obligation |
 |---|---|---|
-| exact host/period/identity, locked risk/news/Friday inputs | No Trade | `Strategy_NoTradeFilter` |
+| setfile-bound host/period, identity, risk mode, locked `strategy_*`; framework news/Friday unpinned | No Trade | `Strategy_NoTradeFilter` |
 | month clock, consumed attempt, endpoints, sample, mean/scale, score, side, spread, ATR | Trade Entry | `Strategy_EntrySignal` plus deterministic helpers |
 | malformed, later-month, and stale repair | Trade Management | `Strategy_ManageOpenPosition` plus lifecycle helper |
 | monthly renewal and broker hard stop | Trade Close | lifecycle helper; `Strategy_ExitSignal` has no discretionary signal |

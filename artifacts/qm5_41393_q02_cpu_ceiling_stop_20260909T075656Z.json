@@ -1,0 +1,77 @@
+{
+  "schema": "qm.commodity-energy-q02-cpu-ceiling-stop/v1",
+  "observed_at_utc": "2026-09-09T07:56:56.0265574+00:00",
+  "branch": "agents/board-advisor",
+  "status": "STOPPED_CPU_CEILING",
+  "candidate": {
+    "ea_id": "QM5_41393",
+    "ea_label": "QM5_41393_xng-seas-resid-mom",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "compile_work_item_id": "cd4230e4-4916-4ff1-9ef1-3864eae7baa2",
+    "compile_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "mq5_sha256": "5231aca2cf82e1f83256bfb301f539d059303df0dbfc522b368b29b243853ae0",
+    "ex5_sha256": "c2baba4bdcc27ef1790a78efdce69775fb7417013a6c7683d0995315df17e8a6",
+    "setfile_sha256": "f36dbc51f5263d3074d18671a30fb7e2d8e991025062afecdd90a0d72993994e",
+    "magic": 413930000,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:\\QM\\repo\\framework\\EAs\\QM5_41393_xng-seas-resid-mom\\QM5_41393_xng-seas-resid-mom.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": []
+  },
+  "q02_dry_run": {
+    "command": "python tools/strategy_farm/farmctl.py intake-first-q02 --compile-work-item-id cd4230e4-4916-4ff1-9ef1-3864eae7baa2",
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "deferred": []
+  },
+  "first_admission_attempt": {
+    "capacity_gate": {
+      "threshold_percent_exclusive": 97.0,
+      "sample_interval_seconds": 1,
+      "sample_count": 5,
+      "samples_percent": [81.6, 88.6, 84.1, 83.3, 85.0],
+      "average_percent": 84.52,
+      "maximum_percent": 88.6,
+      "admitted": true,
+      "rule": "average_and_maximum_must_be_strictly_below_ceiling"
+    },
+    "apply_result": "factory_mutation_lock_busy",
+    "q02_enqueued": false
+  },
+  "capacity_gate": {
+    "threshold_percent_exclusive": 97.0,
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "samples_percent": [89.7, 91.4, 98.3, 99.6, 98.1],
+    "average_percent": 95.42,
+    "maximum_percent": 99.6,
+    "admitted": false,
+    "rule": "average_and_maximum_must_be_strictly_below_ceiling"
+  },
+  "post_refusal_readback": {
+    "ea_work_item_count": 3,
+    "compile_row_count": 3,
+    "q02_row_count": 0
+  },
+  "mutation_boundary": {
+    "q02_apply_command_run_once": true,
+    "q02_apply_result": "factory_mutation_lock_busy",
+    "q02_enqueued": false,
+    "dispatch_tick_run": false,
+    "manual_tester_run": false,
+    "portfolio_gate_changed": false,
+    "deploy_manifest_changed": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "continuation_condition": "Repeat the zero-Q02 collision check, canonical dry run, and fresh five-sample CPU gate; apply exactly one first-Q02 canary only when both average and maximum are strictly below 97 percent."
+}
