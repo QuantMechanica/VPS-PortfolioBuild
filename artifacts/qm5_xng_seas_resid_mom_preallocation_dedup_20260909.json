@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Matti Keloharju; Juhani T. Linnainmaa; Peter Nyberg; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen",
+    "mechanic": "monthly XNG just-completed log return minus up to ten prior-year same-calendar mean divided by sample standard deviation strict half-sigma continuation next month",
+    "slug": "xng-seas-resid-mom",
+    "strategy_id": "KELOHARJU-MOP-XNG-SEASRESMOM-2026_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-09T07:18:12+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41209_wti-seas-resid-mom_card.md",
+      "score": 1.0,
+      "slug": "wti-seas-resid-mom",
+      "source": "card",
+      "strategy_id": "KELOHARJU-MOP-WTI-SEASRESMOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41208_xng-seas-surprise-rv_card.md",
+      "score": 0.95,
+      "slug": "xng-seas-surprise-rv",
+      "source": "card",
+      "strategy_id": "KELOHARJU-MISHRA-XNG-SEASSURPRISE-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4873,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1486,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
