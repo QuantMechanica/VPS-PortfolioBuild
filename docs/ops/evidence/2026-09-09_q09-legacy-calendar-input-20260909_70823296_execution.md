@@ -95,6 +95,19 @@ to close the newer/less-progressed one as a duplicate (`close-review ... --state
 --verdict "duplicate of b66b5ccc"`), not to run the rebuild twice or reserve two separate
 new-identity ea_id/magic slots for the same source EA.
 
+## Checked 2026-09-09T~0837Z (orchestration cycle) — Codex progressing, still gated
+
+`b66b5ccc` (state=IN_PROGRESS, assigned_agent=codex) has produced real forward motion since
+the last check: scope-measurement report landed (`58ad7cbd20`, 55 Q10_NEWS rows classified
+against the `f0102fbcf2`/2026-08-03 boundary, `docs/ops/evidence/...q09_legacy_calendar_input_scope_b66b5ccc.json`),
+and a distinct rebuild identity `QM5_41394` was reserved in `framework/registry/ea_id_registry.csv`
+(`cd86803329`) for the `QM5_11167` mechanics rebuild per this decision's receipt. Compile and
+Q02 enqueue for the new identity have not landed yet. All three claude tasks (`bb814520`,
+`dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS` — their acceptance criteria (PASS/FAIL
+verdict, not `REVIEW_REQUIRED cell_execution_failed`) stay structurally unreachable until the
+new identity clears COMPILE_EA/Q02. No duplicate ticket enqueued, no rebuild performed
+directly, no router state change this cycle.
+
 No rebuild, compile, magic reservation, or Q02 enqueue has been performed by any Claude
 session directly — both sessions' allowed first action was exactly "enqueue one Codex
 ops ticket"; the actual rebuild is Codex's capability lane and remains outstanding.
