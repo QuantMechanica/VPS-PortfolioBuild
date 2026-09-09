@@ -1,5 +1,7 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 07:27Z (Orchestrierungszyklus) — alle 3 IN_PROGRESS-Claude-Aufgaben erneut geprüft, kein Zustandswechsel:** `bb814520`/`dfc60103` bleiben blockiert auf `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (Vorlage weiterhin ohne `OWNER-Antwort`-Abschnitt, `G:`-Vault weiterhin `UnauthorizedAccessException`). `3032534e`: Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `2026-09-09T01:24:20Z` (DB direkt geprüft, unverändert); letzter echter Reprobe war 06:39Z (~48min vor diesem Zyklus) — die Vorgabe „mehrere Stunden, anderer UTC-Slot" ist damit noch nicht erreicht, kein neuer Reprobe. Spawn-Lease-Tabelle direkt geprüft: einzige Zeile (`3032534e`) ist seit `01:32:47Z` abgelaufen, kein aktiver Lease auf einer der drei Aufgaben. Kein Router-Zustandswechsel, kein Ticket/Rebuild/Release erzeugt. Das bereits gemeldete 15-Minuten-Scheduler-Pileup (mehrere gleichzeitige `claude.exe`) bleibt unangetastet, da eine Korrektur außerhalb dieser drei Aufgaben liegt.
+
 > **Nachtrag 09.09., 06:44Z — FX-Fallback 41335 Q02 PASS; CPU-Deckel stoppt Q04:**
 > Der eingefrorene 66-Paar-Cointegration-Frontier bleibt vollständig gebaut;
 > 12532/12533 sind nicht Q02-blockiert. Der bereits einmalig eingereihte
