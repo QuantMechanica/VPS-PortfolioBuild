@@ -1,0 +1,75 @@
+{
+  "schema": "qm.strategy-build-q02-enqueue-evidence/v1",
+  "recorded_at": "2026-09-09T10:24:55+00:00",
+  "ea_id": "QM5_41396",
+  "slug": "xng-summer-w2agree",
+  "edge": "XNGUSD.DWX D1 June-August continuation after strict same-sign agreement across two immediately completed adjacent weeks",
+  "source_approval": "decisions/2026-09-09_xng_summer_two_week_agreement_source_approval.md",
+  "g0_decision": "decisions/2026-09-09_qm5_41396_xng_summer_two_week_agreement_g0.md",
+  "card": "strategy-seeds/cards/approved/QM5_41396_xng-summer-w2agree_card.md",
+  "build_task_id": "e7679051-86c9-413b-87d1-3b1206816ea3",
+  "compile": {
+    "status": "COMPILE_OK",
+    "work_item_id": "ec0c4f42-df9f-4372-a4c6-84d9dd06be79",
+    "terminal": "T3",
+    "errors": 0,
+    "warnings": 0,
+    "evidence_path": "D:\\QM\\reports\\work_items\\ec0c4f42-df9f-4372-a4c6-84d9dd06be79\\QM5_41396\\COMPILE_EA\\compile_evidence.json",
+    "evidence_sha256": "983d61aa2d705508316129d15041a63de5aeef97dcf779d73f65878930c07a74",
+    "mq5_sha256": "3cdfb7db6ac755a96c533c1aff2d4ee2015b20fef3ca5d887ce3f428ab93074e",
+    "ex5_sha256": "c0de9c7f84a945f00c8349d047bce0c92eb926090a719b2e33bcadb1ccb877df",
+    "setfile_sha256": "de8720f427daf010fc07e8e02d122e8328fef8a04e5e8eca7007cb479eaa1177"
+  },
+  "q01": {
+    "build_check": "PASS",
+    "build_check_warnings": 0,
+    "reference_vectors": "PASS_14",
+    "card_schema_lint": "PASS",
+    "pacer_framework_input_pin_audit": {
+      "status": "PASS_ZERO_HITS",
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0
+    }
+  },
+  "capacity_admission": {
+    "cpu_samples_percent": [
+      87.82477169632918,
+      88.6153686116899,
+      85.86259980058104,
+      83.62010034457568,
+      79.8176314128199
+    ],
+    "cpu_average_percent": 85.14809437319914,
+    "cpu_maximum_percent": 88.6153686116899,
+    "cpu_ceiling_percent": 97.0,
+    "admitted": true
+  },
+  "q02": {
+    "enqueue_status": "ENQUEUED",
+    "current_status": "done",
+    "verdict": "ZERO_TRADES",
+    "total_trades": 0,
+    "work_item_id": "bd47f2f3-b8e2-461a-8a41-84a4092d0a1c",
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "priority_boost": false,
+    "receipt": "D:\\QM\\strategy_farm\\artifacts\\receipts\\first_q02_intake\\ec0c4f42-df9f-4372-a4c6-84d9dd06be79_bd47f2f3-b8e2-461a-8a41-84a4092d0a1c.json",
+    "receipt_sha256": "87bc1dd25882993d62dfa10f72c11f98eda5a99a934a680b2268376522b49c69",
+    "run_summary": "D:\\QM\\reports\\work_items\\bd47f2f3-b8e2-461a-8a41-84a4092d0a1c\\QM5_41396\\20260909_103031\\summary.json",
+    "run_summary_sha256": "ef0a7a1c5589079466e624b35026362a716af000b2c2057c6eb2e7b0aca9566b",
+    "dispatched_by_this_mission": false,
+    "dispatch_note": "The paced fleet claimed the pending canary after enqueue and before the closing read-only status check."
+  },
+  "boundaries": {
+    "backtest_executed_by_fleet": true,
+    "backtest_dispatched_by_this_mission": false,
+    "autotrading_toggled": false,
+    "t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  },
+  "remaining_hypotheses": [
+    "The first Q02 result is ZERO_TRADES and requires entry-clock recovery before economics can be judged.",
+    "Q09 alone may establish realized decorrelation from the certified portfolio."
+  ]
+}

@@ -48,9 +48,9 @@ r1_track_record: PASS_WITH_CROSS_SOURCE_AND_HORIZON_TRANSLATION_RISK
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
-pipeline_phase: G0_APPROVED_BUILD_PENDING
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02_ZERO_TRADES
+q01_status: PASS
+q02_status: ZERO_TRADES
 parameters_to_test: "Locked Q02 baseline only: D1; normalized Monday week anchor; eligible months 6,7,8; two immediately completed adjacent weeks; 3-5 sessions each; ln(final close/first open); strict same-sign agreement; exact-zero epsilon; continuation side; 24 D1 history bars; 180-minute entry grace; 3.5*ATR(20,D1) frozen stop; 10-day stale repair; 1500-point spread ceiling."
 review_focus: "Falsify a summer-only XNG two-week agreement continuation distinct from the incumbent RSI pullback and one-week seasonal sleeves. Verify anchor-month eligibility, exact adjacent completed-week membership, strict agreement, continuation orientation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -203,5 +203,5 @@ live manifests, `T_Live`, AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-09 | APPROVED_SOURCE | `decisions/2026-09-09_xng_summer_two_week_agreement_source_approval.md` |
 | G0 Research Intake | 2026-09-09 | APPROVED | `decisions/2026-09-09_qm5_41396_xng_summer_two_week_agreement_g0.md` |
-| Q01 Build Validation | - | NOT_STARTED | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
+| Q01 Build Validation | 2026-09-09 | PASS | strict build check and compile: `ec0c4f42-df9f-4372-a4c6-84d9dd06be79`; reference vectors: 14 PASS; PACER audit: zero findings |
+| Q02 Baseline Screening | 2026-09-09 | ZERO_TRADES | fleet-dispatched canary `bd47f2f3-b8e2-461a-8a41-84a4092d0a1c`; valid bound run, not PASS or strategy rejection; recovery evidence: `docs/ops/evidence/2026-09-09_qm5_41396_zero_trades_recovery_investigation.md` |
