@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T01:16:10.2670899Z",
+  "recorded_at_local": "2026-09-09T03:16:10.2670899+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "2517af3687a29455f1123279882355a4226bf801",
+  "outcome": "STOP_HARD_CPU_CEILING",
+  "candidate": {
+    "slug": "wti-tsmom10-h2",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "mechanic": "At each odd-month boundary, take the sign of the exact prior ten completed broker-month WTI log return and hold one fixed, non-overlapping two-month package.",
+    "source": "Moskowitz, Ooi, and Pedersen (2012), Time Series Momentum, Journal of Financial Economics 104(2), 228-250, DOI 10.1016/j.jfineco.2011.11.003.",
+    "source_packet": "strategy-seeds/sources/MOP-TSMOM-2012/source.md",
+    "dedup_observation": "The current read-only registry and EA-directory scan found no allocated wti-tsmom10-h2 identity. A repository-wide exact-name search found only prior capacity-stop receipts preserving this same unallocated frontier. Exact WTI bimonthly siblings remain allocated for formation horizons 1 through 9 and 12 months.",
+    "prior_evidence": "artifacts/commodity_sleeve_hard_cpu_stop_20260909T001614Z.json"
+  },
+  "capacity": {
+    "cpu_sampler": "Win32_Processor.LoadPercentage; five samples approximately one second apart",
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [100.0, 100.0, 100.0, 100.0, 100.0],
+    "cpu_average_percent": 100.0,
+    "cpu_maximum_percent": 100.0,
+    "cpu_pass": false,
+    "binding_resources": ["whole_host_cpu_average", "whole_host_cpu_maximum"]
+  },
+  "refused_actions": [
+    "source_approval",
+    "strategy_card_creation",
+    "ea_id_allocation",
+    "magic_allocation",
+    "mq5_generation",
+    "framework_input_pin_audit",
+    "compile_enqueue",
+    "q02_enqueue",
+    "terminal_control"
+  ],
+  "pacer_guard": {
+    "mq5_written": false,
+    "input_pin_audit_required": false,
+    "reason": "The hard CPU capacity gate refused the mission before any generated MQ5 existed, so the mandatory audit_framework_input_pins.py boundary was not entered and no compile command was issued."
+  },
+  "worktree_preservation": {
+    "preexisting_modified": [
+      "framework/EAs/QM5_41240_wti-samecal-ramsaye5/QM5_41240_wti-samecal-ramsaye5.mq5",
+      "framework/EAs/QM5_41240_wti-samecal-ramsaye5/docs/test_same_calendar_ramsaye_5_reference.py"
+    ],
+    "preexisting_untracked": [
+      "docs/ops/evidence/2026-09-08_stranded_infra_sweep_triage.json",
+      "docs/ops/evidence/2026-09-09_stranded_infra_sweep_triage.json"
+    ],
+    "touched": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false
+  },
+  "resume_contract": "On a later paced wake, repeat the five-sample whole-host CPU window. Proceed only when both CPU average and maximum are strictly below 97 percent; then revalidate dedup before source approval, card extraction, allocation, guarded build, mandatory source-pin audit, governed compile, and exactly one Q02 enqueue."
+}
