@@ -163,3 +163,7 @@ release or card. Task remains IN_PROGRESS, gated on the same pending OWNER decis
 ## Checked 2026-09-09T06:17Z (orchestration cycle) -- no change
 
 No OWNER answer to OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (G: Vault still permission-denied). No new commit affecting this task since the 05:48Z cycle log (two unrelated factory commits only: 996ef25f78, b07ee51191). No new ticket, release, rerun. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T06:39Z (orchestration cycle) — no change
+
+Re-verified directly (not just against prior log entries): `docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md` still has no OWNER-Antwort section; `G:` Vault path still not accessible from this session (`os.path.exists` → False); no live spawn-lease on `bb814520` in `spawn_leases`. Task remains IN_PROGRESS, gated on the same pending OWNER decision as `dfc60103`. See `2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md` for this cycle's substantive work (task `3032534e` re-probe).

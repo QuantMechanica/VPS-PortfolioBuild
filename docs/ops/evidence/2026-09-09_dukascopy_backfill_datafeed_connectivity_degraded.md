@@ -172,3 +172,45 @@ not escalated, no download restarted, no OWNER decision needed yet. A
 meaningfully later re-test (several hours out, ideally a different UTC
 session) still stands as the next actionable step before choosing between
 options 1-3 above.
+
+## Re-probe 2026-09-09 ~06:37-06:38Z (orchestration cycle, +~4h) — failure signature changed from network-level timeout to application-level HTTP 503; first real downloads since the stop
+
+Ran the same bounded application-level re-test as the two prior probes (same
+resumed output root `D:\QM\reports\dukascopy\backfill\20260909T032705Z`,
+`--rate 5 --timeout 30 --retries 3`, wrapped in a 100s shell timeout). Note: a
+single earlier attempt from a concurrent orchestration cycle at 06:20:27Z
+(visible in the shared `download.log`) still got `WinError 10060`, consistent
+with the prior signature and evidence of the known scheduler pileup rather
+than a new measurement of mine.
+
+My own bounded run (06:37:07Z-06:38:34Z, ~52s of active work after resuming 9
+already-completed hours) processed 4 new hour-files:
+
+| Hour | Result |
+|---|---|
+| `09h` | **downloaded**, HTTP 200, 3,375 ticks decoded, sha256 recorded (attempt 1) |
+| `10h` | error — `RuntimeError: HTTP 503` on all 3 attempts |
+| `11h` | **downloaded**, HTTP 200, 2,697 ticks decoded, sha256 recorded (attempt 3, i.e. succeeded after two prior 503s) |
+| `12h` | error — `RuntimeError: HTTP 503` on all 3 attempts |
+
+`progress.json`: `downloaded=2, errors=2` this session (9 resumed from
+before, 13 completed total). No `WinError 10060`/`10054`/TLS-handshake
+timeouts this run — every failure and every success reached the application
+layer (HTTP 200 or HTTP 503), a qualitatively different signature than the
+01:27Z-02:36Z probes (which never got a clean HTTP response at all). This
+reads as **partial recovery**: the network path/TLS handshake to
+`194.8.15.180:443` now completes reliably; the remaining failures are the
+server explicitly returning 503 (likely rate-limit/overload on their edge,
+not a path-level block), and retries do sometimes succeed (the `11h` file
+needed 2 retries).
+
+No production job restarted from this measurement alone — a 52s, 4-file
+sample is too small to re-estimate the completion timeline, and the run was
+left stopped (bounded timeout expired cleanly, no process killed, confirmed
+via `tasklist`/`Get-CimInstance Win32_Process` — no orphaned
+`download_bi5.py`). Disposition unchanged: **GRÜN/measurement, no OWNER
+decision needed**. Next cycle should run a longer bounded sample (e.g. 5-10
+minutes, still well inside the 1h GRÜN autonomous budget) to get a stable
+success-rate estimate under the new HTTP-503 regime before deciding whether
+to accept the slow path (option 1), tune retry/backoff (option 3), or keep
+re-testing.
