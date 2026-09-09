@@ -2089,3 +2089,21 @@ no queue ordering was bypassed, and no duplicate work item or guessed broker
 value was created. Evidence and continuation target:
 `docs/ops/evidence/2026-09-09_dukascopy_nonfx_price_scale_probe.md`. Acceptance
 remains open until the existing worker-owned T1 receipt supplies all nine rows.
+
+## 2026-09-09T20:55Z — Balke USDJPY window audit commissioned (OWNER question 20:4xZ)
+
+FINDING (orchestrator, evidence `framework/EAs/QM5_41398_balke-pattern-repair-opt/*.mq5`
+Strategy_Gmt3Hour/Strategy_BuildRangeForToday/Strategy_BuildStraddlePlan): the EA trades a FIXED
+UTC+3 clock (range = closed H1 bars hour 3-5, straddle only during hour 6, flat >= 18) = 00:00-03:00
+UTC / 15:00 UTC all year = 03-06 broker in summer but 02-05 broker in winter. Source clock is an
+evidence GAP (captions-only agy analysis "broker GMT+2/+3", no on-screen proof; the video on file
+XgfpXQzpJtk is a tooling video). No entry buffer; stops exactly at range high/low; ATR 0.4-2.5 band
+is not a recorded Balke rule; behaviour when price is already outside the range at 06:00 is
+undetermined in code (BUY_STOP below Ask = MT5 invalid price -> fade-only day suspected).
+Known result: 13213 OOS PF 1.20 gross / 1.168 DXZ-costed. Tickets: `4a3a4a02` P90 OWNER video
+lane (held awaiting_human_lane:owner; questions Q1-Q6 mirrored to Vault OWNER Videoanalysen Tier 1);
+`d444a7a8` P88 Astra Balke clock/outside/buffer audit + governed 36-cell matrix as NEW sibling
+(Q14 lever contract stated: 3 hypotheses with refutation criteria, frequency floor, +3 inputs);
+`95b48188` P80 Astra fleet-wide session-clock audit (read-only). Recipe
+`session_tools/enqueue_balke_clock_audit_0909.py`. Both Astra rows route IN_PROGRESS codex; the
+Codex orchestration holds them `awaiting_model_window:astra` if the Astra window is closed.
