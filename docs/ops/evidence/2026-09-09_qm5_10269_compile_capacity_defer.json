@@ -1,0 +1,85 @@
+{
+  "schema": "qm.router-task-capacity-defer-evidence/v1",
+  "task_id": "2cd23795-b866-4ba8-b1c0-8c7d13ef5fcf",
+  "observed_at_utc": "2026-09-09T00:24:35.8930883Z",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_10269",
+  "ea_label": "QM5_10269_gawd-wma30-trend",
+  "mission": "paced_fleet_priority_2_diverse_forex_q02_oninit_recovery",
+  "repair_commit": "f3a32bf9abe547db76a4487480481f7c97a2f5c9",
+  "repair_authority_evidence": {
+    "path": "docs/ops/evidence/2026-09-08_qm5_10269_stale_resolver_rebuild_authority.json",
+    "sha256": "f6fc799cea7e784028b753fc4cdec0e0e7bbdff57114b727d5f5590ae6164a6d"
+  },
+  "verified_root_cause": "The failed Q02 binary predates the active forex magic registrations and reports EA_MAGIC_NOT_REGISTERED for ea_id=10269 slot=6 magic=102690006.",
+  "preflight": {
+    "card_g0_status": "APPROVED",
+    "card_slug_matches_registry_and_ea": true,
+    "ea_registry_status": "active",
+    "active_magic_slots": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "source_sha256": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+    "framework_input_pin_audit": {
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0
+    },
+    "q02_setfile_risk_contract": {
+      "symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    },
+    "qm_news_stale_max_hours_ceiling": 336
+  },
+  "compile": {
+    "work_item_id": "3a92321c-deb2-45a0-872e-c39d8602d5cb",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "rollout_dry_run_release_count": 1,
+    "rollout_source_hash_match": true,
+    "compiled": false,
+    "current_ex5_sha256": "13e0f1e170447b6a951a19f617b8f8534337bc428219467d48f0d7a57cb8680c"
+  },
+  "capacity_guard": {
+    "counter": "Processor(_Total)/% Processor Time",
+    "sample_interval_seconds": 1,
+    "samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      99.5190649838472,
+      97.2776321249965
+    ],
+    "ceiling_percent": 97.0,
+    "passed": false
+  },
+  "decision": "CAPACITY_DEFERRED",
+  "actions_not_taken": [
+    "compile hold release",
+    "Q02 append-only rerun enqueue"
+  ],
+  "source_q02_rows_preserved": [
+    "9a0ced77-9871-4368-b153-e2a877b4a750",
+    "c246db5e-4425-4cb8-82d9-fe48deaa1c5a",
+    "138e5d99-97e1-4d75-83ff-5ef8bea16940"
+  ],
+  "pipeline_verdict_asserted": false,
+  "live_or_portfolio_mutation": false
+}
