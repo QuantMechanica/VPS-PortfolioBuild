@@ -56,9 +56,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
 force_build: true
 review_focus: "Falsify a WTI summer two-week agreement continuation distinct from the incumbent RSI pullback, disjoint winter agreement, year-round one-week momentum, split-week continuation, and XNG relatives. Verify anchor-month eligibility, exact adjacent completed-week membership, strict agreement, continuation orientation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -212,6 +212,6 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-10 | PENDING | branch build not started |
-| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED | pending Q01 and CPU admission |
+| Q01 Build Validation | 2026-09-10 | PASS | governed compile `ee85cdf5-53f6-4d7e-b28d-e13d70719d05`; 0 errors, 0 warnings; build check PASS |
+| Q02 Baseline Screening | 2026-09-10 | ENQUEUED | work item `120d4922-061b-4d25-ab8b-80e022c96259` after CPU admission PASS |
 
