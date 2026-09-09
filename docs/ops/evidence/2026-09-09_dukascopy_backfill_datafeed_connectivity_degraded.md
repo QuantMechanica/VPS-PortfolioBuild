@@ -298,3 +298,21 @@ Codex ticket `2f717775` (non-FX price_scale) still `APPROVED`/unassigned
 Task `3032534e` stays `IN_PROGRESS`. QM5_41394 gate for bb814520 unchanged
 this cycle (SP500/XAUUSD/XTIUSD Q02 still pending since 10:52:59Z; USDJPY now
 Q03 pending after its Q02 PASS at 12:17:13Z).
+
+## Checked 2026-09-09T16:18Z (orchestration cycle) -- no downloader process running, confirms clean stop after 13:58Z window
+
+`Get-CimInstance Win32_Process` shows no `download_bi5.py` process (only unrelated
+python.exe: dev http.servers, a Q08 aggregate/neighborhood run, farmctl
+health/pump) -- the 13:56-13:58Z bounded window ended cleanly as logged, nothing
+orphaned since. `download_manifest.jsonl` last entry `recorded_at_utc=13:59:10Z`,
+matches. No new probe run this cycle (weekly quota critical per bb814520/16:06Z
+note; skipping non-essential re-probes). Task stays `IN_PROGRESS`, disposition
+unchanged (GRÜN/measurement, no OWNER decision needed).
+
+## Checked 2026-09-09T16:33Z (orchestration cycle) -- no change
+
+No `download_bi5.py` process running (confirmed via `Get-CimInstance Win32_Process`,
+no matches). No new probe run this cycle — weekly quota still critical (~85%),
+same reasoning as the 16:18Z check: a bounded re-probe is non-essential spend
+given the already-documented oscillating HTTP 503 pattern. Task stays `IN_PROGRESS`,
+disposition unchanged.

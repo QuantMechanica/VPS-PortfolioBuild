@@ -331,6 +331,14 @@ Direct read of `work_items` (not the derived summaries in prior entries): `QM5_4
 
 Same gate, direct DB read: still `claimed_by=NULL`/`attempt_count=0`, unchanged since 10:52:59Z. `farmctl health` re-run this cycle: no FAIL on ea_id/registry/mutation-lock/factory-ceremony checks read. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
 
+## Checked 2026-09-09T16:18Z (orchestration cycle) -- no change
+
+Still `pending` since 10:52:59Z (~5h25m), gate unmet. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
+
 ## Checked 2026-09-09T16:17Z (orchestration cycle) -- no change
 
 Same gate. XAUUSD/SP500/XTIUSD Q02 still unclaimed since 10:52:59Z. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T16:33Z (orchestration cycle) -- no change
+
+Direct DB read: `QM5_41394` XAUUSD/SP500/XTIUSD Q02 rows still `pending`, unclaimed since 10:52:59Z (~5h40m); USDJPY at Q03/Q04 pending, no new Q04 result. No downloader/other process interference. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
