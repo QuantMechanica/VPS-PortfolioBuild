@@ -2036,3 +2036,13 @@ reset 2026-09-10T22Z via Sonnet fan-out (session one-shot scheduled 2026-09-10T2
 Balke QM5_41398 (Astra filter matrix): Q02 baseline `2fc84747` PASS; 1,085 OPT_CENSUS cells
 enqueued, 2 MEASURED / 1,083 pending under normal slot scheduling — watched hourly, report at
 completion. Vault mirror: `12 ToDo/AI ToDos/Codex.md` 18:18Z block.
+
+## 2026-09-09T18:35Z — RESULT: FTMO demo deployed-hash manifest addendum
+
+Task `2243207d`: added the dated five-row deployed-vs-sealed hash addendum to
+`docs/ops/evidence/2026-09-06_ftmo_demo_governor_manifest.md`. All deployed EX5
+and preset SHA-256 values were recomputed read-only with `Get-FileHash` from the
+FTMO demo data directory and exactly matched verifier commit `388760053b`; the
+governor, telemetry, QM5_11422, QM5_13054, and QM5_20048 matching set is also
+recorded. Native Windows PowerShell verifier result: `VERIFIED`, exit 0. No
+terminal, profile, preset, EX5, T_Live, AutoTrading, threshold, or gate changed.

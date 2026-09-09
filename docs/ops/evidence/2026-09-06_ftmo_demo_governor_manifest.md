@@ -156,6 +156,34 @@ stale 2026-09-03 snapshot from the previous account (99,838.36) although the col
 0 positions; `ea_errors` lists the two pre-fix `SLEEVE_CALENDAR_INIT_FAILED` entries (19:46Z, 19:58Z) that predate the
 clean `INIT_OK` at 20:08Z. Neither reflects account state.
 
+## Addendum — deployed-hash reconciliation (2026-09-09)
+
+This addendum records deployed reality after the post-signature rebuilds; it does
+not amend the OWNER-signed economics, risk limits, activation authority, or the
+original sealed hashes above. Codex recomputed every value below with
+`Get-FileHash -Algorithm SHA256` from FTMO demo data directory
+`C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\81A933A9AFC5DE3C23B15CAB19C63850`
+and confirmed exact equality with the pins in
+`tools/strategy_farm/verify_ftmo_demo_instrumentation_contract.ps1` at verifier
+commit `388760053b`.
+
+| Chart / EA | Deployed EX5 SHA-256 | Deployed preset path / SHA-256 | Sealed 2026-09-06 value (EX5 / preset) | Reason for deviation |
+|---|---|---|---|---|
+| `chart02` / QM5_10706 | `6f290d49defdfe1ec2d4dad93e419a577c703a53ac91de68e7bbfb22984c6bed` | `MQL5/Presets/QM5_10706_GBPUSD_H1_live_trial.set` / `31c37ec30421a51d7938ebfe911ef13e6615c678d0727ded9def09cb5cd1d140` | `eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb` / `31c37ec30421a51d7938ebfe911ef13e6615c678d0727ded9def09cb5cd1d140` | Post-signature resolver base-name fix and artifact-only rebuild, documented in the activation record (`4fb47bd3b5`). |
+| `chart03` / QM5_11421 | `4ff02978ae5d205355f81850fdbad1dac5daf8a8cb4313eaae08c616b1940e0a` | `MQL5/Presets/QM5_11421_EURUSD_D1_live_trial.set` / `556044b6b3b50003d77604e5358dd9578462eeec8764ba4be10187649d689a50` | `9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b` / `9aa97843bc1b7ac164a1a72fadd8ef69316a87e94051a427fbbc166286529fef` | Previously undocumented 2026-09-08 01:11 chart-panel-standard rebuild; the verifier documents the cosmetic `qm_panel_build_hash` vintage difference. |
+| `chart05` / QM5_11910 | `ae53f3bcca175e8cddabeee7ebfbe2ecd28cdeab83b5d57dbcc202612c31394d` | `MQL5/Presets/QM5_11910_NZDUSD_D1_live_trial.set` / `1223b912585405273b1865fa72cb923957e15c73d9edd501a9e089e6f90ceeef` | `e18d477e63c40cb1002aa4d93d8efcc3ec6fddf1081fb73ad9df1b0a7a3042de` / `1223b912585405273b1865fa72cb923957e15c73d9edd501a9e089e6f90ceeef` | Post-signature resolver base-name fix and artifact-only rebuild, documented in the activation record (`4fb47bd3b5`). |
+| `chart08` / QM5_1537 | `16d66a0f7b86f6f8c9240280712d32914a9a3bbb004baa1ea1a242cb4e9ff5eb` | `MQL5/Presets/QM5_1537_XAGUSD_D1_live_trial_s20260907-002.set` / `47e4fbe5cc90c2ddb895975d32ac105fda38772ba0452d88dd73c1b89590387c` | `142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106` / `7cac68f0956ab496ff70586a4f075b1a96943323faad17b7265a8b6c53f947ba` | Post-signature `strategy_calendar_symbol` / v2-calendar rebuild, documented in the activation record (`dcaeca68f5`). |
+| `chart09` / QM5_21505 | `81386c2dcd80e58d2840fc6941ca066eb276a4650c2bde07da2cb971cad0b24d` | `MQL5/Presets/QM5_21505_XAGUSD_D1_live_trial.set` / `a3121a740daed23646ce3982d36409726e853a76709d6d22e09feb20ae78e9a7` | `395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1` / `a3121a740daed23646ce3982d36409726e853a76709d6d22e09feb20ae78e9a7` | Post-signature resolver base-name fix and artifact-only rebuild, documented in the activation record (`4fb47bd3b5`). |
+
+The remaining verifier-pinned components still match their manifest values:
+governor QM5_13206 (EX5 `e5e827cd...f4878f6`, active preset
+`f7345341...be1361`), telemetry (EX5 `411638a1...458258`, preset
+`f4da1592...09bdd6`), QM5_11422 (EX5 `2b98e9e9...b32d66`, preset
+`215615b5...378ea5`), QM5_13054 (EX5 `2e65488f...6fd96d`, preset
+`c50084a4...4b1659`), and QM5_20048 (EX5 `1312391a...527f00`, preset
+`27527cfe...fc27d8`). The native Windows PowerShell verifier returned
+`VERIFIED` with exit code 0 after this comparison.
+
 Deviations from the sealed install: four sleeve binaries + 1537 source differ from the factory EX5s (rebuilt for the
 broker symbol names; factory inventory untouched; receipts above). News: all EAs log `NEWS_CALENDAR_LOADED` /
 `NEWS_CALENDAR_COVERAGE_GAP` — these are CSV seed diagnostics; live decisions use the native MT5 calendar
