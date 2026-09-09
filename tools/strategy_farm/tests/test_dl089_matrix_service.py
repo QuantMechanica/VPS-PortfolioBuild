@@ -15,6 +15,13 @@ from tools.strategy_farm import opt_census_pruning as pruning
 from tools.strategy_farm import optimization_fork_driver as routing
 
 
+@pytest.fixture(autouse=True)
+def _isolate_full_matrix_fixture_from_live_prescreen_flag(monkeypatch):
+    # These tests declare full annual matrices. The live host's opt-in flag
+    # must not silently turn the fixture into a two-cell staged admission.
+    monkeypatch.setenv("QM_DL089_PRESCREEN", "0")
+
+
 def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 

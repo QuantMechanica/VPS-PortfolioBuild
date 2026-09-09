@@ -802,6 +802,22 @@ def _program_binding_guard(
         )
 
     rows = _program_matrix_rows(conn, program_id)
+    if _payload(q12_row).get("legacy_census_recovery"):
+        try:
+            from tools.strategy_farm.dl089_legacy_adoption import authenticate
+        except ModuleNotFoundError:
+            from dl089_legacy_adoption import authenticate
+        adoption = authenticate(conn, q12_row, artifact_root)
+        # The reviewed adoption sidecar owns these exact immutable historical
+        # rows. Project that proven ownership for validation ONLY, never write
+        # it over their original storage provenance or evidence payloads.
+        rows = [
+            ({**dict(row), "parent_task_id": q12_id},
+             {**payload, "q12_work_item_id": q12_id,
+              "q12_declaration_sha256": declaration_sha})
+            if str(row["id"]) in adoption["legacy_adopted_ids"] else (row, payload)
+            for row, payload in rows
+        ]
     # The census driver appends rows AFTER the 1,085 declared annual cells and
     # they legitimately share the program id (2026-09-03 regression: the
     # 2026-09-02 guard treated them as owner changes and froze every program
@@ -1037,7 +1053,21 @@ def _finalize_from_terminal_ledger(
         superseded_ids.update(ids[:-1])
     evidence_rows: list[dict[str, Any]] = []
     superseded_rows: list[dict[str, Any]] = []
-    for row in _matrix_rows(conn, str(q12_row["id"])):
+    source_rows = _matrix_rows(conn, str(q12_row["id"]))
+    if _payload(q12_row).get("legacy_census_recovery"):
+        try:
+            from tools.strategy_farm.dl089_legacy_adoption import authenticate
+        except ModuleNotFoundError:
+            from dl089_legacy_adoption import authenticate
+        adopted = authenticate(conn, q12_row, program_dir.parent)["legacy_adopted_ids"]
+        present = {str(row["id"]) for row in source_rows}
+        missing = sorted(adopted - present)
+        if missing:
+            source_rows.extend(conn.execute(
+                "SELECT * FROM work_items WHERE id IN (" + ",".join("?" * len(missing)) + ")",
+                missing,
+            ).fetchall())
+    for row in source_rows:
         row_id = str(row["id"])
         row_key = str(_payload(row).get("cell_key") or "")
         current_id = current_by_key.get(row_key)
@@ -1476,22 +1506,33 @@ def service_pending(
                 # guard; until then release_on_restart keeps old residents out.
                 _ensure_rollout_hold(conn, str(row["id"]), apply=True)
             declaration = payload["pattern_filter_sweep"]
-            sibling = _measurement_sibling(
-                repo_root.resolve(),
-                str(row["ea_id"]),
-                str(row["symbol"]),
-                artifact_root=artifact_root,
-                program_id=str(declaration["program_id"]),
-                apply=apply,
-            )
-            compile_receipt = _compile_receipt(conn, sibling)
-            q02_state = _seed_q02(
-                conn,
-                q12_row=row,
-                sibling=sibling,
-                compile_receipt=compile_receipt,
-                apply=apply,
-            )
+            if payload.get("legacy_census_recovery"):
+                try:
+                    from tools.strategy_farm.dl089_legacy_adoption import authenticate
+                except ModuleNotFoundError:
+                    from dl089_legacy_adoption import authenticate
+                sibling = authenticate(conn, row, artifact_root)
+                # The exact reviewed recovery already authenticated the frozen
+                # binary and native Q02. Do not recompile, substitute a newer
+                # binary, or seed a duplicate test from a different setfile.
+                q02_state = sibling["legacy_q02"]
+            else:
+                sibling = _measurement_sibling(
+                    repo_root.resolve(),
+                    str(row["ea_id"]),
+                    str(row["symbol"]),
+                    artifact_root=artifact_root,
+                    program_id=str(declaration["program_id"]),
+                    apply=apply,
+                )
+                compile_receipt = _compile_receipt(conn, sibling)
+                q02_state = _seed_q02(
+                    conn,
+                    q12_row=row,
+                    sibling=sibling,
+                    compile_receipt=compile_receipt,
+                    apply=apply,
+                )
             q02.append(
                 {
                     "q12_work_item_id": row["id"],

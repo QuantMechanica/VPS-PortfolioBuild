@@ -35,9 +35,15 @@ def _artifact_paths(row: sqlite3.Row, payload: dict[str, Any], eas: Path) -> dic
     setfile = Path(str(row["setfile_path"])).resolve()
     ea_dir_name = str(payload.get("ea_dir_name") or setfile.parent.parent.name).strip()
     ea_dir = eas / ea_dir_name
+    # Matrix setfiles live outside framework/EAs. Their grandparent is the
+    # PROGRAM, not the executable's directory; honor the explicit dispatch
+    # binding instead of falsely reporting a missing DL089_*.ex5 executable.
+    explicit_ex5 = str(payload.get("expected_ex5_path") or "").strip()
+    ex5 = Path(explicit_ex5).resolve() if explicit_ex5 else ea_dir / f"{ea_dir_name}.ex5"
+    explicit_mq5 = str(payload.get("expected_mq5_path") or "").strip()
     return {
-        "ex5": ea_dir / f"{ea_dir_name}.ex5",
-        "mq5": ea_dir / f"{ea_dir_name}.mq5",
+        "ex5": ex5,
+        "mq5": Path(explicit_mq5).resolve() if explicit_mq5 else ex5.with_suffix(".mq5"),
         "setfile": setfile,
     }
 

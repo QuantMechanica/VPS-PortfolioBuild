@@ -9860,8 +9860,23 @@ def _dl089_declared_lane(
         raise opt_census_pruning.PruningError(
             f"derived lane absent from ledger: {stage}/{target_arm}"
         )
+    # Prescreen admissions enumerate ANNUAL cells, not these separately sealed
+    # WF/numeric/final runs. Validate the original annual contract before making
+    # the narrow lane view; inheriting its admission keys makes every derived
+    # run fail as "staged admission contains undeclared keys". Never mutate the
+    # persisted ledger or relax the exact derived-cell coverage check below.
+    if ledger.get("prescreen_contract"):
+        try:
+            from tools.strategy_farm.dl089_prescreen import staged_keys
+        except ModuleNotFoundError:
+            from dl089_prescreen import staged_keys
+        staged_keys(dict(ledger))
     years = sorted({int(cell["year"]) for cell in cells})
     lane_ledger = {**dict(ledger), "cells": cells, "years": years}
+    for annual_key in (
+        "prescreen_contract", "prescreen_admitted_cell_keys", "prescreen_last_admission"
+    ):
+        lane_ledger.pop(annual_key, None)
     return cells, lane_ledger
 
 

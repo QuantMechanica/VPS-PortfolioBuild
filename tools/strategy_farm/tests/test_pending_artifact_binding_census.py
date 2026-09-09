@@ -88,3 +88,25 @@ def test_setfile_only_content_change_requires_append_only_successor(tmp_path: Pa
     assert result["mismatched_bindings"] == 1
     assert result["rows"][0]["findings"][0]["classification"] == "CONTENT_CHANGED"
     assert result["rows"][0]["disposition"] == "GOVERNED_APPEND_ONLY_SETFILE_SUCCESSOR_REQUIRED"
+
+
+def test_external_matrix_setfile_uses_explicit_executable_binding(tmp_path: Path) -> None:
+    db = tmp_path / "farm.sqlite"
+    eas = tmp_path / "EAs"
+    ea = eas / "QM5_1_demo"
+    ea.mkdir(parents=True)
+    ex5 = ea / "QM5_1_demo.ex5"; ex5.write_bytes(b"binary")
+    mq5 = ea / "QM5_1_demo.mq5"; mq5.write_bytes(b"source")
+    sets = tmp_path / "artifacts" / "DL089_PROGRAM" / "setfiles"
+    sets.mkdir(parents=True)
+    setfile = sets / "cell.set"; setfile.write_bytes(b"A=1\n")
+    _db(db)
+    _insert(db, setfile, {
+        "expected_ex5_path": str(ex5), "expected_ex5_sha256": _sha(b"binary"),
+        "expected_mq5_sha256": _sha(b"source"), "expected_setfile_sha256": _sha(b"A=1\n"),
+    })
+    assert census.build_census(db, eas)["drifted_rows"] == 0
+    ex5.write_bytes(b"changed")
+    result = census.build_census(db, eas)
+    assert result["class_counts"] == {"CONTENT_CHANGED": 1}
+    assert result["rows"][0]["findings"][0]["path"] == str(ex5)
