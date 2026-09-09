@@ -1306,3 +1306,23 @@ change — keep the `g_symbol`→`_Symbol` migration, restore the eight `QM_Inpu
 guardrail lines — then let `repo_dirty_build_guard` clear on its own. Untracked
 `docs/ops/evidence/2026-09-0{8,9}_stranded_infra_sweep_triage.json` in the same tree are
 unrelated evidence artifacts, not source — not a build-guard blocker.
+
+## Addendum 2026-09-09 ~03:18-03:22Z (orchestration cycle) — 3 claude tasks re-checked, no change; `farmctl health` did not return within its window
+
+Re-checked all three claude-lane IN_PROGRESS tasks (`bb814520`, `dfc60103`, `3032534e`):
+no new information since the prior cycle. No OWNER response found on
+`OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (grepped `docs/ops/` and
+`docs/ops/evidence/` for the decision ID; only the mint/correction commits from the prior
+cycle exist, no receipt). Dukascopy re-test window still not reached — the last
+application-level probe was ~02:33-02:36Z (this cycle started 03:18Z, ~45min later); the
+"wait several hours, different UTC slot" disposition from the prior cycle stands, so no
+re-probe or download restart was attempted. `repo_dirty_build_guard` two-file finding
+above re-verified unchanged (still uncommitted, still flagged-only, no Codex ticket
+enqueued — that would be choosing work outside the three assigned tasks). All three tasks
+correctly remain `IN_PROGRESS`; no router state change made.
+
+`python tools/strategy_farm/farmctl.py health` was launched at cycle start and did not
+return within ~4 minutes (backgrounded, left running); consistent with the prior cycle's
+note that health checks sometimes exceed the interactive window. Not blocking — none of
+the three tasks' next actions depend on the health summary. No terminals, holds, or
+factory state touched this cycle.
