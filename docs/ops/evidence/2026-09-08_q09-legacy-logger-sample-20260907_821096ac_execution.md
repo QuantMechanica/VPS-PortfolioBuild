@@ -330,3 +330,13 @@ work item `58b36f74` is queued (`status=pending`). Full detail in
 the rebuild this task is gated on, not on this task's own sv-logger scope directly. No
 action taken here beyond the read; Q02 has not run yet, so this task's own acceptance
 criterion is still open. Task remains `IN_PROGRESS`.
+
+## Cycle check 2026-09-09T~11:0xZ — remaining 4 symbol legs enqueued; still gated
+
+All five `QM5_41394` intake symbols now have a `Q02` work item (EURUSD PASS→Q04 FAIL
+strategy-taxonomy; SP500/USDJPY/XAUUSD/XTIUSD `pending`, created 10:52:59Z) — full detail
+in `46167bd9`'s execution record. This is forward motion on the rebuild this task is gated
+on, not this task's own sv-logger scope. `farmctl health`: FAIL 13/WARN 17/OK 53, same
+chronic set, none referencing this chain. No action taken beyond the read; this task's own
+acceptance criterion ("11167 rerun ends PASS/FAIL") is still unmet. Task remains
+`IN_PROGRESS`.

@@ -224,3 +224,12 @@ detail in `2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`.
 run yet, so no PASS/FAIL adjudication exists for the new identity this cycle. No release,
 repin, ticket, or verdict change made here. Task remains `IN_PROGRESS`, same gate as
 `dfc60103` and `46167bd9`.
+
+## Cycle check 2026-09-09T~11:0xZ — remaining 4 symbol legs enqueued (incl. XAUUSD); still gated
+
+All five `QM5_41394` intake symbols now have a `Q02` work item (EURUSD PASS→Q04 FAIL
+strategy-taxonomy; SP500/USDJPY/XAUUSD/XTIUSD `pending`, created 10:52:59Z) — full detail
+in `46167bd9`'s execution record. XAUUSD (the 11196 lineage symbol this task's objective
+names first) now has an active leg. No Q10_NEWS adjudication yet on any leg; this task's
+acceptance criterion stays unmet. No action taken here beyond the read; no release, repin,
+or verdict change. Task remains `IN_PROGRESS`.

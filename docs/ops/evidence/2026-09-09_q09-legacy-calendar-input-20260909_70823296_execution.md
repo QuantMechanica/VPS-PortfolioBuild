@@ -342,3 +342,21 @@ ticket, rebuild, release, or router state change. All three tasks (`bb814520`, `
 `46167bd9`) remain correctly `IN_PROGRESS` — genuinely blocked on the factory's own pipeline
 reaching a terminal Q10_NEWS verdict on a new `QM5_41394` symbol leg, not on any action within
 this contract's `selected_effect_only` authority.
+
+## Cycle check 2026-09-09T~11:0xZ (orchestration cycle) — remaining 4 symbol legs enqueued; still gated
+
+Direct DB read: `work_items` for `QM5_41394` now has four fresh `Q02` rows, all `status=pending`,
+`created_at=10:52:59Z` — `17e576cf…` (SP500.DWX), `80789556…` (USDJPY.DWX), `3b315bc8…`
+(XAUUSD.DWX), `53c32094…` (XTIUSD.DWX). This resolves the 10:33Z/10:33Z-entry concern ("sole
+in-flight leg dead-ended, cohort has no active leg progressing") — all 5 intake symbols now
+have a Q02 row, including XAUUSD (the symbol this cross-chain's `bb814520` objective names
+first, via the 11196 lineage). Not this session's action: no `farmctl` enqueue was run here;
+this is either Codex's `b66b5ccc` ticket continuing past its `REVIEW` state-transition (the DB
+row for `b66b5ccc` itself is still `state=REVIEW`/`updated_at=09:09:18Z`, so this enqueue was
+either done directly by the Codex agent process without a router state change, or by the
+factory's own auto-advance) or a downstream automated step; either way it is not something
+this `selected_effect_only` claude task minted. Q02 has not run for any of the four new legs
+yet, so no PASS/FAIL exists. `b66b5ccc` unchanged (`REVIEW`/codex). No action taken beyond this
+read: no ticket, rebuild, release, or router state change. All three tasks (`bb814520`,
+`dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS` — genuinely blocked on a terminal
+Q10_NEWS PASS/FAIL for any `QM5_41394` symbol leg, still not reached.
