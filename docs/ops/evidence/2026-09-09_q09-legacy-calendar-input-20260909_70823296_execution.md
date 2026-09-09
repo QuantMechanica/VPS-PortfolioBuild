@@ -195,6 +195,26 @@ mine to run ahead of. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remai
 correctly `IN_PROGRESS` — acceptance requires the new identity's Q02 (and eventually
 Q10_NEWS) verdict, not yet available.
 
+## Checked 2026-09-09T09:26Z (orchestration cycle) — Codex ticket to REVIEW, Q02 still pending
+
+Direct DB read: ticket `b66b5ccc` moved `IN_PROGRESS` → `REVIEW` (`updated_at=09:09:18Z`,
+`artifact_path=docs/ops/evidence/2026-09-09_qm5_41394_rebuild_b66b5ccc_execution.md`,
+`verdict=BUILD_PASS_Q02_ADMITTED_TESTER_ECHO_PENDING`) — matches its own name: build/compile
+passed and the Q02 work item was admitted to the queue, but the tester (the actual Q02
+backtest run and its PASS/FAIL echo) has not executed yet. Confirmed `58b36f74` (Q02,
+EURUSD.DWX) is still `status=pending` in `work_items` — unchanged since 08:54:05Z. `b66b5ccc`
+is a Codex-assigned `ops_issue` task in `REVIEW`, not a claude `IN_PROGRESS` task — reviewing/
+closing it is outside this cycle's scope (not in my `list-tasks --agent claude --state
+IN_PROGRESS` set) and outside this contract's `selected_effect_only` authority regardless.
+`farmctl health` this cycle: FAIL 13/WARN 18/OK 53, no new signal bearing on this chain (same
+chronic FAIL/WARN set: `q02_stranded_exhausted_pairs`, `phase_invalid_rate_7d`,
+`agent_task_state_stranded`, `work_item_phase_age_slo`, `q09_sealed_plan_hold_age`,
+`q09_autoseal_hold_census`, `pending_artifact_binding_drift`, scheduled-task FAILs/WARNs —
+none reference `QM5_41394`/`11167`/`11196` or this decision chain). No action taken beyond
+this read; the acceptance criterion (a PASS/FAIL Q10_NEWS-reachable verdict on the new
+identity) is still not met. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain
+correctly `IN_PROGRESS`.
+
 ## Self-correction 2026-09-09T~0851Z — my own 0850Z entry's "no work_items row" claim was a query bug
 
 My own 0850Z entry above (this cycle, same session) queried `work_items WHERE ea_id=41394`
