@@ -1,0 +1,9 @@
+{
+  "source_hashes_unchanged": 804,
+  "unique_eas": 804,
+  "clock_and_card_evidence_nonempty": true,
+  "framework_friday_input_excluded": true,
+  "top10_rows": 10,
+  "verification": "PASS",
+  "acceptance": "PARTIAL_REVIEW"
+}
