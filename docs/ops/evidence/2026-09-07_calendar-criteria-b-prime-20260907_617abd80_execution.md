@@ -366,3 +366,7 @@ Direct DB read: QM5_41394 SP500/XAUUSD/XTIUSD Q02 legs still status=pending, cla
 ## Checked 2026-09-09T18:30Z (orchestration cycle) -- no change
 
 Direct DB read: QM5_41394 SP500/XAUUSD/XTIUSD Q02 legs unchanged since 10:52:59Z (~7h45m). Confirmed 5 concurrent claude.exe processes still alive -- the scheduler-pileup class flagged repeatedly above (`QM_StrategyFarm_ClaudeOrchestration_15min`, LastRunTime 20:30:30Z/NextRunTime 20:45:45Z) remains unresolved; weekly quota now 88% used/12% remaining per `agent_router.py status`, worse than every prior reading. No fix attempted (scheduled-task change is outside this ticket's authority; flagged to OWNER in this cycle's summary). No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T~18:50Z (orchestration cycle) -- no change
+
+Direct DB read: QM5_41394 SP500/XAUUSD/XTIUSD Q02 still `pending`, unchanged since 10:52:59Z (~8h). Weekly quota unchanged at 88%/12% remaining; 5 claude.exe still alive (pileup unresolved, not this ticket's authority to fix). `farmctl health` unchanged: FAIL14/WARN17/OK53, same chronic set. No ticket, rebuild, release, or verdict change. Given quota criticality, further per-cycle log entries on this task are suppressed until either the gating symbol's Q02 completes or the pileup resolves. Task remains IN_PROGRESS.
