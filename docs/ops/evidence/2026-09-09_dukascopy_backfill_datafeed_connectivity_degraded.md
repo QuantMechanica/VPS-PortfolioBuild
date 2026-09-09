@@ -118,6 +118,46 @@ No Entscheidungsschlange entry added — this is not blocked on OWNER, just
 slower than planned. Next cycle should re-test at a different hour before
 deciding between options 1-3.
 
+## Re-probe 2026-09-09 ~02:33-02:36Z (orchestration cycle) — TCP-connect probe is a false-positive signal; application-level downloads still fail at the same rate
+
+A raw TCP-connect-only probe (`socket.create_connection`, no TLS, no HTTP) at
+02:33:34Z showed **0/8 failures**, all sub-second (0.04-0.05s) — a large
+apparent improvement over the ~50% failure rate measured at 01:27Z and
+02:04Z. This looked like recovery, so before restarting the full production
+job I ran a bounded 90s re-invocation of the actual downloader (resuming the
+same interrupted run, same command as the original P1 launch) to check
+whether the improvement held at the application level:
+
+```
+timeout 90 python tools/dukascopy/download_bi5.py --out D:\QM\reports\dukascopy\backfill\20260909T032705Z \
+  --splice-csv D:\QM\reports\dukascopy\splice\20260909_010553\tick_tail.csv --rate 5 --timeout 30 --retries 3
+```
+
+Result: **2/2 attempts in the 90s window failed**, both `WinError 10060`
+(connect timeout) on the two hours the resumed run reached
+(`AUDCAD/2025/09/01/05h` and `06h`), the identical signature as the original
+stop. The process was killed by the bounded timeout, not by design (no
+retries were exhausted within the window). No new data downloaded.
+
+**Conclusion: the TCP-connect-only probe is not a reliable recovery signal
+for this host.** A bare TCP handshake to `194.8.15.180:443` can complete in
+under 50ms while the subsequent TLS handshake or HTTP data phase used by the
+real downloader still times out — the earlier 4/8-failing probes and this
+0/8-succeeding probe most likely both undersample a path that fails
+downstream of the initial connect. Future re-tests must use the actual
+downloader (or at minimum a full TLS handshake + HTTP request) rather than a
+raw connect, or they will report false recovery.
+
+Disposition unchanged: **GRÜN/measurement, no OWNER decision needed, no
+production job restarted.** Total factory-adjacent time spent on this
+measurement across both re-probes: well under the 1h GRÜN autonomous budget.
+Options 1-4 from the prior note stand unchanged; option 2 ("re-test at a
+different time of day") is now more clearly not yet satisfied — this and the
+prior probe are both within the same ~70-minute window and same failure
+class. Next cycle should wait several hours (ideally a different UTC
+session/day-part) before the next application-level re-test, and should not
+trust a TCP-connect-only check as sufficient on its own.
+
 ## Re-probe 2026-09-09 ~02:04Z (orchestration cycle, +~35min) — still degraded, no download restarted
 
 Read-only TCP connect probe only (`socket.create_connection`, no HTTP, no
