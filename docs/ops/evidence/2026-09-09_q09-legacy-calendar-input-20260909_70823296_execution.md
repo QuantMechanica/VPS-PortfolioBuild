@@ -246,6 +246,17 @@ Q03-Q09 before a Q10_NEWS run is even reachable. No action taken beyond this rea
 pipeline is the factory's automated job, not mine to trigger). All three tasks (`bb814520`,
 `dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS`.
 
+## Checked 2026-09-09T~1000Z (orchestration cycle) — Q04 admitted, still gated; pileup easing
+
+Direct DB read: `work_items` for `QM5_41394` now has a third row — `0ed63919-c3a7-4d38-881b-84fb5c2fd2ba`
+(`kind=backtest`, `phase=Q04`, `status=pending`, created 09:47:29Z) — the pipeline auto-advanced
+past the 09:39:06Z Q02 PASS on its own (factory's normal path, nothing triggered by this session).
+`b66b5ccc` unchanged (`state=REVIEW`/`codex`, `updated_at=09:09:18Z`). Only 1/5 symbols (EURUSD)
+past Q02; Q04-Q09 remain before any Q10_NEWS adjudication is reachable, so none of this task's,
+`bb814520`'s, or `dfc60103`'s acceptance criteria (a terminal Q10_NEWS PASS/FAIL) are met. Pileup
+down to 3 concurrent `claude.exe` (was 9 at ~0718Z) — improving. No action taken beyond this read;
+no ticket, rebuild, release, or router state change. All three tasks remain correctly `IN_PROGRESS`.
+
 ## Self-correction 2026-09-09T~0851Z — my own 0850Z entry's "no work_items row" claim was a query bug
 
 My own 0850Z entry above (this cycle, same session) queried `work_items WHERE ea_id=41394`
