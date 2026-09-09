@@ -1,5 +1,7 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 03:34Z (Orchestrierungszyklus) — alle 3 IN_PROGRESS-Claude-Aufgaben erneut geprüft, kein Zustandswechsel:** Nur ~12 Minuten seit dem letzten Zyklus (03:22Z); kein neuer Commit zu `bb814520`/`dfc60103`/`3032534e` außer Fabrik-Hintergrundaktivität. `bb814520` und `dfc60103` bleiben blockiert auf `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (weiterhin ohne Antwort). `3032534e`: letzter echter Reprobe war 02:36Z; die Vorgabe „mehrere Stunden, anderer UTC-Slot" ist mit ~1h Abstand noch nicht erreicht — kein Reprobe, kein Download-Neustart. `repo_dirty_build_guard`-Befund (QM5_41240) unverändert, weiterhin nur geflaggt, kein Ticket eröffnet. Kein Router-Zustandswechsel.
+
 > **Nachtrag 09.09., 02:48Z (Orchestrierungszyklus) — alle 3 IN_PROGRESS-Claude-Aufgaben geprüft, kein Zustandswechsel, keine neue Arbeit:** Aufgaben `bb814520` (Calendar-Criteria-B-prime) und `dfc60103` (Q09-Legacy-Logger-Sample) bleiben unverändert auf OWNER-Karte `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` blockiert (Vorlage `docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md`, gestellt vorigen Zyklus, weiterhin ohne Antwort) — kein Duplikat-Ticket, kein Rebuild, kein Verdict-Eingriff. Aufgabe `3032534e` (Dukascopy) bleibt blockiert auf Datenfeed-Erholung: der letzte reale (nicht TCP-only) Reprobe war 02:04Z, ~44 Minuten vor diesem Zyklus — die Vorgabe „mehrere Stunden, anderer UTC-Slot" ist damit noch nicht erreicht; ein erneuter Reprobe jetzt würde nur denselben zu-frühen Datenpunkt wiederholen, daher unterlassen. Keine Terminals/Downloads gestartet, keine Holds berührt. Alle drei Aufgaben bleiben korrekt IN_PROGRESS.
 
 > **Nachtrag 09.09., 02:04Z (Orchestrierungszyklus) — Dukascopy Datenfeed weiter degradiert, kein Download-Neustart:** Nach dem Stopp des Produktiv-Downloads um 01:31:57Z (nur 6/304.621 Stunden, hochgerechnet ~167 Tage statt 3-5 Tage geplant — Detail `docs/ops/evidence/2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md`) zeigt ein reiner Lese-TCP-Reprobe (194.8.15.180:443, 8 Versuche, +~35min) weiterhin ~50 % Timeouts, keine Erholung. Kein Downloader neu gestartet, kein Import, kein OFF-Fenster. GRÜN/Messung, kein OWNER-Entscheid noetig; naechster sinnvoller Schritt ist ein Reprobe mehrere Stunden spaeter (anderer UTC-Slot). Task `3032534e` bleibt IN_PROGRESS.
@@ -1326,3 +1328,32 @@ return within ~4 minutes (backgrounded, left running); consistent with the prior
 note that health checks sometimes exceed the interactive window. Not blocking — none of
 the three tasks' next actions depend on the health summary. No terminals, holds, or
 factory state touched this cycle.
+
+## Addendum 2026-09-09 ~03:29-03:36Z (orchestration cycle) — 3 claude tasks re-checked, no change; health returned FAIL 14/WARN 20/OK 50
+
+Re-checked all three claude-lane IN_PROGRESS tasks (`bb814520`, `dfc60103`, `3032534e`)
+against current router/lease/git state, ~15min after the prior cycle. Spawn-lease table
+confirmed no live lease blocks any of the three (only `3032534e`'s lease existed and had
+already expired at 01:32:47Z), so this cycle proceeded rather than deferring.
+No OWNER response found on `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` — `git log
+--all --since=2026-09-09T03:00:00` shows only unrelated factory/build commits, no new
+receipt or decision commit for that card. Dukascopy: confirmed via
+`2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md` that the last
+application-level re-test (not TCP-connect-only) was ~02:33-02:36Z and explicitly
+concluded a raw-TCP-connect probe is not a valid recovery signal for this host (0/8 fails
+on a connect-only check, 2/2 fails on the real downloader in the same window); "wait
+several hours, different UTC slot" stands, only ~1h elapsed since then, so no re-probe or
+download restart attempted this cycle. Non-FX `price_scale`/`point_size` Codex ticket
+`2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` remains `APPROVED`/unassigned since 01:24:20Z
+(normal router queue state under codex's existing backlog — not re-enqueued, avoiding the
+duplicate-ticket mistake logged for `0b2bddcf` the prior cycle). All three tasks correctly
+remain `IN_PROGRESS`; no router state change made.
+
+`farmctl.py health` returned this cycle: `overall=FAIL`, `fail=14/warn=20/ok=50`. Two
+pre-existing `task_monitor_escalation` FAILs (`QM_EvidenceCohortWatch_Daily_0420`
+LOSS_OBSERVED exit 3; `QM_StrategyFarm_FactoryON_AtLogon` 0x800710E0
+interactive-launch-queued) are scheduler/observation-layer only — "never changes live or
+factory intent" per the check's own action_hint — and are not among the three assigned
+tasks' scope, so not actioned. No QM5_10260 reference in the health output (step 4 of the
+cycle instructions is N/A this cycle since 3 IN_PROGRESS tasks remain). No terminals,
+holds, or factory state touched.
