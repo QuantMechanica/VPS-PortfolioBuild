@@ -1,0 +1,108 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-09T03:31:13Z",
+  "recorded_at_local": "2026-09-09T05:31:13+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "b67f7444081a4e506c353b1c339b4280a43876ec",
+  "outcome": "HARD_CPU_CEILING_STOP",
+  "frontier": {
+    "unbuilt_approved_fx_cointegration_pairs": 0,
+    "scan_evidence": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    },
+    "fallback": {
+      "ea_id": "QM5_12507",
+      "slug": "pair-coint-z",
+      "pair": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+      "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "status": "pending",
+      "claimed_by": null,
+      "attempt_count": 0,
+      "verdict": null,
+      "exact_open_row_count": 1,
+      "duplicate_enqueue_refused": true
+    }
+  },
+  "pacer_build_guard": {
+    "source_generated_or_edited": false,
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5\"",
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "result": "PASS"
+  },
+  "build_identity": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "capacity": {
+    "active_work_item_count": 7,
+    "cpu_sample_interval_seconds": 2,
+    "cpu_samples_percent": [
+      91.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 98.2,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_percent_ceiling_hit": true,
+    "free_physical_memory_gib": 39.498,
+    "running_factory_terminals": [
+      "T1",
+      "T4",
+      "T6",
+      "T10"
+    ],
+    "running_terminal_workers": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "active_work_items": [
+      {"terminal":"T2","phase":"Q04","ea_id":"QM5_10297","symbol":"NZDJPY.DWX","id":"2076ac42-91bb-4211-820e-ac8af394d9ee"},
+      {"terminal":"T3","phase":"Q04","ea_id":"QM5_12350","symbol":"EURUSD.DWX","id":"86a1a17e-3b2f-4cc9-9a5d-dd0f6e3331af"},
+      {"terminal":"T6","phase":"OPT_CENSUS","ea_id":"QM5_41301","symbol":"XAUUSD.DWX","id":"e5f0f567-ade6-529e-bcd0-6ce4ddec4cdb"},
+      {"terminal":"T1","phase":"OPT_CENSUS","ea_id":"QM5_41324","symbol":"USDJPY.DWX","id":"a11fca07-7a34-5218-803e-051a499292fa"},
+      {"terminal":"T4","phase":"OPT_CENSUS","ea_id":"QM5_41345","symbol":"XAUUSD.DWX","id":"b06689ab-0e74-59c9-807a-fe64057ff229"},
+      {"terminal":"T5","phase":"Q04","ea_id":"QM5_9229","symbol":"EURUSD.DWX","id":"83837c1c-a050-475a-ac23-a9b606065a2d"},
+      {"terminal":"T10","phase":"Q04","ea_id":"QM5_9291","symbol":"EURUSD.DWX","id":"09f00872-c770-48ca-8d52-840f913e5048"}
+    ]
+  },
+  "mutations": {
+    "mq5_written_or_edited": false,
+    "compile_command_run": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "farm_state_changed": false,
+    "terminal_process_changed": false,
+    "portfolio_gate_changed": false,
+    "t_live_changed": false,
+    "autotrading_changed": false
+  }
+}
