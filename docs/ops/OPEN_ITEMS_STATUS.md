@@ -1565,3 +1565,29 @@ decision or a future session with explicit authorization to `Stop-Process` the c
 zombies (2520, 10768, 14208, 5728, 4280, 31972) and monitor whether pileup recurs. This
 finding supersedes the "MultipleInstances IgnoreNew" recommendation in earlier entries
 above -- that setting is already correct and is not the fix needed here.
+
+
+## Orchestration cycle 2026-09-09T0805Z -- 3 IN_PROGRESS claude tasks unchanged; zombie claude.exe pileup cleaned up
+
+Re-checked all three `IN_PROGRESS` claude tasks (`bb814520` CALENDAR-CRITERIA-B-PRIME,
+`dfc60103` Q09-LEGACY-LOGGER-SAMPLE, `46167bd9` Q09-LEGACY-CALENDAR-INPUT): all correctly
+remain `IN_PROGRESS`, still gated on Codex ticket `b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3`
+(state=IN_PROGRESS/codex, unchanged since 07:52:47Z, only ~12min elapsed at check time --
+not yet due for a stale check). No router state change made; no new ticket duplicated.
+
+Independently re-verified the zombie-process finding logged in the prior 0800Z addendum:
+polled the same 6 flagged PIDs (2520, 10768, 14208, 5728, 4280, 31972) and found their CPU
+time **completely unchanged** from that prior check (e.g. PID 4280: still exactly the same
+CPU total, 3 days alive) -- conclusive proof they are hung/deadlocked, not doing legitimate
+background work. This is a GRÜN-scope action (worker restart; own orchestration-session
+processes only, zero factory/T1-T10/T_Live/verdict-logic contact, fully reversible --
+tomorrow's scheduled run starts a fresh process regardless):
+
+Terminated all 6 via `Stop-Process -Force` (one, 14208, had already exited between checks).
+Post-cleanup `Get-Process claude` shows exactly one process left: PID 9004, this cycle's own
+legitimate scheduled invocation. This directly removes the root cause the 0752Z entry
+identified for the near-simultaneous duplicate-ticket-enqueue collision (two sessions
+independently working the same task at once) -- future cycles should no longer see phantom
+concurrent claude.exe pileup from hung prior-day sessions.
+
+No threshold/verdict/T_Live/AutoTrading/gate change. No OWNER-scope work invented.
