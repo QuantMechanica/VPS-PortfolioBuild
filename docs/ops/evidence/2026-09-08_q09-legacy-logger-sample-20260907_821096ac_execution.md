@@ -450,3 +450,7 @@ Same gate as bb814520 (QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending since 10:
 ## Checked 2026-09-09T1749Z (orchestration cycle) -- no change
 
 Same gate as bb814520 (QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending since 10:52:59Z, ~6h56m). Spawn lease agent_task:dfc60103 expired at 14:27Z; not reacquired. No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T1818Z (orchestration cycle) -- no change
+
+Same gate as bb814520 (QM5_41394 SP500/XAUUSD/XTIUSD Q02 still pending/unclaimed since 10:52:59Z, ~7h25m, verified by direct DB read). No new OWNER answer on the pending rebuild-vs-park card. No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.

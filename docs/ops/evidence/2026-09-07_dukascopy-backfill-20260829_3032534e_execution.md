@@ -368,3 +368,7 @@ Codex ticket 2f717775 still APPROVED/unassigned since 01:24:20Z (~16h08m). No pr
 ## Checked 2026-09-09T1749Z (orchestration cycle) -- no change
 
 Codex ticket 2f717775 confirmed still APPROVED/unassigned (updated_at 01:24:20Z, ~16h25m unclaimed) via direct DB read. Spawn lease agent_task:3032534e is LIVE (acquired 17:27:22Z, expires 17:57:22Z) -- deferred without touching, per duplicate-work guard (a concurrent cycle may be mid-check). No ticket, release, rebuild, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T1818Z (orchestration cycle) -- material change, no action needed
+
+Codex ticket 2f717775 moved out of the APPROVED/unassigned starvation state: assigned_agent=codex, state=IN_PROGRESS, updated_at=18:18:25Z, verdict note records "Orchestrator 2026-09-09: row sat APPROVED/unassigned since 01:24Z without ever running (invisible to routing); reset to TODO so codex claims it" -- a routing-layer fix, not an action taken by this task. This ticket authors the P1 non-FX price_scale probe (authority_task_id=3032534e) blocking the 9 non-FX Dukascopy symbols; now with codex, no claude action required this cycle. Task remains IN_PROGRESS pending codex's artifact.

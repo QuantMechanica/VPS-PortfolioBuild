@@ -358,3 +358,7 @@ QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending since 10:52:59Z (~6h39m). No tic
 ## Checked 2026-09-09T1749Z (orchestration cycle) -- no change
 
 QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending, claimed_by=None, unchanged since 10:52:59Z (~6h56m). Spawn lease agent_task:bb814520 expired at 14:12Z; not reacquired (read-only cycle, no work to claim). No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T1818Z (orchestration cycle) -- no change
+
+Direct DB read: QM5_41394 SP500/XAUUSD/XTIUSD Q02 legs still status=pending, claimed_by=None, updated_at unchanged at 10:52:59Z (~7h25m). farm_health overall=FAIL (13 fail/17 warn/52 ok, same chronic set: agent_task_state_stranded, work_item_phase_age_slo, q09_autoseal_hold_census, pending_artifact_binding_drift, backup_calendar_continuity, evidence_cohort_watch -- none new or actionable within this task's forbidden-actions scope). No new OWNER answer on OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (rebuild-vs-park). No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
