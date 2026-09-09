@@ -86,3 +86,9 @@ Criterion recorded with exact residual classes; B admits USD-only rows of any ti
   failure already logged above — could not check the Vault mirror as a second source.
 - No new Codex ticket, release, rerun or card minted this cycle; nothing to duplicate. Task
   `bb814520` remains IN_PROGRESS, gated on the same OWNER decision as `dfc60103` and `60cd31a8`.
+
+## Checked 2026-09-09T04:03Z (orchestration cycle) — no change
+
+- Re-checked for an OWNER answer to `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`: none found.
+  `G:` Vault drive still permission-denied from this session. No new ticket, release, rerun or
+  card minted. Task `bb814520` remains IN_PROGRESS, gated on the same pending OWNER decision.
