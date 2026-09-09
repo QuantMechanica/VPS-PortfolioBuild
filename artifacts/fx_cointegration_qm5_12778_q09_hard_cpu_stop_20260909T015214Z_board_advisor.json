@@ -1,0 +1,143 @@
+{
+  "artifact_type": "fx_cointegration_existing_q09_hard_cpu_stop",
+  "schema_version": "qm.fx-cointegration-existing-q09-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-09T01:52:14.7395352Z",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "70089572c827ec64d205ed36d0791ff411ea3b05",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "QM5_12778_UNIQUE_Q09_PRESERVED_HARD_CPU_CEILING_STOP",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "unordered_relationship_count": 66,
+    "unbuilt_scan_relationship_found": false,
+    "new_card_or_build_created": false,
+    "decision": "Use the existing-forex fallback because all 66 governed scan relationships are already mechanized."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12778",
+    "pair": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "scan_pair_rank_all_signs": 25,
+    "mechanic": "fixed-beta log-price spread z-score reversion",
+    "expected_logical_packages_per_year": "4-8",
+    "approved_card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "prior_gate_state": "Q02-Q07 PASS; Q08 FAIL_SOFT; historical Q09_PORTFOLIO PASS_PORTFOLIO",
+    "work_item": {
+      "id": "1ba8f6c7-7725-47c5-b0e5-6a4736c4ad44",
+      "phase": "Q09",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "same_identity_open_count": 1,
+      "active_hold_count": 0,
+      "priority_track_before": null,
+      "priority_track_after": null,
+      "canonical_rank_at_final_read": 3240,
+      "canonical_claimable_count_at_final_read": 4462
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+    "logical_backtest_setfile": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+    "sha256": {
+      "approved_card": "5878c99d9cef732642f99961556dd8bd049e14b42292b61aa72a047b4558134a",
+      "mq5": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+      "ex5": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+      "basket_manifest": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+      "logical_backtest_setfile": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+    }
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "card_ml_hits": 0,
+    "framework_input_pin_audit": {
+      "command": "python tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+      "exit_code": 0,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "verdict": "PASS"
+    },
+    "priority_mark_dry_run": {
+      "applied": false,
+      "already_priority_track": false,
+      "reason": "dry_run"
+    }
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-09-09T01:51:29+00:00",
+    "sampling_method": "Processor(_Total) percent processor time, five one-second samples",
+    "samples_percent": [
+      100.0,
+      99.13,
+      98.64,
+      97.56,
+      98.77
+    ],
+    "average_percent": 98.82,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": true,
+    "ceiling_rule": "Stop when any immediate pre-apply sample meets or exceeds 97 percent.",
+    "mt5_slots_observed_at_utc": "2026-09-09T01:47:06+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T5",
+      "T8",
+      "T9"
+    ],
+    "t_live_observed_only": true,
+    "t_live_controlled": false
+  },
+  "actions": {
+    "new_card_or_ea_created": false,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_payload_changed": false,
+    "priority_changed": false,
+    "work_item_claimed": false,
+    "dispatch_tick": false,
+    "compile_enqueued_or_started": false,
+    "backtest_or_terminal_started": false,
+    "stop_receipt_recorded": true
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  },
+  "resume_contract": "Re-read work item 1ba8f6c7-7725-47c5-b0e5-6a4736c4ad44 and repeat the priority dry-run. Apply one priority mark only if it remains the unique pending, unheld, unclaimed Q09 identity and every immediate CPU sample stays below 97 percent. Never append a duplicate row or touch portfolio/live surfaces."
+}
