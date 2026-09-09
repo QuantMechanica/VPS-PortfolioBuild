@@ -1,0 +1,119 @@
+{
+  "schema": "qm.diversity-funnel-capacity-stop/v1",
+  "generated_at_utc": "2026-09-09T11:30:09.9576717Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "2582249d55f54ff7c369df66266fcc8609f105ab",
+  "outcome": "STOPPED_BEFORE_SELECTION_OR_CLAIM",
+  "binding_gates": [
+    "WHOLE_HOST_CPU_CEILING",
+    "ACTIVE_GOVERNED_TESTER_ROW_LIMIT"
+  ],
+  "cpu_admission": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 2,
+    "samples_percent": [
+      93.449,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 98.69,
+    "maximum_percent": 100.0,
+    "required_average_strictly_below_percent": 97.0,
+    "required_maximum_strictly_below_percent": 97.0,
+    "admitted": false
+  },
+  "farm_snapshot": {
+    "command": "python tools/strategy_farm/farmctl.py work-items --status active",
+    "access": "read_only_operator_query",
+    "active_count": 8,
+    "required_active_count_strictly_below": 7,
+    "admitted": false,
+    "summary": {
+      "OPT_CENSUS_active": 4,
+      "Q02_active": 2,
+      "Q04_active": 2
+    },
+    "items": [
+      {
+        "terminal": "T7",
+        "phase": "Q02",
+        "ea_id": "QM5_11657",
+        "symbol": "GBPUSD.DWX",
+        "work_item_id": "54215c93-524d-4cb4-aee5-cf85b135fd35"
+      },
+      {
+        "terminal": "T4",
+        "phase": "Q02",
+        "ea_id": "QM5_12948",
+        "symbol": "GBPUSD.DWX",
+        "work_item_id": "205af142-0601-4f79-8392-f45d304a166b"
+      },
+      {
+        "terminal": "T5",
+        "phase": "Q04",
+        "ea_id": "QM5_36002",
+        "symbol": "GBPJPY.DWX",
+        "work_item_id": "f9012068-c5c2-4da1-a566-be0f8f1f29e2"
+      },
+      {
+        "terminal": "T1",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41302",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "44cf1078-7f74-5a8c-8b9c-3623af8c69c5"
+      },
+      {
+        "terminal": "T9",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41322",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "830095d0-ee20-5d32-b2d6-81f78c15d907"
+      },
+      {
+        "terminal": "T2",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41324",
+        "symbol": "USDJPY.DWX",
+        "work_item_id": "7a2c718f-23eb-5ba9-a07d-2fdecb650a87"
+      },
+      {
+        "terminal": "T8",
+        "phase": "OPT_CENSUS",
+        "ea_id": "QM5_41345",
+        "symbol": "XAUUSD.DWX",
+        "work_item_id": "7711f005-df38-59d5-9877-a8f939615bd6"
+      },
+      {
+        "terminal": "T6",
+        "phase": "Q04",
+        "ea_id": "QM5_9121",
+        "symbol": "GBPUSD.DWX",
+        "work_item_id": "1a9ad7eb-7c87-4a13-85ff-46afce0b6f0c"
+      }
+    ]
+  },
+  "non_duplicate_delta": {
+    "comparison_artifact": "artifacts/qm5_41397_compile_pending_q02_cpu_ceiling_stop_20260909T112903Z.json",
+    "difference": "Fresh direct five-sample whole-host admission measurement plus the authoritative eight-row active fleet roster; the comparison receipt used terminal-worker hysteresis observations for one already-built EA and did not record the active roster."
+  },
+  "pacer_build_guard": {
+    "generated_mq5_written_or_edited": false,
+    "source_pin_audit_required": false,
+    "reason": "No generated MQ5 was written, so the mandatory post-write pre-compile audit boundary was not entered."
+  },
+  "safety": {
+    "farm_claim_created_or_advanced": false,
+    "work_item_created_requeued_or_reprioritized": false,
+    "compile_command_run": false,
+    "compile_work_enqueued": false,
+    "q02_enqueued": false,
+    "backtest_or_smoke_started": false,
+    "terminal_or_worker_control": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false
+  }
+}
