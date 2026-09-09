@@ -1,5 +1,29 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~13:34Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
+> `farm_state.sqlite`-Prüfung ~16 Minuten nach dem 13:18Z-Check auf allen drei `IN_PROGRESS`-
+> Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,
+> `3032534e` DUKASCOPY-BACKFILL): keine Änderung. `QM5_41394`: EURUSD bleibt terminal
+> `Q04 FAIL` (Sackgasse, Strategy-Taxonomie); USDJPY.DWX unverändert bei `Q03 pending`
+> (`e89d6f8a…`, seit `13:09:21Z`) und `Q04 pending` (`bd6f7c72…`, seit `12:19:47Z`); SP500/
+> XAUUSD/XTIUSD weiterhin `Q02 pending` seit `10:52:59Z` (~2h41m unclaimed) — reine
+> Kapazitätsfrage der Fabrik-Queue, kein manueller Eingriff im GRÜN-Rahmen dieser Aufgabe.
+> Kein Leg hat Q10_NEWS erreicht — `bb814520`/`dfc60103` bleiben korrekt `IN_PROGRESS`.
+> `3032534e`: Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `01:24:20Z`
+> (~12h10m); Codex-Lane weiterhin 0 `IN_PROGRESS` (bestätigt per `list-tasks --agent codex
+> --state IN_PROGRESS`), Ursache unverändert der vorbestehende `repo_dirty_build_guard`
+> (kanonischer Checkout jetzt 71 unstaged Pfade, nicht durch diese Aufgabe verursacht); kein
+> neuer Reprobe fällig (Cadence-Vorgabe „mehrere Stunden, anderer UTC-Slot" seit 11:49-11:50Z
+> noch nicht erreicht). Alle drei Spawn-Leases abgelaufen (`12:49:38Z`), keine Reacquisition
+> durch diese Session (Reacquire läuft nur über den verbotenen Routing-Pfad). `farmctl health`
+> overall=FAIL (15 FAIL/15 WARN/53 OK) — identisches chronisches Set wie beim 13:18Z-Check
+> (`codex_zero_activity`, `agent_task_state_stranded`, `agent_task_aging_slo`,
+> `work_item_phase_age_slo`, `q09_sealed_plan_hold_age`, `q09_autoseal_hold_census`,
+> `pending_artifact_binding_drift`, Scheduled-Task/Backup-Calendar-FAILs); keine dieser Zeilen
+> betrifft die drei gegatterten Ketten. Kein Ticket/Rebuild/Release/Router-Zustandswechsel;
+> `agent_router.py run`/`route-many`/`replenish` nicht aufgerufen; kein OWNER-Scope-Auftrag
+> erfunden.
+
 > **Nachtrag 09.09., ~13:18Z (Orchestrierungszyklus) — keine Zustandsänderung:** ~14 Minuten
 > seit dem 13:04Z-Check. `git log --since=2026-09-09T13:04:00Z` zeigt nur den eigenen 13:04Z-
 > Log-Commit und einen fremden Codex-Review-Commit (`fc355cb7dd`, QM5_41280-Build-Review) —
