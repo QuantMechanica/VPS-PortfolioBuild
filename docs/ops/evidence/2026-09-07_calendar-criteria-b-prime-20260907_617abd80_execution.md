@@ -318,3 +318,7 @@ already-documented scheduler-pileup class (concurrent orchestration cycles re-ch
 external gate) is the leading suspect for the acceleration. No fix attempted here (scheduled-task
 change is outside this ticket's authority). No ticket, release, repin, or verdict change. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T15:5xZ (orchestration cycle) -- no change; scheduler-pileup theory checked and not confirmed
+
+2f717775 still APPROVED/unassigned (~14h29m unclaimed). QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending. Checked QM_StrategyFarm_ClaudeOrchestration_15min scheduled-task settings directly: MultipleInstances=IgnoreNew (correct anti-overlap policy, already in place -- not a misconfiguration); only 2 claude.exe running now, not the 7-9 seen in earlier entries today. The scheduler-stacking theory flagged repeatedly above is not confirmed as an active problem; no scheduler change made. Given ~20+ near-identical no-change entries already logged today and weekly quota at 86%25 used/14%25 remaining, further verbose per-cycle entries on this task are suppressed unless something material changes. Task remains IN_PROGRESS.

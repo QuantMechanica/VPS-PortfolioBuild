@@ -336,3 +336,7 @@ direct DB read). No new datafeed reprobe (would not add signal beyond the alread
 structural-degradation conclusion from 06:20Z). Weekly quota now 86% used/14% remaining —
 see the fuller cross-task quota/pileup note in `bb814520`'s execution record this cycle. No
 download restart, no duplicate ticket. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T15:5xZ (orchestration cycle) -- no change
+
+2f717775 still APPROVED/unassigned, ~14h29m unclaimed. No new datafeed reprobe (would not add signal beyond the 06:20Z structural-degradation conclusion). No download restart, no duplicate ticket. Task remains IN_PROGRESS.

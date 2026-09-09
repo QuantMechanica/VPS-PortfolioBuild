@@ -410,3 +410,7 @@ rebuild, release, or verdict change; read-only, lease not reacquired. Task remai
 Same gate as `bb814520` (see that file for the fuller note this cycle): direct DB read shows
 `QM5_41394` XAUUSD Q02 still `pending` since 10:52:59Z. No ticket, rebuild, release, or verdict
 change. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T15:5xZ (orchestration cycle) -- no change
+
+Same gate as bb814520 (see that file for the scheduler-pileup check this cycle). QM5_41394 XAUUSD Q02 still pending. No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
