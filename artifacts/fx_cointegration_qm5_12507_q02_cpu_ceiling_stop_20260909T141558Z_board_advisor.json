@@ -1,0 +1,84 @@
+{
+  "schema": "qm.fx-cointegration-q02-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-09T14:15:58.4503266Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "43811b585f8c3d81dde369ffd071b2aaaecfe892",
+  "frontier": {
+    "unbuilt_relationship_found": false,
+    "qm5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "q04_verdict": "PASS",
+      "later_terminal_phase": "Q05",
+      "later_terminal_verdict": "FAIL"
+    },
+    "qm5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_terminal_phase": "Q04",
+      "later_terminal_verdict": "FAIL"
+    }
+  },
+  "selection": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "timeframe": "H1",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "duplicate_work_item_inserted": false
+  },
+  "bindings": {
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "basket_manifest_path": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "logical_setfile_path": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set"
+  },
+  "capacity": {
+    "cpu_samples_percent": [
+      84.79176447768641,
+      77.35829955670485,
+      81.45402290004155,
+      92.38316722945694,
+      99.60988364022047
+    ],
+    "cpu_average_percent": 87.11942756082204,
+    "cpu_maximum_percent": 99.60988364022047,
+    "hard_ceiling_percent": 97,
+    "ceiling_hit": true,
+    "active_work_items": 3,
+    "active_work_item_limit": 7,
+    "active_by_phase": {
+      "Q07": 1,
+      "OPT_CENSUS": 2
+    },
+    "running_factory_terminals": [
+      "T9"
+    ],
+    "terminal_worker_count": 10
+  },
+  "action": {
+    "stopped_on_cpu_ceiling": true,
+    "source_written": false,
+    "compile_enqueued": false,
+    "backtest_enqueued": false,
+    "queue_mutated": false,
+    "priority_mutated": false,
+    "manual_dispatch": false,
+    "tester_launched": false,
+    "portfolio_surfaces_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
