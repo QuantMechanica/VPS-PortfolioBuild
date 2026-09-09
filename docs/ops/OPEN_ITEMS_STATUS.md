@@ -1,5 +1,18 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~17:50Z (Orchestrierungszyklus) — keine Zustandsänderung:** `farmctl
+> work-items --ea QM5_41394` direkt geprüft: SP500.DWX/XTIUSD.DWX weiterhin `Q02 pending`
+> seit `10:52:59Z` (~6h57m unclaimed; XAUUSD.DWX Zeile identisch pending), USDJPY.DWX
+> weiterhin `Q03 pending` seit `13:09:21Z` und `Q04 pending` seit `12:19:47Z`, EURUSD.DWX
+> terminal `Q04 FAIL`. Kein Leg hat `Q10_NEWS` erreicht — `bb814520`/`dfc60103` bleiben
+> korrekt `IN_PROGRESS`. Codex-Ticket `2f717775` (Dukascopy) weiterhin `APPROVED`/unassigned
+> seit `01:24:20Z` (~16h26m) — `3032534e` bleibt korrekt `IN_PROGRESS`. `farmctl health`:
+> FAIL 15/WARN 17/OK 51, identisches chronisches Set wie beim 17:31Z-Check, keine Zeile
+> betrifft die drei gegatterten Ketten. Wochenkontingent weiterhin kritisch (86 % used/
+> 14 % remaining) — Zyklus bewusst auf minimale Direct-Read-Verifikation beschränkt, keine
+> Tiefenanalyse. Kein Ticket/Rebuild/Release/Router-Zustandswechsel; `agent_router.py run`/
+> `route-many`/`replenish` nicht aufgerufen; kein OWNER-Scope-Auftrag erfunden.
+
 > **Nachtrag 09.09., ~17:31Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
 > `farm_state.sqlite`-Prüfung ~13 Minuten nach dem 17:18Z-Check auf allen drei `IN_PROGRESS`-
 > Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,
