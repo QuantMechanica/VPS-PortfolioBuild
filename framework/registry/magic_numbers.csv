@@ -18315,3 +18315,8 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41391,wti-tsmom10-h1,0,XTIUSD.DWX,413910000,2026-09-09,Codex governed allocator,active
 41392,xng-shoulder-wrev,0,XNGUSD.DWX,413920000,2026-09-09,Codex governed allocator,active
 41393,xng-seas-resid-mom,0,XNGUSD.DWX,413930000,2026-09-09,Codex governed allocator,active
+41394,weiss-ichi2-ma-calendar-r1,0,EURUSD.DWX,413940000,2026-09-09,Codex governed allocator,active
+41394,weiss-ichi2-ma-calendar-r1,1,USDJPY.DWX,413940001,2026-09-09,Codex governed allocator,active
+41394,weiss-ichi2-ma-calendar-r1,2,XAUUSD.DWX,413940002,2026-09-09,Codex governed allocator,active
+41394,weiss-ichi2-ma-calendar-r1,3,SP500.DWX,413940003,2026-09-09,Codex governed allocator,active
+41394,weiss-ichi2-ma-calendar-r1,4,XTIUSD.DWX,413940004,2026-09-09,Codex governed allocator,active
