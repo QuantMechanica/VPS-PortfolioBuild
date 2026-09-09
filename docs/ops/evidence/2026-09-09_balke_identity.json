@@ -1,0 +1,11 @@
+{
+  "files": {
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41398_balke-pattern-repair-opt\\QM5_41398_balke-pattern-repair-opt.mq5": "fdbb7499f349a6bd238231e7eb3d4a6257290af650e363ba78b0f95518890540",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41398_balke-pattern-repair-opt\\QM5_41398_balke-pattern-repair-opt.ex5": "68d37d3a6b6d5d4354e5a9aa494488d8d2809b1f662ff75fbb26440658137c01",
+    "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41405_balke-clock-audit-opt.md": "ce5a3b23bbf8503697d9a66091d9f854dab4da242e716cdd7a734f7ade3869f3"
+  },
+  "matrix_unique_cells": 36,
+  "parent_source_matches_baseline": true,
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41405_balke-clock-audit-opt.md",
+  "acceptance": "PARTIAL_REVIEW"
+}

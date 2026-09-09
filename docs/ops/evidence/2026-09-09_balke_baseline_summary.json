@@ -1,0 +1,63 @@
+{
+  "baseline_work_item": "2fc84747-27db-5e88-9568-3fdda6c30769",
+  "native_report": "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\raw\\run_01\\report.htm",
+  "journal_source": "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\raw\\run_01\\20260909.log",
+  "journal_isolation": {
+    "start_line": 62331,
+    "end_line": 73514
+  },
+  "baseline_window": {
+    "from": "2018-07-02",
+    "to_exclusive": "2022-12-31"
+  },
+  "trades": 888,
+  "gross_profit": "72559.82",
+  "native_commission": "-25923.04",
+  "native_swap": "0.00",
+  "net_native": "46636.78",
+  "net_dxz_5rt": "46641.37",
+  "pf_native": "1.122094943069433229600444201",
+  "pf_dxz_5rt": "1.122107701326947616261430145",
+  "placement_days": 905,
+  "quote_observed_days": 905,
+  "outside_observed_days": 7,
+  "single_pending_side_days": 7,
+  "invalid_price_lines_isolated": 7,
+  "invalid_price_lines_unfiltered": 47,
+  "confirmed_fade_only_days": 7,
+  "fade_only_trades": 1,
+  "fade_only_net_native": "-869.92",
+  "runtime_evidence": [
+    {
+      "line": 73511,
+      "text": "CS\t0\t16:05:54.996\tTester\tUSDJPY.DWX,H1: 173745965 ticks, 28052 bars generated. Test passed in 0:07:29.167 (including ticks preprocessing 0:00:12.453)."
+    }
+  ],
+  "placement_hour_distribution": [
+    {
+      "season": "summer_US_DST",
+      "broker_hour": 6,
+      "utc_hour": 3,
+      "attempts": 1160
+    },
+    {
+      "season": "winter_US_standard",
+      "broker_hour": 5,
+      "utc_hour": 3,
+      "attempts": 650
+    }
+  ],
+  "limitations": [
+    "Quote evidence is at actual placement, which can be later than range-end on blocked days; no all-calendar-day 06:00 quote census exists in these artifacts.",
+    "Deal fills may occur after the range window. Range-builder code, not fill distribution, establishes which bars form the range.",
+    "Native report commission is already present; replacement DXZ commission is computed from gross plus swap, not subtracted twice.",
+    "Logger ts_utc uses tester clock behavior; derived UTC uses broker timestamp and QM_DSTAware algorithm."
+  ],
+  "input_hashes": {
+    "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\raw\\run_01\\report.htm": "5697dc87a4996b51e1af7f983a4a41463c81c9d39c257b2c28598a7feaa0ebe5",
+    "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\raw\\run_01\\20260909.log": "fbcc417499350745589e54e3a3353ddf972b1bde1de3e661c9afaebeedc64a6d",
+    "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\raw\\run_01\\tester.ini": "0288a77e220d592c7b8f78dcb4ab44fa0e742a42b314d32937088511df616546",
+    "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\summary.json": "740d4e65c3da5f032dec98ec5b7fc2becbdab2cbc547577e6d2bfd590d3ba8e2"
+  },
+  "focused_verification": "PASS: 888 matched round trips, 1776 deals; native balance reconciled; isolated journal; all attempts strategy hour 6"
+}

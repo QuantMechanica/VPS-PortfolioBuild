@@ -1,0 +1,8 @@
+line,log,source
+63027,CS	2	15:59:18.844	Trades	2018.09.21 06:00:01   failed buy stop 4.74 USDJPY.DWX at 112.698 sl: 112.461 [Invalid price],D:\QM\reports\work_items\2fc84747-27db-5e88-9568-3fdda6c30769\QM5_41398\20260909_135814\raw\run_01\20260909.log
+63246,CS	2	15:59:22.584	Trades	2018.10.22 06:00:01   failed buy stop 4.22 USDJPY.DWX at 112.616 sl: 112.350 [Invalid price],D:\QM\reports\work_items\2fc84747-27db-5e88-9568-3fdda6c30769\QM5_41398\20260909_135814\raw\run_01\20260909.log
+64013,CS	2	15:59:46.086	Trades	2019.02.11 05:00:00   failed buy stop 8.71 USDJPY.DWX at 109.899 sl: 109.773 [Invalid price],D:\QM\reports\work_items\2fc84747-27db-5e88-9568-3fdda6c30769\QM5_41398\20260909_135814\raw\run_01\20260909.log
+64466,CS	2	16:00:00.579	Trades	2019.05.02 06:00:00   failed buy stop 5.11 USDJPY.DWX at 111.662 sl: 111.444 [Invalid price],D:\QM\reports\work_items\2fc84747-27db-5e88-9568-3fdda6c30769\QM5_41398\20260909_135814\raw\run_01\20260909.log
+67829,CS	2	16:02:08.055	Trades	2020.09.04 06:00:00   failed buy stop 6.71 USDJPY.DWX at 106.221 sl: 106.063 [Invalid price],D:\QM\reports\work_items\2fc84747-27db-5e88-9568-3fdda6c30769\QM5_41398\20260909_135814\raw\run_01\20260909.log
+71913,CS	2	16:04:16.422	Trades	2022.04.21 06:00:00   failed buy stop 1.95 USDJPY.DWX at 128.614 sl: 127.961 [Invalid price],D:\QM\reports\work_items\2fc84747-27db-5e88-9568-3fdda6c30769\QM5_41398\20260909_135814\raw\run_01\20260909.log
+71960,CS	2	16:04:19.838	Trades	2022.04.27 06:00:00   failed buy stop 2.33 USDJPY.DWX at 127.789 sl: 127.243 [Invalid price],D:\QM\reports\work_items\2fc84747-27db-5e88-9568-3fdda6c30769\QM5_41398\20260909_135814\raw\run_01\20260909.log

@@ -2140,3 +2140,14 @@ Codex ticket `49af4f08` P92 (Terra/high): `window_sweep.py` plan/enqueue/report 
 bound to the plan commit; stage A enqueue only; Claude adjudicates. Follow-ups: Astra `d444a7a8`
 (clock modes / buffer / outside-range / Balke minute config) runs on the winner only; the 1,085-cell
 pattern census stays provisional until the window is settled.
+
+## 2026-09-09 — Balke baseline clock audit and sibling prerequisite
+
+RESULT `d444a7a8`: PARTIAL_REVIEW / DEPENDENCY_PENDING. Exact baseline 2018-2022:
+888 trades reconciled; 03 UTC placement in both seasons; 7 confirmed fade-only
+order days, 1 filled trade, -869.92 native net. Late exits and cumulative-journal
+contamination are explicitly documented. Evidence:
+`docs/ops/evidence/BALKE_CLOCK_AUDIT_2026-09-09.md`.
+Reserved QM5_41405; draft in cards_review; governed magic prerequisite `2e7d5619`
+is TODO. Later WINSWEEP plan sequences variants after window selection. No new
+binary, fidelity rerun or comparison result is claimed; 41398 remains untouched.
