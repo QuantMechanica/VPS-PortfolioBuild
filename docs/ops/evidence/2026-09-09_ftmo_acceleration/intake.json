@@ -1,0 +1,810 @@
+{
+  "schema": "qm.ftmo-acceleration-intake/v1",
+  "measured_at_utc": "2026-09-09T21:21:41.163879+00:00",
+  "db_read_mode": "mode=ro; query_only=ON; single read transaction",
+  "qualified_pairs": 16,
+  "count_definition": "path_to_25._pair_summaries_fast + _qualified_pool, contiguous Q14",
+  "active_reader_phases": [
+    "Q09_NEWS",
+    "Q10_NEWS"
+  ],
+  "legacy_admitted": 0,
+  "active_reader_admitted": 0,
+  "legacy_reasons": {
+    "FTMO_Q09_EVIDENCE_MISSING": 9,
+    "FTMO_Q09_EVIDENCE_UNAUTHENTICATED": 1,
+    "FTMO_Q09_NOT_CONFIG_LOCKED": 6
+  },
+  "active_reasons": {
+    "FTMO_Q09_SCOPE_NOT_FTMO": 12,
+    "FTMO_Q09_EVIDENCE_MISSING": 3,
+    "FTMO_Q09_NOT_CONFIG_LOCKED": 1
+  },
+  "pairs": [
+    {
+      "ea_id": "QM5_10700",
+      "symbol": "XAUUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_10700",
+        "symbol": "XAUUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_10700",
+        "symbol": "XAUUSD.DWX",
+        "q09_news_work_item_id": "bb299ec1-25ff-4ab3-95ec-65906e7cf987",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\0c247960-d1e2-4731-a076-b60843d6aa83\\QM5_10700\\Q10_NEWS\\bb299ec1-25ff-4ab3-95ec-65906e7cf987\\aggregate.json",
+        "aggregate_sha256": "04c58b851f4e7add8f2029321c9e197693e08709f5ec7124c4194b888dc98f89",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_10706",
+        "symbol": "GBPUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_10706",
+        "symbol": "GBPUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "historical_cost_projection_before_spread": {
+        "sleeve_id": "10706:GBPUSD",
+        "trade_stream_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+        "trades": 360,
+        "source_net": 69101.93,
+        "projected_ftmo_net_before_spread": 65196.75,
+        "net_delta": -3905.18,
+        "ftmo_commission": -8128.84,
+        "ftmo_swap": -6317.51,
+        "spread_delta": null,
+        "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"
+      },
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_11421",
+        "symbol": "EURUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_11421",
+        "symbol": "EURUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "historical_cost_projection_before_spread": {
+        "sleeve_id": "11421:EURUSD",
+        "trade_stream_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
+        "trades": 91,
+        "source_net": 4162.83,
+        "projected_ftmo_net_before_spread": 3605.91,
+        "net_delta": -556.92,
+        "ftmo_commission": -568.19,
+        "ftmo_swap": -1408.39,
+        "spread_delta": null,
+        "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"
+      },
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_UNAUTHENTICATED",
+        "ea_id": "QM5_11422",
+        "symbol": "USDCAD.DWX",
+        "q09_news_work_item_id": "44e2c70d-38f7-4771-a721-ddf609ba89ad",
+        "matrix_scope": "7x4",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\44e2c70d-38f7-4771-a721-ddf609ba89ad\\QM5_11422\\Q09_NEWS\\USDCAD_DWX\\aggregate.json",
+        "aggregate_sha256": "0320d9a2bd246065e3c379a393bf5c2ca5be8253632e7ed4e17aa8fa7a99fc52",
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_11422",
+        "symbol": "USDCAD.DWX",
+        "q09_news_work_item_id": "74fec478-4823-4d84-a9a1-41319407197d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\21eb42e1-5107-4033-b9f6-a97c1edc15d1\\QM5_11422\\Q10_NEWS\\74fec478-4823-4d84-a9a1-41319407197d\\aggregate.json",
+        "aggregate_sha256": "0ea766456a304004b92fa3da40524138db2765b4fec13c62128cb49b0aefee09",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": {
+        "sleeve_id": "11422:USDCAD",
+        "trade_stream_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+        "trades": 195,
+        "source_net": 18310.48,
+        "projected_ftmo_net_before_spread": 15074.15,
+        "net_delta": -3236.33,
+        "ftmo_commission": -1291.94,
+        "ftmo_swap": -3713.89,
+        "spread_delta": null,
+        "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"
+      },
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_11881",
+      "symbol": "GBPUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_11881",
+        "symbol": "GBPUSD.DWX",
+        "q09_news_work_item_id": "29fe5106-c812-443a-bad4-96cb8467845a",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\29fe5106-c812-443a-bad4-96cb8467845a\\QM5_11881\\Q09_NEWS\\GBPUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "335089f7d38afd85f8aeae4275f30ecd613284d3173a2b65e333b9ee139007d7",
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_11881",
+        "symbol": "GBPUSD.DWX",
+        "q09_news_work_item_id": "b715d987-535c-4413-9047-4dcf2cbce6ce",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\dddcd4a5-5fc3-4568-9527-73286819a1a2\\QM5_11881\\Q10_NEWS\\b715d987-535c-4413-9047-4dcf2cbce6ce\\aggregate.json",
+        "aggregate_sha256": "018b0e6bacb963a5fb2541ceb674e3b6fe5341149bb0c32ce417e3288b5315ca",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_12849",
+      "symbol": "XTIUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_12849",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "db92d69a-c86f-4a48-a31b-e68f1034e006",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "NONE",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\db92d69a-c86f-4a48-a31b-e68f1034e006\\QM5_12849\\Q09_NEWS\\XTIUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "d4c327048f19695fac95032b9cd0cbc70ee9b8d3237337f78253037c3e3c621a",
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_12849",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "5f23b9ad-db71-4416-b4b1-6c2f66a4970c",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\c0fda6f1-84f0-49eb-846d-a7f729dcf984\\QM5_12849\\Q10_NEWS\\5f23b9ad-db71-4416-b4b1-6c2f66a4970c\\aggregate.json",
+        "aggregate_sha256": "b30f5fd6ab8e06b9382645fef96993a868f5322b6ec056cb0c8d900011782399",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_12855",
+      "symbol": "XTIUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_12855",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "cfa98980-c534-415f-946f-d9a2f5e00b15",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\cfa98980-c534-415f-946f-d9a2f5e00b15\\QM5_12855\\Q09_NEWS\\XTIUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "35dfae1c5e8282789967b4d4744880e15f1275cf8b71648d041c1ded823baa43",
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_12855",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "22baed14-42a0-4f9c-9e8b-96631408c523",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "SKIP_DAY",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\d8ffeba1-6fc8-467c-ad6b-e4c280493879\\QM5_12855\\Q10_NEWS\\22baed14-42a0-4f9c-9e8b-96631408c523\\aggregate.json",
+        "aggregate_sha256": "624250e1767b191eb311c581d742b8ade75e0fb0b5dfa9a90a839e8b573f012a",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_13054",
+      "symbol": "XTIUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_13054",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_13054",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "332b52a7-cdc7-443b-ac6c-c358a3717fbe",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8f760c32-a6d2-4088-9106-d406de466fbb\\QM5_13054\\Q10_NEWS\\332b52a7-cdc7-443b-ac6c-c358a3717fbe\\aggregate.json",
+        "aggregate_sha256": "a3350c86457958812a474cd3859fc9404dd253591ec63390101c54dc74eb3c1c",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": {
+        "sleeve_id": "13054:XTIUSD",
+        "trade_stream_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
+        "trades": 82,
+        "source_net": 4831.28,
+        "projected_ftmo_net_before_spread": 4250.82,
+        "net_delta": -580.46,
+        "ftmo_commission": 0,
+        "ftmo_swap": -581.38,
+        "spread_delta": null,
+        "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"
+      },
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_13213",
+        "symbol": "USDJPY.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_13213",
+        "symbol": "USDJPY.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_1537",
+      "symbol": "XAGUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "q09_news_work_item_id": "c665c1aa-9b3f-410e-bcde-048ef187652d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "NONE",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\c665c1aa-9b3f-410e-bcde-048ef187652d\\QM5_1537\\Q09_NEWS\\XAGUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "dc82bce68617f590533e1723c5fd88d2756689a8bac2208100ca6327c7e0d8ad",
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_1537",
+        "symbol": "XAGUSD.DWX",
+        "q09_news_work_item_id": "463a29c4-2ef0-40d2-baef-fa5a4727f073",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\42b0c995-7fac-415d-a08e-80581da2db33\\QM5_1537\\Q10_NEWS\\463a29c4-2ef0-40d2-baef-fa5a4727f073\\aggregate.json",
+        "aggregate_sha256": "18172c30a3e1c9a56b9586e9672e796c946c9bbb4a0979c0a85d5694cec760c7",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": {
+        "sleeve_id": "1537:XAGUSD",
+        "trade_stream_sha256": "1885c21e4c895827c79ff3d55849308ab4ee5c0db96a7d576cd652dc3eff8658",
+        "trades": 96,
+        "source_net": 3647.61,
+        "projected_ftmo_net_before_spread": -1876.79,
+        "net_delta": -5524.4,
+        "ftmo_commission": -47.13,
+        "ftmo_swap": -5477.4,
+        "spread_delta": null,
+        "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"
+      },
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_20048",
+      "symbol": "XTIUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_20048",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_20048",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "79e825cc-a806-49ac-9bc4-96d4c83c915d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\79e825cc-a806-49ac-9bc4-96d4c83c915d\\QM5_20048\\Q10_NEWS\\XTIUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "750c862687afa1fb4756babb710294274d7c8fbdfa0b969e743a1de89c0b2fbd",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": {
+        "sleeve_id": "20048:XTIUSD",
+        "trade_stream_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
+        "trades": 60,
+        "source_net": 1164.28,
+        "projected_ftmo_net_before_spread": 1277.85,
+        "net_delta": 113.57,
+        "ftmo_commission": 0,
+        "ftmo_swap": 113.15,
+        "spread_delta": null,
+        "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"
+      },
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_20266",
+      "symbol": "XTIUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_20266",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "4263d6b3-1418-47c4-afe1-de7cb6bf61d4",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "NONE",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\4263d6b3-1418-47c4-afe1-de7cb6bf61d4\\QM5_20266\\Q09_NEWS\\XTIUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "017e859a52fcd517f6b9386d7c370d08f446d318ce04068fffae7cad082953a3",
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_20266",
+        "symbol": "XTIUSD.DWX",
+        "q09_news_work_item_id": "f7b49d75-61ec-42eb-92e7-a3b029bb5df8",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\42e4b18c-4f1b-4c3f-8129-1265fa42dd7b\\QM5_20266\\Q10_NEWS\\f7b49d75-61ec-42eb-92e7-a3b029bb5df8\\aggregate.json",
+        "aggregate_sha256": "5f983383a3e51321f86aef8654ee5acce3174f1797bbc57ef7bcf2d98a97682e",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_21505",
+      "symbol": "XAGUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_21505",
+        "symbol": "XAGUSD.DWX",
+        "q09_news_work_item_id": "12bf0454-f00f-4512-b38c-92abeda13f5d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "NONE",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\12bf0454-f00f-4512-b38c-92abeda13f5d\\QM5_21505\\Q09_NEWS\\XAGUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "e9558209afa063840c2c60a9eb5ba89cffe67e23663c96a11094e1ca7fe192b1",
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_21505",
+        "symbol": "XAGUSD.DWX",
+        "q09_news_work_item_id": "21859cc5-0c13-481a-a769-b38be9e4fd91",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\f9a94c2d-98a3-4edc-ade5-f9ce5940da41\\QM5_21505\\Q10_NEWS\\21859cc5-0c13-481a-a769-b38be9e4fd91\\aggregate.json",
+        "aggregate_sha256": "d8d52792cacb62f87b6df8157709012de35cd19d8070e0cd4ff23108a2ffe3ad",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": {
+        "sleeve_id": "21505:XAGUSD",
+        "trade_stream_sha256": "243804faaf0050f5482b9a4aac8f9eb0dcd552de1c2c139a486f0bcfa46b94c1",
+        "trades": 116,
+        "source_net": 7223.85,
+        "projected_ftmo_net_before_spread": 911.67,
+        "net_delta": -6312.18,
+        "ftmo_commission": -54.52,
+        "ftmo_swap": -6257.66,
+        "spread_delta": null,
+        "spread_status": "MISSING_MATCHED_FTMO_DXZ_CALIBRATION"
+      },
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_41219",
+      "symbol": "XAUUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_41219",
+        "symbol": "XAUUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_NOT_CONFIG_LOCKED",
+        "ea_id": "QM5_41219",
+        "symbol": "XAUUSD.DWX",
+        "q09_news_work_item_id": "b25eab58-eccb-44d8-84b2-bdebd758aab5",
+        "matrix_scope": "7x4",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\b25eab58-eccb-44d8-84b2-bdebd758aab5\\QM5_41219\\Q10_NEWS\\XAUUSD_DWX\\aggregate.json",
+        "aggregate_sha256": "41e07bb7a15c955487bd79bbe73227f8c6b41c184e13b4d3433952cdca60eec9",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_41221",
+      "symbol": "EURUSD.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_41221",
+        "symbol": "EURUSD.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_41221",
+        "symbol": "EURUSD.DWX",
+        "q09_news_work_item_id": "b1a60270-b481-4631-a152-e94b1daed18d",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "OFF",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\8bd4a1be-63fc-48f1-8b06-eaf77c32010f\\QM5_41221\\Q10_NEWS\\b1a60270-b481-4631-a152-e94b1daed18d\\aggregate.json",
+        "aggregate_sha256": "49333fc59607e4f7859750e751e7f6a92bd420d47cf24604255f44b845495b83",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    },
+    {
+      "ea_id": "QM5_9641",
+      "symbol": "WS30.DWX",
+      "legacy_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_EVIDENCE_MISSING",
+        "ea_id": "QM5_9641",
+        "symbol": "WS30.DWX",
+        "q09_news_work_item_id": null,
+        "matrix_scope": null,
+        "source_target_compliance": null,
+        "chosen_temporal": null,
+        "deployment_compliance": null,
+        "aggregate_path": null,
+        "aggregate_sha256": null,
+        "details": []
+      },
+      "active_reader_result": {
+        "admitted": false,
+        "reason_code": "FTMO_Q09_SCOPE_NOT_FTMO",
+        "ea_id": "QM5_9641",
+        "symbol": "WS30.DWX",
+        "q09_news_work_item_id": "c33ba35e-ed26-44b8-9a3b-2fa5f7a44529",
+        "matrix_scope": "7x1_target_compliance",
+        "source_target_compliance": "DXZ",
+        "chosen_temporal": "PRE60_POST60",
+        "deployment_compliance": null,
+        "aggregate_path": "D:\\QM\\reports\\work_items\\068afd3f-a36e-4a82-ac1a-3c57dc4f5efd\\QM5_9641\\Q10_NEWS\\c33ba35e-ed26-44b8-9a3b-2fa5f7a44529\\aggregate.json",
+        "aggregate_sha256": "1970f376e1836459a0bc302f92ed450b44b6a06ae14fdb6cea6be6a7496f2156",
+        "details": []
+      },
+      "historical_cost_projection_before_spread": null,
+      "projection_scope": "EXPLORATORY_2026_09_05_NOT_CURRENT_BINARY_OR_NET_EDGE_CERTIFICATION"
+    }
+  ],
+  "news_storage_counts": [
+    {
+      "phase": "Q09_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "DXZ",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 7
+    },
+    {
+      "phase": "Q09_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "NONE",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 7
+    },
+    {
+      "phase": "Q09_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x4",
+      "target_compliance": "DXZ",
+      "verdict": "CONFIG_LOCKED",
+      "n": 1
+    },
+    {
+      "phase": "Q09_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x4",
+      "target_compliance": "DXZ",
+      "verdict": "INVALID_EVIDENCE",
+      "n": 1
+    },
+    {
+      "phase": "Q09_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x4",
+      "target_compliance": "DXZ",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 3
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "DXZ",
+      "verdict": "CONFIG_LOCKED",
+      "n": 1
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "DXZ",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 3
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V2",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "NONE",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 3
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V3",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "DXZ",
+      "verdict": "CONFIG_LOCKED",
+      "n": 33
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V3",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "DXZ",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 40
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V3",
+      "matrix_scope": "7x1_target_compliance",
+      "target_compliance": "NONE",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 46
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V3",
+      "matrix_scope": "7x4",
+      "target_compliance": "DXZ",
+      "verdict": "CONFIG_LOCKED",
+      "n": 32
+    },
+    {
+      "phase": "Q10_NEWS",
+      "contract_version": "Q09_NEWS_V3",
+      "matrix_scope": "7x4",
+      "target_compliance": "DXZ",
+      "verdict": "REVIEW_REQUIRED",
+      "n": 5
+    }
+  ],
+  "raw_q14_verdict_counts": [
+    {
+      "verdict": null,
+      "n": 2
+    },
+    {
+      "verdict": "INFRA_FAIL",
+      "n": 3
+    },
+    {
+      "verdict": "KEEP_INCUMBENT",
+      "n": 25
+    },
+    {
+      "verdict": "OPT_ELIGIBLE",
+      "n": 11
+    },
+    {
+      "verdict": "OPT_REJECTED",
+      "n": 3
+    }
+  ],
+  "bindings": [
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-09_ftmo_acceleration\\collect_snapshot.py",
+      "sha256": "73139d8dda81d4152e557fe0281869ac375b35d03212a5c021e539dd5446e10b"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json",
+      "sha256": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e"
+    },
+    {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\portfolio\\ftmo_q09_admission.py",
+      "sha256": "dc7e38e7b26ec08b89928f41df946827f86a6249cf7b062ec9b416630379cc8f"
+    },
+    {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\path_to_25.py",
+      "sha256": "0a424e8d68a7304b128792d27d16b0195559b5791d1fd110101f53c8eee69ff5"
+    },
+    {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\gate_manifest.v4.json",
+      "sha256": "f71c1ea63f1e847b3670904a6de25bcb4b337df9e0a7cff8ee6405d9c3aa2c83"
+    },
+    {
+      "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\gate_manifest.v4.draft.json",
+      "sha256": "c51fbfffb1aca470207bc0d027b172625e8680095a7a5c75ceed6327e48ae0bc"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_account_terms.md",
+      "sha256": "6d6c7bdd43b690db44d1fac8e64fcb515c2db0d79ae6f12de00e7f5bbcb2e753"
+    }
+  ],
+  "limits": [
+    "FTMO news admission is only one prerequisite; admission does not authorize trading.",
+    "No holdout was opened; prior published projections are exploratory and exclude spread delta.",
+    "Provider terms and binary identity require fresh binding before use in an economic test.",
+    "This snapshot cannot change a pipeline verdict, the 25-pair rule, R5, or purchase authority."
+  ]
+}

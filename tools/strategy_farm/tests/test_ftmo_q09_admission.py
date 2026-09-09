@@ -170,3 +170,44 @@ def test_dxz_7x1_does_not_cover_ftmo(tmp_path: Path) -> None:
         conn.close()
     assert result["admitted"] is False
     assert result["reason_code"] == admission.SCOPE_NOT_FTMO
+
+
+def test_active_news_phase_reads_authenticated_evidence(tmp_path: Path) -> None:
+    conn = _database(tmp_path)
+    _locked(conn, tmp_path, target="FTMO", scope="7x1_target_compliance")
+    active_phase = admission.gate_manifest.load_gate_manifest().storage_phase_for_role("NEWS", "NEWS")
+    conn.execute("UPDATE work_items SET phase=?", (active_phase,))
+    conn.commit()
+    try:
+        result = admission.evaluate_ftmo_q09_admission(conn, 42, "EURUSD.DWX")
+        assert result["admitted"] is True
+        # A migrated phase must not weaken authentication.
+        (tmp_path / "aggregate.json").write_text("{}", encoding="utf-8")
+        tampered = admission.evaluate_ftmo_q09_admission(conn, 42, "EURUSD.DWX")
+        assert tampered["admitted"] is False
+        assert tampered["reason_code"] == admission.EVIDENCE_UNAUTHENTICATED
+    finally:
+        conn.close()
+
+
+def test_newer_active_phase_refusal_supersedes_legacy_pass(tmp_path: Path) -> None:
+    conn = _database(tmp_path)
+    _locked(conn, tmp_path, target="FTMO", scope="7x1_target_compliance")
+    active_phase = admission.gate_manifest.load_gate_manifest().storage_phase_for_role("NEWS", "NEWS")
+    conn.execute(
+        "INSERT INTO work_items VALUES (?,?,?,?,?,?,?,?,?)",
+        ("news-new", active_phase, "QM5_42", "EURUSD.DWX", "done",
+         "REVIEW_REQUIRED", "", "2026-09-09", "2026-09-09"),
+    )
+    conn.execute(
+        "INSERT INTO q09_news_tests VALUES (?,?,?,?,?,?,?,?)",
+        ("news-new", "REVIEW_REQUIRED", "FTMO", "7x1_target_compliance", None, None, "", ""),
+    )
+    conn.commit()
+    try:
+        result = admission.evaluate_ftmo_q09_admission(conn, 42, "EURUSD.DWX")
+    finally:
+        conn.close()
+    assert result["admitted"] is False
+    assert result["reason_code"] == admission.NOT_CONFIG_LOCKED
+    assert result["q09_news_work_item_id"] == "news-new"

@@ -1,0 +1,42 @@
+{
+  "program_id": "FTMO_ACCELERATION_20260909",
+  "commissioned_at_utc": "2026-09-09T21:26:14.766338+00:00",
+  "tasks": [
+    {
+      "enqueued": true,
+      "task_id": "83ffadd6-24bc-4dd3-afa0-2843269b1ad9",
+      "task_type": "ops_issue",
+      "state": "TODO",
+      "workstream": "admission",
+      "priority": 99,
+      "lane": "codex"
+    },
+    {
+      "enqueued": true,
+      "task_id": "54729be7-8082-4a8c-afcf-e4497e6d9f4a",
+      "task_type": "ops_issue",
+      "state": "TODO",
+      "workstream": "cost_shortlist",
+      "priority": 98,
+      "lane": "codex"
+    },
+    {
+      "enqueued": true,
+      "task_id": "b7858771-ecdc-4bb5-9d2f-d428a12bc661",
+      "task_type": "ops_issue",
+      "state": "TODO",
+      "workstream": "execution",
+      "priority": 97,
+      "lane": "codex"
+    },
+    {
+      "enqueued": true,
+      "task_id": "ff8be2f1-aa19-4694-86be-9154be3df6b9",
+      "task_type": "ops_issue",
+      "state": "TODO",
+      "workstream": "economics",
+      "priority": 96,
+      "lane": "claude"
+    }
+  ]
+}

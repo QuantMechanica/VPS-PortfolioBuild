@@ -25,11 +25,13 @@ from typing import Any, Mapping
 
 try:
     from .. import q09_news_contract as q09_contract
+    from .. import gate_manifest
 except ImportError:  # pragma: no cover - direct script/import execution
     import sys
 
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     import q09_news_contract as q09_contract  # type: ignore
+    import gate_manifest  # type: ignore
 
 
 ADMITTED_REASON = "FTMO_Q09_ADMITTED"
@@ -43,6 +45,14 @@ FTMO_CELLS_INCOMPLETE = "FTMO_Q09_FTMO_CELLS_INCOMPLETE"
 FTMO_CONFIG_NOT_VIABLE = "FTMO_Q09_FTMO_CONFIG_NOT_VIABLE"
 
 FTMO_COMPLIANCE_MODE_ID = 2
+
+# The NEWS storage phase moved in v4. Read both the active name and its
+# historical alias, then choose the latest completed evidence across them.
+# Keep authentication, coverage and economic requirements unchanged.
+NEWS_READ_PHASES = tuple(sorted({
+    "Q09_NEWS",
+    gate_manifest.load_gate_manifest().storage_phase_for_role("NEWS", "NEWS"),
+}))
 
 
 def _normalize_ea(value: Any) -> str:
@@ -181,8 +191,9 @@ def evaluate_ftmo_q09_admission(
     try:
         if not _tables_present(conn, required_tables):
             return result
+        phase_placeholders = ",".join("?" for _ in NEWS_READ_PHASES)
         row = conn.execute(
-            """
+            f"""
             SELECT
                 w.id AS work_item_id,
                 w.verdict AS work_item_verdict,
@@ -197,12 +208,12 @@ def evaluate_ftmo_q09_admission(
                 t.aggregate_sha256
             FROM work_items w
             LEFT JOIN q09_news_tests t ON t.work_item_id=w.id
-            WHERE w.ea_id=? AND upper(w.symbol)=? AND w.phase='Q09_NEWS'
+            WHERE w.ea_id=? AND upper(w.symbol)=? AND w.phase IN ({phase_placeholders})
               AND w.status='done'
             ORDER BY w.updated_at DESC, w.created_at DESC, w.id DESC
             LIMIT 1
             """,
-            (result["ea_id"], result["symbol"]),
+            (result["ea_id"], result["symbol"], *NEWS_READ_PHASES),
         ).fetchone()
     except sqlite3.DatabaseError as exc:
         result["details"] = [f"database_error:{type(exc).__name__}"]

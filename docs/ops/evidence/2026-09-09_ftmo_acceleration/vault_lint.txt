@@ -1,0 +1,11 @@
+Company Reference lint: FAIL
+- old gate token in active page: 08 Current State/2026-09-08 FTMO Governance Nachqualifikation.md
+- old gate token in active page: 08 Current State/2026-09-08 T11 Warmterminal und Backtest-Beschleunigung.md
+- old gate token in active page: 08 Current State/2026-09-09_candidates_pattern_balke.md
+- old gate token in active page: 12 ToDo/AI ToDos/Codex.md
+- old gate token in active page: 12 ToDo/AI ToDos/Claude.md
+- old gate token in active page: 12 ToDo/AI ToDos/OWNER.md
+- old gate token in active page: 12 ToDo/AI ToDos/Archive/Entscheidungen 2026-09-05.md
+- old gate token in active page: 12 ToDo/AI ToDos/Archive/Entscheidungen 2026-09-06.md
+- old gate token in active page: 12 ToDo/AI ToDos/Archive/OWNER_2026-09-06_pre_todo_migration.md
+- old gate token in active page: 12 ToDo/AI ToDos/Archive/Entscheidungen 2026-09-08.md
