@@ -156,3 +156,13 @@ dann kohortenweise) vs. Parken dieser 9-10 Zeilen als dauerhaft
 `REVIEW_REQUIRED` bis zu einem späteren Rebuild-Fenster. Dieser Fund betrifft
 auch die verkettete B-prime- und Counter-Path-Aufträge (bb814520, 60cd31a8) —
 Querverweis dort ergänzt.
+
+## Karte gestellt, 2026-09-09 (Orchestrierungszyklus)
+
+Genau die hier empfohlene Karte wurde gestellt: `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`
+(Vorlage `docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md`, Empfehlung B gestuft
+[11167 zuerst] vs. C Parken; kein deklariertes Residuum — die drei Kalender-Bundle-Inputs steuern
+laut `QM_NewsFilter.mqh:744` (`QM_NewsInitTesterBundle`) tatsaechlich den geladenen Bundle, sind
+also kein reines Provenienz-Echo). Erstfassung faelschlich mit Deklarations-Option, im selben
+Zyklus korrigiert (Commits `a65321d94f`/`33dc5a1979`). Aufgabe `dfc60103` bleibt IN_PROGRESS bis
+zur OWNER-Antwort; kein Rebuild ausgefuehrt.

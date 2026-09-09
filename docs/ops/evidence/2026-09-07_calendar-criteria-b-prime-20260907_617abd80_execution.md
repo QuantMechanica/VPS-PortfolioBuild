@@ -62,3 +62,18 @@ Criterion recorded with exact residual classes; B admits USD-only rows of any ti
   hold, verdict or evidence touched; recommend a new OWNER card (rebuild
   pre-08-03 cohort vs. park). This task and 60cd31a8 remain gated on that
   decision for the last unreleased/unadjudicated legacy rows.
+
+## Progress 2026-09-09 (orchestration cycle) — rebuild-vs-park card minted
+
+- OWNER Mission-Control card `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` minted
+  (Vorlage `docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md`) for exactly the
+  question raised above. First draft wrongly proposed a declared-residual option; corrected
+  same-cycle to rebuild (staged, 11167 first) vs. park, after confirming in
+  `QM_NewsFilter.mqh:69-76,744-763` that the three calendar-bundle inputs functionally gate which
+  bundle `QM_NewsInitTesterBundle()` loads — not provenance echo — so no declared-residual
+  analogy to the `sv` precedent is honest here. Commits: mint `0f82e73050`/`7af08a11f0`,
+  correction `a65321d94f`/`33dc5a1979`. Vault sync failed both times (`G:` Drive permission
+  denied on `12 ToDo/AI ToDos/OWNER.md`); local feed/config committed and is the source of truth.
+- Acceptance criterion "first B′ adjudications end PASS/FAIL (not INVALID)" stays OPEN pending
+  this OWNER decision. No repin/publish/threshold/verdict change made. Task `bb814520` stays
+  IN_PROGRESS.

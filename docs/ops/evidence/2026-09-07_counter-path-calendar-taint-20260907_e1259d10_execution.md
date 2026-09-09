@@ -27,6 +27,26 @@ Consumer B active only for declared-admissible rows; excluded rows remain held; 
 
 ## Progress 16:23Z — see the B′ record: 11167 adjudication void (pre-sv build, guard), card OWNER-DEC-Q09-LEGACY-LOGGER-SAMPLE-20260907 minted; counter path continues on post-sv rows (10145/SP500, 10513/XAUUSD prioritised).
 
+## Closeout 2026-09-09 (orchestration cycle) — this decision's own acceptance is met
+
+This decision's scope is the scoped consumer B activation itself (Codex `f3a94b87` APPROVED,
+`312f37e679`), not the downstream per-row adjudication outcomes: consumer B is active only for
+declared-admissible rows, excluded rows remain held, the "Kalender scope-begrenzt" footnote is
+present on every released row (wave 1 + wave 2, 11 of 12 admissible rows released, `745671a4`
+deferred on a separate missing-evidence lineage ticket), the re-adjudication ticket `235e5119`
+exists and stays bound, and no repin/publish/threshold/stored-verdict change was made anywhere in
+this chain. All four acceptance criteria for **this** decision (`OWNER-DEC-COUNTER-PATH-CALENDAR-
+TAINT-20260907`) are satisfied.
+
+The unresolved item (some released rows' first adjudication ending `REVIEW_REQUIRED` rather than
+terminal PASS/FAIL, root-caused this cycle to two independent legacy-build boundaries — `sv`
+2026-07-20 and calendar-bundle-input 2026-08-03 — see
+`2026-09-07_calendar-criteria-b-prime-20260907_617abd80_execution.md` and
+`2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md`) belongs to the
+`CALENDAR-CRITERIA-B-PRIME` decision's own acceptance bar ("first adjudications terminal"), not
+to this one. New card `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` tracks it. Task `60cd31a8`
+moves to REVIEW.
+
 ## Progress 2026-09-09 00:56Z — legacy cohort structurally blocked past the sv-logger fix; see `q09-legacy-logger-sample` record
 
 - The 11167 legacy canary (`6797ed1c`) failed again 2026-09-08 17:32Z on a
