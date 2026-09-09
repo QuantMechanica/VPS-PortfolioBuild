@@ -364,3 +364,7 @@ download restart, no duplicate ticket. Task remains `IN_PROGRESS`.
 ## Checked 2026-09-09T17:32Z (orchestration cycle) -- no change
 
 Codex ticket 2f717775 still APPROVED/unassigned since 01:24:20Z (~16h08m). No process interference confirmed via tasklist. No ticket, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T1749Z (orchestration cycle) -- no change
+
+Codex ticket 2f717775 confirmed still APPROVED/unassigned (updated_at 01:24:20Z, ~16h25m unclaimed) via direct DB read. Spawn lease agent_task:3032534e is LIVE (acquired 17:27:22Z, expires 17:57:22Z) -- deferred without touching, per duplicate-work guard (a concurrent cycle may be mid-check). No ticket, release, rebuild, or verdict change. Task remains IN_PROGRESS.

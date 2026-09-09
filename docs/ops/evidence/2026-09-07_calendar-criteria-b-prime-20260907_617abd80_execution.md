@@ -354,3 +354,7 @@ Same gate, unchanged since 17:03Z check (direct DB read + git log confirm no new
 ## Checked 2026-09-09T17:32Z (orchestration cycle) -- no change
 
 QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending since 10:52:59Z (~6h39m). No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T1749Z (orchestration cycle) -- no change
+
+QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending, claimed_by=None, unchanged since 10:52:59Z (~6h56m). Spawn lease agent_task:bb814520 expired at 14:12Z; not reacquired (read-only cycle, no work to claim). No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
