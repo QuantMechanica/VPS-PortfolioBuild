@@ -1,0 +1,98 @@
+{
+  "schema": "qm.fx-cointegration-paced-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-09T16:00:49.9413032Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "a6ed0484c59b792340171acd5b02af0664ee3c65",
+  "mission": "Grow the certified V5 portfolio book with a non-duplicate market-neutral FX cointegration sleeve and enqueue Q02",
+  "frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "reconciliation": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md",
+    "relationship_count": 66,
+    "unbuilt_relationship_found": false,
+    "reason": "The frozen 66-pair frontier is fully mechanized; a new card or EA would duplicate an existing relationship."
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "pair": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "q04_verdict": "PASS",
+      "later_terminal_phase": "Q05",
+      "later_terminal_verdict": "FAIL",
+      "q02_blocked": false
+    },
+    "QM5_12533": {
+      "pair": [
+        "EURJPY.DWX",
+        "GBPJPY.DWX"
+      ],
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_terminal_phase": "Q04",
+      "later_terminal_verdict": "FAIL",
+      "q02_blocked": false
+    }
+  },
+  "fallback": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "timeframe": "H1",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "q02_status": "pending",
+    "q02_verdict": null,
+    "duplicate_work_item_inserted": false
+  },
+  "capacity": {
+    "active_work_items": 5,
+    "active_by_phase": {
+      "Q08": 1,
+      "OPT_CENSUS": 4
+    },
+    "running_factory_terminals": [
+      "T3",
+      "T5",
+      "T10"
+    ],
+    "cpu_samples_percent": [
+      95.9,
+      93.96,
+      97.27,
+      95.82,
+      95.71
+    ],
+    "cpu_average_percent": 95.73,
+    "cpu_maximum_percent": 97.27,
+    "hard_ceiling_percent": 97,
+    "ceiling_hit": true
+  },
+  "pacer_build_guard": {
+    "mq5_written_or_modified": false,
+    "audit_framework_input_pins_required": false,
+    "audit_framework_input_pins_executed": false,
+    "compile_enqueue_attempted": false,
+    "reason": "The CPU ceiling stopped the mission before source generation, so the mandatory pre-compile source audit was not reached."
+  },
+  "actions": {
+    "strategy_card_created": false,
+    "ea_source_created": false,
+    "basket_manifest_created": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "queue_mutated": false,
+    "tester_launched": false,
+    "terminal_control_performed": false,
+    "portfolio_surfaces_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
