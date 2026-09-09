@@ -1380,3 +1380,27 @@ of scope for the three assigned tasks). `farmctl.py health` returned the same
 `overall=FAIL`, `fail=14/warn=20/ok=50` with the same two chronic scheduler-only
 `task_monitor_escalation` FAILs. All three tasks correctly remain `IN_PROGRESS`; no
 router state change made, no OWNER-scope work invented.
+
+## Orchestration cycle 2026-09-09T0534Z (checked, no change)
+
+- `bb814520` (calendar B-prime) / `dfc60103` (Q09 legacy logger) both still gated on
+  `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (card `docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md`,
+  Option B rebuild-staged vs. C park) — re-checked the card text directly (no JA/NEIN recorded)
+  and `git log --since=2026-09-09T05:08:00Z` (only an unrelated candidate-priorities commit
+  `5c03f68d25`); `G:` Vault drive still `UnauthorizedAccessException` from this session, could not
+  cross-check the mirror. No new ticket, rebuild, release or card minted.
+- `3032534e` (Dukascopy backfill): last real application-level downloader re-test was
+  02:33-02:36Z (`2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md`), which found
+  the TCP-connect-only probe to be a false-recovery signal and called for waiting "several hours
+  (ideally a different UTC session/day-part)" before the next application-level re-test. Current
+  cycle is ~05:34Z, only ~3h since that probe — window not yet reached, no re-test run this cycle
+  (consistent with the disposition every cycle since 0333Z).
+- `farmctl health`: FAIL 14 / WARN 19 / OK 51 — same chronic FAIL set (`codex_zero_activity`,
+  `q02_stranded_exhausted_pairs`, `agent_task_state_stranded`, `agent_task_aging_slo`,
+  `work_item_phase_age_slo`, `q09_sealed_plan_hold_age`, `q09_autoseal_hold_census`,
+  `pending_artifact_binding_drift`, `phase_invalid_rate_7d`, `schtask:QM_EvidenceCohortWatch_Daily_0420`,
+  `schtask:QM_StrategyFarm_FactoryON_AtLogon`, `backup_calendar_continuity`, 2×
+  `task_monitor_escalation` mirroring the same two schtask FAILs); `repo_dirty_build_guard` blocked
+  by 5 uncommitted files in the canonical checkout (`QM5_41240` WIP + `dxz23_execution_contracts.json`),
+  unrelated to any of the 3 claude tasks, not touched. No router state change, no OWNER-scope work
+  invented.
