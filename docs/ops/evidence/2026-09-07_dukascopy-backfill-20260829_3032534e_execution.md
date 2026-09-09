@@ -380,3 +380,42 @@ Codex ticket 2f717775 moved out of the APPROVED/unassigned starvation state: ass
 ## Checked 2026-09-09T~18:50Z (orchestration cycle) -- no change
 
 `2f717775` still `IN_PROGRESS`/codex, `updated_at=18:18:25Z` (~32min, still plausible for an in-flight probe build). Weekly quota unchanged 88%/12%. No download restart, no duplicate ticket. Task remains IN_PROGRESS pending codex's artifact.
+
+## Checked 2026-09-09T19:22Z (orchestration cycle) -- material change, production download launched
+
+Codex ticket `2f717775` (task `f6d18a6e-0170-47c7-bbfd-e1b33d9d01c8`) delivered the P1
+hardening + N=300 measurement: `docs/ops/evidence/2026-09-09_dukascopy_p1_hardening_measurement.md`.
+Result: 98.6667% success (201 downloaded + 95 legitimate no-data / 300), only 4 retry-exhausted
+after 5 attempts, effective throughput 95.63 hour-files/min, projected wall time for the full
+304,621-hour plan = 53.09h / 2.21 days (down from the prior 167-day straight-line estimate before
+hardening). Disposition: PROCEED with resumable scheduled batches, no proxy/different egress
+required. 32 focused tests pass (`test_dukascopy_backfill.py`, `test_download_bi5_hardening.py`,
+`test_dwx_tick_tail_probe.py`). This reverses the connectivity-degraded stop recorded in
+`docs/ops/evidence/2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md` (01:27-01:32Z,
+6/304,621 hours before stopping) -- the earlier interrupted run's `--out` root
+(`20260909T032705Z`) predates `hour_ledger.jsonl` and cannot resume, so it is left untouched
+as historical evidence, not reused.
+
+Action taken (within this task's already-authorized `allowed_actions`: "Run the throttled
+downloader detached at night (5-10 req/s)"): launched the hardened production `download_bi5.py`
+for the full 37-symbol splice CSV, detached (`CREATE_NO_WINDOW | DETACHED_PROCESS`, PID 16480,
+cwd `C:\QM\repo`), fresh output root:
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Verified running after ~65s: `progress.json` status=RUNNING, planned=305,287 hours across 37
+symbols, completed=47, downloaded=47, errors=0 (retry churn visible in `download.log`, matching
+the measured baseline -- no hour permanently failed yet). No terminal process started/stopped,
+no MT5 history mutated, no T1 import, no T_Live/AutoTrading action, no signed-archive change,
+no verdict/threshold change. Process is self-monitoring (resumable via `hour_ledger.jsonl`,
+`production_import: false` receipt) and will run unattended over the projected ~2.2 days;
+subsequent cycles should check `progress.json`/`hour_ledger.jsonl` for completion or the
+retry-exhausted count before restarting anything, not re-launch a duplicate downloader. Next
+step after completion: P2 conversion (still blocked on the 9 non-FX symbols' `price_scale`
+review per the 17:18Z entry above) and P3 reconciliation, then P4 per-symbol import. Task
+remains IN_PROGRESS.
