@@ -11,7 +11,7 @@
   "predecessor_compile_result": "PASS",
   "predecessor_build_check_result": "FAIL",
   "predecessor_mq5_sha256": "4536faab2b4a4a47f47851641f4e8615c8540eebd09621454f1e39cd65380a07",
-  "repaired_mq5_sha256": "5e583bcaf7d304df9d9e708d77cdc14e45b396a472c8b002cc00ad2861204511",
+  "repaired_mq5_sha256": "0040b476cd5cb6fa74117642e23740831960fc25bc620a27bd57936fe5cc46a8",
   "repairs": [
     "Removed the hard-coded runtime symbol and resolved the chart instrument through _Symbol.",
     "Changed the locked backtest risk check to RISK_PERCENT == 0 and finite RISK_FIXED > 0.",
