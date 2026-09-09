@@ -248,3 +248,13 @@ structural change. `completed` 24->29 this cycle (5 more hour-files of
 unclaimed/stalled on `repo_dirty_build_guard`. Task `3032534e` stays
 IN_PROGRESS. Next cycle: continue periodic bounded probes; treat any
 brief clean window as inconclusive until it holds across a >=4min sample.
+
+## Re-probe 2026-09-09 12:33-12:34Z (orchestration cycle, +~8min) — 3/3 net downloaded, 0 errors
+
+Bounded ~70s window, same command/output root. `completed` 29->32, `downloaded=3,
+errors=0` this session (two attempt-1 failures in `download.log`, both
+recovered on retry). No production job restarted, no orphaned process
+(`wmic` confirmed). `2f717775` still `APPROVED`/unclaimed (~11h9m). Task stays
+IN_PROGRESS; QM5_41394 gate for bb814520/dfc60103 also unchanged this cycle
+(SP500/XAUUSD/XTIUSD Q02 still pending since 10:52:59Z, USDJPY now Q04
+pending, EURUSD dead-ended Q02 PASS/Q04 FAIL).
