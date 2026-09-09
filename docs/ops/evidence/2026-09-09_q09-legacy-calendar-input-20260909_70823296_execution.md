@@ -215,6 +215,16 @@ this read; the acceptance criterion (a PASS/FAIL Q10_NEWS-reachable verdict on t
 identity) is still not met. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain
 correctly `IN_PROGRESS`.
 
+## Checked 2026-09-09T09:1xZ (orchestration cycle) — b66b5ccc → REVIEW, Q02 still pending
+
+Direct DB read: `b66b5ccc` moved `IN_PROGRESS`→`REVIEW` (09:09:18Z), artifact
+`docs/ops/evidence/2026-09-09_qm5_41394_rebuild_b66b5ccc_execution.md`, verdict
+`BUILD_PASS_Q02_ADMITTED_TESTER_ECHO_PENDING`. Q02 work item `58b36f74` still `status=pending`
+(not run). Per this cycle's own scope rule, REVIEW-state tasks are not mine to touch. This
+task's acceptance criterion (Q02/Q10_NEWS PASS/FAIL) is still unmet. No router state change.
+Given ~20 near-identical prior entries above with no OWNER-side action needed, further
+per-cycle entries here are suppressed unless Q02 actually produces a verdict or REVIEW closes.
+
 ## Self-correction 2026-09-09T~0851Z — my own 0850Z entry's "no work_items row" claim was a query bug
 
 My own 0850Z entry above (this cycle, same session) queried `work_items WHERE ea_id=41394`
