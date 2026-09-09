@@ -1,0 +1,78 @@
+{
+  "schema": "qm.fx-q02-priority-advance-evidence/v1",
+  "recorded_at_utc": "2026-09-09T06:04:53+00:00",
+  "branch": "agents/board-advisor",
+  "frontier": {
+    "unbuilt_relationship_found": false,
+    "qm5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "q02_verdict": "PASS",
+      "later_terminal_gate": "Q05",
+      "later_terminal_verdict": "FAIL"
+    },
+    "qm5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "q02_verdict": "PASS",
+      "later_terminal_gate": "Q04",
+      "later_terminal_verdict": "FAIL"
+    }
+  },
+  "selection": {
+    "ea_id": "QM5_41335",
+    "ea_label": "QM5_41335_fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "work_item_id": "ff75b1c3-4930-419d-a2fe-49bd37eadc4d",
+    "compile_predecessor_id": "08440065-e8fb-4400-aa99-674eb2693924",
+    "status_after": "active",
+    "claimed_by_after": "T5",
+    "attempt_count_after": 0,
+    "verdict_after": null,
+    "worker_claim_observed_at_utc": "2026-09-09T06:05:59+00:00",
+    "priority_track_before": false,
+    "priority_track_after": true,
+    "duplicate_work_item_inserted": false,
+    "priority_reason": "OWNER 2026-09-09 FX portfolio mission: advance the already-enqueued QM5_41335 AUDUSD D1 structural forex fallback through Q02; no duplicate work item, no manual dispatch, no portfolio/live mutation."
+  },
+  "bindings": {
+    "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41335_fx-usd-exhaustion-reversal-opt.md",
+    "approved_card_sha256": "7826e575a21600cfcc48e7ba03e6fa38bfe8faf91e4db3978f430a49e69dc1aa",
+    "mq5_path": "C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+    "mq5_sha256": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+    "ex5_sha256": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+    "setfile_sha256": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "pacer_audit": {
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0
+    }
+  },
+  "capacity": {
+    "cpu_samples_percent": [
+      78.71437762801308,
+      71.33284048600976,
+      71.84513026604839,
+      73.92884987792687,
+      80.27763093401879
+    ],
+    "cpu_average_percent": 75.21976583840338,
+    "cpu_maximum_percent": 80.27763093401879,
+    "hard_ceiling_percent": 97,
+    "active_work_items_at_selection": 5,
+    "admissible": true
+  },
+  "safety": {
+    "source_written": false,
+    "compile_enqueued": false,
+    "manual_dispatch": false,
+    "tester_launched": false,
+    "portfolio_surfaces_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
