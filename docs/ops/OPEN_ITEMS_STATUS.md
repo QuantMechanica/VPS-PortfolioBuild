@@ -2107,3 +2107,14 @@ lane (held awaiting_human_lane:owner; questions Q1-Q6 mirrored to Vault OWNER Vi
 `95b48188` P80 Astra fleet-wide session-clock audit (read-only). Recipe
 `session_tools/enqueue_balke_clock_audit_0909.py`. Both Astra rows route IN_PROGRESS codex; the
 Codex orchestration holds them `awaiting_model_window:astra` if the Astra window is closed.
+
+## 2026-09-09T21:25Z — Balke video lane executed by Claude (OWNER: AI seats may do video research)
+
+RESULT: captions of Pay-JP34YSI / mOa4dqxAh4g evaluated -> `docs/research/VIDEO_Pay-JP34YSI_BALKE_USDJPY_CLOCK_2026-09-09.md`.
+Balke USDJPY = range 00:00-07:30 broker server time, delete+close 18:00, no range filter, no
+trailing/BE, max 1 buy + 1 sell, SL opposite side, no TP (timestamps in the doc). The 03:00-06:00
+window is the OWNER spec of 2026-06-27 (12700 brief), not a Balke rule; 03:05-06:05 is his gold
+setting. GMT offset never stated on-air; PF/DD/buffer value are on-screen only (Chrome connector not
+connected -> NICHT GEZEIGT). Astra `d444a7a8` updated (H-WINDOW primary, minute-granular range end,
+ATR band OFF cell); OWNER `4a3a4a02` reduced to 3 frames. Policy annex recorded in Vault
+`02 Org/AI Agent Routing and Role Contracts.md` (2026-09-09).
