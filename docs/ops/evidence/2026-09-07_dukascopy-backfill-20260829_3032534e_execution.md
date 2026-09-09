@@ -124,3 +124,14 @@ are possible.
   restart, no terminal touched. `farmctl health` this cycle: overall FAIL 14/WARN 19/OK 50, all
   chronic/unrelated to this task (schtask escalations, ks_baseline 23/24). Task `3032534e` stays
   IN_PROGRESS pending `2f717775` and a later-hour datafeed retest.
+
+## Checked 2026-09-09T04:48Z (orchestration cycle) — no change; ticket now ~3h24m unclaimed
+
+- `2f717775` still `APPROVED`/`assigned_agent=None`, `updated_at=2026-09-09T01:24:20Z`. This
+  cycle's `farmctl health` shows `codex_zero_activity` FAIL (0 codex build activity in 3h) and
+  `codex_auth_broken` WARN, both attributed to `repo_dirty_build_guard` blocked by 10 uncommitted
+  files in `C:\QM\repo` (`QM5_41240_wti-samecal-ramsaye5` + `dxz23_execution_contracts.json`) —
+  plausible root cause for why `2f717775` sits unclaimed (Codex lane broadly stalled, not specific
+  to this ticket). Out of scope for this task (not one of the three assigned tickets; flagged in
+  OPEN_ITEMS for router/OWNER awareness only). No ticket touched, no download restart, no terminal
+  action. Task `3032534e` stays IN_PROGRESS.

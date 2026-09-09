@@ -113,3 +113,9 @@ Criterion recorded with exact residual classes; B admits USD-only rows of any ti
   `G:` Vault drive still permission-denied (`Test-Path` → `UnauthorizedAccessException`). No new
   ticket, release, rerun or card minted. Task `bb814520` remains IN_PROGRESS, gated on the same
   pending OWNER decision as `dfc60103`.
+
+## Checked 2026-09-09T04:48Z (orchestration cycle) — no change
+
+- No OWNER answer to `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (`G:` Vault still
+  permission-denied; no new commit touching the card). No new ticket, release, rerun. Task
+  `bb814520` remains IN_PROGRESS.
