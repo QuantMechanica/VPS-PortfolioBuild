@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T08:30:04.7313217Z",
+  "recorded_at_local": "2026-09-09T10:30:04.7313217+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "58ad7cbd20db60c1196d8ddaabbaf2b2830a3da7",
+  "outcome": "STOP_CPU_AND_ACTIVE_ROW_CEILINGS",
+  "cpu_admission": {
+    "samples_percent": [88.0, 94.0, 96.0, 100.0, 100.0],
+    "average_percent": 95.6,
+    "maximum_percent": 100.0,
+    "required_average_strictly_below_percent": 97.0,
+    "required_maximum_strictly_below_percent": 97.0,
+    "admitted": false,
+    "binding_measure": "maximum_percent"
+  },
+  "farm_snapshot": {
+    "access": "read_only_via_farmctl_work_items",
+    "active_count": 9,
+    "exclusive_admission_limit": 7,
+    "admitted": false,
+    "summary": {
+      "OPT_CENSUS_active": 4,
+      "Q04_active": 4,
+      "Q07_active": 1
+    },
+    "items": [
+      {"terminal":"T1","phase":"Q04","ea_id":"QM5_9121","symbol":"GBPUSD.DWX","work_item_id":"4358a6af-eeae-45c8-b322-1e46b2eb5b5f"},
+      {"terminal":"T2","phase":"Q07","ea_id":"QM5_12925","symbol":"USDJPY.DWX","work_item_id":"8847f41b-08dd-4790-b5b8-470eb6be49e5"},
+      {"terminal":"T3","phase":"Q04","ea_id":"QM5_10513","symbol":"USDJPY.DWX","work_item_id":"33ce2be8-681b-43c4-84a0-a5be676f42b6"},
+      {"terminal":"T4","phase":"Q04","ea_id":"QM5_1017","symbol":"EURUSD.DWX","work_item_id":"3dea2327-8887-4ac6-9196-5ff2c5aa3454"},
+      {"terminal":"T5","phase":"OPT_CENSUS","ea_id":"QM5_41161","symbol":"GBPUSD.DWX","work_item_id":"b87b3ad4-2abc-5580-840f-e8f074fdb2ed"},
+      {"terminal":"T7","phase":"OPT_CENSUS","ea_id":"QM5_41301","symbol":"XAUUSD.DWX","work_item_id":"4ec6bb41-add3-5965-ac10-2af96140dc2e"},
+      {"terminal":"T8","phase":"Q04","ea_id":"QM5_10562","symbol":"GBPUSD.DWX","work_item_id":"76b82dba-521b-4d4f-bd6e-4b8649f17c72"},
+      {"terminal":"T9","phase":"OPT_CENSUS","ea_id":"QM5_41345","symbol":"XAUUSD.DWX","work_item_id":"6d90f401-737d-5f96-ae7a-919410e0fe1b"},
+      {"terminal":"T10","phase":"OPT_CENSUS","ea_id":"QM5_41324","symbol":"USDJPY.DWX","work_item_id":"f3b90d7d-85d4-5830-a4dd-35bdc7fe3a24"}
+    ]
+  },
+  "mutations": {
+    "farm_claim": false,
+    "mq5_written_or_edited": false,
+    "source_pin_audit_required": false,
+    "compile_command_or_enqueue": false,
+    "smoke_or_backtest": false,
+    "q02_enqueue": false,
+    "dispatch_or_terminal_control": false,
+    "portfolio_or_live_change": false
+  },
+  "binding_guard": "If an MQ5 is generated, audit_framework_input_pins.py --check-source must pass before any enqueue-compile command; any nonzero exit or EA_FRAMEWORK_INPUT_PINNED finding refuses the build."
+}
