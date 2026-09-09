@@ -1357,3 +1357,20 @@ factory intent" per the check's own action_hint — and are not among the three 
 tasks' scope, so not actioned. No QM5_10260 reference in the health output (step 4 of the
 cycle instructions is N/A this cycle since 3 IN_PROGRESS tasks remain). No terminals,
 holds, or factory state touched.
+
+## Addendum 2026-09-09 ~03:48Z (orchestration cycle) — 3 claude tasks re-checked, no change
+
+Re-checked all three claude-lane IN_PROGRESS tasks (`bb814520`, `dfc60103`, `3032534e`),
+~12min after the prior cycle. `git log --all --since=2026-09-09T03:30:00` shows only
+unrelated build/research/CPU-stop commits — no OWNER receipt for
+`OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`, so `bb814520`/`dfc60103` stay correctly
+blocked pending that card. Dukascopy (`3032534e`): last application-level re-test commit
+(`b4ff74e881`) timestamps at 2026-09-09 02:37:17Z; only ~1h11m elapsed against this
+cycle's 03:48Z start, still short of the "wait several hours, different UTC slot"
+disposition — no re-probe attempted. `repo_dirty_build_guard`'s two flagged files
+(`QM5_41240_wti-samecal-ramsaye5.mq5` + its reference test) are still uncommitted and
+unchanged since the 02:52Z root-cause note; still flagged-only, no ticket enqueued (out
+of scope for the three assigned tasks). `farmctl.py health` returned the same
+`overall=FAIL`, `fail=14/warn=20/ok=50` with the same two chronic scheduler-only
+`task_monitor_escalation` FAILs. All three tasks correctly remain `IN_PROGRESS`; no
+router state change made, no OWNER-scope work invented.
