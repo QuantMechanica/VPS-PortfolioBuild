@@ -433,3 +433,18 @@ read-only verification, no mutating action, so no reacquisition was required. `f
 FAIL 15/WARN 17/OK 52, same chronic set as prior cycles, none referencing this chain. No ticket,
 rebuild, release, or router state change; `agent_router.py run`/`route-many`/`replenish` not
 invoked.
+
+## Cycle check 2026-09-09T~12:52Z — no change
+
+Direct DB read (`work_items WHERE ea_id='QM5_41394'`): unchanged from the 12:50Z check two
+minutes prior. USDJPY.DWX still `Q04 status=pending` (`bd6f7c72…`, `updated_at=12:19:47Z`).
+SP500 (`17e576cf…`), XAUUSD (`3b315bc8…`), XTIUSD (`53c32094…`) still `Q02 status=pending`,
+unchanged since `10:52:59Z`. EURUSD still dead-ended `Q04 FAIL` (`10:29:26Z`). No leg has
+reached Q10_NEWS; `bb814520`/`dfc60103` acceptance criteria remain unmet — both stay correctly
+`IN_PROGRESS`. `farmctl health`: FAIL 15/WARN 16/OK 53, same chronic set as prior cycles
+(`codex_zero_activity`/`repo_dirty_build_guard`, `q02_stranded_exhausted_pairs`,
+`phase_invalid_rate_7d`, `agent_task_state_stranded`, `agent_task_aging_slo`,
+`work_item_phase_age_slo`, `pending_tail_age`, `q09_sealed_plan_hold_age`,
+`q09_autoseal_hold_census`, `pending_artifact_binding_drift`, scheduled-task/backup-calendar
+FAILs), none referencing this chain. No ticket, rebuild, release, or router state change;
+`agent_router.py run`/`route-many`/`replenish` not invoked per task directive.

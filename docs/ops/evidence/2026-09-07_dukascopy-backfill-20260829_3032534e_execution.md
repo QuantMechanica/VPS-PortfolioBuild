@@ -280,3 +280,15 @@ signal. Spawn lease `agent_task:3032534e-eaf0-5b68-b09f-2127ebb315b0` still held
 the 12:19:38Z reacquisition (expires 12:49:38Z); this cycle performed only read-only
 verification, no reacquisition needed. No download restart, no duplicate ticket, no
 OWNER-scope work invented. Task stays IN_PROGRESS.
+
+## Checked 2026-09-09T~12:52Z (orchestration cycle) — no change
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~11h28m
+unclaimed, direct DB read) — unchanged from the 12:50Z check two minutes prior. No new
+datafeed reprobe due this cycle (last reprobe 11:49-11:50Z). `farmctl health`: FAIL
+15/WARN 16/OK 53, same chronic set, no Dukascopy-lane-specific signal. Lease
+`agent_task:3032534e-eaf0-5b68-b09f-2127ebb315b0` expired at `12:49:38Z`; per the
+router-owned lease contract this session did not reacquire it (reacquisition happens
+only on the routing path, which this task's directive forbids invoking) — the 5-minute
+router cycle is expected to renew it on its own next pass. No download restart, no
+duplicate ticket, no OWNER-scope work invented. Task stays IN_PROGRESS.

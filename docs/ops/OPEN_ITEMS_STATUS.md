@@ -1,5 +1,20 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~12:52Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
+> DB-Prüfung zwei Minuten nach dem 12:50Z-Check: `QM5_41394` unverändert — USDJPY.DWX weiterhin
+> `Q04 pending` (`bd6f7c72…`), SP500/XAUUSD/XTIUSD weiterhin `Q02 pending` seit `10:52:59Z`,
+> EURUSD weiterhin `Q04 FAIL` (Sackgasse). Kein Leg hat Q10_NEWS erreicht —
+> `bb814520`/`dfc60103` bleiben korrekt `IN_PROGRESS`. `3032534e`: Codex-Ticket `2f717775`
+> weiterhin `APPROVED`/unassigned seit `01:24:20Z` (~11h28m); kein neuer Reprobe fällig. Lease
+> `agent_task:3032534e-eaf0-5b68-b09f-2127ebb315b0` ist um `12:49:38Z` abgelaufen; diese Session
+> reacquired sie nicht (Reacquire läuft nur über den Routing-Pfad, den dieser Auftrag verbietet)
+> — die 5-Minuten-Router-Zyklus soll sie eigenständig erneuern. `farmctl health` overall=FAIL
+> (15 FAIL/16 WARN/53 OK) — chronisches Set unverändert, keine Zeile betrifft die drei
+> gegatterten Ketten. Kein Ticket/Rebuild/Release/Router-Zustandswechsel;
+> `agent_router.py run`/`route-many`/`replenish` nicht aufgerufen. Details:
+> `docs/ops/evidence/2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`,
+> `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`.
+
 > **Nachtrag 09.09., ~12:50Z (Orchestrierungszyklus) — Teilfortschritt USDJPY-Leg, weiterhin keine
 > Terminaladjudikation:** Direkte DB-Prüfung `QM5_41394`: USDJPY.DWX-Leg genuine neu seit dem
 > 11:48Z-Check — Q02 jetzt `done`/`PASS` (`80789556…`, 12:17:13Z) und bereits eine neue Q04-Zeile
