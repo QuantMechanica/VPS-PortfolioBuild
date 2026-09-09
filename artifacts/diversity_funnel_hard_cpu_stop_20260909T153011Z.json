@@ -1,0 +1,60 @@
+{
+  "schema_version": "diversity_funnel_capacity_stop.v1",
+  "recorded_at_utc": "2026-09-09T15:30:11.8201613Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "39fd46a2e277558392d308756e74b219649de2aa",
+  "decision": "STOP_CPU_CEILING",
+  "capacity": {
+    "cpu_source": "Win32_PerfFormattedData_PerfOS_Processor:_Total",
+    "sample_interval_seconds": 2,
+    "cpu_samples_percent": [54.0, 100.0, 98.0, 100.0, 72.0],
+    "cpu_average_percent": 84.8,
+    "cpu_max_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "admission_rule": "average < 97.0 and maximum < 97.0",
+    "ceiling_hit": true,
+    "available_physical_memory_gib": 43.953,
+    "drive_d_free_gib": 80.270,
+    "terminal64_count_at_sampling": 4
+  },
+  "farm_snapshot": {
+    "running_factory_terminals": ["T2"],
+    "observed_work_item": {
+      "terminal": "T2",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41321",
+      "symbol": "NDX.DWX",
+      "work_item_id": "263f5d23-675f-5f1a-a2b1-323930176259",
+      "status_at_slot_snapshot": "active"
+    },
+    "supported_active_query_after_slot_snapshot": {
+      "count": 0,
+      "items": []
+    },
+    "t_live_observed_only": true,
+    "ftmo_observed_only": true
+  },
+  "pacer_guard": {
+    "source_written": false,
+    "source_audit_required": false,
+    "source_audit_run": false,
+    "framework_input_pinned_finding": false,
+    "compile_command_run": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false
+  },
+  "mutations": {
+    "card": false,
+    "ea_source": false,
+    "binary": false,
+    "setfile": false,
+    "registry": false,
+    "queue": false,
+    "priority": false,
+    "claim": false,
+    "terminal": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  }
+}
