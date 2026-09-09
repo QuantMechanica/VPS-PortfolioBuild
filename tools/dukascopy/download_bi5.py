@@ -13,14 +13,19 @@ import http.client
 import ipaddress
 import json
 import logging
+import random
 import socket
 import ssl
+import threading
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from pathlib import Path
 from typing import Callable, Iterable, Mapping
+
+import requests
 
 try:
     from .common import (
@@ -66,6 +71,7 @@ DEFAULT_BASE_URL = "https://datafeed.dukascopy.com/datafeed"
 OVERLAP_FLOOR_UTC = dt.datetime(2025, 10, 1, tzinfo=UTC)
 MANIFEST_SCHEMA = "qm.dukascopy-hourly-download-file/v1"
 PROGRESS_SCHEMA = "qm.dukascopy-hourly-download-progress/v1"
+LEDGER_SCHEMA = "qm.dukascopy-hourly-download-ledger/v1"
 USER_AGENT = "Mozilla/5.0 (compatible; QuantMechanica-Dukascopy-Backfill/1.0)"
 
 FetchResult = tuple[int, Mapping[str, str], bytes]
@@ -86,15 +92,19 @@ class RequestRateLimiter:
         self.clock = clock
         self.sleeper = sleeper
         self.last_request: float | None = None
+        self._lock = threading.Lock()
 
     def wait(self) -> None:
-        now = self.clock()
-        if self.last_request is not None:
-            delay = self.interval - (now - self.last_request)
-            if delay > 0:
-                self.sleeper(delay)
-                now = self.clock()
-        self.last_request = now
+        # All downloader threads share one limiter, so concurrency cannot turn
+        # the 5-10 request/s contract into a per-thread rate.
+        with self._lock:
+            now = self.clock()
+            if self.last_request is not None:
+                delay = self.interval - (now - self.last_request)
+                if delay > 0:
+                    self.sleeper(delay)
+                    now = self.clock()
+            self.last_request = now
 
 
 def fetch_http(url: str, timeout_seconds: float) -> FetchResult:
@@ -115,6 +125,38 @@ def fetch_http(url: str, timeout_seconds: float) -> FetchResult:
         }, content
 
 
+class SessionFetcher:
+    """Thread-local keep-alive sessions with opt-out proxy-env support."""
+
+    def __init__(self, *, proxy_env: bool = True) -> None:
+        self.proxy_env = proxy_env
+        self._local = threading.local()
+
+    def _session(self) -> requests.Session:
+        session = getattr(self._local, "session", None)
+        if session is None:
+            session = requests.Session()
+            session.trust_env = self.proxy_env
+            session.headers.update(
+                {"User-Agent": USER_AGENT, "Accept": "application/octet-stream"}
+            )
+            adapter = requests.adapters.HTTPAdapter(
+                pool_connections=1, pool_maxsize=1, max_retries=0, pool_block=True
+            )
+            session.mount("https://", adapter)
+            session.mount("http://", adapter)
+            self._local.session = session
+        return session
+
+    def __call__(self, url: str, timeout_seconds: float) -> FetchResult:
+        response = self._session().get(url, timeout=timeout_seconds)
+        return (
+            int(response.status_code),
+            {key.lower(): value for key, value in response.headers.items()},
+            response.content,
+        )
+
+
 class ResolvedIPFetcher:
     """Connect to a reviewed IP while preserving the URL host for TLS/HTTP.
 
@@ -125,24 +167,28 @@ class ResolvedIPFetcher:
 
     def __init__(self, resolved_ip: str) -> None:
         self.resolved_ip = str(ipaddress.ip_address(resolved_ip))
-        self._socket: ssl.SSLSocket | None = None
+        self._local = threading.local()
+
+    def _socket(self) -> ssl.SSLSocket | None:
+        return getattr(self._local, "socket", None)
 
     def _close(self) -> None:
-        if self._socket is not None:
+        active = self._socket()
+        if active is not None:
             try:
-                self._socket.close()
+                active.close()
             finally:
-                self._socket = None
+                self._local.socket = None
 
     def _connect(self, host: str, port: int, timeout_seconds: float) -> None:
         raw_socket = socket.create_connection(
             (self.resolved_ip, port), timeout=timeout_seconds
         )
         try:
-            self._socket = ssl.create_default_context().wrap_socket(
+            self._local.socket = ssl.create_default_context().wrap_socket(
                 raw_socket, server_hostname=host
             )
-            self._socket.settimeout(timeout_seconds)
+            self._local.socket.settimeout(timeout_seconds)
         except BaseException:
             raw_socket.close()
             raise
@@ -153,9 +199,10 @@ class ResolvedIPFetcher:
             raise ValueError("resolved-IP fetch requires an HTTPS URL with a host")
         port = parsed.port or 443
         request_target = urllib.parse.urlunsplit(("", "", parsed.path, parsed.query, ""))
-        if self._socket is None:
+        if self._socket() is None:
             self._connect(parsed.hostname, port, timeout_seconds)
-        assert self._socket is not None
+        active = self._socket()
+        assert active is not None
         request = (
             f"GET {request_target} HTTP/1.1\r\n"
             f"Host: {parsed.hostname}\r\n"
@@ -164,8 +211,8 @@ class ResolvedIPFetcher:
             "Connection: keep-alive\r\n\r\n"
         ).encode("ascii")
         try:
-            self._socket.sendall(request)
-            response = http.client.HTTPResponse(self._socket)
+            active.sendall(request)
+            response = http.client.HTTPResponse(active)
             response.begin()
             headers = {key.lower(): value for key, value in response.getheaders()}
             content = response.read()
@@ -277,31 +324,59 @@ def run_download(
     requests_per_second: float = 5.0,
     timeout_seconds: float = 30.0,
     retries: int = 3,
-    fetcher: Fetcher = fetch_http,
+    concurrency: int = 6,
+    fetcher: Fetcher | None = None,
     limiter: RequestRateLimiter | None = None,
     logger: logging.Logger | None = None,
     resolved_ip: str | None = None,
+    proxy_env: bool = True,
+    measure_files: int | None = None,
+    projection_hours: int | None = None,
+    backoff_base_seconds: float = 1.0,
+    backoff_cap_seconds: float = 30.0,
+    sleeper: Callable[[float], None] = time.sleep,
+    randomizer: Callable[[], float] = random.random,
 ) -> dict[str, object]:
     if retries < 1 or retries > 8:
         raise ValueError("retries must be between 1 and 8")
     if not 5 <= timeout_seconds <= 180:
         raise ValueError("HTTP timeout must be between 5 and 180 seconds")
+    if not 1 <= concurrency <= 32:
+        raise ValueError("concurrency must be between 1 and 32")
+    if measure_files is not None and measure_files < 1:
+        raise ValueError("measure_files must be positive")
+    if projection_hours is not None and projection_hours < 1:
+        raise ValueError("projection_hours must be positive")
+    if backoff_base_seconds < 0 or backoff_cap_seconds < backoff_base_seconds:
+        raise ValueError("invalid retry backoff bounds")
     if end_utc.astimezone(UTC) > dt.datetime.now(UTC) + dt.timedelta(minutes=5):
         raise ValueError("download end may not be in the future")
     out_dir = out_dir.resolve()
     raw_root = out_dir / "raw"
     raw_root.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "download_manifest.jsonl"
+    ledger_path = out_dir / "hour_ledger.jsonl"
     progress_path = out_dir / "progress.json"
     log = logger or logging.getLogger("qm.dukascopy.download")
     rate_limiter = limiter or RequestRateLimiter(requests_per_second)
     normalized_symbols = tuple(sorted({str(value).strip().upper() for value in symbols}))
-    plan = _planned_hours(
+    full_plan = _planned_hours(
         normalized_symbols,
         splice_times=splice_times,
         start_utc=start_utc,
         end_utc=end_utc,
     )
+    full_plan_hours = len(full_plan)
+    projected_target_hours = projection_hours or full_plan_hours
+    plan = full_plan[:measure_files] if measure_files is not None else full_plan
+    del full_plan
+    active_fetcher: Fetcher
+    if fetcher is not None:
+        active_fetcher = fetcher
+    elif resolved_ip:
+        active_fetcher = ResolvedIPFetcher(resolved_ip)
+    else:
+        active_fetcher = SessionFetcher(proxy_env=proxy_env)
 
     prior_rows = load_json_lines(manifest_path)
     latest_by_url = {
@@ -329,26 +404,50 @@ def run_download(
                 "updated_at_utc": format_utc(dt.datetime.now(UTC)),
                 "base_url": base_url,
                 "resolved_ip_override": resolved_ip,
+                "proxy_env_enabled": proxy_env,
+                "concurrency": concurrency,
+                "measurement": measure_files is not None,
+                "full_plan_hours": full_plan_hours,
+                "projected_target_hours": projected_target_hours,
                 "symbols": normalized_symbols,
                 "current_url": current_url,
                 **counters,
             },
         )
 
-    progress(None, "RUNNING")
-    for symbol, hour in plan:
+    def record(final_row: dict[str, object]) -> None:
+        append_json_line(manifest_path, final_row)
+        url = str(final_row["url"])
+        latest_by_url[url] = final_row
+        status = str(final_row["status"])
+        append_json_line(
+            ledger_path,
+            {
+                "schema": LEDGER_SCHEMA,
+                "url": url,
+                "symbol": final_row["symbol"],
+                "hour_utc": final_row["hour_utc"],
+                "state": "failed" if status == "error" else "done",
+                "outcome": status,
+                "attempts": final_row.get("attempt", 0),
+                "recorded_at_utc": final_row["recorded_at_utc"],
+            },
+        )
+        counters["completed"] += 1
+        if status == "downloaded":
+            counters["downloaded"] += 1
+        elif status == "no_data":
+            counters["no_data"] += 1
+        else:
+            counters["errors"] += 1
+        progress(url, "RUNNING")
+
+    def fetch_one(symbol: str, hour: dt.datetime) -> dict[str, object]:
         url = hourly_url(base_url, symbol, hour)
         relative = hourly_relative_path(symbol, hour)
         destination = (raw_root / relative).resolve()
         if raw_root not in destination.parents:
             raise ValueError(f"download destination escaped raw root: {destination}")
-        existing = latest_by_url.get(url)
-        if existing is not None and _valid_resumed_entry(existing, raw_root):
-            counters["completed"] += 1
-            counters["resumed"] += 1
-            progress(url, "RUNNING")
-            continue
-
         row_base: dict[str, object] = {
             "schema": MANIFEST_SCHEMA,
             "symbol": symbol,
@@ -362,7 +461,7 @@ def run_download(
         for attempt in range(1, retries + 1):
             rate_limiter.wait()
             try:
-                status, headers, content = fetcher(url, timeout_seconds)
+                status, headers, content = active_fetcher(url, timeout_seconds)
                 if status in {204, 404, 410} or (status == 200 and not content):
                     final_row = {
                         **row_base,
@@ -389,17 +488,17 @@ def run_download(
                     "recorded_at_utc": format_utc(dt.datetime.now(UTC)),
                 }
                 break
-            except (
-                OSError,
-                RuntimeError,
-                ValueError,
-                socket.timeout,
-                urllib.error.URLError,
-            ) as exc:
+            except (OSError, RuntimeError, ValueError, requests.RequestException) as exc:
                 last_error = f"{type(exc).__name__}: {exc}"
                 log.warning("download attempt %d/%d failed: %s %s", attempt, retries, url, last_error)
                 if attempt < retries:
-                    time.sleep(min(2 ** (attempt - 1), 8))
+                    exponential = min(
+                        backoff_cap_seconds,
+                        backoff_base_seconds * (2 ** (attempt - 1)),
+                    )
+                    # Multiplying by [0.5, 1.5) retains exponential growth but
+                    # prevents synchronized retries from six workers.
+                    sleeper(exponential * (0.5 + randomizer()))
         if final_row is None:
             final_row = {
                 **row_base,
@@ -408,19 +507,55 @@ def run_download(
                 "attempt": retries,
                 "recorded_at_utc": format_utc(dt.datetime.now(UTC)),
             }
-        append_json_line(manifest_path, final_row)
-        latest_by_url[url] = final_row
-        counters["completed"] += 1
-        status = str(final_row["status"])
-        if status == "downloaded":
-            counters["downloaded"] += 1
-        elif status == "no_data":
-            counters["no_data"] += 1
-        else:
-            counters["errors"] += 1
-        progress(url, "RUNNING")
+        return final_row
 
-    final_status = "PASS" if counters["errors"] == 0 else "FAIL"
+    progress(None, "RUNNING")
+    work_plan: list[tuple[str, dt.datetime]] = []
+    for symbol, hour in plan:
+        url = hourly_url(base_url, symbol, hour)
+        existing = latest_by_url.get(url)
+        if existing is not None and _valid_resumed_entry(existing, raw_root):
+            counters["completed"] += 1
+            counters["resumed"] += 1
+            progress(url, "RUNNING")
+        else:
+            work_plan.append((symbol, hour))
+
+    # Keep only a bounded number of futures live. A production plan has more
+    # than 300k rows, so submitting the entire plan would itself be a memory bug.
+    iterator = iter(work_plan)
+    with ThreadPoolExecutor(max_workers=concurrency, thread_name_prefix="duka") as pool:
+        active: dict[Future[dict[str, object]], tuple[str, dt.datetime]] = {}
+        for _ in range(concurrency):
+            try:
+                item = next(iterator)
+            except StopIteration:
+                break
+            active[pool.submit(fetch_one, *item)] = item
+        while active:
+            done, _ = wait(active, return_when=FIRST_COMPLETED)
+            for future in done:
+                active.pop(future)
+                record(future.result())
+                try:
+                    item = next(iterator)
+                except StopIteration:
+                    continue
+                active[pool.submit(fetch_one, *item)] = item
+
+    elapsed_seconds = max((dt.datetime.now(UTC) - started_at).total_seconds(), 1e-9)
+    successful_hours = counters["downloaded"] + counters["no_data"] + counters["resumed"]
+    hours_per_minute = successful_hours / elapsed_seconds * 60.0
+    projected_seconds = (
+        projected_target_hours / hours_per_minute * 60.0
+        if hours_per_minute > 0
+        else None
+    )
+    final_status = (
+        "MEASURED"
+        if measure_files is not None
+        else ("PASS" if counters["errors"] == 0 else "FAIL")
+    )
     progress(None, final_status)
     result: dict[str, object] = {
         "schema": PROGRESS_SCHEMA,
@@ -431,8 +566,20 @@ def run_download(
         "out_dir": str(out_dir),
         "manifest_path": str(manifest_path),
         "progress_path": str(progress_path),
+        "ledger_path": str(ledger_path),
         "symbols": normalized_symbols,
         "resolved_ip_override": resolved_ip,
+        "proxy_env_enabled": proxy_env,
+        "concurrency": concurrency,
+        "measurement": measure_files is not None,
+        "sample_files": len(plan) if measure_files is not None else None,
+        "full_plan_hours": full_plan_hours,
+        "projected_target_hours": projected_target_hours,
+        "elapsed_seconds": round(elapsed_seconds, 6),
+        "success_rate": successful_hours / len(plan) if plan else 0.0,
+        "hours_per_minute": hours_per_minute,
+        "projected_wall_seconds": projected_seconds,
+        "projected_wall_days": projected_seconds / 86400.0 if projected_seconds else None,
         **counters,
     }
     atomic_write_json(out_dir / "download_receipt.json", result)
@@ -467,7 +614,26 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--rate", type=float, default=5.0)
     parser.add_argument("--timeout", type=float, default=30.0)
-    parser.add_argument("--retries", type=int, default=3)
+    parser.add_argument("--retries", type=int, default=5)
+    parser.add_argument("--concurrency", type=int, default=6)
+    parser.add_argument(
+        "--no-proxy-env",
+        action="store_true",
+        help="ignore HTTP_PROXY/HTTPS_PROXY/NO_PROXY instead of passing them to sessions",
+    )
+    parser.add_argument(
+        "--measure",
+        type=int,
+        metavar="N",
+        help="download only the first N planned hour-files and emit throughput projection",
+    )
+    parser.add_argument(
+        "--projection-hours",
+        type=int,
+        help="fixed total hour-file count used for a measurement projection",
+    )
+    parser.add_argument("--backoff-base", type=float, default=1.0)
+    parser.add_argument("--backoff-cap", type=float, default=30.0)
     parser.add_argument("--log", type=Path)
     parser.add_argument(
         "--symbol-matrix",
@@ -494,7 +660,6 @@ def main(argv: list[str] | None = None) -> int:
     )
     log_path = (args.log or (args.out / "download.log")).resolve()
     logger = _configure_logging(log_path)
-    fetcher: Fetcher = ResolvedIPFetcher(args.resolve_ip) if args.resolve_ip else fetch_http
     try:
         result = run_download(
             out_dir=args.out,
@@ -506,16 +671,21 @@ def main(argv: list[str] | None = None) -> int:
             requests_per_second=args.rate,
             timeout_seconds=args.timeout,
             retries=args.retries,
-            fetcher=fetcher,
+            concurrency=args.concurrency,
             logger=logger,
             resolved_ip=args.resolve_ip,
+            proxy_env=not args.no_proxy_env,
+            measure_files=args.measure,
+            projection_hours=args.projection_hours,
+            backoff_base_seconds=args.backoff_base,
+            backoff_cap_seconds=args.backoff_cap,
         )
     except (OSError, ValueError) as exc:
         logger.exception("download refused")
         print(json.dumps({"status": "REFUSED", "error": str(exc), "log": str(log_path)}))
         return 2
     print(json.dumps(result, sort_keys=True))
-    return 0 if result["status"] == "PASS" else 1
+    return 0 if result["status"] in {"PASS", "MEASURED"} else 1
 
 
 if __name__ == "__main__":

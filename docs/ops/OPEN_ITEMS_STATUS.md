@@ -2060,3 +2060,18 @@ receipt. Focused suite: 84 passed; morning brief dry run rendered both lines and
 sent no mail. Evidence:
 `docs/ops/evidence/2026-09-09_ftmo_launcher_readiness_probe.md`. No terminal,
 profile, preset, EX5, T_Live, AutoTrading, threshold, verdict, or gate changed.
+
+## 2026-09-09T19:14Z — RESULT: Dukascopy P1 downloader hardening and N=300 measurement
+
+Task `f6d18a6e`: hardened `download_bi5.py` with jittered exponential per-hour
+retry, six-way bounded concurrency under one global rate limiter, thread-local
+keep-alive sessions, optional proxy-environment passthrough, append-only
+done/failed hour ledger, failed-only retry, and bounded `--measure N` reporting.
+Focused suite: 32 passed. The fresh public-bi5 N=300 run resolved 296 files
+(98.6667%) in 185.706939s, or 95.634552 successful hour-files/min; the fixed
+304,621-hour target projects to 2.21199 days. Four exhausted files remain
+explicitly retryable in the ledger. Recommendation: **PROCEED** with resumable
+scheduled batches; this sample does not justify proxy/different-egress spend.
+Evidence: `docs/ops/evidence/2026-09-09_dukascopy_p1_hardening_measurement.md`.
+No production import, history mutation, signed-archive change, terminal action,
+Factory action, T_Live/AutoTrading touch, threshold, verdict, or gate change.
