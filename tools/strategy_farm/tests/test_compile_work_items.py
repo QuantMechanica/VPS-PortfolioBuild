@@ -2989,6 +2989,94 @@ def test_hma_cata_requal_payload_binds_owner_artifacts_and_worker_recheck(
     assert worker_recheck["source_repair_authorized"] is True
 
 
+def test_qm5_20143_stale_ex5_authority_is_source_and_evidence_bound() -> None:
+    authority = compile_work_items.QM5_20143_STALE_EX5_REBUILD_AUTHORITY
+    binding = compile_work_items.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[authority]
+    repo = Path(__file__).resolve().parents[3]
+    inventory = {"work_rows": {"20143": []}}
+
+    assert binding["ea_label"] == "QM5_20143_macd-bb-campaign-m5"
+    assert compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="20143",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="20143",
+        source_sha="0" * 64,
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_20144_unrelated",
+        authority,
+        repo_root=repo,
+        ea_id="20143",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+
+
+def test_qm5_20143_stale_ex5_authority_enqueues_append_only_compile(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    (source.parent / f"{label}.ex5").write_bytes(b"stale binary")
+    evidence = repo / "docs" / "ops" / "evidence" / "repair.json"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_text('{"scope":"test-only"}\n', encoding="utf-8")
+    authority = compile_work_items.QM5_20143_STALE_EX5_REBUILD_AUTHORITY
+    monkeypatch.setitem(
+        compile_work_items.BACKLOG_SOURCE_REPAIR_REGISTRATIONS,
+        authority,
+        {
+            "ea_id": "1001",
+            "ea_label": label,
+            "source_sha256": compile_work_items.sha256_file(source),
+            "predecessors": {},
+            "superseded_predecessors": [],
+            "evidence_path": "docs/ops/evidence/repair.json",
+            "evidence_sha256": compile_work_items.sha256_file(evidence),
+        },
+    )
+
+    result = compile_work_items.enqueue_compile_eas(
+        root, repo, [label], source_repair_authority=authority,
+    )
+
+    assert result["ok"] is True
+    assert result["enqueued_count"] == 1
+    work_item_id = result["enqueued"][0]["work_item_id"]
+    with farmctl.connect(root) as conn:
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+        ).fetchone()[0])
+    assert payload["append_only_source_repair"] is True
+    assert payload["compile_source_repair_authority"] == authority
+    assert payload["source_repair_artifact_bindings"] == [{
+        "path": "docs/ops/evidence/repair.json",
+        "sha256": compile_work_items.sha256_file(evidence),
+    }]
+
+    worker_recheck = compile_work_items.classify_candidate(
+        root,
+        repo,
+        label,
+        compile_work_items._inventory(root, repo),
+        current_work_item_id=work_item_id,
+        source_repair_authority=authority,
+    )
+    assert worker_recheck["eligible"] is True
+    assert worker_recheck["source_repair_authorized"] is True
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",

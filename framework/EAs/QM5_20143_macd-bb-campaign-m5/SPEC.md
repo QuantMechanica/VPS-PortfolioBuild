@@ -2,74 +2,85 @@
 
 **EA ID:** QM5_20143
 **Slug:** `macd-bb-campaign-m5`
-**Source:** BP-ELITEFXP-SCALP5M-1266726 (see card QM5_20143)
-**Author of this spec:** Claude (reconciled with Codex blind spec)
-**Last revised:** 2026-07-25
+**Source:** `BP-ELITEFXP-SCALP5M-1266726`
+**Last revised:** 2026-09-10
 
 ---
 
+## 1. Strategy Logic
 
-EA: QM5_20143 `macd-bb-campaign-m5` · TF M5 · Cohort: EURUSD.DWX,
-GBPUSD.DWX.
+On closed M5 bars, an EMA(6)/EMA(17) cross starts a directional campaign. The
+EA then requires a close outside a Bollinger Band (period 10, plot shift 1,
+deviation 0.66), a wick-contact pullback into that band, and a later close
+beyond the tracked campaign extreme. It places a stop order one pip beyond the
+confirming candle. Wick-only breaks replace the reference extreme; an opposite
+EMA cross cancels an unfilled campaign, but does not close a filled position.
+Only one order may fill per campaign.
 
-## Campaign state machine (closed M5 bars)
+The Method-1 baseline places the stop one pip beyond the confirming candle's
+opposite extreme and the take profit at exactly 1R. Invalid risk or broker stop
+geometry rejects the setup without chasing or widening.
 
-- macd[i] = EMA(6,close)[i] − EMA(17,close)[i] (≡ MACD(6,17,1)
-  zero-line; pooled QM_EMA readers). BB(10, plot-shift 1, dev 0.66,
-  close) — buffer reads must be causally aligned (value shown at bar 1
-  computed one bar earlier); OnInit self-test verifies alignment.
-- NEW_CAMPAIGN: macd[2] ≤ 0 AND macd[1] > 0 → long campaign (mirror
-  short). Any opposite zero cross aborts the campaign, cancels the
-  pending, resets all state.
-- EXTENSION (long): ≥1 closed bar above the upper band after the
-  cross; track campaign high from cross bar to the bar before first
-  band re-entry.
-- PULLBACK (long): Low[1] ≤ aligned upper band (wick contact; close
-  may be anywhere).
-- BREAKOUT-WAIT (long): a later bar CLOSES strictly above the tracked
-  high → BUY STOP at that confirming candle's high + 1 pip. Wick above
-  without close → that higher high becomes the new reference.
-  If the stop price is behind market / violates stop-freeze geometry
-  at placement → record invalid, wait for the next campaign (no market
-  chase, no widening).
-- One fill per campaign; one pending/position per magic. Pending lives
-  until the opposite zero cross (no bar expiry); news blackout cancels
-  a triggerable pending (fresh breakout required after).
-- SHORT mirror throughout.
+## 2. Parameters
 
-## Exits (Method 1 baseline)
+| Parameter | Default | Admissible value | Meaning |
+|---|---:|---:|---|
+| `strategy_fast_ema` | 6 | 6 | Fast EMA for the campaign cross. |
+| `strategy_slow_ema` | 17 | 17 | Slow EMA for the campaign cross. |
+| `strategy_bb_period` | 10 | 10 | Bollinger Band lookback. |
+| `strategy_bb_shift` | 1 | 1 | Source-defined plot shift, verified causally at initialization. |
+| `strategy_bb_dev` | 0.66 | 0.66 | Bollinger Band deviation. |
+| `strategy_entry_offset_pips` | 1.0 | 1.0 | Stop-entry offset beyond the confirming candle. |
+| `strategy_sl_offset_pips` | 1.0 | 1.0 | Stop-loss offset beyond the confirming candle. |
+| `strategy_tp_r` | 1.0 | 1.0 | Method-1 take-profit multiple. |
 
-- SL = 1 pip beyond the breakout signal candle's opposite extreme;
-  TP = exactly 1R (fill→SL distance). R invalid/non-positive → reject.
-- A later zero cross does NOT close a filled position (source assigns
-  the cross only to unfilled-order cancellation).
-- Method 2 (aligned outer-band SL frozen at the signal bar, 2R) =
-  labeled variant; Method 3 (wedge) = excluded.
+## 3. Symbol Universe
 
-## Inputs
+**Designed for:**
 
-```
-strategy_fast_ema = 6
-strategy_slow_ema = 17
-strategy_bb_period = 10
-strategy_bb_shift = 1
-strategy_bb_dev = 0.66
-strategy_entry_offset_pips = 1.0
-strategy_sl_offset_pips = 1.0
-strategy_tp_r = 1.0
-```
+- `EURUSD.DWX` - primary major-FX falsification cell.
+- `GBPUSD.DWX` - sibling major-FX diversity cell.
 
-## Flags
+**Explicitly not for:**
 
-- Extension-then-wick-contact pullback (I-03); confirming-candle stop
-  anchor (I-04, material); one-fill-per-campaign (I-06); BB applied
-  price close (I-01). Expected weak (thread skeptics; M5 + 1:1 cost
-  sensitivity) — pure falsification candidate.
+- Non-DWX broker symbols, because the governed test cohort is bound to local
+  `.DWX` history and deterministic magic rows.
+- Non-FX assets, which are outside the approved source cohort.
 
-## Hooks
+## 4. Timeframe
 
-Filter: M5/params/warmup ≥ 40. Entry: false — state machine in Manage
-(pending house pattern). Manage: transitions, pending place/cancel,
-once-latches, per-bar retry pacing. Exit: false. News: default
-fail-closed + pending cancel. NO QM_IsNewBar(); own static guards;
-ZeroMemory(req) + symbol_slot.
+| Aspect | Value |
+|---|---|
+| Base timeframe | `M5` |
+| Multi-timeframe references | none |
+| Bar gating | strategy-owned forming-M5 timestamp guards; decisions use closed bars |
+| Warmup | at least 40 bars for EMA and Bollinger handles |
+
+## 5. Expected Behaviour
+
+| Metric | Expected |
+|---|---|
+| Trades / year / symbol | 400 in the approved card; falsification queue uses a conservative 20/year prior |
+| Typical hold time | intraday |
+| Expected drawdown profile | clustered losses in choppy, cost-heavy M5 regimes |
+| Regime preference | directional extension, pullback, then breakout continuation |
+| Evidence expectation | weak candidate; source-thread critics reported poor live results |
+
+## 6. Source Citation
+
+Eliteforexpartner, "A Scalping/Day Trading strategy 5minute timeframe,"
+BabyPips forum thread 1266726, 2024-12-14. The approved card records the primary
+rules from post 1, the EMA-equivalence observation from post 2, and the adverse
+live-result comments from posts 7-10. Build authority is the reconciled
+`STR-104` final spec and the OWNER-approved Strategy Card for QM5_20143.
+
+## 7. Risk Model
+
+| Context | Model |
+|---|---|
+| Entry stop | confirming-candle opposite extreme plus one pip |
+| Profit target | exactly 1R from fill to initial stop |
+| Position concurrency | one position or pending order per magic |
+| Campaign concurrency | one fill per campaign |
+| Backtest risk | fixed monetary risk only |
+| Live authority | none; this recovery does not authorize deployment or AutoTrading |

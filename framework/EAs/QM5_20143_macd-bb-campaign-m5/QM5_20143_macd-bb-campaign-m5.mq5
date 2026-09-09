@@ -36,7 +36,7 @@
 // =============================================================================
 
 input group "QuantMechanica V5 Framework"
-input int    qm_ea_id                   = 9999;
+input int    qm_ea_id                   = 20143;
 input int    qm_magic_slot_offset       = 0;
 // FW3: Q07 Multi-Seed uses one of the canonical seeds (42, 17, 99, 7, 2026).
 // All other phases use 42 by default. Stress / noise dimensions read from
@@ -221,21 +221,22 @@ bool Strategy104_BandSelfTest()
    ArrayResize(closes, strategy_bb_period);
    const int copied =
       CopyClose(_Symbol, PERIOD_M5, 1 + strategy_bb_shift, strategy_bb_period, closes); // perf-allowed: one bounded OnInit-only BB plot-shift causal self-test
-   if(copied != strategy_bb_period)
+   const int close_count = ArraySize(closes);
+   if(copied != strategy_bb_period || close_count != strategy_bb_period)
       return false;
 
    double mean = 0.0;
-   for(int i = 0; i < copied; ++i)
+   for(int i = 0; i < close_count; ++i)
       mean += closes[i];
-   mean /= (double)copied;
+   mean /= (double)close_count;
 
    double variance = 0.0;
-   for(int i = 0; i < copied; ++i)
+   for(int i = 0; i < close_count; ++i)
      {
       const double delta = closes[i] - mean;
       variance += delta * delta;
      }
-   variance /= (double)copied;
+   variance /= (double)close_count;
    const double sigma = MathSqrt(MathMax(0.0, variance));
    const double manual_upper = mean + strategy_bb_dev * sigma;
    const double manual_lower = mean - strategy_bb_dev * sigma;

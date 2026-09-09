@@ -1,0 +1,49 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_q02_infra_repair:1d1f0dd8-64b9-4011-befb-0b96df513147:QM5_20143",
+  "created_at_local": "2026-09-10T00:34:11+02:00",
+  "ea_id": "QM5_20143",
+  "ea_label": "QM5_20143_macd-bb-campaign-m5",
+  "mission_priority": 2,
+  "scope": "append-only governed COMPILE_EA successor for the current repaired source; no backtest, strategy-mechanics, gate-verdict, live, or cross-EA authority",
+  "root_cause": {
+    "classification": "STALE_EX5_AFTER_ONINIT_REPAIR",
+    "current_mq5_sha256_before_this_repair": "38d9ed0f54c3f9baf0f0447448db8748ef9a23b3bb014ea7fe2f18921bd7db4d",
+    "stale_ex5_sha256": "32be593045e544aa1c462993af5aae97e55a98c12b1a26a717719d85c5ccb470",
+    "last_q02_failure": "compile_gate:COMPILE_FAILED",
+    "failed_q02_work_item_id": "6f32d1f9-680f-4e35-a684-fe4c1ddd80b5",
+    "pending_stale_q02_work_item_id": "8be76d81-2983-4acb-a733-0b653b244be2",
+    "prior_infra_signatures": [
+      "ONINIT_FAILED",
+      "NO_HISTORY"
+    ]
+  },
+  "repair": {
+    "current_mq5_sha256": "6d15f3be593bfefa572122808cdd5a925aa867fe0a74f28a1a0221728dfe6b16",
+    "changes": [
+      "Correct the framework EA-ID input default from 9999 to registered ID 20143.",
+      "Bind the OnInit-only Bollinger self-test loops to the verified dynamic-array size.",
+      "Normalize SPEC.md to the required seven-section build contract without changing strategy mechanics."
+    ],
+    "strategy_mechanics_changed": false
+  },
+  "guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_20143_macd-bb-campaign-m5/QM5_20143_macd-bb-campaign-m5.mq5",
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "ok": true,
+    "hit_count": 0
+  },
+  "coordination": {
+    "infra_repair_task_id": "1d1f0dd8-64b9-4011-befb-0b96df513147",
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor"
+  },
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

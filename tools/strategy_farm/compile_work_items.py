@@ -2453,6 +2453,31 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# Paced fleet task 1d1f0dd8 (2026-09-10): the canonical QM5_20143 EX5
+# predates the committed indicator-warmup repair, so the surviving EURUSD and
+# GBPUSD Q02 cells fail closed at the compile gate before an economic verdict.
+# Bind the one append-only rebuild to the exact conformance-only source bytes
+# and immutable diagnosis receipt.
+QM5_20143_STALE_EX5_REBUILD_AUTHORITY = (
+    "router_q02_infra_repair:1d1f0dd8-64b9-4011-befb-0b96df513147:QM5_20143"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_20143_STALE_EX5_REBUILD_AUTHORITY
+] = {
+    "ea_id": "20143",
+    "ea_label": "QM5_20143_macd-bb-campaign-m5",
+    "source_sha256": "6d15f3be593bfefa572122808cdd5a925aa867fe0a74f28a1a0221728dfe6b16",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-10_qm5_20143_stale_ex5_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "9a0e1e83a4034c7c0a57eaffc41e2380b8ca83c247f984078863e8deec0726ce"
+    ),
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
