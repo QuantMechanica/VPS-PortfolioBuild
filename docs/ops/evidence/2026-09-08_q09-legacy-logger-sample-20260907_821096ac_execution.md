@@ -270,3 +270,7 @@ Aufgabe ausgeloest (Scheduled-Task-Aenderung braucht OWNER-Autorisierung, ausser
 Kein neues Ticket, Rebuild, Release. Aufgabe bleibt IN_PROGRESS.
 
 ## Checked 2026-09-09T07:05Z -- keine OWNER-Antwort, keine Aenderung
+
+## Checked 2026-09-09T07:18Z -- no change
+
+Same gate as bb814520 above: no OWNER answer, no live lease, no new ticket/rebuild/release. Task remains IN_PROGRESS.

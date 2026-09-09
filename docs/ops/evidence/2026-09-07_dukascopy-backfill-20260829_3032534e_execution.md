@@ -223,3 +223,7 @@ ticket. Task stays IN_PROGRESS pending `2f717775` and a later-hour reprobe.
 ## Checked 2026-09-09T07:05Z (orchestration cycle) -- no change
 
 `2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~5h41m unclaimed, no Codex lane activity). No new datafeed reprobe (last one 06:39Z, still too recent for a fresh sample). `claude.exe` pileup now 7 concurrent (was 9 at ~0700Z) -- still stacked but easing. No OWNER answer to `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (shared gate for `bb814520`/`dfc60103`), `G:` Vault still permission-denied, no live spawn-lease on any of the three tasks. No ticket, rebuild, release, download restart or terminal action taken. Task stays IN_PROGRESS.
+
+## Checked 2026-09-09T07:18Z -- no change
+
+2f717775 still APPROVED/unassigned, updated_at=2026-09-09T01:24:20Z (~5h54m unclaimed, Codex lane still idle). Lease agent_task:3032534e expired 01:32:47Z, none live. No new datafeed reprobe (last 06:39Z, still recent). No duplicate ticket, no download restart. Task remains IN_PROGRESS.
