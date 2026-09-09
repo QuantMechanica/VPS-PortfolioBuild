@@ -355,113 +355,644 @@
     },
 
     {
-      "id": "THREE_OUTSIDE_UP_positive_canonical",
+      "id": "THREE_OUTSIDE_UP_positive_three_candles",
       "predicate": "QM_PP_THREE_OUTSIDE_UP",
       "case": "positive",
       "expected": true,
       "basis": "pattern_definition",
-      "rationale": "Bullish engulfing (bar1 bearish open105 close100; bar0 bullish open99 close106 fully engulfs bar1's body) followed by a close 106 above bar1's high 105.2. Engulfing plus breakout confirmation is three-outside-up. bar2 is unread padding.",
-      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [105.0, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Independent CDL3OUTSIDE definition, newest first: oldest candle is reversed by a strictly engulfing middle candle; newest close extends the middle close. Confirmation need not clear the middle wick.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          109,
+          1000
+        ],
+        [
+          99,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_UP_negative_not_engulfing",
+      "id": "THREE_OUTSIDE_UP_positive_confirmation_opposite_color",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Confirmation depends on its close versus the middle close, not on the newest candle color.",
+      "bars": [
+        [
+          110,
+          112,
+          108,
+          109,
+          1000
+        ],
+        [
+          99,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_negative_old_two_bar_false_positive",
       "predicate": "QM_PP_THREE_OUTSIDE_UP",
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "The setup candle (bar1) is bullish (open100 close105), so bar0 is not engulfing a prior bearish candle. Without a bullish engulfing there is no three-outside-up. Implementation also false.",
-      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [100.0, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Regression: engulfing on bars 1/0 is only two candles. Bar 1 does not engulf bar 2; the legacy predicate incorrectly accepted this shape.",
+      "bars": [
+        [
+          99,
+          106.5,
+          98.5,
+          106,
+          5000
+        ],
+        [
+          105,
+          105.2,
+          99.8,
+          100,
+          3000
+        ],
+        [
+          104,
+          106,
+          103,
+          105,
+          2000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_UP_negative_engulfing_but_no_breakout",
+      "id": "THREE_OUTSIDE_UP_negative_oldest_color_mutation",
       "predicate": "QM_PP_THREE_OUTSIDE_UP",
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "bar0 engulfs bar1's body (open99 close106 vs bar1 open105 close100) but closes 106, still below bar1's tall upper wick high 108, so there is no breakout confirmation and it is not three-outside-up. Isolates the added close-beyond clause.",
-      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [105.0, 108.0, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Only the oldest candle color is reversed from the positive fixture. A real three-candle pattern must now fail.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          109,
+          1000
+        ],
+        [
+          99,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          100,
+          106,
+          99,
+          105,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_UP_negative_reference_bar_bearish",
+      "id": "THREE_OUTSIDE_UP_negative_middle_not_engulfing",
       "predicate": "QM_PP_THREE_OUTSIDE_UP",
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "The reversal candle (bar0) must be bullish to engulf upward. Here bar0 opens 106 and closes 99 (bearish), so there is no bullish engulfing and it is not three-outside-up. Implementation also false.",
-      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [105.0, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "The middle real body does not contain the oldest real body.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          109,
+          1000
+        ],
+        [
+          101,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_UP_boundary_close_beyond_high_inside",
+      "id": "THREE_OUTSIDE_UP_boundary_confirmation_inside",
       "predicate": "QM_PP_THREE_OUTSIDE_UP",
       "case": "boundary",
       "expected": true,
       "basis": "implementation_threshold",
-      "rationale": "bar0 closes 105.5, above bar1's high 105.2, so it is inside the close[0]>high[1] breakout region while still engulfing (close 105.5 >= bar1 open 104.9). Only bar0's close differs from the outside case.",
-      "bars": [[99.0, 106.5, 98.5, 105.5, 5000], [104.9, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Newest close is strictly beyond the middle close, inside the confirmation region.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          106.25,
+          1000
+        ],
+        [
+          99,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_UP_boundary_close_beyond_high_outside",
+      "id": "THREE_OUTSIDE_UP_boundary_confirmation_equal",
       "predicate": "QM_PP_THREE_OUTSIDE_UP",
       "case": "boundary",
       "expected": false,
       "basis": "implementation_threshold",
-      "rationale": "bar0 closes 105.0, below bar1's high 105.2, so it is outside the close[0]>high[1] breakout region though it still engulfs (close 105.0 >= bar1 open 104.9). Single changed value isolates the breakout clause.",
-      "bars": [[99.0, 106.5, 98.5, 105.0, 5000], [104.9, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Newest and middle close are equal; confirmation is strictly beyond, so touching is false.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          106,
+          1000
+        ],
+        [
+          99,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
     },
-
     {
-      "id": "THREE_OUTSIDE_DOWN_positive_canonical",
+      "id": "THREE_OUTSIDE_UP_boundary_confirmation_outside",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Newest close lies outside the confirming side of the middle close.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          105.75,
+          1000
+        ],
+        [
+          99,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_boundary_engulf_close_equal",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "The middle close equals the oldest open; strict body engulfing excludes a touching edge.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          109,
+          1000
+        ],
+        [
+          99,
+          112,
+          98,
+          105,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_UP_boundary_engulf_open_equal",
+      "predicate": "QM_PP_THREE_OUTSIDE_UP",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "The middle open equals the oldest close; strict body engulfing excludes a touching edge.",
+      "bars": [
+        [
+          106,
+          110,
+          105,
+          109,
+          1000
+        ],
+        [
+          100,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          105,
+          106,
+          99,
+          100,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_positive_three_candles",
       "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
       "case": "positive",
       "expected": true,
       "basis": "pattern_definition",
-      "rationale": "Bearish engulfing (bar1 bullish open100 close105; bar0 bearish open106 close99 fully engulfs bar1's body) followed by a close 99 below bar1's low 99.8. Engulfing plus breakdown confirmation is three-outside-down. bar2 is unread padding.",
-      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [100.0, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Independent CDL3OUTSIDE definition, newest first: oldest candle is reversed by a strictly engulfing middle candle; newest close extends the middle close. Confirmation need not clear the middle wick.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          101,
+          1000
+        ],
+        [
+          111,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_DOWN_negative_not_engulfing",
+      "id": "THREE_OUTSIDE_DOWN_positive_confirmation_opposite_color",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "positive",
+      "expected": true,
+      "basis": "pattern_definition",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Confirmation depends on its close versus the middle close, not on the newest candle color.",
+      "bars": [
+        [
+          100,
+          102,
+          98,
+          101,
+          1000
+        ],
+        [
+          111,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_negative_old_two_bar_false_positive",
       "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "The setup candle (bar1) is bearish (open105 close100), so bar0 is not engulfing a prior bullish candle. Without a bearish engulfing there is no three-outside-down. Implementation also false.",
-      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [105.0, 105.2, 99.8, 100.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Regression: engulfing on bars 1/0 is only two candles. Bar 1 does not engulf bar 2; the legacy predicate incorrectly accepted this shape.",
+      "bars": [
+        [
+          111,
+          111.5,
+          103.5,
+          104,
+          5000
+        ],
+        [
+          105,
+          110.2,
+          104.8,
+          110,
+          3000
+        ],
+        [
+          106,
+          107,
+          104,
+          105,
+          2000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_DOWN_negative_engulfing_but_no_breakdown",
+      "id": "THREE_OUTSIDE_DOWN_negative_oldest_color_mutation",
       "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "bar0 engulfs bar1's body (open106 close99 vs bar1 open100 close105) but closes 99, still above bar1's long lower wick low 96, so there is no breakdown confirmation and it is not three-outside-down. Isolates the added close-beyond clause.",
-      "bars": [[106.0, 106.5, 98.5, 99.0, 5000], [100.0, 105.2, 96.0, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Only the oldest candle color is reversed from the positive fixture. A real three-candle pattern must now fail.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          101,
+          1000
+        ],
+        [
+          111,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          110,
+          111,
+          104,
+          105,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_DOWN_negative_reference_bar_bullish",
+      "id": "THREE_OUTSIDE_DOWN_negative_middle_not_engulfing",
       "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
       "case": "negative",
       "expected": false,
       "basis": "pattern_definition",
-      "rationale": "The reversal candle (bar0) must be bearish to engulf downward. Here bar0 opens 99 and closes 106 (bullish), so there is no bearish engulfing and it is not three-outside-down. Implementation also false.",
-      "bars": [[99.0, 106.5, 98.5, 106.0, 5000], [100.0, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "The middle real body does not contain the oldest real body.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          101,
+          1000
+        ],
+        [
+          109,
+          112,
+          98,
+          106,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_DOWN_boundary_close_beyond_low_inside",
+      "id": "THREE_OUTSIDE_DOWN_boundary_confirmation_inside",
       "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
       "case": "boundary",
       "expected": true,
       "basis": "implementation_threshold",
-      "rationale": "bar0 closes 99.5, below bar1's low 99.8, so it is inside the close[0]<low[1] breakdown region while still engulfing (close 99.5 <= bar1 open 100.2). Only bar0's close differs from the outside case.",
-      "bars": [[106.0, 106.5, 98.5, 99.5, 5000], [100.2, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Newest close is strictly beyond the middle close, inside the confirmation region.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          103.75,
+          1000
+        ],
+        [
+          111,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
     },
     {
-      "id": "THREE_OUTSIDE_DOWN_boundary_close_beyond_low_outside",
+      "id": "THREE_OUTSIDE_DOWN_boundary_confirmation_equal",
       "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
       "case": "boundary",
       "expected": false,
       "basis": "implementation_threshold",
-      "rationale": "bar0 closes 99.9, above bar1's low 99.8, so it is outside the close[0]<low[1] breakdown region though it still engulfs (close 99.9 <= bar1 open 100.2). Single changed value isolates the breakdown clause.",
-      "bars": [[106.0, 106.5, 98.5, 99.9, 5000], [100.2, 105.2, 99.8, 105.0, 3000], [104.0, 106.0, 103.0, 105.0, 2000]]
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Newest and middle close are equal; confirmation is strictly beyond, so touching is false.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          104,
+          1000
+        ],
+        [
+          111,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_boundary_confirmation_outside",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "Newest close lies outside the confirming side of the middle close.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          104.25,
+          1000
+        ],
+        [
+          111,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_boundary_engulf_close_equal",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "The middle close equals the oldest open; strict body engulfing excludes a touching edge.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          101,
+          1000
+        ],
+        [
+          111,
+          112,
+          98,
+          105,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
+    },
+    {
+      "id": "THREE_OUTSIDE_DOWN_boundary_engulf_open_equal",
+      "predicate": "QM_PP_THREE_OUTSIDE_DOWN",
+      "case": "boundary",
+      "expected": false,
+      "basis": "implementation_threshold",
+      "reference": "https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c",
+      "rationale": "The middle open equals the oldest close; strict body engulfing excludes a touching edge.",
+      "bars": [
+        [
+          104,
+          105,
+          100,
+          101,
+          1000
+        ],
+        [
+          110,
+          112,
+          98,
+          104,
+          1000
+        ],
+        [
+          105,
+          111,
+          104,
+          110,
+          1000
+        ]
+      ]
     }
   ]
 }

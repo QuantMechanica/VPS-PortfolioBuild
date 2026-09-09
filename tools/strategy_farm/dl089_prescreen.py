@@ -23,11 +23,15 @@ ROOT = Path(__file__).resolve().parents[2]
 BAR_ROOT = Path("D:/QM/mt5/T_Export/MQL5/Files")
 MANIFEST_ROOT = Path("D:/QM/reports/dl089_prescreen")
 AUTHORITY = ROOT / "decisions/2026-09-02_owner_receipts_ceo_asks.md"
+RETIREMENT_DECISION = "CEO-DEC-PATTERN-REPAIR-20260909"
+# B2 tests net profit, not the sealed R2DD quorum. B5 is not a proof that
+# an arm cannot pass that quorum either. Retain v1 for evidence replay only.
+# No environment variable can opt a production writer back into this policy.
+RETIRED = True
 
 
 def enabled() -> bool:
-    # Deployment is a CEO-reviewed opt-in; 0 always restores legacy enqueue.
-    return os.environ.get("QM_DL089_PRESCREEN", "0").strip() == "1"
+    return not RETIRED and os.environ.get("QM_DL089_PRESCREEN", "0").strip() == "1"
 
 
 def digest(value) -> str:
@@ -40,6 +44,8 @@ def sha(path: Path) -> str:
 
 def create_contract(symbol: str, protected_years=(), *, bars_root=BAR_ROOT,
                     manifest_root=MANIFEST_ROOT, authority=AUTHORITY) -> dict:
+    if RETIRED:
+        raise ValueError("B2/B5 prescreen retired: " + RETIREMENT_DECISION)
     if not any(DECISION in line and "| 13 |" in line for line in authority.read_text(encoding="utf-8-sig").splitlines()):
         raise ValueError("prescreen OWNER receipt missing")
     if not symbol.endswith(".DWX") or any(c in symbol for c in "/\\:"):
@@ -178,7 +184,7 @@ def plan_admission(plan: dict, conn: sqlite3.Connection, contract: dict, *, coun
         if cell["cell_key"] in rows:
             action, reason = "EXISTING", "IMMUTABLE_EXISTING_ROW"
         elif year in contract["protected_years"] or not enabled():
-            action, reason = "ENQUEUE", "LEGACY_OR_KILL_SWITCH"
+            action, reason = "ENQUEUE", ("PRESCREEN_RETIRED" if RETIRED else "LEGACY_OR_KILL_SWITCH")
         elif year not in YEARS and not stage1_complete:
             reason = "STAGE1_PENDING"
         elif arm == "baseline":
@@ -269,6 +275,7 @@ def enqueue_staged(census, plan: dict, *, db_path: Path, ledger_path: Path,
                        "matrix_runner_revision":runner_revision}
             payload["prescreen_admission"] = {
                 "decision_id":DECISION,"contract_sha256":contract["contract_sha256"],
+                "admission_policy_decision_id":RETIREMENT_DECISION if RETIRED else DECISION,
                 "manifest_sha256":contract["manifest_sha256"],"reason":choice["reason"],
                 "fire_count":choice["fire_count"],"threshold":THRESHOLD,"proof":choice["proof"]}
             evidence = None

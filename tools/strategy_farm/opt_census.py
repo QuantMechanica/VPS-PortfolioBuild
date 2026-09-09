@@ -469,6 +469,24 @@ def _harness_pass(conn: sqlite3.Connection, harness_id: str) -> dict[str, Any]:
         raise CensusError(
             f"fixture harness is not green: status={result['status']} verdict={result['verdict']}"
         )
+    # New hash-bound fixture runs must be backed by their real runner summary.
+    # A legacy worker may lose an exit code and still store HARNESS_OK; that
+    # database token must not admit a new census after a wrapper failure.
+    payload_row = conn.execute("SELECT payload_json FROM work_items WHERE id=?", (result["id"],)).fetchone()
+    payload = json.loads(payload_row[0] or "{}")
+    if payload.get("harness_ex5_sha256"):
+        try:
+            from framework.scripts import collect_pattern_fixture_harness_results as collector
+            summary = collector.validate_smoke_summary(Path(payload.get("report_root") or ""), payload)
+            collection = payload.get("harness_collection") or {}
+            if not collection.get("all_expected_passed") or collection.get("bundle_sha256") != payload.get("bundle_csv_sha256"):
+                raise ValueError("fixture collection is not completely bound")
+            evidence = Path(result["evidence_path"])
+            if _sha256(evidence) != collection.get("results_sha256"):
+                raise ValueError("fixture results hash changed")
+            result["smoke_summary"] = summary
+        except Exception as exc:
+            raise CensusError("bound fixture harness native proof invalid: " + str(exc)) from exc
     return result
 
 

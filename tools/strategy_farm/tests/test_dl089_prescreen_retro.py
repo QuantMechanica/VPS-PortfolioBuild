@@ -20,6 +20,8 @@ def test_classifier_needs_both_measured_years_and_exact_thresholds(profits,fires
 
 @pytest.fixture
 def program(tmp_path,monkeypatch):
+    # Exercise immutable legacy receipt semantics in a disposable DB only.
+    monkeypatch.setattr(p, 'RETIRED', False)
     monkeypatch.setenv('QM_DL089_PRESCREEN','0')
     plan=_plan(tmp_path);db=_db(tmp_path/'db.sqlite');ledger=tmp_path/'ledger.json'
     census.enqueue(plan,db_path=db,ledger_path=ledger)

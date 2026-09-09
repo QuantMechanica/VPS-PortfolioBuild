@@ -456,6 +456,7 @@ HARNESS_PP_FIXTURE_PHASE = "HARNESS_PP_FIXTURE"
 HARNESS_PP_FIXTURE_EA_ID = "QM_PP_FIXTURE_HARNESS"
 HARNESS_PP_FIXTURE_EA_LABEL = "QM_pattern_permission_fixture_runner"
 HARNESS_PP_FIXTURE_SOURCE_DIR = REPO_ROOT / "framework" / "tests"
+HARNESS_MT5_ROOT = Path(r"D:\QM\mt5")
 # Governed non-trading utility work. COMPILE_EA consumes a quiescent factory
 # slot but never launches terminal64 and never emits a Q-gate verdict.
 COMPILE_WORK_ITEM_KIND = "compile"
@@ -2207,7 +2208,9 @@ def _topdown_gate_rank_sql() -> str:
         (_PATTERN_PHASE, _PARAM_OPT_PHASE, _HEAD_TO_HEAD_PHASE, OPT_CENSUS_PHASE)
     ))
     arms = [
-        "WHEN 'HARNESS_PP_FIXTURE' THEN 0",
+        # A short integrity prerequisite must precede even census frontier
+        # lanes; sharing tier 0 allowed those secondary keys to starve it.
+        "WHEN 'HARNESS_PP_FIXTURE' THEN -2",
         "WHEN 'COMPILE_EA' THEN 0",
         *(f"WHEN '{phase}' THEN 0" for phase in optimization_phases),
         f"WHEN '{_INCUMBENT_PHASE}' THEN 1",
@@ -8594,6 +8597,8 @@ def enqueue_pattern_fixture_harness(
     from_date: str = "2024.01.02",
     to_date: str = "2024.01.10",
     timeout_seconds: int = 600,
+    compiled_probe: Path | None = None,
+    terminal: str | None = None,
 ) -> dict[str, Any]:
     """Enqueue a kind='harness' work_item that runs the pattern-permission
     fixture suite (framework/tests/QM_pattern_permission_fixture_runner.ex5)
@@ -8607,7 +8612,18 @@ def enqueue_pattern_fixture_harness(
     """
     import shutil as _shutil
 
-    ex5_path = HARNESS_PP_FIXTURE_SOURCE_DIR / f"{HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
+    if terminal is not None and terminal not in {f"T{i}" for i in range(1,11)}:
+        raise ValueError("fixture terminal pin must be T1-T10")
+    source_dir = HARNESS_PP_FIXTURE_SOURCE_DIR
+    probe_receipt = None
+    if compiled_probe is not None:
+        try:
+            from tools.strategy_farm.pattern_fixture_compile_probe import verify_probe
+        except ModuleNotFoundError:
+            from pattern_fixture_compile_probe import verify_probe
+        probe_receipt = verify_probe(compiled_probe)
+        source_dir = Path(compiled_probe).resolve() / "MQL5"
+    ex5_path = source_dir / f"{HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
     if not ex5_path.is_file():
         raise SystemExit(
             f"fixture harness .ex5 missing: {ex5_path} (compile it first: "
@@ -8650,8 +8666,15 @@ def enqueue_pattern_fixture_harness(
         "priority_track": True,
         "harness_type": "pattern_permission_fixture",
         "harness_ea_label": HARNESS_PP_FIXTURE_EA_LABEL,
-        "harness_source_dir": str(HARNESS_PP_FIXTURE_SOURCE_DIR),
+        "harness_source_dir": str(source_dir),
+        "harness_ex5_sha256": _sha256_file(ex5_path),
+        "staged_ex5_path": str(ex5_path.resolve()),
+        "staged_ex5_sha256": _sha256_file(ex5_path),
+        "expected_ex5_sha256": _sha256_file(ex5_path),
+        "compile_probe_receipt": probe_receipt,
         "harness_period": period,
+        "host_timeframe": period,
+        "avoid_terminals": [f"T{i}" for i in range(1,11) if f"T{i}" != terminal] if terminal else [],
         "harness_year": year,
         "from_date": from_date,
         "to_date": to_date,
@@ -8711,8 +8734,12 @@ def _spawn_harness_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     source_ex5 = harness_source_dir / f"{harness_label}.ex5"
     if not source_ex5.is_file():
         return {"spawned": False, "reason": f"harness ex5 missing: {source_ex5}"}
+    if item_payload.get("harness_ex5_sha256") and _sha256_file(source_ex5) != item_payload["harness_ex5_sha256"]:
+        return {"spawned": False, "reason": "harness_binary_changed_after_enqueue"}
+    if item_payload.get("bundle_csv_sha256") and _sha256_file(Path(item_payload["bundle_csv_path"])) != item_payload["bundle_csv_sha256"]:
+        return {"spawned": False, "reason": "harness_bundle_changed_after_enqueue"}
 
-    dest_dir = Path(r"D:\QM\mt5") / terminal / "MQL5" / "Experts" / "QM"
+    dest_dir = HARNESS_MT5_ROOT / terminal / "MQL5" / "Experts" / "QM"
     dest_dir.mkdir(parents=True, exist_ok=True)
     dest_ex5 = dest_dir / f"{harness_label}.ex5"
     _shutil.copyfile(source_ex5, dest_ex5)
@@ -8735,6 +8762,9 @@ def _spawn_harness_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-Period", period,
         "-Runs", "1",
         "-MinTrades", "0",
+        # Non-trading fixture harness: the generic Q02 floor must not turn
+        # an explicitly requested zero-trade smoke into a five-trade test.
+        "-SmokeMode",
         "-Model", "4",
         "-ReportRoot", str(report_root),
         "-AllowMissingRealTicksLogMarker",
@@ -37188,6 +37218,8 @@ def build_parser() -> argparse.ArgumentParser:
     harness_pp.add_argument("--from-date", default="2024.01.02")
     harness_pp.add_argument("--to-date", default="2024.01.10")
     harness_pp.add_argument("--timeout-seconds", type=int, default=600)
+    harness_pp.add_argument("--compiled-probe", type=Path, help="Fresh hash-bound artifact-only fixture compile directory")
+    harness_pp.add_argument("--terminal", help="Optionally pin this diagnostic to one governed T1-T10 slot")
 
     rebind_q02 = sub.add_parser(
         "rebind-q02",
@@ -38002,6 +38034,8 @@ def main(argv: list[str] | None = None) -> int:
             from_date=args.from_date,
             to_date=args.to_date,
             timeout_seconds=args.timeout_seconds,
+            compiled_probe=args.compiled_probe,
+            terminal=args.terminal,
         ))
     elif args.command == "seed-fresh-q02":
         print_json(enqueue_fresh_q02_seed(

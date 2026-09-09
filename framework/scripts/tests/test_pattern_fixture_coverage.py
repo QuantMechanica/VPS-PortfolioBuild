@@ -18,6 +18,8 @@ checked by test_runner_results_all_pass below once a run exists.
 from __future__ import annotations
 
 import csv
+import hashlib
+import json
 import importlib.util
 import sys
 from pathlib import Path
@@ -176,3 +178,27 @@ def test_runner_covered_every_bundled_fixture():
     expected = {f["id"] for f in FIXTURES}
     missing = sorted(expected - ran)
     assert not missing, f"{len(missing)} bundled fixtures never ran: {missing[:25]}"
+
+
+def test_native_result_receipt_binds_exact_current_bundle_and_results():
+    receipt = json.loads(RESULTS_CSV.with_suffix(".receipt.json").read_text(encoding="utf-8"))
+    bundle = RESULTS_CSV.with_name("pattern_fixtures.csv")
+    assert receipt["all_expected_passed"] is True
+    assert receipt["bundle_sha256"] == hashlib.sha256(bundle.read_bytes()).hexdigest()
+    assert receipt["results_sha256"] == hashlib.sha256(RESULTS_CSV.read_bytes()).hexdigest()
+    assert receipt["row_count"] == len(FIXTURES)
+
+
+def test_three_outside_fixtures_use_independent_three_candle_definition():
+    for fx in FIXTURES:
+        if fx["predicate"] not in ("QM_PP_THREE_OUTSIDE_UP", "QM_PP_THREE_OUTSIDE_DOWN"):
+            continue
+        newest, middle, oldest = fx["rows"][:3]
+        no, _, _, nc, _ = newest
+        mo, _, _, mc, _ = middle
+        oo, _, _, oc, _ = oldest
+        if fx["predicate"].endswith("UP"):
+            oracle = oc < oo and mc > mo and mo < oc and mc > oo and nc > mc
+        else:
+            oracle = oc > oo and mc < mo and mo > oc and mc < oo and nc < mc
+        assert fx["expected"] == oracle, fx["id"]

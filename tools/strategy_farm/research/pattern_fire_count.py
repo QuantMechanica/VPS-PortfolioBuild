@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo
 
 IDS = tuple(range(3, 61)) + tuple(range(77, 85)) + tuple(range(87, 95)) + (98, 99, 100)
 ARMS = tuple(f"{side}_{pid:03d}" for side in ("buy", "sell") for pid in IDS)
-MQL_SOURCE_SHA256_LF = "82ec20e7d6492e0cd3d648000338de292282d1247e1d72e7e6f36e702c41261f"
+MQL_SOURCE_SHA256_LF = "101cc2230e32d88970a89aadea167a8cece2a64074f450a3946f7302dcd2039e"
 REQUIRED = {90: 101, 91: 101, 82: 22, 83: 22, 87: 21, 88: 21, 89: 21,
             98: 22, 57: 12, 58: 12, 44: 8, 43: 7, 42: 4, 53: 4, 54: 4,
             99: 1, 100: 1}
@@ -134,8 +134,9 @@ def evaluate(pid: int, bars: list[Bar]) -> bool:
         case 30: return all(bear[:3]) and c[0] < c[1] < c[2] and o[0] >= c[1] and o[1] >= c[2]
         case 31: return bear[2] and bull[1] and o[1] >= c[2] and c[1] <= o[2] and body[2] > body[1] and bull[0] and c[0] > h[1]
         case 32: return bull[2] and bear[1] and o[1] <= c[2] and c[1] >= o[2] and body[2] > body[1] and bear[0] and c[0] < l[1]
-        case 33: return evaluate(19, bars) and c[0] > h[1]
-        case 34: return evaluate(20, bars) and c[0] < l[1]
+        # CDL3OUTSIDE, semantic revision 2026-09-09; bars 2/1 engulf, 0 confirms.
+        case 33: return bear[2] and bull[1] and c[1] > o[2] and o[1] < c[2] and c[0] > c[1]
+        case 34: return bull[2] and bear[1] and o[1] > c[2] and c[1] < o[2] and c[0] < c[1]
         case 35 | 36:
             inside = all(h[i] <= h[4] and l[i] >= l[4] for i in (3, 2, 1))
             if pid == 35:

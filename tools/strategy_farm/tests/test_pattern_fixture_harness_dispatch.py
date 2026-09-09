@@ -93,6 +93,8 @@ class PatternFixtureHarnessDispatchTests(unittest.TestCase):
             self.assertEqual(row["symbol"], "EURUSD.DWX")
             payload = json.loads(row["payload_json"])
             self.assertEqual(payload["harness_type"], "pattern_permission_fixture")
+            self.assertEqual(payload["host_timeframe"], payload["harness_period"])
+            self.assertEqual(payload["expected_ex5_sha256"], payload["harness_ex5_sha256"])
 
     def test_spawn_run_smoke_routes_harness_kind_to_dedicated_path(self) -> None:
         """A kind='harness' row must never reach the QM5_<digits> EA-dir glob
@@ -142,7 +144,9 @@ class PatternFixtureHarnessDispatchTests(unittest.TestCase):
 
             old_repo_root = farmctl.REPO_ROOT
             old_popen = farmctl.subprocess.Popen
+            old_mt5_root = farmctl.HARNESS_MT5_ROOT
             try:
+                farmctl.HARNESS_MT5_ROOT = Path(tmp) / "mt5"
                 farmctl.REPO_ROOT = Path(tmp) / "repo"
                 farmctl.subprocess.Popen = FakeProc
                 with farmctl.connect(root) as conn:
@@ -151,14 +155,14 @@ class PatternFixtureHarnessDispatchTests(unittest.TestCase):
             finally:
                 farmctl.REPO_ROOT = old_repo_root
                 farmctl.subprocess.Popen = old_popen
+                farmctl.HARNESS_MT5_ROOT = old_mt5_root
 
             self.assertTrue(result["spawned"], result)
             self.assertEqual(len(spawned_cmds), 1)
             cmd = spawned_cmds[0]
 
-            deployed_ex5 = Path(r"D:\QM\mt5") / "T9" / "MQL5" / "Experts" / "QM" / f"{harness_label}.ex5"
+            deployed_ex5 = Path(tmp) / "mt5" / "T9" / "MQL5" / "Experts" / "QM" / f"{harness_label}.ex5"
             self.assertTrue(deployed_ex5.is_file(), "harness .ex5 must be staged into the terminal Experts dir")
-            deployed_ex5.unlink()  # test cleanup: this path lives outside tmp
 
             self.assertEqual(cmd[cmd.index("-Expert") + 1], f"QM\\{harness_label}")
             self.assertEqual(
@@ -169,6 +173,7 @@ class PatternFixtureHarnessDispatchTests(unittest.TestCase):
             self.assertEqual(cmd[cmd.index("-Model") + 1], "4")
             self.assertEqual(cmd[cmd.index("-Runs") + 1], "1")
             self.assertIn("-SkipExpertDeploy", cmd)
+            self.assertIn("-SmokeMode", cmd)
             self.assertIn("-AllowMissingRealTicksLogMarker", cmd)
             # No compile-gate / evidence-identity SHA machinery reserved for
             # real strategy EAs, and no reference to either gate module the

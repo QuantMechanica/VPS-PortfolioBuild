@@ -1,0 +1,14 @@
+{
+  "all_expected_passed": true,
+  "bundle_mtime": 1788957106.769231,
+  "bundle_sha256": "04dec58e3697d1b8526a6845d0026cc7ea2533333b4c0336db0f24612a9e4c73",
+  "collected": true,
+  "dest_csv": "C:\\QM\\repo\\framework\\tests\\fixtures\\pattern_permission\\_bundle\\pattern_fixture_results.csv",
+  "results_sha256": "d7019fa1f75d5855620fb127b76187d33b2d07bdc99e6c960a713f958efa0de0",
+  "row_count": 535,
+  "source_csv": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\Common\\Files\\QM\\pattern_fixture_results.csv",
+  "source_mtime": 1788957459.220999,
+  "verdict_counts": {
+    "PASS": 535
+  }
+}

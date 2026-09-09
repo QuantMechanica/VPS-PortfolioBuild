@@ -650,9 +650,16 @@ bool QM_PP_Evaluate(const QM_PatternId id, const QM_PPBars &b)
                  && QM_PP_Body(b, 2) > QM_PP_Body(b, 1)
                  && QM_PP_IsBear(b, 0) && b.close[0] < b.low[1]);
       case QM_PP_THREE_OUTSIDE_UP:
-         return (QM_PP_Evaluate(QM_PP_ENGULFING_BULL, b) && b.close[0] > b.high[1]);
+         // Semantic revision 2026-09-09: three CLOSED candles, newest first.
+         // TA-Lib CDL3OUTSIDE: bar 1 strictly engulfs bar 2's real body;
+         // bar 0 confirms beyond bar 1's CLOSE (not its wick). No trend test.
+         return (QM_PP_IsBear(b, 2) && QM_PP_IsBull(b, 1)
+                 && b.close[1] > b.open[2] && b.open[1] < b.close[2]
+                 && b.close[0] > b.close[1]);
       case QM_PP_THREE_OUTSIDE_DOWN:
-         return (QM_PP_Evaluate(QM_PP_ENGULFING_BEAR, b) && b.close[0] < b.low[1]);
+         return (QM_PP_IsBull(b, 2) && QM_PP_IsBear(b, 1)
+                 && b.open[1] > b.close[2] && b.close[1] < b.open[2]
+                 && b.close[0] < b.close[1]);
 
       // ---- continuation ------------------------------------------
       case QM_PP_RISING_THREE_METHODS:

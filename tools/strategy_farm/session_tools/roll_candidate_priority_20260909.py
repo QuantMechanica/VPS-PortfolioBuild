@@ -61,6 +61,8 @@ def main():
     parser.add_argument("--target", action="append", required=True)
     parser.add_argument("--worker-sha256", required=True)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--owner", default=OWNER)
+    parser.add_argument("--reason", default="Tested candidate-priority fix; idle-only exact-PID reload")
     args = parser.parse_args()
     pending = targets(args.target)
     done = []
@@ -97,15 +99,15 @@ def main():
             reserved = False
             stopped = False
             try:
-                with FactoryMutationLock(ROOT / "state/FACTORY_MUTATION.lock", owner=OWNER + ":" + terminal):
+                with FactoryMutationLock(ROOT / "state/FACTORY_MUTATION.lock", owner=args.owner + ":" + terminal):
                     if not eligible(terminal, active_terminals(), farmctl.terminal_reservations(ROOT)):
                         continue
                     if hashlib.sha256(WORKER.read_bytes()).hexdigest() != args.worker_sha256:
                         raise RuntimeError("worker source changed before reload")
                     if not starter._pid_alive(old_pid):
                         continue
-                    farmctl.set_terminal_reservation(ROOT, terminal, reserved_by=OWNER, minutes=5,
-                                                     reason="Tested candidate-priority fix; idle-only exact-PID reload")
+                    farmctl.set_terminal_reservation(ROOT, terminal, reserved_by=args.owner, minutes=5,
+                                                     reason=args.reason)
                     reserved = True
                     os.kill(old_pid, signal.SIGTERM)
                     stopped = True
@@ -129,7 +131,7 @@ def main():
                     return 2
                 raise
             finally:
-                if reserved and farmctl.terminal_reservations(ROOT).get(terminal, {}).get("reserved_by") == OWNER:
+                if reserved and farmctl.terminal_reservations(ROOT).get(terminal, {}).get("reserved_by") == args.owner:
                     farmctl.release_terminal_reservation(ROOT, terminal)
         except (RuntimeError, sqlite3.OperationalError) as exc:
             emit("reload_deferred", reason=str(exc), remaining=pending)

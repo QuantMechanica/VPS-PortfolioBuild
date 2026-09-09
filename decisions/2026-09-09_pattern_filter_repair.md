@@ -1,0 +1,11 @@
+# CEO-DEC-PATTERN-REPAIR-20260909
+
+Authority: the user's direct instruction in this thread, “na dqnn geh das gleich mal an!”, following the implementation audit. Recorded by Codex acting within the requested repair; this is not a fabricated independent OWNER signature.
+
+1. Retire the B2/B5 heuristic for all new admission and retro-hold writes. It is not outcome-equivalent to the sealed +5% return/max-drawdown criterion in at least two thirds of selection years. Keep that original selector and its activity floor unchanged. Historical contracts and receipts remain readable and unmodified.
+2. Correct predicate IDs 33/34 to use three closed candles: the middle real body strictly engulfs the oldest, the newest close confirms beyond the middle close. Keep strict non-doji bullish/bearish body colors. Reference: [TA-Lib CDL3OUTSIDE](https://raw.githubusercontent.com/TA-Lib/ta-lib/main/src/ta_func/ta_CDL3OUTSIDE.c), retrieved 2026-09-09. The reference's doji-as-white convention is not adopted; QM's existing strict color helpers are retained explicitly.
+3. Validate independently constructed cases and a fresh real MQL5 fixture run. Do not infer PASS from a successful file copy. Bind source, bundle, binary and results; reject missing/duplicate/failed cases.
+4. Permit a non-trading fixture-only compile in a fresh artifact directory under D:/QM/reports/pattern_permission_repair, using a copied MetaEditor and the single canonical pattern include. No terminal include mirroring, EA inventory allocation, registry changes, terminal launch, trading or live deployment is authorized by this probe. Execution of the resulting harness uses the existing governed factory harness queue.
+5. Do not overwrite an EA binary bound to historical measurements, revise old verdicts, mix repaired predicate measurements into an old program, or release historical prescreen holds en masse. Corrected strategy measurements require a separate, declared recovery lineage and compatible native build evidence. Existing runs may finish with their frozen binaries.
+
+The old “no filter improvement” results are conditional on their implementation and screening policy, not evidence that all Andrea Unger filters are ineffective. The current 77-pattern catalog is not verified as a complete 1:1 Unger PatternFast implementation.

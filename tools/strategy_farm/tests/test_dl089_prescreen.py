@@ -9,6 +9,8 @@ from tools.strategy_farm.tests.test_opt_census import _plan, _db
 
 
 def setup(tmp_path, monkeypatch):
+    # Historical v1 replay, never a production opt-in.
+    monkeypatch.setattr(p, "RETIRED", False)
     monkeypatch.setenv("QM_DL089_PRESCREEN","1")
     plan = _plan(tmp_path); db = _db(tmp_path/"db.sqlite"); ledger = tmp_path/"ledger.json"
     bars = tmp_path/"USDJPY.DWX_D1.csv"; bars.write_text("fixture bars\n")

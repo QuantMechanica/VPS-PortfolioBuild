@@ -1154,6 +1154,21 @@ def _tester_memory_run_kind(
 ) -> str:
     """Coarse run-kind label for the ledger lookup key."""
     phase = str(_work_item_value(item, "phase", "") or "").strip().upper()
+    # Fixture execution is not an economic strategy backtest: its predicate
+    # inputs are fixed CSV rows. Give short, identified fixture runs their own
+    # telemetry cohort rather than borrowing multi-year strategy peaks. The
+    # ordinary flat RAM reservation, post-reservation floor and global latches
+    # remain unchanged; measured fixture peaks can still raise the reservation.
+    if (str(_work_item_value(item, "kind", "")) == farmctl.HARNESS_WORK_ITEM_KIND
+            and phase == farmctl.HARNESS_PP_FIXTURE_PHASE
+            and payload.get("harness_type") == "pattern_permission_fixture"):
+        try:
+            start = datetime.strptime(str(payload.get("from_date")), "%Y.%m.%d")
+            end = datetime.strptime(str(payload.get("to_date")), "%Y.%m.%d")
+            if 0 < (end-start).days <= 14:
+                return "fixture"
+        except (ValueError, TypeError):
+            pass
     if phase == farmctl.OPT_CENSUS_PHASE:
         return "census"
     if phase == farmctl.COMPILE_EA_PHASE:
@@ -6548,7 +6563,7 @@ def _dispatch_ex5_requirement(
         # cb5e3cd3 died staged_ex5_ea_dir_unresolved right after the generic
         # preflight learned the same lesson). Their canonical binary is the
         # harness .ex5 itself; the verified-copy staging below still applies.
-        canonical_source = farmctl.HARNESS_PP_FIXTURE_SOURCE_DIR / (
+        canonical_source = Path(payload.get("harness_source_dir") or farmctl.HARNESS_PP_FIXTURE_SOURCE_DIR) / (
             f"{farmctl.HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
         )
         # The staging destination below derives its filename from ea_dir.name;
@@ -7752,6 +7767,8 @@ def _finish_harness_work_item(
     flat 0.0 and the tester report is discarded). Success means run_smoke
     exited cleanly AND the runner's own verdict CSV was collected out of the
     shared MT5 Common\\Files folder without weakening the staleness guard.
+    Its dispatcher uses explicit zero-trade SmokeMode; Q02's five-trade floor
+    is not a criterion for a predicate fixture runner.
     """
     payload["run_smoke_exit_code"] = exit_code
     harness_type = str(payload.get("harness_type") or "")
@@ -7768,10 +7785,16 @@ def _finish_harness_work_item(
                 source_csv=source_csv, bundle_csv=bundle_csv, dest_csv=_collector.DEFAULT_DEST_CSV,
             )
             report_root = payload.get("report_root")
+            if payload.get("harness_ex5_sha256"):
+                collection["smoke_summary"] = _collector.validate_smoke_summary(Path(report_root or ""), payload)
             if report_root:
                 collection["journal_purged"] = _collector.purge_report_root_journal(Path(report_root))
-            if exit_code not in (0, None):
+            if exit_code != 0:
                 verdict, reason = "HARNESS_FAIL", f"run_smoke_exit_code_{exit_code}"
+            elif not collection.get("all_expected_passed"):
+                verdict, reason = "HARNESS_FAIL", "fixture_results_not_all_passed"
+            elif payload.get("bundle_csv_sha256") and payload["bundle_csv_sha256"] != collection.get("bundle_sha256"):
+                verdict, reason = "HARNESS_FAIL", "fixture_bundle_changed_after_enqueue"
             else:
                 verdict, reason = "HARNESS_OK", "collected"
         except FileNotFoundError as exc:
@@ -8478,7 +8501,8 @@ def _work_item_preflight_failure(item: sqlite3.Row) -> dict[str, Any] | None:
     # first claim). Their own spawn path validates the harness .ex5 and the
     # fixture bundle fail-closed, so the generic preflight must step aside.
     if "kind" in item.keys() and str(item["kind"]) == farmctl.HARNESS_WORK_ITEM_KIND:
-        ex5 = farmctl.HARNESS_PP_FIXTURE_SOURCE_DIR / (
+        payload = _json_loads(_work_item_value(item, "payload_json", "{}"))
+        ex5 = Path(payload.get("harness_source_dir") or farmctl.HARNESS_PP_FIXTURE_SOURCE_DIR) / (
             f"{farmctl.HARNESS_PP_FIXTURE_EA_LABEL}.ex5"
         )
         if not ex5.is_file():

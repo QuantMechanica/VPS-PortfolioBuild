@@ -322,7 +322,8 @@ def test_advance_waits_when_census_incomplete_and_is_idempotent(tmp_path: Path) 
     assert led["driver"]["transitions"] == []  # no transition recorded while waiting
 
 
-def test_advance_transitions_once_then_holds(tmp_path: Path) -> None:
+def test_advance_transitions_once_then_holds(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(sel, "_now", lambda: "2026-09-09T12:00:00+00:00")
     ledger_path, ids = _mini_ledger(tmp_path)
     conn = sqlite3.connect(":memory:")
     conn.execute(WORK_ITEMS_DDL)
@@ -333,7 +334,8 @@ def test_advance_transitions_once_then_holds(tmp_path: Path) -> None:
     assert first["state"] == sel.STATE_WF_COMBO and first["combo_runs"] == 4
     combo_rows = conn.execute(
         "SELECT payload_json FROM work_items WHERE phase='OPT_CENSUS' "
-        "ORDER BY created_at, id").fetchall()
+        # Wall-clock timestamps can tie; UUID lexical order is not fold order.
+        "ORDER BY CAST(json_extract(payload_json, '$.year') AS INTEGER), id").fetchall()
     assert len(combo_rows) == 4  # exactly the 4 walk-forward combo runs
     combo_payloads = [json.loads(row[0]) for row in combo_rows]
     assert [payload["arm"] for payload in combo_payloads] == [

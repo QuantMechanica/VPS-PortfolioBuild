@@ -190,6 +190,8 @@ def progress_snapshot(conn):
 
 def apply_program(conn,program,plan_sha,out,backend,backup):
     """Caller holds shared factory lock. One SQLite transaction, INSERT only."""
+    if prescreen.RETIRED:
+        raise ValueError('B2/B5 prescreen retired: ' + prescreen.RETIREMENT_DECISION)
     conn.row_factory=sqlite3.Row;conn.execute('BEGIN IMMEDIATE')
     try:
         prior=conn.execute('SELECT detail_json FROM events WHERE entity_type=? AND entity_id=? AND event=?',
