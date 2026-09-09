@@ -1,0 +1,6 @@
+{
+  "error": "WORKER_ROLLOUT_REQUIRED: stale or noncanonical worker PIDs [9908, 4380, 2340, 3500, 11308, 11316, 11336, 11356, 8384, 304]; no rows inserted",
+  "first_claim": null,
+  "first_measured": null,
+  "inserted": 0
+}

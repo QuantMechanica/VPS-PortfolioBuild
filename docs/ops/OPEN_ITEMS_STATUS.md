@@ -2151,3 +2151,13 @@ contamination are explicitly documented. Evidence:
 Reserved QM5_41405; draft in cards_review; governed magic prerequisite `2e7d5619`
 is TODO. Later WINSWEEP plan sequences variants after window selection. No new
 binary, fidelity rerun or comparison result is claimed; 41398 remains untouched.
+
+RESULT `2e7d5619`: governed allocator installed and verified QM5_41405 / USDJPY.DWX
+slot 0 / magic 414050000. Commit 448a98e8fa; REVIEW, no build or promotion.
+
+RESULT `49af4f08`: PARTIAL_REVIEW. WINSWEEP planner, authenticated worker adapter
+and incomplete-matrix report pass 71 tests; DL-089 1085-cell plan is identical.
+420 planned / 0 production enqueued / no first claim or MEASURED cell. Apply is
+blocked by all ten workers retaining old code; safe idle rollout is required.
+See `docs/ops/evidence/WINDOW_SWEEP_IMPLEMENTATION_2026-09-09.md` and its exact
+reproduction commands. No active worker/backtest interrupted; no Stage-B enqueue.

@@ -9805,6 +9805,10 @@ def _active_terminal_claim_preflight(root: Path, terminal: str) -> dict[str, Any
 def _is_governed_dl089_census_payload(payload: Mapping[str, Any]) -> bool:
     """Distinguish sealed DL-089 cells from pre-contract legacy census rows."""
 
+    # A window program has its own sealed authority; malformed declarations
+    # must enter authentication and fail closed, never fall into legacy mode.
+    if payload.get("schema") == "qm.window-sweep.v1":
+        return True
     return bool(
         payload.get("schema") == "qm.opt-census.v1"
         and str(payload.get("program_id") or "").strip()
@@ -9975,6 +9979,7 @@ def _opt_census_lane_preflight_outside_factory_lock(
     payload = _json_loads(candidate.get("payload_json"))
     if not _is_governed_dl089_census_payload(payload):
         return {"status": "legacy", "candidate_pending": True, "token": None}
+    window_program = payload.get("schema") == "qm.window-sweep.v1"
     program, arm = dl089_scheduling.lane_id(
         payload, ea_id=candidate.get("ea_id"), symbol=candidate.get("symbol")
     )
@@ -9996,7 +10001,7 @@ def _opt_census_lane_preflight_outside_factory_lock(
             "arm": arm,
             "detail": str(exc),
         }
-    if pruning_enabled:
+    if pruning_enabled and not window_program:
         pruning = _prune_candidate_outside_factory_lock(
             root,
             terminal,
@@ -10011,8 +10016,15 @@ def _opt_census_lane_preflight_outside_factory_lock(
         pruning = {"status": "disabled", "candidate_pending": True}
 
     try:
-        opt_census_pruning.authenticate_amendment()
-        ledger_path, ledger = opt_census_pruning._load_ledger(payload)
+        if window_program:
+            try:
+                from tools.strategy_farm import window_sweep
+            except ModuleNotFoundError:
+                import window_sweep
+            ledger_path, ledger = window_sweep.authenticate_ledger(payload)
+        else:
+            opt_census_pruning.authenticate_amendment()
+            ledger_path, ledger = opt_census_pruning._load_ledger(payload)
         ledger_sha256 = _sha256_file(ledger_path)
         if str(ledger.get("q12_work_item_id") or "") != str(
             payload.get("q12_work_item_id") or ""

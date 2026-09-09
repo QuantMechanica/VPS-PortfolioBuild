@@ -1,0 +1,9 @@
+{
+  "after_plan_sha256": "fa25c676ae44738ece15a83b27ad56369ea16f314d24fbb9706f60b602dfdc2f",
+  "before_plan_sha256": "fa25c676ae44738ece15a83b27ad56369ea16f314d24fbb9706f60b602dfdc2f",
+  "cells": 1085,
+  "focused_tests": "71 passed in 11.51s",
+  "opt_census_source_unchanged": true,
+  "production_inserted": 0,
+  "same_plan": true
+}
