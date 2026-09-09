@@ -1,0 +1,113 @@
+{
+  "schema_version": "fx_cointegration_capacity_stop.v1",
+  "recorded_at_utc": "2026-09-09T15:00:52Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "b2e5318451ef1fa635f623404014bb45e0333524",
+  "decision": "STOP_CPU_CEILING",
+  "frontier": {
+    "scan_pair_count": 66,
+    "unbuilt_relationship_count": 0,
+    "new_pair_action": "REFUSED_DUPLICATE",
+    "anchors": [
+      {
+        "ea_id": "QM5_12532",
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "latest_phase_sequence": ["Q02_PASS", "Q04_PASS", "Q05_FAIL"]
+      },
+      {
+        "ea_id": "QM5_12533",
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "latest_phase_sequence": ["Q02_PASS", "Q04_FAIL"]
+      }
+    ]
+  },
+  "fallback": {
+    "ea_id": "QM5_12507",
+    "slug": "pair-coint-z",
+    "pair": ["EURUSD.DWX", "GBPUSD.DWX"],
+    "timeframe": "H1",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "duplicate_row_created": false,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "ex5_present": true,
+    "basket_manifest_present": true
+  },
+  "capacity": {
+    "active_work_item_count": 5,
+    "active_row_limit": 7,
+    "running_factory_terminals": ["T2", "T4", "T8", "T9", "T10"],
+    "cpu_samples_percent": [95.708092, 98.242988, 96.196880, 97.366182, 99.414087],
+    "cpu_average_percent": 97.385646,
+    "cpu_max_percent": 99.414087,
+    "cpu_hard_ceiling_percent": 97,
+    "available_physical_memory_gib": 41.097,
+    "ceiling_hit": true
+  },
+  "active_work_items": [
+    {
+      "terminal": "T4",
+      "phase": "Q04",
+      "ea_id": "QM5_41011",
+      "symbol": "EURJPY.DWX",
+      "work_item_id": "a99e6996-30dd-4619-81aa-6fc092377af9"
+    },
+    {
+      "terminal": "T10",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41302",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "b0ed73c2-cd01-5149-a39e-3d78dee66871"
+    },
+    {
+      "terminal": "T9",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41321",
+      "symbol": "NDX.DWX",
+      "work_item_id": "7fb7725d-847b-5237-b204-18c28f7445f5"
+    },
+    {
+      "terminal": "T8",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41323",
+      "symbol": "NDX.DWX",
+      "work_item_id": "0c3786c8-445e-5838-9107-b156be6b92ca"
+    },
+    {
+      "terminal": "T2",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41345",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "0c955162-6d01-5874-817e-62500df69089"
+    }
+  ],
+  "pacer_guard": {
+    "source_written": false,
+    "source_checked": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "command_exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "finding_count": 0,
+    "compile_enqueued": false
+  },
+  "mutations": {
+    "card": false,
+    "ea_source": false,
+    "binary": false,
+    "setfile": false,
+    "basket_manifest": false,
+    "registry": false,
+    "queue": false,
+    "priority": false,
+    "claim": false,
+    "terminal": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  }
+}
