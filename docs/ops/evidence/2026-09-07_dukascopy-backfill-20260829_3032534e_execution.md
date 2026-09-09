@@ -319,3 +319,12 @@ rate — consistent with the persistent/structural-degradation conclusion from 0
 a fix. Did not start a new download this cycle (would compound the concurrent-session
 duplication already observed, not add a genuinely new data point). No duplicate ticket,
 no terminal action. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T14:49Z (orchestration cycle) — no material change
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~13h25m
+unclaimed). The concurrent-session download attempt found dead at the 14:39Z check
+(`progress.json` started 13:57:39Z, `download.log` last line 13:59:31Z) has not
+resumed: `progress.json` mtime unchanged at 13:59Z-equivalent local timestamp, no live
+`download_bi5.py` process found. Did not restart the download (same duplication-avoidance
+reasoning as the 14:39Z check) or create a duplicate ticket. Task remains `IN_PROGRESS`.
