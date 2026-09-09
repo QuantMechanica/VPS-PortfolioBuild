@@ -284,3 +284,27 @@ window) and `agent_router.py status` shows `registry_contract.gaps=[]`/`ok=true`
 nominal (claude 5h=16%, weekly=83% used/17% remaining). No terminal Q10_NEWS PASS/FAIL exists yet
 for any acceptance criterion on any of the three tasks. No action taken; no ticket, rebuild,
 release, or router state change. All three tasks remain correctly `IN_PROGRESS`.
+
+## Cycle check 2026-09-09T10:33Z — QM5_41394/EURUSD Q04 FAIL (genuinely new; strategy-taxonomy, unrelated to the calendar-echo question)
+
+Direct DB read: `Q04` work item `0ed63919-c3a7-4d38-881b-84fb5c2fd2ba` (QM5_41394/EURUSD)
+flipped `pending`→`done`/`verdict=FAIL` at `10:29:26Z` (~4 minutes before this check) —
+`verdict_taxonomy=strategy` (not infra/invalid). Aggregate reason:
+`F1:pf_net=1.177;F2:pf_net=0.487;F3:pf_net=0.898` (`D:\QM\reports\pipeline\QM5_41394\Q04\
+EURUSD.DWX__0ed63919-c3a7-4d38-881b-84fb5c2fd2ba\aggregate.json`) — an OOS-fold profit-factor
+survival failure, the normal Q04 mechanism. Nothing about this failure touches the
+`qm_news_calendar_bundle_id`/echo mechanism this whole decision chain exists to test (that
+check lives at Q10_NEWS, many gates further down); this EURUSD leg simply doesn't survive
+Q04 on its own mechanical merits.
+
+Effect on the three gated tasks' acceptance criteria: none are met or disproven by this.
+This leg is now a dead end for "prove the path to a Q10_NEWS adjudication" — it terminated
+before reaching Q09/Q10_NEWS. The intake receipt already deferred 4 other symbol legs
+(SP500, USDJPY, XAUUSD, XTIUSD) for `QM5_41394`; whether/when those are enqueued is Codex's
+ticket (`b66b5ccc`, still `state=REVIEW`, not touched — out of scope for a claude-owned
+`IN_PROGRESS` task) or a fresh OWNER/Codex decision, not this task's `selected_effect_only`
+authority to trigger. No action taken beyond this read: no new work item enqueued, no
+ticket state change, no rebuild. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain
+correctly `IN_PROGRESS` — flagging for OWNER/next-cycle visibility that the sole in-flight
+leg has now dead-ended and the cohort has no active leg progressing toward the acceptance
+criterion.
