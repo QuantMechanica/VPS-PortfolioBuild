@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T11:48:38.9727741Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "b2f9a8b3aa3fe4fc79464a586523aa58317ae547",
+  "outcome": "PACED_CAPACITY_STOP",
+  "mutation": {
+    "card": false,
+    "ea_source": false,
+    "compile": false,
+    "compile_enqueue": false,
+    "q02_append": false,
+    "priority": false,
+    "claim": false,
+    "dispatch": false,
+    "terminal": false,
+    "portfolio_gate": false,
+    "t_live": false
+  },
+  "frontier": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "approved_identity_count": 123,
+    "matching_ea_directory_count": 123,
+    "unbuilt_approved_identity_count": 0,
+    "strict_frontier_fully_mechanized": true,
+    "anchors": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02": "PASS",
+        "later_terminal": "Q05 FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02": "PASS",
+        "later_terminal": "Q04 FAIL"
+      }
+    ]
+  },
+  "fallback": {
+    "ea_id": "QM5_12507",
+    "pair": "EURUSD.DWX/GBPUSD.DWX",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "already_priority_track": true,
+    "duplicate_enqueue_refused": true,
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "risk": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "pacer_input_pin_audit": {
+    "source": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": []
+  },
+  "capacity": {
+    "active_admission_ceiling": 7,
+    "active_count": 9,
+    "cpu_hard_ceiling_percent": 97,
+    "initial_cpu_samples_percent": [
+      95.036613,
+      93.283201,
+      96.493191,
+      92.776994,
+      92.680654
+    ],
+    "initial_cpu_average_percent": 94.054131,
+    "initial_cpu_max_percent": 96.493191,
+    "confirmation_cpu_samples_percent": [
+      85.989372,
+      78.739497,
+      83.939707,
+      69.78099,
+      59.756059
+    ],
+    "confirmation_cpu_average_percent": 75.641125,
+    "confirmation_cpu_max_percent": 85.989372,
+    "free_memory_gib": 25.071,
+    "total_memory_gib": 63.12,
+    "terminal_workers": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10"],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "active_items": [
+      {"terminal":"T1","phase":"OPT_CENSUS","ea_id":"QM5_41302","symbol":"XAUUSD.DWX","work_item_id":"930dd903-639a-563c-b466-f018988ddefc"},
+      {"terminal":"T3","phase":"OPT_CENSUS","ea_id":"QM5_41345","symbol":"XAUUSD.DWX","work_item_id":"21c787a3-44b6-50e7-a3d7-73fb68e79fcc"},
+      {"terminal":"T4","phase":"OPT_CENSUS","ea_id":"QM5_41301","symbol":"XAUUSD.DWX","work_item_id":"fabde3a2-fbd9-590a-b79c-42885a751e2d"},
+      {"terminal":"T5","phase":"Q04","ea_id":"QM5_36002","symbol":"AUDCAD.DWX","work_item_id":"a07a4042-6a8b-4a26-bc84-01ccbb5fdb73"},
+      {"terminal":"T6","phase":"Q04","ea_id":"QM5_9121","symbol":"GBPUSD.DWX","work_item_id":"1a9ad7eb-7c87-4a13-85ff-46afce0b6f0c"},
+      {"terminal":"T7","phase":"Q02","ea_id":"QM5_36005","symbol":"GBPJPY.DWX","work_item_id":"c35af55f-12f8-4220-aac4-0a1e66adbd38"},
+      {"terminal":"T8","phase":"Q02","ea_id":"QM5_36005","symbol":"EURJPY.DWX","work_item_id":"6a41c9df-7238-4b5e-927e-efbe5220de5d"},
+      {"terminal":"T9","phase":"Q05","ea_id":"QM5_36002","symbol":"GBPJPY.DWX","work_item_id":"96ff5caa-9d84-4066-afcd-07b3ff9d0727"},
+      {"terminal":"T10","phase":"OPT_CENSUS","ea_id":"QM5_41324","symbol":"USDJPY.DWX","work_item_id":"dab572fe-2d0b-5abd-9e8c-c3096f16bfd8"}
+    ]
+  },
+  "safety": {
+    "t_live_observed_only": true,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
