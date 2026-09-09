@@ -26,6 +26,16 @@
     "hit_count": 0
   },
   "reference_tests": "PASS: 6 tests",
+  "compile_result": {
+    "work_item_id": "c3c67cf1-12de-4812-a29c-eada79ecd266",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "compile_result": "PASS",
+    "build_check_result": "PASS",
+    "errors": 0,
+    "warnings": 0,
+    "ex5_sha256": "e95ff5bd89a2fa8d053042c7b9925c3174400f81bad087b80beb6d505be1a2c9"
+  },
   "capacity_gate": {
     "threshold_percent_exclusive": 97.0,
     "samples_percent": [88.67457884786056, 91.31039179721141, 83.70597360079562, 59.698893039370894, 85.28259716161259],
@@ -33,5 +43,14 @@
     "maximum_percent": 91.31039179721141,
     "admitted": true
   },
+  "q02_capacity_gate": {
+    "threshold_percent_exclusive": 97.0,
+    "samples_percent": [100.0, 99.90259132997997, 100.0, 100.0, 100.0],
+    "average_percent": 99.98051826599598,
+    "maximum_percent": 100.0,
+    "admitted": false,
+    "binding_dimension": "maximum_percent"
+  },
+  "status": "COMPILE_OK_Q02_CPU_CEILING_STOP",
   "q02_enqueued": false
 }
