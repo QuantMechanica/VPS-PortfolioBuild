@@ -108,6 +108,7 @@ LIVE_WATCHDOG_STATE = REPORTS_STATE / "live_uptime_watchdog.json"       # shippe
 LIVE_SUPERVISOR_STATE = REPORTS_STATE / "live_session_supervisor.json"  # resident supervisor atomic state (fallback cross-read)
 LIVE_MAINTENANCE_FLAG = REPORTS_STATE / "LIVE_UPTIME_MAINTENANCE.flag"
 MORNING_SAFETY_STATE = REPORTS_STATE / "morning_safety_check.json"      # OWNER-ratified 04:45 start-only sweep
+SILENT_FAILURE_HEALTH = REPORTS_STATE / "silent_failure_alarms.json"    # includes named launcher-readiness checks
 FTMO_PULSE_STATE = REPORTS_STATE / "ftmo_trial_pulse.json"             # FTMO account-monitor state (shipped)
 DDGUARD_STATE = REPORTS_STATE / "live_book_dd_guard_state.json"         # DXZ live-book DD-guard state (shipped)
 LIVE_BOOK_PULSE_STATE = REPORTS_STATE / "live_book_pulse.json"          # SP-A3 shared source-TTL/fingerprint producer
@@ -1085,6 +1086,36 @@ def morning_safety_summary() -> dict:
                 "summary": f"04:45-Safety fehlt/unlesbar ({type(exc).__name__})."}
 
 
+def launcher_readiness_summary(path: Path | None = None, now: dt.datetime | None = None) -> list[dict]:
+    """Read the two named launcher checks for distinct 06:00 mail lines."""
+    source = path or SILENT_FAILURE_HEALTH
+    observed = now or _utc_now()
+    payload, state = _read_state_json(source)
+    names = (
+        ("ftmo_launcher_readiness", "FTMO Launcher-Readiness"),
+        ("t_live_launcher_readiness", "T_Live Launcher-Readiness"),
+    )
+    if state != "ok":
+        return [{"name": name, "label": label, "status": "UNKNOWN", "detail": f"Health-Sidecar {state}"}
+                for name, label in names]
+    checked = _parse_utc(payload.get("checked_at"))
+    age_sec = (observed - checked).total_seconds() if checked else None
+    checks = {str(row.get("name")): row for row in (payload.get("checks") or []) if isinstance(row, dict)}
+    rows = []
+    for name, label in names:
+        row = checks.get(name)
+        if row is None:
+            rows.append({"name": name, "label": label, "status": "UNKNOWN", "detail": "benannter Health-Check fehlt"})
+            continue
+        status = str(row.get("status") or "UNKNOWN").upper()
+        detail = str(row.get("detail") or "kein Detail")
+        if age_sec is None or age_sec > 45 * 60:
+            status = "UNKNOWN"
+            detail = f"Health-Sidecar stale ({_age(age_sec) if age_sec is not None else 'Alter unbekannt'}); {detail}"
+        rows.append({"name": name, "label": label, "status": status, "detail": detail})
+    return rows
+
+
 def owner_actions() -> list[dict]:
     """severity=action, fällig ≤ 7 Tage, fällig-sortiert (cockpit logic re-used)."""
     try:
@@ -1481,6 +1512,19 @@ def render_html(data: dict) -> str:
 
     # ── Section 0: LIVE-AMPEL (first block — live-truth first) ───────────
     sec0 = render_live_section(live)
+    launcher_lines = ""
+    launcher_colors = {"OK": EMERALD, "WARN": ORANGE, "FAIL": FAIL, "UNKNOWN": P["text_muted"]}
+    for row in data.get("launcher_readiness") or []:
+        status = str(row.get("status") or "UNKNOWN").upper()
+        color = launcher_colors.get(status, P["text_muted"])
+        launcher_lines += _list_line(
+            f'<b style="color:{P["text"]};">{e(row.get("label"))}</b>'
+            f'<span style="display:block;font-size:10px;color:{P["text_subtle"]};'
+            f'line-height:1.3;margin-top:1px;">{e(row.get("detail"))}</span>',
+            f'<span style="color:{color};font-weight:700;">{e(status)}</span>',
+        )
+    if launcher_lines:
+        sec0 += _section_open("Launcher-Readiness", CYAN, "eigener Health-Check") + _row(launcher_lines)
 
     # ── Header + shell ──────────────────────────────────────────────────
     header = (
@@ -1537,6 +1581,8 @@ def render_text(data: dict) -> str:
     for l in live["lamps"]:
         age_txt = f" (Alter {_age(l['age_sec'])})" if l.get("age_sec") is not None else ""
         L.append(f"   - {l['label']}: {l['level']} · {l['value']}{age_txt} — {l['detail']}")
+    for row in data.get("launcher_readiness") or []:
+        L.append(f"   - {row['label']}: {row['status']} — {row['detail']}")
     L.append("")
     exp_sleeves = live.get("expected_sleeves")
     exp_txt = exp_sleeves if isinstance(exp_sleeves, int) else "?"
@@ -1678,6 +1724,7 @@ def collect() -> dict:
         "path_to_25": path_to_25(),
         "factory": factory_light(),
         "morning_safety": morning_safety_summary(),
+        "launcher_readiness": launcher_readiness_summary(),
         "actions": owner_actions(),
         "quota": quota(),
         "heartbeats": heartbeats(),

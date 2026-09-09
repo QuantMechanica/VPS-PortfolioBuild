@@ -2046,3 +2046,17 @@ FTMO demo data directory and exactly matched verifier commit `388760053b`; the
 governor, telemetry, QM5_11422, QM5_13054, and QM5_20048 matching set is also
 recorded. Native Windows PowerShell verifier result: `VERIFIED`, exit 0. No
 terminal, profile, preset, EX5, T_Live, AutoTrading, threshold, or gate changed.
+
+## 2026-09-09T18:47Z — RESULT: named FTMO/T_Live launcher-readiness health probes
+
+Task `734baee6`: added distinct `ftmo_launcher_readiness` and
+`t_live_launcher_readiness` checks (native read-only verifier rc plus latest
+current-boot launcher exit), dedicated 06:00 HTML/plaintext rows, regression
+tests, and the FTMO re-verify/re-pin SOP. Current `farmctl health` is explicit:
+FTMO **FAIL** because the 16:44:50Z exit-2 receipt remains current despite
+verifier rc=0; T_Live **OK** (verifier rc=0, launcher exit 0). FTMO clears only
+after the next successful launcher run writes a later current-boot exit-0
+receipt. Focused suite: 84 passed; morning brief dry run rendered both lines and
+sent no mail. Evidence:
+`docs/ops/evidence/2026-09-09_ftmo_launcher_readiness_probe.md`. No terminal,
+profile, preset, EX5, T_Live, AutoTrading, threshold, verdict, or gate changed.

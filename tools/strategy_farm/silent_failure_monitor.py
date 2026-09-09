@@ -163,6 +163,7 @@ CONFIG = {
     # ── check 8: both live MT5 processes + recovery readiness ──────────────
     "live_watchdog_warn_stale_min": 3,
     "live_watchdog_fail_stale_min": 7,
+    "launcher_verifier_timeout_sec": 60,
 
     # ── check 9: GoogleDriveFS liveness (G: is a per-user mount; SYSTEM can
     #    NEVER Test-Path G:\, so this check is strictly process-based) ─────────
@@ -207,6 +208,10 @@ QUOTA_GOV_STATE = REPORTS_STATE / "quota_governor_state.json"
 PURGE_LOG = REPORTS_STATE / "tester_cache_purge.log"
 BACKUP_LOG = REPORTS_STATE / "backup_nightly.log"
 LIVE_UPTIME_STATE = REPORTS_STATE / "live_uptime_watchdog.json"
+LIVE_LAUNCHER_EVENTS = REPORTS_STATE / "live_launcher_events.jsonl"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FTMO_LAUNCHER_VERIFIER = REPO_ROOT / "tools" / "strategy_farm" / "verify_ftmo_demo_instrumentation_contract.ps1"
+TLIVE_LAUNCHER_VERIFIER = REPO_ROOT / "tools" / "strategy_farm" / "prepare_dxz_v2_liveops_profile.ps1"
 
 # Outputs (this monitor's ONLY writes)
 MONITOR_STATE = REPORTS_STATE / "silent_failure_monitor_state.json"
@@ -312,7 +317,9 @@ foreach ($t in Get-ScheduledTask -TaskName 'QM_*') {
     }
 }
 $workers = @(Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match 'terminal_worker\.py' }).Count
-[pscustomobject]@{ tasks = $tasks; worker_count = $workers } | ConvertTo-Json -Depth 4 -Compress
+$boot = Get-CimInstance Win32_OperatingSystem
+$bootUtc = if ($boot -and $boot.LastBootUpTime) { $boot.LastBootUpTime.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } else { $null }
+[pscustomobject]@{ tasks = $tasks; worker_count = $workers; boot_utc = $bootUtc } | ConvertTo-Json -Depth 4 -Compress
 """
 
 
@@ -355,7 +362,11 @@ def _windows_probe() -> dict:
     tasks = data.get("tasks") or []
     if isinstance(tasks, dict):   # single task ⇒ ConvertTo-Json emits an object
         tasks = [tasks]
-    return {"tasks": tasks, "worker_count": int(data.get("worker_count") or 0)}
+    return {
+        "tasks": tasks,
+        "worker_count": int(data.get("worker_count") or 0),
+        "boot_utc": data.get("boot_utc"),
+    }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -962,7 +973,142 @@ def check_backup_calendar_continuity(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-#  CHECK 8 — live MT5 uptime + recoverability
+#  CHECK 8 — live launcher contract + current-boot exit readiness
+# ─────────────────────────────────────────────────────────────────────────────
+def _run_launcher_verifier(verifier: Path, extra_args: tuple[str, ...] = ()) -> tuple[int, str]:
+    """Run one launcher's own read-only verifier under Windows PowerShell 5.1."""
+    native_env = os.environ.copy()
+    # A Python intermediary prevents Windows PowerShell from repairing the
+    # PowerShell-7 PSModulePath it inherits from the scheduled parent. Pin only
+    # Windows PowerShell module roots so Get-FileHash/CIM cmdlets load natively.
+    native_env["PSModulePath"] = (
+        r"C:\Program Files\WindowsPowerShell\Modules;"
+        r"C:\Windows\System32\WindowsPowerShell\v1.0\Modules"
+    )
+    try:
+        result = subprocess.run(
+            [
+                "powershell.exe", "-NoProfile", "-NonInteractive",
+                "-ExecutionPolicy", "Bypass", "-File", str(verifier), *extra_args,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=CONFIG["launcher_verifier_timeout_sec"],
+            creationflags=_creationflags_no_window(),
+            env=native_env,
+        )
+    except Exception as exc:  # noqa: BLE001
+        return 255, f"{type(exc).__name__}: {exc}"
+    lines = [line.strip() for line in ((result.stdout or "") + "\n" + (result.stderr or "")).splitlines() if line.strip()]
+    return int(result.returncode), (lines[-1][:300] if lines else "no verifier output")
+
+
+def _latest_launcher_record(path: Path, launcher: str) -> tuple[dict | None, str | None]:
+    if not path.exists():
+        return None, "launcher journal missing"
+    latest = None
+    malformed = 0
+    try:
+        with path.open("r", encoding="utf-8-sig", errors="replace") as handle:
+            for line in handle:
+                if not line.strip():
+                    continue
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError:
+                    malformed += 1
+                    continue
+                if isinstance(row, dict) and str(row.get("launcher") or "").upper() == launcher.upper():
+                    latest = row
+    except OSError as exc:
+        return None, f"launcher journal unreadable: {exc}"
+    if latest is None:
+        return None, f"no {launcher} launcher record; malformed_rows={malformed}"
+    return latest, (f"malformed_rows={malformed}" if malformed else None)
+
+
+def check_launcher_readiness(
+    probe: dict,
+    *,
+    launcher: str,
+    check_name: str,
+    verifier: Path,
+    verifier_args: tuple[str, ...] = (),
+    journal_path: Path | None = None,
+    verifier_result: tuple[int, str] | None = None,
+) -> dict:
+    """Combine present contract validity with the latest launcher exit this boot.
+
+    A failed launch remains FAIL even if today's verifier now succeeds. It clears
+    only when that same launcher writes a later exit-0 record on the current boot.
+    """
+    journal = journal_path or LIVE_LAUNCHER_EVENTS
+    verifier_rc, verifier_note = verifier_result or _run_launcher_verifier(verifier, verifier_args)
+    boot_utc = _parse_iso(probe.get("boot_utc"))
+    latest, journal_note = _latest_launcher_record(journal, launcher)
+    latest_utc = _parse_iso((latest or {}).get("ts_utc"))
+    evidence = f"verifier={verifier}; journal={journal}"
+
+    if verifier_rc != 0:
+        return finding(
+            check_name, FAIL,
+            f"{launcher} contract verifier_rc={verifier_rc} ({verifier_note}); launcher readiness is fail-closed",
+            value=verifier_rc, threshold=0,
+            hint="Repair and re-pin the launcher contract in the same reviewed commit before the next launcher run.",
+            evidence=evidence,
+        )
+    if boot_utc is None:
+        return finding(
+            check_name, FAIL,
+            f"{launcher} verifier_rc=0 but Win32_OperatingSystem.LastBootUpTime is unavailable",
+            hint="Repair the native CIM boot-time probe; current-boot launcher status cannot be authenticated.",
+            evidence=evidence,
+        )
+    if latest is None or latest_utc is None:
+        return finding(
+            check_name, WARN,
+            f"{launcher} verifier_rc=0 but no parseable launcher record is available ({journal_note or 'unknown'})",
+            value=None, threshold=0,
+            hint=f"The next successful {launcher} launcher run should write an exit-0 record.",
+            evidence=evidence,
+        )
+    if latest_utc < boot_utc:
+        return finding(
+            check_name, WARN,
+            f"{launcher} verifier_rc=0; latest launcher record {latest_utc.isoformat()} predates current boot {boot_utc.isoformat()}",
+            value=None, threshold=0,
+            hint=f"The next successful {launcher} launcher run should establish current-boot readiness.",
+            evidence=evidence,
+        )
+
+    try:
+        exit_code = int(latest.get("exit_code"))
+    except (TypeError, ValueError):
+        return finding(
+            check_name, FAIL,
+            f"{launcher} verifier_rc=0 but current-boot launcher exit_code is invalid: {latest.get('exit_code')!r}",
+            hint="Repair the launcher journal producer; do not infer readiness from a malformed exit record.",
+            evidence=evidence,
+        )
+    reason = str(latest.get("reason") or "unspecified")
+    stamp = str(latest.get("ts_utc") or "unknown")
+    if exit_code != 0:
+        return finding(
+            check_name, FAIL,
+            f"{launcher} verifier_rc=0 but latest current-boot launcher exit_code={exit_code} reason={reason} at {stamp}",
+            value=exit_code, threshold=0,
+            hint=f"This remains FAIL until the next successful {launcher} launcher run writes exit_code=0 on this boot.",
+            evidence=evidence,
+        )
+    return finding(
+        check_name, OK,
+        f"{launcher} verifier_rc=0 and latest current-boot launcher exit_code=0 reason={reason} at {stamp}",
+        value=0, threshold=0, evidence=evidence,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  CHECK 9 — live MT5 uptime + recoverability
 # ─────────────────────────────────────────────────────────────────────────────
 def check_live_uptime() -> list[dict]:
     ev = str(LIVE_UPTIME_STATE)
@@ -1312,10 +1458,11 @@ def merge_into_health(health: dict) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 #  Main
 # ─────────────────────────────────────────────────────────────────────────────
-def _run_check(label: str, fn, *args) -> list[dict]:
+def _run_check(label: str, fn, *args, **kwargs) -> list[dict]:
     """Run one check; a crash becomes its own WARN rather than blinding the rest."""
     try:
-        return fn(*args)
+        result = fn(*args, **kwargs)
+        return result if isinstance(result, list) else [result]
     except Exception:  # noqa: BLE001
         tb = traceback.format_exc().strip().splitlines()[-1]
         return [finding(f"check_error:{label}", WARN,
@@ -1368,6 +1515,23 @@ def main() -> int:
     findings += _run_check("worker_health", check_worker_health, probe)
     findings += _run_check("pump_blockade", check_pump_blockade)
     findings += _run_check("heartbeats", check_heartbeats)
+    findings += _run_check(
+        "ftmo_launcher_readiness",
+        check_launcher_readiness,
+        probe,
+        launcher="FTMO",
+        check_name="ftmo_launcher_readiness",
+        verifier=FTMO_LAUNCHER_VERIFIER,
+    )
+    findings += _run_check(
+        "t_live_launcher_readiness",
+        check_launcher_readiness,
+        probe,
+        launcher="DXZ",
+        check_name="t_live_launcher_readiness",
+        verifier=TLIVE_LAUNCHER_VERIFIER,
+        verifier_args=("-VerifyOnly",),
+    )
     findings += _run_check("live_mt5_uptime", check_live_uptime)
     findings += _run_check("gdrive_fs", check_gdrive, probe)
 

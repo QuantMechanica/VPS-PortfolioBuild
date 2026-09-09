@@ -22,6 +22,10 @@ This runbook operationalizes a **capture-only** demo trial. It does not authoriz
 
 All preconditions MUST be MET before the capture window opens. None is executed by this document.
 
+**SOP:** after every FTMO demo attach/detach, EA rebuild, or preset change, rerun
+`verify_ftmo_demo_instrumentation_contract.ps1` and re-pin the verifier in the
+same reviewed commit; a mismatch remains fail-closed.
+
 **OWNER (login-gated / ROT):**
 1. Create the FTMO **Free Trial demo** (2-Step $100K **Swing**, MT5). Store credentials **only** in the private record (`.private/`); never in the repo.
 2. Confirm client-area terms: Swing leverage, current symbol list, margin, swap, and triple-swap weekday (provisional Sep-5 figures stay provisional until confirmed).
