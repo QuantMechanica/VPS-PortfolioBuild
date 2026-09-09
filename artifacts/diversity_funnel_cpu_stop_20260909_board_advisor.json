@@ -1,0 +1,90 @@
+{
+  "artifact_type": "diversity_funnel_cpu_stop",
+  "generated_date": "2026-09-09",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "54959dff96",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "priority_1_build_backlog_audit": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "access": "sqlite_read_only_uri",
+    "pending_build_ea_tasks": 75,
+    "active_build_ea_tasks": 5,
+    "fresh_eligible_diversity_build_found": false,
+    "reason": "Every pending row with a complete ea_id/slug identity already has its exact EA directory and generated source. The two incomplete-payload rows already have Q02 history, so they are not fresh build identities. Recent diversity candidates QM5_41324 (USDJPY), QM5_41393 (XNG), and QM5_41400 (WTI) already have MQ5 and EX5 artifacts; QM5_41324 already has Q02 PASS. No duplicate build was started."
+  },
+  "priority_2_fresh_finding": {
+    "scope": "latest per-EA-symbol Q02/Q03 rows on the DWX forex universe",
+    "recent_unclaimed_infra_candidates": [
+      {
+        "ea_id": "QM5_10069",
+        "symbol": "AUDUSD.DWX",
+        "phase": "Q02",
+        "work_item_id": "995f4c1c-531d-4a46-a4d8-8e6723318058",
+        "created_at": "2026-09-07T15:52:58+00:00",
+        "verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS"
+      },
+      {
+        "ea_id": "QM5_10038",
+        "symbols": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX",
+          "USDCAD.DWX",
+          "USDCHF.DWX"
+        ],
+        "phase": "Q02",
+        "created_at": "2026-09-07T14:52:58+00:00",
+        "verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS"
+      },
+      {
+        "ea_id": "QM5_36007",
+        "symbol": "GBPJPY.DWX",
+        "phase": "Q02",
+        "work_item_id": "aaf5b6cf-0f38-438a-b22f-bf7231948ffc",
+        "created_at": "2026-09-07T13:52:58+00:00",
+        "verdict_reason": "compile_gate:COMPILE_FAILED"
+      }
+    ],
+    "interpretation": "This is newer than the 2026-08-23 diversity backlog audit: the September 7 forex ONINIT cohort is the next bounded recovery surface once capacity permits. No candidate was claimed because the CPU stop became binding during read-only triage."
+  },
+  "capacity_guard": {
+    "cpu_samples_percent": [
+      87,
+      86,
+      97,
+      85,
+      80
+    ],
+    "cpu_average_percent": 87.0,
+    "cpu_maximum_percent": 97,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true,
+    "active_farm_work_items": 4,
+    "active_work_item_phases": [
+      "OPT_CENSUS"
+    ]
+  },
+  "actions": {
+    "farm_claim": false,
+    "ea_or_card_mutation": false,
+    "registry_or_magic_mutation": false,
+    "framework_input_pin_audit": false,
+    "compile_or_build_check": false,
+    "enqueue_compile_or_q02": false,
+    "smoke_or_backtest": false,
+    "dispatch_tick": false,
+    "terminal_control": false,
+    "evidence_only": true
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "commit_scope": [
+      "artifacts/diversity_funnel_cpu_stop_20260909_board_advisor.json"
+    ]
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
