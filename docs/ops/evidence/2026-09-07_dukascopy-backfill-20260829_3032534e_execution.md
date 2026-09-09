@@ -348,3 +348,7 @@ download restart, no duplicate ticket. Task remains `IN_PROGRESS`.
 ## Checked 2026-09-09T16:06Z (orchestration cycle) -- no change
 
 `2f717775` still `APPROVED`/unassigned, ~14h42m unclaimed. No download restart, no duplicate ticket. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T16:17Z (orchestration cycle) -- no change
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~14h53m unclaimed). No new datafeed reprobe, no download restart, no duplicate ticket. Task remains `IN_PROGRESS`.

@@ -330,3 +330,7 @@ Direct read of `work_items` (not the derived summaries in prior entries): `QM5_4
 ## Checked 2026-09-09T16:06Z (orchestration cycle) -- no change (verbose entries suppressed per 15:5xZ note)
 
 Same gate, direct DB read: still `claimed_by=NULL`/`attempt_count=0`, unchanged since 10:52:59Z. `farmctl health` re-run this cycle: no FAIL on ea_id/registry/mutation-lock/factory-ceremony checks read. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T16:17Z (orchestration cycle) -- no change
+
+Same gate. XAUUSD/SP500/XTIUSD Q02 still unclaimed since 10:52:59Z. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
