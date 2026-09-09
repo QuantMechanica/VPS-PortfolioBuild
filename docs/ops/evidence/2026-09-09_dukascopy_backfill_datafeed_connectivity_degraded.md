@@ -316,3 +316,21 @@ no matches). No new probe run this cycle — weekly quota still critical (~85%),
 same reasoning as the 16:18Z check: a bounded re-probe is non-essential spend
 given the already-documented oscillating HTTP 503 pattern. Task stays `IN_PROGRESS`,
 disposition unchanged.
+
+## Checked 2026-09-09T1818Z (orchestration cycle) -- no change
+
+No `download_bi5.py` process running (confirmed via `Get-CimInstance Win32_Process`
+filter on the exact command line, no matches). No new application-level re-probe
+this cycle -- weekly quota still critical (~85-87%, resets 2026-09-10T22Z), same
+non-essential-spend reasoning as the 16:18Z/16:33Z checks. Concurrent-session note:
+`bb814520`/`dfc60103`'s shared blocking gate (QM5_41394 SP500/XAUUSD/XTIUSD Q02) was
+independently re-checked and logged by a concurrent orchestration session in their
+own evidence files at this same timestamp (identical farm_health snapshot: 13
+fail/17 warn/52 ok, same chronic FAIL set -- `codex_zero_activity`,
+`q02_stranded_exhausted_pairs`, `phase_invalid_rate_7d`, `agent_task_state_stranded`/
+`_aging_slo`, `work_item_phase_age_slo`, `pending_tail_age`,
+`q09_sealed_plan_hold_age`/`_autoseal_hold_census`, `pending_artifact_binding_drift`,
+`schtask:QM_EvidenceCohortWatch_Daily_0420`, `backup_calendar_continuity`,
+`task_monitor_escalation`); not re-logged there by this session to avoid duplicate
+entries. No ticket, rebuild, release, or verdict change on any of the three tasks.
+All three remain `IN_PROGRESS`.
