@@ -258,3 +258,13 @@ Weiterhin keine OWNER-Antwort auf OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (
 OWNER-Antwort-Abschnitt geprueft; `G:`-Vault weiterhin nicht erreichbar; kein aktiver Spawn-Lease
 auf `dfc60103`). Aufgabe bleibt IN_PROGRESS. Substanzielle Zyklusarbeit fand stattdessen bei Aufgabe
 `3032534e` statt (Dukascopy-Reprobe, siehe eigene Evidenzdatei).
+
+## Geprueft 2026-09-09T~0700Z (Orchestrierungszyklus) — keine Aenderung; weitere ausfuehrliche Eintraege ausgesetzt
+
+Keine OWNER-Antwort (Antwort-Abschnitt weiterhin fehlend); `G:`-Vault weiterhin `Access is denied`.
+`2f717775` (Codex, Dukascopy price_scale-Ticket, gehoert zu `3032534e`) weiterhin `APPROVED`/unassigned
+seit 01:24:20Z (~5h20m unclaimed) — Codex-Lane wirkt weiterhin blockiert. Bestaetigtes Scheduler-Pileup
+(mehrere gleichzeitige `claude.exe`-Orchestrierungszyklen) verbrennt knappes Wochenkontingent (81%
+verbraucht) auf redundanten No-Change-Checks ueber diese Aufgabengruppe; kein Fix von innerhalb dieser
+Aufgabe ausgeloest (Scheduled-Task-Aenderung braucht OWNER-Autorisierung, ausserhalb dieses Auftrags).
+Kein neues Ticket, Rebuild, Release. Aufgabe bleibt IN_PROGRESS.

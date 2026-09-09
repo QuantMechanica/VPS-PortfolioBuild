@@ -211,3 +211,11 @@ are possible.
 ## Checked 2026-09-09T06:17Z (orchestration cycle) -- no change; pileup persists
 
 2f717775 still APPROVED/unclaimed, updated_at=2026-09-09T01:24:20Z (~4h53m unclaimed). tasklist now shows 9 concurrent claude.exe processes (was 8-9 at 05:48Z) -- QM_StrategyFarm_ClaudeOrchestration_15min pileup confirmed still present, not worsening materially. No scheduled-task or process change made from this routed task (out of scope for a single ops_issue execution ticket; flagging for OWNER/router awareness only, per prior cycle). No duplicate ticket, no download restart, no terminal action. Task stays IN_PROGRESS.
+
+## Checked 2026-09-09T~0700Z (orchestration cycle) — no change; no new reprobe (last one ~20min ago)
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~5h20m unclaimed). No new
+datafeed reprobe this cycle — the 06:39Z probe (partial-recovery signal: 2/4 hour-files genuinely
+downloaded, 2/4 HTTP 503, zero WinError timeouts, see `2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md`)
+is too recent for another sample to add signal. No download restart, no terminal action, no duplicate
+ticket. Task stays IN_PROGRESS pending `2f717775` and a later-hour reprobe.
