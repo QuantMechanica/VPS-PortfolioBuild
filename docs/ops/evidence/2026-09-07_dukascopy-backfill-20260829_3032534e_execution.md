@@ -33,3 +33,31 @@ worker loop — no manual terminal start. Non-FX `price_scale`/`point_size` revi
 e9dea1e3's open item) and the endpoint `--resolve-ip` freshness note remain outstanding
 before any P1 production download. Task `3032534e` stays IN_PROGRESS pending the probe's
 CSV result.
+
+## Step 1 completed 01:11:08Z — 37-row splice CSV delivered; non-FX price_scale ticket enqueued
+
+- `e29eab1c-044b-48ea-99ec-6eecd3aa3ea2` finished `done`/`REVIEW_REQUIRED` (diagnostics never
+  PASS by contract). Output `D:\QM\reports\dukascopy\splice\20260909_010553\tick_tail.csv`
+  (37 rows, per-row `probe_sha256`, `source_terminal=T1`), receipt
+  `probe_receipt.json` bound to `history_range_binding.sha256=023f955337a2…` (the same P0
+  history-ranges evidence the probe cross-checked itself, `first_years∈{2017,2018}`,
+  `last_years∈{2025,2026}`, 37 symbols — matches). Archive manifest unchanged (fe0dd0fd…
+  per e9dea1e3's earlier check; the probe's own before/after audit is inside the receipt).
+- Splice points cluster in two bands: majority of FX pairs last-ticked 2026-04-05 or
+  2026-04-24 (a known D: custom-history pause), indices/energies/metals extend to
+  2026-04-24/2026-07-12 (NDX). These become the per-symbol P1 download start points — no
+  gap gaps assumed beyond what the CSV states.
+- Confirmed in code (`tools/dukascopy/common.py::default_price_scale`): CFD/non-FX symbols
+  (GDAXI, NDX, SP500, UK100, WS30, XAGUSD, XAUUSD, XNGUSD, XTIUSD — 9 symbols) return `None`
+  and both `convert_to_import.py`/`reconcile_overlap.py` refuse without an explicit
+  `price_scale`/`point_size`; no authoritative digits/point registry exists elsewhere in the
+  repo (checked `framework/registry/`). Enqueued exactly one Codex ticket, **`2f717775-2bdd-
+  4457-b5b6-e9ecae2a3e4a`** (priority 78, APPROVED, codex lane): a second governed T1-only
+  read-only diagnostic (same contract shape as `db44a0983a`) that reads
+  `SymbolInfoInteger(SYMBOL_DIGITS)`/`SymbolInfoDouble(SYMBOL_POINT)` for exactly these 9
+  symbols from the live broker spec (no invented values) and wires the 9 explicit values into
+  the conversion/reconciliation call sites; FX auto-derivation stays untouched.
+- Still open before any P1 production download: the new price_scale/point_size probe +
+  wiring (2f717775), and the endpoint `--resolve-ip` freshness note (e9dea1e3). No download,
+  import, OFF window or T_Live/AutoTrading action taken this cycle. Task `3032534e` stays
+  IN_PROGRESS.

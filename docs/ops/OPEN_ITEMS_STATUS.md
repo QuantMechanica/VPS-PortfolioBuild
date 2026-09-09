@@ -1,5 +1,7 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 01:20Z (Orchestrierungszyklus) — Dukascopy Schritt 1 fertig, Preisskalen-Ticket eingereiht:** T1-Tick-Tail-Probe `e29eab1c` lieferte die 37-Zeilen-Splice-CSV (`D:\QM\reports\dukascopy\splice\20260909_010553\tick_tail.csv`), Archiv-Manifest unveraendert. Bestaetigt: `default_price_scale()` liefert fuer die 9 Nicht-FX-Symbole (GDAXI/NDX/SP500/UK100/WS30/XAGUSD/XAUUSD/XNGUSD/XTIUSD) `None`, kein Registry-Ersatz vorhanden -> Codex-Ticket **2f717775** (Prio 78, APPROVED): zweite governed T1-Read-only-Probe liest SYMBOL_DIGITS/SYMBOL_POINT direkt vom Broker (keine erfundenen Werte), verdrahtet die 9 Werte in Konverter/Abgleich. Kein Produktiv-Download, kein Import, kein OFF-Fenster. Detail: `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`. bb814520/dfc60103 unveraendert, weiter blockiert auf OWNER-Karte `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (aus dem vorigen Zyklus, keine Antwort bisher).
+
 > **Nachtrag 09.09., 01:07Z — FX-Fallback QM5_41335 in Q02:** Der eingefrorene
 > 66-Paar-Cointegration-Frontier ist vollständig gebaut; 12532/12533 sind nicht
 > Q02-blockiert. Deshalb wurde der explizite Fallback genutzt: der bestehende,
