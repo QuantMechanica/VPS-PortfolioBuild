@@ -328,3 +328,11 @@ unclaimed). The concurrent-session download attempt found dead at the 14:39Z che
 resumed: `progress.json` mtime unchanged at 13:59Z-equivalent local timestamp, no live
 `download_bi5.py` process found. Did not restart the download (same duplication-avoidance
 reasoning as the 14:39Z check) or create a duplicate ticket. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T15:33Z (orchestration cycle) — no change
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~14h09m unclaimed,
+direct DB read). No new datafeed reprobe (would not add signal beyond the already-established
+structural-degradation conclusion from 06:20Z). Weekly quota now 86% used/14% remaining —
+see the fuller cross-task quota/pileup note in `bb814520`'s execution record this cycle. No
+download restart, no duplicate ticket. Task remains `IN_PROGRESS`.

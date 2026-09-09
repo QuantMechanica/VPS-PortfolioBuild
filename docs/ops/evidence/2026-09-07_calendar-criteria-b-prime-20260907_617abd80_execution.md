@@ -308,3 +308,13 @@ since 14:39Z check); USDJPY Q03 still `pending` since 13:09:21Z, no Q04 progress
 symbol (XAUUSD, 11196 lineage) still unadjudicated; acceptance criterion unmet. No
 ticket, release, repin, or verdict change; read-only, lease not reacquired. Task remains
 `IN_PROGRESS`.
+
+## Checked 2026-09-09T15:33Z (orchestration cycle) — no change; entry kept brief per quota note below
+
+Direct DB read: `QM5_41394` XAUUSD/SP500/XTIUSD Q02 still `pending` since 10:52:59Z (unchanged).
+`farmctl health` FAIL16/WARN16/OK52, same chronic set. Weekly quota now 86% used/14% remaining
+(`agent_router.py status`) — worse than the 81-85% noted in earlier entries above; the
+already-documented scheduler-pileup class (concurrent orchestration cycles re-checking this same
+external gate) is the leading suspect for the acceleration. No fix attempted here (scheduled-task
+change is outside this ticket's authority). No ticket, release, repin, or verdict change. Task
+remains `IN_PROGRESS`.

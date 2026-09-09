@@ -404,3 +404,9 @@ Same gate as `bb814520`: XAUUSD (this task's own 11167 lineage), SP500, XTIUSD s
 progress. This task's acceptance ("11167 rerun ends PASS/FAIL") stays unmet. No ticket,
 rebuild, release, or verdict change; read-only, lease not reacquired. Task remains
 `IN_PROGRESS`.
+
+## Checked 2026-09-09T15:33Z (orchestration cycle) — no change
+
+Same gate as `bb814520` (see that file for the fuller note this cycle): direct DB read shows
+`QM5_41394` XAUUSD Q02 still `pending` since 10:52:59Z. No ticket, rebuild, release, or verdict
+change. Task remains `IN_PROGRESS`.
