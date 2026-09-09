@@ -1881,3 +1881,28 @@ No router state change made; no new ticket duplicated. No threshold/verdict/T_Li
 AutoTrading/gate change. No OWNER-scope work invented. Per the standing suppression
 note, no further per-task evidence-file entry added this cycle (nothing material
 beyond what's recorded here).
+
+## Orchestration cycle 2026-09-09T1632Z -- 3 IN_PROGRESS claude tasks unchanged, still gated
+
+Direct `farm_state.sqlite` read on all three `IN_PROGRESS` claude tasks (`bb814520`
+CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE, `3032534e`
+DUKASCOPY-BACKFILL): all correctly remain `IN_PROGRESS`, no live spawn-lease on any
+of the three keys. `QM5_41394` legs unchanged since the 13:18Z cycle: EURUSD stays
+terminal Q04 `FAIL`; USDJPY still Q03 `pending` (`e89d6f8a`, since 13:09:21Z) and Q04
+`pending` (`bd6f7c72`); SP500/XAUUSD/XTIUSD still Q02 `pending` since `10:52:59Z`
+(~5h40m unclaimed, up from ~2h20m last cycle -- queue depth, not an orphaned/timed-out
+claim, so no GRUEN re-enqueue basis). Neither `bb814520` nor `dfc60103`'s acceptance
+("first adjudications end PASS/FAIL") is met yet. `2f717775` (Dukascopy non-FX
+price_scale ticket) still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z`
+(~15h07m unclaimed); no new reprobe this cycle. `farmctl health`: FAIL 15/WARN 15/OK 52
+(checked 16:32Z) -- all 15 named FAILs match the previously logged, already-tracked
+chronic set (`codex_zero_activity`, `q02_stranded_exhausted_pairs`,
+`phase_invalid_rate_7d`, `agent_task_state_stranded`/`_aging_slo`,
+`work_item_phase_age_slo`, `pending_tail_age`, `q09_sealed_plan_hold_age`/
+`_autoseal_hold_census`, `pending_artifact_binding_drift`, two `schtask:*` checks,
+`backup_calendar_continuity`, two `task_monitor_escalation` rows); no new incident.
+
+No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
+AutoTrading/gate change. No OWNER-scope work invented. Per the standing suppression
+note, no further per-task evidence-file entry added this cycle (nothing material
+beyond what's recorded here).
