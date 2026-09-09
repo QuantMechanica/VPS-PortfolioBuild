@@ -160,3 +160,19 @@ and Q02 enqueue have not landed. No duplicate ticket enqueued, no action taken o
 observation; this task's own next allowed step (enqueue the Q02 work item) is Codex's per the
 ticket scope, not mine to pre-empt. All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain
 correctly `IN_PROGRESS`, gated on this rebuild reaching a Q02 verdict.
+
+## Self-correction 2026-09-09T~0851Z — my own 0850Z entry's "no work_items row" claim was a query bug
+
+My own 0850Z entry above (this cycle, same session) queried `work_items WHERE ea_id=41394`
+(bare int) and found nothing, concluding no compile work item existed yet. Re-checked: the
+`ea_id` column stores the string `'QM5_41394'`, not the bare int — the numeric filter silently
+matched zero rows. Direct correct query (`WHERE ea_id='QM5_41394'` and by explicit id) confirms
+the concurrent session's 0900Z entry was right: work item `1fb4d6f0-c15d-4a10-9ff5-9fd56b5a5f4e`
+(`kind=compile`, `phase=COMPILE_EA`, `status=active`, `updated_at=08:49:39Z`) exists, and the
+release receipt `docs/ops/evidence/2026-09-09_q09_qm5_41394_compile_release_b66b5ccc.json` is
+present on disk. No `.ex5` yet under `framework/EAs/QM5_41394_weiss-ichi2-ma-calendar-r1/` (only
+`.mq5`/`SPEC.md`/`sets`/`docs`) — compile itself has not completed. Flagging per "evidence over
+claims": my 0850Z conclusion was stale/wrong on this one point due to a type-mismatch query bug,
+not a real regression; no other claim in that entry is affected. No action taken beyond this
+correction — compile completion and Q02 enqueue remain Codex's outstanding steps. All three
+tasks (`bb814520`, `dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS`.
