@@ -1,5 +1,19 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 13:43Z — Balke-Pattern-Reparatur, neuer Build und Review-Auftrag:**
+> `QM5_41398_balke-pattern-repair-opt` ist separat registriert und nativ COMPILE_OK
+> (`e8e4cad7`, T9, 0 Fehler/0 Warnungen); 144 erweiterte Tests PASS. Zusätzlich wurde
+> ein reproduzierter Setfile-Generatorfehler bei der Übernahme von Kartenwerten
+> korrigiert. Alte Balke-Artefakte/Ergebnisse bleiben unverändert. Review + bedingte
+> neutrale Q02-Übergabe: `e1358f42-c9f2-4cd2-89ce-f337b17ac84a`, Prio 92, Claude-pin,
+> derzeit TODO (Claude 3/3 IN_PROGRESS). Alle drei doppelten Q12-Anforderungen bleiben
+> geschützt; erst nach unabhängiger Abnahme nur `97908d93…` freigeben. Null neue
+> wirtschaftliche Messungen bisher; keine Rendite-/Portfolio-/Live-Freigabe.
+> Ergebnis: `docs/ops/evidence/2026-09-09_balke_pattern_recovery.md`; exakter Auftrag:
+> `docs/ops/evidence/2026-09-09_balke_41398_review_handoff.md`. Code-Checkpoints
+> `503fb410f5` / `677068883e`. Historischer Karten-/Set-Vergleich explizit geparkt,
+> bis die neue Balke-Basis geklärt ist.
+
 > **Nachtrag 09.09., ~13:34Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
 > `farm_state.sqlite`-Prüfung ~16 Minuten nach dem 13:18Z-Check auf allen drei `IN_PROGRESS`-
 > Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,

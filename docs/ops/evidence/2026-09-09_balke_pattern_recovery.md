@@ -1,7 +1,8 @@
 # Balke: reparierte Messversion QM5_41398
 
-Stand 09.09.2026, 15:30 Wien: **nativ COMPILE_OK / Build-Check PASS; unabhängige
-Review und wirtschaftlicher Q02-/Matrixstart noch ausstehend. Kein Live-Eingriff.**
+Stand 09.09.2026, 15:43 Wien: **nativ COMPILE_OK / Build-Check PASS; unabhängige
+Review beauftragt, noch TODO. Wirtschaftlicher Q02-/Matrixstart ausstehend.
+Kein Live-Eingriff.**
 
 ## Ergebnis dieses Schrittes
 
@@ -124,5 +125,21 @@ explizit beurteilen; notwendige weitere Mechanikänderungen brauchen eine neue
 deklarierte Baseline, keinen Umbau des bereits kompilierten Artefakts.
 
 Autorität: `decisions/2026-09-09_balke_pattern_recovery.md`.
+
+## Verbindliche Übergabe
+
+Die unabhängige Review einschließlich bedingter Q02-Übergabe ist als Router-Task
+`e1358f42-c9f2-4cd2-89ce-f337b17ac84a` angelegt: `ops_issue`, Priorität 92,
+entscheidungstreu auf die Claude-Lane gebunden. Aktueller Zustand: TODO, noch
+nicht beansprucht. Die Lane hat drei laufende Aufgaben bei maximal drei Plätzen;
+hier wurde weder eine davon abgebrochen noch die Parallelitätsgrenze erhöht.
+Das ist eine beauftragte Folgearbeit, keine bereits erteilte Review-Abnahme.
+
+Vollständiger Auftrag: `docs/ops/evidence/2026-09-09_balke_41398_review_handoff.md`.
+Checkpoints: `503fb410f5` (Pattern-Reparatur/Nachweise) und `677068883e`
+(separate Balke-Version, native EX5, Generator-Korrektur und Regressionen).
+Vor Enqueue wurden neue MQ5-/EX5-/Set-Hashes, COMPILE_OK sowie alle drei
+dauerhaften Q12-Holds erneut geprüft. Keine wirtschaftliche Messung wurde gestartet.
+
 **Nächster Schritt: unabhängige technische Review, dann echte neutrale Q02-Messung.
 Weder bessere Balke-Rendite noch Portfolio-/Live-Freigabe sind bislang belegt.**
