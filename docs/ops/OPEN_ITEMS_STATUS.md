@@ -1611,3 +1611,26 @@ logged, already-tracked findings (`p2_pass_no_p3`, `q02_stranded_exhausted_pairs
 
 No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
 AutoTrading/gate change. No OWNER-scope work invented.
+
+## Orchestration cycle 2026-09-09T0933Z -- 3 IN_PROGRESS claude tasks unchanged; gating Codex ticket now in REVIEW, Q02 running
+
+Re-checked all three `IN_PROGRESS` claude tasks (`bb814520` CALENDAR-CRITERIA-B-PRIME,
+`dfc60103` Q09-LEGACY-LOGGER-SAMPLE, `46167bd9` Q09-LEGACY-CALENDAR-INPUT): all correctly
+remain `IN_PROGRESS`. Direct `farm_state.sqlite` read (not router state alone): Codex ticket
+`b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3` moved `IN_PROGRESS`->`REVIEW` at 09:09:18Z (verdict
+`BUILD_PASS_Q02_ADMITTED_TESTER_ECHO_PENDING`), already noted by a prior cycle in each task's
+own evidence file. REVIEW-state Codex work is not mine to touch. The rebuilt `QM5_11167`
+identity's single Q02 work_item (`58b36f74`) has progressed from `pending` to `active`
+(claimed, running, `updated_at=09:29:16Z`) -- still no PASS/FAIL verdict, so no acceptance
+criterion for any of the three tasks is met yet. `farmctl health` overall=FAIL
+(13 fail/18 warn/53 ok, checked 09:32:55Z) -- named FAIL checks match the previously logged,
+already-tracked findings (`q02_stranded_exhausted_pairs`, `phase_invalid_rate_7d`,
+`agent_task_state_stranded`/`_aging_slo`, `work_item_phase_age_slo`,
+`q09_sealed_plan_hold_age`/`q09_autoseal_hold_census`, `pending_artifact_binding_drift`,
+`backup_calendar_continuity`, two `task_monitor_escalation` rows); `p2_pass_no_p3` no longer
+in the FAIL list this cycle (resolved elsewhere, out of this task's scope); no new incident.
+
+No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
+AutoTrading/gate change. No OWNER-scope work invented. Per the suppression note left in all
+three per-task evidence files, no further entry added there this cycle (Q02 still short of a
+verdict, REVIEW not yet closed).
