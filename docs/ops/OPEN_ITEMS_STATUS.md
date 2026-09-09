@@ -1264,3 +1264,16 @@ epo); `Set-ScheduledTask` needs the qm-admin credentials → left as is; verify 
 
 - **OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 minted** for the decision queued above (Vorlage `docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md`; commits `0f82e73050`/`7af08a11f0`). First draft wrongly proposed a declared-residual option (Option A analogy to the sv fix); **corrected same-cycle** (`a65321d94f`/`33dc5a1979`) after confirming in `QM_NewsFilter.mqh:69-76,744-763` that the three calendar-bundle inputs functionally gate which bundle `QM_NewsInitTesterBundle()` loads at tester runtime — not provenance echo — so no declared-residual analogy to the sv precedent is honest here. Card now asks rebuild (staged, 11167 first) vs. park; vault sync failed both times (`G:` Drive permission denied on `12 ToDo/AI ToDos/OWNER.md`), local feed/config committed and is the source of truth.
 - **Router closeout:** `OWNER-DEC-COUNTER-PATH-CALENDAR-TAINT-20260907` (task `60cd31a8`) has its own acceptance fully met independent of the legacy-cohort question (consumer B active for declared-admissible rows only, footnote present, re-adjudication ticket `235e5119` bound, no repin/publish/threshold/verdict change) → moved to REVIEW. `bb814520` (B-prime) and `dfc60103` (legacy-logger) stay IN_PROGRESS pending the new card; their acceptance criterion "first adjudications end PASS/FAIL" remains structurally open for the pre-2026-08-03 cohort until OWNER answers.
+
+## Addendum 2026-09-09 ~02:36Z (orchestration cycle) — Dukascopy connectivity: TCP-connect probe was a false recovery signal; task 3032534e stays IN_PROGRESS
+
+All three Claude-lane tasks this cycle (`bb814520`, `dfc60103`, `3032534e`) checked out
+IN_PROGRESS and correctly blocked/paced — no state change made to any of them. For
+`3032534e` (Dukascopy backfill): a raw TCP-connect probe showed 0/8 failures (looked
+like recovery from the 01:27Z/02:04Z ~50%-failure measurement), but a bounded 90s
+re-run of the real downloader still failed 2/2 with the identical `WinError 10060`
+signature — TLS/data-phase failures happen downstream of a fast raw connect, so
+connect-only checks are not a valid recovery signal here. No production job restarted.
+Evidence: `docs/ops/evidence/2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md`
+(re-probe section). Disposition unchanged: GRÜN/measurement, no OWNER decision needed;
+next cycle should wait several hours before the next application-level re-test.
