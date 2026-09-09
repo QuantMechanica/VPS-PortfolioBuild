@@ -1,0 +1,17 @@
+{
+  "repeat_identical": true,
+  "comparison_sha256": "000ff00ac79446013b243a004be889809088e6d47022043b732c9c103b574671",
+  "intake_pairs": 16,
+  "exposed_hashes_verified": 7,
+  "unscored": 9,
+  "selected": 0,
+  "tests": "14 passed in 0.77s",
+  "native_inputs_still_missing": [
+    "lot_min_step_max",
+    "account_currency_tick_values",
+    "order_calc_margin",
+    "realized_commission",
+    "matched_spread",
+    "fill_slippage"
+  ]
+}
