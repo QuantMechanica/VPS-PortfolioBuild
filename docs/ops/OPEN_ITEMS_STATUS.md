@@ -1,5 +1,22 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~17:31Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
+> `farm_state.sqlite`-Prüfung ~13 Minuten nach dem 17:18Z-Check auf allen drei `IN_PROGRESS`-
+> Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,
+> `3032534e` DUKASCOPY-BACKFILL): `QM5_41394` unverändert — SP500/XAUUSD/XTIUSD weiterhin
+> `Q02 pending` seit `10:52:59Z` (~6h39m unclaimed), USDJPY.DWX weiterhin `Q03 pending` seit
+> `13:09:21Z` und `Q04 pending` seit `12:19:47Z`, EURUSD.DWX terminal `Q04 done` (Sackgasse).
+> Kein Leg hat `Q10_NEWS` erreicht — `bb814520`/`dfc60103` bleiben korrekt `IN_PROGRESS`.
+> `3032534e`: Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `01:24:20Z`
+> (~16h07m); kein `download_bi5.py`-Prozess sichtbar; kein neuer Reprobe fällig. `farmctl
+> health` overall=FAIL (15 FAIL/16 WARN/51 OK) — identisches chronisches Set wie beim
+> 17:18Z-Check, keine der Zeilen betrifft die drei gegatterten Ketten. Wochenkontingent
+> weiterhin kritisch (86 % used/14 % remaining) — dieser Zyklus hielt sich bewusst auf die
+> minimale Direct-DB-Verifikation beschränkt (keine erneute Tiefenanalyse), passend zur bereits
+> dokumentierten Scheduler-Pileup-Klasse. Kein Ticket/Rebuild/Release/Router-Zustandswechsel;
+> `agent_router.py run`/`route-many`/`replenish` nicht aufgerufen; kein OWNER-Scope-Auftrag
+> erfunden.
+
 > **Nachtrag 09.09., 15:19Z — Pattern-Folgeanalyse (read-only):** Balke `QM5_41398`
 > hat unabhängige Review PASS und echte Q02 PASS (`2fc84747`, 888 Trades, PF 1,12,
 > tatsächliches Fenster 2018-07-02 bis 2022-12-31). Neue Matrix: 1/1.085 Jahreszellen
