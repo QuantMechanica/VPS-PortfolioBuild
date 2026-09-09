@@ -242,3 +242,8 @@ only, not a new gate result). The four remaining `QM5_41394` legs (SP500/USDJPY/
 are unchanged: `Q02 status=pending` since 10:52:59Z, no Q10_NEWS adjudication anywhere in the
 lineage yet. This task's acceptance criterion stays unmet. No ticket, release, repin, or verdict
 change made here. Lease reacquired (prior one expired ~3.5h ago). Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T11:50Z — no change (direct DB read)
+
+Q02 legs for `QM5_41394` unchanged since 10:52:59Z (SP500/USDJPY/XAUUSD/XTIUSD still
+`pending`). Same gate as `dfc60103`. Task remains `IN_PROGRESS`.

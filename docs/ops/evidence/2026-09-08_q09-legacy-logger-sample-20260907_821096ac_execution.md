@@ -349,3 +349,8 @@ the already-known EURUSD Q02 PASS — not a new gate result and not this task's 
 `2f717775` (this task's own open Codex ticket, non-FX price_scale/point_size — actually
 belongs to `3032534e`, cross-referenced only) not touched. No ticket, rebuild, or release
 made here. Task remains `IN_PROGRESS`, acceptance criterion still unmet.
+
+## Checked 2026-09-09T11:50Z — no change (direct DB read)
+
+Q02 legs for `QM5_41394` unchanged since 10:52:59Z (SP500/USDJPY/XAUUSD/XTIUSD still
+`pending`). Same gate as `bb814520`. Task remains `IN_PROGRESS`.

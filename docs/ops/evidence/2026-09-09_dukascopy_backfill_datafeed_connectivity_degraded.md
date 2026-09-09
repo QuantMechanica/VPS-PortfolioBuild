@@ -214,3 +214,23 @@ minutes, still well inside the 1h GRÜN autonomous budget) to get a stable
 success-rate estimate under the new HTTP-503 regime before deciding whether
 to accept the slow path (option 1), tune retry/backoff (option 3), or keep
 re-testing.
+
+## Re-probe 2026-09-09 11:49-11:50Z (orchestration cycle, +~5h11m) — regressed back to 0/3, still HTTP 503-dominant
+
+Same bounded command, same output root (`20260909T032705Z`), ~70s active window.
+3 hour-files attempted (`10h`, `14h`, `15h`), **0 succeeded**: `10h` and `14h`
+each 3/3 `HTTP 503`; `15h` one `TimeoutError` + one `HTTP 503` before the bounded
+timeout ended the process. No `WinError 10060/10054` this time — same
+application-layer-only signature as the 06:37Z/06:52Z probes, just a worse
+success rate (0/3 vs. 2/4). Confirms server-side rate-limit/overload
+(HTTP 503), not a path-level block, but no recovery. Process ended cleanly on
+the bounded timeout; verified via `wmic process` — no orphaned `download_bi5.py`.
+`2f717775` (non-FX price_scale ticket) still `APPROVED`/unassigned since
+01:24:20Z (~10h25m unclaimed) — Codex lane still stalled, plausible root cause
+unchanged (`repo_dirty_build_guard`, `C:\QM\repo` still dirty with factory-owned
+set files + one concurrent actor's in-progress `QM5_41240` edit, not touched).
+No production job restarted, no ticket duplicated, no terminal action. Task
+`3032534e` stays IN_PROGRESS. Given ~10 near-identical probe entries now on
+this file with no qualitative change in disposition, further routine "no
+recovery" probes will be logged tersely (one line) rather than in this much
+detail unless the signature changes again.
