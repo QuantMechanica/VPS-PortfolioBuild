@@ -327,3 +327,18 @@ ticket state change, no rebuild. All three tasks (`bb814520`, `dfc60103`, `46167
 correctly `IN_PROGRESS` — flagging for OWNER/next-cycle visibility that the sole in-flight
 leg has now dead-ended and the cohort has no active leg progressing toward the acceptance
 criterion.
+
+## Cycle check 2026-09-09T~1052Z — no change, re-verified against live DB
+
+Direct DB read: `QM5_41394` `work_items` unchanged (compile `done`/`COMPILE_OK`, Q02
+`done`/`PASS` EURUSD, Q04 `done`/`FAIL` EURUSD strategy-taxonomy — same three rows as the
+10:33Z check, no new symbol leg started). `b66b5ccc` unchanged (`state=REVIEW`/`codex`,
+`updated_at=09:09:18Z`). `farmctl.py health`: FAIL 13/WARN 17/OK 55 — same chronic set
+(`q02_stranded_exhausted_pairs`, `phase_invalid_rate_7d`, `agent_task_state_stranded`,
+`agent_task_aging_slo`, `work_item_phase_age_slo`, `q09_sealed_plan_hold_age`,
+`q09_autoseal_hold_census`, `pending_artifact_binding_drift`, scheduled-task/backup-calendar
+FAILs, `task_monitor_escalation`), none referencing this decision chain. No action taken; no
+ticket, rebuild, release, or router state change. All three tasks (`bb814520`, `dfc60103`,
+`46167bd9`) remain correctly `IN_PROGRESS` — genuinely blocked on the factory's own pipeline
+reaching a terminal Q10_NEWS verdict on a new `QM5_41394` symbol leg, not on any action within
+this contract's `selected_effect_only` authority.
