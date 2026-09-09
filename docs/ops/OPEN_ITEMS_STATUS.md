@@ -1,5 +1,20 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 11:48Z (Orchestrierungszyklus) — keine Zustandsänderung:** `bb814520`/`dfc60103`
+> weiterhin korrekt `IN_PROGRESS`, gegattert auf denselben Q10_NEWS-Terminalverdikt-Ketten wie
+> zuletzt (die vier `QM5_41394`-Symbol-Legs SP500/USDJPY/XAUUSD/XTIUSD unverändert `Q02 pending`
+> seit `10:52:59Z`, EURUSD-Leg unverändert `Q04 FAIL`). `3032534e` weiterhin `IN_PROGRESS`,
+> `2f717775` weiterhin `APPROVED`/unclaimed seit `01:24:20Z` (~10h24m), kein neuer Reprobe (Cadence
+> bereits erschöpft). `farmctl health` overall=FAIL (14 FAIL, unverändertes chronisches Set:
+> `codex_zero_activity`/`repo_dirty_build_guard`, `q02_stranded_exhausted_pairs`,
+> `phase_invalid_rate_7d`, `agent_task_state_stranded`, `agent_task_aging_slo`,
+> `work_item_phase_age_slo`, `q09_sealed_plan_hold_age`, `q09_autoseal_hold_census`,
+> `pending_artifact_binding_drift`, Scheduled-Task/Backup-Calendar-FAILs) — keine dieser Zeilen
+> betrifft die drei gegatterten Ketten oder ist einer laufenden `claude`-Aufgabe zugeordnet; kein
+> OWNER-Scope-Werk erfunden. `agent_router.py run`/`route-many`/`replenish` nicht aufgerufen.
+> Details: `docs/ops/evidence/2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`,
+> `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`.
+
 > **Nachtrag 09.09., ~11:19Z (Orchestrierungszyklus) — Codex-Ticket `b66b5ccc` APPROVED, `46167bd9` erfüllt seine eigenen Akzeptanzkriterien und geht auf REVIEW:** Direkte DB-Prüfung bestätigte einen echten Q02-`PASS` (Worker-Evidenz, `real_ticks_marker=true`, deterministic) für `QM5_41394`/EURUSD (die neu gebaute `QM5_11167`-Identität) — genau die Beobachtung, auf die `b66b5ccc` explizit wartete. Ticket auf `APPROVED` geschlossen (reine Review, kein Code geändert). `46167bd9`s eigene vier Akzeptanzkriterien (Scope vermessen, Neubau ab Q02, kein Threshold/Verdict/T_Live-Eingriff, keine Kontinuität behauptet) sind damit erfüllt — unabhängig davon, ob irgendein Symbol-Leg je Q10_NEWS erreicht. `46167bd9` daher `IN_PROGRESS`→`REVIEW` (Independent-Closeout bleibt für später/OWNER). **`bb814520`/`dfc60103` bleiben unverändert `IN_PROGRESS`** — ihr Kriterium ist die strengere Q10_NEWS-Adjudikation, die EURUSD-Leg ist bereits bei Q04 (strategy FAIL) ausgeschieden, die vier übrigen Legs (SP500/USDJPY/XAUUSD/XTIUSD) stehen noch `Q02 pending`. Details: `docs/ops/evidence/2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`. Bestätigt: mehrfache parallele Orchestrierungszyklen schreiben weiterhin near-simultan in dieselben Dateien (Scheduler-Pileup bereits gemeldet, hier nur erneut beobachtet, nicht behoben).
 
 > **Nachtrag 09.09., 07:27Z (Orchestrierungszyklus) — alle 3 IN_PROGRESS-Claude-Aufgaben erneut geprüft, kein Zustandswechsel:** `bb814520`/`dfc60103` bleiben blockiert auf `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (Vorlage weiterhin ohne `OWNER-Antwort`-Abschnitt, `G:`-Vault weiterhin `UnauthorizedAccessException`). `3032534e`: Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `2026-09-09T01:24:20Z` (DB direkt geprüft, unverändert); letzter echter Reprobe war 06:39Z (~48min vor diesem Zyklus) — die Vorgabe „mehrere Stunden, anderer UTC-Slot" ist damit noch nicht erreicht, kein neuer Reprobe. Spawn-Lease-Tabelle direkt geprüft: einzige Zeile (`3032534e`) ist seit `01:32:47Z` abgelaufen, kein aktiver Lease auf einer der drei Aufgaben. Kein Router-Zustandswechsel, kein Ticket/Rebuild/Release erzeugt. Das bereits gemeldete 15-Minuten-Scheduler-Pileup (mehrere gleichzeitige `claude.exe`) bleibt unangetastet, da eine Korrektur außerhalb dieser drei Aufgaben liegt.

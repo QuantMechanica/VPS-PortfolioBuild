@@ -408,3 +408,12 @@ Q10_NEWS PASS/FAIL exists on any leg. `b66b5ccc` being `APPROVED` (a Codex-assig
 is not a claude `IN_PROGRESS` task and not actionable under this task's `selected_effect_only`
 scope. No action taken beyond this read: no ticket, rebuild, release, or router state change.
 All three tasks (`bb814520`, `dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS`.
+
+## Cycle check 2026-09-09T11:48Z — no state change
+
+Direct DB read: the four intake symbol legs (`QM5_41394` SP500/USDJPY/XAUUSD/XTIUSD) remain
+`Q02 status=pending`, `updated_at=2026-09-09T10:52:59Z` — unchanged since the 11:2xZ check, not
+yet claimed/run. EURUSD leg unchanged at `Q04 FAIL` (10:29:26Z). No terminal Q10_NEWS PASS/FAIL
+on any leg. `bb814520`/`dfc60103` acceptance criteria (first adjudications end PASS/FAIL) remain
+unreached. No ticket, rebuild, release, or router state change made; `agent_router.py run` /
+`route-many` / `replenish` not invoked per task directive. Both tasks stay `IN_PROGRESS`.

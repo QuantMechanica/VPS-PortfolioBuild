@@ -231,3 +231,13 @@ ticket. Task stays IN_PROGRESS pending `2f717775` and a later-hour reprobe.
 ## Checked 2026-09-09T07:19Z -- no change
 
 `2f717775` still APPROVED/unassigned, updated_at=2026-09-09T01:24:20Z (~5h55m unclaimed, direct state-DB read). No new datafeed reprobe (last one 06:39Z, still recent). No download restart, no duplicate ticket. Task stays IN_PROGRESS.
+
+## Checked 2026-09-09T11:48Z (orchestration cycle) -- no change
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~10h24m unclaimed,
+direct state-DB read). Codex lane otherwise busy on unrelated tickets this cycle (farm health:
+`codex_zero_activity` FAIL is a `repo_dirty_build_guard` block on unrelated uncommitted MQ5 files,
+not a Dukascopy-lane signal). No new datafeed reprobe this cycle (prior reprobe cadence already
+exhausted the "different time of day" bar per the 06:20Z entry above; no new information would
+result from another immediate TCP/HTTP sample). No download restart, no duplicate ticket, no
+OWNER-scope work invented. Task stays IN_PROGRESS.
