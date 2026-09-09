@@ -1,6 +1,6 @@
 # Balke: reparierte Messversion QM5_41398
 
-Stand 09.09.2026, 15:43 Wien: **nativ COMPILE_OK / Build-Check PASS; unabhängige
+Stand 09.09.2026, 15:42 Wien: **nativ COMPILE_OK / Build-Check PASS; unabhängige
 Review beauftragt, noch TODO. Wirtschaftlicher Q02-/Matrixstart ausstehend.
 Kein Live-Eingriff.**
 

@@ -1,6 +1,6 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
-> **Nachtrag 09.09., 13:43Z — Balke-Pattern-Reparatur, neuer Build und Review-Auftrag:**
+> **Nachtrag 09.09., 13:42Z — Balke-Pattern-Reparatur, neuer Build und Review-Auftrag:**
 > `QM5_41398_balke-pattern-repair-opt` ist separat registriert und nativ COMPILE_OK
 > (`e8e4cad7`, T9, 0 Fehler/0 Warnungen); 144 erweiterte Tests PASS. Zusätzlich wurde
 > ein reproduzierter Setfile-Generatorfehler bei der Übernahme von Kartenwerten
