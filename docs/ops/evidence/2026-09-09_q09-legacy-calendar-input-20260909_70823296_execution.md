@@ -225,6 +225,27 @@ task's acceptance criterion (Q02/Q10_NEWS PASS/FAIL) is still unmet. No router s
 Given ~20 near-identical prior entries above with no OWNER-side action needed, further
 per-cycle entries here are suppressed unless Q02 actually produces a verdict or REVIEW closes.
 
+## Checked 2026-09-09T09:45Z (orchestration cycle) — Q02 PASSED; task stays IN_PROGRESS
+
+Direct DB read: work item `58b36f74-a831-4119-943b-8a9924b20179` (QM5_41394/EURUSD.DWX Q02)
+is now `status=done`, `verdict=PASS` (`updated_at=09:39:06Z`) — genuinely new since the 09:26Z
+check. `b66b5ccc` remains `state=REVIEW`/`assigned_agent=codex`; its own artifact (written
+09:04:53Z, before this Q02 verdict existed) explicitly scoped acceptance item "show the three
+calendar-bundle inputs in this EA's tester report echo" as PENDING and recommended the item
+stay in REVIEW until that evidence lands — Q02 is not the gate that performs that echo check
+(`q09_news_runner.py`'s `_validate_report_effective_inputs` runs at Q10_NEWS, not Q02), so this
+PASS does not by itself constitute that proof.
+
+This task's own objective text ("cohort follow-up after 11167 proves the path") reads as
+requiring the rebuild to reach a genuine Q10_NEWS PASS/FAIL adjudication, not merely clear Q02 —
+consistent with `dfc60103`'s acceptance ("11167 rerun ends PASS/FAIL, not REVIEW_REQUIRED") and
+`bb814520`'s ("first adjudications end PASS/FAIL"), which this task is the common gate for. Not
+closing this task to REVIEW yet: only 1 of 5 symbols (EURUSD) has cleared Q02 so far (SP500,
+USDJPY, XAUUSD, XTIUSD deferred per the intake receipt), and the pipeline still has to clear
+Q03-Q09 before a Q10_NEWS run is even reachable. No action taken beyond this read (advancing the
+pipeline is the factory's automated job, not mine to trigger). All three tasks (`bb814520`,
+`dfc60103`, `46167bd9`) remain correctly `IN_PROGRESS`.
+
 ## Self-correction 2026-09-09T~0851Z — my own 0850Z entry's "no work_items row" claim was a query bug
 
 My own 0850Z entry above (this cycle, same session) queried `work_items WHERE ea_id=41394`

@@ -312,6 +312,14 @@ IN_PROGRESS/claude). Q02 item `58b36f74` still `pending`. This task's own accept
 rerun ends PASS/FAIL") stays unmet. No router state change. Further verbose entries here
 suppressed until Q02 or the review actually resolves.
 
+## Checked 2026-09-09T09:45Z (orchestration cycle) — QM5_41394/EURUSD Q02 PASSED; still gated
+
+Q02 work item `58b36f74` now `status=done`/`verdict=PASS` (09:39:06Z) — first gate cleared, but
+this task's acceptance ("11167 rerun ends PASS/FAIL") needs a Q10_NEWS adjudication, which
+requires Q03-Q09 first and only runs the calendar-echo check this rebuild targets. Full
+reasoning in `46167bd9`'s execution record. No release, repin, or verdict change. Task remains
+`IN_PROGRESS`.
+
 ## Checked 2026-09-09T09:04Z (orchestration cycle) — QM5_41394 compiled, Q02 queued
 
 `QM5_41394` (the governed new-identity rebuild of `QM5_11167` under decision

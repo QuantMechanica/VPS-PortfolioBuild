@@ -208,6 +208,14 @@ IN_PROGRESS/claude). Q02 item `58b36f74` still `pending`. No release/repin/verdi
 Task `bb814520` remains `IN_PROGRESS`. Further verbose entries here suppressed until Q02 or
 the review actually resolves.
 
+## Checked 2026-09-09T09:45Z (orchestration cycle) — QM5_41394/EURUSD Q02 PASSED; still gated
+
+Q02 work item `58b36f74` now `status=done`/`verdict=PASS` (09:39:06Z) — first gate cleared for
+the rebuild, but not the Q10_NEWS calendar-echo proof this task's acceptance needs (that check
+runs only at Q10_NEWS, not Q02; Codex's own `b66b5ccc` artifact scopes it PENDING). 4 of 5
+symbols still deferred, Q03-Q09 not yet run. Full reasoning in `46167bd9`'s execution record.
+No release, repin, or verdict change. Task remains `IN_PROGRESS`.
+
 ## Checked 2026-09-09T09:04Z (orchestration cycle) — rebuild compiled, Q02 queued; still gated
 
 `QM5_41394` (11167's governed rebuild) compiled (`work_items` item `1fb4d6f0`=`done`, `.ex5`
