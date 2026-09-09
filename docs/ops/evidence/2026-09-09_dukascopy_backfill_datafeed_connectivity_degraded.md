@@ -234,3 +234,17 @@ No production job restarted, no ticket duplicated, no terminal action. Task
 this file with no qualitative change in disposition, further routine "no
 recovery" probes will be logged tersely (one line) rather than in this much
 detail unless the signature changes again.
+
+## Re-probe 2026-09-09 12:19-12:25Z (orchestration cycle, +~29min) — brief clean window, then relapse; still no sustained recovery
+
+First bounded window (12:19:15-12:20:05Z, ~50s): 3/3 downloaded, 0 errors, 0
+retries — the first fully clean sample since the outage, initially read as a
+possible recovery signal. A second, longer bounded window immediately after
+(12:20:58-12:24:55Z, ~4min) did not hold: 2 downloaded / 3 errors (HTTP 503
+x2, one hour needing all 3 attempts across 503/timeout/WinError 10060). Same
+oscillating pattern as prior probes, just with a brief clean pocket — not a
+structural change. `completed` 24->29 this cycle (5 more hour-files of
+305,028 planned). No production job restarted, `2f717775` still
+unclaimed/stalled on `repo_dirty_build_guard`. Task `3032534e` stays
+IN_PROGRESS. Next cycle: continue periodic bounded probes; treat any
+brief clean window as inconclusive until it holds across a >=4min sample.
