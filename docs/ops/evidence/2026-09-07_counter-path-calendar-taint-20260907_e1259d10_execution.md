@@ -26,3 +26,15 @@ Consumer B active only for declared-admissible rows; excluded rows remain held; 
 ## Progress 2026-09-07 07:20Z — continued under B′ (task bb814520): 2 rows released (11196, 11167), 10 pending wave 2 — see the B′ record.
 
 ## Progress 16:23Z — see the B′ record: 11167 adjudication void (pre-sv build, guard), card OWNER-DEC-Q09-LEGACY-LOGGER-SAMPLE-20260907 minted; counter path continues on post-sv rows (10145/SP500, 10513/XAUUSD prioritised).
+
+## Progress 2026-09-09 00:56Z — legacy cohort structurally blocked past the sv-logger fix; see `q09-legacy-logger-sample` record
+
+- The 11167 legacy canary (`6797ed1c`) failed again 2026-09-08 17:32Z on a
+  different, deeper defect: pre-2026-08-03 EX5 builds never carry the
+  `qm_news_calendar_*` provenance-echo inputs added that date, so Q10_NEWS's
+  report-input echo check rejects them regardless of the sv-logger exception.
+  All 9 rows in the legacy-logger allowlist predate 2026-08-03 — this path is
+  blocked pending a new OWNER rebuild-vs-park decision, not a counter-path or
+  calendar-scope defect. Post-sv/post-08-03 rows (10145/SP500, 10513/XAUUSD)
+  are unaffected and remain the active counter-path progress. Full detail in
+  `2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md`.

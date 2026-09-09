@@ -110,3 +110,49 @@ sind damit erledigt; Schritte 3–5 bleiben offen. Keine weiteren Binaries aktiv
 
 Kein Rebuild, Repin, Publish, T_Live-/FTMO-Chartwechsel, AutoTrading-, Konto-,
 Order- oder Risiko-Eingriff. Keine historische Evidenz gelöscht oder umgeschrieben.
+
+## Canary-Ergebnis 2026-09-08 17:32Z — REVIEW_REQUIRED, neuer strukturelle Defekt (nicht der sv-Logger)
+
+Der native Canary-Lauf (`6797ed1c-597a-4d44-82f9-7379d45b5e06`) endete
+`REVIEW_REQUIRED` / `cell_execution_failed`, 8/8 Zellen — aber **nicht** wegen
+eines fehlenden `sv`-Feldes. Fehlerursache lt. `cell_failure.json` (alle 8
+Zellen identisch): `RunnerError "MT5 report effective input
+qm_news_calendar_bundle_id mismatch"`.
+
+**Root cause (verifiziert, kein Verdacht):** `QM5_11167`'s EX5 wurde am
+2026-07-14 committet (`f1b1abd677…`, `git show -s`). Die drei
+Provenienz-Echo-Inputs `qm_news_calendar_bundle_id`,
+`qm_news_calendar_expected_sha256`, `qm_news_calendar_common_relative_path`
+wurden erst am **2026-08-03** durch Commit `f0102fbcf` in
+`QM_NewsFilter.mqh` (eingebunden über `QM_Common.mqh`, das `QM5_11167.mq5`
+`#include`t) deklariert. Der kompilierte Altbau vom 14.07. kennt diese Inputs
+nicht — der Q10_NEWS-Runner schreibt sie dennoch in jede Zell-`.set`
+(`q09_news_runner.py:323`) und prüft sie im Tester-Report-Echo
+(`_validate_report_effective_inputs`); das Echo bleibt leer → Mismatch. Das
+ist exakt die am 2026-08-24 für `QM5_9936` dokumentierte Defektklasse
+(`docs/ops/evidence/2026-08-24_qm5_9936_news_provenance_include_revision.md`),
+hier reproduziert für `QM5_11167`.
+
+**Kohortenbefund:** alle 9 im `legacy_logger_allowlist.v1.json` registrierten
+Binaries (11167, 11196, 10148, 10476, 10771, 11179, 1230, 12474, 9573) wurden
+zwischen 2026-06-07 und 2026-07-15 committet — **alle vor dem 03.08.** Sofern
+ihre EAs `QM_Common.mqh`/`QM_NewsFilter.mqh` einbinden (wie 11167), trifft sie
+derselbe Mismatch unabhängig vom sv-Logger-Fix. Die sv-Ausnahme (07af95fcf1)
+war notwendig, aber **nicht hinreichend** — sie löst nur die Logger-Prüfung,
+nicht die Report-Input-Prüfung.
+
+**Die einzig belegte Abhilfe ist ein Rebuild dieser EAs** (Recompile in
+aktivem Inventar = ROT nach Stehender Vollmacht, keine autonome Handlung).
+Ohne Rebuild kann keine dieser 9-10 Zeilen einen PASS/FAIL-Q10_NEWS-Verdikt
+erreichen — die B′-Akzeptanzkriterien ("erste Adjudikationen enden
+PASS/FAIL") sind für diesen Pfad strukturell unerreichbar, bis eine
+Rebuild-Entscheidung getroffen ist.
+
+**Keine Abweichung von der erlaubten Wirkung vorgenommen:** kein Rebuild,
+kein Recompile, kein Verdict-Override, kein Hold blind entfernt; `f625d9aa`
+und `6797ed1c` bleiben unverändert als Evidenz stehen. Empfehlung an OWNER:
+neue Karte "Rebuild pre-08-03-Legacy-Kohorte ja/nein" (Umfang: 11167 zuerst,
+dann kohortenweise) vs. Parken dieser 9-10 Zeilen als dauerhaft
+`REVIEW_REQUIRED` bis zu einem späteren Rebuild-Fenster. Dieser Fund betrifft
+auch die verkettete B-prime- und Counter-Path-Aufträge (bb814520, 60cd31a8) —
+Querverweis dort ergänzt.

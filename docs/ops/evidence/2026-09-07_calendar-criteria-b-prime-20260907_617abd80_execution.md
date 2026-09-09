@@ -45,3 +45,20 @@ Criterion recorded with exact residual classes; B admits USD-only rows of any ti
   until the 11167 native authentication canary succeeds. No further OWNER choice needed.
 - Continue from `2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md`;
   do not enqueue a duplicate implementation task or mark the native acceptance complete.
+
+## Progress 2026-09-09 00:56Z — 6797ed1c canary ended REVIEW_REQUIRED; structural blocker, not a scope/calendar defect
+
+- The 11167 native canary (`6797ed1c`) ended `REVIEW_REQUIRED`/`cell_execution_failed`
+  again (updated_at 2026-09-08T17:32:10Z), but the cause this time is
+  `RunnerError "MT5 report effective input qm_news_calendar_bundle_id mismatch"`,
+  not the sv-logger gap. Root cause: QM5_11167's EX5 (committed 2026-07-14)
+  predates commit `f0102fbcf` (2026-08-03), which is when the three
+  `qm_news_calendar_*` provenance-echo inputs were added to `QM_NewsFilter.mqh`
+  — same defect class as `QM5_9936` (2026-08-24 evidence). Full detail and the
+  cohort-wide finding (all 9 legacy-logger-allowlist binaries predate 2026-08-03)
+  in `2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md`.
+- Consequence for B′: "first adjudications end PASS/FAIL" is unreachable for
+  the pre-08-03 legacy cohort without a recompile (ROT, not autonomous). No
+  hold, verdict or evidence touched; recommend a new OWNER card (rebuild
+  pre-08-03 cohort vs. park). This task and 60cd31a8 remain gated on that
+  decision for the last unreleased/unadjudicated legacy rows.
