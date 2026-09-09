@@ -18320,3 +18320,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41394,weiss-ichi2-ma-calendar-r1,2,XAUUSD.DWX,413940002,2026-09-09,Codex governed allocator,active
 41394,weiss-ichi2-ma-calendar-r1,3,SP500.DWX,413940003,2026-09-09,Codex governed allocator,active
 41394,weiss-ichi2-ma-calendar-r1,4,XTIUSD.DWX,413940004,2026-09-09,Codex governed allocator,active
+41395,xng-winter-wmom,0,XNGUSD.DWX,413950000,2026-09-09,Codex governed allocator,active
