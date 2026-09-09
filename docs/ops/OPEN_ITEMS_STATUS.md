@@ -1,5 +1,23 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~18:03Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
+> `farm_state.sqlite`-Prüfung ~13 Minuten nach dem 17:50Z-Check auf allen drei `IN_PROGRESS`-
+> Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,
+> `3032534e` DUKASCOPY-BACKFILL): `QM5_41394` unverändert — SP500.DWX/XAUUSD.DWX/XTIUSD.DWX
+> weiterhin `Q02 pending` seit `10:52:59Z` (~7h10m unclaimed), USDJPY.DWX weiterhin
+> `Q03 pending` seit `13:09:21Z` und `Q04 pending` seit `12:19:47Z`, EURUSD.DWX terminal bei
+> `Q04 done` (Strategy-Taxonomie-Sackgasse, kein neuer Verdikt-Overwrite versucht). Kein Leg
+> hat `Q10_NEWS` erreicht — `bb814520`/`dfc60103` bleiben korrekt `IN_PROGRESS`. `3032534e`:
+> Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `01:24:20Z` (~16h39m); Codex-
+> Lane bestätigt 0 `IN_PROGRESS` direkt per SQLite. `farmctl health`: overall=FAIL (13 FAIL/
+> 16 WARN/52 OK) — identisches chronisches Set wie beim 17:50Z-Check (u.a. `q09_autoseal_hold_census`,
+> `q09_sealed_plan_hold_age`, `pending_artifact_binding_drift`, `agent_task_state_stranded`,
+> `work_item_phase_age_slo`, `pending_tail_age`, `backup_calendar_continuity`,
+> `task_monitor_escalation`); keine Zeile betrifft die drei gegatterten Ketten. Wochenkontingent
+> weiterhin kritisch (~85-87% used) — Zyklus bewusst auf minimale Direct-Read-Verifikation
+> beschränkt. Kein Ticket/Rebuild/Release/Router-Zustandswechsel; `agent_router.py run`/
+> `route-many`/`replenish` nicht aufgerufen; kein OWNER-Scope-Auftrag erfunden.
+
 > **Nachtrag 09.09., ~17:50Z (Orchestrierungszyklus) — keine Zustandsänderung:** `farmctl
 > work-items --ea QM5_41394` direkt geprüft: SP500.DWX/XTIUSD.DWX weiterhin `Q02 pending`
 > seit `10:52:59Z` (~6h57m unclaimed; XAUUSD.DWX Zeile identisch pending), USDJPY.DWX
