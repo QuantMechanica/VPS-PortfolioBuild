@@ -1,0 +1,58 @@
+{
+  "schema": "qm.paced-build-q02-stop/v1",
+  "generated_at_utc": "2026-09-09T09:35:41.0901267Z",
+  "ea_id": "QM5_41395",
+  "ea_label": "QM5_41395_xng-winter-wmom",
+  "edge": "XNG November-through-March immediately-completed-week sign continuation with one-week hold",
+  "pacer_source_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41395_xng-winter-wmom/QM5_41395_xng-winter-wmom.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "source_sha256": "d9185ec1665c9507383d4f357dfcadd5d76cc21310daf6c90fed33176120fa69",
+  "setfile_sha256_at_stop": "723ab277d3b33f7beec2f983e28de6203bf2418160906e1c9f444204b0741aff",
+  "risk_mode": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "reference_tests": {
+    "passed": 13,
+    "failed": 0
+  },
+  "compile": {
+    "work_item_id": "6595b8b8-5e6e-43ea-bfb2-48402e755738",
+    "activation_hold_released": true,
+    "status_at_stop": "active",
+    "claimed_by": "T4",
+    "verdict_at_stop": null,
+    "ex5_at_stop": null
+  },
+  "q02": {
+    "enqueued": false,
+    "work_item_count_at_stop": 0,
+    "reason": "CPU_CEILING",
+    "threshold_percent_strictly_below": 97.0,
+    "samples_percent": [
+      97.8539326920157,
+      86.8313772795413,
+      78.5502120729899,
+      84.8875153129533,
+      91.4200825429243
+    ],
+    "average_percent": 87.9086239800849,
+    "maximum_percent": 97.8539326920157,
+    "average_pass": true,
+    "maximum_pass": false
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "portfolio_gate_touched": false,
+    "tlive_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
+
