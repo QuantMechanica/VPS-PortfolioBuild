@@ -322,3 +322,7 @@ remains `IN_PROGRESS`.
 ## Checked 2026-09-09T15:5xZ (orchestration cycle) -- no change; scheduler-pileup theory checked and not confirmed
 
 2f717775 still APPROVED/unassigned (~14h29m unclaimed). QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending. Checked QM_StrategyFarm_ClaudeOrchestration_15min scheduled-task settings directly: MultipleInstances=IgnoreNew (correct anti-overlap policy, already in place -- not a misconfiguration); only 2 claude.exe running now, not the 7-9 seen in earlier entries today. The scheduler-stacking theory flagged repeatedly above is not confirmed as an active problem; no scheduler change made. Given ~20+ near-identical no-change entries already logged today and weekly quota at 86%25 used/14%25 remaining, further verbose per-cycle entries on this task are suppressed unless something material changes. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T16:0xZ (orchestration cycle) -- no change, direct DB read confirms queue depth not stall
+
+Direct read of `work_items` (not the derived summaries in prior entries): `QM5_41394` XAUUSD/SP500/XTIUSD Q02 rows unchanged since 10:52:59Z -- `claimed_by=NULL`, `attempt_count=0` on all three, i.e. genuinely unclaimed/queued, not erroring or retrying. Context: 755 Q02-phase rows are pending farm-wide right now, so this is ordinary queue depth, not a stall specific to this chain -- outside this task's authority to reprioritize (I don't route). No OWNER answer path changed. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.

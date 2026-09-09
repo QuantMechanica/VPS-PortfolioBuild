@@ -414,3 +414,7 @@ change. Task remains `IN_PROGRESS`.
 ## Checked 2026-09-09T15:5xZ (orchestration cycle) -- no change
 
 Same gate as bb814520 (see that file for the scheduler-pileup check this cycle). QM5_41394 XAUUSD Q02 still pending. No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T16:0xZ (orchestration cycle) -- no change, direct DB read
+
+Same gate as `bb814520` (see that file for the fuller direct-DB read this cycle): `QM5_41394` XAUUSD Q02 row still `claimed_by=NULL`/`attempt_count=0`, unclaimed since 10:52:59Z -- ordinary queue depth (755 Q02 rows pending farm-wide), not a stall or error. This task's acceptance ("11167 rerun ends PASS/FAIL") stays unmet. No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
