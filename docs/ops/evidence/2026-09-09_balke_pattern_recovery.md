@@ -1,7 +1,7 @@
 # Balke: reparierte Messversion QM5_41398
 
-Stand 09.09.2026, 15:42 Wien: **nativ COMPILE_OK / Build-Check PASS; unabhängige
-Review beauftragt, noch TODO. Wirtschaftlicher Q02-/Matrixstart ausstehend.
+Stand 09.09.2026, Übergabe: **nativ COMPILE_OK / Build-Check PASS; unabhängige
+Review durch Claude übernommen (IN_PROGRESS). Wirtschaftlicher Q02-/Matrixstart ausstehend.
 Kein Live-Eingriff.**
 
 ## Ergebnis dieses Schrittes
@@ -130,10 +130,11 @@ Autorität: `decisions/2026-09-09_balke_pattern_recovery.md`.
 
 Die unabhängige Review einschließlich bedingter Q02-Übergabe ist als Router-Task
 `e1358f42-c9f2-4cd2-89ce-f337b17ac84a` angelegt: `ops_issue`, Priorität 92,
-entscheidungstreu auf die Claude-Lane gebunden. Aktueller Zustand: TODO, noch
-nicht beansprucht. Die Lane hat drei laufende Aufgaben bei maximal drei Plätzen;
-hier wurde weder eine davon abgebrochen noch die Parallelitätsgrenze erhöht.
-Das ist eine beauftragte Folgearbeit, keine bereits erteilte Review-Abnahme.
+entscheidungstreu auf die Claude-Lane gebunden. Zunächst TODO bei belegter Lane;
+die abschließende DB-Nachkontrolle zeigt jetzt **IN_PROGRESS / assigned_agent=claude**.
+Die bestehende Orchestrierung hat den Auftrag übernommen. Hier wurde keine
+fremde Aufgabe abgebrochen und keine Parallelitätsgrenze erhöht.
+Das ist eine übernommene Folgearbeit, keine bereits erteilte Review-Abnahme.
 
 Vollständiger Auftrag: `docs/ops/evidence/2026-09-09_balke_41398_review_handoff.md`.
 Checkpoints: `503fb410f5` (Pattern-Reparatur/Nachweise) und `677068883e`

@@ -6,7 +6,7 @@
 > ein reproduzierter Setfile-Generatorfehler bei der Übernahme von Kartenwerten
 > korrigiert. Alte Balke-Artefakte/Ergebnisse bleiben unverändert. Review + bedingte
 > neutrale Q02-Übergabe: `e1358f42-c9f2-4cd2-89ce-f337b17ac84a`, Prio 92, Claude-pin,
-> derzeit TODO (Claude 3/3 IN_PROGRESS). Alle drei doppelten Q12-Anforderungen bleiben
+> inzwischen IN_PROGRESS / assigned_agent=claude. Alle drei doppelten Q12-Anforderungen bleiben
 > geschützt; erst nach unabhängiger Abnahme nur `97908d93…` freigeben. Null neue
 > wirtschaftliche Messungen bisher; keine Rendite-/Portfolio-/Live-Freigabe.
 > Ergebnis: `docs/ops/evidence/2026-09-09_balke_pattern_recovery.md`; exakter Auftrag:
