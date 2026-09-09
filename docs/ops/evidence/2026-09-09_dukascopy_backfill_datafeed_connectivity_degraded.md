@@ -258,3 +258,43 @@ recovered on retry). No production job restarted, no orphaned process
 IN_PROGRESS; QM5_41394 gate for bb814520/dfc60103 also unchanged this cycle
 (SP500/XAUUSD/XTIUSD Q02 still pending since 10:52:59Z, USDJPY now Q04
 pending, EURUSD dead-ended Q02 PASS/Q04 FAIL).
+
+## Re-probe 2026-09-09 ~13:56-13:58Z (orchestration cycle, +~1h22m) — 6/6 net downloaded, 0 errors; own bounded probe orphaned past its bound, killed
+
+Same command/output root, intended as a ~70s bounded window
+(`timeout 70 python tools/dukascopy/download_bi5.py ...`). The shell's
+`timeout` did not cleanly terminate the process at 70s — `psutil` showed the
+`timeout.exe`/`python.exe` pair still alive at 101s wall-clock age. Killed it
+explicitly (`psutil.Process.terminate()` on all three PIDs; confirmed gone via
+`pid_exists` re-check) rather than leave it running unattended, per the
+"stopped rather than left running" practice established in the initial P0
+stop. Net result over the full ~100s it actually ran: `completed` 30->36,
+`downloaded=6, errors=0` this session — another fully clean window, similar in
+character to the 12:19-12:20Z and 12:33-12:34Z clean bursts. Still an
+oscillating pattern (clean windows interleaved with WinError 10060/10054
+windows, e.g. the two failures logged at 12:24Z/12:34Z before this probe), not
+a sustained recovery. No production job restarted. Lesson for future cycles:
+verify the bounded wrapper actually killed the child (`psutil` age check, not
+just "the shell command returned") before assuming a probe is bounded —
+`timeout <N> cmd | tail` can let the child outlive `<N>` under this tool's
+process-group semantics.
+
+Also observed in passing: at the moment this probe was captured, `psutil`
+showed a second, independent `timeout.exe`/`python.exe` pair present
+alongside the first (both same ~36s-old age at first check), consistent with
+this VPS's known concurrent-session pileup (multiple `claude.exe`
+orchestration cycles running at once, memory: thundering-herd/duplicate
+session race). Could not confirm whether that second pair belonged to a
+different concurrent session's own bounded probe or was an artifact of this
+tool's own process tree; not asserted as fact, flagged for awareness only. If
+real, concurrent duplicate downloaders against the same vendor host at 5 req/s
+each would be a plausible *additional* contributor to the observed failure
+oscillation beyond pure vendor-side rate-limiting — worth a future cycle
+checking `download.log` write-interleaving from two distinct PIDs before
+concluding server-side 503 is the sole cause.
+
+Codex ticket `2f717775` (non-FX price_scale) still `APPROVED`/unassigned
+(~12h30m unclaimed) — Codex lane still stalled, unrelated to this measurement.
+Task `3032534e` stays `IN_PROGRESS`. QM5_41394 gate for bb814520 unchanged
+this cycle (SP500/XAUUSD/XTIUSD Q02 still pending since 10:52:59Z; USDJPY now
+Q03 pending after its Q02 PASS at 12:17:13Z).
