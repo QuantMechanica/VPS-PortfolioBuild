@@ -33,4 +33,3 @@ strategy_atr_sl_mult=2.0
 strategy_time_stop_bars=15
 strategy_min_improve_frac=0.25
 strategy_max_spread_points=50
-strategy_debug=true

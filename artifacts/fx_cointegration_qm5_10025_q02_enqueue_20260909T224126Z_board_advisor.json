@@ -1,0 +1,113 @@
+{
+  "artifact_type": "fx_cointegration_existing_forex_q02_enqueue",
+  "schema_version": "qm.fx-cointegration-q02-enqueue/v1",
+  "generated_at_utc": "2026-09-09T22:41:26+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "58f6087f2b",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "unordered_relationship_count": 66,
+    "covered_relationship_count": 66,
+    "unbuilt_scan_relationship_found": false,
+    "decision": "Use one existing approved market-neutral FX card; do not create a duplicate scan-derived identity."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "logical_q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_10025",
+    "ea_label": "QM5_10025_rw-fx-broad-pairs",
+    "host_symbol": "USDJPY.DWX",
+    "timeframe": "H4",
+    "source": "Robot Wealth, Index of Strategies, FX Broad Pairs Trading",
+    "g0_status": "APPROVED",
+    "r1_track_record": "PASS",
+    "r2_mechanical": "PASS",
+    "r3_data_available": "PASS",
+    "r4_ml_forbidden": "PASS",
+    "mechanic": "monthly selected two-leg fixed-beta log-spread reversion",
+    "basket_manifest": "framework/EAs/QM5_10025_rw-fx-broad-pairs/basket_manifest.json"
+  },
+  "baseline_repair": {
+    "setfile": "framework/EAs/QM5_10025_rw-fx-broad-pairs/sets/QM5_10025_rw-fx-broad-pairs_USDJPY.DWX_H4_backtest.set",
+    "change": "Removed strategy_debug=true from the canonical baseline.",
+    "authority": "The approved card does not define strategy_debug and SPEC.md requires diagnostics to be default-off and enabled only in an evidence-specific preset.",
+    "strategy_mechanics_changed": false,
+    "source_mq5_changed": false,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "resulting_setfile_sha256": "8fbc0a841fea34b345aa7494cc4d822c3ea1c2acfffad65596e2e7bacf8578c3"
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_10025_rw-fx-broad-pairs/QM5_10025_rw-fx-broad-pairs.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "finding_count": 0,
+    "mq5_written_or_edited": false,
+    "compile_enqueued": false
+  },
+  "compile_provenance": {
+    "work_item_id": "21c7d995-2fd6-44f6-b624-8c5f097c0961",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "mq5_sha256": "db7424efcba0a8df90184240e277e1a7546e8030672eec88a4c72a89c32a5a61",
+    "ex5_sha256": "49fcc59b5232531f5fd2e3ba7a0c71f0bac703f54e17f7c92c911e31944d91f1",
+    "evidence_path": "D:/QM/reports/work_items/21c7d995-2fd6-44f6-b624-8c5f097c0961/QM5_10025/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "6a2ca8c03fa628dbb64a67371c3c520312830d3192f1c7ebff880ae313d7fd69",
+    "ad_hoc_build_check_attempt": "REFUSED_LIVE_FACTORY_COMPILE_GUARD",
+    "ad_hoc_compile_attempted": false
+  },
+  "pre_enqueue_cpu_gate": {
+    "sampled_at_local": "2026-09-10T00:41:23.7369137+02:00",
+    "samples_percent": [40.368334, 34.740291, 40.270339, 44.244551, 43.003387],
+    "average_percent": 40.52538,
+    "maximum_percent": 44.244551,
+    "hard_ceiling_percent": 97.0,
+    "admitted": true
+  },
+  "q02_enqueue": {
+    "method": "farmctl.requalify-q02",
+    "predecessor_work_item_id": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+    "predecessor_verdict": "ZERO_TRADES",
+    "failed_intermediate_work_item_id": "e49888a1-6dbe-45b7-bb4f-29461bbcfb0c",
+    "failed_intermediate_verdict": "INFRA_FAIL",
+    "failed_intermediate_reason": "worker_crashed_handling_item",
+    "successor_work_item_id": "d16ec281-927d-4dba-a83d-700cd9caa9fa",
+    "successor_status_at_verification": "pending",
+    "successor_attempt_count": 0,
+    "successor_claimed_by": null,
+    "priority_track": true,
+    "parameter_change_count": 0,
+    "exact_unsuperseded_open_rows_after_enqueue": 1,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/q02_post_binding_requalification/050dd2ea-e9d0-475f-b5ad-40c2206867ff_d16ec281-927d-4dba-a83d-700cd9caa9fa.json",
+    "receipt_sha256": "cb6bf4191622957a5f97650a05ce6e39403808b34c1312ecee26f3f5578088e5"
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  }
+}
