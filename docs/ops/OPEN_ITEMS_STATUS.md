@@ -1404,3 +1404,37 @@ router state change made, no OWNER-scope work invented.
   by 5 uncommitted files in the canonical checkout (`QM5_41240` WIP + `dxz23_execution_contracts.json`),
   unrelated to any of the 3 claude tasks, not touched. No router state change, no OWNER-scope work
   invented.
+
+## Orchestration cycle 2026-09-09T0535Z (checked, no change) — flags a concurrent-session pileup
+
+Re-verified all three: no OWNER answer recorded on `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`
+(`docs/ops/OWNER_VORLAGE_2026-09-09_q09_legacy_calendar_input.md` still has no `OWNER-Antwort`
+section, only the drafted JA/NEIN options), so `bb814520`/`dfc60103` correctly stay `IN_PROGRESS`.
+`3032534e` (Dukascopy): Codex ticket `2f717775-2bdd-4457-b5b6-e9ecae2a3e4a` (non-FX
+`price_scale`/`point_size` fix, a prerequisite for the reconciliation harness) confirmed still
+`APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` — unchanged for ~4h11m across eight
+consecutive cycle checks; not a duplicate-ticket case, this is normal queueing behind codex's
+existing backlog (`codex_zero_activity` FAIL above: 0 build activity in 3h, `repo_dirty_build_guard`
+root cause unchanged). Datafeed reprobe window (guidance: several hours, different UTC
+session/day-part, since the 02:33-02:36Z false-recovery finding) also not yet reached. Spawn-lease
+table re-checked directly (`spawn_leases` in `farm_state.sqlite`): no live lease on any of the three
+task keys, so this cycle was authorized to proceed rather than defer.
+
+**New observation, not previously logged this way:** this exact ~05:20-05:35Z window shows *two*
+independent orchestration-cycle commits 28 seconds apart (`57c32fe411` at 05:20:36Z touching only
+`OPEN_ITEMS_STATUS.md`, `45b3db76bf` at 05:21:04Z independently appending near-duplicate checks to
+the three per-decision evidence files) plus this third cycle now, all reaching the identical
+"no change" conclusion. `Get-ScheduledTaskInfo QM_StrategyFarm_ClaudeOrchestration_15min` shows
+`LastRunTime=07:30:30` / `NextRunTime=07:45:45` (local, 15-min cadence) while `tasklist` shows
+**7 concurrent `claude.exe` processes** alive right now, several with substantial accumulated CPU
+time (up to 1h12m), i.e. prior cycles are not finishing inside their 15-minute slot and the
+scheduler is stacking new launches on top instead of skipping/queuing. This is the same session-race
+class already on file ([[project_qm_claude_orchestration_duplicate_session_race_2026-08-23]] /
+recurrence 2026-08-24) — the per-task 30-minute spawn lease prevents two sessions from *acting* on
+the same task, but does not stop the 15-minute scheduler from piling up redundant *whole-cycle*
+invocations that each burn a full health-check + status pass for zero incremental value while
+claude weekly quota sits at 80% used / 20% remaining. Flagging only — not touching the scheduled
+task or killing other sessions from inside a routed task; a fix (e.g. `-MultipleInstances IgnoreNew`
+on the task, or a cycle-level lease alongside the existing per-task lease) is a GRÜN-eligible infra
+repair for a future session with a clean tree, not invented here. No router state change, no
+OWNER-scope work invented.
