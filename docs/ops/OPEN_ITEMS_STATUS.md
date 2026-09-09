@@ -1,5 +1,15 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 06:44Z — FX-Fallback 41335 Q02 PASS; CPU-Deckel stoppt Q04:**
+> Der eingefrorene 66-Paar-Cointegration-Frontier bleibt vollständig gebaut;
+> 12532/12533 sind nicht Q02-blockiert. Der bereits einmalig eingereihte
+> AUDUSD-D1-Fallback `QM5_41335` (`ff75b1c3`) schloss um 06:13:19Z mit Q02
+> `PASS`; noch keine Q04-Nachfolgezeile vorhanden. Die Fabrik steht zugleich
+> bei 9 aktiven Zeilen (5 Q04, 4 OPT_CENSUS) gegen das bindende Limit 7.
+> Deshalb kein Q04-Enqueue, kein Duplikat der weiterhin pending logischen
+> 12507-Q02-Zeile, kein Priority-/Dispatch-Eingriff. Evidenz:
+> `docs/ops/evidence/2026-09-09_fx_cointegration_qm5_41335_q02_pass_cpu_ceiling_stop.md`.
+
 > **Nachtrag 09.09., 06:39Z (Orchestrierungszyklus) — Dukascopy-Reprobe zeigt Signaturwechsel (Teilerholung), Kalender/Q09 weiter OWNER-blockiert:** `bb814520`/`dfc60103` bleiben unverändert auf `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` blockiert (Vorlage weiterhin ohne OWNER-Antwort, `G:`-Vault weiterhin nicht erreichbar, kein aktiver Spawn-Lease). `3032534e`: gebundener Reprobe (~52s aktive Laufzeit, resumed aus `20260909T032705Z`) zeigt erstmals **keine** `WinError 10060/10054`/TLS-Timeouts mehr — 2/4 neue Stunden-Dateien echt heruntergeladen (HTTP 200, Ticks dekodiert), 2/4 mit `HTTP 503` gescheitert (Applikationsebene, nicht Netzwerkebene). Liest sich als Teilerholung (TCP/TLS jetzt stabil, Server liefert gelegentlich 503 statt Timeout) — Stichprobe zu klein für Neustart des Produktivlaufs; Detail in `docs/ops/evidence/2026-09-09_dukascopy_backfill_datafeed_connectivity_degraded.md`. Kein Router-Zustandswechsel, kein Produktivlauf gestartet, kein Terminal/Factory/T_Live berührt.
 
 > **Nachtrag 09.09., 06:20Z (Orchestrierungszyklus) — Dukascopy-Degradation strukturell bestätigt; Pileup live beobachtet:** `bb814520`/`dfc60103` bleiben blockiert auf `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` (weiterhin ohne Antwort). `3032534e`: gebundener 75s-Applikationsebene-Reprobe (nicht nur TCP) zeigt denselben `WinError 10060` wie 01:27Z/02:33Z — **dritter unabhängiger Zeitfenster-Sample über ~5h**, Degradation liest sich jetzt als strukturell/dauerhaft für diese Dukascopy-Edge-IP von dieser VPS aus, nicht als Tageszeit-Stau; nächster sinnvoller Schritt ist Option 3 (Codex Retry/Backoff-Tuning, sobald die Lane frei ist) oder Option 4 (OWNER-Kenntnis, Plan-Zeitschätzung hält von dieser VPS nicht). Codex-Ticket `2f717775` weiterhin `APPROVED`/unclaimed seit 01:24:20Z (~5h). **Bestätigt live:** zwei parallel laufende Orchestrierungszyklen (06:17Z und 06:20Z) schrieben unabhängig fast identische "keine Änderung"-Einträge in dieselbe Evidenzdatei binnen 3 Minuten — konkreter Beleg für das bereits mehrfach geflaggte 15-Minuten-Scheduler-Pileup (9 parallele `claude.exe`), keine Korrektur von innerhalb dieser Aufgabe vorgenommen. Kein Router-Zustandswechsel, nichts dupliziert.

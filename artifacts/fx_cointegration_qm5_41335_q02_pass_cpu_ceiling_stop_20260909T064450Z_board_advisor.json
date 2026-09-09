@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-09-09T06:44:50Z",
+  "branch": "agents/board-advisor",
+  "mission": "advance one non-duplicate forex sleeve after reconciling the frozen 66-pair cointegration scan",
+  "decision": "STOP_CPU_CEILING",
+  "frontier": {
+    "strict_pairs": 7,
+    "all_strict_pairs_built": true,
+    "all_strict_pairs_have_ex5": true,
+    "all_strict_pairs_have_basket_manifest": true,
+    "new_pair_selected": false,
+    "reason": "No reputable-screen, non-duplicate strict pair remains unbuilt."
+  },
+  "anchors": {
+    "QM5_12532": {
+      "logical_q02": "PASS",
+      "q04": "PASS",
+      "q05": "FAIL",
+      "q02_repair_required": false
+    },
+    "QM5_12533": {
+      "logical_q02": "PASS",
+      "q04": "FAIL",
+      "q02_repair_required": false
+    }
+  },
+  "fallback_progress": {
+    "ea_id": "QM5_41335",
+    "symbol": "AUDUSD.DWX",
+    "q02_work_item_id": "ff75b1c3-4930-419d-a2fe-49bd37eadc4d",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q02_completed_at_utc": "2026-09-09T06:13:19Z",
+    "q04_successor_present": false
+  },
+  "existing_fx_queue": {
+    "ea_id": "QM5_12507",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "duplicate_enqueue_performed": false
+  },
+  "fleet": {
+    "active_work_items": 9,
+    "active_work_item_limit": 7,
+    "active_by_phase": {
+      "Q04": 5,
+      "OPT_CENSUS": 4
+    },
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T7",
+      "T8"
+    ]
+  },
+  "actions": {
+    "card_created": false,
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "backtest_enqueued": false,
+    "priority_changed": false,
+    "dispatch_run": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  }
+}
