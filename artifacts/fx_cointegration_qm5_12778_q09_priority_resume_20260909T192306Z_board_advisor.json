@@ -1,0 +1,120 @@
+{
+  "artifact_type": "fx_cointegration_existing_q09_priority_resume",
+  "schema_version": "qm.fx-cointegration-existing-q09-priority-resume/v1",
+  "generated_at_utc": "2026-09-09T19:23:06+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base_commit": "5a68e29420e9080641eb239d76c93b133ed76841",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "outcome": "QM5_12778_UNIQUE_Q09_PRIORITY_APPLIED",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "unordered_relationship_count": 66,
+    "unbuilt_scan_relationship_found": false,
+    "new_card_or_build_created": false,
+    "decision": "Advance one existing FX continuation because every governed scan relationship is already mechanized."
+  },
+  "preferred_anchor_state": [
+    {
+      "ea_id": "QM5_12532",
+      "pair": ["AUDUSD.DWX", "NZDUSD.DWX"],
+      "q02_verdict": "PASS",
+      "downstream_terminal": "Q05 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "pair": ["EURJPY.DWX", "GBPJPY.DWX"],
+      "q02_verdict": "PASS",
+      "downstream_terminal": "Q04 FAIL",
+      "current_q02_oninit_or_no_history_blocker": false
+    }
+  ],
+  "selected_existing_forex_continuation": {
+    "ea_id": "QM5_12778",
+    "pair": ["AUDUSD.DWX", "EURJPY.DWX"],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "scan_pair_rank_all_signs": 25,
+    "mechanic": "fixed-beta log-price spread z-score reversion",
+    "prior_gate_state": "Q02-Q07 PASS; Q08 FAIL_SOFT",
+    "work_item": {
+      "id": "1ba8f6c7-7725-47c5-b0e5-6a4736c4ad44",
+      "phase": "Q09",
+      "status_after": "pending",
+      "verdict_after": null,
+      "attempt_count_after": 0,
+      "claimed_by_after": null,
+      "same_identity_open_count_after": 1,
+      "active_hold_count_after": 0,
+      "priority_track_before": null,
+      "priority_track_after": true,
+      "priority_mark_count_after": 1,
+      "canonical_pending_rank_1_based_after": 49,
+      "canonical_pending_count_after": 6539
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "approved_card": "strategy-seeds/cards/approved/QM5_12778_edgelab-audusd-eurjpy-cointegration_card.md",
+    "basket_manifest": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/basket_manifest.json",
+    "logical_backtest_setfile": "framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/sets/QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+    "sha256": {
+      "approved_card": "5878c99d9cef732642f99961556dd8bd049e14b42292b61aa72a047b4558134a",
+      "mq5": "132a501d94685f013cc62a8b3c2de111d0a8b1e616a8656d2c61b061a754c146",
+      "ex5": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+      "basket_manifest": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+      "logical_backtest_setfile": "0e7949276927c8c5355c413c631e7b67f684e757892de59fa2cff5521836c8e9"
+    }
+  },
+  "validation": {
+    "card_schema_lint": "PASS",
+    "card_ml_hits": 0,
+    "framework_input_pin_audit": {
+      "command": "python tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12778_edgelab-audusd-eurjpy-cointegration/QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+      "exit_code": 0,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "verdict": "PASS"
+    },
+    "priority_mark_dry_run": {
+      "applied": false,
+      "already_priority_track": false,
+      "reason": "dry_run"
+    },
+    "priority_mark_apply": {
+      "applied": true,
+      "already_priority_track": false,
+      "marked_at_utc": "2026-09-09T19:23:06+00:00"
+    }
+  },
+  "capacity": {
+    "sampled_at_utc": "2026-09-09T19:23:05.385241+00:00",
+    "sampling_method": "psutil total CPU, five one-second samples",
+    "samples_percent": [32.7, 72.4, 75.9, 67.8, 70.5],
+    "average_percent": 63.86,
+    "maximum_percent": 75.9,
+    "hard_ceiling_percent": 97.0,
+    "ceiling_binding": false
+  },
+  "actions": {
+    "new_card_or_ea_created": false,
+    "work_item_created": false,
+    "duplicate_work_item_created": false,
+    "queue_priority_changed": true,
+    "work_item_claimed": false,
+    "compile_enqueued_or_started": false,
+    "backtest_or_terminal_started": false
+  },
+  "protected_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_files": false,
+    "autotrading": false
+  }
+}
