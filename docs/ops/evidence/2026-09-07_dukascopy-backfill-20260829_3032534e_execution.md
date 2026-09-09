@@ -253,3 +253,16 @@ not a Dukascopy-lane signal). No new datafeed reprobe this cycle (prior reprobe 
 exhausted the "different time of day" bar per the 06:20Z entry above; no new information would
 result from another immediate TCP/HTTP sample). No download restart, no duplicate ticket, no
 OWNER-scope work invented. Task stays IN_PROGRESS.
+
+## Checked 2026-09-09T12:19Z (orchestration cycle) — no change
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~10h55m
+unclaimed, direct DB read). No new datafeed reprobe this cycle — the last one was
+11:49-11:50Z, only ~30min ago, too soon to add signal per the "wait several hours"
+guidance in that entry. `farmctl health`: overall FAIL, 16 FAIL/19 WARN/49 OK, same
+chronic set as prior cycles plus a new `disk_scratch_rate_runway` FAIL (D: free
+54.4GB, ~1.96h projected runway at current tester-scratch write rate) — farm-wide,
+not Dukascopy-lane specific, hourly purge already active per the health action-hint,
+no action taken (out of scope for this ticket). Spawn lease
+`agent_task:3032534e-eaf0-5b68-b09f-2127ebb315b0` reacquired (30 min). No download
+restart, no duplicate ticket, no OWNER-scope work invented. Task stays IN_PROGRESS.

@@ -257,3 +257,20 @@ overall FAIL (14 FAIL/19 WARN/50 OK), same chronic set as prior cycles
 `q09_autoseal_hold_census`, `pending_artifact_binding_drift`, scheduled-task/backup FAILs);
 none bear on this chain. No OWNER-scope work invented, no router command run. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T12:19Z (orchestration cycle) — USDJPY leg Q02 PASS, XAUUSD/SP500/XTIUSD still pending
+
+Direct DB read of `QM5_41394` Q02 legs: `USDJPY.DWX` moved `pending`→`done`/`PASS` at
+12:17:13Z (new since the 12:03Z check). `SP500.DWX`, `XAUUSD.DWX`, `XTIUSD.DWX` remain
+`pending` since 10:52:59Z — no successor phase yet for USDJPY either (Q03/Q04 not
+enqueued). This task's gating symbol (11196/XAUUSD lineage) is still unadjudicated, so
+the acceptance criterion stays unmet. `farmctl health`: overall FAIL, 16 FAIL/19 WARN/49
+OK — same chronic set as before (`agent_task_state_stranded`, `phase_invalid_rate_7d`,
+`q09_sealed_plan_hold_age`, `q09_autoseal_hold_census`, `pending_artifact_binding_drift`,
+`q02_stranded_exhausted_pairs`, scheduled-task/backup FAILs), plus a new
+`disk_scratch_rate_runway` FAIL (D: free 54.4GB, projected runway 1.96h at current
+tester-scratch write rate) — a farm-wide infra signal, not specific to this chain;
+noted for OWNER/router awareness, no action taken (out of scope for this ops_issue
+ticket, hourly purge already active per the health action-hint). Spawn lease
+`agent_task:bb814520-3364-5355-97b6-27f662f3ed8b` reacquired (30 min). No ticket,
+release, repin, or verdict change made here. Task remains `IN_PROGRESS`.

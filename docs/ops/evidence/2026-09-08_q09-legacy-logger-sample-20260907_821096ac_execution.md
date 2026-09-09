@@ -362,3 +362,15 @@ Q02 legs for `QM5_41394` still unchanged since 10:52:59Z (SP500/USDJPY/XAUUSD/XT
 overall FAIL (14 FAIL/19 WARN/50 OK), same chronic set as prior cycles; none bear on
 this chain. No OWNER-scope work invented, no router command run. Task remains
 `IN_PROGRESS`.
+
+## Checked 2026-09-09T12:19Z (orchestration cycle) — USDJPY leg Q02 PASS; this task's own symbol (11167/XAUUSD lineage) still pending
+
+Same gate as `bb814520`: `QM5_41394` `USDJPY.DWX` Q02 moved `pending`→`done`/`PASS` at
+12:17:13Z, but that is not this task's own symbol — `XAUUSD.DWX` (11167 lineage) is
+still `pending` since 10:52:59Z, no Q03/Q04 spawned for any leg yet. This task's
+acceptance ("11167 rerun ends PASS/FAIL") stays unmet. `farmctl health`: overall FAIL,
+16 FAIL/19 WARN/49 OK, same chronic set plus a new `disk_scratch_rate_runway` FAIL
+(D: free 54.4GB, ~1.96h projected runway) — farm-wide, out of scope for this ticket,
+hourly purge already active. Spawn lease `agent_task:dfc60103-16e2-5863-80d2-a680a6da2f26`
+reacquired (30 min). No ticket, rebuild, release, or verdict change made here. Task
+remains `IN_PROGRESS`.
