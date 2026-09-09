@@ -1,5 +1,20 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., 15:19Z — Pattern-Folgeanalyse (read-only):** Balke `QM5_41398`
+> hat unabhängige Review PASS und echte Q02 PASS (`2fc84747`, 888 Trades, PF 1,12,
+> tatsächliches Fenster 2018-07-02 bis 2022-12-31). Neue Matrix: 1/1.085 Jahreszellen
+> gemessen, neutrale 2019-Basis; alle 193 Round-Trips identisch zum alten 41097.
+> Die 16 betrachteten Paare haben nun alle Matrix-/Selektionsreceipts: sechs nichtleere
+> letzte Filterauswahlen scheitern an WF-Performance und/oder Auswahlstabilität,
+> zehn bleiben leer. 2.072 historische B2/B5-Skips sind von 5.366 Activity-Floor-Skips
+> getrennt (11/11 Floor-Trigger-Stichproben nativ bestätigt). 28/28 Basis-Set-Hashes
+> und 42/42 extrahierte Elternkartenwerte stimmen. Keine pauschale Invalidierung.
+> Neue Generator-Gegenbeispiele (Core-Doppelzuweisung, symbolische News-Enums) und
+> begrenzte Übertragbarkeit der geerbten News-/Exit-Mechanik dokumentiert, Umsetzung
+> explizit geparkt: aktueller Auftrag ist Analyse. 14 Tests PASS, keine Factory-Mutation.
+> Evidenz: `docs/ops/evidence/2026-09-09_pattern_lineage_followup_analysis.md` + JSON.
+> Balke-Folge bleibt beim bestehenden Task `e1358f42` (Router REVIEW), kein Duplikat.
+
 > **Nachtrag 09.09., ~15:03Z (Orchestrierungszyklus) — keine Zustandsänderung:** Direkte
 > `farm_state.sqlite`-Prüfung ~13 Minuten nach dem 14:50Z-Check auf allen drei `IN_PROGRESS`-
 > Claude-Aufgaben (`bb814520` CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE,

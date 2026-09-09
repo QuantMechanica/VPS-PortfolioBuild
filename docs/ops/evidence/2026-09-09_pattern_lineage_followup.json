@@ -1,0 +1,3922 @@
+{
+  "schema": "qm.pattern-lineage-analysis/v1",
+  "created_at_utc": "2026-09-09T15:19:43.657155+00:00",
+  "database_read_only": true,
+  "factory_mutations": 0,
+  "current_card_evidence": "D:\\QM\\reports\\pattern_permission_repair\\current_card_defaults_20260909.json",
+  "current_card_evidence_sha256": "55b7306be222b0212f1f03fbd8bb470d3cb5f3ff0a58a381018fcf39acf06899",
+  "cohort_definition": "Frozen 16 pairs from 2026-09-09 04:29Z audit, not a refreshed qualification verdict",
+  "programs": [
+    {
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_10145",
+      "measurement_ea_id": "QM5_41301",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "pending",
+      "historical_verdict": null,
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "4bf4c6afe6d9ecce56a0394ada7cee5428929b03b3816f5229d5ce01afeb09d7",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 475,
+        "PRESCREEN_HELD_UNMEASURED": 215,
+        "pending": 395
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 10,
+        "PRESCREEN_HELD_UNMEASURED": 10,
+        "pending": 8
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 112,
+        "2022": 53
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41301_tsm-meanret-opt_XAUUSD.DWX_D1_8772738aed31bda1.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 4,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41301_tsm-meanret-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 25,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": null,
+      "selection_receipt_sha256": null,
+      "selection_receipt_schema": null,
+      "selection_completed_at": null,
+      "selection_stability": {},
+      "selected_before_stability_gate": null,
+      "selection_failure_class": "NO_TERMINAL_SELECTION_RECEIPT",
+      "driver_status": null,
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_10403",
+      "measurement_ea_id": "QM5_41322",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "pending",
+      "historical_verdict": null,
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "387b08e579fe706da9271aeb7d3f3f550541ce5857a873b23ef36ffff3659ffd",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 146,
+        "pending": 939
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 4,
+        "pending": 24
+      },
+      "measured_per_year": {
+        "2019": 146
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41322_et-turtle20x-opt_XAUUSD.DWX_D1_2abd42159016f81f.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 1,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41322_et-turtle20x-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 30,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": null,
+      "selection_receipt_sha256": null,
+      "selection_receipt_schema": null,
+      "selection_completed_at": null,
+      "selection_stability": {},
+      "selected_before_stability_gate": null,
+      "selection_failure_class": "NO_TERMINAL_SELECTION_RECEIPT",
+      "driver_status": null,
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_10513",
+      "measurement_ea_id": "QM5_41302",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "pending",
+      "historical_verdict": null,
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "b473b5fac3b8127e0c4a5c20f04ebdfbbd557d81158c9576aa8704680afc6fd7",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 361,
+        "SKIPPED_EXCLUDED": 306,
+        "PRESCREEN_HELD_UNMEASURED": 50,
+        "pending": 368
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 10,
+        "SKIPPED_EXCLUDED": 10,
+        "pending": 8
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 135,
+        "2021": 71
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41302_mql5-ichimoku-opt_XAUUSD.DWX_D1_b7c8c60f0661964e.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 3,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41302_mql5-ichimoku-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 31,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": {
+        "cell_id": "26b7779b-89de-5641-a434-79940b32b337",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\pruning_receipts\\26b7779b-89de-5641-a434-79940b32b337.json",
+        "receipt_sha256": "8d76216ab9eb57a678f6c92e8be5d0ceba37c8919bc908ca41dab129eaee2dc4",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "5e87f08c-28f2-57a5-ad82-cacdf712f005",
+        "trigger_days_declared": 8,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\5e87f08c-28f2-57a5-ad82-cacdf712f005\\QM5_41302\\20260902_225515\\summary.json",
+          "summary_sha256": "e7c305caf8ca3795e0f6d839156e0ebc5f1693d52acc8df01badef8bd1dd3af3",
+          "report_sha256": "1f285f9f7c189d7586bc1bb0d74ac60c38f76995e0977f7eea024655d71da6fe",
+          "entry_days": 8,
+          "trades": 8,
+          "sides": {
+            "sell": 6,
+            "buy": 2
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": null,
+      "selection_receipt_sha256": null,
+      "selection_receipt_schema": null,
+      "selection_completed_at": null,
+      "selection_stability": {},
+      "selected_before_stability_gate": null,
+      "selection_failure_class": "NO_TERMINAL_SELECTION_RECEIPT",
+      "driver_status": null,
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_10700",
+      "measurement_ea_id": "QM5_41333",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "6b34891505a10b43ef87259938c862ae2094508bc73c8ddcea17e42bc2d56ade",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 1084,
+        "INFRA_FAIL": 1
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 28
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 155,
+        "2022": 155,
+        "2023": 155,
+        "2024": 154,
+        "2025": 155
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41333_tv-liq-break-opt_XAUUSD.DWX_H1_924fef277d6a3b92.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41333_tv-liq-break-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 31,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_risk_cap_pct",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10700_tv-liq-break.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\6a6c3349-511d-5794-9d0f-854e2c6e4280\\QM5_41333\\20260904_082714\\summary.json",
+        "summary_sha256": "ee36ad396014996da0c3434aa31e62c0b6836c77552273a08aff5eef0a26c9c8",
+        "report_sha256": "2fd0cf7b9c31cf59587b48a1e975b5e8311febe4df89fbf699100aad60c2d7d4",
+        "entry_days": 40,
+        "trades": 45,
+        "sides": {
+          "buy": 25,
+          "sell": 20
+        }
+      },
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "17cd45c58cfb47c34a753545f48f47532fbb23850ce3d215b764e9def04ea8fe",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-07T07:05:29.283805+00:00",
+      "selection_stability": {
+        "final_selection": [
+          [
+            "BUY",
+            18
+          ],
+          [
+            "BUY",
+            77
+          ],
+          [
+            "SELL",
+            42
+          ],
+          [
+            "SELL",
+            57
+          ],
+          [
+            "SELL",
+            59
+          ]
+        ],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": false,
+          "3": true
+        },
+        "not_worse_count": 1,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.9695202144744995,
+            "combo": 0.44716781814565687,
+            "not_worse": false
+          },
+          "2023": {
+            "baseline": 0.6198284648570493,
+            "combo": 0.3891878906592874,
+            "not_worse": false
+          },
+          "2024": {
+            "baseline": 3.4620804239925973,
+            "combo": 3.4943228083902342,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 4.2867248049909,
+            "combo": 4.143183536694827,
+            "not_worse": false
+          }
+        },
+        "stable": false,
+        "subset_count": 2,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [
+        [
+          "BUY",
+          18
+        ],
+        [
+          "BUY",
+          77
+        ],
+        [
+          "SELL",
+          42
+        ],
+        [
+          "SELL",
+          57
+        ],
+        [
+          "SELL",
+          59
+        ]
+      ],
+      "selection_failure_class": "PERFORMANCE_UNSTABLE",
+      "driver_status": "WF_UNSTABLE",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_10706",
+      "measurement_ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "8a0763c72fe92dbe931d54ba91a9890adf7615d0758c0b6c3de0e179c86b4346",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 435,
+        "PRESCREEN_HELD_UNMEASURED": 650
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 10,
+        "PRESCREEN_HELD_UNMEASURED": 18
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 61,
+        "2022": 16,
+        "2023": 16,
+        "2024": 16,
+        "2025": 16
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\base_setfiles\\QM5_41161_tv-mon-ls-opt_GBPUSD.DWX_H1_f53bbda887c3be71.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": null,
+      "current_card_input_count": 0,
+      "current_source_input_count": 33,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10706_tv-mon-ls.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\066dd96a-0c3e-5626-a66f-8ad8799350a6\\QM5_41161\\20260826_120706\\summary.json",
+        "summary_sha256": "45335c1e29e25b5bc14e99c7c767155a0eebe7dbdaec6bfab0fded9de361570e",
+        "report_sha256": "96037368e95f035661f5795881be659bfcfda02abe45bf4de262da2cecaef00f",
+        "entry_days": 37,
+        "trades": 37,
+        "sides": {
+          "sell": 16,
+          "buy": 21
+        }
+      },
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "4286eb7f814f3a5b2568f50fd5a17edd2920c5e726048dd95419054a5223a688",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T10:26:22.065093+00:00",
+      "selection_stability": {
+        "final_selection": [
+          [
+            "BUY",
+            52
+          ]
+        ],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 2,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.5589415653407478,
+            "combo": 1.0432180654580538,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.6690280434277142,
+            "combo": -0.04216568221478465,
+            "not_worse": false
+          },
+          "2024": {
+            "baseline": 0.29250183132109414,
+            "combo": 1.079012470405883,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 2.771213699581483,
+            "combo": 2.31578005540065,
+            "not_worse": false
+          }
+        },
+        "stable": false,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [
+        [
+          "BUY",
+          52
+        ]
+      ],
+      "selection_failure_class": "PERFORMANCE_UNSTABLE",
+      "driver_status": "WF_UNSTABLE",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_11294",
+      "measurement_ea_id": "QM5_41347",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11294_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "e6d8c0af9d45b23e22d0163e2097aaaefb33158b387d350433a52d53fec2c0ac",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 80,
+        "SKIPPED_PRESCREEN": 1005
+      },
+      "pattern_33_34_dispositions": {
+        "SKIPPED_PRESCREEN": 28
+      },
+      "measured_per_year": {
+        "2019": 41,
+        "2020": 34,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11294_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41347_cs-ichi-cloud-opt_XAUUSD.DWX_H4_ca8f355d8391fe59.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41347_cs-ichi-cloud-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 25,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11294_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "40fb24a061a37056af685304d712afa0a5403f2c08591138904a6801a4815639",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T05:24:25.169912+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": -0.03225732978015014,
+            "combo": -0.03225732978015014,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.1428010563667288,
+            "combo": 0.1428010563667288,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": -0.42760393512211214,
+            "combo": -0.42760393512211214,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 1.3544301920524822,
+            "combo": 1.3544301920524822,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": null
+    },
+    {
+      "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_11421",
+      "measurement_ea_id": "QM5_41162",
+      "symbol": "EURUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "5fa723685708100857f2d68de0b28fffd21511881c51cb76d446e8f691012372",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 161,
+        "SKIPPED_EXCLUDED": 924
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 4,
+        "SKIPPED_EXCLUDED": 24
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 1,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\base_setfiles\\QM5_41162_ohlc-daily-squeeze-reversal-d1-opt_EURUSD.DWX_D1_d85269e1f87b2046.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": null,
+      "current_card_input_count": 0,
+      "current_source_input_count": 28,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11421_ohlc-daily-squeeze-reversal-d1.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\bd95aa01-62eb-5bb9-83e6-f68535c3f6e0\\QM5_41162\\20260829_111428\\summary.json",
+        "summary_sha256": "842d6718e7b19fcb9e2ac239f5a17dbbe78100918f93e729001742646b674ca1",
+        "report_sha256": "5c23f23c982e062b76fc2b8a33d923c4ae65ab61593ced5e784f82664584f7df",
+        "entry_days": 3,
+        "trades": 3,
+        "sides": {
+          "sell": 2,
+          "buy": 1
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "885ab255-4a48-5496-987e-eb1168fc8d4d",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\pruning_receipts\\885ab255-4a48-5496-987e-eb1168fc8d4d.json",
+        "receipt_sha256": "38c85afad4cb3516348bef08a768ec42ec59cf324e8bdfea01b71dc037be09fe",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "89d61a25-4978-58d2-97e2-8baaf313ce0b",
+        "trigger_days_declared": 3,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\89d61a25-4978-58d2-97e2-8baaf313ce0b\\QM5_41162\\20260829_113106\\summary.json",
+          "summary_sha256": "b21bbad4cad5b3d803346ace752e40c24f2226b6131085da9726ab73bfd0ac28",
+          "report_sha256": "98c837f6b8d97f1b1b12b1daff9fec6746bcbcc0d341e35b54055429b112ca49",
+          "entry_days": 3,
+          "trades": 3,
+          "sides": {
+            "sell": 2,
+            "buy": 1
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-02T07:30:04.136169+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": -0.3664745788844775,
+            "combo": -0.3664745788844775,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.8091964421908614,
+            "combo": 0.8091964421908614,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": -0.20168428325279836,
+            "combo": -0.20168428325279836,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 0.7325372223382213,
+            "combo": 0.7325372223382213,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "READY_FOR_Q15",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "subject_ea_id": "QM5_11422",
+      "measurement_ea_id": "QM5_41163",
+      "symbol": "USDCAD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "210f77e644e7e7826e65b5f4570a15f20608204c1837628eda5d85df0aaa4e36",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 595,
+        "PRESCREEN_HELD_UNMEASURED": 490
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 18,
+        "PRESCREEN_HELD_UNMEASURED": 10
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 57,
+        "2022": 57,
+        "2023": 57,
+        "2024": 57,
+        "2025": 57
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\base_setfiles\\QM5_41163_williams-18ma-outside-bar-entry-d1-opt_USDCAD.DWX_D1_41192b07408d57f8.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": null,
+      "current_card_input_count": 0,
+      "current_source_input_count": 27,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11422_williams-18ma-outside-bar-entry-d1.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\47063720-770d-5238-b2dc-8ca0efe5511e\\QM5_41163\\20260830_034240\\summary.json",
+        "summary_sha256": "9b747723f6438ffdafb391467415e9482b463cbb081321e705542348a72cc08a",
+        "report_sha256": "42e2858f7d22b751ebefb7406091a0a285ae501858afdc40306b39ac02b78d7e",
+        "entry_days": 19,
+        "trades": 19,
+        "sides": {
+          "sell": 9,
+          "buy": 10
+        }
+      },
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "744e6fec163465b8ba5fb76acf4ba0d3c92ed4988c4cb28a4e3da35c3f312601",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T05:06:43.496040+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 3,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.5095698103333772,
+            "combo": 0.33575910521366,
+            "not_worse": false
+          },
+          "2023": {
+            "baseline": 0.6200586104666426,
+            "combo": 0.6200586104666426,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 1.0564204586753387,
+            "combo": 1.0564204586753387,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 1.504194428142369,
+            "combo": 1.504194428142369,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_11708",
+      "measurement_ea_id": "QM5_41342",
+      "symbol": "EURUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "8bcdfcc3e12f52b5ed7be11dc4c2a5ea01ea94d13861e4d4c239a4ff425be5c9",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 1065,
+        "SKIPPED_EXCLUDED": 20
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 28
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 152,
+        "2021": 152,
+        "2022": 152,
+        "2023": 152,
+        "2024": 151,
+        "2025": 151
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\base_setfiles\\QM5_41342_anon-market-squeeze-d1-opt_EURUSD.DWX_D1_2609d1f438c829eb.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41342_anon-market-squeeze-d1-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 25,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11708_anon-market-squeeze-d1.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\4946a960-ca04-53a0-bcd6-732f2fe171e9\\QM5_41342\\20260905_073651\\summary.json",
+        "summary_sha256": "68ee296a8403bdcdbe782679b2e11b0d937e874e90c76b023b39a200b5e7ecb4",
+        "report_sha256": "08b39b0bb63b91658deb65fe03e4eae34acb0663ecdad2d58e6352be48fee285",
+        "entry_days": 21,
+        "trades": 21,
+        "sides": {
+          "sell": 21
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "1a36827c-1b3f-5127-8ff1-ba3c24f13476",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\pruning_receipts\\1a36827c-1b3f-5127-8ff1-ba3c24f13476.json",
+        "receipt_sha256": "049a8ef710e5e4732cb947268342e94a47eb9338634027e95ea06e5740e26a71",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "f481f8da-7e12-5073-aa68-3ab9a4ea849b",
+        "trigger_days_declared": 9,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\f481f8da-7e12-5073-aa68-3ab9a4ea849b\\QM5_41342\\20260905_145011\\summary.json",
+          "summary_sha256": "fcda4c03b2a0eeb4ace0f644597b03d329116affd538807ff6a644eb1f863dc2",
+          "report_sha256": "c4e61c6259f6725cb1e1f9cfbece02170afaf7d723d61de11ed9ac29b62141ad",
+          "entry_days": 9,
+          "trades": 9,
+          "sides": {
+            "sell": 9
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "11e182b0911b56d2d731d4879c2e8fcd7c0b0166dfa7f871f49350a6c24f4e55",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-07T11:20:46.812209+00:00",
+      "selection_stability": {
+        "final_selection": [
+          [
+            "SELL",
+            11
+          ],
+          [
+            "SELL",
+            53
+          ],
+          [
+            "SELL",
+            79
+          ]
+        ],
+        "final_subset_of_earlier": {
+          "1": false,
+          "2": false,
+          "3": false
+        },
+        "not_worse_count": 3,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 1.2046087436690633,
+            "combo": 1.7315029144607674,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.28838453472915965,
+            "combo": -0.5470077802199993,
+            "not_worse": false
+          },
+          "2024": {
+            "baseline": 1.4562171249317586,
+            "combo": 1.4562171249317586,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": -0.24453634015387,
+            "combo": 1.3149426381682299,
+            "not_worse": true
+          }
+        },
+        "stable": false,
+        "subset_count": 0,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [
+        [
+          "SELL",
+          11
+        ],
+        [
+          "SELL",
+          53
+        ],
+        [
+          "SELL",
+          79
+        ]
+      ],
+      "selection_failure_class": "SELECTION_UNSTABLE",
+      "driver_status": "WF_UNSTABLE",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_11881",
+      "measurement_ea_id": "QM5_41197",
+      "symbol": "GBPUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "faa903d7a35ed0bfb778ad0392ebdb21745200508912f1b886dcac2db2109dec",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 403,
+        "SKIPPED_EXCLUDED": 27,
+        "PRESCREEN_HELD_UNMEASURED": 655
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 8,
+        "PRESCREEN_HELD_UNMEASURED": 20
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 152,
+        "2021": 21,
+        "2022": 21,
+        "2023": 18,
+        "2024": 18,
+        "2025": 18
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\base_setfiles\\QM5_41197_connors-rsi2-mean-reversion-opt_GBPUSD.DWX_D1_ef81b92496ae02d3.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41197_connors-rsi2-mean-reversion-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 29,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11881_connors-rsi2-mean-reversion.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\14826bd4-f6a2-5739-9d68-b21425e7dd62\\QM5_41197\\20260831_222102\\summary.json",
+        "summary_sha256": "fc3ece42f58fef6290a6acf011b9997de2d3e97e41fcd9b6fe38dc4a5f9cf799",
+        "report_sha256": "3cd85843d71aba7822a3c52a57c3ecc7836e346ed67bdcccea27442bae558ca1",
+        "entry_days": 16,
+        "trades": 16,
+        "sides": {
+          "sell": 9,
+          "buy": 7
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "dc19016c-e45e-569b-94bf-b4ad0bd7674f",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\pruning_receipts\\dc19016c-e45e-569b-94bf-b4ad0bd7674f.json",
+        "receipt_sha256": "92eaf3f9c17c644f1db80233d82986cc312df9e71dfad8beb6b2e14f64bbab0c",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "47c51ba5-93fb-54c7-bfa5-c9d19f04c6b0",
+        "trigger_days_declared": 9,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\47c51ba5-93fb-54c7-bfa5-c9d19f04c6b0\\QM5_41197\\20260901_072224\\summary.json",
+          "summary_sha256": "a0863aac094b0aee6a68a829af1a54263d9f49904f6383768f4bc8c47417c5d6",
+          "report_sha256": "36d18f45a1ac537e17e27cfd5db40a8168db33aa94605372e3ed3fc77333c85b",
+          "entry_days": 9,
+          "trades": 9,
+          "sides": {
+            "sell": 9
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "39033dd460433face1a4d6440878a1f864b85130660c2253c14c1449ca4435ee",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-06T09:24:53.584608+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.346545802995013,
+            "combo": 0.4254109565034524,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.5676204928504879,
+            "combo": 0.5676204928504879,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 2.3732896961217844,
+            "combo": 2.3732896961217844,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": -0.5195195542351132,
+            "combo": -0.5195195542351132,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_11910",
+      "measurement_ea_id": "QM5_41332",
+      "symbol": "NZDUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "8e9f37aa9707b009f99f7d6b775af169c92d0bf55ba6df1c3784cd05c29ffd2f",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 161,
+        "SKIPPED_EXCLUDED": 924
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 4,
+        "SKIPPED_EXCLUDED": 24
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 1,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\base_setfiles\\QM5_41332_larry-williams-18ma-2outside-bars-d1-opt_NZDUSD.DWX_D1_c4c609a62187f622.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41332_larry-williams-18ma-2outside-bars-d1-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 26,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11910_larry-williams-18ma-2outside-bars-d1.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\792f1291-9f91-566b-b473-bb078a309a23\\QM5_41332\\20260903_145746\\summary.json",
+        "summary_sha256": "72db2e3b5fdd7c2d32a203f7b51fc6734cbae360a696ffe0978f00587fee63cd",
+        "report_sha256": "f4a384517b7e9e25fe2ecc0b34154e2824fdcd16ee338e7c487b21de7efbe08e",
+        "entry_days": 8,
+        "trades": 8,
+        "sides": {
+          "buy": 4,
+          "sell": 4
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "bb27b8a2-f633-5a73-9892-aa41c54fa44e",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\pruning_receipts\\bb27b8a2-f633-5a73-9892-aa41c54fa44e.json",
+        "receipt_sha256": "f2f3789271630f2f8227e431f8161abfa2620c71a036d2e7fea1fe82c5707a61",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "245b921f-0248-5c24-b510-015e8c997e10",
+        "trigger_days_declared": 8,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\245b921f-0248-5c24-b510-015e8c997e10\\QM5_41332\\20260903_150745\\summary.json",
+          "summary_sha256": "b36d2be8e1f6bb4a3b91d62ee2c578cbce0f685bb36b0894ffe71a364fe7dfa4",
+          "report_sha256": "6741a01057d55bf35cb19d780da31989b4a6ba979824310889eecae12fe3fd30",
+          "entry_days": 8,
+          "trades": 8,
+          "sides": {
+            "buy": 4,
+            "sell": 4
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "cc2b0d7b9c0a4926b1203811590cf9f99405cd4bdde54bee234ac001727f58e6",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-04T15:18:52.491752+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.571357109227872,
+            "combo": 0.571357109227872,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 1.4769149428325954,
+            "combo": 1.4769149428325954,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.028632855991093026,
+            "combo": 0.028632855991093026,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 0.12994665435613345,
+            "combo": 0.12994665435613345,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_12710",
+      "measurement_ea_id": "QM5_41331",
+      "symbol": "XTIUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "d3d157ae40b48573157c5530a050a42bf5ca0ed3a643a31dcb75d528c509ab89",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 693,
+        "SKIPPED_EXCLUDED": 309,
+        "PRESCREEN_HELD_UNMEASURED": 83
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 24,
+        "PRESCREEN_HELD_UNMEASURED": 4
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 145,
+        "2021": 113,
+        "2022": 107,
+        "2023": 86,
+        "2024": 85,
+        "2025": 2
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\base_setfiles\\QM5_41331_commodity-tsmom-12m-atr-opt_XTIUSD.DWX_D1_f64de0ea66d4e406.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41331_commodity-tsmom-12m-atr-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 28,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "C:\\QM\\repo\\strategy-seeds\\cards\\commodity-tsmom-12m-atr_card.md",
+      "parent_card_comparison": [
+        {
+          "input": "strategy_max_spread_points",
+          "card_value": "1000",
+          "set_values": [
+            "1000"
+          ],
+          "current_source_value": "1000",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_min_atr_pct",
+          "card_value": "0.75",
+          "set_values": [
+            "0.75"
+          ],
+          "current_source_value": "0.75",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_atr_pct",
+          "card_value": "7.5",
+          "set_values": [
+            "7.50"
+          ],
+          "current_source_value": "7.50",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_sl_mult",
+          "card_value": "3.5",
+          "set_values": [
+            "3.5"
+          ],
+          "current_source_value": "3.5",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_hold_days",
+          "card_value": "31",
+          "set_values": [
+            "31"
+          ],
+          "current_source_value": "31",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_min_abs_return_pct",
+          "card_value": "1.0",
+          "set_values": [
+            "1.0"
+          ],
+          "current_source_value": "1.0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_period",
+          "card_value": "20",
+          "set_values": [
+            "20"
+          ],
+          "current_source_value": "20",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_momentum_lookback_d1",
+          "card_value": "252",
+          "set_values": [
+            "252"
+          ],
+          "current_source_value": "252",
+          "classification": "EXPLICIT_MATCH"
+        }
+      ],
+      "parent_card_comparison_counts": {
+        "EXPLICIT_MATCH": 8
+      },
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\63f07520-7fa8-543a-8326-037178041ffe\\QM5_41331\\20260903_130132\\summary.json",
+        "summary_sha256": "7ece14b18fb0f3c62132a6df826cf0ce7600003806dd423d8c5ca18ac5044418",
+        "report_sha256": "2684bcdd3a9e8b6aba226794300e2ea841f9d28dd4563a67447b8c59fd427caa",
+        "entry_days": 12,
+        "trades": 12,
+        "sides": {
+          "sell": 11,
+          "buy": 1
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "81313fa6-2954-5e82-a95c-42beaf27c34c",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\pruning_receipts\\81313fa6-2954-5e82-a95c-42beaf27c34c.json",
+        "receipt_sha256": "65c756832c2d452b1702e5f4435029609b6e595f0cc8358dbeac10fe92630f78",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "861bdac3-cfe0-5ecb-a90f-6005493b2305",
+        "trigger_days_declared": 6,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\861bdac3-cfe0-5ecb-a90f-6005493b2305\\QM5_41331\\20260903_223251\\summary.json",
+          "summary_sha256": "18b0ba292ccf8e2532169c65824a9059cd7f0069d90d0f2870bfa8c2e6b3d6ee",
+          "report_sha256": "09868263eb2ef2aec2a4eeeab6e05bbf40b0a8ca98c31c66b8adf44dde69ef86",
+          "entry_days": 6,
+          "trades": 6,
+          "sides": {
+            "sell": 5,
+            "buy": 1
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "0262435e2fc8e023f2ae605ed06166a54241b0129725f64c1f1389fc83e99587",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-05T12:20:01.088507+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 1.143977359825482,
+            "combo": 1.143977359825482,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.4891373249582205,
+            "combo": 0.4891373249582205,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.14676183844011143,
+            "combo": 0.14676183844011143,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 2.751976162685873,
+            "combo": 2.751976162685873,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_12849",
+      "measurement_ea_id": "QM5_41307",
+      "symbol": "XTIUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "a1ce00c628808f38ec3c32b916cd309be8289ebe28e87ac2c2736b92d993da00",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 917,
+        "SKIPPED_EXCLUDED": 168
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 28
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 145,
+        "2021": 138,
+        "2022": 127,
+        "2023": 119,
+        "2024": 117,
+        "2025": 116
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\base_setfiles\\QM5_41307_brent-tsmom12m-opt_XTIUSD.DWX_D1_0ad9d831bce45551.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41307_brent-tsmom12m-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 26,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "C:\\QM\\repo\\strategy-seeds\\cards\\brent-tsmom12m_card.md",
+      "parent_card_comparison": [
+        {
+          "input": "strategy_min_abs_return_pct",
+          "card_value": "1.0",
+          "set_values": [
+            "1.0"
+          ],
+          "current_source_value": "1.0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_spread_points",
+          "card_value": "1200",
+          "set_values": [
+            "1200"
+          ],
+          "current_source_value": "1200",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_momentum_lookback_d1",
+          "card_value": "252",
+          "set_values": [
+            "252"
+          ],
+          "current_source_value": "252",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_sl_mult",
+          "card_value": "3.5",
+          "set_values": [
+            "3.5"
+          ],
+          "current_source_value": "3.5",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_period",
+          "card_value": "20",
+          "set_values": [
+            "20"
+          ],
+          "current_source_value": "20",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_hold_days",
+          "card_value": "31",
+          "set_values": [
+            "31"
+          ],
+          "current_source_value": "31",
+          "classification": "EXPLICIT_MATCH"
+        }
+      ],
+      "parent_card_comparison_counts": {
+        "EXPLICIT_MATCH": 6
+      },
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\2b47e185-42d4-53cf-b6da-c275de8912b3\\QM5_41307\\20260905_062517\\summary.json",
+        "summary_sha256": "65e0d3f3e14a2bcd19eb8481a821a39d8d8c7cbee1aaa2aa116047c2b0871509",
+        "report_sha256": "67c9d7ccfb1c3b7a5eba042b4d988c18b5df5ddecfb39eff7353481ca5b59a9d",
+        "entry_days": 12,
+        "trades": 12,
+        "sides": {
+          "sell": 11,
+          "buy": 1
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "ac39455c-adf6-5aa4-9fb5-5bf2205608c2",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\pruning_receipts\\ac39455c-adf6-5aa4-9fb5-5bf2205608c2.json",
+        "receipt_sha256": "bafa6f078397ef660035df5b9877dcd2e588f04f21a528c8bbdd5f75a031b9de",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "0fc0b4fd-8243-509c-aa40-998f99de4012",
+        "trigger_days_declared": 6,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\0fc0b4fd-8243-509c-aa40-998f99de4012\\QM5_41307\\20260905_154645\\summary.json",
+          "summary_sha256": "edb35e5f4084fe33ca23b342bd097e9e47cfec79aa60b807351ba6d47874442d",
+          "report_sha256": "ef39adc6fb873d749b47d12ca6b86985b47777d9b7cd76676363271fab59107b",
+          "entry_days": 6,
+          "trades": 6,
+          "sides": {
+            "sell": 5,
+            "buy": 1
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "c04cd5468b8796d7e3f38549cf112fb9ed1404b31938456b26bb88314c55a420",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-07T08:26:05.181528+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 1.1020576616944757,
+            "combo": 1.1020576616944757,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.4891373249582205,
+            "combo": 0.4891373249582205,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.14676183844011143,
+            "combo": 0.14676183844011143,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 2.751976162685873,
+            "combo": 2.751976162685873,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_12855",
+      "measurement_ea_id": "QM5_41305",
+      "symbol": "XTIUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "33333afbbc6cf256590e8d718ee0fba503196f4f8c9d36dc21b9a711d55f2118",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 1055,
+        "SKIPPED_EXCLUDED": 29,
+        "INFRA_FAIL": 1
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 28
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 152,
+        "2021": 151,
+        "2022": 150,
+        "2023": 150,
+        "2024": 148,
+        "2025": 149
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\base_setfiles\\QM5_41305_brent-nov-fade-opt_XTIUSD.DWX_D1_7a9417b93f294f96.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41305_brent-nov-fade-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 25,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "C:\\QM\\repo\\strategy-seeds\\cards\\brent-nov-fade_card.md",
+      "parent_card_comparison": [
+        {
+          "input": "strategy_atr_period",
+          "card_value": "20",
+          "set_values": [
+            "20"
+          ],
+          "current_source_value": "20",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_spread_points",
+          "card_value": "1200",
+          "set_values": [
+            "1200"
+          ],
+          "current_source_value": "1200",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_hold_days",
+          "card_value": "1",
+          "set_values": [
+            "1"
+          ],
+          "current_source_value": "1",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_entry_month",
+          "card_value": "11",
+          "set_values": [
+            "11"
+          ],
+          "current_source_value": "11",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_sl_mult",
+          "card_value": "2.25",
+          "set_values": [
+            "2.25"
+          ],
+          "current_source_value": "2.25",
+          "classification": "EXPLICIT_MATCH"
+        }
+      ],
+      "parent_card_comparison_counts": {
+        "EXPLICIT_MATCH": 5
+      },
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\e7ebd427-0fb5-5a48-a4cb-8cf7c5cdbbe1\\QM5_41305\\20260905_105503\\summary.json",
+        "summary_sha256": "ab8ede9309066b9f3a3bae706bdb2e0bf1a92fe1f60813a9d1eae063b6118598",
+        "report_sha256": "c0ca1a8dc24be165ae70fed19806d5f58f3a247d306698089e36c5bce4966572",
+        "entry_days": 21,
+        "trades": 21,
+        "sides": {
+          "sell": 21
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "86cec32e-cc57-5ba2-b4ce-d4b4c91cae8c",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\pruning_receipts\\86cec32e-cc57-5ba2-b4ce-d4b4c91cae8c.json",
+        "receipt_sha256": "a82a9bbbc5b126afc953fc6b178d4b369c8957f546fb823d778ac76b15b10ef4",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "aa2240f3-8a63-5d81-915a-9fbd89cfb50b",
+        "trigger_days_declared": 6,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\aa2240f3-8a63-5d81-915a-9fbd89cfb50b\\QM5_41305\\20260905_174800\\summary.json",
+          "summary_sha256": "0edc95154a4627e1462fffa3a0e6e2cdd984d39b72e747cc6dd99ad3321c338f",
+          "report_sha256": "445b83b4fa43a94f582b4f2a61f276bb45279b26f6dc884f2a79de211e72894f",
+          "entry_days": 6,
+          "trades": 6,
+          "sides": {
+            "sell": 6
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "bf14aa8f2a8e01527ee59f12cd4f4f95f306469547e24835ca7f1f456b5fda8d",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-08T16:40:47.781374+00:00",
+      "selection_stability": {
+        "final_selection": [
+          [
+            "SELL",
+            44
+          ],
+          [
+            "SELL",
+            54
+          ],
+          [
+            "SELL",
+            56
+          ]
+        ],
+        "final_subset_of_earlier": {
+          "1": false,
+          "2": false,
+          "3": false
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.5394069617533305,
+            "combo": 0.5394069617533305,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.5449873437140447,
+            "combo": 0.5449873437140447,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.2736092637508802,
+            "combo": 0.2736092637508802,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": -0.038659021437276495,
+            "combo": 0.04317785379335341,
+            "not_worse": true
+          }
+        },
+        "stable": false,
+        "subset_count": 0,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [
+        [
+          "SELL",
+          44
+        ],
+        [
+          "SELL",
+          54
+        ],
+        [
+          "SELL",
+          56
+        ]
+      ],
+      "selection_failure_class": "SELECTION_UNSTABLE",
+      "driver_status": "WF_UNSTABLE",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_13054",
+      "measurement_ea_id": "QM5_41194",
+      "symbol": "XTIUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "0c950db4b6ff651020cb53edcc964263b99fa69fa68745f1e28334de3988d6d8",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 445,
+        "SKIPPED_EXCLUDED": 640
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 12,
+        "SKIPPED_EXCLUDED": 16
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 146,
+        "2021": 140,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\base_setfiles\\QM5_41194_brent-tom-mom-opt_XTIUSD.DWX_D1_def9275fb9e215e9.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41194_brent-tom-mom-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 29,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "C:\\QM\\repo\\strategy-seeds\\cards\\brent-tom-mom_card.md",
+      "parent_card_comparison": [
+        {
+          "input": "strategy_tom_post_days",
+          "card_value": "3",
+          "set_values": [
+            "3"
+          ],
+          "current_source_value": "3",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_min_momentum_pct",
+          "card_value": "4.0",
+          "set_values": [
+            "4.0"
+          ],
+          "current_source_value": "4.0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_spread_points",
+          "card_value": "1200",
+          "set_values": [
+            "1200"
+          ],
+          "current_source_value": "1200",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_period",
+          "card_value": "20",
+          "set_values": [
+            "20"
+          ],
+          "current_source_value": "20",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_tom_pre_days",
+          "card_value": "2",
+          "set_values": [
+            "2"
+          ],
+          "current_source_value": "2",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_sl_mult",
+          "card_value": "2.5",
+          "set_values": [
+            "2.5"
+          ],
+          "current_source_value": "2.5",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_tp_mult",
+          "card_value": "3.0",
+          "set_values": [
+            "3.0"
+          ],
+          "current_source_value": "3.0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_momentum_lookback_days",
+          "card_value": "63",
+          "set_values": [
+            "63"
+          ],
+          "current_source_value": "63",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_hold_days",
+          "card_value": "6",
+          "set_values": [
+            "6"
+          ],
+          "current_source_value": "6",
+          "classification": "EXPLICIT_MATCH"
+        }
+      ],
+      "parent_card_comparison_counts": {
+        "EXPLICIT_MATCH": 9
+      },
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\081b2fd4-56fe-5d5d-9748-e6ee935b8460\\QM5_41194\\20260830_003227\\summary.json",
+        "summary_sha256": "b8b359a935feb38a212b61d62c31805bb9c904fbea67fe3385242ee2ec703249",
+        "report_sha256": "44d1beeda14a935340aff0a036a36ac45717e0b63590993ba7aea57b587a92c1",
+        "entry_days": 12,
+        "trades": 12,
+        "sides": {
+          "sell": 6,
+          "buy": 6
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "3ed151d7-5496-5380-b451-b2c2d33dc509",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\pruning_receipts\\3ed151d7-5496-5380-b451-b2c2d33dc509.json",
+        "receipt_sha256": "ed902b0eb9765118c13e6a29ed817387a53735cdfc46b46ed8ce9a2944cfaa52",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "b7694476-a0d7-5903-9d82-f5b26773e1c9",
+        "trigger_days_declared": 9,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\b7694476-a0d7-5903-9d82-f5b26773e1c9\\QM5_41194\\20260830_073754\\summary.json",
+          "summary_sha256": "1ba8fb3fa1c1f45d78924f4e0f7cd1a536c45f980662f2078c67183a7b77344e",
+          "report_sha256": "308d8ff2eecf994911c5b84370fc5858f48674cf662a28b99dcf5c4fd4bf2c12",
+          "entry_days": 9,
+          "trades": 9,
+          "sides": {
+            "sell": 6,
+            "buy": 3
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "72fdfb6f6cc85169e0758dc1ed49d3c954a494aa8a911fcce850c4fc0d42f491",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-03T00:39:03.777805+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 2.6057235311962788,
+            "combo": 2.6057235311962788,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 2.0753734636934196,
+            "combo": 2.0753734636934196,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": -0.41811105153947214,
+            "combo": -0.41811105153947214,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 0.2100825390133525,
+            "combo": 0.2100825390133525,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "subject_ea_id": "QM5_13213",
+      "measurement_ea_id": "QM5_41398",
+      "symbol": "USDJPY.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "pending",
+      "historical_verdict": null,
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13213_USDJPY_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "fd9a3d4fca88690320f7e52b7e8675d1a1af6e078d13c4aec1c1dfbc13211ac4",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 1,
+        "pending": 1084
+      },
+      "pattern_33_34_dispositions": {
+        "pending": 28
+      },
+      "measured_per_year": {
+        "2019": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13213_USDJPY_DWX_2019_2025\\base_setfiles\\QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_ff092a50d474609a.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 1,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41398_balke-pattern-repair-opt.md",
+      "current_card_input_count": 23,
+      "current_source_input_count": 28,
+      "omitted_current_source_inputs": [],
+      "card_comparison": [
+        {
+          "input": "qm_news_stale_max_hours",
+          "card_value": "336",
+          "set_values": [
+            "336"
+          ],
+          "current_source_value": "336",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_news_mode_legacy",
+          "card_value": "0",
+          "set_values": [
+            "0"
+          ],
+          "current_source_value": "QM_NEWS_OFF",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_news_compliance",
+          "card_value": "1",
+          "set_values": [
+            "1"
+          ],
+          "current_source_value": "QM_NEWS_COMPLIANCE_DXZ",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "opt_pp_buy2",
+          "card_value": "0",
+          "set_values": [
+            "0"
+          ],
+          "current_source_value": "0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_period",
+          "card_value": "14",
+          "set_values": [
+            "14"
+          ],
+          "current_source_value": "14",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_friday_close_enabled",
+          "card_value": "true",
+          "set_values": [
+            "true"
+          ],
+          "current_source_value": "true",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_news_temporal",
+          "card_value": "3",
+          "set_values": [
+            "3"
+          ],
+          "current_source_value": "QM_NEWS_TEMPORAL_PRE30_POST30",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "opt_pp_sell2",
+          "card_value": "0",
+          "set_values": [
+            "0"
+          ],
+          "current_source_value": "0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "opt_pp_buy3",
+          "card_value": "0",
+          "set_values": [
+            "0"
+          ],
+          "current_source_value": "0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "opt_pp_buy1",
+          "card_value": "0",
+          "set_values": [
+            "0"
+          ],
+          "current_source_value": "0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_exit_hour",
+          "card_value": "18",
+          "set_values": [
+            "18"
+          ],
+          "current_source_value": "18",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_range_end_hour",
+          "card_value": "6",
+          "set_values": [
+            "6"
+          ],
+          "current_source_value": "6",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_min_range_atr_mult",
+          "card_value": "0.4",
+          "set_values": [
+            "0.4"
+          ],
+          "current_source_value": "0.4",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "opt_pp_sell1",
+          "card_value": "0",
+          "set_values": [
+            "0"
+          ],
+          "current_source_value": "0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_range_scan_bars",
+          "card_value": "36",
+          "set_values": [
+            "36"
+          ],
+          "current_source_value": "36",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_friday_close_hour_broker",
+          "card_value": "21",
+          "set_values": [
+            "21"
+          ],
+          "current_source_value": "21",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_rng_seed",
+          "card_value": "42",
+          "set_values": [
+            "42"
+          ],
+          "current_source_value": "42",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_range_atr_mult",
+          "card_value": "2.5",
+          "set_values": [
+            "2.5"
+          ],
+          "current_source_value": "2.5",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_trail_trigger_r",
+          "card_value": "1.0",
+          "set_values": [
+            "1.0"
+          ],
+          "current_source_value": "1.0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_news_min_impact",
+          "card_value": "high",
+          "set_values": [
+            "high"
+          ],
+          "current_source_value": "high",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "opt_pp_sell3",
+          "card_value": "0",
+          "set_values": [
+            "0"
+          ],
+          "current_source_value": "0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "qm_stress_reject_probability",
+          "card_value": "0.0",
+          "set_values": [
+            "0.0"
+          ],
+          "current_source_value": "0.0",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_range_start_hour",
+          "card_value": "3",
+          "set_values": [
+            "3"
+          ],
+          "current_source_value": "3",
+          "classification": "EXPLICIT_MATCH"
+        }
+      ],
+      "card_comparison_counts": {
+        "EXPLICIT_MATCH": 23
+      },
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": null,
+      "selection_receipt_sha256": null,
+      "selection_receipt_schema": null,
+      "selection_completed_at": null,
+      "selection_stability": {},
+      "selected_before_stability_gate": null,
+      "selection_failure_class": "NO_TERMINAL_SELECTION_RECEIPT",
+      "driver_status": null,
+      "harness_work_item_id": "ccd5acb4-af10-51ce-8b64-8953a6cb2a4b"
+    },
+    {
+      "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_1537",
+      "measurement_ea_id": "QM5_41195",
+      "symbol": "XAGUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "a32501b68df2de98ac21e2d80a8a5edfe7d77b19d5a306cff1daa885f71491b6",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 607,
+        "SKIPPED_EXCLUDED": 477,
+        "INFRA_FAIL": 1
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 16,
+        "SKIPPED_EXCLUDED": 12
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 151,
+        "2021": 149,
+        "2022": 149,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\base_setfiles\\QM5_41195_aa-vol-sma10-opt_XAGUSD.DWX_D1_392047a4eb62f5f5.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41195_aa-vol-sma10-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 34,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1537_aa-vol-sma10.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\eca49eaa-6cea-5b0f-bce0-11b3afa78c8a\\QM5_41195\\20260830_170131\\summary.json",
+        "summary_sha256": "b95d99e56d0e56d3a33ea3c0ba57ab3742648d9af03eb35290a51e1ea6bc626a",
+        "report_sha256": "12ba795e44c5dd398711473b12f2e5cffe713cd648139a4c0ea8ecb91fc7e632",
+        "entry_days": 14,
+        "trades": 14,
+        "sides": {
+          "buy": 14
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "a82cb956-6f7f-5b63-a2ec-92ebf2b1f496",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\pruning_receipts\\a82cb956-6f7f-5b63-a2ec-92ebf2b1f496.json",
+        "receipt_sha256": "98031f7de223f65b899f5c900324fb0e8f9890372ec66cb2050e68f1b73f3cef",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "7754b067-b36f-51dc-a294-e2a72c093596",
+        "trigger_days_declared": 6,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\7754b067-b36f-51dc-a294-e2a72c093596\\QM5_41195\\20260830_234804\\summary.json",
+          "summary_sha256": "75ceb9d81fb2d13a660863056f4087f0b4ecd57857a37a68e638e3ec24f1de5b",
+          "report_sha256": "a6fd581bff141c00c3ef778b766fa26f3b11d0b326e5ba94bd6447b5c432ec69",
+          "entry_days": 6,
+          "trades": 6,
+          "sides": {
+            "buy": 6
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "5db5bc0f7b6ab2a747389564550e382d6857a2e3778f8005b66c674202534661",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-03T05:23:50.681653+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 3,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.1842195835484426,
+            "combo": 0.1842195835484426,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 1.542294642152608,
+            "combo": 1.542294642152608,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 1.13512293558494,
+            "combo": 1.13512293558494,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": null,
+            "combo": null,
+            "not_worse": false
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_20048",
+      "measurement_ea_id": "QM5_41303",
+      "symbol": "XTIUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "44d6d234c747cac29e55853913d9bbb108051c6b45bb7ddb5a14f656c2baf08d",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 161,
+        "SKIPPED_EXCLUDED": 924
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 4,
+        "SKIPPED_EXCLUDED": 24
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 1,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\base_setfiles\\QM5_41303_wti-preholiday-opt_XTIUSD.DWX_D1_c7ecacd802bb9b35.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41303_wti-preholiday-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 24,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-preholiday_card.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\37eb2122-6123-5f21-9c58-29c0f5b3ca52\\QM5_41303\\20260903_010637\\summary.json",
+        "summary_sha256": "51db8687b363e5691218a60aee226746c58951a42bd6391d001141b3a5adbcbd",
+        "report_sha256": "8723eb84e2ef455eaef0bab43758798d53a399db778a45fcc0fc2066a4b77690",
+        "entry_days": 7,
+        "trades": 7,
+        "sides": {
+          "buy": 7
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "19998519-4f7f-5e1c-9a86-1a57660be73b",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\pruning_receipts\\19998519-4f7f-5e1c-9a86-1a57660be73b.json",
+        "receipt_sha256": "05abe469f87c8e1f7b16c2fd3d67aec74e8cbf06fa5c7f041c9245014ba6bcba",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "93d19b92-aeef-5f48-88a1-8d29d68ecc3d",
+        "trigger_days_declared": 7,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\93d19b92-aeef-5f48-88a1-8d29d68ecc3d\\QM5_41303\\20260903_011407\\summary.json",
+          "summary_sha256": "2cca422204d6a68e6effd7e9169cf7b323a974d6b4aeb211b86ca136982b4ec8",
+          "report_sha256": "1af1482829b4bed8e2919a2c6a9aafc0d13487035242578b33c8d82998a847fc",
+          "entry_days": 7,
+          "trades": 7,
+          "sides": {
+            "buy": 7
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "79f0401e2a15fa057075ca9082e33c00e005ab47242040fd1927f883fc814af7",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-04T05:48:53.332807+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 1.1035901271503368,
+            "combo": 1.1035901271503368,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": -0.0028455284552845526,
+            "combo": -0.0028455284552845526,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.7047817836812145,
+            "combo": 0.7047817836812145,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 0.40147058823529413,
+            "combo": 0.40147058823529413,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_20086",
+      "measurement_ea_id": "QM5_41343",
+      "symbol": "EURUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_EURUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "fb25720230a80329e42ef896b0fd72bab19588e52cd0dade853cffc3cfd49857",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 70,
+        "SKIPPED_PRESCREEN": 1015
+      },
+      "pattern_33_34_dispositions": {
+        "SKIPPED_PRESCREEN": 27,
+        "MEASURED": 1
+      },
+      "measured_per_year": {
+        "2019": 32,
+        "2020": 33,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_EURUSD_DWX_2019_2025\\base_setfiles\\QM5_41343_connors-multi-day-high-low-h4-r1-recovery-opt_EURUSD.DWX_H4_8c015a0b0c8806d0.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41343_connors-multi-day-high-low-h4-r1-recovery-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 27,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "e42079d89c998af9ef389c8285783bbdd1efbfa4463902d4383ce834ec21a3bf",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T05:24:00.593281+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.5619234933407719,
+            "combo": 0.5619234933407719,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 4.55214111757543,
+            "combo": 4.55214111757543,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.49373463927261285,
+            "combo": 0.49373463927261285,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 3.3056242366469064,
+            "combo": 3.3056242366469064,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": null
+    },
+    {
+      "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_20266",
+      "measurement_ea_id": "QM5_41198",
+      "symbol": "XTIUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "b178c7ff37805345fc97dc8b82110a3ce9fd5da4ccc6c3de2e6b67cd37b0613f",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 939,
+        "PRESCREEN_HELD_UNMEASURED": 146
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 24,
+        "PRESCREEN_HELD_UNMEASURED": 4
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 155,
+        "2022": 155,
+        "2023": 155,
+        "2024": 155,
+        "2025": 9
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\base_setfiles\\QM5_41198_collins-66mom-opt_XTIUSD.DWX_D1_f7902ad402279032.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41198_collins-66mom-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 27,
+      "omitted_current_source_inputs": [],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "C:\\QM\\repo\\strategy-seeds\\cards\\collins-66mom_card.md",
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\d65bf13f-d476-5752-ab1e-b88c737f04bc\\QM5_41198\\20260830_002840\\summary.json",
+        "summary_sha256": "dc99b6e6d0966d869fafcd0e1b40d4e17bc1e3f70e84de97f000a39699500967",
+        "report_sha256": "32959a0aea5acfc6c0a383e74b5aa0fa48a858302785ae37af347a0c1e0a4d0a",
+        "entry_days": 58,
+        "trades": 58,
+        "sides": {
+          "sell": 37,
+          "buy": 21
+        }
+      },
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "b3966d118be4ad1c1790f5b16bad6e6935bcac0bce9dbe7fff88dd34826cef4d",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-05T12:19:47.951488+00:00",
+      "selection_stability": {
+        "final_selection": [
+          [
+            "SELL",
+            3
+          ],
+          [
+            "SELL",
+            87
+          ]
+        ],
+        "final_subset_of_earlier": {
+          "1": false,
+          "2": false,
+          "3": false
+        },
+        "not_worse_count": 1,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": -0.7162479484913521,
+            "combo": -0.7822353811991117,
+            "not_worse": false
+          },
+          "2023": {
+            "baseline": 0.7193669468266115,
+            "combo": 0.09047251202918648,
+            "not_worse": false
+          },
+          "2024": {
+            "baseline": 3.0112877571249643,
+            "combo": 3.116727241991378,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 1.0784598520142503,
+            "combo": 0.8932496199021592,
+            "not_worse": false
+          }
+        },
+        "stable": false,
+        "subset_count": 0,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [
+        [
+          "SELL",
+          3
+        ],
+        [
+          "SELL",
+          87
+        ]
+      ],
+      "selection_failure_class": "PERFORMANCE_AND_SELECTION_UNSTABLE",
+      "driver_status": "WF_UNSTABLE",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+      "subject_ea_id": "QM5_21501",
+      "measurement_ea_id": "QM5_41324",
+      "symbol": "USDJPY.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "pending",
+      "historical_verdict": null,
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "132fd8845eb28bea7df619231ff0353a15f8004069d008aaf67d1a75cf0af35f",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 907,
+        "active": 1,
+        "pending": 177
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 24,
+        "pending": 4
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 155,
+        "2022": 155,
+        "2023": 155,
+        "2024": 132
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\base_setfiles\\QM5_41324_balke-gmt3-range-breakout-path25-opt_USDJPY.DWX_H1_7c407f6b88fcc99c.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 6,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41324_balke-gmt3-range-breakout-path25-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 28,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": null,
+      "selection_receipt_sha256": null,
+      "selection_receipt_schema": null,
+      "selection_completed_at": null,
+      "selection_stability": {},
+      "selected_before_stability_gate": null,
+      "selection_failure_class": "NO_TERMINAL_SELECTION_RECEIPT",
+      "driver_status": null,
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_21502",
+      "measurement_ea_id": "QM5_41345",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "pending",
+      "historical_verdict": null,
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "04ba311c9ce1557fe99fc0dbb76dfd3443e694246c4d51436f3ac46f886d3f4c",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 531,
+        "active": 1,
+        "pending": 553
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 14,
+        "pending": 14
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 155,
+        "2022": 66
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41345_xau-weekly-tsmom-opt_XAUUSD.DWX_D1_04f877708023eccf.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 4,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41345_xau-weekly-tsmom-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 25,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": null,
+      "selection_receipt_sha256": null,
+      "selection_receipt_schema": null,
+      "selection_completed_at": null,
+      "selection_stability": {},
+      "selected_before_stability_gate": null,
+      "selection_failure_class": "NO_TERMINAL_SELECTION_RECEIPT",
+      "driver_status": null,
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_21505",
+      "measurement_ea_id": "QM5_41304",
+      "symbol": "XAGUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "96ce3e49022bd067321b8d1cef583af02058981cc4f5ea04b5a1f5a8757f3bf6",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 161,
+        "SKIPPED_EXCLUDED": 924
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 4,
+        "SKIPPED_EXCLUDED": 24
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 1,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\base_setfiles\\QM5_41304_xag-weekly-lowvol-momentum-opt_XAGUSD.DWX_D1_d3e74ae4759326a2.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41304_xag-weekly-lowvol-momentum-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 26,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_21505_xag-weekly-lowvol-momentum.md",
+      "parent_card_comparison": [
+        {
+          "input": "strategy_max_spread_points",
+          "card_value": "250",
+          "set_values": [
+            "250"
+          ],
+          "current_source_value": "250",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_sl_mult",
+          "card_value": "2.5",
+          "set_values": [
+            "2.5"
+          ],
+          "current_source_value": "2.5",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_vol_lookback",
+          "card_value": "40",
+          "set_values": [
+            "40"
+          ],
+          "current_source_value": "40",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_hold_bars",
+          "card_value": "10",
+          "set_values": [
+            "10"
+          ],
+          "current_source_value": "10",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_period",
+          "card_value": "14",
+          "set_values": [
+            "14"
+          ],
+          "current_source_value": "14",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_vol_percentile",
+          "card_value": "33",
+          "set_values": [
+            "33.0"
+          ],
+          "current_source_value": "33.0",
+          "classification": "EXPLICIT_MATCH"
+        }
+      ],
+      "parent_card_comparison_counts": {
+        "EXPLICIT_MATCH": 6
+      },
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\611df193-4776-5a51-ae80-2bc4b61235f6\\QM5_41304\\20260902_192621\\summary.json",
+        "summary_sha256": "c1f32d1d7c46bda57e7613b540d6810a1a2a49a191fc7cb6d4acef2cf75bc144",
+        "report_sha256": "13f0f63c8a39b960ef75ffde0bcf4c17e6ecec90ae6d0aae9d313b6a33e11e4d",
+        "entry_days": 1,
+        "trades": 1,
+        "sides": {
+          "buy": 1
+        }
+      },
+      "one_floor_skip_sample": {
+        "cell_id": "6020adf3-03b0-5be1-bfbf-e4aef7458f99",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\pruning_receipts\\6020adf3-03b0-5be1-bfbf-e4aef7458f99.json",
+        "receipt_sha256": "d5dad975d64de15748726b3a3fd31047d80bda7180d305ba4ae22775d55f6cef",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "2c30a988-a398-5f1c-8487-802ff86bc172",
+        "trigger_days_declared": 1,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\2c30a988-a398-5f1c-8487-802ff86bc172\\QM5_41304\\20260902_193212\\summary.json",
+          "summary_sha256": "60c7fcce01feaf40c4fd108373571ca999d49a3a8bee5f5b6ac06de798d21af8",
+          "report_sha256": "c18270f00c9515ff72f77426b51d3d90177447e71b2750d695f86761401e4986",
+          "entry_days": 1,
+          "trades": 1,
+          "sides": {
+            "buy": 1
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "13266c8965f9efbb83f6f2d861a13076caff5cb16abf40a8c91aa6f92144c189",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-04T04:29:23.215668+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": -0.15917450512424539,
+            "combo": -0.15917450512424539,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 3.7306978853209114,
+            "combo": 3.7306978853209114,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": -0.24748792395319402,
+            "combo": -0.24748792395319402,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 0.1342768158272685,
+            "combo": 0.1342768158272685,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_21507",
+      "measurement_ea_id": "QM5_41196",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": true,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "887b842b29431402e705a3bedb91d46e40066af25d3c71fd6bfb6b2409040354",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 1037,
+        "PRESCREEN_HELD_UNMEASURED": 48
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 26,
+        "PRESCREEN_HELD_UNMEASURED": 2
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 155,
+        "2022": 155,
+        "2023": 155,
+        "2024": 155,
+        "2025": 107
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41196_qs-kama-trend-xau-opt_XAUUSD.DWX_D1_225cf99dc7872315.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41196_qs-kama-trend-xau-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 28,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_21507_qs-kama-trend-xau.md",
+      "parent_card_comparison": [
+        {
+          "input": "strategy_max_hold_bars",
+          "card_value": "60",
+          "set_values": [
+            "60"
+          ],
+          "current_source_value": "60",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_warmup_buffer",
+          "card_value": "10",
+          "set_values": [
+            "10"
+          ],
+          "current_source_value": "10",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_max_spread_points",
+          "card_value": "300",
+          "set_values": [
+            "300"
+          ],
+          "current_source_value": "300",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_fast_ema",
+          "card_value": "2",
+          "set_values": [
+            "2"
+          ],
+          "current_source_value": "2",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_er_period",
+          "card_value": "10",
+          "set_values": [
+            "10"
+          ],
+          "current_source_value": "10",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_sl_mult",
+          "card_value": "2.5",
+          "set_values": [
+            "2.5"
+          ],
+          "current_source_value": "2.5",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_atr_period",
+          "card_value": "14",
+          "set_values": [
+            "14"
+          ],
+          "current_source_value": "14",
+          "classification": "EXPLICIT_MATCH"
+        },
+        {
+          "input": "strategy_slow_ema",
+          "card_value": "30",
+          "set_values": [
+            "30"
+          ],
+          "current_source_value": "30",
+          "classification": "EXPLICIT_MATCH"
+        }
+      ],
+      "parent_card_comparison_counts": {
+        "EXPLICIT_MATCH": 8
+      },
+      "baseline_2019_native_activity": {
+        "summary_path": "D:\\QM\\reports\\work_items\\f07a95d8-7e65-5ceb-8257-e42369b1c39f\\QM5_41196\\20260830_171059\\summary.json",
+        "summary_sha256": "81abef941dc886bffc4beefadd75ac782383420371e09c9d8cf839e6dc7c11ff",
+        "report_sha256": "0f72fed9f8e50f2ad3f5a8c59403ffd789d371b5c76be7521789526c54bfdc5d",
+        "entry_days": 79,
+        "trades": 79,
+        "sides": {
+          "buy": 44,
+          "sell": 35
+        }
+      },
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "44dd7f699b56eadd990f7a191a5f1ac81b915f2dbf0995e0cec6bc6c67d42e28",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-05T12:19:39.941289+00:00",
+      "selection_stability": {
+        "final_selection": [
+          [
+            "BUY",
+            41
+          ],
+          [
+            "BUY",
+            78
+          ],
+          [
+            "BUY",
+            92
+          ],
+          [
+            "SELL",
+            26
+          ],
+          [
+            "SELL",
+            59
+          ]
+        ],
+        "final_subset_of_earlier": {
+          "1": false,
+          "2": true,
+          "3": false
+        },
+        "not_worse_count": 2,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.3919055599904707,
+            "combo": 0.1307301921172025,
+            "not_worse": false
+          },
+          "2023": {
+            "baseline": 2.7284124126449467,
+            "combo": 3.482530029242832,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.23140221927584337,
+            "combo": 0.5943046297555887,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 0.985508615555236,
+            "combo": 0.31196307008607277,
+            "not_worse": false
+          }
+        },
+        "stable": false,
+        "subset_count": 1,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [
+        [
+          "BUY",
+          41
+        ],
+        [
+          "BUY",
+          78
+        ],
+        [
+          "BUY",
+          92
+        ],
+        [
+          "SELL",
+          26
+        ],
+        [
+          "SELL",
+          59
+        ]
+      ],
+      "selection_failure_class": "PERFORMANCE_AND_SELECTION_UNSTABLE",
+      "driver_status": "WF_UNSTABLE",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "subject_ea_id": "QM5_13213",
+      "measurement_ea_id": "QM5_41097",
+      "symbol": "USDJPY.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41097_USDJPY_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "6ec01321de03be89b0ccbb4d8c5dc153df3e22a2fbe1521858931999786d9aef",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 867,
+        "PRESCREEN_HELD_UNMEASURED": 218
+      },
+      "pattern_33_34_dispositions": {
+        "MEASURED": 22,
+        "PRESCREEN_HELD_UNMEASURED": 6
+      },
+      "measured_per_year": {
+        "2019": 155,
+        "2020": 155,
+        "2021": 155,
+        "2022": 155,
+        "2023": 155,
+        "2024": 89,
+        "2025": 3
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41097_USDJPY_DWX_2019_2025\\base_setfiles\\QM5_41097_balke-gmt3-range-breakout-opt_USDJPY.DWX_H1_legacy_recovery_c42828e18475249a.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": null,
+      "current_card_input_count": 0,
+      "current_source_input_count": 28,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41097_USDJPY_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "cdaad4496737ee4e90e15cfdb693e866bd42b82c8126a5d3299ce3595f33f66b",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T05:40:35.527567+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 3,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 2.491461286671107,
+            "combo": 1.0588371127033835,
+            "not_worse": false
+          },
+          "2023": {
+            "baseline": -0.2933559414701058,
+            "combo": -0.19136339846475925,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 0.48662930813463723,
+            "combo": 0.48662930813463723,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 3.0166723187369997,
+            "combo": 3.0166723187369997,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": "2dbc9f85-badd-4bf9-b607-e2655e9944b1"
+    },
+    {
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_41219",
+      "measurement_ea_id": "QM5_41346",
+      "symbol": "XAUUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "a7bc1bc70132129bff4bfcb8b0872540d228d76b204d7516e2d2264f46baa1a0",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 15,
+        "SKIPPED_PRESCREEN": 1067,
+        "SKIPPED_EXCLUDED": 3
+      },
+      "pattern_33_34_dispositions": {
+        "SKIPPED_PRESCREEN": 28
+      },
+      "measured_per_year": {
+        "2019": 9,
+        "2020": 1,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\base_setfiles\\QM5_41346_cum-rsi2-commodity-requal8-opt_XAUUSD.DWX_D1_78ac44877f3a74b1.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41346_cum-rsi2-commodity-requal8-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 29,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": {
+        "cell_id": "c8b6f723-746f-5e7a-8c88-a6e5d25be0f2",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\pruning_receipts\\c8b6f723-746f-5e7a-8c88-a6e5d25be0f2.json",
+        "receipt_sha256": "9ac7cb4bcbf54103c398d2f49307d8ccf85a0ccbc138339b24dd11a5ab1b28e0",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "59316ad8-a4f8-59ea-8f52-05181c614e2d",
+        "trigger_days_declared": 4,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\59316ad8-a4f8-59ea-8f52-05181c614e2d\\QM5_41346\\20260907_083216\\summary.json",
+          "summary_sha256": "aefb008b7ccdd8a46f37465b6668aae6576fae11f0bc15931122ca60f20f4ea8",
+          "report_sha256": "856011fc3bf969a0e40a1c33d0a7401430ea426d8b39689b87210163af95486c",
+          "entry_days": 4,
+          "trades": 4,
+          "sides": {
+            "buy": 4
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "8b8fa9cdc970a3c3643f88fe2188f3c29ab77cb7c5721e575ba969b8a25deea7",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T05:06:30.087419+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": 0.03835547423965211,
+            "combo": 0.03835547423965211,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.4329579574421305,
+            "combo": 0.4329579574421305,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 2.4413893916191007,
+            "combo": 2.4413893916191007,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 2.8577131886435008,
+            "combo": 2.8577131886435008,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": null
+    },
+    {
+      "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+      "subject_ea_id": "QM5_41221",
+      "measurement_ea_id": "QM5_41344",
+      "symbol": "EURUSD.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41221_EURUSD_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "d93a8ef06fe75f2ca07634101fe38a264a379a8fe74e1cb7fa20a2cb8da19286",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 7,
+        "SKIPPED_PRESCREEN": 1078
+      },
+      "pattern_33_34_dispositions": {
+        "SKIPPED_PRESCREEN": 28
+      },
+      "measured_per_year": {
+        "2019": 1,
+        "2020": 1,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41221_EURUSD_DWX_2019_2025\\base_setfiles\\QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt_EURUSD.DWX_D1_ac93a8ad2358d14e.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 28,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": null,
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41221_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "fc43466281e1da2d1b5201301c2fc4dfca3d90a83c8b95ec78d0380244a79bbe",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T05:23:26.731262+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": -0.3664745788844775,
+            "combo": -0.3664745788844775,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": 0.8091964421908614,
+            "combo": 0.8091964421908614,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": -0.20168428325279836,
+            "combo": -0.20168428325279836,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": 0.7325372223382213,
+            "combo": 0.7325372223382213,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": null
+    },
+    {
+      "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+      "subject_ea_id": "QM5_9641",
+      "measurement_ea_id": "QM5_41306",
+      "symbol": "WS30.DWX",
+      "in_frozen_16_cohort": false,
+      "owner_status": "done",
+      "historical_verdict": "NO_FILTER_CHANGE",
+      "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\ledger.json",
+      "ledger_sha256": "16c6d83fcaa4810503cc13bdbc2ab33d73b3442f01e31862de5523d05a3c7260",
+      "ledger_changed_during_read": false,
+      "annual_dispositions": {
+        "MEASURED": 9,
+        "SKIPPED_PRESCREEN": 1075,
+        "SKIPPED_EXCLUDED": 1
+      },
+      "pattern_33_34_dispositions": {
+        "SKIPPED_PRESCREEN": 28
+      },
+      "measured_per_year": {
+        "2019": 3,
+        "2020": 1,
+        "2021": 1,
+        "2022": 1,
+        "2023": 1,
+        "2024": 1,
+        "2025": 1
+      },
+      "base_setfile_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\base_setfiles\\QM5_41306_bandy-cci-extreme-fade-mr-index-opt_WS30.DWX_D1_a1bfe0a1e1da7204.set",
+      "base_setfile_exists": true,
+      "base_setfile_hash_matches_ledger": true,
+      "neutral_controls_checked": 7,
+      "neutral_control_hash_mismatches": [],
+      "neutral_control_missing_paths": [],
+      "neutral_controls_with_recorded_hash": 7,
+      "base_duplicates": {},
+      "card_path_current": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41306_bandy-cci-extreme-fade-mr-index-opt.md",
+      "current_card_input_count": 0,
+      "current_source_input_count": 29,
+      "omitted_current_source_inputs": [
+        "qm_friday_close_enabled",
+        "qm_friday_close_hour_broker",
+        "qm_news_compliance",
+        "qm_news_min_impact",
+        "qm_news_mode_legacy",
+        "qm_news_stale_max_hours",
+        "qm_news_temporal",
+        "qm_rng_seed",
+        "qm_stress_reject_probability"
+      ],
+      "card_comparison": [],
+      "card_comparison_counts": {},
+      "parent_card_path_current": null,
+      "parent_card_comparison": [],
+      "parent_card_comparison_counts": {},
+      "baseline_2019_native_activity": null,
+      "one_floor_skip_sample": {
+        "cell_id": "9706fb27-1725-57bc-b132-cd64d28c376e",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\pruning_receipts\\9706fb27-1725-57bc-b132-cd64d28c376e.json",
+        "receipt_sha256": "c649ef5547d74e0948244a9e92c508b0f036e2a1b1b89136882dc1a07af28e60",
+        "structural_validation": "PASS",
+        "trigger_work_item_id": "d78497fe-afc9-50da-ac16-9fae955cbad8",
+        "trigger_days_declared": 3,
+        "trigger_native_activity": {
+          "summary_path": "D:\\QM\\reports\\work_items\\d78497fe-afc9-50da-ac16-9fae955cbad8\\QM5_41306\\20260909_051317\\summary.json",
+          "summary_sha256": "5cce30d2a7153c9d5f6e1238eb5e55d945de3a224830422276f0e49220dca2aa",
+          "report_sha256": "82b6fe6d9fca81660c37bfac910cfa3896dc1832da5f2b7b1ed92e6167e009d3",
+          "entry_days": 3,
+          "trades": 3,
+          "sides": {
+            "buy": 3
+          }
+        },
+        "trigger_days_equal": true
+      },
+      "selection_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\q12_selection_receipt.json",
+      "selection_receipt_sha256": "4e2720dda470e5a67dcbca094a560d5b6ef06411274f93816c9b798fb1a8ce00",
+      "selection_receipt_schema": "qm.dl089-q12-selection-receipt/v1",
+      "selection_completed_at": "2026-09-09T06:11:00.894829+00:00",
+      "selection_stability": {
+        "final_selection": [],
+        "final_subset_of_earlier": {
+          "1": true,
+          "2": true,
+          "3": true
+        },
+        "not_worse_count": 4,
+        "not_worse_required": 3,
+        "per_test_year": {
+          "2022": {
+            "baseline": -0.7034314688888015,
+            "combo": -0.7034314688888015,
+            "not_worse": true
+          },
+          "2023": {
+            "baseline": -0.302999364571657,
+            "combo": -0.302999364571657,
+            "not_worse": true
+          },
+          "2024": {
+            "baseline": 1.2416429403193454,
+            "combo": 1.2416429403193454,
+            "not_worse": true
+          },
+          "2025": {
+            "baseline": -0.12552963604152212,
+            "combo": -0.12552963604152212,
+            "not_worse": true
+          }
+        },
+        "stable": true,
+        "subset_count": 3,
+        "subset_required": 2
+      },
+      "selected_before_stability_gate": [],
+      "selection_failure_class": "NO_NONEMPTY_FINAL_SELECTION",
+      "driver_status": "PATTERN_SELECTION_READY",
+      "harness_work_item_id": null
+    }
+  ],
+  "limits": [
+    "SQLite transaction is consistent; external artifacts are read separately with hashes and drift flags.",
+    "Current card/source differences are exposure flags, not proven historical default defects.",
+    "SKIPPED_EXCLUDED is kept distinct from retired B2/B5 prescreen; no verdict is rewritten.",
+    "Parser labels broker report timestamps UTC internally; parity compares identical raw clock labels, not verified UTC conversion."
+  ],
+  "balke_q02": {
+    "id": "2fc84747-27db-5e88-9568-3fdda6c30769",
+    "phase": "Q02",
+    "ea_id": "QM5_41398",
+    "status": "done",
+    "verdict": "PASS",
+    "evidence_path": "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\summary.json",
+    "updated_at": "2026-09-09T14:06:13+00:00",
+    "claimed_at": "2026-09-09T13:57:45+00:00",
+    "started_at": "2026-09-09T13:58:06+00:00",
+    "runner_to_verdict_seconds": 487.0,
+    "claim_to_verdict_seconds": 508.0,
+    "evidence_sha256": "740d4e65c3da5f032dec98ec5b7fc2becbdab2cbc547577e6d2bfd590d3ba8e2",
+    "window": {
+      "from_date": "2018.07.02",
+      "to_date": "2022.12.31"
+    },
+    "metrics": [
+      {
+        "net_profit": 46636.78,
+        "profit_factor": 1.12,
+        "drawdown": 21852.77,
+        "total_trades": 888
+      }
+    ],
+    "report_path": "D:\\QM\\reports\\work_items\\2fc84747-27db-5e88-9568-3fdda6c30769\\QM5_41398\\20260909_135814\\raw\\run_01\\report.htm",
+    "report_sha256": "5697dc87a4996b51e1af7f983a4a41463c81c9d39c257b2c28598a7feaa0ebe5",
+    "report_hash_matches_summary": true
+  },
+  "balke_2019_controls": [
+    {
+      "id": "356a3655-5f0a-51ea-84f3-a3d04e2ed714",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41097",
+      "status": "done",
+      "verdict": "MEASURED",
+      "evidence_path": "D:\\QM\\reports\\work_items\\356a3655-5f0a-51ea-84f3-a3d04e2ed714\\QM5_41097\\20260822_063632\\summary.json",
+      "updated_at": "2026-08-22T06:39:37+00:00",
+      "claimed_at": "2026-08-22T06:33:08+00:00",
+      "started_at": "2026-08-22T06:35:28+00:00",
+      "runner_to_verdict_seconds": 249.0,
+      "claim_to_verdict_seconds": 389.0,
+      "evidence_sha256": "b5373ac1c45dd4138928115da88c094b141d7e5dfae3a347d9a1ba96886610fc",
+      "window": {
+        "from_date": "2019.01.01",
+        "to_date": "2019.12.31"
+      },
+      "metrics": [
+        {
+          "net_profit": -10748.5,
+          "profit_factor": 0.88,
+          "drawdown": 18981.05,
+          "total_trades": 193
+        }
+      ],
+      "report_path": "D:\\QM\\reports\\work_items\\356a3655-5f0a-51ea-84f3-a3d04e2ed714\\QM5_41097\\20260822_063632\\raw\\run_01\\report.htm",
+      "report_sha256": "2a6cc66d37c41d398cdecf726632aeabf8f7fe547d148c47956de9db5c9899bf",
+      "report_hash_matches_summary": true,
+      "round_trip_count": 193,
+      "round_trip_sha256": "4a758ddea3f45e4cecba5b143c748195dfd4f0e8595f2d97cf3040d92dba7a08",
+      "native_commission_sum": -6247.8,
+      "native_swap_sum": 0.0
+    },
+    {
+      "id": "bc035c74-0000-5a7f-9c21-69a5e92b9529",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41398",
+      "status": "done",
+      "verdict": "MEASURED",
+      "evidence_path": "D:\\QM\\reports\\work_items\\bc035c74-0000-5a7f-9c21-69a5e92b9529\\QM5_41398\\20260909_143930\\summary.json",
+      "updated_at": "2026-09-09T14:42:07+00:00",
+      "claimed_at": "2026-09-09T14:38:49+00:00",
+      "started_at": "2026-09-09T14:39:21+00:00",
+      "runner_to_verdict_seconds": 166.0,
+      "claim_to_verdict_seconds": 198.0,
+      "evidence_sha256": "1a220eb91ec852a2d1506fc32b40867b5fd9ef364663fd7741d1c610d3a4ae81",
+      "window": {
+        "from_date": "2019.01.01",
+        "to_date": "2019.12.31"
+      },
+      "metrics": [
+        {
+          "net_profit": -10748.5,
+          "profit_factor": 0.88,
+          "drawdown": 18981.05,
+          "total_trades": 193
+        }
+      ],
+      "report_path": "D:\\QM\\reports\\work_items\\bc035c74-0000-5a7f-9c21-69a5e92b9529\\QM5_41398\\20260909_143930\\raw\\run_01\\report.htm",
+      "report_sha256": "691077961f187f461411f23acafc17e7ed34eb0bd8bc71855834bfd864aeef5e",
+      "report_hash_matches_summary": true,
+      "round_trip_count": 193,
+      "round_trip_sha256": "4a758ddea3f45e4cecba5b143c748195dfd4f0e8595f2d97cf3040d92dba7a08",
+      "native_commission_sum": -6247.8,
+      "native_swap_sum": 0.0
+    }
+  ],
+  "review_task": {
+    "id": "e1358f42-c9f2-4cd2-89ce-f337b17ac84a",
+    "state": "REVIEW",
+    "assigned_agent": "claude",
+    "verdict": "Independent review PASS. Released hold 97908d93 only (ed127702/0e5eff83 stay held); commissioned Q02 work item 2fc84747-27db-5e88-9568-3fdda6c30769 (pending, superseded_work_item_id=null). No economic result yet; full matrix gated on this Q02 PASS.",
+    "artifact_path": "docs/ops/evidence/2026-09-09_balke_41398_independent_review.md",
+    "updated_at": "2026-09-09T13:54:51+00:00"
+  },
+  "balke_duplicate_holds": [
+    {
+      "work_item_id": "0e5eff83-75b8-5c59-99d0-609f5f2fb65c",
+      "active": 1,
+      "hold_code": "BALKE_PATTERN_REPAIR_REVIEW_PENDING"
+    },
+    {
+      "work_item_id": "97908d93-3ff8-5528-9518-8968aea72342",
+      "active": 0,
+      "hold_code": "BALKE_PATTERN_REPAIR_REVIEW_PENDING"
+    },
+    {
+      "work_item_id": "ed127702-3a08-59fa-888a-c3a0a20a0803",
+      "active": 1,
+      "hold_code": "BALKE_PATTERN_REPAIR_REVIEW_PENDING"
+    }
+  ],
+  "balke_2019_all_round_trips_equal": true,
+  "balke_matrix_runtime_projection": {
+    "basis": "one 2019 neutral annual run; linear scenario only, not ETA",
+    "observed_claim_to_verdict_seconds": 198.0,
+    "annual_cells": 1085,
+    "serial_terminal_hours": 59.67,
+    "excludes": [
+      "four WF combinations",
+      "queue wait",
+      "retries",
+      "different annual tick volumes",
+      "contention changes"
+    ]
+  }
+}
