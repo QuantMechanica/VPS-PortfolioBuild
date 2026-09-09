@@ -1726,3 +1726,31 @@ No router state change made; no new ticket duplicated. No threshold/verdict/T_Li
 AutoTrading/gate change. No OWNER-scope work invented. Per the standing suppression note, no
 further per-task evidence-file entry added this cycle (nothing material beyond the b66b5ccc
 close, which is recorded here).
+
+## Orchestration cycle 2026-09-09T1318Z -- 3 IN_PROGRESS claude tasks unchanged, still gated
+
+Direct `farm_state.sqlite` read on all three `IN_PROGRESS` claude tasks (`bb814520`
+CALENDAR-CRITERIA-B-PRIME, `dfc60103` Q09-LEGACY-LOGGER-SAMPLE, `3032534e`
+DUKASCOPY-BACKFILL): all correctly remain `IN_PROGRESS`. Spawn lease
+`agent_task:<id>` on all three keys was held `12:19:38Z`-`12:49:38Z` (a prior cycle,
+not this one) and is now expired (~29min ago at check time) -- no live lease,
+proceeding read-only per the skip/defer rule is moot since nothing is in flight.
+`QM5_41394` legs progressed but none reached Q10_NEWS: EURUSD stays terminal Q04
+`FAIL` (unchanged); USDJPY advanced Q02 `PASS`(12:17Z) -> a new Q04 row
+(`bd6f7c72`, pending) and a new Q03 row (`e89d6f8a`, pending, created 13:09:21Z);
+SP500/XAUUSD/XTIUSD still Q02 `pending` since `10:52:59Z` (~2h20m unclaimed). Neither
+`bb814520` nor `dfc60103`'s acceptance ("first adjudications end PASS/FAIL") is met
+yet. `2f717775` (Dukascopy non-FX price_scale ticket) still `APPROVED`/unassigned,
+`updated_at=2026-09-09T01:24:20Z` (~11h54m unclaimed); last datafeed reprobe was
+11:49-11:50Z (~1h29m ago), short of the "several hours, different UTC slot" bar from
+the 06:20Z structural-degradation finding, so no new reprobe this cycle. `farmctl
+health`: FAIL 15/WARN 16/OK 53, same chronic named set (`codex_zero_activity` FAIL is
+the pre-existing `repo_dirty_build_guard` block on unrelated uncommitted MQ5 files,
+not a lane-specific signal; `q09_autoseal_hold_census`/`q09_sealed_plan_hold_age`
+FAILs are the pre-existing 30-hold backlog, none of the three held rows belong to
+these tasks); no new incident.
+
+No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
+AutoTrading/gate change. No OWNER-scope work invented. Per the standing suppression
+note, no further per-task evidence-file entry added this cycle (nothing material
+beyond what's recorded here).
