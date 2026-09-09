@@ -1,0 +1,10 @@
+{
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41400_wti-mrecency-sign-tr/QM5_41400_wti-mrecency-sign-tr.mq5\"",
+  "exit_code": 0,
+  "hit_count": 0,
+  "hits": [],
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "recorded_date": "2026-09-09",
+  "source_count": 1
+}
