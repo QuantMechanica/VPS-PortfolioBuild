@@ -286,3 +286,10 @@ noted for OWNER/router awareness, no action taken (out of scope for this ops_iss
 ticket, hourly purge already active per the health action-hint). Spawn lease
 `agent_task:bb814520-3364-5355-97b6-27f662f3ed8b` reacquired (30 min). No ticket,
 release, repin, or verdict change made here. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T14:18Z (orchestration cycle) — no change
+
+`QM5_41394` Q02: SP500/XAUUSD/XTIUSD still `pending` since 10:52:59Z (~3h25m, unchanged
+since 13:56Z check); USDJPY/EURUSD done. Gating symbol (XAUUSD, 11196 lineage) still
+unadjudicated. No ticket, release, repin, or verdict change. Read-only this cycle, lease
+not reacquired. Task remains `IN_PROGRESS`.
