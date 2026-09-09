@@ -274,3 +274,7 @@ Kein neues Ticket, Rebuild, Release. Aufgabe bleibt IN_PROGRESS.
 ## Checked 2026-09-09T07:18Z -- no change
 
 Same gate as bb814520 above: no OWNER answer, no live lease, no new ticket/rebuild/release. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T07:19Z -- no change
+
+No OWNER answer to OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (shared gate with `bb814520`). No new ticket, rebuild or release. Task remains IN_PROGRESS.

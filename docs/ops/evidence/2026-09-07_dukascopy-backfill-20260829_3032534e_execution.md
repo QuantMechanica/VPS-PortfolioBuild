@@ -227,3 +227,7 @@ ticket. Task stays IN_PROGRESS pending `2f717775` and a later-hour reprobe.
 ## Checked 2026-09-09T07:18Z -- no change
 
 2f717775 still APPROVED/unassigned, updated_at=2026-09-09T01:24:20Z (~5h54m unclaimed, Codex lane still idle). Lease agent_task:3032534e expired 01:32:47Z, none live. No new datafeed reprobe (last 06:39Z, still recent). No duplicate ticket, no download restart. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T07:19Z -- no change
+
+`2f717775` still APPROVED/unassigned, updated_at=2026-09-09T01:24:20Z (~5h55m unclaimed, direct state-DB read). No new datafeed reprobe (last one 06:39Z, still recent). No download restart, no duplicate ticket. Task stays IN_PROGRESS.
