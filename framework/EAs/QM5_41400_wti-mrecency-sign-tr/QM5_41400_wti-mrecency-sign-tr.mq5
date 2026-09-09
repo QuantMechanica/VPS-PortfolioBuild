@@ -58,8 +58,6 @@ input int    strategy_max_hold_days           = 40;
 input int    strategy_max_spread_points       = 1500;
 input int    strategy_deviation_points        = 20;
 
-const string g_symbol = "XTIUSD.DWX";
-
 struct Strategy_SignalMetrics
   {
    int direction;
@@ -100,7 +98,7 @@ bool     g_support_contract_valid  = false;
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_symbol && _Period == PERIOD_D1);
+   return (_Period == PERIOD_D1);
   }
 
 int Strategy_DateKeyForTime(const datetime value)
@@ -209,7 +207,7 @@ bool Strategy_OwnedPositionStateValid()
       if(ticket == 0 || !PositionSelectByTicket(ticket) ||
          !Strategy_IsOwnedPosition())
          continue;
-      if(PositionGetString(POSITION_SYMBOL) != g_symbol)
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
          return false;
       const ENUM_POSITION_TYPE type =
          (ENUM_POSITION_TYPE)PositionGetInteger(POSITION_TYPE);
@@ -842,8 +840,9 @@ bool Strategy_NoTradeFilter()
       qm_magic_slot_offset != 0 ||
       QM_FrameworkMagic() != 414000000)
       return true;
-   if(RISK_PERCENT != 0.0 || RISK_FIXED != 1000.0 ||
-      PORTFOLIO_WEIGHT != 1.0)
+   if(RISK_PERCENT != 0.0 ||
+      !MathIsValidNumber(RISK_FIXED) ||
+      RISK_FIXED <= 0.0)
       return true;
 
    if(!MathIsValidNumber(qm_stress_reject_probability) ||
@@ -1012,7 +1011,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!SymbolSelect(g_symbol, true) ||
+   if(!SymbolSelect(_Symbol, true) ||
       !Strategy_IsHostChart() || qm_ea_id != 41400 ||
       qm_magic_slot_offset != 0)
       return INIT_PARAMETERS_INCORRECT;
@@ -1055,7 +1054,7 @@ int OnInit()
    Strategy_LoadAttemptState(TimeCurrent());
 
    string warmup_symbols[1];
-   warmup_symbols[0] = g_symbol;
+   warmup_symbols[0] = _Symbol;
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols,
                           PERIOD_D1,
