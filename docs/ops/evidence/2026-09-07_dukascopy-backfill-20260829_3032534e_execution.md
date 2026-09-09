@@ -372,3 +372,7 @@ Codex ticket 2f717775 confirmed still APPROVED/unassigned (updated_at 01:24:20Z,
 ## Checked 2026-09-09T1818Z (orchestration cycle) -- material change, no action needed
 
 Codex ticket 2f717775 moved out of the APPROVED/unassigned starvation state: assigned_agent=codex, state=IN_PROGRESS, updated_at=18:18:25Z, verdict note records "Orchestrator 2026-09-09: row sat APPROVED/unassigned since 01:24Z without ever running (invisible to routing); reset to TODO so codex claims it" -- a routing-layer fix, not an action taken by this task. This ticket authors the P1 non-FX price_scale probe (authority_task_id=3032534e) blocking the 9 non-FX Dukascopy symbols; now with codex, no claude action required this cycle. Task remains IN_PROGRESS pending codex's artifact.
+
+## Checked 2026-09-09T18:30Z (orchestration cycle) -- no change
+
+`2f717775` still `IN_PROGRESS`/codex, `updated_at=18:18:25Z` (~12min, too soon for an artifact). No download restart, no duplicate ticket. Confirmed 5 concurrent claude.exe processes (scheduler-pileup class) and weekly quota 88% used/12% remaining -- see bb814520's execution record for the fuller note; flagged to OWNER this cycle, not actioned here (out of this ticket's authority). Task remains IN_PROGRESS pending codex's artifact.

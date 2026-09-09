@@ -362,3 +362,7 @@ QM5_41394 XAUUSD/SP500/XTIUSD Q02 still pending, claimed_by=None, unchanged sinc
 ## Checked 2026-09-09T1818Z (orchestration cycle) -- no change
 
 Direct DB read: QM5_41394 SP500/XAUUSD/XTIUSD Q02 legs still status=pending, claimed_by=None, updated_at unchanged at 10:52:59Z (~7h25m). farm_health overall=FAIL (13 fail/17 warn/52 ok, same chronic set: agent_task_state_stranded, work_item_phase_age_slo, q09_autoseal_hold_census, pending_artifact_binding_drift, backup_calendar_continuity, evidence_cohort_watch -- none new or actionable within this task's forbidden-actions scope). No new OWNER answer on OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (rebuild-vs-park). No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-09T18:30Z (orchestration cycle) -- no change
+
+Direct DB read: QM5_41394 SP500/XAUUSD/XTIUSD Q02 legs unchanged since 10:52:59Z (~7h45m). Confirmed 5 concurrent claude.exe processes still alive -- the scheduler-pileup class flagged repeatedly above (`QM_StrategyFarm_ClaudeOrchestration_15min`, LastRunTime 20:30:30Z/NextRunTime 20:45:45Z) remains unresolved; weekly quota now 88% used/12% remaining per `agent_router.py status`, worse than every prior reading. No fix attempted (scheduled-task change is outside this ticket's authority; flagged to OWNER in this cycle's summary). No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
