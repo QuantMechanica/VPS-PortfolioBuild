@@ -2126,3 +2126,17 @@ file:line and report citations, conditional top-10 triage ranking, and unchanged
 source-hash verification are in `docs/ops/evidence/FLEET_SESSION_CLOCK_AUDIT_2026-09-09.md`.
 Exhaustive pending-placement classification and measured affected-trade ranking
 remain open; no source changes or work items created for this audit.
+
+## 2026-09-09T22:05Z — Balke USDJPY range-window sweep pre-registered and commissioned (OWNER ~21:45Z)
+
+OWNER: find the best range window empirically on our own .DWX data. Plan pre-registered in
+`docs/research/BALKE_WINDOW_SWEEP_PLAN_2026-09-09.md` (commit 1da6f019c7): fixed UTC+3 clock,
+stage A 60 windows (start 0..9 x length 2..8, exit 18) + stage B 30 exit variants on the top-5,
+per-year OPT_CENSUS cells 2019..2025 (630 cells, ~8-9 h fleet time, GELB cost reported), costed
+return_to_maxdd, DEV 2019-2022 / OOS 2023-2025, plateau-median selection over the 3x3 grid
+neighbourhood, admissibility >=10 entry days every year, refutation = winner plateau < 1.10 x the
+03-06 DEV score or OOS confirmation fails. Declared trial count 90, parameter count 3.
+Codex ticket `49af4f08` P92 (Terra/high): `window_sweep.py` plan/enqueue/report + declaration.json
+bound to the plan commit; stage A enqueue only; Claude adjudicates. Follow-ups: Astra `d444a7a8`
+(clock modes / buffer / outside-range / Balke minute config) runs on the winner only; the 1,085-cell
+pattern census stays provisional until the window is settled.
