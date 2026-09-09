@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T08:46:49.4952900Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "7e11a3e8cacad099112a69ba97571f87b142da8e",
+  "outcome": "STOP_ACTIVE_WORK_ITEM_CEILING",
+  "frontier": {
+    "frozen_scan_pairs": 66,
+    "unbuilt_relationships": 0,
+    "reconciliation": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md"
+  },
+  "anchors": {
+    "QM5_12532": {
+      "q02": {"verdict": "PASS", "work_item_id": "e4890d77-b865-4a48-b946-315faefca920"},
+      "latest_terminal_gate": {"phase": "Q05", "verdict": "FAIL"}
+    },
+    "QM5_12533": {
+      "q02": {"verdict": "PASS", "work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62"},
+      "latest_terminal_gate": {"phase": "Q04", "verdict": "FAIL"}
+    }
+  },
+  "nonduplicate_fallbacks": {
+    "QM5_41335": {"q02": "PASS", "work_item_id": "ff75b1c3-4930-419d-a2fe-49bd37eadc4d"},
+    "QM5_12507": {"q02": "pending", "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251"}
+  },
+  "cpu_admission": {
+    "samples_percent": [79.79, 75.77, 78.04, 71.98, 74.05],
+    "average_percent": 75.93,
+    "maximum_percent": 79.79
+  },
+  "farm_snapshot": {
+    "access": "read_only_via_farmctl_work_items",
+    "active_count": 10,
+    "active_work_item_limit": 7,
+    "admitted": false,
+    "summary": {
+      "OPT_CENSUS_active": 5,
+      "Q02_active": 2,
+      "Q04_active": 2,
+      "Q07_active": 1
+    },
+    "running_factory_terminals": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T9", "T10"]
+  },
+  "mutations": {
+    "mq5_written_or_edited": false,
+    "source_pin_audit_required": false,
+    "compile_command_or_enqueue": false,
+    "smoke_or_backtest": false,
+    "q02_enqueue": false,
+    "dispatch_or_terminal_control": false,
+    "portfolio_or_live_change": false
+  },
+  "binding_guard": "Any generated MQ5 must pass audit_framework_input_pins.py --check-source before enqueue-compile; any nonzero exit or EA_FRAMEWORK_INPUT_PINNED finding refuses the build."
+}
