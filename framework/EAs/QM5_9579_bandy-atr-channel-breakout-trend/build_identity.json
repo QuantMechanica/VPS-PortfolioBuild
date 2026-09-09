@@ -1,9 +1,14 @@
 {
+  "schema": "qm.build-identity/v1",
   "task_id": "34ffb386-bb5b-4c08-8319-c8b893fc50cc",
+  "review_task_id": "ad98fd21-0459-4b0b-a673-69d41d2b1a0d",
   "ea_id": "QM5_9579",
+  "ea_label": "QM5_9579_bandy-atr-channel-breakout-trend",
   "ea_dir": "framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend",
   "mq5_path": "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/QM5_9579_bandy-atr-channel-breakout-trend.mq5",
-  "ex5_path": null,
+  "mq5_sha256": "8e18aff5def9ca39c01d445be3842ea3f9409d345d25b8cc99ca59b37ddd4e48",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/QM5_9579_bandy-atr-channel-breakout-trend.ex5",
+  "ex5_sha256": "9e27f963b2acd6d661e2550ee253a3bc92c381532e41e4dcd04a8eca218655a4",
   "magic_base": 95790000,
   "symbols_registered": [
     "GDAXI.DWX",
@@ -20,15 +25,35 @@
     "USDCAD.DWX",
     "NZDUSD.DWX"
   ],
-  "setfiles_generated": [],
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_AUDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_EURUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_GBPUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_GDAXI.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_NDX.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_NZDUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_SP500.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_UK100.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_USDCAD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_USDCHF.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_USDJPY.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_WS30.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/sets/QM5_9579_bandy-atr-channel-breakout-trend_XAUUSD.DWX_D1_backtest.set"
+  ],
   "spec_md_path": "C:/QM/repo/framework/EAs/QM5_9579_bandy-atr-channel-breakout-trend/SPEC.md",
-  "build_check_passed": false,
-  "compile_succeeded": false,
+  "build_check_passed": true,
+  "compile_succeeded": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "compile_work_item_id": "8958e6ed-0bd6-4055-97a3-f48a01ab6e13",
+  "compile_evidence_path": "D:/QM/reports/work_items/8958e6ed-0bd6-4055-97a3-f48a01ab6e13/QM5_9579/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "8fdc91bf095d31f250f69ad9a11d39042e24a468d91c59ee825711b2848a04e0",
   "smoke_result": "deferred_p2_smoke",
   "smoke_report_path": null,
-  "blocked_reason": "Governed COMPILE_EA work item 8958e6ed-0bd6-4055-97a3-f48a01ab6e13 is pending under COMPILE_EA_WORKER_ROLLOUT_PENDING. Measured CPU max 99.51% exceeded the 97% ceiling, so no smoke or Q02 work was started.",
-  "open_questions": [
-    "The existing EX5 and setfiles remain bound to the superseded source SHA dde31d552fb197f3d16f311353b553d7956cb90a5b84ef2efb79cddf1f7fdd44 and are not evidence for this source revision.",
-    "After the compile-worker rollout, release only work item 8958e6ed-0bd6-4055-97a3-f48a01ab6e13 and require COMPILE_OK plus current-source setfile hashes before smoke or Q02 enqueue."
-  ]
+  "blocked_reason": "",
+  "open_questions": [],
+  "scope": "build_and_non_live_review_only",
+  "pipeline_phase_run": false,
+  "live_authorized": false,
+  "generated_at_utc": "2026-09-09T18:15:52Z"
 }
