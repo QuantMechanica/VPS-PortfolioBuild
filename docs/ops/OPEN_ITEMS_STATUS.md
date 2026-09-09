@@ -1591,3 +1591,23 @@ independently working the same task at once) -- future cycles should no longer s
 concurrent claude.exe pileup from hung prior-day sessions.
 
 No threshold/verdict/T_Live/AutoTrading/gate change. No OWNER-scope work invented.
+
+## Orchestration cycle 2026-09-09T0904Z -- 3 IN_PROGRESS claude tasks unchanged; gating Codex ticket close but not done
+
+Re-checked all three `IN_PROGRESS` claude tasks (`bb814520` CALENDAR-CRITERIA-B-PRIME,
+`dfc60103` Q09-LEGACY-LOGGER-SAMPLE, `46167bd9` Q09-LEGACY-CALENDAR-INPUT): all correctly
+remain `IN_PROGRESS`, gated on Codex ticket `b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3`, still
+`state=IN_PROGRESS` (unchanged since 07:52:47Z). Checked its actual deliverables directly
+in `farm_state.sqlite` rather than trusting router state alone: the rebuilt `QM5_11167`
+identity (`QM5_41394`) has `COMPILE_EA=done/COMPILE_OK`, and its single Q02 work_item
+(`58b36f74`) is enqueued and `pending` (unclaimed, not yet run) -- exactly one, per the
+ticket's acceptance criteria. Ticket is functionally close to done but Codex has not yet
+moved it to `REVIEW`, so nothing is unblocked for Claude this cycle. `farmctl health`
+overall=FAIL (14 fail/15 warn/53 ok) -- all named FAIL/WARN checks match previously
+logged, already-tracked findings (`p2_pass_no_p3`, `q02_stranded_exhausted_pairs`,
+`phase_invalid_rate_7d`, `agent_task_state_stranded`/`_aging_slo`,
+`q09_sealed_plan_hold_age`/`q09_autoseal_hold_census`, `pending_artifact_binding_drift`,
+`backup_calendar_continuity`, two `task_monitor_escalation` rows); no new incident.
+
+No router state change made; no new ticket duplicated. No threshold/verdict/T_Live/
+AutoTrading/gate change. No OWNER-scope work invented.
