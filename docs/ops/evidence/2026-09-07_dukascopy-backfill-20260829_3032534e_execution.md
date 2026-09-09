@@ -182,3 +182,7 @@ are possible.
   scheduled-task or process change made from inside this routed task — flagging for OWNER/router
   awareness only. Also reducing the verbosity of further no-op log entries on this task group per
   the note in the calendar-criteria-b-prime evidence file. Task `3032534e` stays IN_PROGRESS.
+
+## Checked 2026-09-09T06:17Z (orchestration cycle) -- no change; pileup persists
+
+2f717775 still APPROVED/unclaimed, updated_at=2026-09-09T01:24:20Z (~4h53m unclaimed). tasklist now shows 9 concurrent claude.exe processes (was 8-9 at 05:48Z) -- QM_StrategyFarm_ClaudeOrchestration_15min pileup confirmed still present, not worsening materially. No scheduled-task or process change made from this routed task (out of scope for a single ops_issue execution ticket; flagging for OWNER/router awareness only, per prior cycle). No duplicate ticket, no download restart, no terminal action. Task stays IN_PROGRESS.
