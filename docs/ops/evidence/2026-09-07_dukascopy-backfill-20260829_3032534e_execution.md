@@ -301,3 +301,21 @@ shared OWNER-decision gate since 13:59Z (only an unrelated FX-cointegration CPU-
 record and this task-group's own prior cycle-log commits). D: free 80.96GB (OK, no
 disk-runway concern this cycle). No new reprobe, ticket, download restart, or
 OWNER-scope work invented. Task stays IN_PROGRESS.
+
+## Checked 2026-09-09T14:39Z (orchestration cycle) — concurrent-session download attempt found dead, not restarted
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~13h15m
+unclaimed). New signal (not from this task's own actions): `progress.json` in the same
+output root (`20260909T032705Z`) shows a download run `started_at_utc=13:57:39Z` with
+`completed=36, downloaded=6, status=RUNNING` — i.e. a *different* session/process
+attempted a resume ~40min before this check, without a corresponding log entry in this
+file (duplicate-session-race class, consistent with the `claude.exe` pileup already
+flagged above). Checked `Get-CimInstance Win32_Process` for `python.exe`: no
+`download_bi5.py` process is currently alive, and `download.log`'s last line is
+`13:59:31Z` — so that run has already died (no clean terminal status written) rather
+than completing or being actively retried. Failure signature in that window is the same
+mix of `WinError 10060` / `HTTP 503` as every prior probe, with a partial 6/36 success
+rate — consistent with the persistent/structural-degradation conclusion from 06:20Z, not
+a fix. Did not start a new download this cycle (would compound the concurrent-session
+duplication already observed, not add a genuinely new data point). No duplicate ticket,
+no terminal action. Task remains `IN_PROGRESS`.

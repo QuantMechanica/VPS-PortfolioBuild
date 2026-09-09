@@ -293,3 +293,10 @@ release, repin, or verdict change made here. Task remains `IN_PROGRESS`.
 since 13:56Z check); USDJPY/EURUSD done. Gating symbol (XAUUSD, 11196 lineage) still
 unadjudicated. No ticket, release, repin, or verdict change. Read-only this cycle, lease
 not reacquired. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T14:39Z (orchestration cycle) — no material change
+
+`QM5_41394` Q02: SP500/XAUUSD/XTIUSD still `pending` since 10:52:59Z (~3h46m); USDJPY
+Q03 still `pending` since 13:09:21Z (~1h30m), no Q04 progress. Gating symbol (XAUUSD,
+11196 lineage) still unadjudicated; acceptance criterion unmet. No ticket, release,
+repin, or verdict change; read-only, lease not reacquired. Task remains `IN_PROGRESS`.
