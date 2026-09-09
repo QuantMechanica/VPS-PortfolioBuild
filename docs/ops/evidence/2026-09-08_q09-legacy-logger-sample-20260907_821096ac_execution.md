@@ -434,3 +434,7 @@ Same gate. Still unclaimed since 10:52:59Z. No ticket, rebuild, release, or verd
 ## Checked 2026-09-09T16:33Z (orchestration cycle) -- no change
 
 Same gate as `bb814520` (direct DB read, ~5h40m unclaimed). No ticket, rebuild, release, or verdict change. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-09T17:03Z (orchestration cycle) -- no change
+
+Same gate as bb814520. QM5_41394 XAUUSD (11167 lineage) Q02 still pending since 10:52:59Z. No ticket, rebuild, release, or verdict change. Task remains IN_PROGRESS.
