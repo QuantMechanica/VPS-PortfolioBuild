@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-09T10:49:09.5760379Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "d968ba2b721a6eb53d361fbd4e13fd08f42e19ad",
+  "outcome": "HARD_CAPACITY_STOP",
+  "mutation": {
+    "card": false,
+    "ea_source": false,
+    "compile": false,
+    "compile_enqueue": false,
+    "q02_append": false,
+    "priority": false,
+    "claim": false,
+    "dispatch": false,
+    "terminal": false,
+    "portfolio_gate": false,
+    "t_live": false
+  },
+  "frontier": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "strict_qualifier_count": 7,
+    "strict_frontier_fully_mechanized": true,
+    "anchors": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02": "PASS",
+        "later_terminal": "Q05 FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02": "PASS",
+        "later_terminal": "Q04 FAIL"
+      }
+    ]
+  },
+  "fallback": {
+    "ea_id": "QM5_12507",
+    "pair": "EURUSD.DWX/GBPUSD.DWX",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "already_priority_track": true,
+    "duplicate_enqueue_refused": true,
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "risk": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "pacer_input_pin_audit": {
+    "source": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": []
+  },
+  "capacity": {
+    "active_admission_ceiling": 7,
+    "active_count": 8,
+    "cpu_hard_ceiling_percent": 97,
+    "cpu_samples_percent": [
+      69.142122,
+      67.190114,
+      66.021682,
+      71.924832,
+      73.510339
+    ],
+    "cpu_average_percent": 69.557818,
+    "cpu_max_percent": 73.510339,
+    "free_memory_gib": 6.644,
+    "total_memory_gib": 63.12,
+    "running_mt5_terminals": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T5",
+      "T6",
+      "T7",
+      "T8"
+    ],
+    "terminal_workers": [
+      "T1",
+      "T10",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "duplicate_terminal_workers": {},
+    "orphaned_terminal_processes": [],
+    "active_items": [
+      {"terminal":"T2","phase":"Q02","ea_id":"QM5_11240","symbol":"GBPUSD.DWX","work_item_id":"84aa0e4b-a970-440d-8581-831ca726f817"},
+      {"terminal":"T5","phase":"Q08","ea_id":"QM5_41165","symbol":"XTIUSD.DWX","work_item_id":"376bea1c-cde6-4239-bf95-2f9d4b2e4ef0"},
+      {"terminal":"T10","phase":"Q07","ea_id":"QM5_41176","symbol":"XTIUSD.DWX","work_item_id":"a486680e-c81b-4fbd-8d88-890de92d52bc"},
+      {"terminal":"T8","phase":"OPT_CENSUS","ea_id":"QM5_41302","symbol":"XAUUSD.DWX","work_item_id":"d6d9e356-e4a9-5a25-b3ae-b70bd91d55d8"},
+      {"terminal":"T3","phase":"OPT_CENSUS","ea_id":"QM5_41322","symbol":"XAUUSD.DWX","work_item_id":"c476b90e-643f-5b25-bc9a-4099aa792c2f"},
+      {"terminal":"T7","phase":"OPT_CENSUS","ea_id":"QM5_41324","symbol":"USDJPY.DWX","work_item_id":"4f90cf2a-b8fd-5646-af30-93dcbf1d244c"},
+      {"terminal":"T1","phase":"OPT_CENSUS","ea_id":"QM5_41345","symbol":"XAUUSD.DWX","work_item_id":"0a5520f8-8074-57bc-b0ea-69d350456449"},
+      {"terminal":"T6","phase":"Q04","ea_id":"QM5_9121","symbol":"GBPUSD.DWX","work_item_id":"1a9ad7eb-7c87-4a13-85ff-46afce0b6f0c"}
+    ]
+  },
+  "safety": {
+    "t_live_observed_only": true,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "unrelated_worktree_changes_preserved": true
+  }
+}
