@@ -266,3 +266,17 @@ not Dukascopy-lane specific, hourly purge already active per the health action-h
 no action taken (out of scope for this ticket). Spawn lease
 `agent_task:3032534e-eaf0-5b68-b09f-2127ebb315b0` reacquired (30 min). No download
 restart, no duplicate ticket, no OWNER-scope work invented. Task stays IN_PROGRESS.
+
+## Checked 2026-09-09T~12:50Z (orchestration cycle) — no change
+
+`2f717775` still `APPROVED`/unassigned, `updated_at=2026-09-09T01:24:20Z` (~11h26m
+unclaimed, direct DB read). No new datafeed reprobe this cycle — last reprobe cycle
+was 11:49-11:50Z (~1h ago), and the structural-degradation conclusion from 06:20Z
+already exhausted the "different time of day" re-test bar; no new sample would add
+signal without a materially later UTC slot. `farmctl health`: FAIL 15/WARN 17/OK 52,
+same chronic set, `disk_free_gb` now OK (84.9GB free, D: purge cycle recovered space
+since the 12:19Z `disk_scratch_rate_runway` FAIL) — no Dukascopy-lane-specific
+signal. Spawn lease `agent_task:3032534e-eaf0-5b68-b09f-2127ebb315b0` still held from
+the 12:19:38Z reacquisition (expires 12:49:38Z); this cycle performed only read-only
+verification, no reacquisition needed. No download restart, no duplicate ticket, no
+OWNER-scope work invented. Task stays IN_PROGRESS.

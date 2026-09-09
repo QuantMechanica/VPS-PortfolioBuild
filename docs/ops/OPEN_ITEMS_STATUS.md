@@ -1,5 +1,24 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 09.09., ~12:50Z (Orchestrierungszyklus) — Teilfortschritt USDJPY-Leg, weiterhin keine
+> Terminaladjudikation:** Direkte DB-Prüfung `QM5_41394`: USDJPY.DWX-Leg genuine neu seit dem
+> 11:48Z-Check — Q02 jetzt `done`/`PASS` (`80789556…`, 12:17:13Z) und bereits eine neue Q04-Zeile
+> `bd6f7c72…` (`pending`, 12:19:47Z). SP500/XAUUSD/XTIUSD unverändert `Q02 pending` seit `10:52:59Z`;
+> EURUSD unverändert `Q04 FAIL` (Sackgasse, strategy-Taxonomie). Damit existiert weiterhin **kein**
+> terminales Q10_NEWS-PASS/FAIL auf irgendeinem Leg — `bb814520`/`dfc60103` bleiben korrekt
+> `IN_PROGRESS`. `3032534e`: Codex-Ticket `2f717775` weiterhin `APPROVED`/unassigned seit `01:24:20Z`
+> (~11h26m), kein neuer Reprobe (letzter Reprobe-Zyklus 11:49-11:50Z, Cadence noch nicht wieder
+> fällig). Spawn-Leases für alle drei Aufgaben zuletzt `12:19:38Z` reacquired (Ablauf `12:49:38Z`).
+> `farmctl health` overall=FAIL (15 FAIL/17 WARN/52 OK) — chronisches Set unverändert
+> (`codex_zero_activity`/`repo_dirty_build_guard`, `q02_stranded_exhausted_pairs`,
+> `phase_invalid_rate_7d`, `agent_task_state_stranded`, `agent_task_aging_slo`,
+> `work_item_phase_age_slo`, `q09_sealed_plan_hold_age`, `q09_autoseal_hold_census`,
+> `pending_artifact_binding_drift`, Scheduled-Task/Backup-Calendar-FAILs); keine dieser Zeilen
+> betrifft die drei gegatterten Ketten. Kein Ticket/Rebuild/Release/Router-Zustandswechsel;
+> `agent_router.py run`/`route-many`/`replenish` nicht aufgerufen. Details:
+> `docs/ops/evidence/2026-09-09_q09-legacy-calendar-input-20260909_70823296_execution.md`,
+> `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`.
+
 > **Nachtrag 09.09., 11:48Z (Orchestrierungszyklus) — keine Zustandsänderung:** `bb814520`/`dfc60103`
 > weiterhin korrekt `IN_PROGRESS`, gegattert auf denselben Q10_NEWS-Terminalverdikt-Ketten wie
 > zuletzt (die vier `QM5_41394`-Symbol-Legs SP500/USDJPY/XAUUSD/XTIUSD unverändert `Q02 pending`

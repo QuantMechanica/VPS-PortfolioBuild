@@ -417,3 +417,19 @@ yet claimed/run. EURUSD leg unchanged at `Q04 FAIL` (10:29:26Z). No terminal Q10
 on any leg. `bb814520`/`dfc60103` acceptance criteria (first adjudications end PASS/FAIL) remain
 unreached. No ticket, rebuild, release, or router state change made; `agent_router.py run` /
 `route-many` / `replenish` not invoked per task directive. Both tasks stay `IN_PROGRESS`.
+
+## Cycle check 2026-09-09T~12:50Z — USDJPY leg advances to Q04, still not terminal
+
+Direct DB read (`work_items WHERE ea_id='QM5_41394'`): the USDJPY.DWX leg is genuinely new since
+the 11:48Z check — Q02 item `80789556-ee90-4597-8e1e-8cee845c69d5` is now `status=done`/
+`verdict=PASS` (`updated_at=12:17:13Z`), and a fresh Q04 item `bd6f7c72-aa6c-4aa4-9008-9c33c7d8bef7`
+exists (`status=pending`, `updated_at=12:19:47Z`). SP500 (`17e576cf…`), XAUUSD (`3b315bc8…`), and
+XTIUSD (`53c32094…`) remain `Q02 status=pending`, unchanged since `10:52:59Z`. EURUSD remains the
+dead-ended `Q04 FAIL` (`10:29:26Z`, strategy-taxonomy). No leg has reached Q10_NEWS; no PASS/FAIL
+adjudication of the calendar-echo mechanism exists yet. `bb814520`/`dfc60103` acceptance criteria
+remain unmet — both stay correctly `IN_PROGRESS`. Spawn leases for all three tasks were reacquired
+`12:19:38Z` (expire `12:49:38Z`) by the immediately-preceding cycle; this cycle performed only
+read-only verification, no mutating action, so no reacquisition was required. `farmctl health`:
+FAIL 15/WARN 17/OK 52, same chronic set as prior cycles, none referencing this chain. No ticket,
+rebuild, release, or router state change; `agent_router.py run`/`route-many`/`replenish` not
+invoked.
