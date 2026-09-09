@@ -1,0 +1,16 @@
+{
+  "schema": "qm.framework-input-pin-audit.receipt/v1",
+  "date": "2026-09-09",
+  "ea_id": "QM5_41397",
+  "source": "C:/QM/repo/framework/EAs/QM5_41397_wti-seas-surprise-rv/QM5_41397_wti-seas-surprise-rv.mq5",
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41397_wti-seas-surprise-rv/QM5_41397_wti-seas-surprise-rv.mq5",
+  "exit_code": 0,
+  "result": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": []
+  },
+  "compile_enqueue_allowed": true
+}
