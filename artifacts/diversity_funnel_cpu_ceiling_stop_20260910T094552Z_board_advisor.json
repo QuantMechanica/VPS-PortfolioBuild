@@ -1,0 +1,83 @@
+{
+  "schema": "qm.paced-fleet-diversity-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-10T09:45:52.1194627Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "fb1f7aafda27e719cce9158d4d6ab2b41d2dc6a7",
+  "mission": "Advance one non-duplicate, diversity-first V5 strategy-farm unit toward Q02.",
+  "outcome": "STOP_BACKTEST_CPU_CEILING",
+  "capacity": {
+    "sampler": "Win32_Processor.LoadPercentage; processor-average; five samples approximately one second apart",
+    "samples_percent": [
+      96.0,
+      97.0,
+      91.0,
+      91.0,
+      66.0
+    ],
+    "average_percent": 88.2,
+    "maximum_percent": 97.0,
+    "ceiling_percent": 97.0,
+    "admission_rule": "Both the five-sample average and maximum must be strictly below 97 percent.",
+    "admission_passed": false,
+    "binding_dimension": "maximum_percent"
+  },
+  "farm_state": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "active_work_item_count": 4,
+    "active_phase_summary": {
+      "OPT_CENSUS": 4
+    },
+    "active_work_items": [
+      {
+        "id": "3bbf4bd4-bd8b-58bc-b65a-4fcf2eab1896",
+        "ea_id": "QM5_41302",
+        "symbol": "XAUUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "a05d9deb-0cca-500b-a3b4-c01fbdb78ed4",
+        "ea_id": "QM5_41321",
+        "symbol": "NDX.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "6804ff6d-1595-57e9-a2a0-4697320de291",
+        "ea_id": "QM5_41322",
+        "symbol": "XAUUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T5"
+      },
+      {
+        "id": "e99d98f5-4bc7-55fa-b970-87927d3a85db",
+        "ea_id": "QM5_41345",
+        "symbol": "XAUUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T7"
+      }
+    ]
+  },
+  "guard_disposition": {
+    "candidate_ranked": false,
+    "farm_claim_created": false,
+    "ea_source_written": false,
+    "framework_input_pin_audit_required": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "reason": "The capacity guard bound before backlog ranking or mutation. No generated MQ5 existed to audit."
+  },
+  "mutation_boundary": {
+    "agent_task_changed": false,
+    "work_item_changed": false,
+    "registry_changed": false,
+    "magic_resolver_changed": false,
+    "ea_or_setfile_changed": false,
+    "compile_or_tester_started": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false
+  },
+  "continuation_condition": "On a later paced wake, take a fresh five-sample whole-host CPU window. Proceed only if both average and maximum are strictly below 97 percent; then re-rank the current approved backlog, atomically claim one distinct highest-diversity candidate through the farm DB, run the mandatory framework-input-pin audit after writing the MQ5 and before any compile enqueue, and enqueue only a RISK_FIXED Q02 row."
+}
