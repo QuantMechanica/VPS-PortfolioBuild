@@ -462,3 +462,7 @@ Same gate as bb814520 (see that file for the fuller note this cycle, incl. confi
 ## Checked 2026-09-09T~18:50Z (orchestration cycle) -- no change
 
 Same gate as bb814520. QM5_41394 XAUUSD Q02 still pending since 10:52:59Z (~8h). No ticket, rebuild, release, or verdict change. Verbose entries suppressed per note in bb814520's file. Task remains IN_PROGRESS.
+
+## Checked 2026-09-10T22:25Z (orchestration cycle, first check this session, ~35h32m gap since prior entry) -- gate still unmet, new context
+
+Same gate as `bb814520` (see that file for the fuller note this cycle). QM5_41394 XAUUSD.DWX Q02 (the 11167 lineage row this task's acceptance depends on) still `status=pending`, `claimed_by=NULL`, `updated_at=2026-09-09T10:52:59Z`, ~35h32m static. Sibling row XTIUSD.DWX from the same EA cluster cleared Q02->Q03->Q04 on 2026-09-10 -- the queue is actively draining elsewhere, only SP500/XAUUSD remain stuck on this EA. Not this task's authority to reprioritize (`selected_effect_only`). Weekly quota healthy post-reset (0.1% used) -- the 2026-09-09 quota-pressure suppression driver is gone, but per-cycle logging discipline is kept to avoid re-introducing the same near-duplicate-entry problem. No `update-task` call -- acceptance criterion ("11167 rerun ends PASS/FAIL") still unmet. Task remains `IN_PROGRESS`.
