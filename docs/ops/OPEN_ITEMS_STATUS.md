@@ -2184,3 +2184,20 @@ interleave; nothing deleted or down-prioritised. Ticket closed APPROVED (partial
 by orchestrator). Next: first WINSWEEP claim/MEASURED in the hourly watch (`winsweep` line), then
 `window_sweep.py report` and stage-A adjudication per the pre-registered plan; stage B tooling is a
 follow-up ticket after adjudication.
+
+## 2026-09-10T00:55Z — WINSWEEP/41398 cells starved by claim order; queue-order lever applied; Codex fix commissioned
+
+FINDING: canonical claim order (farmctl.pending_claim_order_sql, top-down ON) ranks OPT_CENSUS
+frontier rows idle-program -> queue_order_at (Q12 owner) -> ... -> _asset_rank -> updated_at.
+USDJPY programs (asset rank 3) sit behind the continuously re-boosted XAU (0) / NDX (1) frontier
+rows: DL089_QM5_13213 (41398 pattern census) got 2 of 1,085 cells in 10 h; WINSWEEP 0 of 420 (no
+Q12 owner, sentinel queue order). Snapshot: first 13213 row at position 15, first WINSWEEP row at 21.
+ACTION (GRUEN queue-order change, reversible): set_dl089_queue_order.py apply on Q12 owner
+97908d93 (ea QM5_13213) queue_order_at=2026-08-20T00:00:00+00:00 -> rank 51 -> 1; backup written by
+the tool; reason + OWNER instruction 2026-09-09 ~21:45Z recorded. This lifts the 41398 pattern
+census; WINSWEEP cannot be targeted by the lever (window rows carry no q12_work_item_id) -> Codex
+ticket `ba63936d` P95 (Terra/high): generic queue-order support for window programs, tests,
+DL089 identity proof; orchestrator then reloads workers (chunk-59 pattern) and applies the lever.
+STRUCTURAL (for OWNER, parked): asset-rank starvation of USDJPY programs under the top-down selector
+is a pool-order policy question; candidate fairness option (round-robin over idle programs before
+asset rank) to be proposed by Codex in its RESULT, decision stays with OWNER.
