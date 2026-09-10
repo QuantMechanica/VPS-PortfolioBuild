@@ -1,0 +1,25 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41149
+; ea_slug:      audusd-local-session-inventory-drift
+; ea_version:   v5.0
+; set_version:  s20260910-001
+; symbol:       AUDUSD.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   4ddf42ea2820c116272c3bfabb127288c24ee718b823996cc6e412a72f7871eb
+; author:       Development
+; date:         2026-09-10
+;==========================================================
+qm_ea_id=41149
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41149_audusd-local-session-inventory-drift.md
+strategy_atr_period_h1=14
+strategy_hard_stop_atr=1.5
