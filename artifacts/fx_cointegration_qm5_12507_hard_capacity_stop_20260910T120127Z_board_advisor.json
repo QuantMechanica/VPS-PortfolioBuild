@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-10T12:01:27.233Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "67d7a02f33bc877dd3404482a41119cd92c06933",
+  "mission": "Grow the certified V5 portfolio book with a non-duplicate low-frequency market-neutral FX cointegration sleeve, preferring QM5_12532/QM5_12533 Q02 repair and otherwise advancing an existing forex card.",
+  "frontier": {
+    "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "coverage_record": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "covered_relationships": 66,
+    "uncovered_relationships": 0,
+    "unbuilt_pair_found": false,
+    "duplicate_guard": "All 66 frozen-scan relationships already have governed EA/Q02 coverage; no new card or EA identity was created."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02": "PASS",
+      "later_terminal_state": "Q04 PASS, then Q05 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02": "PASS",
+      "later_terminal_state": "Q04 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "H1",
+    "work_item": {
+      "id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "phase": "Q02",
+      "status": "pending",
+      "verdict": null,
+      "attempt_count": 0,
+      "claimed_by": null,
+      "priority_track": true,
+      "matching_open_logical_q02_count": 1,
+      "duplicate_enqueue_performed": false
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "pacer_build_guard": {
+    "source_audited": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "generated_mq5_written": false,
+    "compile_enqueued": false
+  },
+  "capacity_preflight": {
+    "sampled_at_utc": "2026-09-10T12:00Z",
+    "cpu_samples_percent": [
+      97.756,
+      94.727,
+      92.579,
+      96.68,
+      87.013
+    ],
+    "cpu_average_percent": 93.751,
+    "cpu_maximum_percent": 97.756,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": true,
+    "free_physical_memory_gib": 46.49,
+    "heavy_multisymbol_admission_required_gib": 58.0,
+    "ram_admission_clear": false,
+    "paced_launch_gate_max": 1,
+    "active_factory_claims": [
+      "T1",
+      "T7",
+      "T8",
+      "T10"
+    ],
+    "active_factory_claim_count": 4,
+    "paced_launch_capacity_clear": false
+  },
+  "outcome": {
+    "status": "HARD_CAPACITY_STOP",
+    "action": "Preserved the sole pending priority Q02 row and stopped without duplicate enqueue, manual claim, dispatch tick, tester launch, terminal reservation, source edit, or compile.",
+    "continuation": "Allow the resident worker to claim the existing Q02 row after the CPU, serialized-lane, and 58 GiB basket RAM admission gates clear."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "runtime_queue_mutated": false,
+    "terminal_process_mutated": false
+  }
+}
