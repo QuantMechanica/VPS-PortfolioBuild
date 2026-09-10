@@ -2359,3 +2359,20 @@ parent-close return plus lower-tercile completed-week close in February/March/Se
 fixed-risk backtest only. Five current whole-host CPU samples were 98.83/98.73/97.85/99.12/100.00%
 (average 98.91%, maximum 100.00%), exceeding the exclusive 97% ceiling. Stopped as ordered: no Q02
 row exists. Evidence: `docs/ops/evidence/2026-09-10_qm5_41427_wti_refinery_maintenance_weekly_close_location_build_cpu_hold.md`.
+
+## 2026-09-10T20:30Z — OWNER "Umsetzen" (3 acceleration items): status
+
+1. Census order by counter value (GRUEN, set_dl089_queue_order.py, backups by the tool): programs whose
+   pair is not yet Q14-terminal first, fewest pending cells first -> 21502, 10513, 10403, 13013, 11660 at
+   queue_order_at 2026-08-19T00:10 (behind WINSWEEP 08-19 00:00); 13213 pattern program (pair COMPLETE
+   at Q14, 1,060 pending) demoted to 2026-08-30; 10145 (ECON_FAIL) to 2026-08-31; 41097 owner row is
+   done/NO_FILTER_CHANGE -> precondition refused, left as is. COMPLETE pairs keep 08-21/08-29.
+2. T11 launch path: Codex `63398c6b` P90 (catalog from signed source, research_canary launch mode,
+   isolation + CPU/RAM guards, one real-tick smoke cell identical to the fleet cell); ASTRA-T11-PRESCREEN
+   `b48ba1fb` re-opens after it (its DEVIATION: symbols.custom.dat absent on T11).
+3. Warm-runner V4a: correction - never validated against MT5 (both V4a tickets DEVIATION_STOP, injected
+   test backend only, 0 warm cells). Codex `da0512a7` P84: resident-MT5 backend behind the existing
+   Default-OFF flag, 20/20 warm-vs-cold identical on canary T10, rollout/rollback runbook; fleet
+   activation only via staggered reload by the orchestrator.
+Watch 20:26Z: census 45/h under cap 3; Q02 done 3h = 8 (admission works again), Q04 2 active; D: 87 GB
+(queue-order backups ~0.75 GB each, 16 GB backup dir -> prune candidate after the reset).
