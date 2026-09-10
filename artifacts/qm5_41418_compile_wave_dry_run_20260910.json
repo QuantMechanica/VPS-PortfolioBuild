@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "19fa3cd2fd115f4dd548dd68e22cfe6fdb1ac9bf129ec09e5a313945606b6728",
+      "ea_id": "QM5_41418",
+      "ea_label": "QM5_41418_xauxag-wstreak2-cont",
+      "expected_mq5_sha256": "19fa3cd2fd115f4dd548dd68e22cfe6fdb1ac9bf129ec09e5a313945606b6728",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41418_xauxag-wstreak2-cont\\QM5_41418_xauxag-wstreak2-cont.mq5",
+      "work_item_id": "6683cc5f-a969-4c4b-881a-9676af581196"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "6683cc5f-a969-4c4b-881a-9676af581196",
+  "work_item_id_selectors": [
+    "6683cc5f-a969-4c4b-881a-9676af581196"
+  ]
+}

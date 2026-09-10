@@ -1,0 +1,29 @@
+{
+  "schema": "qm.compile-status-evidence/v1",
+  "captured_at_utc": "2026-09-10T10:35:09+00:00",
+  "ea_id": "QM5_41418",
+  "ea_label": "QM5_41418_xauxag-wstreak2-cont",
+  "work_item_id": "6683cc5f-a969-4c4b-881a-9676af581196",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 3,
+  "failure_classes": [],
+  "setfile_count": 3,
+  "mq5_sha256": "19fa3cd2fd115f4dd548dd68e22cfe6fdb1ac9bf129ec09e5a313945606b6728",
+  "ex5_sha256": "5eaa250a0ad56aa5dc723b3b8274cd8a041398303be966982a9bb69ca2b9f222",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41418_xauxag-wstreak2-cont/QM5_41418_xauxag-wstreak2-cont.ex5",
+  "compile_evidence_path": "D:/QM/reports/work_items/6683cc5f-a969-4c4b-881a-9676af581196/QM5_41418/COMPILE_EA/compile_evidence.json",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_103443.json",
+  "framework_input_pin_audit": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "reference_tests": "6/6 PASS",
+  "note": "Build-check warnings concern optional card inference only; no failures. Symbol-literal scan found zero source occurrences and basket symbol scope passed."
+}
