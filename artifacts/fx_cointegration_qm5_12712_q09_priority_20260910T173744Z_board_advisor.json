@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-10T17:37:44Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "1625457242fbca13bf0c8b7dd1effd55e663735d",
+  "mission": "Advance one non-duplicate low-frequency market-neutral FX cointegration sleeve without exceeding paced fleet capacity.",
+  "frontier_decision": {
+    "new_pair_selected": false,
+    "reason": "The frozen sign-aware 66-pair scan is fully mechanized with 66 covered relationships and zero uncovered relationships; creating another scan-derived card or EA would duplicate governed work.",
+    "frontier_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "preferred_anchor_triage": {
+      "QM5_12532": "Q02 PASS, Q04 PASS, then terminal Q05 FAIL; no current Q02 ONINIT or NO_HISTORY blocker",
+      "QM5_12533": "Q02 PASS, then terminal Q04 FAIL; no current Q02 ONINIT or NO_HISTORY blocker"
+    }
+  },
+  "selection": {
+    "ea_id": "QM5_12712",
+    "ea_label": "QM5_12712_edgelab-eurgbp-euraud-cointegration",
+    "pair": [
+      "EURGBP.DWX",
+      "EURAUD.DWX"
+    ],
+    "logical_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "host_symbol": "EURGBP.DWX",
+    "host_timeframe": "D1",
+    "scan_rank_positive_hedges": 5,
+    "scan_metrics": {
+      "dev_net_sharpe": 0.66171,
+      "oos_net_sharpe": 0.619076,
+      "oos_return_percent": 3.541437,
+      "oos_state_changes": 25,
+      "hedge_beta": 0.312529,
+      "half_life_d1_bars": 40.191
+    },
+    "method_source": "Chan, Ernest P. (2009), Quantitative Trading, Chapter 7",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12712_edgelab-eurgbp-euraud-cointegration.md",
+    "approved_card_sha256": "404c777413fd4e39ec1628ab37b2d2571d886cea1d6345d270bf646d83dbf6c5"
+  },
+  "q09_predecessor": {
+    "work_item_id": "b1bd1d06-dbfb-4d16-9951-3ea89e14d64f",
+    "phase": "Q08",
+    "status": "done",
+    "verdict": "FAIL_SOFT",
+    "evidence_path": "D:/QM/reports/work_items/b1bd1d06-dbfb-4d16-9951-3ea89e14d64f/QM5_12712/Q08/QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1/aggregate.json"
+  },
+  "queue_mutation": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mark-priority-track --work-item-id 844cb4a9-5cd5-4198-a8ae-56e5764f3bea --reason \"FX cointegration mission: advance unique QM5_12712 EURGBP/EURAUD D1 Q09 continuation\"",
+    "work_item_id": "844cb4a9-5cd5-4198-a8ae-56e5764f3bea",
+    "phase": "Q09",
+    "before_priority_track": null,
+    "after_priority_track": true,
+    "applied": true,
+    "marked_at_utc": "2026-09-10T17:37:44+00:00",
+    "status_after": "pending",
+    "verdict_after": null,
+    "claimed_by_after": null,
+    "attempt_count_after": 0,
+    "same_identity_open_count_after": 1,
+    "active_hold_count_after": 0,
+    "payload_sha256_after": "97b706ed09ee6ccce18766d907e9268112e9b8fe0323f6ca674789f3d1f4c255",
+    "duplicate_enqueue_performed": false,
+    "tester_dispatched": false
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_sha256": {
+    "mq5": "afdfd1a80dbfcd2c398ddc92dffe2181e5727f3837c37df2a772f25b68e171d1",
+    "ex5": "0003ed98f590e95a28a08e7d8198639b48213e882e8c5d2428cad4422355c982",
+    "basket_manifest": "a15214089f0efd8564a1ee6f2d6bb09164cde12d742ad8627fa1f7870d6e773a",
+    "logical_setfile": "105a23da1d33d559cff4ff19a5e8c5c51e8a72eb6cec5b7f6a92ecedaea6208c",
+    "scan_script": "870e3c67d7c05a75f62ab9e89d421dd94d337288f5c623395cafcf03300433d6",
+    "research_note": "e513cc785df2dfc7c74f2d89a03c47a9a90e00dcc9e14902839ee80946c13df7"
+  },
+  "verification": {
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12712_edgelab-eurgbp-euraud-cointegration/QM5_12712_edgelab-eurgbp-euraud-cointegration.mq5",
+      "exit_code": 0,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "status": "PASS"
+    },
+    "targeted_basket_manifest_test": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q -k qm5_12712",
+      "passed": 1,
+      "deselected": 46,
+      "status": "PASS"
+    }
+  },
+  "capacity_post_mutation": {
+    "cpu_samples_percent": [
+      95.313,
+      89.583,
+      91.312,
+      84.985,
+      93.461
+    ],
+    "cpu_average_percent": 90.931,
+    "cpu_maximum_percent": 95.313,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false,
+    "free_physical_memory_gib": 42.16,
+    "heavy_multisymbol_admission_required_gib": 58.0,
+    "ram_admission_clear": false,
+    "paced_launch_gate_max": 1,
+    "active_factory_claim_count": 5,
+    "dispatch_decision": "No dispatch tick or tester launch; the resident paced worker retains ownership after RAM and serialized-lane capacity recover."
+  },
+  "safety": {
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "terminal_process_mutated": false
+  }
+}
