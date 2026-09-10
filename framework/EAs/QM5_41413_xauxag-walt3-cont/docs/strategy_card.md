@@ -232,4 +232,4 @@ gate, portfolio admission, or correlation waiver is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-09-10 | initial strict XAU/XAG three-week alternation continuation card | G0 | APPROVED; build pending |
+| v1 | 2026-09-10 | initial strict XAU/XAG three-week alternation continuation card | Q02 | COMPILE_OK; Q02 enqueued pending as c7bd17a3-6262-45d6-bd4f-99a982b01a30 |

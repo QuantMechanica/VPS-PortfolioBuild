@@ -1,0 +1,55 @@
+{
+  "schema": "qm.paced-q02-enqueue/v1",
+  "recorded_at": "2026-09-10T05:54:45+00:00",
+  "ea_id": "QM5_41413",
+  "ea_label": "QM5_41413_xauxag-walt3-cont",
+  "compile": {
+    "work_item_id": "cabd9c09-d11b-41e8-bad1-777298abce89",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "ex5_sha256": "a8d5bef919ca607c7a62858b91960121c09cea935e99a525ffb7a196773b9234"
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41413_xauxag-walt3-cont/QM5_41413_xauxag-walt3-cont.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "evidence": "artifacts/qm5_41413_framework_input_pin_audit_20260910.json"
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "evidence": "artifacts/qm5_41413_q02_intake_dry_run_20260910.json"
+  },
+  "cpu_guard": {
+    "recorded_at_local": "2026-09-10T07:54:34.6464960+02:00",
+    "sample_interval_seconds": 1,
+    "samples_percent": [66.0, 54.0, 45.0, 65.0, 61.0],
+    "average_percent": 58.2,
+    "maximum_percent": 66.0,
+    "exclusive_ceiling_percent": 97.0,
+    "average_below_ceiling": true,
+    "maximum_below_ceiling": true,
+    "pass": true,
+    "terminal_or_tester_process_count": 9
+  },
+  "q02": {
+    "work_item_id": "c7bd17a3-6262-45d6-bd4f-99a982b01a30",
+    "status": "pending",
+    "symbol": "QM5_41413_XAU_XAG_WALT3_CONT_D1",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41413_xauxag-walt3-cont/sets/QM5_41413_xauxag-walt3-cont_QM5_41413_XAU_XAG_WALT3_CONT_D1_D1_backtest.set",
+    "setfile_sha256": "9e11aaea709e8dd4f6e12de2e0bc28b61fccaf05cc61bbfdedfe21424d6ac507",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/cabd9c09-d11b-41e8-bad1-777298abce89_c7bd17a3-6262-45d6-bd4f-99a982b01a30.json",
+    "receipt_sha256": "f75116542d64fa0add62b943c944c8950a57a746d099cbc62ceaacd4d5361df4"
+  },
+  "decision": "Q02_ENQUEUED",
+  "live_or_portfolio_mutation": false
+}
