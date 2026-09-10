@@ -499,3 +499,16 @@ inconsistent evidence. Flagging for the next cycle or OWNER: if the QM5_41394 re
 remains stuck past today, consider whether the pre-authorized raw append-only rerun of
 `f625d9aa` should be dispatched directly instead of waiting on the rebuild queue. No
 ticket, rebuild, release, or verdict change made here. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-10T23:10Z (headless orchestration cycle) -- root-cause chain for the unmet acceptance now fully traced
+
+See `bb814520`'s file (2026-09-10T23:10Z entry) for the full trace. Summary: this task's own
+logger-auth fix (commit `07af95fcf1`, allowlist-based) already works -- 11167's post-fix canary
+(`6797ed1c`) got past the logger wall but now fails on an unrelated `qm_news_calendar_bundle_id
+mismatch`, which is the subject of a separate OWNER decision
+(`OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`) with its own Codex ticket (`b66b5ccc`,
+APPROVED, not yet started -- blocked by the same chronic `repo_dirty_build_guard` codex-lane
+block visible in `farmctl health`). This task's own acceptance ("11167 rerun ends PASS/FAIL")
+depends on that separate ticket landing, not on any action within this task's
+`selected_effect_only` scope. No new Codex ticket needed here (would duplicate `b66b5ccc`).
+No `update-task` call. Task remains `IN_PROGRESS`.

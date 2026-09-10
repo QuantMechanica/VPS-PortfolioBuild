@@ -409,3 +409,24 @@ judgment call). `QM5_41394` SP500/XAUUSD.DWX Q02 rows checked directly: still `p
 `claimed_by=NULL`, `attempt_count=0`, `updated_at=2026-09-09T10:52:59Z` (~2 days static,
 ordinary queue depth, not this task's authority). No ticket, rebuild, release, or verdict
 change made. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-10T23:10Z (headless orchestration cycle) -- 11196 gate traced to a deliberate design choice, not a new defect
+
+QM5_41394 SP500.DWX/XAUUSD.DWX Q02 rows unchanged (`status=pending`, `claimed_by=NULL`,
+`updated_at=2026-09-09T10:52:59Z`, direct DB read). Traced the 11196/XAUUSD Q10_NEWS
+terminalization (`a909ee18`, done/REVIEW_REQUIRED, `reason_codes=["cell_execution_failed"]`,
+all 8 cells `"Q09 selection logger authentication refused; no transient retry"`) at
+`updated_at=2026-09-10T22:58:05Z`: `tools/strategy_farm/config/legacy_logger_allowlist.v1.json`
+explicitly carries `ea_id=11196, enabled=false, rollout="enable only after 11167 native canary
+authentication"` -- 11196 is deliberately gated behind 11167's own canary, not independently
+broken. 11167's own canary (`6797ed1c`, run 2026-09-08T17:32:10Z, ~1h23m after the allowlist
+fix commit `07af95fcf1` landed same day, same `ex5_sha256` as the allowlist entry) got past the
+logger-auth wall but hit a different failure on all 8 cells: `"MT5 report effective input
+qm_news_calendar_bundle_id mismatch"` -- this is the root cause behind the separate
+`OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909` decision (task `46167bd9`, APPROVED/claude, not
+IN_PROGRESS/mine) and its Codex ticket `b66b5ccc` ("measure affected scope + governed Q02
+rebuild of QM5_11167", APPROVED/codex since 2026-09-09T11:19:40Z, not yet started -- ties to the
+chronic `codex_zero_activity`/`repo_dirty_build_guard` block already surfaced in `farmctl
+health`, not this task's authority to clear). Net: the critical path to unblock both 11167 and
+11196 already has a Codex ticket in flight; no duplicate ticket needed here. No `update-task`
+call, no rebuild/release/verdict change made this cycle. Task remains `IN_PROGRESS`.
