@@ -2376,3 +2376,14 @@ row exists. Evidence: `docs/ops/evidence/2026-09-10_qm5_41427_wti_refinery_maint
    activation only via staggered reload by the orchestrator.
 Watch 20:26Z: census 45/h under cap 3; Q02 done 3h = 8 (admission works again), Q04 2 active; D: 87 GB
 (queue-order backups ~0.75 GB each, 16 GB backup dir -> prune candidate after the reset).
+
+## 2026-09-10T20:xxZ — RESULT: T11 catalog repaired; canary launch and V4a remain fail-closed
+
+`63398c6b` REVIEW: T11 now has `Bases/symbols.custom.dat`, copied only after T1/T10 authenticated
+copies agreed and post-copy SHA-256 verified (`6be56cd...09d65`, 20,480 bytes).  The existing signed
+custom-history verifier passed all 108 T11-private USDJPY.DWX archive files (1.15 GB) against manifest
+`fe0dd0...aab06`.  No real-tick S3 smoke ran: no governed research-canary controller currently supplies
+the required no-work-item/no-DB-write isolation plus resource guards, and the signed worker activation
+correctly excludes disabled T11.  `da0512a7` REVIEW: warm runner stays Default-OFF; its injected session
+protocol and DEV2 restart adapter do not constitute a resident T10 backend, so no 20-cell parity or
+throughput claim is made.  No worker/terminal restart, T_Live/AutoTrading action, queue or gate change.
