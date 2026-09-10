@@ -374,3 +374,18 @@ Direct DB read: QM5_41394 SP500/XAUUSD/XTIUSD Q02 still `pending`, unchanged sin
 ## Checked 2026-09-10T22:25Z (orchestration cycle, first check this session, ~35h32m gap since prior entry) -- gate still unmet, new context
 
 Direct DB read: QM5_41394 SP500.DWX/XAUUSD.DWX Q02 rows still `status=pending`, `claimed_by=NULL`, `attempt_count=0`, `updated_at=2026-09-09T10:52:59Z` (unchanged, ~35h32m static). Farm-wide Q02 pending backlog: 758 rows -- consistent with "ordinary queue depth" explanation, not a per-row error. New since last check: the sibling row `XTIUSD.DWX` (same EA, same original blocking set referenced in this task's evidence) was claimed and completed Q02 on 2026-09-10T19:59:04Z and has since progressed through Q03 (2026-09-10T20:17:08Z) and Q04 (2026-09-10T20:24:25Z) -- i.e. the queue is not globally stalled, only these two specific symbol rows (SP500/XAUUSD) remain unclaimed after 35+ hours while a sibling row from the same EA cluster cleared three phases in the same window. This task's authority (`selected_effect_only`) does not extend to reprioritizing or claiming queue rows; not actioned. Weekly Claude quota is healthy post-reset (0.1% used per `agent_router.py status`), so the quota-driven suppression rationale from 2026-09-09 no longer applies, but the suppression discipline itself (no near-duplicate spam) is kept. No `update-task` call -- acceptance criterion ("11196/XAUUSD adjudicable") still unmet. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T~00:15Z (headless orchestration cycle) -- partial movement, direct DB read
+
+Gate progress since the last logged check (2026-09-09 20:48Z): QM5_41394 XTIUSD Q02 moved
+pending->done (updated_at 2026-09-10T19:59:04Z); SP500/XAUUSD Q02 still pending/unclaimed
+since 2026-09-09T10:52:59Z (~2 days). Separately, 11196/XAUUSD Q10_NEWS (a909ee18, the row
+this task's B-prime release targeted first) moved from held to status=active, claimed_by=T8,
+updated_at=2026-09-10T21:28:58Z -- running, not yet a terminal verdict. 11167/XAUUSD Q10_NEWS
+rows (f625d9aa, 6797ed1c) remain REVIEW_REQUIRED, unchanged. farmctl health overall=FAIL
+(15 fail/17 warn/53 ok), same chronic set (codex_zero_activity/repo_dirty_build_guard,
+agent_task_state_stranded, q09_autoseal_hold_census, pending_artifact_binding_drift,
+backup_calendar_continuity, evidence_cohort_watch) -- none new or in this task's
+forbidden-actions scope. No ticket, rebuild, release, or verdict change made here
+(acceptance criterion still unmet: XAUUSD/SP500 legs unresolved, 11196 not yet PASS/FAIL).
+Task remains IN_PROGRESS.
