@@ -99,5 +99,6 @@ partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-09-10 | approved new WTI fresh-streak reversion identity | G0 APPROVED; build pending |
-
+| v1-build | 2026-09-10 | deterministic implementation and governed compile | COMPILE_OK; 11-test suite PASS; input-pin audit zero findings |
+| v1-q02 | 2026-09-10 | paced first-Q02 intake | pending work item `4e47caf3-c306-4ce4-b979-3bb11d2bfcea`; CPU max 79.6% |
 

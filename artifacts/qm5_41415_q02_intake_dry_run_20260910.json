@@ -1,0 +1,22 @@
+{
+  "schema": "qm.first-q02-intake/v1",
+  "compile_work_item_id": "369e8fdd-9f63-4b41-8e79-f8dca4ab1eeb",
+  "ea_id": "QM5_41415",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "dry_run": true,
+  "would_enqueue": true,
+  "ex5_sha256": "d54663b264d171aae09421ed78fc01fc57c1eaf4838f19581c0c4d557b560fe8",
+  "magic_ok": true,
+  "active_magic_row_count": 1,
+  "target_symbols": ["XTIUSD.DWX"],
+  "canary": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41415_wti-wstreak3-fade/sets/QM5_41415_wti-wstreak3-fade_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "a89643ba5267e57e2c25b0ad3cc3217d73154a4a754d4a40280287742ae30c22",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "deferred": []
+}

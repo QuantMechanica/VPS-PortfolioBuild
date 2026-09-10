@@ -61,7 +61,7 @@ news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: PENDING
+q02_status: ENQUEUED
 q01_build_report: D:/QM/reports/work_items/369e8fdd-9f63-4b41-8e79-f8dca4ab1eeb/QM5_41415/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a direct-WTI fresh three-week sign-streak reversal sleeve outside the certified XAU/SP500/NDX/XNG book. Verify uniform energy labels, exact Monday anchors, five completed week-ending closes, four adjacent returns, strict -+++ / +--- state, opposite-streak side, durable weekly attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
@@ -222,6 +222,7 @@ identity, and a zero-finding PACER framework-input-pin audit.
 |---|---|---|---|---|
 | v1 | 2026-09-10 | initial WTI fresh three-week streak-reversion card | G0 | APPROVED; build pending |
 | v1-build | 2026-09-10 | governed compile and build check | Q01 | COMPILE_OK; 0 compiler errors/warnings; build-check PASS; pin audit zero findings; 11/11 tests PASS |
+| v1-q02 | 2026-09-10 | first fixed-risk XTI canary | Q02 | ENQUEUED; pending work item `4e47caf3-c306-4ce4-b979-3bb11d2bfcea`; CPU max 79.6% |
 
 ## Safety Boundary
 

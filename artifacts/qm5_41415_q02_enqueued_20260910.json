@@ -1,0 +1,55 @@
+{
+  "schema": "qm.paced-q02-enqueue/v1",
+  "recorded_at": "2026-09-10T07:50:56+00:00",
+  "ea_id": "QM5_41415",
+  "ea_label": "QM5_41415_wti-wstreak3-fade",
+  "compile": {
+    "work_item_id": "369e8fdd-9f63-4b41-8e79-f8dca4ab1eeb",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "ex5_sha256": "d54663b264d171aae09421ed78fc01fc57c1eaf4838f19581c0c4d557b560fe8"
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41415_wti-wstreak3-fade/QM5_41415_wti-wstreak3-fade.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "evidence": "artifacts/qm5_41415_framework_input_pin_audit_20260910.json"
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "evidence": "artifacts/qm5_41415_q02_intake_dry_run_20260910.json"
+  },
+  "cpu_guard": {
+    "recorded_at_utc": "2026-09-10T07:50:48.958226+00:00",
+    "sample_interval_seconds": 1,
+    "samples_percent": [79.6, 61.6, 51.8, 45.0, 54.3],
+    "average_percent": 58.46,
+    "maximum_percent": 79.6,
+    "exclusive_ceiling_percent": 97.0,
+    "ceiling_rule": "Stop when any five-sample maximum is greater than or equal to 97 percent.",
+    "maximum_below_ceiling": true,
+    "pass": true
+  },
+  "q02": {
+    "work_item_id": "4e47caf3-c306-4ce4-b979-3bb11d2bfcea",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41415_wti-wstreak3-fade/sets/QM5_41415_wti-wstreak3-fade_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "a89643ba5267e57e2c25b0ad3cc3217d73154a4a754d4a40280287742ae30c22",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/369e8fdd-9f63-4b41-8e79-f8dca4ab1eeb_4e47caf3-c306-4ce4-b979-3bb11d2bfcea.json",
+    "receipt_sha256": "da2339a83740fbd98eefe2b9e1975b063aec2690256fd0a3595a375537beb829"
+  },
+  "decision": "Q02_ENQUEUED",
+  "manual_dispatch": false,
+  "live_or_portfolio_mutation": false
+}
