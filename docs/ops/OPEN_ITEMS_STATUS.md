@@ -2441,3 +2441,10 @@ signed-history, CPU/RAM, job-object and Model-4 controls are documented in
 `docs/ops/evidence/2026-09-11_research_canary_t11.md`. No terminal was
 started: the exact S3 EX5/setfile are not T11-staged, so no S3 comparison is
 claimed.
+
+## RESULT 2026-09-11 — ff5cc3b9 Dukascopy containment fix
+
+`REVIEW — TARGETED_FIX_TESTED`: `download_bi5.py` now resolves `raw_root`
+before comparing it with resolved destinations, retaining the escape refusal.
+The extended-prefix regression and genuine-escape test pass with the focused
+23-test downloader suite; no downloader was restarted.

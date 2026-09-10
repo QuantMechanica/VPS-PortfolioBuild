@@ -78,6 +78,18 @@ FetchResult = tuple[int, Mapping[str, str], bytes]
 Fetcher = Callable[[str, float], FetchResult]
 
 
+def assert_contained_destination(raw_root: Path, destination: Path) -> None:
+    """Reject only a resolved destination that is actually outside raw_root.
+
+    Both operands must already be resolved.  Windows may attach the extended
+    path prefix during ``Path.resolve()``, so mixing a lexical root with a
+    resolved destination creates a false path-escape result.
+    """
+
+    if destination != raw_root and raw_root not in destination.parents:
+        raise ValueError(f"download destination escaped raw root: {destination}")
+
+
 class RequestRateLimiter:
     def __init__(
         self,
@@ -352,7 +364,7 @@ def run_download(
     if end_utc.astimezone(UTC) > dt.datetime.now(UTC) + dt.timedelta(minutes=5):
         raise ValueError("download end may not be in the future")
     out_dir = out_dir.resolve()
-    raw_root = out_dir / "raw"
+    raw_root = (out_dir / "raw").resolve()
     raw_root.mkdir(parents=True, exist_ok=True)
     manifest_path = out_dir / "download_manifest.jsonl"
     ledger_path = out_dir / "hour_ledger.jsonl"
@@ -446,8 +458,7 @@ def run_download(
         url = hourly_url(base_url, symbol, hour)
         relative = hourly_relative_path(symbol, hour)
         destination = (raw_root / relative).resolve()
-        if raw_root not in destination.parents:
-            raise ValueError(f"download destination escaped raw root: {destination}")
+        assert_contained_destination(raw_root, destination)
         row_base: dict[str, object] = {
             "schema": MANIFEST_SCHEMA,
             "symbol": symbol,

@@ -5,7 +5,7 @@ import lzma
 import struct
 import threading
 import time
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 import pytest
 
@@ -23,6 +23,21 @@ def _unthrottled_limiter() -> download_bi5.RequestRateLimiter:
     return download_bi5.RequestRateLimiter(
         10, clock=lambda: 0.0, sleeper=lambda _seconds: None
     )
+
+
+def test_containment_compares_equally_resolved_extended_windows_paths() -> None:
+    """A long-path prefix is safe when both sides use the same resolution."""
+
+    raw_root = PureWindowsPath(r"\\?\D:\QM\reports\dukascopy\backfill\raw")
+    destination = raw_root / "EURAUD" / "2025" / "09" / "19" / "23h_ticks.bi5"
+    download_bi5.assert_contained_destination(raw_root, destination)
+
+
+def test_containment_still_refuses_a_genuine_escape() -> None:
+    raw_root = PureWindowsPath(r"\\?\D:\QM\reports\dukascopy\backfill\raw")
+    escaped = PureWindowsPath(r"\\?\D:\QM\reports\outside\23h_ticks.bi5")
+    with pytest.raises(ValueError, match="escaped raw root"):
+        download_bi5.assert_contained_destination(raw_root, escaped)
 
 
 def test_retries_with_jitter_ledger_and_failed_only_resume(tmp_path: Path) -> None:
