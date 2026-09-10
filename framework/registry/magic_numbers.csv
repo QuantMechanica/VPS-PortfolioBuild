@@ -18344,3 +18344,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41412,wti-walt3-fade,0,XTIUSD.DWX,414120000,2026-09-10,Codex governed allocator,active
 41413,xauxag-walt3-cont,0,XAUUSD.DWX,414130000,2026-09-10,Codex governed allocator,active
 41413,xauxag-walt3-cont,1,XAGUSD.DWX,414130001,2026-09-10,Codex governed allocator,active
+41414,xauxag-wrelvote-flip-cont,0,XAUUSD.DWX,414140000,2026-09-10,Codex governed allocator,active
+41414,xauxag-wrelvote-flip-cont,1,XAGUSD.DWX,414140001,2026-09-10,Codex governed allocator,active
