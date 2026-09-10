@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "54917fd8b9085b804a70efd9e803e66017b805391ac4bb6f3763ad4f61457e82",
+      "ea_id": "QM5_41415",
+      "ea_label": "QM5_41415_wti-wstreak3-fade",
+      "expected_mq5_sha256": "54917fd8b9085b804a70efd9e803e66017b805391ac4bb6f3763ad4f61457e82",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41415_wti-wstreak3-fade\\QM5_41415_wti-wstreak3-fade.mq5",
+      "work_item_id": "369e8fdd-9f63-4b41-8e79-f8dca4ab1eeb"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "369e8fdd-9f63-4b41-8e79-f8dca4ab1eeb",
+  "work_item_id_selectors": [
+    "369e8fdd-9f63-4b41-8e79-f8dca4ab1eeb"
+  ]
+}
