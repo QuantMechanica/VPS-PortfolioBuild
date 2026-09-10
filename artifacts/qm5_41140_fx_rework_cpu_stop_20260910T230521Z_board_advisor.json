@@ -1,0 +1,46 @@
+{
+  "schema": "qm.paced-fleet.cpu-stop/v1",
+  "recorded_at_utc": "2026-09-10T23:05:21.2083880Z",
+  "branch": "agents/board-advisor",
+  "operator": "Codex paced fleet",
+  "mission_priority": 1,
+  "selection": {
+    "ea_id": "QM5_41140",
+    "ea_label": "QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
+    "build_task_id": "5f69b208-6e8b-4900-a8c2-020c779eb030",
+    "priority_score": 21.35,
+    "rank_basis": "highest strategy_priority score among 32 claimable pending build_ea rows",
+    "diversity_basis": "single-symbol NZDJPY.DWX D1 carry-unwind crisis-momentum sleeve",
+    "claim_key": "paced_fleet:diversity_build_rework:QM5_41140:20260911"
+  },
+  "source_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41140_nzdjpy-carry-unwind-crisis-momentum/QM5_41140_nzdjpy-carry-unwind-crisis-momentum.mq5",
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "ok": true
+  },
+  "cpu_preflight": {
+    "sampler": "Win32_Processor.LoadPercentage",
+    "samples_pct": [97.0, 100.0, 94.0, 99.0, 91.0],
+    "average_pct": 96.2,
+    "maximum_pct": 100.0,
+    "ceiling_pct": 97.0,
+    "stop_condition": "average_pct >= 97.0 OR maximum_pct >= 97.0",
+    "stop_triggered": true,
+    "trigger": "maximum_pct >= ceiling_pct"
+  },
+  "disposition": {
+    "build_task_status_after_release": "pending",
+    "compile_enqueued": false,
+    "smoke_started": false,
+    "q02_enqueued": false,
+    "existing_q02_work_item_id": "381b2608-c3f1-4493-88f8-9ed119e61d69",
+    "existing_q02_status": "pending",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false
+  },
+  "resume_condition": "A fresh five-sample host CPU window must have both average and maximum below 97 percent before any compile enqueue, smoke, or Q02 execution attempt. Re-run the framework-input pin audit immediately before enqueue-compile."
+}
