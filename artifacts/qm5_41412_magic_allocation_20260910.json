@@ -1,0 +1,20 @@
+{
+  "schema": "qm.governed-magic-allocation/v1",
+  "mode": "apply",
+  "date": "2026-09-10",
+  "card": "strategy-seeds/cards/approved/QM5_41412_wti-walt3-fade_card.md",
+  "ea_id": "QM5_41412",
+  "slug": "wti-walt3-fade",
+  "identity_registered": true,
+  "created_directory": "framework/EAs/QM5_41412_wti-walt3-fade",
+  "allocated_rows": [
+    {
+      "symbol_slot": 0,
+      "symbol": "XTIUSD.DWX",
+      "magic": 414120000,
+      "status": "active"
+    }
+  ],
+  "resolver_regenerated": true,
+  "survived_regeneration": true
+}
