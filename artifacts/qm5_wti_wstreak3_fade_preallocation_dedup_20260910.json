@@ -1,0 +1,30 @@
+{
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "tool_version": "2.0.0",
+  "generated_at_utc": "2026-09-10T07:33:20.6409876Z",
+  "candidate": {
+    "slug": "wti-wstreak3-fade",
+    "strategy_id": "YANG-WTI-WSTREAK3-FADE-20260910_S01",
+    "author": "Chao Yang; A. Goncu; Athanasios A. Pantelous; OpenAI Codex",
+    "mechanic": "normalized-week-boundary-wti-five-consecutive-completed-week-ending-closes-four-adjacent-weekly-returns-newest-three-strict-same-sign-preceding-strict-opposite-sign-fresh-three-week-streak-reversion-one-week-hold"
+  },
+  "sources": [
+    {"label": "ea_id_registry", "checked_root": "C:/QM/repo/framework/registry/ea_id_registry.csv", "count": 4895, "status": "OK", "detail": null},
+    {"label": "strategy_cards", "checked_root": "C:/QM/repo/strategy-seeds/cards", "count": 1505, "status": "OK", "detail": null},
+    {"label": "strategy_wiki", "checked_root": "G:/My Drive/09 Strategy Wiki/strategies", "count": null, "status": "MISSING_ROOT", "detail": null}
+  ],
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_41074_wti-wstreak3-mom_card.md",
+      "score": 0.96,
+      "slug": "wti-wstreak3-mom",
+      "strategy_id": "MOP-WTI-WSTREAK3-MOM-2026_S01",
+      "source": "card"
+    }
+  ],
+  "manual_resolution": "DISTINCT_DIRECTION_AND_SOURCE_LINEAGE: QM5_41074 follows the first fresh three-week same-sign streak under peer-reviewed time-series-momentum lineage; this candidate fades that identical admitted state under academic commodity-reversal lineage. Direction is the complete economic hypothesis and a load-bearing identity field, while the state remains disjoint from three-week strict alternation and unconditional one-week reversal EAs.",
+  "error": "MISSING_ROOT:strategy_wiki:G:/My Drive/09 Strategy Wiki/strategies",
+  "exit_code": 1,
+  "verdict": "FUZZY_MATCH_RESOLVED_DISTINCT"
+}
