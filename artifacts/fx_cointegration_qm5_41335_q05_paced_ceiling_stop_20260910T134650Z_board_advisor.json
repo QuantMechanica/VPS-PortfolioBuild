@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-10T13:46:50.5378437Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "7c3914b9ca5d05b1b107f3cf93dd66c1be5a8947",
+  "mission": "Grow the certified V5 forex book without duplicating the fully mechanized 66-pair FX cointegration frontier.",
+  "frontier": {
+    "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "reconciliation_record": "artifacts/fx_cointegration_frontier_cpu_stop_20260910T0616Z_board_advisor.json",
+    "reconciliation_sha256": "be8d30d3deba74d6125330018fb7410b678492774ad7cad50fde52b017381b",
+    "relationships_scanned": 66,
+    "approved_next_best_cards_checked": 16,
+    "approved_next_best_cards_with_ea_directory": 16,
+    "unbuilt_approved_pair_found": false,
+    "duplicate_guard": "Every approved next-best Edge Lab cointegration Card has an EA directory and terminal Q02 history; a new Card, EA, or Q02 row would duplicate governed work."
+  },
+  "anchors": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_repair_required": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": "Q02 PASS, Q04 FAIL",
+      "q02_repair_required": false
+    }
+  },
+  "selected_existing_forex": {
+    "ea_id": "QM5_41335",
+    "slug": "fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "structural": true,
+    "low_frequency": true,
+    "ml_used": false,
+    "q02": {
+      "work_item_id": "ff75b1c3-4930-419d-a2fe-49bd37eadc4d",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "41b82b89-c50e-4eb0-8563-928c4d5d5d9a",
+      "status": "done",
+      "verdict": "PASS_LOWFREQ"
+    },
+    "q05": {
+      "work_item_id": "5b046970-f847-42c6-a3df-77b2d5ec11bc",
+      "status": "pending",
+      "verdict": null,
+      "created_at": "2026-09-10T12:47:02+00:00",
+      "duplicate_enqueue_performed": false
+    },
+    "prior_q05_enqueue_record": "artifacts/qm5_41335_fx_q05_enqueue_20260910T124702Z_board_advisor.json",
+    "prior_q05_enqueue_record_sha256": "2fdcac7944023d60ad336e591409832054bcb3b3bcc9c5c6f76b4cee3318f046"
+  },
+  "artifact_identity": {
+    "mq5_sha256": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+    "ex5_sha256": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+    "setfile_sha256": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47"
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build_guard": {
+    "generated_mq5_written": false,
+    "compile_enqueued": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+    "audit_exit_code": 0,
+    "audit_ok": true,
+    "audit_predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "audit_hit_count": 0,
+    "audit_hits": []
+  },
+  "capacity_preflight": {
+    "paced_launch_gate_max": 1,
+    "paced_launch_gate_source": "D:/QM/strategy_farm/state/launch_gate_max.txt",
+    "running_factory_terminals": [
+      "T9"
+    ],
+    "running_factory_terminal_count": 1,
+    "paced_launch_gate_hit": true,
+    "active_work_item_count_at_query": 2,
+    "active_work_items": [
+      {
+        "id": "abc515a9-f88a-57a1-8065-29df686f08d3",
+        "ea_id": "QM5_41322",
+        "symbol": "XAUUSD.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T9"
+      },
+      {
+        "id": "57d3e4a0-5ba3-5739-9949-53e53a5d757d",
+        "ea_id": "QM5_41398",
+        "symbol": "USDJPY.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T6"
+      }
+    ],
+    "active_snapshot_note": "Fleet state changed during the read-only observation: the database still held a T6 active claim while the later process scan showed only T9. The one visible factory tester already equaled the paced launch maximum.",
+    "cpu_counter": "\\Processor(_Total)\\% Processor Time",
+    "cpu_sample_interval_seconds": 1,
+    "cpu_samples_percent": [
+      52.839283,
+      45.080672,
+      37.538164,
+      36.757119,
+      29.207531
+    ],
+    "cpu_average_percent": 40.284554,
+    "cpu_maximum_percent": 52.839283,
+    "cpu_ceiling_percent": 97.0,
+    "host_cpu_ceiling_hit": false,
+    "binding_measure": "paced_launch_gate"
+  },
+  "actions_this_run": {
+    "card_created": false,
+    "ea_created_or_modified": false,
+    "compile_enqueued": false,
+    "backtest_enqueued_or_requeued": false,
+    "dispatch_tick_run": false,
+    "terminal_mutated": false,
+    "queue_mutated": false,
+    "reason": "The relationship frontier is exhausted, the selected fallback already has one exact pending Q05 successor, and the paced launch gate is saturated."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_or_autotrading_touched": false
+  },
+  "outcome": "PACED_CEILING_STOP_WITH_QM5_41335_Q05_ALREADY_PENDING"
+}
