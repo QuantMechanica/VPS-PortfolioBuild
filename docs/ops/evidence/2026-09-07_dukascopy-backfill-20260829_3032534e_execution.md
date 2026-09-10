@@ -498,3 +498,39 @@ QM5_41394 SP500/XAUUSD Q02 rows (bb814520/dfc60103's shared gate) unchanged, sti
 pending/unclaimed since 2026-09-09T10:52:59Z -- see that file, not repeated in full here.
 No ticket, rebuild, release, or verdict change made by this task. Task `3032534e` remains
 `IN_PROGRESS`.
+
+## Checked 2026-09-10T22:49Z (headless orchestration cycle) -- fix merged, downloader resumed
+
+Codex ticket `ff5cc3b9` cleared: commit `caa9fc6f4c` ("fix: normalize Dukascopy raw-root
+containment") is present on `agents/board-advisor` in the canonical checkout, with
+`docs/ops/evidence/2026-09-11_dukascopy_raw_root_containment_fix.md` recording 23/23 tests
+passing (`test_download_bi5_hardening.py`, `test_dukascopy_backfill.py`). Confirmed no
+`download_bi5.py` process was running (progress.json frozen at `completed=66458/305287`,
+`updated_at_utc` stale since the 2026-09-10T01:01:30Z crash, ~21h45m idle).
+
+Action taken (within this task's already-authorized `allowed_actions`, "Run the throttled
+downloader detached at night (5-10 req/s)" -- resuming the same interrupted run, not new
+scope): relaunched the identical command against the same `--out` root so it resumes via
+`hour_ledger.jsonl` rather than re-downloading from scratch:
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Launched detached (PowerShell `Start-Process -WindowStyle Hidden`, PID 13484, cwd
+`C:\QM\repo`, started 2026-09-10T22:49:01Z). Verified alive after ~40s: `progress.json`
+`status=RUNNING`, `resumed=153`, `downloaded=0`, `errors=0` -- confirms the previously
+completed hours are being skipped via the ledger, not re-fetched, and the fixed containment
+check is not false-positiving on the resumed paths. No terminal process started/stopped, no
+MT5 history mutated, no T1 import, no T_Live/AutoTrading action, no signed-archive change,
+no verdict/threshold change. Subsequent cycles should check `progress.json`/`hour_ledger.jsonl`
+for completion, a new error class, or a stall before touching it again -- do not re-launch a
+duplicate downloader while PID 13484 (or its successor after a legitimate own-exit) is alive.
+
+QM5_41394 SP500/XAUUSD Q02 rows (bb814520/dfc60103's shared gate) unchanged, still
+pending/unclaimed since 2026-09-09T10:52:59Z (direct sqlite read, ~2 days now) -- see that
+file, not repeated in full here. No ticket, rebuild, release, or verdict change made by this
+task beyond the downloader resume. Task `3032534e` remains `IN_PROGRESS`.
