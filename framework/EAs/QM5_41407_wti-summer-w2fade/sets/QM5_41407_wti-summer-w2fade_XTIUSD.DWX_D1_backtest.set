@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   d68b215b1ac67763472827826eed884084b360199a93223858ec8403da3e0722
+; build_hash:   daaf1bb1b8ef76c83339637e6e3915289ab1ebebf081e405d6e8099682f0b25b
 ; author:       Development
 ; date:         2026-09-10
 ;==========================================================
@@ -21,7 +21,7 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_symbol=XTIUSD.DWX
+strategy_symbol=
 strategy_label_offset_seconds=86400
 strategy_entry_grace_minutes=180
 strategy_history_bars=24

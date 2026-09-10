@@ -5,5 +5,8 @@
   "hit_count": 0,
   "hits": [],
   "source": "C:/QM/repo/framework/EAs/QM5_41407_wti-summer-w2fade/QM5_41407_wti-summer-w2fade.mq5",
-  "recorded_at_local": "2026-09-10T02:11:48.5443980+02:00"
+  "source_sha256": "7d69a13de1c0381f61f713354b165b56ec84d23434de3b1506d859e90c450856",
+  "recorded_at_local": "2026-09-10T02:22:02+02:00",
+  "timing": "immediately_before_enqueue_compile_apply",
+  "enqueue_compile_successor_work_item_id": "4810479a-091e-4c02-b778-2578b06d7f3d"
 }
