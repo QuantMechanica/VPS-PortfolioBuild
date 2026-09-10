@@ -2272,3 +2272,12 @@ is in code with regression tests but its canary was never run: this reload is wa
 (signature = census cells/h collapse ~88->21 with PROGRAM_PREFLIGHT_SUPPRESSED); rollback = reload
 without the two vars. Whether the 2026-09-07 SAMEPROG execution ever reached workers is an open
 question (no effective-limits evidence in state) -> noted for Codex after the quota reset.
+
+## 2026-09-10T04:50Z — RESULT: WINSWEEP L=2 live (chunk 62), no decline loop
+
+Reload chunk 62 finished 04:46:15Z (10/10). Proof of L=2: two WINSWEEP cells active concurrently
+(T4 + T5) at 04:48:39Z (poll log in session scratchpad). Census throughput 44 cells / 30 min
+(~88/h), 0 PROGRAM_PREFLIGHT_SUPPRESSED events since 04:00Z -> the 2026-09-05 L=2 fix holds under
+this bounded canary. WINSWEEP stage A: 46 MEASURED / 374 pending at 04:46Z; expected completion
+~12-14 h at 2 lanes. Next: hourly watch; window_sweep.py report + stage-A adjudication when all
+420 cells are MEASURED (per docs/research/BALKE_WINDOW_SWEEP_PLAN_2026-09-09.md section 5).
