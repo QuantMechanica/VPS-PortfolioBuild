@@ -60,9 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q01_build_report: D:/QM/reports/framework/21/build_check_20260910_192120.json
 force_build: true
 review_focus: "Falsify a long-only WTI refinery-ramp completed-week close-location continuation distinct from the year-round symmetric outer-fifth rule, the one-week April-May open-to-close sign sleeve, daily May-July squeeze/pullback builds, and incumbent XNG logic. Verify exact two-week membership, parent-close endpoint, upper-tercile gate, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -209,5 +210,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | `decisions/2026-09-10_wti_refinery_ramp_weekly_close_location_continuation_source_approval.md` |
 | G0 Research Intake | 2026-09-10 | APPROVED | decision above |
-| Q01 Build Validation | - | NOT_BUILT | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
+| Q01 Build Validation | 2026-09-10 | PASS | compile `aa47bbdd-7e86-4cb1-bcef-40487423dec0`; 0 errors / 0 warnings; build-check PASS; PACER audit 0 findings; reference tests 12/12 PASS |
+| Q02 Baseline Screening | 2026-09-10 | ENQUEUED | pending work item `2ad0e7b6-fe21-4ce6-8bf9-4a501cc6b6ce`; fixed-risk XTIUSD.DWX D1 canary |

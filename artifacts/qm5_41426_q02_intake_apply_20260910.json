@@ -1,0 +1,45 @@
+{
+  "applied": true,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260910T191916Z_564c4156.sqlite",
+    "sha256": "cb3e26df4faec311729540a459680c876cb63948f526b4acaa2373e671119aac"
+  },
+  "canary": {
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41426_wti-reframp-wclv-cont\\sets\\QM5_41426_wti-reframp-wclv-cont_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "14d661493f68981ea98c42634617f765b0559730ce85761a7e6051c23accb7f9",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1"
+  },
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\aa47bbdd-7e86-4cb1-bcef-40487423dec0\\QM5_41426\\COMPILE_EA\\compile_evidence.json",
+  "compile_work_item_id": "aa47bbdd-7e86-4cb1-bcef-40487423dec0",
+  "deferred": [],
+  "dry_run": false,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41426_wti-reframp-wclv-cont",
+  "ea_id": "QM5_41426",
+  "eligible": true,
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41426_wti-reframp-wclv-cont\\QM5_41426_wti-reframp-wclv-cont.ex5",
+  "ex5_sha256": "51aef8c3665f7487d7c1d4f601185e6e57e897c6b9fcb29298f84a21f1029550",
+  "magic": {
+    "active_row_count": 1,
+    "issues": [],
+    "ok": true,
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+    "target_symbols": ["XTIUSD.DWX"]
+  },
+  "priority_boost": false,
+  "reason": "ELIGIBLE",
+  "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\receipts\\first_q02_intake\\aa47bbdd-7e86-4cb1-bcef-40487423dec0_2ad0e7b6-fe21-4ce6-8bf9-4a501cc6b6ce.json",
+  "receipt_sha256": "3e4fbfff7a40b9eee4647a31378cd446a6a007f437ff581da7e54b75e595faaf",
+  "schema": "qm.first-q02-intake/v1",
+  "setfile_checks": [
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41426_wti-reframp-wclv-cont\\sets\\QM5_41426_wti-reframp-wclv-cont_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "14d661493f68981ea98c42634617f765b0559730ce85761a7e6051c23accb7f9"
+    }
+  ],
+  "target_symbols": ["XTIUSD.DWX"],
+  "work_item_id": "2ad0e7b6-fe21-4ce6-8bf9-4a501cc6b6ce",
+  "would_enqueue": false
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "qm.cpu-admission-evidence/v1",
+  "captured_at": "2026-09-10T19:22:00+00:00",
+  "sample_interval_seconds": 1,
+  "samples_percent": [
+    70.48,
+    74.01,
+    74.17,
+    66.02,
+    60.61
+  ],
+  "average_percent": 69.06,
+  "maximum_percent": 74.17,
+  "exclusive_ceiling_percent": 97.0,
+  "admitted": true
+}

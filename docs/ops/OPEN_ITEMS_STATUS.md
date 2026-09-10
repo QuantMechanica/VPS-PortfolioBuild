@@ -1,5 +1,14 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 10.09., 19:25Z — neuer WTI-Refinery-Ramp-Sleeve bis Q02:** Der
+> neue strukturelle `QM5_41426_wti-reframp-wclv-cont` wurde nach Source-
+> Freigabe und Canonical-Dedup als XTIUSD.DWX-D1-Build erstellt. PACER-Pin-
+> Audit exit 0 / 0 Findings, Referenztests 12/12 PASS, Compile `aa47bbdd`
+> COMPILE_OK ohne Compilerfehler/-warnungen. Die finale CPU-Stichprobe lag bei
+> Ø 69,06% und max. 74,17% (<97%); genau eine Fixed-Risk-Q02-Zeile `2ad0e7b6`
+> wurde enqueued. Kein Portfolio-Gate-, T_Live-, AutoTrading- oder Deploy-
+> Eingriff. Evidenz: `docs/ops/evidence/2026-09-10_qm5_41426_wti_refinery_ramp_weekly_close_location_build_q02.md`.
+
 > **Nachtrag 10.09., 18:15Z — neuer WTI-Sleeve bis Q02:** Der neue strukturelle
 > `QM5_41425_wti-refrestart-negweek-fade` wurde nach Source-Freigabe und
 > Canonical-Dedup als XTIUSD.DWX-D1-Build erstellt. PACER-Pin-Audit exit 0 / 0
