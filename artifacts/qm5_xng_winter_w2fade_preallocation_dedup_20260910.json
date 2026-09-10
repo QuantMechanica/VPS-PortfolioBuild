@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "U.S. Energy Information Administration; Hongbing Yang; Ahmet Goncu; Athanasios Pantelous; OpenAI Codex",
+    "mechanic": "normalized-weekly-xng-two-adjacent-completed-week-open-to-close-log-returns-strict-same-sign-contrarian-only-november-december-january-february-march-one-week-hold",
+    "slug": "xng-winter-w2fade",
+    "strategy_id": "EIA-YANG-XNG-WINTER-W2FADE-20260910_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T01:03:10+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41403_wti-winter-w2fade_card.md",
+      "score": 1.0,
+      "slug": "wti-winter-w2fade",
+      "source": "card",
+      "strategy_id": "BURAKOV-YANG-WTI-WINTER-W2FADE-20260909_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41402_xng-winter-w2agree_card.md",
+      "score": 0.9473684210526315,
+      "slug": "xng-winter-w2agree",
+      "source": "card",
+      "strategy_id": "EIA-MOP-XNG-WINTER-W2AGREE-20260909_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41404_wti-winter-w2agree_card.md",
+      "score": 0.9,
+      "slug": "wti-winter-w2agree",
+      "source": "card",
+      "strategy_id": "BURAKOV-MOP-WTI-WINTER-W2AGREE-20260909_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41395_xng-winter-wmom_card.md",
+      "score": 0.7368421052631579,
+      "slug": "xng-winter-wmom",
+      "source": "card",
+      "strategy_id": "EIA-MOP-XNG-WINTER-WMOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41401_xng-shoulder-w2fade_card.md",
+      "score": 0.7368421052631579,
+      "slug": "xng-shoulder-w2fade",
+      "source": "card",
+      "strategy_id": "EIA-MOP-XNG-SHOULDER-W2FADE-20260909_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4888,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1498,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
