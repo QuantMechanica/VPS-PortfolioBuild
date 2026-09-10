@@ -56,9 +56,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q01
+q01_status: COMPILE_ENQUEUED_PENDING
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify an XNG summer two-week exhaustion fade distinct from certified QM5_12567, same-regime continuation, disjoint shoulder/winter fades, year-round volatility-gated weekly reversal, and WTI summer relatives. Verify native label clock, exact weekly membership, strict agreement, inverse orientation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -213,6 +213,5 @@ correlation waiver, portfolio-gate edit, deployment, live manifest change,
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_BUILT | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
-
+| Q01 Build Validation | 2026-09-10 | COMPILE_ENQUEUED_PENDING | governed item `42a891ea-be6b-4c40-bece-52f923c70713`; pin audit PASS; static build check PASS; 15/15 reference tests PASS |
+| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED_CPU_CEILING | intake dry run refused pending compile; CPU samples `91,88,97,90,97`, exclusive 97% ceiling reached |

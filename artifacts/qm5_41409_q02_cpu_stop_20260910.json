@@ -1,0 +1,50 @@
+{
+  "schema": "qm.q02-cpu-stop/v1",
+  "recorded_at_local": "2026-09-10T04:26:07.8438585+02:00",
+  "ea_id": "QM5_41409",
+  "ea_label": "QM5_41409_xng-summer-w2fade",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "compile": {
+    "work_item_id": "42a891ea-be6b-4c40-bece-52f923c70713",
+    "status": "pending",
+    "attempt_count": 0,
+    "activation_hold": null,
+    "priority_track_marked_at_utc": "2026-09-10T02:21:06+00:00",
+    "priority_track_reason": "OWNER PACER commodity sleeve mission requires governed compile before Q02 intake",
+    "governed_source_sha256": "42e8f1a2a28a84737ebb50d6db6a8a9690b8cbcf4697187a6dc974d8a2f86af9"
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41409_xng-summer-w2fade/QM5_41409_xng-summer-w2fade.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "evidence": "artifacts/qm5_41409_framework_input_pin_audit_20260910.json"
+  },
+  "q02_intake_dry_run": {
+    "eligible": false,
+    "would_enqueue": false,
+    "reason": "compile_work_item_not_done_compile_ok",
+    "observed_compile_status": "pending",
+    "observed_compile_verdict": ""
+  },
+  "cpu_guard": {
+    "sample_interval_seconds": 1,
+    "samples_percent": [91.0, 88.0, 97.0, 90.0, 97.0],
+    "max_percent": 97.0,
+    "average_percent": 92.6,
+    "exclusive_ceiling_percent": 97.0,
+    "pass": false,
+    "terminal_or_tester_process_count": 6
+  },
+  "ad_hoc_compile_safeguard": {
+    "attempted_after_governed_queue_delay": true,
+    "result": "REFUSED_WITHOUT_RETRY",
+    "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "source_modified": false,
+    "binary_produced": false
+  },
+  "decision": "STOP_NO_Q02_APPLY",
+  "reason": "The exclusive 97 percent backtest CPU ceiling was reached; the governed compile prerequisite also remained pending."
+}
