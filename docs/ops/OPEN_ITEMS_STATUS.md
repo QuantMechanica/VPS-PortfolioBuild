@@ -2201,3 +2201,16 @@ DL089 identity proof; orchestrator then reloads workers (chunk-59 pattern) and a
 STRUCTURAL (for OWNER, parked): asset-rank starvation of USDJPY programs under the top-down selector
 is a pool-order policy question; candidate fairness option (round-robin over idle programs before
 asset rank) to be proposed by Codex in its RESULT, decision stays with OWNER.
+
+## 2026-09-10 — RESULT: FX cointegration frontier reconciled; existing fallback retained
+
+The frozen sign-aware 66-pair scan remains fully covered (66/66, zero unbuilt);
+QM5_12532 and QM5_12533 are past Q02 with later terminal failures. The selected
+non-duplicate fallback QM5_12507 EURUSD/GBPUSD already has one pending,
+priority-tracked logical Q02 row, so no duplicate enqueue or priority rewrite was
+made. PACER source audit: exit 0, zero `EA_FRAMEWORK_INPUT_PINNED` hits; backtest
+risk remains `RISK_FIXED=1000`, `RISK_PERCENT=0`. Five active claims occupied a
+paced launch cap of one, so no dispatch followed. Evidence:
+`docs/research/FX_COINTEGRATION_PACED_CAPACITY_STOP_20260910T003623Z.md`.
+No portfolio gate, T_Live, AutoTrading, card, EA, registry, setfile, manifest,
+queue verdict, or terminal state changed.
