@@ -1,0 +1,47 @@
+{
+  "candidate": {
+    "author": "Kyung Yoon Kwon; Jangkoo Kang; Jaesun Yun; OpenAI Codex",
+    "mechanic": "normalized-weekly-wti-three-consecutive-completed-week-open-to-close-log-returns-strict-sign-alternation-newest-week-sign-continuation-one-week-hold",
+    "slug": "wti-walt3-cont",
+    "strategy_id": "KWON-WTI-WALT3-CONT-20260910_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T03:42:33+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41375_wti-wmom1_card.md",
+      "score": 0.5625,
+      "slug": "wti-wmom1",
+      "source": "card",
+      "strategy_id": "KWON-KANG-YUN-WTI-WMOM1-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4891,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1501,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
