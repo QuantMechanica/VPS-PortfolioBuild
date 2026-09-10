@@ -708,3 +708,66 @@ pipeline) — also left for that dedicated pass, not attempted here.
 
 No `update-task` call on any of the three tasks (no acceptance criterion newly
 met on `bb814520`/`dfc60103`/`3032534e`).
+
+## Checked 2026-09-10T23:5xZ / 2026-09-11 (headless cycle) — gap closed: no governed DWX M1 export tool exists yet; Codex ticket enqueued
+
+Confirmed `bb814520`/`dfc60103` still gated: `QM5_41394` `SP500.DWX`/`XAUUSD.DWX`
+Q02 rows still `status=pending`, `claimed_by=NULL`, `attempt_count=0`,
+`updated_at=2026-09-09T10:52:59Z` (direct sqlite read) — unchanged, still ordinary
+queue depth outside this task's authority. `XTIUSD.DWX` in the same original
+trio has since cleared `Q02` (`done`, last `2026-09-10T19:59:04Z`) via ordinary
+factory throughput — not a B-prime release-order action, does not satisfy any
+acceptance criterion.
+
+For `3032534e`, re-read the prior cycle's own "concrete next step" above ("locate
+their governed DWX M1 export CSVs") before re-deriving anything, per this task's
+own established practice. Searched `D:/QM/data` for an existing per-symbol M1
+history export covering 2025-10-01..2026-04-01: only D1 bars exist
+(`D:/QM/data/research/d1_bars/*.DWX.csv`), no M1 export. Checked
+`tools/strategy_farm/session_tools/enqueue_dukascopy_0907.py` (the original P1-P3
+commissioning script) — its own ticket B text says the DWX side of P3 "reads the
+T1 custom history read-only through the same governed probe route as step 1 (or
+from an exported M1 CSV produced under a factory claim)"; the tick-tail probe
+(step 1 / `a7e1333c`) only ever produced tick-level splice timestamps + the
+9-row non-FX `price_scale.csv`, never a bulk M1 OHLC export. `framework/scripts/mt5_diagnostics/`
+has bar-export scripts (`Export_FX_Bars.mq5`, `QM_1537_Native_D1_Export.mq5` +
+its governed `qm1537_native_d1_export.py` wrapper) but none scoped to M1 for the
+fixed 6-month overlap window across the 37-symbol universe in the header schema
+`tools/dukascopy/reconcile_overlap.py::read_m1_csv` accepts
+(`time,open,high,low,close,tickvol`). Conclusion: the governed DWX-side M1 export
+is a genuine, currently-missing piece — not a prior cycle's oversight and not
+something already sitting on disk — and building it is squarely inside
+`3032534e`'s own `allowed_actions` ("Enqueue, review and close the Codex build
+tasks for P1/P2/P3 and the read-only T1 tick-tail probe").
+
+Enqueued exactly one Codex `ops_issue` ticket, `ba2a478e-f437-404b-843b-a1def6f2cf4c`
+(priority 75, `decision_bound_agent=codex`, `parent_task_ref=3032534e`,
+state `TODO`): build a new READ-ONLY MQL5 diagnostic + Python work-item enqueuer
+mirroring the exact governance shape of `dwx_tick_tail_probe.py` /
+`QM_DWX_Tick_Tail_Probe.mq5` / `tools/strategy_farm/dwx_tick_tail_probe_work_item.py`
+(diagnostic work-item kind, phase Q00, `no_gate_verdict=true`,
+`diagnostic_allowed_terminals=["T1"]`, `diagnostic_non_admission=true`,
+`read_only=true`, signed-archive-manifest inventory unchanged before/after, no
+`Custom*`/trading MQL5 API calls), producing per-symbol M1 CSVs
+(`time,open,high,low,close,tickvol`, UTC, exactly 2025-10-01T00:00:00Z through
+2026-04-01T00:00:00Z, both intervening US-DST weeks included) from T1's already-
+imported custom-symbol history only (`CopyRates` or equivalent read-only API; no
+new import/download), verified loadable by `reconcile_overlap.py`'s
+`read_m1_csv`. The ticket is explicitly build-and-test only — it does not
+authorize a production run against the live T1 terminal; that first dispatch is
+a separate governed enqueue, mirroring how the tick-tail-probe build (`a7e1333c`)
+was separate from its own first production run. The ticket payload also records
+a correction to the 2026-09-11T~00:35Z note above: P2 (`convert_to_import.py`)
+and P3 (`reconcile_overlap.py`) code already exists and is tested (commit
+`3c65edd4d2`, 23/23 tests) — no new P2/P3 build ticket was needed or created;
+only the DWX-side M1 export was missing.
+
+Downloader (PID 18208, `20260909T191800Z_hardened`) reconfirmed `RUNNING`,
+`completed=73883/306286`, `errors=98` (transient churn), fresh
+`updated_at_utc=2026-09-10T23:48:17.651Z`, exactly one `download_bi5.py` process
+alive (full `Win32_Process` command-line scan) — no new collision, no action
+taken (already authorized and progressing).
+
+No `update-task` call on `bb814520`/`dfc60103`/`3032534e` (no acceptance
+criterion newly met on any of the three; the new Codex ticket is a sub-step,
+not a criterion itself).

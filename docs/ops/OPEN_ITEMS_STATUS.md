@@ -1,5 +1,37 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 11.09. (Orchestrierungszyklus) — `3032534e` DUKASCOPY: fehlendes
+> P3-Puzzlestück identifiziert, EIN Codex-Ticket beauftragt.** Vor jeder eigenen
+> Ableitung erst die letzte Notiz der Ausführungsevidenz gelesen ("locate their
+> governed DWX M1 export CSVs" als nächster Schritt). `D:/QM/data` durchsucht —
+> keine bestehende M1-Historie für das Overlap-Fenster 2025-10-01..2026-04-01
+> vorhanden (nur D1-Bars unter `d1_bars/`). Ursprüngliches Kommissionierungs-
+> Skript (`tools/strategy_farm/session_tools/enqueue_dukascopy_0907.py`) bestätigt:
+> die DWX-Seite von P3 sollte "durch dieselbe Governed-Probe-Route wie Schritt 1
+> (oder aus einem unter Factory-Claim erzeugten M1-CSV-Export)" gelesen werden —
+> der Tick-Tail-Probe (`a7e1333c`) lieferte aber nur Tick-Zeitstempel + die
+> 9-Zeilen-`price_scale.csv`, nie einen M1-Bulk-Export. Korrektur zur 01:35Z-Notiz:
+> P2 (`convert_to_import.py`) und P3 (`reconcile_overlap.py`) sind bereits
+> gebaut und getestet (Commit `3c65edd4d2`, 23/23 Tests) — kein neues P2/P3-Bau-
+> Ticket nötig oder erstellt; es fehlte einzig der governed DWX-M1-Export.
+> Codex-Ticket `ba2a478e-f437-404b-843b-a1def6f2cf4c` (Priorität 75,
+> `decision_bound_agent=codex`, `parent_task_ref=3032534e`, Status `TODO`)
+> beauftragt: READ-ONLY MQL5-Diagnose + Python-Work-Item-Enqueuer nach exaktem
+> Governance-Muster von `dwx_tick_tail_probe.py`/`QM_DWX_Tick_Tail_Probe.mq5`,
+> liefert pro Symbol eine M1-CSV (`time,open,high,low,close,tickvol`, UTC,
+> exakt 2025-10-01T00:00:00Z–2026-04-01T00:00:00Z inkl. beider US-DST-Wochen)
+> aus der bereits importierten T1-Custom-Symbol-Historie (nur lesend, kein
+> `Custom*`-Schreibzugriff, keine neue Import/Download), verifiziert ladbar
+> durch `reconcile_overlap.py::read_m1_csv`. Ticket ist Bau+Test only, keine
+> Produktivausführung gegen T1 autorisiert. `bb814520`/`dfc60103`: `QM5_41394`
+> SP500.DWX/XAUUSD.DWX Q02 weiterhin unverändert `pending`/unclaimed seit
+> `2026-09-09T10:52:59Z` — keine Aktion, außerhalb der Aufgabenautorität.
+> Downloader (PID 18208) weiter `RUNNING` (`completed=73883/306286`), kein
+> Kollisionsvorfall. Kein `update-task` auf `3032534e` selbst (das neue Ticket
+> ist ein Zwischenschritt, kein erfülltes Akzeptanzkriterium). Evidenz:
+> `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`
+> (neuer Abschnitt "Checked 2026-09-10T23:5xZ / 2026-09-11").
+
 > **Nachtrag 11.09., ~01:35Z (Orchestrierungszyklus) — `3032534e` DUKASCOPY: non-FX
 > price-scale-Ticket `2f717775` abgenommen.** Der gebundene T1-Governed-Work-Item
 > `ed393d48` war seit dem letzten Checkpoint auf `done`/`PASS` gelaufen (Receipt
