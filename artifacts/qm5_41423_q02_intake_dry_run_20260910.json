@@ -1,0 +1,19 @@
+{
+  "applied": false,
+  "compile_work_item_id": "49537786-e298-4eef-87d5-645a57def313",
+  "dry_run": true,
+  "ea_id": "QM5_41423",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "schema": "qm.first-q02-intake/v1",
+  "would_enqueue": true,
+  "canary": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_sha256": "37748c6d77441db03f0a9f643700f4461b90792e4e5f6f630c46ff56fe5de283"
+  },
+  "ex5_sha256": "50cdfdd38ee24c00545b829abee47b2f0f600d3c1f2b0b0a19e7b1d418f2c5db",
+  "magic_active_row_count": 1,
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0
+}

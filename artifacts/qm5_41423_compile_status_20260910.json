@@ -1,0 +1,30 @@
+{
+  "schema": "qm.compile-status-evidence/v1",
+  "captured_at_utc": "2026-09-10T16:00:27+00:00",
+  "ea_id": "QM5_41423",
+  "ea_label": "QM5_41423_wti-wstreak2-fade",
+  "work_item_id": "49537786-e298-4eef-87d5-645a57def313",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 3,
+  "failure_classes": [],
+  "setfile_count": 1,
+  "mq5_sha256": "3f4d14b141a211498454dac8f377f96d7bf263060bbdaa9d56e3acbd4f228e76",
+  "ex5_sha256": "50cdfdd38ee24c00545b829abee47b2f0f600d3c1f2b0b0a19e7b1d418f2c5db",
+  "setfile_sha256_after_required_symbol_binding": "37748c6d77441db03f0a9f643700f4461b90792e4e5f6f630c46ff56fe5de283",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41423_wti-wstreak2-fade/QM5_41423_wti-wstreak2-fade.ex5",
+  "compile_evidence_path": "D:/QM/reports/work_items/49537786-e298-4eef-87d5-645a57def313/QM5_41423/COMPILE_EA/compile_evidence.json",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_155957.json",
+  "framework_input_pin_audit": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "reference_tests": "6/6 PASS",
+  "note": "First governed compile passed. The generated setfile's blank strategy_symbol was restored to the approved XTIUSD.DWX input binding; no EA source or binary changed. Build-check warnings are optional card inferences only."
+}

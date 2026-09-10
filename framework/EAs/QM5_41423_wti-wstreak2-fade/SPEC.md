@@ -78,5 +78,6 @@ martingale, pyramid, target, trail, or partial exit.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-09-10 | approved new WTI fresh two-week reversion identity | G0 APPROVED; build pending |
-
+| v1-build | 2026-09-10 | governed compile and strict build check | COMPILE_OK; 0 errors/warnings; build-check PASS; 6/6 tests; pin audit clean |
+| v1-q02 | 2026-09-10 | paced first-Q02 intake | pending `f3a0a713-9280-4db5-8a78-af8f0fee1006`; CPU max 91.12% |
 
