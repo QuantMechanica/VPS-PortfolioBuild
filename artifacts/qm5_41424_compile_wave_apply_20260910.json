@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "ec65f795-ad77-465a-9620-93c35c7e2905"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260910T170222_911234Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260910T170212Z_93440fd5.sqlite",
+    "reused": false,
+    "sha256": "d17b949257365f827c496c70de924b3c9474620822e5749fac0a867b739373c4"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "6c71c99d57084e78a219aa20df4348ae363a5aa27b12561f2fa53bb4725fcd7b",
+      "ea_id": "QM5_41424",
+      "ea_label": "QM5_41424_wti-refmaint-posweek-fade",
+      "expected_mq5_sha256": "6c71c99d57084e78a219aa20df4348ae363a5aa27b12561f2fa53bb4725fcd7b",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41424_wti-refmaint-posweek-fade\\QM5_41424_wti-refmaint-posweek-fade.mq5",
+      "work_item_id": "ec65f795-ad77-465a-9620-93c35c7e2905"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-10T17:02:22+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "ec65f795-ad77-465a-9620-93c35c7e2905",
+  "work_item_id_selectors": [
+    "ec65f795-ad77-465a-9620-93c35c7e2905"
+  ]
+}

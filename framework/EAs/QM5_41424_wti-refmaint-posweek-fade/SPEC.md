@@ -108,4 +108,5 @@ operation is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-10 | Initial build from approved card | OWNER pacer mission |
-
+| v1-q01 | 2026-09-10 | Governed compile and strict build check PASS (`ec65f795-ad77-465a-9620-93c35c7e2905`) | OWNER pacer mission |
+| v1-q02-hold | 2026-09-10 | Q02 enqueue refused at 97.27% CPU ceiling sample | OWNER pacer mission |

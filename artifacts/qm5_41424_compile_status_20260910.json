@@ -1,0 +1,30 @@
+{
+  "schema": "qm.compile-status-evidence/v1",
+  "captured_at_utc": "2026-09-10T17:06:03+00:00",
+  "ea_id": "QM5_41424",
+  "ea_label": "QM5_41424_wti-refmaint-posweek-fade",
+  "work_item_id": "ec65f795-ad77-465a-9620-93c35c7e2905",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 3,
+  "failure_classes": [],
+  "setfile_count": 1,
+  "mq5_sha256": "6c71c99d57084e78a219aa20df4348ae363a5aa27b12561f2fa53bb4725fcd7b",
+  "ex5_sha256": "15e5522651c4562453dc849fccfd7dff7789386eb9074830aaa4a798e1e5bf59",
+  "setfile_sha256_after_required_symbol_binding": "0157a36a7b2a813a26bdcf6b6877080dedcd17089a509f64fb7b5129244a19d9",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41424_wti-refmaint-posweek-fade/QM5_41424_wti-refmaint-posweek-fade.ex5",
+  "compile_evidence_path": "D:/QM/reports/work_items/ec65f795-ad77-465a-9620-93c35c7e2905/QM5_41424/COMPILE_EA/compile_evidence.json",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_170240.json",
+  "framework_input_pin_audit": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "reference_tests": "12/12 PASS",
+  "note": "First governed compile passed. The generated setfile's blank strategy_symbol was restored to the approved XTIUSD.DWX input binding; no EA source or binary changed. Build-check warnings are optional card inferences only."
+}

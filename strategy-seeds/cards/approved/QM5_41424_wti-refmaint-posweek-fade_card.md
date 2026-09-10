@@ -60,9 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q01_build_report: D:/QM/reports/work_items/ec65f795-ad77-465a-9620-93c35c7e2905/QM5_41424/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a short-only WTI refinery-maintenance positive-week reversion distinct from the mutually exclusive negative-week continuation, shoulder stretch fade, May-July refinery entries, and XNG shoulder reversion. Verify exact week membership, positive-only signal and short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -202,5 +203,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision below |
-| Q01 Build Validation | - | NOT_BUILT | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
+| Q01 Build Validation | 2026-09-10 | PASS | governed compile `ec65f795-ad77-465a-9620-93c35c7e2905`; 12 reference tests; PACER audit clean |
+| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED_CPU_CEILING | five-sample CPU maximum 97.27% exceeded exclusive 97% ceiling |

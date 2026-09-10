@@ -1,0 +1,12 @@
+{
+  "schema": "qm.q02-cpu-admission-evidence/v1",
+  "captured_at_utc": "2026-09-10T17:07:00Z",
+  "ea_id": "QM5_41424",
+  "workload": "one paced Q02 canary",
+  "samples_percent": [57.23, 65.53, 97.27, 95.90, 95.02],
+  "average_percent": 82.19,
+  "maximum_percent": 97.27,
+  "exclusive_ceiling_percent": 97.0,
+  "admitted": false,
+  "q02_enqueued": false
+}
