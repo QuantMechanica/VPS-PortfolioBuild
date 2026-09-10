@@ -1,0 +1,4 @@
+path,sample_count,total_seconds,mean_seconds,verdict
+cold_governed_reference,20,7394.198,369.71,BASELINE_ONLY
+resident_t10,0,,,NOT_RUN_TECHNICAL_IMPOSSIBILITY_CURRENT_MT5_COMMAND_SURFACE
+metatester_local_agent,0,,,PROPOSED_ALTERNATIVE_NOT_RUN

@@ -2422,3 +2422,12 @@ New tickets: 8f6a6b3c P91 BUILD research_canary (explicit authorization), 31b825
 session backend (explicit authorization), fleet clock audit part 2 (P60), FTMO native receipts (P65).
 NEXT: WINSWEEP stage-A adjudication when 420/420 MEASURED, then stage B via fc926dde tooling, Balke clock
 audit continuation on the winner, Dukascopy download resume under 3032534e (2.2-day projection).
+
+## RESULT 2026-09-11 — 31b8255e V4a resident backend
+
+`REVIEW — TECHNICAL_IMPOSSIBILITY_CURRENT_MT5_COMMAND_SURFACE`:
+`docs/ops/evidence/2026-09-11_v4a_resident_backend.md` binds the official MT5
+startup/tester interface, the exact cold-launch and fresh-logger boundaries,
+and the closest safe MetaTester-local-agent alternative. The Default-OFF flag
+remains unset; no T10 launch/reload or factory mutation occurred. Focused
+warm-runner tests are recorded with the artifact.
