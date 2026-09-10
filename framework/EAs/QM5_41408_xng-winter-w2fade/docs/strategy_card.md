@@ -56,9 +56,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify an XNG winter two-week exhaustion fade distinct from certified QM5_12567, same-regime continuation, disjoint shoulder fade, one-week winter momentum, and WTI winter relatives. Verify native label clock, exact weekly membership, strict agreement, inverse orientation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -211,6 +211,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_BUILT | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
-
+| Q01 Build Validation | 2026-09-10 | PASS | governed compile `927a738f-3b07-4e6b-bb8d-fd8a22bc9736`; 0 errors/warnings; build check PASS; 15 reference tests; PACER pin audit clean |
+| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED_CPU_CEILING | intake dry-run eligible; apply skipped after CPU samples 100/97/94/96/90% hit the exclusive 97% ceiling |

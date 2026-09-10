@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "recorded_at_local": "2026-09-10T03:17:00+02:00",
+  "branch": "agents/board-advisor",
+  "outcome": "Q02_NOT_ENQUEUED_CPU_CEILING",
+  "ea_id": "QM5_41408",
+  "ea_label": "QM5_41408_xng-winter-w2fade",
+  "compile": {
+    "work_item_id": "927a738f-3b07-4e6b-bb8d-fd8a22bc9736",
+    "verdict": "COMPILE_OK",
+    "errors": 0,
+    "warnings": 0,
+    "build_check": "PASS",
+    "ex5_sha256": "0c2a4e941bf81583ae469478eb6002185bdfaf67beba95f41cc8ff02f53af9c9"
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "symbol": "XNGUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "setfile_sha256": "f1a00069f770d56d5ebbe780ab34ba34c976d0d32281cebe2ced139967e5f94e"
+  },
+  "capacity": {
+    "sampler": "Win32_Processor.LoadPercentage; five samples approximately one second apart",
+    "cpu_threshold_percent_exclusive": 97.0,
+    "cpu_samples_percent": [100.0, 97.0, 94.0, 96.0, 90.0],
+    "cpu_average_percent": 95.4,
+    "cpu_maximum_percent": 100.0,
+    "cpu_pass": false,
+    "terminal64_or_metatester64_process_count": 4
+  },
+  "pacer_guard": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "exit_code": 0,
+    "hit_count": 0,
+    "passed_before_compile_enqueue": true
+  },
+  "actions": {
+    "q02_apply_called": false,
+    "manual_backtest_launched": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "terminal_control_performed": false
+  }
+}
