@@ -2258,3 +2258,17 @@ farm_state_before_window_sweep_queue_order_20260910T013238Z.sqlite); 13213 owner
 LESSON: time pending_claim_order_sql on the production DB before every farmctl SQL change; a
 worker claim loop of >2 min is the stall signature. Codex ticket ba63936d closed APPROVED with the
 defect recorded; regression-time test = follow-up (noted, not ticketed until quota reset).
+
+## 2026-09-10T03:45Z — OWNER decision "Winsweep ja": L=2 for the WINSWEEP program (chunk 62)
+
+OWNER (chat 03:3xZ) answered the 02:40Z GELB proposal with YES. Execution: machine env
+DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST now = 21507,12710,11910 + WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025
+(append-only). Finding while executing: start_terminal_workers.py carries only QM_* and
+DL089_PROGRAM_SLOTS from machine scope (comment dated 2026-09-05), so DL089_LANES_PER_PROGRAM=2 and
+the allowlist never reach workers unless the launching session env carries them -> reload chunk 62
+(session_tools/reload_chunk62.py) injects both into the launcher env (same pattern as QM_DSR_V2 in
+chunk 58). The L=2 decline-loop fix (docs/ops/evidence/2026-09-05_dl089_l2_decline_loop_rootcause.md)
+is in code with regression tests but its canary was never run: this reload is watched as that canary
+(signature = census cells/h collapse ~88->21 with PROGRAM_PREFLIGHT_SUPPRESSED); rollback = reload
+without the two vars. Whether the 2026-09-07 SAMEPROG execution ever reached workers is an open
+question (no effective-limits evidence in state) -> noted for Codex after the quota reset.
