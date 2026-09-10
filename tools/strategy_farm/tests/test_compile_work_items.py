@@ -2674,6 +2674,78 @@ def test_qm5_10116_stale_resolver_with_q02_history_can_append_compile_recovery(
     assert recovery["refused"] == []
 
 
+def test_qm5_39005_q02_worker_crash_recovery_authority_is_exact_label_bound() -> None:
+    label = "QM5_39005_forexfactory-genesis-matrix-scalper"
+
+    assert compile_work_items.QM5_39005_Q02_WORKER_CRASH_RECOVERY_EA_LABELS == {
+        label
+    }
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_39005_Q02_WORKER_CRASH_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_39006_unrelated-scalper",
+        compile_work_items.QM5_39005_Q02_WORKER_CRASH_RECOVERY_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_q02_infra_repair:wrong-task",
+    )
+
+
+def test_qm5_39005_worker_crash_with_q02_history_can_append_compile_recovery(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    label = "QM5_1001_forexfactory-genesis-matrix-scalper"
+    repo, root = _fixture(tmp_path, [label])
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_39005_Q02_WORKER_CRASH_RECOVERY_EA_LABELS",
+        frozenset({label}),
+    )
+    binary = repo / "framework" / "EAs" / label / f"{label}.ex5"
+    binary.write_bytes(b"current worker-crash recovery fixture")
+    setfile = (
+        repo / "framework" / "EAs" / label / "sets"
+        / f"{label}_EURUSD.DWX_M5_backtest.set"
+    )
+    setfile.parent.mkdir()
+    setfile.write_text("; build_hash: current\n", encoding="utf-8")
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items "
+            "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,"
+            "evidence_path,payload_json,created_at,updated_at) "
+            "VALUES ('failed-q02','backtest','Q02','QM5_1001','EURUSD.DWX',"
+            "'eurusd.set','failed','INFRA_FAIL',0,"
+            "'EVIDENCE_UNAVAILABLE:worker_crashed_handling_item','{}',?,?)",
+            (now, now),
+        )
+        conn.commit()
+
+    generic = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    recovery = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.QM5_39005_Q02_WORKER_CRASH_RECOVERY_AUTHORITY
+        ),
+    )
+
+    assert generic["ok"] is False
+    assert generic["enqueued_count"] == 0
+    assert {"EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST"}.issubset(
+        generic["refused"][0]["reasons"]
+    )
+    assert recovery["ok"] is True
+    assert recovery["enqueued_count"] == 1
+    assert recovery["refused"] == []
+
+
 def test_qm5_41192_q02_binary_recovery_authority_is_exact_label_bound() -> None:
     label = "QM5_41192_xtixng-mdaily-hl-rv"
 

@@ -618,6 +618,19 @@ QM5_10116_Q02_STALE_RESOLVER_REPAIR_AUTHORITY = (
 QM5_10116_Q02_STALE_RESOLVER_REPAIR_EA_LABELS = frozenset({
     "QM5_10116_tv-multi-ma-exit",
 })
+# Exact paced-fleet authority for the QM5_39005 EURUSD Q02 infrastructure
+# recovery.  Its only Q02 attempt never launched MT5 because the historical
+# refusal-recording path hit the SH3 verdict-taxonomy SQLite constraint.  The
+# current source, binary, fixed-risk setfile, and active two-symbol registry
+# remain byte/contract valid, but current dispatch requires one governed
+# COMPILE_EA provenance row.  This one infra-repair task/label binding grants
+# no strategy, backtest, gate-verdict, or cross-EA authority.
+QM5_39005_Q02_WORKER_CRASH_RECOVERY_AUTHORITY = (
+    "router_q02_infra_repair:6f132b33-334d-490e-b9d8-78a287e338c2"
+)
+QM5_39005_Q02_WORKER_CRASH_RECOVERY_EA_LABELS = frozenset({
+    "QM5_39005_forexfactory-genesis-matrix-scalper",
+})
 # Exact paced-fleet authority for the QM5_41192 XTI/XNG diversity recovery.
 # Its source, card, and fixed-risk basket setfiles still match the sealed Q02
 # receipt, but the untracked compiled binary disappeared while the logical Q02
@@ -2952,6 +2965,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_10116_Q02_STALE_RESOLVER_REPAIR_AUTHORITY
             and ea_label in QM5_10116_Q02_STALE_RESOLVER_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_39005_Q02_WORKER_CRASH_RECOVERY_AUTHORITY
+            and ea_label in QM5_39005_Q02_WORKER_CRASH_RECOVERY_EA_LABELS
         )
         or (
             authority == QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY
