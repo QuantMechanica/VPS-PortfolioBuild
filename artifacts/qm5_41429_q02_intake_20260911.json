@@ -1,0 +1,33 @@
+{
+  "schema": "qm.first-q02-intake-evidence/v1",
+  "captured_at": "2026-09-10T22:43:00Z",
+  "ea_id": "QM5_41429",
+  "ea_label": "QM5_41429_wti-refmaint-wclv-fade",
+  "compile_work_item_id": "31aace23-ddf2-4237-8cab-4efe6372e5e7",
+  "compile_verdict": "COMPILE_OK",
+  "dry_run": {
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "would_enqueue": true
+  },
+  "first_apply_attempt": {
+    "applied": false,
+    "reason": "factory_mutation_lock_busy",
+    "action": "WAIT_WITHOUT_TOUCHING_LOCK"
+  },
+  "successful_apply": {
+    "applied": true,
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "work_item_id": "7a185f4e-ff2c-492d-925b-cba0b805f84e",
+    "status": "pending",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "setfile_sha256": "28851e34ae1bd85ddbc2a6eba025f15ee0af43de9e26b2eb7c83dff3d41ae27b",
+    "ex5_sha256": "adb35e5d674d1a9c4b2125bfef38fa9ab6335a1a17f43ebd0739da0ef9fa90fa",
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/31aace23-ddf2-4237-8cab-4efe6372e5e7_7a185f4e-ff2c-492d-925b-cba0b805f84e.json",
+    "receipt_sha256": "9e5b048c549a4515bb76ccc665d037794dcb2fbe33acc09efb6356083c58e014"
+  }
+}

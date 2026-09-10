@@ -61,9 +61,9 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: PENDING
-q02_status: PENDING
-q01_build_report: pending
+q01_status: PASS
+q02_status: ENQUEUED
+q01_build_report: D:/QM/reports/framework/21/build_check_20260910_224132.json
 force_build: true
 review_focus: "Falsify a short-only WTI refinery-maintenance completed-week close-location reversion distinct from the mutually exclusive negative/lower-tercile continuation and the one-week open-to-close fade. Verify exact two-week membership, parent-close endpoint, upper-tercile gate, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -208,5 +208,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | `decisions/2026-09-11_wti_refinery_maintenance_weekly_close_location_reversion_source_approval.md` |
 | G0 Research Intake | 2026-09-11 | APPROVED | decision above |
-| Q01 Build Validation | 2026-09-11 | PENDING | governed build not yet executed |
-| Q02 Baseline Screening | 2026-09-11 | PENDING | fixed-risk XTIUSD.DWX D1 canary not yet enqueued |
+| Q01 Build Validation | 2026-09-11 | PASS | compile `31aace23-ddf2-4237-8cab-4efe6372e5e7`; 0 errors / 0 warnings; build-check PASS; PACER audit 0 findings; reference tests 12/12 PASS |
+| Q02 Baseline Screening | 2026-09-11 | ENQUEUED | pending work item `7a185f4e-ff2c-492d-925b-cba0b805f84e`; fixed-risk XTIUSD.DWX D1 canary |

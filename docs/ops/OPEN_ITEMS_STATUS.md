@@ -2448,3 +2448,14 @@ claimed.
 before comparing it with resolved destinations, retaining the escape refusal.
 The extended-prefix regression and genuine-escape test pass with the focused
 23-test downloader suite; no downloader was restarted.
+
+## 2026-09-11T22:43Z — RESULT: QM5_41429 WTI maintenance reversion built; Q02 enqueued
+
+QM5_41429 `wti-refmaint-wclv-fade` is source-approved, non-duplicate reviewed,
+magic-registered, PACER-audited with zero framework-input pin findings, and
+compiled with zero errors/warnings plus strict build-check PASS. One fixed-
+risk `XTIUSD.DWX` D1 Q02 canary is pending as
+`7a185f4e-ff2c-492d-925b-cba0b805f84e`. CPU admission max was 59% against the
+exclusive 97% ceiling. No live, deploy-manifest, or portfolio-gate surface was
+touched. Evidence:
+`docs/ops/evidence/2026-09-11_qm5_41429_wti_refinery_maintenance_weekly_close_location_reversion_build_q02.md`.
