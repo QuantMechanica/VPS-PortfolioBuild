@@ -1,0 +1,17 @@
+{
+  "schema": "qm.framework-input-pin-audit-evidence/v1",
+  "captured_date": "2026-09-10",
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41426_wti-reframp-wclv-cont/QM5_41426_wti-reframp-wclv-cont.mq5\"",
+  "exit_code": 0,
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "verified_contract": {
+    "framework_equality_pins": ["qm_ea_id", "qm_magic_slot_offset", "RISK_PERCENT_zero"],
+    "framework_range_checks": ["RISK_FIXED_finite_positive", "qm_stress_reject_probability_finite_inclusive_0_1"],
+    "strategy_pins": "all strategy_* locked baseline inputs",
+    "not_equality_pinned": ["qm_rng_seed", "qm_news_*", "qm_friday_close_*", "PORTFOLIO_WEIGHT", "qm_stress_reject_probability"]
+  }
+}
