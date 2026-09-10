@@ -1,0 +1,38 @@
+{
+  "candidate": {
+    "author": "U.S. Energy Information Administration; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; OpenAI Codex",
+    "mechanic": "XTIUSD D1 February March September October refinery maintenance one completed normalized week strictly negative open-to-close log return short continuation one week",
+    "slug": "wti-refmaint-negweek-cont",
+    "strategy_id": "EIA-MOP-WTI-REFMAINT-NEGWEEK-CONT-20260910_S01"
+  },
+  "error": null,
+  "exit_code": 0,
+  "generated_at_utc": "2026-09-10T14:02:53+00:00",
+  "matches": [],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4901,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1511,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "CLEAN"
+}
