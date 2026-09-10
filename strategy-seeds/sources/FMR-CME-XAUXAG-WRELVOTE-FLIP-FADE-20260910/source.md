@@ -5,7 +5,7 @@ publisher: QuantMechanica governed extraction from peer-reviewed commodity resea
 source_type: academic_plus_exchange_bounded_mechanization
 status: approved_source_complete
 approval_basis: decisions/2026-09-10_xauxag_weekly_relative_vote_flip_reversion_source_approval.md
-parent_source_ids: [FMR-MOMTS-2010, CME-GSR-SPREAD-2025]
+parent_source_ids: [FMR-MOMTS-2010, CME-GSR-SPREAD-2025, YANG-COMM-REVERSAL-2017]
 created: 2026-09-10
 created_by: Research+Development
 cards_extracted: [xauxag-wrelvote-flip-fade]
@@ -15,14 +15,17 @@ cards_extracted: [xauxag-wrelvote-flip-fade]
 
 ## Complete-Read Record
 
-The bounded parent records `strategy-seeds/sources/FMR-MOMTS-2010/source.md`
-and `strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md` were read end to end
+The bounded parent records `strategy-seeds/sources/FMR-MOMTS-2010/source.md`,
+`strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md`, and
+`strategy-seeds/sources/YANG-COMM-REVERSAL-2017/source.md` were read end to end
 before this extraction. The first preserves the complete 47-page accepted
 manuscript and DOI for Fuertes, Miffre, and Rallis (2010), *Tactical
 Allocation in Commodity Futures Markets: Combining Momentum and Term Structure
 Signals*, *Journal of Banking & Finance* 34(10), 2530–2548. It defines
 cross-sectional commodity momentum. The second preserves CME's definition of
-the gold/silver ratio and the gold/silver intermarket-spread carrier.
+the gold/silver ratio and the gold/silver intermarket-spread carrier. The third
+supplies named academic commodity-reversal lineage through Yang, Goncu, and
+Pantelous (2017), SSRN 3069253.
 
 Neither parent tests overlapping three-week sign votes, a majority flip,
 fading the new majority, Monday-anchored continuous-CFD labels, equal-notional
@@ -64,8 +67,8 @@ Verdict: `DISTINCT_XAUXAG_OVERLAPPING_THREE_WEEK_RELATIVE_MAJORITY_FLIP_REVERSIO
 ## Reputable-Source Criteria
 
 - R1 `PASS_WITH_DIRECTION_HORIZON_AND_STATE_TRANSLATION_RISK`: peer-reviewed
-  commodity research and official-exchange carrier lineage; the exact weekly
-  fade is untested.
+  commodity-momentum research, named academic commodity-reversal work, and
+  official-exchange carrier lineage; the exact weekly fade is untested.
 - R2 `PASS`: endpoints, votes, side, attempt, risk, stops, notional tolerance,
   spreads, and lifecycle are deterministic.
 - R3 `PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK`: registered

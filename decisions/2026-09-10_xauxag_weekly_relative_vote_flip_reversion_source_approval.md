@@ -20,7 +20,9 @@ offers an XAU/XAG market-neutral basket. The bounded packet preserves the
 complete local record for Fuertes, Miffre, and Rallis (2010), *Tactical
 Allocation in Commodity Futures Markets*, *Journal of Banking & Finance*
 34(10), 2530–2548, DOI `10.1016/j.jbankfin.2010.04.009`, plus CME Group's
-official gold/silver ratio and intermarket-spread definition. The exact weekly
+official gold/silver ratio and intermarket-spread definition, and Yang, Goncu,
+and Pantelous (2017), *Momentum and Reversal in Commodity Futures*, SSRN
+3069253, for academic commodity-reversal lineage. The exact weekly
 vote-flip fade is disclosed as an untested QM translation; no source efficacy,
 neutrality, or diversification claim transfers.
 
