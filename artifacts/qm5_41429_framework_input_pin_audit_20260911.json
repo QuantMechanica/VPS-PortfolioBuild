@@ -1,0 +1,11 @@
+{
+  "schema_version": "qm.framework-input-pin-audit-evidence/v1",
+  "captured_at": "2026-09-11",
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41429_wti-refmaint-wclv-fade/QM5_41429_wti-refmaint-wclv-fade.mq5",
+  "exit_code": 0,
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": []
+}
