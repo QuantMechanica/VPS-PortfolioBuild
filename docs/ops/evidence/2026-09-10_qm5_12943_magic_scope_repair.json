@@ -1,0 +1,120 @@
+{
+  "schema": "qm.paced_fleet.q02_magic_scope_repair.v1",
+  "recorded_at_utc": "2026-09-10T11:50:24.6299703+00:00",
+  "branch": "agents/board-advisor",
+  "head_before_commit": "eacb4dbb5eeade39cb6019ef594a87049000249d",
+  "ea_id": "QM5_12943",
+  "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+  "priority": "P2_INFRA_REPAIR",
+  "selection": {
+    "reason": "The approved-build census had no genuinely unbuilt, collision-free diversity candidate. QM5_12943 was the newest collision-free FX Q02 infrastructure failure: MetaEditor had passed with zero errors and warnings, while strict build checking rejected nine active registry symbols outside the approved card universe.",
+    "expected_trades_per_year_per_symbol": 100,
+    "mechanism": "structural H1 EMA(5/10) crossover with RSI(10) midline confirmation and a daily ATR floor",
+    "source": "ForexFactory Trading Systems / BabyPips Robopip HLHB Trend Catcher",
+    "source_url": "https://www.babypips.com/trading-systems/hlhb",
+    "forbidden_features_present": false
+  },
+  "authority": {
+    "approved_card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12943_robopip-hlhb-trend-catcher-h1.md",
+    "approved_card_sha256": "ef72a38ac2cc6ba8ab0c741c6204af46db31dba3f802984eab8205d043b9d406",
+    "g0_status": "APPROVED",
+    "farm_task_id": "10a4c879-2ac8-4760-b386-5d11cd874695",
+    "farm_task_kind": "infra_repair",
+    "claim_collision_check": "PASS_NO_OPEN_TASK_OR_WORK_ITEM",
+    "database_backup_path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_qm5_12943_magic_scope_claim_20260910T114420Z.sqlite",
+    "database_backup_sha256": "553a040552d356c317252c94e68401e6618ce20ee3533e852e244a4da7d1f583",
+    "prior_review_directive": "docs/ops/evidence/2026-08-24_greview_12943.md",
+    "predecessor_compile_work_item_id": "558cb930-d97a-4a91-b1f4-ebbe69b4a01a",
+    "predecessor_compile_result": "PASS_0_ERRORS_0_WARNINGS",
+    "predecessor_build_check_result": "FAIL_EA_SYMBOL_NOT_IN_CARD_UNIVERSE"
+  },
+  "repair": {
+    "source_changed": false,
+    "mq5_path": "framework/EAs/QM5_12943_robopip-hlhb-trend-catcher-h1/QM5_12943_robopip-hlhb-trend-catcher-h1.mq5",
+    "mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "active_card_symbols": {
+      "XAUUSD.DWX": 5,
+      "EURUSD.DWX": 6,
+      "GBPUSD.DWX": 7,
+      "USDJPY.DWX": 8
+    },
+    "retired_out_of_card_symbols": {
+      "GDAXI.DWX": 0,
+      "NDX.DWX": 1,
+      "SP500.DWX": 2,
+      "UK100.DWX": 3,
+      "WS30.DWX": 4,
+      "USDCHF.DWX": 9,
+      "AUDUSD.DWX": 10,
+      "USDCAD.DWX": 11,
+      "NZDUSD.DWX": 12
+    },
+    "historical_magic_rows_deleted": 0,
+    "magic_registry_sha256": "cc3cb9210c0861daade27bea818a02df722a13326baa978470be22b6332b0f47",
+    "resolver_rows": 18208,
+    "resolver_rows_dropped": 0,
+    "resolver_registry_sha256": "CC3CB9210C0861DAADE27BEA818A02DF722A13326BAA978470BE22B6332B0F47",
+    "resolver_file_sha256": "8e7e8f0a7bb08d24ba0ce85bfba507141e668725c7718ae1ea38f40d67d87f89",
+    "strict_build_symbol_failures_before": 9,
+    "strict_build_symbol_failures_after": 0
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:\\QM\\repo\\framework\\EAs\\QM5_12943_robopip-hlhb-trend-catcher-h1\\QM5_12943_robopip-hlhb-trend-catcher-h1.mq5\"",
+    "executed_before_enqueue_compile": true,
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": [],
+    "risk_fixed": 1000,
+    "risk_percent": 0
+  },
+  "capacity_preflight": {
+    "processor_utility_samples_percent": [
+      44.585649683641826,
+      51.848029026650146,
+      51.43366657724915,
+      56.75377944544675,
+      52.104789866975885
+    ],
+    "average_percent": 51.34518291999275,
+    "maximum_percent": 56.75377944544675,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false,
+    "active_work_items": 2
+  },
+  "compile_intake": {
+    "source_repair_authority": "router_q02_infra_repair:10a4c879-2ac8-4760-b386-5d11cd874695:QM5_12943",
+    "work_item_id": "7017bc20-56bc-45a4-be48-22ddff35b63f",
+    "eligible_count": 1,
+    "enqueued_count": 1,
+    "refused_count": 0,
+    "symbol_count": 4,
+    "timeframe": "H1",
+    "status_at_recording": "pending",
+    "activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
+    "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "no_gate_verdict": true,
+    "canonical_ex5_preserved_while_pending": true,
+    "canonical_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2"
+  },
+  "validation": {
+    "resolver_regeneration_dry_run": "PASS_IDEMPOTENT_18208_ROWS_ZERO_DROPPED",
+    "focused_tests": "10_PASSED",
+    "authority_tests": "2_PASSED",
+    "combined_regression_suite": "99_PASSED",
+    "build_gate_hardening": "PASS_ZERO_FAILURES",
+    "build_guardrails": "PASS_5_FILES_ZERO_FINDINGS",
+    "diff_check": "PASS",
+    "global_registry_validator": "BASELINE_FAIL_OUTSIDE_QM5_12943_SCOPE",
+    "qm5_12943_registry_issues": 0
+  },
+  "boundaries": {
+    "q02_or_q03_enqueued": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "manifest_touched": false,
+    "gate_logic_bypassed": false
+  }
+}

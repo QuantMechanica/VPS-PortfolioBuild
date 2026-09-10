@@ -631,6 +631,19 @@ QM5_39005_Q02_WORKER_CRASH_RECOVERY_AUTHORITY = (
 QM5_39005_Q02_WORKER_CRASH_RECOVERY_EA_LABELS = frozenset({
     "QM5_39005_forexfactory-genesis-matrix-scalper",
 })
+# Exact paced-fleet authority for the QM5_12943 registry-scope repair. Its
+# previous governed compile passed MetaEditor with zero errors and warnings,
+# then failed strict build checking because nine active magic rows were outside
+# the OWNER-approved four-symbol card universe. Farm task 10a4c879 records the
+# collision-free repair claim. This task/label binding permits one append-only
+# COMPILE_EA requalification after those rows are retired and the resolver is
+# regenerated; it grants no strategy, backtest, gate-verdict, or live authority.
+QM5_12943_Q02_MAGIC_SCOPE_REPAIR_AUTHORITY = (
+    "router_q02_infra_repair:10a4c879-2ac8-4760-b386-5d11cd874695:QM5_12943"
+)
+QM5_12943_Q02_MAGIC_SCOPE_REPAIR_EA_LABELS = frozenset({
+    "QM5_12943_robopip-hlhb-trend-catcher-h1",
+})
 # Exact paced-fleet authority for the QM5_41192 XTI/XNG diversity recovery.
 # Its source, card, and fixed-risk basket setfiles still match the sealed Q02
 # receipt, but the untracked compiled binary disappeared while the logical Q02
@@ -2969,6 +2982,10 @@ def _source_repair_authorized(
         or (
             authority == QM5_39005_Q02_WORKER_CRASH_RECOVERY_AUTHORITY
             and ea_label in QM5_39005_Q02_WORKER_CRASH_RECOVERY_EA_LABELS
+        )
+        or (
+            authority == QM5_12943_Q02_MAGIC_SCOPE_REPAIR_AUTHORITY
+            and ea_label in QM5_12943_Q02_MAGIC_SCOPE_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY

@@ -18,6 +18,17 @@ AUTHORIZED_SYMBOLS = {
     "USDJPY.DWX": 8,
     "XAUUSD.DWX": 5,
 }
+RETIRED_OUT_OF_CARD_SYMBOLS = {
+    "AUDUSD.DWX": 10,
+    "GDAXI.DWX": 0,
+    "NDX.DWX": 1,
+    "NZDUSD.DWX": 12,
+    "SP500.DWX": 2,
+    "UK100.DWX": 3,
+    "USDCAD.DWX": 11,
+    "USDCHF.DWX": 9,
+    "WS30.DWX": 4,
+}
 
 
 def source_text() -> str:
@@ -110,10 +121,17 @@ def test_qm5_12943_delivers_only_the_card_symbols_with_fixed_risk() -> None:
     with (REPO_ROOT / "framework" / "registry" / "magic_numbers.csv").open(
         newline="", encoding="utf-8-sig"
     ) as handle:
-        active_rows = {
-            row["symbol"]: int(row["symbol_slot"])
-            for row in csv.DictReader(handle)
-            if row["ea_id"] == "12943" and row["status"] == "active"
-        }
-    for symbol, slot in AUTHORIZED_SYMBOLS.items():
-        assert active_rows.get(symbol) == slot
+        rows = [row for row in csv.DictReader(handle) if row["ea_id"] == "12943"]
+
+    active_rows = {
+        row["symbol"]: int(row["symbol_slot"])
+        for row in rows
+        if row["status"] == "active"
+    }
+    retired_rows = {
+        row["symbol"]: int(row["symbol_slot"])
+        for row in rows
+        if row["status"] == "retired"
+    }
+    assert active_rows == AUTHORIZED_SYMBOLS
+    assert retired_rows == RETIRED_OUT_OF_CARD_SYMBOLS

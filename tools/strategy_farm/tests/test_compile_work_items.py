@@ -2694,6 +2694,24 @@ def test_qm5_39005_q02_worker_crash_recovery_authority_is_exact_label_bound() ->
     )
 
 
+def test_qm5_12943_magic_scope_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_12943_robopip-hlhb-trend-catcher-h1"
+    authority = compile_work_items.QM5_12943_Q02_MAGIC_SCOPE_REPAIR_AUTHORITY
+
+    assert compile_work_items.QM5_12943_Q02_MAGIC_SCOPE_REPAIR_EA_LABELS == {
+        label
+    }
+    assert compile_work_items._source_repair_authorized(label, authority)
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_12944_unrelated-strategy",
+        authority,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_q02_infra_repair:wrong-task:QM5_12943",
+    )
+
+
 def test_qm5_39005_worker_crash_with_q02_history_can_append_compile_recovery(
     tmp_path: Path,
     monkeypatch,
