@@ -39,48 +39,55 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    breadth_return_days          = 5;
-input double breadth_threshold            = -0.010;
-input int    breakout_lookback            = 20;
-input int    vol_short_days               = 10;
-input int    vol_baseline_days            = 60;
-input int    atr_period                    = 14;
-input double hard_stop_atr                 = 2.0;
-input int    max_hold_bars                 = 10;
+input string strategy_symbol_1              = "NZDJPY.DWX";
+input string strategy_symbol_2              = "AUDJPY.DWX";
+input string strategy_symbol_3              = "CADJPY.DWX";
+input string strategy_symbol_4              = "EURJPY.DWX";
+input int    strategy_breadth_return_days   = 5;
+input double strategy_breadth_threshold     = -0.010;
+input int    strategy_breakout_lookback     = 20;
+input int    strategy_vol_short_days        = 10;
+input int    strategy_vol_baseline_days     = 60;
+input int    strategy_atr_period             = 14;
+input double strategy_hard_stop_atr          = 2.0;
+input int    strategy_max_hold_bars          = 10;
 
-string   g_breadth_symbols[4] =
-  {
-   "AUDJPY.DWX",
-   "NZDJPY.DWX",
-   "CADJPY.DWX",
-   "EURJPY.DWX"
-  };
-datetime g_last_exit_completed_bar = 0;
+string g_breadth_symbols[4];
 
 bool Strategy_InputsValid()
   {
    return (qm_ea_id == 41140 && qm_magic_slot_offset == 0 &&
-           breadth_return_days >= 1 && breadth_return_days <= 252 &&
-           breadth_threshold < 0.0 && breadth_threshold > -1.0 &&
-           breakout_lookback >= 2 && breakout_lookback <= 500 &&
-           vol_short_days >= 2 && vol_short_days <= 252 &&
-           vol_baseline_days >= 2 && vol_baseline_days <= 2520 &&
-           atr_period >= 2 && atr_period <= 500 &&
-           hard_stop_atr > 0.0 && hard_stop_atr <= 100.0 &&
-           max_hold_bars >= 1 && max_hold_bars <= 252 &&
-           RISK_PERCENT >= 0.0 && RISK_FIXED >= 0.0 &&
-           (RISK_PERCENT > 0.0 || RISK_FIXED > 0.0) &&
-           PORTFOLIO_WEIGHT > 0.0 &&
+           StringLen(strategy_symbol_1) > 0 &&
+           StringLen(strategy_symbol_2) > 0 &&
+           StringLen(strategy_symbol_3) > 0 &&
+           StringLen(strategy_symbol_4) > 0 &&
+           strategy_breadth_return_days >= 1 &&
+           strategy_breadth_return_days <= 252 &&
+           strategy_breadth_threshold < 0.0 &&
+           strategy_breadth_threshold > -1.0 &&
+           strategy_breakout_lookback >= 2 &&
+           strategy_breakout_lookback <= 500 &&
+           strategy_vol_short_days >= 2 &&
+           strategy_vol_short_days <= 252 &&
+           strategy_vol_baseline_days >= 2 &&
+           strategy_vol_baseline_days <= 2520 &&
+           strategy_atr_period >= 2 && strategy_atr_period <= 500 &&
+           strategy_hard_stop_atr > 0.0 &&
+           strategy_hard_stop_atr <= 100.0 &&
+           strategy_max_hold_bars >= 1 && strategy_max_hold_bars <= 252 &&
+           RISK_FIXED > 0.0 && RISK_PERCENT == 0.0 &&
+           MathIsValidNumber(qm_stress_reject_probability) &&
            qm_stress_reject_probability >= 0.0 &&
            qm_stress_reject_probability <= 1.0);
   }
 
 int Strategy_RequiredHistoryBars()
   {
-   int required = vol_baseline_days + vol_short_days + 5;
-   required = MathMax(required, breakout_lookback + 5);
-   required = MathMax(required, atr_period + 5);
-   required = MathMax(required, breadth_return_days + 5);
+   int required = strategy_vol_baseline_days +
+                  strategy_vol_short_days + 5;
+   required = MathMax(required, strategy_breakout_lookback + 5);
+   required = MathMax(required, strategy_atr_period + 5);
+   required = MathMax(required, strategy_breadth_return_days + 5);
    return required;
   }
 
@@ -256,7 +263,7 @@ bool Strategy_LoadTargetState(const datetime signal_time,
 
    target_close = rates[0].close;
    double low = DBL_MAX;
-   for(int index = 1; index <= breakout_lookback; ++index)
+   for(int index = 1; index <= strategy_breakout_lookback; ++index)
      {
       if(rates[index].time <= 0 || rates[index].low <= 0.0)
          return false;
@@ -266,17 +273,19 @@ bool Strategy_LoadTargetState(const datetime signal_time,
       return false;
    prior_low = low;
 
-   if(!Strategy_RealizedVolatility(rates, 0, vol_short_days,
+   if(!Strategy_RealizedVolatility(rates, 0, strategy_vol_short_days,
                                    current_vol))
       return false;
 
    double samples[];
-   ArrayResize(samples, vol_baseline_days);
-   for(int sample = 0; sample < vol_baseline_days; ++sample)
+   ArrayResize(samples, strategy_vol_baseline_days);
+   if(ArraySize(samples) != strategy_vol_baseline_days)
+      return false;
+   for(int sample = 0; sample < ArraySize(samples); ++sample)
      {
       double value = 0.0;
       if(!Strategy_RealizedVolatility(rates, sample + 1,
-                                      vol_short_days, value))
+                                      strategy_vol_short_days, value))
          return false;
       samples[sample] = value;
      }
@@ -298,17 +307,18 @@ bool Strategy_LoadBreadthReturn(const datetime signal_time,
 
       MqlRates rates[];
       ArraySetAsSeries(rates, true);
-      const int requested = breadth_return_days + 1;
+      const int requested = strategy_breadth_return_days + 1;
       const int copied =
          CopyRates(symbol, PERIOD_D1, 1, requested, rates); // perf-allowed: bounded synchronized breadth history, called only from the framework new-bar entry hook.
       if(copied != requested || ArraySize(rates) != requested ||
          rates[0].time != signal_time ||
          rates[0].close <= 0.0 ||
-         rates[breadth_return_days].close <= 0.0)
+         rates[strategy_breadth_return_days].close <= 0.0)
          return false;
 
       const double component_return =
-         rates[0].close / rates[breadth_return_days].close - 1.0;
+         rates[0].close /
+         rates[strategy_breadth_return_days].close - 1.0;
       if(!MathIsValidNumber(component_return))
          return false;
       sum += component_return;
@@ -326,7 +336,7 @@ bool Strategy_ChannelMidpoint(const datetime signal_time,
    midpoint = 0.0;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
-   const int requested = breakout_lookback + 1;
+   const int requested = strategy_breakout_lookback + 1;
    const int copied =
       CopyRates(_Symbol, PERIOD_D1, 1, requested, rates); // perf-allowed: bounded completed-bar exit channel, evaluated at most once per D1 bar.
    if(copied != requested || ArraySize(rates) != requested ||
@@ -335,7 +345,7 @@ bool Strategy_ChannelMidpoint(const datetime signal_time,
 
    double highest = -DBL_MAX;
    double lowest = DBL_MAX;
-   for(int index = 1; index <= breakout_lookback; ++index)
+   for(int index = 1; index <= strategy_breakout_lookback; ++index)
      {
       if(rates[index].time <= 0 || rates[index].high <= 0.0 ||
          rates[index].low <= 0.0 || rates[index].high < rates[index].low)
@@ -370,14 +380,16 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.sl = 0.0;
    req.tp = 0.0;
    req.reason = "";
-   req.symbol_slot = 0;
+   req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
 
    if(Strategy_OwnedPositionCount() > 0)
       return false;
 
-   const datetime signal_time =
-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: exact completed-bar anchor inside the framework new-bar entry hook.
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, signal_bar))
+      return false;
+   const datetime signal_time = signal_bar.time;
    if(signal_time <= 0)
       return false;
 
@@ -394,7 +406,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(!breadth_valid || !target_valid)
       return false;
 
-   const bool breadth_gate = (breadth_return <= breadth_threshold);
+   const bool breadth_gate =
+      (breadth_return <= strategy_breadth_threshold);
    const bool breakout_gate = (target_close < prior_low);
    const bool volatility_gate = (current_vol > baseline_median);
    QM_LogEvent(QM_INFO,
@@ -402,7 +415,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                StringFormat("{\"signal_time\":%I64d,\"breadth\":%.12e,\"threshold\":%.12e,\"target_close\":%.8f,\"prior_low\":%.8f,\"rv10\":%.12e,\"rv60_median\":%.12e,\"breadth_gate\":%s,\"breakout_gate\":%s,\"volatility_gate\":%s}",
                             (long)signal_time,
                             breadth_return,
-                            breadth_threshold,
+                            strategy_breadth_threshold,
                             target_close,
                             prior_low,
                             current_vol,
@@ -419,11 +432,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       !Strategy_ExecutionMetadataValid(_Symbol, tick))
       return false;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_D1, atr_period, 1);
+   const double atr =
+      QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(atr <= 0.0 || !MathIsValidNumber(atr))
       return false;
    const double stop =
-      QM_StopATRFromValue(_Symbol, QM_SELL, tick.bid, atr, hard_stop_atr);
+      QM_StopATRFromValue(_Symbol, QM_SELL, tick.bid, atr,
+                          strategy_hard_stop_atr);
    if(stop <= tick.bid || !MathIsValidNumber(stop))
       return false;
 
@@ -455,17 +470,19 @@ bool Strategy_ExitSignal()
       !integrity_ok)
       return false;
 
-   const datetime completed_time =
-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: completed-bar exit gate.
-   if(completed_time <= 0 || completed_time == g_last_exit_completed_bar)
+   if(!QM_IsNewCalendarPeriod(PERIOD_D1, _Symbol))
       return false;
-   g_last_exit_completed_bar = completed_time;
 
-   const int entry_shift =
-      iBarShift(_Symbol, PERIOD_D1, opened_at, false); // perf-allowed: one bounded completed-D1 holding-period lookup.
-   if(entry_shift >= max_hold_bars)
+   const int held_bars =
+      QM_TM_HeldPeriodsForMagic((long)QM_FrameworkMagic(), _Symbol,
+                                PERIOD_D1, TimeCurrent());
+   if(held_bars >= strategy_max_hold_bars)
       return true;
 
+   MqlRates completed_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_D1, 1, completed_bar))
+      return false;
+   const datetime completed_time = completed_bar.time;
    double completed_close = 0.0;
    double midpoint = 0.0;
    if(!Strategy_ChannelMidpoint(completed_time, completed_close, midpoint))
@@ -484,7 +501,14 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(_Symbol != "NZDJPY.DWX" || _Period != PERIOD_D1 ||
+   g_breadth_symbols[0] = strategy_symbol_2;
+   g_breadth_symbols[1] = strategy_symbol_1;
+   g_breadth_symbols[2] = strategy_symbol_3;
+   g_breadth_symbols[3] = strategy_symbol_4;
+
+   if(QM_MagicSymbolCanonical(_Symbol) !=
+         QM_MagicSymbolCanonical(strategy_symbol_1) ||
+      _Period != PERIOD_D1 ||
       !Strategy_InputsValid())
       return INIT_PARAMETERS_INCORRECT;
 

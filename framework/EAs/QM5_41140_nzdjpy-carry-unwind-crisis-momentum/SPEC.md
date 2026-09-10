@@ -6,7 +6,7 @@
 
 **Source ID:** `BRUNNERMEIER-NAGEL-PEDERSEN-CARRY-CRASH-2008`
 
-**Last revised:** 2026-08-27
+**Last revised:** 2026-09-10
 
 ## 1. Strategy Logic
 
@@ -30,14 +30,18 @@ against the median. "Prior 20" excludes the signal bar for both entry and exit.
 
 | Parameter | Baseline | Meaning |
 |---|---:|---|
-| `breadth_return_days` | 5 | completed-session return horizon |
-| `breadth_threshold` | -0.010 | maximum equal-weight JPY-cross return |
-| `breakout_lookback` | 20 | prior target range window |
-| `vol_short_days` | 10 | realized-volatility window |
-| `vol_baseline_days` | 60 | prior rolling-volatility sample count |
-| `atr_period` | 14 | completed D1 ATR period |
-| `hard_stop_atr` | 2.0 | frozen initial stop distance |
-| `max_hold_bars` | 10 | completed D1 time stop |
+| `strategy_symbol_1` | NZDJPY.DWX | execution/chart symbol |
+| `strategy_symbol_2` | AUDJPY.DWX | first auxiliary breadth series |
+| `strategy_symbol_3` | CADJPY.DWX | second auxiliary breadth series |
+| `strategy_symbol_4` | EURJPY.DWX | third auxiliary breadth series |
+| `strategy_breadth_return_days` | 5 | completed-session return horizon |
+| `strategy_breadth_threshold` | -0.010 | maximum equal-weight JPY-cross return |
+| `strategy_breakout_lookback` | 20 | prior target range window |
+| `strategy_vol_short_days` | 10 | realized-volatility window |
+| `strategy_vol_baseline_days` | 60 | prior rolling-volatility sample count |
+| `strategy_atr_period` | 14 | completed D1 ATR period |
+| `strategy_hard_stop_atr` | 2.0 | frozen initial stop distance |
+| `strategy_max_hold_bars` | 10 | completed D1 time stop |
 
 No undeclared strategy parameter or adaptive state is present.
 
@@ -111,3 +115,4 @@ break-even move, partial exit, or discretionary input.
 | Version | Date | Reason |
 |---|---|---|
 | v1-build | 2026-08-27 | deterministic implementation from OWNER-approved G0 card |
+| v2-recovery | 2026-09-10 | canonical strategy input names, configurable symbol inputs, framework-owned D1 exit cadence, and current-binary Q02 recovery |
