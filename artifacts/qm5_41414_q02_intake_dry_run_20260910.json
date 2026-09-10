@@ -1,0 +1,39 @@
+{
+  "schema": "qm.first-q02-intake/v1",
+  "recorded_at_local": "2026-09-10T09:01:48+02:00",
+  "applied": false,
+  "dry_run": true,
+  "eligible": true,
+  "would_enqueue": true,
+  "reason": "ELIGIBLE",
+  "ea_id": "QM5_41414",
+  "compile_work_item_id": "e257eebd-9747-42a3-b83f-4d4f0ab2b7f5",
+  "compile_evidence_path": "D:/QM/reports/work_items/e257eebd-9747-42a3-b83f-4d4f0ab2b7f5/QM5_41414/COMPILE_EA/compile_evidence.json",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41414_xauxag-wrelvote-flip-cont/QM5_41414_xauxag-wrelvote-flip-cont.ex5",
+  "ex5_sha256": "a8026c39d98d97eaf1b143e240192ae1f5775c3bb97a2b74c26de64c076fb164",
+  "target_symbols": [
+    "XAGUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "canary": {
+    "symbol": "QM5_41414_XAU_XAG_WRELVOTE_FLIP_CONT_D1",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41414_xauxag-wrelvote-flip-cont/sets/QM5_41414_xauxag-wrelvote-flip-cont_QM5_41414_XAU_XAG_WRELVOTE_FLIP_CONT_D1_D1_backtest.set",
+    "setfile_sha256": "3e69566e6152a7d07db3becf461011707b4f86d26ea506426ce51711e0e78880"
+  },
+  "risk_contract": {
+    "setfile_count": 3,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "strategy_parameter_contract": {
+    "setfile_count": 3,
+    "all_strategy_values_nonempty": true
+  },
+  "magic_contract": {
+    "ok": true,
+    "active_row_count": 2,
+    "issues": []
+  },
+  "deferred": []
+}

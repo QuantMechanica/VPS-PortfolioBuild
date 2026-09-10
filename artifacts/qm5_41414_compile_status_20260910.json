@@ -1,0 +1,23 @@
+{
+  "schema": "qm.compile-status/v1",
+  "recorded_at": "2026-09-10T06:55:07+00:00",
+  "ea_id": "QM5_41414",
+  "ea_label": "QM5_41414_xauxag-wrelvote-flip-cont",
+  "work_item_id": "e257eebd-9747-42a3-b83f-4d4f0ab2b7f5",
+  "predecessor_work_item_id": "e0a80430-3397-4d23-bb3b-8f32a4e415a6",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "framework_build_check_warnings": 0,
+  "framework_build_check_failures": 0,
+  "setfile_count": 3,
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41414_xauxag-wrelvote-flip-cont/QM5_41414_xauxag-wrelvote-flip-cont.ex5",
+  "ex5_sha256": "a8026c39d98d97eaf1b143e240192ae1f5775c3bb97a2b74c26de64c076fb164",
+  "mq5_sha256": "45249e83c05be1f6104cc35d5c8a551e754fa400c7715fb660fc4a56f4589ab7",
+  "compile_evidence_path": "D:/QM/reports/work_items/e257eebd-9747-42a3-b83f-4d4f0ab2b7f5/QM5_41414/COMPILE_EA/compile_evidence.json",
+  "repair": "Removed source literal symbol defaults after the predecessor strict build check raised EA_SYMBOL_HARDCODED; strategy symbol values are bound only by the backtest setfiles.",
+  "no_gate_verdict": true
+}
