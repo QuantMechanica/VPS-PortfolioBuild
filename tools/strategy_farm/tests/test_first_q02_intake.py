@@ -168,6 +168,61 @@ def test_dry_run_is_eligible_and_has_no_mutation(tmp_path: Path) -> None:
     assert not (root / "artifacts" / "receipts" / "first_q02_intake").exists()  # type: ignore[operator]
 
 
+def test_signal_only_manifest_matches_compile_execution_symbols(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    ea_dir = Path(fixture["ea_dir"])
+    logical_symbol = "QM5_9001_EURUSD_GBPUSD_SIGNAL_BASKET_H1"
+    manifest = {
+        "logical_symbol": logical_symbol,
+        "host_symbol": "EURUSD.DWX",
+        "host_timeframe": "H1",
+        "basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"],
+        "execution_symbols": ["EURUSD.DWX"],
+        "signal_only_symbols": ["GBPUSD.DWX"],
+    }
+    (ea_dir / "basket_manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+    source_setfile = Path(fixture["setfiles"]["EURUSD.DWX"])  # type: ignore[index]
+    logical_setfile = ea_dir / "sets" / f"{ea_dir.name}_{logical_symbol}_H1_backtest.set"
+    logical_setfile.write_bytes(source_setfile.read_bytes())
+
+    evidence_path = Path(fixture["evidence_path"])
+    evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+    evidence["candidate_recheck"]["symbols"] = ["EURUSD.DWX"]
+    evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+    repo = Path(fixture["repo"])
+    _write_csv(
+        repo / "framework" / "registry" / "magic_numbers.csv",
+        ["ea_id", "ea_slug", "symbol_slot", "symbol", "magic", "status"],
+        [{
+            "ea_id": "9001", "ea_slug": EA_SLUG, "symbol_slot": 0,
+            "symbol": "EURUSD.DWX", "magic": 90010000, "status": "active",
+        }],
+    )
+    with sqlite3.connect(Path(fixture["root"]) / farmctl.DB_REL) as conn:
+        conn.execute(
+            "UPDATE work_items SET payload_json=? WHERE id=?",
+            (json.dumps({
+                "symbols": ["EURUSD.DWX"],
+                "compile_result": {
+                    "compile_result": "PASS",
+                    "build_check_result": "PASS",
+                    "ex5_sha256": hashlib.sha256(Path(fixture["ex5"]).read_bytes()).hexdigest(),
+                },
+            }), COMPILE_ID),
+        )
+        conn.commit()
+
+    result = _plan(fixture)
+
+    assert result["eligible"] is True
+    assert result["would_enqueue"] is True
+    assert result["target_symbols"] == ["EURUSD.DWX"]
+    assert result["canary"]["symbol"] == logical_symbol  # type: ignore[index]
+    assert result["deferred"] == []
+
+
 def test_apply_appends_one_unboosted_canary_deferral_and_receipt(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
     result = farmctl.intake_first_q02(

@@ -34686,11 +34686,45 @@ def _first_q02_setfile_plan(
             for value in (basket_manifest.get("basket_symbols") or [])
             if str(value).strip()
         }
-        if manifest_symbols != set(target_symbols):
+        compile_symbols = set(target_symbols)
+        raw_execution_symbols = basket_manifest.get("execution_symbols")
+        if isinstance(raw_execution_symbols, list):
+            execution_symbols = {
+                str(value).strip().upper()
+                for value in raw_execution_symbols
+                if str(value).strip()
+            }
+            signal_only_symbols = {
+                str(value).strip().upper()
+                for value in (basket_manifest.get("signal_only_symbols") or [])
+                if str(value).strip()
+            }
+            host_symbol = str(basket_manifest.get("host_symbol") or "").strip().upper()
+            role_issues: list[str] = []
+            if execution_symbols != compile_symbols:
+                role_issues.append("execution_symbols_do_not_match_compile_symbols")
+            if not execution_symbols.issubset(manifest_symbols):
+                role_issues.append("execution_symbols_not_in_basket_symbols")
+            if execution_symbols & signal_only_symbols:
+                role_issues.append("execution_and_signal_only_symbols_overlap")
+            if execution_symbols | signal_only_symbols != manifest_symbols:
+                role_issues.append("symbol_roles_do_not_cover_basket_symbols")
+            if host_symbol not in execution_symbols:
+                role_issues.append("host_symbol_not_in_execution_symbols")
+            if role_issues:
+                return None, {
+                    "reason": "basket_manifest_compile_symbol_mismatch",
+                    "manifest_symbols": sorted(manifest_symbols),
+                    "execution_symbols": sorted(execution_symbols),
+                    "signal_only_symbols": sorted(signal_only_symbols),
+                    "compile_symbols": sorted(compile_symbols),
+                    "issues": role_issues,
+                }
+        elif manifest_symbols != compile_symbols:
             return None, {
                 "reason": "basket_manifest_compile_symbol_mismatch",
                 "manifest_symbols": sorted(manifest_symbols),
-                "compile_symbols": sorted(target_symbols),
+                "compile_symbols": sorted(compile_symbols),
             }
         basket_manifest["manifest_path"] = str(manifest_path.resolve())
         logical_symbol = str(basket_manifest["logical_symbol"])
