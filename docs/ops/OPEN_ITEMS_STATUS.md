@@ -2313,3 +2313,16 @@ because WINSWEEP heads the claim order and keeps its 2 lanes inside the cap. Exp
 cells/h, Q04/Q02 windows open, Clear-ETA toward ~1 week. ROLLBACK due 2026-09-12T19:00Z: staggered
 reload without DL089_CELL_SLOTS (session one-shot scheduled; any Factory restart also drops it since
 the launcher carries only QM_*/PROGRAM_SLOTS). Watch: census cells/h, Q04 done/24 h, Q02 admission.
+
+## 2026-09-10T19:45Z — ASTRA-T11-PRESCREEN commissioned (OWNER ~19:30Z)
+
+OWNER: Astra shall test on T11 whether optimizer runs or other backtest variants can pre-sort parts
+of the schedule; real-tick stays mandatory at the end. Ticket `b48ba1fb` P86 (Astra, scalpel):
+speed matrix on T11 (real-tick per-year vs single full window vs OHLC M1 vs generated ticks vs open
+prices vs MT5 optimizer with local agents), fidelity vs the >=318 MEASURED WINSWEEP cells and >=100
+DL-089 41398 cells (rank correlation, top-k overlap, false-negative rate per cut-off), option table
+(warm runner, full-window split, tick-cache reuse, agent parallelism), and a decision-card draft for
+a governed pre-screen protocol (ordering only, never a verdict; real-tick confirmation + random
+control sample). Isolation: T11 only, no work_items, CPU guard (<=4 agents, pause at >90 % CPU),
+RAM guard. Builds on V4a/V4b evidence (3e129337, c7536f46, 7d800fe1). Recipe
+session_tools/enqueue_astra_t11_prescreen_0910.py.
