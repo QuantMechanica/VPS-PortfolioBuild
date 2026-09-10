@@ -1,0 +1,57 @@
+{
+  "applied": false,
+  "canary": {
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41417_xauxag-wstreak2-rv\\sets\\QM5_41417_xauxag-wstreak2-rv_QM5_41417_XAU_XAG_WSTREAK2_RV_D1_D1_backtest.set",
+    "setfile_sha256": "516eb8eb740f601ec7e572ceb435db714f476ca3708c26c5cd92612bfd2f2f6e",
+    "symbol": "QM5_41417_XAU_XAG_WSTREAK2_RV_D1",
+    "timeframe": "D1"
+  },
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\1d8fa534-7c63-4f88-bcb2-6ad7675702b4\\QM5_41417\\COMPILE_EA\\compile_evidence.json",
+  "compile_work_item_id": "1d8fa534-7c63-4f88-bcb2-6ad7675702b4",
+  "deferred": [],
+  "dry_run": true,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41417_xauxag-wstreak2-rv",
+  "ea_id": "QM5_41417",
+  "eligible": true,
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41417_xauxag-wstreak2-rv\\QM5_41417_xauxag-wstreak2-rv.ex5",
+  "ex5_sha256": "3731e49d7c6e10e6e610dd89da53832fc2ffc9892faf770d218aeeb0a22e4428",
+  "magic": {
+    "active_row_count": 2,
+    "issues": [],
+    "ok": true,
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+    "target_symbols": [
+      "XAGUSD.DWX",
+      "XAUUSD.DWX"
+    ]
+  },
+  "priority_boost": false,
+  "reason": "ELIGIBLE",
+  "schema": "qm.first-q02-intake/v1",
+  "setfile_checks": [
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41417_xauxag-wstreak2-rv\\sets\\QM5_41417_xauxag-wstreak2-rv_QM5_41417_XAU_XAG_WSTREAK2_RV_D1_D1_backtest.set",
+      "sha256": "516eb8eb740f601ec7e572ceb435db714f476ca3708c26c5cd92612bfd2f2f6e"
+    },
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41417_xauxag-wstreak2-rv\\sets\\QM5_41417_xauxag-wstreak2-rv_XAGUSD.DWX_D1_backtest.set",
+      "sha256": "84b4be849224b2dd1a48d1a95dd3b33287a7786c7a24cf36214349704198c1ca"
+    },
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41417_xauxag-wstreak2-rv\\sets\\QM5_41417_xauxag-wstreak2-rv_XAUUSD.DWX_D1_backtest.set",
+      "sha256": "b268f0598a5afa1042270aad2a522efdcd38b82e84ca3a83a09cb7b1656e3d53"
+    }
+  ],
+  "target_symbols": [
+    "XAGUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "would_enqueue": true
+}
+

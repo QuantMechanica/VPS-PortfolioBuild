@@ -59,9 +59,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 q01_build_report: D:/QM/reports/work_items/1d8fa534-7c63-4f88-bcb2-6ad7675702b4/QM5_41417/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a fresh two-completed-week XAU/XAG relative-sign streak fade outside the certified directional XAU/SP500/NDX/XNG book. Verify four synchronized completed-week endpoints, strict -++ / +-- state, contrarian basket, durable weekly attempt, aggregate fixed risk, atomic repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
@@ -227,6 +227,7 @@ zero-finding PACER pin audit, and governed strict compile/build checks.
 |---|---|---|---|---|
 | v1 | 2026-09-10 | initial XAU/XAG fresh two-week streak-reversion card | G0 | APPROVED; build pending |
 | v1-build | 2026-09-10 | governed compile and build check | Q01 | COMPILE_OK; 0 compiler errors/warnings; build-check PASS; pin audit zero findings; 6/6 tests PASS |
+| v1-q02 | 2026-09-10 | first fixed-risk logical-basket canary | Q02 | ENQUEUED; pending work item `1cecabd6-7778-44aa-9c48-f738c6353655`; CPU max 86.3% |
 
 ## Safety Boundary
 
