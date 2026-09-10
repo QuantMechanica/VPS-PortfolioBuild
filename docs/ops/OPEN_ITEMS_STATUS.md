@@ -2341,3 +2341,11 @@ Cheap-mode speed/fidelity and expected savings are NOT MEASURED. Raw audit under
 D:/QM/reports/research/t11_prescreen_2026-09-10/; report and CSV/hash verification:
 [canonical packet](evidence/b48ba1fb_t11_prescreen_2026-09-10/T11_PRESCREEN_FIDELITY_2026-09-10.md).
 Review the T11 readiness/isolated-runner prerequisite before resuming the experimental task.
+
+## 2026-09-10T19:55Z — RESULT: census cap G=3 live (chunk 63), standard path running again
+
+Reload chunk 63 finished 19:49:09Z (10/10). Snapshot 19:5xZ: active = OPT_CENSUS 3 (cap holds),
+Q04 2, Q03 1, Q07 1, Q10_NEWS 1; done in the previous 30 min: Q04 3, Q03 2, Q02 1, COMPILE_EA 1,
+census 22 (~44/h, WINSWEEP 323/420 with 1 active). CPU 91 %, RAM free 38 GB. First gate rows since
+the collapse; Q02 admission (CPU < 97 %) to be confirmed over the next hours. Rollback one-shot set
+for 2026-09-12T19:05Z.
