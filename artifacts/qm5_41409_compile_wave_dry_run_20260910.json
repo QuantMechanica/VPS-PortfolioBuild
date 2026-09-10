@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "42e8f1a2a28a84737ebb50d6db6a8a9690b8cbcf4697187a6dc974d8a2f86af9",
+      "ea_id": "QM5_41409",
+      "ea_label": "QM5_41409_xng-summer-w2fade",
+      "expected_mq5_sha256": "42e8f1a2a28a84737ebb50d6db6a8a9690b8cbcf4697187a6dc974d8a2f86af9",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41409_xng-summer-w2fade\\QM5_41409_xng-summer-w2fade.mq5",
+      "work_item_id": "42a891ea-be6b-4c40-bece-52f923c70713"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "42a891ea-be6b-4c40-bece-52f923c70713",
+  "work_item_id_selectors": [
+    "42a891ea-be6b-4c40-bece-52f923c70713"
+  ]
+}
