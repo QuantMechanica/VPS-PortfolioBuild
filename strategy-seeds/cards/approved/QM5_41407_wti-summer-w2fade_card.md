@@ -57,8 +57,8 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: NOT_RUN
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a WTI summer two-week exhaustion fade distinct from the incumbent RSI pullback, same-regime continuation, disjoint winter fade, year-round one-week relatives, and XNG relatives. Verify anchor-month eligibility, exact adjacent completed-week membership, strict agreement, inverse orientation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -213,6 +213,6 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision above |
-| Q01 Build Validation | — | NOT_RUN | pending branch build |
-| Q02 Baseline Screening | — | NOT_ENQUEUED | requires compile PASS and CPU admission |
+| Q01 Build Validation | 2026-09-10 | PASS | governed compile `4810479a-091e-4c02-b778-2578b06d7f3d`; 0 errors/warnings; build check PASS; 15 reference tests; PACER pin audit clean |
+| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED_CPU_CEILING | intake dry-run eligible after exact symbol binding; apply skipped at CPU 96/97/99/100/97% |
 
