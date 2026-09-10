@@ -2290,3 +2290,17 @@ Reload chunk 62 finished 04:46:15Z (10/10). Proof of L=2: two WINSWEEP cells act
 this bounded canary. WINSWEEP stage A: 46 MEASURED / 374 pending at 04:46Z; expected completion
 ~12-14 h at 2 lanes. Next: hourly watch; window_sweep.py report + stage-A adjudication when all
 420 cells are MEASURED (per docs/research/BALKE_WINDOW_SWEEP_PLAN_2026-09-09.md section 5).
+
+## 2026-09-10T19:05Z — OWNER "Umsetzen!": census cap G=3 for 48 h (chunk 63)
+
+DIAGNOSIS (Mission Control Clear-ETA P50 ~61 d): gate throughput collapsed to 26 rows/24 h (7-day
+rate ~11/h) because the fleet ran census only (1,920 cells/24 h): priority-track OPT_CENSUS rows
+rank before Q04, 4-5 census cells x 8 GB commit exhaust the RAM headroom so Q04 long runs (32 GB
+reservation, drain_window tracker) never fit, and Q02 intake is refused at the 97 % CPU ceiling
+(artifacts/qm5_41424_q02_cpu_ceiling_stop_20260910.json). Pending: Q02 777, Q04 666, census 6,453.
+ACTION (OWNER YES 19:00Z): DL089_CELL_SLOTS=3 injected via reload chunk 63 (plus machine scope for
+the record; the launcher does not carry it), applied immediately instead of after WINSWEEP stage A
+because WINSWEEP heads the claim order and keeps its 2 lanes inside the cap. Expected: census ~30
+cells/h, Q04/Q02 windows open, Clear-ETA toward ~1 week. ROLLBACK due 2026-09-12T19:00Z: staggered
+reload without DL089_CELL_SLOTS (session one-shot scheduled; any Factory restart also drops it since
+the launcher carries only QM_*/PROGRAM_SLOTS). Watch: census cells/h, Q04 done/24 h, Q02 admission.
