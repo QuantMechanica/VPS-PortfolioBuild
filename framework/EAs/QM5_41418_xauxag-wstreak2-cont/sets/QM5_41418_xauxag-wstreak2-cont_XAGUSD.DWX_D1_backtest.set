@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_host_symbol=
-strategy_companion_symbol=
+strategy_host_symbol=XAUUSD.DWX
+strategy_companion_symbol=XAGUSD.DWX
 strategy_history_bars_d1=45
 strategy_min_sessions_per_week=3
 strategy_max_sessions_per_week=5

@@ -1,0 +1,55 @@
+{
+  "schema": "qm.paced-q02-enqueue/v1",
+  "recorded_at": "2026-09-10T10:41:39+00:00",
+  "ea_id": "QM5_41418",
+  "ea_label": "QM5_41418_xauxag-wstreak2-cont",
+  "compile": {
+    "work_item_id": "6683cc5f-a969-4c4b-881a-9676af581196",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "ex5_sha256": "5eaa250a0ad56aa5dc723b3b8274cd8a041398303be966982a9bb69ca2b9f222"
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41418_xauxag-wstreak2-cont/QM5_41418_xauxag-wstreak2-cont.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "evidence": "artifacts/qm5_41418_framework_input_pin_audit_20260910.json"
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "evidence": "artifacts/qm5_41418_q02_intake_dry_run_20260910.json"
+  },
+  "cpu_guard": {
+    "recorded_at_utc": "2026-09-10T10:41:29.4792245+00:00",
+    "sample_interval_seconds": 1,
+    "samples_percent": [63.51, 61.55, 66.41, 67.89, 72.17],
+    "average_percent": 66.31,
+    "maximum_percent": 72.17,
+    "exclusive_ceiling_percent": 97.0,
+    "ceiling_rule": "Stop when any five-sample maximum is greater than or equal to 97 percent.",
+    "maximum_below_ceiling": true,
+    "pass": true
+  },
+  "q02": {
+    "work_item_id": "e02b077e-85e1-433c-a15b-15d2154b5fb5",
+    "status": "pending",
+    "symbol": "QM5_41418_XAU_XAG_WSTREAK2_CONT_D1",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41418_xauxag-wstreak2-cont/sets/QM5_41418_xauxag-wstreak2-cont_QM5_41418_XAU_XAG_WSTREAK2_CONT_D1_D1_backtest.set",
+    "setfile_sha256": "3bd5a6055a3d06bad52772f7ac1d405d04a1470e452c68a3679ea41bce109457",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/6683cc5f-a969-4c4b-881a-9676af581196_e02b077e-85e1-433c-a15b-15d2154b5fb5.json",
+    "receipt_sha256": "026b68d700a0bde10fa763843a1a3083ae92afb3dfe30721dc3d562c5dd0e9fc"
+  },
+  "decision": "Q02_ENQUEUED",
+  "manual_dispatch": false,
+  "live_or_portfolio_mutation": false
+}

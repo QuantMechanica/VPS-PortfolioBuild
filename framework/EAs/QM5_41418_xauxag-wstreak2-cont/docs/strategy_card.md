@@ -61,7 +61,7 @@ news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 q01_build_report: D:/QM/reports/work_items/6683cc5f-a969-4c4b-881a-9676af581196/QM5_41418/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a fresh two-completed-week XAU/XAG relative-sign continuation basket outside the certified directional XAU/SP500/NDX/XNG book. Verify four synchronized completed-week endpoints, strict -++ / +-- state, continuation package, durable weekly attempt, aggregate fixed risk, atomic repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
@@ -228,6 +228,7 @@ zero-finding PACER pin audit, and governed strict compile/build checks.
 |---|---|---|---|---|
 | v1 | 2026-09-10 | initial XAU/XAG fresh two-week streak-continuation card | G0 | APPROVED; build pending |
 | v1-build | 2026-09-10 | governed compile and build check | Q01 | COMPILE_OK; 0 compiler errors/warnings; build-check PASS; pin audit zero findings; 6/6 tests PASS |
+| v1-q02 | 2026-09-10 | first governed fixed-risk logical basket intake | Q02 | ENQUEUED as `e02b077e-85e1-433c-a15b-15d2154b5fb5`; result pending |
 
 ## Safety Boundary
 
