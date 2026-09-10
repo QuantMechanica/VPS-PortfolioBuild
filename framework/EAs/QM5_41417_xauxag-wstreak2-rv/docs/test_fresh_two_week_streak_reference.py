@@ -1,0 +1,139 @@
+"""Deterministic reference checks for QM5_41417 weekly fresh two-week streak fade."""
+
+from __future__ import annotations
+
+import json
+import math
+import re
+import unittest
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+
+
+UTC = timezone.utc
+EA_DIR = Path(__file__).resolve().parents[1]
+MQ5 = EA_DIR / "QM5_41417_xauxag-wstreak2-rv.mq5"
+SETFILE = (
+    EA_DIR
+    / "sets"
+    / "QM5_41417_xauxag-wstreak2-rv_QM5_41417_XAU_XAG_WSTREAK2_RV_D1_D1_backtest.set"
+)
+MANIFEST = EA_DIR / "basket_manifest.json"
+
+
+def fresh_two_week_streak_signal(
+    relative_returns: list[float], epsilon: float = 1e-10
+) -> int:
+    if len(relative_returns) != 3 or any(
+        not math.isfinite(value) or abs(value) <= epsilon for value in relative_returns
+    ):
+        return 0
+    if relative_returns[0] < 0 < relative_returns[1] and relative_returns[2] > 0:
+        return -1
+    if relative_returns[0] > 0 > relative_returns[1] and relative_returns[2] < 0:
+        return 1
+    return 0
+
+
+def week_key(value: datetime) -> datetime:
+    return (value - timedelta(days=value.weekday())).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+
+
+def weeks_valid(current_week: datetime, completed: list[tuple[datetime, int]]) -> bool:
+    if len(completed) != 4:
+        return False
+    expected = current_week - timedelta(days=7)
+    for anchor, sessions in completed:
+        if week_key(anchor) != expected or not 3 <= sessions <= 5:
+            return False
+        expected -= timedelta(days=7)
+    return True
+
+
+def package_lots(
+    xau_risk_per_lot: float,
+    xag_risk_per_lot: float,
+    xau_notional_per_lot: float,
+    xag_notional_per_lot: float,
+    step: float = 0.01,
+) -> tuple[float, float, float, float]:
+    full_xau = 1000.0 / xau_risk_per_lot
+    full_xag = 1000.0 / xag_risk_per_lot
+    ratio = xag_notional_per_lot / xau_notional_per_lot
+    raw_xag = 1.0 / (ratio / full_xau + 1.0 / full_xag)
+    raw_xau = ratio * raw_xag
+    xau = math.floor((raw_xau + 1e-12) / step) * step
+    xag = math.floor((raw_xag + 1e-12) / step) * step
+    risk = xau / full_xau + xag / full_xag
+    notional_ratio = xau * xau_notional_per_lot / (xag * xag_notional_per_lot)
+    return xau, xag, risk, notional_ratio
+
+
+class FreshTwoWeekStreakReferenceTest(unittest.TestCase):
+    def test_negative_positive_positive_fades_xau(self) -> None:
+        self.assertEqual(fresh_two_week_streak_signal([-0.03, 0.02, 0.01]), -1)
+
+    def test_positive_negative_negative_fades_xag(self) -> None:
+        self.assertEqual(fresh_two_week_streak_signal([0.03, -0.02, -0.01]), 1)
+
+    def test_non_fresh_streak_ties_and_nonfinite_are_flat(self) -> None:
+        for values in (
+            [0.03, 0.02, 0.01],
+            [-0.03, -0.02, -0.01],
+            [0.03, -0.02, 0.01],
+            [-0.03, 0.0, -0.01],
+            [-0.03, 1e-10, -0.01],
+            [-0.03, math.inf, -0.01],
+        ):
+            with self.subTest(values=values):
+                self.assertEqual(fresh_two_week_streak_signal(values), 0)
+
+    def test_four_consecutive_completed_weeks_and_session_bounds(self) -> None:
+        current = datetime(2026, 8, 24, tzinfo=UTC)
+        valid = [(current - timedelta(days=7 * index), 5) for index in range(1, 5)]
+        self.assertTrue(weeks_valid(current, valid))
+        invalid_sessions = valid.copy()
+        invalid_sessions[2] = (invalid_sessions[2][0], 2)
+        self.assertFalse(weeks_valid(current, invalid_sessions))
+        missing_week = valid.copy()
+        missing_week[3] = (missing_week[3][0] - timedelta(days=7), 5)
+        self.assertFalse(weeks_valid(current, missing_week))
+
+    def test_aggregate_risk_and_equal_notional_are_bounded(self) -> None:
+        xau, xag, risk, ratio = package_lots(2100.0, 700.0, 240000.0, 30000.0)
+        self.assertGreater(xau, 0.0)
+        self.assertGreater(xag, 0.0)
+        self.assertLessEqual(risk, 1.0 + 1e-8)
+        self.assertLessEqual(abs(ratio - 1.0) * 100.0, 20.0)
+
+    def test_static_artifacts_lock_identity_signal_and_fixed_risk(self) -> None:
+        source = MQ5.read_text(encoding="utf-8")
+        preset = SETFILE.read_text(encoding="utf-8")
+        manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+        self.assertIn("qm_ea_id                    = 41417", source)
+        self.assertIn("Strategy_LoadFreshTwoWeekStreak", source)
+        self.assertIn("g_relative_return[0] < 0.0", source)
+        self.assertIn("g_relative_return[1] > 0.0", source)
+        self.assertIn("g_relative_return[2] > 0.0", source)
+        self.assertIn("for(int slot = 0; slot < 4; ++slot)", source)
+        self.assertIn("strategy_history_bars_d1 == 45", source)
+        self.assertNotIn("XAUUSD.DWX\";", source)
+        self.assertNotIn("XAGUSD.DWX\";", source)
+        self.assertRegex(preset, r"(?m)^RISK_FIXED=1000$")
+        self.assertRegex(preset, r"(?m)^RISK_PERCENT=0$")
+        self.assertRegex(preset, r"(?m)^qm_friday_close_enabled=false$")
+        self.assertRegex(preset, r"(?m)^strategy_host_symbol=XAUUSD\.DWX$")
+        self.assertRegex(preset, r"(?m)^strategy_companion_symbol=XAGUSD\.DWX$")
+        self.assertEqual(manifest["host_symbol"], "XAUUSD.DWX")
+        self.assertEqual(manifest["basket_symbols"], ["XAUUSD.DWX", "XAGUSD.DWX"])
+        resolver = (EA_DIR.parents[1] / "include" / "QM" / "QM_MagicResolver.mqh").read_text(
+            encoding="utf-8"
+        )
+        self.assertRegex(resolver, re.compile(r"414170000.*414170001", re.DOTALL))
+
+
+if __name__ == "__main__":
+    unittest.main()
+
