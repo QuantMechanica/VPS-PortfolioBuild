@@ -3,16 +3,16 @@
 ; ea_id:        41190
 ; ea_slug:      xtixng-mtheilsen-rv
 ; ea_version:   v5.0
-; set_version:  s20260905-001
+; set_version:  s20260910-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   acc744d83a0b636822c2da28f1cf62ca57df04ac0fdd6320b94bead4994ff044
+; build_hash:   4a354bbb0a162661a28c1af42fe1c21151f157d9bbb33c7f35af477d9a35bf21
 ; author:       Development
-; date:         2026-09-05
+; date:         2026-09-10
 ;==========================================================
 qm_ea_id=41190
 qm_magic_slot_offset=0
@@ -21,7 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_xng_symbol=XNGUSD.DWX
+strategy_host_symbol=XTIUSD.DWX
+strategy_companion_symbol=XNGUSD.DWX
 strategy_month_end_count=13
 strategy_history_bars_d1=900
 strategy_entry_window_minutes=180

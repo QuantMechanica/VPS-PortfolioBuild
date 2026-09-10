@@ -35,7 +35,8 @@ hard stops.
 
 | Parameter | Value | Meaning |
 |---|---:|---|
-| `strategy_xng_symbol` | `XNGUSD.DWX` | exact companion |
+| `strategy_host_symbol` | setfile-required `XTIUSD.DWX` | runtime slot 0; broker aliases stay outside trading logic |
+| `strategy_companion_symbol` | setfile-required `XNGUSD.DWX` | runtime slot 1; broker aliases stay outside trading logic |
 | `strategy_month_end_count` | 13 | exact consecutive completed months |
 | `strategy_history_bars_d1` | 900 | bounded synchronized D1 scan per symbol |
 | `strategy_entry_window_minutes` | 180 | first-month-bar execution window |

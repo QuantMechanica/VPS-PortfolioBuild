@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   ee1faf8dcff14a349c3ee02a37249a3fe29137f93d851b891a1b64cb7ca2a31c
+; build_hash:   63f2ede3660774d878d2e275bcf24f32df4fff397dc4376d54b18f2f663d6eac
 ; author:       Development
 ; date:         2026-08-28
 ;==========================================================
@@ -33,7 +33,8 @@ qm_friday_close_hour_broker=21
 qm_stress_reject_probability=0.0
 ; Locked strategy defaults from the approved card; no optimization surface.
 ; card_defaults_source=strategy-seeds/cards/approved/QM5_41190_xtixng-mtheilsen-rv_card.md
-strategy_xng_symbol=XNGUSD.DWX
+strategy_host_symbol=XTIUSD.DWX
+strategy_companion_symbol=XNGUSD.DWX
 strategy_month_end_count=13
 strategy_history_bars_d1=900
 strategy_entry_window_minutes=180

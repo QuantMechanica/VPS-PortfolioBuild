@@ -42,7 +42,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input string strategy_xng_symbol             = "XNGUSD.DWX";
+input string strategy_host_symbol            = "";
+input string strategy_companion_symbol       = "";
 input int    strategy_month_end_count         = 13;
 input int    strategy_history_bars_d1         = 900;
 input int    strategy_entry_window_minutes    = 180;
@@ -56,8 +57,8 @@ input int    strategy_xti_max_spread_points   = 1500;
 input int    strategy_xng_max_spread_points   = 3000;
 input int    strategy_deviation_points        = 20;
 
-string g_leg_xti = "XTIUSD.DWX";
-string g_leg_xng = "XNGUSD.DWX";
+string g_leg_xti = "";
+string g_leg_xng = "";
 
 bool     g_is_new_bar = false;
 bool     g_entry_ready = false;
@@ -177,8 +178,8 @@ bool Strategy_IsHostChart()
 bool Strategy_InputsValid()
   {
    return (qm_ea_id == 41190 && qm_magic_slot_offset == 0 &&
-            qm_rng_seed == 42 &&
-            strategy_xng_symbol == "XNGUSD.DWX" &&
+            g_leg_xti != "" && g_leg_xng != "" &&
+            g_leg_xti != g_leg_xng &&
             strategy_month_end_count == 13 &&
             strategy_history_bars_d1 == 900 &&
             strategy_entry_window_minutes == 180 &&
@@ -191,16 +192,12 @@ bool Strategy_InputsValid()
             strategy_xti_max_spread_points == 1500 &&
             strategy_xng_max_spread_points == 3000 &&
             strategy_deviation_points == 20 &&
+            MathIsValidNumber(RISK_PERCENT) &&
             MathAbs(RISK_PERCENT) <= 1.0e-12 &&
-            MathAbs(RISK_FIXED - 1000.0) <= 1.0e-12 &&
-            MathAbs(PORTFOLIO_WEIGHT - 1.0) <= 1.0e-12 &&
-            qm_news_temporal == QM_NEWS_TEMPORAL_OFF &&
-            qm_news_compliance == QM_NEWS_COMPLIANCE_NONE &&
-            qm_news_mode_legacy == QM_NEWS_OFF &&
-            qm_news_stale_max_hours == 336 &&
-            qm_news_min_impact == "high" &&
-            !qm_friday_close_enabled && qm_friday_close_hour_broker == 21 &&
-            MathAbs(qm_stress_reject_probability) <= 1.0e-12);
+            MathIsValidNumber(RISK_FIXED) && RISK_FIXED > 0.0 &&
+            MathIsValidNumber(qm_stress_reject_probability) &&
+            qm_stress_reject_probability >= 0.0 &&
+            qm_stress_reject_probability <= 1.0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
@@ -729,24 +726,13 @@ bool Strategy_LoadMonthlyTheilSen(
 
    MqlRates xti_bars[];
    MqlRates xng_bars[];
-   double newest_first_ratios[];
-   datetime newest_first_times[];
-   double chronological_ratios[];
-   datetime chronological_times[];
-   double slopes[];
+   double newest_first_ratios[13];
+   datetime newest_first_times[13];
+   double chronological_ratios[13];
+   datetime chronological_times[13];
+   double slopes[78];
    ArraySetAsSeries(xti_bars, true);
    ArraySetAsSeries(xng_bars, true);
-   if(ArrayResize(newest_first_ratios, strategy_month_end_count) !=
-         strategy_month_end_count ||
-      ArrayResize(newest_first_times, strategy_month_end_count) !=
-         strategy_month_end_count ||
-      ArrayResize(chronological_ratios, strategy_month_end_count) !=
-         strategy_month_end_count ||
-      ArrayResize(chronological_times, strategy_month_end_count) !=
-         strategy_month_end_count ||
-      ArrayResize(slopes, expected_slope_count) != expected_slope_count)
-      return false;
-
    const int xti_copied =
       CopyRates(g_leg_xti, // perf-allowed: one bounded thirteen-month scan behind a consumed monthly attempt.
                 PERIOD_D1, 1, strategy_history_bars_d1, xti_bars);
@@ -1064,7 +1050,9 @@ bool Strategy_PrimeLateSignalAttach()
 
 int OnInit()
   {
-   g_leg_xng = strategy_xng_symbol;
+   g_leg_xti = (strategy_host_symbol == "") ? _Symbol
+                                             : strategy_host_symbol;
+   g_leg_xng = strategy_companion_symbol;
    if(!Strategy_IsHostChart() || !Strategy_InputsValid())
       return INIT_PARAMETERS_INCORRECT;
    if(!SymbolSelect(g_leg_xti, true) || !SymbolSelect(g_leg_xng, true))
