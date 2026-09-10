@@ -1,0 +1,11 @@
+{
+  "schema": "qm.compile-intake-refusal/v1",
+  "date": "2026-09-10",
+  "ea_id": "QM5_41412",
+  "ea_label": "QM5_41412_wti-walt3-fade",
+  "attempted_source_sha256": "6a7c55b47cb5d9074c7bcd8914a00f14813c841b575f59365d6c35584a0e9483",
+  "enqueued_count": 0,
+  "refused_count": 1,
+  "reason": "BOUND_SETFILE_HASH_EXISTS",
+  "repair": "Changed only the pre-compile setfile build_hash marker from the source SHA-256 to pending; the governed compile worker owns final hash binding."
+}
