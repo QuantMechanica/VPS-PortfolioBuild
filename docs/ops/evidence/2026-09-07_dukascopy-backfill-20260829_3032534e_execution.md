@@ -444,3 +444,40 @@ and unattended: 4,335/305,287 hours completed, 2,976 downloaded, 1,265 no_data, 
 churn, no permanent failures), `status=RUNNING`. No action taken/needed — self-monitoring,
 resumable via `hour_ledger.jsonl`. No terminal, T1 import, T_Live/AutoTrading, threshold, or
 verdict action this cycle. Task remains IN_PROGRESS.
+
+## Checked 2026-09-11T~00:45Z (headless orchestration cycle) -- downloader crashed and died silently; root cause found; Codex fix ticket enqueued
+
+The 20260909T191800Z_hardened run is **not** actually RUNNING despite `progress.json`
+still saying so: `Get-CimInstance Win32_Process` shows no `download_bi5.py` process, and
+`progress.json.updated_at_utc` is frozen at `2026-09-10T01:01:30.747Z` (~23h stale),
+`completed=66458/305287` (21.8%, real progress up from 21,955 at the 2026-09-09 21:20Z
+checkpoint). `download.log` shows the actual cause at `2026-09-10T01:01:43Z`: an unhandled
+`ValueError: download destination escaped raw root: \?\D:\QMeports\dukascopyackfill60909T191800Z_hardenedaw\EURAUD5 99h_ticks.bi5`
+from `fetch_one()` in `tools/dukascopy/download_bi5.py` (~line 449), which propagated
+uncaught through `run_download()`'s `record(future.result())` and killed the whole
+ThreadPoolExecutor run, not just that one file. Root cause: `raw_root = out_dir / "raw"`
+(line 355) is never `.resolve()`d, but `destination = (raw_root / relative).resolve()` is;
+on this host `.resolve()` returns a Windows extended-length-prefixed (`\?\`) path, so
+`raw_root not in destination.parents` is a **false positive** for every legitimate
+destination once resolve() starts adding that prefix -- not a real path-escape, and
+systematic (not random) once triggered, so simply restarting the same command would crash
+again on the very next URL. No Windows crash/reboot event around the failure time (checked
+`Get-WinEvent` System log ids 41/6005/6006/6008 -- only an unrelated reboot at 18:40Z the
+day before); this is a pure application bug, not host instability. No system reboot/crash
+event coincides with the 01:01:43Z failure.
+
+Enqueued Codex ticket `ff5cc3b9-b254-4223-9f3e-e22a3c6f7300` (priority 85) with the exact
+root cause, the one-line fix (resolve `raw_root` once at setup so the comparison is
+apples-to-apples), and acceptance criteria including a positive regression test (extended-
+prefix resolve no longer false-positives) and a negative test (genuine escape still
+raises) -- the containment check itself must not be weakened or removed, only the
+comparison fixed. Did **not** restart the production downloader this cycle: doing so before
+the fix lands would immediately crash again and waste more wall-clock on a known-bad binary.
+Separately, work item `ed393d48` (non-FX `price_scale` probe) completed
+`2026-09-10T03:33:48Z` (`REVIEW_REQUIRED`, expected for a diagnostic), producing
+`D:/QM/reports/dukascopy/splice/20260909_185632/price_scale.csv` -- this resolves the
+earlier P2-conversion blocker noted at 2026-09-09T19:52Z. Codex ticket `2f717775` was
+independently re-routed from RECYCLE back to IN_PROGRESS at 2026-09-10T23:1xZ with a narrow
+TODO to fold that receipt into its evidence doc and close to REVIEW; that is Codex's own
+task, not touched here. No terminal, T1 import, T_Live/AutoTrading, threshold, or verdict
+action this cycle. Task `3032534e` stays IN_PROGRESS.
