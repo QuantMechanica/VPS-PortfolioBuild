@@ -1,0 +1,21 @@
+{
+  "schema_version": "qm.pacer-build-guard-audit/v1",
+  "ea_id": "QM5_41141",
+  "source": "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.mq5",
+  "first_attempt": {
+    "exit_code": 1,
+    "finding": "C:\\Python311\\python.exe: can't open file 'C:\\\\QM\\\\repo\\\\tools\\\\audit_framework_input_pins.py': [Errno 2] No such file or directory",
+    "compile_refused": true
+  },
+  "repair": {
+    "path": "C:/QM/repo/tools/audit_framework_input_pins.py",
+    "sha256_before_final_source_write": "552eb76f70bd8e46e9e4c8f85348ee444a261d035c1f0ab5225fa9b707f3f561",
+    "regression_tests": "5 passed"
+  },
+  "final_attempt": {
+    "exit_code": 0,
+    "finding": "PASS: C:\\QM\\repo\\framework\\EAs\\QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow\\QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.mq5: locked-input pin audit found no violations",
+    "source_sha256": "4da20e18a9638da1162fbe8f6d9d6817945fd9e791aa77156ac894305f51489e"
+  },
+  "recorded_at_utc": "2026-09-10T03:23:44.2734405Z"
+}

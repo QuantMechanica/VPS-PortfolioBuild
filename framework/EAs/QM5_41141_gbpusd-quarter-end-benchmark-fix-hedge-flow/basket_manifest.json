@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_41141_GBPUSD_QUARTEREND_FIX_M15",
+  "host_symbol": "GBPUSD.DWX",
+  "host_timeframe": "M15",
+  "basket_symbols": [
+    "GBPUSD.DWX",
+    "UK100.DWX"
+  ],
+  "execution_symbols": [
+    "GBPUSD.DWX"
+  ],
+  "signal_only_symbols": [
+    "UK100.DWX"
+  ],
+  "notes": [
+    "Single-symbol execution card: only GBPUSD.DWX may receive an order and only GBPUSD.DWX has a magic row.",
+    "UK100.DWX is a read-only month-to-date direction proxy. Its latest signal close is the latest completed M15 bar at the first executable decision at or after 14:00 Europe/London on the last London business day of a calendar quarter."
+  ]
+}

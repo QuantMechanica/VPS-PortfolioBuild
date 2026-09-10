@@ -18339,3 +18339,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41410,xauxag-walt3-rv,0,XAUUSD.DWX,414100000,2026-09-10,Codex governed allocator,active
 41410,xauxag-walt3-rv,1,XAGUSD.DWX,414100001,2026-09-10,Codex governed allocator,active
 41149,audusd-local-session-inventory-drift,0,AUDUSD.DWX,411490000,2026-09-10,Codex governed allocator,active
+41141,gbpusd-quarter-end-benchmark-fix-hedge-flow,0,GBPUSD.DWX,411410000,2026-09-10,Codex governed allocator,active
