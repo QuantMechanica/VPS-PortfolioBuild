@@ -2612,7 +2612,15 @@ def pending_claim_order_sql() -> str:
                 THEN json_extract(window_owner.payload_json, '$.queue_order_at')
                 ELSE NULL END
                FROM work_items window_owner
-               WHERE upper(COALESCE(window_owner.phase, ''))='WINDOW_SWEEP_OWNER'
+               -- Orchestrator 2026-09-10 02:2xZ hotfix: the original predicate
+               -- upper(COALESCE(phase,''))=... forced a full 146k-row scan per
+               -- window cell (420x per claim attempt -> ~17 min claim loops,
+               -- fleet stalled at 0 active cells).  Anchor on the covering
+               -- index idx_work_items_ea_phase (ea_id, phase); the owner row
+               -- is written by window_sweep.py with the program's ea_id and the
+               -- literal phase, so the semantics are unchanged.
+               WHERE window_owner.ea_id = w.ea_id
+                 AND window_owner.phase = 'WINDOW_SWEEP_OWNER'
                  AND json_valid(window_owner.payload_json)=1
                  AND json_extract(window_owner.payload_json, '$.schema')='qm.window-sweep.v1'
                  AND json_extract(window_owner.payload_json, '$.program_id')=

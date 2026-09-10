@@ -2240,3 +2240,21 @@ paced launch cap of one, so no dispatch followed. Evidence:
 `docs/research/FX_COINTEGRATION_PACED_CAPACITY_STOP_20260910T003623Z.md`.
 No portfolio gate, T_Live, AutoTrading, card, EA, registry, setfile, manifest,
 queue verdict, or terminal state changed.
+
+## 2026-09-10T02:35Z — Fleet stall after queue-order commit; hotfix + reload chunk 61
+
+INCIDENT: after reload chunk 60 (01:27-02:00Z) every worker needed ~17 min per claim attempt and
+OPT_CENSUS active fell to 0 (T2 log: claim attempt 01:28:17 -> result 01:45:10). Cause: the new
+window-owner correlated subquery in farmctl.pending_claim_order_sql (Codex 4ce11df5c1) used
+upper(COALESCE(phase,''))=... and scanned all 146,861 work_items rows once per window cell
+(420x per attempt). Orchestrator snapshot query also timed out (>120 s).
+FIX (GRUEN infra repair, verdict logic untouched): subquery anchored on idx_work_items_ea_phase
+(window_owner.ea_id = w.ea_id AND phase = literal), semantics unchanged (owner row carries the
+program ea_id). pending_claim_order_sql now 4.7 s for 6,411 rows; 25 tests pass
+(test_claim_order_memo.py, test_window_sweep.py). Rollback = git revert of this hotfix commit +
+staggered reload. Reload chunk 61 started 02:3xZ (session_tools/reload_chunk61.py). Lever state:
+WINSWEEP owner e144b67f queue_order_at=2026-08-19 (apply 01:32Z, backup
+farm_state_before_window_sweep_queue_order_20260910T013238Z.sqlite); 13213 owner 97908d93 = 2026-08-20.
+LESSON: time pending_claim_order_sql on the production DB before every farmctl SQL change; a
+worker claim loop of >2 min is the stall signature. Codex ticket ba63936d closed APPROVED with the
+defect recorded; regression-time test = follow-up (noted, not ticketed until quota reset).
