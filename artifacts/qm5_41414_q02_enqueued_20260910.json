@@ -1,0 +1,66 @@
+{
+  "schema": "qm.paced-q02-enqueue/v1",
+  "recorded_at": "2026-09-10T07:03:04+00:00",
+  "ea_id": "QM5_41414",
+  "ea_label": "QM5_41414_xauxag-wrelvote-flip-cont",
+  "compile": {
+    "work_item_id": "e257eebd-9747-42a3-b83f-4d4f0ab2b7f5",
+    "predecessor_work_item_id": "e0a80430-3397-4d23-bb3b-8f32a4e415a6",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "ex5_sha256": "a8026c39d98d97eaf1b143e240192ae1f5775c3bb97a2b74c26de64c076fb164"
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41414_xauxag-wrelvote-flip-cont/QM5_41414_xauxag-wrelvote-flip-cont.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "evidence": "artifacts/qm5_41414_framework_input_pin_audit_20260910.json"
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "evidence": "artifacts/qm5_41414_q02_intake_dry_run_20260910.json",
+    "preset_repair": "The initial dry run refused empty strategy symbol values in the two physical-leg presets. Both were rebound to XAUUSD.DWX/XAGUSD.DWX; the repeated dry run then passed all three presets."
+  },
+  "cpu_guard": {
+    "recorded_at_local": "2026-09-10T09:02:51.0577363+02:00",
+    "sample_interval_seconds": 1,
+    "samples_percent": [
+      90.1378659799731,
+      96.1059046398476,
+      93.1648651788819,
+      94.4370167842911,
+      95.3130118191093
+    ],
+    "average_percent": 93.83173288042062,
+    "maximum_percent": 96.10590463984764,
+    "exclusive_ceiling_percent": 97.0,
+    "ceiling_rule": "Stop when average or maximum is greater than or equal to 97 percent.",
+    "average_below_ceiling": true,
+    "maximum_below_ceiling": true,
+    "pass": true,
+    "running_factory_terminals": ["T1", "T5", "T6", "T7"],
+    "running_factory_terminal_count": 4
+  },
+  "q02": {
+    "work_item_id": "f5d1acbe-4e86-4fd5-9120-8ebf7b816f71",
+    "status": "pending",
+    "symbol": "QM5_41414_XAU_XAG_WRELVOTE_FLIP_CONT_D1",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41414_xauxag-wrelvote-flip-cont/sets/QM5_41414_xauxag-wrelvote-flip-cont_QM5_41414_XAU_XAG_WRELVOTE_FLIP_CONT_D1_D1_backtest.set",
+    "setfile_sha256": "3e69566e6152a7d07db3becf461011707b4f86d26ea506426ce51711e0e78880",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/e257eebd-9747-42a3-b83f-4d4f0ab2b7f5_f5d1acbe-4e86-4fd5-9120-8ebf7b816f71.json",
+    "receipt_sha256": "44702042c3f99ed146df7a08c4afa61ed40ae8e41d78532f52b283f8c887600f"
+  },
+  "decision": "Q02_ENQUEUED",
+  "manual_dispatch": false,
+  "live_or_portfolio_mutation": false
+}

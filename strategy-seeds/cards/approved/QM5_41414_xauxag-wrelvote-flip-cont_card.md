@@ -234,4 +234,4 @@ gate, portfolio admission, or correlation waiver is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-09-10 | initial XAU/XAG overlapping relative-vote flip continuation card | G0 | APPROVED; build pending |
+| v1 | 2026-09-10 | initial XAU/XAG overlapping relative-vote flip continuation card | Q02 | COMPILE_OK; Q02 enqueued pending as f5d1acbe-4e86-4fd5-9120-8ebf7b816f71 |
