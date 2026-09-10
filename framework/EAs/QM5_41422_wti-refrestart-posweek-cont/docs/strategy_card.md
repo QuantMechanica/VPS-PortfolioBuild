@@ -62,7 +62,7 @@ news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a long-only WTI post-maintenance positive-week continuation distinct from maintenance-season negative-week continuation, May-July daily compression breakout/pullback, unconditional weekly momentum, and XNG shoulder rules. Verify exact week membership, positive-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -241,4 +241,4 @@ control, or live use.
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision above |
 | Q01 Build Validation | 2026-09-10 | PASS | governed compile `12e67cc1-25b0-4007-a132-6b6febebdefd`; 12 reference tests; PACER audit clean |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | requires Q01 PASS and CPU admission |
+| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED_CPU_CEILING | eligible dry run; CPU sample max 98.34% exceeded exclusive 97% ceiling |

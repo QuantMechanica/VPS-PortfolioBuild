@@ -114,3 +114,4 @@ operation is authorized.
 |---|---|---|---|
 | v1 | 2026-09-10 | Initial build from approved card | OWNER pacer mission |
 | v1-q01 | 2026-09-10 | Governed compile and strict build check PASS (`12e67cc1-25b0-4007-a132-6b6febebdefd`) | OWNER pacer mission |
+| v1-q02-hold | 2026-09-10 | Q02 dry-run eligible; enqueue refused at 98.34% CPU ceiling sample | OWNER pacer mission |
