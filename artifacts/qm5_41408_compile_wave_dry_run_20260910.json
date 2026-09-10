@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "24131e7a9a11aadb23e720dbbf8e1d16367cf0f8b2c59f90c19727cd17f8976e",
+      "ea_id": "QM5_41408",
+      "ea_label": "QM5_41408_xng-winter-w2fade",
+      "expected_mq5_sha256": "24131e7a9a11aadb23e720dbbf8e1d16367cf0f8b2c59f90c19727cd17f8976e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41408_xng-winter-w2fade\\QM5_41408_xng-winter-w2fade.mq5",
+      "work_item_id": "927a738f-3b07-4e6b-bb8d-fd8a22bc9736"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "927a738f-3b07-4e6b-bb8d-fd8a22bc9736",
+  "work_item_id_selectors": [
+    "927a738f-3b07-4e6b-bb8d-fd8a22bc9736"
+  ]
+}
