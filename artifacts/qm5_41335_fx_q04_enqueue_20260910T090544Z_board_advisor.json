@@ -1,0 +1,121 @@
+{
+  "schema_version": "qm.fx-fallback-q04-enqueue/v1",
+  "recorded_at_utc": "2026-09-10T09:05:47Z",
+  "branch": "agents/board-advisor",
+  "mission_outcome": "EXISTING_FOREX_FALLBACK_ADVANCED_TO_Q04",
+  "frontier": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_pair_created": false,
+    "reason": "Every relationship in the frozen sign-aware scan already has governed EA/Q02 coverage; another identity would be duplicate work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_41335",
+    "ea_label": "QM5_41335_fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41335_fx-usd-exhaustion-reversal-opt.md",
+    "g0_status": "APPROVED",
+    "r1_r4": "PASS",
+    "structural_non_ml": true,
+    "q02": {
+      "work_item_id": "ff75b1c3-4930-419d-a2fe-49bd37eadc4d",
+      "status": "done",
+      "verdict": "PASS",
+      "trades": 64,
+      "profit_factor": 1.23,
+      "net_profit": 4428.72,
+      "drawdown_pct": 5.02,
+      "from_date": "2018.07.02",
+      "to_date": "2022.12.31"
+    },
+    "artifact_identity": {
+      "mq5_path": "framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+      "mq5_sha256": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+      "ex5_path": "framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.ex5",
+      "ex5_sha256": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+      "setfile_path": "framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/sets/QM5_41335_fx-usd-exhaustion-reversal-opt_AUDUSD.DWX_D1_backtest.set",
+      "setfile_sha256": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47"
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "pacer_guard": {
+    "mq5_written_or_modified": false,
+    "compile_enqueued": false,
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+      "exit_code": 0,
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "hits": []
+    }
+  },
+  "capacity_preflight": {
+    "sampled_at_utc": "2026-09-10T09:05:44.9192032Z",
+    "cpu_samples_percent": [
+      89.649597,
+      91.887566,
+      81.274990,
+      83.790696,
+      85.060249
+    ],
+    "cpu_average_percent": 86.332620,
+    "cpu_maximum_percent": 91.887566,
+    "hard_cpu_percent_ceiling": 97.0,
+    "hard_cpu_percent_ceiling_hit": false,
+    "active_work_item_count": 2,
+    "active_work_item_enqueue_backpressure_limit": 7,
+    "backpressure_binding": false,
+    "preinsert_open_q04_count": 0
+  },
+  "q04_enqueue": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_41335 --phase Q04 --from-work-item-id ff75b1c3-4930-419d-a2fe-49bd37eadc4d",
+    "enqueued": true,
+    "created_work_item_id": "41b82b89-c50e-4eb0-8563-928c4d5d5d9a",
+    "status": "pending",
+    "phase": "Q04",
+    "symbol": "AUDUSD.DWX",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/sets/QM5_41335_fx-usd-exhaustion-reversal-opt_AUDUSD.DWX_D1_backtest.set",
+    "promoted_from_phase": "Q02",
+    "promoted_from_work_item": "ff75b1c3-4930-419d-a2fe-49bd37eadc4d",
+    "q04_default_probe": true,
+    "priority_track": true,
+    "timeout_min": 105,
+    "postinsert_q04_count": 1,
+    "requeued_count": 0,
+    "skipped_count": 0,
+    "dispatch_tick_run": false
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
