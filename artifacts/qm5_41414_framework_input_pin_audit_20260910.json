@@ -1,0 +1,9 @@
+{
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41414_xauxag-wrelvote-flip-cont/QM5_41414_xauxag-wrelvote-flip-cont.mq5\"",
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "exit_code": 0
+}
