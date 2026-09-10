@@ -1,0 +1,154 @@
+{
+  "schema": "qm.ftmo-track-d-economics.v1",
+  "generated_at_utc": "2026-09-10T22:23:38.855980+00:00",
+  "account_variant": "FTMO Challenge 2-Step / USD 100000 / Standard",
+  "sources": {
+    "rulepack": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
+    "rulepack_as_of": "2026-09-04",
+    "withdrawal_terms_url": "https://ftmo.com/en/faq/how-do-i-withdraw-my-profits/",
+    "withdrawal_terms_fetched": "2026-09-11"
+  },
+  "provider_constants_usd": {
+    "fee": 540.0,
+    "fee_refund_percent": 1.0,
+    "reward_split_base": 0.8,
+    "reward_split_scaling": 0.9,
+    "phase1_target": 10000.0,
+    "phase2_target": 5000.0,
+    "daily_loss_limit": 5000.0,
+    "total_loss_floor": 90000.0,
+    "min_trading_days_per_phase": 4,
+    "no_max_trading_period": true,
+    "min_withdrawal_bank": 20.0,
+    "min_withdrawal_crypto": 50.0
+  },
+  "internal_risk_guardrails_pct": {
+    "per_trade_risk_cap": 0.01,
+    "correlated_cluster_cap": 0.015,
+    "total_open_stop_cap": 0.025,
+    "daily_loss_budget": 0.03,
+    "total_drawdown_budget": 0.07
+  },
+  "time_to_cash_floor": {
+    "floor_calendar_days_challenge_to_funded_minimum_qualifying_days": 8,
+    "floor_calendar_days_first_trade_to_reward_eligible": 14,
+    "floor_business_days_review_plus_transfer": 2,
+    "floor_total_calendar_days_illustrative_lower_bound": 24,
+    "note": "Lower bound only; Phase1/2 duration is unmeasured and provider-unbounded above."
+  },
+  "breakeven_sensitivity_table": [
+    {
+      "reward_profit_usd": 50.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.9310344827586207,
+      "breakeven_joint_probability_pct": 93.1,
+      "inflow_on_success_usd": 580.0
+    },
+    {
+      "reward_profit_usd": 100.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.8709677419354839,
+      "breakeven_joint_probability_pct": 87.1,
+      "inflow_on_success_usd": 620.0
+    },
+    {
+      "reward_profit_usd": 250.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.7297297297297297,
+      "breakeven_joint_probability_pct": 72.97,
+      "inflow_on_success_usd": 740.0
+    },
+    {
+      "reward_profit_usd": 500.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.574468085106383,
+      "breakeven_joint_probability_pct": 57.45,
+      "inflow_on_success_usd": 940.0
+    },
+    {
+      "reward_profit_usd": 1000.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.40298507462686567,
+      "breakeven_joint_probability_pct": 40.3,
+      "inflow_on_success_usd": 1340.0
+    },
+    {
+      "reward_profit_usd": 2500.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.2125984251968504,
+      "breakeven_joint_probability_pct": 21.26,
+      "inflow_on_success_usd": 2540.0
+    },
+    {
+      "reward_profit_usd": 5000.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.11894273127753303,
+      "breakeven_joint_probability_pct": 11.89,
+      "inflow_on_success_usd": 4540.0
+    },
+    {
+      "reward_profit_usd": 10000.0,
+      "marginal_cost_usd": 0.0,
+      "breakeven_joint_probability": 0.06323185011709602,
+      "breakeven_joint_probability_pct": 6.32,
+      "inflow_on_success_usd": 8540.0
+    },
+    {
+      "reward_profit_usd": 50.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 1.2758620689655173,
+      "breakeven_joint_probability_pct": 127.59,
+      "inflow_on_success_usd": 580.0
+    },
+    {
+      "reward_profit_usd": 100.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 1.1935483870967742,
+      "breakeven_joint_probability_pct": 119.35,
+      "inflow_on_success_usd": 620.0
+    },
+    {
+      "reward_profit_usd": 250.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 1.0,
+      "breakeven_joint_probability_pct": 100.0,
+      "inflow_on_success_usd": 740.0
+    },
+    {
+      "reward_profit_usd": 500.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 0.7872340425531915,
+      "breakeven_joint_probability_pct": 78.72,
+      "inflow_on_success_usd": 940.0
+    },
+    {
+      "reward_profit_usd": 1000.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 0.5522388059701493,
+      "breakeven_joint_probability_pct": 55.22,
+      "inflow_on_success_usd": 1340.0
+    },
+    {
+      "reward_profit_usd": 2500.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 0.29133858267716534,
+      "breakeven_joint_probability_pct": 29.13,
+      "inflow_on_success_usd": 2540.0
+    },
+    {
+      "reward_profit_usd": 5000.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 0.16299559471365638,
+      "breakeven_joint_probability_pct": 16.3,
+      "inflow_on_success_usd": 4540.0
+    },
+    {
+      "reward_profit_usd": 10000.0,
+      "marginal_cost_usd": 200.0,
+      "breakeven_joint_probability": 0.08665105386416862,
+      "breakeven_joint_probability_pct": 8.67,
+      "inflow_on_success_usd": 8540.0
+    }
+  ],
+  "no_assumed_probability_asserted": true
+}
