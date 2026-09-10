@@ -18342,3 +18342,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41141,gbpusd-quarter-end-benchmark-fix-hedge-flow,0,GBPUSD.DWX,411410000,2026-09-10,Codex governed allocator,active
 41411,wti-walt3-cont,0,XTIUSD.DWX,414110000,2026-09-10,Codex governed allocator,active
 41412,wti-walt3-fade,0,XTIUSD.DWX,414120000,2026-09-10,Codex governed allocator,active
+41413,xauxag-walt3-cont,0,XAUUSD.DWX,414130000,2026-09-10,Codex governed allocator,active
+41413,xauxag-walt3-cont,1,XAGUSD.DWX,414130001,2026-09-10,Codex governed allocator,active
