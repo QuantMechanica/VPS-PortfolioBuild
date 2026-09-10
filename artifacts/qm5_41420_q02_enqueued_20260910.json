@@ -1,0 +1,17 @@
+{
+  "applied": true,
+  "compile_work_item_id": "a464663b-321c-45c1-87f0-eff847ca6ae2",
+  "ea_id": "QM5_41420",
+  "eligible": true,
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "setfile_sha256": "1b72351f316b4c18541b6754ab6b2e8a23c32a0f96c022eeb6204fd356887ec5",
+  "ex5_sha256": "679e5cd7d74f9b6a0d9312c8f9699eea8a64564aa171ac07cbac17fa09d70157",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "reason": "ELIGIBLE",
+  "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/a464663b-321c-45c1-87f0-eff847ca6ae2_1c638c40-aec4-4b4d-a03d-8eb43fb03917.json",
+  "receipt_sha256": "a4c84091f056ea884d41c4508b31a5cb88d91180a0a5045387b7f95cab5f783c",
+  "schema": "qm.first-q02-intake/v1",
+  "work_item_id": "1c638c40-aec4-4b4d-a03d-8eb43fb03917"
+}

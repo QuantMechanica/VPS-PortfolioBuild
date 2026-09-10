@@ -107,3 +107,4 @@ operation is authorized.
 |---|---|---|---|
 | v1 | 2026-09-10 | Initial build from approved card | OWNER pacer mission |
 | v1-q01 | 2026-09-10 | Governed compile and strict build check PASS (`a464663b-321c-45c1-87f0-eff847ca6ae2`) | OWNER pacer mission |
+| v1-q02 | 2026-09-10 | One fixed-risk paced canary enqueued (`1c638c40-aec4-4b4d-a03d-8eb43fb03917`) | OWNER pacer mission |

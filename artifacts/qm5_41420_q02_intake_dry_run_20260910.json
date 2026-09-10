@@ -1,0 +1,17 @@
+{
+  "applied": false,
+  "compile_work_item_id": "a464663b-321c-45c1-87f0-eff847ca6ae2",
+  "dry_run": true,
+  "ea_id": "QM5_41420",
+  "eligible": true,
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "setfile_sha256": "1b72351f316b4c18541b6754ab6b2e8a23c32a0f96c022eeb6204fd356887ec5",
+  "ex5_sha256": "679e5cd7d74f9b6a0d9312c8f9699eea8a64564aa171ac07cbac17fa09d70157",
+  "magic_active_row_count": 1,
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "reason": "ELIGIBLE",
+  "schema": "qm.first-q02-intake/v1",
+  "would_enqueue": true
+}
