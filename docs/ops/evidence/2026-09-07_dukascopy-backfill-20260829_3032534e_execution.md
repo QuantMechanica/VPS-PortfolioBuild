@@ -452,12 +452,13 @@ still saying so: `Get-CimInstance Win32_Process` shows no `download_bi5.py` proc
 `progress.json.updated_at_utc` is frozen at `2026-09-10T01:01:30.747Z` (~23h stale),
 `completed=66458/305287` (21.8%, real progress up from 21,955 at the 2026-09-09 21:20Z
 checkpoint). `download.log` shows the actual cause at `2026-09-10T01:01:43Z`: an unhandled
-`ValueError: download destination escaped raw root: \?\D:\QMeports\dukascopyackfill60909T191800Z_hardenedaw\EURAUD5 99h_ticks.bi5`
+`ValueError: download destination escaped raw root:
+\?\D:\QM\reports\dukascopy\backfill\20260909T191800Z_hardened\raw\EURAUD\2025\09\19\23h_ticks.bi5`
 from `fetch_one()` in `tools/dukascopy/download_bi5.py` (~line 449), which propagated
 uncaught through `run_download()`'s `record(future.result())` and killed the whole
 ThreadPoolExecutor run, not just that one file. Root cause: `raw_root = out_dir / "raw"`
 (line 355) is never `.resolve()`d, but `destination = (raw_root / relative).resolve()` is;
-on this host `.resolve()` returns a Windows extended-length-prefixed (`\?\`) path, so
+on this host `.resolve()` returns a Windows extended-length-prefixed (\?\) path, so
 `raw_root not in destination.parents` is a **false positive** for every legitimate
 destination once resolve() starts adding that prefix -- not a real path-escape, and
 systematic (not random) once triggered, so simply restarting the same command would crash
