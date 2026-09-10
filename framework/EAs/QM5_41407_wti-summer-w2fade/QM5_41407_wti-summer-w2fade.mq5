@@ -690,8 +690,10 @@ bool Strategy_NoTradeFilter()
       strategy_required_weeks != 2 ||
       strategy_min_week_bars != 3 ||
       strategy_max_week_bars != 5 ||
+      !MathIsValidNumber(strategy_return_epsilon) ||
       MathAbs(strategy_return_epsilon) > 1.0e-15 ||
       strategy_atr_period_d1 != 20 ||
+      !MathIsValidNumber(strategy_atr_sl_mult) ||
       MathAbs(strategy_atr_sl_mult - 3.5) > 1.0e-12 ||
       strategy_max_hold_days != 10 ||
       strategy_max_spread_points != 1500)
