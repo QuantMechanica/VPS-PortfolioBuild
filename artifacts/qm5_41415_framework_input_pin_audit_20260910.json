@@ -1,0 +1,13 @@
+{
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41415_wti-wstreak3-fade/QM5_41415_wti-wstreak3-fade.mq5\"",
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "exit_code": 0,
+  "rechecked_after_source_repair": true,
+  "recheck_reason": "Replaced the strategy symbol literal default with an empty input binding and retained only a nonempty strategy-symbol guard.",
+  "recheck_exit_code": 0,
+  "recheck_hit_count": 0
+}
