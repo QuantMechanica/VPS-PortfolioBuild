@@ -1,0 +1,38 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41409
+; ea_slug:      xng-summer-w2fade
+; ea_version:   v5.0
+; set_version:  s20260910-001
+; symbol:       XNGUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   9bd685bd77893dcf54f248e4d94b43ece3f2ce74fea60580c126fc104af348d1
+; author:       Development
+; date:         2026-09-10
+;==========================================================
+qm_ea_id=41409
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
+strategy_symbol=XNGUSD.DWX
+strategy_label_offset_seconds=0
+strategy_entry_grace_minutes=180
+strategy_history_bars=24
+strategy_summer_month_1=6
+strategy_summer_month_2=7
+strategy_summer_month_3=8
+strategy_required_weeks=2
+strategy_min_week_bars=3
+strategy_max_week_bars=5
+strategy_return_epsilon=0.0
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=10
+strategy_max_spread_points=1500

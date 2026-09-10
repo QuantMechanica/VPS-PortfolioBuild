@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "source": "C:/QM/repo/framework/EAs/QM5_41409_xng-summer-w2fade/QM5_41409_xng-summer-w2fade.mq5",
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41409_xng-summer-w2fade/QM5_41409_xng-summer-w2fade.mq5",
+  "exit_code": 0,
+  "recorded_at_local": "2026-09-10"
+}
