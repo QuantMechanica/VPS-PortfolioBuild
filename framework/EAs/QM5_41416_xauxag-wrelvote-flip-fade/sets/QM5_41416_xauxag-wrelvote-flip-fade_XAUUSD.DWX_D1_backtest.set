@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   887bef258721b12518b3f1be16b5e83709751fd9db93f283973401f939873bf1
+; build_hash:   514592c5761da8edd5e3f7ef3a006b5816e79a65c1f63b73b8d4f892e486fae9
 ; author:       Development
 ; date:         2026-09-10
 ;==========================================================
@@ -21,8 +21,8 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_host_symbol=
-strategy_companion_symbol=
+strategy_host_symbol=XAUUSD.DWX
+strategy_companion_symbol=XAGUSD.DWX
 strategy_history_bars_d1=50
 strategy_min_sessions_per_week=3
 strategy_max_sessions_per_week=5

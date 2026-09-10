@@ -7,6 +7,9 @@
 - Author: Codex
 **Last revised:** 2026-09-10
 
+- Q01: `COMPILE_OK`, 0 compiler errors/warnings, build-check `PASS`.
+- Q02: logical basket enqueued as `f5f4b2e0-7172-42cc-bbd0-8a01de1c776d`.
+
 ## 1. Strategy Logic
 
 At the first tradable `XAUUSD.DWX` D1 bar of a new broker week, reconstruct
@@ -76,4 +79,3 @@ trail, break-even move, or partial exit is authorized.
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-09-10 | approved build identity |
-

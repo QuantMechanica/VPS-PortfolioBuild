@@ -1,0 +1,22 @@
+{
+  "schema": "qm.first-q02-intake/v1",
+  "compile_work_item_id": "74eeb745-6936-4afe-abce-ed85595bf4c6",
+  "ea_id": "QM5_41416",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "dry_run": true,
+  "would_enqueue": true,
+  "ex5_sha256": "795eea75dfd14a2c996ec738f756c138f6dcd9b473b45414c4a1a52ccdafea0f",
+  "magic_ok": true,
+  "active_magic_row_count": 2,
+  "target_symbols": ["XAGUSD.DWX", "XAUUSD.DWX"],
+  "canary": {
+    "symbol": "QM5_41416_XAU_XAG_WRELVOTE_FLIP_FADE_D1",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41416_xauxag-wrelvote-flip-fade/sets/QM5_41416_xauxag-wrelvote-flip-fade_QM5_41416_XAU_XAG_WRELVOTE_FLIP_FADE_D1_D1_backtest.set",
+    "setfile_sha256": "60f2be985156b3b59999febfd42ec395a5ac5e420dadb4cff30e1aee1d66afc0",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "deferred": []
+}
