@@ -41,8 +41,8 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input string strategy_host_symbol                  = "XAUUSD.DWX";
-input string strategy_companion_symbol             = "XAGUSD.DWX";
+input string strategy_host_symbol                  = "";
+input string strategy_companion_symbol             = "";
 input int    strategy_history_bars_d1         = 50;
 input int    strategy_min_sessions_per_week   = 3;
 input int    strategy_max_sessions_per_week   = 5;
@@ -57,8 +57,8 @@ input int    strategy_host_max_spread_points   = 1500;
 input int    strategy_companion_max_spread_points   = 500;
 input int    strategy_deviation_points        = 20;
 
-string g_leg_xau = "XAUUSD.DWX";
-string g_leg_xag = "XAGUSD.DWX";
+string g_leg_xau = "";
+string g_leg_xag = "";
 bool     g_is_new_bar = false;
 bool     g_entry_ready = false;
 bool     g_late_decision = false;
@@ -166,8 +166,8 @@ bool Strategy_IsHostChart()
 bool Strategy_InputsValid()
   {
    return (qm_ea_id == 41414 && qm_magic_slot_offset == 0 &&
-            strategy_host_symbol == "XAUUSD.DWX" &&
-            strategy_companion_symbol == "XAGUSD.DWX" &&
+            g_leg_xau != "" && g_leg_xag != "" &&
+            g_leg_xau != g_leg_xag &&
             strategy_history_bars_d1 == 50 &&
             strategy_min_sessions_per_week == 3 &&
             strategy_max_sessions_per_week == 5 &&

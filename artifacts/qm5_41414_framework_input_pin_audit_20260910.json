@@ -5,5 +5,9 @@
   "source_count": 1,
   "hit_count": 0,
   "hits": [],
-  "exit_code": 0
+  "exit_code": 0,
+  "rechecked_after_source_repair": true,
+  "recheck_reason": "Removed hardcoded global symbol literals after EA_SYMBOL_HARDCODED; source-only input binding retained.",
+  "recheck_exit_code": 0,
+  "recheck_hit_count": 0
 }
