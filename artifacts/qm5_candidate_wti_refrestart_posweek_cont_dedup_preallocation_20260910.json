@@ -1,0 +1,63 @@
+{
+  "candidate": {
+    "author": "U.S. Energy Information Administration; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; OpenAI Codex",
+    "mechanic": "normalized-weekly-wti-one-immediately-completed-week-open-to-close-strict-positive-log-return-long-continuation-only-april-may-one-week-hold",
+    "slug": "wti-refrestart-posweek-cont",
+    "strategy_id": "EIA-MOP-WTI-REFRESTART-POSWEEK-CONT-20260910_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T15:02:45+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41392_xng-shoulder-wrev_card.md",
+      "score": 0.7333333333333333,
+      "slug": "xng-shoulder-wrev",
+      "source": "card",
+      "strategy_id": "EIA-XNG-SHOULDER-WREV-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41421_wti-refmaint-negweek-cont_card.md",
+      "score": 0.6666666666666666,
+      "slug": "wti-refmaint-negweek-cont",
+      "source": "card",
+      "strategy_id": "EIA-MOP-WTI-REFMAINT-NEGWEEK-CONT-20260910_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41420_xng-shoulder-w2agree_card.md",
+      "score": 0.6470588235294118,
+      "slug": "xng-shoulder-w2agree",
+      "source": "card",
+      "strategy_id": "EIA-MOP-XNG-SHOULDER-W2AGREE-20260910_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4902,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1512,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
