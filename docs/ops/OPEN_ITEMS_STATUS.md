@@ -2403,3 +2403,22 @@ ceiling. One Q02 canary is pending as `2edd794c-cb9e-4ed5-827a-d67223c8bd02`. Ev
 REVIEW. Stage-B plan/enqueue/report tooling is implemented and focused tests pass (43). Stage A has
 349 MEASURED, 1 active and 70 pending cells, so the guarded Stage-B production dry-run refuses before
 any DB or ledger mutation. Evidence: `docs/ops/evidence/2026-09-10_window_sweep_stage_b_tooling.md`.
+
+## 2026-09-10T23:35Z — REVIEW drain after the weekly reset (Sonnet fan-out, 21 rows)
+
+Quota: Claude weekly 0 % after reset. 21 REVIEW rows, one Sonnet reviewer each (artifact exists, content
+supports verdict, cited paths/commits real, scope clean, acceptance from payload, tests re-run when < 60 s).
+Closed APPROVED (16): 60cd31a8, e1358f42, f6d18a6e, 2243207d, 734baee6, 2e7d5619, 46167bd9, 819e967e,
+83ffadd6, cbd1e400, fc926dde, b48ba1fb; APPROVED as partial/honest stop with follow-up: 83efd045 (cited
+log path missing, smoke not invented), 54729be7 (native costs open), b7858771 (M01-M12 open, blockers
+named), da0512a7 (6th V4a stop, blocker = missing resident-session surface), d444a7a8 (S1/S2 done: range
+end 03 UTC = broker 05 winter / 06 summer; 7 fade-only days confirmed; S3-S6 wait on WINSWEEP), 63398c6b
+(catalog installed, S3 blocked on missing research_canary controller), 95b48188 (804-EA inventory:
+MISMATCH 0, UNSTATED-IN-CARD 554, MATCH 93). RECYCLE -> re-routed TODO: 2f717775 (doc stale vs completed
+T1 receipt ed393d48). Pending: f63a632a (reviewer still running). Findings recorded: RECYCLE is a
+graveyard state (200+ rows, not auto-routed); the hourly watch line for the 41398 pattern census was
+mixing WINSWEEP rows (same ea_id) - fixed to program scope (DL089 program had 25 done, not 377).
+New tickets: 8f6a6b3c P91 BUILD research_canary (explicit authorization), 31b8255e P83 BUILD resident
+session backend (explicit authorization), fleet clock audit part 2 (P60), FTMO native receipts (P65).
+NEXT: WINSWEEP stage-A adjudication when 420/420 MEASURED, then stage B via fc926dde tooling, Balke clock
+audit continuation on the winner, Dukascopy download resume under 3032534e (2.2-day projection).
