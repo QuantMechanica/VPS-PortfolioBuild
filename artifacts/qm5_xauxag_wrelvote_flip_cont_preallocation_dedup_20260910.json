@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Fuertes; Miffre; Rallis; CME Group; OpenAI Codex",
+    "mechanic": "normalized-week-boundary-xau-xag-five-synchronized-completed-week-endpoints-four-adjacent-relative-log-returns-overlapping-older-and-newer-three-week-strict-sign-majorities-strict-majority-flip-newest-majority-winner-continuation-equal-notional-one-week-basket",
+    "slug": "xauxag-wrelvote-flip-cont",
+    "strategy_id": "FMR-CME-XAUXAG-WRELVOTE-FLIP-CONT-20260910_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T06:32:20+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41372_xtixng-wrelvote-flip-cont_card.md",
+      "score": 0.9615384615384616,
+      "slug": "xtixng-wrelvote-flip-cont",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-WRELVOTE-FLIP-CONT-20260906_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41413_xauxag-walt3-cont_card.md",
+      "score": 0.7307692307692307,
+      "slug": "xauxag-walt3-cont",
+      "source": "card",
+      "strategy_id": "FMR-CME-XAUXAG-WALT3-CONT-20260910_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4894,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1504,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
