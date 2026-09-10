@@ -1,0 +1,20 @@
+{
+  "applied": true,
+  "compile_work_item_id": "4516a5b1-296f-4d60-ae2b-0169fe8b484f",
+  "dry_run": false,
+  "ea_id": "QM5_41425",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "schema": "qm.first-q02-intake/v1",
+  "work_item_id": "e6c263cb-c853-4551-a95f-f90b91f82186",
+  "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/4516a5b1-296f-4d60-ae2b-0169fe8b484f_e6c263cb-c853-4551-a95f-f90b91f82186.json",
+  "receipt_sha256": "277f0381b78f8245f93406acc088c0c4e3c98b6644e7d1540e67792818bb7815",
+  "canary": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_sha256": "7d43dcd706f4b4357abdb2c5d0888d3f5aa2b9ca5b54e05c3d7913e724864cdb"
+  },
+  "ex5_sha256": "2de15c79e9a5fa62133fa611d6bb248c7dd1e7df825836beb23db311d3ceacca",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0
+}

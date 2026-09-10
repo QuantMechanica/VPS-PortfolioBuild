@@ -113,3 +113,5 @@ operation is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-10 | Initial build from approved card | OWNER pacer mission |
+| v1.1 | 2026-09-10 | Q01 governed compile PASS; PACER pin audit and 12 reference tests clean | compile `4516a5b1-296f-4d60-ae2b-0169fe8b484f` |
+| v1.2 | 2026-09-10 | First fixed-risk Q02 baseline enqueued below CPU ceiling | Q02 `e6c263cb-c853-4551-a95f-f90b91f82186` |

@@ -60,9 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q01_build_report: D:/QM/reports/work_items/4516a5b1-296f-4d60-ae2b-0169fe8b484f/QM5_41425/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a long-only WTI post-maintenance negative-week reversion distinct from the mutually exclusive positive-week continuation, maintenance-season short sleeves, May-July daily compression breakout/pullback, and XNG shoulder reversal. Verify exact week membership, negative-only signal and long-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -203,5 +204,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | `decisions/2026-09-10_wti_refinery_restart_negative_week_reversion_source_approval.md` |
 | G0 Research Intake | 2026-09-10 | APPROVED | decision below |
-| Q01 Build Validation | - | NOT_BUILT | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
+| Q01 Build Validation | 2026-09-10 | PASS | compile `4516a5b1-296f-4d60-ae2b-0169fe8b484f`; 12/12 reference tests; clean PACER pin audit; zero compiler errors/warnings |
+| Q02 Baseline Screening | 2026-09-10 | ENQUEUED | paced work item `e6c263cb-c853-4551-a95f-f90b91f82186` |

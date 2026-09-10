@@ -1,0 +1,30 @@
+{
+  "schema": "qm.compile-status-evidence/v1",
+  "captured_at_utc": "2026-09-10T18:15:15+00:00",
+  "ea_id": "QM5_41425",
+  "ea_label": "QM5_41425_wti-refrestart-negweek-fade",
+  "work_item_id": "4516a5b1-296f-4d60-ae2b-0169fe8b484f",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 3,
+  "failure_classes": [],
+  "setfile_count": 1,
+  "mq5_sha256": "fbe6ac4897206414f59c284927ded6e409f61b0e91ba3c7b03112c701b5e2bae",
+  "ex5_sha256": "2de15c79e9a5fa62133fa611d6bb248c7dd1e7df825836beb23db311d3ceacca",
+  "setfile_sha256_after_required_symbol_binding": "7d43dcd706f4b4357abdb2c5d0888d3f5aa2b9ca5b54e05c3d7913e724864cdb",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41425_wti-refrestart-negweek-fade/QM5_41425_wti-refrestart-negweek-fade.ex5",
+  "compile_evidence_path": "D:/QM/reports/work_items/4516a5b1-296f-4d60-ae2b-0169fe8b484f/QM5_41425/COMPILE_EA/compile_evidence.json",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_181216.json",
+  "framework_input_pin_audit": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "reference_tests": "12/12 PASS",
+  "note": "First governed compile passed. The generated setfile's blank strategy_symbol was restored to the approved XTIUSD.DWX input binding; no EA source or binary changed. Build-check warnings are optional card inferences only."
+}

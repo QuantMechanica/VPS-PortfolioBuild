@@ -1,0 +1,10 @@
+{
+  "schema": "qm.paced-cpu-admission/v1",
+  "captured_date": "2026-09-10",
+  "samples_percent": [47.27, 51.47, 60.26, 72.97, 77.16],
+  "average_percent": 61.83,
+  "maximum_percent": 77.16,
+  "exclusive_ceiling_percent": 97.0,
+  "admitted": true,
+  "scope": "QM5_41425 first Q02 intake"
+}

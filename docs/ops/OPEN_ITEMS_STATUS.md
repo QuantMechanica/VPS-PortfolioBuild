@@ -1,5 +1,14 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 10.09., 18:15Z — neuer WTI-Sleeve bis Q02:** Der neue strukturelle
+> `QM5_41425_wti-refrestart-negweek-fade` wurde nach Source-Freigabe und
+> Canonical-Dedup als XTIUSD.DWX-D1-Build erstellt. PACER-Pin-Audit exit 0 / 0
+> Findings, Referenztests 12/12 PASS, Compile `4516a5b1` COMPILE_OK ohne
+> Compilerfehler/-warnungen. Die finale CPU-Stichprobe lag bei Ø 61,83% und
+> max. 77,16% (<97%); genau eine Fixed-Risk-Q02-Zeile `e6c263cb` wurde
+> enqueued. Kein Portfolio-Gate-, T_Live-, AutoTrading- oder Deploy-Eingriff.
+> Evidenz: `docs/ops/evidence/2026-09-10_qm5_41425_wti_refinery_restart_negative_week_build_q02.md`.
+
 > **Nachtrag 10.09., 01:31Z — FX-Cointegration am bindenden CPU-Hard-Stop:**
 > Der sign-aware 66-Paar-Scan bleibt vollständig mechanisiert; `QM5_12532` und
 > `QM5_12533` besitzen Q02-PASS und keine ONINIT-/NO_HISTORY-Blockade. Der
