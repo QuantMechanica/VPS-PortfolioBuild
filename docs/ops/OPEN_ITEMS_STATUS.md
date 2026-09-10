@@ -2415,7 +2415,7 @@ named), da0512a7 (6th V4a stop, blocker = missing resident-session surface), d44
 end 03 UTC = broker 05 winter / 06 summer; 7 fade-only days confirmed; S3-S6 wait on WINSWEEP), 63398c6b
 (catalog installed, S3 blocked on missing research_canary controller), 95b48188 (804-EA inventory:
 MISMATCH 0, UNSTATED-IN-CARD 554, MATCH 93). RECYCLE -> re-routed TODO: 2f717775 (doc stale vs completed
-T1 receipt ed393d48). Pending: f63a632a (reviewer still running). Findings recorded: RECYCLE is a
+T1 receipt ed393d48). f63a632a APPROVED as partial (artifact lacks magic/slot, unnamed 23-tests claim). Findings recorded: RECYCLE is a
 graveyard state (200+ rows, not auto-routed); the hourly watch line for the 41398 pattern census was
 mixing WINSWEEP rows (same ea_id) - fixed to program scope (DL089 program had 25 done, not 377).
 New tickets: 8f6a6b3c P91 BUILD research_canary (explicit authorization), 31b8255e P83 BUILD resident
