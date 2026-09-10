@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-10T16:34:48.5836300Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "754546e68b13b7579bd2d48687510e384d97990d",
+  "mission": "Grow the V5 forex funnel without duplicating the fully mechanized 66-pair FX cointegration frontier.",
+  "frontier": {
+    "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "reconciliation_record": "artifacts/fx_cointegration_frontier_cpu_stop_20260910T0616Z_board_advisor.json",
+    "reconciliation_sha256": "b58e8d30d3deba74d6125330018fb7410b678492774ad7cad50fde52b017381b",
+    "relationships_scanned": 66,
+    "approved_next_best_cards_checked": 16,
+    "approved_next_best_cards_with_ea_directory": 16,
+    "unbuilt_approved_pair_found": false,
+    "duplicate_guard": "The frozen sign-aware relationship inventory is fully represented; no new card, EA, compile row, or Q02 row was created."
+  },
+  "preferred_anchor_triage": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_terminal_state": "Q04 PASS, then Q05 FAIL"
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_terminal_state": "Q04 FAIL"
+    }
+  },
+  "selected_existing_forex": {
+    "ea_id": "QM5_41335",
+    "slug": "fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "structural": true,
+    "low_frequency": true,
+    "ml_used": false,
+    "predecessor": {
+      "work_item_id": "5b046970-f847-42c6-a3df-77b2d5ec11bc",
+      "phase": "Q05",
+      "status": "done",
+      "verdict": "PASS",
+      "pf": 1.15,
+      "trades": 99,
+      "dd_pct": 5.14103,
+      "aggregate_path": "D:/QM/reports/work_items/5b046970-f847-42c6-a3df-77b2d5ec11bc/QM5_41335/Q05/AUDUSD_DWX/aggregate.json",
+      "aggregate_sha256": "b16386bb33283b9c515e4a3869517221a8c459df31595f094cd9c4f485b05096"
+    },
+    "successor": {
+      "work_item_id": "20341cb3-786b-4485-9750-73fc6a81dba6",
+      "phase": "Q06",
+      "status": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "priority_track": true,
+      "matching_open_q06_count": 1,
+      "created_new_row": true,
+      "requeued_existing_row": false,
+      "duplicate_enqueue_performed": false,
+      "dispatch_performed": false
+    }
+  },
+  "artifact_identity": {
+    "mq5_sha256": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+    "ex5_sha256": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+    "baseline_setfile_sha256": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47"
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build_guard": {
+    "generated_mq5_written": false,
+    "compile_enqueued": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+    "audit_exit_code": 0,
+    "audit_ok": true,
+    "audit_predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "audit_hit_count": 0,
+    "audit_hits": []
+  },
+  "capacity_preflight": {
+    "cpu_ceiling_percent": 97.0,
+    "ceiling_rule": "Stop when average or maximum is greater than or equal to 97 percent.",
+    "pre_enqueue_samples_percent": [
+      31.19,
+      27.93,
+      27.36,
+      27.29,
+      26.77
+    ],
+    "pre_enqueue_average_percent": 28.108,
+    "pre_enqueue_maximum_percent": 31.19,
+    "post_enqueue_samples_percent": [
+      57.94,
+      52.41,
+      42.59,
+      42.19,
+      42.39
+    ],
+    "post_enqueue_average_percent": 47.504,
+    "post_enqueue_maximum_percent": 57.94,
+    "cpu_ceiling_hit": false
+  },
+  "outcome": {
+    "status": "Q06_ENQUEUED",
+    "enqueue_command": "python tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_41335 --phase Q06 --from-work-item-id 5b046970-f847-42c6-a3df-77b2d5ec11bc",
+    "next_action": "The resident worker may claim the sole pending priority Q06 row."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_or_autotrading_touched": false,
+    "terminal_process_mutated": false
+  }
+}
