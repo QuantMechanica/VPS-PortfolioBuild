@@ -1,0 +1,44 @@
+{
+  "schema": "qm.paced-fleet-q02-infra-recovery/v1",
+  "recorded_at": "2026-09-10T00:26:21+00:00",
+  "ea_id": "QM5_36007",
+  "ea_label": "QM5_36007_nnfx-vidya-trix-fisher-momentum",
+  "symbol": "GBPJPY.DWX",
+  "timeframe": "D1",
+  "phase": "Q02",
+  "selection_reason": "No collision-free approved card met low-frequency structural diversity; recover a diverse FX row stranded by a compile-gate-only refusal.",
+  "predecessor_work_item_id": "aaf5b6cf-0f38-438a-b22f-bf7231948ffc",
+  "predecessor_status": "failed",
+  "predecessor_verdict": "INFRA_FAIL",
+  "predecessor_evidence_path": "EVIDENCE_UNAVAILABLE:spawn_refusal:compile_gate:COMPILE_FAILED",
+  "tester_launch_proven_absent": true,
+  "compile_work_item_id": "22e33cea-1bd3-4f18-9751-a9ff9b6f5a7d",
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\22e33cea-1bd3-4f18-9751-a9ff9b6f5a7d\\QM5_36007\\COMPILE_EA\\compile_evidence.json",
+  "compile_evidence_sha256": "9b7b39d5f2cb7e02886c7af5e415958bae5cab806777e5e364fdcc018a9c19a7",
+  "current_mq5_sha256": "5dd37c9f921b4c3d942d29c610a1b8b5daad057c958872e454e3f57ff36f60ee",
+  "current_ex5_sha256": "0da9611c9105f0951aadba4f67f6b83cf1b8b382f31319ac8f510ebf962777db",
+  "current_setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_36007_nnfx-vidya-trix-fisher-momentum\\sets\\QM5_36007_nnfx-vidya-trix-fisher-momentum_GBPJPY.DWX_D1_backtest.set",
+  "current_setfile_sha256": "b3084636270b7d1279ce9b983bfff78ef73471cf70f82141335df441fd797928",
+  "parameter_change_count": 0,
+  "parameter_diff": [],
+  "successor_work_item_id": "692b9f6d-199c-4a4d-a65f-857b1924d025",
+  "successor_status_verified": "pending",
+  "runtime_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\receipts\\q02_post_binding_requalification\\aaf5b6cf-0f38-438a-b22f-bf7231948ffc_692b9f6d-199c-4a4d-a65f-857b1924d025.json",
+  "runtime_receipt_sha256": "3569cf16af60a24dc12be12a67d698b05c766c296e77054551cd51faf1465559",
+  "mutations": {
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "historical_work_item_overwritten": false,
+    "successor_appended": true,
+    "backtest_started": false
+  },
+  "pacer_guard": {
+    "source_audit_required": false,
+    "reason": "No .mq5 was generated or modified and no compile was enqueued."
+  },
+  "cpu_ceiling": {
+    "active_at_selection": 5,
+    "threshold": 7,
+    "hit": false
+  }
+}
