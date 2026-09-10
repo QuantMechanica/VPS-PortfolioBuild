@@ -60,9 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: BUILD_PENDING
+pipeline_phase: Q02
+q01_status: PASS
 q02_status: NOT_ENQUEUED
+q01_build_report: D:/QM/reports/work_items/5a92a23f-e31e-4a5e-ac5f-8d2d0ca1ae85/QM5_41419/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a direct-WTI fresh two-completed-week continuation sleeve outside the certified XAU/SP500/NDX/XNG book. Verify energy labels, exact Monday anchors, four completed week endpoints, strict -++ / +-- state, same-sign side, durable weekly attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -215,6 +216,7 @@ zero-finding PACER framework-input-pin audit.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-10 | initial WTI fresh two-week streak-continuation card | G0 | APPROVED; build pending |
+| v1-build | 2026-09-10 | governed compile and build check | Q01 | COMPILE_OK; 0 compiler errors/warnings; build-check PASS; pin audit zero findings; 6/6 tests PASS |
 
 ## Safety Boundary
 
