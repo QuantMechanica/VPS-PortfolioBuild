@@ -60,9 +60,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
+pipeline_phase: Q02
 q01_status: PASS
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
 force_build: true
 review_focus: "Falsify a short-only WTI refinery-maintenance negative-week continuation distinct from shoulder stretch fade, May-July refinery entries, unconditional weekly momentum, two-week streak, and winter/summer agreement variants. Verify exact week membership, negative-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -241,4 +241,4 @@ control, or live use.
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision below |
 | Q01 Build Validation | 2026-09-10 | PASS | governed compile `1d13cb7f-fcf7-4c04-8079-06fe036e0775`; 12 reference tests; PACER audit clean |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending CPU ceiling |
+| Q02 Baseline Screening | 2026-09-10 | ENQUEUED | paced canary `290e9de5-3b60-4166-983b-fab2bd11ab23` |
