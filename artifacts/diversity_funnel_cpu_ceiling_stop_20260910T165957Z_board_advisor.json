@@ -1,0 +1,95 @@
+{
+  "schema": "qm.paced-fleet-diversity-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-10T17:00:11Z",
+  "branch": "agents/board-advisor",
+  "observation_base": "b0189b76b11abf29ef35b3047e754b79dc2261bb",
+  "mission": "Advance one non-duplicate, diversity-first V5 strategy-farm unit toward Q02.",
+  "outcome": "STOP_BACKTEST_CPU_CEILING",
+  "capacity": {
+    "sampler": "Win32_Processor.LoadPercentage; processor-average; five samples approximately one second apart",
+    "sampled_from_utc": "2026-09-10T16:59:57.6642164Z",
+    "sampled_through_utc": "2026-09-10T17:00:06.2789672Z",
+    "samples_percent": [
+      69.0,
+      44.0,
+      97.0,
+      100.0,
+      100.0
+    ],
+    "average_percent": 82.0,
+    "maximum_percent": 100.0,
+    "ceiling_percent": 97.0,
+    "admission_rule": "Both the five-sample average and maximum must be strictly below 97 percent.",
+    "admission_passed": false,
+    "binding_dimension": "maximum_percent"
+  },
+  "farm_state": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "read_only_checked_at_utc": "2026-09-10T17:00:11Z",
+    "pending_build_ea_task_count": 77,
+    "active_task_count": 11,
+    "active_task_summary": {
+      "build_ea": 5,
+      "infra_repair": 6
+    },
+    "active_work_item_count": 2,
+    "active_phase_summary": {
+      "OPT_CENSUS": 2
+    },
+    "active_work_items": [
+      {
+        "id": "067f931c-784e-5642-b4d4-0c3350488434",
+        "ea_id": "QM5_41323",
+        "symbol": "NDX.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T9"
+      },
+      {
+        "id": "5438407f-e413-56e2-9106-97beeb98beba",
+        "ea_id": "QM5_41398",
+        "symbol": "USDJPY.DWX",
+        "phase": "OPT_CENSUS",
+        "claimed_by": "T1"
+      }
+    ],
+    "running_factory_terminals": [
+      "T1",
+      "T9"
+    ],
+    "factory_terminal_worker_slots_present": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ]
+  },
+  "guard_disposition": {
+    "candidate_ranked": false,
+    "farm_claim_created": false,
+    "ea_source_written": false,
+    "framework_input_pin_audit_required": false,
+    "framework_input_pin_audit_run": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "reason": "The CPU ceiling bound before backlog ranking or mutation. No generated MQ5 existed, so the mandatory post-write PACER audit boundary was not entered."
+  },
+  "mutation_boundary": {
+    "agent_task_changed": false,
+    "work_item_changed": false,
+    "registry_changed": false,
+    "magic_resolver_changed": false,
+    "ea_or_setfile_changed": false,
+    "compile_or_tester_started": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false
+  },
+  "continuation_condition": "On a later paced wake, take a fresh five-sample whole-host CPU window. Proceed only if both average and maximum are strictly below 97 percent; then re-read the farm DB, rank the current approved backlog, atomically claim one distinct highest-diversity candidate, audit the absolute MQ5 path after generation and before any compile enqueue, and enqueue only a RISK_FIXED Q02 row after governed compile success."
+}
