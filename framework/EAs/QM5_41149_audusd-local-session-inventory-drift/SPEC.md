@@ -1,52 +1,85 @@
-# QM5_41149 — AUDUSD Local-Session Inventory Drift
+# QM5_41149_audusd-local-session-inventory-drift — Strategy Spec
 
-## 1. Provenance and hypothesis
+**EA ID:** QM5_41149
+**Slug:** audusd-local-session-inventory-drift
+**Source:** BREEDON-RANALDO-FX-INTRADAY-2013
+**Author of this spec:** Codex
+**Last revised:** 2026-09-10
 
-The approved Strategy Card is `D:\QM\strategy_farm\artifacts\cards_approved\QM5_41149_audusd-local-session-inventory-drift.md`. Its Tier-A source is Francis Breedon and Angelo Ranaldo, “Intraday Patterns in FX Returns and Order Flow,” *Journal of Money, Credit and Banking* 45(5), 2013. The source's Table 1 defines Australian local trading hours as 10:00–16:00, and the card predeclares the source-signed AUD depreciation expression. No source performance statistic is transferred to this EA.
+## 1. Strategy Logic
 
-This is a structural local-inventory/session edge on `AUDUSD.DWX`, not a momentum signal. It is deliberately a low-frequency, one-attempt-per-Sydney-business-date sleeve.
+On the exact 10:00 Australia/Sydney H1 bar of Monday through Friday, the EA submits one market SELL when no position is owned by its magic, the local date has not been consumed, completed H1 ATR and execution metadata are valid, and uncached news-calendar checks clear the full owned interval. The date is persisted and flushed before submission, so a broker rejection or restart cannot create a second attempt.
 
-## 2. Market, clock, and data contract
+The position has a 1.5-times completed H1 ATR(14) hard stop, no profit target, and is flattened at or after 16:00 Sydney time. Sydney DST uses recurring civil-time rules and unique local/UTC round trips. Clock ambiguity, missing history, stale news data, invalid risk geometry, and ownership faults all fail closed. There is no momentum filter, grid, averaging, pyramiding, reversal, banned indicator, or ML/adaptive component.
 
-- Execution carrier: the chart symbol (`_Symbol`), with the registry/setfile binding it to `AUDUSD.DWX`.
-- Literal chart and decision timeframe: H1.
-- Australia/Sydney session: 10:00 inclusive to 16:00 exclusive local civil time.
-- Sydney DST is computed from the statutory recurring rule: first Sunday in October start and first Sunday in April end. Local-to-UTC conversion round-trips both possible offsets and fails closed unless exactly one is valid.
-- ATR is H1 ATR(14), read only from shift 1 at the entry decision.
-- A session without an exact executable 10:00 H1 bar is operationally non-trading. This also makes a closed-market holiday fail closed; no unapproved jurisdictional holiday series is synthesized.
+## 2. Parameters
 
-## 3. Entry rules
+| Parameter | Default | Range | Meaning |
+|---|---:|---:|---|
+| strategy_atr_period_h1 | 14 | locked 14 | Completed H1 ATR period for the initial hard stop |
+| strategy_hard_stop_atr | 1.5 | locked 1.5 | Initial hard-stop distance in completed H1 ATR units |
 
-On the exact 10:00 Australia/Sydney H1 bar of Monday through Friday, submit one market SELL if and only if all of the following hold:
+The configuration guard additionally locks `qm_ea_id=41149`, `qm_magic_slot_offset=0`, and fixed-risk mode (`RISK_PERCENT=0`, finite `RISK_FIXED>0`). It does not compare RNG, news, or Friday-close inputs. Stress rejection is checked only for finiteness and inclusive 0..1 range.
 
-1. No position is owned by this magic and ownership integrity is clean.
-2. The local date has not already been consumed.
-3. The completed H1 ATR is finite and positive, quotes and symbol metadata are valid, and fixed-risk sizing produces positive volume.
-4. Six uncached one-hour news-calendar checks cover the full [10:00,16:00] owned interval and all allow trading. Missing or stale calendar coverage fails closed.
-5. The initial stop satisfies broker minimum-distance geometry.
+## 3. Symbol Universe
 
-The local date is written to a terminal Global Variable and flushed before order submission. A rejection therefore consumes the opportunity. Deal history is also checked on each new Sydney date so a restart cannot duplicate a filled entry.
+**Designed for:**
 
-## 4. Exit and position integrity
+- The chart carrier `_Symbol`, bound by the registry and canonical setfile to `AUDUSD.DWX`.
+- Slot 0, magic `411490000`.
 
-- Initial hard stop: 1.5 completed H1 ATR above the expected SELL fill; it is never widened or trailed.
-- No profit target.
-- Flatten at or after 16:00 Australia/Sydney on the same local date. A date mismatch or an owned position observed before 10:00 is also flattened.
-- Friday-close and kill-switch handling execute before strategy entry logic.
-- More than one owned position, another owned symbol, a BUY, missing/invalid stop, nonzero target, or invalid volume is an ownership fault and triggers flattening of all exposure owned by this magic.
+**Explicitly not for:**
 
-## 5. Declared parameter surface and build guard
+- Other carriers or multi-symbol execution. A carrier change creates a new strategy identity.
+- Grid, martingale, averaging, pyramiding, post-session reversal, or discretionary filtering.
 
-The only strategy parameters are `strategy_atr_period_h1=14` and `strategy_hard_stop_atr=1.5`; both are card-locked. The EA also locks `qm_ea_id=41149`, `qm_magic_slot_offset=0`, and fixed-risk mode (`RISK_PERCENT=0`, finite `RISK_FIXED>0`).
+## 4. Timeframe
 
-No equality guard is applied to RNG, news, Friday-close, portfolio-weight, or stress defaults. `qm_stress_reject_probability` is checked only for finiteness and inclusive 0..1 range. News and Friday-close inputs remain framework-governed.
+| Aspect | Value |
+|---|---|
+| Chart and execution timeframe | H1 |
+| Signal time | exact 10:00 Australia/Sydney H1 open |
+| Owned interval | [10:00,16:00] Australia/Sydney local civil time |
+| Volatility input | H1 ATR(14), completed shift 1 only |
+| Bar gating | one `QM_IsNewBar(_Symbol, PERIOD_H1)` consume per tick |
 
-## 6. Failure policy and prohibited behavior
+A session without an exact executable 10:00 H1 bar is operationally non-trading. This makes a closed-market holiday fail closed. The approved card does not identify a versioned Australian/NSW civil-holiday dataset, so the build does not invent an additional jurisdictional calendar; such a rule requires a governed calendar artifact.
 
-Clock ambiguity, missing history, stale/missing news data, invalid ATR/quotes/metadata, risk-sizing failure, stop-rule failure, duplicate state, and ownership faults all fail closed. There is no grid, martingale, averaging, pyramiding, reversal, discretionary filter, banned indicator, or ML/adaptive component. The EA does not access live deployment controls.
+## 5. Expected Behaviour
 
-## 7. Verification and open questions
+| Metric | Expected |
+|---|---|
+| Maximum opportunities | one per Sydney weekday before no-trade filters |
+| Card frequency declaration | approximately 100 trades/year/symbol; Q02 measures the actual implementation |
+| Direction | SELL AUDUSD during the Australian local trading session |
+| Typical hold time | at most six hours, always flat at/after 16:00 Sydney |
+| Refutation focus | post-cost sign, stability across Sydney DST regimes, and concentration in news dates |
 
-Reference tests verify the Sydney DST boundaries, unambiguous 10:00/16:00 conversions, session membership, and source/card/static guard invariants. The mandatory framework-input-pin audit must pass after source generation and immediately before compile enqueue. Compilation, strict build checks, canonical setfile validation, and Q02 are separate governed evidence.
+Six fresh trailing-hour news checks at 11:00 through 16:00 Sydney cover the complete [10:00,16:00] interval. Missing or stale tester/live calendar coverage blocks the entry.
 
-Open question for later research review: the approved card does not identify a versioned Australian/NSW holiday dataset. This implementation therefore treats “holiday” as a missing exact executable H1 session-open bar and does not invent a civil-holiday exclusion. Any broader holiday definition requires a new governed calendar artifact rather than an undeclared code rule.
+## 6. Source Citation
+
+**Source ID:** BREEDON-RANALDO-FX-INTRADAY-2013
+
+**Citation:** Francis Breedon and Angelo Ranaldo (2013), “Intraday Patterns in FX Returns and Order Flow,” *Journal of Money, Credit and Banking* 45(5), 953–965.
+
+**Primary source:** https://www.snb.ch/public/asset/en/www-snb-ch/publications/research/working-papers/2011/working_paper_2011_04/publications0_en/working_paper_2011_04.n.pdf
+
+**Card pointer:** D:/QM/strategy_farm/artifacts/cards_approved/QM5_41149_audusd-local-session-inventory-drift.md
+
+The source's Table 1 defines Australian local trading hours as 10:00–16:00. The card predeclares the source-signed AUD depreciation expression. No paper performance statistic or portfolio property is transferred to this EA.
+
+## 7. Risk Model
+
+| Phase | Risk mode | Value |
+|---|---|---|
+| Backtest | RISK_FIXED | $1,000 per trade with RISK_PERCENT=0 |
+| Live | not authorized | Any future risk requires downstream portfolio and deployment approval |
+
+The framework sizes from entry-to-stop geometry and rejects invalid tick-value, volume, or stop metadata. The initial stop is never widened or trailed. Friday-close and kill-switch handling run before strategy entry logic. An ownership fault flattens every position owned by this magic at the first safe executable point.
+
+## Revision History
+
+| Version | Date | Reason | Notes |
+|---|---|---|---|
+| v1 | 2026-09-10 | Initial build from approved card | build task `8a6b57f0-4911-431d-8c1c-4f1be85fd431`; compile successor `72ea3a08-296e-4eaf-92f3-15282343e002`; Q02 `12134047-e835-498f-9a5e-c10598be9749` |

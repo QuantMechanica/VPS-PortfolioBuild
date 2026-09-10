@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Fuertes; Miffre; Rallis; CME Group; OpenAI Codex",
+    "mechanic": "normalized-week-boundary-xau-xag-four-synchronized-completed-week-endpoints-three-adjacent-relative-log-returns-strict-sign-alternation-newest-relative-winner-continuation-equal-notional-one-week-basket",
+    "slug": "xauxag-walt3-cont",
+    "strategy_id": "FMR-CME-XAUXAG-WALT3-CONT-20260910_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T05:32:11+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41410_xauxag-walt3-rv_card.md",
+      "score": 0.95,
+      "slug": "xauxag-walt3-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-WALT3-RV-20260910_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41373_xtixng-walt3-rv_card.md",
+      "score": 0.9,
+      "slug": "xtixng-walt3-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-WALT3-RV-20260907_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4893,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1503,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
