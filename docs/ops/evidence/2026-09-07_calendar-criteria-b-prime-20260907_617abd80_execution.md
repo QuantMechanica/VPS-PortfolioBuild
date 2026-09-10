@@ -389,3 +389,23 @@ backup_calendar_continuity, evidence_cohort_watch) -- none new or in this task's
 forbidden-actions scope. No ticket, rebuild, release, or verdict change made here
 (acceptance criterion still unmet: XAUUSD/SP500 legs unresolved, 11196 not yet PASS/FAIL).
 Task remains IN_PROGRESS.
+
+## Checked 2026-09-10T23:05Z (headless orchestration cycle) -- 11196 Q10_NEWS ran, verdict REVIEW_REQUIRED (expected, staged-rollout gate working as designed)
+
+Direct DB read: `a909ee18` (QM5_11196/XAUUSD.DWX Q10_NEWS, the row this task's B-prime
+release targeted first) moved `active` (claimed T8, 21:28:58Z) -> `done`/`REVIEW_REQUIRED`
+at `2026-09-10T22:58:05Z` -- a new terminal state since the last logged check. Read the
+aggregate (`D:\QM\reports\work_items\a909ee18...\aggregate.json`): all 8 measured cells
+failed with `"Q09 selection logger authentication refused; no transient retry"`. This is
+**not** a new/unexplained blocker -- `tools/strategy_farm/config/legacy_logger_allowlist.v1.json`
+(landed via `07af95fcf1`, 2026-09-08, dfc60103's own fix) explicitly lists `ea_id: 11196` with
+`"enabled": false, "rollout": "enable only after 11167 native canary authentication"`. The
+staged rollout is doing exactly what it was designed to do: 11196 stays refused until 11167's
+own canary (see dfc60103) authenticates first. Not this task's acceptance criterion being
+newly met (still need "first adjudications end PASS/FAIL, not INVALID" -- REVIEW_REQUIRED is
+neither yet) and not this task's authority to flip the allowlist `enabled` flag (that's
+dfc60103's gated sequencing, and even there requires the 11167 canary first, not a Claude
+judgment call). `QM5_41394` SP500/XAUUSD.DWX Q02 rows checked directly: still `pending`,
+`claimed_by=NULL`, `attempt_count=0`, `updated_at=2026-09-09T10:52:59Z` (~2 days static,
+ordinary queue depth, not this task's authority). No ticket, rebuild, release, or verdict
+change made. Task remains `IN_PROGRESS`.

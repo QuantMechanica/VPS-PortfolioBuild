@@ -474,3 +474,28 @@ moved pending->done (2026-09-10T19:59:04Z); SP500/XAUUSD Q02 still pending/uncla
 2026-09-09T10:52:59Z. This task's own gate, 11167/XAUUSD Q10_NEWS (f625d9aa/6797ed1c),
 remains REVIEW_REQUIRED (acceptance "11167 rerun ends PASS/FAIL" still unmet). No ticket,
 rebuild, release, or verdict change. Task remains IN_PROGRESS.
+
+## Checked 2026-09-10T23:05Z (headless orchestration cycle) -- sibling row 11196 confirms staged allowlist gate is live and correctly refusing; own 11167 canary still not rerun
+
+See bb814520's file for full detail: `a909ee18` (QM5_11196/XAUUSD Q10_NEWS) ran and hit
+`done`/`REVIEW_REQUIRED` at 22:58:05Z with `"Q09 selection logger authentication refused"`
+on all 8 cells -- expected, since `legacy_logger_allowlist.v1.json` has 11196
+`"enabled": false, "rollout": "enable only after 11167 native canary authentication"`.
+Confirms `07af95fcf1`'s guard code is active in production and gating correctly. This task's
+own row, `11167`/XAUUSD, is `"enabled": true, "rollout": "single append-only canary first"`
+in the same allowlist -- but no append-only rerun of `f625d9aa` has actually been dispatched
+since the fix landed (2026-09-08T16:09:21+02:00): direct DB read confirms the two existing
+`QM5_11167` Q10_NEWS rows (`f625d9aa` created 2026-09-07T00:46Z, `6797ed1c` created
+2026-09-08T14:09Z) both predate the fix commit and are unchanged, still `REVIEW_REQUIRED`.
+Per the evidence trail above (09-09 cycles), the operative path being awaited is not the
+raw `farmctl enqueue-backtest --append-only-rerun-of` action but the `QM5_41394` rebuild's
+own XAUUSD.DWX Q02 leg completing the pipeline (calendar-input correction, tracked under
+`bb814520`) -- that leg is still `pending`/unclaimed since 2026-09-09T10:52:59Z, ordinary
+queue depth, not this task's authority to reprioritize. Not actioning the raw append-only
+rerun unilaterally this cycle: the QM5_41394 rebuild path was the one actually chosen and
+tracked across ~30 prior cycle entries, and switching lanes without OWNER/prior-session
+context on why the rebuild path was preferred over a direct raw rerun would risk duplicate/
+inconsistent evidence. Flagging for the next cycle or OWNER: if the QM5_41394 rebuild leg
+remains stuck past today, consider whether the pre-authorized raw append-only rerun of
+`f625d9aa` should be dispatched directly instead of waiting on the rebuild queue. No
+ticket, rebuild, release, or verdict change made here. Task remains `IN_PROGRESS`.
