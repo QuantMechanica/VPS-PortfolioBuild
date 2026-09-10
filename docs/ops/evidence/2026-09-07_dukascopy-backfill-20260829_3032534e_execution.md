@@ -482,3 +482,19 @@ independently re-routed from RECYCLE back to IN_PROGRESS at 2026-09-10T23:1xZ wi
 TODO to fold that receipt into its evidence doc and close to REVIEW; that is Codex's own
 task, not touched here. No terminal, T1 import, T_Live/AutoTrading, threshold, or verdict
 action this cycle. Task `3032534e` stays IN_PROGRESS.
+
+## Checked 2026-09-10T22:47Z (headless orchestration cycle) -- both Codex sub-tickets landed in REVIEW, still not actionable here
+
+Both blocking Codex tickets moved `IN_PROGRESS` -> `REVIEW` since the last checkpoint:
+`ff5cc3b9` (raw_root containment false-positive fix) at 22:42:45Z, `2f717775` (non-FX
+price_scale receipt fold-in) at 22:33:45Z. Neither has a verdict or artifact_path recorded
+yet in the router (`update-task ... --state REVIEW` was called without those fields) --
+their close-review (accept/RECYCLE) has not happened. This task's `selected_effect_only`
+authority does not cover reviewing or closing Codex's own tickets, and they are not in
+this task's IN_PROGRESS assignment, so not actioned here; left for Codex's own review lane.
+Until `ff5cc3b9` clears review and merges, the production downloader stays un-restarted
+(restarting on the unfixed binary would crash again on the next URL, per the prior entry).
+QM5_41394 SP500/XAUUSD Q02 rows (bb814520/dfc60103's shared gate) unchanged, still
+pending/unclaimed since 2026-09-09T10:52:59Z -- see that file, not repeated in full here.
+No ticket, rebuild, release, or verdict change made by this task. Task `3032534e` remains
+`IN_PROGRESS`.
