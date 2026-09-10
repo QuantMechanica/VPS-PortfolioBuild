@@ -97,7 +97,7 @@ bool Strategy_NoTradeFilter()
 
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
-   if(bid <= 0.0 || ask <= 0.0 || ask <= bid)
+   if(bid <= 0.0 || ask <= 0.0 || ask < bid)
       return true;
 
    const double stop_distance = ask * strategy_stop_loss_pct / 100.0;
@@ -249,6 +249,9 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample floating P&L before any guard can return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
