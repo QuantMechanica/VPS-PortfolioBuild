@@ -1,0 +1,18 @@
+{
+  "schema": "qm.framework-input-pin-audit-receipt/v1",
+  "ea_id": "QM5_41411",
+  "slug": "wti-walt3-cont",
+  "source": "C:/QM/repo/framework/EAs/QM5_41411_wti-walt3-cont/QM5_41411_wti-walt3-cont.mq5",
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41411_wti-walt3-cont/QM5_41411_wti-walt3-cont.mq5\"",
+  "executed_after_source_write": true,
+  "executed_before_enqueue_compile": true,
+  "exit_code": 0,
+  "result": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "source_count": 1,
+    "hit_count": 0,
+    "hits": []
+  },
+  "decision": "PASS_COMPILE_ENQUEUE_PERMITTED"
+}

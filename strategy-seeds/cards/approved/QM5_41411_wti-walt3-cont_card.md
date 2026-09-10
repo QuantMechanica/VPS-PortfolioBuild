@@ -157,7 +157,6 @@ There is no sweep. Q02 uses one locked baseline:
 | `strategy_atr_sl_mult` | 3.5 |
 | `strategy_max_hold_days` | 10 |
 | `strategy_max_spread_points` | 1500 |
-| `strategy_deviation_points` | 20 |
 
 Framework backtests use `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
 `PORTFOLIO_WEIGHT=1`. News and Friday controls remain configurable framework
