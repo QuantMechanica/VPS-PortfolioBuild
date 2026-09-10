@@ -1,0 +1,109 @@
+{
+  "schema": "qm.fx-fallback-q08-enqueue/v1",
+  "recorded_at_utc": "2026-09-10T21:32:30.643Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "5f34dce61b98c34eb7c4940249f8a7b90af1f6bf",
+  "scan_frontier": {
+    "covered_relationships": 66,
+    "uncovered_relationships": 0,
+    "evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "evidence_sha256": "5b11c01ec9afebf853433585d172fdc52669b367567ec5afff5fca4077bc5344"
+  },
+  "preferred_anchor_triage": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_terminal_state": "Q04_PASS_Q05_FAIL"
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_terminal_state": "Q04_FAIL"
+    }
+  },
+  "selection": {
+    "new_pair_created": false,
+    "reason": "The frozen 66-pair scan is fully mechanized; the authorized existing-forex fallback had a fresh Q07 PASS and no Q08 successor.",
+    "ea_id": "QM5_41335",
+    "ea_label": "QM5_41335_fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "structure": "existing single-symbol FX fallback; not a new market-neutral pair identity"
+  },
+  "q07_predecessor": {
+    "id": "25e274d5-3cb6-4382-ac9b-87f04b6c2857",
+    "status": "done",
+    "verdict": "PASS",
+    "updated_at": "2026-09-10T20:06:38+00:00",
+    "mean_profit_factor": 1.176,
+    "minimum_profit_factor": 1.08,
+    "maximum_profit_factor": 1.23,
+    "variance_percent": 12.76,
+    "seed_count": 5,
+    "aggregate_sha256": "0d92c523b124a130106fd9eab38d76eefb72415bd867543e1af4dcd60547c8be"
+  },
+  "q08_successor": {
+    "id": "ca09ce75-f7c9-4bea-b19b-19a77850b032",
+    "created": true,
+    "status_at_verification": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "active_holds": [],
+    "open_exact_identity_count": 1,
+    "promoted_from_phase": "Q07",
+    "promoted_from_work_item": "25e274d5-3cb6-4382-ac9b-87f04b6c2857",
+    "cascade_result": {
+      "created_count": 1,
+      "requeued_count": 0,
+      "skipped_count": 0
+    },
+    "dsr_context_status": {
+      "status": "UNAVAILABLE",
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED",
+      "producer_schema": "qm.dsr-cohort/v1"
+    }
+  },
+  "pacer_build_guard": {
+    "mq5_generated_or_edited": false,
+    "compile_enqueued": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+    "audit_exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "ok": true
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_sha256": {
+    "mq5": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+    "ex5": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+    "setfile": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47"
+  },
+  "capacity": {
+    "cpu_ceiling_percent": 97.0,
+    "pre_enqueue_cpu_percent": [74.43, 73.396, 70.901, 80.764, 83.4],
+    "pre_enqueue_average_percent": 76.578,
+    "pre_enqueue_maximum_percent": 83.4,
+    "post_enqueue_cpu_percent": [63.997, 80.422, 81.935, 67.509, 71.194],
+    "post_enqueue_average_percent": 73.011,
+    "post_enqueue_maximum_percent": 81.935,
+    "post_enqueue_free_physical_memory_gib": 28.959,
+    "paced_launch_gate_max": 1,
+    "cpu_ceiling_hit": false,
+    "dispatch_attempted": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "tester_launched_by_this_action": false
+  }
+}
