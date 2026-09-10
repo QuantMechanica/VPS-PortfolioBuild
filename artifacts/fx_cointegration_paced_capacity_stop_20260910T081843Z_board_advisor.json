@@ -1,0 +1,127 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-capacity-stop/v1",
+  "generated_at_utc": "2026-09-10T08:18:43.831Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "3971571cf78718811b5a18e1132a4aca414fa6a7",
+  "mission_outcome": "STOPPED_NO_NONDUPLICATE_ENQUEUE_AND_PACED_CAPACITY_BINDING",
+  "frontier": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_pair_selected": false,
+    "reason": "Every relationship in the frozen sign-aware scan is already represented by governed EA/Q02 work; another identity would duplicate the frontier."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_12507",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "duplicate_enqueue_performed": false,
+    "priority_rewrite_performed": false,
+    "source_path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "source_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+      "exit_code": 0,
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "hits": []
+    }
+  },
+  "paced_capacity": {
+    "launch_gate_max": 1,
+    "active_claim_count": 3,
+    "capacity_binding": true,
+    "active_claims": [
+      {
+        "id": "5932c2eb-c436-5259-8951-2b5407e96fc2",
+        "ea_id": "QM5_41322",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T4"
+      },
+      {
+        "id": "9b42803c-80bf-5eb8-8838-5f7478e0cc08",
+        "ea_id": "QM5_41321",
+        "phase": "OPT_CENSUS",
+        "symbol": "NDX.DWX",
+        "claimed_by": "T5"
+      },
+      {
+        "id": "38d5b4d7-edb8-584a-b5cd-f0878db57fe8",
+        "ea_id": "QM5_41323",
+        "phase": "OPT_CENSUS",
+        "symbol": "NDX.DWX",
+        "claimed_by": "T8"
+      }
+    ],
+    "cpu_samples_percent": [
+      71.389387,
+      76.038952,
+      84.671391,
+      84.474163,
+      74.904837
+    ],
+    "cpu_average_percent": 78.295746,
+    "cpu_maximum_percent": 84.671391,
+    "hard_cpu_percent_ceiling": 97.0,
+    "hard_cpu_percent_ceiling_hit": false,
+    "available_memory_gib": 43.358,
+    "interpretation": "Whole-host CPU was below the 97 percent hard threshold, but three governed claims already occupied a paced launch budget of one; no additional enqueue or dispatch was permitted."
+  },
+  "actions": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "mq5_written_or_modified": false,
+    "compile_enqueued": false,
+    "q02_enqueued_or_requeued": false,
+    "priority_mutated": false,
+    "dispatch_tick_run": false,
+    "tester_or_terminal_started": false,
+    "reason": "The scan has no uncovered pair, the existing fallback already owns one pending priority Q02 row, and paced capacity is binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
