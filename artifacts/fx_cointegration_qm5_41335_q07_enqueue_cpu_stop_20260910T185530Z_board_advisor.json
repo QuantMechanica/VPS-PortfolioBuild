@@ -1,0 +1,91 @@
+{
+  "schema": "qm.fx-cointegration-fallback-q07-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-10T18:55:30Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "e9c00e1bf4c6b9fb5f63df6362df388e3f7c2929",
+  "scan_frontier": {
+    "covered_relationships": 66,
+    "uncovered_relationships": 0,
+    "evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json"
+  },
+  "preferred_anchors": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "q04": "PASS",
+      "terminal": "Q05_FAIL"
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "terminal": "Q04_FAIL"
+    }
+  },
+  "selected_fallback": {
+    "ea_id": "QM5_41335",
+    "ea_label": "QM5_41335_fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "q06_predecessor": {
+      "id": "20341cb3-786b-4485-9750-73fc6a81dba6",
+      "status": "done",
+      "verdict": "PASS",
+      "profit_factor": 1.21,
+      "trades": 92,
+      "drawdown_percent": 5.54711,
+      "stress_rejection_probability": 0.1,
+      "aggregate_sha256": "47f103fa2c24cf1ca08b2f924ae80f8eb1cdeb969cbbc2859e3a4f361e53f2c7"
+    },
+    "q07_successor": {
+      "id": "25e274d5-3cb6-4382-ac9b-87f04b6c2857",
+      "status_at_verification": "pending",
+      "verdict": null,
+      "claimed_by": null,
+      "attempt_count": 0,
+      "active_holds": [],
+      "priority_track": true,
+      "open_exact_identity_count": 1
+    }
+  },
+  "pacer_guard": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "ok": true,
+    "hit_count": 0,
+    "source": "C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5"
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "hashes": {
+    "mq5_sha256": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+    "ex5_sha256": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+    "setfile_sha256": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47"
+  },
+  "first_q02_signal_only_validator": {
+    "changed": true,
+    "test_result": "21 passed",
+    "qm5_41141_q02_enqueued": false,
+    "remaining_gate": "review_entry_gate_blocked"
+  },
+  "capacity": {
+    "ceiling_percent": 97.0,
+    "pre_enqueue_cpu_percent": [64.267, 58.989, 57.814, 69.062, 69.775],
+    "pre_enqueue_average_percent": 63.981,
+    "pre_enqueue_maximum_percent": 69.775,
+    "post_enqueue_cpu_percent": [99.707, 99.805, 99.024, 99.805, 98.731],
+    "post_enqueue_average_percent": 99.414,
+    "post_enqueue_maximum_percent": 99.805,
+    "free_physical_memory_gib": 42.214,
+    "ceiling_hit": true,
+    "dispatch_attempted": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "tester_launched_by_this_action": false
+  }
+}
