@@ -1,0 +1,29 @@
+{
+  "schema": "qm.compile-status-evidence/v1",
+  "captured_at_utc": "2026-09-10T13:19:11+00:00",
+  "ea_id": "QM5_41420",
+  "ea_label": "QM5_41420_xng-shoulder-w2agree",
+  "work_item_id": "a464663b-321c-45c1-87f0-eff847ca6ae2",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 3,
+  "failure_classes": [],
+  "setfile_count": 1,
+  "mq5_sha256": "53d82766aa5146c16782308806fec280e3d0c50b5b6e68b3ca41b6c88066f040",
+  "ex5_sha256": "679e5cd7d74f9b6a0d9312c8f9699eea8a64564aa171ac07cbac17fa09d70157",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41420_xng-shoulder-w2agree/QM5_41420_xng-shoulder-w2agree.ex5",
+  "compile_evidence_path": "D:/QM/reports/work_items/a464663b-321c-45c1-87f0-eff847ca6ae2/QM5_41420/COMPILE_EA/compile_evidence.json",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_131831.json",
+  "framework_input_pin_audit": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "reference_tests": "14/14 PASS",
+  "note": "Build-check warnings are optional card inferences only; no failures. Compiler reported zero errors and warnings."
+}

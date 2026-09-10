@@ -106,3 +106,4 @@ operation is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-10 | Initial build from approved card | OWNER pacer mission |
+| v1-q01 | 2026-09-10 | Governed compile and strict build check PASS (`a464663b-321c-45c1-87f0-eff847ca6ae2`) | OWNER pacer mission |

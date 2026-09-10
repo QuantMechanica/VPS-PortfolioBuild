@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "53d82766aa5146c16782308806fec280e3d0c50b5b6e68b3ca41b6c88066f040",
+      "ea_id": "QM5_41420",
+      "ea_label": "QM5_41420_xng-shoulder-w2agree",
+      "expected_mq5_sha256": "53d82766aa5146c16782308806fec280e3d0c50b5b6e68b3ca41b6c88066f040",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41420_xng-shoulder-w2agree\\QM5_41420_xng-shoulder-w2agree.mq5",
+      "work_item_id": "a464663b-321c-45c1-87f0-eff847ca6ae2"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "a464663b-321c-45c1-87f0-eff847ca6ae2",
+  "work_item_id_selectors": [
+    "a464663b-321c-45c1-87f0-eff847ca6ae2"
+  ]
+}
