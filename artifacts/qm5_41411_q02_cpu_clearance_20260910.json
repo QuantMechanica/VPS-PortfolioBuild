@@ -1,0 +1,15 @@
+{
+  "schema": "qm.q02-cpu-clearance/v1",
+  "ea_id": "QM5_41411",
+  "ea_label": "QM5_41411_wti-walt3-cont",
+  "compile_work_item_id": "8f1fe766-711b-4aeb-893f-ba8bac7b1130",
+  "sampled_at_utc": "2026-09-10T04:06:21.7136766Z",
+  "cpu_samples_pct": [77.2, 82.9, 89.3, 78.8, 88.5],
+  "ceiling_pct": 97.0,
+  "comparison": "every sample must be strictly below ceiling",
+  "all_strictly_below_ceiling": true,
+  "terminal64_count": 6,
+  "metatester64_count": 3,
+  "q02_dry_run_eligible": true,
+  "decision": "Q02_APPLY_PERMITTED"
+}

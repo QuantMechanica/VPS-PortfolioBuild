@@ -1,0 +1,13 @@
+{
+  "schema": "qm.compile-status-receipt/v1",
+  "ea_id": "QM5_41411",
+  "ea_label": "QM5_41411_wti-walt3-cont",
+  "work_item_id": "8f1fe766-711b-4aeb-893f-ba8bac7b1130",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "build_check_result": "PASS",
+  "setfile_count": 1,
+  "evidence_path": "D:/QM/reports/work_items/8f1fe766-711b-4aeb-893f-ba8bac7b1130/QM5_41411/COMPILE_EA/compile_evidence.json",
+  "ex5_sha256": "8cb7c62d55a3bd5438621fa9335284b595dbbb0a24bc93dfa9ed1653baeee9f9",
+  "failure_classes": []
+}

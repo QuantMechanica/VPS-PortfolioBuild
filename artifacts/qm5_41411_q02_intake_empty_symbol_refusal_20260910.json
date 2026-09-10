@@ -1,0 +1,11 @@
+{
+  "schema": "qm.first-q02-intake/v1",
+  "compile_work_item_id": "8f1fe766-711b-4aeb-893f-ba8bac7b1130",
+  "ea_id": "QM5_41411",
+  "dry_run": true,
+  "eligible": false,
+  "would_enqueue": false,
+  "reason": "empty_strategy_values",
+  "empty_strategy_parameter_names": ["strategy_symbol"],
+  "resolution": "Restore the card-bound XTIUSD.DWX string after compile-time default normalization, matching the established governed weekly-WTI preset workflow."
+}

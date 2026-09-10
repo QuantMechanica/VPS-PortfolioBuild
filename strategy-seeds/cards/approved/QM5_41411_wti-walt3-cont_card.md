@@ -59,9 +59,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED_PENDING
 force_build: true
 review_focus: "Falsify a strict three-completed-week WTI sign-alternation continuation outside the certified book. Verify exact consecutive weekly packages, open-to-close endpoints, strict alternation, newest-sign direction, durable weekly attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -222,6 +222,8 @@ PACER input-pin audit.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-10 | initial WTI three-week alternation continuation card | G0 | APPROVED; build pending |
+| v1-build | 2026-09-10 | governed source build and compile | Q01 | COMPILE_OK; pin audit PASS with zero findings; 10/10 reference tests PASS |
+| v1-q02 | 2026-09-10 | first fixed-risk intake | Q02 | ENQUEUED_PENDING after dry-run eligibility and five CPU samples below 97% |
 
 ## Safety Boundary
 

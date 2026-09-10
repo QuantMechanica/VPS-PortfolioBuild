@@ -1,0 +1,18 @@
+{
+  "schema": "qm.first-q02-intake/v1",
+  "compile_work_item_id": "8f1fe766-711b-4aeb-893f-ba8bac7b1130",
+  "work_item_id": "a52839d0-9eb8-48b4-a199-5949c1959c7e",
+  "ea_id": "QM5_41411",
+  "applied": true,
+  "dry_run": false,
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "target_symbols": ["XTIUSD.DWX"],
+  "setfile_count": 1,
+  "setfile_sha256": "1ef1f1449ef41fc0d20c6ddf2b4a89b17090f4e0102ab46d478c20beba48173c",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "ex5_sha256": "8cb7c62d55a3bd5438621fa9335284b595dbbb0a24bc93dfa9ed1653baeee9f9",
+  "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/8f1fe766-711b-4aeb-893f-ba8bac7b1130_a52839d0-9eb8-48b4-a199-5949c1959c7e.json",
+  "receipt_sha256": "e9f2c489d318e46d2b6465fd88de258848656b3b28f0d7b30c6f5aaf3b0bacc5"
+}
