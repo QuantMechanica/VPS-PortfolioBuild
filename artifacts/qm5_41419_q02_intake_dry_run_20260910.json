@@ -1,0 +1,42 @@
+{
+  "applied": false,
+  "canary": {
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41419_wti-wstreak2-cont\\sets\\QM5_41419_wti-wstreak2-cont_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "a7a149ae0ad9b6d150711707e7705d3eff02719eb6b5aa3cded64a0518be93a0",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1"
+  },
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\5a92a23f-e31e-4a5e-ac5f-8d2d0ca1ae85\\QM5_41419\\COMPILE_EA\\compile_evidence.json",
+  "compile_work_item_id": "5a92a23f-e31e-4a5e-ac5f-8d2d0ca1ae85",
+  "deferred": [],
+  "dry_run": true,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41419_wti-wstreak2-cont",
+  "ea_id": "QM5_41419",
+  "eligible": true,
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41419_wti-wstreak2-cont\\QM5_41419_wti-wstreak2-cont.ex5",
+  "ex5_sha256": "177d9816939f8846627665253abc9f3a9e68dca4a6dde9e346f68da3b34c2475",
+  "magic": {
+    "active_row_count": 1,
+    "issues": [],
+    "ok": true,
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+    "target_symbols": [
+      "XTIUSD.DWX"
+    ]
+  },
+  "priority_boost": false,
+  "reason": "ELIGIBLE",
+  "schema": "qm.first-q02-intake/v1",
+  "setfile_checks": [
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41419_wti-wstreak2-cont\\sets\\QM5_41419_wti-wstreak2-cont_XTIUSD.DWX_D1_backtest.set",
+      "sha256": "a7a149ae0ad9b6d150711707e7705d3eff02719eb6b5aa3cded64a0518be93a0"
+    }
+  ],
+  "target_symbols": [
+    "XTIUSD.DWX"
+  ],
+  "would_enqueue": true
+}
