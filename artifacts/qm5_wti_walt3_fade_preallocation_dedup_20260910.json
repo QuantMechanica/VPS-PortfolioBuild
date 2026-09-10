@@ -1,0 +1,30 @@
+{
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "tool_version": "2.0.0",
+  "generated_at_utc": "2026-09-10T04:15:00+00:00",
+  "candidate": {
+    "slug": "wti-walt3-fade",
+    "strategy_id": "YANG-WTI-WALT3-FADE-20260910_S01",
+    "author": "Chao Yang; A. Goncu; Athanasios A. Pantelous; OpenAI Codex",
+    "mechanic": "normalized-weekly-wti-three-consecutive-completed-week-open-to-close-log-returns-strict-sign-alternation-newest-week-sign-reversal-one-week-hold"
+  },
+  "sources": [
+    {"label": "ea_id_registry", "checked_root": "C:/QM/repo/framework/registry/ea_id_registry.csv", "count": 4892, "status": "OK", "detail": null},
+    {"label": "strategy_cards", "checked_root": "C:/QM/repo/strategy-seeds/cards", "count": 1502, "status": "OK", "detail": null},
+    {"label": "strategy_wiki", "checked_root": "G:/My Drive/09 Strategy Wiki/strategies", "count": null, "status": "MISSING_ROOT", "detail": null}
+  ],
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_41411_wti-walt3-cont_card.md",
+      "score": 0.93,
+      "slug": "wti-walt3-cont",
+      "strategy_id": "KWON-WTI-WALT3-CONT-20260910_S01",
+      "source": "card"
+    }
+  ],
+  "manual_resolution": "DISTINCT_DIRECTION_AND_SOURCE_LINEAGE: QM5_41411 follows the newest sign under peer-reviewed weekly-momentum lineage; this candidate reverses the newest sign under academic commodity-reversal lineage. Direction is load-bearing and requires a separate identity.",
+  "error": "MISSING_ROOT:strategy_wiki:G:/My Drive/09 Strategy Wiki/strategies",
+  "exit_code": 3,
+  "verdict": "FUZZY_MATCH_RESOLVED_DISTINCT"
+}
