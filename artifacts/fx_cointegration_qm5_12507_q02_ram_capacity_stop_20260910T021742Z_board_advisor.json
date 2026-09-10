@@ -1,0 +1,165 @@
+{
+  "schema_version": "qm.fx-cointegration-q02-ram-capacity-stop/v1",
+  "generated_at_utc": "2026-09-10T02:17:42.302Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "ef53614e354a75269111886f527d336f1ea262aa",
+  "mission_outcome": "STOPPED_EXISTING_Q02_ALREADY_QUEUED_AND_RAM_ADMISSION_BLOCKED",
+  "frontier": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_pair_selected": false,
+    "reason": "Every relationship in the frozen sign-aware scan already has governed coverage; another Card or EA would duplicate an existing sleeve."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "active_hold_count": 0,
+    "priority_track": true,
+    "priority_dry_run_reason": "already_priority_track",
+    "duplicate_enqueue_performed": false,
+    "priority_rewrite_performed": false,
+    "source_path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "source_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5\"",
+      "exit_code": 0,
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "hits": []
+    },
+    "symbol_scope": {
+      "verdict": "BASKET_OK",
+      "violation_count": 0,
+      "basket_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NDX.DWX",
+        "WS30.DWX"
+      ]
+    }
+  },
+  "capacity": {
+    "launch_gate_max": 1,
+    "active_claim_count": 3,
+    "active_claims": [
+      {
+        "id": "8f9a465b-ff54-591c-8cc9-9484d8c31652",
+        "ea_id": "QM5_41398",
+        "phase": "OPT_CENSUS",
+        "symbol": "USDJPY.DWX",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "984a0233-0848-5121-b258-0d87b4c0b5dc",
+        "ea_id": "QM5_41324",
+        "phase": "OPT_CENSUS",
+        "symbol": "USDJPY.DWX",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "c1e261b9-6684-54b5-adc0-57e71be69e2a",
+        "ea_id": "QM5_41345",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T7"
+      }
+    ],
+    "cpu_ceiling_percent": 97.0,
+    "initial_cpu_samples_percent": [
+      89.063967,
+      89.967654,
+      91.313897,
+      85.060252,
+      86.726852
+    ],
+    "initial_cpu_average_percent": 88.426524,
+    "initial_cpu_maximum_percent": 91.313897,
+    "final_cpu_samples_percent": [
+      77.552888,
+      75.832381,
+      79.592091,
+      79.992692,
+      79.989971
+    ],
+    "final_cpu_average_percent": 78.592005,
+    "final_cpu_maximum_percent": 79.992692,
+    "hard_cpu_percent_ceiling_hit": false,
+    "available_memory_gib": 43.941,
+    "total_memory_gib": 63.12,
+    "ram_admission": {
+      "commit_class": "heavy_or_unknown_multisymbol",
+      "reservation_gib": 44.0,
+      "post_reservation_floor_gib": 14.0,
+      "normal_required_available_gib": 58.0,
+      "binding": true
+    },
+    "interpretation": "CPU was below the hard ceiling, but free physical memory was below the governed 58 GiB admission requirement while three optimization claims were active."
+  },
+  "pacer_guard": {
+    "mq5_generated_or_edited": false,
+    "pre_compile_pin_audit_required": false,
+    "read_only_pin_audit_passed": true,
+    "compile_enqueue_attempted": false,
+    "refusal_triggered": false,
+    "reason": "No source write; the existing authenticated binary and Q02 lineage were preserved."
+  },
+  "actions": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "mq5_written_or_modified": false,
+    "compile_enqueued": false,
+    "q02_enqueued_or_requeued": false,
+    "priority_mutated": false,
+    "dispatch_tick_run": false,
+    "tester_or_terminal_started": false,
+    "reason": "The only non-duplicate fallback already owns a pending priority Q02 row, and the RAM admission gate is currently binding."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "resume_contract": "Do not append another Q02 row. Let the existing priority work item advance through normal worker claim order after the 58 GiB RAM admission condition and paced launch gate clear."
+}
