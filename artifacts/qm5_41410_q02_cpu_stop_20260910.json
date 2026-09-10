@@ -1,0 +1,50 @@
+{
+  "schema": "qm.q02-cpu-stop/v1",
+  "recorded_at_local": "2026-09-10T05:03:00+02:00",
+  "ea_id": "QM5_41410",
+  "ea_label": "QM5_41410_xauxag-walt3-rv",
+  "logical_symbol": "QM5_41410_XAU_XAG_WALT3_RV_D1",
+  "timeframe": "D1",
+  "compile": {
+    "work_item_id": "13f0c2ce-f938-42b5-928c-eb1672b528b5",
+    "status": "done",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "ex5_sha256": "244a5e72b4167718f20581c95a66d71da686ee48469d8e4f31a3d6e094e62c3a",
+    "evidence_path": "D:/QM/reports/work_items/13f0c2ce-f938-42b5-928c-eb1672b528b5/QM5_41410/COMPILE_EA/compile_evidence.json"
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41410_xauxag-walt3-rv/QM5_41410_xauxag-walt3-rv.mq5\"",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "evidence": "artifacts/qm5_41410_framework_input_pin_audit_20260910.json"
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41410_xauxag-walt3-rv/sets/QM5_41410_xauxag-walt3-rv_QM5_41410_XAU_XAG_WALT3_RV_D1_D1_backtest.set",
+    "setfile_sha256": "3a8ef0775ee8e2ef138caa873dc5a61838d1360a2782d1693911ba79c2a35131",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "cpu_guard": {
+    "sample_interval_seconds": 1,
+    "samples_percent": [72.0, 100.0, 97.0, 94.0, 94.0],
+    "max_percent": 100.0,
+    "average_percent": 91.4,
+    "exclusive_ceiling_percent": 97.0,
+    "pass": false,
+    "terminal_or_tester_process_count": 12
+  },
+  "q02_apply": {
+    "attempted": false,
+    "work_item_created": false
+  },
+  "decision": "STOP_NO_Q02_APPLY",
+  "reason": "The exclusive 97 percent backtest CPU ceiling was reached after an eligible logical-basket intake dry run."
+}

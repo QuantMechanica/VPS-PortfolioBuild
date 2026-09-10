@@ -56,9 +56,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a strict three-completed-week XAU/XAG relative-sign alternation fade outside the certified directional XAU/SP500/NDX/XNG book. Verify four consecutive synchronized completed-week endpoints, exact strict alternation, newest-winner fade, durable weekly attempt, aggregate fixed risk, atomic package repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -214,3 +214,5 @@ gate, portfolio admission, or correlation waiver is authorized.
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
 | v1 | 2026-09-10 | initial strict XAU/XAG three-week alternation card | G0 | APPROVED; build pending |
+| v1-build | 2026-09-10 | governed source build and compile | Q01 | COMPILE_OK; pin audit PASS with zero findings; 6/6 reference tests PASS |
+| v1-q02-hold | 2026-09-10 | first logical-basket intake | Q02 | dry run ELIGIBLE; apply withheld at CPU ceiling (samples 72,100,97,94,94) |
