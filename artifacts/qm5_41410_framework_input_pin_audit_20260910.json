@@ -1,0 +1,12 @@
+{
+  "schema": "qm.framework-input-pin-audit-receipt/v1",
+  "ea_id": "QM5_41410",
+  "source": "C:/QM/repo/framework/EAs/QM5_41410_xauxag-walt3-rv/QM5_41410_xauxag-walt3-rv.mq5",
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41410_xauxag-walt3-rv/QM5_41410_xauxag-walt3-rv.mq5\"",
+  "exit_code": 0,
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": []
+}

@@ -1,0 +1,19 @@
+{
+  "logical_symbol": "QM5_41410_XAU_XAG_WALT3_RV_D1",
+  "host_symbol": "XAUUSD.DWX",
+  "host_timeframe": "D1",
+  "tester_currency": "USD",
+  "tester_deposit": 100000,
+  "basket_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "traded_symbols": [
+    "XAUUSD.DWX",
+    "XAGUSD.DWX"
+  ],
+  "notes": [
+    "One logical two-leg XAU/XAG package. Q02 evaluates combined package PnL, paired costs, density, and later Q09 correlation; neither leg is standalone.",
+    "The EA requires exactly three strict alternating XAU-minus-XAG completed-week relative-return signs, fades the newest relative winner, targets equal absolute USD notionals, and caps aggregate frozen-stop risk at one RISK_FIXED budget."
+  ]
+}
