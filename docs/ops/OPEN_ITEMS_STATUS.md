@@ -1,5 +1,18 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 10.09., 01:31Z — FX-Cointegration am bindenden CPU-Hard-Stop:**
+> Der sign-aware 66-Paar-Scan bleibt vollständig mechanisiert; `QM5_12532` und
+> `QM5_12533` besitzen Q02-PASS und keine ONINIT-/NO_HISTORY-Blockade. Der
+> konkrete nicht-duplizierende Fallback `QM5_12507_pair-coint-z`
+> (EURUSD/GBPUSD H1) besitzt weiterhin genau eine pending, unclaimed,
+> priority-tracked Q02-Zeile `547c4fd3`; deshalb kein zweites Enqueue oder
+> Priority-Rewrite. Der read-only Source-Pin-Audit ergab exit 0 und null
+> `EA_FRAMEWORK_INPUT_PINNED`-Treffer. Fünf CPU-Samples lagen bei Ø 95,746073%
+> und max. 98,550951% und überschritten damit die 97%-Kappe; fünf Factory-Zeilen
+> waren aktiv bei `launch_gate_max=1`. Gemäß Stop-Regel kein Build, Compile,
+> Queue-/Dispatch-, Portfolio- oder Live-Eingriff. Evidenz:
+> `artifacts/fx_cointegration_qm5_12507_q02_hard_cpu_stop_20260910T013150Z_board_advisor.json`.
+
 > **Nachtrag 09.09., 18:20Z — FX-cointegration Q02 queue guard:** Der
 > sign-aware 66-Paar-Scan bleibt vollständig mechanisiert; `QM5_12532`/`12533`
 > sind längst über Q02 hinaus. Der konkrete Fallback `QM5_12507_pair-coint-z`

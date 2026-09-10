@@ -1,0 +1,140 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-cpu-stop/v1",
+  "generated_at_utc": "2026-09-10T01:31:50.839Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "61e6167c6a3e0f41acb7166b745b41e82710ecb7",
+  "mission_outcome": "STOPPED_EXISTING_Q02_ALREADY_QUEUED_AND_HARD_CPU_CEILING_HIT",
+  "frontier": {
+    "scan": "framework/scripts/mt5_diagnostics/analyze_cross_asset_v3.py --include-negative-hedges",
+    "durable_coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_pair_selected": false,
+    "reason": "Every relationship in the frozen sign-aware scan already has governed coverage; another Card or EA would duplicate an existing sleeve."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_12507",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "duplicate_enqueue_performed": false,
+    "priority_rewrite_performed": false,
+    "source_path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "source_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+      "exit_code": 0,
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "hits": []
+    }
+  },
+  "capacity": {
+    "launch_gate_max": 1,
+    "active_claim_count": 5,
+    "active_claims": [
+      {
+        "id": "717b7088-4c25-4144-93c6-aefd03dc1e6d",
+        "ea_id": "QM5_38003",
+        "phase": "Q04",
+        "symbol": "AUDUSD.DWX",
+        "claimed_by": "T9"
+      },
+      {
+        "id": "b08aaf4c-2267-5cb7-85f1-a8a56aa4d998",
+        "ea_id": "QM5_41302",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T8"
+      },
+      {
+        "id": "cfcd0319-98ab-54f2-90ba-c610a9260ae8",
+        "ea_id": "QM5_41398",
+        "phase": "OPT_CENSUS",
+        "symbol": "USDJPY.DWX",
+        "claimed_by": "T6"
+      },
+      {
+        "id": "f5a5ee84-977c-552e-927b-8b19717ae1c6",
+        "ea_id": "QM5_41322",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T10"
+      },
+      {
+        "id": "e71910df-3172-577d-83ae-f10f2d9f5558",
+        "ea_id": "QM5_41324",
+        "phase": "OPT_CENSUS",
+        "symbol": "USDJPY.DWX",
+        "claimed_by": "T4"
+      }
+    ],
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      96.5840761383931,
+      98.5509510113538,
+      90.72354126358,
+      95.5082546827864,
+      97.3635418002992
+    ],
+    "cpu_average_percent": 95.7460729792825,
+    "cpu_maximum_percent": 98.5509510113538,
+    "hard_cpu_percent_ceiling_hit": true,
+    "available_memory_gib": 45.119,
+    "interpretation": "The five-sample host window crossed the 97 percent hard CPU ceiling while five governed claims were active; the requested stop condition bound before any queue or launch mutation."
+  },
+  "actions": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "mq5_written_or_modified": false,
+    "compile_enqueued": false,
+    "q02_enqueued_or_requeued": false,
+    "priority_mutated": false,
+    "dispatch_tick_run": false,
+    "tester_or_terminal_started": false,
+    "reason": "The only non-duplicate fallback already owns a pending priority Q02 row, and current host CPU crossed the binding ceiling."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
