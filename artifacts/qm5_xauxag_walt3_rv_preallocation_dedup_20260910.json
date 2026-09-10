@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; CME Group; OpenAI Codex",
+    "mechanic": "normalized-week-boundary-xau-xag-four-synchronized-completed-week-endpoints-three-adjacent-relative-log-returns-strict-sign-alternation-newest-relative-winner-fade-equal-notional-one-week-basket",
+    "slug": "xauxag-walt3-rv",
+    "strategy_id": "SCHWEIKERT-CME-XAUXAG-WALT3-RV-20260910_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T02:48:18+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41373_xtixng-walt3-rv_card.md",
+      "score": 0.95,
+      "slug": "xtixng-walt3-rv",
+      "source": "card",
+      "strategy_id": "AI-CODEX-XTIXNG-WALT3-RV-20260907_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41066_xauxag-wdecay-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xauxag-wdecay-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-WDECAY-RV-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41075_xauxag-wovershoot-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xauxag-wovershoot-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-WOVERSHOOT-RV-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41076_xauxag-waccel-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xauxag-waccel-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-WACCEL-RV-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41077_xauxag-wretr-rv_card.md",
+      "score": 0.6666666666666666,
+      "slug": "xauxag-wretr-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CME-XAUXAG-WRETR-RV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4890,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1500,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
