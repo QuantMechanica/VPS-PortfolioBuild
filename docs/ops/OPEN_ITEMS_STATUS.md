@@ -1,5 +1,26 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 11.09., ~01:35Z (Orchestrierungszyklus) — `3032534e` DUKASCOPY: non-FX
+> price-scale-Ticket `2f717775` abgenommen.** Der gebundene T1-Governed-Work-Item
+> `ed393d48` war seit dem letzten Checkpoint auf `done`/`PASS` gelaufen (Receipt
+> `D:\QM\reports\dukascopy\splice\20260909_185632\probe_receipt.json`,
+> `signed_archive_unchanged=true`); ein Vorzyklus hatte die 9 Zeilen bereits in
+> `docs/ops/evidence/2026-09-09_dukascopy_nonfx_price_scale_probe.md` gebunden und
+> committed (`36d31d82cc`), aber `2f717775` stand noch auf `REVIEW`. Eigene
+> Verifikation: `price_scale.csv` lädt fehlerfrei durch
+> `tools.dukascopy.common.load_nonfx_instrument_metadata` (9/9 Symbole, Schema
+> exakt). `close-review 2f717775 --state APPROVED` ausgeführt — alle 5
+> Akzeptanzkriterien erfüllt. `bb814520`/`dfc60103`: `QM5_41394`
+> SP500.DWX/XAUUSD.DWX Q02 weiterhin unverändert `pending`/unclaimed seit
+> `2026-09-09T10:52:59Z` (~39h) — keine Aktion, außerhalb der Aufgabenautorität.
+> Downloader (PID 18208) weiter `RUNNING`, kein neuer Kollisionsvorfall, kein
+> Prozess-Pileup dieses Mal (1 headless + 2 interaktive `claude.exe`). Kein
+> `update-task` auf `3032534e` selbst — die übrigen 3 Akzeptanzkriterien
+> (Abgleichs-CSV/Report, `verify_import.py`-PASS, monatlicher Refresh-Task)
+> stehen noch aus und erfordern neue Codex-Tickets für P2/P3, bewusst nicht in
+> diesem Zyklus verfasst (Scope/Sorgfalt), sondern als nächster Schritt markiert.
+> Evidenz: `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`.
+
 > **Nachtrag 10.09., ~22:55Z (Orchestrierungszyklus) — Dukascopy-Fix abgenommen, Downloader neu gestartet, dabei Kollision mit paralleler Session entdeckt und ohne Datenschaden aufgelöst:** Codex-Ticket `ff5cc3b9` (raw_root-Containment-Fix, Commit `caa9fc6f4c`) per `close-review --state APPROVED` abgenommen (17 neue/geänderte Zeilen geprüft: `raw_root` wird jetzt einmalig vor dem Vergleich aufgelöst; neuer Test für den harmlosen Extended-Prefix-Fall + bestehender Test für echten Escape bestehen beide; 23/23 fokussierte Tests grün, kein Eingriff in Retry/Backoff/Manifest-Schema). Anschließend Produktivdownloader (`20260909T191800Z_hardened`, resumable über `hour_ledger.jsonl`) neu gestartet — dabei entdeckt: eine **parallele** Orchestrierungssession hatte denselben Neustart binnen derselben Minute bereits ausgeführt (PID 13484 vs. eigener erster Versuch PID 9288); beide Prozesse kollidierten auf der fest benannten `progress.json.tmp` (`tools/dukascopy/common.py`) und stürzten mit `PermissionError`/`WinError 5` ab — dieselbe Fehlerklasse wie der gerade gefixte raw_root-Bug, nur anderer Auslöser. Verwaiste `.tmp`-Datei entfernt, einmal neu gestartet (PID 18208), über zwei Folgeprüfungen als stabil laufend bestätigt (`completed` 4239→5246→13745, `errors=0`). Volle Prozessliste (`Get-CimInstance Win32_Process`) zeigt danach genau **einen** `download_bi5.py`-Prozess (PID 18208); PID 13484 ist verschwunden (vermutlich Spiegel-Kollision). Kein Schaden: `hour_ledger.jsonl` unverändert bei exakt 66.458 Zeilen (0 defekt), jüngster Eintrag weiterhin der ursprüngliche Absturz-Zeitstempel — keiner der kollidierenden Prozesse hatte schon einen neuen Ledger-Eintrag geschrieben, nur die nicht-autoritative `progress.json` war betroffen. Erweitert das bereits mehrfach geflaggte 15-Minuten-Scheduler-Pileup-Muster von doppelten *Lesevorgängen* auf doppelte *Aktionen* gegen eine gemeinsame externe Ressource — nicht selbst behoben (Cadence-Änderung liegt außerhalb dieser Aufgabenautorität), erneut als offene OWNER-Empfehlung markiert. `bb814520`/`dfc60103`: `QM5_41394` SP500.DWX/XAUUSD.DWX Q02 weiterhin unverändert `pending`/unclaimed seit `2026-09-09T10:52:59Z`. Evidenz: `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md` (neuer Abschnitt "Checked 2026-09-10T22:49-22:53Z").
 
 > **Nachtrag 10.09., 19:25Z — neuer WTI-Refinery-Ramp-Sleeve bis Q02:** Der

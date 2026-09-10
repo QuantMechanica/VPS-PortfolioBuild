@@ -585,3 +585,41 @@ launch incident, not just duplicate reads.
 QM5_41394 SP500/XAUUSD Q02 rows unchanged (same gate as always, see above). No ticket,
 rebuild, release, or verdict change beyond the `ff5cc3b9` close-review and the downloader
 restart already covered. Task `3032534e` remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T~00:35Z (headless orchestration cycle)
+
+`bb814520`/`dfc60103` gate unchanged: `QM5_41394` SP500.DWX/XAUUSD.DWX Q02 rows
+still `status=pending`, `claimed_by=NULL`, `updated_at=2026-09-09T10:52:59Z`
+(~39h static, direct sqlite read). No action, outside authority.
+
+Genuinely new for `3032534e`: the governed T1 tick-tail/non-FX-metadata probe
+work item `ed393d48` (blocking Codex ticket `2f717775`) completed with
+`status=PASS` at `2026-09-10T03:33:46Z` — `signed_archive_unchanged=true`, 37-row
+splice CSV (`tick_tail.csv`) and 9-row non-FX `price_scale.csv` both bound. A
+prior cycle already wrote and committed the authenticated receipt into
+`docs/ops/evidence/2026-09-09_dukascopy_nonfx_price_scale_probe.md`
+(`36d31d82cc`) but left `2f717775` sitting in `REVIEW` rather than closing it.
+This cycle independently re-verified the receipt by loading
+`price_scale.csv` through `tools.dukascopy.common.load_nonfx_instrument_metadata`
+(no exceptions, all 9 governed symbols present, schema exact) before closing:
+`agent_router.py close-review 2f717775 --state APPROVED` — all 5 acceptance
+criteria met (governed diagnostic pattern, exact 9-row receipted CSV sourced
+only from `SymbolInfoInteger`/`SymbolInfoDouble` on T1, `convert_to_import.py`/
+`reconcile_overlap.py` wiring committed at `97c1ea8d50` with 30/30 tests green,
+no production download/import/Factory/T_Live action).
+
+This satisfies acceptance criterion 1 of `3032534e` itself ("splice CSV with 37
+exact last-tick timestamps produced by a read-only T1 probe, no history
+mutation") via the same `ed393d48` receipt (`tick_tail.csv`, 37 rows,
+`signed_archive_unchanged=true`). The remaining 3 acceptance criteria (per-symbol
+reconciliation CSV + summary report with OWNER-visible fail list; `verify_import.py`
+PASS per imported symbol; monthly refresh task + >45-day WARN health check) are
+still open and require new Codex tickets for the P2 converter and P3
+reconciliation harness (per `docs/ops/DUKASCOPY_BACKFILL_PLAN_2026-08-29.md`).
+Deliberately not drafted in this cycle — designing the reconciliation
+pass/fail criteria (M1 OHLC p95 <= 1.5x typical spread, session coverage >= 99%,
+DST 0-second check) deserves a dedicated pass rather than being rushed at the
+tail of a routine health-check cycle. Downloader (PID 18208) still `RUNNING`,
+no new collision, no process pileup this cycle (1 headless + 2 interactive
+`claude.exe`). No `update-task` call on `3032534e` itself (task stays
+`IN_PROGRESS`; 3 of 4 acceptance criteria remain open).
