@@ -1,0 +1,29 @@
+{
+  "schema": "qm.compile-status-evidence/v1",
+  "captured_at_utc": "2026-09-10T08:49:15+00:00",
+  "ea_id": "QM5_41416",
+  "ea_label": "QM5_41416_xauxag-wrelvote-flip-fade",
+  "work_item_id": "74eeb745-6936-4afe-abce-ed85595bf4c6",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_failures": 0,
+  "build_check_warnings": 3,
+  "failure_classes": [],
+  "setfile_count": 3,
+  "mq5_sha256": "e4bc7ff5f2418b7f5dea3b42c20eb1bde6162fcfa282725f586f06e739fead4e",
+  "ex5_sha256": "795eea75dfd14a2c996ec738f756c138f6dcd9b473b45414c4a1a52ccdafea0f",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41416_xauxag-wrelvote-flip-fade/QM5_41416_xauxag-wrelvote-flip-fade.ex5",
+  "compile_evidence_path": "D:/QM/reports/work_items/74eeb745-6936-4afe-abce-ed85595bf4c6/QM5_41416/COMPILE_EA/compile_evidence.json",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_084756.json",
+  "framework_input_pin_audit": {
+    "exit_code": 0,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "reference_tests": "6/6 PASS",
+  "note": "Build-check warnings concern optional card inference only; no failures. Symbol-literal scan found zero source occurrences and basket symbol scope returned BASKET_OK."
+}

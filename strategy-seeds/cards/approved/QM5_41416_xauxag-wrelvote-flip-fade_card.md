@@ -56,9 +56,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: READY_NOT_ENQUEUED
+q01_build_report: D:/QM/reports/work_items/74eeb745-6936-4afe-abce-ed85595bf4c6/QM5_41416/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a fresh overlapping-three-week XAU/XAG relative-majority flip reversion outside the certified directional XAU/SP500/NDX/XNG book. Verify five consecutive synchronized completed-week endpoints, exact four strict signs, overlapping majority windows, strict majority flip, newest-majority reversion, durable weekly attempt, aggregate fixed risk, atomic package repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -236,5 +237,5 @@ gate, portfolio admission, or correlation waiver is authorized.
 
 | version | date | rebuild reason | phase reached | verdict |
 |---|---|---|---|---|
-| v1 | 2026-09-10 | initial XAU/XAG overlapping relative-vote flip reversion card | G0 | APPROVED; build pending |
-
+| v1 | 2026-09-10 | initial XAU/XAG overlapping relative-vote flip reversion card | G0 | APPROVED |
+| v1-build | 2026-09-10 | governed compile and build check | Q01 | COMPILE_OK; 0 compiler errors/warnings; build-check PASS; pin audit zero findings; 6/6 tests PASS |
