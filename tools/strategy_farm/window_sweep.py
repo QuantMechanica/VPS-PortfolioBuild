@@ -31,6 +31,8 @@ EVIDENCE=ROOT/'docs/ops/evidence'
 YEARS=list(range(2019,2026))
 NAMESPACE=uuid.UUID('f45f154c-65d5-5e0f-96c8-505bc44bbc39')
 TASK='49af4f08-0d72-460d-959e-7c9a32db4650'
+QUEUE_OWNER_PHASE='WINDOW_SWEEP_OWNER'
+QUEUE_OWNER_EVENT='window_sweep_queue_order_set'
 class SweepError(ValueError): pass
 def digest(p): return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def canonical(obj): return (json.dumps(obj,sort_keys=True,separators=(',',':'),ensure_ascii=True)+'\n').encode()
@@ -92,6 +94,90 @@ def render(base,cell):
     before,after=inputs(base),inputs(result)
     if set(before)!=set(after) or any(before[k]!=after[k] for k in before if k not in replacements):raise SweepError('unrelated input drift')
     return result.replace('\r\n','\n')
+
+def queue_owner_id(): return str(uuid.uuid5(NAMESPACE,f'{PROGRAM}:queue-owner'))
+def queue_owner_payload(queue_order_at=None):
+    payload={'schema':SCHEMA,'program_id':PROGRAM,'queue_owner':True,'source_agent_task_id':TASK,
+             'owner_contract':'qm.window-sweep.queue-owner/v1','symbol':'USDJPY.DWX'}
+    if queue_order_at is not None:payload['queue_order_at']=queue_order_at
+    return payload
+def _owner(conn):
+    row=conn.execute('SELECT * FROM work_items WHERE id=?',(queue_owner_id(),)).fetchone()
+    if row is None:raise SweepError('queue owner is not registered; run queue-owner --apply first')
+    payload=json.loads(row['payload_json'])
+    expected=queue_owner_payload();actual={k:v for k,v in payload.items() if k!='queue_order_at'}
+    if (row['phase']!=QUEUE_OWNER_PHASE or row['ea_id']!='QM5_41398' or row['symbol']!='USDJPY.DWX'
+        or row['status']!='done' or row['verdict']!='DECLARED' or row['claimed_by'] is not None
+        or actual!=expected):raise SweepError('queue owner contract drift')
+    return row,payload
+def register_queue_owner(db=DB,apply=False):
+    conn=sqlite3.connect(f'file:{Path(db).as_posix()}?mode={"rw" if apply else "ro"}',uri=True,timeout=60);conn.row_factory=sqlite3.Row
+    try:
+        row=conn.execute('SELECT * FROM work_items WHERE id=?',(queue_owner_id(),)).fetchone()
+        if row is not None:
+            _owner(conn);return {'apply':apply,'queue_owner_id':queue_owner_id(),'registered':False,'already_registered':True}
+        result={'apply':apply,'queue_owner_id':queue_owner_id(),'registered':False,'already_registered':False}
+        if not apply:return result|{'would_register':True}
+        now=dt.datetime.now(dt.timezone.utc).isoformat();conn.execute('BEGIN IMMEDIATE')
+        conn.execute("INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,payload_json,created_at,updated_at,claimed_by,evidence_path) VALUES (?,'control',?,'QM5_41398','USDJPY.DWX','WINDOW_SWEEP_OWNER.control','done','DECLARED',0,?,?,?,NULL,'EVIDENCE_UNAVAILABLE')",(queue_owner_id(),QUEUE_OWNER_PHASE,json.dumps(queue_owner_payload(),sort_keys=True),now,now))
+        _owner(conn);conn.commit();return result|{'registered':True}
+    except Exception:conn.rollback();raise
+    finally:conn.close()
+def _normalize_queue_order_at(value):
+    value=str(value).strip()
+    try:parsed=dt.datetime.fromisoformat(value)
+    except ValueError as exc:raise SweepError(f'invalid queue_order_at: {value!r}') from exc
+    if not value or parsed.tzinfo is None:raise SweepError('queue_order_at requires timezone-aware ISO 8601')
+    return value
+def _pending_order(conn):
+    from tools.strategy_farm import farmctl
+    rows=conn.execute(farmctl.pending_claim_order_sql()).fetchall();result=[]
+    for row in rows:
+        payload=json.loads(row['payload_json']) if row['payload_json'] else {}
+        result.append((str(row['id']),payload.get('program_id')))
+    return result
+def _order_report(conn):
+    ordered=_pending_order(conn);window=[item for item in ordered if item[1]==PROGRAM]
+    non_window='\n'.join(item[0] for item in ordered if item[1]!=PROGRAM).encode()
+    return {'first_window_position':next((i for i,item in enumerate(ordered,1) if item[1]==PROGRAM),None),
+            'first_window_work_item_id':window[0][0] if window else None,'window_rows':len(window),
+            'non_window_ordered_id_sha256':hashlib.sha256(non_window).hexdigest()}
+def _project_order(conn,queue_order_at):
+    snapshot=sqlite3.connect(':memory:');snapshot.row_factory=sqlite3.Row
+    try:
+        conn.backup(snapshot);row,payload=_owner(snapshot);payload['queue_order_at']=queue_order_at
+        snapshot.execute('UPDATE work_items SET payload_json=? WHERE id=?',(json.dumps(payload,sort_keys=True),row['id']))
+        return _order_report(snapshot)
+    finally:snapshot.close()
+def queue_order_plan(db=DB,queue_order_at=None,reason=None,owner_decision=None):
+    if not reason or not owner_decision:raise SweepError('reason and owner_decision are required')
+    queue_order_at=_normalize_queue_order_at(queue_order_at);conn=sqlite3.connect(f'file:{Path(db).as_posix()}?mode=ro',uri=True,timeout=60);conn.row_factory=sqlite3.Row
+    try:
+        _,payload=_owner(conn);before=_order_report(conn);after=_project_order(conn,queue_order_at)
+    finally:conn.close()
+    return {'schema':'qm.window-sweep.queue-order/v1','mode':'plan','program_id':PROGRAM,'queue_owner_id':queue_owner_id(),'reason':reason,'owner_decision':owner_decision,'previous_queue_order_at':payload.get('queue_order_at'),'queue_order_at':queue_order_at,'order_before':before,'order_after':after,'would_update':payload.get('queue_order_at')!=queue_order_at}
+def _backup(db,backup_dir):
+    backup_dir=Path(backup_dir);backup_dir.mkdir(parents=True,exist_ok=True);path=backup_dir/f'farm_state_before_window_sweep_queue_order_{dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")}.sqlite'
+    if path.exists():raise SweepError(f'backup exists: {path}')
+    source=sqlite3.connect(db,timeout=60);target=sqlite3.connect(path)
+    try:source.backup(target)
+    finally:target.close();source.close()
+    return path,digest(path)
+def queue_order_apply(db=DB,backup_dir=Path('D:/QM/strategy_farm/state/backups'),queue_order_at=None,reason=None,owner_decision=None):
+    if not reason or not owner_decision:raise SweepError('reason and owner_decision are required')
+    queue_order_at=_normalize_queue_order_at(queue_order_at);backup_path,backup_sha=_backup(db,backup_dir)
+    conn=sqlite3.connect(db,timeout=60);conn.row_factory=sqlite3.Row
+    try:
+        conn.execute('BEGIN IMMEDIATE');row,payload=_owner(conn);before=_order_report(conn);previous=payload.get('queue_order_at');payload['queue_order_at']=queue_order_at
+        raw=json.dumps(payload,sort_keys=True);cur=conn.execute('UPDATE work_items SET payload_json=? WHERE id=? AND payload_json=?',(raw,row['id'],row['payload_json']))
+        if cur.rowcount!=1:raise SweepError('queue owner compare-and-set failed')
+        after=_order_report(conn);verify,verified_payload=_owner(conn)
+        if verified_payload.get('queue_order_at')!=queue_order_at:raise SweepError('queue owner revalidation failed')
+        conn.execute("INSERT INTO events(ts,entity_type,entity_id,event,detail_json) VALUES(?,?,?,?,?)",(dt.datetime.now(dt.timezone.utc).isoformat(),'work_item',row['id'],QUEUE_OWNER_EVENT,json.dumps({'program_id':PROGRAM,'previous_queue_order_at':previous,'queue_order_at':queue_order_at,'reason':reason,'owner_decision':owner_decision,'backup_path':str(backup_path),'backup_sha256':backup_sha},sort_keys=True)))
+        conn.commit()
+    except Exception:conn.rollback();raise
+    finally:conn.close()
+    return {'schema':'qm.window-sweep.queue-order/v1','mode':'apply','program_id':PROGRAM,'queue_owner_id':queue_owner_id(),'reason':reason,'owner_decision':owner_decision,'previous_queue_order_at':previous,'queue_order_at':queue_order_at,'updated':previous!=queue_order_at,'backup':{'path':str(backup_path),'sha256':backup_sha},'order_before':before,'order_after':after,'work_item_columns_touched':['payload_json']}
 def enqueue(plan,db=DB,art=ART,apply=False):
     d=plan['declaration'];validate_declaration(d)
     if plan['stage']!='A':raise SweepError('stage B enqueue requires separate Claude adjudication; only plan is available')
@@ -254,9 +340,23 @@ def main():
         if name!='report':p.add_argument('--stage',choices=('A','B'),default='A');p.add_argument('--stage-a-report',type=Path)
         if name!='plan':p.add_argument('--db',type=Path,default=DB)
         if name=='enqueue':p.add_argument('--apply',action='store_true')
+    owner=sub.add_parser('queue-owner',help='append-only registration of the non-dispatchable queue owner')
+    owner.add_argument('--db',type=Path,default=DB);owner.add_argument('--apply',action='store_true')
+    order=sub.add_parser('queue-order',help='plan, apply or list the WINSWEEP queue-order lever')
+    order.add_argument('mode',choices=('plan','apply','list'));order.add_argument('--db',type=Path,default=DB)
+    order.add_argument('--backup-dir',type=Path,default=Path('D:/QM/strategy_farm/state/backups'))
+    order.add_argument('--queue-order-at');order.add_argument('--reason');order.add_argument('--owner-decision')
     a=parser.parse_args()
     try:
-        if a.command=='report':result=report(a.artifacts,a.db,a.output or EVIDENCE/'2026-09-09_window_sweep_surface.csv')
+        if a.command=='queue-owner':result=register_queue_owner(a.db,a.apply)
+        elif a.command=='queue-order':
+            if a.mode=='list':
+                conn=sqlite3.connect(f'file:{Path(a.db).as_posix()}?mode=ro',uri=True);conn.row_factory=sqlite3.Row
+                try:row,payload=_owner(conn);result={'schema':'qm.window-sweep.queue-order/v1','mode':'list','program_id':PROGRAM,'queue_owner_id':row['id'],'queue_order_at':payload.get('queue_order_at'),'order':_order_report(conn)}
+                finally:conn.close()
+            elif a.mode=='plan':result=queue_order_plan(a.db,a.queue_order_at,a.reason,a.owner_decision)
+            else:result=queue_order_apply(a.db,a.backup_dir,a.queue_order_at,a.reason,a.owner_decision)
+        elif a.command=='report':result=report(a.artifacts,a.db,a.output or EVIDENCE/'2026-09-09_window_sweep_surface.csv')
         else:
             plan=build_plan(a.stage,a.artifacts,a.stage_a_report)
             result=plan if a.command=='plan' else enqueue(plan,a.db,a.artifacts,a.apply)

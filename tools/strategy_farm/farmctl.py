@@ -2598,6 +2598,29 @@ def pending_claim_order_sql() -> str:
                LIMIT 1),
               '{_OPT_CENSUS_QUEUE_ORDER_SENTINEL}'
             )
+            -- A sealed window-sweep program has no Q12 owner: its cells are
+            -- deliberately independent of the DL-089 matrix.  Its append-only
+            -- WINDOW_SWEEP_OWNER row is nevertheless the same governed lever:
+            -- only that row's payload.queue_order_at may be changed.  Do not
+            -- add a q12_work_item_id to existing sealed cells.
+            WHEN upper(COALESCE(w.phase, ''))='OPT_CENSUS'
+             AND json_valid(w.payload_json)=1
+             AND json_extract(w.payload_json, '$.schema')='qm.window-sweep.v1'
+             AND json_extract(w.payload_json, '$.program_id') LIKE 'WINSWEEP_%'
+            THEN COALESCE(
+              (SELECT CASE WHEN json_valid(window_owner.payload_json)=1
+                THEN json_extract(window_owner.payload_json, '$.queue_order_at')
+                ELSE NULL END
+               FROM work_items window_owner
+               WHERE upper(COALESCE(window_owner.phase, ''))='WINDOW_SWEEP_OWNER'
+                 AND json_valid(window_owner.payload_json)=1
+                 AND json_extract(window_owner.payload_json, '$.schema')='qm.window-sweep.v1'
+                 AND json_extract(window_owner.payload_json, '$.program_id')=
+                     json_extract(w.payload_json, '$.program_id')
+                 AND json_type(window_owner.payload_json, '$.queue_owner')='true'
+               LIMIT 1),
+              '{_OPT_CENSUS_QUEUE_ORDER_SENTINEL}'
+            )
             ELSE '{_OPT_CENSUS_QUEUE_ORDER_SENTINEL}' END
             AS _opt_census_queue_order_rank,
           MAX(0, CAST(COALESCE(julianday('now') - julianday(w.created_at), 0) / 7 AS INTEGER))

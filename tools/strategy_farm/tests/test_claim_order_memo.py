@@ -28,6 +28,7 @@ from pathlib import Path
 import pytest
 
 from tools.strategy_farm import farmctl
+from tools.strategy_farm import window_sweep
 
 
 def _insert(conn: sqlite3.Connection, **cols: object) -> None:
@@ -337,6 +338,55 @@ def test_conn_key_none_for_in_memory() -> None:
         assert farmctl._claim_order_conn_key(mem) is None
     finally:
         mem.close()
+
+
+def test_window_sweep_owner_lever_fronts_only_window_rows(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The program owner changes WINSWEEP order, never sealed cell payloads."""
+    monkeypatch.setenv(farmctl.TOPDOWN_GATE_PRIORITY_ENV, "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-10T00:00:00+00:00"
+    window_payload = {
+        "schema": window_sweep.SCHEMA,
+        "program_id": window_sweep.PROGRAM,
+        "priority_track": True,
+        "opt_census_frontier_priority": True,
+    }
+    with farmctl.connect(root) as conn:
+        _row(conn, "xau-frontier", "OPT_CENSUS", "QM5_XAU", "XAUUSD.DWX",
+             {"program_id": "XAU_FRONTIER", "priority_track": True,
+              "opt_census_frontier_priority": True}, now)
+        _row(conn, "ndx-frontier", "OPT_CENSUS", "QM5_NDX", "NDX.DWX",
+             {"program_id": "NDX_FRONTIER", "priority_track": True,
+              "opt_census_frontier_priority": True}, now)
+        _row(conn, "window-cell", "OPT_CENSUS", "QM5_41398", "USDJPY.DWX",
+             window_payload, now)
+        conn.commit()
+        assert _raw_ids(conn)[:3] == ["xau-frontier", "ndx-frontier", "window-cell"]
+
+    db = farmctl.db_path(root)
+    registered = window_sweep.register_queue_owner(db, apply=True)
+    assert registered["registered"] is True
+    plan = window_sweep.queue_order_plan(
+        db, "2000-01-01T00:00:00+00:00", "test front", "OWNER-DEC-WINSWEEP-TEST"
+    )
+    assert plan["order_before"]["first_window_position"] == 3
+    assert plan["order_after"]["first_window_position"] == 1
+    applied = window_sweep.queue_order_apply(
+        db, tmp_path / "backups", "2000-01-01T00:00:00+00:00", "test front",
+        "OWNER-DEC-WINSWEEP-TEST",
+    )
+    assert applied["work_item_columns_touched"] == ["payload_json"]
+    assert (applied["order_before"]["non_window_ordered_id_sha256"]
+            == applied["order_after"]["non_window_ordered_id_sha256"])
+    with farmctl.connect(root) as conn:
+        assert _raw_ids(conn)[:3] == ["window-cell", "xau-frontier", "ndx-frontier"]
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id='window-cell'"
+        ).fetchone()[0])
+        assert payload == window_payload
 
 
 def test_memo_source_has_no_bare_v3_phase_literal() -> None:

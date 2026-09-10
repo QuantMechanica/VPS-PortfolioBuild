@@ -2202,6 +2202,19 @@ STRUCTURAL (for OWNER, parked): asset-rank starvation of USDJPY programs under t
 is a pool-order policy question; candidate fairness option (round-robin over idle programs before
 asset rank) to be proposed by Codex in its RESULT, decision stays with OWNER.
 
+RESULT `ba63936d`: REVIEW. WINSWEEP now has an append-only, non-dispatchable
+`WINDOW_SWEEP_OWNER` (`e144b67f-787d-5386-b7e7-9f070fb89a58`) and a governed
+`window_sweep.py queue-owner|queue-order plan|apply|list` lever. The selector
+reads its payload `queue_order_at` only for `qm.window-sweep.v1` WINSWEEP cells;
+existing 420 sealed cell payloads remain unchanged. Focused tests: 41 passed,
+including XAU/NDX/WINSWEEP temporary-DB ordering (WINSWEEP last before, first
+after) and identical ordered-ID SHA-256 for non-window rows. Worker reload and
+the OWNER-recorded lever apply remain orchestrator actions; no restart, terminal,
+backtest, live setting, pipeline verdict, or policy change occurred. Evidence:
+`docs/ops/evidence/2026-09-10_winsweep_queue_order.md`. OWNER proposal only:
+consider round-robin idle-program fairness before asset rank to address recurring
+USDJPY starvation.
+
 ## 2026-09-10 — RESULT: FX cointegration frontier reconciled; existing fallback retained
 
 The frozen sign-aware 66-pair scan remains fully covered (66/66, zero unbuilt);
