@@ -1,0 +1,25 @@
+{
+  "schema": "qm.paced-q02-cpu-stop/v1",
+  "date": "2026-09-10",
+  "ea_id": "QM5_41412",
+  "compile_work_item_id": "11cf801c-5e01-45b0-a50a-d90270ec153c",
+  "first_apply": {
+    "result": "NO_MUTATION",
+    "error": "sqlite3.OperationalError: database is locked",
+    "stage": "BEGIN IMMEDIATE"
+  },
+  "post_lock_idempotence_check": {
+    "eligible": true,
+    "would_enqueue": true,
+    "existing_q02_rows": 0
+  },
+  "fresh_cpu_window": {
+    "samples_percent": [96, 96, 91, 94, 99],
+    "average_percent": 95.2,
+    "maximum_percent": 99,
+    "exclusive_ceiling_percent": 97,
+    "eligible": false
+  },
+  "q02_apply_after_cpu_window": "NOT_RUN",
+  "q02_status": "NOT_ENQUEUED_CPU_CEILING"
+}

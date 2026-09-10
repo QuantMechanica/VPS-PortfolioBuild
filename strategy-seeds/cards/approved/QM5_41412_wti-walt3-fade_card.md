@@ -60,8 +60,9 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q01_build_report: D:/QM/reports/work_items/11cf801c-5e01-45b0-a50a-d90270ec153c/QM5_41412/COMPILE_EA/compile_evidence.json
 force_build: true
 review_focus: "Falsify a strict three-completed-week WTI sign-alternation fade outside the certified book. Verify exact weekly packages, strict alternation, opposite-newest-sign direction, durable weekly attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -217,6 +218,8 @@ and a zero-hit PACER input-pin audit.
 | Version | Date | Change | Gate | Status |
 |---|---|---|---|---|
 | v1 | 2026-09-10 | initial WTI three-week alternation fade card | G0 | APPROVED; build pending |
+| v1-build | 2026-09-10 | governed source build and compile | Q01 | COMPILE_OK; pin audit PASS with zero findings; 10/10 reference tests PASS |
+| v1-q02-capacity | 2026-09-10 | first fixed-risk intake | Q02 | NOT_ENQUEUED_CPU_CEILING; retry window maximum 99% |
 
 ## Safety Boundary
 
