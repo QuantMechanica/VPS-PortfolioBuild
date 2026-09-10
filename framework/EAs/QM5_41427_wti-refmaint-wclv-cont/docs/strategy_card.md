@@ -61,8 +61,9 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q01_build_report: D:/QM/reports/framework/21/build_check_20260910_201049.json
 force_build: true
 review_focus: "Falsify a short-only WTI refinery-maintenance completed-week close-location continuation distinct from the year-round symmetric outer-fifth rule, the one-week maintenance open-to-close sign sleeve, and the April-July upper-tercile ramp build. Verify exact two-week membership, parent-close endpoint, lower-tercile gate, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -209,5 +210,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-10 | PENDING | build not started |
-| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED | gated on Q01 and CPU admission |
+| Q01 Build Validation | 2026-09-10 | PASS | compile `6cb23d9a-5764-4445-9d4e-99d324e29009`; 0 errors / 0 warnings; build-check PASS; PACER audit 0 findings; reference tests 12/12 PASS |
+| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED_CPU_CEILING | five-sample average 98.91%, maximum 100.00%, exclusive ceiling 97% |

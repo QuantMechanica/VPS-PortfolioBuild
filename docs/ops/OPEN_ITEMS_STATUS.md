@@ -2349,3 +2349,13 @@ Q04 2, Q03 1, Q07 1, Q10_NEWS 1; done in the previous 30 min: Q04 3, Q03 2, Q02 
 census 22 (~44/h, WINSWEEP 323/420 with 1 active). CPU 91 %, RAM free 38 GB. First gate rows since
 the collapse; Q02 admission (CPU < 97 %) to be confirmed over the next hours. Rollback one-shot set
 for 2026-09-12T19:05Z.
+
+## 2026-09-10T20:12Z — RESULT: QM5_41427 WTI maintenance sleeve built; Q02 held at CPU ceiling
+
+QM5_41427 `wti-refmaint-wclv-cont` is source-approved, non-duplicate reviewed, magic-registered,
+and Q01 compile PASS (`6cb23d9a`, 0 errors/warnings, strict build-check PASS, 12/12 reference tests,
+PACER pin audit 0 findings). It shorts XTIUSD.DWX for one week only after a negative two-week
+parent-close return plus lower-tercile completed-week close in February/March/September/October;
+fixed-risk backtest only. Five current whole-host CPU samples were 98.83/98.73/97.85/99.12/100.00%
+(average 98.91%, maximum 100.00%), exceeding the exclusive 97% ceiling. Stopped as ordered: no Q02
+row exists. Evidence: `docs/ops/evidence/2026-09-10_qm5_41427_wti_refinery_maintenance_weekly_close_location_build_cpu_hold.md`.

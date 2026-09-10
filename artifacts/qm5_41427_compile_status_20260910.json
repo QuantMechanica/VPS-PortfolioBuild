@@ -1,0 +1,20 @@
+{
+  "ok": true,
+  "ea_id": "QM5_41427",
+  "ea_label": "QM5_41427_wti-refmaint-wclv-cont",
+  "work_item_id": "6cb23d9a-5764-4445-9d4e-99d324e29009",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "failed": false,
+  "failure_classes": [],
+  "build_check_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_201049.json",
+  "compile_evidence_path": "D:/QM/reports/work_items/6cb23d9a-5764-4445-9d4e-99d324e29009/QM5_41427/COMPILE_EA/compile_evidence.json",
+  "mq5_sha256": "ae41d20e10f5d7e959ef2b4e4bf87d0ccbd7b5075d8e6ecc570d7cd1cbc9a407",
+  "ex5_sha256": "a1dd0a3f79eb79a454e3c223ce73063361b6f8de53c2748558634856613df6b3",
+  "setfile_sha256_after_build_hash_binding": "bcc559efb24f896377a7acd84fa9abb6982e9ba634db513cc2f69e219c4e8723",
+  "setfile_count": 1
+}

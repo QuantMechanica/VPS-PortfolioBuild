@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "ae41d20e10f5d7e959ef2b4e4bf87d0ccbd7b5075d8e6ecc570d7cd1cbc9a407",
+      "ea_id": "QM5_41427",
+      "ea_label": "QM5_41427_wti-refmaint-wclv-cont",
+      "expected_mq5_sha256": "ae41d20e10f5d7e959ef2b4e4bf87d0ccbd7b5075d8e6ecc570d7cd1cbc9a407",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41427_wti-refmaint-wclv-cont\\QM5_41427_wti-refmaint-wclv-cont.mq5",
+      "work_item_id": "6cb23d9a-5764-4445-9d4e-99d324e29009"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "6cb23d9a-5764-4445-9d4e-99d324e29009",
+  "work_item_id_selectors": [
+    "6cb23d9a-5764-4445-9d4e-99d324e29009"
+  ]
+}

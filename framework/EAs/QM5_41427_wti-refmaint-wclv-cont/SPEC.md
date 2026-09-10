@@ -117,3 +117,4 @@ operation is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-10 | Initial build from approved card | OWNER pacer mission |
+| v1.1 | 2026-09-10 | Q01 compile PASS (`6cb23d9a-5764-4445-9d4e-99d324e29009`); Q02 held at binding CPU ceiling | OWNER pacer mission |

@@ -1,0 +1,17 @@
+{
+  "schema_version": "qm.cpu-admission-evidence/v1",
+  "captured_at": "2026-09-10T20:11:52.5553899Z",
+  "sample_interval_seconds": 1,
+  "samples_percent": [
+    98.83,
+    98.73,
+    97.85,
+    99.12,
+    100.0
+  ],
+  "average_percent": 98.91,
+  "maximum_percent": 100.0,
+  "exclusive_ceiling_percent": 97.0,
+  "admitted": false,
+  "action": "STOP_NO_Q02_ENQUEUE"
+}
