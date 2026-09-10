@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "1d8fa534-7c63-4f88-bcb2-6ad7675702b4"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260910T094448_239059Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260910T094431Z_f4162b51.sqlite",
+    "reused": false,
+    "sha256": "8adcc640b1aa2d37e60da3208f6cc2698a2c6cb39db32cf21b68eb31e1143ac3"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "8919c12337eaafcaa3de756c57045fc4e054fe914ca0dbf3313f8230f50e6216",
+      "ea_id": "QM5_41417",
+      "ea_label": "QM5_41417_xauxag-wstreak2-rv",
+      "expected_mq5_sha256": "8919c12337eaafcaa3de756c57045fc4e054fe914ca0dbf3313f8230f50e6216",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41417_xauxag-wstreak2-rv\\QM5_41417_xauxag-wstreak2-rv.mq5",
+      "work_item_id": "1d8fa534-7c63-4f88-bcb2-6ad7675702b4"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-10T09:44:48+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "1d8fa534-7c63-4f88-bcb2-6ad7675702b4",
+  "work_item_id_selectors": [
+    "1d8fa534-7c63-4f88-bcb2-6ad7675702b4"
+  ]
+}

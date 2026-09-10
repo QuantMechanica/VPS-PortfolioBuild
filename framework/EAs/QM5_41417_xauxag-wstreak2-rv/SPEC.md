@@ -75,3 +75,4 @@ trail, break-even move, or partial exit is authorized.
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-09-10 | approved build identity |
+| v1-build | 2026-09-10 | governed COMPILE_OK and Q01 build-check PASS |
