@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "210dbf42624570c4bd948813e6f55a88b43f301aabfc51e7a865b921d53da82c",
+      "ea_id": "QM5_41428",
+      "ea_label": "QM5_41428_wti-reframp-wclv-fade",
+      "expected_mq5_sha256": "210dbf42624570c4bd948813e6f55a88b43f301aabfc51e7a865b921d53da82c",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41428_wti-reframp-wclv-fade\\QM5_41428_wti-reframp-wclv-fade.mq5",
+      "work_item_id": "acf9dfe5-606c-460c-aceb-624b832e64a1"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "acf9dfe5-606c-460c-aceb-624b832e64a1",
+  "work_item_id_selectors": [
+    "acf9dfe5-606c-460c-aceb-624b832e64a1"
+  ]
+}

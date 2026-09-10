@@ -60,9 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q01_build_report: D:/QM/reports/framework/21/build_check_20260910_205502.json
 force_build: true
 review_focus: "Falsify a long-only WTI refinery-ramp completed-week close-location reversion distinct from the mutually exclusive positive/upper-tercile continuation and the April-May one-week open-to-close fade. Verify exact two-week membership, parent-close endpoint, lower-tercile gate, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -208,5 +209,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | `decisions/2026-09-10_wti_refinery_ramp_weekly_close_location_reversion_source_approval.md` |
 | G0 Research Intake | 2026-09-10 | APPROVED | decision above |
-| Q01 Build Validation | 2026-09-10 | PENDING | build not started |
-| Q02 Baseline Screening | 2026-09-10 | NOT_ENQUEUED | gated on Q01 and CPU admission |
+| Q01 Build Validation | 2026-09-10 | PASS | compile `acf9dfe5-606c-460c-aceb-624b832e64a1`; 0 errors / 0 warnings; build-check PASS; PACER audit 0 findings; reference tests 12/12 PASS |
+| Q02 Baseline Screening | 2026-09-10 | ENQUEUED | pending work item `2edd794c-cb9e-4ed5-827a-d67223c8bd02`; fixed-risk XTIUSD.DWX D1 canary |

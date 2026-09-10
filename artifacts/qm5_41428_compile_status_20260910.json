@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "ea_id": "QM5_41428",
+  "ea_label": "QM5_41428_wti-reframp-wclv-fade",
+  "work_item_id": "acf9dfe5-606c-460c-aceb-624b832e64a1",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "failed": false,
+  "failure_classes": [],
+  "build_check_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260910_205502.json",
+  "compile_evidence_path": "D:/QM/reports/work_items/acf9dfe5-606c-460c-aceb-624b832e64a1/QM5_41428/COMPILE_EA/compile_evidence.json",
+  "mq5_sha256": "210dbf42624570c4bd948813e6f55a88b43f301aabfc51e7a865b921d53da82c",
+  "ex5_sha256": "7475afb0a0c61cb3be916ef0a3c914a0a59b72ffc75cc58e8550bd0485c5df35",
+  "setfile_sha256_from_compile_generation": "fce9f60d8f4ff95a461fee09e6975aa7fd37d96259c89c9f359e27efed4cb0e7",
+  "setfile_sha256_q02_binding": "e211604ecb311893c3298f436f461ac9fe3a96471c9a807467d1f2afac0e8fb4",
+  "setfile_count": 1
+}

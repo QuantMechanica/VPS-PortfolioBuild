@@ -115,3 +115,4 @@ operation is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-10 | Initial build from approved card | OWNER pacer mission |
+| v1.1 | 2026-09-10 | Q01 compile PASS (`acf9dfe5-606c-460c-aceb-624b832e64a1`) and fixed-risk Q02 enqueue (`2edd794c-cb9e-4ed5-827a-d67223c8bd02`) | OWNER pacer mission |

@@ -2387,3 +2387,13 @@ the required no-work-item/no-DB-write isolation plus resource guards, and the si
 correctly excludes disabled T11.  `da0512a7` REVIEW: warm runner stays Default-OFF; its injected session
 protocol and DEV2 restart adapter do not constitute a resident T10 backend, so no 20-cell parity or
 throughput claim is made.  No worker/terminal restart, T_Live/AutoTrading action, queue or gate change.
+
+## 2026-09-10T20:57Z — RESULT: QM5_41428 WTI ramp reversion built; Q02 enqueued
+
+QM5_41428 `wti-reframp-wclv-fade` is source-approved, non-duplicate reviewed, magic-registered,
+and Q01 compile PASS (`acf9dfe5`, 0 errors/warnings, strict build-check PASS, 12/12 reference tests,
+PACER pin audit 0 findings). It buys XTIUSD.DWX for one week only after a negative two-week
+parent-close return plus lower-tercile completed-week close in April-July; fixed-risk backtest only.
+Five current whole-host CPU samples averaged 68.52% with an 87.14% maximum, below the exclusive 97%
+ceiling. One Q02 canary is pending as `2edd794c-cb9e-4ed5-827a-d67223c8bd02`. Evidence:
+`docs/ops/evidence/2026-09-10_qm5_41428_wti_refinery_ramp_weekly_close_location_reversion_build_q02.md`.
