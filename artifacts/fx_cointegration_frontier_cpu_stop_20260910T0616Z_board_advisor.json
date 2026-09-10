@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-10T06:17:20.601658+00:00",
+  "branch": "agents/board-advisor",
+  "observation_base": "21f4cee3c535f203ab5ad726f0dea5f590e0a72b",
+  "mission": "Grow the certified V5 portfolio book with a new low-frequency market-neutral FX cointegration sleeve, preferring QM5_12532/QM5_12533 Q02 repair when applicable and otherwise avoiding duplicate scan work.",
+  "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+  "frontier": {
+    "relationships_scanned": 66,
+    "published_survivor_rule": "DEV Sharpe > 0, OOS net Sharpe > 0.8, and at least 4 OOS trades",
+    "qualified_pairs": [
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+        "q02_status": "done",
+        "q02_verdict": "PASS",
+        "later_terminal_state": "Q04 FAIL"
+      },
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+        "q02_status": "done",
+        "q02_verdict": "PASS",
+        "later_terminal_state": "Q04 PASS, then Q05 FAIL"
+      }
+    ],
+    "anchor_repair_required": false,
+    "approved_next_best_card_glob": "strategy-seeds/cards/approved/QM5_*edgelab*cointegration*_card.md",
+    "approved_next_best_cards_checked": 16,
+    "approved_next_best_cards_with_ea_directory": 16,
+    "unbuilt_approved_pair_found": false,
+    "duplicate_guard": "Every approved next-best Edge Lab cointegration card checked has a matching framework/EAs directory and terminal Q02 history. Creating or re-enqueueing one would duplicate governed work."
+  },
+  "capacity_preflight": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "sampled_during_utc_minute": "2026-09-10T06:16Z",
+    "samples_percent": [
+      86.928668520062,
+      86.2859392614691,
+      88.9652284239595,
+      97.7575327059136,
+      94.0525513397916
+    ],
+    "average_percent": 90.79798405023915,
+    "maximum_percent": 97.75753270591359,
+    "ceiling_percent": 97.0,
+    "ceiling_rule": "Stop when average or maximum is greater than or equal to 97 percent.",
+    "ceiling_hit": true,
+    "binding_measure": "maximum_percent"
+  },
+  "farm_snapshot": {
+    "mt5_slots_scanned_at_utc": "2026-09-10T06:15:51+00:00",
+    "running_factory_terminals": [
+      "T1",
+      "T2",
+      "T5",
+      "T6",
+      "T8"
+    ],
+    "running_factory_terminal_count": 5,
+    "active_reservation_count": 5,
+    "terminal_worker_daemon_count": 10,
+    "excluded_observed_terminals": [
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe"
+    ],
+    "work_item_db_queried_at_utc": "2026-09-10T06:17:20.601658+00:00",
+    "active_work_item_count_at_query": 2,
+    "pending_work_item_count_at_query": 9271,
+    "note": "Fleet state was changing during the read-only observation window; the CPU maximum already triggered the binding mission stop."
+  },
+  "build_guard": {
+    "generated_mq5_written": false,
+    "input_pin_audit_required_for_this_run": false,
+    "input_pin_audit_explanation": "No MQ5 was generated or changed, so there was no source to audit before compile enqueue.",
+    "compile_enqueued": false,
+    "q02_enqueued": false
+  },
+  "outcome": {
+    "status": "CPU_CEILING_STOP",
+    "selected_pair": null,
+    "action": "Stopped before card, build, compile, backtest enqueue, dispatch, or terminal mutation.",
+    "continuation": "On a later paced wake, rerun the five-sample capacity preflight. If it clears, revalidate a non-duplicate existing FX successor; do not weaken the published 66-pair criterion or duplicate terminal Q02 history."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "queue_mutated": false,
+    "terminal_process_mutated": false
+  }
+}
