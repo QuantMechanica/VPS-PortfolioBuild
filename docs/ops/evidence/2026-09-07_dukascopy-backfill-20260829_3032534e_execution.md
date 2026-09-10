@@ -534,3 +534,54 @@ QM5_41394 SP500/XAUUSD Q02 rows (bb814520/dfc60103's shared gate) unchanged, sti
 pending/unclaimed since 2026-09-09T10:52:59Z (direct sqlite read, ~2 days now) -- see that
 file, not repeated in full here. No ticket, rebuild, release, or verdict change made by this
 task beyond the downloader resume. Task `3032534e` remains `IN_PROGRESS`.
+
+## Checked 2026-09-10T22:49-22:53Z (headless orchestration cycle, independent of the entry above) -- concurrent-session collision on the same restart action; resolved to one healthy process
+
+Arrived at the same conclusion as the entry immediately above (`ff5cc3b9` cleared to REVIEW,
+tests pass) independently, without having seen it yet, and performed the same close-review
+(`agent_router.py close-review ff5cc3b9 --state APPROVED`, verdict recorded, artifact
+`docs/ops/evidence/2026-09-11_dukascopy_raw_root_containment_fix.md`) and the same downloader
+restart. This is a genuine **duplicate-action** collision, not just duplicate reads: two
+headless cycles independently relaunched the same detached downloader against the same
+`--out` root within about a minute of each other (this cycle's first attempt, PID 9288,
+started ~22:49:42Z per Windows process metadata; the sibling cycle's PID 13484 started
+22:49:01Z per its own entry above). Both processes write `progress.json` via a **fixed**
+temp filename (`progress.json.tmp`, not unique per writer -- `tools/dukascopy/common.py`
+`atomic_write_bytes`), so the two concurrent writers collided: this cycle's first attempt
+(PID 9288) crashed uncaught at 22:50:34Z with `PermissionError: [WinError 5] Access is
+denied` on `os.replace(progress.json.tmp, progress.json)`, matching the same "unhandled
+exception in a hot-path write kills the whole run" class as the raw_root bug `ff5cc3b9` had
+just fixed, just a different trigger (concurrent-writer lock contention rather than a false-
+positive path check). Cleared the orphaned `progress.json.tmp` (safe -- a partial temp
+artifact, not ledger data) and relaunched once more (PID 18208, 22:51:47Z local); confirmed
+stably `RUNNING` and progressing over two follow-up checks (`completed` 4239->5246->13745,
+`errors=0`).
+
+A fresh full-process enumeration at 22:55Z (`Get-CimInstance Win32_Process`, all `python.exe`
+command lines) found **exactly one** `download_bi5.py` process alive: PID 18208. PID 13484
+from the sibling cycle's entry is no longer present -- it evidently died in the same
+collision window (either the mirror-image `PermissionError` or a subsequent check by that
+cycle found it dead and did not re-launch, per its own "do not re-launch while PID 13484 is
+alive" note). No corruption resulted: `hour_ledger.jsonl` is still exactly 66,458 lines (0
+malformed), newest `recorded_at_utc` still the original 2026-09-10T01:01:30Z crash timestamp
+-- neither colliding process had reached a new ledger write yet (both were still fast-
+skipping already-ledgered hours via `resumed` when the collision hit `progress.json`, which
+is a non-authoritative status file, not the ledger). Net effect: two wasted process spawns,
+zero data risk, ~2 minutes lost, now one healthy downloader (PID 18208).
+
+This extends the already-flagged "15-minute scheduler pileup" pattern
+([[project_qm_claude_orchestration_duplicate_session_race_2026-08-23]],
+[[project_qm_thundering_herd_worker_restart_2026-08-29]],
+[[project_qm_ownerdec_tasks_stuck_on_q02_gate_quota_critical_2026-09-09]]) from duplicate
+*reads* (wasted quota, near-identical log entries) to duplicate *actions* on a shared
+external resource (two processes independently launched against the same output root within
+the same minute). Not actioned further here -- changing `QM_StrategyFarm_ClaudeOrchestration_15min`
+cadence or adding an execution-side lease for one-shot external actions (beyond the existing
+30-minute router spawn lease, which covers task claiming but not ad-hoc subprocess launches
+inside a task) is outside this task's `selected_effect_only` authority; re-flagging the
+2026-09-09 OWNER recommendation as still open and now evidenced with a concrete duplicate-
+launch incident, not just duplicate reads.
+
+QM5_41394 SP500/XAUUSD Q02 rows unchanged (same gate as always, see above). No ticket,
+rebuild, release, or verdict change beyond the `ff5cc3b9` close-review and the downloader
+restart already covered. Task `3032534e` remains `IN_PROGRESS`.
