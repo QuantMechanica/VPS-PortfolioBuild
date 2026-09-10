@@ -1,0 +1,94 @@
+{
+  "files": [
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\backlog_scenarios.csv",
+      "bytes": 430,
+      "sha256": "07aab9ec36c12efe3a6f6561283ca8aeddf2461258a2eb75b82580d9256da168"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\baseline_summary.json",
+      "bytes": 3663,
+      "sha256": "9b4bb514c55a0c5eeb11ad782e9ab236b1d1de9dedaaf3113cfc698ae71599b1"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\collect_baseline.py",
+      "bytes": 10667,
+      "sha256": "400b12ddfd310e3019e3ca9974d6deb1aab7fe1ddc93c0806aee97f4286cd725"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\fidelity_matrix.csv",
+      "bytes": 8393,
+      "sha256": "f7f3734d7876dcb888e651ce2f5c258f8990050c6d835e9a9e335afe15e793e0"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\initial_health.json",
+      "bytes": 46043,
+      "sha256": "44a7df1c4ea0440292bcd008bca46f48e9c1d1e2b92c6ca1d39e6b6c67ef587c"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\readiness.json",
+      "bytes": 242,
+      "sha256": "ee7d22f55682319b1a644935b114789ca36fd62f70916eec09677d5f0cb85b3d"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\real_tick_vs_cheap_cells.csv",
+      "bytes": 404465,
+      "sha256": "6b67b0fa9547fc130502ebf83efd94aed50daaf9c95059af4764d2ce8914fdc0"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\symbol_catalog_check.json",
+      "bytes": 298,
+      "sha256": "6ce7863d736c333a3ab88991558e83a02d516ebc596625970e7405ff00ecf2e8"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\t11_history_inventory.csv",
+      "bytes": 8930,
+      "sha256": "75e1ee22352e672a9aa1eccda3c62b719a127050e681141f5f6ecc9c638d9672"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\T11_PRESCREEN_FIDELITY_2026-09-10.md",
+      "bytes": 13635,
+      "sha256": "8f647937ea60e0143b27f494705d4bf4921109719fcee378e52cd345504d302b"
+    },
+    {
+      "path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\verification.json",
+      "bytes": 676,
+      "sha256": "768e3cd943c448e5cd5f7201a6099efaea621c8e4d3fc72a515435ff467904b8"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\assigned_task.json",
+      "bytes": 9365,
+      "sha256": "93a202fc5261baa8008dbd617d6dc6de40b16bd91452838430435d68c90743d6"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\cpu_guard.json",
+      "bytes": 1110,
+      "sha256": "75f66a8e58f6bc4caa8edd41e6766e6f5ecfad6dabf5c9e3da8c6d54741802e3"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\ground_truth_rows.json",
+      "bytes": 3577758,
+      "sha256": "2d9539864a4b30793bbf11ccb656791796a44e493c2faefd88e5c089bc19461b"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\isolation_after.json",
+      "bytes": 1842,
+      "sha256": "10345eedf246d1a1fbc32d667b0cbf23c6098d63031100348788316c243dc7b5"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\isolation_before.json",
+      "bytes": 1842,
+      "sha256": "422ec3cac545d11aa34d3a7435951aa6e36f150092ddee036f9bb2a0e9d20dfe"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\spawn_lease.json",
+      "bytes": 198,
+      "sha256": "c2ad4473595884dfd10bcf51618e102defb6913d3f315ce2f7614197fe0e7495"
+    },
+    {
+      "path": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\tester_defaults_snapshot.json",
+      "bytes": 2400,
+      "sha256": "9fb3f03d214c4f722230222ff27206f82633eca5cd72e7adca4e789823f66f7f"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+backlog_from_task,hypothetical_retained_fraction,hypothetical_control_fraction,retained_cells,control_cells,confirmations,fewer_real_tick_cells,status,source
+6453,0.5,0.1,3227,323,3550,2903,ARITHMETIC_ONLY_NOT_EXPECTED_SAVINGS,D:/QM/reports/research/t11_prescreen_2026-09-10/assigned_task.json
+6453,0.3,0.1,1936,452,2388,4065,ARITHMETIC_ONLY_NOT_EXPECTED_SAVINGS,D:/QM/reports/research/t11_prescreen_2026-09-10/assigned_task.json

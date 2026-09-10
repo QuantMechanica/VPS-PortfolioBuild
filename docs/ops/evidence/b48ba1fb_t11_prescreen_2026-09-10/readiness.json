@@ -1,0 +1,6 @@
+{
+  "scheduled_task_query_return_code": 0,
+  "explicit_t11_action_matches": [],
+  "query_scope": "Explicit --terminal T11 or mt5/T11 in task actions; indirect script targets not exhaustively audited",
+  "t11_terminal_version": "5.0.0.6140"
+}

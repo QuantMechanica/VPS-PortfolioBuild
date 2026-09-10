@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "checks": {
+    "row_count": true,
+    "unique_cell_keys": true,
+    "program_counts": true,
+    "cheap_fields_blank": true,
+    "all_raw_report_and_ini_hashes_match": true,
+    "risk_and_model_authentication_no_errors": true,
+    "all_84_tick_months_present": true,
+    "all_7_history_years_present": true,
+    "inventory_files_single_link_no_reparse": true,
+    "unchanged_workers_and_no_t11_rows": true,
+    "scenario_arithmetic": true,
+    "fidelity_rows_complete": true,
+    "source_syntax_valid": true,
+    "all_packet_files_lf": true
+  },
+  "scope": "Baseline artifact integrity only; no tester run, runtime guard test or fidelity acceptance"
+}

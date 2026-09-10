@@ -1,0 +1,107 @@
+{
+  "schema": "qm.t11-prescreen-preflight.v1",
+  "at_utc": "2026-09-10T19:35:47.520799+00:00",
+  "task_id": "b48ba1fb-0201-4bfd-a700-fbc14c98a668",
+  "status": "DEVIATION_NO_MT5_LAUNCH",
+  "measured_counts": {
+    "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025": 320,
+    "DL089_QM5_13213_USDJPY_DWX_2019_2025": 25
+  },
+  "year_counts": {
+    "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025": {
+      "2023": 46,
+      "2024": 45,
+      "2020": 46,
+      "2025": 45,
+      "2019": 46,
+      "2021": 46,
+      "2022": 46
+    },
+    "DL089_QM5_13213_USDJPY_DWX_2019_2025": {
+      "2019": 25
+    }
+  },
+  "queue_counts": [
+    {
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "state": "pending",
+      "verdict": null,
+      "n": 1060
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "state": "active",
+      "verdict": null,
+      "n": 1
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "state": "pending",
+      "verdict": null,
+      "n": 99
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "state": "done",
+      "verdict": "MEASURED",
+      "n": 320
+    },
+    {
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "state": "done",
+      "verdict": "MEASURED",
+      "n": 25
+    }
+  ],
+  "authenticated_cells": 345,
+  "authentication_errors": [],
+  "timing": {
+    "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025": {
+      "cells": 320,
+      "mean_seconds": 140.24854265,
+      "median_seconds": 135.75435900000002,
+      "min_seconds": 96.438616,
+      "max_seconds": 221.537556,
+      "total_seconds": 44879.533648
+    },
+    "DL089_QM5_13213_USDJPY_DWX_2019_2025": {
+      "cells": 25,
+      "mean_seconds": 134.3179676,
+      "median_seconds": 132.672295,
+      "min_seconds": 114.558561,
+      "max_seconds": 165.652145,
+      "total_seconds": 3357.9491899999994
+    }
+  },
+  "ex5_sha256": "68d37d3a6b6d5d4354e5a9aa494488d8d2809b1f662ff75fbb26440658137c01",
+  "t11_history_files": 91,
+  "t11_history_bytes": 961133319,
+  "history_validation": "Filename/size/link inventory only; contents and tick completeness not validated by tester",
+  "t11_terminal_sha256": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed",
+  "cheap_measurements": 0,
+  "raw_tester_outputs_created": 0,
+  "fidelity_metrics": null,
+  "declared_backlog": 6453,
+  "empirically_supported_reduction": null,
+  "sources": {
+    "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+    "snapshot": "D:\\QM\\reports\\research\\t11_prescreen_2026-09-10\\ground_truth_rows.json",
+    "cell_csv": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\real_tick_vs_cheap_cells.csv"
+  },
+  "code_evidence": {
+    "C:\\QM\\repo\\framework\\scripts\\run_smoke.ps1": "c55796861b1c73f80a4b0f140e48f88ca54cf42c90997023f20143e39a8733aa",
+    "C:\\QM\\repo\\tools\\strategy_farm\\custom_history_smoke_admission.py": "a13526b28dad8d0caf4bd21bf879ecf388a57d8ab1df86e6c06583434a910606",
+    "C:\\QM\\repo\\tools\\strategy_farm\\mt5_latency_lab.py": "5bfcf70893adb220d62c2bd739f39bbea18d9dda52a3a9f156fcd175fed738a6",
+    "C:\\QM\\repo\\tools\\strategy_farm\\mt5_warm_lab.py": "3c10448c01c930dd7192c00ef510abef8d74883e55a4906ee41d6cae945a8d7a",
+    "C:\\QM\\repo\\tools\\strategy_farm\\mt5_qm_warm_fixture.py": "77848b59963276ab702533ea1e456f0c3019c00e09a80392d987d38e14b075aa"
+  },
+  "isolation": {
+    "worker_pid_map_unchanged": true,
+    "t11_rows_before": 0,
+    "t11_rows_after": 0,
+    "t11_process_count_before": 0,
+    "t11_process_count_after": 0,
+    "research_db_connection": "mode=ro; PRAGMA query_only=ON",
+    "experiment_launches": 0
+  }
+}

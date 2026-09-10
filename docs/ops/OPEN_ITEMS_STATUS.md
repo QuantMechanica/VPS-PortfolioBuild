@@ -2326,3 +2326,18 @@ a governed pre-screen protocol (ordering only, never a verdict; real-tick confir
 control sample). Isolation: T11 only, no work_items, CPU guard (<=4 agents, pause at >90 % CPU),
 RAM guard. Builds on V4a/V4b evidence (3e129337, c7536f46, 7d800fe1). Recipe
 session_tools/enqueue_astra_t11_prescreen_0910.py.
+
+
+## 2026-09-10T19:40Z — RESULT: ASTRA-T11-PRESCREEN preflight deviation (b48ba1fb)
+
+REVIEW, DEVIATION_NO_MT5_LAUNCH; experimental acceptance remains incomplete. Canonical baseline
+audit authenticated 345/345 existing Model-4 receipts (320 WINSWEEP + 25 current-binary DL-089).
+DL-089 has only 25 measured cells, all 2019, versus the requested >=100; the task premise >=340
+is not the current DB state. T11 root lacks Bases/symbols.custom.dat, matching the catalog gap
+documented in the September 9 warm-lab report. Standard smoke admission requires worker-bound
+work; cheaper modes are not admitted, and this cycle forbids manual terminal launches and new
+work items. No launch, catalog repair, worker restart, queue mutation or gate/counter change.
+Cheap-mode speed/fidelity and expected savings are NOT MEASURED. Raw audit under
+D:/QM/reports/research/t11_prescreen_2026-09-10/; report and CSV/hash verification:
+[canonical packet](evidence/b48ba1fb_t11_prescreen_2026-09-10/T11_PRESCREEN_FIDELITY_2026-09-10.md).
+Review the T11 readiness/isolated-runner prerequisite before resuming the experimental task.
