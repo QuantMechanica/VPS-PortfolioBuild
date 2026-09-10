@@ -21,7 +21,7 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
-strategy_symbol=
+strategy_symbol=XNGUSD.DWX
 strategy_label_offset_seconds=0
 strategy_entry_grace_minutes=180
 strategy_history_bars=24
