@@ -100,6 +100,41 @@ def test_stage_b_requires_complete_same_declaration(tmp_path):
     p=tmp_path/'report.json';w.write_json(p,{'complete':False})
     with pytest.raises(w.SweepError,match='incomplete'):w.build_plan('B',tmp_path,p)
 
+def _complete_stage_a_report(art,path):
+    d=w.declaration(art)
+    result=w.select(synthetic())
+    w.write_json(path,{'schema':w.SCHEMA,'program_id':w.PROGRAM,
+                       'declaration_sha256':d['declaration_sha256'],**result})
+    return path
+
+def test_stage_b_plan_enqueue_is_idempotent_and_hash_bound(queue,tmp_path):
+    db,art=queue
+    # A sealed stage-A ledger is a prerequisite; this temporary DB never touches production.
+    w.enqueue(w.build_plan(art=art),db,art,True)
+    report=_complete_stage_a_report(art,tmp_path/'stage_a.json')
+    plan=w.build_plan('B',art,report)
+    assert len(plan['cells'])==210 and plan['stage_a_report_sha256']==w.digest(report)
+    assert w.enqueue(plan,db,art)['new_rows']==210
+    assert w.enqueue(plan,db,art,True)['inserted']==210
+    assert w.enqueue(plan,db,art,True)['inserted']==0
+    ledger=json.loads((art/'ledger.json').read_text())
+    assert len(ledger['cells'])==420 and len(ledger['amendments'])==1
+    payload=json.loads(sqlite3.connect(db).execute("SELECT payload_json FROM work_items WHERE json_extract(payload_json,'$.stage')='B' LIMIT 1").fetchone()[0])
+    _,authenticated=w.authenticate_ledger(payload)
+    assert authenticated['amendments'][0]['stage_a_report_sha256']==w.digest(report)
+
+def test_stage_b_exit_plateau_tie_uses_fixed_axis_and_stage_a_stands():
+    stage_a=synthetic();stage_a_result=w.select(stage_a)
+    pairs=[(row['start'],row['length']) for row in stage_a_result['top_five']]
+    stage_b=[]
+    for start,length in pairs:
+        for exit_hour in (15,16,17,19,20,21):
+            stage_b.append({'start':start,'length':length,'exit':exit_hour,
+                            'years':{year:{'trades':50,'entry_days':20,'score':1,'costed_trade_pnl':[2,-1]} for year in w.YEARS}})
+    result=w.select_stage_b(stage_b,stage_a,stage_a_result)
+    assert (result['winner']['start'],result['winner']['length'],result['winner']['exit'])==(0,2,15)
+    assert result['final_rule']=='STAGE_A_EXIT_18_STANDS'
+
 def test_worker_malformed_window_payload_cannot_use_legacy_mode():
     from tools.strategy_farm import terminal_worker as worker
     assert worker._is_governed_dl089_census_payload({'schema':w.SCHEMA})

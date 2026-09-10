@@ -31,6 +31,7 @@ EVIDENCE=ROOT/'docs/ops/evidence'
 YEARS=list(range(2019,2026))
 NAMESPACE=uuid.UUID('f45f154c-65d5-5e0f-96c8-505bc44bbc39')
 TASK='49af4f08-0d72-460d-959e-7c9a32db4650'
+STAGE_B_TASK='fc926dde-c7c7-4b8b-bc72-b354909ea062'
 QUEUE_OWNER_PHASE='WINDOW_SWEEP_OWNER'
 QUEUE_OWNER_EVENT='window_sweep_queue_order_set'
 class SweepError(ValueError): pass
@@ -75,16 +76,33 @@ def cells_for(windows,art):
             key=f'{PROGRAM}:{year}:{arm}'
             cells.append({'cell_key':key,'work_item_id':str(uuid.uuid5(NAMESPACE,key)),'year':year,'arm':arm,'direction':'NONE','predicate_id':0,'start':s,'length':n,'exit':x,'from_date':f'{year}.01.01','to_date':f'{year}.12.31','setfile_path':str(Path(art)/'setfiles'/f'{EA.name}_USDJPY.DWX_H1_{year}_{arm}.set')})
     return cells
+def _stage_b_top_five(report,d):
+    """Validate the sealed stage-A hand-off before deriving the exit axis."""
+    if report.get('declaration_sha256')!=d['declaration_sha256'] or not report.get('complete'):
+        raise SweepError('stage-A report incomplete or wrong declaration')
+    top=report.get('top_five',[])
+    allowed={(s,n) for s,n,_ in stage_a()}
+    pairs=[]
+    for row in top:
+        try: pair=(int(row['start']),int(row['length']))
+        except (KeyError,TypeError,ValueError) as exc: raise SweepError('stage-A top-five malformed') from exc
+        if pair not in allowed or int(row.get('exit',18))!=18:raise SweepError('stage-A top-five grid drift')
+        pairs.append(pair)
+    if len(pairs)!=5 or len(set(pairs))!=5:raise SweepError('stage-A report has no deterministic top five')
+    return pairs
 def build_plan(stage='A',art=ART,stage_a_report=None):
     d=declaration(art);windows=stage_a()
     if stage=='B':
         if not stage_a_report:raise SweepError('stage B requires complete stage-A report')
-        report=json.loads(Path(stage_a_report).read_text(encoding='utf-8'))
-        if report.get('declaration_sha256')!=d['declaration_sha256'] or not report.get('complete') or len(report.get('top_five',[]))!=5:raise SweepError('stage-A report incomplete or wrong declaration')
-        windows=[(w['start'],w['length'],x) for w in report['top_five'] for x in d['stage_b_exits']]
+        stage_a_report=Path(stage_a_report)
+        report=json.loads(stage_a_report.read_text(encoding='utf-8'))
+        windows=[(s,n,x) for s,n in _stage_b_top_five(report,d) for x in d['stage_b_exits']]
     cells=cells_for(windows,art)
     assert len(cells)==(420 if stage=='A' else 210)
-    return {'schema':SCHEMA,'program_id':PROGRAM,'stage':stage,'declaration':d,'years':YEARS,'cells':cells,'ea_id':'QM5_41398','symbol':'USDJPY.DWX','planned_trials':len(cells)}
+    result={'schema':SCHEMA,'program_id':PROGRAM,'stage':stage,'declaration':d,'years':YEARS,'cells':cells,'ea_id':'QM5_41398','symbol':'USDJPY.DWX','planned_trials':len(cells)}
+    if stage=='B':
+        result.update(stage_a_report_path=str(stage_a_report),stage_a_report_sha256=digest(stage_a_report),stage_a_top_five=_stage_b_top_five(report,d))
+    return result
 def render(base,cell):
     replacements={'strategy_range_start_hour':str(cell['start']),'strategy_range_end_hour':str(cell['start']+cell['length']),'strategy_exit_hour':str(cell['exit'])}
     result=base
@@ -178,9 +196,68 @@ def queue_order_apply(db=DB,backup_dir=Path('D:/QM/strategy_farm/state/backups')
     except Exception:conn.rollback();raise
     finally:conn.close()
     return {'schema':'qm.window-sweep.queue-order/v1','mode':'apply','program_id':PROGRAM,'queue_owner_id':queue_owner_id(),'reason':reason,'owner_decision':owner_decision,'previous_queue_order_at':previous,'queue_order_at':queue_order_at,'updated':previous!=queue_order_at,'backup':{'path':str(backup_path),'sha256':backup_sha},'order_before':before,'order_after':after,'work_item_columns_touched':['payload_json']}
+def _stage_b_amendment(plan,rendered):
+    """An amendment is the sole permitted extension of the 420-cell ledger."""
+    cells=[]
+    for source in plan['cells']:
+        cell=dict(source)
+        cell['setfile_sha256']=hashlib.sha256(rendered[cell['work_item_id']].encode()).hexdigest()
+        cells.append(cell)
+    amendment={'schema':SCHEMA,'kind':'stage_b_cells','stage':'B','program_id':PROGRAM,
+               'declaration_sha256':plan['declaration']['declaration_sha256'],
+               'stage_a_report_path':plan['stage_a_report_path'],
+               'stage_a_report_sha256':plan['stage_a_report_sha256'],
+               'stage_a_top_five':[list(v) for v in plan['stage_a_top_five']],
+               'cells':cells}
+    amendment['amendment_sha256']=seal(amendment)
+    return amendment
+def _validate_ledger(ledger,d,ledger_path):
+    if (ledger.get('schema')!=SCHEMA or ledger.get('program_id')!=PROGRAM
+        or ledger.get('declaration_sha256')!=d['declaration_sha256'] or ledger.get('years')!=YEARS
+        or ledger.get('stage')!='A'):raise SweepError('ledger contract drift')
+    base_cells=ledger.get('cells',[]);expected=cells_for(stage_a(),Path(ledger_path).parent)
+    if len(base_cells)!=420:raise SweepError('incomplete ledger')
+    for actual,wanted in zip(base_cells,expected):
+        if any(actual.get(k)!=v for k,v in wanted.items()):raise SweepError('ledger cell changed')
+    amendments=ledger.get('amendments',[])
+    if not isinstance(amendments,list) or len(amendments)>1:raise SweepError('unsupported ledger amendment chain')
+    all_cells=list(base_cells)
+    for amendment in amendments:
+        unsigned=dict(amendment);got=unsigned.pop('amendment_sha256',None)
+        if got!=seal(unsigned):raise SweepError('ledger amendment hash mismatch')
+        if (amendment.get('schema')!=SCHEMA or amendment.get('kind')!='stage_b_cells'
+            or amendment.get('stage')!='B' or amendment.get('program_id')!=PROGRAM
+            or amendment.get('declaration_sha256')!=d['declaration_sha256']):raise SweepError('ledger amendment contract drift')
+        report_path=Path(amendment.get('stage_a_report_path',''))
+        if not report_path.is_file() or digest(report_path)!=amendment.get('stage_a_report_sha256'):
+            raise SweepError('stage-A report binding changed')
+        report=json.loads(report_path.read_text(encoding='utf-8'))
+        pairs=_stage_b_top_five(report,d)
+        if amendment.get('stage_a_top_five')!=[list(v) for v in pairs]:raise SweepError('stage-A top-five binding drift')
+        expected_b=cells_for([(s,n,x) for s,n in pairs for x in d['stage_b_exits']],Path(ledger_path).parent)
+        cells=amendment.get('cells',[])
+        if len(cells)!=210:raise SweepError('incomplete stage-B amendment')
+        for actual,wanted in zip(cells,expected_b):
+            if any(actual.get(k)!=v for k,v in wanted.items()):raise SweepError('ledger amendment cell changed')
+            if actual.get('setfile_sha256')!=hashlib.sha256(render(text(BASE),wanted).encode()).hexdigest():raise SweepError('ledger amendment setfile binding drift')
+        all_cells.extend(cells)
+    return all_cells,amendments
+def _ledger_for_plan(plan,ledger_path,q02,fixture,rendered):
+    if plan['stage']=='A':
+        ledger={k:v for k,v in plan.items() if k!='declaration'}
+        return ledger|{'declaration_path':str(Path(ledger_path).parent/'declaration.json'),
+                       'declaration_sha256':plan['declaration']['declaration_sha256'],
+                       'q02_precondition':q02,'harness_evidence':fixture}
+    if not Path(ledger_path).is_file():raise SweepError('stage B requires the sealed stage-A ledger')
+    ledger=json.loads(Path(ledger_path).read_text(encoding='utf-8'))
+    _validate_ledger(ledger,plan['declaration'],ledger_path)
+    amendment=_stage_b_amendment(plan,rendered)
+    existing=ledger.get('amendments',[])
+    if existing and existing[0]!=amendment:raise SweepError('stage-B amendment already differs; new program required')
+    ledger['amendments']=[amendment]
+    return ledger
 def enqueue(plan,db=DB,art=ART,apply=False):
     d=plan['declaration'];validate_declaration(d)
-    if plan['stage']!='A':raise SweepError('stage B enqueue requires separate Claude adjudication; only plan is available')
     if apply and Path(db).resolve()==DB.resolve():require_current_workers()
     ledger_path=Path(art)/'ledger.json';base=text(BASE)
     rendered={c['work_item_id']:render(base,c) for c in plan['cells']}
@@ -194,14 +271,13 @@ def enqueue(plan,db=DB,art=ART,apply=False):
         priority=conn.execute("SELECT id,payload_json FROM work_items WHERE ea_id='QM5_41398' AND phase='OPT_CENSUS' AND status='pending' AND json_extract(payload_json,'$.program_id')='DL089_QM5_13213_USDJPY_DWX_2019_2025' AND json_extract(payload_json,'$.opt_census_frontier_priority')=1 LIMIT 1").fetchone()
         if priority is None:raise SweepError('no pending reference frontier row; do not invent priority')
         pp=json.loads(priority['payload_json'])
-        ledger={k:v for k,v in plan.items() if k!='declaration'}
-        ledger.update(declaration_path=str(Path(art)/'declaration.json'),declaration_sha256=d['declaration_sha256'],q02_precondition=q02,harness_evidence=fixture)
         payloads={}
         for c in plan['cells']:
             h=hashlib.sha256(rendered[c['work_item_id']].encode()).hexdigest();c['setfile_sha256']=h
-            payload={**{k:c[k] for k in ('cell_key','year','arm','direction','predicate_id','from_date','to_date')},'schema':SCHEMA,'program_id':PROGRAM,'host_timeframe':'H1','opt_census_pool':True,'declared_trial_count':90,'planned_trials':420,'ledger_path':str(ledger_path),'declaration_path':ledger['declaration_path'],'declaration_sha256':d['declaration_sha256'],'source_agent_task_id':TASK,'priority_track':pp.get('priority_track') is True,'opt_census_frontier_priority':pp.get('opt_census_frontier_priority') is True,'priority_source_work_item':priority['id'],'evidence_binding_required':True,'expected_ex5_sha256':d['artifact_identity']['ex5_sha256'],'expected_mq5_sha256':d['artifact_identity']['mq5_sha256'],'expected_setfile_sha256':h,'expected_expert':EA.name,'artifact_identity':{**d['artifact_identity'],'setfile_sha256':h,'data_window_start':c['from_date'],'data_window_end':c['to_date']}}
+            payload={**{k:c[k] for k in ('cell_key','year','arm','direction','predicate_id','from_date','to_date')},'schema':SCHEMA,'program_id':PROGRAM,'stage':plan['stage'],'host_timeframe':'H1','opt_census_pool':True,'declared_trial_count':90,'planned_trials':630 if plan['stage']=='B' else 420,'ledger_path':str(ledger_path),'declaration_path':str(Path(art)/'declaration.json'),'declaration_sha256':d['declaration_sha256'],'source_agent_task_id':STAGE_B_TASK if plan['stage']=='B' else TASK,'priority_track':pp.get('priority_track') is True,'opt_census_frontier_priority':pp.get('opt_census_frontier_priority') is True,'priority_source_work_item':priority['id'],'evidence_binding_required':True,'expected_ex5_sha256':d['artifact_identity']['ex5_sha256'],'expected_mq5_sha256':d['artifact_identity']['mq5_sha256'],'expected_setfile_sha256':h,'expected_expert':EA.name,'artifact_identity':{**d['artifact_identity'],'setfile_sha256':h,'data_window_start':c['from_date'],'data_window_end':c['to_date']}}
             payload.update(expected_expert='QM\\'+EA.name,expected_symbol='USDJPY.DWX',expected_period='H1',expected_from_date=c['from_date'],expected_to_date=c['to_date'])
             payloads[c['work_item_id']]=payload
+        ledger=_ledger_for_plan(plan,ledger_path,q02,fixture,rendered)
         existing=0
         for c in plan['cells']:
             row=conn.execute('SELECT * FROM work_items WHERE id=?',(c['work_item_id'],)).fetchone()
@@ -209,11 +285,16 @@ def enqueue(plan,db=DB,art=ART,apply=False):
                 old=json.loads(row['payload_json'])
                 if row['phase']!='OPT_CENSUS' or row['ea_id']!='QM5_41398' or row['symbol']!='USDJPY.DWX' or row['setfile_path']!=c['setfile_path'] or any(old.get(k)!=payloads[c['work_item_id']].get(k) for k in ('schema','program_id','cell_key','declaration_sha256','expected_setfile_sha256')):raise SweepError('idempotency collision')
                 existing+=1
-        result={'apply':apply,'planned':len(plan['cells']),'existing':existing,'new_rows':len(plan['cells'])-existing,'priority_source':priority['id'],'priority_track':True,'opt_census_frontier_priority':True,'cells':plan['cells']}
+        result={'apply':apply,'stage':plan['stage'],'planned':len(plan['cells']),'existing':existing,'new_rows':len(plan['cells'])-existing,'priority_source':priority['id'],'priority_track':True,'opt_census_frontier_priority':True,'cells':plan['cells']}
         if not apply:return result
         write_json(Path(art)/'declaration.json',d)
-        # Sealed ledger is immutable; runtime status belongs to DB and reports.
-        if ledger_path.exists() and json.loads(ledger_path.read_text())!=ledger:raise SweepError('ledger drift')
+        # Stage A is immutable; Stage B is one hash-bound append-only amendment.
+        if ledger_path.exists():
+            current=json.loads(ledger_path.read_text())
+            if plan['stage']=='A' and current!=ledger:raise SweepError('ledger drift')
+            if plan['stage']=='B':
+                _validate_ledger(current,d,ledger_path)
+                if current.get('amendments',[]) and current!=ledger:raise SweepError('ledger amendment drift')
         write_json(ledger_path,ledger)
         for c in plan['cells']:
             p=Path(c['setfile_path']);p.parent.mkdir(parents=True,exist_ok=True)
@@ -246,11 +327,7 @@ def authenticate_ledger(payload):
     dp=Path(payload.get('declaration_path',''));d=json.loads(dp.read_text(encoding='utf-8'));validate_declaration(d)
     if d['declaration_sha256']!=payload.get('declaration_sha256'):raise SweepError('payload declaration mismatch')
     lp=Path(payload.get('ledger_path',''));ledger=json.loads(lp.read_text(encoding='utf-8'))
-    if ledger.get('schema')!=SCHEMA or ledger.get('program_id')!=PROGRAM or ledger.get('declaration_sha256')!=d['declaration_sha256'] or ledger.get('years')!=YEARS or ledger.get('stage')!='A':raise SweepError('ledger contract drift')
-    expected=cells_for(stage_a(),lp.parent);cells=ledger.get('cells',[])
-    if len(cells)!=420:raise SweepError('incomplete ledger')
-    for actual,wanted in zip(cells,expected):
-        if any(actual.get(k)!=v for k,v in wanted.items()):raise SweepError('ledger cell changed')
+    cells,_=_validate_ledger(ledger,d,lp)
     target=next((c for c in cells if c['cell_key']==payload.get('cell_key')),None)
     if target is None:raise SweepError('candidate absent')
     for key in ('year','arm','direction','predicate_id','from_date','to_date'):
@@ -299,45 +376,97 @@ def select(windows):
         # excludes candidate winners, not points from this fixed neighbourhood.
         w['plateau_score']=statistics.median(n['dev_score'] for n in neighbors)
     ranked=sorted((w for w in windows if w['admissible']),key=lambda w:(-w['plateau_score'],w['length'],w['start']))
-    if not ranked:return {'complete':True,'winner':None,'top_five':[],'refutation':'NO_ADMISSIBLE_WINDOW'}
+    if not ranked:return {'complete':True,'winner':None,'top_five':[],'refutation':'NO_ADMISSIBLE_WINDOW','refutation_verdict':'H-WIN REFUTED'}
     winner=ranked[0];baseline=by[(3,3)]
-    if not baseline['admissible']:return {'complete':True,'winner':None,'top_five':[],'refutation':'BASELINE_INADMISSIBLE'}
+    if not baseline['admissible']:return {'complete':True,'winner':None,'top_five':[],'refutation':'BASELINE_INADMISSIBLE','refutation_verdict':'H-WIN REFUTED'}
     oos=[winner['years'][y] for y in (2023,2024,2025)];bp=[baseline['years'][y] for y in (2023,2024,2025)]
     pnls=[n for v in oos for n in v['costed_trade_pnl']];profit=sum(n for n in pnls if n>0);loss=-sum(n for n in pnls if n<0)
     pf=profit/loss if loss else None
     confirm=statistics.median(v['score'] for v in oos)>=statistics.median(v['score'] for v in bp) and (pf>=1 if pf is not None else profit>0)
     improvement=winner['plateau_score']>=1.10*baseline['dev_score']
     slim=lambda w:{k:w[k] for k in ('start','length','exit','dev_score','plateau_score')}
-    return {'complete':True,'winner':slim(winner),'top_five':[slim(w) for w in ranked[:5]],'oos_pooled_pf':pf,'oos_confirmation':confirm,'dev_improvement':improvement,'refutation':'SURVIVES' if confirm and improvement else 'REFUTED'}
-def report(art=ART,db=DB,output=EVIDENCE/'2026-09-09_window_sweep_surface.csv'):
+    winner_oos=statistics.median(v['score'] for v in oos);baseline_oos=statistics.median(v['score'] for v in bp)
+    survives=confirm and improvement
+    return {'complete':True,'winner':slim(winner),'top_five':[slim(w) for w in ranked[:5]],'oos_pooled_pf':pf,
+            'winner_oos_median_costed_return_to_maxdd':winner_oos,
+            'baseline_oos_median_costed_return_to_maxdd':baseline_oos,
+            'oos_confirmation':confirm,'dev_improvement':improvement,
+            'refutation':'SURVIVES' if survives else 'REFUTED',
+            'refutation_verdict':'H-WIN KEPT' if survives else 'H-WIN REFUTED'}
+def _measure_cells(cells,conn):
+    surface=[];missing=[];windows={}
+    for c in cells:
+        key=(c['start'],c['length'],c['exit']);windows.setdefault(key,{'start':c['start'],'length':c['length'],'exit':c['exit'],'years':{}})
+        row=conn.execute('SELECT status,verdict,evidence_path,payload_json FROM work_items WHERE id=?',(c['work_item_id'],)).fetchone()
+        entry={k:c[k] for k in ('cell_key','work_item_id','start','length','exit','year')};entry.update(status=row['status'] if row else 'NOT_ENQUEUED',verdict=row['verdict'] if row else '',error='')
+        if row and row['status']=='done' and row['verdict']=='MEASURED':
+            try:
+                payload=json.loads(row['payload_json']);authenticate_ledger(payload)
+                m=measure(row['evidence_path'],payload);windows[key]['years'][c['year']]=m
+                entry.update({k:v for k,v in m.items() if k!='costed_trade_pnl'})
+            except (OSError,ValueError,KeyError) as exc:entry['error']=str(exc);missing.append(c['cell_key'])
+        else:missing.append(c['cell_key'])
+        surface.append(entry)
+    return surface,missing,list(windows.values())
+def select_stage_b(windows,stage_a_windows,stage_a_result):
+    if any(len(w['years'])!=7 for w in windows):return {'complete':False,'winner':None,'reason':'incomplete annual matrix'}
+    by={(w['start'],w['length'],w['exit']):w for w in windows}
+    for w in windows:
+        values=list(w['years'].values());w['admissible']=all(v['entry_days']>=10 and v['trades']>=5 for v in values) and statistics.mean(v['trades'] for v in values)>=40
+        w['dev_score']=statistics.median(w['years'][y]['score'] for y in (2019,2020,2021,2022))
+    for w in windows:
+        neighbors=[by[key] for key in by if key[:2]==(w['start'],w['length']) and abs(key[2]-w['exit'])<=1]
+        w['plateau_score']=statistics.median(n['dev_score'] for n in neighbors)
+    ranked=sorted((w for w in windows if w['admissible']),key=lambda w:(-w['plateau_score'],w['length'],w['start'],w['exit']))
+    if not ranked:return {'complete':True,'winner':None,'final_configuration':stage_a_result.get('winner'),'reason':'NO_ADMISSIBLE_STAGE_B_WINDOW'}
+    candidate=ranked[0];baseline=next((w for w in stage_a_windows if (w['start'],w['length'])==(stage_a_result['winner']['start'],stage_a_result['winner']['length'])),None)
+    if baseline is None:raise SweepError('stage-A winner absent from report surface')
+    oos=[candidate['years'][y] for y in (2023,2024,2025)];base_oos=[baseline['years'][y] for y in (2023,2024,2025)]
+    pnls=[n for v in oos for n in v['costed_trade_pnl']];profit=sum(n for n in pnls if n>0);loss=-sum(n for n in pnls if n<0)
+    pf=profit/loss if loss else None
+    confirmation=statistics.median(v['score'] for v in oos)>=statistics.median(v['score'] for v in base_oos) and (pf>=1 if pf is not None else profit>0)
+    beats=candidate['plateau_score']>=1.10*baseline['plateau_score']
+    slim=lambda w:{k:w[k] for k in ('start','length','exit','dev_score','plateau_score')}
+    final=slim(candidate) if beats and confirmation else stage_a_result['winner']
+    return {'complete':True,'winner':slim(candidate),'stage_a_winner_exit_18':slim(baseline),'oos_confirmation':confirmation,
+            'winner_oos_median_costed_return_to_maxdd':statistics.median(v['score'] for v in oos),
+            'stage_a_winner_oos_median_costed_return_to_maxdd':statistics.median(v['score'] for v in base_oos),
+            'oos_pooled_pf':pf,'dev_improvement':beats,'final_configuration':final,
+            'final_rule':'STAGE_B_SELECTED' if beats and confirmation else 'STAGE_A_EXIT_18_STANDS'}
+def report(art=ART,db=DB,output=EVIDENCE/'2026-09-09_window_sweep_surface.csv',stage='A'):
     d=json.loads((Path(art)/'declaration.json').read_text());validate_declaration(d)
-    cells=cells_for(stage_a(),art);conn=sqlite3.connect(f'file:{Path(db).as_posix()}?mode=ro',uri=True);conn.row_factory=sqlite3.Row
-    surface=[];missing=[];windows={(s,n):{'start':s,'length':n,'exit':x,'years':{}} for s,n,x in stage_a()}
+    ledger_path=Path(art)/'ledger.json'
+    if ledger_path.is_file():
+        ledger=json.loads(ledger_path.read_text(encoding='utf-8'));all_cells,amendments=_validate_ledger(ledger,d,ledger_path)
+    else:
+        all_cells,amendments=cells_for(stage_a(),art),[]
+    if stage=='B' and not amendments:raise SweepError('stage B has not been planned')
+    cells=all_cells if stage=='B' else all_cells[:420]
+    conn=sqlite3.connect(f'file:{Path(db).as_posix()}?mode=ro',uri=True);conn.row_factory=sqlite3.Row
     try:
-        for c in cells:
-            row=conn.execute('SELECT status,verdict,evidence_path,payload_json FROM work_items WHERE id=?',(c['work_item_id'],)).fetchone()
-            entry={k:c[k] for k in ('cell_key','work_item_id','start','length','exit','year')};entry.update(status=row['status'] if row else 'NOT_ENQUEUED',verdict=row['verdict'] if row else '',error='')
-            if row and row['status']=='done' and row['verdict']=='MEASURED':
-                try:
-                    payload=json.loads(row['payload_json']);authenticate_ledger(payload)
-                    m=measure(row['evidence_path'],payload);windows[(c['start'],c['length'])]['years'][c['year']]=m
-                    entry.update({k:v for k,v in m.items() if k!='costed_trade_pnl'})
-                except (OSError,ValueError,KeyError) as exc:entry['error']=str(exc);missing.append(c['cell_key'])
-            else:missing.append(c['cell_key'])
-            surface.append(entry)
+        surface,missing,windows=_measure_cells(cells,conn)
     finally:conn.close()
-    selection=select(list(windows.values()))
-    for entry in surface:entry['window_admissible']=windows[(entry['start'],entry['length'])].get('admissible','UNDETERMINED')
+    if stage=='A':selection=select(windows)
+    else:
+        stage_a_conn=sqlite3.connect(f'file:{Path(db).as_posix()}?mode=ro',uri=True);stage_a_conn.row_factory=sqlite3.Row
+        try:stage_a_surface,_,stage_a_windows=_measure_cells(all_cells[:420],stage_a_conn)
+        finally:stage_a_conn.close()
+        del stage_a_surface
+        stage_a_report=json.loads(Path(amendments[0]['stage_a_report_path']).read_text(encoding='utf-8'))
+        selection=select_stage_b([w for w in windows if w['exit']!=18],stage_a_windows,stage_a_report)
+    admissible={(w['start'],w['length'],w['exit']):w.get('admissible','UNDETERMINED') for w in windows}
+    for entry in surface:entry['window_admissible']=admissible[(entry['start'],entry['length'],entry['exit'])]
     fields=list(dict.fromkeys(k for r in surface for k in r));Path(output).parent.mkdir(parents=True,exist_ok=True)
     with Path(output).open('w',encoding='utf-8',newline='') as f:
         w=csv.DictWriter(f,fieldnames=fields,lineterminator='\n');w.writeheader();w.writerows(surface)
-    result={'schema':SCHEMA,'program_id':PROGRAM,'declaration_sha256':d['declaration_sha256'],'missing_or_unusable_cells':missing,'surface_path':str(output),'stage_table':[{k:v for k,v in w.items() if k!='years'} for w in windows.values()],**selection}
+    result={'schema':SCHEMA,'program_id':PROGRAM,'stage':stage,'declaration_sha256':d['declaration_sha256'],'missing_or_unusable_cells':missing,'surface_path':str(output),'stage_table':[{k:v for k,v in w.items() if k!='years'} for w in windows],**selection}
     write_json(Path(output).with_suffix('.json'),result);return result
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='command',required=True)
     for name in ('plan','enqueue','report'):
         p=sub.add_parser(name);p.add_argument('--artifacts',type=Path,default=ART);p.add_argument('--output',type=Path)
         if name!='report':p.add_argument('--stage',choices=('A','B'),default='A');p.add_argument('--stage-a-report',type=Path)
+        else:p.add_argument('--stage',choices=('A','B'),default='A')
         if name!='plan':p.add_argument('--db',type=Path,default=DB)
         if name=='enqueue':p.add_argument('--apply',action='store_true')
     owner=sub.add_parser('queue-owner',help='append-only registration of the non-dispatchable queue owner')
@@ -356,7 +485,9 @@ def main():
                 finally:conn.close()
             elif a.mode=='plan':result=queue_order_plan(a.db,a.queue_order_at,a.reason,a.owner_decision)
             else:result=queue_order_apply(a.db,a.backup_dir,a.queue_order_at,a.reason,a.owner_decision)
-        elif a.command=='report':result=report(a.artifacts,a.db,a.output or EVIDENCE/'2026-09-09_window_sweep_surface.csv')
+        elif a.command=='report':
+            default_output=EVIDENCE/('2026-09-09_window_sweep_surface.csv' if a.stage=='A' else '2026-09-09_window_sweep_stage_b_surface.csv')
+            result=report(a.artifacts,a.db,a.output or default_output,a.stage)
         else:
             plan=build_plan(a.stage,a.artifacts,a.stage_a_report)
             result=plan if a.command=='plan' else enqueue(plan,a.db,a.artifacts,a.apply)

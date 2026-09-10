@@ -2397,3 +2397,9 @@ parent-close return plus lower-tercile completed-week close in April-July; fixed
 Five current whole-host CPU samples averaged 68.52% with an 87.14% maximum, below the exclusive 97%
 ceiling. One Q02 canary is pending as `2edd794c-cb9e-4ed5-827a-d67223c8bd02`. Evidence:
 `docs/ops/evidence/2026-09-10_qm5_41428_wti_refinery_ramp_weekly_close_location_reversion_build_q02.md`.
+
+## 2026-09-10T21:xxZ — RESULT: WINSWEEP Stage-B tooling ready; Stage A still guarded
+
+REVIEW. Stage-B plan/enqueue/report tooling is implemented and focused tests pass (43). Stage A has
+349 MEASURED, 1 active and 70 pending cells, so the guarded Stage-B production dry-run refuses before
+any DB or ledger mutation. Evidence: `docs/ops/evidence/2026-09-10_window_sweep_stage_b_tooling.md`.
