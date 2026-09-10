@@ -2744,6 +2744,104 @@ def test_qm5_41192_pending_q02_missing_binary_can_append_recovery(
     assert tuple(q02) == ("pending", 0)
 
 
+def test_qm5_9406_first_q02_stale_binary_can_append_exact_recovery(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    label = "QM5_1001_qs-daily-mac-d1"
+    repo, root = _fixture(tmp_path, [label])
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    assert first["enqueued_count"] == 1, first
+    first_id = first["enqueued"][0]["work_item_id"]
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    source_sha = compile_work_items.sha256_file(source)
+    binary = repo / "framework" / "EAs" / label / f"{label}.ex5"
+    binary.write_bytes(b"reviewed current-source binary")
+    reviewed_ex5_sha = compile_work_items.sha256_file(binary)
+    with farmctl.connect(root) as conn:
+        row = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (first_id,)
+        ).fetchone()
+        payload = json.loads(row["payload_json"])
+        payload["compile_result"] = {
+            "compile_result": "PASS",
+            "build_check_result": "PASS",
+            "failure_classes": [],
+            "success": True,
+            "ex5_sha256": reviewed_ex5_sha,
+        }
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',"
+            "ex5_sha256=?,payload_json=? WHERE id=?",
+            (reviewed_ex5_sha, json.dumps(payload), first_id),
+        )
+        conn.commit()
+    binary.write_bytes(b"stale binary from a rejected compile")
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_9406_FIRST_Q02_BINARY_RECOVERY_EA_ID",
+        "1001",
+    )
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_9406_FIRST_Q02_BINARY_RECOVERY_EA_LABEL",
+        label,
+    )
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_9406_FIRST_Q02_BINARY_RECOVERY_SOURCE_SHA256",
+        source_sha,
+    )
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_ID",
+        first_id,
+    )
+    monkeypatch.setattr(
+        compile_work_items,
+        "QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_EX5_SHA256",
+        reviewed_ex5_sha,
+    )
+
+    recovery = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority=(
+            compile_work_items.QM5_9406_FIRST_Q02_BINARY_RECOVERY_AUTHORITY
+        ),
+    )
+
+    assert recovery["ok"] is True
+    assert recovery["enqueued_count"] == 1
+    assert recovery["enqueued"][0]["work_item_id"] != first_id
+    assert recovery["refused"] == []
+    with farmctl.connect(root) as conn:
+        successor = conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?",
+            (recovery["enqueued"][0]["work_item_id"],),
+        ).fetchone()
+    successor_payload = json.loads(successor["payload_json"])
+    assert successor_payload["source_repair_predecessor_work_item_ids"] == [first_id]
+
+
+def test_qm5_9406_first_q02_recovery_refuses_wrong_authority(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_9406_qs-daily-mac"
+    repo, root = _fixture(tmp_path, [label])
+
+    result = compile_work_items.enqueue_compile_eas(
+        root,
+        repo,
+        [label],
+        source_repair_authority="router_first_q02_binary_repair:wrong:QM5_9406",
+    )
+
+    assert result["ok"] is False
+    assert "SOURCE_REPAIR_AUTHORITY_INVALID" in result["refused"][0]["reasons"]
+
+
 def test_qm5_41164_41191_compile_fail_repair_authority_is_exact_label_bound() -> None:
     allowed = compile_work_items.QM5_41164_41191_COMPILE_FAIL_REPAIR_EA_LABELS
 

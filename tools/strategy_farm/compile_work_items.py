@@ -630,6 +630,26 @@ QM5_41192_Q02_BINARY_RECOVERY_AUTHORITY = (
 QM5_41192_Q02_BINARY_RECOVERY_EA_LABELS = frozenset({
     "QM5_41192_xtixng-mdaily-hl-rv",
 })
+# Exact paced-fleet authority for the QM5_9406 D1 multi-FX first-Q02
+# recovery.  The current source still matches its reviewed COMPILE_OK receipt,
+# but the canonical EX5 was replaced by bytes from an older failed compile.
+# This task/EA/source/predecessor binding permits one append-only current-source
+# compile successor and grants no strategy, backtest, gate-verdict, or
+# cross-EA authority.
+QM5_9406_FIRST_Q02_BINARY_RECOVERY_AUTHORITY = (
+    "router_first_q02_binary_repair:7fa67295-4b30-4c27-beba-970983acb74b:QM5_9406"
+)
+QM5_9406_FIRST_Q02_BINARY_RECOVERY_EA_ID = "9406"
+QM5_9406_FIRST_Q02_BINARY_RECOVERY_EA_LABEL = "QM5_9406_qs-daily-mac"
+QM5_9406_FIRST_Q02_BINARY_RECOVERY_SOURCE_SHA256 = (
+    "23bc76a30cadb074ca66c66ffcd9a5602222cd1649232a433ed29510d0c4c5cf"
+)
+QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_ID = (
+    "28aa59c6-9664-402c-8e9a-f3571b1ea8fc"
+)
+QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_EX5_SHA256 = (
+    "5cb131e4ea12a03e4f09472e3e59243e754ad8d37f5021fdbf23e8e996d56f12"
+)
 # Exact remediation authority for the 2026-08-24 ROT-violation revert
 # (router task b63eaead-7890-4be4-b8e7-0edea3fe6a85). Both EAs had ad-hoc
 # EX5 binaries committed after an explicit LIVE_FACTORY_AD_HOC_COMPILE_REFUSED
@@ -2539,6 +2559,93 @@ def _backlog_source_repair_authorized(
     )
 
 
+def _qm5_9406_first_q02_binary_recovery_authorized(
+    repo_root: Path | None,
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+    current_work_item_id: str | None,
+) -> bool:
+    """Bind one stale-binary recovery to the reviewed D1 multi-FX build."""
+    if (
+        authority != QM5_9406_FIRST_Q02_BINARY_RECOVERY_AUTHORITY
+        or ea_label != QM5_9406_FIRST_Q02_BINARY_RECOVERY_EA_LABEL
+        or ea_id != QM5_9406_FIRST_Q02_BINARY_RECOVERY_EA_ID
+        or str(source_sha or "").lower()
+        != QM5_9406_FIRST_Q02_BINARY_RECOVERY_SOURCE_SHA256
+        or repo_root is None
+        or inventory is None
+    ):
+        return False
+    rows = inventory.get("work_rows", {}).get(ea_id, [])
+    predecessor = next(
+        (
+            row
+            for row in rows
+            if str(row.get("id"))
+            == QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None or any(row.get("phase") == "Q02" for row in rows):
+        return False
+    predecessor_payload = _json_object(predecessor.get("payload_json"))
+    compile_result = predecessor_payload.get("compile_result")
+    if not (
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "done"
+        and predecessor.get("verdict") == "COMPILE_OK"
+        and predecessor_payload.get("ea_label") == ea_label
+        and str(predecessor_payload.get("mq5_sha256") or "").lower()
+        == QM5_9406_FIRST_Q02_BINARY_RECOVERY_SOURCE_SHA256
+        and str(predecessor.get("ex5_sha256") or "").lower()
+        == QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_EX5_SHA256
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") == "PASS"
+        and compile_result.get("build_check_result") == "PASS"
+        and compile_result.get("failure_classes") == []
+        and compile_result.get("success") is True
+        and str(compile_result.get("ex5_sha256") or "").lower()
+        == QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_EX5_SHA256
+    ):
+        return False
+    if current_work_item_id is not None:
+        current = next(
+            (
+                row
+                for row in rows
+                if str(row.get("id")) == str(current_work_item_id)
+            ),
+            None,
+        )
+        current_payload = _json_object(
+            current.get("payload_json") if current else None
+        )
+        return bool(
+            current
+            and current.get("phase") == COMPILE_EA_PHASE
+            and current_payload.get("append_only_source_repair") is True
+            and current_payload.get("compile_source_repair_authority")
+            == authority
+            and str(current_payload.get("mq5_sha256") or "").lower()
+            == QM5_9406_FIRST_Q02_BINARY_RECOVERY_SOURCE_SHA256
+            and QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_ID
+            in current_payload.get("source_repair_predecessor_work_item_ids", [])
+        )
+    ex5 = repo_root / "framework" / "EAs" / ea_label / f"{ea_label}.ex5"
+    try:
+        return bool(
+            ex5.is_file()
+            and sha256_file(ex5).lower()
+            != QM5_9406_FIRST_Q02_BINARY_RECOVERY_PREDECESSOR_EX5_SHA256
+        )
+    except OSError:
+        return False
+
+
 def _source_repair_authorized(
     ea_label: str,
     authority: str | None,
@@ -2722,6 +2829,16 @@ def _source_repair_authorized(
         )
     if authority == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY:
         return _hma_cata_requal_authorized(
+            repo_root,
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+            current_work_item_id=current_work_item_id,
+        )
+    if authority == QM5_9406_FIRST_Q02_BINARY_RECOVERY_AUTHORITY:
+        return _qm5_9406_first_q02_binary_recovery_authorized(
             repo_root,
             ea_label,
             authority,
