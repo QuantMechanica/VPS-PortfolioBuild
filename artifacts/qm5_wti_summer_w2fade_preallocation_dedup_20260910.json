@@ -1,0 +1,71 @@
+{
+  "candidate": {
+    "author": "Dmitry Burakov; Max Freidin; Yuriy Solovyev; Hongbing Yang; Ahmet Goncu; Athanasios Pantelous; OpenAI Codex",
+    "mechanic": "normalized-weekly-wti-two-adjacent-completed-week-open-to-close-log-returns-strict-same-sign-contrarian-only-june-july-august-september-october-one-week-hold",
+    "slug": "wti-summer-w2fade",
+    "strategy_id": "BURAKOV-YANG-WTI-SUMMER-W2FADE-20260910_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T00:01:01+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41406_wti-summer-w2agree_card.md",
+      "score": 0.9473684210526315,
+      "slug": "wti-summer-w2agree",
+      "source": "card",
+      "strategy_id": "BURAKOV-MOP-WTI-SUMMER-W2AGREE-20260910_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41396_xng-summer-w2agree_card.md",
+      "score": 0.8421052631578947,
+      "slug": "xng-summer-w2agree",
+      "source": "card",
+      "strategy_id": "EIA-MOP-XNG-SUMMER-W2AGREE-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41401_xng-shoulder-w2fade_card.md",
+      "score": 0.8421052631578947,
+      "slug": "xng-shoulder-w2fade",
+      "source": "card",
+      "strategy_id": "EIA-MOP-XNG-SHOULDER-W2FADE-20260909_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41403_wti-winter-w2fade_card.md",
+      "score": 0.75,
+      "slug": "wti-winter-w2fade",
+      "source": "card",
+      "strategy_id": "BURAKOV-YANG-WTI-WINTER-W2FADE-20260909_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4887,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1497,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
