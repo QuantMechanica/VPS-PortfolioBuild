@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-10T12:47:02Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "d8881996f1720415e2d1fce0511bd6482438ea46",
+  "mission": "Grow the certified V5 portfolio book with new forex sleeves without duplicating the fully mechanized 66-pair cointegration frontier.",
+  "frontier": {
+    "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "reconciliation_record": "artifacts/fx_cointegration_frontier_cpu_stop_20260910T0616Z_board_advisor.json",
+    "relationships_scanned": 66,
+    "approved_next_best_cards_checked": 16,
+    "approved_next_best_cards_with_ea_directory": 16,
+    "unbuilt_approved_pair_found": false,
+    "duplicate_guard": "Creating another scan-derived Card, EA, or Q02 row would duplicate governed work."
+  },
+  "anchors": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "state": "Q02 PASS, Q04 PASS, Q05 FAIL",
+      "q02_repair_required": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "state": "Q02 PASS, Q04 FAIL",
+      "q02_repair_required": false
+    }
+  },
+  "selected_fallback": {
+    "ea_id": "QM5_41335",
+    "slug": "fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41335_fx-usd-exhaustion-reversal-opt.md",
+    "card_g0_status": "APPROVED",
+    "r1_r4": "PASS",
+    "structural": true,
+    "low_frequency": true,
+    "ml_used": false,
+    "predecessor_phase": "Q04",
+    "predecessor_work_item_id": "41b82b89-c50e-4eb0-8563-928c4d5d5d9a",
+    "predecessor_verdict": "PASS_LOWFREQ",
+    "predecessor_metrics": {
+      "fold_count": 3,
+      "pooled_trades": 32,
+      "pooled_pf_net": 1.033,
+      "oos_years": "2023-2025"
+    },
+    "q04_aggregate_path": "D:/QM/reports/pipeline/QM5_41335/Q04/AUDUSD.DWX__41b82b89-c50e-4eb0-8563-928c4d5d5d9a/aggregate.json",
+    "q04_aggregate_sha256": "d3b4674fce8420806fa9e45040c305a58757e3e280bc63a58c856ef034dc1c01"
+  },
+  "artifact_identity": {
+    "mq5_sha256": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+    "ex5_sha256": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+    "setfile_sha256": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47"
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "build_guard": {
+    "generated_mq5_written": false,
+    "compile_enqueued": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+    "audit_exit_code": 0,
+    "audit_ok": true,
+    "audit_predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "audit_hit_count": 0,
+    "audit_hits": []
+  },
+  "capacity_preflight": {
+    "checked_at_utc": "2026-09-10T12:47:00.4590529Z",
+    "cpu_samples_percent": [
+      91.51755249925245,
+      77.0247392925729,
+      74.82004976964052,
+      71.50171120872949,
+      72.26532214507581
+    ],
+    "cpu_average_percent": 77.42587498305423,
+    "cpu_maximum_percent": 91.51755249925245,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": false,
+    "active_work_item_count": 5,
+    "active_work_item_limit": 7,
+    "active_backpressure_hit": false
+  },
+  "enqueue": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm enqueue-backtest --ea QM5_41335 --phase Q05 --from-work-item-id 41b82b89-c50e-4eb0-8563-928c4d5d5d9a",
+    "enqueued": true,
+    "phase": "Q05",
+    "work_item_id": "5b046970-f847-42c6-a3df-77b2d5ec11bc",
+    "status_after_enqueue": "pending",
+    "created_count": 1,
+    "requeued_count": 0,
+    "skipped_count": 0,
+    "duplicate_q05_rows_after_enqueue": 0,
+    "dispatch_tick_run": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "terminal_process_mutated": false
+  },
+  "outcome": "QM5_41335 advanced from Q04 PASS_LOWFREQ to one pending Q05 work item."
+}
