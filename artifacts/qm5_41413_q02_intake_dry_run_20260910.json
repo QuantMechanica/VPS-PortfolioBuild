@@ -1,0 +1,35 @@
+{
+  "schema": "qm.first-q02-intake/v1",
+  "recorded_at_local": "2026-09-10T08:00:00+02:00",
+  "applied": false,
+  "dry_run": true,
+  "eligible": true,
+  "would_enqueue": true,
+  "reason": "ELIGIBLE",
+  "ea_id": "QM5_41413",
+  "compile_work_item_id": "cabd9c09-d11b-41e8-bad1-777298abce89",
+  "compile_evidence_path": "D:/QM/reports/work_items/cabd9c09-d11b-41e8-bad1-777298abce89/QM5_41413/COMPILE_EA/compile_evidence.json",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41413_xauxag-walt3-cont/QM5_41413_xauxag-walt3-cont.ex5",
+  "ex5_sha256": "a8d5bef919ca607c7a62858b91960121c09cea935e99a525ffb7a196773b9234",
+  "target_symbols": [
+    "XAGUSD.DWX",
+    "XAUUSD.DWX"
+  ],
+  "canary": {
+    "symbol": "QM5_41413_XAU_XAG_WALT3_CONT_D1",
+    "timeframe": "D1",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41413_xauxag-walt3-cont/sets/QM5_41413_xauxag-walt3-cont_QM5_41413_XAU_XAG_WALT3_CONT_D1_D1_backtest.set",
+    "setfile_sha256": "9e11aaea709e8dd4f6e12de2e0bc28b61fccaf05cc61bbfdedfe21424d6ac507"
+  },
+  "risk_contract": {
+    "setfile_count": 3,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "magic_contract": {
+    "ok": true,
+    "active_row_count": 2,
+    "issues": []
+  },
+  "deferred": []
+}

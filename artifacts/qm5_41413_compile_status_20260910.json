@@ -1,0 +1,21 @@
+{
+  "schema": "qm.compile-status/v1",
+  "recorded_at": "2026-09-10T05:46:21+00:00",
+  "ea_id": "QM5_41413",
+  "ea_label": "QM5_41413_xauxag-walt3-cont",
+  "work_item_id": "cabd9c09-d11b-41e8-bad1-777298abce89",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "framework_build_check_warnings": 3,
+  "framework_build_check_failures": 0,
+  "setfile_count": 3,
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41413_xauxag-walt3-cont/QM5_41413_xauxag-walt3-cont.ex5",
+  "ex5_sha256": "a8d5bef919ca607c7a62858b91960121c09cea935e99a525ffb7a196773b9234",
+  "mq5_sha256": "ee5cfb8a663bdc20f0fcedd569fa73a531981864b4f5207e743878f9b24b8c63",
+  "compile_evidence_path": "D:/QM/reports/work_items/cabd9c09-d11b-41e8-bad1-777298abce89/QM5_41413/COMPILE_EA/compile_evidence.json",
+  "no_gate_verdict": true
+}
