@@ -652,3 +652,59 @@ no new build ticket required.
 still `pending`/unclaimed/`attempt_count=0`, `updated_at=2026-09-09T10:52:59Z`,
 ~2 days static). No `update-task` call on any of the three (no acceptance
 criterion newly met by this correction alone).
+
+## Checked 2026-09-10T23:51Z (headless orchestration cycle)
+
+`bb814520`/`dfc60103` gate unchanged: `QM5_41394` SP500.DWX/XAUUSD.DWX Q02 rows
+still `status=pending`, `claimed_by=NULL`, `attempt_count=0`,
+`updated_at=2026-09-09T10:52:59Z` (direct sqlite read). No action, outside
+authority. `farmctl health` overall=FAIL (15/17/53) — same chronic set as prior
+cycles, no new CRITICAL-class item.
+
+**Correction to prior cycles' assessment of `3032534e`'s remaining scope:**
+earlier checkpoints (e.g. 2026-09-11T~00:35Z above) stated P2 (converter) and
+P3 (reconciliation harness) "are still open and require new Codex tickets."
+That is stale/inaccurate — `tools/dukascopy/convert_to_import.py` and
+`tools/dukascopy/reconcile_overlap.py` already exist, are wired to the governed
+non-FX `price_scale.csv` metadata, and implement exactly the plan's P3
+acceptance thresholds in code (`CLOSE_P95_SPREAD_MULTIPLIER=1.5`,
+`MIN_SESSION_COVERAGE=0.99`, `REQUIRED_DST_OFFSET_SECONDS=0`,
+`REQUIRED_OVERLAP_START=2025-10-01`, `REQUIRED_OVERLAP_END=2026-04-01`,
+`MAX_COMPUTE_SECONDS=2h`) — these were built as part of the `2f717775` line of
+work (commit `97c1ea8d50`, 30/30 tests), not drafted separately. No new Codex
+ticket is needed to build P2/P3; what remains is *running* them against real
+data and then P5.
+
+Checked `download_manifest.jsonl` under the active downloader's output root
+(`D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened`): 8 of 37 symbols
+(`AUDCAD`, `AUDCHF`, `AUDJPY`, `AUDNZD`, `AUDUSD`, `CADCHF`, `CADJPY`, `CHFJPY`)
+already have a complete download range `2025-10-01T00:00Z -> 2026-09-10T21:00Z`,
+i.e. they already fully cover the plan's required overlap window
+(2025-10-01..2026-04-01) and are reconciliation-ready right now, read-only.
+Remaining symbols (alphabetically after `CHFJPY`, e.g. `EURAUD` at 7590/8278
+hours) are still in progress; downloader `progress.json` shows
+`completed=73889/306286`, `errors=102` (still transient churn), `status=RUNNING`,
+`updated_at_utc=2026-09-10T23:48:58Z` — healthy, no stall, no new collision
+(single process, PID 18208, confirmed via full `Win32_Process` command-line
+scan).
+
+Not executed this cycle: running `convert_to_import.py` + `reconcile_overlap.py`
+for the 8 ready symbols requires locating and binding the correct existing DWX-side
+M1 export CSVs for the same window and verifying the splice timestamps from
+`tick_tail.csv` line up — that binding step deserves the dedicated, careful pass
+already deferred by prior cycles (this is real reconciliation output that feeds
+an eventual import decision, not just a status read), rather than being rushed
+here. **Concrete next step for that dedicated pass:** for the 8 symbols above,
+locate their governed DWX M1 export CSVs, run `reconcile_overlap.py --jobs`
+(or per-symbol) against the Dukascopy M1 output from `convert_to_import.py`
+(splice timestamps from `tick_tail.csv`, instrument metadata from
+`price_scale.csv` for non-FX only — all 8 are FX here so no metadata file is
+needed), write results under a new `docs/ops/evidence/` or
+`D:/QM/reports/dukascopy/reconciliation/` root, and only then consider
+per-symbol import via the existing T1 queue for any that PASS. P5 (monthly
+refresh task + >45-day WARN health check) remains genuinely unbuilt and is a
+separate, real automation-surface decision (it will eventually feed the import
+pipeline) — also left for that dedicated pass, not attempted here.
+
+No `update-task` call on any of the three tasks (no acceptance criterion newly
+met on `bb814520`/`dfc60103`/`3032534e`).
