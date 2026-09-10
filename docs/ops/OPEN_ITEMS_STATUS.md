@@ -2482,3 +2482,18 @@ risk `XTIUSD.DWX` D1 Q02 canary is pending as
 exclusive 97% ceiling. No live, deploy-manifest, or portfolio-gate surface was
 touched. Evidence:
 `docs/ops/evidence/2026-09-11_qm5_41429_wti_refinery_maintenance_weekly_close_location_reversion_build_q02.md`.
+
+## 2026-09-10T23:48Z — CORRECTION: 3032534e P2/P3 tooling already built, not missing
+
+Prior cycle's ~00:35Z note claimed the Dukascopy P2 converter and P3
+reconciliation harness "need new Codex tickets" — incorrect. Both
+`tools/dukascopy/convert_to_import.py` and `tools/dukascopy/reconcile_overlap.py`
+were built together with the P1 downloader under the original ticket
+`e9dea1e3` (landed `3c65edd4d2` 2026-09-07, extended `97c1ea8d50` 2026-09-09),
+23/23 tests pass. No new build ticket needed. What remains is *running* P3
+once the downloader (PID 18208, `completed=73884/306286`, 9/37 symbols
+touched so far) has covered each symbol's Oct-2025→Apr-2026 overlap window —
+not yet the case for 28/37 symbols, so no reconciliation run this cycle.
+`bb814520`/`dfc60103` gate unchanged (QM5_41394 Q02 rows still pending,
+~2 days static). No `update-task` call on any of the three. Full detail:
+`docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`.

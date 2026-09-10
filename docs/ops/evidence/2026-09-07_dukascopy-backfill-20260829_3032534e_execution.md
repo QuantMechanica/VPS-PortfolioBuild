@@ -623,3 +623,32 @@ tail of a routine health-check cycle. Downloader (PID 18208) still `RUNNING`,
 no new collision, no process pileup this cycle (1 headless + 2 interactive
 `claude.exe`). No `update-task` call on `3032534e` itself (task stays
 `IN_PROGRESS`; 3 of 4 acceptance criteria remain open).
+
+## Checked 2026-09-10T23:48Z (headless orchestration cycle) — correction to prior entry
+
+The previous entry ("Checked 2026-09-11T~00:35Z") claimed the 3 remaining
+acceptance criteria for `3032534e` "require new Codex tickets for the P2
+converter and P3 reconciliation harness" — that is **stale/incorrect**. Both
+`tools/dukascopy/convert_to_import.py` (P2) and `tools/dukascopy/reconcile_overlap.py`
+(P3) were already built together with the P1 downloader in the original ticket
+`e9dea1e3` (per this file's own "Started 14:22Z" entry above), landed
+2026-09-07 (`3c65edd4d2`, "ops: add governed Dukascopy backfill source tools"),
+and extended 2026-09-09 (`97c1ea8d50`) for non-FX metadata support — the very
+commit the prior entry cited when closing `2f717775`. All 23 tests in
+`tools/dukascopy/tests/` pass (verified this cycle: `pytest tools/dukascopy/tests/ -q`
+→ `23 passed`). **No new Codex ticket is needed to build P2/P3.**
+
+What is actually still open is *running* P3 against real data, not building it:
+the downloader (PID 18208, `20260909T191800Z_hardened`) has only produced ledger
+rows for 9 of 37 symbols so far (`completed=73884/306286`, ~24%), so the
+Oct-2025→Apr-2026 reconciliation overlap window is not yet populated for most
+symbols. Running `reconcile_overlap.py` now would be premature for 28 of 37
+symbols. Correct next step (not this cycle, not urgent): once the downloader
+has covered each symbol's overlap window, run `convert_to_import.py` then
+`reconcile_overlap.py` per symbol and only import Q4-covered PASS symbols —
+no new build ticket required.
+
+`bb814520`/`dfc60103` gate unchanged (QM5_41394 SP500.DWX/XAUUSD.DWX Q02 rows
+still `pending`/unclaimed/`attempt_count=0`, `updated_at=2026-09-09T10:52:59Z`,
+~2 days static). No `update-task` call on any of the three (no acceptance
+criterion newly met by this correction alone).
