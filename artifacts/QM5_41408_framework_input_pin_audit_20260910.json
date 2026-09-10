@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "source": "C:/QM/repo/framework/EAs/QM5_41408_xng-winter-w2fade/QM5_41408_xng-winter-w2fade.mq5",
+  "source_sha256": "24131e7a9a11aadb23e720dbbf8e1d16367cf0f8b2c59f90c19727cd17f8976e",
+  "recorded_at_local": "2026-09-10T03:11:22.4997967+02:00",
+  "timing": "after_generated_source_write_before_any_compile_enqueue"
+}
