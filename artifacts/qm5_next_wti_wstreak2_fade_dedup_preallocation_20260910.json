@@ -1,0 +1,71 @@
+{
+  "candidate": {
+    "author": "Chao Yang; A. Goncu; Athanasios A. Pantelous; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; OpenAI Codex",
+    "mechanic": "normalized-week-boundary-wti-four-consecutive-completed-week-ending-closes-three-adjacent-weekly-returns-newest-two-strict-same-sign-preceding-strict-opposite-sign-fresh-two-week-streak-reversion-one-week-hold",
+    "slug": "wti-wstreak2-fade",
+    "strategy_id": "YANG-WTI-WSTREAK2-FADE-20260910_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-10T15:49:24+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41415_wti-wstreak3-fade_card.md",
+      "score": 1.0,
+      "slug": "wti-wstreak3-fade",
+      "source": "card",
+      "strategy_id": "YANG-WTI-WSTREAK3-FADE-20260910_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41419_wti-wstreak2-cont_card.md",
+      "score": 0.9545454545454546,
+      "slug": "wti-wstreak2-cont",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WSTREAK2-CONT-20260910_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41074_wti-wstreak3-mom_card.md",
+      "score": 0.9130434782608695,
+      "slug": "wti-wstreak3-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WSTREAK3-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41082_wti-wrunbreak-dom_card.md",
+      "score": 0.5,
+      "slug": "wti-wrunbreak-dom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WRUNBREAK-DOM-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4903,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1513,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
