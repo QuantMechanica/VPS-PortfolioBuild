@@ -66,11 +66,42 @@ normal admission; it must not be duplicated. When it finishes, append the
 authenticated nine CSV rows and receipt hashes to this document before treating
 the task acceptance as complete.
 
-## Receipt intentionally absent
+## Authenticated T1 receipt (completed 2026-09-10)
 
-No broker values are stated here because the governed T1 work item has not run.
-Publishing a table now would require guessed or hardcoded values, explicitly
-forbidden by the task. Expected later artifacts are:
+The governed T1 work item completed at `2026-09-10T03:33:46Z` with
+`status=PASS` and its non-admission verdict fixed at `REVIEW_REQUIRED`.  The
+probe used only `SymbolInfoInteger(SYMBOL_DIGITS)` and
+`SymbolInfoDouble(SYMBOL_POINT)` on T1; the following values are transcribed
+from its bound CSV, not inferred by this document or the conversion code.
+
+| Symbol | Digits | Point | Price scale |
+|---|---:|---:|---:|
+| GDAXI.DWX | 1 | 0.1 | 10 |
+| NDX.DWX | 1 | 0.1 | 10 |
+| SP500.DWX | 1 | 0.1 | 10 |
+| UK100.DWX | 1 | 0.1 | 10 |
+| WS30.DWX | 0 | 1 | 1 |
+| XAGUSD.DWX | 3 | 0.001 | 1000 |
+| XAUUSD.DWX | 2 | 0.01 | 100 |
+| XNGUSD.DWX | 3 | 0.001 | 1000 |
+| XTIUSD.DWX | 2 | 0.01 | 100 |
+
+| Bound artifact | SHA-256 |
+|---|---|
+| `price_scale.csv` | `b72a05df91da8da053cd066a698a02aeda2930761e990f4f35d379899761fb4d` |
+| `probe_receipt.json` | `159f98171260a1155a7611f457ca0d00c5234d644cc2b1d437085fe8dc42784e` |
+| T1 Q00 `summary.json` | `status=PASS`, `signed_archive_unchanged=true`, verdict `REVIEW_REQUIRED` |
+
+The before/after signed archive inventory is identical (`3946` files,
+`44,231,653,718` bytes; manifest
+`fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06`).
+This completes the deferred receipt portion without any production download,
+import, Factory state change, live-trading action, or gate verdict.
+
+## Original deferred-receipt boundary
+
+Before completion, no broker values were stated here because the governed T1
+work item had not run. The now-realized expected artifacts are:
 
 - `D:\QM\reports\dukascopy\splice\20260909_185632\price_scale.csv`
 - `D:\QM\reports\dukascopy\splice\20260909_185632\probe_receipt.json`
