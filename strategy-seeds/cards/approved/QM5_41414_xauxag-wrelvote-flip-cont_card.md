@@ -47,7 +47,7 @@ risk_class: high
 ml_required: false
 r1_track_record: PASS_WITH_HORIZON_AND_STATE_TRANSLATION_RISK
 r2_mechanical: PASS
-r3_data_available: PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK
+r3_data_available: PASS
 r4_ml_forbidden: PASS
 parameters_to_test: "Locked Q02 baseline only: D1; native synchronized XAU/XAG labels; five immediately preceding consecutive week endpoints; four strict relative log-return signs; overlapping older/newer three-return majority windows; strict majority flip; epsilon 1e-10; newest-majority continuation; 50 D1 bars; 180-minute entry grace; aggregate fixed risk; 3.5*ATR(20,D1) frozen per-leg stops; 20% notional mismatch cap; 10-day stale repair; XAU/XAG spread ceilings 1500/500."
 risk_fixed_backtest: 1000
