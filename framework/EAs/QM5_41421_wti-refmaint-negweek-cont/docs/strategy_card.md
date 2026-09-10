@@ -60,9 +60,9 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED_Q01_PENDING
+pipeline_phase: Q01
+q01_status: PASS
+q02_status: NOT_ENQUEUED
 force_build: true
 review_focus: "Falsify a short-only WTI refinery-maintenance negative-week continuation distinct from shoulder stretch fade, May-July refinery entries, unconditional weekly momentum, two-week streak, and winter/summer agreement variants. Verify exact week membership, negative-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -99,7 +99,9 @@ one-week lifecycle are jointly load-bearing.
 
 ## Rules
 
-### Entry
+The numbered execution sections below are the locked mechanical contract.
+
+## 4. Entry Rules
 
 1. Run only on the setfile-bound `XTIUSD.DWX` D1 host with EA 41421, slot zero,
    registered magic, and fixed-risk backtest mode.
@@ -116,16 +118,13 @@ one-week lifecycle are jointly load-bearing.
 7. Require spread in `[0,1500]`, executable quotes, completed ATR(20,D1), valid
    symbol metadata, and one normalized frozen `3.5*ATR` hard stop.
 
-### Exit And Management
+## 5. Exit Rules
 
 Close on the first processed tick in the next normalized broker week. Ten
-elapsed days is stale repair. Immediately flatten duplicate, wrong-symbol,
-wrong-magic, non-short, missing-stop, take-profit-bearing, future-dated, or
-invalid-volume owned exposure. The broker stop and framework kill switch are
-authoritative. No target, intraweek signal flip, trail, break-even, partial
-close, scale-in, pyramid, grid, martingale, or discretionary exit is allowed.
+elapsed days is stale repair. The broker stop and framework kill switch are
+authoritative. There is no target or intraweek signal-flip exit.
 
-### No-Trade And Framework Inputs
+## 6. Filters (No-Trade Module)
 
 Fail closed on wrong host/period/identity/slot/risk mode, unlocked strategy
 configuration, late restart, consumed week, ineligible month, bad package,
@@ -134,7 +133,14 @@ RNG, news, and Friday-close inputs remain configurable and are never
 equality-pinned by the EA. Stress rejection is checked only for finiteness and
 inclusive `0..1` range.
 
-## Parameters To Test
+## 7. Trade Management Rules
+
+Immediately flatten duplicate, wrong-symbol, wrong-magic, non-short,
+missing-stop, take-profit-bearing, future-dated, or invalid-volume owned
+exposure. No trail, break-even, partial close, scale-in, pyramid, grid,
+martingale, or discretionary exit is allowed.
+
+## Locked Q02 Baseline
 
 Q02 has one locked baseline and no optimization surface:
 
@@ -155,14 +161,45 @@ Q02 has one locked baseline and no optimization surface:
 Changing the calendar, sample, sign, direction, carrier, stop, hold, spread,
 or retry contract requires a new identity.
 
-## Risk And Data
+## Source-Defined Rules
+
+- EIA supports a broad late-winter and fall refinery-maintenance regime, not
+  the exact four-month trade rule or its direction.
+- Moskowitz-Ooi-Pedersen supports own-return commodity momentum at materially
+  broader horizons, not this weekly continuous-CFD implementation.
+
+## QM Interpretations
+
+- February, March, September, and October Monday anchors translate the broad
+  maintenance regime into an exact, testable calendar.
+- One strictly negative completed week, a short-only continuation, the
+  one-week hold, retry semantics, and all numeric thresholds are QM choices.
+
+## Framework Execution Overrides
+
+- Q02 keeps news temporal/compliance modes off and Friday close disabled so
+  the strategy-owned normalized-week exit is measured intact.
+- Those framework inputs and the RNG seed remain configurable and are not
+  equality-pinned. Stress rejection receives range/finiteness validation only.
+
+## Exit Precedence
+
+1. framework kill switch and broker hard stop;
+2. malformed or non-short owned-exposure repair;
+3. first processed tick of the next normalized week;
+4. ten-calendar-day stale-state repair.
+
+## Runtime Data Dependencies
+
+Runtime uses configured-symbol D1 OHLC/timestamps, broker clock, quotes,
+symbol properties, positions, deal history, and terminal-global attempt state
+only. No refinery, inventory, curve, volume, open-interest, file, API, trained
+output, optimizer result, or portfolio state is read at runtime.
+
+## Risk
 
 Backtest only: `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
-`PORTFOLIO_WEIGHT=1`. Runtime uses configured-symbol D1 OHLC/timestamps,
-broker clock, quotes, symbol properties, positions, deal history, and
-terminal-global attempt state only. No refinery, inventory, curve, volume,
-open-interest, file, API, trained output, optimizer result, or portfolio state
-is read at runtime.
+`PORTFOLIO_WEIGHT=1`.
 
 WTI gaps, roll/basis/financing, label sensitivity, sparse seasonal samples,
 hard-stop slippage, regime instability, source translation, and overlap with
@@ -178,15 +215,16 @@ alone owns realized portfolio correlation.
 | malformed, next-week, and stale closure | Trade Management | `Strategy_ManageOpenPosition` |
 | framework reason mapping and broker hard stop | Trade Close | `Strategy_ExitSignal` and framework helper |
 
-## Validation And Kill Conditions
+## Falsification And Requalification
 
-Q01 must verify all four eligible months, ineligible boundaries, negative short
+Q01 verified all four eligible months, ineligible boundaries, negative short
 entry, positive/zero flat states, three-to-five-session weeks, current-week
 exclusion, attempt persistence, frozen stop, next-week exit, card lint, magic
 resolver, PACER audit, reference tests, and strict compile/build checks. Q02
 retires on zero positions, fewer than five completed positions in any full
 scored year, nonpositive governed economics, or any contract mismatch. No weak
-result may be rescued by tuning.
+result may be rescued by tuning; a material rule change requires a new identity
+and G0 review. Q09 alone may establish realized portfolio diversification.
 
 ## Safety Boundary
 
@@ -202,5 +240,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-10 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-10 | APPROVED | G0 decision below |
-| Q01 Build Validation | - | NOT_BUILT | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
+| Q01 Build Validation | 2026-09-10 | PASS | governed compile `1d13cb7f-fcf7-4c04-8079-06fe036e0775`; 12 reference tests; PACER audit clean |
+| Q02 Baseline Screening | - | NOT_ENQUEUED | pending CPU ceiling |
