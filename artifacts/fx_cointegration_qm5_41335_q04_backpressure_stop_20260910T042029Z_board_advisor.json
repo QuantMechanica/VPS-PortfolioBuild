@@ -1,0 +1,118 @@
+{
+  "schema": "qm.fx-cointegration-fallback-backpressure-stop/v1",
+  "recorded_utc": "2026-09-10T04:20:29.7299938Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "43bfe54e8187d0cd5486f86543b4ca9cc9780d7f",
+  "frontier": {
+    "scan_relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_build_refused_reason": "frozen_scan_fully_mechanized_duplicate_guard",
+    "coverage_receipt": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "coverage_receipt_sha256": "5b11c01ec9afebf853433585d172fdc52669b367567ec5afff5fca4077bc5344"
+  },
+  "preferred_anchors": [
+    {
+      "ea_id": "QM5_12532",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "latest_path": ["Q02:PASS", "Q04:PASS", "Q05:FAIL"],
+      "q02_setup_blocked": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "latest_path": ["Q02:PASS", "Q04:FAIL"],
+      "q02_setup_blocked": false
+    }
+  ],
+  "selected_fallback": {
+    "ea_id": "QM5_41335",
+    "ea_dir": "QM5_41335_fx-usd-exhaustion-reversal-opt",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "D1",
+    "card_status": "APPROVED",
+    "expected_trades_per_year_per_symbol": 5,
+    "q02_work_item_id": "ff75b1c3-4930-419d-a2fe-49bd37eadc4d",
+    "q02_status": "done",
+    "q02_verdict": "PASS",
+    "q02_metrics": {
+      "profit_factor": 1.23,
+      "total_trades": 64,
+      "net_profit": 4428.72,
+      "data_window_start": "2018.07.02",
+      "data_window_end": "2022.12.31"
+    },
+    "q04_successor_present": false,
+    "artifact_identity": {
+      "card_sha256": "7826e575a21600cfcc48e7ba03e6fa38bfe8faf91e4db3978f430a49e69dc1aa",
+      "mq5_sha256": "d7eec6373be1b7b865902cd8420b2a3fe305c7a7e026603e9baef9e32ee1e7bc",
+      "ex5_sha256": "f17045107715b1ee127011f14ee60ad36e6ad23e8dbfc372819a27d4bb596280",
+      "setfile_sha256": "6ed5b4fe7549362276fa8812bcbf9450f6aca2b3b03fd169336a89799874bd47"
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    }
+  },
+  "pacer_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41335_fx-usd-exhaustion-reversal-opt/QM5_41335_fx-usd-exhaustion-reversal-opt.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "admission_snapshot": {
+    "captured_utc": "2026-09-10T04:20:29.7299938Z",
+    "active_work_item_count": 7,
+    "active_by_phase": {
+      "OPT_CENSUS": 6,
+      "Q04": 1
+    },
+    "active_work_item_pause_threshold": 7,
+    "backpressure_bound": true,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [75.100113, 73.541203, 84.481946, 88.380075, 95.508281],
+    "cpu_average_percent": 83.402324,
+    "cpu_maximum_percent": 95.508281,
+    "cpu_utilization_ceiling_bound": false
+  },
+  "post_stop_read_only_verification": {
+    "captured_utc": "2026-09-10T04:21:13.659035Z",
+    "active_work_item_count": 3,
+    "active_work_items": [
+      {
+        "id": "8b0bdff9-24f3-59d9-a379-d23ef6375081",
+        "ea_id": "QM5_41321",
+        "phase": "OPT_CENSUS",
+        "symbol": "NDX.DWX",
+        "claimed_by": "T2"
+      },
+      {
+        "id": "53848830-6136-5107-8334-95b29481516f",
+        "ea_id": "QM5_41322",
+        "phase": "OPT_CENSUS",
+        "symbol": "XAUUSD.DWX",
+        "claimed_by": "T3"
+      },
+      {
+        "id": "a04b0625-48f0-5954-96d2-d820c69686d5",
+        "ea_id": "QM5_41323",
+        "phase": "OPT_CENSUS",
+        "symbol": "NDX.DWX",
+        "claimed_by": "T5"
+      }
+    ]
+  },
+  "mutations": {
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "q04_enqueued": false,
+    "dispatch_tick_run": false,
+    "farm_state_changed": false,
+    "terminal_state_changed": false,
+    "live_surface_touched": false,
+    "portfolio_gate_touched": false
+  },
+  "stop_reason": "active_work_item_backpressure_threshold_reached"
+}
