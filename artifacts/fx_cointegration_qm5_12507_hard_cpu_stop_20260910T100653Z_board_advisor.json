@@ -1,0 +1,133 @@
+{
+  "artifact_type": "fx_cointegration_existing_pair_hard_cpu_stop",
+  "generated_at_utc": "2026-09-10T10:07:06Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "11dcb9186c",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "scan_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_created": false,
+    "reason": "Every sign-aware relationship from the frozen 66-pair scan is already represented; another identity would duplicate governed work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "q02_status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "priority_track": true,
+    "priority_dry_run_reason": "already_priority_track",
+    "duplicate_enqueue_performed": false,
+    "priority_mutation_performed": false,
+    "symbol_scope_verdict": "BASKET_OK",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "compile_enqueue_contemplated": false,
+    "compile_enqueue_performed": false
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "approved_card_sha256": "237b11c5657f226e140a6ae68a41e438e2514519a1b0cf9f987b1c284006c988"
+  },
+  "capacity_observation": {
+    "mt5_slots_scanned_at": "2026-09-10T12:06:53+02:00",
+    "paced_launch_gate_max": 1,
+    "running_factory_terminal_count": 5,
+    "running_factory_terminals": [
+      "T10",
+      "T2",
+      "T3",
+      "T6",
+      "T9"
+    ],
+    "running_factory_work_items": [
+      "8ba7b42b-03b6-57dc-8f9f-7b38e9176cc6",
+      "212625c9-38f0-5ced-bee2-1629c5c0681c",
+      "d922866a-44a4-5e4a-80a5-f47ccb2184e5",
+      "246154b3-36c9-5be3-b875-5f8e43614d36",
+      "bfb2b22a-6471-5b0c-b407-414b2928fda8"
+    ],
+    "running_factory_phases": [
+      "OPT_CENSUS",
+      "OPT_CENSUS",
+      "OPT_CENSUS",
+      "OPT_CENSUS",
+      "OPT_CENSUS"
+    ],
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ],
+    "cpu_sampled_at_utc": "2026-09-10T10:07:06Z",
+    "cpu_samples_percent": [
+      84.572172,
+      85.262838,
+      96.722748,
+      96.097472,
+      100.0
+    ],
+    "cpu_average_percent": 92.531046,
+    "cpu_max_percent": 100.0,
+    "hard_cpu_threshold_percent": 97.0,
+    "hard_cpu_ceiling_binding": true,
+    "available_physical_memory_gib": 37.963,
+    "total_visible_memory_gib": 63.12,
+    "multisymbol_reserved_memory_gib": 44.0,
+    "post_reservation_floor_gib": 14.0,
+    "required_free_memory_gib": 58.0,
+    "ram_admission_binding": true,
+    "paced_launch_capacity_binding": true
+  },
+  "actions_this_run": {
+    "q02_enqueue_or_requeue": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "source_or_binary_change": false,
+    "reason": "The explicit 97% backtest CPU ceiling fired at a 100% sample. The unique Q02 row was already priority-tracked, five active factory testers exceeded the paced launch maximum of one, and free RAM was below the 58 GiB heavy multisymbol admission requirement."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
