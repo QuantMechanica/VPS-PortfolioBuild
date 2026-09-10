@@ -2431,3 +2431,13 @@ startup/tester interface, the exact cold-launch and fresh-logger boundaries,
 and the closest safe MetaTester-local-agent alternative. The Default-OFF flag
 remains unset; no T10 launch/reload or factory mutation occurred. Focused
 warm-runner tests are recorded with the artifact.
+
+## RESULT 2026-09-11 — 8f6a6b3c research_canary
+
+`REVIEW — IMPLEMENTED_NO_GUARDED_S3_RUN`: the no-DB T11 controller and focused
+tests are in `tools/strategy_farm/research_canary.py` and
+`tools/strategy_farm/tests/test_research_canary.py`; receipt, isolation,
+signed-history, CPU/RAM, job-object and Model-4 controls are documented in
+`docs/ops/evidence/2026-09-11_research_canary_t11.md`. No terminal was
+started: the exact S3 EX5/setfile are not T11-staged, so no S3 comparison is
+claimed.
