@@ -1,0 +1,20 @@
+{
+  "schema": "qm.framework-input-pin-audit-evidence/v1",
+  "captured_at_utc": "2026-09-10T18:05:00Z",
+  "ea_id": "QM5_41425",
+  "source_path": "C:/QM/repo/framework/EAs/QM5_41425_wti-refrestart-negweek-fade/QM5_41425_wti-refrestart-negweek-fade.mq5",
+  "source_sha256": "FBE6AC4897206414F59C284927DED6E409F61B0E91BA3C7B03112C701B5E2BAE",
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41425_wti-refrestart-negweek-fade/QM5_41425_wti-refrestart-negweek-fade.mq5",
+  "exit_code": 0,
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "guard_contract": {
+    "equality_pins": ["strategy_*", "qm_ea_id", "qm_magic_slot_offset"],
+    "risk_mode": "RISK_FIXED finite and greater than zero; RISK_PERCENT equals zero",
+    "stress_reject_probability": "finiteness and inclusive 0..1 only",
+    "not_equality_pinned": ["qm_rng_seed", "qm_news_*", "qm_friday_close_*"]
+  }
+}
