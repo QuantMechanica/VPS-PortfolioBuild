@@ -2524,6 +2524,39 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# Review task 0de0879d (2026-09-10): the original QM5_41140 package was
+# rejected for a hand-rolled D1 exit cadence and a dishonest smoke
+# disposition.  The committed replacement uses framework-owned cadence and
+# bar readers while preserving the approved carry-unwind mechanics.  Bind one
+# append-only rebuild to that exact source, the completed historical compile,
+# and immutable review/repair evidence; this grants no backtest verdict, live,
+# portfolio-gate, or cross-EA authority.
+QM5_41140_REVIEW_REWORK_AUTHORITY = (
+    "router_review_ea:0de0879d-4c63-444b-a48d-c7d56c6ba1d5:QM5_41140"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_41140_REVIEW_REWORK_AUTHORITY
+] = {
+    "ea_id": "41140",
+    "ea_label": "QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
+    "source_sha256": "b25ad6366f2dfabb7610170babe56c7d5aaaf57bea44c2b2825778a6686ccff4",
+    "predecessors": {
+        "c791b8f6-7474-495a-abab-2469b610f332": {
+            "source_sha256": "9bdfd70380c9040d84ce3ac323a39ee94acc5d7a9201816fe5eee6231e387479",
+            "status": "done",
+            "verdict": "COMPILE_OK",
+        }
+    },
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-11_qm5_41140_source_repair_authority.json"
+    ),
+    "evidence_sha256": (
+        "ff61096062a694027d29fc9d8f5fd601a0d98ead027558f9ac1239f631ee8cec"
+    ),
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})

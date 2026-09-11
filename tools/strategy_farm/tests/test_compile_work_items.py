@@ -3265,6 +3265,52 @@ def test_qm5_20143_stale_ex5_authority_enqueues_append_only_compile(
     assert worker_recheck["source_repair_authorized"] is True
 
 
+def test_qm5_41140_review_rework_authority_is_exactly_bound() -> None:
+    authority = compile_work_items.QM5_41140_REVIEW_REWORK_AUTHORITY
+    binding = compile_work_items.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[authority]
+    repo = Path(__file__).resolve().parents[3]
+    predecessor = {
+        "id": "c791b8f6-7474-495a-abab-2469b610f332",
+        "phase": compile_work_items.COMPILE_EA_PHASE,
+        "status": "done",
+        "verdict": "COMPILE_OK",
+        "claimed_by": None,
+        "payload_json": json.dumps({
+            "ea_label": binding["ea_label"],
+            "mq5_sha256": (
+                "9bdfd70380c9040d84ce3ac323a39ee94acc5d7a9201816fe5eee6231e387479"
+            ),
+        }),
+    }
+    inventory = {"work_rows": {"41140": [predecessor]}}
+
+    assert compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41140",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41140",
+        source_sha="0" * 64,
+        inventory=inventory,
+    )
+    inventory["work_rows"]["41140"][0]["verdict"] = "COMPILE_FAIL"
+    assert not compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41140",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",

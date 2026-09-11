@@ -1,0 +1,63 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_review_ea:0de0879d-4c63-444b-a48d-c7d56c6ba1d5:QM5_41140",
+  "created_at_local": "2026-09-11T02:36:43+02:00",
+  "ea_id": "QM5_41140",
+  "ea_label": "QM5_41140_nzdjpy-carry-unwind-crisis-momentum",
+  "mission_priority": 1,
+  "scope": "append-only governed COMPILE_EA successor for the review-repaired source; no strategy-mechanics, backtest-verdict, live, portfolio-gate, or cross-EA authority",
+  "governance": {
+    "build_task_id": "5f69b208-6e8b-4900-a8c2-020c779eb030",
+    "review_task_id": "0de0879d-4c63-444b-a48d-c7d56c6ba1d5",
+    "review_verdict": "FAIL",
+    "review_build_generation": 0,
+    "replacement_build_generation": 1,
+    "repair_commit": "12bd4c8b2f2a0f4e33de3c09b0c184ab1ef7642f"
+  },
+  "root_cause": {
+    "classification": "STALE_EX5_AFTER_REVIEW_REWORK",
+    "review_findings": [
+      "The prior source used a forbidden file-scope D1 exit timestamp latch and raw iTime cadence instead of framework-owned calendar-period helpers.",
+      "The prior build record used deferred_p2_smoke without tester-capacity evidence even though the actual refusal was the custom-history isolation gate."
+    ],
+    "predecessor_compile_work_item_id": "c791b8f6-7474-495a-abab-2469b610f332",
+    "predecessor_status": "done",
+    "predecessor_verdict": "COMPILE_OK",
+    "predecessor_mq5_sha256": "9bdfd70380c9040d84ce3ac323a39ee94acc5d7a9201816fe5eee6231e387479",
+    "stale_ex5_sha256": "b7b1796aedc601b3576e5195344ff1e47de4f4a9efb9e2b6cafc4c965c5f3bf1",
+    "pending_q02_work_item_id": "381b2608-c3f1-4493-88f8-9ed119e61d69",
+    "pending_q02_hold": "SOURCE_REPAIR_AUTHORITY_REQUIRED"
+  },
+  "repair": {
+    "current_mq5_sha256": "b25ad6366f2dfabb7610170babe56c7d5aaaf57bea44c2b2825778a6686ccff4",
+    "changes": [
+      "Replace the file-scope exit timestamp latch and raw iTime cadence with QM_IsNewCalendarPeriod and QM_ReadBar.",
+      "Replace raw holding-period lookup with QM_TM_HeldPeriodsForMagic.",
+      "Expose the four JPY-cross symbols and all strategy controls as strategy_* inputs.",
+      "Preserve the approved entry, exit, stop, risk, and single-symbol mechanics."
+    ],
+    "strategy_mechanics_changed": false,
+    "repair_receipt_path": "docs/ops/evidence/2026-09-10_qm5_41140_fx_source_repair.md",
+    "repair_receipt_sha256": "1bca5c2347d46259b6a5d342253b8c6088824ed889d6d72978b58788fb81537a"
+  },
+  "guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41140_nzdjpy-carry-unwind-crisis-momentum/QM5_41140_nzdjpy-carry-unwind-crisis-momentum.mq5",
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "required_immediately_before_enqueue": true,
+    "last_observed_ok": true,
+    "last_observed_hit_count": 0
+  },
+  "coordination": {
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor",
+    "claim_key": "paced_fleet:diversity_build_rework:QM5_41140:20260911:resume"
+  },
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}
