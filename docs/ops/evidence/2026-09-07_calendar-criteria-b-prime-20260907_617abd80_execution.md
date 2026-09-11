@@ -469,3 +469,42 @@ process (`3032534e`, PID `19568`) confirmed still running, same PID, no new cras
 07:20:32Z. Sub-tickets `b66b5ccc`/`46167bd9`/`ae1df6bf` unchanged. No ticket, rebuild,
 release, repin, or verdict change made; not this task's authority to force SP500's claim.
 Task remains `IN_PROGRESS`.
+
+
+## Checked 2026-09-11T11:35Z (headless orchestration cycle) -- XAUUSD leg passed Q03 (past prior siblings' Q04-death point), Q04 queued; Dukascopy crashed a 4th time on the same unfixed defect, relaunched
+
+Direct DB read: `QM5_41394` XAUUSD.DWX advanced one further gate since the 10:53Z check --
+Q03 (`e3b5d3c6`) `status=done`/`verdict=PASS` at `2026-09-11T11:14:00+00:00`, and a Q04
+work_item (`5f3f323d`) is now `pending`/unclaimed since `10:51:37Z`. This is notable because
+the prior three legs of this same rebuild (EURUSD/USDJPY/XTIUSD) each died at Q04 after their
+own Q02 PASS (3-for-3 pattern logged at 10:53Z) -- XAUUSD has now passed the gate immediately
+before that death point, so its Q04 outcome is the next real signal on whether the pattern
+holds. Not yet resolved; still several gates short of the 11167-native-canary-authentication
+chain this task's acceptance criterion needs. SP500.DWX Q02 (`17e576cf`) not re-checked this
+cycle (no reason to expect a change absent a claim). Sub-tickets `b66b5ccc` (APPROVED/codex,
+unstarted since 2026-09-09T11:19:40Z), `46167bd9` (APPROVED/claude, not routed since
+2026-09-10T22:16:06Z), `ae1df6bf` (APPROVED/unassigned since 2026-09-11T06:42:08Z) all
+unchanged.
+
+Dukascopy (`3032534e`) update: PID `19568` (stable since 07:20:32Z, longest stretch yet per
+the 10:20Z check) crashed at `11:23:16Z` on the same already-diagnosed
+`assert_contained_destination` mkdir-before-resolve defect (`ae1df6bf`, still
+APPROVED/unassigned/unworked) -- `\?\D:\QMeports\dukascopyackfill60909T191800Z_hardenedaw\DEUIDXEUR6h_ticks.bi5`
+escaped-root ValueError, 4th occurrence of this exact class. Checked for orphaned `*.tmp`
+files under the crash symbol dir (none found), then relaunched the identical resume command
+(within `3032534e`'s own pre-authorized `allowed_actions`, not new scope): same
+`--out`/`--splice-csv`/rate/timeout/retry/concurrency/backoff flags, detached, cwd
+`C:\QMepo`. Verified alive: PID `12040`, `started_at_utc=2026-09-11T11:34:54.555Z`,
+`status=RUNNING`, progress.json updating normally at +15s. `progress.json` at crash time
+showed `completed=179697/306619` (58.6%), no data loss (resumes via `hour_ledger.jsonl`).
+This is now the fourth consecutive crash-relaunch cycle on the same known defect -- per the
+09-11 memory note, only a landed `ae1df6bf` fix stops the recurrence; relaunching again
+without it remains a treadmill, not progress, but is still the correct in-scope action absent
+that fix. No new ticket drafted (`ae1df6bf` already covers this exact class).
+
+No `update-task`/`close-review` call made on any of the three owner-decision tasks -- no
+acceptance criterion newly satisfied on `bb814520`/`dfc60103`/`3032534e`. `farmctl health`
+overall FAIL15/WARN20/OK51 (checked_at 11:34:55Z) -- same chronic FAIL/WARN category set as
+the prior 10:47Z FAIL14/WARN17/OK55 baseline (codex_zero_activity FAIL still
+repo_dirty_build_guard-blocked by uncommitted artifacts, unrelated to and outside these three
+tasks' scope; no new FAIL category). All three tasks remain `IN_PROGRESS`.
