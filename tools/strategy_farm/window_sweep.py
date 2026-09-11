@@ -427,8 +427,12 @@ def select_stage_b(windows,stage_a_windows,stage_a_result):
     pnls=[n for v in oos for n in v['costed_trade_pnl']];profit=sum(n for n in pnls if n>0);loss=-sum(n for n in pnls if n<0)
     pf=profit/loss if loss else None
     confirmation=statistics.median(v['score'] for v in oos)>=statistics.median(v['score'] for v in base_oos) and (pf>=1 if pf is not None else profit>0)
-    beats=candidate['plateau_score']>=1.10*baseline['plateau_score']
-    slim=lambda w:{k:w[k] for k in ('start','length','exit','dev_score','plateau_score')}
+    # Orchestrator 2026-09-11: the raw stage-A surface windows carry no plateau annotation in the
+    # stage-B path; the frozen stage-A report winner does (same numbers, same rule).  Use it.
+    base_plateau=baseline.get('plateau_score',stage_a_result['winner']['plateau_score'])
+    baseline={**baseline,'plateau_score':base_plateau,'dev_score':baseline.get('dev_score',stage_a_result['winner'].get('dev_score'))}
+    beats=candidate['plateau_score']>=1.10*base_plateau
+    slim=lambda w:{k:w.get(k) for k in ('start','length','exit','dev_score','plateau_score')}
     final=slim(candidate) if beats and confirmation else stage_a_result['winner']
     return {'complete':True,'winner':slim(candidate),'stage_a_winner_exit_18':slim(baseline),'oos_confirmation':confirmation,
             'winner_oos_median_costed_return_to_maxdd':statistics.median(v['score'] for v in oos),

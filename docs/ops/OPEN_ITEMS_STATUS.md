@@ -3056,3 +3056,10 @@ control of drops, suspend if omission or running FNR > 10 pct). Pattern census n
 needs all seven years). Throughput caveat: T11 at ~40 cells/h is below the fleet feed (45-50 cells/h),
 so pre-screening is not a throughput multiplier without a second seat. Mirrored to Vault OWNER.md as a
 non-urgent decision; orchestrator recommendation = A now, shadow protocol on the next new sweep program.
+
+## 2026-09-11T15:00Z — WINSWEEP stage B adjudicated: STAGE_A_EXIT_18_STANDS
+
+210/210 MEASURED. Top stage-B candidate s1_l4/exit 21 beats the plateau margin (2.60 vs 1.56) but fails
+the OOS confirmation (OOS median 0.24 vs 0.91; pooled PF 1.07 vs 1.21) -> final configuration stays
+s0_l8 exit 18 (docs/research/BALKE_WINDOW_SWEEP_RESULT_2026-09-11.md, stage-B section). Bug fixed in
+select_stage_b (baseline plateau lookup). The 41405 stage-2 matrix (exit 18) remains valid as is.

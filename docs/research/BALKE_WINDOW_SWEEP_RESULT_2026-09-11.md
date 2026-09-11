@@ -66,3 +66,27 @@ net reconciliation against the summary stays strict. 17 tests pass. Patch in `wi
 
 No live authorisation, no verdict change, no counter change. Stage A selects a window on the fixed
 UTC+3 clock only; the clock-mode question and minute-granular range ends are stage-2 work.
+
+## Stage B result (exit axis, 2026-09-11 ~15:00Z, tool-adjudicated)
+
+210/210 cells MEASURED (top five windows x exit 15/16/17/19/20/21). Rule (plan §3/§5): the top-ranked
+stage-B candidate must beat the stage-A winner (s0_l8, exit 18, plateau 1.56) by ≥ 1.10 on the plateau
+score AND pass the OOS confirmation.
+
+| | Candidate s1_l4 exit 21 | Stage-A winner s0_l8 exit 18 |
+|---|---|---|
+| DEV score / plateau | 2.71 / 2.60 | 1.96 / 1.56 |
+| DEV improvement ≥ 1.10× | yes (1.66×) | — |
+| OOS median costed return-to-maxDD | 0.24 | 0.91 |
+| OOS pooled costed PF | 1.07 | 1.21 |
+| OOS confirmation | **fails** | — |
+
+**Final rule: STAGE_A_EXIT_18_STANDS.** Final configuration = start 0 / length 8 / exit 18.
+
+Observation (not a selection, outside the rule): later exits raise DEV plateaus for both leading
+windows (s0_l8 exit 21: 2.51, exit 20: 2.46) but only the top-ranked candidate is tested OOS by the
+pre-registered rule, and it fails. A later-exit hypothesis for s0_l8 would be a new, separately
+pre-registered program (stage-3 lever), not a re-selection here.
+
+Tooling note: select_stage_b read the plateau from the raw stage-A surface (unannotated) and crashed
+on KeyError; fixed to use the frozen stage-A report winner (same numbers), 17 tests pass.
