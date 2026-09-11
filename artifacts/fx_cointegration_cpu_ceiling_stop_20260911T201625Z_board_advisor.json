@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-11T20:16:25.3501019Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "d0e0fc52417e3fe932c04440ca7bd10078c9b118",
+  "outcome": "STOP_CPU_CEILING",
+  "frontier": {
+    "frozen_scan_pairs": 66,
+    "unbuilt_relationships": 0,
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md"
+  },
+  "anchors": {
+    "QM5_12532": {
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02": "PASS",
+      "latest_terminal_gate": "Q05_FAIL",
+      "current_oninit_or_no_history_block": false
+    },
+    "QM5_12533": {
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02": "PASS",
+      "latest_terminal_gate": "Q04_FAIL",
+      "current_oninit_or_no_history_block": false
+    }
+  },
+  "existing_forex_fallback": {
+    "ea_id": "QM5_11051",
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "D1",
+    "q02_work_item_id": "97c5fffa-691b-407a-8a5f-363197037048",
+    "q02_status": "pending",
+    "q02_attempt_count": 0,
+    "q02_claimed_by": null,
+    "q02_duplicate_created": false
+  },
+  "cpu_admission": {
+    "binding_samples_percent": [
+      100.0,
+      99.529
+    ],
+    "hard_ceiling_percent": 97.0,
+    "admitted": false,
+    "later_diagnostic_samples_percent": [
+      85.165,
+      92.897,
+      86.525
+    ],
+    "stop_is_latched_for_run": true
+  },
+  "factory_testers_observed": [
+    "T1",
+    "T3",
+    "T4",
+    "T5",
+    "T6",
+    "T7"
+  ],
+  "t_live_observed_only_and_excluded": true,
+  "mutations": {
+    "mq5_written_or_edited": false,
+    "source_pin_audit_required": false,
+    "compile_command_or_enqueue": false,
+    "backtest_enqueue": false,
+    "dispatch_or_terminal_control": false,
+    "farm_database_change": false,
+    "portfolio_or_live_change": false
+  },
+  "binding_guard": "Any generated MQ5 must pass audit_framework_input_pins.py --check-source before enqueue-compile; any nonzero exit or EA_FRAMEWORK_INPUT_PINNED finding refuses the build. No MQ5 was written in this stopped run."
+}
