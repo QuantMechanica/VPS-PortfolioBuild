@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   c90a3baf674d0a75014943da7db00bf931ce10f2f243feff05d2049bff313245
 ; author:       Development
 ; date:         2026-09-11
 ;==========================================================
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=ea_input_defaults
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41441_wti-winter-nr2-breakout.md
 strategy_symbol=XTIUSD.DWX
 strategy_label_offset_seconds=86400
 strategy_entry_grace_minutes=180

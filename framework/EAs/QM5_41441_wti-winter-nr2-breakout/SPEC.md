@@ -88,3 +88,4 @@ or AutoTrading action is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-11 | Initial build from approved card | OWNER pacer mission |
+| v1-q01 | 2026-09-11 | Governed compile `0098a350-46e7-4bef-b920-dbbf33aa264b` COMPILE_OK; strict build check PASS | OWNER pacer mission |

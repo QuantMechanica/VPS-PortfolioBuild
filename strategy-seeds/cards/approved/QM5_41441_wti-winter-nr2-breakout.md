@@ -7,7 +7,7 @@ source_id: BURAKOV-CRABEL-WTI-WINTER-NR2-BREAKOUT-20260911
 ea_id: QM5_41441
 slug: wti-winter-nr2-breakout
 status: APPROVED
-execution_contract_ref: strategy-seeds/cards/approved/QM5_41441_wti-winter-nr2-breakout_card.md
+execution_contract_ref: strategy-seeds/cards/approved/QM5_41441_wti-winter-nr2-breakout.md
 execution_contract_status: APPROVED
 created: 2026-09-11
 created_by: Research+Development
@@ -60,8 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0_APPROVED_BUILD_PENDING
-q01_status: NOT_STARTED
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: 0098a350-46e7-4bef-b920-dbbf33aa264b
+q01_build_report: D:/QM/reports/framework/21/build_check_20260911_143110.json
 q02_status: NOT_ENQUEUED
 force_build: true
 review_focus: "Falsify a WTI winter weekly contraction/completed-close breakout distinct from XNG winter NR2, WTI winter range-expansion CLV momentum, WTI hurricane NR2, and the certified XNG oscillator. Verify two exact completed weeks, strict range contraction without containment, current-week close chronology, both sides, durable first-breakout attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
@@ -227,5 +229,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | Build pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Q01 and fresh CPU admission required |
+| Q01 Build Validation | 2026-09-11 | PASS | compile `0098a350-46e7-4bef-b920-dbbf33aa264b`; `COMPILE_OK`; zero compiler errors/warnings; strict build check PASS; 13 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | - | NOT_ENQUEUED | Fresh CPU admission required |

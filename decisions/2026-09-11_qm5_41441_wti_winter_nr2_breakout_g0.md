@@ -3,7 +3,7 @@
 - Date: 2026-09-11
 - Decision owner: OWNER
 - Recorded by: Codex
-- Card: `strategy-seeds/cards/approved/QM5_41441_wti-winter-nr2-breakout_card.md`
+- Card: `strategy-seeds/cards/approved/QM5_41441_wti-winter-nr2-breakout.md`
 - Source approval: `decisions/2026-09-11_wti_winter_nr2_breakout_source_approval.md`
 - Verdict: `APPROVED`
 - Execution contract: `APPROVED` for branch build and non-live pipeline only
