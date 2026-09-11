@@ -1,0 +1,31 @@
+{
+  "schema": "qm.compile-release-evidence/v1",
+  "ea_id": "QM5_41447",
+  "ea_label": "QM5_41447_wti-winter-nr2-clv-mom",
+  "compile_work_item_id": "54a704f4-3951-4363-8528-e8d638b79fe9",
+  "compile_status": "done",
+  "compile_verdict": "COMPILE_OK",
+  "terminal_claim": "T2",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "reference_tests": {
+    "count": 11,
+    "result": "PASS"
+  },
+  "pacer_audit": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "result": "PASS"
+  },
+  "mq5_sha256": "be504f5c8c4d93f28b4cdf73ead9118a32542d18245e93c69e470eb7e6cc3fd2",
+  "ex5_sha256": "ee90f865a87b252720c7efd6a72edd3bf63e992861ee4a4153e5bdbd959d73b9",
+  "setfile_sha256": "b0acbeadede35f698eac1993cf7787766cc5ac0205e4370d0301ca10975bac40",
+  "evidence_path": "D:/QM/reports/work_items/54a704f4-3951-4363-8528-e8d638b79fe9/QM5_41447/COMPILE_EA/compile_evidence.json",
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false
+  }
+}
