@@ -1,0 +1,39 @@
+{
+  "schema": "qm.q02-cpu-admission/v1",
+  "ea_id": "QM5_41443",
+  "compile_work_item_id": "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9",
+  "q02_dry_run_eligible": true,
+  "canary": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41443_wti-winter-wr2-body-mom\\sets\\QM5_41443_wti-winter-wr2-body-mom_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "7e9f152e18cf7b58a8bdd433988087ab17a8671b025f1e638cdffb9b3bd8848d",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "first_window": {
+    "sampled_at_utc": "2026-09-11T16:31:02.6535584Z",
+    "samples_percent": [74.158320, 81.204458, 78.922642, 81.268398, 95.608146],
+    "average_percent": 82.232393,
+    "maximum_percent": 95.608146,
+    "admitted": true,
+    "apply_result": "factory_mutation_lock_busy",
+    "applied": false
+  },
+  "final_fresh_window": {
+    "sampled_at_utc": "2026-09-11T16:31:33.1879090Z",
+    "samples_percent": [95.223874, 89.410937, 85.067155, 84.581770, 85.457055],
+    "average_percent": 87.948158,
+    "maximum_percent": 95.223874,
+    "terminal64_process_count": 7,
+    "free_physical_memory_gib": 27.670,
+    "admitted": true
+  },
+  "ceiling_percent": 97.0,
+  "admission_rule": "average_percent < 97.0 and maximum_percent < 97.0",
+  "q02_enqueued": true,
+  "q02_work_item_id": "5b5fb49e-94a7-45b9-a49e-34610df50261",
+  "runtime_receipt_path": "D:\\QM\\strategy_farm\\artifacts\\receipts\\first_q02_intake\\394402c3-ddc7-4ba6-a9e1-0056dc9ebee9_5b5fb49e-94a7-45b9-a49e-34610df50261.json",
+  "runtime_receipt_sha256": "98eff69ffc79881f87dae079b01cafaff7e382610b58871c9be4edbbb92a8010",
+  "stop_reason": null
+}

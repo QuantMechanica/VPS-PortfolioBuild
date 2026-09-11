@@ -81,3 +81,4 @@ dominate. No manual backtest, optimization, portfolio-gate edit, admission, depl
 |---|---|---|
 | v1 | 2026-09-11 | Initial governed build from approved card |
 | v1-q01 | 2026-09-11 | T9 governed compile and build check PASS; Q02 pending fresh CPU admission |
+| v1-q02 | 2026-09-11 | Fixed-risk XTIUSD.DWX D1 Q02 canary enqueued as 5b5fb49e-94a7-45b9-a49e-34610df50261 |

@@ -60,11 +60,12 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01_PASS_Q02_PENDING
+pipeline_phase: Q02
 q01_status: PASS
 q01_compile_work_item: 394402c3-ddc7-4ba6-a9e1-0056dc9ebee9
 q01_build_report: D:/QM/reports/work_items/394402c3-ddc7-4ba6-a9e1-0056dc9ebee9/QM5_41443/COMPILE_EA/compile_evidence.json
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
+q02_work_item: 5b5fb49e-94a7-45b9-a49e-34610df50261
 force_build: true
 review_focus: "Falsify a WTI November-May range-expansion own-body continuation distinct from the certified XNG oscillator, upper-quartile WTI continuation, symmetric CLV fade, NR2 breakout, and all-year WR4/CLV momentum. Verify exact weeks, strict inequalities, both continuation sides, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -227,4 +228,4 @@ control, or live use.
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
 | Q01 Build Validation | 394402c3-ddc7-4ba6-a9e1-0056dc9ebee9 | PASS | T9 compile and build check PASS; 0 compiler errors, 0 compiler warnings |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Q01 and fresh CPU admission required |
+| Q02 Baseline Screening | 5b5fb49e-94a7-45b9-a49e-34610df50261 | ENQUEUED | Fixed-risk XTIUSD.DWX D1 canary; fresh CPU window admitted below 97% |
