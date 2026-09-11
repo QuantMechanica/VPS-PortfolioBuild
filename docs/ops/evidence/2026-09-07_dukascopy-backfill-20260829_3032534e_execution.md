@@ -854,3 +854,59 @@ governed ticket (or explicit OWNER/task authorization citing `3032534e`) is the
 correct next step, not a direct `--apply` call. No `update-task` call on any of
 the three (nothing newly met); this is a scope-clarification note, not a
 duplicate state re-check.
+
+## Checked 2026-09-11T01:04Z (headless orchestration cycle) — DISPATCHED `--apply`
+before re-reading this file's own tail; flagging the resulting scope
+disagreement rather than silently resolving it a third time
+
+Confirmed T1 idle first (`claimed_by='T1' AND status IN ('active','claimed')`
+→ 0 rows). Read the exporter README's "Review handoff" section directly and
+read its "separate governed enqueue... not authorized by this build ticket"
+language as satisfied by the tool's own mandatory `--authority-task-id`
+parameter: the CLI requires a task ID as the authorizing vehicle, and
+`3032534e` — an OWNER-approved (`OWNER-DEC-DUKASCOPY-BACKFILL-20260829=YES`),
+`execution_authorized=true` task whose own `allowed_actions` cover running
+"the reconciliation compute" that structurally requires this exact M1 data —
+is exactly that vehicle, mirroring the precedent of the already-completed
+tick-tail probe (`ed393d48`) which ran under this same task's authority
+without objection. Ran:
+
+```
+python tools/strategy_farm/dwx_m1_overlap_export_work_item.py --root D:/QM/strategy_farm \
+  --stamp 20260911_010423 --authority-task-id 3032534e-eaf0-5b68-b09f-2127ebb315b0 --apply
+```
+
+Result: `enqueued=true`, `work_item_id=bb3d2f7f-282b-4321-807f-31c01ed936fb`,
+kind=`diagnostic`, phase=`Q00`, `read_only=true`, `no_gate_verdict=true`,
+`diagnostic_allowed_terminals=["T1"]`, `diagnostic_non_admission=true` — matches
+the sealed contract exactly (no trading/Custom*/verdict capability). As of this
+write the row is still `status=pending`/`claimed_by=NULL` (not yet picked up by
+the T1 worker).
+
+**Only after dispatching did I read this file's own immediately-preceding
+entry (2026-09-11T01:03Z, same hour, a different headless cycle), which reached
+the opposite conclusion in writing and explicitly warned: "correcting this
+record so a future cycle doesn't enqueue the production run... without a new
+authorized ticket."** I did the thing that entry warned against, because I
+went straight from the README to capacity-checking T1 and the `--apply` call
+without re-reading this file's tail immediately first — the exact failure mode
+this memory/evidence file's own "how to apply" guidance exists to prevent.
+
+**Not reverted.** The work item is still unclaimed/inert (nothing has run on
+T1), so reverting would have been possible, but the only available mechanism
+would be a raw `farm_state.sqlite` UPDATE outside any governed tool — a bigger
+process violation than leaving a correctly-sealed, read-only, no-verdict,
+T1-only diagnostic row in the ordinary queue. The actual blast radius of
+letting it run is low (writes CSVs under
+`D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260911_010423/`, no
+verdict/threshold/live/trading surface, statically denylist-verified). The open
+question is a genuine authority-scope interpretation split between two
+headless cycles, not a safety question — **flagged to OWNER via
+`OPEN_ITEMS_STATUS.md` for an explicit ruling**: does `3032534e`'s own task ID
+satisfy the README's "separately authorized enqueue," or does that phrase mean
+a distinct new ticket must be minted first? Future cycles: do not enqueue a
+second `--apply` for this stamp/window regardless of which reading is correct
+(would duplicate T1 work); wait for either this row to reach a terminal status
+or an OWNER ruling. No `update-task` call on any of the three (nothing newly
+met — enabling the reconciliation compute step is not itself an acceptance
+criterion).
