@@ -2874,3 +2874,12 @@ genuinely IN_PROGRESS/codex since 05:15:49Z. Removed orphaned progress.json.tmp,
 (PID 17764), verified exactly one python process alive and resuming. bb814520/dfc60103 gate
 (QM5_41394 SP500.DWX/XAUUSD.DWX Q02) still pending/unclaimed since 2026-09-09T10:52:59Z,
 unchanged. Full account: docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.
+
+2026-09-11T05:2xZ (Codex, task 036de7b9): RESULT — Q-CONFIG-SWEEP REVIEW. The generic
+declaration-bound adapter, worker dispatch, 350-cell matrix declaration, and seven-control dry-run
+PASS are committed; production enqueue is correctly held until the orchestrator staggered-reloads
+the terminal workers that must authenticate the new adapter. No factory row or selection claim made.
+
+2026-09-11T05:2xZ (Codex, task f04d66ec): RESULT — Q-S3 REVIEW. The governed T11
+real-tick canary passed signed-history/resource/input checks and exited 0, but the receipt records
+`REFUSED: tester exited without report`; no metrics or fleet identity comparison were accepted.

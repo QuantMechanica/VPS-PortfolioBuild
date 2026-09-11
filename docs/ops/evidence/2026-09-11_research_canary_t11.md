@@ -143,3 +143,25 @@ read-only boundary, and receipt contract before another smoke attempt.
 **RESULT (Q-only):** Q-S3 remains REVIEW — T11-scoped guard and dry-run receipt
 PASS; the actual 2021 S3 run is `REFUSED_NO_REPORT`, so fleet identity is
 unproven. T1–T10 were not interrupted; T_Live and AutoTrading were untouched.
+
+## S3 rerun — 2026-09-11T05:18Z
+
+Router task: `f04d66ec-b296-4f2c-b5eb-83a8c2379626`.
+
+The hash-bound T11-only controller was run again after its relative report
+capture implementation. Receipt:
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_051851_052198d5/receipt.json`.
+The signed private-history audit passed (108 files), the T11 agent count was
+zero, RAM was 37,659,582,464 bytes, and the five CPU samples averaged 93.48%
+(below the 95% controller limit). It launched only the suspended, job-bound
+T11 process; `terminal64.exe` exited `0`.
+
+No `research_canary_20260911_051851_052198d5.htm` was found under T11 or the
+standard roaming terminal roots. The controller therefore recorded
+`status=REFUSED`, `reason=tester exited without report`, and did not accept any
+metrics. Factory isolation changed only because the independent factory
+mutation lock appeared after admission; the controller wrote no work-item row.
+
+**RESULT (Q-only):** Q-S3 is REVIEW. The real run and all safety/input guards
+are evidenced, but report export is still absent; there is no identity table,
+PASS, delta, tuning, selection, T1–T10 interruption, T_Live, or AutoTrading.

@@ -10154,11 +10154,21 @@ def _opt_census_lane_preflight_outside_factory_lock(
 
     try:
         if window_program:
-            try:
-                from tools.strategy_farm import window_sweep
-            except ModuleNotFoundError:
-                import window_sweep
-            ledger_path, ledger = window_sweep.authenticate_ledger(payload)
+            # The adapter schema supports a generic declared-config engine as
+            # well as the sealed original program; absent/unknown engine stays
+            # on the original fail-closed authenticator.
+            if str(payload.get("sweep_engine") or "") == "config_sweep":
+                try:
+                    from tools.strategy_farm import config_sweep
+                except ModuleNotFoundError:
+                    import config_sweep
+                ledger_path, ledger = config_sweep.authenticate_ledger(payload)
+            else:
+                try:
+                    from tools.strategy_farm import window_sweep
+                except ModuleNotFoundError:
+                    import window_sweep
+                ledger_path, ledger = window_sweep.authenticate_ledger(payload)
         else:
             opt_census_pruning.authenticate_amendment()
             ledger_path, ledger = opt_census_pruning._load_ledger(payload)
