@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-11T00:02:20Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "cdb9c1a7ab51ac2405b5f3f6e360ad8c9964d291",
+  "mission_outcome": "EXISTING_FOREX_FALLBACK_ADVANCED_IN_PLACE",
+  "frontier": {
+    "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "coverage_evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260910T0616Z_board_advisor.json",
+    "coverage_evidence_sha256": "b58e8d30d3deba74d6125330018fb7410b678492774ad7cad50fde52b017381b",
+    "relationships_scanned": 66,
+    "covered_relationships": 66,
+    "unbuilt_relationship_found": false,
+    "new_pair_created": false,
+    "reason": "The frozen sign-aware 66-pair frontier already has governed EA and Q02 coverage for every relationship, so another pair identity would duplicate prior work."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_fallback": {
+    "ea_id": "QM5_41149",
+    "ea_label": "QM5_41149_audusd-local-session-inventory-drift",
+    "symbol": "AUDUSD.DWX",
+    "timeframe": "H1",
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41149_audusd-local-session-inventory-drift.md",
+    "card_sha256": "b81627ca15ca77688f972b2abe97378f102eaf3d04edb9ab562499bbc548c3f3",
+    "g0_status": "APPROVED",
+    "source_id": "BREEDON-RANALDO-FX-INTRADAY-2013",
+    "source_quality": "peer-reviewed Journal of Money, Credit and Banking article",
+    "structural_non_ml": true,
+    "frequency_contract": "at most one Australia/Sydney-session entry per local date; card expectation 100 trades/year",
+    "declared_strategy_parameter_count": 2,
+    "q02": {
+      "work_item_id": "12134047-e835-498f-9a5e-c10598be9749",
+      "status": "done",
+      "verdict": "PASS",
+      "oninit_failure_detected": false,
+      "attempted_runs": 1,
+      "trades": 687,
+      "profit_factor": 0.67,
+      "from_date": "2018.07.02",
+      "to_date": "2022.12.31",
+      "evidence_path": "D:/QM/reports/work_items/12134047-e835-498f-9a5e-c10598be9749/QM5_41149/20260910_205228/summary.json"
+    }
+  },
+  "artifact_identity": {
+    "mq5_path": "framework/EAs/QM5_41149_audusd-local-session-inventory-drift/QM5_41149_audusd-local-session-inventory-drift.mq5",
+    "mq5_sha256": "833a96b8e9eb42cd5ab4e7109afdc4052dd0ae473d4d097251e3a32f11f69d72",
+    "ex5_path": "framework/EAs/QM5_41149_audusd-local-session-inventory-drift/QM5_41149_audusd-local-session-inventory-drift.ex5",
+    "ex5_sha256": "0e2b57da5d55048dd5a76715b1cb38367006cf93126057c3df13b04387f3730e",
+    "setfile_path": "framework/EAs/QM5_41149_audusd-local-session-inventory-drift/sets/QM5_41149_audusd-local-session-inventory-drift_AUDUSD.DWX_H1_backtest.set",
+    "setfile_sha256": "481de9d5d1916f5f56b236741e5789c5beafb781b2e4e1ebd8dceba47b013dc7"
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "pacer_build_guard": {
+    "generated_mq5_written_or_modified": false,
+    "compile_enqueued": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41149_audusd-local-session-inventory-drift/QM5_41149_audusd-local-session-inventory-drift.mq5",
+    "audit_exit_code": 0,
+    "audit_ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "capacity_preflight": {
+    "sampled_at_local": "2026-09-11T02:01:49+02:00",
+    "cpu_samples_percent": [96.49, 93.87, 96.78, 94.63, 92.68],
+    "cpu_average_percent": 94.89,
+    "cpu_maximum_percent": 96.78,
+    "hard_cpu_percent_ceiling": 97.0,
+    "hard_cpu_percent_ceiling_hit": false,
+    "active_main_backtests_after_mark": 4,
+    "d_free_gb_after_mark": 80.55
+  },
+  "queue_mutation": {
+    "command": "python tools/strategy_farm/farmctl.py --root D:/QM/strategy_farm mark-priority-track --work-item-id 35554b60-b527-42bf-ad09-d0c313fbdce6 --reason <recorded-governance-reason>",
+    "work_item_id": "35554b60-b527-42bf-ad09-d0c313fbdce6",
+    "phase": "Q04",
+    "status_after": "pending",
+    "verdict_after": null,
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "same_target_rows_after": 1,
+    "open_same_target_rows_after": 1,
+    "duplicate_work_item_inserted": false,
+    "dispatch_tick_run": false,
+    "tester_launched_by_this_mission": false,
+    "reason": "Advance the already-enqueued Q04 row in place after its authenticated Q02 PASS; no duplicate enqueue."
+  },
+  "safety": {
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "portfolio_gate_touched": false,
+    "t_live_manifest_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "terminal_process_mutated": false
+  }
+}
