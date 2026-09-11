@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Burakov; Crabel; Moskowitz; Ooi; Pedersen; OpenAI Codex",
+    "mechanic": "November-May WTI two completed weeks newest strict wider full range; continue newest weekly open-close body sign; symmetric one-week hold",
+    "slug": "wti-winter-wr2-body-mom",
+    "strategy_id": "BURAKOV-CRABEL-MOP-WTI-WINTER-WR2-BODY-MOM-20260911_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-11T16:17:01+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41440_wti-winter-wr2-clv-mom.md",
+      "score": 0.75,
+      "slug": "wti-winter-wr2-clv-mom",
+      "source": "card",
+      "strategy_id": "BURAKOV-CRABEL-MOP-WTI-WINTER-WR2-CLV-MOM-20260911_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41441_wti-winter-nr2-breakout.md",
+      "score": 0.75,
+      "slug": "wti-winter-nr2-breakout",
+      "source": "card",
+      "strategy_id": "BURAKOV-CRABEL-WTI-WINTER-NR2-BREAKOUT-20260911_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4923,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1533,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
