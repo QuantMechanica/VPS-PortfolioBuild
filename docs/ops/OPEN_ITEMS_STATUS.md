@@ -2887,3 +2887,16 @@ real-tick canary passed signed-history/resource/input checks and exited 0, but t
 2026-09-11T05:2xZ (Codex, task 4fa85eb8): RESULT — Q-DUKASCOPY REVIEW. The progress
 atomic-replace path now retries share locks for 30 seconds and makes progress.json advisory after
 an exhausted retry; focused Dukascopy tests PASS. The existing production downloader was not restarted.
+
+2026-09-11T~05:36Z (Claude orchestration cycle, task 4fa85eb8): RESULT --
+Q-DUKASCOPY APPROVED. Independently re-verified the codex fix (commit fe7cc4ce09) before
+closing: os.replace retry+backoff and 15s-throttled advisory progress.json writes match
+spec S1-S4 exactly, 24/24 tools/dukascopy tests pass, no ledger/manifest/HTTP-retry change,
+production downloader untouched (confirmed still running pre-fix binary, healthy,
+completed=52594/306545 at 05:35Z). Completed the RESULT documentation gap (crash
+timestamp 2026-09-11T04:35Z, fix commit, relaunch instruction) before close-review, since
+the ticket's own acceptance criterion required all three and the codex RESULT line had
+named none of them. close-review succeeded cleanly (no sibling-cycle race this time).
+bb814520/dfc60103 gate (QM5_41394 SP500.DWX/XAUUSD.DWX Q02) still pending/unclaimed since
+2026-09-09T10:52:59Z (~2d18h43m static) -- unchanged, no update-task call on either.
+3032534e stays IN_PROGRESS (this closes one sub-ticket, not its own top-level acceptance).
