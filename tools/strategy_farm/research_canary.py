@@ -226,8 +226,15 @@ def render_tester_ini(*, expert: str, symbol: str, period: str, setfile_name: st
                          (setfile_name, "setfile"), (from_date, "from-date"), (to_date, "to-date")):
         if "\n" in value or "\r" in value or not value:
             raise CanaryRefused(f"invalid tester {label}")
+    defaults = _read_json(REPO_ROOT / "framework/registry/tester_defaults.json")
+    deposit, leverage = int(defaults["initial_deposit"]), int(defaults["leverage"])
+    currency = str(defaults["deposit_currency"])
+    if deposit <= 0 or leverage <= 0 or not re.fullmatch(r"[A-Z]{3}", currency):
+        raise CanaryRefused("invalid canonical tester defaults")
     return "\r\n".join(("[Tester]", f"Expert={expert}", f"ExpertParameters={setfile_name}",
         f"Symbol={symbol}", f"Period={period}", "Model=4", "ExecutionMode=0", "Optimization=0",
+        f"Deposit={deposit}", f"Currency={currency}", f"Leverage={leverage}",
+        "ProfitInPips=0", "ForwardMode=0", "OptimizationCriterion=0",
         f"FromDate={from_date}", f"ToDate={to_date}", "UseLocal=1", "UseRemote=0", "UseCloud=0",
         "Visual=0", "Replace=1", "ReplaceReport=1", "ShutdownTerminal=1", f"Report={report_rel}", ""))
 
@@ -350,10 +357,16 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
     artifact.mkdir(parents=True, exist_ok=False)
     terminal_root = mt5_root / request.terminal
     report = artifact / "report.htm"
+    # Match the governed fleet exporter: MT5 resolves Report relative to its
+    # portable data root. Absolute paths can finish testing without an export.
+    report_name = f"research_canary_{run_id}.htm"
+    exported_report = terminal_root / report_name
+    if exported_report.exists():
+        raise CanaryRefused("unique canary report destination already exists")
     ini = artifact / "tester.ini"
     rendered = render_tester_ini(expert=request.expert, symbol=request.symbol, period=request.period,
         setfile_name=request.setfile_path.name, from_date=request.from_date, to_date=request.to_date,
-        report_rel=str(report))
+        report_rel=report_name)
     ini.write_text(rendered, encoding="utf-16", newline="")
     before = isolation_snapshot(farm_root=farm_root, terminal=request.terminal)
     assert_isolation_admitted(before)
@@ -363,6 +376,16 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         "setfile": {"path": str(request.setfile_path), "sha256": sha256_file(request.setfile_path)},
         "ex5": {"path": str(request.expert_path), "sha256": sha256_file(request.expert_path)}, "isolation_before": before}
     try:
+        canonical_group = REPO_ROOT / "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt"
+        installed_group = terminal_root / "MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt"
+        if not installed_group.is_file() or sha256_file(installed_group) != sha256_file(canonical_group):
+            raise CanaryRefused("T11 tester commission group differs from canonical")
+        receipt["tester_contract"] = {
+            "defaults_sha256": sha256_file(REPO_ROOT / "framework/registry/tester_defaults.json"),
+            "commission_group_sha256": sha256_file(installed_group),
+            "commission_group_path": str(installed_group),
+            "report_export_path": str(exported_report),
+        }
         receipt["history_audit"] = verify_private_history(terminal=request.terminal, symbol=request.symbol,
             farm_root=farm_root, mt5_root=mt5_root)
         receipt["resource_guard"] = resource_check(terminal=request.terminal, max_agents=request.max_agents,
@@ -379,11 +402,30 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
             "pid": child.pid, "process_creation_key": str((get_process_identity(child.pid) or {}).get("creation_key") or ""),
             "process_image_path": str((get_process_identity(child.pid) or {}).get("image_path") or "")},
             process_created_suspended=True)
+        deadline = time.monotonic() + request.timeout_seconds
+        receipt["runtime_resource_guards"] = []
         try:
-            receipt["exit_code"] = process.wait(timeout=request.timeout_seconds)
-        except subprocess.TimeoutExpired as exc:
-            GLOBAL_JOB_REGISTRY.abort(int(process.pid), str(receipt["process"]["process_creation_key"]))
-            raise CanaryRefused(f"tester timeout after {request.timeout_seconds}s") from exc
+            while True:
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise CanaryRefused(f"tester timeout after {request.timeout_seconds}s")
+                try:
+                    receipt["exit_code"] = process.wait(timeout=min(5.0, remaining))
+                    break
+                except subprocess.TimeoutExpired:
+                    receipt["runtime_resource_guards"].append(resource_check(
+                        terminal=request.terminal, max_agents=request.max_agents,
+                        cpu_samples=1, sample_seconds=0, mt5_root=mt5_root))
+        except Exception:
+            # Abort only the identity-bound canary job, never any fleet process.
+            GLOBAL_JOB_REGISTRY.abort_retained(int(process.pid), str(receipt["process"]["process_creation_key"]))
+            raise
+        if receipt["exit_code"] != 0:
+            raise CanaryRefused(f"tester exit code {receipt['exit_code']}")
+        if exported_report.is_file():
+            shutil.copy2(exported_report, report)
+            if sha256_file(report) != sha256_file(exported_report):
+                raise CanaryRefused("report capture SHA-256 mismatch")
         if not report.is_file():
             raise CanaryRefused("tester exited without report")
         receipt["report"] = {"path": str(report), "sha256": sha256_file(report)}
