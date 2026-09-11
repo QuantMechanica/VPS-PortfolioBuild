@@ -39,3 +39,6 @@ QM5_41405 MQ5/EX5/set hashes and commit before even the seven control cells are
 enqueued. Until that adapter has a real first claim and all 350 cells are
 MEASURED, deal-list identity, hypothesis results, fade-only economics, and any
 recommended configuration remain unproven.
+
+Review provenance: this continuation was committed with the required Codex
+co-author trailer on `agents/board-advisor`.
