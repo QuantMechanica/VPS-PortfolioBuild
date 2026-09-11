@@ -2940,3 +2940,12 @@ evidence sentinel per DB trigger; GRUEN queue-order lever); (b) payloads lacked 
 first sort key) -> set on the 7 pending unclaimed rows + config_sweep.py now emits priority_track and
 opt_census_pool (3 tests pass). Claim-order position now 0 among OPT_CENSUS rows; first-claim poll
 running. LESSON for 036de7b9 follow-up: a new program tool must ship queue-owner + priority_track.
+
+## 2026-09-11T07:40Z — QM5_41405 identity PASS, stage-2 matrix enqueued
+
+Control cells 2019-2025 (config 0 = fixed UTC+3 / AS_IS / buffer 0 / band on / H1) reproduce the
+stage-A s0_l8 cells exactly on net_profit, profit_factor and total_trades for every year (report
+sha differs as expected: EA name/magic/timestamps). Sibling QM5_41405 is a faithful copy of 41398 on
+the winner window. Remaining 343 matrix cells enqueued via config_sweep.py (idempotent), priority_track
++ queue owner in place; ~17 h at 2 lanes (GELB cost). Adjudication per the approved card (five
+refutation criteria) when 350/350 are MEASURED via `config_sweep.py report`.
