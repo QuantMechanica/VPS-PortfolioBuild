@@ -3047,3 +3047,12 @@ Next: Astra drafts the OWNER decision card (protocol: programs, mode, cut-off, r
 ## RESULT 2026-09-11 — Codex `3bc4034e`: Q-PRESCREEN decision card ready for REVIEW
 
 Analysis complete: frozen pilot, 20,000-replicate bootstrap CIs, FN-at-cut tables, cost/queue reconciliation and German 15-line Mission Control text verified. Recommendation: preserve full real-tick measurement in existing DL-089 and Balke programs; new-program shadow validation only, provisional 70% keep. No pruning adoption: 2021 keep-50% FN=1/5, score cost semantics differ, net wall-time gain and earlier Q14 closures NICHT GEZEIGT. No launches, work-item writes, selection/gate/counter change or live action. Canonical board-advisor packet: [decision card](evidence/2026-09-11_prescreen_decision/PRESCREEN_PROTOCOL_DECISION_CARD_2026-09-11.md); [verification](evidence/2026-09-11_prescreen_decision/verification.json). Leave in REVIEW for Claude+OWNER close-out.
+
+## 2026-09-11T14:45Z — Pre-screen decision card delivered (Astra 3bc4034e APPROVED)
+
+Recommendation A: keep full real-tick confirmation for every sealed program; OHLC-M1 only as a research
+ordering signal; for NEW programs an inert, pre-registered shadow protocol (keep 70 pct, 10 pct random
+control of drops, suspend if omission or running FNR > 10 pct). Pattern census not eligible (sealed rule
+needs all seven years). Throughput caveat: T11 at ~40 cells/h is below the fleet feed (45-50 cells/h),
+so pre-screening is not a throughput multiplier without a second seat. Mirrored to Vault OWNER.md as a
+non-urgent decision; orchestrator recommendation = A now, shadow protocol on the next new sweep program.
