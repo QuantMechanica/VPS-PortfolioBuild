@@ -2664,3 +2664,15 @@ APPROVED by hand and the card mirrored to D:/.../cards_approved, C:/QM/repo/arti
 (commit 5136355a4a) and the EA docs. dee2fc76 re-routed TODO->IN_PROGRESS with the card path.
 f04d66ec (research_canary S3) re-routed: staging accepted; the <=4 agent guard must count only T11's
 own MetaTester agents (path-anchored), not the fleet's; then real dry-run receipt and S3.
+
+## 2026-09-11T03:05Z — Stage B unclaimable: worker lane resolver ignored ledger amendments (hotfix)
+
+210 stage-B rows sat first in the claim order for ~1 h with zero claims while other census cells ran.
+Root cause: terminal_worker._dl089_declared_lane resolves census lanes from ledger.cells (+ driver
+reruns) only; window_sweep.py appends stage-B cells as an authenticated ledger amendment (kind
+stage_b_cells), so every stage-B candidate was refused as absent-from-ledger (surfaced only as
+no_pending_claimable). Codex fc926dde tested plan/enqueue/report, not worker acceptance. GRUEN infra
+repair: for schema qm.window-sweep.v1 the resolver now appends amendment cells (append-only, dedup by
+work_item_id); DL-089 programs untouched. Syntax ok, test_window_sweep 17 pass, lane/frontier tests 3
+pass. Reload chunk 65 started; stage B expected to start claiming afterwards (~10 h at 2 lanes).
+LESSON: every new cell class must be proven by a real first claim before the ticket is accepted.

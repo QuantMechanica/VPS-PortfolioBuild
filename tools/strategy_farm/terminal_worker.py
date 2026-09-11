@@ -9974,6 +9974,24 @@ def _dl089_declared_lane(
             if rerun_ids:
                 cell["work_item_id"] = rerun_ids[-1]
             cells.append(cell)
+        # 2026-09-11 (Orchestrator, GRUEN infra repair): a sealed window-sweep
+        # program appends its stage-B cells as an authenticated ledger amendment
+        # (kind 'stage_b_cells', sha-bound to the stage-A report by
+        # window_sweep.authenticate_ledger).  Without merging them here every
+        # stage-B row was refused as absent-from-ledger and stage B could never
+        # start (210 rows first in claim order, 0 claims for 1 h on 2026-09-11).
+        # Append-only; DL-089 programs (qm.opt-census.v1) are untouched.
+        if str(payload.get("schema") or "") == "qm.window-sweep.v1":
+            known = {str(cell.get("work_item_id") or "") for cell in cells}
+            for amendment in ledger.get("amendments") or []:
+                if str(amendment.get("kind") or "") != "stage_b_cells":
+                    continue
+                for raw_cell in amendment.get("cells") or []:
+                    cell = dict(raw_cell)
+                    if str(cell.get("work_item_id") or "") in known:
+                        continue
+                    cells.append(cell)
+            return cells, {**dict(ledger), "cells": cells}
         if census_reruns:
             return cells, {**dict(ledger), "cells": cells}
         return cells, dict(ledger)
