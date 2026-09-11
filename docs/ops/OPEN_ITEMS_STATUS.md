@@ -2633,3 +2633,17 @@ docs/ops/evidence/2026-09-09_window_sweep_surface.json --apply` twice: inserted 
 0bdd5d9e... bound in the ledger amendment. Program stays first in claim order (owner e144b67f), L=2,
 ~10 h expected. Final configuration rule: stage-B winner only if >= 1.10 x s0_l8/exit-18 plateau AND OOS
 confirmation, else s0_l8 with exit 18 stands.
+
+## 2026-09-11T02:55Z — QM5_41405 card amended + G0-approved; two Codex tickets re-routed
+
+Astra stage-2 (dee2fc76) correctly refused to build from a DRAFT card whose G0 scope covered only three
+inputs on the 03-06 window. Orchestrator amended the card (Astra's clock/outside-rule text kept):
+defaults = stage-A winner s0_l8 (start 0 / end 8 / exit 18), six declared inputs (clock mode, outside
+rule, entry buffer points 0/20, range band on/off, range bar period H1/M30/M5, range end minute) and the
+pre-registered 350-cell matrix with five refutation criteria; body carries the Balke 2024 video URL
+(validator needs year+URL). farmctl approve-card ran (g0 reasoning, expected_pf 1.2, dd 15; DB record);
+the tool leaves cards_review cards in place and never touches the lifecycle field, so status was set
+APPROVED by hand and the card mirrored to D:/.../cards_approved, C:/QM/repo/artifacts/cards_approved
+(commit 5136355a4a) and the EA docs. dee2fc76 re-routed TODO->IN_PROGRESS with the card path.
+f04d66ec (research_canary S3) re-routed: staging accepted; the <=4 agent guard must count only T11's
+own MetaTester agents (path-anchored), not the fleet's; then real dry-run receipt and S3.
