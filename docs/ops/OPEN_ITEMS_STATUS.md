@@ -2922,3 +2922,11 @@ named none of them. close-review succeeded cleanly (no sibling-cycle race this t
 bb814520/dfc60103 gate (QM5_41394 SP500.DWX/XAUUSD.DWX Q02) still pending/unclaimed since
 2026-09-09T10:52:59Z (~2d18h43m static) -- unchanged, no update-task call on either.
 3032534e stays IN_PROGRESS (this closes one sub-ticket, not its own top-level acceptance).
+
+## 2026-09-11T07:00Z — QM5_41405 control cells enqueued (config_sweep, chunk 66)
+
+Config-sweep adapter (57574e26cc: sweep_engine dispatch in the worker, fail-closed default) reviewed:
+worker diff 20 lines, 3 + 21 tests pass. Reload chunk 66 finished 06:58Z (10/10). `config_sweep.py
+enqueue --controls-only --apply` twice: inserted 7, then 0 (program WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025,
+frontier priority inherited from 41398 rows). Open: the program has no queue owner (config_sweep has
+no queue-owner command) -> claim-order position checked; first-claim proof pending (poll).
