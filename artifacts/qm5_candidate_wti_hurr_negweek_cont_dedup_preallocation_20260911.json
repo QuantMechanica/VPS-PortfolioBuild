@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "U.S. Energy Information Administration; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; OpenAI Codex",
+    "mechanic": "normalized-weekly-wti-august-september-october-hurricane-season-one-immediately-completed-week-open-to-close-strict-negative-log-return-short-continuation-one-week-hold",
+    "slug": "wti-hurr-negweek-cont",
+    "strategy_id": "EIA-MOP-WTI-HURR-NEGWEEK-CONT-20260911_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-11T03:17:09+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41430_wti-hurr-posweek-cont_card.md",
+      "score": 0.8888888888888888,
+      "slug": "wti-hurr-posweek-cont",
+      "source": "card",
+      "strategy_id": "EIA-MOP-WTI-HURR-POSWEEK-CONT-20260911_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41431_wti-hurr-negweek-fade_card.md",
+      "score": 0.8888888888888888,
+      "slug": "wti-hurr-negweek-fade",
+      "source": "card",
+      "strategy_id": "EIA-YANG-WTI-HURR-NEGWEEK-FADE-20260911_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41421_wti-refmaint-negweek-cont_card.md",
+      "score": 0.8333333333333334,
+      "slug": "wti-refmaint-negweek-cont",
+      "source": "card",
+      "strategy_id": "EIA-MOP-WTI-REFMAINT-NEGWEEK-CONT-20260910_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41424_wti-refmaint-posweek-fade_card.md",
+      "score": 0.7222222222222222,
+      "slug": "wti-refmaint-posweek-fade",
+      "source": "card",
+      "strategy_id": "EIA-YANG-WTI-REFMAINT-POSWEEK-FADE-20260910_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41392_xng-shoulder-wrev_card.md",
+      "score": 0.6111111111111112,
+      "slug": "xng-shoulder-wrev",
+      "source": "card",
+      "strategy_id": "EIA-XNG-SHOULDER-WREV-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4912,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1522,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
