@@ -2830,3 +2830,18 @@ this cycle independently drafted (58703508) was found and closed once 8ffc30f1 s
 account: docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.
 bb814520/dfc60103 gate (QM5_41394 SP500.DWX/XAUUSD.DWX Q02) still pending/unclaimed since
 2026-09-09T10:52:59Z, unchanged.
+
+## 2026-09-11T05:20Z — Dukascopy tick-data lane status (OWNER question)
+
+Decision OWNER-DEC-DUKASCOPY-BACKFILL-20260829 = YES, executed under Claude task 3032534e. Done: splice
+CSV 37/37 symbols (tick-tail probe a7e1333c), P1 hardened downloader (f6d18a6e: 98.7 % success, 95
+hours/min measured, 2.2-day projection), non-FX price_scale receipts 9/9 (2f717775), P3 DWX M1
+overlap export read-only (ba2a478e), raw_root containment false-positive fix (ff5cc3b9). Production
+run D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened: 306,545 hour-files planned, 11,693
+completed (3.8 %), ~131 hours/min in the 3 h before 04:35Z (=> ~1.6 days of runtime), relaunched by
+the headless cycle 05:11Z (pid 11056, concurrency 6). DEFECT: 5 crashes on PermissionError WinError 5
+in common.atomic_write (progress.json.tmp -> progress.json share-locked by a concurrent reader); each
+crash waits for the next relaunch. Ticket 4fa85eb8 P80: retry os.replace, continue on progress-write
+failure, resume-safe relaunch. Remaining phases after P1: P2 append-only convert into the 2026 mutable
+year (signed 2017-2025 archive untouched), P3 splice + verify_import per symbol + T1 reconciliation,
+then the decision-bound task reports RESULT. Raw so far 1.6 GB reports + 2.7 GB data.
