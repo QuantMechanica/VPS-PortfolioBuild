@@ -1,0 +1,32 @@
+{
+  "captured_at_utc": "2026-09-11T12:03:36.201478+00:00",
+  "controller_sha256": "1257fc7ee25ed9a64e956ccd1e89a7d07c0414a18969cd45756404693f2cd038",
+  "controller_matches_prior": true,
+  "focused_command": "python -m pytest tools/strategy_farm/tests/test_research_canary.py -q",
+  "focused_result": "38 passed in 2.02s; exit 0",
+  "pilot_receipt_path": "D:\\QM\\reports\\research\\T11_PRESCREEN_PART2_c3fc6278\\20260911_110621_51e53c05\\receipt.json",
+  "pilot_receipt_sha256": "c313ebe5b8fbc03dd1c09f2411a985ca4b9c38877ba0519056b2dd475fa3f63a",
+  "pilot_matches_preserved_copy": true,
+  "pilot_status": "REFUSED",
+  "pilot_reason": "tester exited without report",
+  "report_paths": [],
+  "configured_report_export_path": "D:\\QM\\mt5\\T11\\research_canary_20260911_110621_51e53c05.htm",
+  "configured_report_exists": false,
+  "journal_path": "D:\\QM\\mt5\\T11\\logs\\20260911.log",
+  "journal_sha256": "6df9cb135f1d11f596724627bd883f6166f55c6323deda21b47005c915daae2d",
+  "journal_matches_previous_cycle": true,
+  "journal_last_write_utc": "2026-09-11T11:11:25.794603+00:00",
+  "journal_tail": [
+    "RG\t0\t13:11:25.455\tStartup\tsuccessfully initialized from start config \"D:\\QM\\reports\\research\\T11_PRESCREEN_PART2_c3fc6278\\20260911_110621_51e53c05\\tester.ini\"",
+    "OQ\t0\t13:11:25.516\tLiveUpdate\tstart \"C:\\Windows\\system32\\config\\systemprofile\\AppData\\Roaming\\MetaQuotes\\Terminal\\F5D9412A6437C1548F3DA4241E8C78A6\\liveupdate\\terminal64.exe\" /update /path:\"D:\\QM\\mt5\\T11\" /portable /config:\"D:\\QM\\reports\\research\\T11_PRESCREEN_PART2_c3fc6278\\20260911_110621_51e53c05\\tester.ini\"",
+    "GK\t0\t13:11:25.690\tTerminal\texit with code 0",
+    "RH\t0\t13:11:25.691\tTerminal\tstopped with 0",
+    "GL\t0\t13:11:25.794\tTerminal\tshutdown with 0"
+  ],
+  "terminal_path": "D:\\QM\\mt5\\T11\\terminal64.exe",
+  "terminal_sha256": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed",
+  "terminal_matches_failed_pilot_audit": true,
+  "t11_processes": [],
+  "new_launches_this_cycle": 0,
+  "experimental_acceptance_complete": false
+}
