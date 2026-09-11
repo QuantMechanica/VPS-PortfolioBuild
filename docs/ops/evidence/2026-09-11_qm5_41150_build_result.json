@@ -1,0 +1,27 @@
+{
+  "schema": "qm.build-result.v1",
+  "task_id": "31c75268-67a5-443d-92c8-96760d5d5183",
+  "ea_id": "QM5_41150",
+  "ea_label": "QM5_41150_gbpusd-local-session-inventory-drift",
+  "build_check_passed": true,
+  "build_check": {
+    "result": "PASS",
+    "exit_code": 0,
+    "errors": 0,
+    "warnings": 0,
+    "evidence_path": "D:\\QM\\reports\\work_items\\d21006d6-1baa-4672-8f4f-0df0e4923352\\QM5_41150\\COMPILE_EA\\compile_evidence.json"
+  },
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41150_gbpusd-local-session-inventory-drift\\QM5_41150_gbpusd-local-session-inventory-drift.mq5",
+  "mq5_sha256": "c6e682803e066399b79c7f20153008bcc535753ce12384458a3a7c34a4fc9021",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41150_gbpusd-local-session-inventory-drift\\QM5_41150_gbpusd-local-session-inventory-drift.ex5",
+  "ex5_sha256": "033eea3b4dc328f3c1cc7db362dabcc3dd42244445f2eff33571f1f6b1844f4d",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41150_gbpusd-local-session-inventory-drift\\sets\\QM5_41150_gbpusd-local-session-inventory-drift_GBPUSD.DWX_H1_backtest.set"
+  ],
+  "setfile_hashes": {
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41150_gbpusd-local-session-inventory-drift\\sets\\QM5_41150_gbpusd-local-session-inventory-drift_GBPUSD.DWX_H1_backtest.set": "8da19241af16ba0ded8e5338d34d6ba10e57e6e19a8238e2b778b2fa627a4e9c"
+  },
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41150_gbpusd-local-session-inventory-drift.md",
+  "compile_work_item_id": "d21006d6-1baa-4672-8f4f-0df0e4923352",
+  "verdict": "Q01_COMPILE_PASS_Q02_REVIEW_GATE_PENDING"
+}

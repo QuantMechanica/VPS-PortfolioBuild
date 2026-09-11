@@ -1,0 +1,28 @@
+{
+  "schema": "qm.ea-source-review/v1",
+  "ea_id": "QM5_41150",
+  "ea_label": "QM5_41150_gbpusd-local-session-inventory-drift",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41150_gbpusd-local-session-inventory-drift.md",
+  "mq5_sha256": "c6e682803e066399b79c7f20153008bcc535753ce12384458a3a7c34a4fc9021",
+  "review_verdict": "APPROVED",
+  "review_scope": [
+    "approved-card identity and GBPUSD.DWX universe",
+    "07:00-16:00 Europe/London DST-aware session contract",
+    "one SELL attempt per civil session with same-session exit",
+    "ATR(14) x 1.5 hard stop and no take-profit",
+    "fixed-risk setfile and magic/resolver bindings",
+    "PACER framework-input-pin contract",
+    "framework management and restart-state ordering"
+  ],
+  "evidence": {
+    "pin_audit": "PASS; hit_count=0",
+    "build_gate_hardening": "PASS; failures=0; warnings=0",
+    "build_guardrails": "PASS; findings=0",
+    "reference_tests": "4 passed",
+    "compile": "COMPILE_OK; 0 errors; 0 warnings",
+    "build_check": "PASS; failures=0; warnings=0",
+    "compile_evidence_path": "D:\\QM\\reports\\work_items\\d21006d6-1baa-4672-8f4f-0df0e4923352\\QM5_41150\\COMPILE_EA\\compile_evidence.json"
+  },
+  "live_authority": false,
+  "portfolio_gate_authority": false
+}
