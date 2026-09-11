@@ -1,0 +1,85 @@
+{
+  "schema": "qm.diversity-funnel-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-11T05:45:47.0249988Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "3a4380732ef4f0df7c01febaab5a97ee78d1176e",
+  "outcome": "STOP_CPU_CEILING",
+  "admission_rule": {
+    "cpu_average_strictly_below_percent": 97.0,
+    "cpu_maximum_strictly_below_percent": 97.0,
+    "active_tester_rows_strictly_below": 7
+  },
+  "capacity": {
+    "cpu_source": "Win32_Processor.LoadPercentage",
+    "cpu_samples_percent": [99.0, 99.0, 88.0, 85.0, 86.0],
+    "cpu_average_percent": 91.4,
+    "cpu_maximum_percent": 99.0,
+    "cpu_admitted": false,
+    "active_tester_rows": 5,
+    "active_rows_admitted": true,
+    "d_free_gib": 74.116
+  },
+  "active_rows": [
+    {
+      "id": "2f1f8a1e-cbc6-5dce-aa6b-da35c041d7f3",
+      "ea_id": "QM5_41398",
+      "symbol": "USDJPY.DWX",
+      "phase": "OPT_CENSUS",
+      "status": "active",
+      "claimed_by": "T10",
+      "updated_at": "2026-09-11T05:44:29+00:00"
+    },
+    {
+      "id": "678387d2-b04b-4804-9698-77f32c88e057",
+      "ea_id": "QM5_10715",
+      "symbol": "XAUUSD.DWX",
+      "phase": "Q04",
+      "status": "active",
+      "claimed_by": "T6",
+      "updated_at": "2026-09-11T05:44:53+00:00"
+    },
+    {
+      "id": "74b354ef-1226-57e7-8e3c-cb9078ae6fa3",
+      "ea_id": "QM5_41322",
+      "symbol": "XAUUSD.DWX",
+      "phase": "OPT_CENSUS",
+      "status": "active",
+      "claimed_by": "T9",
+      "updated_at": "2026-09-11T05:45:08+00:00"
+    },
+    {
+      "id": "e5b3b516-4f27-47cd-934d-d2ef62d2ef27",
+      "ea_id": "QM5_12552",
+      "symbol": "EURUSD.DWX",
+      "phase": "Q08",
+      "status": "active",
+      "claimed_by": "T4",
+      "updated_at": "2026-09-11T05:45:40+00:00"
+    },
+    {
+      "id": "e8c5b775-7c98-42b2-90d5-020b1b4639f0",
+      "ea_id": "QM5_11622",
+      "symbol": "EURUSD.DWX",
+      "phase": "Q04",
+      "status": "active",
+      "claimed_by": "T2",
+      "updated_at": "2026-09-11T05:45:42+00:00"
+    }
+  ],
+  "mutations_refused": {
+    "farm_claim": true,
+    "strategy_card": true,
+    "registry": true,
+    "mq5": true,
+    "compile": true,
+    "q02_enqueue": true,
+    "terminal_control": true,
+    "portfolio_or_live": true
+  },
+  "input_pin_audit": {
+    "required_after_mq5_before_compile_enqueue": true,
+    "entered": false,
+    "reason": "no generated mq5 was written"
+  },
+  "continuation_condition": "Repeat a fresh five-sample CPU window and governed active-row census; proceed only when CPU average and maximum are both strictly below 97 percent and active tester rows are fewer than seven."
+}
