@@ -22,3 +22,21 @@ At its next authorized resume-safe relaunch it will pick up this commit.
 
 **RESULT (Q-only):** Q-DUKASCOPY is REVIEW — the progress-share-lock repair is
 implemented and tested; the active production process remains untouched.
+
+**Crash timestamp:** 2026-09-11T04:35Z, `PermissionError [WinError 5]` in
+`atomic_write_text` -> `atomic_write_bytes` -> `os.replace(progress.json.tmp,
+progress.json)` (share-locked reader), in
+`D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened/download.log`.
+**Fix commit:** `fe7cc4ce09e5c492153b125f4967bd530fd5ef77`.
+**Relaunch instruction:** the process that crash-relaunched at 05:11Z (PID
+11056, `resume`d from the hour ledger 7,778 -> 11,693) and the one running now
+(PID confirmed via `progress.json.started_at_utc=2026-09-11T05:22:13.175Z`,
+i.e. started *before* this commit) both still run the pre-fix binary — no
+action needed on them; they resume correctly from `hour_ledger.jsonl` on any
+crash regardless. The retry/backoff hardening takes effect only once this
+process is next stopped and the identical `download_bi5.py` resume command is
+relaunched (no flag change required — same `--out` root, same symbol list,
+resumes via the ledger as always). Do not restart the currently running
+process solely to pick up this fix; let it continue and apply automatically
+at its next natural relaunch (e.g. after a future crash or an explicit,
+separately authorized stop).
