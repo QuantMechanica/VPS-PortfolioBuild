@@ -823,3 +823,34 @@ dedicated pass, and the 37-symbol production run should be checked against
 current T1 queue depth/capacity before adding it. `bb814520`/`dfc60103` remain
 outside this task's authority entirely (ordinary Q02 queue depth on a
 different EA).
+
+## Checked 2026-09-11T01:03Z (headless orchestration cycle) — scope correction: production dispatch needs separate authorization, not just a capacity check
+
+All three tasks re-confirmed `IN_PROGRESS` via `list-tasks`; `bb814520`/`dfc60103`
+gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02 rows still
+`pending`/unclaimed/`attempt_count=0`, `updated_at=2026-09-09T10:52:59Z`, ~2d14h
+static). `farmctl health` overall=FAIL15/WARN19/OK51, same chronic set (no new
+CRITICAL-class item; `task_monitor_escalation` FAIL now also carries
+`FACTORY_UTILIZATION_LOW:53.56%<55%` alongside the existing
+`QM_EvidenceCohortWatch_Daily_0420 LOSS_OBSERVED` line — both outside these
+three tasks' authority).
+
+Re-read `docs/ops/evidence/2026-09-11_dukascopy_dwx_m1_overlap_export/README.md`
+in full before treating the prior cycle's "needs a dedicated capacity-check
+pass" framing as the only blocker on `--apply`. The README's own "Review
+handoff" section is more restrictive than that framing suggested: *"The first
+production T1 dispatch is a separate governed enqueue and is not authorized by
+this build ticket... Do not add `--apply` without that separate
+authorization."* This is an authorization boundary, not merely an operational
+capacity check — `3032534e`'s own `allowed_actions` cover enqueueing/reviewing
+*build* tickets and running the *already-authorized* downloader/import/
+reconciliation-compute steps, but the M1 exporter's production run was
+explicitly carved out of `ba2a478e`'s (the build ticket's) authorization when
+it closed. Dispatching `--apply` this cycle without a new authorized ticket
+would risk exceeding `3032534e`'s `selected_effect_only` scope. Not actioned —
+correcting this record so a future cycle doesn't enqueue the production run on
+the strength of the earlier "just needs a capacity check" note alone; a new
+governed ticket (or explicit OWNER/task authorization citing `3032534e`) is the
+correct next step, not a direct `--apply` call. No `update-task` call on any of
+the three (nothing newly met); this is a scope-clarification note, not a
+duplicate state re-check.
