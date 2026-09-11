@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-11T19:30:33.7152737Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "fefe5d60d1ada664b6c855f341914ee9dbf00400",
+  "outcome": "STOP_CPU_CEILING",
+  "frontier": {
+    "frozen_scan_pairs": 66,
+    "unbuilt_relationships": 0,
+    "reconciliation": "docs/research/FX_COINTEGRATION_FRONTIER_Q02_CPU_CEILING_STOP_2026-08-07.md"
+  },
+  "anchors": {
+    "QM5_12532": {
+      "logical_q02": "PASS",
+      "latest_terminal_gate": "Q05_FAIL",
+      "current_oninit_or_no_history_block": false
+    },
+    "QM5_12533": {
+      "logical_q02": "PASS",
+      "latest_terminal_gate": "Q04_FAIL",
+      "current_oninit_or_no_history_block": false
+    }
+  },
+  "selected_existing_forex_card": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "timeframe": "H1",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "q02_status": "pending",
+    "q02_attempt_count": 0,
+    "q02_claimed_by": null,
+    "q02_duplicate_created": false,
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "ex5_sha256": "B9BAF4B48E02B9CED91B2D86D24B87245B595B506D1763B279E36BB9074BA4AA"
+  },
+  "cpu_admission": {
+    "samples_percent": [
+      100.0,
+      94.0,
+      96.0,
+      94.0,
+      100.0
+    ],
+    "average_percent": 96.8,
+    "maximum_percent": 100.0,
+    "hard_ceiling_percent": 97.0,
+    "admitted": false
+  },
+  "farm_snapshot": {
+    "active_work_item_count": 5,
+    "active_work_item_limit": 7,
+    "active_summary": {
+      "OPT_CENSUS": 3,
+      "Q02": 1,
+      "Q07": 1
+    },
+    "running_factory_terminals": [
+      "T4",
+      "T6",
+      "T7",
+      "T10"
+    ],
+    "t_live_observed_only_and_excluded": true
+  },
+  "mutations": {
+    "mq5_written_or_edited": false,
+    "source_pin_audit_required": false,
+    "compile_command_or_enqueue": false,
+    "backtest_enqueue": false,
+    "dispatch_or_terminal_control": false,
+    "portfolio_or_live_change": false
+  },
+  "binding_guard": "Any generated MQ5 must pass audit_framework_input_pins.py --check-source before enqueue-compile; any nonzero exit or EA_FRAMEWORK_INPUT_PINNED finding refuses the build. No MQ5 was written in this stopped run."
+}
