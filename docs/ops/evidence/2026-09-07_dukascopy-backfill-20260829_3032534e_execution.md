@@ -1649,3 +1649,43 @@ XAUUSD.DWX Q04 still `pending`/unclaimed, `updated_at=2026-09-11T10:51:37Z` (~3.
 Q08 re-confirmed unchanged (`FAIL_HARD`, static since 2026-06-26). No acceptance criterion
 newly met on any of the three owner-decision tasks; no `update-task` call made. All three
 remain `IN_PROGRESS`.
+
+## Checked 2026-09-11T16:00-16:06Z (headless orchestration cycle) -- crash+relaunch, clean resume verified, gate still unchanged
+
+No `download_bi5.py` process was alive at `~16:04Z` (`progress.json` static at
+`completed=215678`, `updated_at_utc=2026-09-11T15:23:51.842Z` -- ~39min stale, itself the
+stall signal per lesson #4). Confirmed via `Get-CimInstance Win32_Process` full command-line
+enumeration (not just the progress file) that no `download_bi5.py` process existed anywhere
+on the host; no orphaned `*.tmp` under the out root. `hour_ledger.jsonl` at `218991` lines
+pre-relaunch. Relaunched the identical resume command (within `3032534e`'s own
+pre-authorized `allowed_actions`, not new scope; `ae1df6bf` -- the root-cause fix ticket --
+still `APPROVED`/unassigned/unworked since `06:42:08Z`, now 9h20min unworked):
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Launched detached via `Start-Process` (PID `11700`, `2026-09-11T18:05:00+02:00` local =
+`16:05:00Z`), working directory `C:\QM\repo`. Verified single-writer state 15s later (only
+PID `11700` present, no duplicate spawn this cycle). `hour_ledger.jsonl` unchanged at
+`218991` lines immediately post-launch -- no data loss. Initial `progress.json` read showed
+the expected startup-transient `resumed=0/completed=0` (same artifact noted in every prior
+relaunch, not a regression); re-checked 45s post-launch via a bounded `Monitor` poll:
+`resumed=13823 completed=13823 status=RUNNING` -- resume confirmed working correctly, climbing
+normally from the `218991`-line ledger baseline. No further action needed/taken this cycle.
+
+`bb814520`/`dfc60103` gate re-checked via direct DB query, unchanged since the `15:33Z`
+checkpoint: `b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`;
+`46167bd9` still `APPROVED`/claude not routed since `2026-09-10T22:16:06Z`; `ae1df6bf` still
+`APPROVED`/unassigned since `06:42:08Z`; codex's one live `IN_PROGRESS` slot this cycle is
+an unrelated `governed_magic_precondition` ticket (`f7f39835`, `QM5_1557`), confirming codex
+capacity is not fully idle but simply not picking up these three specific tickets.
+`QM5_41394` XAUUSD.DWX Q04 still `pending`/unclaimed, `updated_at=2026-09-11T10:51:37Z`
+(~5h14min static) -- ordinary queue depth, not this task's authority. `farmctl health`
+FAIL15/WARN17/OK52 (`checked_at=16:05:47Z`) -- same chronic category set as prior baselines
+(FAIL15/WARN18-20/OK51-52), no new FAIL category. No acceptance criterion newly met on any
+of the three owner-decision tasks; no `update-task` call made. All three remain
+`IN_PROGRESS`.
