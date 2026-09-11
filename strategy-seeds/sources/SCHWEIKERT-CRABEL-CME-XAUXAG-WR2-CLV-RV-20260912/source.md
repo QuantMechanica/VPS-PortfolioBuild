@@ -1,0 +1,111 @@
+---
+source_id: SCHWEIKERT-CRABEL-CME-XAUXAG-WR2-CLV-RV-20260912
+title: Gold-silver weekly ratio range-expansion outer-quartile reversion
+status: approved_source_complete
+source_type: governed_peer_reviewed_exchange_and_range_state_mechanization
+approval_basis: decisions/2026-09-12_xauxag_wr2_clv_reversion_source_approval.md
+primary_instruments: [XAUUSD.DWX, XAGUSD.DWX]
+decision_timeframe: D1
+strategy_ids:
+  - SCHWEIKERT-CRABEL-CME-XAUXAG-WR2-CLV-RV-20260912_S01
+parent_sources:
+  - source_id: SCHWEIKERT-CME-XAUXAG-WCLOSE-EXTREME-RV-2026
+    role: peer_reviewed_cointegration_lineage_exchange_ratio_carrier_and_weekly_reversion_translation
+  - source_id: CRABEL-MOP-WTI-WR4-CLOSE-MOM-2026
+    role: governed_range_state_and_monday_anchored_completed_week_construction
+---
+
+# Gold-Silver Weekly Ratio Range-Expansion Outer-Quartile Reversion
+
+## Complete-Read Record
+
+The two bounded approved parent records named above were read end to end before the durable
+approval at `decisions/2026-09-12_xauxag_wr2_clv_reversion_source_approval.md`.
+`SCHWEIKERT-CME-XAUXAG-WCLOSE-EXTREME-RV-2026` carries named-author peer-reviewed evidence that
+the gold/silver relation can be state dependent, CME's definition of the gold/silver ratio as an
+intermarket spread, and a governed weekly relative-value reversion translation.
+`CRABEL-MOP-WTI-WR4-CLOSE-MOM-2026` carries reputable range-state lineage and a reproducible
+Monday-anchored completed-week construction. No unrecorded online content is used.
+
+## Claim And Translation Boundary
+
+No parent tests this exact rule. The sources support investigating a gold/silver relative-value
+carrier and systematic range states; they do not establish that expansion from one completed
+ratio week to the next, followed by an outer-quartile settlement, reverses over the following
+week. They also do not establish equal-notional neutrality, Darwinex CFD equivalence, activity,
+profitability, decorrelation, or live fitness. This is a pre-result QM hypothesis.
+
+## Bounded Mechanization
+
+At the first tradable `XAUUSD.DWX` D1 bar of each normalized Monday-anchored broker week:
+
+1. Persist the decision-week attempt before history, signal, news, spread, quote, ATR, sizing,
+   margin, or order gates; never retry the week.
+2. Aggregate exactly the two immediately preceding consecutive completed broker weeks from
+   synchronized XAU and XAG D1 bars. Each week must contain three through five positive, finite,
+   unique, strictly ordered sessions, and both legs must share every timestamp.
+3. For each session compute `s=ln(XAU_close)-ln(XAG_close)`. For each week compute the ratio-close
+   range `R=max(s)-min(s)` and newest-week close location
+   `CLV=(s_final-min(s))/R`.
+4. Require both ranges to be positive and finite and the newest range to be strictly greater than
+   the prior range. Equality or contraction is flat.
+5. If `CLV>0.75`, SELL XAU and BUY XAG. If `CLV<0.25`, BUY XAU and SELL XAG. Threshold equality or
+   an interior settlement is flat. Weekly body sign and absolute ratio level are irrelevant.
+6. Target equal absolute USD notionals under one aggregate fixed-dollar stop-risk budget.
+7. Close both legs on the first processed tick in the next normalized week; ten elapsed calendar
+   days is stale repair.
+8. Use `RISK_FIXED=1000`, `RISK_PERCENT=0`, `PORTFOLIO_WEIGHT=1`, independent frozen
+   `3.5*ATR(20,D1)` hard stops, no target, a 20% notional-mismatch cap, and XAU/XAG spread ceilings
+   of 1500/500 points.
+
+## Cadence And Falsification
+
+Two range observations and an outer-quartile settlement imply a deliberately sparse weekly
+event, expected at roughly eight to sixteen packages per full post-warm-up year before execution
+losses. Q02 retires on zero packages, fewer than five completed packages in any full scored year,
+nonpositive governed economics, or contract mismatch. No threshold, range orientation, side,
+carrier, or lifecycle may be changed after Q02 to rescue a failure.
+
+## Reputable-Source Criteria
+
+- R1 `PASS_WITH_CROSS_SOURCE_AND_WEEKLY_TRANSLATION_RISK`: named-author peer-reviewed gold/silver
+  relation evidence, CME exchange carrier evidence, and governed reputable range-state lineage;
+  the exact conjunction is explicitly untested.
+- R2 `PASS`: synchronization, two completed weeks, strict range expansion, strict CLV thresholds,
+  opposed sides, attempt, aggregate risk, stops, and lifecycle are deterministic and locked.
+- R3 `PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK`: registered native
+  `XAUUSD.DWX`/`XAGUSD.DWX` D1 histories provide all runtime market data.
+- R4 `PASS`: native timestamps, prices, logarithms, comparisons, ATR, quotes, positions, deals,
+  and persistent state only; no ML, banned signal indicator, external runtime feed, grid,
+  martingale, scale-in, or pyramid.
+
+## Non-Duplicate Boundary
+
+The canonical pre-allocation checker found no exact identity across 4,928 registry rows and 1,538
+repository cards. It emitted generic fuzzy family matches and could not read the absent external
+Strategy Wiki; the durable receipt is
+`artifacts/qm5_candidate_xauxag_wr2_clv_rv_dedup_preallocation_20260912.json`.
+
+Manual review distinguishes this candidate from `QM5_41079`, which ranks the newest close against
+other closes in one week and has no two-week range comparison; `QM5_41060`, which requires a
+seven-week narrow-range state and a later current-week breakout; `QM5_41088`, which compares
+per-leg close locations rather than the ratio-close range; `QM5_41417/41418`, which classify
+three weekly endpoint-return signs; `QM5_41440/41442`, which use the same WR2/CLV geometry on
+directional WTI inside a November-May calendar rather than a two-leg gold/silver carrier; and
+rolling ratio center, channel, empirical-tail, monthly-rank, and same-calendar families.
+
+Manual verdict:
+`DISTINCT_XAUXAG_TWO_WEEK_RATIO_RANGE_EXPANSION_OUTER_QUARTILE_REVERSION_AFTER_FAMILY_REVIEW`.
+
+## Prohibited Interpretations
+
+Do not add a fitted center or beta, moving average, oscillator, body-sign filter, current-week
+breakout, calendar gate, adaptive threshold, external feed, target, trail, partial, scale-in,
+retry, optimization, grid, or martingale.
+
+## Safety Boundary
+
+This packet supports one V5 card, deterministic allocation, one branch-only non-live build,
+strict Q01, and one paced fixed-risk Q02 handoff if CPU permits. It does not authorize manual
+backtests, portfolio-gate edits or admission, a correlation waiver, deploy/live manifests,
+`T_Live`, AutoTrading, terminal control, or live use.
