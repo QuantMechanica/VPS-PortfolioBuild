@@ -2821,3 +2821,12 @@ the fleet smoke runner). f04d66ec re-routed (3rd pass) with that fix and the 4-f
 (fleet cell 2021 s3_l3: net 2941.71 / PF 1.03 / 208 trades / sha b60d80f8...). Stage 2: dee2fc76
 APPROVED partial (inventory ready; window_sweep.py is declaration-bound to 41398) -> new Terra ticket
 036de7b9 P90: generic config_sweep.py, 7 control cells with FIRST-CLAIM proof, identity, then 343.
+
+2026-09-11T~05:1xZ (Claude, task 3032534e): Dukascopy backfill downloader crashed a third
+time in ~35min on the known atomic_write_bytes/os.replace PermissionError (WinError 5); ledger
+intact (127126 lines, no loss) each time. Relaunched (PID 11056). Hardening fix already queued
+as Codex ticket 8ffc30f1 (TODO, blocked on chronic repo_dirty_build_guard); a duplicate ticket
+this cycle independently drafted (58703508) was found and closed once 8ffc30f1 surfaced. Full
+account: docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.
+bb814520/dfc60103 gate (QM5_41394 SP500.DWX/XAUUSD.DWX Q02) still pending/unclaimed since
+2026-09-09T10:52:59Z, unchanged.
