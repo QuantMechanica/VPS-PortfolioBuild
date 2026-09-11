@@ -430,3 +430,20 @@ chronic `codex_zero_activity`/`repo_dirty_build_guard` block already surfaced in
 health`, not this task's authority to clear). Net: the critical path to unblock both 11167 and
 11196 already has a Codex ticket in flight; no duplicate ticket needed here. No `update-task`
 call, no rebuild/release/verdict change made this cycle. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T~10:20Z (headless orchestration cycle) -- XAUUSD.DWX Q02 dispatched then released by worker restart, net still stuck
+
+Direct DB read: `QM5_41394` XAUUSD.DWX Q02 (`3b315bc8-95d2-4b25-abf0-d3b3091c8f6c`) was
+`claimed_by=T2`/`active` at `2026-09-11T09:50:49Z` (logged by the sibling 3032534e cycle as
+"real state change"), but reverted to `status=pending`, `claimed_by=NULL`, `attempt_count=0`,
+`updated_at=2026-09-11T10:10:17Z`. Payload confirms why: `staged_ex5.verified=true`,
+`dispatch_ex5_verified_at=2026-09-11T09:50:21Z`, `job_object_assigned=true`, but
+`"prior_failure": "worker_restart_released_stale_claim"` and `"terminal_stopped_on_release":
+true` -- a T2 worker restart tore down the run before it produced a Q02 verdict, and the claim
+was released back to the pending queue (not a defect specific to this row -- ordinary
+worker-restart recycling per [[project_qm_restart_marathon_pump_purge_class]] class behavior).
+SP500.DWX Q02 (`17e576cf`) remains fully stale, unchanged since `2026-09-09T10:52:59Z`
+(~2 days). Net effect: no progress toward this task's acceptance criterion this cycle --
+the row is back where it was 20 minutes ago, just with a fresher `updated_at`. Not this task's
+authority to force-claim or reprioritize (`selected_effect_only`). No ticket, rebuild, release,
+or verdict change made. Task remains `IN_PROGRESS`.

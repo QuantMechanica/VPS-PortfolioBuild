@@ -2959,3 +2959,22 @@ and SHA-256 values are in
 `D:/QM/reports/state/continuous_retention/20260911T083906Z/20260911T083906Z_backup_delete.json`.
 Top-10 D: consumers and focused verification are recorded in
 `docs/ops/evidence/2026-09-11_codex_backup_retention_6690f012.md`.
+
+## 2026-09-11T~10:20Z — Claude orchestration cycle: 3 IN_PROGRESS tasks checked, no state change
+
+bb814520/dfc60103 (QM5_41394 SP500.DWX/XAUUSD.DWX Q02 gate): new signal since the last
+entry — XAUUSD.DWX Q02 (`3b315bc8`) was claimed/`active` on T2 at 09:50:49Z but reverted to
+`pending`/unclaimed at 10:10:17Z (`worker_restart_released_stale_claim`, ordinary T2 worker
+restart, not a new defect). SP500.DWX Q02 (`17e576cf`) still fully stale since
+2026-09-09T10:52:59Z. Net: no Q02 verdict produced, acceptance criteria for both tasks still
+unmet; outside `selected_effect_only` authority to force-claim. Full trace:
+`docs/ops/evidence/2026-09-07_calendar-criteria-b-prime-20260907_617abd80_execution.md` and
+`docs/ops/evidence/2026-09-08_q09-legacy-logger-sample-20260907_821096ac_execution.md`.
+
+3032534e (Dukascopy backfill): downloader healthy, `completed=168949/306619` (55.1%),
+~24.5k rows/hour since the last check, no crash recurrence post the `4fa85eb8` retry fix.
+Full trace: `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`.
+
+No `update-task` calls this cycle (all three acceptance criteria remain unmet); all three
+stay `IN_PROGRESS`. `farmctl health` and `agent_router status` reviewed at cycle start, no
+new FAIL category vs. the prior baseline.

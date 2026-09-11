@@ -512,3 +512,12 @@ block visible in `farmctl health`). This task's own acceptance ("11167 rerun end
 depends on that separate ticket landing, not on any action within this task's
 `selected_effect_only` scope. No new Codex ticket needed here (would duplicate `b66b5ccc`).
 No `update-task` call. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T~10:20Z (headless orchestration cycle) -- same gate, dispatched then released
+
+See `bb814520`'s file (2026-09-11T~10:20Z entry) for the full trace: `QM5_41394` XAUUSD.DWX
+Q02 was claimed/`active` on T2 at `09:50:49Z` but reverted to `pending`/unclaimed at
+`10:10:17Z` (`worker_restart_released_stale_claim`, `terminal_stopped_on_release=true`) --
+no Q02 verdict produced. This task's own gate (11167/XAUUSD Q10_NEWS rerun ending PASS/FAIL)
+is unaffected and still unmet. No ticket, rebuild, release, or verdict change made. Task
+remains `IN_PROGRESS`.

@@ -1503,3 +1503,19 @@ Q02 verdict, then adjudication PASS/FAIL) — no `update-task` call made.
 FAIL14/WARN16/OK55 baseline, no new FAIL category); `QM5_10260` Q08
 FAIL_HARD confirmed unchanged (last verdict row still the known FAIL/PASS
 history through 2026-07-25, no new rows).
+
+## Checked 2026-09-11T~10:20Z (headless orchestration cycle) -- downloader healthy, strong throughput, bb814520/dfc60103 gate reverted
+
+`progress.json` (`20260909T191800Z_hardened`): `status=RUNNING`, `completed=168949/306619`
+(55.1%), `updated_at_utc=2026-09-11T10:20:12Z` (fresh, no stall). Since the last logged
+check (`52594/306545` at `~05:35Z`), completed rows advanced by ~116,355 in ~4h45m
+(~24.5k/hour) with no crash entries -- the `4fa85eb8` atomic-replace retry fix (confirmed
+`APPROVED` 2026-09-11T~05:36Z) is holding; no PermissionError/WinError 5 recurrence this
+cycle. `errors=481`/`no_data=9573` out of `downloaded=23551` fresh-fetch attempts this run --
+within the expected weekend/holiday no-data range, not investigated further (not a P1
+acceptance criterion). Cross-referenced the `bb814520`/`dfc60103` gate this cycle: `QM5_41394`
+XAUUSD.DWX Q02 was claimed/active on T2 at `09:50:49Z` then reverted to pending/unclaimed at
+`10:10:17Z` (`worker_restart_released_stale_claim`) -- full trace in `bb814520`'s file. No
+action taken on the downloader (healthy, no intervention needed) or on the unrelated Q02 gate
+(outside this task's authority). No ticket, rebuild, release, or verdict change made. Task
+remains `IN_PROGRESS`.
