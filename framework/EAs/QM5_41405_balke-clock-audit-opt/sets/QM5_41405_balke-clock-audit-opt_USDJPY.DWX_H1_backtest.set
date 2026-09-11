@@ -10,6 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
+; build_hash:   df3b7cbd25b6736e033ffc1cc9fe146df9e4bcb9efe997ffea4215bc2bf6efc3
 ; author:       Development
 ; date:         2026-09-11
 ;==========================================================
@@ -20,34 +21,32 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41405_balke-clock-audit-opt.md
-strategy_max_range_atr_mult=2.5
 strategy_range_scan_bars=36
 qm_friday_close_enabled=true
+strategy_clock_mode=0
 qm_news_compliance=1
-qm_news_min_impact=high
-opt_pp_sell2=0
+strategy_range_band_enabled=true
 strategy_exit_hour=18
 qm_friday_close_hour_broker=21
 qm_stress_reject_probability=0.0
 strategy_min_range_atr_mult=0.4
 qm_news_mode_legacy=0
-opt_pp_buy3=0
-opt_pp_buy2=0
-opt_pp_buy1=0
+qm_news_min_impact=high
+strategy_outside_range_rule=0
+strategy_trail_trigger_r=1.0
+strategy_range_bar_period=0
 strategy_atr_period=14
 qm_news_temporal=3
 qm_news_stale_max_hours=336
 strategy_range_end_hour=8
-strategy_trail_trigger_r=1.0
-opt_pp_sell3=0
-opt_pp_sell1=0
+strategy_range_end_minute=0
+strategy_entry_buffer_points=0
+strategy_max_range_atr_mult=2.5
 qm_rng_seed=42
 strategy_range_start_hour=0
-
-
-strategy_clock_mode=0
-strategy_outside_range_rule=0
-strategy_entry_buffer_points=0
-strategy_range_band_enabled=true
-strategy_range_bar_period=0
-strategy_range_end_minute=0
+opt_pp_buy1=0
+opt_pp_buy2=0
+opt_pp_buy3=0
+opt_pp_sell1=0
+opt_pp_sell2=0
+opt_pp_sell3=0

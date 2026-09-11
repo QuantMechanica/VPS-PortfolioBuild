@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-09-11T04:16:30.138395Z",
+  "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt",
+  "files_checked": 2,
+  "max_news_stale_hours": 336,
+  "entry_grace_margin_minutes": 5.0,
+  "session_offset_registry_path": "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv",
+  "verdict": "PASS",
+  "findings": []
+}

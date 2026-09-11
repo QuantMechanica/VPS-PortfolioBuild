@@ -1,0 +1,103 @@
+{
+  "build_check_exit_code": 0,
+  "build_check_output_tail": "build_check.compile_guard={\"claimed_terminal\": \"T4\", \"ok\": true, \"pipeline_hint\": \"python tools/strategy_farm/farmctl.py enqueue-compile <EA label>\", \"pipeline_work_item_id\": \"9be85db5-298b-44ac-af7d-cf6ffc561f22\", \"retry_attempted\": false, \"running_terminals\": [\"T1\", \"T2\", \"T3\"], \"schema_version\": \"qm.include-mirror-guard/v1\"}\nbuild_check.compile.target=C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt\\QM5_41405_balke-clock-audit-opt.mq5\ncompile_one.result=PASS\ncompile_one.reason_class=OK\ncompile_one.errors=0\ncompile_one.warnings=0\ncompile_one.metaeditor_exit_code=1\ncompile_one.include_sync_root=\ncompile_one.include_sync_targets=D:\\QM\\mt5\\T4\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\5BC264D6982E3750B5E72ADD672A4CB1\\MQL5\\Include\ncompile_one.include_sync_deferred_targets=C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\23F4CC3F82E1F778FB3B989B9A7959AF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\28E47E87AA76CCE760DDF8997279C02D\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\2A75F04AEFC0DD58D685C4B1FBE49B9B\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\4DB55D150BE7C77D719910E6167F98D9\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\62611A7492286AC58551265C585B8217\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\66ACF1DA5F8EF8F636BD62E87A1E0EAE\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\838D42D8C9CA97A8C8A40FAE3BFC3C4C\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\A343A0E8FFAA491AD235EAB1FFC20C67\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AC9F706B929ADCFBE60C8EDA2C379CFC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AE0A37E2EC2BC870ED414E4143BA21BF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\BAAC8BF158EA0E0000BD124AA5FD8744\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\CB9B94F4E9CF990046A9B3E8E1ED9444\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\E082C3FA2B8AF7675CA9E80BEEFDB6FC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\FC8706F6EB4F26C35F2BD4B6DA170EF6\\MQL5\\Include\ncompile_one.include_mirror_mutex=D:\\QM\\strategy_farm\\state\\locks\\include_mirror.lock\ncompile_one.include_mirror_atomic_replace=True\ncompile_one.compile_profile_stdlib_source=D:\\QM\\mt5\\T4\\MQL5\\Include\ncompile_one.compile_profile_stdlib_missing=\ncompile_one.compile_profile_stdlib_repair={\"atomic_replace\":true,\"files_per_target\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\":0,\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\":0},\"mismatched_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\":[]},\"missing_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\":[]},\"project_source_root\":\"C:\\\\QM\\\\repo\\\\framework\\\\include\",\"required_relative_paths\":[\"Object.mqh\",\"Trade/Trade.mqh\"],\"source_root\":\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\",\"stdlib_file_count\":263,\"target_roots\":[\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\",\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\"],\"verified_after\":true}\ncompile_one.compile_work_item_id=9be85db5-298b-44ac-af7d-cf6ffc561f22\ncompile_one.claimed_terminal=T4\ncompile_one.log=C:\\QM\\repo\\framework\\build\\compile\\20260911_041657\\QM5_41405_balke-clock-audit-opt.compile.log\ncompile_one.summary=D:\\QM\\reports\\compile\\20260911_041657\\summary.csv\ncompile_one.ex5=C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt\\QM5_41405_balke-clock-audit-opt.ex5\nbuild_check.live_news_ea_sources=1\nbuild_check.live_news_contracts=1\nbuild_check.symbol_literal_sources=0\nbuild_check.symbol_literal_occurrences=0\nbuild_check.non_chart_market_data_sources=0\nbuild_check.report=D:\\QM\\reports\\framework\\21\\build_check_20260911_041654.json\nbuild_check.result=PASS\nbuild_check.failures=0\nbuild_check.warnings=0\n",
+  "build_check_report": "D:\\QM\\reports\\framework\\21\\build_check_20260911_041654.json",
+  "build_check_result": "PASS",
+  "candidate_recheck": {
+    "active_magic_row_count": 1,
+    "bound_setfile_hashes": [],
+    "build_task_binding": {
+      "authorized": false,
+      "build_task_id": null,
+      "contract_version": "qm.compile-ea-build-task-binding/v1",
+      "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+      "requested": false
+    },
+    "build_task_binding_authorized": false,
+    "current_compile_ok_work_item_ids": [],
+    "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt",
+    "ea_id": "QM5_41405",
+    "ea_label": "QM5_41405_balke-clock-audit-opt",
+    "eligible": true,
+    "force_rebuild_authorized": false,
+    "force_rebuild_waived_reasons": [],
+    "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt\\QM5_41405_balke-clock-audit-opt.mq5",
+    "mq5_sha256": "d3d6feff4ac2b4faad2ebb72100bee4a5d7eafa19fcc6629b3327dcf902ff9fa",
+    "numeric_ea_id": "41405",
+    "reason": "ELIGIBLE",
+    "reasons": [],
+    "sanctioned_predecessor_ids": [],
+    "sibling_rebind_authorized": false,
+    "sibling_rebind_contract_version": null,
+    "sibling_rebind_current_setfile_path": null,
+    "sibling_rebind_current_setfile_sha256": null,
+    "sibling_rebind_findings": [],
+    "sibling_rebind_historical_setfiles": [],
+    "source_repair_artifact_bindings": [],
+    "source_repair_authority": null,
+    "source_repair_authorized": false,
+    "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+    "source_repair_predecessor_work_item_ids": [],
+    "source_repair_stale_open_work_item_ids": [],
+    "source_repair_superseded_predecessor_work_item_ids": [],
+    "source_repair_waived_reasons": [],
+    "symbols": [
+      "USDJPY.DWX"
+    ],
+    "timeframe": {
+      "candidates": [
+        "H1"
+      ],
+      "source": "existing_setfiles",
+      "timeframe": "H1"
+    },
+    "unsupported_symbols": []
+  },
+  "claim_admission_commit_headroom_gb": null,
+  "claim_admission_commit_reserved_gb": null,
+  "claim_admission_effective_commit_headroom_gb": null,
+  "claim_admission_mode": null,
+  "compile_errors": "0",
+  "compile_log": "C:\\QM\\repo\\framework\\build\\compile\\20260911_041657\\QM5_41405_balke-clock-audit-opt.compile.log",
+  "compile_profile_stdlib_missing": "",
+  "compile_profile_stdlib_repair": "{\"atomic_replace\":true,\"files_per_target\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\":0,\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\":0},\"mismatched_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\":[]},\"missing_before\":{\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\":[],\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\":[]},\"project_source_root\":\"C:\\\\QM\\\\repo\\\\framework\\\\include\",\"required_relative_paths\":[\"Object.mqh\",\"Trade/Trade.mqh\"],\"source_root\":\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\",\"stdlib_file_count\":263,\"target_roots\":[\"D:\\\\QM\\\\mt5\\\\T4\\\\MQL5\\\\Include\",\"C:\\\\Users\\\\Administrator\\\\AppData\\\\Roaming\\\\MetaQuotes\\\\Terminal\\\\5BC264D6982E3750B5E72ADD672A4CB1\\\\MQL5\\\\Include\"],\"verified_after\":true}",
+  "compile_profile_stdlib_source": "D:\\QM\\mt5\\T4\\MQL5\\Include",
+  "compile_reason_class": "OK",
+  "compile_result": "PASS",
+  "compile_summary": "D:\\QM\\reports\\compile\\20260911_041657\\summary.csv",
+  "compile_warnings": "0",
+  "completed_at": "2026-09-11T04:17:27+00:00",
+  "ea_id": "QM5_41405",
+  "ea_label": "QM5_41405_balke-clock-audit-opt",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt\\QM5_41405_balke-clock-audit-opt.ex5",
+  "ex5_sha256": "a85371920c43970070b32607410a7245116ea5a667bc3feb0b29c2f9eb9ad33b",
+  "failure_classes": [],
+  "include_mirror_atomic_replace": true,
+  "include_mirror_mutex": "D:\\QM\\strategy_farm\\state\\locks\\include_mirror.lock",
+  "include_sync_deferred_targets": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\23F4CC3F82E1F778FB3B989B9A7959AF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\28E47E87AA76CCE760DDF8997279C02D\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\2A75F04AEFC0DD58D685C4B1FBE49B9B\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\4DB55D150BE7C77D719910E6167F98D9\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\62611A7492286AC58551265C585B8217\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\66ACF1DA5F8EF8F636BD62E87A1E0EAE\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\838D42D8C9CA97A8C8A40FAE3BFC3C4C\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\A343A0E8FFAA491AD235EAB1FFC20C67\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AC9F706B929ADCFBE60C8EDA2C379CFC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\AE0A37E2EC2BC870ED414E4143BA21BF\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\BAAC8BF158EA0E0000BD124AA5FD8744\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\CB9B94F4E9CF990046A9B3E8E1ED9444\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\E082C3FA2B8AF7675CA9E80BEEFDB6FC\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\FC8706F6EB4F26C35F2BD4B6DA170EF6\\MQL5\\Include",
+  "include_sync_targets": "D:\\QM\\mt5\\T4\\MQL5\\Include;C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\5BC264D6982E3750B5E72ADD672A4CB1\\MQL5\\Include",
+  "no_gate_verdict": true,
+  "phase": "COMPILE_EA",
+  "running_terminals_at_worker_start": [
+    "T1",
+    "T2",
+    "T3"
+  ],
+  "schema_version": "qm.compile-ea-evidence/v1",
+  "setfile_count": 1,
+  "setfile_generation": [
+    {
+      "exit_code": 0,
+      "output_tail": "{\n    \"status\":  \"ok\",\n    \"ea\":  \"QM5_41405_balke-clock-audit-opt\",\n    \"env\":  \"backtest\",\n    \"symbol\":  \"USDJPY.DWX\",\n    \"tf\":  \"H1\",\n    \"card_path\":  \"C:\\\\QM\\\\repo\\\\artifacts\\\\cards_approved\\\\QM5_41405_balke-clock-audit-opt.md\",\n    \"setfile_path\":  \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_41405_balke-clock-audit-opt\\\\sets\\\\QM5_41405_balke-clock-audit-opt_USDJPY.DWX_H1_backtest.set\",\n    \"setfile_sha256\":  \"07b6eb78676a0e4d26393b06b7c15b279e7ba5ef438064af6c084c2117c60072\"\n}\n",
+      "setfile_exists": true,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt\\sets\\QM5_41405_balke-clock-audit-opt_USDJPY.DWX_H1_backtest.set",
+      "setfile_sha256": "07b6eb78676a0e4d26393b06b7c15b279e7ba5ef438064af6c084c2117c60072",
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "started_at": "2026-09-11T04:16:44+00:00",
+  "success": true,
+  "terminal_claim": "T4",
+  "verdict_taxonomy": "artifact",
+  "work_item_id": "9be85db5-298b-44ac-af7d-cf6ffc561f22"
+}

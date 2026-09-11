@@ -1,0 +1,78 @@
+{
+  "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41405_balke-clock-audit-opt\\QM5_41405_balke-clock-audit-opt.mq5",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41405_balke-clock-audit-opt.md",
+  "failures": [],
+  "warnings": [],
+  "checks": {
+    "D3_pip_double_conversion": {
+      "failures": 0
+    },
+    "D4_management_reachability": {
+      "failures": 0
+    },
+    "D6_indicator_warmup_reachability": {
+      "failures": 0
+    },
+    "D7_mae_hook": {
+      "failures": 0
+    },
+    "D8_duplicate_new_bar_entry_gate": {
+      "failures": 0
+    },
+    "D9_trade_request_initialization": {
+      "failures": 0
+    },
+    "D10_indicator_buffer_bounds": {
+      "failures": 0
+    },
+    "D2_loss_limit_contract": {
+      "failures": 0,
+      "warnings": 0,
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41405_balke-clock-audit-opt.md",
+      "declared": {}
+    },
+    "D5_broker_time_window": {
+      "failures": 0,
+      "warnings": 0,
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41405_balke-clock-audit-opt.md",
+      "card_gmt_window": true,
+      "converter_present": true,
+      "documented_override": false,
+      "raw_broker_clock_present": true,
+      "hour_logic_present": true
+    },
+    "D13_pending_entry_type": {
+      "failures": 0,
+      "warnings": 0,
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41405_balke-clock-audit-opt.md",
+      "expected": [],
+      "implemented": [],
+      "evidence": []
+    },
+    "D14_directional_series_order": {
+      "failures": 0,
+      "warnings": 0,
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41405_balke-clock-audit-opt.md",
+      "requirements": []
+    },
+    "D15_news_entry_contract": {
+      "failures": 0,
+      "warnings": 0,
+      "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41405_balke-clock-audit-opt.md",
+      "contract": null
+    },
+    "D18_deterministic_zero_trade_ordering": {
+      "failures": 0,
+      "descending_shift_arrays": [],
+      "contradictions": []
+    },
+    "D12_invented_inputs_or_proxies": {
+      "mechanizable": false,
+      "missing_card_declaration": "required_data_inputs[] with canonical identifier, source kind, point-in-time/as-of lag, allowed transforms, and proxy policy"
+    },
+    "D16_restart_safe_management": {
+      "mechanizable": false,
+      "missing_card_declaration": "restart_state_contract[] with required state, durable source, reconstruction trigger, idempotency invariant, and fail-closed fallback"
+    }
+  }
+}
