@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "e2c5356c583e81107f99fd4f6004a869a5e9717aba066919ac6b78a834b7f23f",
+      "ea_id": "QM5_41431",
+      "ea_label": "QM5_41431_wti-hurr-negweek-fade",
+      "expected_mq5_sha256": "e2c5356c583e81107f99fd4f6004a869a5e9717aba066919ac6b78a834b7f23f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41431_wti-hurr-negweek-fade\\QM5_41431_wti-hurr-negweek-fade.mq5",
+      "work_item_id": "9b5e9fb8-29ed-4ce2-8a5c-dc69f28f3d14"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "9b5e9fb8-29ed-4ce2-8a5c-dc69f28f3d14",
+  "work_item_id_selectors": [
+    "9b5e9fb8-29ed-4ce2-8a5c-dc69f28f3d14"
+  ]
+}

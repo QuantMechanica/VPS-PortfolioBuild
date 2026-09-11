@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "9b5e9fb8-29ed-4ce2-8a5c-dc69f28f3d14"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260911T013800_221856Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260911T013750Z_f6ce47bb.sqlite",
+    "reused": false,
+    "sha256": "8ab6f709ff4ca74dd87ba2f8af68681a7a7089d0f0c4ce028bcdd12440a22d04"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "e2c5356c583e81107f99fd4f6004a869a5e9717aba066919ac6b78a834b7f23f",
+      "ea_id": "QM5_41431",
+      "ea_label": "QM5_41431_wti-hurr-negweek-fade",
+      "expected_mq5_sha256": "e2c5356c583e81107f99fd4f6004a869a5e9717aba066919ac6b78a834b7f23f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41431_wti-hurr-negweek-fade\\QM5_41431_wti-hurr-negweek-fade.mq5",
+      "work_item_id": "9b5e9fb8-29ed-4ce2-8a5c-dc69f28f3d14"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-11T01:38:00+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "9b5e9fb8-29ed-4ce2-8a5c-dc69f28f3d14",
+  "work_item_id_selectors": [
+    "9b5e9fb8-29ed-4ce2-8a5c-dc69f28f3d14"
+  ]
+}
