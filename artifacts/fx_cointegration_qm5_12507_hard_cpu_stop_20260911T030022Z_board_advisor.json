@@ -1,0 +1,108 @@
+{
+  "artifact_type": "fx_cointegration_qm5_12507_hard_cpu_stop",
+  "generated_at_utc": "2026-09-11T03:00:22Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "50077147d8e47bb010ab7b1ac6e3415a2004edcc",
+  "mission_outcome": "STOPPED_AT_BACKTEST_CPU_CEILING",
+  "frontier_reconciliation": {
+    "evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json",
+    "relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "new_card_or_ea_would_duplicate": true
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_PASS_Q05_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "q02": "PASS",
+      "later_state": "Q04_FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "host_timeframe": "H1",
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "logical_setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "artifact_sha256": {
+      "mq5": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+      "ex5": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+      "basket_manifest": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+      "logical_setfile": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+    },
+    "q02": {
+      "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+      "status": "pending",
+      "attempt_count": 0,
+      "claimed_by": null,
+      "verdict": null,
+      "duplicate_enqueue_performed": false
+    }
+  },
+  "pacer_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "capacity": {
+    "cpu_sample_utc": "2026-09-11T03:00:21.9173920Z",
+    "cpu_percent": 100.0,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_binding": true,
+    "memory_sample_utc": "2026-09-11T03:00:22.3340085Z",
+    "free_physical_memory_gib": 19.362,
+    "heavy_multisymbol_minimum_gib": 58.0,
+    "memory_admission_binding": true,
+    "paced_launch_gate_max": 1,
+    "running_factory_terminals": [
+      "T1",
+      "T3",
+      "T7",
+      "T8"
+    ],
+    "running_factory_terminal_count": 4,
+    "excluded_and_not_controlled": [
+      "T_Live",
+      "FTMO"
+    ]
+  },
+  "actions_this_run": {
+    "new_card_created": false,
+    "new_ea_created": false,
+    "ea_source_changed": false,
+    "compile_enqueued": false,
+    "q02_enqueue_or_requeue": false,
+    "priority_mutation": false,
+    "dispatch_tick": false,
+    "terminal_reservation_or_control": false,
+    "tester_or_backtest_run": false,
+    "reason": "All 66 frozen-scan pairs are covered, the selected fallback already has one pending logical Q02 row, and the first fresh CPU sample crossed the binding ceiling."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "portfolio_gate": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}
