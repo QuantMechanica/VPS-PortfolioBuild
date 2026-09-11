@@ -1,0 +1,25 @@
+{
+  "schema": "qm.first-q02-intake-evidence/v1",
+  "captured_at": "2026-09-11T00:26:00Z",
+  "ea_id": "QM5_41430",
+  "ea_label": "QM5_41430_wti-hurr-posweek-cont",
+  "compile_work_item_id": "3978c46b-db15-4c26-82c3-c3a380444080",
+  "compile_verdict": "COMPILE_OK",
+  "dry_run": {
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "would_enqueue": true,
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "setfile_sha256": "039068ecde4bb9a6c558874710d550fb0824bb142901e746f6527c8482c076f5",
+    "ex5_sha256": "047af04c83e60dda72350efbc75954ce41bdac1522c4abab32fd855bacc507b8"
+  },
+  "apply": {
+    "applied": false,
+    "reason": "CPU_CEILING",
+    "maximum_percent": 98.64,
+    "exclusive_ceiling_percent": 97.0
+  }
+}
