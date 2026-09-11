@@ -1,0 +1,18 @@
+{
+  "schema_version": "qm.compile-receipt/v1",
+  "completed_at": "2026-09-11T07:49:22Z",
+  "ea_id": "QM5_41435",
+  "ea_label": "QM5_41435_wti-hurr-wr2-clv-fade",
+  "work_item_id": "29d16f68-6173-4028-a6b5-b436ff872fdb",
+  "terminal": "T6",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "build_check_result": "PASS",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "mq5_sha256": "9481cba4cdbb6e94d2094336e2d98c487ea559af24a1e555004de65c4dc8b868",
+  "ex5_sha256": "abbbdf424945737d91ad22b25170b9fdab4cdab107b2f6678139208cd0dd8768",
+  "setfile_count": 1,
+  "evidence_path": "D:\\QM\\reports\\work_items\\29d16f68-6173-4028-a6b5-b436ff872fdb\\QM5_41435\\COMPILE_EA\\compile_evidence.json"
+}

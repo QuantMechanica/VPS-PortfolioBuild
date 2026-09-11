@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "9481cba4cdbb6e94d2094336e2d98c487ea559af24a1e555004de65c4dc8b868",
+      "ea_id": "QM5_41435",
+      "ea_label": "QM5_41435_wti-hurr-wr2-clv-fade",
+      "expected_mq5_sha256": "9481cba4cdbb6e94d2094336e2d98c487ea559af24a1e555004de65c4dc8b868",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41435_wti-hurr-wr2-clv-fade\\QM5_41435_wti-hurr-wr2-clv-fade.mq5",
+      "work_item_id": "29d16f68-6173-4028-a6b5-b436ff872fdb"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "29d16f68-6173-4028-a6b5-b436ff872fdb",
+  "work_item_id_selectors": [
+    "29d16f68-6173-4028-a6b5-b436ff872fdb"
+  ]
+}
