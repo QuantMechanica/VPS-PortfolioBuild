@@ -2865,3 +2865,12 @@ crash waits for the next relaunch. Ticket 4fa85eb8 P80: retry os.replace, contin
 failure, resume-safe relaunch. Remaining phases after P1: P2 append-only convert into the 2026 mutable
 year (signed 2017-2025 archive untouched), P3 splice + verify_import per symbol + T1 reconciliation,
 then the decision-bound task reports RESULT. Raw so far 1.6 GB reports + 2.7 GB data.
+
+2026-09-11T~05:2xZ (Claude, task 3032534e): downloader (PID 11056) crashed a 4th time at
+05:17:53Z on the same atomic_write_bytes/os.replace PermissionError; ledger reconfirmed
+intact (127126 lines). Duplicate hardening tickets 8ffc30f1/58703508 both closed FAILED
+(duplicate_of_4fa85eb8) by a sibling cycle; 4fa85eb8 (broader retry+backoff fix) confirmed
+genuinely IN_PROGRESS/codex since 05:15:49Z. Removed orphaned progress.json.tmp, relaunched
+(PID 17764), verified exactly one python process alive and resuming. bb814520/dfc60103 gate
+(QM5_41394 SP500.DWX/XAUUSD.DWX Q02) still pending/unclaimed since 2026-09-09T10:52:59Z,
+unchanged. Full account: docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.

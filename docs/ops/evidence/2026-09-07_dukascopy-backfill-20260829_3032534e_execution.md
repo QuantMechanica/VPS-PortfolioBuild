@@ -1199,3 +1199,54 @@ owner-decision tasks — nothing newly met. **Lesson:** `codex_zero_activity` in
 — check `list-tasks --agent codex --state IN_PROGRESS` directly before
 concluding codex is fully blocked on a chronic guard; it can be actively
 working other task types the whole time.
+
+## Checked 2026-09-11T~05:2xZ (headless orchestration cycle) — 4th crash of the fixed-tmp-filename class; dedup resolved; real fix now IN_PROGRESS under codex; relaunched
+
+`bb814520`/`dfc60103` gate reconfirmed unchanged via direct sqlite read: `QM5_41394`
+`SP500.DWX`/`XAUUSD.DWX` Q02 rows still `status=pending`, `claimed_by=NULL`,
+`attempt_count=0`, `updated_at=2026-09-09T10:52:59Z` (~2d18h static).
+
+For `3032534e`: found no `download_bi5.py` python process alive (a first check flagged 4
+"processes" matching `*download_bi5*` but those were this cycle's own `Get-CimInstance`
+filter commands matching their own command-line string, not real downloader instances —
+confirmed false positive by re-filtering on `Name -eq 'python.exe'`, which returned zero).
+`download.log` showed a 4th occurrence of the same `atomic_write_bytes`/`os.replace`
+`PermissionError: [WinError 5]` on `progress.json.tmp`, this time at `05:17:53Z` (prior
+occurrences: 04:35:47Z, 05:06:02Z, 05:08:36Z) — the relaunch from the ~05:1xZ checkpoint
+(PID 11056) survived ~6 minutes this time (started_at_utc 05:11:51Z), longer than the
+1-3 minutes of the immediately preceding relaunches but still not stable. `hour_ledger.jsonl`
+reconfirmed intact at 127,126 lines (no data loss; `progress.json`'s own `completed` counter
+reading 24,007 at that point is a per-run resume-scan artifact, not the ledger's authoritative
+count — consistent with the ledger being append-only and separate from the live counter).
+
+Checked the two duplicate hardening tickets from the last cycle's own drafting
+(`8ffc30f1`, `58703508`): both now `FAILED` with `duplicate_of_4fa85eb8-...` verdicts —
+a sibling cycle deduped them against a newer, broader ticket `4fa85eb8-9e6d-435e-
+9d69-9c7782a5fbec` (retry+backoff plus continue-on-write-failure, broader than the
+unique-tmp-filename-only approach). Confirmed `4fa85eb8` is genuinely `IN_PROGRESS`/`codex`
+since `2026-09-11T05:15:49Z` (~7min old at check time) — the real fix is now actively being
+worked, not just queued.
+
+Action taken (within `3032534e`'s own pre-authorized `allowed_actions`, "run the throttled
+downloader detached at night" — resuming the same interrupted run, not new scope): found and
+removed an orphaned `progress.json.tmp` from the 05:17:53Z crash, then relaunched the
+identical command against the same `--out` root:
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Launched detached (PowerShell `Start-Process -WindowStyle Hidden`, PID `17764`, cwd
+`C:\QM\repo`, `started_at_utc=2026-09-11T05:22:13Z`). Verified alive and resuming correctly
+after 15s: exactly one `download_bi5.py` python process alive (confirmed via
+`Name -eq 'python.exe'` filter, not just command-line substring match), `status=RUNNING`,
+`resumed` climbing from 889, `errors=0`. No terminal process started/stopped, no MT5 history
+mutated, no T1 import, no T_Live/AutoTrading action, no signed-archive change, no
+verdict/threshold change. No `update-task` call on any of the three (no acceptance criterion
+newly met — the hardening fix landing is what would resolve the crash-loop, not this
+relaunch). **Do not draft another hardening ticket** — `4fa85eb8` already covers this
+exact defect and is actively in progress; next cycles should check its state
+(`IN_PROGRESS`→`REVIEW`) before assuming the crash-loop needs a fresh diagnosis.
