@@ -3,16 +3,16 @@
 ; ea_id:        10069
 ; ea_slug:      mql5-hs-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260911-001
 ; symbol:       NZDUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   7
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   53810fcb7fa48d80e494191cde3ac894e7fe918c3121be0efe263f8fa4a444c7
+; build_hash:   12bf7683c50039501dc76ea88e70aac508dd52130fe5aff3288f087e2ae91ec3
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-11
 ;==========================================================
 qm_ea_id=10069
 qm_magic_slot_offset=7

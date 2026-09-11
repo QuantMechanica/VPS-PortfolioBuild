@@ -3,16 +3,16 @@
 ; ea_id:        10069
 ; ea_slug:      mql5-hs-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260911-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   10
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   de79a293f7d38168d235203a0029a72cdc9d33c126218d7afb7352e6b5831d7d
+; build_hash:   07b503b4771ad4d5105f05a80b6e6a0163b1cc15651f58b815cb83908ce72302
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-11
 ;==========================================================
 qm_ea_id=10069
 qm_magic_slot_offset=10

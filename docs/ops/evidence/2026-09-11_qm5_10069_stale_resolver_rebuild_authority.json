@@ -1,0 +1,74 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "c81ced56-c26d-455d-beea-24aebe2d49f7",
+  "mode": "paced_fleet_authorized_enqueue",
+  "source_branch": "agents/board-advisor",
+  "repair": "Rebuild the June binary against the current magic resolver, restore first-statement Q08 open-position MAE sampling, and annotate the bounded once-per-bar structural OHLC scan for the strict performance gate. Strategy entry, exit, risk, news, Friday-close, RNG, and stress inputs are unchanged.",
+  "root_cause": {
+    "classification": "STALE_EX5_MAGIC_RESOLVER",
+    "finding": "Four post-expansion FX Q02 runs returned ONINIT_FAILED while executing the same June binary. Their required magic slots 4, 7, 10, and 11 were registered on 2026-08-23, after that binary was produced.",
+    "source_work_item_ids": [
+      "995f4c1c-531d-4a46-a4d8-8e6723318058",
+      "727fd995-bf25-4943-bf14-422f59adab65",
+      "75b113ab-b366-4030-a611-fba87b099032",
+      "2c7d0845-adfb-4f5c-bc24-59bcb73bd2fc"
+    ],
+    "symbols": [
+      "AUDUSD.DWX",
+      "NZDUSD.DWX",
+      "USDCAD.DWX",
+      "USDCHF.DWX"
+    ],
+    "old_ex5_sha256": "823215f8ec9f29b5b4d7905d2831343a482e548874dc9283437619e16317e785",
+    "old_ex5_last_write_utc": "2026-06-16T11:21:12.5045905Z",
+    "magic_registration_date": "2026-08-23",
+    "required_magic_slots": [4, 7, 10, 11],
+    "current_resolver_sha256": "566cad6e22887f0c9a347a93e36d3d002e0697f46450c3184e43415bba6161ad",
+    "current_resolver_contains_required_magics": true,
+    "active_magic_row_count": 13
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_10069_mql5-hs-rev/QM5_10069_mql5-hs-rev.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "registrations": [
+    {
+      "ea_id": "10069",
+      "ea_label": "QM5_10069_mql5-hs-rev",
+      "source_sha256": "d6243b426c4290aae893cc64088aecc9cca6cbf696abfe8792859588a60ba77c",
+      "predecessors": [],
+      "superseded_predecessors": []
+    }
+  ],
+  "source_q02_rows_preserved": [
+    "995f4c1c-531d-4a46-a4d8-8e6723318058",
+    "727fd995-bf25-4943-bf14-422f59adab65",
+    "75b113ab-b366-4030-a611-fba87b099032",
+    "2c7d0845-adfb-4f5c-bc24-59bcb73bd2fc"
+  ],
+  "execution": {
+    "compile_authority_used": "router_q02_infra_repair:4e3fda2a-4481-4791-942b-6b7bca56ad7f",
+    "strict_gate_failure_work_item_id": "7f1060e1-1fd0-4ec0-af74-4b69e8ce2072",
+    "strict_gate_failure_class": "EA_FRAMEWORK_RAW_SERIES_CALL",
+    "compile_ok_work_item_id": "7deba014-7ca5-4e79-bd20-789bad639b69",
+    "compile_evidence_sha256": "c8ae280e849b830848e6b19728724204e1e74e1b8c7c888f82c290e9496eadf9",
+    "new_ex5_sha256": "4f474930fa4c53657df8252416dc55efa7f3bc974ca706d63faacd54b1db7c55",
+    "q02_symbol": "USDCHF.DWX",
+    "q02_successor_work_item_id": "e07b78dc-1ca1-4d7b-8c7b-130988aab057",
+    "q02_receipt_sha256": "48458201f166fc0d96f0e88a42ff6599b1f90e9b983d4fc09ec39f8d0dc7db6d",
+    "q02_parameter_change_count": 0,
+    "cpu_sample_max_percent": 95.12,
+    "cpu_ceiling_percent": 97
+  },
+  "compile_enqueue_applied": true,
+  "q02_enqueue_applied": true,
+  "live_or_portfolio_mutation": false
+}

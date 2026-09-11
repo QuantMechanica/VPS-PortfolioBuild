@@ -3,16 +3,16 @@
 ; ea_id:        10069
 ; ea_slug:      mql5-hs-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260911-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   5
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   52d9dc3b43d4612708f123c4cc1fd6c07d5304bcf5d3dafa5d3fb3cec4ab861c
+; build_hash:   18445a851bc1520f140c907b4f541472d74260ad84b8ccebe3b39ce5f78d861c
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-11
 ;==========================================================
 qm_ea_id=10069
 qm_magic_slot_offset=5

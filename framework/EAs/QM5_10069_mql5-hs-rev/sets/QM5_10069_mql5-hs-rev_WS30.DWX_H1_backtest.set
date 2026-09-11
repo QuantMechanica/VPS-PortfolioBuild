@@ -3,16 +3,16 @@
 ; ea_id:        10069
 ; ea_slug:      mql5-hs-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260911-001
 ; symbol:       WS30.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   12
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   27a178eee212ccf4b51fee368ae419f9dbf58acbd4ab961a0027e3814f2fcab3
+; build_hash:   069a49c2ead88eb45a847e106948c2b477d5c4d2332567332f2a671201ef9d93
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-11
 ;==========================================================
 qm_ea_id=10069
 qm_magic_slot_offset=12

@@ -3,16 +3,16 @@
 ; ea_id:        10069
 ; ea_slug:      mql5-hs-rev
 ; ea_version:   v5.0
-; set_version:  s20260823-001
+; set_version:  s20260911-001
 ; symbol:       AUDUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e6de8afdfb94b7e7dd18491b1e76565f6a1c9a78e5327deefee23fd8948f5318
+; build_hash:   6f371df1bdcf54c0a845667a9379da8f89630782f9817dde60de69da3f758565
 ; author:       Development
-; date:         2026-08-23
+; date:         2026-09-11
 ;==========================================================
 qm_ea_id=10069
 qm_magic_slot_offset=4

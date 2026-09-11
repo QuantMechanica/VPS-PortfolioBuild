@@ -114,7 +114,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(strategy_swing_lookback < 2 || strategy_scan_bars < 20)
       return false;
 
-   const int bars_available = Bars(_Symbol, _Period);
+   const int bars_available = Bars(_Symbol, _Period); // perf-allowed: once-per-bar structural swing scan
    const int scan = MathMin(strategy_scan_bars, bars_available - strategy_swing_lookback - 2);
    if(scan <= strategy_swing_lookback + 8)
       return false;
@@ -126,8 +126,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    for(int shift = scan; shift >= strategy_swing_lookback + 1 && swing_count < 96; --shift)
      {
-      const double high = iHigh(_Symbol, _Period, shift);
-      const double low = iLow(_Symbol, _Period, shift);
+      const double high = iHigh(_Symbol, _Period, shift); // perf-allowed: once-per-bar structural swing scan
+      const double low = iLow(_Symbol, _Period, shift); // perf-allowed: once-per-bar structural swing scan
       if(high <= 0.0 || low <= 0.0)
          continue;
 
@@ -135,9 +135,9 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       bool is_low = true;
       for(int j = 1; j <= strategy_swing_lookback; ++j)
         {
-         if(high <= iHigh(_Symbol, _Period, shift - j) || high <= iHigh(_Symbol, _Period, shift + j))
+         if(high <= iHigh(_Symbol, _Period, shift - j) || high <= iHigh(_Symbol, _Period, shift + j)) // perf-allowed: bounded once-per-bar pivot comparison
             is_high = false;
-         if(low >= iLow(_Symbol, _Period, shift - j) || low >= iLow(_Symbol, _Period, shift + j))
+         if(low >= iLow(_Symbol, _Period, shift - j) || low >= iLow(_Symbol, _Period, shift + j)) // perf-allowed: bounded once-per-bar pivot comparison
             is_low = false;
         }
 
@@ -170,8 +170,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(point <= 0.0)
       return false;
 
-   const double close1 = iClose(_Symbol, _Period, 1);
-   const double close2 = iClose(_Symbol, _Period, 2);
+   const double close1 = iClose(_Symbol, _Period, 1); // perf-allowed: fixed closed-bar read, once per bar
+   const double close2 = iClose(_Symbol, _Period, 2); // perf-allowed: fixed closed-bar read, once per bar
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(close1 <= 0.0 || close2 <= 0.0 || bid <= 0.0 || ask <= 0.0)
@@ -311,6 +311,9 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence lifecycle: sample open-position MAE before any early return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
