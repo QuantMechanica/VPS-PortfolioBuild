@@ -1544,3 +1544,46 @@ investigated further as it is not a P1 acceptance criterion.
 (`checked_at=2026-09-11T11:34:54Z`) -- chronic FAIL/WARN set, no new category vs prior
 baselines. No acceptance criterion newly met on any of the three owner-decision tasks; no
 `update-task` call made on any of them. All three remain `IN_PROGRESS`.
+
+## Checked 2026-09-11T13:41Z (headless orchestration cycle) -- crash+relaunch, no data loss, gate unchanged
+
+Downloader (PID `12040`, relaunched 11:34:54Z) had crashed again since the last logged
+check: no `download_bi5.py` process found at `13:40:26Z`; `progress.json` frozen at
+`completed=199840/306767`, `updated_at_utc=2026-09-11T13:25:23.559Z` (~15min stale). No
+sibling cycle had relaunched it yet. `ae1df6bf` (root-cause fix ticket) confirmed still
+`APPROVED`/unassigned, `updated_at=2026-09-11T06:42:08Z` unchanged -- crash class still
+unfixed, expected to keep recurring until it lands.
+
+Verified no data loss before relaunching: `hour_ledger.jsonl` at `202764` rows, consistent
+with (slightly ahead of) the last `progress.json` `completed=199840` snapshot -- ledger
+intact. Action taken (within this task's already-authorized `allowed_actions`, "Run the
+throttled downloader detached at night" -- resuming the same interrupted run, not new
+scope): relaunched the identical command against the same `--out` root:
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Launched detached (PowerShell `Start-Process -WindowStyle Hidden`, PID `16332`, cwd
+`C:\QM\repo`, started `2026-09-11T13:40:56Z` local / `13:40:56Z` UTC). Verified alive and
+resuming correctly after ~30s: `progress.json` `status=RUNNING`,
+`resumed=13177`, `completed=13177`, `downloaded=0`, `errors=0` at `13:41:25.421Z` --
+confirms ledger-based resume is working (previously completed hours skipped, not
+re-fetched); `full_plan_hours` ticked up slightly (306767 -> 306841, expected drift as the
+dynamic plan window advances with calendar time). No terminal process started/stopped, no
+MT5 history mutated, no T1 import, no T_Live/AutoTrading action, no signed-archive change,
+no verdict/threshold change.
+
+`bb814520`/`dfc60103` gate re-checked, unchanged since the `13:06Z` memory checkpoint:
+`QM5_41394` XAUUSD.DWX Q04 still `pending`/unclaimed, `updated_at=2026-09-11T10:51:37Z`
+(same as prior checks); `b66b5ccc`/`46167bd9`/`ae1df6bf` all unchanged (see above). A fresh
+`farmctl health` run did not return within this cycle's budget (canonical checkout is
+running several concurrent `farmctl.py health` invocations from other cycles/services
+right now -- flagging as a possible load signal, not investigated further, outside this
+task's authority to fix); relying on the last confirmed baseline (`FAIL15/WARN20/OK51`,
+chronic set, no new category, `checked_at=2026-09-11T11:34:54Z`) for this cycle. No
+acceptance criterion newly met on any of the three owner-decision tasks; no `update-task`
+call made on any of them. All three remain `IN_PROGRESS`.
