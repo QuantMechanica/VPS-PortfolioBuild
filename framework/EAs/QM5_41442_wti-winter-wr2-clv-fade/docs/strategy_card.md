@@ -60,11 +60,12 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01_PASS_Q02_PENDING
+pipeline_phase: Q02
 q01_status: PASS
 q01_compile_work_item: 971eb543-0e8f-4a46-bee0-620cd6c91c4b
 q01_build_report: D:/QM/reports/work_items/971eb543-0e8f-4a46-bee0-620cd6c91c4b/QM5_41442/COMPILE_EA/compile_evidence.json
-q02_status: NOT_ENQUEUED
+q02_status: BLOCKED_CPU_CEILING
+q02_blocker: "Q02 dry-run was eligible. The first admitted apply attempt made no mutation because the shared factory lock was busy. After the lock cleared naturally, the required fresh five-sample whole-host CPU window averaged 93.832178% but peaked at 97.168259%, above the strict exclusive 97.0% ceiling; no Q02 row was enqueued."
 force_build: true
 review_focus: "Falsify a WTI November-May range-expansion outer-quartile fade distinct from the certified XNG oscillator, weekly sign fades, WTI winter continuation, hurricane-only short fade, and XNG winter continuation. Verify exact weeks, strict inequalities, both contrarian sides, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -228,4 +229,4 @@ control, or live use.
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
 | Q01 Build Validation | 971eb543-0e8f-4a46-bee0-620cd6c91c4b | PASS | T5 compile and build check PASS; 0 compiler errors, 0 compiler warnings |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Fresh CPU admission required |
+| Q02 Baseline Screening | - | BLOCKED_CPU_CEILING | Dry-run eligible; fresh retry window max 97.168259% exceeded exclusive 97% ceiling; no row enqueued |

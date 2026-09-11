@@ -1,0 +1,37 @@
+{
+  "schema": "qm.q02-cpu-admission/v1",
+  "ea_id": "QM5_41442",
+  "compile_work_item_id": "971eb543-0e8f-4a46-bee0-620cd6c91c4b",
+  "q02_dry_run_eligible": true,
+  "canary": {
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41442_wti-winter-wr2-clv-fade\\sets\\QM5_41442_wti-winter-wr2-clv-fade_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "36ad059cfc9b1ed11f1b5a4ad88d85f526ac8942aca7e80fc070e6812c63b847",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "first_window": {
+    "sampled_at_utc": "2026-09-11T15:33:27.7189279Z",
+    "samples_percent": [73.642067, 71.782531, 65.455025, 68.676850, 69.823867],
+    "average_percent": 69.876068,
+    "maximum_percent": 73.642067,
+    "admitted": true,
+    "apply_result": "factory_mutation_lock_busy",
+    "applied": false
+  },
+  "final_fresh_window": {
+    "sampled_at_utc": "2026-09-11T15:34:14.8945430Z",
+    "samples_percent": [94.924943, 94.835197, 97.168259, 91.899432, 90.333060],
+    "average_percent": 93.832178,
+    "maximum_percent": 97.168259,
+    "terminal64_process_count": 5,
+    "free_physical_memory_gib": 33.239,
+    "total_visible_memory_gib": 63.120,
+    "admitted": false
+  },
+  "ceiling_percent": 97.0,
+  "admission_rule": "average_percent < 97.0 and maximum_percent < 97.0",
+  "q02_enqueued": false,
+  "stop_reason": "CPU_CEILING"
+}

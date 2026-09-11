@@ -83,3 +83,4 @@ AutoTrading, terminal control, or live operation is authorized.
 |---|---|---|
 | v1 | 2026-09-11 | Initial governed build from approved card |
 | v1-q01 | 2026-09-11 | T5 governed compile and build check PASS; Q02 pending fresh CPU admission |
+| v1-q02-handoff | 2026-09-11 | Q02 dry-run eligible; enqueue stopped at fresh CPU max 97.168259%; no Q02 row created |
