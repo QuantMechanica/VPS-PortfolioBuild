@@ -47,8 +47,9 @@ REPORTS_ROOT = Path(r"D:\QM\reports\research")
 REPO_ROOT = Path(r"C:\QM\repo")
 ALLOWED_TERMINALS = frozenset({"T11", "T12"})
 PRIMARY_TERMINAL = "T11"
-# Match the fleet guard: admission pauses only above a five-minute 95% average.
-DEFAULT_CPU_LIMIT = 95.0
+# The authorized S3 canary ceiling is stricter than the fleet's general
+# admission setting: do not admit or continue a canary above 90% average CPU.
+DEFAULT_CPU_LIMIT = 90.0
 DEFAULT_RAM_MIN_BYTES = 20 * 1024**3
 _SAFE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 
@@ -369,14 +370,19 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         setfile_name=request.setfile_path.name, from_date=request.from_date, to_date=request.to_date,
         report_rel=report_name)
     ini.write_text(rendered, encoding="utf-16", newline="")
-    before = isolation_snapshot(farm_root=farm_root, terminal=request.terminal)
-    assert_isolation_admitted(before)
     receipt: dict[str, Any] = {"schema": "qm.research-canary/v1", "run_id": run_id,
         "program": request.program, "terminal": request.terminal, "dry_run": request.dry_run,
         "started_at_utc": utc_now(), "artifact_root": str(artifact), "ini": {"path": str(ini), "sha256": sha256_file(ini)},
         "setfile": {"path": str(request.setfile_path), "sha256": sha256_file(request.setfile_path)},
-        "ex5": {"path": str(request.expert_path), "sha256": sha256_file(request.expert_path)}, "isolation_before": before}
+        "ex5": {"path": str(request.expert_path), "sha256": sha256_file(request.expert_path)}}
+    before: dict[str, Any] | None = None
     try:
+        # Take and record admission failures inside the receipt boundary.  A
+        # refusal caused by an active factory is itself safety evidence and
+        # must never leave an orphaned artifact directory without a receipt.
+        before = isolation_snapshot(farm_root=farm_root, terminal=request.terminal)
+        receipt["isolation_before"] = before
+        assert_isolation_admitted(before)
         canonical_group = REPO_ROOT / "framework/registry/tester_groups/Darwinex-Live_real.canonical.txt"
         installed_group = terminal_root / "MQL5/Profiles/Tester/Groups/Darwinex-Live_real.txt"
         if not installed_group.is_file() or sha256_file(installed_group) != sha256_file(canonical_group):
@@ -438,13 +444,14 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         raise
     finally:
         receipt["ended_at_utc"] = utc_now()
-        receipt["isolation_after"] = isolation_snapshot(farm_root=farm_root, terminal=request.terminal)
-        try:
-            assert_isolation_unchanged(before, receipt["isolation_after"])
-            receipt["isolation_unchanged"] = True
-        except CanaryRefused as exc:
-            receipt["isolation_unchanged"] = False
-            receipt["isolation_failure"] = str(exc)
+        if before is not None:
+            receipt["isolation_after"] = isolation_snapshot(farm_root=farm_root, terminal=request.terminal)
+            try:
+                assert_isolation_unchanged(before, receipt["isolation_after"])
+                receipt["isolation_unchanged"] = True
+            except CanaryRefused as exc:
+                receipt["isolation_unchanged"] = False
+                receipt["isolation_failure"] = str(exc)
         _write_json(artifact / "receipt.json", receipt)
 
 

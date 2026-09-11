@@ -61,6 +61,15 @@ def test_resource_guard_refuses_ram_and_agent_limits(monkeypatch):
         canary.check_resources(terminal="T11", max_agents=1, cpu_samples=1, sample_seconds=0)
 
 
+def test_resource_guard_refuses_cpu_above_s3_ceiling(monkeypatch):
+    class Memory: available = 100 * 1024**3
+    monkeypatch.setattr(canary.psutil, "virtual_memory", lambda: Memory())
+    monkeypatch.setattr(canary.psutil, "process_iter", lambda _attrs: [])
+    monkeypatch.setattr(canary.psutil, "cpu_percent", lambda interval: 90.1)
+    with pytest.raises(canary.CanaryRefused, match="90.0"):
+        canary.check_resources(terminal="T11", max_agents=4, cpu_samples=1, sample_seconds=0)
+
+
 def test_resource_guard_counts_only_t11_owned_metatesters(tmp_path, monkeypatch):
     class Memory: available = 100 * 1024**3
     class Process:
@@ -148,3 +157,28 @@ def test_run_captures_relative_report_and_binds_tester_contract(tmp_path, monkey
     with pytest.raises(canary.CanaryRefused, match="commission group"):
         canary.run(request, farm_root=farm, mt5_root=tmp_path / "mt5",
             reports_root=tmp_path / "reports", resource_check=lambda **kw: {})
+
+
+def test_run_writes_receipt_for_factory_lock_refusal(tmp_path, monkeypatch):
+    farm = _farm(tmp_path)
+    (farm / "state" / "FACTORY_MUTATION.lock").write_text("locked", encoding="utf-8")
+    repo = tmp_path / "repo"
+    registry = repo / "framework/registry"; registry.mkdir(parents=True)
+    (registry / "tester_defaults.json").write_text(json.dumps({
+        "initial_deposit": 100000, "deposit_currency": "USD", "leverage": 100}))
+    terminal = tmp_path / "mt5/T11"
+    experts = terminal / "MQL5/Experts"; experts.mkdir(parents=True)
+    profiles = terminal / "MQL5/Profiles/Tester"; profiles.mkdir(parents=True)
+    expert = experts / "x.ex5"; expert.write_bytes(b"expert")
+    setfile = profiles / "x.set"; setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n")
+    monkeypatch.setattr(canary, "REPO_ROOT", repo)
+    request = canary.CanaryRequest("test", "T11", "x.ex5", expert, setfile,
+        "USDJPY.DWX", "H1", "2021.01.01", "2021.12.31", 4, 60, True)
+    with pytest.raises(canary.CanaryRefused, match="FACTORY_MUTATION"):
+        canary.run(request, farm_root=farm, mt5_root=tmp_path / "mt5",
+            reports_root=tmp_path / "reports", resource_check=lambda **kw: {})
+    receipt_path = next((tmp_path / "reports/test").glob("*/receipt.json"))
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["status"] == "REFUSED"
+    assert "FACTORY_MUTATION.lock" in receipt["reason"]
+    assert receipt["isolation_before"]["factory_mutation_lock_present"] is True

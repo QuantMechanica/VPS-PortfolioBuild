@@ -165,3 +165,50 @@ mutation lock appeared after admission; the controller wrote no work-item row.
 **RESULT (Q-only):** Q-S3 is REVIEW. The real run and all safety/input guards
 are evidenced, but report export is still absent; there is no identity table,
 PASS, delta, tuning, selection, T1–T10 interruption, T_Live, or AutoTrading.
+
+## S3 receipt-bound refusal and ceiling correction — 2026-09-11T06:40Z
+
+Router task: `f04d66ec-b296-4f2c-b5eb-83a8c2379626`.
+
+The controller now records an append-only `receipt.json` even when admission
+refuses before the tester contract and resource sampling.  This closes an
+evidence gap in which a present `FACTORY_MUTATION.lock` previously left a
+created run directory with no receipt.  The T11 canary CPU ceiling is also
+the task-authorized **90%** five-sample average (not the fleet's 95% general
+admission ceiling).  Focused verification:
+
+```text
+python -m pytest tools/strategy_farm/tests/test_research_canary.py -q
+11 passed
+python -m py_compile tools/strategy_farm/research_canary.py
+PASS
+```
+
+The first fresh dry-run receipt after the initial receipt repair was
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_063525_cb71a08b/receipt.json`.
+It is `DRY_RUN_PASS`: the staged EX5 and setfile hash-bind to
+`68d37d3a6b6d5d4354e5a9aa494488d8d2809b1f662ff75fbb26440658137c01` and
+`afa42711867677bd7d5641f93e52a104f31c86a181f835579241b214f35bf47c`, the
+108-file signed-history audit passed, T11-owned MetaTester count was zero,
+RAM available was 37,383,778,304 bytes, and its CPU samples averaged 88.18%.
+The independently operating factory changed `worker_pids.json` during that
+observation, so `isolation_unchanged=false`; no terminal was launched.
+
+After the 90% ceiling correction, the guarded retry produced the real refusal
+receipt `D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_064005_f4d6664b/receipt.json`:
+`status=REFUSED`, `reason=FACTORY_MUTATION.lock is present`, with matching
+before/after isolation snapshots (147,181 work items; T11 absent from the
+T1–T10 activation).  Thus the required safety receipt exists and no live
+smoke was admissible.  A live run and fleet-cell identity table would be
+unsafe to attempt while the factory mutation lock is live.
+
+**RESULT (Q-only):** Q-S3 remains REVIEW — staging is hash-bound and the
+controller has a receipt for both admission and refusal paths, but there is
+no current lock-free, isolation-stable live smoke; therefore no report hash,
+metric identity PASS, delta, tuning, or selection claim exists.  T1–T10,
+T_Live, and AutoTrading were untouched.  When a future scheduled cycle finds
+the lock absent, the sole permitted command surface is:
+
+```text
+python C:/QM/repo/tools/strategy_farm/research_canary.py --program WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025 --terminal T11 --expert QM5_41398_balke-pattern-repair-opt.ex5 --expert-path D:/QM/mt5/T11/MQL5/Experts/QM5_41398_balke-pattern-repair-opt.ex5 --setfile D:/QM/mt5/T11/MQL5/Profiles/Tester/QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set --symbol USDJPY.DWX --period H1 --from-date 2021.01.01 --to-date 2021.12.31 --max-agents 4 --dry-run
+```
