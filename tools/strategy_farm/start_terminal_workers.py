@@ -173,7 +173,16 @@ def _load_existing(pid_file: Path) -> dict[str, int]:
 # activation reproduced the lane-preflight decline loop (~88->21 cells/h) and was rolled
 # back on 2026-09-02; those stay machine-only until an OWNER decision re-activates them.
 MACHINE_FACTORY_ENV_PREFIXES = ("QM_",)
-MACHINE_FACTORY_ENV_EXACT = frozenset({"DL089_PROGRAM_SLOTS"})
+# 2026-09-11 (Orchestrator, OWNER window): OWNER 2026-09-10 "Winsweep ja" re-activated
+# L=2 for the allow-listed programs (OWNER-DEC-SAMEPROG-FLEET-20260831 + 2026-09-10),
+# so the lane cap and allow-list are carried from machine scope as well; a reboot no
+# longer silently drops them to L=1.  DL089_CELL_SLOTS is deliberately NOT carried
+# (temporary 48 h cap of 2026-09-10, rollback due 2026-09-12T19:05Z = the reboot).
+MACHINE_FACTORY_ENV_EXACT = frozenset({
+    "DL089_PROGRAM_SLOTS",
+    "DL089_LANES_PER_PROGRAM",
+    "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST",
+})
 
 
 def _is_machine_factory_var(name: object) -> bool:

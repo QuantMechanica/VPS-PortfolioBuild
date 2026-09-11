@@ -39,15 +39,17 @@ def test_merge_carries_machine_dl089_scheduling_caps():
     process = {"PATH": "x"}
     machine = {
         "DL089_PROGRAM_SLOTS": "8",
-        "DL089_LANES_PER_PROGRAM": "2",  # rolled-back canary value: must stay machine-only
+        "DL089_LANES_PER_PROGRAM": "2",  # OWNER 2026-09-10 "Winsweep ja": carried since 2026-09-11
         "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST": "DL089_X",
+        "DL089_CELL_SLOTS": "3",  # temporary 48 h cap: never carried across a reboot
         "QM_ENABLE_DL089_PRUNING": "1",
         "PATHEXT": ".EXE",
     }
     merged = merge_machine_qm_env(process, machine)
     assert merged["DL089_PROGRAM_SLOTS"] == "8"
     assert merged["QM_ENABLE_DL089_PRUNING"] == "1"
-    assert "DL089_LANES_PER_PROGRAM" not in merged
-    assert "DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST" not in merged
+    assert merged["DL089_LANES_PER_PROGRAM"] == "2"
+    assert merged["DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST"] == "DL089_X"
+    assert "DL089_CELL_SLOTS" not in merged
     assert "PATHEXT" not in merged  # unrelated machine vars are still not merged
 

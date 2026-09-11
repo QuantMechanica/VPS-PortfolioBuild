@@ -3172,3 +3172,21 @@ free) -> commit limit ~127 GB -> ~10 concurrent ordinary cells and index Q04 row
 (b) keep as is (fleet ~50 pct), (c) lower the 44 GB index class -- no ledger evidence for Q04 index peaks since the
 ledger began 2026-09-03, so not proposed. Cosmetic fix in the same commit: the commit probe now selects phase so
 the reservation label matches the claimed class.
+
+## 2026-09-11T19:50Z — OWNER window (weekend, T_Live + FTMO flat): pagefile 64 GB fixed + VPS reboot executed
+
+OWNER 19:4xZ: "Wir sind bereits im Wochenende, T_Live, FTMO haben alle Trades beendet und traden bis naechste
+Woche nicht. Owner Fenster, fuehr alles gestaffelt durch." Executed in order: (1) pre-checks: AutoAdminLogon on,
+QM_StrategyFarm_FactoryON_AtLogon + QM_T_Live_AtLogon + QM_FTMO_AtLogon logon-triggered, FTMO pulse
+open_positions 0, no FACTORY_OFF.flag; (2) start_terminal_workers.py now carries DL089_LANES_PER_PROGRAM and
+DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST from machine scope (OWNER 2026-09-10 L=2), NOT DL089_CELL_SLOTS -> the
+48 h census cap (due 2026-09-12T19:05Z) rolls back with this reboot as planned; machine allow-list extended with
+WINSWEEP_QM5_41405 (config sweep, L=2); (3) pagefile: AutomaticManagedPagefile=false, C:\pagefile.sys
+InitialSize=MaximumSize=65536 MB (was system-managed 26 GB; commit limit 89 -> ~127 GB expected);
+(4) one-shot task QM_TMP_PostRebootCheck_0911 (AtStartup + 10 min) writes
+D:/QM/reports/state/post_reboot_check_20260911.md/.json; (5) shutdown /r /t 120. In-flight rows at reboot
+(orphan recovery = append-only rerun path): Q02 QM5_9121 XAUUSD (T10, since 17:57Z), Q07 QM5_12548 XAUUSD
+(T7, since 19:01Z), three census cells. The orchestrator session and its session crons (hourly watch, cap
+rollback one-shot) end with the reboot: next session reads the post-reboot report, verifies T_Live/FTMO
+terminals up (no trading until Monday), commit limit, worker count 10, fleet saturation (target ~10 cells),
+and deletes QM_TMP_PostRebootCheck_0911.
