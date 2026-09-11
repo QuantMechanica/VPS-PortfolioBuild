@@ -1,0 +1,10 @@
+{
+  "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_12351_alp-ema12-26/QM5_12351_alp-ema12-26.mq5\"",
+  "exit_code": 0,
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "mq5_sha256": "27da9fb5c285dc78d5bd2ca2a1185c131de6511aa7026d42ea8fd0952df51b34"
+}

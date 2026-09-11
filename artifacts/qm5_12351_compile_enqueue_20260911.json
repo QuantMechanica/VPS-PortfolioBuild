@@ -1,0 +1,14 @@
+{
+  "schema": "qm.pacer-compile-enqueue-receipt/v1",
+  "ea_id": "QM5_12351",
+  "ea_label": "QM5_12351_alp-ema12-26",
+  "build_task_id": "b63e991a-cf37-4a8d-a884-a3ef1bb5a90e",
+  "compile_work_item_id": "92797bae-0f0d-45cb-872d-6f0bcccb258d",
+  "mq5_sha256": "27da9fb5c285dc78d5bd2ca2a1185c131de6511aa7026d42ea8fd0952df51b34",
+  "status": "pending",
+  "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+  "activation_state": "AWAITING_REVIEWED_WORKER_ROLLOUT",
+  "release_applied": false,
+  "q02_enqueued": false,
+  "stop_reason": "CPU_CEILING_97_PERCENT_EXCEEDED"
+}

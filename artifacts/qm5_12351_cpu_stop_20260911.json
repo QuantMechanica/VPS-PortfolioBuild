@@ -1,0 +1,19 @@
+{
+  "schema": "qm.pacer-cpu-admission/v1",
+  "ea_label": "QM5_12351_alp-ema12-26",
+  "measured_at_utc": "2026-09-11T10:22:19.2856917Z",
+  "sample_interval_seconds": 2,
+  "sample_count": 5,
+  "samples_pct": [
+    98.7315559783491,
+    96.7833210927601,
+    90.0906086415192,
+    92.6295626607306,
+    97.4789010651416
+  ],
+  "average_pct": 95.14278988770015,
+  "maximum_pct": 98.73155597834914,
+  "ceiling_pct": 97.0,
+  "admitted": false,
+  "action": "STOP_BEFORE_COMPILE_HOLD_RELEASE"
+}
