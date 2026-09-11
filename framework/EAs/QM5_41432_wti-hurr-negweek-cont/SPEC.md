@@ -113,4 +113,5 @@ operation is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-11 | Initial build from approved card | OWNER pacer mission |
-
+| v1-q01 | 2026-09-11 | Governed compile and strict build check PASS (`693125c7-2ccc-46e5-8041-3b440c429576`) | OWNER pacer mission |
+| v1-q02 | 2026-09-11 | One fixed-risk Q02 canary enqueued below CPU ceiling (`4c7d7b31-c837-4fdc-9070-505b72b82f97`) | OWNER pacer mission |

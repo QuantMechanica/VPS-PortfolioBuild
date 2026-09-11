@@ -1,0 +1,21 @@
+{
+  "schema": "qm.first-q02-intake-evidence/v1",
+  "captured_at": "2026-09-11T03:35:00Z",
+  "ea_id": "QM5_41432",
+  "ea_label": "QM5_41432_wti-hurr-negweek-cont",
+  "compile_work_item_id": "693125c7-2ccc-46e5-8041-3b440c429576",
+  "compile_verdict": "COMPILE_OK",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "applied": true,
+  "work_item_id": "4c7d7b31-c837-4fdc-9070-505b72b82f97",
+  "status_at_capture": "pending",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "setfile_sha256": "b5aa07d54f3fe8ae408ede9a15b025a35e8568c0bff7db194d48831ab4a218bf",
+  "ex5_sha256": "7c7729cc4f512924629cf5cc2542836072fd046f45cc522df08ad4c1729da7ab",
+  "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/693125c7-2ccc-46e5-8041-3b440c429576_4c7d7b31-c837-4fdc-9070-505b72b82f97.json",
+  "receipt_sha256": "76183de6d2b92a5e60b00dd84eaf5a88d623743e6920a87e7fceb9220ea78544"
+}

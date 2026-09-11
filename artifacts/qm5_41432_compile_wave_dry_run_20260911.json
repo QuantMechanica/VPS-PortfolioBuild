@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "2f29fa29efde564562deab080bbc32486b45267e362797b0b3b1211ad0c45bf9",
+      "ea_id": "QM5_41432",
+      "ea_label": "QM5_41432_wti-hurr-negweek-cont",
+      "expected_mq5_sha256": "2f29fa29efde564562deab080bbc32486b45267e362797b0b3b1211ad0c45bf9",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41432_wti-hurr-negweek-cont\\QM5_41432_wti-hurr-negweek-cont.mq5",
+      "work_item_id": "693125c7-2ccc-46e5-8041-3b440c429576"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "693125c7-2ccc-46e5-8041-3b440c429576",
+  "work_item_id_selectors": [
+    "693125c7-2ccc-46e5-8041-3b440c429576"
+  ]
+}

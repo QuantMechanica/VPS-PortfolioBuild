@@ -1,0 +1,18 @@
+{
+  "schema": "qm.compile-status-evidence/v1",
+  "captured_at": "2026-09-11T03:32:19Z",
+  "ea_id": "QM5_41432",
+  "ea_label": "QM5_41432_wti-hurr-negweek-cont",
+  "work_item_id": "693125c7-2ccc-46e5-8041-3b440c429576",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260911_033147.json",
+  "compile_evidence_path": "D:/QM/reports/work_items/693125c7-2ccc-46e5-8041-3b440c429576/QM5_41432/COMPILE_EA/compile_evidence.json",
+  "ex5_sha256": "7c7729cc4f512924629cf5cc2542836072fd046f45cc522df08ad4c1729da7ab",
+  "setfile_count": 1,
+  "failure_classes": []
+}
