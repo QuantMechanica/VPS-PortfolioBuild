@@ -7,7 +7,7 @@ source_id: BURAKOV-CRABEL-MOP-WTI-WINTER-WR2-CLV-MOM-20260911
 ea_id: QM5_41440
 slug: wti-winter-wr2-clv-mom
 status: APPROVED
-execution_contract_ref: strategy-seeds/cards/approved/QM5_41440_wti-winter-wr2-clv-mom_card.md
+execution_contract_ref: strategy-seeds/cards/approved/QM5_41440_wti-winter-wr2-clv-mom.md
 execution_contract_status: APPROVED
 created: 2026-09-11
 created_by: Research+Development
@@ -139,17 +139,25 @@ partial close, scale-in, pyramid, grid, martingale, hedge, reversal, or re-entry
 
 Q02 has one locked baseline and no optimization surface:
 
-| Input | Value |
+| param | default |
 |---|---:|
-| `strategy_symbol` | `XTIUSD.DWX` via setfile |
+| `strategy_symbol` | `XTIUSD.DWX` |
 | `strategy_label_offset_seconds` | 86400 |
 | `strategy_entry_grace_minutes` | 180 |
 | `strategy_history_bars` | 30 |
-| `strategy_winter_month_1..7` | 11 / 12 / 1 / 2 / 3 / 4 / 5 |
+| `strategy_winter_month_1` | 11 |
+| `strategy_winter_month_2` | 12 |
+| `strategy_winter_month_3` | 1 |
+| `strategy_winter_month_4` | 2 |
+| `strategy_winter_month_5` | 3 |
+| `strategy_winter_month_6` | 4 |
+| `strategy_winter_month_7` | 5 |
 | `strategy_required_weeks` | 2 |
-| `strategy_min_week_bars` / `strategy_max_week_bars` | 3 / 5 |
+| `strategy_min_week_bars` | 3 |
+| `strategy_max_week_bars` | 5 |
 | `strategy_clv_upper` | 0.75 |
-| `strategy_atr_period_d1` / `strategy_atr_sl_mult` | 20 / 3.5 |
+| `strategy_atr_period_d1` | 20 |
+| `strategy_atr_sl_mult` | 3.5 |
 | `strategy_max_hold_days` | 10 |
 | `strategy_max_spread_points` | 1500 |
 

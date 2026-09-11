@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   d4a8a87c3e617dbc764b2c925eaf3804ee379799294b7d94fd9212389e28aa6d
 ; author:       Development
 ; date:         2026-09-11
 ;==========================================================
@@ -20,23 +20,23 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=ea_input_defaults
-strategy_symbol=XTIUSD.DWX
-strategy_label_offset_seconds=86400
-strategy_entry_grace_minutes=180
-strategy_history_bars=30
-strategy_winter_month_1=11
-strategy_winter_month_2=12
-strategy_winter_month_3=1
-strategy_winter_month_4=2
-strategy_winter_month_5=3
-strategy_winter_month_6=4
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41440_wti-winter-wr2-clv-mom.md
 strategy_winter_month_7=5
-strategy_required_weeks=2
-strategy_min_week_bars=3
-strategy_max_week_bars=5
+strategy_winter_month_2=12
+strategy_winter_month_4=2
 strategy_clv_upper=0.75
-strategy_atr_period_d1=20
-strategy_atr_sl_mult=3.5
+strategy_required_weeks=2
+strategy_winter_month_6=4
 strategy_max_hold_days=10
+strategy_symbol=XTIUSD.DWX
+strategy_atr_sl_mult=3.5
+strategy_min_week_bars=3
+strategy_winter_month_1=11
+strategy_history_bars=30
+strategy_winter_month_5=3
 strategy_max_spread_points=1500
+strategy_label_offset_seconds=86400
+strategy_max_week_bars=5
+strategy_entry_grace_minutes=180
+strategy_winter_month_3=1
+strategy_atr_period_d1=20
