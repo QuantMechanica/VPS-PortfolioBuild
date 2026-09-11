@@ -3156,3 +3156,19 @@ carries no top-level symbol. Fix: guard falls back to the <SYMBOL>_DWX_<from>_<t
 (tester_cache_purge_guard.ledger_symbol, test added); config_sweep now writes symbol into new ledgers (sealed
 ledger left untouched). Guard runs clean on the live tree; next scheduled purge run verifies. Lesson: every new
 ledger-writing program tool must satisfy the purge guard schema (symbol, ea_id, program_id).
+
+## 2026-09-11T18:35Z — Fleet saturation audit after reload chunk 67: commit limit is the binding ceiling (OWNER Vorlage)
+
+After chunk 67 (all 10 workers reloaded 18:16Z) the fleet holds 4-5 active cells, not 10. Measured (claim_result
+skips, new diagnostics 244f9995b5): no_pending_claimable events skip ~365 rows as census_lane_protection and ~363
+as heavy commit class -- these are the 369 pending single-symbol Q04 full-history rows on index symbols (NDX 173,
+GDAXI 101, SP500 48, WS30 36, UK100 11; 44 GB single_index_tick class) plus 47 basket rows; 530 of 607 pending
+Q02 single rows are recovery-class (idle-capped by design). Host: pagefile C: system-managed 26 GB, peak usage =
+allocation (26.1 GB), total commit limit 89 GB (63 GB RAM + 26 GB) versus ~122 GB assumed in terminal_worker.py
+(2026-08 comments); free commit 46 GB at 18:2xZ. With the 24 GB commit floor and 8 GB ordinary reservations per
+claim (300 s), 5-6 concurrent testers exhaust the commit budget; a 44 GB index row is never admissible and the
+drain window reports not winnable. Vorlage (OWNER, system setting + reboot): fixed pagefile 64 GB on C: (141 GB
+free) -> commit limit ~127 GB -> ~10 concurrent ordinary cells and index Q04 rows admissible again. Alternatives:
+(b) keep as is (fleet ~50 pct), (c) lower the 44 GB index class -- no ledger evidence for Q04 index peaks since the
+ledger began 2026-09-03, so not proposed. Cosmetic fix in the same commit: the commit probe now selects phase so
+the reservation label matches the claimed class.

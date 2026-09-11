@@ -3178,7 +3178,7 @@ def _commit_admission_snapshot(
     reservations: list[dict[str, Any]] = []
     reserved_gb = 0.0
     rows = conn.execute(
-        "SELECT id, ea_id, symbol, payload_json FROM work_items WHERE status='active'"
+        "SELECT id, ea_id, symbol, phase, payload_json FROM work_items WHERE status='active'"
     ).fetchall()
     for row in rows:
         payload = _json_loads(row["payload_json"])
