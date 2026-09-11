@@ -2930,3 +2930,13 @@ worker diff 20 lines, 3 + 21 tests pass. Reload chunk 66 finished 06:58Z (10/10)
 enqueue --controls-only --apply` twice: inserted 7, then 0 (program WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025,
 frontier priority inherited from 41398 rows). Open: the program has no queue owner (config_sweep has
 no queue-owner command) -> claim-order position checked; first-claim proof pending (poll).
+
+## 2026-09-11T07:15Z — 41405 control cells made claimable (queue owner + priority_track)
+
+After enqueue the 7 control rows sat at census position 148-196: (a) no queue owner for the new
+program (config_sweep.py has no queue-owner command) -> orchestrator inserted the WINDOW_SWEEP_OWNER
+control row a5efb888 mirroring e144b67f (program WINSWEEP_QM5_41405..., queue_order_at 2026-08-19T00:05,
+evidence sentinel per DB trigger; GRUEN queue-order lever); (b) payloads lacked priority_track (the
+first sort key) -> set on the 7 pending unclaimed rows + config_sweep.py now emits priority_track and
+opt_census_pool (3 tests pass). Claim-order position now 0 among OPT_CENSUS rows; first-claim poll
+running. LESSON for 036de7b9 follow-up: a new program tool must ship queue-owner + priority_track.
