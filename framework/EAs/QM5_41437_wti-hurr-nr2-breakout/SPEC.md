@@ -79,3 +79,5 @@ risk. No live set, deployment, portfolio admission, `T_Live`, or AutoTrading act
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-11 | Initial build from approved card | OWNER pacer mission |
+| v1-q01 | 2026-09-11 | Governed compile and strict build check PASS (`27ca36d0-4048-42b9-8322-cce59d692de4`) | OWNER pacer mission |
+| v1-q02 | 2026-09-11 | CPU-admitted fixed-risk Q02 enqueued (`e29b85e8-c31d-42a5-a3d2-3abb5ed8ecae`) | OWNER pacer mission |

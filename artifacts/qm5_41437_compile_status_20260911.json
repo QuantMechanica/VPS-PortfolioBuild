@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-09-11T09:44:03Z",
+  "ea_id": "QM5_41437",
+  "ea_label": "QM5_41437_wti-hurr-nr2-breakout",
+  "work_item_id": "27ca36d0-4048-42b9-8322-cce59d692de4",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "build_check_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "failure_classes": [],
+  "mq5_sha256": "2aba16ce9c760075f6ea293de920a437cf0d6c820b04cca9da878ede309ea6d3",
+  "ex5_sha256": "ca62f06e4d9d1d771dd7fac4b1c0adc7529ca6f4c9e5b947ba73ce2618c89be8",
+  "evidence_path": "D:/QM/reports/work_items/27ca36d0-4048-42b9-8322-cce59d692de4/QM5_41437/COMPILE_EA/compile_evidence.json",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260911_094336.json"
+}
