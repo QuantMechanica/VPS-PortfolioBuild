@@ -1,0 +1,5 @@
+population,pending_rows,retain_fraction,dropped_control_fraction,kept,controls,real_tick_confirmations,fewer_real_tick_cells,cheap_run_seconds,net_saved_seconds,status
+pending_all_programs,6255,0.5,0.1,3128,313,3441,2814,,,CONDITIONAL_COUNTS_ONLY
+pending_all_programs,6255,0.3,0.1,1877,438,2315,3940,,,CONDITIONAL_COUNTS_ONLY
+pending_target_programs,1119,0.5,0.1,560,56,616,503,,,CONDITIONAL_COUNTS_ONLY
+pending_target_programs,1119,0.3,0.1,336,79,415,704,,,CONDITIONAL_COUNTS_ONLY

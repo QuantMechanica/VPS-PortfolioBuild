@@ -1,0 +1,5 @@
+RG	0	13:11:25.455	Startup	successfully initialized from start config "D:\QM\reports\research\T11_PRESCREEN_PART2_c3fc6278\20260911_110621_51e53c05\tester.ini"
+OQ	0	13:11:25.516	LiveUpdate	start "C:\Windows\system32\config\systemprofile\AppData\Roaming\MetaQuotes\Terminal\F5D9412A6437C1548F3DA4241E8C78A6\liveupdate\terminal64.exe" /update /path:"D:\QM\mt5\T11" /portable /config:"D:\QM\reports\research\T11_PRESCREEN_PART2_c3fc6278\20260911_110621_51e53c05\tester.ini"
+GK	0	13:11:25.690	Terminal	exit with code 0
+RH	0	13:11:25.691	Terminal	stopped with 0
+GL	0	13:11:25.794	Terminal	shutdown with 0

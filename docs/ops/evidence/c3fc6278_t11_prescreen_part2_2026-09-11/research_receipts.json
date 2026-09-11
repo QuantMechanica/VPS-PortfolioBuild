@@ -1,0 +1,31 @@
+[
+  {
+    "receipt_path": "D:\\QM\\reports\\research\\T11_PRESCREEN_PART2_c3fc6278\\20260911_110621_51e53c05\\receipt.json",
+    "receipt_sha256": "c313ebe5b8fbc03dd1c09f2411a985ca4b9c38877ba0519056b2dd475fa3f63a",
+    "status": "REFUSED",
+    "model": 1,
+    "optimize": "off",
+    "report_path": "",
+    "reason": "tester exited without report",
+    "wall_seconds": 304.0780000000086,
+    "tester_wall_seconds": 1.8900000000139698,
+    "isolation_unchanged": true,
+    "resource_guard": {
+      "cpu_average_percent": 90.66,
+      "cpu_limit_percent": 95.0,
+      "cpu_samples_percent": [
+        88.3,
+        91.4,
+        92.4,
+        88.5,
+        92.7
+      ],
+      "max_agents": 2,
+      "metatester_agent_processes": [],
+      "metatester_agent_scope": "T11 executable path prefix",
+      "metatester_agents": 0,
+      "ram_available_bytes": 47885922304
+    },
+    "refusal_observation": null
+  }
+]

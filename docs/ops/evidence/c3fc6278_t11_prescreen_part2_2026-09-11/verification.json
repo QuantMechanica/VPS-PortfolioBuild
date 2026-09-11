@@ -1,0 +1,46 @@
+{
+  "captured_at_utc": "2026-09-11T11:14:49.166701+00:00",
+  "commands": [
+    {
+      "command": [
+        "python",
+        "-m",
+        "pytest",
+        "tools/strategy_farm/tests/test_research_canary.py",
+        "-q"
+      ],
+      "returncode": 0,
+      "stdout": "......................................                                   [100%]\n38 passed in 1.60s\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python",
+        "-m",
+        "py_compile",
+        "tools/strategy_farm/research_canary.py"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "tools/strategy_farm/research_canary.py",
+        "tools/strategy_farm/tests/test_research_canary.py",
+        "docs/ops/evidence/c3fc6278_t11_prescreen_part2_2026-09-11"
+      ],
+      "returncode": 0,
+      "stdout": "",
+      "stderr": "warning: in the working copy of 'tools/strategy_farm/research_canary.py', LF will be replaced by CRLF the next time Git touches it\nwarning: in the working copy of 'tools/strategy_farm/tests/test_research_canary.py', LF will be replaced by CRLF the next time Git touches it\n"
+    }
+  ],
+  "controller_sha256": "1257fc7ee25ed9a64e956ccd1e89a7d07c0414a18969cd45756404693f2cd038",
+  "frozen_cells": 345,
+  "fidelity_rows": 48,
+  "speed_pilot_cells": 20
+}

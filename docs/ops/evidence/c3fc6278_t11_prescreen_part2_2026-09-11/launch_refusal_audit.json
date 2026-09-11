@@ -1,0 +1,14 @@
+{
+  "captured_at_utc": "2026-09-11T11:12:18.363354+00:00",
+  "native_receipt_path": "D:\\QM\\reports\\research\\T11_PRESCREEN_PART2_c3fc6278\\20260911_110621_51e53c05\\receipt.json",
+  "receipt_sha256": "c313ebe5b8fbc03dd1c09f2411a985ca4b9c38877ba0519056b2dd475fa3f63a",
+  "journal_path": "D:\\QM\\mt5\\T11\\logs\\20260911.log",
+  "journal_sha256_at_capture": "6df9cb135f1d11f596724627bd883f6166f55c6323deda21b47005c915daae2d",
+  "excerpt_path": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\t11_launch_journal_excerpt.txt",
+  "terminal_exe": "D:\\QM\\mt5\\T11\\terminal64.exe",
+  "terminal_exe_sha256": "86c563c8c113e4af8802dc91241ecd51fc06caf92cc86fc40026dd8046e526ed",
+  "terminal_exe_size": 121845984,
+  "t11_processes_after": [],
+  "observed": "LiveUpdate start, root exit code 0, no report; /skipupdate present in controller launch arguments. No mode-performance measurement.",
+  "cause_limit": "Journal proves updater hand-off; reason /skipupdate did not prevent it is not established."
+}

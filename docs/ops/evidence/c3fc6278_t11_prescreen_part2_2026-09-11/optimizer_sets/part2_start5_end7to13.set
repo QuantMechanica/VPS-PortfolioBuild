@@ -1,0 +1,52 @@
+; opt_census_schema: qm.opt-census.v1
+; opt_census_cell_key: DL089_QM5_13213_USDJPY_DWX_2019_2025:2019:baseline
+; opt_census_from_date: 2019.01.01
+; opt_census_to_date: 2019.12.31
+;==========================================================
+; QM5 Set File
+; ea_id:        41398
+; ea_slug:      balke-pattern-repair-opt
+; ea_version:   v5.0
+; set_version:  s20260909-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   fdf3fe22bd6298863b92c3085d89cfa247f25b1a8a6bd6e11788d607ab14a44d
+; author:       Development
+; date:         2026-09-09
+;==========================================================
+qm_ea_id=41398
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41398_balke-pattern-repair-opt.md
+strategy_max_range_atr_mult=2.5
+strategy_range_scan_bars=36
+qm_friday_close_enabled=true
+qm_news_compliance=1
+qm_news_min_impact=high
+opt_pp_sell2=0
+strategy_exit_hour=18
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_min_range_atr_mult=0.4
+qm_news_mode_legacy=0
+opt_pp_buy3=0
+opt_pp_buy2=0
+opt_pp_buy1=0
+strategy_atr_period=14
+qm_news_temporal=3
+qm_news_stale_max_hours=336
+strategy_range_end_hour=7||7||1||13||Y
+strategy_trail_trigger_r=1.0
+opt_pp_sell3=0
+opt_pp_sell1=0
+qm_rng_seed=42
+strategy_range_start_hour=5
+
+; DL-089 governed neutral pattern bindings

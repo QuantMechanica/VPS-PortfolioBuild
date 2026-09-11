@@ -1,0 +1,458 @@
+{
+  "captured_at": "2026-09-11T11:09:13.171408+00:00",
+  "rows": [
+    {
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 766
+    },
+    {
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 319
+    },
+    {
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "status": "active",
+      "verdict": null,
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 496
+    },
+    {
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 588
+    },
+    {
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 711
+    },
+    {
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 328
+    },
+    {
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 50
+    },
+    {
+      "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 439
+    },
+    {
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 650
+    },
+    {
+      "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 84
+    },
+    {
+      "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_PRESCREEN",
+      "n": 1005
+    },
+    {
+      "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 237
+    },
+    {
+      "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 924
+    },
+    {
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 599
+    },
+    {
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 490
+    },
+    {
+      "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 264
+    },
+    {
+      "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 821
+    },
+    {
+      "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 1069
+    },
+    {
+      "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 20
+    },
+    {
+      "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 407
+    },
+    {
+      "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 27
+    },
+    {
+      "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 655
+    },
+    {
+      "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 165
+    },
+    {
+      "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 924
+    },
+    {
+      "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 697
+    },
+    {
+      "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 309
+    },
+    {
+      "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 83
+    },
+    {
+      "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 921
+    },
+    {
+      "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 168
+    },
+    {
+      "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 1060
+    },
+    {
+      "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 29
+    },
+    {
+      "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 281
+    },
+    {
+      "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 43
+    },
+    {
+      "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 761
+    },
+    {
+      "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 449
+    },
+    {
+      "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 640
+    },
+    {
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 25
+    },
+    {
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 1060
+    },
+    {
+      "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 612
+    },
+    {
+      "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 477
+    },
+    {
+      "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+      "status": "failed",
+      "verdict": "INFRA_FAIL",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 165
+    },
+    {
+      "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 924
+    },
+    {
+      "program_id": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 74
+    },
+    {
+      "program_id": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_PRESCREEN",
+      "n": 1015
+    },
+    {
+      "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 943
+    },
+    {
+      "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 146
+    },
+    {
+      "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 1058
+    },
+    {
+      "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 27
+    },
+    {
+      "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 165
+    },
+    {
+      "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 924
+    },
+    {
+      "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 1041
+    },
+    {
+      "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 48
+    },
+    {
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 871
+    },
+    {
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 218
+    },
+    {
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 19
+    },
+    {
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 3
+    },
+    {
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_PRESCREEN",
+      "n": 1067
+    },
+    {
+      "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 11
+    },
+    {
+      "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_PRESCREEN",
+      "n": 1078
+    },
+    {
+      "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 13
+    },
+    {
+      "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_EXCLUDED",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+      "status": "done",
+      "verdict": "SKIPPED_PRESCREEN",
+      "n": 1075
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "status": "active",
+      "verdict": null,
+      "n": 1
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 570
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 59
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+      "status": "active",
+      "verdict": null,
+      "n": 1
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+      "status": "done",
+      "verdict": "MEASURED",
+      "n": 69
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+      "status": "pending",
+      "verdict": null,
+      "n": 280
+    }
+  ],
+  "pending_all_programs": 6255,
+  "pending_target_programs": 1119,
+  "limit": "Raw pending rows; holds and program eligibility are not inferred away."
+}

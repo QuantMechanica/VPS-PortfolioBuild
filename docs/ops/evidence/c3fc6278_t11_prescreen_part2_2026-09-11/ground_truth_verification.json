@@ -1,0 +1,13 @@
+{
+  "baseline_path": "C:\\QM\\repo\\docs\\ops\\evidence\\b48ba1fb_t11_prescreen_2026-09-10\\real_tick_vs_cheap_cells.csv",
+  "baseline_sha256": "6b67b0fa9547fc130502ebf83efd94aed50daaf9c95059af4764d2ce8914fdc0",
+  "cells": 345,
+  "counts": {
+    "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025": 320,
+    "DL089_QM5_13213_USDJPY_DWX_2019_2025": 25
+  },
+  "hash_checks": 1380,
+  "errors": [],
+  "selection_rule": "2 WINSWEEP cells/year + 6 DL089 cells sorted by SHA256(cell_key)",
+  "note": "The first admission pilot is the already staged identity cell; it is additional to the frozen matrix."
+}

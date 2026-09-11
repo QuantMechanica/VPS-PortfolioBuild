@@ -1,0 +1,9 @@
+program_id,model,mode,frozen_real_cells,matched_matrix_cells,historical_real_median_seconds,t11_matrix_median_seconds,speedup,status,source
+DL089_QM5_13213_USDJPY_DWX_2019_2025,4,real-ticks,25,0,132.672295,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json
+DL089_QM5_13213_USDJPY_DWX_2019_2025,1,ohlc-m1,25,0,,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json
+DL089_QM5_13213_USDJPY_DWX_2019_2025,0,generated-ticks,25,0,,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json
+DL089_QM5_13213_USDJPY_DWX_2019_2025,2,open-prices,25,0,,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json
+WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025,4,real-ticks,320,0,135.75435900000002,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json
+WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025,1,ohlc-m1,320,0,,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json
+WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025,0,generated-ticks,320,0,,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json
+WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025,2,open-prices,320,0,,,,NICHT GEZEIGT,frozen_ground_truth.csv; research_receipts.json

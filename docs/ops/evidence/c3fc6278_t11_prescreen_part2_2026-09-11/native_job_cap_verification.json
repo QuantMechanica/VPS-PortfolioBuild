@@ -1,0 +1,7 @@
+{
+  "status": "PASS_NATIVE_WINDOWS_JOB_QUERY",
+  "active_process_limit": 3,
+  "limit_flags": 8200,
+  "terminal_processes_launched": 0,
+  "note": "Native API set/query; optimizer throughput not measured."
+}

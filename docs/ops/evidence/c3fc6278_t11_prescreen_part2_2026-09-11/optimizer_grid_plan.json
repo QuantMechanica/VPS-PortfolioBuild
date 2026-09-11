@@ -1,0 +1,99 @@
+{
+  "status": "DRAFT_NOT_RUN",
+  "native_input_limitation": "EA has start/end inputs; no length input. Exact constrained grid needs ten complete-optimizer shards per year. A rectangular start/end run is not the registered grid. A 2019-2025 full-window pass is not equivalent to seven annual resets.",
+  "shards": [
+    {
+      "start": 0,
+      "end_min": 2,
+      "end_max": 8,
+      "windows": 7,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start0_end2to8.set",
+      "sha256": "f967df164b9734033c0e6ac69b88cbd7b0c848392dd424277ee1acbafb6f0982"
+    },
+    {
+      "start": 1,
+      "end_min": 3,
+      "end_max": 9,
+      "windows": 7,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start1_end3to9.set",
+      "sha256": "eb97c882ab70b3b1f4d04a13fbcb27a033570d7179d8b28a2753a7198fc61d2b"
+    },
+    {
+      "start": 2,
+      "end_min": 4,
+      "end_max": 10,
+      "windows": 7,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start2_end4to10.set",
+      "sha256": "0889b8b23ae2cb008a8f0969f715831c19ea22d80a93b50a0c8ed87228411402"
+    },
+    {
+      "start": 3,
+      "end_min": 5,
+      "end_max": 11,
+      "windows": 7,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start3_end5to11.set",
+      "sha256": "ae85a88621b423ce1c2488815d6b3f82955137443e77b1bb6d9931f28c378261"
+    },
+    {
+      "start": 4,
+      "end_min": 6,
+      "end_max": 12,
+      "windows": 7,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start4_end6to12.set",
+      "sha256": "8f5aaefc5172a2bc6d1fa7f7c3bba4415f4b6dbc503195df908f0514f9c5d691"
+    },
+    {
+      "start": 5,
+      "end_min": 7,
+      "end_max": 13,
+      "windows": 7,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start5_end7to13.set",
+      "sha256": "b541a3a3276198b70d126f29120cac04f665287a6bb971c762805912517bf8f3"
+    },
+    {
+      "start": 6,
+      "end_min": 8,
+      "end_max": 13,
+      "windows": 6,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start6_end8to13.set",
+      "sha256": "4c68da1b9c9033f6277529578faab5d7144cb9bc3871a69c44a2156ad7e03bc3"
+    },
+    {
+      "start": 7,
+      "end_min": 9,
+      "end_max": 13,
+      "windows": 5,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start7_end9to13.set",
+      "sha256": "ba91176aff8681cf79a10a0f17cca2034fd13a6dc8ff64c672bf99360f7172df"
+    },
+    {
+      "start": 8,
+      "end_min": 10,
+      "end_max": 13,
+      "windows": 4,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start8_end10to13.set",
+      "sha256": "480f0d23523d47a206fc36efb84b17fa8c24ec37e71704831c98d5ba2508a728"
+    },
+    {
+      "start": 9,
+      "end_min": 11,
+      "end_max": 13,
+      "windows": 3,
+      "setfile": "C:\\QM\\repo\\docs\\ops\\evidence\\c3fc6278_t11_prescreen_part2_2026-09-11\\optimizer_sets\\part2_start9_end11to13.set",
+      "sha256": "ca6ed14b5e26250e9a9c2ac9ae7db24e7141f9bb2dd9e054bf00fbb3888feb09"
+    }
+  ],
+  "years": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "annual_runs": 70,
+  "annual_passes": 420,
+  "source_setfile": "D:\\QM\\mt5\\T11\\MQL5\\Profiles\\Tester\\QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set",
+  "source_setfile_sha256": "afa42711867677bd7d5641f93e52a104f31c86a181f835579241b214f35bf47c"
+}

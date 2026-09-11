@@ -1,0 +1,19 @@
+{
+  "captured_at": "2026-09-11T11:09:13.178426+00:00",
+  "counts": {
+    "done": 286,
+    "failed": 1,
+    "pending": 1
+  },
+  "open_rows": [
+    {
+      "id": "a0a0128f-a245-4fab-959f-c4941585dd62",
+      "status": "pending",
+      "phase": "Q04",
+      "symbol": "NDX.DWX",
+      "verdict": null,
+      "claimed_by": null,
+      "updated_at": "2026-09-02T10:12:57+00:00"
+    }
+  ]
+}

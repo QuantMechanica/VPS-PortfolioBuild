@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 """Governed, no-DB MT5 research launch controller for the inert T11 canary.
 
-This component is deliberately separate from the factory worker path.  It
-never claims work, writes ``farm_state.sqlite``, acquires FACTORY_MUTATION, or
-changes a terminal configuration.  Its only mutable scope is a new, uniquely
-named research artifact directory.  ``--dry-run`` is the normal safe mode.
+This component is separate from the factory worker path. It never claims work,
+writes ``farm_state.sqlite`` or acquires FACTORY_MUTATION. Explicit staging
+copies hash-bound inputs to inert T11; execution writes unique research reports.
+``--dry-run`` checks admission without launching a terminal.
 """
 from __future__ import annotations
 
 import argparse
+import csv
+import ctypes
 import datetime as dt
 import hashlib
 import json
+import math
 import os
 import re
 import shutil
@@ -19,6 +22,7 @@ import sqlite3
 import subprocess
 import time
 import uuid
+import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping
@@ -35,6 +39,7 @@ if __package__ in {None, ""}:
 from tools.strategy_farm import custom_history_contract as history_contract
 from tools.strategy_farm import custom_history_copy_on_claim as history_copy
 from tools.strategy_farm.process_identity import get_process_identity
+from tools.strategy_farm import windows_job_object as jobs
 from tools.strategy_farm.windows_job_object import (
     GLOBAL_JOB_REGISTRY,
     bind_spawned_process_to_kill_job,
@@ -47,18 +52,21 @@ REPORTS_ROOT = Path(r"D:\QM\reports\research")
 REPO_ROOT = Path(r"C:\QM\repo")
 ALLOWED_TERMINALS = frozenset({"T11", "T12"})
 PRIMARY_TERMINAL = "T11"
-# The authorized S3 canary ceiling is stricter than the fleet's general
-# admission setting: do not admit or continue a canary above 90% average CPU.
-# orchestrator 2026-09-11: fleet idles at ~90 %; 95 keeps the Q02 admission ceiling (97) safe.
-# QM_CANARY_CPU_LIMIT overrides it for a documented single identity smoke (the fleet itself sits
-# at 97 % at times, so a 2.5-minute one-cell run cannot be gated on fleet CPU without starving).
+# The research lane defaults to 95%; an override remains capped at the task's
+# 97% hard ceiling. Admission uses five 60-second samples; runtime five seconds.
 DEFAULT_CPU_LIMIT = float(os.environ.get("QM_CANARY_CPU_LIMIT", "95.0"))
 DEFAULT_RAM_MIN_BYTES = 20 * 1024**3
+MODEL_NAMES = {4: "real-ticks", 1: "ohlc-m1", 0: "generated-ticks", 2: "open-prices"}
+OPTIMIZATION_MODES = {"off": 0, "complete": 1, "genetic": 2}
 _SAFE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 
 
 class CanaryRefused(RuntimeError):
     """A safety or input contract did not admit the canary run."""
+
+    def __init__(self, message: str, *, observation: dict[str, Any] | None = None):
+        super().__init__(message)
+        self.observation = observation
 
 
 def utc_now() -> str:
@@ -142,7 +150,7 @@ def assert_isolation_admitted(snapshot: Mapping[str, Any]) -> None:
 
 
 def assert_isolation_unchanged(before: Mapping[str, Any], after: Mapping[str, Any]) -> None:
-    keys = ("worker_pids_sha256", "work_items_count", "factory_mutation_lock_present")
+    keys = ("worker_pids_sha256", "work_items_count", "activation_sha256")
     changed = {key: [before.get(key), after.get(key)] for key in keys if before.get(key) != after.get(key)}
     if changed:
         raise CanaryRefused(f"factory isolation changed during canary run: {changed}")
@@ -153,7 +161,7 @@ def _t11_metatester_agents(*, terminal: str, mt5_root: Path) -> list[dict[str, A
     """Return only MetaTester processes whose executable belongs to this canary.
 
     Factory terminal agents must not block a T11-only canary.  Conversely, a
-    same-named executable outside T11 cannot consume this canary's four-agent
+    same-named executable outside T11 cannot consume this canary's two-agent
     allowance, so the executable path is retained in the receipt.
     """
 
@@ -181,8 +189,11 @@ def check_resources(*, terminal: str, max_agents: int, cpu_samples: int, sample_
                     ram_min_bytes: int = DEFAULT_RAM_MIN_BYTES,
                     mt5_root: Path = MT5_ROOT,
                     sleep: Callable[[float], None] = time.sleep) -> dict[str, Any]:
-    if max_agents < 1 or max_agents > 4:
-        raise CanaryRefused("max-agents must be in [1,4]")
+    if max_agents < 1 or max_agents > 2:
+        raise CanaryRefused("max-agents must be in [1,2]")
+    if not math.isfinite(cpu_limit) or cpu_limit <= 0:
+        raise CanaryRefused("invalid CPU limit")
+    cpu_limit = min(cpu_limit, 97.0)
     if cpu_samples < 1 or sample_seconds < 0:
         raise CanaryRefused("invalid CPU sampling window")
     available = int(psutil.virtual_memory().available)
@@ -192,18 +203,25 @@ def check_resources(*, terminal: str, max_agents: int, cpu_samples: int, sample_
     if len(agents) > max_agents:
         raise CanaryRefused(f"MetaTester guard: {terminal} agents={len(agents)} > max_agents={max_agents}")
     samples: list[float] = []
+    psutil.cpu_percent(interval=None)  # discard the unprimed first observation
     for index in range(cpu_samples):
-        samples.append(float(psutil.cpu_percent(interval=None)))
-        if index + 1 < cpu_samples and sample_seconds:
+        if sample_seconds:
             sleep(sample_seconds)
+        samples.append(float(psutil.cpu_percent(interval=None)))
     average = sum(samples) / len(samples)
-    if average > cpu_limit:
-        raise CanaryRefused(f"CPU guard: {len(samples)}-sample fleet average {average:.3f} > {cpu_limit}")
-    return {"ram_available_bytes": available, "metatester_agents": len(agents),
+    available = int(psutil.virtual_memory().available)
+    observation = {"ram_available_bytes": available, "metatester_agents": len(agents),
             "metatester_agent_scope": f"{terminal.upper()} executable path prefix",
             "metatester_agent_processes": agents,
             "cpu_samples_percent": samples, "cpu_average_percent": average,
             "cpu_limit_percent": cpu_limit, "max_agents": max_agents}
+    if available < ram_min_bytes:
+        raise CanaryRefused(f"RAM guard after sampling: available={available} < minimum={ram_min_bytes}",
+                            observation=observation)
+    if average > cpu_limit:
+        raise CanaryRefused(f"CPU guard: {len(samples)}-sample fleet average {average:.3f} > {cpu_limit}",
+                            observation=observation)
+    return observation
 
 
 def verify_private_history(*, terminal: str, symbol: str, farm_root: Path = FARM_ROOT,
@@ -230,9 +248,13 @@ def verify_private_history(*, terminal: str, symbol: str, farm_root: Path = FARM
 
 
 def render_tester_ini(*, expert: str, symbol: str, period: str, setfile_name: str,
-                      from_date: str, to_date: str, report_rel: str) -> str:
+                      from_date: str, to_date: str, report_rel: str,
+                      model: int = 4, optimize: str = "off") -> str:
+    if model not in MODEL_NAMES or optimize not in OPTIMIZATION_MODES:
+        raise CanaryRefused("invalid modelling/optimization mode")
     for value, label in ((expert, "expert"), (symbol, "symbol"), (period, "period"),
-                         (setfile_name, "setfile"), (from_date, "from-date"), (to_date, "to-date")):
+                         (setfile_name, "setfile"), (from_date, "from-date"), (to_date, "to-date"),
+                         (report_rel, "report")):
         if "\n" in value or "\r" in value or not value:
             raise CanaryRefused(f"invalid tester {label}")
     defaults = _read_json(REPO_ROOT / "framework/registry/tester_defaults.json")
@@ -241,7 +263,8 @@ def render_tester_ini(*, expert: str, symbol: str, period: str, setfile_name: st
     if deposit <= 0 or leverage <= 0 or not re.fullmatch(r"[A-Z]{3}", currency):
         raise CanaryRefused("invalid canonical tester defaults")
     return "\r\n".join(("[Tester]", f"Expert={expert}", f"ExpertParameters={setfile_name}",
-        f"Symbol={symbol}", f"Period={period}", "Model=4", "ExecutionMode=0", "Optimization=0",
+        f"Symbol={symbol}", f"Period={period}", f"Model={model}", "ExecutionMode=0",
+        f"Optimization={OPTIMIZATION_MODES[optimize]}",
         f"Deposit={deposit}", f"Currency={currency}", f"Leverage={leverage}",
         "ProfitInPips=0", "ForwardMode=0", "OptimizationCriterion=0",
         f"FromDate={from_date}", f"ToDate={to_date}", "UseLocal=1", "UseRemote=0", "UseCloud=0",
@@ -262,6 +285,113 @@ class CanaryRequest:
     max_agents: int
     timeout_seconds: int
     dry_run: bool
+    model: int = 4
+    optimize: str = "off"
+
+
+class CanaryJobApi(jobs.CtypesWindowsJobApi):
+    """Cap the T11 process tree BEFORE resuming it; no fleet API changes.
+
+    The terminal consumes one slot; its local testers share max_agents slots.
+    Extra helpers consume that same budget and may cause a refused run.
+    Existing T11 processes are refused separately, never adopted or killed.
+    """
+
+    def __init__(self, max_agents: int, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.process_limit = max_agents + 1
+
+    def create_kill_on_close_job(self) -> int:
+        handle = super().create_kill_on_close_job()
+        info = jobs._JOBOBJECT_EXTENDED_LIMIT_INFORMATION()
+        info.BasicLimitInformation.LimitFlags = jobs.JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE | 0x8
+        info.BasicLimitInformation.ActiveProcessLimit = self.process_limit
+        if not self._kernel32.SetInformationJobObject(handle,
+                jobs.JOB_OBJECT_EXTENDED_LIMIT_INFORMATION_CLASS,
+                ctypes.byref(info), ctypes.sizeof(info)):
+            error = self._last_error("SetInformationJobObject(ACTIVE_PROCESS_LIMIT)")
+            self.close_handle(handle)
+            raise error
+        return handle
+
+
+def validate_setfile(path: Path, *, optimize: str) -> dict[str, Any]:
+    raw = path.read_bytes()
+    content = raw.decode("utf-16" if raw.startswith((b"\xff\xfe", b"\xfe\xff")) else "utf-8-sig")
+    values: dict[str, str] = {}
+    ranges: dict[str, Any] = {}
+    for line in content.splitlines():
+        if not line.strip() or line.lstrip().startswith(";"):
+            continue
+        if "=" not in line:
+            raise CanaryRefused("malformed setfile line")
+        key, value = line.split("=", 1)
+        key, value = key.strip(), value.strip()
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", key) or key in values:
+            raise CanaryRefused("invalid or duplicate setfile input")
+        parts = value.split("||")
+        values[key] = parts[0]
+        if len(parts) not in (1, 5):
+            raise CanaryRefused(f"invalid range syntax: {key}")
+        if len(parts) == 5:
+            if parts[4] not in ("Y", "N"):
+                raise CanaryRefused(f"invalid range flag: {key}")
+            if parts[4] == "Y":
+                try:
+                    start, step, stop = map(float, parts[1:4])
+                except ValueError as exc:
+                    raise CanaryRefused(f"non-numeric optimization range: {key}") from exc
+                if not all(map(math.isfinite, (start, step, stop))) or step <= 0 or stop < start:
+                    raise CanaryRefused(f"invalid optimization range: {key}")
+                if key in {"RISK_FIXED", "RISK_PERCENT", "qm_news_stale_max_hours"}:
+                    raise CanaryRefused(f"safety input may not be optimized: {key}")
+                ranges[key] = {"start": start, "step": step, "stop": stop}
+    try:
+        fixed = float(values["RISK_FIXED"])
+        percent = float(values["RISK_PERCENT"])
+        stale = float(values.get("qm_news_stale_max_hours", "336"))
+    except (KeyError, ValueError) as exc:
+        raise CanaryRefused("missing or invalid backtest safety inputs") from exc
+    if not all(map(math.isfinite, (fixed, percent, stale))) or fixed <= 0 or percent != 0 or not 0 < stale <= 336:
+        raise CanaryRefused("requires RISK_FIXED > 0, RISK_PERCENT = 0, news staleness in (0,336]")
+    if optimize != "off" and not ranges:
+        raise CanaryRefused("optimizer requires enabled .set ranges (value||start||step||stop||Y)")
+    return {"enabled_ranges": ranges, "risk_fixed": fixed, "risk_percent": percent,
+            "news_stale_max_hours": stale}
+
+
+def collect_optimization_table(report: Path, destination: Path) -> dict[str, Any]:
+    """Preserve native SpreadsheetML pass rows, including sparse cell indexes."""
+    ns = {"s": "urn:schemas-microsoft-com:office:spreadsheet"}
+    try:
+        root = ET.parse(report).getroot()
+    except ET.ParseError as exc:
+        raise CanaryRefused("invalid optimization XML") from exc
+    for table in root.findall(".//s:Table", ns):
+        rows = []
+        for row in table.findall("s:Row", ns):
+            cells: list[str] = []
+            for cell in row.findall("s:Cell", ns):
+                index = int(cell.get("{" + ns["s"] + "}Index", len(cells) + 1))
+                if index <= len(cells) or index > 4096:
+                    raise CanaryRefused("invalid optimization XML cell index")
+                cells.extend([""] * (index - len(cells) - 1))
+                cells.append(cell.findtext("s:Data", default="", namespaces=ns))
+            rows.append(cells)
+        header_index = next((i for i, row in enumerate(rows) if "Pass" in row), None)
+        if header_index is None:
+            continue
+        header = rows[header_index]
+        passes = [row + [""] * (len(header) - len(row)) for row in rows[header_index + 1:] if any(row)]
+        if not passes or any(len(row) != len(header) for row in passes):
+            raise CanaryRefused("empty or malformed optimization pass table")
+        with destination.open("x", encoding="utf-8", newline="") as stream:
+            writer = csv.writer(stream)
+            writer.writerow(header)
+            writer.writerows(passes)
+        return {"path": str(destination), "sha256": sha256_file(destination),
+                "pass_count": len(passes), "columns": header}
+    raise CanaryRefused("optimization XML has no Pass table")
 
 
 @dataclass(frozen=True)
@@ -348,6 +478,10 @@ def _validate_request(request: CanaryRequest, *, mt5_root: Path) -> None:
     if request.terminal not in ALLOWED_TERMINALS or request.terminal != PRIMARY_TERMINAL:
         raise CanaryRefused("only inert T11 is enabled; T12 is declared but disabled")
     _safe_component(request.program, "program")
+    if request.model not in MODEL_NAMES or request.optimize not in OPTIMIZATION_MODES:
+        raise CanaryRefused("invalid modelling/optimization mode")
+    if request.max_agents not in (1, 2) or request.timeout_seconds <= 0:
+        raise CanaryRefused("requires 1-2 agents and positive timeout")
     root = (mt5_root / request.terminal).resolve()
     for path, label in ((request.expert_path, "expert"), (request.setfile_path, "setfile")):
         if not path.is_file():
@@ -356,6 +490,14 @@ def _validate_request(request: CanaryRequest, *, mt5_root: Path) -> None:
         raise CanaryRefused("expert must be staged inside T11 MQL5/Experts")
     if not request.setfile_path.resolve().is_relative_to(root / "MQL5" / "Profiles" / "Tester"):
         raise CanaryRefused("setfile must be staged inside T11 MQL5/Profiles/Tester")
+    if request.setfile_path.resolve().parent != root / "MQL5" / "Profiles" / "Tester":
+        raise CanaryRefused("setfile must be directly in the T11 Tester directory")
+    relative_expert = request.expert.replace("\\", "/")
+    bound_expert = root / "MQL5" / "Experts" / relative_expert
+    if bound_expert.suffix.lower() != ".ex5":
+        bound_expert = bound_expert.with_suffix(".ex5")
+    if bound_expert.resolve() != request.expert_path.resolve():
+        raise CanaryRefused("INI expert does not match hash-bound expert path")
 
 
 def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path = MT5_ROOT,
@@ -365,25 +507,33 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
     artifact = reports_root / request.program / run_id
     artifact.mkdir(parents=True, exist_ok=False)
     terminal_root = mt5_root / request.terminal
-    report = artifact / "report.htm"
+    suffix = "xml" if request.optimize != "off" else "htm"
+    report = artifact / f"report.{suffix}"
     # Match the governed fleet exporter: MT5 resolves Report relative to its
     # portable data root. Absolute paths can finish testing without an export.
-    report_name = f"research_canary_{run_id}.htm"
+    report_name = f"research_canary_{run_id}.{suffix}"
     exported_report = terminal_root / report_name
     if exported_report.exists():
         raise CanaryRefused("unique canary report destination already exists")
     ini = artifact / "tester.ini"
     rendered = render_tester_ini(expert=request.expert, symbol=request.symbol, period=request.period,
         setfile_name=request.setfile_path.name, from_date=request.from_date, to_date=request.to_date,
-        report_rel=report_name)
+        report_rel=report_name, model=request.model, optimize=request.optimize)
     ini.write_text(rendered, encoding="utf-16", newline="")
     receipt: dict[str, Any] = {"schema": "qm.research-canary/v1", "run_id": run_id,
         "program": request.program, "terminal": request.terminal, "dry_run": request.dry_run,
         "started_at_utc": utc_now(), "artifact_root": str(artifact), "ini": {"path": str(ini), "sha256": sha256_file(ini)},
         "setfile": {"path": str(request.setfile_path), "sha256": sha256_file(request.setfile_path)},
-        "ex5": {"path": str(request.expert_path), "sha256": sha256_file(request.expert_path)}}
+        "ex5": {"path": str(request.expert_path), "sha256": sha256_file(request.expert_path)},
+        "model": request.model, "modelling_mode": MODEL_NAMES[request.model],
+        "optimize": request.optimize, "max_agents": request.max_agents,
+        "cpu_limit_environment": os.environ.get("QM_CANARY_CPU_LIMIT"),
+        "cpu_hard_ceiling_percent": 97.0,
+        "controller": {"path": str(Path(__file__).resolve()), "sha256": sha256_file(Path(__file__))}}
     before: dict[str, Any] | None = None
+    started_monotonic = time.monotonic()
     try:
+        receipt["input_contract"] = validate_setfile(request.setfile_path, optimize=request.optimize)
         # Take and record admission failures inside the receipt boundary.  A
         # refusal caused by an active factory is itself safety evidence and
         # must never leave an orphaned artifact directory without a receipt.
@@ -407,18 +557,29 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         if request.dry_run:
             receipt["status"] = "DRY_RUN_PASS"
             return receipt
+        # A terminal or warm tester owned by another run must never be reused.
+        for candidate in psutil.process_iter(["pid", "exe"]):
+            executable = candidate.info.get("exe")
+            if executable and Path(executable).resolve().is_relative_to(terminal_root.resolve()):
+                raise CanaryRefused(f"T11 already has a process: pid={candidate.pid}")
+        if sha256_file(request.expert_path) != receipt["ex5"]["sha256"] or sha256_file(request.setfile_path) != receipt["setfile"]["sha256"]:
+            raise CanaryRefused("staged input changed during admission")
         exe = terminal_root / "terminal64.exe"
         if not exe.is_file():
             raise CanaryRefused(f"missing T11 terminal executable: {exe}")
+        receipt["terminal_executable"] = {"path": str(exe), "sha256": sha256_file(exe)}
         # Orchestrator 2026-09-11: every T11 launch today (journal 06:43/07:22/11:41 local) spawned
         # MT5 LiveUpdate from the SYSTEM-profile roaming dir and exited 0 within 0.2 s -> no test,
         # no report. /skipupdate keeps the canary on the fleet build and lets the tester run.
+        job_api = CanaryJobApi(request.max_agents)
+        launch_started = time.monotonic()
         process = subprocess.Popen([str(exe), "/portable", "/skipupdate", f"/config:{ini}"], cwd=str(terminal_root),
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=suspended_runner_creation_flags())
         receipt["process"] = bind_spawned_process_to_kill_job(process, lambda child: {
             "pid": child.pid, "process_creation_key": str((get_process_identity(child.pid) or {}).get("creation_key") or ""),
             "process_image_path": str((get_process_identity(child.pid) or {}).get("image_path") or "")},
-            process_created_suspended=True)
+            process_created_suspended=True, api=job_api)
+        receipt["process"]["active_process_limit"] = request.max_agents + 1
         deadline = time.monotonic() + request.timeout_seconds
         receipt["runtime_resource_guards"] = []
         try:
@@ -437,6 +598,7 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
             # Abort only the identity-bound canary job, never any fleet process.
             GLOBAL_JOB_REGISTRY.abort_retained(int(process.pid), str(receipt["process"]["process_creation_key"]))
             raise
+        receipt["tester_wall_seconds"] = time.monotonic() - launch_started
         if receipt["exit_code"] != 0:
             raise CanaryRefused(f"tester exit code {receipt['exit_code']}")
         if exported_report.is_file():
@@ -446,20 +608,25 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         if not report.is_file():
             raise CanaryRefused("tester exited without report")
         receipt["report"] = {"path": str(report), "sha256": sha256_file(report)}
+        if request.optimize != "off":
+            receipt["optimization_table"] = collect_optimization_table(report, artifact / "optimization_passes.csv")
         receipt["status"] = "COMPLETED_REVIEW_REQUIRED"
         return receipt
     except Exception as exc:
         receipt["status"] = "REFUSED" if isinstance(exc, CanaryRefused) else "ERROR"
         receipt["reason"] = str(exc)
+        if isinstance(exc, CanaryRefused) and exc.observation is not None:
+            receipt["refusal_observation"] = exc.observation
         raise
     finally:
         receipt["ended_at_utc"] = utc_now()
+        receipt["wall_seconds"] = time.monotonic() - started_monotonic
         if before is not None:
-            receipt["isolation_after"] = isolation_snapshot(farm_root=farm_root, terminal=request.terminal)
             try:
+                receipt["isolation_after"] = isolation_snapshot(farm_root=farm_root, terminal=request.terminal)
                 assert_isolation_unchanged(before, receipt["isolation_after"])
                 receipt["isolation_unchanged"] = True
-            except CanaryRefused as exc:
+            except Exception as exc:
                 receipt["isolation_unchanged"] = False
                 receipt["isolation_failure"] = str(exc)
         _write_json(artifact / "receipt.json", receipt)
@@ -479,6 +646,12 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-agents", type=int, default=1)
     parser.add_argument("--timeout-seconds", type=int, default=1800)
     parser.add_argument("--dry-run", action="store_true")
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument("--model", type=int, choices=sorted(MODEL_NAMES),
+                       help="Native MT5: 4 real ticks; 1 M1 OHLC; 0 generated ticks; 2 open prices")
+    modes.add_argument("--modelling-mode", choices=list(MODEL_NAMES.values()))
+    parser.add_argument("--optimize", choices=list(OPTIMIZATION_MODES), default="off",
+                        help="Explicit optimizer mode; enabled ranges come from the staged .set")
     parser.add_argument("--stage", action="store_true",
                         help="hash-bind and copy the inputs into inert T11 before a canary run")
     parser.add_argument("--expected-ex5-sha256")
@@ -495,9 +668,11 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         print(json.dumps(result, sort_keys=True))
         return 0
+    model = args.model if args.model is not None else next(
+        (key for key, name in MODEL_NAMES.items() if name == args.modelling_mode), 4)
     request = CanaryRequest(args.program, args.terminal.upper(), args.expert, args.expert_path,
         args.setfile, args.symbol, args.period, args.from_date, args.to_date, args.max_agents,
-        args.timeout_seconds, args.dry_run)
+        args.timeout_seconds, args.dry_run, model, args.optimize)
     try:
         result = run(request)
     except (CanaryRefused, OSError, sqlite3.Error) as exc:

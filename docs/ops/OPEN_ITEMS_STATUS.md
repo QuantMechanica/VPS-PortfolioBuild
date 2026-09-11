@@ -2991,3 +2991,18 @@ fleet itself sat at 97 pct). RESULT run 20260911_104039_6540e43e: net 2,941.71 /
 trades / maxDD 15,307.15 = fleet cell be5d3ce4 exactly (report sha differs by design). f04d66ec closed
 APPROVED. Astra pre-screen part 2 ticket enqueued (modelling modes + optimizer flags in the controller,
 speed + fidelity vs the 345 ground-truth cells, decision-card draft).
+
+## RESULT 2026-09-11 — T11 pre-screen part 2 (`c3fc6278`): REVIEW / PARTIAL
+
+Controller model flags (native MT5 mapping: 0 generated ticks, 1 M1 OHLC, 2 open prices,
+4 real ticks), complete/genetic optimizer XML-to-CSV capture, two-agent process containment,
+and risk/CPU guards delivered; 38 focused tests PASS. Frozen 345 real-tick cells authenticated
+with 1,380 file-hash checks; 20-cell pilot matrix and exact 60-window optimizer shards prepared.
+The governed M1 OHLC admission pilot passed at 90.66% CPU but exited without a report:
+LiveUpdate recurred despite /skipupdate (run 20260911_110621_51e53c05). No further experiment
+launches; native optimizer use, speed, fidelity and expected time saving remain NICHT GEZEIGT.
+6,255 raw pending census rows / 1,119 target-program rows at the frozen snapshot; conditional
+counts are not measured savings. Full acceptance remains unmet. Artifact:
+[part-2 evidence](evidence/c3fc6278_t11_prescreen_part2_2026-09-11/T11_PRESCREEN_FIDELITY_PART2_2026-09-11.md).
+Requires review of report-producing T11 launch behavior before resuming the matrix; no pipeline
+promotion, pre-screen adoption, fleet repair or main integration performed.
