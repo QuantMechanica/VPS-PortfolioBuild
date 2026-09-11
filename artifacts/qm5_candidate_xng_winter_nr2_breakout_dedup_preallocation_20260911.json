@@ -1,0 +1,47 @@
+{
+  "candidate": {
+    "author": "U.S. Energy Information Administration; Toby Crabel; OpenAI Codex",
+    "mechanic": "normalized-weekly-xng-november-march-winter-two-completed-weeks-newest-strict-narrower-range-than-prior-next-week-completed-d1-close-breakout-symmetric-one-week-hold",
+    "slug": "xng-winter-nr2-breakout",
+    "strategy_id": "EIA-CRABEL-XNG-WINTER-NR2-BREAKOUT-20260911_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-11T12:34:20+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41437_wti-hurr-nr2-breakout_card.md",
+      "score": 0.7619047619047619,
+      "slug": "wti-hurr-nr2-breakout",
+      "source": "card",
+      "strategy_id": "EIA-CRABEL-WTI-HURR-NR2-BREAKOUT-20260911_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4919,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1529,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
