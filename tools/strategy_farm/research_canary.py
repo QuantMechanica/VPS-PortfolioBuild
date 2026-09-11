@@ -47,7 +47,8 @@ REPORTS_ROOT = Path(r"D:\QM\reports\research")
 REPO_ROOT = Path(r"C:\QM\repo")
 ALLOWED_TERMINALS = frozenset({"T11", "T12"})
 PRIMARY_TERMINAL = "T11"
-DEFAULT_CPU_LIMIT = 90.0
+# Match the fleet guard: admission pauses only above a five-minute 95% average.
+DEFAULT_CPU_LIMIT = 95.0
 DEFAULT_RAM_MIN_BYTES = 20 * 1024**3
 _SAFE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 

@@ -26,3 +26,46 @@ Hand-back for b48ba1fb: use the same governed CLI below when resources admit it;
 ```text
 python C:/QM/repo/tools/strategy_farm/research_canary.py --program WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025 --terminal T11 --expert QM5_41398_balke-pattern-repair-opt.ex5 --expert-path D:/QM/mt5/T11/MQL5/Experts/QM5_41398_balke-pattern-repair-opt.ex5 --setfile D:/QM/mt5/T11/MQL5/Profiles/Tester/QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set --symbol USDJPY.DWX --period H1 --from-date 2021.01.01 --to-date 2021.12.31 --max-agents 4 --dry-run
 ```
+
+## Router continuation — corrected fleet guard and S3 result
+
+Task: `f04d66ec-b296-4f2c-b5eb-83a8c2379626`.
+
+The controller default now matches the fleet CPU policy: a five-sample average
+is refused only above 95%, and this task used the authorized `--max-agents 2`
+T11 scope. Focused verification after the one-line policy correction:
+
+```text
+python -m pytest tools/strategy_farm/tests/test_research_canary.py -q
+9 passed
+python -m py_compile tools/strategy_farm/research_canary.py
+PASS
+```
+
+The real dry run passed at
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_043507_13d7f421/receipt.json`:
+108-file signed history PASS, zero T11-owned MetaTester agents, 39,430,549,504
+bytes available RAM, and CPU samples `99.4, 91.3, 90.8, 78.0, 86.7` (mean
+89.24%, below 95%). It did not launch a terminal.
+
+The one authorized non-dry 2021 smoke wrote its durable receipt at
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_043920_a419cb70/receipt.json`.
+Its pre-launch guards passed (zero T11-owned agents, 48,185,860,096 bytes RAM,
+CPU mean 83.26% under 95%); the suspended T11 process was identity-bound to a
+kill-on-close job and exited 0. MT5 did not create the requested relative HTML
+export, so the controller correctly recorded `status: REFUSED`, reason `tester
+exited without report`. During the run the factory mutation lock appeared;
+the receipt truthfully records `isolation_unchanged: false` for that one field.
+T11 was never in the activation list and no T1-T10 process was interrupted.
+
+| Required comparison | Fleet MEASURED cell | T11 smoke |
+| --- | ---: | --- |
+| Net profit | 2941.71 | Unmeasured: no report |
+| Profit factor | 1.03 | Unmeasured: no report |
+| Total trades | 208 | Unmeasured: no report |
+| Report SHA-256 | `b60d80f80657ca8a7cdd11bad1856834281aa3b079723ac55950feac6702cbea` | Unmeasured: no report |
+
+**RESULT (Q-only):** Q-S3 is REVIEW. The new guard policy and real dry-run
+passed, but the report-export contract failed again on the actual smoke. There
+is no S3 identity PASS, delta, tuning, or selection claim. Any repair must
+preserve T11-only isolation and prove a real report before another comparison.

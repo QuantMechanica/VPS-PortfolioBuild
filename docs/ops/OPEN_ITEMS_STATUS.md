@@ -1,5 +1,16 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT (Q-only, 11.09. 04:43Z) — Q-S3 `f04d66ec` REVIEW:** T11-only
+> dry-run passed after aligning the CPU guard to the fleet's 95% five-sample
+> ceiling (89.24%, zero T11 agents). The one authorized 2021 smoke exited 0,
+> but MT5 again emitted no HTML report; receipt
+> `D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/
+> 20260911_043920_a419cb70/receipt.json` is `REFUSED` (`tester exited without
+> report`). A factory mutation lock appeared mid-run, so isolation is correctly
+> recorded as changed; T11 stayed outside the activation list and T1-T10 were
+> not interrupted. No identity verdict, tuning, or selection claim. Evidence:
+> `docs/ops/evidence/2026-09-11_f04d66ec_canary_export.md`.
+
 > **★ OFFENE ENTSCHEIDUNG FÜR OWNER (11.09. 01:04Z) — Scope-Auslegung
 > `3032534e` DUKASCOPY, T1-Produktivlauf DWX-M1-Exporter bereits gestartet,
 > zwei Zyklen widersprechen sich.** Der Exporter-README (`docs/ops/evidence/
