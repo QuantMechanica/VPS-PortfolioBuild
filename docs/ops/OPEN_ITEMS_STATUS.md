@@ -2722,3 +2722,5 @@ f04d66ec (research_canary S3): T11-scoped guard + real dry-run receipt PASS; the
 (2:26, 29M ticks) but MT5 wrote no report because the rendered tester.ini lacks the report export
 keys -> re-routed with the fix (Report=, ReplaceReport=1, ShutdownTerminal=1, report sha in receipt),
 then S3 identity table. Stage B: 19 MEASURED at 03:5xZ, claiming normally after chunk 65.
+
+RESULT 2026-09-11 dee2fc76 Q-RESEARCH REVIEW: 350-cell parameter inventory verified; governed enqueue awaits QM5_41405 build and seven control identity receipts. Evidence: docs/ops/evidence/2026-09-11_dee2fc76_stage2_matrix.md
