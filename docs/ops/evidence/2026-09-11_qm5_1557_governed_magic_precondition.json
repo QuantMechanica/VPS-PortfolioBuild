@@ -1,0 +1,120 @@
+{
+  "schema": "qm.governed-magic-precondition-evidence/v1",
+  "generated_at": "2026-09-11T16:05:00Z",
+  "task_id": "f7f39835-a5e5-449d-ba61-e05ba30f33b4",
+  "operation": "governed_magic_precondition",
+  "canonical_checkout": {
+    "path": "C:\\QM\\repo",
+    "branch": "agents/board-advisor",
+    "inspected_head": "8486cd721cb6d05529a95f15f0e5d86ce7168780"
+  },
+  "ea": {
+    "ea_id": "QM5_1557",
+    "ea_id_numeric": 1557,
+    "slug": "aa-zak-psma10",
+    "directory": "C:\\QM\\repo\\framework\\EAs\\QM5_1557_aa-zak-psma10",
+    "directory_exists": true
+  },
+  "card": {
+    "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1557_aa-zak-psma10.md",
+    "sha256": "4AECF2E178BC705133D20EF0A5248442267222E602A736CF327D6984E79781C4",
+    "g0_status": "APPROVED",
+    "frontmatter_ea_id": "QM5_1557",
+    "frontmatter_slug": "aa-zak-psma10",
+    "frontmatter_target_symbols_present": false,
+    "parsed_target_symbols": [],
+    "body_baseline_symbols_advisory_only": [
+      "SP500.DWX",
+      "NDX.DWX",
+      "WS30.DWX",
+      "GDAXI.DWX",
+      "XAUUSD.DWX",
+      "USOIL.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+    ],
+    "body_symbols_absent_from_dwx_matrix": [
+      "USOIL.DWX"
+    ],
+    "canonical_matrix_oil_symbol_observed_not_substituted": "XTIUSD.DWX"
+  },
+  "fresh_precheck": {
+    "ready": false,
+    "classification": "card_target_symbols_missing_or_invalid",
+    "action": "CARD_AMENDMENT_REQUIRED",
+    "target_symbols": [],
+    "target_symbols_valid": false,
+    "invalid_target_symbols": [],
+    "identity_registry_rows": 1,
+    "active_magic_rows": 13,
+    "retired_magic_rows": 0,
+    "other_status_magic_rows": 0,
+    "total_magic_rows": 13,
+    "ea_directory_exists": true
+  },
+  "identity_registry": {
+    "path": "framework/registry/ea_id_registry.csv",
+    "sha256": "FC0C7B95248CBA1A67C71B0DB0364B8E3F07E53A3DF19D347DB2CD8EBFD902F9",
+    "exact_active_row_count": 1,
+    "row": {
+      "ea_id": "1557",
+      "slug": "aa-zak-psma10",
+      "source_id": "ede348b4-0fa7-5be1-baa8-09e9089b67b7",
+      "status": "active"
+    }
+  },
+  "magic_registry": {
+    "path": "framework/registry/magic_numbers.csv",
+    "sha256": "F729AB7A6377A100551CED36A5C0EBDFE90C7C93263C36AE99BACA3CE4CEBB07",
+    "rows": [
+      {"slot": 0, "symbol": "GDAXI.DWX", "magic": 15570000, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 1, "symbol": "NDX.DWX", "magic": 15570001, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 2, "symbol": "SP500.DWX", "magic": 15570002, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 3, "symbol": "UK100.DWX", "magic": 15570003, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 4, "symbol": "WS30.DWX", "magic": 15570004, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 5, "symbol": "XAUUSD.DWX", "magic": 15570005, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 6, "symbol": "EURUSD.DWX", "magic": 15570006, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 7, "symbol": "GBPUSD.DWX", "magic": 15570007, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 8, "symbol": "USDJPY.DWX", "magic": 15570008, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 9, "symbol": "USDCHF.DWX", "magic": 15570009, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 10, "symbol": "AUDUSD.DWX", "magic": 15570010, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 11, "symbol": "USDCAD.DWX", "magic": 15570011, "status": "active", "formula_ok": true, "resolver_tuple_present": true},
+      {"slot": 12, "symbol": "NZDUSD.DWX", "magic": 15570012, "status": "active", "formula_ok": true, "resolver_tuple_present": true}
+    ],
+    "all_rows_active": true,
+    "all_magics_match_ea_id_times_10000_plus_slot": true,
+    "all_existing_rows_present_in_resolver": true
+  },
+  "resolver": {
+    "path": "framework/include/QM/QM_MagicResolver.mqh",
+    "sha256": "BE8E507666CC86AB3A7D444E5EB501084F5BFF1BFEBBD518182F2E358ED82E0B",
+    "registry_sha256_constant": "F729AB7A6377A100551CED36A5C0EBDFE90C7C93263C36AE99BACA3CE4CEBB07",
+    "dry_run": {
+      "command": "python framework/scripts/update_magic_resolver.py --dry-run",
+      "exit_code": 0,
+      "rows_kept": 18231,
+      "rows_dropped": 0
+    },
+    "regenerated_on_disk": false,
+    "no_write_reason": "No registry allocation was authorized or performed; dry-run regeneration and exact tuple verification proved the current derived resolver."
+  },
+  "verification": {
+    "approved_card_identity_matches_registry": true,
+    "explicit_card_target_contract_present": false,
+    "every_card_symbol_slot_magic_resolver_tuple_proven": false,
+    "existing_registry_rows_formula_valid": true,
+    "existing_registry_rows_resolver_valid": true,
+    "original_build_must_remain_blocked": true
+  },
+  "mutations": {
+    "approved_card_changed": false,
+    "ea_registry_changed": false,
+    "magic_registry_changed": false,
+    "resolver_changed": false,
+    "ea_or_setfile_changed": false,
+    "compile_or_pipeline_run": false
+  },
+  "required_owner_action": "Amend and re-approve the card with an explicit ordered target_symbols frontmatter contract, including an explicit USOIL.DWX versus XTIUSD.DWX disposition. Then rerun the governed allocator/precheck sequence; do not infer symbols, reuse unrelated slots, retire/reactivate rows, or advance the blocked build before every declared tuple is proven.",
+  "verdict": "REVIEW — CARD_AMENDMENT_REQUIRED; build remains blocked"
+}
