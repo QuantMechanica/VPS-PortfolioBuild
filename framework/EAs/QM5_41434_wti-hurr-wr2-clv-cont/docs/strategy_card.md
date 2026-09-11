@@ -60,9 +60,11 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: NOT_ENQUEUED_CPU_CEILING
+q01_build_report: D:/QM/reports/framework/21/build_check_20260911_052845.json
+q01_compile_work_item: 22fb111a-7943-4d87-bebd-0d852497794f
 force_build: true
 review_focus: "Falsify a WTI hurricane-season weekly range-expansion/upper-quartile continuation distinct from all-year WR4 symmetric continuation, return-sign hurricane continuation, and D1 channel breakout. Verify two exact weeks, strict range and CLV inequalities, long-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -220,5 +222,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-11 | PENDING | branch build not yet compiled |
-| Q02 Baseline Screening | 2026-09-11 | NOT_ENQUEUED | gated on Q01 and CPU admission |
+| Q01 Build Validation | 2026-09-11 | PASS | compile `22fb111a-7943-4d87-bebd-0d852497794f`; 0 errors / 0 compiler warnings; strict build-check PASS; PACER audit 0 findings; reference tests 12/12 PASS |
+| Q02 Baseline Screening | 2026-09-11 | NOT_ENQUEUED_CPU_CEILING | intake dry-run ELIGIBLE; CPU maximum 100.0% exceeded exclusive 97% ceiling |

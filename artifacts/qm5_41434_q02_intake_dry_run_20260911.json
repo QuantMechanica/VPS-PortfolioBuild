@@ -1,0 +1,18 @@
+{
+  "schema": "qm.first-q02-intake-evidence/v1",
+  "captured_at": "2026-09-11T05:30:00Z",
+  "ea_id": "QM5_41434",
+  "ea_label": "QM5_41434_wti-hurr-wr2-clv-cont",
+  "compile_work_item_id": "22fb111a-7943-4d87-bebd-0d852497794f",
+  "compile_verdict": "COMPILE_OK",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "would_enqueue": true,
+  "applied": false,
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "setfile_sha256": "11e5c47066a73f7acf19044e459bfbb9ba9912556f58670802769d132c7cc9b8",
+  "ex5_sha256": "4add7e38374ead29926f452e7b7a37f216aa53af144e956719eb67530665ddb5"
+}
