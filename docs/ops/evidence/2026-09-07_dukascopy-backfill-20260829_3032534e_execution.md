@@ -1587,3 +1587,46 @@ task's authority to fix); relying on the last confirmed baseline (`FAIL15/WARN20
 chronic set, no new category, `checked_at=2026-09-11T11:34:54Z`) for this cycle. No
 acceptance criterion newly met on any of the three owner-decision tasks; no `update-task`
 call made on any of them. All three remain `IN_PROGRESS`.
+
+## Checked 2026-09-11T13:38-13:42Z (headless orchestration cycle) -- crash+relaunch, duplicate-spawn race caught and resolved, no data loss
+
+No `download_bi5.py` process was alive at `~13:38Z` (last `progress.json.updated_at_utc`
+`13:25:23Z`, `completed=199840/306767` -- this is now the 5th crash-relaunch cycle on the
+same known, unfixed `assert_contained_destination` defect; `ae1df6bf` still
+`APPROVED`/unassigned since `06:42:08Z`). Checked for orphaned `*.tmp` under the out root and
+`raw/` -- none found. Relaunched the identical resume command (within `3032534e`'s own
+pre-authorized `allowed_actions`, not new scope):
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Caught a genuine duplicate-spawn race this cycle (lesson #3 materialized directly, not just
+a risk note): a sibling concurrent headless cycle had already relaunched the downloader as
+PID `16332` at `2026-09-11T13:40:56` local, ~23s before this cycle's own `Start-Process` call
+landed as PID `17028`/parent `21476` at `13:41:19` local -- two live writers against the same
+`--out` root simultaneously. Killed this cycle's own spawn (`17028`+`21476`) immediately via
+`Stop-Process -Force`, left the earlier-started sibling instance (`16332`) as sole survivor.
+Verified single-writer state afterward (`Get-CimInstance` re-check: only `16332` present).
+
+No data loss: `hour_ledger.jsonl` unchanged at `202764` lines across the crash gap (matches
+pre-crash count); `progress.json` fresh at `+15s` post-verification
+(`updated_at_utc=2026-09-11T13:42:10.422Z`, `status=RUNNING`, `errors=0`) -- the low
+`resumed=completed=58598` is the same startup-transient display artifact seen at every prior
+relaunch (not a regression).
+
+Cross-referenced the `bb814520`/`dfc60103` gate: `b66b5ccc` still `APPROVED`/codex unstarted
+since `2026-09-09T11:19:40Z`; `46167bd9` still `APPROVED`/claude, not routed, since
+`2026-09-10T22:16:06Z`; `ae1df6bf` still `APPROVED`/unassigned since `06:42:08Z`; `QM5_41394`
+XAUUSD.DWX Q04 still `pending`/unclaimed since `10:51:37Z`, SP500.DWX Q02 still
+`pending`/unclaimed since `2026-09-09T10:52:59Z` -- all unchanged, no acceptance criterion
+newly met on any of the three owner-decision tasks. `farmctl health` FAIL15/WARN19/OK52 --
+chronic FAIL/WARN set, no new category. Noted but out of scope for this task: six concurrent
+`farmctl.py health` PowerShell/python processes were observed alive simultaneously
+(`16912`,`19088`,`16912`,`652`,`20068`,`9152` across `15:30:24`-`15:37:02` local) -- possible
+health-check pileup/contention, not investigated further (outside `3032534e`'s
+`allowed_actions`; flagging only). No `update-task` call made on any of the three tasks; all
+remain `IN_PROGRESS`.
