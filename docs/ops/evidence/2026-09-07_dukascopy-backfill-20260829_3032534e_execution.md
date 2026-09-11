@@ -1519,3 +1519,28 @@ XAUUSD.DWX Q02 was claimed/active on T2 at `09:50:49Z` then reverted to pending/
 action taken on the downloader (healthy, no intervention needed) or on the unrelated Q02 gate
 (outside this task's authority). No ticket, rebuild, release, or verdict change made. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T11:36Z (headless orchestration cycle) -- new crash+relaunch, no data loss, gate unchanged
+
+Downloader had crashed since the last logged check (`~10:20Z`, `completed=168949/306619`):
+no `python .../download_bi5.py` process found at `11:33Z`. A sibling concurrent cycle had
+already relaunched it before this cycle's check completed -- found `PID 12040` already
+`RUNNING`, `started_at_utc=2026-09-11T11:34:54Z` (not launched by this session; no relaunch
+action taken here, per the suppression/no-duplicate-relaunch rule). `ae1df6bf` (the root-cause
+fix ticket) still `APPROVED`/unassigned -- crash class unchanged, expected to recur until it
+lands.
+
+Verified no data loss despite the fresh `progress.json` showing a low `completed=55219`:
+`hour_ledger.jsonl` has grown to `181944` rows (`last recorded_at_utc=2026-09-11T11:22:52Z`,
+just before the crash) vs `168949` logged at `10:20Z` -- real forward progress of ~13k hours
+in the interim, ledger intact. The low `completed=55219` in a just-started `progress.json` is
+a startup-transient display artifact (matches the same pattern seen in earlier relaunches,
+e.g. `resumed=completed=4343` at the `07:20:32Z` relaunch) -- not a regression, not
+investigated further as it is not a P1 acceptance criterion.
+
+`bb814520`/`dfc60103` gate unchanged: `QM5_41394` SP500.DWX Q02 still pending/unclaimed;
+`b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`; `46167bd9` still
+`APPROVED`/claude, not routed, since `2026-09-10T22:16:06Z`. `farmctl health` FAIL15/WARN20/OK51
+(`checked_at=2026-09-11T11:34:54Z`) -- chronic FAIL/WARN set, no new category vs prior
+baselines. No acceptance criterion newly met on any of the three owner-decision tasks; no
+`update-task` call made on any of them. All three remain `IN_PROGRESS`.
