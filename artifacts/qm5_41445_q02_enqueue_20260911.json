@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-09-11T20:45:31.592585+00:00",
+  "ea_id": "QM5_41445",
+  "symbol": "XTIUSD.DWX",
+  "phase": "Q02",
+  "compile_work_item_id": "41bbb9ef-ef16-433b-b770-9e9398ae2c2e",
+  "compile_verdict": "COMPILE_OK",
+  "q02_work_item_id": "6bf0bb8c-91c5-4fbc-b39e-f04b3399aa83",
+  "q02_status_at_handoff": "active",
+  "q02_claimed_by_at_handoff": "T2",
+  "intake": {
+    "applied": true,
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/41bbb9ef-ef16-433b-b770-9e9398ae2c2e_6bf0bb8c-91c5-4fbc-b39e-f04b3399aa83.json",
+    "receipt_sha256": "69d2bac378a9422c9bc06cc979d1a7b895f4e532f0d918498b4f0d51064862cf"
+  },
+  "build_evidence": {
+    "compile_evidence_path": "D:/QM/reports/work_items/41bbb9ef-ef16-433b-b770-9e9398ae2c2e/QM5_41445/COMPILE_EA/compile_evidence.json",
+    "strict_build_check_path": "D:/QM/reports/framework/21/build_check_20260911_204040.json",
+    "mq5_sha256": "e654b626288edb7f1ed33f680fc730b4c38302ebbf18e5b68283910d1801d5ed",
+    "ex5_sha256": "47fc4a706646aa98dccb3bebab092d2100ca8e3081dfffd1f11c297ac540e13a",
+    "set_sha256": "0669a60e4266037f3fc603eea62d78aacfa7afea2c745993305fdfe9ce8fe4f0"
+  },
+  "pacer_guard": {
+    "audit_ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "cpu_ceiling_check": {
+    "samples_percent": [70.8, 84.5, 82.2, 87.0, 82.0],
+    "max_percent": 87.0,
+    "threshold_percent": 97.0,
+    "below_ceiling": true
+  },
+  "scope_boundary": "Q02 was enqueued only. No backtest result was awaited and no portfolio-gate, T_Live, live manifest, AutoTrading, optimization, or live operation was touched."
+}
