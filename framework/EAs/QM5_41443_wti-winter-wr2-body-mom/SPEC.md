@@ -80,3 +80,4 @@ dominate. No manual backtest, optimization, portfolio-gate edit, admission, depl
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-11 | Initial governed build from approved card |
+| v1-q01 | 2026-09-11 | T9 governed compile and build check PASS; Q02 pending fresh CPU admission |

@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "3e029719df8de51ca32c2821dbb9c8dea3052527622d21c0ed8e4c79238decaf",
+      "ea_id": "QM5_41443",
+      "ea_label": "QM5_41443_wti-winter-wr2-body-mom",
+      "expected_mq5_sha256": "3e029719df8de51ca32c2821dbb9c8dea3052527622d21c0ed8e4c79238decaf",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41443_wti-winter-wr2-body-mom\\QM5_41443_wti-winter-wr2-body-mom.mq5",
+      "work_item_id": "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9",
+  "work_item_id_selectors": [
+    "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9"
+  ]
+}

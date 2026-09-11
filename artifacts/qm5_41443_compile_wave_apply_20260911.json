@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260911T162622_019217Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260911T162559Z_3843d519.sqlite",
+    "reused": false,
+    "sha256": "d67c2aef7cc03c0350ac3527173c51dc25a2e559cfa14e1a8b5464db2f6d0e4a"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "3e029719df8de51ca32c2821dbb9c8dea3052527622d21c0ed8e4c79238decaf",
+      "ea_id": "QM5_41443",
+      "ea_label": "QM5_41443_wti-winter-wr2-body-mom",
+      "expected_mq5_sha256": "3e029719df8de51ca32c2821dbb9c8dea3052527622d21c0ed8e4c79238decaf",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41443_wti-winter-wr2-body-mom\\QM5_41443_wti-winter-wr2-body-mom.mq5",
+      "work_item_id": "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-11T16:26:22+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9",
+  "work_item_id_selectors": [
+    "394402c3-ddc7-4ba6-a9e1-0056dc9ebee9"
+  ]
+}

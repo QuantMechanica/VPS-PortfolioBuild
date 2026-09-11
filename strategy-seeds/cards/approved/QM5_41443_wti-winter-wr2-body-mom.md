@@ -60,8 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0_APPROVED_BUILD_PENDING
-q01_status: NOT_STARTED
+pipeline_phase: Q01_PASS_Q02_PENDING
+q01_status: PASS
+q01_compile_work_item: 394402c3-ddc7-4ba6-a9e1-0056dc9ebee9
+q01_build_report: D:/QM/reports/work_items/394402c3-ddc7-4ba6-a9e1-0056dc9ebee9/QM5_41443/COMPILE_EA/compile_evidence.json
 q02_status: NOT_ENQUEUED
 force_build: true
 review_focus: "Falsify a WTI November-May range-expansion own-body continuation distinct from the certified XNG oscillator, upper-quartile WTI continuation, symmetric CLV fade, NR2 breakout, and all-year WR4/CLV momentum. Verify exact weeks, strict inequalities, both continuation sides, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
@@ -136,7 +138,7 @@ Immediately flatten duplicate, wrong-symbol, wrong-magic, missing-stop, take-pro
 future-dated, or invalid-volume owned exposure. No trail, break-even, partial close, scale-in,
 pyramid, grid, martingale, hedge, reversal, or re-entry is allowed.
 
-## Locked Q02 Baseline
+## Parameters To Test
 
 Q02 has one locked baseline and no optimization surface:
 
@@ -224,6 +226,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | Build pending |
+| Q01 Build Validation | 394402c3-ddc7-4ba6-a9e1-0056dc9ebee9 | PASS | T9 compile and build check PASS; 0 compiler errors, 0 compiler warnings |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | Q01 and fresh CPU admission required |
-
