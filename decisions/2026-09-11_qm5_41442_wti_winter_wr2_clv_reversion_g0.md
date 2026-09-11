@@ -3,7 +3,7 @@
 - Date: 2026-09-11
 - Decision owner: OWNER
 - Recorded by: Codex
-- Card: `strategy-seeds/cards/approved/QM5_41442_wti-winter-wr2-clv-fade_card.md`
+- Card: `strategy-seeds/cards/approved/QM5_41442_wti-winter-wr2-clv-fade.md`
 - Source approval: `decisions/2026-09-11_wti_winter_wr2_clv_reversion_source_approval.md`
 - Verdict: `APPROVED`
 - Execution contract: `APPROVED` for branch build and non-live pipeline only
@@ -32,4 +32,3 @@ Q09 alone may establish realized portfolio correlation.
 
 No portfolio gate, portfolio admission, live or deploy manifest, `T_Live`, AutoTrading, terminal
 control, manual backtest, or live operation is authorized.
-

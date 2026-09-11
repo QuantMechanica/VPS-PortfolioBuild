@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:
+; build_hash:   aefe4a7f3837440a9935c3457404e9d2bd8b35d3ee29759091ca5f1a3a8036b5
 ; author:       Development
 ; date:         2026-09-11
 ;==========================================================
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41442_wti-winter-wr2-clv-fade_card.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41442_wti-winter-wr2-clv-fade.md
 strategy_symbol=XTIUSD.DWX
 strategy_label_offset_seconds=86400
 strategy_entry_grace_minutes=180
@@ -41,4 +41,3 @@ strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=10
 strategy_max_spread_points=1500
-

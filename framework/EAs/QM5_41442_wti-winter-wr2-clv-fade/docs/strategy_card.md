@@ -7,7 +7,7 @@ source_id: BURAKOV-CRABEL-YANG-WTI-WINTER-WR2-CLV-FADE-20260911
 ea_id: QM5_41442
 slug: wti-winter-wr2-clv-fade
 status: APPROVED
-execution_contract_ref: strategy-seeds/cards/approved/QM5_41442_wti-winter-wr2-clv-fade_card.md
+execution_contract_ref: strategy-seeds/cards/approved/QM5_41442_wti-winter-wr2-clv-fade.md
 execution_contract_status: APPROVED
 created: 2026-09-11
 created_by: Research+Development
@@ -60,8 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0_APPROVED_BUILD_PENDING
-q01_status: NOT_STARTED
+pipeline_phase: Q01_PASS_Q02_PENDING
+q01_status: PASS
+q01_compile_work_item: 971eb543-0e8f-4a46-bee0-620cd6c91c4b
+q01_build_report: D:/QM/reports/work_items/971eb543-0e8f-4a46-bee0-620cd6c91c4b/QM5_41442/COMPILE_EA/compile_evidence.json
 q02_status: NOT_ENQUEUED
 force_build: true
 review_focus: "Falsify a WTI November-May range-expansion outer-quartile fade distinct from the certified XNG oscillator, weekly sign fades, WTI winter continuation, hurricane-only short fade, and XNG winter continuation. Verify exact weeks, strict inequalities, both contrarian sides, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
@@ -136,7 +138,7 @@ Immediately flatten duplicate, wrong-symbol, wrong-magic, missing-stop, take-pro
 future-dated, or invalid-volume owned exposure. No trail, break-even, partial close, scale-in,
 pyramid, grid, martingale, hedge, reversal, or re-entry is allowed.
 
-## Parameters To Test
+## Locked Q02 Baseline
 
 Q02 has one locked baseline and no optimization surface:
 
@@ -225,6 +227,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | Build pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Q01 and fresh CPU admission required |
-
+| Q01 Build Validation | 971eb543-0e8f-4a46-bee0-620cd6c91c4b | PASS | T5 compile and build check PASS; 0 compiler errors, 0 compiler warnings |
+| Q02 Baseline Screening | - | NOT_ENQUEUED | Fresh CPU admission required |
