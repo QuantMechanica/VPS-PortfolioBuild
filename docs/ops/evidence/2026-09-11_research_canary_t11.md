@@ -102,6 +102,46 @@ the direct CLI only when the guard admits it:
 python C:/QM/repo/tools/strategy_farm/research_canary.py --program WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025 --terminal T11 --expert QM5_41398_balke-pattern-repair-opt.ex5 --expert-path D:/QM/mt5/T11/MQL5/Experts/QM5_41398_balke-pattern-repair-opt.ex5 --setfile D:/QM/mt5/T11/MQL5/Profiles/Tester/QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set --symbol USDJPY.DWX --period H1 --from-date 2021.01.01 --to-date 2021.12.31 --max-agents 4 --dry-run
 ```
 
+## S3 guarded retry — 2026-09-11T09:33Z
+
+Router task: `f04d66ec-b296-4f2c-b5eb-83a8c2379626`.
+
+The staged T11 inputs were re-hashed before admission and still matched the
+declared EX5 and setfile SHA-256 values.  The real dry-run receipt is
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_093342_06b9da80/receipt.json`.
+It is `DRY_RUN_PASS`: the signed private-history audit covered 108 files,
+there were zero T11-owned MetaTester processes, RAM was 44,069,965,824 bytes,
+and the five CPU samples averaged 83.98% (under the 90% ceiling).  The
+before/after isolation snapshots were identical: 147,561 work items, no
+factory mutation lock, and T11 absent from the T1–T10 activation list.
+
+The consequent, authorized T11-only non-dry smoke was attempted through the
+same controller.  Receipt:
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_093754_38dcc756/receipt.json`.
+Admission guards again passed (108 signed-history files, zero T11 agents,
+46,425,681,920 bytes RAM, CPU mean 81.00%, unchanged isolation at 147,561
+work items).  The tester then exited without writing the required report, so
+the controller recorded `status=REFUSED`, `reason=tester exited without
+report`; it accepted no metrics or report SHA-256.
+
+| Identity field | Fleet MEASURED 2021 s3_l3_x18 | T11 canary | Result |
+|---|---|---|---|
+| EX5 SHA-256 | `68d37d3a...58137c01` | `68d37d3a...58137c01` | input match |
+| Setfile SHA-256 | `afa42711...f35bf47c` | `afa42711...f35bf47c` | input match |
+| Net profit / profit factor / trades / report SHA-256 | 2941.71 / 1.03 / 208 / `b60d80f8...6702cbea` | unavailable: no report | not assessable |
+
+The fleet reference is work item `be5d3ce4-4762-5bf0-96e0-3c3469f9e3c9`,
+`D:/QM/reports/work_items/be5d3ce4-4762-5bf0-96e0-3c3469f9e3c9/QM5_41398/20260910_102420/summary.json`.
+No metric delta, tuning, selection, or identity PASS is claimed.  The canary
+controller alone launched the bounded T11 process; T1–T10 were not
+interrupted, and T_Live and AutoTrading were untouched.
+
+**RESULT (Q-only):** Q-S3 remains REVIEW — the fresh dry-run and all input,
+history, resource, and isolation guards PASS, but `REFUSED_NO_REPORT` leaves
+the fleet identity comparison unproven.  Hand back to the Astra pre-screen:
+`python C:/QM/repo/tools/strategy_farm/research_canary.py` is the only
+permitted T11 canary CLI; repair report export before any further smoke.
+
 ## S3 rerun — T11-scoped agent guard and report-export refusal
 
 Router task: `f04d66ec-b296-4f2c-b5eb-83a8c2379626` (continuation).
