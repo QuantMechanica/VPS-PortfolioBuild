@@ -1035,3 +1035,71 @@ still trace to `repo_dirty_build_guard`; `q09_autoseal_hold_census`,
 `backup_calendar_continuity`, `task_monitor_escalation` x2,
 `QM_EvidenceCohortWatch` — no new CRITICAL-class item). No `update-task` call on
 `bb814520`/`dfc60103`.
+
+## Checked 2026-09-11T~05:0xZ (headless orchestration cycle) — downloader crashed on the fixed-tmp-filename race a second time (solo, not a cycle collision); resumed; Codex hardening ticket enqueued (`8ffc30f1`)
+
+`bb814520`/`dfc60103` gate reconfirmed unchanged: direct sqlite read, `QM5_41394`
+`SP500.DWX`/`XAUUSD.DWX` Q02 rows still `pending`/unclaimed/`attempt_count=0`,
+`updated_at` still `2026-09-09T10:52:59Z` (~2d18h static). `b66b5ccc`
+(APPROVED/codex, unstarted since 2026-09-09T11:19:40Z) and `46167bd9`
+(APPROVED/claude, unstarted since 2026-09-10T22:16:06Z) both unchanged, same
+`codex_zero_activity`/`repo_dirty_build_guard` chronic block (`list-tasks
+--agent codex --state IN_PROGRESS` empty; 16 uncommitted artifact files in the
+canonical repo, not this task's authority to clean).
+
+For `3032534e`: `progress.json`/`hour_ledger.jsonl` showed `completed=126126`
+unchanged from the prior ~04:3xZ checkpoint (not fresher despite ~30min
+elapsed) — checked `download.log`'s tail directly rather than trusting the
+aggregate counter, and found the run had crashed at `2026-09-11T04:35:47Z`:
+`os.replace('...\\progress.json.tmp', '...\\progress.json')` raised
+`PermissionError: [WinError 5] Access is denied`, from
+`tools/dukascopy/common.py::atomic_write_bytes` via `download_bi5.py`'s
+`progress()` callback — the exact same fixed-tmp-filename hazard already
+flagged as latent after the 2026-09-10T22:49-22:55Z sibling-cycle collision
+(PIDs 9288/18208), but this time as a **solo** crash: a full
+`Get-CimInstance Win32_Process` command-line scan confirmed **no**
+`download_bi5.py` process was alive at check time (only Q07/Q04 pipeline
+workers, the pump task, and this cycle's own `farmctl health` invocation) —
+so this was an external, transient lock on `progress.json` (AV/backup/indexer
+scan is the working hypothesis, not confirmed), not a second concurrent
+downloader. `hour_ledger.jsonl` was intact at 127,126 lines (append-only,
+unaffected by the crash — no data loss).
+
+Action taken, within `3032534e`'s own pre-authorized `allowed_actions` ("run
+the throttled downloader detached at night") — resuming an interrupted
+authorized action after confirming no live duplicate is not new scope: removed
+the orphaned `progress.json.tmp` and relaunched the identical command against
+the same `--out` root (`D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened`,
+`--splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv`,
+`--rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1
+--backoff-cap 8`), detached via PowerShell `Start-Process -WindowStyle Hidden`
+(new PID 7672, cwd `C:\QM\repo`). Verified alive and resuming correctly, not
+re-downloading from scratch: within ~15s, `resumed` climbed 207→1088,
+`completed` matched `resumed` (no new `downloaded` yet), `errors=0`,
+`hour_ledger.jsonl` still exactly 127,126 lines. No terminal process
+started/stopped, no MT5 history mutated, no T1 import, no T_Live/AutoTrading
+action, no signed-archive change, no verdict/threshold change.
+
+Since this is the *second* occurrence of the identical fixed-tmp-filename
+class (first: two of our own cycles colliding; now: a real external-lock
+crash with zero collision from our own tooling), enqueued exactly one Codex
+build+test-only hardening ticket (`8ffc30f1-014d-4691-a314-d6a1767c4b4b`,
+`ops_issue`, priority 65, `parent_task_ref=3032534e`) — squarely inside
+`3032534e`'s own `allowed_actions` ("enqueue... the Codex build tasks for
+P1/P2/P3"). Scope: make `atomic_write_bytes`'s temp filename unique per call
+(PID/random-suffixed) instead of the fixed `<path>.tmp`, add a bounded retry
+around `os.replace` for transient `PermissionError`/`WinError 5`, and clean up
+the temp file on any failure — explicitly not touching HTTP retry policy,
+rate limiting, resume/ledger semantics, or any `reconcile_overlap.py`
+threshold. No `update-task` call on any of the three (a hardening ticket is a
+sub-step within `3032534e`'s own scope, not an acceptance criterion for any of
+the three tasks).
+
+**Lesson:** a `progress.json` `updated_at_utc` that reads identical across two
+consecutive checkpoints (not just stale by a few seconds) is itself a stall
+signal worth chasing into the log tail immediately, rather than assuming
+"still fresh enough" from the aggregate counter alone — and before relaunching
+any detached process after a crash, a full process-command-line scan (not
+just a progress/status file) is the correct way to rule out a live duplicate,
+consistent with the lesson already recorded from the 2026-09-10T22:49-22:55Z
+collision.

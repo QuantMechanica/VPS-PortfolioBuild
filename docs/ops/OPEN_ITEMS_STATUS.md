@@ -2786,3 +2786,26 @@ lot 2026-07-27 -1,537 with sl 28385; EURUSD SELL 0.43 2026-07-24 -261; +57/+16/+
 liveness audit ticket 428f6802. Structural: only 5 of 24 live sleeves are current Q14-terminal pairs;
 17 validated pairs are not live (book = July artifact, pre-v4 rebaseline). Weekly attribution ticket
 308c8009. No live action (ROT); book replacement runs through the counter (22/25) -> Q11-Q13 -> OWNER.
+
+## 2026-09-11T~05:0xZ — Claude task 3032534e: downloader crashed on fixed-tmp-filename race (solo, no cycle collision), resumed; Codex hardening ticket 8ffc30f1 enqueued
+
+`progress.json` was frozen at `completed=126126` across two checkpoints
+(~30min apart, not just stale by seconds). `download.log` tail showed a real
+crash at `2026-09-11T04:35:47Z`: `os.replace` on `progress.json.tmp` ->
+`progress.json` raised `PermissionError: [WinError 5]` from
+`tools/dukascopy/common.py::atomic_write_bytes` — the same fixed-tmp-filename
+hazard flagged after the 2026-09-10T22:49-22:55Z sibling-cycle collision, but
+this time confirmed solo (full `Get-CimInstance Win32_Process` scan found no
+`download_bi5.py` alive) — an external transient lock, not a duplicate
+downloader. `hour_ledger.jsonl` intact (127,126 lines, no data loss). Removed
+the orphaned `.tmp`, relaunched the identical resume command (new PID 7672),
+verified resuming correctly from the ledger (resumed 207->1088 in ~15s,
+errors=0) — within `3032534e`'s own `allowed_actions`. Enqueued exactly one
+Codex build+test-only hardening ticket (`8ffc30f1-014d-4691-a314-d6a1767c4b4b`,
+priority 65, `parent_task_ref=3032534e`): unique-per-call temp filenames +
+bounded retry on transient `PermissionError` for `atomic_write_bytes`, no
+change to HTTP retry/rate/resume semantics or reconciliation thresholds.
+`bb814520`/`dfc60103` gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02
+rows still pending/unclaimed since 2026-09-09T10:52:59Z, ~2d18h static). No
+`update-task` call on any of the three. Full detail:
+docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.
