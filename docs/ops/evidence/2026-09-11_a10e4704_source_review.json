@@ -1,0 +1,30 @@
+{
+  "schema": "qm.balke-sibling-source-review.v1",
+  "parent_frozen_hooks": {
+    "Strategy_ManageOpenPosition": true,
+    "Strategy_ExitSignal": true,
+    "Strategy_NewsFilterHook": true,
+    "Census_Permission": true,
+    "Opt_AddPattern": true,
+    "OnDeinit": true,
+    "OnTimer": true,
+    "OnTradeTransaction": true,
+    "OnTester": true
+  },
+  "parent_setfile_value_delta": {
+    "qm_ea_id": [
+      "41398",
+      "41405"
+    ]
+  },
+  "additional_inputs": {
+    "strategy_clock_mode": "0",
+    "strategy_outside_range_rule": "0",
+    "strategy_entry_buffer_points": "0",
+    "strategy_range_band_enabled": "true",
+    "strategy_range_bar_period": "0",
+    "strategy_range_end_minute": "0"
+  },
+  "default_deal_identity": "UNMEASURED; requires seven governed annual cells",
+  "parent_mq5_sha256": "fdbb7499f349a6bd238231e7eb3d4a6257290af650e363ba78b0f95518890540"
+}

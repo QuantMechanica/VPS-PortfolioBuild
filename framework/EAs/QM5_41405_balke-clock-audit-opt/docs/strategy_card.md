@@ -17,6 +17,14 @@ last_updated: 2026-09-11
 g0_approval_reasoning: "R1-R4 inherited from the approved parent lineage QM5_13213/41097/41398 (same source, same pool); stage-2 measurement sibling on the tool-adjudicated stage-A winner s0_l8 (OWNER 2026-09-09/10 directives), six declared inputs, pre-registered 350-cell matrix with refutation criteria; non-live measureme"
 expected_pf: 1.2
 expected_dd_pct: 15.0
+r1_track_record: TIER_C
+r1_reasoning: "existing card attribution is canonical source lineage; R1 is informational and non-gating (2026-07-23)."
+r2_mechanical: PASS
+r2_reasoning: "all six new inputs (clock mode, outside-range rule, entry buffer, range band, range bar period, range end minute) are enumerated deterministic switches with explicit use sites and default values reproducing the parent; no discretionary judgment anywhere in the spec."
+r3_data_available: PASS
+r3_reasoning: "target symbol USDJPY.DWX on H1 is a standard DWX MT5 instrument/timeframe already used by the approved parent lineage QM5_13213/41097/41398."
+r4_ml_forbidden: PASS
+r4_reasoning: "card explicitly states single open position, no martingale/grid, no HFT, no ML; all logic is rule-based clock/window/buffer arithmetic with no learning or adaptive-PnL components."
 ---
 # QM5_41405 — Balke stage-2 measurement instrument (clock, outside-range rule, buffer, range band, minute-granular range)
 

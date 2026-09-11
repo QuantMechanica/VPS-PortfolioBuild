@@ -1,0 +1,53 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41405
+; ea_slug:      balke-clock-audit-opt
+; ea_version:   v5.0
+; set_version:  s20260911-001
+; symbol:       USDJPY.DWX
+; timeframe:    H1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; author:       Development
+; date:         2026-09-11
+;==========================================================
+qm_ea_id=41405
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41405_balke-clock-audit-opt.md
+strategy_max_range_atr_mult=2.5
+strategy_range_scan_bars=36
+qm_friday_close_enabled=true
+qm_news_compliance=1
+qm_news_min_impact=high
+opt_pp_sell2=0
+strategy_exit_hour=18
+qm_friday_close_hour_broker=21
+qm_stress_reject_probability=0.0
+strategy_min_range_atr_mult=0.4
+qm_news_mode_legacy=0
+opt_pp_buy3=0
+opt_pp_buy2=0
+opt_pp_buy1=0
+strategy_atr_period=14
+qm_news_temporal=3
+qm_news_stale_max_hours=336
+strategy_range_end_hour=8
+strategy_trail_trigger_r=1.0
+opt_pp_sell3=0
+opt_pp_sell1=0
+qm_rng_seed=42
+strategy_range_start_hour=0
+
+
+strategy_clock_mode=0
+strategy_outside_range_rule=0
+strategy_entry_buffer_points=0
+strategy_range_band_enabled=true
+strategy_range_bar_period=0
+strategy_range_end_minute=0
