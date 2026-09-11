@@ -1,0 +1,18 @@
+{
+  "captured_at": "2026-09-11T04:10:22Z",
+  "ea_id": "QM5_41433",
+  "ea_label": "QM5_41433_wti-hurr-posweek-fade",
+  "compile_work_item_id": "65fa5ff5-a729-467d-842e-1d654fb5dc43",
+  "status": "done",
+  "verdict": "COMPILE_OK",
+  "compiled": true,
+  "failed": false,
+  "failure_classes": [],
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "build_check_report": "D:/QM/reports/framework/21/build_check_20260911_040948.json",
+  "setfile_count": 1,
+  "ex5_sha256": "4773ccca368b7e481bc7f9c85db4a5626da3acaa82401845e5f88f3ce614a558",
+  "evidence_path": "D:/QM/reports/work_items/65fa5ff5-a729-467d-842e-1d654fb5dc43/QM5_41433/COMPILE_EA/compile_evidence.json"
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "qm.first-q02-intake-evidence/v1",
+  "captured_at": "2026-09-11T04:11:43Z",
+  "ea_id": "QM5_41433",
+  "ea_label": "QM5_41433_wti-hurr-posweek-fade",
+  "compile_work_item_id": "65fa5ff5-a729-467d-842e-1d654fb5dc43",
+  "compile_verdict": "COMPILE_OK",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "would_enqueue": true,
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "setfile_sha256": "ff272e3fbf81831ac25ebe1b85a7eff5fd03998401edad405c27836ff2b88b60",
+  "ex5_sha256": "4773ccca368b7e481bc7f9c85db4a5626da3acaa82401845e5f88f3ce614a558"
+}

@@ -60,9 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q02_status: ENQUEUED
+q01_build_report: D:/QM/reports/framework/21/build_check_20260911_040948.json
 force_build: true
 review_focus: "Falsify a short-only WTI hurricane-season positive-week reversion distinct from hurricane positive-week continuation, hurricane negative-week reversion/continuation, maintenance positive-week fade, daily hurricane breakout/fade, and XNG shoulder rules. Verify exact week membership, positive-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -243,5 +244,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | - |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-09-11 | PASS | compile `65fa5ff5-a729-467d-842e-1d654fb5dc43`; 0 errors / 0 compiler warnings; build-check PASS; PACER audit 0 findings; reference tests 12/12 PASS |
+| Q02 Baseline Screening | 2026-09-11 | ENQUEUED | pending canary `06341514-697d-44c5-b675-734ef0c355dc`; CPU maximum 95.2% below exclusive 97% ceiling |
