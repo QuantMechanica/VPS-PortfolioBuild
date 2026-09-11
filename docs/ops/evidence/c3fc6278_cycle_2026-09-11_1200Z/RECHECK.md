@@ -37,4 +37,23 @@ Only canonical control-plane paths were used. No routing, work-item creation,
 fleet repair, terminal launch, live-setting change, or main integration occurred.
 Active backtests were left running. The G: reference mount was unavailable;
 local charter, profitability track, assigned payload and canonical evidence were
-read. Final health and QM5_10260 queue observations follow after the task update.
+read.
+
+## Final cycle checks
+
+The router accepted REVIEW with evidence commit `1d55c02f60` on
+`agents/board-advisor`. The subsequent Codex IN_PROGRESS query returned `[]`.
+
+Final health at **2026-09-11T12:07:06Z** returned overall **FAIL**, with
+15 FAIL / 19 WARN / 52 OK checks. The command exited 0; the health verdict is
+separate from process exit status. [Full health](final_health.json),
+[command receipt](final_health_command.json), and
+[initial summary](initial_health_summary.json) are preserved.
+
+[QM5_10260 queue](final_qm5_10260_queue.json), captured at 12:05:14 UTC:
+286 done, 1 failed, 1 pending. Pending item
+`a0a0128f-a245-4fab-959f-c4941585dd62` is Q04 NDX.DWX, unclaimed since
+2026-09-02T10:12:57Z. No queue action was taken.
+
+Single-pass cycle complete. Experimental acceptance remains incomplete in REVIEW;
+no cadence sleep loop or additional work was started.

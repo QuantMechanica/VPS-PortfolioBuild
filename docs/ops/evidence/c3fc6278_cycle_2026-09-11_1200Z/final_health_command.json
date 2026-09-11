@@ -1,0 +1,5 @@
+{
+  "command": "python C:/QM/repo/tools/strategy_farm/farmctl.py health",
+  "exit_code": 0,
+  "completed_at_utc": "2026-09-11T12:07:07.1892368Z"
+}

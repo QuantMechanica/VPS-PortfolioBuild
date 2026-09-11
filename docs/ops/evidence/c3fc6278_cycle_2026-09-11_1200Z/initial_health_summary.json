@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-09-11T12:03:33Z",
+  "overall": "FAIL",
+  "summary": {
+    "fail": 15,
+    "ok": 52,
+    "warn": 19
+  },
+  "command": "python C:/QM/repo/tools/strategy_farm/farmctl.py health",
+  "exit_code": 0
+}

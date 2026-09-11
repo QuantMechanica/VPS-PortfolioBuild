@@ -1,0 +1,54 @@
+{
+  "captured_at_utc": "2026-09-11T12:05:14.5134092Z",
+  "count": 288,
+  "status_counts": [
+    {
+      "Name": "done",
+      "Count": 286
+    },
+    {
+      "Name": "failed",
+      "Count": 1
+    },
+    {
+      "Name": "pending",
+      "Count": 1
+    }
+  ],
+  "pending": [
+    {
+      "attempt_count": 0,
+      "claimed_by": null,
+      "created_at": "2026-09-02T12:12:57+02:00",
+      "ea_id": "QM5_10260",
+      "evidence_path": null,
+      "id": "a0a0128f-a245-4fab-959f-c4941585dd62",
+      "kind": "backtest",
+      "parent_task_id": null,
+      "phase": "Q04",
+      "phase_display": "Q04",
+      "phase_qid": "Q04",
+      "status": "pending",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-09-02T12:12:57+02:00",
+      "verdict": null
+    }
+  ],
+  "summary": {
+    "Q02_done_FAIL": 8,
+    "Q02_done_INFRA_FAIL": 4,
+    "Q02_done_PASS": 18,
+    "Q03_done_INFRA_FAIL": 1,
+    "Q03_done_PASS": 117,
+    "Q03_failed_INFRA_FAIL": 1,
+    "Q04_done_FAIL": 110,
+    "Q04_done_INFRA_FAIL": 1,
+    "Q04_done_PASS": 6,
+    "Q04_pending": 1,
+    "Q05_done_PASS": 6,
+    "Q06_done_PASS": 6,
+    "Q07_done_FAIL": 3,
+    "Q07_done_PASS": 3,
+    "Q08_done_FAIL_HARD": 3
+  }
+}
