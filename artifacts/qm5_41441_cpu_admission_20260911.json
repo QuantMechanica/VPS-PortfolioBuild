@@ -1,0 +1,24 @@
+{
+  "schema": "qm.q02-cpu-admission/v1",
+  "ea_id": "QM5_41441",
+  "compile_work_item_id": "0098a350-46e7-4bef-b920-dbbf33aa264b",
+  "sampled_at_utc": "2026-09-11T14:37:57.3056105Z",
+  "probe": "Get-Counter \\Processor(_Total)\\% Processor Time",
+  "samples_percent": [
+    98.144725,
+    97.080872,
+    98.053099,
+    98.147511,
+    98.553439
+  ],
+  "average_percent": 97.995929,
+  "maximum_percent": 98.553439,
+  "ceiling_percent": 97.0,
+  "admission_rule": "average_percent < 97.0 and maximum_percent < 97.0",
+  "admitted": false,
+  "terminal64_process_count": 6,
+  "free_physical_memory_gib": 33.201,
+  "total_visible_memory_gib": 63.12,
+  "q02_dry_run_eligible": true,
+  "q02_enqueued": false
+}

@@ -64,7 +64,8 @@ pipeline_phase: Q02
 q01_status: PASS
 q01_compile_work_item: 0098a350-46e7-4bef-b920-dbbf33aa264b
 q01_build_report: D:/QM/reports/framework/21/build_check_20260911_143110.json
-q02_status: NOT_ENQUEUED
+q02_status: BLOCKED_CPU_CEILING
+q02_blocker: "Fresh five-sample whole-host CPU window averaged 97.995929% and peaked at 98.553439%, above the strict 97.0% ceiling; Q02 dry-run eligible but no Q02 row enqueued."
 force_build: true
 review_focus: "Falsify a WTI winter weekly contraction/completed-close breakout distinct from XNG winter NR2, WTI winter range-expansion CLV momentum, WTI hurricane NR2, and the certified XNG oscillator. Verify two exact completed weeks, strict range contraction without containment, current-week close chronology, both sides, durable first-breakout attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -230,4 +231,4 @@ control, or live use.
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
 | Q01 Build Validation | 2026-09-11 | PASS | compile `0098a350-46e7-4bef-b920-dbbf33aa264b`; `COMPILE_OK`; zero compiler errors/warnings; strict build check PASS; 13 reference tests; PACER audit zero hits |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | Fresh CPU admission required |
+| Q02 Baseline Screening | 2026-09-11 | BLOCKED_CPU_CEILING | Dry-run eligible; no Q02 row; CPU average 97.995929%, maximum 98.553439% against strict 97.0% ceiling |
