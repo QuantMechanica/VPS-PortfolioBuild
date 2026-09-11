@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-09-11T21:41:32+00:00",
+  "ea_id": "QM5_41446",
+  "symbol": "XTIUSD.DWX",
+  "phase": "Q02",
+  "compile_work_item_id": "059f2358-40ad-4d84-bcd7-d7c3730e5b73",
+  "compile_verdict": "COMPILE_OK",
+  "q02_work_item_id": "295a8d98-7e36-4b90-abba-379758d9e05d",
+  "q02_status_at_handoff": "pending",
+  "q02_claimed_by_at_handoff": null,
+  "intake": {
+    "applied": true,
+    "eligible": true,
+    "reason": "ELIGIBLE",
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/059f2358-40ad-4d84-bcd7-d7c3730e5b73_295a8d98-7e36-4b90-abba-379758d9e05d.json",
+    "receipt_sha256": "b6807514c5fcd5b3337ece53a7ff6bf21145e1b8fe068138ca7988f0af13cdce",
+    "initial_apply_attempt": "factory_mutation_lock_busy",
+    "retry_result": "ELIGIBLE_APPLIED"
+  },
+  "build_evidence": {
+    "compile_evidence_path": "D:/QM/reports/work_items/059f2358-40ad-4d84-bcd7-d7c3730e5b73/QM5_41446/COMPILE_EA/compile_evidence.json",
+    "strict_build_check_path": "D:/QM/reports/framework/21/build_check_20260911_213741.json",
+    "mq5_sha256": "2806dc9bd9280224b023ece4a03694aa5d6f1322ff9e2da64562a8a216704775",
+    "ex5_sha256": "2045d7e70e8bdb6a27dbbc2fcbf1c46941acdc876a2c401a7e08b9c027223ef7",
+    "set_sha256": "9341e009ad49503792ba7b09ab66582233a5e977c3f6f6c24477c851f6b23acb"
+  },
+  "pacer_guard": {
+    "audit_ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "cpu_ceiling_check": {
+    "samples_percent": [81.2, 72.9, 83.8, 79.8, 77.4],
+    "max_percent": 83.8,
+    "threshold_percent": 97.0,
+    "below_ceiling": true
+  },
+  "scope_boundary": "Q02 was enqueued only. No backtest result was awaited and no portfolio-gate, T_Live, live manifest, AutoTrading, optimization, or live operation was touched."
+}
