@@ -20,6 +20,13 @@
 > seven control claims before the remaining 343 cells. Evidence:
 > `docs/ops/evidence/2026-09-11_dee2fc76_stage2_matrix.md`.
 
+> **RESULT (Q-only, 11.09.) — Q-LIVE-LIVENESS `428f6802` REVIEW:** all eight
+> flat sleeves remain attached; four continue emitting equity snapshots and
+> four are telemetry-silent but have recent `INIT_OK` evidence. No
+> re-attach/preset action is indicated, and T_Live was read-only. The signed
+> manifest does not state expected trades/year, so frequency remains UNKNOWN.
+> Evidence: `docs/ops/evidence/2026-09-11_tlive_flat_sleeves_liveness.md`.
+
 > **★ OFFENE ENTSCHEIDUNG FÜR OWNER (11.09. 01:04Z) — Scope-Auslegung
 > `3032534e` DUKASCOPY, T1-Produktivlauf DWX-M1-Exporter bereits gestartet,
 > zwei Zyklen widersprechen sich.** Der Exporter-README (`docs/ops/evidence/
