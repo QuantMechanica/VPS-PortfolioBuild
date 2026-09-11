@@ -1,10 +1,12 @@
 from pathlib import Path
+import json
 import re
 
 
 EA_DIR = Path(__file__).resolve().parents[1]
 SOURCE = EA_DIR / "QM5_12919_amp-value-momentum-xasset.mq5"
 SETS_DIR = EA_DIR / "sets"
+MANIFEST = EA_DIR / "basket_manifest.json"
 
 
 def source_text() -> str:
@@ -54,3 +56,26 @@ def test_approved_signal_and_risk_contract_are_unchanged() -> None:
         values = set_values(setfile)
         assert float(values["RISK_FIXED"]) > 0
         assert float(values["RISK_PERCENT"]) == 0
+
+
+def test_q02_dependency_manifest_covers_the_approved_universe() -> None:
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    expected = [
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "UK100.DWX",
+        "WS30.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+        "AUDUSD.DWX",
+    ]
+    assert manifest["ea_id"] == "QM5_12919"
+    assert manifest["timeframe"] == manifest["host_timeframe"] == "M30"
+    assert manifest["basket_symbols"] == expected
+    assert manifest["symbols"] == expected
+    assert manifest["order_routes"] == expected
+
+    source = source_text()
+    for symbol in expected:
+        assert f'"{symbol}"' in source

@@ -1,0 +1,41 @@
+{
+  "ea_id": "QM5_12919",
+  "slug": "amp-value-momentum-xasset",
+  "timeframe": "M30",
+  "host_timeframe": "M30",
+  "basket_symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX"
+  ],
+  "symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX"
+  ],
+  "order_routes": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX"
+  ],
+  "notes": [
+    "Each registered M30 chart symbol is tested as its own order route and magic slot.",
+    "Every instance reads the same eight-symbol D1 universe for the monthly cross-sectional score.",
+    "Q02 must bind all eight history dependencies even though the execution host is a physical DWX symbol."
+  ]
+}
