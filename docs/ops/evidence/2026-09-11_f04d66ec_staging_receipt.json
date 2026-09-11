@@ -1,0 +1,21 @@
+{
+  "created_at_utc": "2026-09-11T01:19:40+00:00",
+  "ex5": {
+    "action": "copied",
+    "bytes": 438586,
+    "destination": "D:\\QM\\mt5\\T11\\MQL5\\Experts\\QM5_41398_balke-pattern-repair-opt.ex5",
+    "sha256": "68d37d3a6b6d5d4354e5a9aa494488d8d2809b1f662ff75fbb26440658137c01",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41398_balke-pattern-repair-opt\\QM5_41398_balke-pattern-repair-opt.ex5"
+  },
+  "program": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+  "schema": "qm.research-canary-staging/v1",
+  "setfile": {
+    "action": "copied",
+    "bytes": 1541,
+    "destination": "D:\\QM\\mt5\\T11\\MQL5\\Profiles\\Tester\\QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set",
+    "sha256": "afa42711867677bd7d5641f93e52a104f31c86a181f835579241b214f35bf47c",
+    "source": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025\\setfiles\\QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set"
+  },
+  "status": "STAGED_HASH_VERIFIED",
+  "terminal": "T11"
+}
