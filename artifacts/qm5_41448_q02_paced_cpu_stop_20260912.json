@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "recorded_utc": "2026-09-11T23:44:57.5863581Z",
+  "ea_id": "QM5_41448",
+  "ea_label": "QM5_41448_xauxag-wr2-clv-rv",
+  "symbol": "QM5_41448_XAU_XAG_WR2_CLV_RV_D1",
+  "phase_requested": "Q02",
+  "compile_work_item_id": "d487948f-d410-4722-999b-c8f1282984b2",
+  "compile_verdict": "COMPILE_OK",
+  "build_check_result": "PASS",
+  "pacer_guard": {
+    "audit_ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "cpu_ceiling_check": {
+    "samples_percent": [87.6, 85.5, 92.6, 92.0, 97.8],
+    "average_percent": 91.1,
+    "max_percent": 97.8,
+    "threshold_percent": 97.0,
+    "below_ceiling": false
+  },
+  "decision": "STOP_WITHOUT_Q02_ENQUEUE",
+  "reason": "The whole-host CPU sample reached 97.8%, above the binding 97.0% ceiling.",
+  "q02_work_item_id": null,
+  "scope_boundary": "No Q02 intake or backtest was enqueued. No portfolio gate, T_Live, live/deploy manifest, AutoTrading, manual tester, optimization, or live operation was touched."
+}
