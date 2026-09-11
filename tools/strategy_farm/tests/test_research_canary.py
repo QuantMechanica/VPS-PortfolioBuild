@@ -47,7 +47,24 @@ def test_resource_guard_refuses_ram_and_agent_limits(monkeypatch):
     class Memory: available = 1
     monkeypatch.setattr(canary.psutil, "virtual_memory", lambda: Memory())
     with pytest.raises(canary.CanaryRefused, match="RAM guard"):
-        canary.check_resources(max_agents=1, cpu_samples=1, sample_seconds=0)
+        canary.check_resources(terminal="T11", max_agents=1, cpu_samples=1, sample_seconds=0)
+
+
+def test_resource_guard_counts_only_t11_owned_metatesters(tmp_path, monkeypatch):
+    class Memory: available = 100 * 1024**3
+    class Process:
+        def __init__(self, pid, executable):
+            self.pid = pid
+            self.info = {"pid": pid, "name": "metatester64.exe", "exe": str(executable)}
+    mt5 = tmp_path / "mt5"
+    t11_exe = mt5 / "T11" / "metatester64.exe"; t11_exe.parent.mkdir(parents=True); t11_exe.write_bytes(b"")
+    t1_exe = mt5 / "T1" / "metatester64.exe"; t1_exe.parent.mkdir(parents=True); t1_exe.write_bytes(b"")
+    monkeypatch.setattr(canary.psutil, "virtual_memory", lambda: Memory())
+    monkeypatch.setattr(canary.psutil, "process_iter", lambda _attrs: [Process(1, t11_exe), Process(2, t1_exe)])
+    monkeypatch.setattr(canary.psutil, "cpu_percent", lambda interval: 1.0)
+    result = canary.check_resources(terminal="T11", max_agents=1, cpu_samples=1, sample_seconds=0, mt5_root=mt5)
+    assert result["metatester_agents"] == 1
+    assert result["metatester_agent_processes"] == [{"pid": 1, "exe": str(t11_exe.resolve())}]
 
 
 def test_request_rejects_t12_and_outside_t11_paths(tmp_path):

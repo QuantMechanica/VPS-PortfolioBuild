@@ -101,3 +101,45 @@ the direct CLI only when the guard admits it:
 ```text
 python C:/QM/repo/tools/strategy_farm/research_canary.py --program WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025 --terminal T11 --expert QM5_41398_balke-pattern-repair-opt.ex5 --expert-path D:/QM/mt5/T11/MQL5/Experts/QM5_41398_balke-pattern-repair-opt.ex5 --setfile D:/QM/mt5/T11/MQL5/Profiles/Tester/QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set --symbol USDJPY.DWX --period H1 --from-date 2021.01.01 --to-date 2021.12.31 --max-agents 4 --dry-run
 ```
+
+## S3 rerun — T11-scoped agent guard and report-export refusal
+
+Router task: `f04d66ec-b296-4f2c-b5eb-83a8c2379626` (continuation).
+
+The previous guard incorrectly counted all fleet `metatester64.exe` processes.
+`research_canary.py` now counts only executable paths under the target T11
+root, records the selected PIDs/paths in the receipt, and permits the stated
+`<= 4` T11 agents. Focused verification: `7 passed` from
+`python -m pytest tools/strategy_farm/tests/test_research_canary.py -q`, plus
+`python -m py_compile tools/strategy_farm/research_canary.py`.
+
+The real dry-run receipt is
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_014940_80d83d4d/receipt.json`.
+It recorded the hash-bound EX5 and setfile, a 108-file signed-private-history
+PASS, zero T11-owned MetaTester processes, 35,034,267,648 bytes available RAM,
+and CPU samples `66.6,64.7,50.6,52.6,64.4` (mean 59.78%, below 90%). The
+factory independently advanced its own queue from 147,169 to 147,170 during
+the observation; the receipt therefore truthfully marks
+`isolation_unchanged: false`. The controller wrote no work-item row and did
+not launch a terminal in dry-run mode.
+
+The authorized non-dry T11 smoke was then attempted through that same
+controller. Receipt:
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_015408_0d019d2e/receipt.json`.
+Its T11 guards passed (zero T11-owned agents; 35,280,703,488 bytes RAM; CPU
+mean 74.62%); the private-history audit again passed. `terminal64.exe` was
+created suspended, bound to the kill-on-close job, and exited `0`. The T11
+tester log independently records that the USDJPY.DWX H1 run completed in
+2:26.285 with 28,993,517 ticks, but MT5 wrote no configured HTML report. The
+controller correctly refused with `tester exited without report` and no
+metrics/report hash were accepted. The log-only final balance and trade stream
+are not a substitute for the required report/summary evidence.
+
+Consequently, there is no valid S3 identity table, PASS, delta, tuning, or
+selection claim. The next bounded repair is report-export capture in the
+canary controller; it must preserve the T11-only path, hash bindings, factory
+read-only boundary, and receipt contract before another smoke attempt.
+
+**RESULT (Q-only):** Q-S3 remains REVIEW — T11-scoped guard and dry-run receipt
+PASS; the actual 2021 S3 run is `REFUSED_NO_REPORT`, so fleet identity is
+unproven. T1–T10 were not interrupted; T_Live and AutoTrading were untouched.

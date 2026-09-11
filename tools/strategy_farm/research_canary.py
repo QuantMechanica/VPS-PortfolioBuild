@@ -140,9 +140,37 @@ def assert_isolation_unchanged(before: Mapping[str, Any], after: Mapping[str, An
     assert_isolation_admitted(after)
 
 
-def check_resources(*, max_agents: int, cpu_samples: int, sample_seconds: float,
+def _t11_metatester_agents(*, terminal: str, mt5_root: Path) -> list[dict[str, Any]]:
+    """Return only MetaTester processes whose executable belongs to this canary.
+
+    Factory terminal agents must not block a T11-only canary.  Conversely, a
+    same-named executable outside T11 cannot consume this canary's four-agent
+    allowance, so the executable path is retained in the receipt.
+    """
+
+    terminal_root = (mt5_root / terminal).resolve()
+    agents: list[dict[str, Any]] = []
+    for process in psutil.process_iter(["pid", "name", "exe"]):
+        info = process.info
+        if (info.get("name") or "").lower() != "metatester64.exe":
+            continue
+        executable = info.get("exe")
+        if not executable:
+            continue
+        try:
+            executable_path = Path(str(executable)).resolve()
+            if not executable_path.is_relative_to(terminal_root):
+                continue
+        except OSError:
+            continue
+        agents.append({"pid": int(info.get("pid") or process.pid), "exe": str(executable_path)})
+    return agents
+
+
+def check_resources(*, terminal: str, max_agents: int, cpu_samples: int, sample_seconds: float,
                     cpu_limit: float = DEFAULT_CPU_LIMIT,
                     ram_min_bytes: int = DEFAULT_RAM_MIN_BYTES,
+                    mt5_root: Path = MT5_ROOT,
                     sleep: Callable[[float], None] = time.sleep) -> dict[str, Any]:
     if max_agents < 1 or max_agents > 4:
         raise CanaryRefused("max-agents must be in [1,4]")
@@ -151,9 +179,9 @@ def check_resources(*, max_agents: int, cpu_samples: int, sample_seconds: float,
     available = int(psutil.virtual_memory().available)
     if available < ram_min_bytes:
         raise CanaryRefused(f"RAM guard: available={available} < minimum={ram_min_bytes}")
-    agents = sum(1 for p in psutil.process_iter(["name"]) if (p.info.get("name") or "").lower() == "metatester64.exe")
-    if agents >= max_agents:
-        raise CanaryRefused(f"MetaTester guard: agents={agents} >= max_agents={max_agents}")
+    agents = _t11_metatester_agents(terminal=terminal, mt5_root=mt5_root)
+    if len(agents) > max_agents:
+        raise CanaryRefused(f"MetaTester guard: {terminal} agents={len(agents)} > max_agents={max_agents}")
     samples: list[float] = []
     for index in range(cpu_samples):
         samples.append(float(psutil.cpu_percent(interval=None)))
@@ -162,7 +190,9 @@ def check_resources(*, max_agents: int, cpu_samples: int, sample_seconds: float,
     average = sum(samples) / len(samples)
     if average > cpu_limit:
         raise CanaryRefused(f"CPU guard: {len(samples)}-sample fleet average {average:.3f} > {cpu_limit}")
-    return {"ram_available_bytes": available, "metatester_agents": agents,
+    return {"ram_available_bytes": available, "metatester_agents": len(agents),
+            "metatester_agent_scope": f"{terminal.upper()} executable path prefix",
+            "metatester_agent_processes": agents,
             "cpu_samples_percent": samples, "cpu_average_percent": average,
             "cpu_limit_percent": cpu_limit, "max_agents": max_agents}
 
@@ -335,8 +365,8 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
     try:
         receipt["history_audit"] = verify_private_history(terminal=request.terminal, symbol=request.symbol,
             farm_root=farm_root, mt5_root=mt5_root)
-        receipt["resource_guard"] = resource_check(max_agents=request.max_agents, cpu_samples=5,
-            sample_seconds=60.0)
+        receipt["resource_guard"] = resource_check(terminal=request.terminal, max_agents=request.max_agents,
+            cpu_samples=5, sample_seconds=60.0, mt5_root=mt5_root)
         if request.dry_run:
             receipt["status"] = "DRY_RUN_PASS"
             return receipt

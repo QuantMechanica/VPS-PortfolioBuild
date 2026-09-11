@@ -2625,6 +2625,15 @@ and minute-end expansion. No sibling source, compile claim, setfile, matrix,
 or backtest was created. Evidence:
 `docs/ops/evidence/2026-09-11_qm5_41405_stage2_preflight.md`.
 
+## RESULT 2026-09-11 — Q-S3 T11 canary receipt follow-up (`f04d66ec`)
+
+`REVIEW — REFUSED_NO_REPORT`: the controller now scopes its <=4 MetaTester
+guard to T11 executable paths (7 focused tests PASS). The hash-bound real
+dry-run passed the signed history and resource checks; the governed non-dry
+2021 smoke completed in the T11 tester log but MT5 emitted no configured HTML
+report, so the controller rejected it and no fleet identity comparison exists.
+Evidence: `docs/ops/evidence/2026-09-11_research_canary_t11.md`.
+
 ## 2026-09-11T01:45Z — WINSWEEP stage B enqueued (210 cells)
 
 Reload chunk 64 finished 01:38:35Z (10/10). `window_sweep.py enqueue --stage B --stage-a-report
