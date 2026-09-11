@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "U.S. Energy Information Administration; Toby Crabel; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; OpenAI Codex",
+    "mechanic": "normalized-weekly-wti-august-september-october-hurricane-season-two-completed-weeks-newest-strict-narrower-range-than-prior-own-week-return-sign-continuation-one-week-hold",
+    "slug": "wti-hurr-nr2-sign-cont",
+    "strategy_id": "EIA-CRABEL-MOP-WTI-HURR-NR2-SIGN-CONT-20260911_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-11T08:46:46+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41434_wti-hurr-wr2-clv-cont_card.md",
+      "score": 0.7727272727272727,
+      "slug": "wti-hurr-wr2-clv-cont",
+      "source": "card",
+      "strategy_id": "EIA-CRABEL-WTI-HURR-WR2-CLV-CONT-20260911_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41435_wti-hurr-wr2-clv-fade_card.md",
+      "score": 0.7272727272727273,
+      "slug": "wti-hurr-wr2-clv-fade",
+      "source": "card",
+      "strategy_id": "EIA-CRABEL-YANG-WTI-HURR-WR2-CLV-FADE-20260911_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41080_wti-wclose-location-mom_card.md",
+      "score": 0.5,
+      "slug": "wti-wclose-location-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WCLOSE-LOCATION-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41081_xng-wclose-location-mom_card.md",
+      "score": 0.5,
+      "slug": "xng-wclose-location-mom",
+      "source": "card",
+      "strategy_id": "MOP-XNG-WCLOSE-LOCATION-MOM-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41092_wti-wbody-dominance-mom_card.md",
+      "score": 0.5,
+      "slug": "wti-wbody-dominance-mom",
+      "source": "card",
+      "strategy_id": "MOP-WTI-WBODY-DOMINANCE-MOM-2026_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4916,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1526,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
