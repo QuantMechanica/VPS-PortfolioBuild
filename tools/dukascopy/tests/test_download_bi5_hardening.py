@@ -12,6 +12,22 @@ import pytest
 from tools.dukascopy import common, download_bi5
 
 
+def test_atomic_replace_retries_then_succeeds(tmp_path, monkeypatch) -> None:
+    target = tmp_path / "progress.json"
+    real_replace = common.os.replace
+    calls = {"count": 0}
+    def locked_once(source, destination):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise PermissionError(5, "share lock")
+        return real_replace(source, destination)
+    monkeypatch.setattr(common.os, "replace", locked_once)
+    monkeypatch.setattr(common.time, "sleep", lambda _: None)
+    monkeypatch.setattr(common.random, "uniform", lambda _a, _b: 0.0)
+    common.atomic_write_bytes(target, b"ok")
+    assert calls["count"] == 2 and target.read_bytes() == b"ok"
+
+
 UTC = dt.timezone.utc
 
 

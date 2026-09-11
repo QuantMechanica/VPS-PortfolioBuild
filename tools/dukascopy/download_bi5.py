@@ -30,6 +30,7 @@ import requests
 try:
     from .common import (
         CANONICAL_SYMBOLS,
+        AtomicReplaceError,
         UTC,
         append_json_line,
         atomic_write_bytes,
@@ -49,6 +50,7 @@ try:
 except ImportError:  # direct script execution
     from common import (  # type: ignore
         CANONICAL_SYMBOLS,
+        AtomicReplaceError,
         UTC,
         append_json_line,
         atomic_write_bytes,
@@ -406,10 +408,15 @@ def run_download(
     }
     started_at = dt.datetime.now(UTC)
 
+    last_progress_at = 0.0
+    last_progress_error_at = 0.0
+
     def progress(current_url: str | None, status: str) -> None:
-        atomic_write_json(
-            progress_path,
-            {
+        nonlocal last_progress_at, last_progress_error_at
+        now_monotonic = time.monotonic()
+        if status == "RUNNING" and now_monotonic - last_progress_at < 15.0:
+            return
+        value = {
                 "schema": PROGRESS_SCHEMA,
                 "status": status,
                 "started_at_utc": format_utc(started_at),
@@ -424,8 +431,16 @@ def run_download(
                 "symbols": normalized_symbols,
                 "current_url": current_url,
                 **counters,
-            },
-        )
+            }
+        try:
+            atomic_write_json(progress_path, value)
+            last_progress_at = now_monotonic
+        except AtomicReplaceError as exc:
+            # The append-only hour ledger is the durable resume source. A
+            # share-locked advisory progress file must never terminate it.
+            if now_monotonic - last_progress_error_at >= 60.0:
+                log.warning("progress_write_deferred path=%s error=%s", progress_path, exc)
+                last_progress_error_at = now_monotonic
 
     def record(final_row: dict[str, object]) -> None:
         append_json_line(manifest_path, final_row)

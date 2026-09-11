@@ -10,7 +10,9 @@ import json
 import lzma
 import math
 import os
+import random
 import struct
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterator, Mapping, Sequence
@@ -71,14 +73,28 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def atomic_write_bytes(path: Path, content: bytes) -> None:
+class AtomicReplaceError(OSError):
+    """A completed temporary write could not be atomically published."""
+
+
+def atomic_write_bytes(path: Path, content: bytes, *, replace_timeout_seconds: float = 30.0) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
     with temporary.open("wb") as handle:
         handle.write(content)
         handle.flush()
         os.fsync(handle.fileno())
-    os.replace(temporary, path)
+    deadline = time.monotonic() + replace_timeout_seconds
+    delay = 0.05
+    while True:
+        try:
+            os.replace(temporary, path)
+            return
+        except OSError as exc:
+            if time.monotonic() >= deadline:
+                raise AtomicReplaceError(f"atomic replace timed out for {path}: {exc}") from exc
+            time.sleep(delay + random.uniform(0.0, delay))
+            delay = min(delay * 2.0, 1.0)
 
 
 def atomic_write_text(path: Path, content: str) -> None:

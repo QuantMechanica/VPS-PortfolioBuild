@@ -2883,3 +2883,7 @@ the terminal workers that must authenticate the new adapter. No factory row or s
 2026-09-11T05:2xZ (Codex, task f04d66ec): RESULT — Q-S3 REVIEW. The governed T11
 real-tick canary passed signed-history/resource/input checks and exited 0, but the receipt records
 `REFUSED: tester exited without report`; no metrics or fleet identity comparison were accepted.
+
+2026-09-11T05:2xZ (Codex, task 4fa85eb8): RESULT — Q-DUKASCOPY REVIEW. The progress
+atomic-replace path now retries share locks for 30 seconds and makes progress.json advisory after
+an exhausted retry; focused Dukascopy tests PASS. The existing production downloader was not restarted.
