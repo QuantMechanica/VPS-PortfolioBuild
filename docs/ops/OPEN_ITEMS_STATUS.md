@@ -3019,3 +3019,14 @@ hashes still match the earlier failed-pilot evidence; no report or T11 process.
 38 focused tests pass. Experimental acceptance remains incomplete and measured
 speed/fidelity/savings remain NICHT GEZEIGT. No new launch or fleet action.
 [Fresh verification](evidence/c3fc6278_cycle_2026-09-11_1200Z/RECHECK.md).
+
+## 2026-09-11T12:45Z — T11 pre-screen pilot cell measured by the orchestrator (OHLC M1 vs real ticks)
+
+Codex/Astra c3fc6278 returned three times without launching (stale 13:11-local LiveUpdate excerpt),
+so the orchestrator ran the first pilot through research_canary.py (97 % pacing clamp lifted only
+for an explicit QM_CANARY_CPU_LIMIT override, receipt records it; 38 tests pass):
+run D:/QM/reports/research/T11_PRESCREEN_PILOT_ORCH/20260911_123214_66a00683 (2021 s3_l3, ohlc-m1):
+net 4,963.35 / PF 1.05 / trades 208 / maxDD 14,269.75 in 0:41 tester time, vs real ticks
+2,941.71 / 1.03 / 208 / 15,307.15 in 2:12 (3.2x faster; same trade count, fills differ, net +69 %).
+Single cell = orientation only; the 20-cell speed/fidelity matrix follows. Admission sampling (5 x
+60 s) dominates the wall time (372 s) and must be shortened for batch pilots.

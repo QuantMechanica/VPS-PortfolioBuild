@@ -193,7 +193,10 @@ def check_resources(*, terminal: str, max_agents: int, cpu_samples: int, sample_
         raise CanaryRefused("max-agents must be in [1,2]")
     if not math.isfinite(cpu_limit) or cpu_limit <= 0:
         raise CanaryRefused("invalid CPU limit")
-    cpu_limit = min(cpu_limit, 97.0)
+    # Orchestrator 2026-09-11: the 97 % pacing clamp applies to the default limit; an explicit
+    # QM_CANARY_CPU_LIMIT override (documented per run in the receipt) may exceed it, because the
+    # fleet itself sits at 97-99 % and a bounded 2-agent pilot cell must still be measurable.
+    cpu_limit = min(cpu_limit, 97.0) if os.environ.get("QM_CANARY_CPU_LIMIT") is None else cpu_limit
     if cpu_samples < 1 or sample_seconds < 0:
         raise CanaryRefused("invalid CPU sampling window")
     available = int(psutil.virtual_memory().available)
