@@ -1103,3 +1103,72 @@ any detached process after a crash, a full process-command-line scan (not
 just a progress/status file) is the correct way to rule out a live duplicate,
 consistent with the lesson already recorded from the 2026-09-10T22:49-22:55Z
 collision.
+
+## Checked 2026-09-11T~05:1xZ (headless orchestration cycle) — downloader crashed a THIRD time within ~35min (rapid-recrash pattern); relaunched again; found and closed a duplicate hardening ticket
+
+`bb814520`/`dfc60103` gate reconfirmed unchanged: direct sqlite read, `QM5_41394`
+`SP500.DWX`/`XAUUSD.DWX` Q02 rows still `pending`/unclaimed/`attempt_count=0`,
+`updated_at` still `2026-09-09T10:52:59Z` (~2d18h static); `XTIUSD.DWX` in the
+same original trio already `done` since 2026-09-10T19:59:04Z (ordinary factory
+throughput, already noted, not a B-prime release). `b66b5ccc` (APPROVED/codex,
+unstarted since 2026-09-09T11:19:40Z) and `46167bd9` (APPROVED/claude,
+unstarted since 2026-09-10T22:16:06Z) both unchanged, same
+`codex_zero_activity`/`repo_dirty_build_guard` chronic block confirmed again
+(`list-tasks --agent codex --state IN_PROGRESS` empty; 16 uncommitted artifact
+files in the canonical repo).
+
+For `3032534e`: found the downloader dead again via a full `Get-CimInstance
+Win32_Process` command-line scan (no `download_bi5.py` process, no `*dukascopy*`
+match beyond this cycle's own diagnostic commands). `download.log` tail showed
+the identical `atomic_write_bytes` -> `os.replace` `PermissionError: [WinError
+5]` traceback, this time at `2026-09-11T05:06:02.710Z` — independently arrived
+at by this cycle before discovering a sibling cycle had already diagnosed the
+same crash chain (04:35:47Z first occurrence -> relaunch PID 7672 -> 05:06:02Z
+second occurrence) and filed hardening ticket `8ffc30f1-014d-4691-a314-
+d6a1767c4b4b` (TODO, priority 65, `parent_task_ref=3032534e`) one cycle
+earlier. `hour_ledger.jsonl` reconfirmed intact (127,126 lines, 0 malformed,
+parsed every line) — no data loss across any of the crashes.
+
+**Duplicate ticket created and closed:** before discovering `8ffc30f1`, this
+cycle independently drafted and enqueued its own near-identical hardening
+ticket (`58703508-2014-49ad-8eb0-60ce706caefb`, same file, same fix: unique
+temp filename + bounded `PermissionError` retry + cleanup). On finding
+`8ffc30f1` already existed with matching scope, closed `58703508` immediately
+via `update-task 58703508 --state FAILED --verdict
+duplicate_of_8ffc30f1-014d-4691-a314-d6a1767c4b4b...` rather than leaving two
+conflicting specs for Codex to pick up. **Lesson: grep the evidence file's own
+tail for "hardening ticket" / the target filename BEFORE drafting a new ticket
+for a defect that looks freshly discovered — a sibling cycle running only ~2
+minutes ahead can file the identical fix first.**
+
+Action taken (within `3032534e`'s own pre-authorized `allowed_actions`, "run
+the throttled downloader detached at night"): relaunched the identical
+command a second time this cycle (removed the orphaned `progress.json.tmp`
+first), detached via PowerShell `Start-Process -WindowStyle Hidden`, PID
+`17560` at `05:07:58Z`. Verified alive and resuming correctly at `05:08:36Z`
+(`resumed`/`completed`=3049, `errors=0`) — but a follow-up process scan a few
+minutes later (~05:11:21Z) found PID 17560 **also** dead, with the same
+`PermissionError` traceback appended to `download.log`. This is the **third**
+crash of the identical class within roughly 35 minutes (04:35:47Z, 05:06:02Z,
+and this one), each relaunch surviving only 1-3 minutes before dying again —
+markedly faster than the "twice in a day" pattern from the prior 22:49-22:55Z
+collision, and faster than plausible for a single infrequent AV/backup scan
+sweep. Cleaned the orphaned `.tmp` again and relaunched a third time this
+cycle, PID `11056`, then verified via a **process-list-only** check (not
+another `progress.json` read, to avoid this cycle's own tooling contributing
+another potential file-handle collision) that it was still alive after a
+staged 20s-interval wait rather than an immediate single check.
+
+**Escalation-worthy observation, not yet escalated to OWNER this cycle:** the
+recrash cadence has accelerated (3 crashes in ~35min vs. the prior "twice in a
+day" baseline), and the actual fix (`8ffc30f1`) cannot land until Codex
+resumes — which is itself blocked by the chronic `repo_dirty_build_guard` (16
+uncommitted artifact files in the canonical repo), unrelated to and outside
+this task's authority to clean. Until one of those two things changes, this
+downloader will likely keep requiring near-continuous manual relaunching,
+which is a poor use of headless cycles' time and quota. Recommend OWNER
+attention on `repo_dirty_build_guard` specifically because it is now blocking
+real progress on an OWNER-authorized job (Dukascopy backfill), not just
+routine EA builds. No `update-task` call on any of the three tasks (relaunch +
+hardening ticket are sub-steps within `3032534e`'s own scope, not an
+acceptance criterion for any of the three).
