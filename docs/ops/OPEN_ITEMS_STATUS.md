@@ -2741,3 +2741,21 @@ running); dee2fc76 re-routed with ordered steps (pre-register scoring, 7 control
 window-sweep machinery or a first-claim-proven adapter, identity proof, then 343 cells; Balke cells
 keep parent trailing as documented approximation). f04d66ec re-routed with the corrected CPU guard
 (pause > 95 % 5-min, 2 agents) after the 90 % guard refused the T11 dry-run at 92 %.
+
+## 2026-09-11T05:25Z — Darwinex live-account analysis (OWNER question)
+
+Sources: D:/QM/reports/portfolio/live_attribution_20260905_054540/live_deals_normalized.csv (deals
+2026-04-24..2026-09-04), portfolio_manifest_live_24sleeve_20260724.json (24 sleeves, 100k, 9.75 %
+total risk), live_burnin/livevsbook_sunday_20260906.json, live_book_dd_guard.log, pipeline_state pairs.
+FINDINGS: since the 24-sleeve deploy (2026-07-24) net -2,974 = manual (magic 0) -1,703 [NDX SELL 1.00
+lot 2026-07-27 -1,537 with sl 28385; EURUSD SELL 0.43 2026-07-24 -261; +57/+16/+24 small] + EA book
+-1,271 (16 of 24 sleeves traded, 75 closes, gross win ~3.3k / loss ~4.6k, live PF ~0.72). Pre-deploy
+(04-24..07-24) the EAs made +2,250 (manual -395) -> HWM 101,871. Biggest EA losers: 11132 SP500 -545
+(2 trades), 11708 EURUSD -531, 10939 GBPUSD -265, 11421 EURUSD -250, 10513 XAU -231, 1567 EURUSD
+-196 (2.39 lots, 1 trade); winners: 10706 GBPUSD +395, 10440 NDX +170, 10403 XAU +163, 1556 XAU +150;
+13213 USDJPY (Balke 03-06) 23 closes -30 (live PF 0.91). Entry hours per magic plausible (13213 fires
+03-07 UTC = fixed UTC+3 clock); no sizing/symbol anomaly seen. 8 sleeves flat for 6 weeks (10919,
+12778, 12969, 12567 x2, 12989, 13117, 13128 = the highest-risk sleeves) and 4 telemetry-silent ->
+liveness audit ticket 428f6802. Structural: only 5 of 24 live sleeves are current Q14-terminal pairs;
+17 validated pairs are not live (book = July artifact, pre-v4 rebaseline). Weekly attribution ticket
+308c8009. No live action (ROT); book replacement runs through the counter (22/25) -> Q11-Q13 -> OWNER.
