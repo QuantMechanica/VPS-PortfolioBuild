@@ -3138,3 +3138,11 @@ average, 93.0% maximum versus 97.0% ceiling), but D: free remained 57.97 GiB ver
 100 GiB intake floor after a short scheduled-purge recovery window. Q02 was not enqueued and no
 backtest ran. Evidence: `artifacts/qm5_41444_q02_enqueue_20260911.json` and
 `docs/ops/evidence/2026-09-11_qm5_41444_wti_winter_wr2_body_reversion_q02_handoff.md`.
+
+## RESULT 2026-09-11 — Q-PRESCREEN fleet implementation REVIEW
+
+The requested OHLC-M1 PRESCREEN build is withheld fail-closed: the task labels native
+`Model=2` as M1 OHLC, but the governed mapping verifies `Model=1` = M1 OHLC and
+`Model=2` = open prices. No worker, declaration, queue row, terminal, or live setting changed;
+PRESCREEN cannot be emitted as MEASURED. Evidence:
+`docs/ops/evidence/2026-09-11_fleet_ohlc_prescreen_build_review.md`.
