@@ -1,0 +1,113 @@
+{
+  "artifact_type": "fx_cointegration_nonduplicate_fallback_hold",
+  "generated_at_utc": "2026-09-11T22:19:07Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "49248f52ede26d463fb219927c73212e807c9352",
+  "mission_outcome": "EXISTING_Q02_ALREADY_ENQUEUED_NO_DUPLICATE_MUTATION",
+  "frontier": {
+    "scan_relationship_count": 66,
+    "covered_relationship_count": 66,
+    "uncovered_relationship_count": 0,
+    "evidence": "artifacts/fx_cointegration_frontier_cpu_stop_20260812T112137Z_board_advisor.json"
+  },
+  "anchor_triage": {
+    "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_Q04_FAIL",
+    "q02_oninit_or_no_history_repair_required": false
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "priority_track": true,
+    "priority_reason": "owner_2026-08-30_fx_portfolio_existing_logical_basket_fallback",
+    "duplicate_enqueue_performed": false
+  },
+  "pacer_build_guard": {
+    "source": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "compile_enqueued": false
+  },
+  "validation": {
+    "symbol_scope": "BASKET_OK",
+    "symbol_scope_violations": 0,
+    "build_check": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "build_check_note": "Read-only SkipCompile validation is guarded while terminal64 processes are alive; no compile retry or compile enqueue followed."
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "runtime_snapshot": {
+    "cpu_samples_percent": [
+      69.241636,
+      67.369361,
+      80.480575,
+      83.213437,
+      85.353216
+    ],
+    "cpu_average_percent": 77.131645,
+    "cpu_max_percent": 85.353216,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_binding": false,
+    "free_physical_ram_gib": 22.811,
+    "total_physical_ram_gib": 63.12,
+    "free_commit_gib_followup_probe": 83.1,
+    "active_work_items": 6,
+    "pending_work_items": 7221,
+    "active_phase_counts": {
+      "OPT_CENSUS": 3,
+      "Q04": 1,
+      "Q08": 2
+    },
+    "worker_observation": "Recent terminal-worker claim scans reported multisymbol_commit_skipped while the paced fleet continued claiming other eligible work."
+  },
+  "legacy_manifest_constraint": {
+    "basket_symbol_count": 4,
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX"
+    ],
+    "reason_not_reclassified": "The EA deliberately warms all four symbols and supports two pair families; declaring only the selected FX legs would understate actual dependencies without an authorized source split and governed recompile."
+  },
+  "actions": {
+    "card_created": false,
+    "ea_source_changed": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "queue_mutated": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "reason": "The full 66-pair frontier is already covered and the only valid pending logical Q02 continuation already exists once and is priority-bound."
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_admission": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  }
+}

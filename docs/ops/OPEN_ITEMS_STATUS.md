@@ -3203,3 +3203,15 @@ default). Rationale: the cap (OWNER 2026-09-10, 48 h) protected Q02/Q04 RAM wind
 that contention is gone, and the OWNER window instruction covers the planned rollback. Lesson: check
 [Environment]::GetEnvironmentVariable(name,'Machine'/'User') AND the logon session env before assuming a lever
 is script-local.
+
+## 2026-09-11T22:19Z — FX cointegration frontier remains fully covered; one valid Q02 row preserved
+
+All 66 frozen-scan relationships remain represented; 12532/12533 are past Q02 and terminal later. The selected
+fallback `QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1` already has exactly one pending, attempt-zero, priority-bound
+Q02 row (`547c4fd3-f3fd-4c59-b9dc-654e96521251`), so no duplicate queue mutation was valid. The PACER input-pin
+audit passed with zero findings, symbol scope returned `BASKET_OK`, and the setfile remains
+`RISK_FIXED=1000`/`RISK_PERCENT=0`. CPU was below the 97% stop (77.13% average, 85.35% maximum), but the legacy EA
+actually warms four declared symbols and recent workers reported `multisymbol_commit_skipped`; reducing the
+payload to two legs would be a dishonest metadata-only reclassification without splitting and recompiling the
+EA. Evidence: `docs/research/FX_COINTEGRATION_QM5_12507_NONDUPLICATE_HOLD_20260911T221907Z.md` and
+`artifacts/fx_cointegration_qm5_12507_nonduplicate_hold_20260911T221907Z_board_advisor.json`.
