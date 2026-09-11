@@ -1,0 +1,15 @@
+OHLC-M1-Vorsortierung: OWNER-Entscheidungsvorlage, Status REVIEW; keine Aktivierung.
+Empfehlung: bestehende versiegelte Programme vollständig mit echten Ticks messen.
+DL-089 erlaubt keine OHLC-basierte Kürzung der Pattern-/Jahresmatrix.
+Auch die laufenden Balke-Fenster- und Konfigurationsmatrizen bleiben vollständig.
+Pilot: OHLC-M1 rho 0,977 bei n=19; Bootstrap-95%-Intervall 0,885 bis 1,000.
+2021 allein: rho 0,952 bei n=10; Intervall 0,623 bis 1,000.
+Bei 50% Behalten fehlt 2021 einer der fünf besten Real-Tick-Kandidaten: 20% FN.
+70% Behalten verfehlt im Pilot keinen Zielkandidaten; FN höchstens 10% ist NICHT GEZEIGT.
+Vorschlag für ein neues Experiment: 70%-Schattenauswahl, zunächst 100% Real-Tick-Kontrolle.
+Später nur separat freigegeben: Überlebende plus zufällige 10% der verworfenen Konfigurationen bestätigen.
+Bei Kontroll-Fehlrate oder geschätzter FN-Rate über 10% aussetzen und vollständig zurückrollen.
+Score-Korrektur: Real-Tick-Score ist kostenbereinigt, Cheap-Score bisher nicht gleichartig bereinigt.
+6.400 Zellen würden rechnerisch 1.728 Real-Tick-Zellen sparen, aber etwa 160 T11-Stunden Vorsortierung kosten.
+Das ist keine aktuelle Ersparnis: freigegebene Kürzung 0; Nettozeitgewinn und frühere Q14-Abschlüsse NICHT GEZEIGT.
+T12-Kapazität nicht belegt; keine Starts, Work-Item-Schreibvorgänge, Gate-/Zähler- oder Live-Änderungen.

@@ -1,0 +1,73 @@
+# DL-089 — Pattern-Filter-Optimierung v3: Walk-Forward-Jahreszensus, Auswahlregel, Trial-Deflation
+
+**Date:** 2026-08-21
+**Status:** ADOPTED (OWNER-authorized)
+**Authority:** OWNER, 2026-08-21 abends, im Chat: Direktive („In Wahrheit entstehen da
+mehrere hundert Backtests! Einer je Pattern je Buy/Sell Richtung … Außerdem testest du
+jedes Jahr einzeln, damit wird Overfitting verhindert! … du als AI interpretierst und
+anhand der Ergebnisse bis zu drei buy und bis zu drei sell Filter auswählst. Danach …
+Gesamttest … und daraus entsteht dann das Portfolio!") plus 12 explizite
+Einzelentscheide über die strukturierte Abfrage, plus Nachtrag („Die numerischen
+Parameter Optimization kannst du mit Codex bereits mitbauen, deren Optimierungstest
+sind aber Phase 2").
+**Operative Spezifikation:** `docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md`
+**Scope:** Optimierungszweig Q14→Q15→Q16 (DL-084/DL-088). Kernfunnel Q00–Q13 unberührt.
+
+## Entscheide
+
+1. **Messdesign:** je (EA, Symbol) ein Zensus 77 Muster × 2 Richtungen × Kalenderjahre
+   einzeln (2019–2025) + Baseline je Jahr; Blacklist-Semantik (ODER-Verknüpfung).
+2. **Auswahlregel (versiegelt):** Konsistenz ≥ 2/3 der Auswahljahre mit je ≥ +5 %
+   relativer Verbesserung auf return_to_maxdd gegen die Jahres-Baseline; Auswahl bis zu
+   3 Buy + 3 Sell; „kein Filter" ist stets Kandidat.
+3. **Frequenz-Boden fail-closed:** Aktivitätskriterium (≥ 10 Entry-Handelstage je
+   gewertetem Jahr, pro-rata gem. CEO-MP-#4); Riss in EINEM Jahr ⇒ Filter unzulässig,
+   Ausschluss VOR Renditebetrachtung.
+4. **OOS-Protokoll:** ankernder Walk-Forward, Mindestfenster 3 Jahre, Prüfjahre
+   2022–2025; Stabilitätskriterium gemäß Plan §2.
+5. **Overfit-Deflation:** `declared_trial_count = 154` (Suchraum; Einzeljahre =
+   wiederholte Messung, keine Trials). Q16-Vertrag (PBO < 0,40; DSR p < 0,05) unverändert.
+6. **_opt-EA:** Pattern-Filter-Inputs UND numerische Parameter-Inputs werden jetzt
+   gebaut (Codex); Phase 1 optimiert nur Pattern; numerische Optimierung = Phase 2
+   (AI_PARAM-Hebel, DL-088).
+7. **Pilot:** QM5_13213/USDJPY über Instrument QM5_21501; Skalierung erst nach
+   Pilot-Bewertung.
+8. **Portfolio:** getrennte Bewertung FTMO und DXZ.
+
+## Supersessions (bewusst, OWNER)
+
+- Plan-v2-Entscheid E0-1 („Zensus selegiert nicht; Promotion quell-abgeleitet und
+  vorregistriert") ist für v3 ersetzt durch datengetriebene Auswahl unter versiegelter
+  Regel + WF + volle Trial-Deflation + Q16-Sealed-Head-to-Head.
+- Charter-Kappe „≤ 1 Prädikat/Sleeve" → „≤ 3 je Richtung" (im Einklang mit DL-088).
+
+## Warum ein Decision Record
+
+Auswahlregel, Trial-Zahl und OOS-Protokoll sind Gate-Vertragsgrößen (ROT-Zone der
+Stehenden Vollmacht) — sie binden die Auswertung, bevor Daten gesehen werden, und
+dürfen nachträglich nur durch neuen OWNER-Entscheid geändert werden.
+
+## Nachtrag (2026-08-21, später am Abend — OWNER)
+
+„Zwischen 4 und 5 gehören die numerischen Parameter Optimization Tests rein!" —
+Die numerische Parameter-Optimierung ist damit **Stufe S5 der Pilotkette** (zwischen
+Gesamttest und Q15/Q16), nicht ein separates Nachprogramm. Methodik: identische
+Jahres-Einzeltests + ankernder Walk-Forward + versiegelte Konsistenzregel auf der
+eingefrorenen Filter-Kombination; je Parameter ein Trial mit ≤ 5 Kandidatenwerten und
+Elternwert als Pflicht-Kontrollzelle (DL-088), Auswahl = Plateau-Median. Die
+numerischen Zellen erhöhen `declared_trial_count` VOR ihrer Messung; die Q16-Deflation
+läuft über die Gesamt-Trial-Zahl (154 + numerische Trials). Umsetzung + kompletter
+automatisierter Pilot-Durchlauf QM5_13213/USDJPY per Ultracode OWNER-beauftragt
+(„Baue die Pipeline damit das automatisch funktioniert und überwache").
+
+## Nachtrag 2 (2026-08-22 früh — OWNER)
+
+„S5 muss vor S4 passieren!" — Die Stufenfolge ist damit: S2 Jahreszensus → S3
+WF-Filterauswahl → **S4 numerische Parameter-Optimierung** (auf der eingefrorenen
+Filter-Kombination, gleiche Jahres-/WF-Methodik, Plateau-Median, Ledger-Zuwachs VOR
+Messung) → **S5 Gesamttest der Endkonfiguration** (Filter + Parameter vs. Baseline über
+den maximalen Zeitraum, Deflation über die Gesamt-Trial-Zahl) → Q15/Q16 → Portfolio.
+Es gibt keinen separaten Filter-only-Gesamttest mehr; der eine Gesamttest bestätigt die
+fertige Endkonfiguration. Zusätzlich autorisiert: Factory-OFF/ON-Zeremonie nach Bedarf
+(„Fahr factory off und factory on wenn du es brauchst!") — genutzt für die beiden
+anstehenden Compiles (QM5_41097, Fixture-Harness-Runner) im Null-Terminal-Fenster.

@@ -3042,3 +3042,8 @@ trade counts differ on 80 % of cells. Tester time 38-43 s vs 132 s real ticks (~
 coarse PRE-SORT (ranking) for window/config sweeps, never as economics; open-prices not admissible.
 Next: Astra drafts the OWNER decision card (protocol: programs, mode, cut-off, real-tick confirmation
 + random control sample, expected saving on the ~6,400-cell census backlog).
+
+
+## RESULT 2026-09-11 — Codex `3bc4034e`: Q-PRESCREEN decision card ready for REVIEW
+
+Analysis complete: frozen pilot, 20,000-replicate bootstrap CIs, FN-at-cut tables, cost/queue reconciliation and German 15-line Mission Control text verified. Recommendation: preserve full real-tick measurement in existing DL-089 and Balke programs; new-program shadow validation only, provisional 70% keep. No pruning adoption: 2021 keep-50% FN=1/5, score cost semantics differ, net wall-time gain and earlier Q14 closures NICHT GEZEIGT. No launches, work-item writes, selection/gate/counter change or live action. Canonical board-advisor packet: [decision card](evidence/2026-09-11_prescreen_decision/PRESCREEN_PROTOCOL_DECISION_CARD_2026-09-11.md); [verification](evidence/2026-09-11_prescreen_decision/verification.json). Leave in REVIEW for Claude+OWNER close-out.

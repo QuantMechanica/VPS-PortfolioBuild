@@ -1,0 +1,32 @@
+[
+  {
+    "source": "C:/QM/repo/docs/ops/evidence/2026-09-11_t11_prescreen_pilot_orch.md",
+    "snapshot": "source_2026-09-11_t11_prescreen_pilot_orch.md",
+    "sha256": "d45290dcff49ec7360d1b74f35c24c34bb9a6d0455ca7c6d52e82d9ec1904ac8"
+  },
+  {
+    "source": "C:/QM/repo/docs/research/BALKE_WINDOW_SWEEP_PLAN_2026-09-09.md",
+    "snapshot": "source_BALKE_WINDOW_SWEEP_PLAN_2026-09-09.md",
+    "sha256": "e05369ae49f11dcba69f31157c5d1417f443cc369e168a78c6b66fde6ec49b86"
+  },
+  {
+    "source": "C:/QM/repo/docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md",
+    "snapshot": "source_PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md",
+    "sha256": "b6c29cf6b63c965341bd007a823e2453d4be76b77581832edbcfeb0418a5e151"
+  },
+  {
+    "source": "C:/QM/repo/decisions/DL-089_pattern_filter_wf_census_v3.md",
+    "snapshot": "source_DL-089_pattern_filter_wf_census_v3.md",
+    "sha256": "6c10d3f4e78f1787c7993466f672740a02d37b30ba1f2073157ef802835794ca"
+  },
+  {
+    "source": "D:/QM/strategy_farm/artifacts/opt_census/WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025/declaration.json",
+    "snapshot": "source_declaration.json",
+    "sha256": "fdd8708a573565456280369da561f2ad7b6fc19faa5a519a964f05b0f02e1836"
+  },
+  {
+    "source": "C:/QM/repo/artifacts/cards_approved/QM5_41405_balke-clock-audit-opt.md",
+    "snapshot": "source_QM5_41405_balke-clock-audit-opt.md",
+    "sha256": "42ae839b3a7703e70330b6b8a492ef86e3a98566b9851961308973f95fc193bb"
+  }
+]

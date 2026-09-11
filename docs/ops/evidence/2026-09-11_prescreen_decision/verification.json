@@ -1,0 +1,35 @@
+{
+  "at_utc": "2026-09-11T13:54:12.826998+00:00",
+  "task_id": "3bc4034e-2432-4fd5-a839-330ca463d5f7",
+  "status": "PASS",
+  "checks": [
+    "deterministic 20000-replicate bootstrap on frozen CSV",
+    "rank and tie fixtures",
+    "29 complete unique paired rows",
+    "29 cheap formula checks",
+    "29 real score and native net surface matches",
+    "published FN table exact numerators",
+    "source snapshot sha256 values",
+    "all decision-card relative links resolve",
+    "German summary exactly 15 lines",
+    "git diff --check",
+    "packet .gitattributes disables newline conversion for reproducible byte hashes"
+  ],
+  "artifacts_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "analysis.json": "6f4a4b86ad57603d2b667eac35e501cc311b2abd76c8f414ddcab7393c28bfd1",
+    "analyze.py": "357ee524167fef73edf2edc455eac14fdf03edf7eabe75592f29d6e1a981dafe",
+    "MISSION_CONTROL_DE.txt": "6dbea8a0121a64b2c9b8968e1f3f1506d006ba95e1cb698ad85ba929e14a80ff",
+    "pilot_input.csv": "62d6eb8f98c74fa8bc37506336c6216120a5f0dd3c6a6748726e2db1b869d08c",
+    "PRESCREEN_PROTOCOL_DECISION_CARD_2026-09-11.md": "e1c987c7cdddd5cf529bf7a6e2794d898b15a3d5f0764e7067eb68514f648ca9",
+    "source_2026-09-11_t11_prescreen_pilot_orch.md": "d45290dcff49ec7360d1b74f35c24c34bb9a6d0455ca7c6d52e82d9ec1904ac8",
+    "source_BALKE_WINDOW_SWEEP_PLAN_2026-09-09.md": "e05369ae49f11dcba69f31157c5d1417f443cc369e168a78c6b66fde6ec49b86",
+    "source_declaration.json": "fdd8708a573565456280369da561f2ad7b6fc19faa5a519a964f05b0f02e1836",
+    "source_DL-089_pattern_filter_wf_census_v3.md": "6c10d3f4e78f1787c7993466f672740a02d37b30ba1f2073157ef802835794ca",
+    "source_manifest.json": "fa07086cad0d0eec5c5eb84c1731b95102d21144db133ad00a1cdd5aae6fb435",
+    "source_PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md": "b6c29cf6b63c965341bd007a823e2453d4be76b77581832edbcfeb0418a5e151",
+    "source_QM5_41405_balke-clock-audit-opt.md": "42ae839b3a7703e70330b6b8a492ef86e3a98566b9851961308973f95fc193bb",
+    "surface_input.csv": "17209737db097b99df485b7c0cbb58db67d5a580e14eb9825ae4a07de9ddbd19",
+    "task_and_queue_snapshot.json": "23fb6a931b1c2bc4dde7f4f65ce8034bbf70fc19cdd85f58ef515e94bd45859b"
+  }
+}

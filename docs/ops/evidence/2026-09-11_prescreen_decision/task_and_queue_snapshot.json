@@ -1,0 +1,366 @@
+{
+  "at_utc": "2026-09-11T13:49:21.542178+00:00",
+  "task": {
+    "id": "3bc4034e-2432-4fd5-a839-330ca463d5f7",
+    "task_type": "ops_issue",
+    "state": "IN_PROGRESS",
+    "priority": 85,
+    "required_capabilities_json": "[\"ops\",\"code\",\"research\",\"scalpel_mechanization\"]",
+    "assigned_agent": "codex",
+    "budget_class": "standard",
+    "parent_id": null,
+    "artifact_path": null,
+    "verdict": null,
+    "payload_json": "{\"acceptance\":[\"decision card with options/recommendation/rollback/cost-of-wait\",\"CI + FN-vs-cut table\",\"German MC summary\"],\"codex_model_tier\":\"astra\",\"codex_reasoning_effort\":\"high\",\"context\":[\"Pilot: 30 cells via research_canary.py; OHLC-M1 rho 0.977 (n=19, 3 years), 0.952 (2021, n=10), FN at top-50 pct cut 0-20 pct, top-5 overlap 3/5-4/5, tester 38-43 s vs 132 s real ticks; open-prices rho 0.988 but 80 pct trade-count mismatch. One anomaly (2019 s3_l3 ohlc Ticks:0) to be re-run by the orchestrator.\",\"Backlog: ~6,400 pending OPT_CENSUS cells across 15 DL-089 programs + 350 stage-2 + stage-B 21; fleet ~45-50 cells/h under cap 3, T11 alone did 30 cells in ~45 min sequentially.\",\"Governance: real ticks remain the only evidence class for verdicts/counter; a pre-sort may only ORDER or SHRINK a candidate pool that is then confirmed on real ticks; the sealed DL-089 selection rule cannot change (ROT) - the card must state whether the pattern census is even eligible (per-arm per-year cells with 10-entry-day admissibility) or only window/config sweeps.\"],\"decision_bound_agent\":\"codex\",\"evidence\":[\"docs/ops/evidence/2026-09-11_t11_prescreen_pilot_orch.csv\",\"docs/ops/evidence/2026-09-11_t11_prescreen_pilot_orch.md\",\"docs/research/BALKE_WINDOW_SWEEP_PLAN_2026-09-09.md\",\"docs/research/PATTERN_FILTER_WF_OPT_PLAN_V3_2026-08-21.md\"],\"hard_limits\":[\"No launches, no work_items, no gate/verdict change; every number from the CSV or cited; NICHT GEZEIGT where not measured; commit with explicit pathspecs; RESULT line in OPEN_ITEMS\"],\"model_tier\":\"astra\",\"quota_gate\":{\"agent\":\"codex\",\"allowed\":true,\"decided_at\":\"2026-09-11T13:35:23+00:00\",\"enforced\":true,\"hard_exhaustion\":false,\"invocation\":{\"model\":\"gpt-6-astra\",\"model_tier\":\"astra\",\"model_tier_chain\":[\"astra\"],\"model_tier_chain_detail\":[{\"budget\":48,\"model\":\"gpt-6-astra\",\"tier\":\"astra\"}],\"model_tier_enforcement_mode\":\"observe\",\"model_tier_reason\":\"explicit_payload:codex_model_tier:astra\",\"model_tier_source\":\"explicit_payload\",\"model_window\":{\"budget\":48,\"count\":3,\"ledger_integrity\":{\"corrupt_lines\":0,\"corrupt_lines_outside_window\":0,\"counted_corrupt_lines\":0,\"ledger_mtime\":\"2026-09-11T13:13:51.887757+00:00\",\"read_error\":null},\"model\":\"gpt-6-astra\",\"plan_tier\":\"pro_20x\",\"safety_factor\":0.8,\"tier\":\"astra\",\"window_minutes\":300.0},\"reasoning_effort\":\"high\",\"selection_reason\":\"explicit_payload:codex_reasoning_effort;explicit_payload:codex_model_tier:astra\"},\"metrics\":{\"five_hour_used_pct\":null,\"pace_diff_points\":30.0,\"weekly_elapsed_pct\":50.0,\"weekly_used_pct\":80.0},\"policy_schema\":\"qm.agent_quota_gate.v1\",\"priority\":85,\"reason\":\"owner_priority_bypass\",\"state_status\":\"fresh\",\"task_class\":\"ops_review\",\"task_type\":\"ops_issue\",\"tier_escalation\":null,\"violations\":[]},\"requested_by\":\"Orchestrator Claude 2026-09-11 14:0xZ (pilot measured; T11 works; decision card needed)\",\"required_capabilities\":[\"code\",\"ops\",\"research\",\"scalpel_mechanization\"],\"routed_at\":\"2026-09-11T13:35:23+00:00\",\"router_skipped_blocked_task_count\":2,\"scalpel\":true,\"steps\":[\"S1 Statistical reading of the CSV: bootstrap CI for rho per mode, FN rate as a function of the cut (30/50/70 pct), and the expected real-tick cells saved per 100 candidates at each cut.\",\"S2 Protocol draft (decision card, DL-089 style): scope (window sweeps + config sweeps first; pattern census only if compatible with the sealed rule), mode OHLC-M1, cut-off recommendation, confirmation rule (real-tick for survivors + 10 pct random control sample of dropped cells with a running FN estimate), stop rule (if FN > 10 pct in the control sample -> suspend), T11/T12 seat usage and pacing, rollback.\",\"S3 Cost/benefit on the current backlog: cells saved, hours saved at fleet rate, counter impact (which programs reach Q14 sooner).\",\"S4 Output docs/research/PRESCREEN_PROTOCOL_DECISION_CARD_2026-09-XX.md + Vault-ready summary (German, 15 lines) for Mission Control.\"],\"title\":\"ASTRA-PRESCREEN-DECISION-CARD: from the measured T11 pilot (docs/ops/evidence/2026-09-11_t11_prescreen_pilot_orch.csv/.md) draft the OWNER decision card for a governed OHLC-M1 pre-sort protocol: which programs/phases, cut-off, real-tick confirmation + random control sample, expected saving on the census backlog, refutation criteria and rollback; analysis only, no launches\"}",
+    "created_at": "2026-09-11T13:35:22+00:00",
+    "updated_at": "2026-09-11T13:35:23+00:00",
+    "required_skills_json": "[]"
+  },
+  "lease": [
+    {
+      "task_key": "agent_task:3bc4034e-2432-4fd5-a839-330ca463d5f7",
+      "agent_id": "codex",
+      "acquired_at": "2026-09-11T13:35:23+00:00",
+      "expires_at": "2026-09-11T14:05:23+00:00"
+    }
+  ],
+  "raw_census_counts": [
+    {
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41301",
+      "status": "done",
+      "n": 766
+    },
+    {
+      "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41301",
+      "status": "pending",
+      "n": 319
+    },
+    {
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41322",
+      "status": "active",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41322",
+      "status": "done",
+      "n": 532
+    },
+    {
+      "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41322",
+      "status": "pending",
+      "n": 552
+    },
+    {
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41302",
+      "status": "done",
+      "n": 1039
+    },
+    {
+      "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41302",
+      "status": "pending",
+      "n": 50
+    },
+    {
+      "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41333",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41333",
+      "status": "failed",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "ea_id": "QM5_41161",
+      "status": "done",
+      "n": 439
+    },
+    {
+      "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+      "ea_id": "QM5_41161",
+      "status": "pending",
+      "n": 650
+    },
+    {
+      "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41347",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+      "ea_id": "QM5_41162",
+      "status": "done",
+      "n": 1161
+    },
+    {
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "ea_id": "QM5_41163",
+      "status": "done",
+      "n": 599
+    },
+    {
+      "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+      "ea_id": "QM5_41163",
+      "status": "pending",
+      "n": 490
+    },
+    {
+      "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+      "ea_id": "QM5_41323",
+      "status": "done",
+      "n": 264
+    },
+    {
+      "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+      "ea_id": "QM5_41323",
+      "status": "pending",
+      "n": 821
+    },
+    {
+      "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+      "ea_id": "QM5_41342",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+      "ea_id": "QM5_41197",
+      "status": "done",
+      "n": 434
+    },
+    {
+      "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+      "ea_id": "QM5_41197",
+      "status": "pending",
+      "n": 655
+    },
+    {
+      "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+      "ea_id": "QM5_41332",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41331",
+      "status": "done",
+      "n": 1006
+    },
+    {
+      "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41331",
+      "status": "pending",
+      "n": 83
+    },
+    {
+      "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41307",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41305",
+      "status": "done",
+      "n": 1090
+    },
+    {
+      "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+      "ea_id": "QM5_41321",
+      "status": "done",
+      "n": 324
+    },
+    {
+      "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+      "ea_id": "QM5_41321",
+      "status": "pending",
+      "n": 761
+    },
+    {
+      "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41194",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41398",
+      "status": "done",
+      "n": 25
+    },
+    {
+      "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41398",
+      "status": "pending",
+      "n": 1060
+    },
+    {
+      "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+      "ea_id": "QM5_41195",
+      "status": "done",
+      "n": 1090
+    },
+    {
+      "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+      "ea_id": "QM5_41195",
+      "status": "failed",
+      "n": 1
+    },
+    {
+      "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41303",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+      "ea_id": "QM5_41343",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41198",
+      "status": "done",
+      "n": 943
+    },
+    {
+      "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+      "ea_id": "QM5_41198",
+      "status": "pending",
+      "n": 146
+    },
+    {
+      "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41324",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41345",
+      "status": "done",
+      "n": 1059
+    },
+    {
+      "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41345",
+      "status": "pending",
+      "n": 26
+    },
+    {
+      "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+      "ea_id": "QM5_41304",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41196",
+      "status": "done",
+      "n": 1041
+    },
+    {
+      "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41196",
+      "status": "pending",
+      "n": 48
+    },
+    {
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41097",
+      "status": "done",
+      "n": 871
+    },
+    {
+      "program_id": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41097",
+      "status": "pending",
+      "n": 218
+    },
+    {
+      "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+      "ea_id": "QM5_41346",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+      "ea_id": "QM5_41344",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+      "ea_id": "QM5_41306",
+      "status": "done",
+      "n": 1089
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41398",
+      "status": "active",
+      "n": 1
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41398",
+      "status": "done",
+      "n": 614
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41398",
+      "status": "pending",
+      "n": 15
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41405",
+      "status": "active",
+      "n": 1
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41405",
+      "status": "done",
+      "n": 113
+    },
+    {
+      "program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+      "ea_id": "QM5_41405",
+      "status": "pending",
+      "n": 236
+    }
+  ],
+  "pending_by_program": {
+    "DL089_QM5_41097_USDJPY_DWX_2019_2025": 218,
+    "DL089_QM5_10706_GBPUSD_DWX_2019_2025": 650,
+    "DL089_QM5_20266_XTIUSD_DWX_2019_2025": 146,
+    "DL089_QM5_11422_USDCAD_DWX_2019_2025": 490,
+    "DL089_QM5_21507_XAUUSD_DWX_2019_2025": 48,
+    "DL089_QM5_11881_GBPUSD_DWX_2019_2025": 655,
+    "DL089_QM5_10145_XAUUSD_DWX_2019_2025": 319,
+    "DL089_QM5_10513_XAUUSD_DWX_2019_2025": 50,
+    "DL089_QM5_10403_XAUUSD_DWX_2019_2025": 552,
+    "DL089_QM5_12710_XTIUSD_DWX_2019_2025": 83,
+    "DL089_QM5_21502_XAUUSD_DWX_2019_2025": 26,
+    "DL089_QM5_13013_NDX_DWX_2019_2025": 761,
+    "DL089_QM5_11660_NDX_DWX_2019_2025": 821,
+    "DL089_QM5_13213_USDJPY_DWX_2019_2025": 1060,
+    "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025": 15,
+    "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025": 236
+  },
+  "note": "Raw status counts; not claimability/hold-adjusted. Read-only transaction."
+}

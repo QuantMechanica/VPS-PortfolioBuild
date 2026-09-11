@@ -1,0 +1,899 @@
+{
+  "bootstrap_replicates": 20000,
+  "seed": 20260911,
+  "numpy_version": "2.4.6",
+  "input_sha256": "62d6eb8f98c74fa8bc37506336c6216120a5f0dd3c6a6748726e2db1b869d08c",
+  "source_surface_sha256": "17209737db097b99df485b7c0cbb58db67d5a580e14eb9825ae4a07de9ddbd19",
+  "rows": 32,
+  "included": 29,
+  "excluded": [
+    {
+      "mode": "ohlc-m1",
+      "year": "2019",
+      "cell_key": "s3_l3",
+      "reason": "COMPLETED_ZERO_TICKS_ANOMALY"
+    },
+    {
+      "mode": "ohlc-m1",
+      "year": "2021",
+      "cell_key": "s3_l3",
+      "reason": "REFUSED: CPU guard: 5-sample fleet average 99.160 > 97.0"
+    },
+    {
+      "mode": "ohlc-m1",
+      "year": "2019",
+      "cell_key": "s0_l8",
+      "reason": "DRY_RUN_PASS: None"
+    }
+  ],
+  "score_real_definition": "surface costed (net_native - 5 * entry lots) / max(maxdd,1); NOT net_real / maxdd_real",
+  "surface_matches": [
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s0_l8_x18",
+      "work_item_id": "2bf932c4-b1cc-56a3-af3d-a6dd0bd4aca3",
+      "score": "2.357049219227181",
+      "net_native": "18529.72",
+      "lots_rt": "487.53000000000003",
+      "net_costed_plan": "16092.070000000002",
+      "maxdd": "6827.21",
+      "native_report": "D:\\QM\\reports\\work_items\\2bf932c4-b1cc-56a3-af3d-a6dd0bd4aca3\\QM5_41398\\20260910_043955\\raw\\run_01\\report.htm",
+      "native_report_sha256": "11d6213ea65c1c793957f018e3739a63d511121bd23253a1a8b74eac468cf6d2"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s1_l4_x18",
+      "work_item_id": "aba7cdeb-5214-56eb-8b1a-3073d4ab9f84",
+      "score": "3.843691015703595",
+      "net_native": "38939.09",
+      "lots_rt": "1369.1000000000006",
+      "net_costed_plan": "32093.589999999993",
+      "maxdd": "8349.68",
+      "native_report": "D:\\QM\\reports\\work_items\\aba7cdeb-5214-56eb-8b1a-3073d4ab9f84\\QM5_41398\\20260910_054107\\raw\\run_01\\report.htm",
+      "native_report_sha256": "e62ff38f0eafe66f136b82aa3def6cb5cd5df8d1b47c62304ddeeb5bad73011f"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s2_l4_x18",
+      "work_item_id": "a41cc279-53bf-57e8-9b03-3d8cc9008811",
+      "score": "0.06222101266106246",
+      "net_native": "6870.11",
+      "lots_rt": "1229.5299999999995",
+      "net_costed_plan": "722.4600000000019",
+      "maxdd": "11611.19",
+      "native_report": "D:\\QM\\reports\\work_items\\a41cc279-53bf-57e8-9b03-3d8cc9008811\\QM5_41398\\20260910_081141\\raw\\run_01\\report.htm",
+      "native_report_sha256": "eab287526ceee2522cd3cf008b1247a70c4cdc4588883d7a04945ba09dcd5565"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s3_l4_x18",
+      "work_item_id": "572ab76f-199c-5606-80cf-0ce76e2d0ce3",
+      "score": "0.5833499181251255",
+      "net_native": "12076.27",
+      "lots_rt": "1154.8600000000001",
+      "net_costed_plan": "6301.969999999999",
+      "maxdd": "10803.07",
+      "native_report": "D:\\QM\\reports\\work_items\\572ab76f-199c-5606-80cf-0ce76e2d0ce3\\QM5_41398\\20260910_104220\\raw\\run_01\\report.htm",
+      "native_report_sha256": "361ea094a089c5bc15ab8048c5747de4797c844525d6bdb0fbe7ac9e5b3882c7"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s3_l3_x18",
+      "work_item_id": "be5d3ce4-4762-5bf0-96e0-3c3469f9e3c9",
+      "score": "-0.24524753099594482",
+      "net_native": "2941.71",
+      "lots_rt": "1397.29",
+      "net_costed_plan": "-4044.74",
+      "maxdd": "16492.48",
+      "native_report": "D:\\QM\\reports\\work_items\\be5d3ce4-4762-5bf0-96e0-3c3469f9e3c9\\QM5_41398\\20260910_102420\\raw\\run_01\\report.htm",
+      "native_report_sha256": "b60d80f80657ca8a7cdd11bad1856834281aa3b079723ac55950feac6702cbea"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s1_l8_x18",
+      "work_item_id": "5ea0464a-cafc-59d0-8b2b-f1b1eba5c2cc",
+      "score": "1.461821234177577",
+      "net_native": "10680.66",
+      "lots_rt": "345.85999999999996",
+      "net_costed_plan": "8951.36",
+      "maxdd": "6123.43",
+      "native_report": "D:\\QM\\reports\\work_items\\5ea0464a-cafc-59d0-8b2b-f1b1eba5c2cc\\QM5_41398\\20260910_070334\\raw\\run_01\\report.htm",
+      "native_report_sha256": "bad7e452df48141af2b34e61b6f1101b0d77677bc40de504405e84750d2c04c3"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s5_l3_x18",
+      "work_item_id": "b6f2d201-b10b-508f-8cf0-8e087d6832d8",
+      "score": "-0.4927974621661167",
+      "net_native": "2448.26",
+      "lots_rt": "2221.4299999999994",
+      "net_costed_plan": "-8658.889999999998",
+      "maxdd": "17570.89",
+      "native_report": "D:\\QM\\reports\\work_items\\b6f2d201-b10b-508f-8cf0-8e087d6832d8\\QM5_41398\\20260910_155316\\raw\\run_01\\report.htm",
+      "native_report_sha256": "40f2ebf275c99424804fe49fc6feb86406c235ead736d2ec0e642816edb010b4"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s2_l6_x18",
+      "work_item_id": "7011a09c-36c7-5908-a9e3-ba08abc7eeb4",
+      "score": "1.1897566706506641",
+      "net_native": "12677.74",
+      "lots_rt": "666.1000000000001",
+      "net_costed_plan": "9347.239999999998",
+      "maxdd": "7856.43",
+      "native_report": "D:\\QM\\reports\\work_items\\7011a09c-36c7-5908-a9e3-ba08abc7eeb4\\QM5_41398\\20260910_085730\\raw\\run_01\\report.htm",
+      "native_report_sha256": "00583a4dd830e2ad50645cbf0709c9f9d67beb7e35dab79e05ed63d2df666512"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s0_l4_x18",
+      "work_item_id": "a13095b5-1aef-5315-98a6-2eb3a4636e84",
+      "score": "2.9782937133932776",
+      "net_native": "39984.24",
+      "lots_rt": "1566.4200000000003",
+      "net_costed_plan": "32152.139999999996",
+      "maxdd": "10795.49",
+      "native_report": "D:\\QM\\reports\\work_items\\a13095b5-1aef-5315-98a6-2eb3a4636e84\\QM5_41398\\20260910_030046\\raw\\run_01\\report.htm",
+      "native_report_sha256": "84ac68c35f960120783659f61802e0450fb1cd36bcda94e62fe74c6a47d11544"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s4_l6_x18",
+      "work_item_id": "82a7b146-63b1-536b-bdf6-1ec3921fd182",
+      "score": "1.1326760500926916",
+      "net_native": "17449.66",
+      "lots_rt": "833.3399999999999",
+      "net_costed_plan": "13282.96",
+      "maxdd": "11727.06",
+      "native_report": "D:\\QM\\reports\\work_items\\82a7b146-63b1-536b-bdf6-1ec3921fd182\\QM5_41398\\20260910_141937\\raw\\run_01\\report.htm",
+      "native_report_sha256": "41f341a722f943af766cbbcae98af4dcfed11aec3a1f74c882f4fe0a7c3ace45"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2019:s0_l8_x18",
+      "work_item_id": "7a76c348-4ff2-5687-8e95-d73723bd0f22",
+      "score": "-1.1179331335785607",
+      "net_native": "-13683.35",
+      "lots_rt": "567.5199999999999",
+      "net_costed_plan": "-16520.95",
+      "maxdd": "14778.12",
+      "native_report": "D:\\QM\\reports\\work_items\\7a76c348-4ff2-5687-8e95-d73723bd0f22\\QM5_41398\\20260910_043419\\raw\\run_01\\report.htm",
+      "native_report_sha256": "6bb3348d63222db84019ce7cfb949a1b81c67fcc0e4a51861c16416d4e2586a9"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2019:s1_l4_x18",
+      "work_item_id": "34fa5c69-9189-5b91-8c01-80f98a548500",
+      "score": "-0.5127445428722016",
+      "net_native": "-3180.43",
+      "lots_rt": "1142.2699999999998",
+      "net_costed_plan": "-8891.779999999999",
+      "maxdd": "17341.54",
+      "native_report": "D:\\QM\\reports\\work_items\\34fa5c69-9189-5b91-8c01-80f98a548500\\QM5_41398\\20260910_052535\\raw\\run_01\\report.htm",
+      "native_report_sha256": "3cb9dc63ad905ff6a54ad95051663d2f1d9857ddc993f3ee90d574a0e53736c8"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2019:s2_l4_x18",
+      "work_item_id": "532fa556-dc66-592a-9f39-f8313d61c06e",
+      "score": "-1.0074531343182986",
+      "net_native": "-11325.42",
+      "lots_rt": "1083.1200000000001",
+      "net_costed_plan": "-16741.02",
+      "maxdd": "16617.17",
+      "native_report": "D:\\QM\\reports\\work_items\\532fa556-dc66-592a-9f39-f8313d61c06e\\QM5_41398\\20260910_075146\\raw\\run_01\\report.htm",
+      "native_report_sha256": "c47212c4f1a9739e31d36c989157fbdcbf492b894ec6cfcab9da88a4bf8bef40"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2019:s1_l8_x18",
+      "work_item_id": "7208eb32-ca8d-5b92-9a2c-500d6a305a71",
+      "score": "-1.0270314641278728",
+      "net_native": "-10762.5",
+      "lots_rt": "512.4699999999999",
+      "net_costed_plan": "-13324.849999999999",
+      "maxdd": "12974.14",
+      "native_report": "D:\\QM\\reports\\work_items\\7208eb32-ca8d-5b92-9a2c-500d6a305a71\\QM5_41398\\20260910_064712\\raw\\run_01\\report.htm",
+      "native_report_sha256": "7253a6b51ee467a2698bc3b683e6e9769d463c2716968935c60808a953eb6853"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2023:s0_l8_x18",
+      "work_item_id": "543eed49-7020-576e-96a1-6f7bb4a873d1",
+      "score": "0.9116589690099411",
+      "net_native": "10474.86",
+      "lots_rt": "367.0299999999999",
+      "net_costed_plan": "8639.710000000001",
+      "maxdd": "9476.91",
+      "native_report": "D:\\QM\\reports\\work_items\\543eed49-7020-576e-96a1-6f7bb4a873d1\\QM5_41398\\20260910_044700\\raw\\run_01\\report.htm",
+      "native_report_sha256": "1a70c6d58b167accec1adbc04fff5df26a1117d722d66726175a4f1372c9a9d9"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2023:s1_l4_x18",
+      "work_item_id": "5e66caf3-cdaa-5665-a2a2-38ddd2477c1a",
+      "score": "-0.5769424066984742",
+      "net_native": "-7655.91",
+      "lots_rt": "916.2999999999993",
+      "net_costed_plan": "-12237.409999999996",
+      "maxdd": "21210.8",
+      "native_report": "D:\\QM\\reports\\work_items\\5e66caf3-cdaa-5665-a2a2-38ddd2477c1a\\QM5_41398\\20260910_054745\\raw\\run_01\\report.htm",
+      "native_report_sha256": "6775a3b374166acb8c1b5d1b060c26d2f96f33b2e22791835acd911726aab0ca"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2023:s3_l3_x18",
+      "work_item_id": "b29d34b0-5250-59ab-af15-0a60f2cc9544",
+      "score": "-0.4747049565360861",
+      "net_native": "-7254.27",
+      "lots_rt": "896.8999999999994",
+      "net_costed_plan": "-11738.769999999997",
+      "maxdd": "24728.56",
+      "native_report": "D:\\QM\\reports\\work_items\\b29d34b0-5250-59ab-af15-0a60f2cc9544\\QM5_41398\\20260910_103121\\raw\\run_01\\report.htm",
+      "native_report_sha256": "98509e177ce4a4e2cbe8da917b52bef85ddf464cb814b2bafc4ef420a445ae37"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2023:s2_l4_x18",
+      "work_item_id": "f1ee8650-04f5-5781-9bbb-bbdff17a9c4f",
+      "score": "-0.45574622062455444",
+      "net_native": "-5512.03",
+      "lots_rt": "819.3399999999998",
+      "net_costed_plan": "-9608.73",
+      "maxdd": "21083.51",
+      "native_report": "D:\\QM\\reports\\work_items\\f1ee8650-04f5-5781-9bbb-bbdff17a9c4f\\QM5_41398\\20260910_081940\\raw\\run_01\\report.htm",
+      "native_report_sha256": "82244ec8b10fd1758c6048345b2709c224e83f5550fe800dde4b5b7702b8a810"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2023:s1_l8_x18",
+      "work_item_id": "0846f878-3b4e-5558-b409-5fe36d3d5bf7",
+      "score": "-0.25954252429305563",
+      "net_native": "-1841.62",
+      "lots_rt": "277.94000000000005",
+      "net_costed_plan": "-3231.32",
+      "maxdd": "12450.06",
+      "native_report": "D:\\QM\\reports\\work_items\\0846f878-3b4e-5558-b409-5fe36d3d5bf7\\QM5_41398\\20260910_070945\\raw\\run_01\\report.htm",
+      "native_report_sha256": "371fd656657947021da17b6d64d56e71e1db48899b52947794911f5611da1b95"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s0_l8_x18",
+      "work_item_id": "2bf932c4-b1cc-56a3-af3d-a6dd0bd4aca3",
+      "score": "2.357049219227181",
+      "net_native": "18529.72",
+      "lots_rt": "487.53000000000003",
+      "net_costed_plan": "16092.070000000002",
+      "maxdd": "6827.21",
+      "native_report": "D:\\QM\\reports\\work_items\\2bf932c4-b1cc-56a3-af3d-a6dd0bd4aca3\\QM5_41398\\20260910_043955\\raw\\run_01\\report.htm",
+      "native_report_sha256": "11d6213ea65c1c793957f018e3739a63d511121bd23253a1a8b74eac468cf6d2"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s1_l4_x18",
+      "work_item_id": "aba7cdeb-5214-56eb-8b1a-3073d4ab9f84",
+      "score": "3.843691015703595",
+      "net_native": "38939.09",
+      "lots_rt": "1369.1000000000006",
+      "net_costed_plan": "32093.589999999993",
+      "maxdd": "8349.68",
+      "native_report": "D:\\QM\\reports\\work_items\\aba7cdeb-5214-56eb-8b1a-3073d4ab9f84\\QM5_41398\\20260910_054107\\raw\\run_01\\report.htm",
+      "native_report_sha256": "e62ff38f0eafe66f136b82aa3def6cb5cd5df8d1b47c62304ddeeb5bad73011f"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s2_l4_x18",
+      "work_item_id": "a41cc279-53bf-57e8-9b03-3d8cc9008811",
+      "score": "0.06222101266106246",
+      "net_native": "6870.11",
+      "lots_rt": "1229.5299999999995",
+      "net_costed_plan": "722.4600000000019",
+      "maxdd": "11611.19",
+      "native_report": "D:\\QM\\reports\\work_items\\a41cc279-53bf-57e8-9b03-3d8cc9008811\\QM5_41398\\20260910_081141\\raw\\run_01\\report.htm",
+      "native_report_sha256": "eab287526ceee2522cd3cf008b1247a70c4cdc4588883d7a04945ba09dcd5565"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s3_l4_x18",
+      "work_item_id": "572ab76f-199c-5606-80cf-0ce76e2d0ce3",
+      "score": "0.5833499181251255",
+      "net_native": "12076.27",
+      "lots_rt": "1154.8600000000001",
+      "net_costed_plan": "6301.969999999999",
+      "maxdd": "10803.07",
+      "native_report": "D:\\QM\\reports\\work_items\\572ab76f-199c-5606-80cf-0ce76e2d0ce3\\QM5_41398\\20260910_104220\\raw\\run_01\\report.htm",
+      "native_report_sha256": "361ea094a089c5bc15ab8048c5747de4797c844525d6bdb0fbe7ac9e5b3882c7"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s3_l3_x18",
+      "work_item_id": "be5d3ce4-4762-5bf0-96e0-3c3469f9e3c9",
+      "score": "-0.24524753099594482",
+      "net_native": "2941.71",
+      "lots_rt": "1397.29",
+      "net_costed_plan": "-4044.74",
+      "maxdd": "16492.48",
+      "native_report": "D:\\QM\\reports\\work_items\\be5d3ce4-4762-5bf0-96e0-3c3469f9e3c9\\QM5_41398\\20260910_102420\\raw\\run_01\\report.htm",
+      "native_report_sha256": "b60d80f80657ca8a7cdd11bad1856834281aa3b079723ac55950feac6702cbea"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s1_l8_x18",
+      "work_item_id": "5ea0464a-cafc-59d0-8b2b-f1b1eba5c2cc",
+      "score": "1.461821234177577",
+      "net_native": "10680.66",
+      "lots_rt": "345.85999999999996",
+      "net_costed_plan": "8951.36",
+      "maxdd": "6123.43",
+      "native_report": "D:\\QM\\reports\\work_items\\5ea0464a-cafc-59d0-8b2b-f1b1eba5c2cc\\QM5_41398\\20260910_070334\\raw\\run_01\\report.htm",
+      "native_report_sha256": "bad7e452df48141af2b34e61b6f1101b0d77677bc40de504405e84750d2c04c3"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s5_l3_x18",
+      "work_item_id": "b6f2d201-b10b-508f-8cf0-8e087d6832d8",
+      "score": "-0.4927974621661167",
+      "net_native": "2448.26",
+      "lots_rt": "2221.4299999999994",
+      "net_costed_plan": "-8658.889999999998",
+      "maxdd": "17570.89",
+      "native_report": "D:\\QM\\reports\\work_items\\b6f2d201-b10b-508f-8cf0-8e087d6832d8\\QM5_41398\\20260910_155316\\raw\\run_01\\report.htm",
+      "native_report_sha256": "40f2ebf275c99424804fe49fc6feb86406c235ead736d2ec0e642816edb010b4"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s2_l6_x18",
+      "work_item_id": "7011a09c-36c7-5908-a9e3-ba08abc7eeb4",
+      "score": "1.1897566706506641",
+      "net_native": "12677.74",
+      "lots_rt": "666.1000000000001",
+      "net_costed_plan": "9347.239999999998",
+      "maxdd": "7856.43",
+      "native_report": "D:\\QM\\reports\\work_items\\7011a09c-36c7-5908-a9e3-ba08abc7eeb4\\QM5_41398\\20260910_085730\\raw\\run_01\\report.htm",
+      "native_report_sha256": "00583a4dd830e2ad50645cbf0709c9f9d67beb7e35dab79e05ed63d2df666512"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s0_l4_x18",
+      "work_item_id": "a13095b5-1aef-5315-98a6-2eb3a4636e84",
+      "score": "2.9782937133932776",
+      "net_native": "39984.24",
+      "lots_rt": "1566.4200000000003",
+      "net_costed_plan": "32152.139999999996",
+      "maxdd": "10795.49",
+      "native_report": "D:\\QM\\reports\\work_items\\a13095b5-1aef-5315-98a6-2eb3a4636e84\\QM5_41398\\20260910_030046\\raw\\run_01\\report.htm",
+      "native_report_sha256": "84ac68c35f960120783659f61802e0450fb1cd36bcda94e62fe74c6a47d11544"
+    },
+    {
+      "cell_key": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025:2021:s4_l6_x18",
+      "work_item_id": "82a7b146-63b1-536b-bdf6-1ec3921fd182",
+      "score": "1.1326760500926916",
+      "net_native": "17449.66",
+      "lots_rt": "833.3399999999999",
+      "net_costed_plan": "13282.96",
+      "maxdd": "11727.06",
+      "native_report": "D:\\QM\\reports\\work_items\\82a7b146-63b1-536b-bdf6-1ec3921fd182\\QM5_41398\\20260910_141937\\raw\\run_01\\report.htm",
+      "native_report_sha256": "41f341a722f943af766cbbcae98af4dcfed11aec3a1f74c882f4fe0a7c3ace45"
+    }
+  ],
+  "scopes": [
+    {
+      "scope": "ohlc-m1:pooled",
+      "n": 19,
+      "rho": 0.9771929824561404,
+      "paired_row_bootstrap": {
+        "percentile_95": [
+          0.8848513009692881,
+          1.0
+        ],
+        "valid": 20000,
+        "degenerate": 0
+      },
+      "net_sign_agree": 0.7368421052631579,
+      "trade_count_exact": 0.5789473684210527,
+      "top5_overlap": 3,
+      "median_tester_seconds": 42.678,
+      "cuts": [
+        {
+          "keep_fraction": 0.3,
+          "keep_n": 5,
+          "missed_top_same_k": 2,
+          "truth_n": 5,
+          "fn_same_k": 0.4,
+          "fn_wilson_95_descriptive": [
+            0.11762077423264783,
+            0.769275718723987
+          ],
+          "missed_keys": [
+            "2021:s1_l8",
+            "2021:s2_l6"
+          ],
+          "missed_fixed_top50": 4,
+          "fixed_top50_n": 9,
+          "sample_controls_rounded": 2,
+          "sample_real_cells_saved": 12,
+          "saved_per_100_candidates": 62.99999999999999
+        },
+        {
+          "keep_fraction": 0.5,
+          "keep_n": 9,
+          "missed_top_same_k": 0,
+          "truth_n": 9,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            0,
+            0.2991450484195441
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 9,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 9,
+          "saved_per_100_candidates": 45.0
+        },
+        {
+          "keep_fraction": 0.7,
+          "keep_n": 13,
+          "missed_top_same_k": 0,
+          "truth_n": 13,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            0,
+            0.22809537235419838
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 9,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 5,
+          "saved_per_100_candidates": 27.000000000000004
+        }
+      ],
+      "year_stratified_bootstrap": {
+        "percentile_95": [
+          0.8911685994647636,
+          0.9982363315696648
+        ],
+        "valid": 20000,
+        "degenerate": 0
+      },
+      "window_cluster_bootstrap": {
+        "percentile_95": [
+          0.8891454965357968,
+          0.997907949790795
+        ],
+        "valid": 20000,
+        "degenerate": 0
+      }
+    },
+    {
+      "scope": "ohlc-m1:2021",
+      "n": 10,
+      "rho": 0.9515151515151515,
+      "paired_row_bootstrap": {
+        "percentile_95": [
+          0.6226415094339622,
+          1.0
+        ],
+        "valid": 20000,
+        "degenerate": 0
+      },
+      "net_sign_agree": 1.0,
+      "trade_count_exact": 0.6,
+      "top5_overlap": 4,
+      "median_tester_seconds": 41.939,
+      "cuts": [
+        {
+          "keep_fraction": 0.3,
+          "keep_n": 3,
+          "missed_top_same_k": 0,
+          "truth_n": 3,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            5.551115123125783e-17,
+            0.5614970317550454
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 2,
+          "fixed_top50_n": 5,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 6,
+          "saved_per_100_candidates": 62.99999999999999
+        },
+        {
+          "keep_fraction": 0.5,
+          "keep_n": 5,
+          "missed_top_same_k": 1,
+          "truth_n": 5,
+          "fn_same_k": 0.2,
+          "fn_wilson_95_descriptive": [
+            0.03622410863243014,
+            0.6244653702374747
+          ],
+          "missed_keys": [
+            "2021:s1_l8"
+          ],
+          "missed_fixed_top50": 1,
+          "fixed_top50_n": 5,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 4,
+          "saved_per_100_candidates": 45.0
+        },
+        {
+          "keep_fraction": 0.7,
+          "keep_n": 7,
+          "missed_top_same_k": 0,
+          "truth_n": 7,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            5.551115123125783e-17,
+            0.35433043506668743
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 5,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 2,
+          "saved_per_100_candidates": 27.000000000000004
+        }
+      ]
+    },
+    {
+      "scope": "open-prices:2021",
+      "n": 10,
+      "rho": 0.9878787878787879,
+      "paired_row_bootstrap": {
+        "percentile_95": [
+          0.8675496688741722,
+          1.0
+        ],
+        "valid": 20000,
+        "degenerate": 0
+      },
+      "net_sign_agree": 0.9,
+      "trade_count_exact": 0.2,
+      "top5_overlap": 4,
+      "median_tester_seconds": 37.08,
+      "cuts": [
+        {
+          "keep_fraction": 0.3,
+          "keep_n": 3,
+          "missed_top_same_k": 0,
+          "truth_n": 3,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            5.551115123125783e-17,
+            0.5614970317550454
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 2,
+          "fixed_top50_n": 5,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 6,
+          "saved_per_100_candidates": 62.99999999999999
+        },
+        {
+          "keep_fraction": 0.5,
+          "keep_n": 5,
+          "missed_top_same_k": 1,
+          "truth_n": 5,
+          "fn_same_k": 0.2,
+          "fn_wilson_95_descriptive": [
+            0.03622410863243014,
+            0.6244653702374747
+          ],
+          "missed_keys": [
+            "2021:s2_l6"
+          ],
+          "missed_fixed_top50": 1,
+          "fixed_top50_n": 5,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 4,
+          "saved_per_100_candidates": 45.0
+        },
+        {
+          "keep_fraction": 0.7,
+          "keep_n": 7,
+          "missed_top_same_k": 0,
+          "truth_n": 7,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            5.551115123125783e-17,
+            0.35433043506668743
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 5,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 2,
+          "saved_per_100_candidates": 27.000000000000004
+        }
+      ]
+    },
+    {
+      "scope": "ohlc-m1:2019",
+      "n": 4,
+      "rho": 1.0,
+      "paired_row_bootstrap": {
+        "percentile_95": [
+          1.0,
+          1.0
+        ],
+        "valid": 19672,
+        "degenerate": 328
+      },
+      "net_sign_agree": 0.75,
+      "trade_count_exact": 0.75,
+      "top5_overlap": 4,
+      "median_tester_seconds": 44.563500000000005,
+      "cuts": [
+        {
+          "keep_fraction": 0.3,
+          "keep_n": 1,
+          "missed_top_same_k": 0,
+          "truth_n": 1,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            0,
+            0.7934506856227626
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 1,
+          "fixed_top50_n": 2,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 2,
+          "saved_per_100_candidates": 62.99999999999999
+        },
+        {
+          "keep_fraction": 0.5,
+          "keep_n": 2,
+          "missed_top_same_k": 0,
+          "truth_n": 2,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            0,
+            0.6576197724933469
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 2,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 1,
+          "saved_per_100_candidates": 45.0
+        },
+        {
+          "keep_fraction": 0.7,
+          "keep_n": 2,
+          "missed_top_same_k": 0,
+          "truth_n": 2,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            0,
+            0.6576197724933469
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 2,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 1,
+          "saved_per_100_candidates": 27.000000000000004
+        }
+      ]
+    },
+    {
+      "scope": "ohlc-m1:2023",
+      "n": 5,
+      "rho": 1.0,
+      "paired_row_bootstrap": {
+        "percentile_95": [
+          1.0,
+          1.0
+        ],
+        "valid": 19970,
+        "degenerate": 30
+      },
+      "net_sign_agree": 0.2,
+      "trade_count_exact": 0.4,
+      "top5_overlap": 5,
+      "median_tester_seconds": 40.68,
+      "cuts": [
+        {
+          "keep_fraction": 0.3,
+          "keep_n": 1,
+          "missed_top_same_k": 0,
+          "truth_n": 1,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            0,
+            0.7934506856227626
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 1,
+          "fixed_top50_n": 2,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 3,
+          "saved_per_100_candidates": 62.99999999999999
+        },
+        {
+          "keep_fraction": 0.5,
+          "keep_n": 2,
+          "missed_top_same_k": 0,
+          "truth_n": 2,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            0,
+            0.6576197724933469
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 2,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 2,
+          "saved_per_100_candidates": 45.0
+        },
+        {
+          "keep_fraction": 0.7,
+          "keep_n": 3,
+          "missed_top_same_k": 0,
+          "truth_n": 3,
+          "fn_same_k": 0.0,
+          "fn_wilson_95_descriptive": [
+            5.551115123125783e-17,
+            0.5614970317550454
+          ],
+          "missed_keys": [],
+          "missed_fixed_top50": 0,
+          "fixed_top50_n": 2,
+          "sample_controls_rounded": 1,
+          "sample_real_cells_saved": 1,
+          "saved_per_100_candidates": 27.000000000000004
+        }
+      ]
+    }
+  ],
+  "projections": [
+    {
+      "n": 100,
+      "keep": 0.3,
+      "saved_real_cells_expected": 62.99999999999999,
+      "released_fleet_hours_at_50_to_45": [
+        1.2599999999999998,
+        1.4
+      ],
+      "cheap_tester_hours_at_m1_median": 1.1854999999999998,
+      "t11_wall_hours_at_payload_40_cells_h": 2.5
+    },
+    {
+      "n": 100,
+      "keep": 0.5,
+      "saved_real_cells_expected": 45.0,
+      "released_fleet_hours_at_50_to_45": [
+        0.9,
+        1.0
+      ],
+      "cheap_tester_hours_at_m1_median": 1.1854999999999998,
+      "t11_wall_hours_at_payload_40_cells_h": 2.5
+    },
+    {
+      "n": 100,
+      "keep": 0.7,
+      "saved_real_cells_expected": 27.000000000000004,
+      "released_fleet_hours_at_50_to_45": [
+        0.54,
+        0.6000000000000001
+      ],
+      "cheap_tester_hours_at_m1_median": 1.1854999999999998,
+      "t11_wall_hours_at_payload_40_cells_h": 2.5
+    },
+    {
+      "n": 6400,
+      "keep": 0.3,
+      "saved_real_cells_expected": 4031.9999999999995,
+      "released_fleet_hours_at_50_to_45": [
+        80.63999999999999,
+        89.6
+      ],
+      "cheap_tester_hours_at_m1_median": 75.87199999999999,
+      "t11_wall_hours_at_payload_40_cells_h": 160.0
+    },
+    {
+      "n": 6400,
+      "keep": 0.5,
+      "saved_real_cells_expected": 2880.0,
+      "released_fleet_hours_at_50_to_45": [
+        57.6,
+        64.0
+      ],
+      "cheap_tester_hours_at_m1_median": 75.87199999999999,
+      "t11_wall_hours_at_payload_40_cells_h": 160.0
+    },
+    {
+      "n": 6400,
+      "keep": 0.7,
+      "saved_real_cells_expected": 1728.0000000000002,
+      "released_fleet_hours_at_50_to_45": [
+        34.56,
+        38.400000000000006
+      ],
+      "cheap_tester_hours_at_m1_median": 75.87199999999999,
+      "t11_wall_hours_at_payload_40_cells_h": 160.0
+    },
+    {
+      "n": 350,
+      "keep": 0.3,
+      "saved_real_cells_expected": 220.5,
+      "released_fleet_hours_at_50_to_45": [
+        4.41,
+        4.9
+      ],
+      "cheap_tester_hours_at_m1_median": 4.149249999999999,
+      "t11_wall_hours_at_payload_40_cells_h": 8.75
+    },
+    {
+      "n": 350,
+      "keep": 0.5,
+      "saved_real_cells_expected": 157.5,
+      "released_fleet_hours_at_50_to_45": [
+        3.15,
+        3.5
+      ],
+      "cheap_tester_hours_at_m1_median": 4.149249999999999,
+      "t11_wall_hours_at_payload_40_cells_h": 8.75
+    },
+    {
+      "n": 350,
+      "keep": 0.7,
+      "saved_real_cells_expected": 94.50000000000001,
+      "released_fleet_hours_at_50_to_45": [
+        1.8900000000000003,
+        2.1000000000000005
+      ],
+      "cheap_tester_hours_at_m1_median": 4.149249999999999,
+      "t11_wall_hours_at_payload_40_cells_h": 8.75
+    },
+    {
+      "n": 21,
+      "keep": 0.3,
+      "saved_real_cells_expected": 13.23,
+      "released_fleet_hours_at_50_to_45": [
+        0.2646,
+        0.294
+      ],
+      "cheap_tester_hours_at_m1_median": 0.24895499999999998,
+      "t11_wall_hours_at_payload_40_cells_h": 0.525
+    },
+    {
+      "n": 21,
+      "keep": 0.5,
+      "saved_real_cells_expected": 9.450000000000001,
+      "released_fleet_hours_at_50_to_45": [
+        0.18900000000000003,
+        0.21000000000000002
+      ],
+      "cheap_tester_hours_at_m1_median": 0.24895499999999998,
+      "t11_wall_hours_at_payload_40_cells_h": 0.525
+    },
+    {
+      "n": 21,
+      "keep": 0.7,
+      "saved_real_cells_expected": 5.670000000000002,
+      "released_fleet_hours_at_50_to_45": [
+        0.11340000000000003,
+        0.12600000000000003
+      ],
+      "cheap_tester_hours_at_m1_median": 0.24895499999999998,
+      "t11_wall_hours_at_payload_40_cells_h": 0.525
+    },
+    {
+      "n": 371,
+      "keep": 0.3,
+      "saved_real_cells_expected": 233.73000000000002,
+      "released_fleet_hours_at_50_to_45": [
+        4.674600000000001,
+        5.194000000000001
+      ],
+      "cheap_tester_hours_at_m1_median": 4.398205,
+      "t11_wall_hours_at_payload_40_cells_h": 9.275
+    },
+    {
+      "n": 371,
+      "keep": 0.5,
+      "saved_real_cells_expected": 166.95000000000002,
+      "released_fleet_hours_at_50_to_45": [
+        3.3390000000000004,
+        3.7100000000000004
+      ],
+      "cheap_tester_hours_at_m1_median": 4.398205,
+      "t11_wall_hours_at_payload_40_cells_h": 9.275
+    },
+    {
+      "n": 371,
+      "keep": 0.7,
+      "saved_real_cells_expected": 100.17000000000003,
+      "released_fleet_hours_at_50_to_45": [
+        2.0034000000000005,
+        2.226000000000001
+      ],
+      "cheap_tester_hours_at_m1_median": 4.398205,
+      "t11_wall_hours_at_payload_40_cells_h": 9.275
+    }
+  ],
+  "verification": {
+    "rank_fixtures": "PASS",
+    "unique_complete_rows": "PASS",
+    "cheap_score_formula": "PASS",
+    "real_score_surface_lineage": "PASS"
+  }
+}
