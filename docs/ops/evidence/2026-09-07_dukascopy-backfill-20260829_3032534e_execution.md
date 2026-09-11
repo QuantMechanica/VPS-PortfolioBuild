@@ -1630,3 +1630,22 @@ chronic FAIL/WARN set, no new category. Noted but out of scope for this task: si
 health-check pileup/contention, not investigated further (outside `3032534e`'s
 `allowed_actions`; flagging only). No `update-task` call made on any of the three tasks; all
 remain `IN_PROGRESS`.
+
+## Checked 2026-09-11T14:18Z (headless orchestration cycle) -- no crash this cycle, genuine forward progress, gate unchanged
+
+First cycle in this incident with **zero** downloader crash/relaunch needed: PID `16332`
+(launched by a sibling cycle at `13:40:56` local) still alive and running, `progress.json`
+fresh (`updated_at_utc=2026-09-11T14:18:05.984Z`, `status=RUNNING`, `errors=121` static),
+`completed` advanced `199840->203939` since the `13:41Z` checkpoint -- real throughput, no
+data loss, no action needed/taken this cycle.
+
+`bb814520`/`dfc60103` gate re-checked via direct DB query, unchanged since `13:41Z`:
+`b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`; `46167bd9` still
+`APPROVED`/claude not routed since `2026-09-10T22:16:06Z`; `ae1df6bf` still
+`APPROVED`/unassigned since `06:42:08Z` (codex weekly quota 80% used/`allowed:false` per
+`agent_router.py status`, consistent with the unstarted codex tickets); `QM5_41394`
+XAUUSD.DWX Q04 still `pending`/unclaimed, `updated_at=2026-09-11T10:51:37Z` (~3.5h static).
+`farmctl health` FAIL15/WARN20/OK52 -- same chronic set, no new FAIL category. `QM5_10260`
+Q08 re-confirmed unchanged (`FAIL_HARD`, static since 2026-06-26). No acceptance criterion
+newly met on any of the three owner-decision tasks; no `update-task` call made. All three
+remain `IN_PROGRESS`.
