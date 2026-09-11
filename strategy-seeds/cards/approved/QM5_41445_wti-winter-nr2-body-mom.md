@@ -60,8 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01_PENDING
-q01_status: PENDING
+pipeline_phase: Q02_READY
+q01_status: PASS
+q01_compile_work_item: 41bbb9ef-ef16-433b-b770-9e9398ae2c2e
+q01_build_report: D:/QM/reports/work_items/41bbb9ef-ef16-433b-b770-9e9398ae2c2e/QM5_41445/COMPILE_EA/compile_evidence.json
 q02_status: NOT_ENQUEUED
 force_build: true
 review_focus: "Falsify a WTI November-May range-contraction own-body continuation distinct from the certified XNG oscillator, range-expansion body momentum, contraction-box breakout, and upper-quartile continuation. Verify exact weeks, strict inequalities, both continuation sides, immediate boundary entry without breakout confirmation, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
@@ -226,5 +228,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | PENDING | branch-only non-live build |
+| Q01 Build Validation | 41bbb9ef-ef16-433b-b770-9e9398ae2c2e | PASS | T10 compile and strict build check PASS; zero compiler errors/warnings; 11 reference tests; PACER audit zero hits |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | only after Q01 PASS and deterministic intake guards |

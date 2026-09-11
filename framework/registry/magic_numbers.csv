@@ -18380,3 +18380,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41443,wti-winter-wr2-body-mom,0,XTIUSD.DWX,414430000,2026-09-11,Codex governed allocator,active
 41444,wti-winter-wr2-body-fade,0,XTIUSD.DWX,414440000,2026-09-11,Codex governed allocator,active
 41150,gbpusd-local-session-inventory-drift,0,GBPUSD.DWX,411500000,2026-09-11,Codex governed allocator,active
+41445,wti-winter-nr2-body-mom,0,XTIUSD.DWX,414450000,2026-09-11,Codex governed allocator,active
