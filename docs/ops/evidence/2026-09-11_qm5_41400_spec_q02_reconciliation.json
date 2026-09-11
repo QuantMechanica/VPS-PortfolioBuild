@@ -1,0 +1,76 @@
+{
+  "schema_version": "qm.paced-build-reconciliation/v1",
+  "recorded_at_utc": "2026-09-11T08:09:09+00:00",
+  "mission": "Advance one diverse low-frequency sleeve through the build-to-Q02 funnel without duplicating an existing build.",
+  "ea_id": "QM5_41400",
+  "ea_label": "QM5_41400_wti-mrecency-sign-tr",
+  "asset_diversity": {
+    "asset_class": "energy",
+    "instrument": "XTIUSD.DWX",
+    "rationale": "WTI is the mission's explicit energy-beyond-XNG priority and the card expects approximately six trades per year."
+  },
+  "farm_coordination": {
+    "build_task_id": "fb67a381-dcd6-4296-bf48-3d0d875c5cf0",
+    "claim": "codex:agents/board-advisor",
+    "task_status_after": "done",
+    "false_fail_code_removed": "compile_error",
+    "false_fail_code_reason": "The classifier matched the text token COMPILE_OK inside a nonfailure smoke-deferral explanation; the governed artifact itself was COMPILE_OK."
+  },
+  "diagnosis": {
+    "classification": "BUILT_BUT_BUILD_TASK_STRANDED",
+    "existing_source_commit": "d4b6f363eb",
+    "existing_compile_work_item_id": "c3c67cf1-12de-4812-a29c-eada79ecd266",
+    "existing_compile_verdict": "COMPILE_OK",
+    "blocker": "SPEC.md failed the current Q01 seven-section schema, while source, binary, magic row, and backtest setfile already existed.",
+    "source_or_binary_changed": false
+  },
+  "checks": {
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41400_wti-mrecency-sign-tr/QM5_41400_wti-mrecency-sign-tr.mq5",
+      "status": "PASS",
+      "finding_count": 0
+    },
+    "spec_validation": {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_41400_wti-mrecency-sign-tr",
+      "status": "PASS"
+    },
+    "reference_tests": {
+      "command": "python -m pytest framework/EAs/QM5_41400_wti-mrecency-sign-tr/docs/test_wti_mrecency_sign_tr_reference.py -q",
+      "status": "PASS",
+      "passed": 6
+    },
+    "scoped_build_check": {
+      "ea_label": "QM5_41400_wti-mrecency-sign-tr",
+      "status": "PASS",
+      "report": "D:/QM/reports/framework/21/build_check_20260911_074849.json"
+    },
+    "tester_capacity_before_enqueue": {
+      "active_backtest_work_items": 5,
+      "saturation_threshold": 7,
+      "saturated": false
+    }
+  },
+  "artifact_hashes_sha256": {
+    "mq5": "0040b476cd5cb6fa74117642e23740831960fc25bc620a27bd57936fe5cc46a8",
+    "ex5": "e95ff5bd89a2fa8d053042c7b9925c3174400f81bad087b80beb6d505be1a2c9",
+    "backtest_setfile": "e7e07194b1c9334fba478db32789f1410f4415697e1ea7753e55776b47654428",
+    "build_result": "21d8b2e6b7c037d32a4e90a1a3453616f3ee4e59f34eb4af4321cfb2e42d75c7"
+  },
+  "q02_handoff": {
+    "work_item_id": "22867231-d30a-4a2b-ac78-a14ee02a61d1",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "risk_mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "status_observed": "active",
+    "claimed_by": "T3"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "reason": "The approved card's safety boundary delegates test execution to the governed Q02 worker.",
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
