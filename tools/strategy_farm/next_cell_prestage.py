@@ -1000,7 +1000,7 @@ class PrestageController:
                 "skips": {
                     key: (len(value) if isinstance(value, (list, tuple)) else value)
                     for key, value in claim.items()
-                    if key.endswith("_skipped") and value
+                    if (key.endswith("_skipped") or key.endswith("_deferred")) and value
                 },
             },
         )
