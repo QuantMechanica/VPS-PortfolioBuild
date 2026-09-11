@@ -447,3 +447,25 @@ SP500.DWX Q02 (`17e576cf`) remains fully stale, unchanged since `2026-09-09T10:5
 the row is back where it was 20 minutes ago, just with a fresher `updated_at`. Not this task's
 authority to force-claim or reprioritize (`selected_effect_only`). No ticket, rebuild, release,
 or verdict change made. Task remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T10:53Z (headless orchestration cycle) -- XAUUSD.DWX Q02 PASSED on reclaim, gating symbol advances one gate; SP500 still stale
+
+Direct DB read: `QM5_41394` XAUUSD.DWX Q02 (`3b315bc8`) was reclaimed after the 09:50Z
+worker-restart release and this time ran to completion -- `status=done`/`verdict=PASS` at
+`2026-09-11T10:46:04+00:00` (evidence
+`D:\QM\reports\work_items\3b315bc8...\20260911_102630\summary.json`). This is the first
+terminal verdict for the XAUUSD leg (the 11196-lineage gating symbol this task's objective
+names first). Full `QM5_41394` leg status: EURUSD/USDJPY/XTIUSD/XAUUSD all Q02 PASS;
+EURUSD/USDJPY/XTIUSD all died `Q04 FAIL` after their own Q02 PASS (pattern: this rebuild
+dies at Q04 for every leg reaching it so far) -- XAUUSD has not reached Q04 yet, no work
+item enqueued for it. SP500.DWX Q02 (`17e576cf`) still `pending`/`claimed_by=NULL`,
+unchanged since `2026-09-09T10:52:59Z` (~2 days). This is real factory throughput but not
+this task's acceptance criterion: the criterion needs 11196 itself (`a909ee18`,
+Q10_NEWS) to end PASS/FAIL, which per the `legacy_logger_allowlist.v1.json` gate still
+requires 11167-native-canary-authentication first -- QM5_41394 clearing one more Q02 leg is
+several gates short of that (Q03/Q04/.../Q09), and the observed 3-for-3 Q04-death pattern on
+sibling legs means XAUUSD reaching a canary-qualifying verdict is not assured. Dukascopy
+process (`3032534e`, PID `19568`) confirmed still running, same PID, no new crash since
+07:20:32Z. Sub-tickets `b66b5ccc`/`46167bd9`/`ae1df6bf` unchanged. No ticket, rebuild,
+release, repin, or verdict change made; not this task's authority to force SP500's claim.
+Task remains `IN_PROGRESS`.
