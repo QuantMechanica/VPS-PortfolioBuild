@@ -910,3 +910,86 @@ second `--apply` for this stamp/window regardless of which reading is correct
 or an OWNER ruling. No `update-task` call on any of the three (nothing newly
 met — enabling the reconciliation compute step is not itself an acceptance
 criterion).
+
+## Checked 2026-09-11T~02:5xZ (headless cycle) — `bb3d2f7f` reached a terminal
+status (`INFRA_FAIL`); real defect found in the exporter, one Codex hardening
+ticket enqueued (`6bbbf070-2945-4512-9d69-9c7782a5fbec`)
+
+`bb814520`/`dfc60103` gate unchanged (direct sqlite read): `QM5_41394`
+`SP500.DWX`/`XAUUSD.DWX` Q02 rows still `status=pending`, `claimed_by=NULL`,
+`attempt_count=0`, `updated_at=2026-09-09T10:52:59Z` (~2 days static).
+
+`bb3d2f7f` (the M1 overlap export diagnostic dispatched by the prior cycle,
+flagged above as an open authority-scope question) was picked up by the T1
+worker in the ordinary course and reached a terminal state at
+`2026-09-11T02:01:21Z`: `status=failed`, `verdict=INFRA_FAIL`. Read the actual
+`summary.json` (not just the wrapper's rejection reason) directly:
+`{"error": "ValueError: raw M1 export is empty: AUDCHF.DWX", "status": "FAIL",
+"m1_export_manifest": null, "signed_archive_unchanged": true, "no_gate_verdict":
+true}`. The MT5-side raw exporter itself completed across the full 37-symbol
+universe (`export_receipt.json.completion = "successes=25 failures=12
+terminal=T1 build=6182 total_rows=1735391"` — 12 symbols genuinely have no M1
+data in T1's DWX custom history for the 2025-10-01..2026-04-01 overlap window,
+not a script defect at that layer). The defect is one layer up: only 2 raw CSVs
+exist under `.../20260911_010423/raw/` (`AUDCAD.DWX_M1.csv`,
+`AUDCHF.DWX_M1.csv`) because
+`framework/scripts/mt5_diagnostics/dwx_m1_overlap_export.py::canonicalize_export_set`
+loops over the 37 symbols in alphabetical order and calls
+`canonicalize_raw_symbol` per symbol with no per-symbol exception handling — it
+hit `AUDCHF.DWX` (0 rows) second and raised uncaught, aborting before even
+attempting the other 34 symbols (25 of which the MT5 layer says had valid
+data). `validate_summary()`'s existing `manifest_binding.get("symbols") != 37`
+check (the all-37-required contract) was never reached — the run never got
+that far, so this failure gives **zero information** about the other 34
+symbols one way or the other. That opacity is the actual defect worth fixing,
+independent of whatever the eventual OWNER-scoped policy answer is on whether
+a < 37-symbol partial export can ever be production-admissible (that question
+is still open, still not decided here).
+
+Enqueued exactly one Codex `ops_issue` ticket, `6bbbf070-2945-4512-9d69-9c7782a5fbec`
+(priority 74, `decision_bound_agent=codex`, `parent_task_ref=3032534e`, state
+`TODO`, skills `code,ops`): harden `canonicalize_export_set` to attempt all 37
+symbols, catch per-symbol `ValueError`, record failures with reason in
+`dwx_m1_manifest.json` under a new `failed_symbols` list, and keep succeeding
+symbols in `files` as today. Explicitly scoped as build+test+evidence only —
+forbids loosening `validate_summary()`'s current 37-symbols-required contract
+or any Q-gate criterion, and forbids any production T1 dispatch in this ticket
+(mirrors how `ba2a478e` was build-only). This is squarely inside `3032534e`'s
+own `allowed_actions` ("Enqueue, review and close the Codex build tasks for
+P1/P2/P3").
+
+This does **not** satisfy any of `3032534e`'s own four acceptance criteria (a
+build ticket for better failure diagnosis is a sub-step, not the reconciliation
+report itself) — no `update-task` call made. `3032534e` stays `IN_PROGRESS`.
+The open authority-scope question flagged in the entry above (whether
+`3032534e`'s own task ID is a valid "separately authorized enqueue" vehicle for
+the *production* M1 export run) is **unchanged and still needs an OWNER
+ruling** — this cycle did not re-dispatch `--apply` for this stamp/window,
+per that entry's own "do not enqueue a second `--apply`" instruction; a new
+production attempt only makes sense after the hardening ticket lands anyway,
+since the current tool cannot report a complete per-symbol picture.
+
+`3032534e`'s downloader (`20260909T191800Z_hardened`, PID 18208) reconfirmed
+`RUNNING`: `completed=108960/306286` (up from 103371/103198 at the 02:18-02:19Z
+readings), `errors=639` (still transient retry churn, consistent trend),
+`updated_at_utc` seconds-fresh. `farmctl health` FAIL15/WARN17/OK53, same
+chronic set as the 02:18-02:19Z readings (`codex_zero_activity`/
+`repo_dirty_build_guard` blocked by 16 uncommitted files in the canonical
+repo — none touched by this commit, which uses explicit pathspecs for exactly
+the 2 intended files; `q09_autoseal_hold_census`, `q09_sealed_plan_hold_age`,
+`agent_task_state_stranded`, `agent_task_aging_slo`, `work_item_phase_age_slo`,
+`pending_tail_age`, `pending_artifact_binding_drift`, `phase_invalid_rate_7d`,
+`q02_stranded_exhausted_pairs`, `ftmo_launcher_readiness`,
+`task_monitor_escalation` x2, `backup_calendar_continuity`,
+`QM_EvidenceCohortWatch` — no new CRITICAL-class item). No `update-task` call
+on any of the three.
+
+**Lesson:** a row that was "still pending, not yet picked up" in one cycle's
+checkpoint can reach a terminal state before the next cycle without any action
+from this task's own authority — ordinary factory throughput claimed and ran
+it. Checking the row's *current* status (not trusting the last-known "pending"
+note) turned an assumed-dormant open question into real, actionable diagnostic
+evidence. Also: a work item's own rejection message (`diagnostic_summary_invalid:
+...`) can be a symptom one layer removed from the root cause (`validate_summary()`
+rejecting an incomplete manifest) — read the underlying `summary.json` and, where
+present, the richer `export_receipt.json` before concluding what actually broke.

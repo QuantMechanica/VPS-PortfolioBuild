@@ -2676,3 +2676,19 @@ repair: for schema qm.window-sweep.v1 the resolver now appends amendment cells (
 work_item_id); DL-089 programs untouched. Syntax ok, test_window_sweep 17 pass, lane/frontier tests 3
 pass. Reload chunk 65 started; stage B expected to start claiming afterwards (~10 h at 2 lanes).
 LESSON: every new cell class must be proven by a real first claim before the ticket is accepted.
+
+## 2026-09-11T~02:5xZ — Claude task 3032534e: real T1 diagnostic defect found, Codex hardening ticket enqueued
+
+`bb3d2f7f` (governed T1 M1-overlap-export diagnostic, dispatched under task 3032534e's own authority,
+last seen "pending" by a prior cycle) reached a terminal state on its own via ordinary factory
+throughput: `status=failed`/`verdict=INFRA_FAIL` at 2026-09-11T02:01:21Z. Root cause:
+`framework/scripts/mt5_diagnostics/dwx_m1_overlap_export.py::canonicalize_export_set` aborts the
+entire 37-symbol run on the first per-symbol empty M1 export (hit AUDCHF.DWX, 0 rows, second
+alphabetically) instead of isolating the failure and continuing — even though the MT5-side raw
+exporter had already completed across all 37 symbols (25 succeeded, 12 genuinely empty in T1's DWX
+history for the window). Enqueued Codex ops ticket `6bbbf070-2945-4512-9d69-9c7782a5fbec` (build+test
+only, priority 74, parent_task_ref=3032534e) to make per-symbol failure isolation/reporting complete;
+explicitly does NOT touch the existing 37-symbols-required admission contract (separate OWNER-scoped
+question, still open). Full detail:
+docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md. No `update-task` call
+on bb814520/dfc60103/3032534e (gate rows unchanged; no acceptance criterion newly met).
