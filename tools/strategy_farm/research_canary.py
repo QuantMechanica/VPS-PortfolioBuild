@@ -556,7 +556,7 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         receipt["history_audit"] = verify_private_history(terminal=request.terminal, symbol=request.symbol,
             farm_root=farm_root, mt5_root=mt5_root)
         receipt["resource_guard"] = resource_check(terminal=request.terminal, max_agents=request.max_agents,
-            cpu_samples=5, sample_seconds=60.0, mt5_root=mt5_root)
+            cpu_samples=5, sample_seconds=float(os.environ.get("QM_CANARY_ADMISSION_SAMPLE_SECONDS", "60.0")), mt5_root=mt5_root)  # orchestrator 2026-09-11: batch pilots may shorten admission sampling (receipted)
         if request.dry_run:
             receipt["status"] = "DRY_RUN_PASS"
             return receipt
