@@ -1387,6 +1387,47 @@ sqlite read this cycle). No `update-task` call on any of the three
 owner-decision tasks — no acceptance criterion newly met. Task `3032534e`
 remains `IN_PROGRESS`.
 
+## Checked 2026-09-11T07:2xZ (headless orchestration cycle) — same raw-root
+defect class recurred on a THIRD symbol (GBPCAD, not GBPAUD), confirming it is
+general and not symbol-specific; process had already been relaunched by a
+sibling cycle before this check; verified healthy, no action taken
+
+`download.log` showed PID `9768` crashed again at `07:16:08Z` on the identical
+`ValueError: download destination escaped raw root` fault, this time at
+`raw\GBPCAD\2026\00\30\04h_ticks.bi5` (preceded by a `GBPCAD/2026/00/22`
+connect-timeout retry exhaustion, unrelated). This is a third distinct
+symbol/date combination for the same defect class already root-caused and
+ticketed under `ae1df6bf-b435-47c8-bcb2-bf7a96b4c654` — further evidence the
+defect is a general resolve-timing race (mid-run directory creation flips
+`raw_root`'s `\\?\`-prefix state), not specific to `GBPAUD`. No new ticket
+needed; `ae1df6bf` already covers the general case.
+
+By the time this cycle checked, a sibling headless cycle had already
+relaunched the downloader: PID `19568`, parent `cmd.exe /c cd /d C:\QM\repo &&
+python tools/dukascopy/download_bi5.py ...` (confirms launch cwd is the
+canonical checkout, not a stale worktree), `started_at_utc=2026-09-11T07:20:32Z`.
+First read caught it mid resume-scan (`completed=6442`, alarming at a glance
+next to the pre-crash `130464`) — verified this is the known startup-climb
+transient, not data loss: `hour_ledger.jsonl` has 137553 lines intact, on-disk
+raw files are present for already-completed symbols (`AUDCAD` 5895 files,
+`GBPAUD` 5837 files), and a second read 20s later showed `completed=45268,
+errors=0, status=RUNNING` — climbing fast, confirming healthy resume in
+progress. Did not relaunch (already running and healthy) and did not touch
+any terminal, T1 import, T_Live/AutoTrading, or pipeline threshold/verdict.
+
+`ae1df6bf` checked: still `APPROVED`, `assigned_agent=None` (not yet picked
+up by Codex) — consistent with Codex's `ops_review` quota gate showing
+`allowed=false, reason=class_threshold_exceeded` this cycle (weekly Codex
+quota 74% used, 26% remaining); not a stall this task can clear, no action
+taken. `bb814520`/`dfc60103` gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX
+Q02 still `pending`/unclaimed, `attempt_count=0`, since
+`2026-09-09T10:52:59Z` — now ~44.5h static, reconfirmed via direct sqlite
+read); `b66b5ccc` (Codex, `APPROVED`, unstarted since 2026-09-09T11:19:40Z)
+and `46167bd9` (claude, `APPROVED`, not yet routed to `IN_PROGRESS` since
+2026-09-10T22:16:06Z) both unchanged. No `update-task` call on any of the
+three owner-decision tasks — no acceptance criterion newly met. Task
+`3032534e` remains `IN_PROGRESS`.
+
 ## Checked 2026-09-11T07:19Z (headless orchestration cycle) — PID `9768` crashed again on the same unfixed defect class; relaunched, verified alive; fix ticket still unworked
 
 `download.log` showed PID `9768` (relaunched 06:39:08Z) crashed at
