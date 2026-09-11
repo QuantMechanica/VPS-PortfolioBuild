@@ -2624,3 +2624,12 @@ G0 build scope conflicts with the requested points-buffer, band, bar-period,
 and minute-end expansion. No sibling source, compile claim, setfile, matrix,
 or backtest was created. Evidence:
 `docs/ops/evidence/2026-09-11_qm5_41405_stage2_preflight.md`.
+
+## 2026-09-11T01:45Z — WINSWEEP stage B enqueued (210 cells)
+
+Reload chunk 64 finished 01:38:35Z (10/10). `window_sweep.py enqueue --stage B --stage-a-report
+docs/ops/evidence/2026-09-09_window_sweep_surface.json --apply` twice: inserted 210, then 0. 30 windows
+(top five s0_l8, s1_l8, s1_l4, s2_l4, s3_l4 x exit 15/16/17/19/20/21) x 7 years, stage-A report sha
+0bdd5d9e... bound in the ledger amendment. Program stays first in claim order (owner e144b67f), L=2,
+~10 h expected. Final configuration rule: stage-B winner only if >= 1.10 x s0_l8/exit-18 plateau AND OOS
+confirmation, else s0_l8 with exit 18 stands.
