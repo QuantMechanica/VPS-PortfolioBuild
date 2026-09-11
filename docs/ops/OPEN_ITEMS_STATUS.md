@@ -2728,3 +2728,16 @@ RESULT 2026-09-11 dee2fc76 Q-RESEARCH REVIEW: 350-cell parameter inventory verif
 RESULT 2026-09-11 f04d66ec Q-S3 REVIEW: relative export and canonical tester contract repaired (9 tests PASS); real dry-run CPU average 92.080% > 90%, so no smoke launch or identity claim. Evidence: docs/ops/evidence/2026-09-11_f04d66ec_canary_export.md
 
 RESULT 2026-09-11 a10e4704 Q01 COMPILE_PASS / REVIEW: approved QM5_41405 sibling built via governed queue on T4; strict checks PASS; seven annual default identity comparisons still required before stage-2 enqueue. Evidence: docs/ops/evidence/2026-09-11_a10e4704_build_result.json
+
+## 2026-09-11T04:50Z — Morning briefing + stage-2 chain state
+
+Briefing (skill /update): Codex week 70 % (build lane governor-throttled; 0 build activity 3 h, 75
+pending build_ea mostly BLOCKED legacy), Claude week 6 %. Health FAIL 15/WARN 19/OK 52, no new class;
+new since yesterday: ftmo_launcher_readiness (expected until next launcher run), factory utilization
+7d 53 % < 55 % (yesterday's stall). Funnel pending: Q02 177, Q03 36, Q04 273, Q05 10, Q07 11, Q09 13,
+Q10 16, Q12 27; counter 22/25. Stall verdict: moving (census 43/h under cap 3, Q04/Q05 active).
+Stage-2 chain: QM5_41405 built and COMPILE_OK (a10e4704, 04:17Z; control identity pending, review
+running); dee2fc76 re-routed with ordered steps (pre-register scoring, 7 control cells first via the
+window-sweep machinery or a first-claim-proven adapter, identity proof, then 343 cells; Balke cells
+keep parent trailing as documented approximation). f04d66ec re-routed with the corrected CPU guard
+(pause > 95 % 5-min, 2 agents) after the 90 % guard refused the T11 dry-run at 92 %.
