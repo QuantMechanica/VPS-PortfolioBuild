@@ -1,0 +1,92 @@
+{
+  "artifact_type": "pacer_fx_q02_priority_receipt",
+  "recorded_at_utc": "2026-09-11T02:13:55Z",
+  "branch": "agents/board-advisor",
+  "mission_result": "ADVANCED_EXISTING_FOREX_CARD",
+  "new_ea_built": false,
+  "compile_enqueued": false,
+  "q02_enqueued": false,
+  "q02_existing_row_prioritized": true,
+  "frontier": {
+    "scan_relationship_count": 66,
+    "unbuilt_relationship_found": false,
+    "evidence": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "reason": "The sign-aware 66-relationship frontier is fully represented; all seven strict survivors are built and have terminal Q02 evidence."
+  },
+  "anchor_status": [
+    {
+      "ea_id": "QM5_12532",
+      "relationship": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02_status": "PASS",
+      "q02_work_item_id": "e4890d77-6fa1-489d-ad76-4d05ba3b27fa"
+    },
+    {
+      "ea_id": "QM5_12533",
+      "relationship": "EURJPY.DWX/GBPJPY.DWX",
+      "q02_status": "PASS",
+      "q02_work_item_id": "76cb11ee-902b-477e-9a13-b28e479b2a4f"
+    }
+  ],
+  "selection": {
+    "ea_id": "QM5_11051",
+    "slug": "pst-volatten-break",
+    "source": "Rob Carver / pysystemtrade",
+    "source_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11051_pst-volatten-break.md",
+    "g0_status": "APPROVED",
+    "symbol": "GBPUSD.DWX",
+    "timeframe": "D1",
+    "work_item_id": "97c5fffa-691b-407a-8a5f-363197037048",
+    "work_item_status": "pending",
+    "claimed_by": null,
+    "active_holds": 0,
+    "priority_track": true,
+    "priority_marked_at_utc": "2026-09-11T02:13:55Z",
+    "priority_reason": "PACER forex diversity fallback: one clean D1 GBPUSD sleeve; approved pysystemtrade source, no economic-failure history, fixed-risk, single current Q02 row",
+    "mechanics": "Deterministic multi-horizon D1 channel breakout with fixed volatility attenuation and ATR emergency stop",
+    "ml_used": false,
+    "grid_or_martingale_used": false,
+    "prior_economic_failure_count": 0,
+    "q02_window_count_added": 0
+  },
+  "risk": {
+    "mode": "RISK_FIXED",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "setfile": "framework/EAs/QM5_11051_pst-volatten-break/sets/QM5_11051_pst-volatten-break_GBPUSD.DWX_D1_backtest.set"
+  },
+  "identity": {
+    "mq5_sha256": "c73b86f3685ba8af3929e9da2b3fbae0f87f3c888373b641499246669a0d1be6",
+    "ex5_sha256": "90e0d5f698125b77c67f70cdb1ddf2bad9329425a9376744b761af41ef7c5bbe",
+    "setfile_sha256": "6376e046f6bd2ba058f541d66c85ccf40ad09fc2f68a19da3381e70d66bf5133"
+  },
+  "build_guard": {
+    "generated_mq5_written_this_mission": false,
+    "required_command": "python tools/strategy_farm/audit_ea_input_pinning.py --mq5 framework/EAs/QM5_11051_pst-volatten-break/QM5_11051_pst-volatten-break.mq5",
+    "required_command_result": "TOOL_NOT_FOUND",
+    "required_command_exit_code": 2,
+    "available_repository_audit_command": "python tools/strategy_farm/audit_framework_input_pins.py --check-source framework/EAs/QM5_11051_pst-volatten-break/QM5_11051_pst-volatten-break.mq5",
+    "available_repository_audit_result": "PASS",
+    "available_repository_audit_hits": 0,
+    "effect": "No build or compile enqueue was attempted. Existing Q02 queue priority only was changed."
+  },
+  "capacity_sample": {
+    "sample_count": 5,
+    "samples_percent": [
+      53.91525495918097,
+      44.00705781804982,
+      42.486025849902894,
+      43.95076359070262,
+      45.12273809117898
+    ],
+    "average_percent": 45.89636806180305,
+    "maximum_percent": 53.91525495918097,
+    "ceiling_percent": 97,
+    "ceiling_reached": false
+  },
+  "prohibited_actions": {
+    "live_or_t_live_touched": false,
+    "portfolio_gate_touched": false,
+    "many_dates_enqueued": false,
+    "correlated_symbol_taps_prioritized": false
+  }
+}
