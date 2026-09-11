@@ -1469,3 +1469,37 @@ still pending/unclaimed since 2026-09-09T10:52:59Z; `b66b5ccc` still
 `APPROVED`/claude, not yet routed, since 2026-09-10T22:16:06Z). No
 `update-task` call on any of the three owner-decision tasks — no acceptance
 criterion newly met. Task `3032534e` remains `IN_PROGRESS`.
+
+**Check 2026-09-11T08:02Z (headless cycle):** PID `19568` (launched
+`07:20:32Z`) still alive, no new crash — first stable stretch >40min since
+the crash-loop began (previous cycles crashed within minutes). `progress.json`
+active (`updated_at_utc=2026-09-11T08:02:48Z`), `hour_ledger.jsonl` writing
+normally (per-hour retry/success entries, no fixed-tmp collisions). `ae1df6bf`
+still `APPROVED`/unassigned (unstarted since `06:42:08Z`) — once it lands,
+confirm the crash class is actually gone rather than assuming stability from
+uptime alone. Blockers unchanged: `b66b5ccc` `APPROVED`/codex since
+`2026-09-09T11:19:40Z`; `46167bd9` `APPROVED`/claude, not routed, since
+`2026-09-10T22:16:06Z`; `bb814520`/`dfc60103` gate (`QM5_41394`
+SP500.DWX/XAUUSD.DWX Q02) unchanged since `2026-09-09T10:52:59Z`. No
+acceptance criterion newly met on any of the three owner-decision tasks; no
+`update-task` call made.
+
+**Check 2026-09-11T10:03Z (headless cycle):** PID `19568` still alive
+(CreationDate read via `Get-CimInstance` showed local time `09:20:26 AM`
+W. Europe DST = `07:20:26Z`, matching the `07:20:32Z` launch — no new crash,
+~2h40m uptime, longest stable stretch yet). `ae1df6bf` still
+`APPROVED`/unassigned (unchanged since `06:42:08Z`); `b66b5ccc` still
+`APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`; `46167bd9` still
+`APPROVED`/claude, not routed, since `2026-09-10T22:16:06Z`. New signal on
+the `bb814520`/`dfc60103` gate: the `QM5_41394` XAUUSD.DWX Q02 work_item
+(`3b315bc8-95d2-4b25-abf0-d3b3091c8f6c`) moved from `pending`/unclaimed to
+`status=active`, `claimed_by=T2`, `updated_at=2026-09-11T09:50:49Z` — a real
+state change (Q02 backtest now running) after being static since
+2026-09-09, though the SP500.DWX row (`17e576cf`) is still
+`pending`/unclaimed. This is ordinary factory throughput, not this task's
+action, and does not itself satisfy any acceptance criterion (still need a
+Q02 verdict, then adjudication PASS/FAIL) — no `update-task` call made.
+`farmctl health` FAIL15/WARN15/OK56 (chronic set, consistent with the prior
+FAIL14/WARN16/OK55 baseline, no new FAIL category); `QM5_10260` Q08
+FAIL_HARD confirmed unchanged (last verdict row still the known FAIL/PASS
+history through 2026-07-25, no new rows).
