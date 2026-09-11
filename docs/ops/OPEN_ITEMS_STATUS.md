@@ -3063,3 +3063,10 @@ non-urgent decision; orchestrator recommendation = A now, shadow protocol on the
 the OOS confirmation (OOS median 0.24 vs 0.91; pooled PF 1.07 vs 1.21) -> final configuration stays
 s0_l8 exit 18 (docs/research/BALKE_WINDOW_SWEEP_RESULT_2026-09-11.md, stage-B section). Bug fixed in
 select_stage_b (baseline plateau lookup). The 41405 stage-2 matrix (exit 18) remains valid as is.
+
+## 2026-09-11T16:45Z — QM5_1557 card amended (explicit target_symbols, oil disposition)
+
+Precondition f7f39835 blocked on card_target_symbols_missing_or_invalid. Mechanical amendment (GRUEN,
+no universe change): frontmatter target_symbols = the 13 magic slots registered 2026-08-17; the body's
+USOIL.DWX is not a factory custom symbol (oil = XTIUSD.DWX) and has no slot -> excluded, extension is an
+OWNER decision. Re-approved in place via farmctl approve-card; EA docs card synced; ticket re-routed.
