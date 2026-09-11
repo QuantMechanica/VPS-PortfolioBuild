@@ -82,3 +82,4 @@ dominate. No manual backtest, optimization, portfolio-gate edit, admission, depl
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-11 | Initial governed build from approved card |
+| v2 | 2026-09-11 | Q01 `COMPILE_OK`; repaired empty generated `strategy_symbol`; guardrails passed; first Q02 enqueued as `17c3e39a-6818-4ef5-90ca-ecae9cb5af25` below CPU ceiling |

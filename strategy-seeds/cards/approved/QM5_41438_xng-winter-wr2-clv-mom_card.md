@@ -223,5 +223,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
+| Q01 Build Validation | 2026-09-11 | PASS | compile `371f3306-2819-436a-8bbf-9e46e7ab1516`; `COMPILE_OK`; build check PASS; 12 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-11 | ENQUEUED_PENDING | work item `17c3e39a-6818-4ef5-90ca-ecae9cb5af25`; CPU avg 93.229528%, max 96.679841% |
