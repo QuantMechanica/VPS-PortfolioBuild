@@ -82,3 +82,4 @@ AutoTrading, terminal control, or live operation is authorized.
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-11 | Initial governed build from approved card |
+| v1-q02 | 2026-09-11 | Worker compile PASS; hash-bound fixed-risk Q02 canary enqueued after CPU admission |
