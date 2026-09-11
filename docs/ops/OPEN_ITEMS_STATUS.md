@@ -2634,6 +2634,14 @@ dry-run passed the signed history and resource checks; the governed non-dry
 report, so the controller rejected it and no fleet identity comparison exists.
 Evidence: `docs/ops/evidence/2026-09-11_research_canary_t11.md`.
 
+## RESULT 2026-09-11 — Q-BUILD QM5_41405 reroute re-check (`dee2fc76`)
+
+`REVIEW — PREFLIGHT_PASS_BUILD_NOT_STARTED`: the amended approved card, EA-ID,
+and USDJPY magic tuple pass deterministically, but the sibling still has no
+source, EX5, setfile, governed compile receipt, identity proof, or 350-cell
+program declaration. No ungoverned compile/backtest or terminal action was
+taken. Evidence: `docs/ops/evidence/2026-09-11_qm5_41405_stage2_preflight.md`.
+
 ## 2026-09-11T01:45Z — WINSWEEP stage B enqueued (210 cells)
 
 Reload chunk 64 finished 01:38:35Z (10/10). `window_sweep.py enqueue --stage B --stage-a-report

@@ -32,3 +32,27 @@ selection/refutation criteria, and a backtest risk contract (`RISK_FIXED > 0`,
 `RISK_PERCENT = 0`). The next build cycle can then create the sibling, submit
 only a governed `COMPILE_EA` claim, prove the default cell identity, and
 declare/enqueue the matrix without changing pipeline thresholds or verdicts.
+
+## Reroute re-check (2026-09-11)
+
+The card was subsequently amended under the recorded OWNER/G0 authority and is
+now present at `D:/QM/strategy_farm/artifacts/cards_approved/QM5_41405_balke-clock-audit-opt.md`
+with both `status: APPROVED` and `g0_status: APPROVED`. Its six inputs, fixed
+50-config/350-cell matrix, refutation criteria, news ceiling of 336h, and
+backtest risk contract (`RISK_FIXED=1000`, `RISK_PERCENT=0`) match the routed
+task. Registry row 4887 and the active USDJPY.DWX slot-0 magic 414050000 remain
+present.
+
+The source directory currently contains only
+`framework/EAs/QM5_41405_balke-clock-audit-opt/docs/strategy_card.md`; no
+`.mq5`, `.ex5`, setfile, COMPILE_EA receipt, declared matrix, or cell-0
+trade-list identity evidence exists. The full authorized task remains to build
+the six mechanical inputs, submit its governed compile, establish the default
+identity, and enqueue the pre-registered matrix. No ungoverned compile,
+backtest, terminal action, or pipeline verdict was performed during this
+single-pass re-check.
+
+**RESULT (Q-only):** Q-BUILD remains REVIEW — pre-flight is now PASS, but the
+approved sibling implementation and its governed measurement program are not
+yet present; therefore no configuration recommendation or selection claim is
+valid.
