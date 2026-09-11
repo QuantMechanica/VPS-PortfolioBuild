@@ -1,5 +1,25 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 11.09. 05:17Z (Orchestrierungszyklus) — `3032534e` DUKASCOPY,
+> doppeltes Hardening-Ticket bereinigt, Korrektur zur Blocker-Annahme:** die
+> in mehreren vorherigen Zyklen wiederholte Annahme "Downloader-Fix kann erst
+> landen, wenn `repo_dirty_build_guard` sich löst" war zu pauschal —
+> `codex_zero_activity` in `farmctl health` ist auf `build_ea` beschränkt;
+> Codex hat parallel ganz normal `ops_issue`-Tickets bearbeitet. Ein frisches
+> Ticket `4fa85eb8` (routed 05:15:49Z, codex IN_PROGRESS) deckt den
+> `progress.json`-`PermissionError`-Crashloop bereits mit einem breiteren Fix
+> ab (Retry+Backoff statt nur eindeutiger Tempdateiname) als das ältere,
+> noch unbearbeitete `8ffc30f1`. `8ffc30f1` per `update-task --state FAILED
+> --verdict duplicate_of_4fa85eb8...` geschlossen, um zwei widersprüchliche
+> Codex-Specs zu vermeiden. Downloader (PID 11056) zum Zeitpunkt der Prüfung
+> seit ~6min am Leben (länger als das vorherige 1-3min-Crashmuster),
+> `progress.json` sekundenfrisch. `bb814520`/`dfc60103`-Gate unverändert
+> (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02 weiter pending/unclaimed seit
+> 2026-09-09T10:52:59Z). Kein `update-task` auf die drei OWNER-Decision-Tasks
+> selbst — kein Akzeptanzkriterium neu erfüllt. Volldetail:
+> `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`
+> (Abschnitt "Confirmed 2026-09-11T05:17Z").
+
 > **RESULT (Q-only, 11.09. 04:43Z) — Q-S3 `f04d66ec` REVIEW:** T11-only
 > dry-run passed after aligning the CPU guard to the fleet's 95% five-sample
 > ceiling (89.24%, zero T11 agents). The one authorized 2021 smoke exited 0,

@@ -1172,3 +1172,30 @@ real progress on an OWNER-authorized job (Dukascopy backfill), not just
 routine EA builds. No `update-task` call on any of the three tasks (relaunch +
 hardening ticket are sub-steps within `3032534e`'s own scope, not an
 acceptance criterion for any of the three).
+
+**Confirmed 2026-09-11T05:17Z (headless cycle) — correction to the prior
+escalation note, and one duplicate ticket closed:** the "blocked by
+`repo_dirty_build_guard`" framing above was wrong for this specific ticket
+class. That guard only blocks `build_ea` codex activity (confirmed via
+`farmctl health`'s `codex_zero_activity` check, which is scoped to build_ea);
+`ops_issue` tickets are unaffected, and codex has in fact been actively
+working the Dukascopy crash-loop: a fresh ticket `4fa85eb8`
+(`routed_at=2026-09-11T05:15:49Z`, priority 80) reached `IN_PROGRESS` under
+codex with a broader fix than the stale `8ffc30f1` (retry `os.replace` with
+backoff + continue-on-write-failure instead of aborting the download loop,
+plus an explicit instruction not to restart the running PID 11056). Closed
+`8ffc30f1` via `update-task --state FAILED --verdict
+duplicate_of_4fa85eb8-9e6d-435e-bcf2-780c84f9d4d8` before it could be picked
+up as a second, narrower spec — same dedup pattern already used once this
+session for `58703508`/`8ffc30f1`. Process/state check at time of writing:
+PID 11056 alive since `2026-09-11T05:11:46` local (~6min, longer than the
+prior 1-3min crash cadence), `progress.json` `completed=24007`,
+`updated_at_utc=2026-09-11T05:17:53Z` (seconds-fresh), `status=RUNNING` — not
+yet confirmed stable, just no longer accelerating. `bb814520`/`dfc60103` gate
+unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02 rows still pending/unclaimed
+since 2026-09-09T10:52:59Z). No `update-task` call on any of the three
+owner-decision tasks — nothing newly met. **Lesson:** `codex_zero_activity` in
+`farmctl health` is scoped to `build_ea` specifically, not all codex activity
+— check `list-tasks --agent codex --state IN_PROGRESS` directly before
+concluding codex is fully blocked on a chronic guard; it can be actively
+working other task types the whole time.
