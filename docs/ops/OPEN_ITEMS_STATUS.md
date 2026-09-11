@@ -2949,3 +2949,13 @@ sha differs as expected: EA name/magic/timestamps). Sibling QM5_41405 is a faith
 the winner window. Remaining 343 matrix cells enqueued via config_sweep.py (idempotent), priority_track
 + queue owner in place; ~17 h at 2 lanes (GELB cost). Adjudication per the approved card (five
 refutation criteria) when 350/350 are MEASURED via `config_sweep.py report`.
+## 2026-09-11T08:41Z — Codex task 6690f012: backup retention RESULT
+
+RESULT: PASS — existing `QM_StrategyFarm_ContinuousRetention_45min` now limits
+farm-state rotation to `farm_state_before_*.sqlite`, retaining the newest five
+plus every matching backup newer than 24 hours. Applied run deleted 18 files /
+13,271,830,528 bytes after `PRAGMA quick_check=ok`; pre-delete names, sizes,
+and SHA-256 values are in
+`D:/QM/reports/state/continuous_retention/20260911T083906Z/20260911T083906Z_backup_delete.json`.
+Top-10 D: consumers and focused verification are recorded in
+`docs/ops/evidence/2026-09-11_codex_backup_retention_6690f012.md`.

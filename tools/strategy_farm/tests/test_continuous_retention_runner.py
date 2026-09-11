@@ -23,15 +23,40 @@ def age(path: Path, hours: float) -> None:
     os.utime(path, (stamp, stamp))
 
 
-def test_backup_plan_keeps_union_of_newest_ten_and_fourteen_days(tmp_path: Path) -> None:
+def test_backup_plan_keeps_union_of_newest_five_and_24_hours(tmp_path: Path) -> None:
     now = dt.datetime.now(dt.UTC)
     for index in range(15):
-        path = tmp_path / f"backup_{index:02d}.sqlite"
+        path = tmp_path / f"farm_state_before_test_{index:02d}.sqlite"
         path.write_bytes(b"x")
         age(path, index * 24 + 1)
+    (tmp_path / "farm_state.sqlite").write_bytes(b"live")
+    (tmp_path / "unrelated.sqlite").write_bytes(b"keep")
     keep, delete = runner.backup_plan(tmp_path, now)
-    assert len(keep) == 14
-    assert [path.name for path in delete] == ["backup_14.sqlite"]
+    assert len(keep) == 5
+    assert [path.name for path in delete] == ["farm_state_before_test_05.sqlite",
+                                              "farm_state_before_test_06.sqlite",
+                                              "farm_state_before_test_07.sqlite",
+                                              "farm_state_before_test_08.sqlite",
+                                              "farm_state_before_test_09.sqlite",
+                                              "farm_state_before_test_10.sqlite",
+                                              "farm_state_before_test_11.sqlite",
+                                              "farm_state_before_test_12.sqlite",
+                                              "farm_state_before_test_13.sqlite",
+                                              "farm_state_before_test_14.sqlite"]
+
+
+def test_backup_delete_receipt_hashes_before_delete(tmp_path: Path) -> None:
+    root = tmp_path / "backups"
+    receipts = tmp_path / "receipts"
+    root.mkdir()
+    target = root / "farm_state_before_old.sqlite"
+    target.write_bytes(b"abc")
+    result = runner.safe_delete_batch([target], root, receipts, "run", "BACKUP_DELETE", False)
+    receipt = json.loads((receipts / "run_backup_delete.json").read_text())
+    assert result["requested_bytes"] == 3
+    assert receipt["archive_list"].endswith("run_backup_delete.json")
+    assert receipt["entries"][0]["name"] == target.name
+    assert receipt["entries"][0]["sha256"] == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
 
 
 def test_open_work_item_paths_are_never_compaction_candidates(tmp_path: Path) -> None:

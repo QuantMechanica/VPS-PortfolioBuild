@@ -5,7 +5,8 @@ minutes by Windows Task Scheduler.  Above the free-space watermark it records
 a no-op.  Below the watermark it:
 
 * validates the live farm DB with PRAGMA quick_check before backup deletion;
-* retains the union of the newest ten backups and the trailing fourteen days,
+* retains the union of the newest five farm-state backups and the trailing
+  twenty-four hours,
   NTFS-compresses retained backups, and removes older backups in byte-receipted
   batches;
 * NTFS-compresses work-item evidence older than two hours, excluding every
@@ -21,6 +22,7 @@ from __future__ import annotations
 import argparse
 import ctypes
 import datetime as dt
+import hashlib
 import json
 import msvcrt
 import os
@@ -216,10 +218,16 @@ def set_ntfs_compression(path: Path) -> tuple[str, int, int]:
 
 
 def backup_plan(root: Path, now: dt.datetime) -> tuple[list[Path], list[Path]]:
-    files = sorted((p for p in root.glob("*.sqlite") if p.is_file()),
+    """Return the exact safe-to-rotate farm-state backup set.
+
+    The live DB and every non-snapshot SQLite artifact are outside this
+    policy.  The newest-five floor is applied across the matching snapshots;
+    the 24-hour window is then unioned with that floor.
+    """
+    files = sorted((p for p in root.glob("farm_state_before_*.sqlite") if p.is_file()),
                    key=lambda p: (p.stat().st_mtime_ns, p.name), reverse=True)
-    cutoff = now.timestamp() - 14 * 86400
-    keep = [p for index, p in enumerate(files) if index < 10 or p.stat().st_mtime >= cutoff]
+    cutoff = now.timestamp() - 24 * 3600
+    keep = [p for index, p in enumerate(files) if index < 5 or p.stat().st_mtime >= cutoff]
     delete = [p for p in files if p not in set(keep)]
     return keep, delete
 
@@ -233,6 +241,14 @@ def long_path(path: "str | Path") -> str:
     if os.name != "nt" or text.startswith(LONG_PATH_PREFIX):
         return text
     return LONG_PATH_PREFIX + os.path.abspath(text)
+
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def iter_old_files(root: Path, cutoff_epoch: float) -> Iterable[Path]:
@@ -302,15 +318,22 @@ def safe_delete_batch(paths: list[Path], root: Path, receipt_dir: Path,
         stat = resolved.stat()
         if file_attributes(resolved) & REPARSE_ATTRIBUTE:
             continue
-        entries.append({"path": str(resolved), "bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns})
+        entry = {"path": str(resolved), "name": resolved.name,
+                 "bytes": stat.st_size, "mtime_ns": stat.st_mtime_ns}
+        if action == "BACKUP_DELETE":
+            # The receipt is written before any move/unlink, so this is the
+            # authoritative pre-delete content identity.
+            entry["sha256"] = sha256_file(resolved)
+        entries.append(entry)
+    receipt_path = receipt_dir / f"{run_id}_{action.lower()}.json"
     receipt = {"schema": SCHEMA, "authority": AUTHORITY, "run_id": run_id,
                "action": action, "mode": "APPLY" if apply else "DRY_RUN",
                "requested_files": len(entries),
                "requested_bytes": sum(row["bytes"] for row in entries),
                "deleted_files": 0, "deleted_bytes": 0,
                "skipped_files": 0, "skipped_bytes": 0,
+               "archive_list": str(receipt_path) if action == "BACKUP_DELETE" else None,
                "skip_reasons": {}, "skipped": [], "entries": entries}
-    receipt_path = receipt_dir / f"{run_id}_{action.lower()}.json"
     atomic_json(receipt_path, receipt)
     if apply and entries:
         quarantine = root / f".continuous_retention_quarantine_{run_id}_{action.lower()}"

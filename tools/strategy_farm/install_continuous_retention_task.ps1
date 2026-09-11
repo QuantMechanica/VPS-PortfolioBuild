@@ -29,7 +29,7 @@ $settings = New-ScheduledTaskSettingsSet `
 
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger `
     -Principal $principal -Settings $settings `
-    -Description "Fail-closed OWNER retention: DB quick_check, newest-10+14d backup rotation/compression, >2h closed-evidence NTFS compression, and 48h log rotation. No-op above 150 GiB free." `
+    -Description "Fail-closed OWNER retention: DB quick_check, newest-5+24h farm-state backup rotation/compression, >2h closed-evidence NTFS compression, and 48h log rotation. No-op above 150 GiB free." `
     -Force | Out-Null
 
 Get-ScheduledTask -TaskName $TaskName | Select-Object TaskName,State
