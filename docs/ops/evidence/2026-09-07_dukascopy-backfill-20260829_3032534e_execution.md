@@ -1386,3 +1386,45 @@ still pending/unclaimed since 2026-09-09T10:52:59Z, reconfirmed via direct
 sqlite read this cycle). No `update-task` call on any of the three
 owner-decision tasks — no acceptance criterion newly met. Task `3032534e`
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T07:19Z (headless orchestration cycle) — PID `9768` crashed again on the same unfixed defect class; relaunched, verified alive; fix ticket still unworked
+
+`download.log` showed PID `9768` (relaunched 06:39:08Z) crashed at
+`07:16:08Z`, same `ValueError: download destination escaped raw root` class
+as the prior two cycles
+(`\\?\D:\QM\reports\dukascopy\backfill\20260909T191800Z_hardened\raw\GBPCAD\
+2026\00\30\04h_ticks.bi5`) — the root-cause fix for `ae1df6bf-b435-47c8-bcb2-
+bf7a96b4c654` (mkdir-before-resolve reorder) is still `APPROVED`/unassigned,
+not yet picked up by Codex (confirmed via direct `agent_tasks` sqlite read,
+`updated_at=2026-09-11T06:42:08Z` unchanged since the ticket was enqueued).
+No `python.exe` process with `download_bi5.py` in its command line was alive
+at check time; `progress.json` frozen at `completed=135423,
+updated_at_utc=2026-09-11T07:15:03Z` (~2h4m stale by cycle start).
+
+Checked for orphaned `*.tmp` files under the out root and the crash
+destination's symbol dir (none found), then relaunched the identical
+resume command (within `3032534e`'s own pre-authorized `allowed_actions`,
+not new scope):
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Launched detached (`Start-Process cmd.exe /c ... -WindowStyle Hidden`), cwd
+`C:\QM\repo`. Verified alive at +20s: PID `19568`,
+`started_at_utc=2026-09-11T07:20:32.272Z`, `status=RUNNING`,
+`resumed=completed=4343`, `errors=0` — resuming cleanly from
+`hour_ledger.jsonl`, no data loss from the crash gap. This is now the third
+consecutive crash-relaunch cycle on the same known, already-diagnosed
+defect (see `ae1df6bf` root cause above) — the relaunch treats the symptom
+each time; only a landed fix stops the recurrence. No fresh duplicate ticket
+drafted (`ae1df6bf` already covers this exact class and remains open).
+`bb814520`/`dfc60103` gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02
+still pending/unclaimed since 2026-09-09T10:52:59Z; `b66b5ccc` still
+`APPROVED`/codex unstarted since 2026-09-09T11:19:40Z; `46167bd9` still
+`APPROVED`/claude, not yet routed, since 2026-09-10T22:16:06Z). No
+`update-task` call on any of the three owner-decision tasks — no acceptance
+criterion newly met. Task `3032534e` remains `IN_PROGRESS`.
