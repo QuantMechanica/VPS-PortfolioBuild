@@ -995,6 +995,13 @@ class PrestageController:
                 "claimed": bool(claim.get("claimed")),
                 "claimed_item_id": (claim.get("item") or {}).get("id"),
                 "reason": claim.get("reason"),
+                # 2026-09-11 (Orchestrator): non-empty skip-list sizes so an idle
+                # fleet can be diagnosed from the log alone (counts only).
+                "skips": {
+                    key: (len(value) if isinstance(value, (list, tuple)) else value)
+                    for key, value in claim.items()
+                    if key.endswith("_skipped") and value
+                },
             },
         )
         if not claim.get("claimed") or not self.config.active:
