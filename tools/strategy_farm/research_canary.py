@@ -403,7 +403,10 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         exe = terminal_root / "terminal64.exe"
         if not exe.is_file():
             raise CanaryRefused(f"missing T11 terminal executable: {exe}")
-        process = subprocess.Popen([str(exe), "/portable", f"/config:{ini}"], cwd=str(terminal_root),
+        # Orchestrator 2026-09-11: every T11 launch today (journal 06:43/07:22/11:41 local) spawned
+        # MT5 LiveUpdate from the SYSTEM-profile roaming dir and exited 0 within 0.2 s -> no test,
+        # no report. /skipupdate keeps the canary on the fleet build and lets the tester run.
+        process = subprocess.Popen([str(exe), "/portable", "/skipupdate", f"/config:{ini}"], cwd=str(terminal_root),
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=suspended_runner_creation_flags())
         receipt["process"] = bind_spawned_process_to_kill_job(process, lambda child: {
             "pid": child.pid, "process_creation_key": str((get_process_identity(child.pid) or {}).get("creation_key") or ""),
