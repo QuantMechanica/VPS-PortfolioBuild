@@ -993,3 +993,45 @@ evidence. Also: a work item's own rejection message (`diagnostic_summary_invalid
 ...`) can be a symptom one layer removed from the root cause (`validate_summary()`
 rejecting an incomplete manifest) — read the underlying `summary.json` and, where
 present, the richer `export_receipt.json` before concluding what actually broke.
+
+## 2026-09-11T~03:2xZ — Claude task 3032534e: hardening ticket 6bbbf070 closed APPROVED
+
+`6bbbf070` (the `canonicalize_export_set` per-symbol failure isolation build,
+enqueued the prior cycle) reached `REVIEW` at `2026-09-11T03:12:18Z`, verdict
+`PASS_BUILD: 37/37 attempted; 25/12 real replay diagnosed; partial remains
+INFRA_FAIL; 24 focused tests passed; commit 88e428e83f`. Independently
+re-verified rather than trusting the reported verdict: read the evidence doc
+(`docs/ops/evidence/2026-09-11_dwx_m1_partial_canonicalization_6bbbf070.md`),
+confirmed `88e428e83f` touches exactly `framework/scripts/mt5_diagnostics/
+dwx_m1_overlap_export.py` + its test file (no `.mq5`, no
+`dwx_m1_overlap_export_work_item.py::validate_summary` change — the 37-symbol
+admission contract stays untouched, as required), grepped the diff for
+`OrderSend`/`WebRequest`/`Custom*`/`Trade(` (none found), and independently
+re-ran `pytest tools/strategy_farm/tests/test_dwx_m1_overlap_export.py -q`
+(13 passed, matching the reported count). Called
+`close-review 6bbbf070 --state APPROVED` — no race this time, unlike the
+`ba2a478e` collision at 00:48-00:49Z. This is squarely inside `3032534e`'s own
+`allowed_actions` ("review and close the Codex build tasks"); it does **not**
+satisfy any of `3032534e`'s own four top-level acceptance criteria (still need:
+reconciliation report, `verify_import.py` PASS, monthly refresh task) — no
+`update-task` call made, `3032534e` stays `IN_PROGRESS`. The canonicalizer can
+now report a complete per-symbol picture (25 ok / 12 genuine DWX gaps) instead
+of aborting after symbol 2; the next real step is a *separately authorized*
+production T1 dispatch of the hardened exporter, per the authority-scope
+finding already on record above (still open, still needs an OWNER ruling on
+whether `3032534e` itself is a valid enqueue vehicle for that production run).
+`bb814520`/`dfc60103` gate reconfirmed unchanged this cycle: direct sqlite read,
+`QM5_41394` `SP500.DWX`/`XAUUSD.DWX` Q02 rows still `pending`/unclaimed/
+`attempt_count=0`, `updated_at` still `2026-09-09T10:52:59Z` (~2d16h static).
+`XTIUSD.DWX` (the third symbol in the original trio) is now confirmed `done`
+through Q04 via ordinary factory throughput — unrelated to any of these three
+tasks' own acceptance criteria, noted for completeness only. `farmctl health`
+FAIL15/WARN15/OK54 (`checked_at=2026-09-11T03:19:25Z`) — same chronic set as
+prior cycles (`codex_zero_activity`/`codex_auth_broken`/`codex_bridge_heartbeat`
+still trace to `repo_dirty_build_guard`; `q09_autoseal_hold_census`,
+`q09_sealed_plan_hold_age`, `agent_task_state_stranded`, `agent_task_aging_slo`,
+`work_item_phase_age_slo`, `pending_tail_age`, `pending_artifact_binding_drift`,
+`phase_invalid_rate_7d`, `q02_stranded_exhausted_pairs`, `ftmo_launcher_readiness`,
+`backup_calendar_continuity`, `task_monitor_escalation` x2,
+`QM_EvidenceCohortWatch` — no new CRITICAL-class item). No `update-task` call on
+`bb814520`/`dfc60103`.

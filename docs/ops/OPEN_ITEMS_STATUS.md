@@ -2692,3 +2692,17 @@ explicitly does NOT touch the existing 37-symbols-required admission contract (s
 question, still open). Full detail:
 docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md. No `update-task` call
 on bb814520/dfc60103/3032534e (gate rows unchanged; no acceptance criterion newly met).
+
+## 2026-09-11T~03:2xZ — Claude task 3032534e: hardening ticket 6bbbf070 closed APPROVED
+
+Independently re-verified (evidence doc read, diff scoped to exactly the
+canonicalizer + its tests, no `.mq5`/no `validate_summary()` change, grep for
+forbidden calls clean, own re-run of the 13 focused tests) before calling
+`close-review 6bbbf070 --state APPROVED`. `canonicalize_export_set` now
+isolates per-symbol failures instead of aborting the whole 37-symbol run on
+the first empty export (real incident: 25 ok / 12 genuine DWX gaps, previously
+only 2 symbols were ever attempted). Does not satisfy any of `3032534e`'s own
+four acceptance criteria — no `update-task` call, task stays `IN_PROGRESS`.
+`bb814520`/`dfc60103` gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02
+rows still pending/unclaimed since 2026-09-09T10:52:59Z, ~2d16h static). Full
+detail: docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.
