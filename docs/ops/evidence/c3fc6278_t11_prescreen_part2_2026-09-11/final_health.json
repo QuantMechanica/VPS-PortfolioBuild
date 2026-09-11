@@ -1,0 +1,1253 @@
+{
+  "checked_at": "2026-09-11T11:18:36Z",
+  "checks": [
+    {
+      "action_hint": "",
+      "detail": "every active numeric ea_id maps to at most one distinct active slug",
+      "layer": "observation",
+      "name": "ea_id_slug_uniqueness",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "rejected card statuses and active registry slug identities agree",
+      "layer": "observation",
+      "name": "card_registry_identity_integrity",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "no un-promoted higher-version dirs",
+      "layer": "observation",
+      "name": "stranded_ea_improvements",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "0/0 FAIL (low volume)",
+      "layer": "observation",
+      "name": "codex_review_fail_rate_1h",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0.8,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "no actionable stagnation",
+      "layer": "observation",
+      "name": "cards_ready_stagnation",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 3,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "last run exit 0",
+      "layer": "observation",
+      "name": "pump_task_lastresult",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "global mutation lock absent",
+      "layer": "observation",
+      "name": "factory_mutation_lock",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 120,
+      "value": "absent"
+    },
+    {
+      "action_hint": "",
+      "detail": "Factory_ON ceremony-incomplete marker absent",
+      "layer": "observation",
+      "name": "factory_on_ceremony_incomplete",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": "absent",
+      "value": "absent"
+    },
+    {
+      "action_hint": "",
+      "detail": "0 master-repairs in 24h (DL-085 self-heal)",
+      "layer": "observation",
+      "name": "custom_history_repairs_24h",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 10,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "NTFS change journal on D: active",
+      "layer": "observation",
+      "name": "usn_journal_d",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": "active"
+    },
+    {
+      "action_hint": "",
+      "detail": "timestamps sane",
+      "layer": "observation",
+      "name": "work_items_timestamp_sanity",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "no SQLite-lock worker crash INFRA rows in the last 24h",
+      "layer": "observation",
+      "name": "sqlite_lock_crash_infra_24h",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "Next pump cycle (\u22645 min) should promote them",
+      "detail": "9 profitable Q02-PASS without Q03 promotion (pump catches up gradually)",
+      "layer": "observation",
+      "name": "p2_pass_no_p3",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 3,
+      "value": 9
+    },
+    {
+      "action_hint": "",
+      "detail": "94599 rows, refreshed 15m ago",
+      "layer": "observation",
+      "name": "ea_metrics_fresh",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 90,
+      "value": 15
+    },
+    {
+      "action_hint": "",
+      "detail": "25 hourly snapshots, newest 15m ago",
+      "layer": "observation",
+      "name": "db_backup_fresh",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 150,
+      "value": 15
+    },
+    {
+      "action_hint": "",
+      "detail": "no grandchildren",
+      "layer": "observation",
+      "name": "ablation_grandchildren",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "no starvation",
+      "layer": "observation",
+      "name": "claude_review_starved",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 3,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "7957 pending, 5 active, 7 pwsh workers, 9 fresh work_item logs",
+      "layer": "observation",
+      "name": "mt5_dispatch_idle",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 5,
+      "value": 7957
+    },
+    {
+      "action_hint": "Enabled workers are healthy, but design capacity is reduced; resolve or explicitly ratify each quarantined terminal.",
+      "detail": "10/12 design terminal_worker capacity alive; 10/10 enabled daemons alive (T1, T10, T2, T3, T4, T5, T6, T7, T8, T9) // 2 unavailable by disabled_terminals.txt safety/quarantine policy: T11, T12",
+      "layer": "observation",
+      "name": "mt5_worker_saturation",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 12,
+      "value": 10
+    },
+    {
+      "action_hint": "Quarantine each affected factory slot, then repair its portable account profile only in an OWNER-approved stopped-state window; health must never stop/start terminals or touch AutoTrading.",
+      "detail": "latest launch has not yet proved account readiness on T9:20260911.log",
+      "layer": "observation",
+      "name": "terminal_account_profiles",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "no active rows beyond phase timeout",
+      "layer": "observation",
+      "name": "active_row_age",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 1,
+      "value": 0
+    },
+    {
+      "action_hint": "Run farmctl pump manually; check codex.cmd is on PATH and codex CLI works",
+      "detail": "0 codex build activity in 3h but 75 pending build_ea tasks",
+      "layer": "observation",
+      "name": "codex_zero_activity",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 1,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "13 pending sources",
+      "layer": "observation",
+      "name": "source_pool_drained",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 10,
+      "value": 13
+    },
+    {
+      "action_hint": "",
+      "detail": "no uncovered recurrent zero-trade EAs",
+      "layer": "observation",
+      "name": "zerotrade_rework_backlog",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 1,
+      "value": 0
+    },
+    {
+      "action_hint": "No manual action while Codex slots are full; pump will emit auto-build tasks when a slot frees.",
+      "detail": "306 approved cards await build, Codex/build queue saturated (codex=1, pending_builds=75; QM5_10367, QM5_11212, QM5_11213, QM5_11214, QM5_11291, QM5_11292, QM5_11375, QM5_11376, QM5_11380, QM5_1157; buckets READY=250 NEEDS_SOURCE=50 DATA_BLOCKED=6 (disposition snapshot 2026-09-11T11:00:46.589127+00:00))",
+      "layer": "observation",
+      "name": "unbuilt_cards_count",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 10,
+      "value": 306
+    },
+    {
+      "action_hint": "Next pump cycles should enqueue Q02 work_items.",
+      "detail": "4 reviewed built EAs have no Q02 work_items (QM5_11561, QM5_11731, QM5_11570, QM5_10050)",
+      "layer": "observation",
+      "name": "unenqueued_eas_count",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 3,
+      "value": 4
+    },
+    {
+      "action_hint": "Build lane blocked by repo_dirty_build_guard: commit/clean the tree. Uncommitted SOURCE never self-heals via the pump (project_qm_dirty_guard_build_deadlock). Do NOT restart the retired bridge.",
+      "detail": "no direct build activity in 3h, 75 pending \u2014 repo_dirty_build_guard blocked by 18 uncommitted file(s): M  artifacts/evidence_cohort_baseline.json, A  artifacts/qm5_41149_magic_allocation_20260910.json, A  artifacts/qm5_41149_magic_allocation_dry_run_20260910.json (legacy /goal bridge retired 2026-05-17; heartbeat relic 117d old)",
+      "layer": "observation",
+      "name": "codex_bridge_heartbeat",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 1,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "no enabled router lane heartbeat older than 2h",
+      "layer": "observation",
+      "name": "agent_lane_heartbeat_stale",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "Disk filling \u2014 watch tester caches; the hourly purge should hold it.",
+      "detail": "D: free 68.6GB < 80GB warn",
+      "layer": "observation",
+      "name": "disk_free_gb",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 80,
+      "value": 68.6
+    },
+    {
+      "action_hint": "Preserve active work. Recover verified closed-file space before a full restart; do not lower the admission floor.",
+      "detail": "Full ten-worker cold restart lacks 51.4GiB disk reserve",
+      "layer": "observation",
+      "name": "cold_restart_disk_reserve",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 136.0,
+      "value": {
+        "free_gib": 68.58,
+        "margin_gib": -51.42,
+        "required_gib": 120.0
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "busy-agent bar*.tmp observed-write rate=0.0GB/h over 20m; D: free=68.6GB; projected runway=infinite; terminals={}; read_errors=0",
+      "layer": "observation",
+      "name": "disk_scratch_rate_runway",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": {
+        "rate_fail_gb_per_hour": 80.0,
+        "runway_fail_hours": 2.0
+      },
+      "value": {
+        "by_terminal": {},
+        "files": 0,
+        "free_gb": 68.6,
+        "projected_runway_hours": null,
+        "rate_gb_per_hour": 0.0,
+        "read_errors": 0,
+        "recent_gb": 0.0,
+        "window_minutes": 20
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "20 Q03+ PASS in last 6h",
+      "layer": "observation",
+      "name": "p_pass_stagnation",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 1,
+      "value": 20
+    },
+    {
+      "action_hint": "",
+      "detail": "no gate is INFRA_FAIL-saturated",
+      "layer": "observation",
+      "name": "phase_infra_graveyard",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 30,
+      "value": 0
+    },
+    {
+      "action_hint": "Classify the cohort by row-bound aggregate and verdict_reason; route valid zero-trade outcomes to RETIRE/frequency-floor and INVALID outcomes to evidence repair; run an OWNER-sized governed canary before any bulk infra requeue.",
+      "detail": "3 Q02 EA/symbol pairs have no non-infra terminal disposition, no queued successor, and >= 12 INFRA_FAIL rows",
+      "layer": "observation",
+      "name": "q02_stranded_exhausted_pairs",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": 3
+    },
+    {
+      "action_hint": "",
+      "detail": "codex=15s, claude=15s",
+      "layer": "observation",
+      "name": "quota_snapshot_fresh",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 300,
+      "value": 15
+    },
+    {
+      "action_hint": "",
+      "detail": "verdict=ok qwinsta_ok=True qwinsta_error=None tasks_failing=0/3 logon_session_ok=True spawn_ok=True age=1.3h",
+      "layer": "observation",
+      "name": "lsm_session_health",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": "ok",
+      "value": "ok"
+    },
+    {
+      "action_hint": "Build lane blocked by repo_dirty_build_guard, not auth. Commit/clean the artifact; the pump auto-commit should self-heal (project_qm_dirty_guard_build_deadlock).",
+      "detail": "NOT auth \u2014 repo_dirty_build_guard blocked by 18 uncommitted file(s): M  artifacts/evidence_cohort_baseline.json, A  artifacts/qm5_41149_magic_allocation_20260910.json, A  artifacts/qm5_41149_magic_allocation_dry_run_20260910.json (75 builds pending, 0 build activity in 3h, auth_age=234.9h, n_401=0)",
+      "layer": "observation",
+      "name": "codex_auth_broken",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 1,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "db=D:\\QM\\strategy_farm\\state\\farm_state.sqlite window=14d evidence_reads=0 stress_identity=0 candidates=0 authenticated=0 unbound_provenance=[] benign[distinct_kpis=58]",
+      "layer": "observation",
+      "name": "q05q06_stress_identity",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 20,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "db=D:\\QM\\strategy_farm\\state\\farm_state.sqlite window=14d evidence_reads=0 flagged=0 candidates=0 authenticated=0 unbound_provenance=[] classes[]",
+      "layer": "observation",
+      "name": "q07_zero_variance",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 5,
+      "value": 0
+    },
+    {
+      "action_hint": "A phase's trailing-7d INVALID rate is high: the gate runs but yields no verdict (unauthenticatable / missing evidence). Investigate the phase runner / tester health.",
+      "detail": "db=D:\\QM\\strategy_farm\\state\\farm_state.sqlite window=7d min_sample=20 warn>=10.0% fail>=25.0% worst=Q08:42.6% [COMPILE_EA=0/388=0.0% OPT_CENSUS=0/17346=0.0% Q02=1/170=0.6% Q03=0/120=0.0% Q04=0/954=0.0% Q05=0/52=0.0% Q06=0/29=0.0% Q07=0/52=0.0% Q08=23/54=42.6%]",
+      "layer": "observation",
+      "name": "phase_invalid_rate_7d",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 25.0,
+      "value": 42.6
+    },
+    {
+      "action_hint": "Live sleeves without a loaded KS baseline run with the divergence kill-switch DORMANT. Generate/deploy the Q10 baseline (gen_q10_baseline.py --deploy-live, OWNER-gated) and confirm KS_BASELINE_LOADED in the live QM logs. A newer portfolio manifest exists unreconciled next to DXZ_BOOK_MANIFEST -- confirm which book T_Live actually runs (per any recent decisions/*book*.md) and repoint DXZ_BOOK_MANIFEST (env QM_DXZ_BOOK_MANIFEST) if it is stale, rather than trusting sleeve dormancy/coverage findings against a possibly-superseded book.",
+      "detail": "manifest=portfolio_manifest_live_24sleeve_20260724.json live_logs=C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM sleeves=24 loader_precedence=terminal_local_then_file_common baseline_sources={'terminal_local': 21, 'file_common': 2, 'none': 1} loaded_ok=23 dormant=0 no_baseline_file=1 hash_mismatch=0 mirror_divergent=0 dormant_list=[] nofile=['10440/NDX'] mismatch=[] manifest_staleness=newer_candidate_unreconciled newest=portfolio_manifest_sunday_FINAL22_TOTALRISK12_20260726.json newest_mtime=2026-07-26T08:18:54+00:00 configured_mtime=2026-07-24T08:00:14+00:00 all_newer=['portfolio_manifest_sunday_FINAL22_TOTALRISK12_20260726.json', 'portfolio_manifest_sunday_FINAL23_TOTALRISK12_20260726.json', 'portfolio_manifest_sunday_FINAL24b_TOTALRISK12_20260726.json', 'portfolio_manifest_sunday_24sleeve_TOTALRISK12_20260726.json']",
+      "layer": "observation",
+      "name": "ks_baseline_dormancy",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "db=D:\\QM\\strategy_farm\\state\\farm_state.sqlite window=14d q07_runs=89 seed_auth_failures=0 rate=0.0% warn>=1 fail>=5.0% offenders=[]",
+      "layer": "observation",
+      "name": "seed_auth_failure_rate",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 5.0,
+      "value": 0
+    },
+    {
+      "action_hint": "Report/apply exits with `python tools/strategy_farm/agent_router.py reconcile-exits` (dry-run first); RECYCLE->TODO re-queues builds and is an OWNER capacity decision. See docs/ops/evidence/2026-07-27_state_machine_exits_fix.md",
+      "detail": "limbo tasks: RECYCLE=181, APPROVED=639, PIPELINE=173 total=993 (>3d stale=946); directory_artifacts=15",
+      "layer": "observation",
+      "name": "agent_task_state_stranded",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 900,
+      "value": 993
+    },
+    {
+      "action_hint": "Disposition each stale class with its named sweeper/rule; dry-run first. Do not overwrite pipeline verdict evidence.",
+      "detail": ">3d agent tasks: RECYCLE=181 oldest=2026-07-19T17:30:59+00:00, PIPELINE=169 oldest=2026-05-26T13:25:44+00:00, BLOCKED=414 oldest=2026-07-06T13:03:43+00:00",
+      "layer": "observation",
+      "name": "agent_task_aging_slo",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": 764
+    },
+    {
+      "action_hint": "Inspect this check in state/health.json (also shown by the cockpit); drain the named Q-phase rows without overwriting verdict evidence.",
+      "detail": "COMPILE_EA=40/45 >p95 48.09h (n=940; oldest=d646713d,1cab0ed2,a44c3c83); Q02=649/754 >p95 585.42h (n=75745; oldest=b967119e,38c3b787,2294c626); Q03=55/61 >p95 230.16h (n=13185; oldest=2735c545,adfa7182,c15e6f39); Q04=485/606 >p95 531.76h (n=18031; oldest=34c5dfbf,d7e0fb4a,884f8ba1); Q06=5/6 >p95 17.47h (n=593; oldest=a57cb302,a075334f,af220f2f); Q07=6/16 >p95 256.33h (n=642; oldest=c62565c1,7d0e2ae9,230e29a2); Q08=6/12 >p95 472.20h (n=839; oldest=b68d05cd,30297fe9,3d886f4b); Q09=12/12 >p95 155.57h (n=323; oldest=b196a1ba,90ca0947,844cb4a9); Q09_NEWS=40/40 >p95 120.34h (n=113; oldest=1ab6156f,24acc5d4,1ffcb576); Q10_NEWS=17/52 >p95 241.60h (n=214; oldest=49a059da,aa80274f,745671a4); Q11=1/1 >p95 143.59h (n=32; oldest=b62dbcec); Q14=2/2 >p95 15.19h (n=44; oldest=64604d7a,f81a14df)",
+      "layer": "observation",
+      "name": "work_item_phase_age_slo",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": 1318
+    },
+    {
+      "action_hint": "Claim-time effective priority subtracts one point per whole age week; recovery_class rows remain Operating-Rule-22 idle-capped. Investigate only if this grows while the queue is otherwise draining.",
+      "detail": "2142 pending >14d (OPT_CENSUS=868, Q02=678, Q04=504, Q03=35, COMPILE_EA=20); recovery_class=551 (idle-capped by design); oldest_created=2026-06-08T03:45:57+00:00; max_age_credit_weeks=13",
+      "layer": "observation",
+      "name": "pending_tail_age",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 1900,
+      "value": 2142
+    },
+    {
+      "action_hint": "",
+      "detail": "only 0 recent summary-missing terminals (<20); no signal",
+      "layer": "observation",
+      "name": "q02_summary_missing_unclassified",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 0.5,
+      "value": 0
+    },
+    {
+      "action_hint": "Review the recorded effective budget and workload before releasing the retry hold.",
+      "detail": "monitor kills in 24h=3; UTC days={'2026-09-10': 2, '2026-09-11': 1}; pending budget review=4",
+      "layer": "observation",
+      "name": "monitor_budget_exhausted",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": 1,
+      "value": 3
+    },
+    {
+      "action_hint": "Inspect bound run/config and report evidence for recurring post-test terminal hangs.",
+      "detail": "finished-but-alive detections in 24h=0; terminated=0; UTC days={}",
+      "layer": "observation",
+      "name": "terminal_finished_but_alive",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 1,
+      "value": 0
+    },
+    {
+      "action_hint": "Check Q08-bound binary/setfile vintage, deterministically author and hash-bind a q09-news-run-plan/v2, then verify the ordinary claim predicate. Never release Q09_AWAITING_SEALED_PLAN without a validated bound plan.",
+      "detail": "completions_24h=1; pending=52; 30 Q10_NEWS sealed-plan hold(s) older than 6h; d81d9ea8:QM5_1556:XAUUSD.DWX:450.9h, 08fe4173:QM5_11476:USDJPY.DWX:450.9h, 84608819:QM5_12831:QM5_12831_XTI_AUDUSD_BRK_D1:450.9h, 72992810:QM5_1556:XAUUSD.DWX:291.9h, 70171429:QM5_10569:XAUUSD.DWX:215.1h, e8ec3223:QM5_10569:XAUUSD.DWX:215.1h, cec67ad5:QM5_10513:XAUUSD.DWX:215.1h, 58ae0036:QM5_10692:NDX.DWX:215.1h, 9f691044:QM5_10692:NDX.DWX:215.1h, 9b69d492:QM5_10692:NDX.DWX:215.1h, f3f1cedc:QM5_10692:NDX.DWX:215.1h, 15e7deca:QM5_10692:NDX.DWX:215.1h",
+      "layer": "observation",
+      "name": "q09_sealed_plan_hold_age",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 6,
+      "value": 30
+    },
+    {
+      "action_hint": "",
+      "detail": "no active Q10 long-cell breaker holds",
+      "layer": "observation",
+      "name": "q10_long_cell_breaker_holds",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": 6.0,
+      "value": 0
+    },
+    {
+      "action_hint": "Resolve the grouped q09_autoseal_failure cause and let the governed binder release Q09_AWAITING_SEALED_PLAN; never release the hold by hand.",
+      "detail": "active_holds=30; aged>1h=0; aged>6h=0; trigger=reason_count_gte_3=Q09_AUTOSEAL_BIND_PLAN_FAILED:8,Q09_AUTOSEAL_DERIVE_LINEAGE_FAILED:16,Q09_AUTOSEAL_VALIDATE_Q08_VINTAGE_FAILED:6; AWAITING_SEALED_PLAN/Q09_AUTOSEAL_DERIVE_LINEAGE_FAILED=16 oldest=2026-09-11T11:15:36+00:00 ids=70171429,e8ec3223,cec67ad5,58ae0036,9f691044; AWAITING_SEALED_PLAN/Q09_AUTOSEAL_BIND_PLAN_FAILED=8 oldest=2026-09-11T11:15:31+00:00 ids=08fe4173,84608819,72992810,2641d5cf,9a85fb74; AWAITING_SEALED_PLAN/Q09_AUTOSEAL_VALIDATE_Q08_VINTAGE_FAILED=6 oldest=2026-09-11T11:15:28+00:00 ids=d81d9ea8,0f7f63e4,fb127697,10449264,83826f05",
+      "layer": "observation",
+      "name": "q09_autoseal_hold_census",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": {
+        "fail_age_hours_exclusive": 6.0,
+        "fail_aged_count": 3,
+        "fail_reason_count": 3,
+        "warn_age_hours_exclusive": 1.0
+      },
+      "value": 30
+    },
+    {
+      "action_hint": "Activate an exact non-restart hold before dispatch. LINE_ENDINGS_ONLY may be rebound only after normalized-byte proof; CONTENT_CHANGED/MISSING requires per-EA review and a governed successor from the final build. Report runnable/created.",
+      "detail": "729 mismatched artifact binding(s) across 366 pending row(s); classes={\"CONTENT_CHANGED\": 63, \"MISSING\": 666}; 8abafefb:QM5_10203:Q02:mq5:CONTENT_CHANGED:HELD, 824ca951:QM5_20181:Q02:mq5:CONTENT_CHANGED:HELD, 824ca951:QM5_20181:Q02:setfile:CONTENT_CHANGED:HELD, a0d6400a:QM5_20181:Q02:mq5:CONTENT_CHANGED:HELD, a0d6400a:QM5_20181:Q02:setfile:CONTENT_CHANGED:HELD, 8084f025:QM5_10593:Q04:mq5:CONTENT_CHANGED:HELD, 8084f025:QM5_10593:Q04:setfile:CONTENT_CHANGED:HELD, c2ce418a:QM5_10649:Q04:ex5:CONTENT_CHANGED:HELD, c2ce418a:QM5_10649:Q04:mq5:CONTENT_CHANGED:HELD, c2ce418a:QM5_10649:Q04:setfile:CONTENT_CHANGED:HELD, 48f156eb:QM5_1443:Q04:mq5:CONTENT_CHANGED:HELD, 8322d8c7:QM5_33007:Q02:ex5:CONTENT_CHANGED:HELD, 8322d8c7:QM5_33007:Q02:mq5:CONTENT_CHANGED:HELD, 8322d8c7:QM5_33007:Q02:setfile:CONTENT_CHANGED:HELD, 61f887b7:QM5_35005:Q02:mq5:CONTENT_CHANGED:HELD, 61f887b7:QM5_35005:Q02:setfile:CONTENT_CHANGED:HELD, 62156a75:QM5_35005:Q02:mq5:CONTENT_CHANGED:HELD, 62156a75:QM5_35005:Q02:setfile:CONTENT_CHANGED:HELD, 869ea74a:QM5_35004:Q02:mq5:CONTENT_CHANGED:HELD, 869ea74a:QM5_35004:Q02:setfile:CONTENT_CHANGED:HELD",
+      "layer": "observation",
+      "name": "pending_artifact_binding_drift",
+      "source": "farm_health",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": 729
+    },
+    {
+      "action_hint": "Inspect expansion child/hold IDs and legacy placeholder lineage; only append a governed continuation, never rewrite the historical verdict.",
+      "detail": "conclusive_verdicts_24h=0; expansions_pending=3; PENDING_RUNNER=18; active_holds=30; hold_causes={\"Q07_EVIDENCE_MISSING\": 6, \"Q07_LINEAGE_MISSING\": 2, \"Q08_EVIDENCE_MISSING\": 16, \"Q08_VINTAGE\": 6}",
+      "layer": "observation",
+      "name": "news_gate_service_rate",
+      "source": "farm_health",
+      "status": "WARN",
+      "threshold": "visibility SLO: a conclusive 24h verdict while unresolved work exists",
+      "value": {
+        "active_hold_count": 30,
+        "conclusive_verdicts_per_day": 0,
+        "expansion_pending_rows": [
+          {
+            "children": [
+              {
+                "id": "b25eab58-eccb-44d8-84b2-bdebd758aab5",
+                "status": "done",
+                "verdict": "REVIEW_REQUIRED"
+              }
+            ],
+            "ea_id": "QM5_41219",
+            "source_work_item_id": "1da33661-ae52-442d-babd-8c73c3d9f9c6",
+            "symbol": "XAUUSD.DWX"
+          },
+          {
+            "children": [
+              {
+                "id": "0c4a80fc-640b-4da8-ad63-ccc1ce5095a5",
+                "status": "done",
+                "verdict": "REVIEW_REQUIRED"
+              }
+            ],
+            "ea_id": "QM5_11294",
+            "source_work_item_id": "1a6aa6bf-c747-449c-ab2a-0d082b497522",
+            "symbol": "GDAXI.DWX"
+          },
+          {
+            "children": [],
+            "ea_id": "QM5_1354",
+            "source_work_item_id": "317b916e-f93f-43ce-9b40-1c43d1639a49",
+            "symbol": "XAUUSD.DWX"
+          }
+        ],
+        "expansions_pending": 3,
+        "hold_cause_counts": {
+          "Q07_EVIDENCE_MISSING": 6,
+          "Q07_LINEAGE_MISSING": 2,
+          "Q08_EVIDENCE_MISSING": 16,
+          "Q08_VINTAGE": 6
+        },
+        "hold_cause_rows": {
+          "Q07_EVIDENCE_MISSING": [
+            {
+              "ea_id": "QM5_10148",
+              "id": "8b233bbf-4ed6-4c27-a3d2-5e940c9248ab",
+              "symbol": "EURNZD.DWX"
+            },
+            {
+              "ea_id": "QM5_10771",
+              "id": "9a85fb74-4c31-4a74-8e8c-c332cf1b802e",
+              "symbol": "USDJPY.DWX"
+            },
+            {
+              "ea_id": "QM5_1230",
+              "id": "bb02b701-0d7c-4de7-82b2-87d917f8dd1b",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_12831",
+              "id": "84608819-5253-4df0-871c-6eb4750c3435",
+              "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1"
+            },
+            {
+              "ea_id": "QM5_1556",
+              "id": "72992810-aaf1-4fa8-9c12-c778bda0ae87",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_9573",
+              "id": "e0cbdd1a-1cfe-4bbe-8ebe-a4b4c26d151f",
+              "symbol": "USDCHF.DWX"
+            }
+          ],
+          "Q07_LINEAGE_MISSING": [
+            {
+              "ea_id": "QM5_10569",
+              "id": "2641d5cf-6e1c-43d1-92b2-05c9d6f54d82",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_11476",
+              "id": "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+              "symbol": "USDJPY.DWX"
+            }
+          ],
+          "Q08_EVIDENCE_MISSING": [
+            {
+              "ea_id": "QM5_10145",
+              "id": "bd840961-23a1-4fea-99ce-2e285c0d1914",
+              "symbol": "SP500.DWX"
+            },
+            {
+              "ea_id": "QM5_10513",
+              "id": "1d9a2d26-4407-4554-acbb-4e4c258f0b04",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_10513",
+              "id": "9d3f470e-5071-4398-86c7-7de4be979c3d",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_10513",
+              "id": "cec67ad5-2ca5-4d84-b347-a0c370415329",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_10513",
+              "id": "d3312a9e-038a-4ab8-b392-0dbdfa2728e0",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_10569",
+              "id": "70171429-8d84-49bd-8082-7034c924dbf4",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_10569",
+              "id": "e8ec3223-886a-400b-ba1b-096a82cebd9f",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "120d68ff-bf61-4b16-abf8-1867aee53bb3",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "15e7deca-13e8-4760-9e8e-5918040f948d",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "42c8debd-ca2a-4618-8aaf-b9c3ee379f61",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "58ae0036-5bc4-4711-8bfa-eb3465af298b",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "60ce66e6-8c40-493a-aa8f-40c8714a3e85",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "9b69d492-82df-4703-9350-fea30afac98f",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "9f691044-d481-4f69-8823-267d80fff89d",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "a8e36fba-36e7-419a-9d2b-5b3116cbdde2",
+              "symbol": "NDX.DWX"
+            },
+            {
+              "ea_id": "QM5_10692",
+              "id": "f3f1cedc-c0d6-4485-917c-7f3b98957453",
+              "symbol": "NDX.DWX"
+            }
+          ],
+          "Q08_VINTAGE": [
+            {
+              "ea_id": "QM5_10476",
+              "id": "b6bdac29-b608-4016-9394-2be6f34cc9a3",
+              "symbol": "USDCAD.DWX"
+            },
+            {
+              "ea_id": "QM5_12474",
+              "id": "83826f05-3d85-4cac-8177-e3f7cd25c7e8",
+              "symbol": "GBPUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_1556",
+              "id": "d81d9ea8-b802-4c38-8fc9-8bdbab6ef75c",
+              "symbol": "XAUUSD.DWX"
+            },
+            {
+              "ea_id": "QM5_1567",
+              "id": "fb127697-b89e-4d52-9bd5-0d92d95e9125",
+              "symbol": "GBPJPY.DWX"
+            },
+            {
+              "ea_id": "QM5_1567",
+              "id": "10449264-8fa1-47f5-a3d7-adb28cee934d",
+              "symbol": "GBPNZD.DWX"
+            },
+            {
+              "ea_id": "QM5_1567",
+              "id": "0f7f63e4-9244-4c60-8610-ea068c5fc64e",
+              "symbol": "XAGUSD.DWX"
+            }
+          ]
+        },
+        "pending_runner_count": 18,
+        "window_hours": 24
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "24h completed by contract/gate={\"v4:Q12:PATTERN\": 1, \"v4:Q13:PARAM_OPT\": 1, \"v4:Q14:HEAD_TO_HEAD\": 1}; pending_or_active=81; backlog_scope=optimization_fork_schema+active_manifest_sha256",
+      "layer": "observation",
+      "name": "opt_fork_service_rate",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": "visibility SLO: nonzero 24h completion when backlog exists",
+      "value": {
+        "v4:Q12:PATTERN": 1,
+        "v4:Q13:PARAM_OPT": 1,
+        "v4:Q14:HEAD_TO_HEAD": 1
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "24h execution_verdicts=1597 (66.542/h) vs raw_rows=1597 (66.542/h); disposition_only_excluded=0; by_phase[exec/raw]: COMPILE_EA=25/25, OPT_CENSUS=1382/1382, Q00=1/1, Q02=36/36, Q03=24/24, Q04=104/104, Q05=7/7, Q06=3/3, Q07=3/3, Q08=7/7, Q10_NEWS=1/1, Q12=1/1, Q13=1/1, Q14=1/1, WINDOW_SWEEP_OWNER=1/1",
+      "layer": "observation",
+      "name": "execution_verdict_throughput",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": "visibility SLO: nonzero execution verdicts when terminal rows exist",
+      "value": {
+        "by_phase": {
+          "COMPILE_EA": {
+            "execution": 25,
+            "raw": 25
+          },
+          "OPT_CENSUS": {
+            "execution": 1382,
+            "raw": 1382
+          },
+          "Q00": {
+            "execution": 1,
+            "raw": 1
+          },
+          "Q02": {
+            "execution": 36,
+            "raw": 36
+          },
+          "Q03": {
+            "execution": 24,
+            "raw": 24
+          },
+          "Q04": {
+            "execution": 104,
+            "raw": 104
+          },
+          "Q05": {
+            "execution": 7,
+            "raw": 7
+          },
+          "Q06": {
+            "execution": 3,
+            "raw": 3
+          },
+          "Q07": {
+            "execution": 3,
+            "raw": 3
+          },
+          "Q08": {
+            "execution": 7,
+            "raw": 7
+          },
+          "Q10_NEWS": {
+            "execution": 1,
+            "raw": 1
+          },
+          "Q12": {
+            "execution": 1,
+            "raw": 1
+          },
+          "Q13": {
+            "execution": 1,
+            "raw": 1
+          },
+          "Q14": {
+            "execution": 1,
+            "raw": 1
+          },
+          "WINDOW_SWEEP_OWNER": {
+            "execution": 1,
+            "raw": 1
+          }
+        },
+        "disposition": 0,
+        "execution": 1597,
+        "raw": 1597
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "active_rows=5; total_active_minutes=27; by_phase: OPT_CENSUS=9m, Q04=19m",
+      "layer": "observation",
+      "name": "active_terminal_minutes_by_phase",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": "visibility only: terminal occupancy attributed to the working Qxx gate",
+      "value": {
+        "OPT_CENSUS": 8.8,
+        "Q04": 18.6
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "24h terminal execution rows with a claim stamp=1563 (skipped_no_claim=34); latency_min p50=3.1 p90=5.1 p99=20.1",
+      "layer": "observation",
+      "name": "claim_to_complete_latency",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": "visibility only: (updated_at - claimed_at_iso) distribution, minutes",
+      "value": {
+        "p50": 3.1,
+        "p90": 5.1,
+        "p99": 20.1,
+        "sample_count": 1563
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "Q10 parents_scanned=14; 24h cell_receipts=0 (0.0/h); retry_exhausted_cells=0 (0.0/h)",
+      "layer": "observation",
+      "name": "q10_cell_throughput",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": "visibility only: success receipts vs retry-exhausted cells, separated",
+      "value": {
+        "receipts": 0,
+        "retry_exhausted": 0
+      }
+    },
+    {
+      "action_hint": "",
+      "detail": "terminal requalification verdict rows across versioned v3/v4 roles: 27",
+      "layer": "observation",
+      "name": "terminal_requalification_verdicts_count",
+      "source": "farm_health",
+      "status": "OK",
+      "threshold": ">=1 proves the optimization fork has completed at least once",
+      "value": 27
+    },
+    {
+      "action_hint": "",
+      "detail": "silent_failure_monitor sidecar age=3.3m",
+      "evidence": "D:\\QM\\reports\\state\\silent_failure_alarms.json",
+      "layer": "transport",
+      "name": "silent_failure_monitor_surface",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 25,
+      "value": 3.3
+    },
+    {
+      "action_hint": "Investigate ongoing disappearance of baselined evidence; do not mask exit 3.",
+      "detail": "QM_EvidenceCohortWatch_Daily_0420 reports LOSS_OBSERVED (documented exit 3)",
+      "evidence": "D:\\QM\\strategy_farm\\logs\\evidence_cohort_watch.log",
+      "layer": "observation",
+      "name": "schtask:QM_EvidenceCohortWatch_Daily_0420",
+      "source": "silent_failure_monitor",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": 3
+    },
+    {
+      "action_hint": "Recurring task last exited non-zero; check its wrapper log.",
+      "detail": "QM_NewsCalendar_Refresh LastTaskResult 1 (non-zero, recurring)",
+      "evidence": "Get-ScheduledTaskInfo QM_NewsCalendar_Refresh",
+      "layer": "observation",
+      "name": "schtask:QM_NewsCalendar_Refresh",
+      "source": "silent_failure_monitor",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "Recently-run task exited non-zero; inspect if still relevant.",
+      "detail": "QM_StrategyFarm_FactoryON_AtLogon LastTaskResult 1 (non-zero, last ran 2026-09-10T02:00:00Z)",
+      "evidence": "Get-ScheduledTaskInfo QM_StrategyFarm_FactoryON_AtLogon",
+      "layer": "observation",
+      "name": "schtask:QM_StrategyFarm_FactoryON_AtLogon",
+      "source": "silent_failure_monitor",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "Recurring task last exited non-zero; check its wrapper log.",
+      "detail": "QM_StrategyFarm_MailboxSourceIntake_Daily LastTaskResult 1 (non-zero, recurring)",
+      "evidence": "Get-ScheduledTaskInfo QM_StrategyFarm_MailboxSourceIntake_Daily",
+      "layer": "observation",
+      "name": "schtask:QM_StrategyFarm_MailboxSourceIntake_Daily",
+      "source": "silent_failure_monitor",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "Recurring task last exited non-zero; check its wrapper log.",
+      "detail": "QM_StrategyFarm_TesterCachePurge LastTaskResult 3 (non-zero, recurring)",
+      "evidence": "Get-ScheduledTaskInfo QM_StrategyFarm_TesterCachePurge",
+      "layer": "observation",
+      "name": "schtask:QM_StrategyFarm_TesterCachePurge",
+      "source": "silent_failure_monitor",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 3
+    },
+    {
+      "action_hint": "Recurring task last exited non-zero; check its wrapper log.",
+      "detail": "QM_StrategyFarm_WorktreeClean_4h LastTaskResult 1 (non-zero, recurring)",
+      "evidence": "Get-ScheduledTaskInfo QM_StrategyFarm_WorktreeClean_4h",
+      "layer": "observation",
+      "name": "schtask:QM_StrategyFarm_WorktreeClean_4h",
+      "source": "silent_failure_monitor",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "Recurring task last exited non-zero; check its wrapper log.",
+      "detail": "QM_WorkItemLogPruner_Daily_0310 LastTaskResult 1 (non-zero, recurring)",
+      "evidence": "Get-ScheduledTaskInfo QM_WorkItemLogPruner_Daily_0310",
+      "layer": "observation",
+      "name": "schtask:QM_WorkItemLogPruner_Daily_0310",
+      "source": "silent_failure_monitor",
+      "status": "WARN",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "0 acting purge run(s) logged; no 3-run futility streak",
+      "evidence": "D:\\QM\\reports\\state\\tester_cache_purge.log",
+      "layer": "observation",
+      "name": "purge_futility",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 3,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "0/14 recent pump runs blocked; newest ok=True",
+      "evidence": "D:\\QM\\strategy_farm\\logs\\pump_task_*.log",
+      "layer": "observation",
+      "name": "pump_blockade",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 3,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "backup_nightly.log fresh (509min)",
+      "evidence": "D:\\QM\\reports\\state\\backup_nightly.log",
+      "layer": "observation",
+      "name": "heartbeat:backup_nightly",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 1560,
+      "value": 509.0
+    },
+    {
+      "action_hint": "Investigate the named calendar dates; a later healthy run does not close the gap.",
+      "detail": "missing successful nightly backup date(s): 2026-08-18; logged causes=2026-08-18:drive G: not available after 15min wait -- GoogleDriveFS mount absent in this session",
+      "evidence": "D:\\QM\\reports\\state\\backup_nightly.log",
+      "layer": "observation",
+      "name": "backup_calendar_continuity",
+      "source": "silent_failure_monitor",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": 1
+    },
+    {
+      "action_hint": "",
+      "detail": "health.json fresh (6min)",
+      "evidence": "D:\\QM\\strategy_farm\\state\\health.json",
+      "layer": "observation",
+      "name": "heartbeat:health_json",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 30,
+      "value": 6.0
+    },
+    {
+      "action_hint": "",
+      "detail": "cockpit.html fresh (3min)",
+      "evidence": "D:\\QM\\strategy_farm\\dashboards\\cockpit.html",
+      "layer": "observation",
+      "name": "heartbeat:cockpit_html",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 15,
+      "value": 3.0
+    },
+    {
+      "action_hint": "This remains FAIL until the next successful FTMO launcher run writes exit_code=0 on this boot.",
+      "detail": "FTMO verifier_rc=0 but latest current-boot launcher exit_code=2 reason=profile_contract_failed at 2026-09-09T16:44:50.270Z",
+      "evidence": "verifier=C:\\QM\\repo\\tools\\strategy_farm\\verify_ftmo_demo_instrumentation_contract.ps1; journal=D:\\QM\\reports\\state\\live_launcher_events.jsonl",
+      "layer": "observation",
+      "name": "ftmo_launcher_readiness",
+      "source": "silent_failure_monitor",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": 2
+    },
+    {
+      "action_hint": "",
+      "detail": "DXZ verifier_rc=0 and latest current-boot launcher exit_code=0 reason=launched at 2026-09-09T16:44:55.970Z",
+      "evidence": "verifier=C:\\QM\\repo\\tools\\strategy_farm\\prepare_dxz_v2_liveops_profile.ps1; journal=D:\\QM\\reports\\state\\live_launcher_events.jsonl",
+      "layer": "observation",
+      "name": "t_live_launcher_readiness",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 0,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "expected state satisfied (DXZ=RUNNING, FTMO=RUNNING); session=1 (Disc); recovery ready; state age=1.2min",
+      "evidence": "D:\\QM\\reports\\state\\live_uptime_watchdog.json",
+      "layer": "observation",
+      "name": "live_mt5_uptime",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 3,
+      "value": 0
+    },
+    {
+      "action_hint": "",
+      "detail": "GoogleDriveFS alive (2 proc)",
+      "evidence": "tasklist /FI \"IMAGENAME eq GoogleDriveFS.exe\"",
+      "layer": "observation",
+      "name": "gdrive_fs",
+      "source": "silent_failure_monitor",
+      "status": "OK",
+      "threshold": 1,
+      "value": 2
+    },
+    {
+      "action_hint": "",
+      "detail": "live_book_pulse sidecar age=18.5m",
+      "evidence": "D:\\QM\\reports\\state\\live_book_pulse.json",
+      "layer": "transport",
+      "name": "live_book_pulse_surface",
+      "source": "live_book_pulse",
+      "status": "OK",
+      "threshold": 90,
+      "value": 18.5
+    },
+    {
+      "action_hint": "",
+      "detail": "dxz_live_book: RUNNING intent satisfied",
+      "intent": {
+        "condition": "running",
+        "effective_state": "RUNNING",
+        "expected_state": "RUNNING",
+        "reason": "declared",
+        "review_expired": false,
+        "review_expires_utc": "2026-09-30T00:00:00Z",
+        "source": "live_book_pulse",
+        "valid": true
+      },
+      "layer": "intent",
+      "name": "dxz_live_book_operating_intent",
+      "source": "live_book_pulse",
+      "status": "OK",
+      "threshold": "RUNNING",
+      "value": true
+    },
+    {
+      "action_hint": "",
+      "detail": "loaded_ok=23/24; dormant=0; missing_files=1; hash_mismatches=0; mirror_divergences=0",
+      "intent": {
+        "condition": "running",
+        "effective_state": "RUNNING",
+        "expected_state": "RUNNING",
+        "reason": "declared",
+        "review_expired": false,
+        "review_expires_utc": "2026-09-30T00:00:00Z",
+        "source": "live_book_pulse",
+        "valid": true
+      },
+      "layer": "observation",
+      "name": "ks_baseline_status",
+      "source": "live_book_pulse",
+      "status": "WARN",
+      "threshold": null,
+      "value": "23/24"
+    },
+    {
+      "action_hint": "",
+      "detail": "journal_stale_gt_120m_open_position",
+      "intent": {
+        "condition": "running",
+        "effective_state": "RUNNING",
+        "expected_state": "RUNNING",
+        "reason": "declared",
+        "review_expired": false,
+        "review_expires_utc": "2026-09-30T00:00:00Z",
+        "source": "live_book_pulse",
+        "valid": true
+      },
+      "layer": "observation",
+      "name": "journal_age_minutes",
+      "source": "live_book_pulse",
+      "status": "WARN",
+      "threshold": null,
+      "value": 125.74
+    },
+    {
+      "action_hint": "",
+      "detail": "ftmo_trial_pulse sidecar age=26.7m",
+      "evidence": "D:\\QM\\reports\\state\\ftmo_trial_pulse.json",
+      "layer": "transport",
+      "name": "ftmo_trial_pulse_surface",
+      "source": "ftmo_trial_pulse",
+      "status": "OK",
+      "threshold": 90,
+      "value": 26.7
+    },
+    {
+      "action_hint": "Inspect the FTMO pulse evidence; never toggle AutoTrading from a monitor.",
+      "detail": "condition=ok; decision=OWNER-DEC-M13-ECONOMIC-TRIAL-20260906; review_trigger=18/25; ks_day_anchor_missing:0/8; ks_book_tag_missing:0/8",
+      "evidence": "D:\\QM\\reports\\state\\ftmo_trial_pulse.json",
+      "intent": {
+        "condition": "ok",
+        "decision_id": "OWNER-DEC-M13-ECONOMIC-TRIAL-20260906",
+        "effective_state": "RUNNING",
+        "expected_state": "RUNNING",
+        "reason": "baked_owner_contract",
+        "review_expired": false,
+        "review_expires_utc": null,
+        "review_trigger": "qualified_pairs>=25",
+        "source": "ftmo_trial_pulse",
+        "valid": true
+      },
+      "layer": "observation",
+      "name": "ftmo_trial_pulse",
+      "source": "ftmo_trial_pulse",
+      "status": "WARN",
+      "threshold": "RUNNING",
+      "value": true
+    },
+    {
+      "action_hint": "",
+      "detail": "task_monitor sidecar age=15.0m",
+      "evidence": "D:\\QM\\reports\\state\\task_monitor_health.json",
+      "layer": "transport",
+      "name": "task_monitor_surface",
+      "source": "task_monitor",
+      "status": "OK",
+      "threshold": 90,
+      "value": 15.0
+    },
+    {
+      "action_hint": "Investigate; the task monitor never changes live or factory intent.",
+      "detail": "FACTORY_UTILIZATION_LOW:52.34%<55%; panel=D:\\QM\\reports\\state\\factory_hours\\factory_hours_rolling_7d.md",
+      "layer": "observation",
+      "name": "task_monitor_escalation",
+      "source": "task_monitor",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": "FACTORY_UTILIZATION_LOW:52.34%<55%; panel=D:\\QM\\reports\\state\\factory_hours\\factory_hours_rolling_7d.md"
+    },
+    {
+      "action_hint": "Investigate; the task monitor never changes live or factory intent.",
+      "detail": "FAIL:schtask:QM_EvidenceCohortWatch_Daily_0420:QM_EvidenceCohortWatch_Daily_0420 reports LOSS_OBSERVED (documented exit 3)",
+      "layer": "observation",
+      "name": "task_monitor_escalation",
+      "source": "task_monitor",
+      "status": "FAIL",
+      "threshold": 0,
+      "value": "FAIL:schtask:QM_EvidenceCohortWatch_Daily_0420:QM_EvidenceCohortWatch_Daily_0420 reports LOSS_OBSERVED (documented exit 3)"
+    }
+  ],
+  "overall": "FAIL",
+  "schema": "qm.health.contract.v1",
+  "source": "farm_health",
+  "summary": {
+    "fail": 15,
+    "ok": 51,
+    "warn": 21
+  }
+}

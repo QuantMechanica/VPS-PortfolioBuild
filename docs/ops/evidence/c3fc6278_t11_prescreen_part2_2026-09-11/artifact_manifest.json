@@ -1,5 +1,10 @@
 [
   {
+    "path": ".gitattributes",
+    "bytes": 8,
+    "sha256": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da"
+  },
+  {
     "path": "assigned_task.json",
     "bytes": 5761,
     "sha256": "9ecf0235c315ac111d8a8c3071934f2f858273fa5ec72c411f710b940eeec559"
@@ -23,6 +28,16 @@
     "path": "fidelity_matrix.csv",
     "bytes": 4206,
     "sha256": "15b8514e272b08aa6542a167af60886ca4dd4e671182b34422280e5d06b021e9"
+  },
+  {
+    "path": "final_health.json",
+    "bytes": 48933,
+    "sha256": "d8f59ddececdd659fbfc6b1725df8e1aef488ca3e386e7c3296069302d22287a"
+  },
+  {
+    "path": "final_qm5_10260_queue.json",
+    "bytes": 1028,
+    "sha256": "95a69ac679e839450df5e1ef8305a8fed2dd83115917e1bb5e16b0f33974e4aa"
   },
   {
     "path": "frozen_ground_truth.csv",
@@ -141,8 +156,8 @@
   },
   {
     "path": "T11_PRESCREEN_FIDELITY_PART2_2026-09-11.md",
-    "bytes": 11756,
-    "sha256": "fb79c8001d0ed63766d58dac12cffff41f19e663c71963fe15bba2f8b7cd5a07"
+    "bytes": 12197,
+    "sha256": "7dd61fba35f10841840170f45f560f8d491bd91542c869fd42d311453bce1110"
   },
   {
     "path": "verification.json",

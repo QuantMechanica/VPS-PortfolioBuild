@@ -167,3 +167,10 @@ Initial health returned overall FAIL with 15 FAIL / 17 WARN / 54 OK. QM5_10260 h
 1 failed and 1 pending row; the pending row is Q04 NDX.DWX, unclaimed since 2026-09-02.
 [Queue snapshot](qm5_10260_queue.json). These observations did not authorize unrelated repairs.
 Final health and queue checks are preserved separately after the router task reaches REVIEW.
+
+
+Final cycle check: after the task moved to REVIEW, the canonical Codex IN_PROGRESS list
+returned `[]`. Health at **2026-09-11T11:18:36Z** remains **FAIL: 15 FAIL / 21 WARN / 51 OK**;
+[full snapshot](final_health.json). The final [QM5_10260 queue](final_qm5_10260_queue.json)
+confirms the same single unclaimed Q04 NDX.DWX item. No extra task was selected.
+Controller and experimental packet commit: `9683a4facd` on `agents/board-advisor`.
