@@ -1,5 +1,21 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 11.09. 17:07Z (Orchestrierungszyklus, Claude) — alle drei IN_PROGRESS-Tasks (`bb814520`,
+> `dfc60103`, `3032534e`) weiter extern blockiert, kein Akzeptanzkriterium erfüllt, kein `update-task`:**
+> Evidence-Tail gelesen vor jeder Prüfung (Suppressionsregel). Direktabfrage der DB bestätigt den
+> Codex-Block präziser als bisher: die drei B-prime-Codex-Tickets von `bb814520`
+> (`934e6104`/`253814f1`/`632a00c9`, alle APPROVED/codex) stehen unverändert seit 2026-09-07 (~4 Tage)
+> unclaimed; `ae1df6bf` (Downloader raw_root-Fix für `3032534e`, Ticket aus dem 06:44Z-Zyklus) ist nach
+> >10 h weiterhin unclaimed. Ursache konsistent mit Router-Status: Codex-Wochenkontingent 83 % verbraucht/
+> 17 % Rest, `last_gate.allowed=false reason=class_threshold_exceeded task_class=ops_review` — die
+> gesamte `ops_review`-Klasse ist fail-closed gedrosselt, nicht nur diese drei Tickets. Einzige reale
+> Bewegung seit 06:44Z: `QM5_41394`/XAUUSD.DWX Q02→Q03 fertig (Q04 pending) — gatet aber keines der drei
+> Claude-Tasks direkt, nur als Fabrik-Kanarie genutzt; `SP500.DWX` Q02 bleibt seit 2026-09-09T10:52:59Z
+> (~2T6h) statisch. `farmctl health` sonst grün (kein CRITICAL; einzige WARN: 9 Q02-PASS ohne Q03-Promotion,
+> Pumpe holt in ≤5 min auf; 10/12 Worker-Design-Kapazität, T11/T12 bewusst quarantiniert). Keine eigene
+> Aktion außerhalb der drei Tasks' `allowed_actions` möglich, solange Codex die zugrunde liegenden
+> Tickets nicht claimt — kein Routing-Eingriff (außerhalb meiner Befugnis in diesem Zyklus).
+
 > **RESULT 11.09. 17:02Z — FX cointegration fallback Q09 active / CPU stop:**
 > the governed fleet advanced the existing structural D1 basket
 > `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1` from pending to active on T8
