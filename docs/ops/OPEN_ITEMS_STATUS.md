@@ -2706,3 +2706,8 @@ four acceptance criteria — no `update-task` call, task stays `IN_PROGRESS`.
 `bb814520`/`dfc60103` gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02
 rows still pending/unclaimed since 2026-09-09T10:52:59Z, ~2d16h static). Full
 detail: docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.
+
+## 2026-09-11T03:30Z — RESULT: stage B claimable after chunk 65
+
+Reload chunk 65 finished (10/10). Stage B: first claims within minutes of the first reloaded workers;
+03:24Z 13 MEASURED / 1 active / 196 pending. Counter 22/25 (+1 since 2026-09-10 21:2xZ).
