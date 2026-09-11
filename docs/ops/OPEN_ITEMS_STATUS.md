@@ -3124,3 +3124,17 @@ Tests 127 pass (3 new in tests/test_index_tick_reservation.py). Rollout: stagger
 delete the OPT_CENSUS branch in _multisymbol_commit_class and reload. Secondary idle reasons to watch after
 the reload: no_pending_claimable 243 (census cap 3 + Q02/Q04 not admitted), claim_spacing_wait 280,
 factory_mutation_lock_busy 104 (dl089_matrix_service holds), cpu_high_pause 82.
+
+## RESULT 2026-09-11T17:30Z — QM5_41444 WTI winter WR2 body reversion built; Q02 disk hold
+
+New non-duplicate structural WTI sleeve `QM5_41444_wti-winter-wr2-body-fade` was source-approved,
+registered, magic-allocated, implemented, reference-tested, and compiled on the paced fleet. Q01
+work item `79a79aa3-19d0-4c9e-a9f0-ff9615c58ecf` is `COMPILE_OK`: zero compiler errors/warnings,
+framework build check PASS, PACER pin audit `hit_count=0`, EX5 SHA-256
+`77ce7cc5e4c4849ad0e2e995a4d2375d7e8a92b0c6dad3972f9878e27ddbbc22`.
+
+First-Q02 dry run selected one fixed-risk XTIUSD.DWX D1 canary. CPU admission passed (76.0%
+average, 93.0% maximum versus 97.0% ceiling), but D: free remained 57.97 GiB versus the governed
+100 GiB intake floor after a short scheduled-purge recovery window. Q02 was not enqueued and no
+backtest ran. Evidence: `artifacts/qm5_41444_q02_enqueue_20260911.json` and
+`docs/ops/evidence/2026-09-11_qm5_41444_wti_winter_wr2_body_reversion_q02_handoff.md`.
