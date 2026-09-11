@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+  "source_count": 1,
+  "hit_count": 0,
+  "hits": [],
+  "source": "C:/QM/repo/framework/EAs/QM5_41430_wti-hurr-posweek-cont/QM5_41430_wti-hurr-posweek-cont.mq5",
+  "audited_at": "2026-09-11",
+  "exit_code": 0
+}
