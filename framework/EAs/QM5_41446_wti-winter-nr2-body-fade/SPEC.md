@@ -82,4 +82,4 @@ dominate. No manual backtest, optimization, portfolio-gate edit, admission, depl
 |---|---|---|
 | v1 | 2026-09-11 | Initial governed build from approved card |
 | v1-q01 | 2026-09-11 | T3 governed compile and strict build check PASS; Q02 pending deterministic intake |
-| v1-q02 | 2026-09-11 | Deterministic Q02 intake accepted; work item `295a8d98-7e36-4b90-abba-379758d9e05d` pending and unclaimed at handoff; no result awaited |
+| v1-q02 | 2026-09-11 | Deterministic Q02 intake accepted; work item `295a8d98-7e36-4b90-abba-379758d9e05d` claimed by T8; no result awaited |

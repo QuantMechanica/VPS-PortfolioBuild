@@ -7,8 +7,8 @@
   "compile_work_item_id": "059f2358-40ad-4d84-bcd7-d7c3730e5b73",
   "compile_verdict": "COMPILE_OK",
   "q02_work_item_id": "295a8d98-7e36-4b90-abba-379758d9e05d",
-  "q02_status_at_handoff": "pending",
-  "q02_claimed_by_at_handoff": null,
+  "q02_status_at_handoff": "active",
+  "q02_claimed_by_at_handoff": "T8",
   "intake": {
     "applied": true,
     "eligible": true,

@@ -4,7 +4,7 @@
 
 `QM5_41446_wti-winter-nr2-body-fade` is a newly approved and built `XTIUSD.DWX` D1 candidate.
 Its governed compile completed `COMPILE_OK`, deterministic first-Q02 intake returned `ELIGIBLE`,
-and Q02 work item `295a8d98-7e36-4b90-abba-379758d9e05d` was pending and unclaimed at handoff.
+and Q02 work item `295a8d98-7e36-4b90-abba-379758d9e05d` was claimed by T8 before handoff.
 
 ## Controls And Evidence
 
