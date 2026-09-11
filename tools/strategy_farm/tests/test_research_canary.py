@@ -88,14 +88,16 @@ def test_resource_guard_counts_only_t11_owned_metatesters(tmp_path, monkeypatch)
     assert result["metatester_agent_processes"] == [{"pid": 1, "exe": str(t11_exe.resolve())}]
 
 
-def test_request_rejects_t12_and_outside_t11_paths(tmp_path):
-    root = tmp_path / "mt5"; (root / "T11" / "MQL5" / "Experts").mkdir(parents=True)
-    (root / "T11" / "MQL5" / "Profiles" / "Tester").mkdir(parents=True)
-    expert = root / "T11" / "MQL5" / "Experts" / "x.ex5"; expert.write_bytes(b"x")
-    setfile = root / "T11" / "MQL5" / "Profiles" / "Tester" / "x.set"; setfile.write_text("x")
+def test_request_accepts_t12_and_rejects_outside_research_seats(tmp_path):
+    root = tmp_path / "mt5"; (root / "T12" / "MQL5" / "Experts").mkdir(parents=True)
+    (root / "T12" / "MQL5" / "Profiles" / "Tester").mkdir(parents=True)
+    expert = root / "T12" / "MQL5" / "Experts" / "x.ex5"; expert.write_bytes(b"x")
+    setfile = root / "T12" / "MQL5" / "Profiles" / "Tester" / "x.set"; setfile.write_text("x")
     request = canary.CanaryRequest("test", "T12", "x", expert, setfile, "USDJPY.DWX", "H1", "2021.01.01", "2021.12.31", 1, 1, True)
-    with pytest.raises(canary.CanaryRefused, match="only inert T11"):
-        canary._validate_request(request, mt5_root=root)
+    canary._validate_request(request, mt5_root=root)
+    outside = canary.CanaryRequest("test", "T1", "x", expert, setfile, "USDJPY.DWX", "H1", "2021.01.01", "2021.12.31", 1, 1, True)
+    with pytest.raises(canary.CanaryRefused, match="T11/T12"):
+        canary._validate_request(outside, mt5_root=root)
 
 
 def test_stage_is_hash_bound_t11_only_and_writes_receipt(tmp_path, monkeypatch):
@@ -114,6 +116,19 @@ def test_stage_is_hash_bound_t11_only_and_writes_receipt(tmp_path, monkeypatch):
     with pytest.raises(canary.CanaryRefused, match="source SHA-256 mismatch"):
         canary.stage_inputs(canary.StagingRequest("test", "T11", expert, setfile,
             "0" * 64, canary.sha256_file(setfile)), mt5_root=mt5, reports_root=tmp_path / "reports")
+
+
+def test_stage_is_hash_bound_for_t12_and_writes_seat_receipt(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"; repo.mkdir()
+    expert = repo / "x.ex5"; expert.write_bytes(b"expert")
+    setfile = tmp_path / "x.set"; setfile.write_text("RISK_FIXED=1\nRISK_PERCENT=0\n", encoding="utf-8")
+    mt5 = tmp_path / "mt5"; (mt5 / "T12").mkdir(parents=True)
+    monkeypatch.setattr(canary, "REPO_ROOT", repo)
+    result = canary.stage_inputs(canary.StagingRequest("test", "T12", expert, setfile,
+        canary.sha256_file(expert), canary.sha256_file(setfile)), mt5_root=mt5, reports_root=tmp_path / "reports")
+    assert result["terminal"] == "T12"
+    assert Path(result["receipt_path"]).is_file()
+    assert (mt5 / "T12" / "MQL5" / "Experts" / "x.ex5").read_bytes() == b"expert"
 
 
 @pytest.mark.parametrize("optimize", ["off", "complete", "genetic"])

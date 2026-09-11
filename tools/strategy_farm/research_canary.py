@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Governed, no-DB MT5 research launch controller for the inert T11 canary.
+"""Governed, no-DB MT5 research launch controller for inert T11/T12 research seats.
 
 This component is separate from the factory worker path. It never claims work,
 writes ``farm_state.sqlite`` or acquires FACTORY_MUTATION. Explicit staging
-copies hash-bound inputs to inert T11; execution writes unique research reports.
+copies hash-bound inputs to an inert research seat; execution writes unique research reports.
 ``--dry-run`` checks admission without launching a terminal.
 """
 from __future__ import annotations
@@ -51,7 +51,6 @@ MT5_ROOT = Path(r"D:\QM\mt5")
 REPORTS_ROOT = Path(r"D:\QM\reports\research")
 REPO_ROOT = Path(r"C:\QM\repo")
 ALLOWED_TERMINALS = frozenset({"T11", "T12"})
-PRIMARY_TERMINAL = "T11"
 # The research lane defaults to 95%; an override remains capped at the task's
 # 97% hard ceiling. Admission uses five 60-second samples; runtime five seconds.
 DEFAULT_CPU_LIMIT = float(os.environ.get("QM_CANARY_CPU_LIMIT", "95.0"))
@@ -293,7 +292,7 @@ class CanaryRequest:
 
 
 class CanaryJobApi(jobs.CtypesWindowsJobApi):
-    """Cap the T11 process tree BEFORE resuming it; no fleet API changes.
+    """Cap a research-seat process tree BEFORE resuming it; no fleet API changes.
 
     The terminal consumes one slot; its local testers share max_agents slots.
     Extra helpers consume that same budget and may cause a refused run.
@@ -399,7 +398,7 @@ def collect_optimization_table(report: Path, destination: Path) -> dict[str, Any
 
 @dataclass(frozen=True)
 class StagingRequest:
-    """An explicitly hash-bound, T11-only copy of canary inputs.
+    """An explicitly hash-bound copy of canary inputs into a research seat.
 
     Staging is deliberately separate from ``run``: the operator supplies the
     source hashes from the governed program declaration, and this function
@@ -447,22 +446,23 @@ def stage_inputs(request: StagingRequest, *, mt5_root: Path = MT5_ROOT,
                  reports_root: Path = REPORTS_ROOT) -> dict[str, Any]:
     """Stage immutable canary inputs and write an append-only SHA-256 receipt."""
 
-    if request.terminal.upper() != PRIMARY_TERMINAL:
-        raise CanaryRefused("staging is enabled only for inert T11")
+    terminal = request.terminal.upper()
+    if terminal not in ALLOWED_TERMINALS:
+        raise CanaryRefused("staging is enabled only for inert T11/T12 research seats")
     program = _safe_component(request.program, "program")
     ex5_expected = _sha256_argument(request.expected_ex5_sha256, "EX5")
     set_expected = _sha256_argument(request.expected_setfile_sha256, "setfile")
     source_root = REPO_ROOT.resolve()
     if not request.expert_source.resolve().is_relative_to(source_root):
         raise CanaryRefused("EX5 staging source must be inside the canonical repository")
-    terminal_root = (mt5_root / PRIMARY_TERMINAL).resolve()
+    terminal_root = (mt5_root / terminal).resolve()
     if not terminal_root.is_dir():
-        raise CanaryRefused(f"missing T11 terminal root: {terminal_root}")
+        raise CanaryRefused(f"missing {terminal} terminal root: {terminal_root}")
     receipt_root = reports_root / program / "staging"
     receipt_root.mkdir(parents=True, exist_ok=True)
     receipt_path = receipt_root / f"{dt.datetime.now(dt.timezone.utc):%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:8]}_receipt.json"
     receipt = {
-        "schema": "qm.research-canary-staging/v1", "program": program, "terminal": PRIMARY_TERMINAL,
+        "schema": "qm.research-canary-staging/v1", "program": program, "terminal": terminal,
         "created_at_utc": utc_now(),
         "ex5": _stage_one(source=request.expert_source,
             destination=terminal_root / "MQL5" / "Experts" / request.expert_source.name,
@@ -478,8 +478,8 @@ def stage_inputs(request: StagingRequest, *, mt5_root: Path = MT5_ROOT,
 
 
 def _validate_request(request: CanaryRequest, *, mt5_root: Path) -> None:
-    if request.terminal not in ALLOWED_TERMINALS or request.terminal != PRIMARY_TERMINAL:
-        raise CanaryRefused("only inert T11 is enabled; T12 is declared but disabled")
+    if request.terminal not in ALLOWED_TERMINALS:
+        raise CanaryRefused("only inert T11/T12 research seats are enabled")
     _safe_component(request.program, "program")
     if request.model not in MODEL_NAMES or request.optimize not in OPTIMIZATION_MODES:
         raise CanaryRefused("invalid modelling/optimization mode")
@@ -490,11 +490,11 @@ def _validate_request(request: CanaryRequest, *, mt5_root: Path) -> None:
         if not path.is_file():
             raise CanaryRefused(f"missing {label}: {path}")
     if not request.expert_path.resolve().is_relative_to(root / "MQL5" / "Experts"):
-        raise CanaryRefused("expert must be staged inside T11 MQL5/Experts")
+        raise CanaryRefused(f"expert must be staged inside {request.terminal} MQL5/Experts")
     if not request.setfile_path.resolve().is_relative_to(root / "MQL5" / "Profiles" / "Tester"):
-        raise CanaryRefused("setfile must be staged inside T11 MQL5/Profiles/Tester")
+        raise CanaryRefused(f"setfile must be staged inside {request.terminal} MQL5/Profiles/Tester")
     if request.setfile_path.resolve().parent != root / "MQL5" / "Profiles" / "Tester":
-        raise CanaryRefused("setfile must be directly in the T11 Tester directory")
+        raise CanaryRefused(f"setfile must be directly in the {request.terminal} Tester directory")
     relative_expert = request.expert.replace("\\", "/")
     bound_expert = root / "MQL5" / "Experts" / relative_expert
     if bound_expert.suffix.lower() != ".ex5":
@@ -656,7 +656,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--optimize", choices=list(OPTIMIZATION_MODES), default="off",
                         help="Explicit optimizer mode; enabled ranges come from the staged .set")
     parser.add_argument("--stage", action="store_true",
-                        help="hash-bind and copy the inputs into inert T11 before a canary run")
+                        help="hash-bind and copy the inputs into inert T11 or T12 before a canary run")
     parser.add_argument("--expected-ex5-sha256")
     parser.add_argument("--expected-setfile-sha256")
     args = parser.parse_args(argv)
