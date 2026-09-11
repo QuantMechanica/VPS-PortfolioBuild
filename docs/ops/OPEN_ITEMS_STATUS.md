@@ -2615,3 +2615,12 @@ private-history and unchanged-isolation checks, then refused before launch becau
 were active while the hard limit is <=4. No smoke report, fleet identity comparison, terminal start,
 T1–T10 interruption, T_Live, or AutoTrading action occurred. Evidence and exact rerun CLI:
 `docs/ops/evidence/2026-09-11_research_canary_t11.md`.
+
+## RESULT 2026-09-11 — Q-BUILD QM5_41405 stage-2 pre-flight (`dee2fc76`)
+
+`REVIEW — CARD_SCOPE_NOT_APPROVED`: registry row and USDJPY slot-0 magic
+`414050000` are active, but the only card is `status: DRAFT` and its limited
+G0 build scope conflicts with the requested points-buffer, band, bar-period,
+and minute-end expansion. No sibling source, compile claim, setfile, matrix,
+or backtest was created. Evidence:
+`docs/ops/evidence/2026-09-11_qm5_41405_stage2_preflight.md`.
