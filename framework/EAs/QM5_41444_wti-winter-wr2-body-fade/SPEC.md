@@ -82,3 +82,4 @@ dominate. No manual backtest, optimization, portfolio-gate edit, admission, depl
 |---|---|---|
 | v1 | 2026-09-11 | Initial governed build from approved card |
 | v1-q01 | 2026-09-11 | T3 governed compile and build check PASS; Q02 pending fresh CPU admission |
+| v1-q02-hold | 2026-09-11 | CPU passed; Q02 not enqueued because D: free remained 57.97 GiB below the 100 GiB intake floor |
