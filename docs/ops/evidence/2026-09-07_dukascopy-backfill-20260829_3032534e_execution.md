@@ -1272,3 +1272,64 @@ SP500.DWX/XAUUSD.DWX Q02 still pending/unclaimed since 2026-09-09T10:52:59Z,
 confirmed this cycle). No `update-task` call on any of the three
 owner-decision tasks — no acceptance criterion newly met. Task remains
 `IN_PROGRESS`.
+
+## Checked 2026-09-11T06:39Z (headless orchestration cycle) — crashed on a NEW defect class (raw-root escape, not the known PermissionError class); relaunched, verified alive
+
+Found the PID `17764` process (started `05:22:13Z`) dead: no `download_bi5.py`
+python.exe process alive, `progress.json` frozen at `completed=130464,
+errors=113, updated_at_utc=2026-09-11T06:25:05Z`, `download.log` tail ending in
+an unhandled `ValueError` from `assert_contained_destination` (line 90):
+`download destination escaped raw root:
+\\?\D:\QM\reports\dukascopy\backfill\20260909T191800Z_hardened\raw\GBPAUD\2026\
+05\16\01h_ticks.bi5`. This is a **different** defect class than the
+`PermissionError`/progress-write crash-loop tracked by `4fa85eb8`/`fe7cc4ce09` —
+notable because the raw-root containment fix (`caa9fc6f4c`, commit time
+`2026-09-11T00:42:38+02:00`) was already merged **before** this process even
+started (`05:22:13Z` UTC = `07:22:13+02:00`), so the running process's loaded
+module already included that fix, yet it still crashed on exactly the escape
+check the fix targets. Confirmed via `git log` that both fixes
+(`caa9fc6f4c` raw-root, `fe7cc4ce09` progress-write) are present on
+`agents/board-advisor` in the canonical `C:\QM\repo` checkout, working tree
+clean under `tools/dukascopy/`.
+
+Action taken (within `3032534e`'s own pre-authorized `allowed_actions`, "run
+the throttled downloader detached at night" — resuming the same interrupted
+run at the same `--out` root, not new scope): checked for and found no
+orphaned `progress.json.tmp` or `raw/**/*.tmp`, then relaunched the identical
+command:
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Launched detached (`Start-Process cmd.exe /c ... -WindowStyle Hidden`), cwd
+`C:\QM\repo`. Verified alive twice (at +20s and +35s): PID `9768`,
+`started_at_utc=2026-09-11T06:39:08.129Z`, `status=RUNNING`, `resumed`/
+`completed` climbing (0 -> 37991 in the first 30s), `errors=0` on the new
+instance. The stale `ValueError` traceback still visible in `download.log`
+tail at +35s is leftover content appended by the *previous* (dead) process
+instance, not a re-crash of the new one — `progress.json.updated_at_utc`
+advanced twice in that window, confirming the new process is live and
+writing, not stuck replaying the same fault.
+
+**Not yet resolved / flagged for next cycle:** because the escape ValueError
+recurred on the *exact same* destination (`GBPAUD/2026/05/16/01h_ticks.bi5`)
+even under a process whose loaded code already post-dates the raw-root fix
+commit, this looks like a genuine remaining edge case in
+`assert_contained_destination` (not the false-positive class `caa9fc6f4c`
+targeted), possibly resume-scan-order or symbol-casing related, rather than a
+transient fault. No fresh Codex ticket drafted this cycle (avoiding the
+established duplicate-ticket pattern flagged earlier in this file) — the
+resume-and-verify action was cheap, safe, and non-destructive regardless. If
+the newly launched process (PID `9768`) crashes again on `GBPAUD/2026/05/16`
+specifically, that is strong enough evidence for a scoped Codex ticket
+(reproduce with that exact symbol/date/hour, inspect `raw/GBPAUD/2026/05/16/`
+for a pre-existing file/dir with divergent casing or a stale symlink before
+assuming the containment-check logic itself is still wrong). `bb814520`/
+`dfc60103` gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02 still
+pending/unclaimed since 2026-09-09T10:52:59Z). No `update-task` call on any of
+the three owner-decision tasks — no acceptance criterion newly met. Task
+remains `IN_PROGRESS`.
