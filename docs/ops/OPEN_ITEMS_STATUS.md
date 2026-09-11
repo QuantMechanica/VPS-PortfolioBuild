@@ -1,5 +1,17 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 11.09. 17:02Z — FX cointegration fallback Q09 active / CPU stop:**
+> the governed fleet advanced the existing structural D1 basket
+> `QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1` from pending to active on T8
+> (`1ba8f6c7`, attempt zero, staged EX5 verified, custom-history
+> `PASS_PRIVATIZED`). The frozen 66-pair frontier remains fully mechanized;
+> 12532/12533 are beyond Q02, and the unique priority Q02 fallback `547c4fd3`
+> for 12507 remains pending. PACER source audit: exit 0, zero pin findings.
+> Five host CPU samples were 98.93/95.59/97.60/99.12/99.80% (98.21% average),
+> crossing the binding 97% ceiling; no duplicate row, queue mutation, launch,
+> compile, portfolio gate, or live surface followed. Evidence:
+> `docs/ops/evidence/2026-09-11_fx_cointegration_qm5_12778_q09_active_cpu_stop_170209Z.md`.
+
 > **Nachtrag 11.09. 06:44Z (Orchestrierungszyklus) — `3032534e` DUKASCOPY,
 > zweite Absturzklasse (raw-root escape) diagnostiziert, konkrete Ursache
 > gefunden, Codex-Ticket erstellt:** der Downloader (PID 17764) crashte
