@@ -2711,3 +2711,14 @@ detail: docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execut
 
 Reload chunk 65 finished (10/10). Stage B: first claims within minutes of the first reloaded workers;
 03:24Z 13 MEASURED / 1 active / 196 pending. Counter 22/25 (+1 since 2026-09-10 21:2xZ).
+
+## 2026-09-11T04:05Z — Stage-2 build routed as governed build_ea; canary S3 re-routed for report export
+
+dee2fc76 (Astra stage 2) verified the approved card but does not author EA source inside an ops_issue
+-> governed build_ea task a10e4704 P92 enqueued for QM5_41405 (card G0-APPROVED, magic 414050000
+pre-allocated, cell-0 identity vs stage-A s0_l8 cells is part of the build acceptance); dee2fc76
+re-routed behind it (matrix as program BALKE2_QM5_41405_USDJPY_DWX_2019_2025 after COMPILE PASS).
+f04d66ec (research_canary S3): T11-scoped guard + real dry-run receipt PASS; the live smoke ran
+(2:26, 29M ticks) but MT5 wrote no report because the rendered tester.ini lacks the report export
+keys -> re-routed with the fix (Report=, ReplaceReport=1, ShutdownTerminal=1, report sha in receipt),
+then S3 identity table. Stage B: 19 MEASURED at 03:5xZ, claiming normally after chunk 65.
