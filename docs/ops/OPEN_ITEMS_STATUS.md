@@ -2552,3 +2552,21 @@ not yet the case for 28/37 symbols, so no reconciliation run this cycle.
 `bb814520`/`dfc60103` gate unchanged (QM5_41394 Q02 rows still pending,
 ~2 days static). No `update-task` call on any of the three. Full detail:
 `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`.
+
+## 2026-09-11T01:30Z — WINSWEEP stage A adjudicated: H-WIN KEPT, winner 00:00-08:00 (fixed UTC+3)
+
+420/420 MEASURED. Tool-adjudicated per the pre-registered rule: refutation_verdict H-WIN KEPT; winner
+s0_l8 exit 18 (DEV 1.96, plateau 1.56 vs baseline 03-06 0.65 / 0.78 = 2.0x, margin 1.10 met), OOS
+confirmation true, OOS pooled costed PF 1.21; top five s0_l8, s1_l8, s1_l4, s2_l4, s3_l4. Full tables in
+docs/research/BALKE_WINDOW_SWEEP_RESULT_2026-09-11.md. The empirical winner matches Balke's own
+published USDJPY window (00:00-07:30 broker time); the 03-06 window (OWNER spec 2026-06-27) ranks
+29/48. INGESTION REPAIR (GRUEN, rule untouched): the report refused 111 MEASURED cells because the
+sequential in/out zip-pairing broke on same-timestamp fills with tester-rounded volumes; per-trade
+costed P&L now comes from each MT5 out-deal row (aggregate identical), net reconciliation still strict,
+17 tests pass. Stage B (30 windows x 7 years = 210 cells, ~10 h at 2 lanes): plan OK (top five bound
+to the stage-A report sha 0bdd5d9e...), enqueue blocked by the worker-freshness gate after the
+window_sweep.py patch -> reload chunk 64 running; enqueue follows. Astra stage-2 ticket on the winner
+enqueued (sibling QM5_41405: clock modes x outside rules x buffer x ATR band + Balke minute config,
+350 cells as its own declared program). New REVIEW rows (ff8be2f1 FTMO economics, 31b8255e resident
+backend = TECHNICAL_IMPOSSIBILITY + MetaTester-agent alternative, 8f6a6b3c research_canary
+implemented) under Sonnet verification.

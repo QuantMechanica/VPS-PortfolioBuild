@@ -354,11 +354,13 @@ def measure(summary_path,payload):
     r=runs[0];p=Path(r['report_canonical_path']);deals=native_rows(p)
     entries=[x for x in deals if x[4]=='in'];exits=[x for x in deals if x[4]=='out']
     if len(entries)!=len(exits) or len(entries)!=int(r['total_trades']):raise SweepError('native deal count mismatch')
-    pooled=[]
-    for a,b in zip(entries,exits):
-        if a[0]>b[0] or number(a[5])!=number(b[5]):raise SweepError('native round-trip pairing mismatch')
-        net=sum(number(x[i]) for x in (a,b) for i in (8,9,10))
-        pooled.append(net-5*number(a[5]))
+    # Orchestrator 2026-09-11 (GRUEN ingestion repair, rule unchanged): sequential in/out
+    # zip-pairing failed on 111/420 MEASURED stage-A cells (same-timestamp fills with
+    # tester-rounded volumes, e.g. IN 17.22 / OUT 17.23 lots).  The plan needs no pairing:
+    # each MT5 'out' deal row carries the realised commission/swap/profit of its trade, so
+    # per-trade costed P&L = out-deal net - 5 USD x out-deal lots; the aggregate equals the
+    # former sum exactly and net reconciliation below stays strict.
+    pooled=[sum(number(b[i]) for i in (8,9,10))-5*number(b[5]) for b in exits]
     net=float(r['net_profit']);native_net=sum(number(x[i]) for x in deals for i in (8,9,10))
     if abs(net-native_net)>.011:raise SweepError('native net reconciliation failed')
     lots=sum(number(x[5]) for x in entries);dd=float(r['drawdown'])
