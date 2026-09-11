@@ -22,7 +22,7 @@ import sqlite3
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Mapping, Any, Iterable
 
 
 SCHEMA = "qm.tester-cache-purge-guard/v1"
@@ -132,6 +132,23 @@ def normalize_symbol(value: Any) -> str:
     return symbol
 
 
+def ledger_symbol(ledger: Mapping[str, Any]) -> Any:
+    """Symbol of a research/census ledger.
+
+    2026-09-11: config_sweep ledgers (schema qm.window-sweep.v1, e.g.
+    WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025) carry no top-level ``symbol``;
+    the guard then raised invalid_symbol:None on every purge run and the
+    10-minute purge was fail-closed for ~10 h (D: 58 GB).  Fall back to the
+    ``<SYMBOL>_DWX_<from>_<to>`` suffix of the program id; still None when the
+    program id does not carry it, so the fail-closed behaviour is unchanged.
+    """
+    symbol = ledger.get("symbol")
+    if symbol is not None:
+        return symbol
+    match = re.search(r"_([A-Z0-9]+)_DWX_\d{4}_\d{4}$", str(ledger.get("program_id") or ""))
+    return f"{match.group(1)}.DWX" if match else None
+
+
 def canonical_pair(ea_id: Any, symbol: Any) -> Pair:
     return normalize_ea_id(ea_id), normalize_symbol(symbol)
 
@@ -223,8 +240,9 @@ def _read_research_pairs(db_path: Path, census_root: Path) -> set[Pair]:
         ledger = _load_json(path, "research_census_ledger")
         if not isinstance(ledger, dict) or not ledger.get("program_id"):
             raise GuardError(f"research_census_ledger_invalid:{path}")
-        pairs.add(canonical_pair(ledger.get("subject_ea_id") or ledger.get("ea_id"), ledger.get("symbol")))
-        pairs.add(canonical_pair(ledger.get("ea_id"), ledger.get("symbol")))
+        symbol = ledger_symbol(ledger)
+        pairs.add(canonical_pair(ledger.get("subject_ea_id") or ledger.get("ea_id"), symbol))
+        pairs.add(canonical_pair(ledger.get("ea_id"), symbol))
     return pairs
 
 

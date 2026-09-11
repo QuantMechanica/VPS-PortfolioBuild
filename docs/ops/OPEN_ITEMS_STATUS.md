@@ -3146,3 +3146,13 @@ The requested OHLC-M1 PRESCREEN build is withheld fail-closed: the task labels n
 `Model=2` = open prices. No worker, declaration, queue row, terminal, or live setting changed;
 PRESCREEN cannot be emitted as MEASURED. Evidence:
 `docs/ops/evidence/2026-09-11_fleet_ohlc_prescreen_build_review.md`.
+
+## 2026-09-11T18:00Z — Tester-cache purge fail-closed for ~10 h (config_sweep ledger without symbol) — GRUEN repair
+
+D: 58 GB (< 60 GB alert). tester_cache_purge.log: PURGE_SKIP_EVIDENCE_EXCLUSION_ERROR reason=invalid_symbol:None on
+every 10-minute run since ~07:30Z (63 runs). Cause: the purge guard reads every artifacts/opt_census/*/ledger.json and
+the config_sweep ledger WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025 (schema qm.window-sweep.v1, engine config_sweep)
+carries no top-level symbol. Fix: guard falls back to the <SYMBOL>_DWX_<from>_<to> program-id suffix
+(tester_cache_purge_guard.ledger_symbol, test added); config_sweep now writes symbol into new ledgers (sealed
+ledger left untouched). Guard runs clean on the live tree; next scheduled purge run verifies. Lesson: every new
+ledger-writing program tool must satisfy the purge guard schema (symbol, ea_id, program_id).

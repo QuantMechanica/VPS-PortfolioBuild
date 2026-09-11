@@ -253,3 +253,13 @@ def test_powershell_calls_guard_before_deletion_and_keeps_normal_purge() -> None
     assert "stage=post_stop_refresh" in source[post_stop_refresh:deletion_guard]
     assert protected_skip < idle_delete
     assert "SKIP_EVIDENCE_PROTECTED" in source[protected_skip:idle_delete]
+
+
+def test_ledger_symbol_falls_back_to_program_id_suffix() -> None:
+    ledger = {"program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025", "ea_id": "QM5_41405", "schema": "qm.window-sweep.v1"}
+    assert guard.ledger_symbol(ledger) == "USDJPY.DWX"
+    assert guard.canonical_pair("QM5_41405", guard.ledger_symbol(ledger)) == ("41405", "USDJPY")
+    assert guard.ledger_symbol({"program_id": "DL089_QM5_1_XAUUSD_DWX_2019_2025", "symbol": "XAUUSD.DWX"}) == "XAUUSD.DWX"
+    assert guard.ledger_symbol({"program_id": "something_else"}) is None
+    with pytest.raises(guard.GuardError):
+        guard.canonical_pair("QM5_1", guard.ledger_symbol({"program_id": "something_else"}))

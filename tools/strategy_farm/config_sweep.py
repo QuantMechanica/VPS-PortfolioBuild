@@ -185,7 +185,7 @@ def _ledger(plan_value: Mapping[str, Any], rendered: Mapping[str, str]) -> dict[
         item = dict(cell)
         item["setfile_sha256"] = hashlib.sha256(rendered[cell["work_item_id"]].encode()).hexdigest()
         cells_value.append(item)
-    value = {"schema": SCHEMA, "engine": ENGINE, "program_id": declaration["program_id"], "ea_id": declaration["ea_id"],
+    value = {"schema": SCHEMA, "engine": ENGINE, "program_id": declaration["program_id"], "ea_id": declaration["ea_id"], "symbol": declaration.get("symbol") or declaration.get("host_symbol"),
              "declaration_sha256": declaration["declaration_sha256"], "years": declaration["years"], "cells": cells_value}
     value["ledger_sha256"] = _seal(value)
     return value
