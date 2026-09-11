@@ -220,23 +220,36 @@ def canonicalize_export_set(
     raw_copy_dir.mkdir(parents=True, exist_ok=False)
     final_dir.mkdir(parents=True, exist_ok=False)
     bindings: list[dict[str, Any]] = []
+    failed_symbols: list[dict[str, str]] = []
     total_rows = 0
     for symbol in symbols:
         filename = f"{symbol}_M1.csv"
         raw_copy = raw_copy_dir / filename
         shutil.copyfile(raw_dir / filename, raw_copy)
-        binding = canonicalize_raw_symbol(
-            raw_copy,
-            final_dir / filename,
-            symbol=symbol,
-        )
+        final_path = final_dir / filename
+        try:
+            binding = canonicalize_raw_symbol(
+                raw_copy,
+                final_path,
+                symbol=symbol,
+            )
+        except ValueError as exc:
+            # One bad symbol must not hide the outcome for the rest of the
+            # governed universe. A compatibility failure can occur after the
+            # final file was installed, so also ensure failed outputs are not
+            # left beside successful canonical files.
+            final_path.unlink(missing_ok=True)
+            failed_symbols.append({"symbol": symbol, "reason": str(exc)})
+            continue
         binding["raw_path"] = str(raw_copy.resolve())
         binding["raw_sha256"] = sha256_file(raw_copy)
         bindings.append(binding)
         total_rows += int(binding["rows"])
+    canonicalization_status = "COMPLETE" if not failed_symbols else "PARTIAL"
     price_scale = dwx_m1_overlap_export_work_item._price_scale_binding()
     manifest = {
         "schema_version": EXPORT_MANIFEST_SCHEMA,
+        "canonicalization_status": canonicalization_status,
         "source_terminal": "T1",
         "read_only": True,
         "period": "M1",
@@ -246,6 +259,10 @@ def canonicalize_export_set(
         "schema": FINAL_HEADER,
         "symbols": symbols,
         "symbol_count": len(symbols),
+        "attempted_symbol_count": len(symbols),
+        "successful_symbol_count": len(bindings),
+        "failed_symbol_count": len(failed_symbols),
+        "failed_symbols": failed_symbols,
         "total_rows": total_rows,
         "price_scale_csv": price_scale,
         "reconcile_overlap": {
@@ -262,7 +279,12 @@ def canonicalize_export_set(
     return {
         "path": str(manifest_path.resolve()),
         "sha256": sha256_file(manifest_path),
-        "symbols": len(symbols),
+        "canonicalization_status": canonicalization_status,
+        "symbols": len(bindings),
+        "attempted_symbol_count": len(symbols),
+        "successful_symbol_count": len(bindings),
+        "failed_symbol_count": len(failed_symbols),
+        "failed_symbols": failed_symbols,
         "total_rows": total_rows,
         "schema": FINAL_HEADER,
         "overlap_start_utc": dwx_m1_overlap_export_work_item.OVERLAP_START_TEXT,
@@ -354,6 +376,11 @@ def run(
     result: dict[str, Any] = {
         "schema_version": RECEIPT_SCHEMA,
         "status": "FAIL",
+        "canonicalization_status": "NOT_RUN",
+        "attempted_symbol_count": 0,
+        "successful_symbol_count": 0,
+        "failed_symbol_count": 0,
+        "failed_symbols": [],
         "no_gate_verdict": True,
         "work_item_id": work_item_id,
         "phase": farmctl.DWX_M1_OVERLAP_EXPORT_PHASE,
@@ -570,6 +597,15 @@ def run(
                 result["m1_export_manifest"] = canonicalize_export_set(
                     raw_terminal_dir, out
                 )
+                manifest_binding = result["m1_export_manifest"]
+                for key in (
+                    "canonicalization_status",
+                    "attempted_symbol_count",
+                    "successful_symbol_count",
+                    "failed_symbol_count",
+                    "failed_symbols",
+                ):
+                    result[key] = manifest_binding[key]
             except Exception as exc:
                 result["output_error"] = f"{type(exc).__name__}: {exc}"
 
@@ -586,6 +622,8 @@ def run(
                     "successes=37 failures=0 terminal=T1 "
                 )
                 and result.get("signed_archive_unchanged") is True
+                and result.get("canonicalization_status") == "COMPLETE"
+                and result.get("failed_symbol_count") == 0
                 and manifest_binding.get("symbols") == 37
                 and int(manifest_binding.get("total_rows") or 0) > 0
             )
@@ -607,6 +645,11 @@ def run(
             "export_receipt_path": str(receipt_path),
             "export_receipt_sha256": sha256_file(receipt_path),
             "m1_export_manifest": result.get("m1_export_manifest"),
+            "canonicalization_status": result.get("canonicalization_status"),
+            "attempted_symbol_count": result.get("attempted_symbol_count", 0),
+            "successful_symbol_count": result.get("successful_symbol_count", 0),
+            "failed_symbol_count": result.get("failed_symbol_count", 0),
+            "failed_symbols": result.get("failed_symbols", []),
             "signed_archive_unchanged": result.get(
                 "signed_archive_unchanged", False
             ),
@@ -615,6 +658,12 @@ def run(
                 result.get("error")
                 or result.get("output_error")
                 or result.get("post_audit_error")
+                or (
+                    "M1 canonicalization completed with "
+                    f"{result.get('failed_symbol_count', 0)} failed symbol(s)"
+                    if result.get("failed_symbol_count", 0)
+                    else None
+                )
             ),
         }
         _atomic_write_json(summary_path, summary)

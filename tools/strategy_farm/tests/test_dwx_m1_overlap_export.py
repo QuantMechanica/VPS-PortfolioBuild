@@ -228,6 +228,64 @@ def test_export_set_writes_and_validates_exact_37_symbol_manifest(
     assert checked == {"symbols": 37, "total_rows": 37}
 
 
+def test_export_set_records_empty_symbol_and_continues_across_universe(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    output_dir = tmp_path / "exports" / "20260911_013500"
+    raw_dir = tmp_path / "terminal_raw"
+    output_dir.mkdir(parents=True)
+    raw_dir.mkdir()
+    price_scale = tmp_path / "price_scale.csv"
+    _price_scale_fixture(price_scale)
+    monkeypatch.setattr(work_item, "EXPORT_ROOT", output_dir.parent)
+    monkeypatch.setattr(work_item, "PRICE_SCALE", price_scale)
+    instant = dt.datetime(2026, 1, 5, 10, 0, tzinfo=UTC)
+    symbols = sorted(dukascopy_common.CANONICAL_SYMBOLS)
+    failed_symbol = "AUDCHF.DWX"
+    assert symbols.index(failed_symbol) == 1
+    for index, symbol in enumerate(symbols):
+        rows = [] if symbol == failed_symbol else [_raw_bar(instant, 1.0 + index)]
+        _write_csv(raw_dir / f"{symbol}_M1.csv", export.RAW_HEADER, rows)
+
+    binding = export.canonicalize_export_set(raw_dir, output_dir)
+    manifest = json.loads(Path(binding["path"]).read_text(encoding="utf-8"))
+
+    expected_failure = {
+        "symbol": failed_symbol,
+        "reason": "raw M1 export is empty: AUDCHF.DWX",
+    }
+    assert binding["canonicalization_status"] == "PARTIAL"
+    assert binding["symbols"] == 36
+    assert binding["attempted_symbol_count"] == 37
+    assert binding["successful_symbol_count"] == 36
+    assert binding["failed_symbol_count"] == 1
+    assert binding["failed_symbols"] == [expected_failure]
+    assert manifest["canonicalization_status"] == "PARTIAL"
+    assert manifest["attempted_symbol_count"] == 37
+    assert manifest["successful_symbol_count"] == 36
+    assert manifest["failed_symbol_count"] == 1
+    assert manifest["failed_symbols"] == [expected_failure]
+    assert len(manifest["files"]) == 36
+    assert {row["symbol"] for row in manifest["files"]} >= {
+        "AUDCAD.DWX",
+        "AUDJPY.DWX",
+    }
+    assert (output_dir / "dwx_m1" / "AUDCAD.DWX_M1.csv").is_file()
+    assert (output_dir / "dwx_m1" / "AUDJPY.DWX_M1.csv").is_file()
+    assert not (output_dir / "dwx_m1" / "AUDCHF.DWX_M1.csv").exists()
+    assert len(list((output_dir / "raw").glob("*.csv"))) == 37
+    payload = _valid_payload(output_dir.name)
+    payload["price_scale_path"] = str(price_scale.resolve())
+    payload["price_scale_sha256"] = work_item.sha256_file(price_scale)
+    payload["reconcile_overlap_sha256"] = work_item.sha256_file(
+        work_item.RECONCILE_OVERLAP
+    )
+    with pytest.raises(ValueError, match="manifest contract mismatch"):
+        work_item._validate_export_manifest(
+            Path(str(binding["path"])), payload, verify_files=True
+        )
+
+
 def test_reconcile_reader_retains_numeric_epoch_compatibility(tmp_path: Path) -> None:
     instant = dt.datetime(2026, 2, 2, 12, 0, tzinfo=UTC)
     raw = tmp_path / "numeric.csv"
