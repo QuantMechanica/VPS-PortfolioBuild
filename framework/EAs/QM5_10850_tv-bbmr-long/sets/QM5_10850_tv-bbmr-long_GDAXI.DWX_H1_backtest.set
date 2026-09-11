@@ -3,16 +3,16 @@
 ; ea_id:        10850
 ; ea_slug:      tv-bbmr-long
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260911-001
 ; symbol:       GDAXI.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   b83b8d8b54e065ea8cca09b75f2d18fa46225835192b8575857d11897053e7e1
+; build_hash:   2e1c078b50e86c690b8bdae178ab66394dcc636afc7e588e8d4ba88df0c16ca2
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-11
 ;==========================================================
 qm_ea_id=10850
 qm_magic_slot_offset=1

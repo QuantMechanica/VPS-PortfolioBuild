@@ -3,16 +3,16 @@
 ; ea_id:        10850
 ; ea_slug:      tv-bbmr-long
 ; ea_version:   v5.0
-; set_version:  s20260901-001
+; set_version:  s20260911-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   4
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   cb2d58d925789cc8e39443a5999d25b77507af73b58747c63a91fbc07017e510
+; build_hash:   507ef4f10d3777283a7a66eb610931bf941649f687015ecfaab1137a36d48bc9
 ; author:       Development
-; date:         2026-09-01
+; date:         2026-09-11
 ;==========================================================
 qm_ea_id=10850
 qm_magic_slot_offset=4
