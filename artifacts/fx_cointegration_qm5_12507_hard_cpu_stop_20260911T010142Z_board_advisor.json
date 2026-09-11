@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-11T01:01:42.5623439Z",
+  "recorded_at_local": "2026-09-11T03:01:42.5623439+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "88f4c4757d2868fbc60fde6f2d8a5054a182d41e",
+  "mission": "Advance one non-duplicate low-frequency market-neutral FX cointegration sleeve without exceeding the paced fleet CPU ceiling.",
+  "selection": {
+    "new_pair_selected": false,
+    "reason": "The frozen sign-aware 66-pair scan is fully mechanized with 66 covered relationships and zero uncovered relationships.",
+    "existing_ea_id": "QM5_12507",
+    "existing_ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "host_symbol": "EURUSD.DWX",
+    "host_timeframe": "H1"
+  },
+  "preferred_anchor_triage": {
+    "QM5_12532": {
+      "q02": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_terminal_state": "Q04 PASS, then Q05 FAIL"
+    },
+    "QM5_12533": {
+      "q02": "PASS",
+      "q02_oninit_or_no_history_blocker": false,
+      "later_terminal_state": "Q04 FAIL"
+    }
+  },
+  "q02_work_item": {
+    "id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "parent_task_id": "47e96b62-0ece-40a2-a22b-13704bd24e46",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "duplicate_enqueue_performed": false,
+    "queue_mutation_performed": false
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_sha256": {
+    "mq5": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+  },
+  "pacer_build_guard": {
+    "mq5_generated_or_edited": false,
+    "compile_enqueue_attempted": false,
+    "post_write_pre_compile_audit_required": false,
+    "reason": "No source write and no compile enqueue occurred."
+  },
+  "capacity_preflight": {
+    "cpu_samples_percent": [
+      99.6096061551543
+    ],
+    "cpu_maximum_percent": 99.6096061551543,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": true,
+    "sampling_stopped_on_first_breach": true,
+    "free_physical_memory_gib": 31.477,
+    "heavy_multisymbol_admission_required_gib": 58.0,
+    "ram_admission_clear": false,
+    "running_factory_terminals": [
+      "T2",
+      "T7",
+      "T10"
+    ],
+    "t_live_observed_only": true
+  },
+  "outcome": {
+    "status": "HARD_CPU_CEILING_STOP",
+    "action": "Stopped without duplicate enqueue, priority mutation, dispatch, tester launch, terminal reservation, source edit, compile enqueue, or pipeline verdict mutation.",
+    "continuation": "The resident paced worker may claim the existing logical Q02 row after CPU and heavy-multisymbol memory admission recover."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "runtime_queue_mutated": false,
+    "terminal_process_mutated": false
+  }
+}
