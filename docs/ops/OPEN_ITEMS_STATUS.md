@@ -3070,3 +3070,15 @@ Precondition f7f39835 blocked on card_target_symbols_missing_or_invalid. Mechani
 no universe change): frontmatter target_symbols = the 13 magic slots registered 2026-08-17; the body's
 USOIL.DWX is not a factory custom symbol (oil = XTIUSD.DWX) and has no slot -> excluded, extension is an
 OWNER decision. Re-approved in place via farmctl approve-card; EA docs card synced; ticket re-routed.
+
+## 2026-09-11T17:00Z — OWNER-DEC-PRESCREEN-OHLC-20260911 recorded and commissioned
+
+OWNER (chat ~16:5xZ): "T12 ist auch nutzbar, 1min Tests gehen auf allen Terminals, hauptsache
+Zeitgewinn, aber natuerlich erfolgreiche EAs dann mit Real Tick Data verifizieren!" Reading: T12 becomes
+the second research seat; OHLC-M1 (Model 2) cells are allowed fleet-wide as a PRESCREEN class; every
+survivor is confirmed on real ticks (Model 4); real-tick evidence stays the only class for verdicts,
+counter and books. Invariants for the implementation: declared keep fraction (start 70 pct per the
+pilot), 10 pct random control sample of dropped arms, suspension at FN > 10 pct, PRESCREEN never
+equals MEASURED. Tickets: T12 seat (Terra P88), fleet pre-screen cell class + promote + FN tracking
+(Terra P95), DL-089 census Nachtrag draft for OWNER signature (Astra P90). Recipe
+session_tools/enqueue_prescreen_decision_0911.py.
