@@ -60,9 +60,13 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: bc0fe3d3-68a6-45ee-83b4-1c3341ee4ee6
+q01_build_report: D:/QM/reports/framework/21/build_check_20260911_085628.json
+q02_status: ENQUEUED_PENDING
+q02_work_item: ae5f4df7-e2ac-437d-b736-b99e5b635c6c
+q02_receipt: D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/bc0fe3d3-68a6-45ee-83b4-1c3341ee4ee6_ae5f4df7-e2ac-437d-b736-b99e5b635c6c.json
 force_build: true
 review_focus: "Falsify a WTI hurricane-season weekly contraction/sign-continuation rule distinct from the WR2/CLV expansion pair, all-year NR7 breakout, realized-volatility rank, and incumbent XNG oscillator. Verify two exact weeks, strict contraction, earliest open/final close, both sides, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -223,5 +227,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | - |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | - |
+| Q01 Build Validation | 2026-09-11 | PASS | governed compile `bc0fe3d3-68a6-45ee-83b4-1c3341ee4ee6`; strict build check PASS |
+| Q02 Baseline Screening | 2026-09-11 | ENQUEUED_PENDING | work item `ae5f4df7-e2ac-437d-b736-b99e5b635c6c` |

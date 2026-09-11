@@ -1,0 +1,21 @@
+{
+  "schema": "qm.first-q02-intake-evidence/v1",
+  "captured_at": "2026-09-11T08:58:32Z",
+  "ea_id": "QM5_41436",
+  "ea_label": "QM5_41436_wti-hurr-nr2-sign-cont",
+  "compile_work_item_id": "bc0fe3d3-68a6-45ee-83b4-1c3341ee4ee6",
+  "compile_verdict": "COMPILE_OK",
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "applied": true,
+  "work_item_id": "ae5f4df7-e2ac-437d-b736-b99e5b635c6c",
+  "work_item_status": "pending",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "setfile_sha256": "64eeb70a1434ed905054e18b10db8e1057d1aea1b371e53f354785e6dd5699d2",
+  "ex5_sha256": "36b99f86771e817486894df4e37399306d5a4281d3d6e369b547092ebda43054",
+  "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/bc0fe3d3-68a6-45ee-83b4-1c3341ee4ee6_ae5f4df7-e2ac-437d-b736-b99e5b635c6c.json",
+  "receipt_sha256": "8499926e5c97212181e6f75f503f87eb04b0694cb72b48e7097b7df6b7b13643"
+}

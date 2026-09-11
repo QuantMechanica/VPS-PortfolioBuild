@@ -80,3 +80,5 @@ deployment, portfolio admission, `T_Live`, or AutoTrading action is authorized.
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-11 | Initial build from approved card | OWNER pacer mission |
+| v1-q01 | 2026-09-11 | Governed compile and strict build check PASS (`bc0fe3d3-68a6-45ee-83b4-1c3341ee4ee6`) | OWNER pacer mission |
+| v1-q02 | 2026-09-11 | CPU-admitted fixed-risk Q02 enqueued (`ae5f4df7-e2ac-437d-b736-b99e5b635c6c`) | OWNER pacer mission |
