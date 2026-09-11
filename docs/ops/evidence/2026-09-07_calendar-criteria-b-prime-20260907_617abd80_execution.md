@@ -489,12 +489,11 @@ unchanged.
 Dukascopy (`3032534e`) update: PID `19568` (stable since 07:20:32Z, longest stretch yet per
 the 10:20Z check) crashed at `11:23:16Z` on the same already-diagnosed
 `assert_contained_destination` mkdir-before-resolve defect (`ae1df6bf`, still
-APPROVED/unassigned/unworked) -- `\?\D:\QMeports\dukascopyackfill60909T191800Z_hardenedaw\DEUIDXEUR6h_ticks.bi5`
+APPROVED/unassigned/unworked) -- `\\?\D:\QM\reports\dukascopy\backfill\20260909T191800Z_hardened\raw\DEUIDXEUR\2026\04\27\01h_ticks.bi5`
 escaped-root ValueError, 4th occurrence of this exact class. Checked for orphaned `*.tmp`
 files under the crash symbol dir (none found), then relaunched the identical resume command
 (within `3032534e`'s own pre-authorized `allowed_actions`, not new scope): same
-`--out`/`--splice-csv`/rate/timeout/retry/concurrency/backoff flags, detached, cwd
-`C:\QMepo`. Verified alive: PID `12040`, `started_at_utc=2026-09-11T11:34:54.555Z`,
+`--out`/`--splice-csv`/rate/timeout/retry/concurrency/backoff flags, detached, cwd `C:\QM\repo`. Verified alive: PID `12040`, `started_at_utc=2026-09-11T11:34:54.555Z`,
 `status=RUNNING`, progress.json updating normally at +15s. `progress.json` at crash time
 showed `completed=179697/306619` (58.6%), no data loss (resumes via `hour_ledger.jsonl`).
 This is now the fourth consecutive crash-relaunch cycle on the same known defect -- per the
