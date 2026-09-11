@@ -2595,3 +2595,14 @@ enqueued (sibling QM5_41405: clock modes x outside rules x buffer x ATR band + B
 350 cells as its own declared program). New REVIEW rows (ff8be2f1 FTMO economics, 31b8255e resident
 backend = TECHNICAL_IMPOSSIBILITY + MetaTester-agent alternative, 8f6a6b3c research_canary
 implemented) under Sonnet verification.
+
+## 2026-09-11T02:10Z — Second review round (3 rows) + V4a line closed
+
+ff8be2f1 FTMO acceleration D economics: APPROVED (terms sourced live, frontier in required joint pass
+probability, decision draft CONTINUE_EVIDENCE with review 2026-09-15; goes to the OWNER queue).
+31b8255e resident backend: APPROVED as impossibility proof (MT5 /config is startup-only, one process
+per cell; no IPC) -> the V4a warm-runner line is CLOSED after 6 stops; alternative = MetaTester
+local-agent lane, evidence contract ticket cbacb01b P55 (docs only). 8f6a6b3c research_canary:
+APPROVED as partial (controller + 5 tests real; S3 not run: EX5/setfile not staged in T11) -> f04d66ec
+P90 adds staging with sha receipts, real dry-run receipt, then S3 identity run. Stage B enqueue waits
+for reload chunk 64 (worker-freshness gate after the window_sweep.py patch).
