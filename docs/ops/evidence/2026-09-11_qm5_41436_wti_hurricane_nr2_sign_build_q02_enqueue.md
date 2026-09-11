@@ -37,5 +37,12 @@ Five one-second whole-host CPU samples were `71.585104, 77.526318, 76.186378, 80
 enqueued: `ae5f4df7-e2ac-437d-b736-b99e5b635c6c`, pending on `XTIUSD.DWX` D1. No manual backtest,
 dispatch tick, terminal control, or retry was run.
 
+The worker subsequently completed that row as `ZERO_TRADES`. The evidence-bound report is valid,
+uses the required source/binary/set hashes, Model 4, `XTIUSD.DWX` D1, and 2018-07-02 through
+2022-12-31. Initialization passed, but the authenticated EA log contains zero `STRATEGY_STATE`
+decision markers and zero entry markers. This is recorded as an entry-hook observability failure
+requiring bounded same-economics diagnosis, not as a strategy PASS or automatic economic reject.
+No repair, parameter change, compile, or retry was attempted.
+
 No `T_Live`, AutoTrading, deploy/live manifest, portfolio gate, portfolio admission, or
 correlation waiver was touched.
