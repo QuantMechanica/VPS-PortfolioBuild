@@ -1,0 +1,66 @@
+{
+  "schema_version": "qm.paced-fleet-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-11T13:46:39.7736741Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "7ca687d74eb687a7a631b9c3d216aa42f06fd7fd",
+  "outcome": "STOP_CPU_CEILING",
+  "cpu_admission_ceiling_percent": 97.0,
+  "cpu_samples_percent": [100.0, 100.0, 99.0, 99.0, 100.0],
+  "cpu_average_percent": 99.6,
+  "cpu_maximum_percent": 100.0,
+  "process_counts": {
+    "terminal64": 5,
+    "metatester64": 3
+  },
+  "active_governed_tester_row_count": 5,
+  "active_governed_tester_rows": [
+    {
+      "terminal": "T5",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41398",
+      "symbol": "USDJPY.DWX",
+      "work_item_id": "94f58367-7971-58ae-abbe-6cbd56f20d47"
+    },
+    {
+      "terminal": "T3",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41405",
+      "symbol": "USDJPY.DWX",
+      "work_item_id": "26e17d6b-970e-5e1d-a748-a0832f9b0d86"
+    },
+    {
+      "terminal": "T8",
+      "phase": "Q02",
+      "ea_id": "QM5_1637",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "729b2361-5c15-4471-903d-211e8879a536"
+    },
+    {
+      "terminal": "T7",
+      "phase": "OPT_CENSUS",
+      "ea_id": "QM5_41322",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "07c50437-4765-5476-b5e3-607a5a203101"
+    },
+    {
+      "terminal": "T10",
+      "phase": "Q02",
+      "ea_id": "QM5_9235",
+      "symbol": "XAUUSD.DWX",
+      "work_item_id": "4f040db2-31b8-4b2b-ab08-c402c8704580"
+    }
+  ],
+  "mutations": {
+    "farm_claim": false,
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "farm_db_changed": false,
+    "portfolio_or_live_surface_changed": false
+  },
+  "framework_input_pin_audit": {
+    "applicable": false,
+    "reason": "No generated MQ5 was written before the binding CPU stop."
+  },
+  "continuation_condition": "Take a fresh five-sample CPU window and farm-DB collision check. Continue only if CPU average and maximum are both strictly below 97 percent and the intended EA remains unclaimed."
+}
