@@ -60,8 +60,10 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01_PENDING
-q01_status: NOT_RUN
+pipeline_phase: Q02_READY
+q01_status: PASS
+q01_compile_work_item: 059f2358-40ad-4d84-bcd7-d7c3730e5b73
+q01_build_report: D:/QM/reports/work_items/059f2358-40ad-4d84-bcd7-d7c3730e5b73/QM5_41446/COMPILE_EA/compile_evidence.json
 q02_status: NOT_ENQUEUED
 force_build: true
 review_focus: "Falsify a WTI November-May range-contraction own-body reversion distinct from the certified XNG oscillator, outer-quartile CLV fade, opposite body continuation, two-same-sign-week fades, and intraweek excursion rejection. Verify exact weeks, strict inequalities, both contrarian sides, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
@@ -225,6 +227,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_RUN | build pending |
+| Q01 Build Validation | 059f2358-40ad-4d84-bcd7-d7c3730e5b73 | PASS | T3 compile and strict build check PASS; zero compiler errors/warnings; 11 reference tests; PACER audit zero hits |
 | Q02 Baseline Screening | - | NOT_ENQUEUED | only after Q01 PASS and deterministic intake guards |
-
