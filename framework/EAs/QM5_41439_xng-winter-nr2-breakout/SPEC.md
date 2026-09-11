@@ -88,3 +88,5 @@ existing XNG sleeve can exceed modeled risk. No live set, deployment, portfolio 
 | Version | Date | Change | Task |
 |---|---|---|---|
 | v1 | 2026-09-11 | Initial build from approved card | OWNER pacer mission |
+| v1-q01 | 2026-09-11 | Governed compile and strict build check PASS (`790255b0-7bb6-41cd-9419-33daf5f14bc3`) | OWNER pacer mission |
+| v1-q02-stop | 2026-09-11 | Q02 dry-run eligible; enqueue refused because fresh CPU maximum 98.047568% exceeded the strict 97.0% ceiling | OWNER pacer mission |

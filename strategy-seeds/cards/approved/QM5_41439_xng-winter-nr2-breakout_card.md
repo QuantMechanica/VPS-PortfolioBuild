@@ -61,8 +61,11 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q01_compile_work_item: 790255b0-7bb6-41cd-9419-33daf5f14bc3
+q01_build_report: D:/QM/reports/work_items/790255b0-7bb6-41cd-9419-33daf5f14bc3/QM5_41439/COMPILE_EA/compile_evidence.json
+q02_status: BLOCKED_CPU_CEILING
+q02_blocker: "Fresh five-sample whole-host CPU window peaked at 98.047568%, above the strict 97.0% ceiling; no Q02 row enqueued."
 force_build: true
 review_focus: "Falsify an XNG winter weekly contraction/completed-close breakout distinct from all-year NR7, range-expansion CLV momentum, WTI hurricane NR2, and incumbent XNG oscillator. Verify two exact completed weeks, strict range contraction without containment, current-week close chronology, both sides, durable first-breakout attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -225,5 +228,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-11 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-11 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | pending Q01 and CPU ceiling |
+| Q01 Build Validation | 2026-09-11 | PASS | compile `790255b0-7bb6-41cd-9419-33daf5f14bc3`; `COMPILE_OK`; build check PASS; 13 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-11 | BLOCKED_CPU_CEILING | dry-run eligible after set repair; no Q02 row; CPU avg 93.187870%, max 98.047568% against strict 97.0% ceiling |

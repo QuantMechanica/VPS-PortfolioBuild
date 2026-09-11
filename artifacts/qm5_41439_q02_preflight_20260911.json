@@ -1,0 +1,21 @@
+{
+  "schema": "qm.first-q02-intake/v1",
+  "captured_at_utc": "2026-09-11T12:42:48Z",
+  "applied": false,
+  "dry_run": true,
+  "eligible": true,
+  "reason": "ELIGIBLE",
+  "ea_id": "QM5_41439",
+  "compile_work_item_id": "790255b0-7bb6-41cd-9419-33daf5f14bc3",
+  "would_enqueue": true,
+  "q02_enqueue_performed": false,
+  "q02_enqueue_blocker": "CPU_CEILING",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "setfile_sha256": "92211fe21c31792cdd9e71ceec35a01799d9813f3179ec9d71b996611e113762",
+  "risk_fixed": 1000.0,
+  "risk_percent": 0.0,
+  "ex5_sha256": "fc213b00ae0e90dd742bd51a6dd64744429a36fd701f31270ceb87968ddff89d",
+  "open_work_items_for_ea": 1,
+  "open_q02_work_items_for_ea": 0
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "qm.q02-cpu-admission/v1",
+  "ea_id": "QM5_41439",
+  "compile_work_item_id": "790255b0-7bb6-41cd-9419-33daf5f14bc3",
+  "started_at_utc": "2026-09-11T12:42:17.0004212Z",
+  "ended_at_utc": "2026-09-11T12:42:28.5055548Z",
+  "probe": "Get-Counter \\Processor(_Total)\\% Processor Time",
+  "samples_percent": [
+    89.79568011967115,
+    95.0790418448256,
+    87.3612201766074,
+    98.04756752779788,
+    95.65584021763459
+  ],
+  "average_percent": 93.18786997730732,
+  "maximum_percent": 98.04756752779788,
+  "ceiling_percent": 97.0,
+  "admission_rule": "average_percent < 97.0 and maximum_percent < 97.0",
+  "admitted": false,
+  "terminal64_process_count": 7
+}

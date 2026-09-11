@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "8e43b1aff84f48f8e25e902b05845219d1b2c044753530d787ef7c3300038142",
+      "ea_id": "QM5_41439",
+      "ea_label": "QM5_41439_xng-winter-nr2-breakout",
+      "expected_mq5_sha256": "8e43b1aff84f48f8e25e902b05845219d1b2c044753530d787ef7c3300038142",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41439_xng-winter-nr2-breakout\\QM5_41439_xng-winter-nr2-breakout.mq5",
+      "work_item_id": "790255b0-7bb6-41cd-9419-33daf5f14bc3"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "790255b0-7bb6-41cd-9419-33daf5f14bc3",
+  "work_item_id_selectors": [
+    "790255b0-7bb6-41cd-9419-33daf5f14bc3"
+  ]
+}
