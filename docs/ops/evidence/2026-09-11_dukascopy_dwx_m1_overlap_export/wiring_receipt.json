@@ -1,0 +1,142 @@
+{
+  "authority_task_id": "ba2a478e-f437-404b-843b-a1def6f2cf4c",
+  "base_head": "a20d667fa0cc58eb9b1b3b21cb8d6d323ddc4a46",
+  "bindings": {
+    "history_ranges": {
+      "m1_rows": 37,
+      "path": "C:/QM/repo/docs/ops/evidence/2026-09-02_dukascopy_p0_history_ranges.csv",
+      "sha256": "023f955337a24c16e47e354ca9ce431ace0bd2660d62cfcdc3a36b6e95ba0c4b"
+    },
+    "owner_approved_archive_manifest": {
+      "archive_years": [
+        2017,
+        2018,
+        2019,
+        2020,
+        2021,
+        2022,
+        2023,
+        2024,
+        2025
+      ],
+      "path": "D:/QM/strategy_farm/artifacts/ops/custom_history_custom_history_variant_a_20260809/archive_manifest_owner_approved.json",
+      "sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06"
+    },
+    "price_scale": {
+      "path": "D:/QM/reports/dukascopy/splice/20260909_185632/price_scale.csv",
+      "rows": 9,
+      "sha256": "b72a05df91da8da053cd066a698a02aeda2930761e990f4f35d379899761fb4d"
+    },
+    "symbol_matrix": {
+      "path": "C:/QM/repo/framework/registry/dwx_symbol_matrix.csv",
+      "rows": 37,
+      "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+    }
+  },
+  "claim_contract": {
+    "allowed_terminals": [
+      "T1"
+    ],
+    "completion_verdict": "REVIEW_REQUIRED",
+    "contract": "qm.dwx-m1-overlap-export-work-item/v1",
+    "diagnostic_non_admission": true,
+    "diagnostic_queue_rank": 0,
+    "ea_id": "QM_DIAG_DWX_M1_OVERLAP",
+    "kind": "diagnostic",
+    "no_gate_verdict": true,
+    "phase": "Q00",
+    "priority_track": true,
+    "read_only": true
+  },
+  "generated_at_utc": "2026-09-11T00:31:55Z",
+  "implementation_files": [
+    {
+      "path": "framework/scripts/mt5_diagnostics/QM_DWX_M1_Overlap_Export.mq5",
+      "sha256": "8dccb744ceaa1510313b5129b17840e4a1994882f72ebb7dc3cc12fb2919ee79"
+    },
+    {
+      "path": "framework/scripts/mt5_diagnostics/dwx_m1_overlap_export.py",
+      "sha256": "d8a435f587739393e7e1e961f01c491f8184f6788e876d1542d37cf127f83378"
+    },
+    {
+      "path": "tools/strategy_farm/dwx_m1_overlap_export_work_item.py",
+      "sha256": "2237a4ea3dddafb4a1efaa4118db40fd257b13680351f6925e8e06625ef36bd2"
+    },
+    {
+      "path": "tools/dukascopy/reconcile_overlap.py",
+      "sha256": "d0740da790985ee5ef85945b34a278e2a064f216a97a20040e6e982c3c18397f"
+    },
+    {
+      "path": "tools/strategy_farm/farmctl.py",
+      "sha256": "06716f53350acc1aa2973bdd512d9d3a6d1512670b93d3f2c01303af2cc8ee0f"
+    },
+    {
+      "path": "tools/strategy_farm/terminal_worker.py",
+      "sha256": "f69b03f311da1ddf4dfd8fe1bb01f9a069b2f083698e78307bc3d0bd16aecffc"
+    },
+    {
+      "path": "tools/strategy_farm/tests/test_dwx_m1_overlap_export.py",
+      "sha256": "3b6fdff5942109fe13204c92987b934af402553413b734f36e0cf0cdd668f357"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-11_dukascopy_dwx_m1_overlap_export/README.md",
+      "sha256": "65bff41da95d4d4f0f638503211ab07f8606032a54197b9a8a395dd0eb2f6f47"
+    }
+  ],
+  "output_contract": {
+    "end_broker_epoch": 1775012400,
+    "end_inclusive": true,
+    "end_utc": "2026-04-01T00:00:00Z",
+    "header": [
+      "time",
+      "open",
+      "high",
+      "low",
+      "close",
+      "tickvol"
+    ],
+    "output_root": "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/<stamp>",
+    "start_broker_epoch": 1759287600,
+    "start_utc": "2025-10-01T00:00:00Z",
+    "symbol_count": 37,
+    "time_encoding": "UTC ISO-8601"
+  },
+  "production_run": {
+    "matching_work_items_after_dry_run": 0,
+    "output_created": false,
+    "reason": "Build and test ticket; first production dispatch requires separate governed authorization.",
+    "status": "NOT_RUN_BY_DESIGN",
+    "terminal64_started": false
+  },
+  "schema_version": "qm.dwx-m1-overlap-export-wiring-receipt/v1",
+  "status": "READY_FOR_REVIEW",
+  "verification": {
+    "dry_run": {
+      "apply": false,
+      "dispatch_binding_sha256": "3902e7b0d0b3c45e32b03e0161d7874534db7cc74b98bf1d45d5f700ab821ac5",
+      "enqueued": false,
+      "manifest_selection": "PASS_37_SYMBOLS",
+      "output_exists": false,
+      "stamp": "20260911_002500"
+    },
+    "metaeditor_compile": {
+      "artifact": "D:/QM/reports/dukascopy/build_dry_run/20260911T0000Z_dwx_m1_overlap_ba2a478e",
+      "errors": 0,
+      "ex5_sha256": "19ac7a4ed700e26fbbe0c56f292189d1daa3a7fb0e39ebc8b636469dc9b84464",
+      "exit_code": 1,
+      "log_sha256": "0770f626b7e98ed77a7524c62dd2d8b8c089568db1b0d16fa3ef156aef8642a1",
+      "source_sha256": "8dccb744ceaa1510313b5129b17840e4a1994882f72ebb7dc3cc12fb2919ee79",
+      "warnings": 0
+    },
+    "mql_forbidden_api_findings": 0,
+    "py_compile": "PASS",
+    "pytest_adjacent": {
+      "passed": 197,
+      "status": "PASS"
+    },
+    "pytest_focused": {
+      "passed": 42,
+      "status": "PASS"
+    }
+  }
+}

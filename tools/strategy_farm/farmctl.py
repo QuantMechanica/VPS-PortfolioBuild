@@ -470,6 +470,12 @@ DIAGNOSTIC_WORK_ITEM_KIND = "diagnostic"
 DWX_TICK_TAIL_PROBE_PHASE = "Q00"
 DWX_TICK_TAIL_PROBE_EA_ID = "QM_DIAG_DWX_TICK_TAIL"
 DWX_TICK_TAIL_PROBE_CONTRACT = "qm.dwx-tick-tail-probe-work-item/v1"
+# Governed read-only T1 utility for exporting the fixed DWX/Dukascopy M1
+# reconciliation window. It is a separate non-admission contract from the
+# tick-tail inventory and likewise completes only as REVIEW_REQUIRED.
+DWX_M1_OVERLAP_EXPORT_PHASE = "Q00"
+DWX_M1_OVERLAP_EXPORT_EA_ID = "QM_DIAG_DWX_M1_OVERLAP"
+DWX_M1_OVERLAP_EXPORT_CONTRACT = "qm.dwx-m1-overlap-export-work-item/v1"
 # Router-authorized build-smoke recovery is a prerequisite lane, not a pipeline
 # backtest.  Its exact producer contract receives the same bounded emergency
 # scheduling treatment as compile/harness work so a Q01 prerequisite cannot sit
@@ -10800,6 +10806,141 @@ def _spawn_dwx_tick_tail_probe(
     }
 
 
+def _is_dwx_m1_overlap_export_item(
+    item_row: sqlite3.Row | Mapping[str, Any],
+    payload: Mapping[str, Any] | None = None,
+) -> bool:
+    """Match only the sealed DWX M1 overlap-export utility contract."""
+
+    def _value(key: str) -> Any:
+        try:
+            return item_row[key]
+        except (KeyError, IndexError, TypeError):
+            return None
+
+    if payload is None:
+        try:
+            loaded = json.loads(str(_value("payload_json") or "{}"))
+        except (TypeError, ValueError):
+            loaded = {}
+        payload = loaded if isinstance(loaded, dict) else {}
+    return bool(
+        str(_value("kind") or "") == DIAGNOSTIC_WORK_ITEM_KIND
+        and str(_value("phase") or "") == DWX_M1_OVERLAP_EXPORT_PHASE
+        and str(_value("ea_id") or "") == DWX_M1_OVERLAP_EXPORT_EA_ID
+        and payload.get("diagnostic_contract") == DWX_M1_OVERLAP_EXPORT_CONTRACT
+        and payload.get("diagnostic_non_admission") is True
+    )
+
+
+def _spawn_dwx_m1_overlap_export(
+    root: Path,
+    item_row: sqlite3.Row | Mapping[str, Any],
+    terminal: str,
+) -> dict[str, Any]:
+    """Spawn the governed read-only M1 exporter inside the Factory Job."""
+
+    try:
+        from tools.strategy_farm import dwx_m1_overlap_export_work_item as _export_item
+    except ModuleNotFoundError:
+        import dwx_m1_overlap_export_work_item as _export_item
+
+    try:
+        payload = json.loads(str(item_row["payload_json"] or "{}"))
+    except (TypeError, ValueError):
+        payload = {}
+    if not isinstance(payload, dict):
+        payload = {}
+    try:
+        _export_item.validate_payload(payload, terminal=terminal, verify_files=True)
+    except (OSError, TypeError, ValueError) as exc:
+        return {"spawned": False, "reason": f"diagnostic_payload_invalid:{exc}"}
+    if str(terminal).upper() != "T1":
+        return {"spawned": False, "reason": "diagnostic_requires_T1"}
+    if (Path(root) / "state" / "FACTORY_OFF.flag").exists():
+        return {"spawned": False, "reason": "diagnostic_factory_off"}
+
+    stamp = str(payload.get("export_stamp") or "")
+    output_dir = Path(str(payload.get("output_dir") or "")).resolve()
+    expected_output_dir = (_export_item.EXPORT_ROOT / stamp).resolve()
+    if output_dir != expected_output_dir or output_dir.exists():
+        return {
+            "spawned": False,
+            "reason": "diagnostic_output_scope_or_freshness_invalid",
+        }
+
+    work_item_id = str(item_row["id"])
+    ea_id = str(item_row["ea_id"])
+    phase = str(item_row["phase"])
+    report_root = Path(r"D:\QM\reports\work_items") / work_item_id / ea_id / phase
+    report_root.mkdir(parents=True, exist_ok=True)
+    summary_path = report_root / "summary.json"
+    if summary_path.exists():
+        return {"spawned": False, "reason": "diagnostic_summary_already_exists"}
+    log_path = Path(root) / "logs" / f"work_item_{work_item_id}.log"
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        timeout_seconds = int(payload.get("export_timeout_seconds") or 3600)
+    except (TypeError, ValueError):
+        timeout_seconds = 0
+    if not 300 <= timeout_seconds <= 3600:
+        return {"spawned": False, "reason": "diagnostic_timeout_invalid"}
+
+    wrapper = _export_item.EXPORT_WRAPPER.resolve()
+    cmd = [
+        _console_python_executable(),
+        str(wrapper),
+        "--out", str(output_dir),
+        "--summary", str(summary_path),
+        "--work-item-id", work_item_id,
+        "--farm-root", str(Path(root).resolve()),
+        "--timeout", str(timeout_seconds),
+    ]
+    reap_finished_job_objects()
+    log_fh = open(log_path, "a", encoding="utf-8")
+    log_fh.write(
+        f"\n{utc_now()} spawning governed T1 DWX M1 overlap export: "
+        + " ".join(cmd)
+        + "\n"
+    )
+    log_fh.flush()
+    creationflags = suspended_runner_creation_flags()
+    env = {**os.environ}
+    env["QM_DWX_M1_OVERLAP_WORK_ITEM_ID"] = work_item_id
+    env["QM_DWX_M1_OVERLAP_CLAIMED_TERMINAL"] = "T1"
+    env["PYTHONPATH"] = os.pathsep.join([str(REPO_ROOT), env.get("PYTHONPATH", "")])
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(REPO_ROOT),
+        stdout=log_fh,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        creationflags=creationflags,
+        close_fds=True,
+        env=env,
+    )
+    try:
+        process_identity = bind_spawned_process_to_kill_job(
+            proc,
+            _capture_spawned_process_identity,
+            process_created_suspended=(sys.platform == "win32"),
+        )
+    finally:
+        log_fh.close()
+    return {
+        "spawned": True,
+        "pid": proc.pid,
+        **process_identity,
+        "log_path": str(log_path),
+        "report_root": str(report_root),
+        "phase_evidence_path": str(summary_path),
+        "ea_dir_name": ea_id,
+        "phase_runner": str(wrapper),
+        "timeout_seconds": timeout_seconds,
+        "diagnostic_wrapper": True,
+    }
+
+
 def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
                             terminal: str) -> dict[str, Any]:
     if (
@@ -10833,6 +10974,8 @@ def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
         }
     if _is_dwx_tick_tail_probe_item(item_row):
         return _spawn_dwx_tick_tail_probe(root, item_row, terminal)
+    if _is_dwx_m1_overlap_export_item(item_row):
+        return _spawn_dwx_m1_overlap_export(root, item_row, terminal)
     if item_row["phase"] in REAL_PHASE_RUNNER_PHASES:
         return _spawn_phase_runner_for_work_item(root, item_row, terminal)
     return _spawn_run_smoke_for_work_item(root, item_row, terminal)
@@ -13334,7 +13477,10 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 "claimed_by_worker_pid": payload.get("claimed_by_worker_pid"),
             })
             continue
-        if _is_dwx_tick_tail_probe_item(item, payload):
+        if (
+            _is_dwx_tick_tail_probe_item(item, payload)
+            or _is_dwx_m1_overlap_export_item(item, payload)
+        ):
             # The resident T1 worker owns the wrapper Job, exact process
             # identity, and REVIEW_REQUIRED completion. The legacy observer
             # must not independently poll or classify this utility row.

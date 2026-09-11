@@ -101,8 +101,30 @@ def _bar_from_values(
     return Bar(time_s, open_price, high, low, close, volume, spread)
 
 
+def _header_time(value: str) -> int:
+    """Return the Darwinex broker epoch for a numeric or UTC ISO header value."""
+
+    text = str(value).strip()
+    try:
+        return int(float(text))
+    except (OverflowError, ValueError):
+        pass
+    try:
+        parsed = dt.datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("time must be a broker epoch or ISO-8601 timestamp") from exc
+    if parsed.tzinfo is None:
+        raise ValueError("ISO-8601 time must include a UTC offset")
+    return broker_epoch_seconds_for_utc(parsed.astimezone(UTC))
+
+
 def read_m1_csv(path: Path) -> dict[int, Bar]:
-    """Read native-export header CSV or TDM-compatible headerless M1 CSV."""
+    """Read native-export header CSV or TDM-compatible headerless M1 CSV.
+
+    Header CSVs may use the historic numeric Darwinex broker epoch or an
+    explicit ISO-8601 instant. ISO values are normalized back to the broker
+    epoch used by the reconciliation engine, preserving existing comparisons.
+    """
 
     path = path.resolve()
     if not path.is_file():
@@ -130,7 +152,7 @@ def read_m1_csv(path: Path) -> dict[int, Bar]:
         for line_number, row in enumerate(data_rows, start=2):
             try:
                 bar = _bar_from_values(
-                    time_s=int(float(row[index["time"]])),
+                    time_s=_header_time(row[index["time"]]),
                     open_value=row[index["open"]],
                     high_value=row[index["high"]],
                     low_value=row[index["low"]],
