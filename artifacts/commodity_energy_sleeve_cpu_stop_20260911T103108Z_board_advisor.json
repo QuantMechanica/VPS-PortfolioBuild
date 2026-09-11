@@ -1,0 +1,52 @@
+{
+  "schema_version": "qm.cpu-admission-window/v1",
+  "mission": "new commodity/energy sleeve edge selection, card, build, and paced Q02 enqueue",
+  "branch": "agents/board-advisor",
+  "observed_head": "9ded253efe48901fdffec8400c289f678c663aed",
+  "sampled_at_utc": "2026-09-11T10:30:54Z",
+  "threshold_percent": 97.0,
+  "resume_percent": 90.0,
+  "rule": "stop when average or maximum is at or above 97 percent; resume only when both are below 90 percent",
+  "samples_percent": [
+    99.913147329645,
+    98.9291175530275,
+    96.4851956275471,
+    97.0709795740694,
+    97.1695471283401
+  ],
+  "average_percent": 97.9135974425258,
+  "maximum_percent": 99.913147329645,
+  "average_binding": true,
+  "maximum_binding": true,
+  "admitted": false,
+  "decision": "HARD_STOP_BEFORE_CARD_OR_BUILD_MUTATION",
+  "read_only_duplicate_scan": {
+    "requested_example_qm5_12533_recipe_reviewed": false,
+    "quiet_flow_candidate_qm5_21520_already_built": true,
+    "latest_registry_identity_observed": "QM5_41437_wti-hurr-nr2-breakout",
+    "new_identity_selected_or_reserved": false
+  },
+  "factory_process_snapshot": {
+    "factory_terminals": ["T2", "T4", "T6", "T7", "T9"],
+    "factory_metatesters": ["T2", "T4", "T6", "T7", "T9"],
+    "factory_terminal_count": 5,
+    "factory_metatester_count": 5,
+    "t_live_observation_only": true,
+    "external_ftmo_terminal_observation_only": true
+  },
+  "actions": {
+    "source_or_card_created": false,
+    "ea_id_or_magic_allocated": false,
+    "mq5_or_setfile_written": false,
+    "framework_input_pin_audit_run": false,
+    "compile_enqueued": false,
+    "backtest_started": false,
+    "q02_enqueued": false,
+    "terminal_or_tester_controlled": false,
+    "portfolio_gate_touched": false,
+    "t_live_or_deploy_manifest_touched": false,
+    "autotrading_touched": false,
+    "capacity_evidence_commit_only": true
+  },
+  "continuation_condition": "A fresh five-sample whole-host guard must have both average and maximum below 90 percent before selecting and allocating a new non-duplicate edge."
+}
