@@ -1,0 +1,147 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-stop/v1",
+  "recorded_at_utc": "2026-09-11T08:33:00.4013810Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "452bbfdda8f685f47b5b96213cb7b6d40fadfa54",
+  "mission": "Grow the certified V5 portfolio book with a new market-neutral FX cointegration sleeve, preferring QM5_12532/QM5_12533 Q02 repair and otherwise advancing one existing forex card without duplicate work.",
+  "frontier": {
+    "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "relationships_covered": 66,
+    "unbuilt_relationships": 0,
+    "new_card_or_build_allowed": false,
+    "reason": "The frozen sign-aware frontier is fully mechanized; a new scan-derived card, EA, registry identity, basket manifest, or Q02 row would duplicate governed work."
+  },
+  "preferred_anchors": [
+    {
+      "ea_id": "QM5_12532",
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02": "PASS",
+      "terminal_state": "Q04 PASS, then Q05 FAIL",
+      "q02_repair_required": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02": "PASS",
+      "terminal_state": "Q04 FAIL",
+      "q02_repair_required": false
+    }
+  ],
+  "existing_forex_fallback": {
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "timeframe": "H1",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "priority_track": true,
+    "open_logical_q02_identity_count": 1,
+    "duplicate_enqueue_performed": false,
+    "source_path": "framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "source_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "basket_manifest": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "generated_mq5_written": false,
+    "compile_enqueued": false
+  },
+  "basket_manifest_regression": {
+    "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q -k qm5_12507",
+    "exit_code": 0,
+    "result": "1 passed, 46 deselected"
+  },
+  "priority_dry_run": {
+    "command": "python tools/strategy_farm/farmctl.py mark-priority-track --work-item-id 547c4fd3-f3fd-4c59-b9dc-654e96521251 --reason OWNER_FOREX_COINTEGRATION_FALLBACK_20260911 --dry-run",
+    "applied": false,
+    "already_priority_track": true,
+    "reason": "already_priority_track"
+  },
+  "capacity_preflight": {
+    "counter": "\\Processor(_Total)\\% Processor Time",
+    "sample_interval_seconds": 1,
+    "sample_count": 5,
+    "samples_percent": [
+      95.021263,
+      97.274816,
+      95.221871,
+      94.047861,
+      92.969633
+    ],
+    "average_percent": 94.907089,
+    "maximum_percent": 97.274816,
+    "ceiling_percent": 97.0,
+    "ceiling_rule": "Stop when average or maximum is greater than or equal to 97 percent.",
+    "ceiling_hit": true,
+    "binding_measure": "maximum_percent",
+    "free_physical_memory_gib": 43.611,
+    "total_visible_memory_gib": 63.120,
+    "heavy_multisymbol_admission_floor_gib": 58.0,
+    "memory_floor_met": false
+  },
+  "farm_snapshot": {
+    "pre_admission_scanned_at_utc": "2026-09-11T08:32:06+00:00",
+    "pre_admission_running_factory_terminals": [
+      "T2",
+      "T3",
+      "T7",
+      "T10"
+    ],
+    "pre_admission_running_factory_terminal_count": 4,
+    "post_stop_scanned_at_utc": "2026-09-11T08:33:24+00:00",
+    "post_stop_running_factory_terminals": [
+      "T1",
+      "T2"
+    ],
+    "post_stop_running_factory_terminal_count": 2,
+    "terminal_worker_daemon_count": 10,
+    "duplicate_terminal_workers": 0,
+    "orphaned_terminal_processes": 0,
+    "excluded_observed_terminals": [
+      "C:/QM/mt5/T_Live/MT5_Base/terminal64.exe",
+      "C:/Program Files/FTMO Global Markets MT5 Terminal/terminal64.exe"
+    ]
+  },
+  "outcome": {
+    "status": "HARD_CPU_CEILING_STOP",
+    "selected_pair": "EURUSD.DWX/GBPUSD.DWX",
+    "selected_existing_ea": "QM5_12507_pair-coint-z",
+    "action": "Preserved the one existing priority Q02 row and stopped before enqueue, requeue, dispatch, tester launch, terminal reservation, terminal control, or compile.",
+    "q02_enqueued": false,
+    "q02_requeued": false,
+    "dispatch_started": false
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "queue_mutated": false,
+    "terminal_process_mutated": false,
+    "ea_source_mutated": false,
+    "registry_mutated": false
+  }
+}
