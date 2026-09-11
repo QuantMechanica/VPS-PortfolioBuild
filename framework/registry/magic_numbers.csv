@@ -18375,3 +18375,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41438,xng-winter-wr2-clv-mom,0,XNGUSD.DWX,414380000,2026-09-11,Codex governed allocator,active
 41439,xng-winter-nr2-breakout,0,XNGUSD.DWX,414390000,2026-09-11,Codex governed allocator,active
 41440,wti-winter-wr2-clv-mom,0,XTIUSD.DWX,414400000,2026-09-11,Codex governed allocator,active
+41441,wti-winter-nr2-breakout,0,XTIUSD.DWX,414410000,2026-09-11,Codex governed allocator,active
