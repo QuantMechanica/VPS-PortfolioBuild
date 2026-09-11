@@ -2606,3 +2606,12 @@ local-agent lane, evidence contract ticket cbacb01b P55 (docs only). 8f6a6b3c re
 APPROVED as partial (controller + 5 tests real; S3 not run: EX5/setfile not staged in T11) -> f04d66ec
 P90 adds staging with sha receipts, real dry-run receipt, then S3 identity run. Stage B enqueue waits
 for reload chunk 64 (worker-freshness gate after the window_sweep.py patch).
+
+## RESULT 2026-09-11 — Q-S3 T11 canary follow-up (`f04d66ec`)
+
+`REVIEW — GUARD_REFUSED_NO_LAUNCH`: hash-bound staging copied the declared QM5_41398 EX5 and 2021
+s3_l3_x18 setfile into T11 with matching SHA-256 receipts. The real T11 `--dry-run` passed signed
+private-history and unchanged-isolation checks, then refused before launch because 5 MetaTester agents
+were active while the hard limit is <=4. No smoke report, fleet identity comparison, terminal start,
+T1–T10 interruption, T_Live, or AutoTrading action occurred. Evidence and exact rerun CLI:
+`docs/ops/evidence/2026-09-11_research_canary_t11.md`.

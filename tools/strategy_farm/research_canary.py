@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import sqlite3
 import subprocess
 import time
@@ -23,6 +24,13 @@ from pathlib import Path
 from typing import Any, Callable, Mapping
 
 import psutil
+
+# This controller is documented as a direct CLI as well as importable module.
+# Direct ``python C:/QM/repo/tools/.../research_canary.py`` otherwise lacks the
+# repository root on sys.path and cannot load the shared identity verifiers.
+if __package__ in {None, ""}:
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from tools.strategy_farm import custom_history_contract as history_contract
 from tools.strategy_farm import custom_history_copy_on_claim as history_copy
@@ -210,6 +218,86 @@ class CanaryRequest:
     dry_run: bool
 
 
+@dataclass(frozen=True)
+class StagingRequest:
+    """An explicitly hash-bound, T11-only copy of canary inputs.
+
+    Staging is deliberately separate from ``run``: the operator supplies the
+    source hashes from the governed program declaration, and this function
+    refuses a changed source or a non-identical existing destination.
+    """
+
+    program: str
+    terminal: str
+    expert_source: Path
+    setfile_source: Path
+    expected_ex5_sha256: str
+    expected_setfile_sha256: str
+
+
+def _sha256_argument(value: str, label: str) -> str:
+    digest = str(value or "").strip().lower()
+    if not re.fullmatch(r"[0-9a-f]{64}", digest):
+        raise CanaryRefused(f"invalid expected {label} SHA-256")
+    return digest
+
+
+def _stage_one(*, source: Path, destination: Path, expected_sha256: str,
+               label: str) -> dict[str, Any]:
+    if not source.is_file():
+        raise CanaryRefused(f"missing staging {label} source: {source}")
+    source_sha256 = sha256_file(source)
+    if source_sha256 != expected_sha256:
+        raise CanaryRefused(f"staging {label} source SHA-256 mismatch")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    action = "reused"
+    if destination.exists():
+        if not destination.is_file() or sha256_file(destination) != source_sha256:
+            raise CanaryRefused(f"staging destination already exists but differs: {destination}")
+    else:
+        shutil.copyfile(source, destination)
+        action = "copied"
+    destination_sha256 = sha256_file(destination)
+    if destination_sha256 != expected_sha256:
+        raise CanaryRefused(f"staging {label} destination SHA-256 mismatch")
+    return {"source": str(source), "destination": str(destination), "sha256": destination_sha256,
+            "bytes": destination.stat().st_size, "action": action}
+
+
+def stage_inputs(request: StagingRequest, *, mt5_root: Path = MT5_ROOT,
+                 reports_root: Path = REPORTS_ROOT) -> dict[str, Any]:
+    """Stage immutable canary inputs and write an append-only SHA-256 receipt."""
+
+    if request.terminal.upper() != PRIMARY_TERMINAL:
+        raise CanaryRefused("staging is enabled only for inert T11")
+    program = _safe_component(request.program, "program")
+    ex5_expected = _sha256_argument(request.expected_ex5_sha256, "EX5")
+    set_expected = _sha256_argument(request.expected_setfile_sha256, "setfile")
+    source_root = REPO_ROOT.resolve()
+    if not request.expert_source.resolve().is_relative_to(source_root):
+        raise CanaryRefused("EX5 staging source must be inside the canonical repository")
+    terminal_root = (mt5_root / PRIMARY_TERMINAL).resolve()
+    if not terminal_root.is_dir():
+        raise CanaryRefused(f"missing T11 terminal root: {terminal_root}")
+    receipt_root = reports_root / program / "staging"
+    receipt_root.mkdir(parents=True, exist_ok=True)
+    receipt_path = receipt_root / f"{dt.datetime.now(dt.timezone.utc):%Y%m%d_%H%M%S}_{uuid.uuid4().hex[:8]}_receipt.json"
+    receipt = {
+        "schema": "qm.research-canary-staging/v1", "program": program, "terminal": PRIMARY_TERMINAL,
+        "created_at_utc": utc_now(),
+        "ex5": _stage_one(source=request.expert_source,
+            destination=terminal_root / "MQL5" / "Experts" / request.expert_source.name,
+            expected_sha256=ex5_expected, label="EX5"),
+        "setfile": _stage_one(source=request.setfile_source,
+            destination=terminal_root / "MQL5" / "Profiles" / "Tester" / request.setfile_source.name,
+            expected_sha256=set_expected, label="setfile"),
+        "status": "STAGED_HASH_VERIFIED",
+    }
+    _write_json(receipt_path, receipt)
+    receipt["receipt_path"] = str(receipt_path)
+    return receipt
+
+
 def _validate_request(request: CanaryRequest, *, mt5_root: Path) -> None:
     if request.terminal not in ALLOWED_TERMINALS or request.terminal != PRIMARY_TERMINAL:
         raise CanaryRefused("only inert T11 is enabled; T12 is declared but disabled")
@@ -301,7 +389,22 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--max-agents", type=int, default=1)
     parser.add_argument("--timeout-seconds", type=int, default=1800)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--stage", action="store_true",
+                        help="hash-bind and copy the inputs into inert T11 before a canary run")
+    parser.add_argument("--expected-ex5-sha256")
+    parser.add_argument("--expected-setfile-sha256")
     args = parser.parse_args(argv)
+    if args.stage:
+        if not args.expected_ex5_sha256 or not args.expected_setfile_sha256:
+            parser.error("--stage requires --expected-ex5-sha256 and --expected-setfile-sha256")
+        try:
+            result = stage_inputs(StagingRequest(args.program, args.terminal.upper(), args.expert_path,
+                args.setfile, args.expected_ex5_sha256, args.expected_setfile_sha256))
+        except (CanaryRefused, OSError) as exc:
+            print(json.dumps({"status": "REFUSED", "reason": str(exc)}, sort_keys=True))
+            return 2
+        print(json.dumps(result, sort_keys=True))
+        return 0
     request = CanaryRequest(args.program, args.terminal.upper(), args.expert, args.expert_path,
         args.setfile, args.symbol, args.period, args.from_date, args.to_date, args.max_agents,
         args.timeout_seconds, args.dry_run)

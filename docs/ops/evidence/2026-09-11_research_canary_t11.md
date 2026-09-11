@@ -55,3 +55,49 @@ identity claim. The active factory, T1–T10 backtests, T_Live, AutoTrading,
 thresholds, gate contracts, and signed archive were untouched. This packet is
 an implementation hand-back only and must remain REVIEW until the first
 guarded S3 run produces receipts.
+
+## S3 follow-up — hash-bound staging and real dry-run receipt
+
+Router task: `f04d66ec-b296-4f2c-b5eb-83a8c2379626` (priority 90).
+
+`research_canary.py --stage` now performs the authorized T11-only staging
+operation. It accepts only a canonical-repository EX5 source, requires a
+declared SHA-256 for both inputs, refuses a divergent existing destination,
+and writes an append-only staging receipt. It can also run as the documented
+direct CLI (the repository root is added for shared-verifier imports).
+
+At 2026-09-11T01:19:40Z, it copied and hash-verified these exact inputs:
+
+| Input | SHA-256 | T11 destination | Result |
+|---|---|---|---|
+| `QM5_41398_balke-pattern-repair-opt.ex5` | `68d37d3a6b6d5d4354e5a9aa494488d8d2809b1f662ff75fbb26440658137c01` | `D:/QM/mt5/T11/MQL5/Experts/QM5_41398_balke-pattern-repair-opt.ex5` | copied, 438,586 bytes |
+| `QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set` | `afa42711867677bd7d5641f93e52a104f31c86a181f835579241b214f35bf47c` | `D:/QM/mt5/T11/MQL5/Profiles/Tester/QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set` | copied, 1,541 bytes |
+
+Staging receipt: `D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/staging/20260911_011940_06fc048e_receipt.json`.
+
+The real `--dry-run` receipt was written at
+`D:/QM/reports/research/WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025/20260911_011946_c01dfb9a/receipt.json`.
+It passed the 108-file signed private-history audit, captured unchanged
+factory isolation before and after (146,955 work items; T11 absent from
+T1–T10 activation), then refused before any terminal launch because the
+MetaTester guard observed 5 agents, exceeding the task's hard limit of 4.
+Its terminal state is `REFUSED`, not a smoke result. No T11 terminal or
+T1–T10 job was started or interrupted.
+
+Focused verification after the change:
+
+```text
+python -m pytest tools/strategy_farm/tests/test_research_canary.py -q
+6 passed
+python -m py_compile tools/strategy_farm/research_canary.py
+PASS
+```
+
+**RESULT (Q-only):** Q-S3 remains REVIEW: inputs are staged and bound by
+receipt, but the mandatory `<= 4` MetaTester guard refused the smoke cell;
+there is consequently no S3 identity comparison or selection claim. Re-run
+the direct CLI only when the guard admits it:
+
+```text
+python C:/QM/repo/tools/strategy_farm/research_canary.py --program WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025 --terminal T11 --expert QM5_41398_balke-pattern-repair-opt.ex5 --expert-path D:/QM/mt5/T11/MQL5/Experts/QM5_41398_balke-pattern-repair-opt.ex5 --setfile D:/QM/mt5/T11/MQL5/Profiles/Tester/QM5_41398_balke-pattern-repair-opt_USDJPY.DWX_H1_2021_s3_l3_x18.set --symbol USDJPY.DWX --period H1 --from-date 2021.01.01 --to-date 2021.12.31 --max-agents 4 --dry-run
+```

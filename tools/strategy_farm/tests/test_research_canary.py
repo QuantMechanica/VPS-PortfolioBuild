@@ -58,3 +58,21 @@ def test_request_rejects_t12_and_outside_t11_paths(tmp_path):
     request = canary.CanaryRequest("test", "T12", "x", expert, setfile, "USDJPY.DWX", "H1", "2021.01.01", "2021.12.31", 1, 1, True)
     with pytest.raises(canary.CanaryRefused, match="only inert T11"):
         canary._validate_request(request, mt5_root=root)
+
+
+def test_stage_is_hash_bound_t11_only_and_writes_receipt(tmp_path, monkeypatch):
+    repo = tmp_path / "repo"; repo.mkdir()
+    expert = repo / "x.ex5"; expert.write_bytes(b"expert")
+    setfile = tmp_path / "x.set"; setfile.write_text("RISK_FIXED=1\nRISK_PERCENT=0\n", encoding="utf-8")
+    mt5 = tmp_path / "mt5"; (mt5 / "T11").mkdir(parents=True)
+    monkeypatch.setattr(canary, "REPO_ROOT", repo)
+    request = canary.StagingRequest("test", "T11", expert, setfile,
+        canary.sha256_file(expert), canary.sha256_file(setfile))
+    result = canary.stage_inputs(request, mt5_root=mt5, reports_root=tmp_path / "reports")
+    assert result["status"] == "STAGED_HASH_VERIFIED"
+    assert result["ex5"]["action"] == "copied"
+    assert Path(result["receipt_path"]).is_file()
+    assert (mt5 / "T11" / "MQL5" / "Experts" / "x.ex5").read_bytes() == b"expert"
+    with pytest.raises(canary.CanaryRefused, match="source SHA-256 mismatch"):
+        canary.stage_inputs(canary.StagingRequest("test", "T11", expert, setfile,
+            "0" * 64, canary.sha256_file(setfile)), mt5_root=mt5, reports_root=tmp_path / "reports")
