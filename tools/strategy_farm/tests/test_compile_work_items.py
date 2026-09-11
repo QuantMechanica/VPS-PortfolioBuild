@@ -3265,6 +3265,39 @@ def test_qm5_20143_stale_ex5_authority_enqueues_append_only_compile(
     assert worker_recheck["source_repair_authorized"] is True
 
 
+def test_qm5_12582_stale_framework_authority_is_source_and_evidence_bound() -> None:
+    authority = compile_work_items.QM5_12582_STALE_FRAMEWORK_REBUILD_AUTHORITY
+    binding = compile_work_items.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[authority]
+    repo = Path(__file__).resolve().parents[3]
+    inventory = {"work_rows": {"12582": []}}
+
+    assert binding["ea_label"] == "QM5_12582_chan-ng-spring"
+    assert compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="12582",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="12582",
+        source_sha="0" * 64,
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_12583_unrelated",
+        authority,
+        repo_root=repo,
+        ea_id="12582",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+
+
 def test_qm5_41140_review_rework_authority_is_exactly_bound() -> None:
     authority = compile_work_items.QM5_41140_REVIEW_REWORK_AUTHORITY
     binding = compile_work_items.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[authority]

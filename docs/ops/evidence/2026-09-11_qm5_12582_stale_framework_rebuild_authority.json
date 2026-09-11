@@ -1,0 +1,56 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_triage_failure:d9c3f4a8-dbae-4955-ac36-ef0d166f14e0:QM5_12582",
+  "created_at_local": "2026-09-11T16:47:03+02:00",
+  "ea_id": "QM5_12582",
+  "ea_label": "QM5_12582_chan-ng-spring",
+  "mission_priority": 2,
+  "scope": "one append-only governed COMPILE_EA successor for the repaired source; no gate verdict, live, portfolio, deployment, or cross-EA authority",
+  "root_cause": {
+    "classification": "STALE_FRAMEWORK_BINARY_WITH_Q01_CONFORMANCE_DEFECTS",
+    "pre_repair_mq5_sha256": "2b4956b032106d326f95cdb208e1ca62a21a7a247c1721a9b036129196dbe94b",
+    "stale_ex5_sha256": "c6d66c602ce572cea369b92353aba0c6a814476733dbf536e9c3db1673786974",
+    "latest_failed_q02_work_item_id": "ae468d0f-2d3c-4595-9d49-6b5b00a25f75",
+    "latest_failure": "INFRA_FAIL: ONINIT_FAILED; INCOMPLETE_RUNS",
+    "historical_q02_infra_rows": 13,
+    "diagnostic_limit": "The MT5 report records only OnInit code 1; the repair does not claim that any single stale-source defect alone caused every historical failure."
+  },
+  "repair": {
+    "current_mq5_sha256": "1e0128d5b6745cbbe5d18a99dbd659061f8145907a632509481bbe48898e308a",
+    "current_setfile_sha256": "a3c9e8bd02fdf3a8b5dfdd8ad9faea54d072edbefb1418c8cd98d54bdd946bfa",
+    "changes": [
+      "Replace the factory-only XNGUSD.DWX source literal with the governed chart symbol while retaining the registered XNG Q02 universe.",
+      "Move the framework news gate below management and exit handling so it suppresses entries only.",
+      "Restore the Q08 MAE sampling hook before all early returns.",
+      "Zero-initialize QM_EntryRequest before strategy population.",
+      "Evaluate closed-D1 exits once per broker date through QM_CalendarPeriodKey, before the entry-only news gate.",
+      "Regenerate the XNGUSD.DWX D1 backtest setfile with RISK_FIXED=1000 and RISK_PERCENT=0."
+    ],
+    "strategy_mechanics_changed": false
+  },
+  "guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12582_chan-ng-spring/QM5_12582_chan-ng-spring.mq5",
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "ok": true,
+    "hit_count": 0
+  },
+  "validation": {
+    "spec": "PASS",
+    "build_guardrails": "PASS",
+    "local_build_check": "REFUSED_AS_DESIGNED: LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "compile_route": "governed enqueue-compile only"
+  },
+  "coordination": {
+    "infra_repair_task_id": "d9c3f4a8-dbae-4955-ac36-ef0d166f14e0",
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor"
+  },
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

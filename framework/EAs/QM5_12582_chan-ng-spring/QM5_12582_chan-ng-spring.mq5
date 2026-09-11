@@ -45,9 +45,11 @@ input double strategy_atr_sl_mult         = 3.0;
 input int    strategy_max_hold_days       = 10;
 input int    strategy_max_spread_points   = 800;
 
-bool Strategy_IsXngD1()
+bool Strategy_IsD1Host()
   {
-   return (_Symbol == "XNGUSD.DWX" && _Period == PERIOD_D1);
+   // The governed registry/setfile selects XNG for Q02. Keep the EA itself
+   // broker-suffix portable by trading the chart symbol.
+   return (_Period == PERIOD_D1);
   }
 
 bool Strategy_InSpringWindow(const datetime t)
@@ -88,13 +90,13 @@ bool Strategy_ClosedState(double &close_last, double &sma_last, datetime &closed
    return (closed_time > 0 && close_last > 0.0 && sma_last > 0.0);
   }
 
-void Strategy_CloseOpenPositionsIfNeeded()
+bool Strategy_ShouldCloseOpenPosition()
   {
    double close_last = 0.0;
    double sma_last = 0.0;
    datetime closed_time = 0;
    if(!Strategy_ClosedState(close_last, sma_last, closed_time))
-      return;
+      return false;
 
    const bool in_window = Strategy_InSpringWindow(closed_time);
    const int magic = QM_FrameworkMagic();
@@ -117,13 +119,14 @@ void Strategy_CloseOpenPositionsIfNeeded()
          should_close = true;
 
       if(should_close)
-         QM_TM_ClosePosition(ticket, QM_EXIT_STRATEGY);
+         return true;
      }
+   return false;
   }
 
 bool Strategy_NoTradeFilter()
   {
-   if(!Strategy_IsXngD1())
+   if(!Strategy_IsD1Host())
       return true;
    if(qm_magic_slot_offset != 0)
       return true;
@@ -143,8 +146,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "QM5_12582_CHAN_NG_SPRING";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
-
-   Strategy_CloseOpenPositionsIfNeeded();
 
    if(Strategy_HasOpenPosition())
       return false;
@@ -181,12 +182,22 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
 void Strategy_ManageOpenPosition()
   {
-   Strategy_CloseOpenPositionsIfNeeded();
+   // No trailing or intrabar management in the approved card.
   }
 
 bool Strategy_ExitSignal()
   {
-   return false;
+   if(!Strategy_HasOpenPosition())
+      return false;
+
+   static int processed_exit_key = 0;
+   const int exit_key = QM_CalendarPeriodKey(PERIOD_D1, _Symbol, 0);
+   if(exit_key <= 0 || exit_key == processed_exit_key)
+      return false;
+
+   const bool should_close = Strategy_ShouldCloseOpenPosition();
+   processed_exit_key = exit_key;
+   return should_close;
   }
 
 bool Strategy_NewsFilterHook(const datetime broker_time)
@@ -226,18 +237,14 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   // Q08 evidence must be sampled before any per-tick guard can return.
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
       return;
 
    const datetime broker_now = TimeCurrent();
    if(Strategy_NewsFilterHook(broker_now))
-      return;
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows)
       return;
    if(QM_FrameworkHandleFridayClose())
       return;
@@ -261,12 +268,23 @@ void OnTick()
         }
      }
 
+   // News suppresses entries only; exits and position management above remain
+   // active through blackout windows.
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows)
+      return;
+
    if(!QM_IsNewBar())
       return;
 
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

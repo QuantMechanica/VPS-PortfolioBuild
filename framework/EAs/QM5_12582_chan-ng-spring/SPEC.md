@@ -12,7 +12,8 @@ This EA implements a low-frequency structural natural-gas sleeve on
 `XNGUSD.DWX`. It ports Chan's annual NG spring calendar idea to the available
 Darwinex custom symbol: long-only between February 25 and April 15, with a
 D1 SMA confirmation filter, ATR hard stop, date-window exit, SMA failure exit,
-and max-hold exit.
+and max-hold exit. The exit conditions are evaluated once per broker D1 date
+through the framework calendar key, before the entry-only news blackout gate.
 
 The V5 Friday-close guard remains enabled. That intentionally segments the
 original continuous futures-calendar hold into weekly D1 packages in backtest,
@@ -34,7 +35,8 @@ trades only one fixed annual spring window and never shorts.
 
 ## 3. Symbol Universe
 
-- `XNGUSD.DWX` only, magic slot 0.
+- `XNGUSD.DWX` only, magic slot 0. Runtime trading uses the chart symbol so
+  broker suffixes do not require a rebuild.
 
 ## 4. Timeframe
 

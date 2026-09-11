@@ -2524,6 +2524,31 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# Paced fleet task d9c3f4a8 (2026-09-11): the only QM5_12582 binary is a
+# June artifact that repeatedly aborts Q02 OnInit and predates the current
+# framework wiring contract. Bind one governed rebuild to the repaired source
+# and immutable receipt; this grants no backtest, gate, live, or cross-EA
+# authority.
+QM5_12582_STALE_FRAMEWORK_REBUILD_AUTHORITY = (
+    "router_triage_failure:d9c3f4a8-dbae-4955-ac36-ef0d166f14e0:QM5_12582"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_12582_STALE_FRAMEWORK_REBUILD_AUTHORITY
+] = {
+    "ea_id": "12582",
+    "ea_label": "QM5_12582_chan-ng-spring",
+    "source_sha256": "1e0128d5b6745cbbe5d18a99dbd659061f8145907a632509481bbe48898e308a",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-11_qm5_12582_stale_framework_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "d828559aee27cebd19752ac663a473044054bc19256c541fa4f636bb669d7a05"
+    ),
+}
+
 # Review task 0de0879d (2026-09-10): the original QM5_41140 package was
 # rejected for a hand-rolled D1 exit cadence and a dishonest smoke
 # disposition.  The committed replacement uses framework-owned cadence and
