@@ -1,0 +1,55 @@
+{
+  "schema": "qm.pacer-cpu-admission/v1",
+  "ea_id": "QM5_12351",
+  "ea_label": "QM5_12351_alp-ema12-26",
+  "measured_at_utc": "2026-09-11T16:35:06.7448525Z",
+  "sample_interval_seconds": 1,
+  "sample_count": 5,
+  "samples_pct": [
+    100.0,
+    100.0,
+    94.9298,
+    79.1248,
+    89.855
+  ],
+  "average_pct": 92.7819,
+  "maximum_pct": 100.0,
+  "ceiling_pct": 97.0,
+  "admitted": false,
+  "action": "STOP_BEFORE_FARM_CLAIM_AND_COMPILE_HOLD_RELEASE",
+  "repo_head": "7a4d60b0c23fe63cc311128501b41738670184e6",
+  "mq5_sha256": "27da9fb5c285dc78d5bd2ca2a1185c131de6511aa7026d42ea8fd0952df51b34",
+  "input_pin_audit": {
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "farm_state": {
+    "active_work_items": 5,
+    "compile_work_item_id": "92797bae-0f0d-45cb-872d-6f0bcccb258d",
+    "compile_status": "pending",
+    "compile_claimed_by": null,
+    "compile_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "compile_hold_active": true,
+    "q02_rows": 0,
+    "open_agent_tasks_for_ea": 0
+  },
+  "process_snapshot": {
+    "terminal64": 7,
+    "metatester64": 5
+  },
+  "mutations": {
+    "farm_claim_created": false,
+    "compile_enqueued": false,
+    "compile_hold_released": false,
+    "q02_enqueued": false,
+    "ea_source_changed": false,
+    "setfile_changed": false,
+    "registry_changed": false,
+    "portfolio_gate_changed": false,
+    "t_live_changed": false,
+    "autotrading_changed": false
+  }
+}
