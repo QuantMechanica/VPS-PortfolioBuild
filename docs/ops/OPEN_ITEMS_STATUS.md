@@ -2978,3 +2978,16 @@ Full trace: `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_e
 No `update-task` calls this cycle (all three acceptance criteria remain unmet); all three
 stay `IN_PROGRESS`. `farmctl health` and `agent_router status` reviewed at cycle start, no
 new FAIL category vs. the prior baseline.
+
+## 2026-09-11T10:55Z — T11 IS A VALID RESEARCH SEAT: identity smoke PASS
+
+Root cause of five report-less runs found by the orchestrator in the T11 terminal journal: every
+launch spawned MT5 LiveUpdate from the SYSTEM-profile roaming dir and exited 0 within 0.2 s before
+any test (journal 06:43 / 07:22 / 11:41 local). Fixes (research_canary.py, commits 9ded253efe +
+10278c5f92): /skipupdate on launch; FACTORY_MUTATION.lock presence recorded as observation, not a
+refusal (it flickers constantly with 10 workers); CPU ceiling 95 pct with a 5-sample runtime guard
+and env override QM_CANARY_CPU_LIMIT for a documented single run (used once, value 100, because the
+fleet itself sat at 97 pct). RESULT run 20260911_104039_6540e43e: net 2,941.71 / PF 1.03 / 208
+trades / maxDD 15,307.15 = fleet cell be5d3ce4 exactly (report sha differs by design). f04d66ec closed
+APPROVED. Astra pre-screen part 2 ticket enqueued (modelling modes + optimizer flags in the controller,
+speed + fidelity vs the 345 ground-truth cells, decision-card draft).
