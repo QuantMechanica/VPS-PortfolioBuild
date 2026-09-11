@@ -1,5 +1,28 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 11.09. ~02:3xZ (Orchestrierungszyklus) — `3032534e` DUKASCOPY:
+> Codex-Ticket `ba2a478e` abgenommen.** Bau des governed T1-DWX-M1-Overlap-
+> Exporters (READ-ONLY, 37 Symbole, Fenster 2025-10-01..2026-04-01) fertig:
+> Verdict `PASS_BUILD`, Artefakt
+> `docs/ops/evidence/2026-09-11_dukascopy_dwx_m1_overlap_export/README.md`.
+> Eigenständig nachgeprüft vor Abnahme: Dateien vorhanden, Commit `c34f8f51ca`
+> auf `agents/board-advisor`, `pytest tools/strategy_farm/tests/
+> test_dwx_m1_overlap_export.py tools/dukascopy/tests/ -q` → 35 passed,
+> Denylist-Scan der `.mq5`-Quelle (Custom*/WebRequest/OrderSend/trade.) sauber,
+> kein Work-Item erzeugt, kein `terminal64.exe`-Start (Bau+Test only wie
+> beauftragt). `close-review ba2a478e --state APPROVED` ausgeführt — liegt
+> innerhalb `3032534e`s eigener `allowed_actions` ("review and close the Codex
+> build tasks"). Erfüllt aber noch keines der vier Top-Level-Akzeptanzkriterien
+> von `3032534e` selbst — der Produktivlauf des Exporters gegen T1 (separat zu
+> autorisierender Governed-Enqueue) fehlt noch, bevor `reconcile_overlap.py`
+> einen Abgleichbericht liefern kann; bewusst nicht in diesem Zyklus beauftragt.
+> `bb814520`/`dfc60103`: `QM5_41394` SP500.DWX/XAUUSD.DWX Q02 weiterhin
+> unverändert `pending`/unclaimed seit `2026-09-09T10:52:59Z` (~2T15h statisch).
+> Downloader weiter `RUNNING` (`completed=85589/306286`, `errors=294`,
+> transiente Retries). Evidenz:
+> `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`
+> (Abschnitt "Checked 2026-09-11T~02:3xZ").
+
 > **Nachtrag 11.09. (Orchestrierungszyklus) — `3032534e` DUKASCOPY: fehlendes
 > P3-Puzzlestück identifiziert, EIN Codex-Ticket beauftragt.** Vor jeder eigenen
 > Ableitung erst die letzte Notiz der Ausführungsevidenz gelesen ("locate their

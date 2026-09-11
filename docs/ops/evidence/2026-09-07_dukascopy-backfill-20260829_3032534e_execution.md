@@ -771,3 +771,55 @@ taken (already authorized and progressing).
 No `update-task` call on `bb814520`/`dfc60103`/`3032534e` (no acceptance
 criterion newly met on any of the three; the new Codex ticket is a sub-step,
 not a criterion itself).
+
+## Checked 2026-09-11T~02:3xZ (headless orchestration cycle)
+
+`ba2a478e-f437-404b-843b-a1def6f2cf4c` (governed T1 DWX M1 overlap exporter
+build, enqueued the prior cycle) had moved `TODO`→`IN_PROGRESS`→`REVIEW` under
+`codex` since the last checkpoint, verdict
+`PASS_BUILD: T1-only read-only 37-symbol M1 exporter built; 42 focused + 197
+adjacent tests PASS, MetaEditor 0E/0W; production not run`, artifact
+`docs/ops/evidence/2026-09-11_dukascopy_dwx_m1_overlap_export/README.md`.
+Independently re-verified before closing (per this task's own `allowed_actions`,
+"review and close the Codex build tasks"):
+
+- Files exist: `tools/strategy_farm/dwx_m1_overlap_export_work_item.py`,
+  `framework/scripts/mt5_diagnostics/dwx_m1_overlap_export.py`,
+  `framework/scripts/mt5_diagnostics/QM_DWX_M1_Overlap_Export.mq5`,
+  `tools/strategy_farm/tests/test_dwx_m1_overlap_export.py`.
+- Committed on `agents/board-advisor` (`c34f8f51ca`), working tree clean for
+  these paths (`git status --porcelain` empty).
+- Ran the focused suite directly (not just trusting the reported count):
+  `pytest tools/strategy_farm/tests/test_dwx_m1_overlap_export.py
+  tools/dukascopy/tests/ -q` → `35 passed` (narrower scope than the reported
+  "42 + 197 adjacent" — the adjacent count includes atomic-claim/Job/isolation
+  suites elsewhere in the tree not re-run here; the exporter-specific and
+  Dukascopy-specific tests all pass, which is the material claim).
+- `grep -Ei` scan of the `.mq5` source for
+  `CustomTicksAdd|CustomRatesUpdate|CustomTicksReplace|CustomTicksDelete|
+  WebRequest|OrderSend|trade\.` → no matches (forbidden-call denylist clean).
+- Confirmed build-only disposition: no work-item rows created, no
+  `terminal64.exe` launch, per the README's own verification section.
+
+Closed `ba2a478e` via `close-review ... --state APPROVED`. This also satisfies
+`3032534e`'s own first-listed `allowed_action` for this sub-step, but does
+**not** by itself satisfy any of `3032534e`'s four top-level acceptance
+criteria — the reconciliation harness still needs the exporter actually run
+against T1 (a separate governed production-dispatch enqueue, explicitly
+out of scope for the build ticket) before `reconcile_overlap.py` can produce
+the per-symbol reconciliation CSV/report. `3032534e` stays `IN_PROGRESS`.
+
+`bb814520`/`dfc60103` gate unchanged: `QM5_41394` `SP500.DWX`/`XAUUSD.DWX` Q02
+rows still `status=pending`, `claimed_by=NULL`, `attempt_count=0`,
+`updated_at=2026-09-09T10:52:59Z` (direct sqlite read, ~2d15h static).
+Downloader (`20260909T191800Z_hardened`) still `RUNNING`,
+`completed=85589/306286`, `errors=294` (still transient churn, no permanent
+failures), fresh `updated_at_utc=2026-09-11T00:49:09Z`.
+
+**Concrete next step for a future cycle:** the production dispatch of
+`dwx_m1_overlap_export_work_item.py --apply` against T1 is the next unblocking
+action, but is deliberately not enqueued this cycle — the plan calls for a
+dedicated pass, and the 37-symbol production run should be checked against
+current T1 queue depth/capacity before adding it. `bb814520`/`dfc60103` remain
+outside this task's authority entirely (ordinary Q02 queue depth on a
+different EA).
