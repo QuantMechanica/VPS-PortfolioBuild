@@ -1,0 +1,79 @@
+{
+  "candidate": {
+    "author": "U.S. Energy Information Administration; Toby Crabel; Tobias J. Moskowitz; Yao Hua Ooi; Lasse Heje Pedersen; OpenAI Codex",
+    "mechanic": "normalized-weekly-xng-november-december-january-february-march-winter-season-two-consecutive-completed-weeks-newest-strict-wider-range-than-prior-strict-upper-or-lower-quartile-close-symmetric-continuation-one-week-hold",
+    "slug": "xng-winter-wr2-clv-mom",
+    "strategy_id": "EIA-CRABEL-MOP-XNG-WINTER-WR2-CLV-MOM-20260911_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-11T11:32:16+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20209_wti-winter-mom1_card.md",
+      "score": 1.0,
+      "slug": "wti-winter-mom1",
+      "source": "card",
+      "strategy_id": "BURAKOV-MOP-WTI-WINTER-MOM1-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_20218_wti-winter-rev1_card.md",
+      "score": 1.0,
+      "slug": "wti-winter-rev1",
+      "source": "card",
+      "strategy_id": "BURAKOV-YANG-WTI-WINREV1-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-winter-mom1_card.md",
+      "score": 1.0,
+      "slug": "wti-winter-mom1",
+      "source": "card",
+      "strategy_id": "BURAKOV-MOP-WTI-WINTER-MOM1-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\wti-winter-rev1_card.md",
+      "score": 1.0,
+      "slug": "wti-winter-rev1",
+      "source": "card",
+      "strategy_id": "BURAKOV-YANG-WTI-WINREV1-2026_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41434_wti-hurr-wr2-clv-cont_card.md",
+      "score": 0.6538461538461539,
+      "slug": "wti-hurr-wr2-clv-cont",
+      "source": "card",
+      "strategy_id": "EIA-CRABEL-WTI-HURR-WR2-CLV-CONT-20260911_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4918,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1528,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
