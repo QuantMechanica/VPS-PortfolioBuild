@@ -3030,3 +3030,15 @@ net 4,963.35 / PF 1.05 / trades 208 / maxDD 14,269.75 in 0:41 tester time, vs re
 2,941.71 / 1.03 / 208 / 15,307.15 in 2:12 (3.2x faster; same trade count, fills differ, net +69 %).
 Single cell = orientation only; the 20-cell speed/fidelity matrix follows. Admission sampling (5 x
 60 s) dominates the wall time (372 s) and must be shortened for batch pilots.
+
+## 2026-09-11T14:05Z — T11 pre-screen pilot RESULT (30 cells, orchestrator lane)
+
+docs/ops/evidence/2026-09-11_t11_prescreen_pilot_orch.csv / .md (Sonnet-executed via research_canary.py,
+sequential, QM_CANARY_CPU_LIMIT=100 + admission sampling 5 s, receipts per run). Spearman of
+score_cheap vs score_real: OHLC-M1 all years n=19 rho 0.977 (top-5 overlap 3/5, false-negative at a
+top-50 % cut 0 %), 2021-only n=10 rho 0.952 (top-5 4/5, FN 20 %); open-prices 2021 n=10 rho 0.988 but
+trade counts differ on 80 % of cells. Tester time 38-43 s vs 132 s real ticks (~3.3x). One anomaly:
+2019 s3_l3 ohlc-m1 returned Ticks:0 (excluded, re-run pending). VERDICT: OHLC-M1 is admissible as a
+coarse PRE-SORT (ranking) for window/config sweeps, never as economics; open-prices not admissible.
+Next: Astra drafts the OWNER decision card (protocol: programs, mode, cut-off, real-tick confirmation
++ random control sample, expected saving on the ~6,400-cell census backlog).
