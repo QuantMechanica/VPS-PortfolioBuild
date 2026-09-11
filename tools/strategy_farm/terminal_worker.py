@@ -278,6 +278,20 @@ MULTISYMBOL_HEAVY_SYMBOL_COUNT = 10
 # ordinary jobs keep flowing beside one.
 COMMIT_CLASS_SINGLE_INDEX_TICK = "single_index_tick"
 SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB = 44.0
+# 2026-09-11 17:4xZ (Orchestrator, infra repair under the Stehende Vollmacht
+# GRUEN zone; OWNER "Fabrik auf Anschlag"): a single ANNUAL OPT_CENSUS cell on
+# an index symbol inherited the 44 GB single_index_tick commit class although
+# the tester memory ledger (D:/QM/reports/state/tester_memory_ledger.jsonl,
+# 2026-09-11) shows NDX annual cells at max 7.32 GB / p95 1.99 GB (n=269,
+# QM5_41323 H4) and 5.24 GB (n=287, QM5_41321 M15).  Every NDX cell claim
+# therefore parked the other workers behind commit_headroom_low for the full
+# 300 s reservation window (417 of 1,060 declined polls in 90 min, fleet at
+# 2-3 active cells with 10 workers).  Annual index cells now carry their own
+# class sized at the ledger max rounded up plus margin; full-history index runs
+# keep the 44 GB fail-safe.  Rollback: delete the OPT_CENSUS branch in
+# _multisymbol_commit_class and idle-reload the workers.
+COMMIT_CLASS_OPT_CENSUS_INDEX_CELL = "opt_census_index_cell"
+OPT_CENSUS_INDEX_CELL_COMMIT_RESERVATION_GB = 12.0
 # Today's annual OPT_CENSUS metatester cells were measured in the 2-4GB
 # working-set band. Reserve the observed upper bound; unlike an ordinary
 # full-history/news run, a single annual cell must not inherit the flat 8GB
@@ -1037,6 +1051,9 @@ def _multisymbol_commit_class(
             _work_item_value(item, "symbol", "") or payload.get("host_symbol") or ""
         ).strip().upper()
         if host.split(".")[0] in INDEX_TICK_SYMBOL_BASES:
+            phase = str(_work_item_value(item, "phase", "") or payload.get("phase") or "").strip().upper()
+            if phase == "OPT_CENSUS":
+                return COMMIT_CLASS_OPT_CENSUS_INDEX_CELL
             return COMMIT_CLASS_SINGLE_INDEX_TICK
         return MULTISYMBOL_COMMIT_CLASS_ORDINARY
 
@@ -1073,6 +1090,8 @@ def _commit_reservation_gb(commit_class: str) -> float:
         return ORDINARY_COMMIT_RESERVATION_GB
     if commit_class == COMMIT_CLASS_SINGLE_INDEX_TICK:
         return SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+    if commit_class == COMMIT_CLASS_OPT_CENSUS_INDEX_CELL:
+        return OPT_CENSUS_INDEX_CELL_COMMIT_RESERVATION_GB
     if commit_class == MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX:
         return MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB
     if commit_class == MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX:

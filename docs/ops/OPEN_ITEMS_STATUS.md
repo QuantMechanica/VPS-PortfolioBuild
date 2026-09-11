@@ -3110,3 +3110,17 @@ pilot), 10 pct random control sample of dropped arms, suspension at FN > 10 pct,
 equals MEASURED. Tickets: T12 seat (Terra P88), fleet pre-screen cell class + promote + FN tracking
 (Terra P95), DL-089 census Nachtrag draft for OWNER signature (Astra P90). Recipe
 session_tools/enqueue_prescreen_decision_0911.py.
+
+## 2026-09-11T17:55Z — Fleet parked behind commit_headroom_low: annual NDX census cells reserved 44 GB (GRUEN infra repair)
+
+OWNER 17:3xZ: "Ueberwache, damit die Factory kontinuierlich auf Anschlag laeuft!" Measured 17:19Z: 10 workers,
+2-3 active cells; of 1,060 declined claim polls in 90 min 417 were commit_headroom_low (effective headroom
+17.7 GB < 24 GB floor) while free RAM stood at 44 GB. Cause: QM5_41323 NDX.DWX OPT_CENSUS annual cells
+(815 pending, first in claim order) inherit the 44 GB single_index_tick commit class for 300 s after each
+claim; the tester memory ledger shows these cells at max 7.32 GB / p95 1.99 GB (n=269). Fix: new commit class
+opt_census_index_cell (12 GB) for OPT_CENSUS rows on index symbols; full-history index runs keep 44 GB.
+Tests 127 pass (3 new in tests/test_index_tick_reservation.py). Rollout: staggered idle reload chunk 67
+(session_tools/reload_chunk67.py, one terminal per >= 150 s, keeps cap G=3, L=2, allowlist). Rollback:
+delete the OPT_CENSUS branch in _multisymbol_commit_class and reload. Secondary idle reasons to watch after
+the reload: no_pending_claimable 243 (census cap 3 + Q02/Q04 not admitted), claim_spacing_wait 280,
+factory_mutation_lock_busy 104 (dl089_matrix_service holds), cpu_high_pause 82.

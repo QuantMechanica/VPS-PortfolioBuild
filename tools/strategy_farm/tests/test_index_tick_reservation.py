@@ -45,3 +45,29 @@ def test_multisymbol_items_keep_their_existing_classes():
         _classify("GDAXI.DWX", multisymbol=True)
         == terminal_worker.MULTISYMBOL_COMMIT_CLASS_HEAVY
     )
+
+
+def test_annual_opt_census_index_cell_uses_ledger_sized_class():
+    """2026-09-11: NDX annual cells peak at 7.32 GB in the tester memory ledger."""
+    cls = terminal_worker._multisymbol_commit_class(
+        {"symbol": "NDX.DWX", "ea_id": "QM5_41323", "phase": "OPT_CENSUS"}, {}, False
+    )
+    assert cls == terminal_worker.COMMIT_CLASS_OPT_CENSUS_INDEX_CELL
+    gb = terminal_worker._commit_reservation_gb(cls)
+    assert gb == terminal_worker.OPT_CENSUS_INDEX_CELL_COMMIT_RESERVATION_GB == 12.0
+    assert 7.32 < gb < terminal_worker.SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+
+
+def test_full_history_index_runs_keep_the_fail_safe_class():
+    for phase in ("Q02", "Q04", "Q07", "Q10_NEWS", ""):
+        cls = terminal_worker._multisymbol_commit_class(
+            {"symbol": "NDX.DWX", "ea_id": "QM5_41323", "phase": phase}, {}, False
+        )
+        assert cls == terminal_worker.COMMIT_CLASS_SINGLE_INDEX_TICK, phase
+
+
+def test_opt_census_on_non_index_symbol_stays_ordinary():
+    cls = terminal_worker._multisymbol_commit_class(
+        {"symbol": "XAUUSD.DWX", "ea_id": "QM5_41322", "phase": "OPT_CENSUS"}, {}, False
+    )
+    assert cls == terminal_worker.MULTISYMBOL_COMMIT_CLASS_ORDINARY
