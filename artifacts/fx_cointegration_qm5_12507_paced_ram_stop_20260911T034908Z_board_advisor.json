@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-09-11T03:49:08.6301422Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "84bcbb3446c9a9b08d22dbe37db4dfc67cc37305",
+  "mission": "Grow the certified V5 portfolio book with a non-duplicate low-frequency market-neutral FX cointegration sleeve.",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "phase": "Q02",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "work_item_status": "pending",
+    "work_item_verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "active_holds": 0,
+    "open_same_identity": 1,
+    "priority_track": true,
+    "priority_reason": "owner_2026-08-30_fx_portfolio_existing_logical_basket_fallback",
+    "duplicate_work_item_created": false,
+    "queue_priority_mutated": false
+  },
+  "frontier": {
+    "relationships_scanned": 66,
+    "relationships_covered": 66,
+    "unbuilt_relationships": 0,
+    "anchor_repair_required": false,
+    "anchors": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": "AUDUSD.DWX/NZDUSD.DWX",
+        "terminal_path": "Q02 PASS, Q04 PASS, Q05 FAIL"
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": "EURJPY.DWX/GBPJPY.DWX",
+        "terminal_path": "Q02 PASS, Q04 FAIL"
+      }
+    ]
+  },
+  "package_verification": {
+    "source_path": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "source_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "framework_input_pin_audit": {
+      "exit_code": 0,
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0
+    },
+    "basket_manifest_test": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_fx_basket_manifests.py -q -k qm5_12507",
+      "result": "1 passed, 46 deselected"
+    },
+    "risk_contract": {
+      "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "mq5_generated_or_modified": false,
+    "compile_enqueued": false,
+    "rebind_q02_dry_run": {
+      "eligible": false,
+      "reason": "source_ex5_sha256_missing",
+      "would_enqueue": false,
+      "disposition": "Preserve the unique pre-binding pending row; do not append a duplicate successor."
+    }
+  },
+  "capacity": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      87.89498901445589,
+      84.80970981725542,
+      79.99033876492115,
+      74.82159226511243,
+      76.75819348980741
+    ],
+    "cpu_average_percent": 80.85496467031047,
+    "cpu_maximum_percent": 87.89498901445589,
+    "cpu_ceiling_hit": false,
+    "free_physical_gib": 43.805,
+    "total_physical_gib": 63.12,
+    "heavy_multisymbol_admission_min_free_gib": 58.0,
+    "ram_admission_met": false,
+    "factory_terminal_count": 4,
+    "factory_terminals": [
+      "T1",
+      "T2",
+      "T4",
+      "T10"
+    ],
+    "launch_gate_max": 1
+  },
+  "outcome": {
+    "status": "PACED_RAM_CAPACITY_STOP",
+    "advanced_state": "The unique logical Q02 successor remains pending, priority-tracked, unclaimed, and hold-free for the resident worker.",
+    "reason": "Free physical memory was below the governed 58 GiB heavy-multisymbol admission floor; a manual dispatch would violate paced-fleet capacity even though the 97% CPU ceiling did not fire.",
+    "next_action": "Let the resident worker claim the existing priority row after memory and serialized launch capacity recover; do not enqueue or reprioritize a duplicate."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false,
+    "tester_launched": false,
+    "terminal_control_performed": false
+  }
+}
