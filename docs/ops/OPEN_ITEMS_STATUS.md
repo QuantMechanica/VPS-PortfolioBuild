@@ -11,6 +11,15 @@
 > not interrupted. No identity verdict, tuning, or selection claim. Evidence:
 > `docs/ops/evidence/2026-09-11_f04d66ec_canary_export.md`.
 
+> **RESULT (Q-only, 11.09. 04:4xZ) — Q-STAGE2 `dee2fc76` REVIEW:**
+> QM5_41405 compiled through COMPILE_EA (strict 0/0), but the fixed
+> `window_sweep.py` controller binds the 41398/90-trial/420-cell parent program
+> and cannot enqueue the reserved 41405 350-cell matrix. No malformed or
+> parent-bound cells were created. A new governed, idempotent Stage-2 adapter
+> must bind its pre-registered 41405 declaration and demonstrate the first of
+> seven control claims before the remaining 343 cells. Evidence:
+> `docs/ops/evidence/2026-09-11_dee2fc76_stage2_matrix.md`.
+
 > **★ OFFENE ENTSCHEIDUNG FÜR OWNER (11.09. 01:04Z) — Scope-Auslegung
 > `3032534e` DUKASCOPY, T1-Produktivlauf DWX-M1-Exporter bereits gestartet,
 > zwei Zyklen widersprechen sich.** Der Exporter-README (`docs/ops/evidence/
