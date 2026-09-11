@@ -1250,3 +1250,25 @@ newly met — the hardening fix landing is what would resolve the crash-loop, no
 relaunch). **Do not draft another hardening ticket** — `4fa85eb8` already covers this
 exact defect and is actively in progress; next cycles should check its state
 (`IN_PROGRESS`→`REVIEW`) before assuming the crash-loop needs a fresh diagnosis.
+
+## Checked 2026-09-11T~08:2xZ (headless orchestration cycle) — hardening fix landed APPROVED; production downloader stable, not yet relaunched onto fixed binary
+
+`4fa85eb8` moved `IN_PROGRESS`→`APPROVED` (commit `f1be502193`, verdict
+`PASS_BUILD verified: os.replace retry+backoff (30s bounded jittered) and
+progress.json throttled/advisory writes match spec S1-S4; 24/24 tools/dukascopy
+tests pass`). Its own verdict notes the production downloader (PID `17764`,
+`started_at_utc=2026-09-11T05:22:13Z`) is still the **pre-fix** binary and
+"resumes correctly regardless" — confirmed live: `progress.json` shows
+`status=RUNNING`, `completed=129965/306545`, `errors=77`, no `PermissionError`
+in the last 200 log lines (crash class absent since the ~05:22Z relaunch, now
+~3h stable vs. the earlier 1-6min crash cadence). Not relaunching onto the
+fixed binary this cycle — the running process is healthy and mid-flight;
+restarting to pick up a hardening fix for a crash class that isn't currently
+occurring would be unforced churn on a resumable but actively-progressing
+download, within `allowed_actions` but not required by it. Next cycle: if the
+process crashes again, relaunch will pick up `f1be502193` automatically since
+it's already merged. `bb814520`/`dfc60103` gate unchanged (`QM5_41394`
+SP500.DWX/XAUUSD.DWX Q02 still pending/unclaimed since 2026-09-09T10:52:59Z,
+confirmed this cycle). No `update-task` call on any of the three
+owner-decision tasks — no acceptance criterion newly met. Task remains
+`IN_PROGRESS`.
