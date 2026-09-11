@@ -60,11 +60,13 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q02_READY
+pipeline_phase: Q02
 q01_status: PASS
 q01_compile_work_item: 54a704f4-3951-4363-8528-e8d638b79fe9
 q01_build_report: D:/QM/reports/work_items/54a704f4-3951-4363-8528-e8d638b79fe9/QM5_41447/COMPILE_EA/compile_evidence.json
-q02_status: NOT_ENQUEUED
+q02_status: ENQUEUED
+q02_work_item: 11e67265-23c2-490b-a675-bd04c3dbc977
+q02_receipt: D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/54a704f4-3951-4363-8528-e8d638b79fe9_11e67265-23c2-490b-a675-bd04c3dbc977.json
 force_build: true
 review_focus: "Falsify a WTI November-May range-contraction/upper-quartile continuation distinct from the certified XNG oscillator, monthly WTI winter sign rules, hurricane-only NR2/CLV rules, and XNG winter NR2/CLV rule. Verify exact weeks, strict inequalities, long-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -236,4 +238,4 @@ control, or live use.
 | G0 Source Approval | 2026-09-12 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
 | Q01 Build Validation | 2026-09-12 | PASS | governed T2 compile; zero compiler errors/warnings; strict build check PASS; 11 reference tests; PACER audit zero hits |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | only after Q01 PASS and deterministic intake guards |
+| Q02 Baseline Screening | 2026-09-12 | ENQUEUED | deterministic intake receipt; claimed by T8 at handoff |
