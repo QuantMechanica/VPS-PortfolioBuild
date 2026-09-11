@@ -2809,3 +2809,15 @@ change to HTTP retry/rate/resume semantics or reconciliation thresholds.
 rows still pending/unclaimed since 2026-09-09T10:52:59Z, ~2d18h static). No
 `update-task` call on any of the three. Full detail:
 docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md.
+
+## 2026-09-11T05:50Z — T11 status (OWNER question) + stage-2 continuation
+
+T11 has produced no measurement yet. Chain: Astra pre-screen stopped (no symbol catalog) -> catalog
+installed (63398c6b) -> research_canary controller built (8f6a6b3c) -> staging + T11-scoped guard +
+real dry-run receipt PASS (f04d66ec, receipts under D:/QM/reports/research/WINSWEEP_.../2026091104*)
+-> the live 2021 smoke ran twice (exit 0, 2:26, 29M ticks) but MT5 wrote no HTML report both times
+(tester Report= is relative to the terminal root in /portable mode; export keys/collection must mirror
+the fleet smoke runner). f04d66ec re-routed (3rd pass) with that fix and the 4-field identity target
+(fleet cell 2021 s3_l3: net 2941.71 / PF 1.03 / 208 trades / sha b60d80f8...). Stage 2: dee2fc76
+APPROVED partial (inventory ready; window_sweep.py is declaration-bound to 41398) -> new Terra ticket
+036de7b9 P90: generic config_sweep.py, 7 control cells with FIRST-CLAIM proof, identity, then 343.
