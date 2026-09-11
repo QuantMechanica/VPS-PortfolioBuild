@@ -51,9 +51,9 @@ under one aggregate fixed-risk ceiling and frozen per-leg ATR hard stops.
 | `strategy_xti_max_spread_points` | 1500 | XTI entry-cost guard |
 | `strategy_xng_max_spread_points` | 3000 | XNG entry-cost guard |
 | `strategy_deviation_points` | 20 | framework order deviation contract |
-| `qm_friday_close_enabled` | false | preserve full-month ownership |
-
-All strategy parameters are locked for the Q02 baseline.
+All strategy parameters are locked for the Q02 baseline. Framework controls
+remain configurable; the backtest preset selects news OFF and Friday close
+OFF so the package retains full-month ownership.
 
 ## 3. Symbol Universe
 
@@ -99,7 +99,7 @@ hypotheses; no source result transfers.
 
 ## 7. Risk Model
 
-Q02 uses aggregate `RISK_FIXED=1000`, `RISK_PERCENT=0`, and
+Q02 uses aggregate `RISK_FIXED=1000`, `RISK_PERCENT=0`, and the preset's
 `PORTFOLIO_WEIGHT=1`. Each leg begins at half the aggregate frozen-stop risk
 allowance; balancing may only reduce the larger target notional. The EA
 requires no more than 20% realized notional mismatch. Both news axes and
@@ -114,7 +114,9 @@ partial exit.
 
 ## Framework Alignment
 
-- no_trade: exact symbols/period/ID/slots and locked risk/news/Friday inputs.
+- no_trade: chart/companion symbol and period checks, locked ID/slots and
+  backtest risk mode, plus a finite inclusive 0..1 stress-probability guard.
+  News, Friday-close and RNG inputs are delegated to the shared framework.
 - trade_entry: consume-first month state, synchronized endpoint selection,
   chronological ratios, fixed blocks, exact U complement and rank-sum
   invariants, inclusive contrarian gate, spread/quote/ATR/stop checks,
