@@ -1,5 +1,27 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **Nachtrag 11.09. 06:44Z (Orchestrierungszyklus) — `3032534e` DUKASCOPY,
+> zweite Absturzklasse (raw-root escape) diagnostiziert, konkrete Ursache
+> gefunden, Codex-Ticket erstellt:** der Downloader (PID 17764) crashte
+> 06:25:56Z erneut, diesmal an `assert_contained_destination` (nicht die
+> bekannte `PermissionError`-Klasse). Ein paralleler Zyklus hatte bereits neu
+> gestartet (PID 9768, lief bereits stabil) bevor mein Fix-Vorschlag fertig
+> war — daher kein erneuter Neustart. Ursache per `git show caa9fc6f4c`
+> gefunden: der bereits gemergte Fix resolved `raw_root` VOR dem `mkdir()`,
+> wodurch `raw_root` auf Windows den `\\?\`-Präfix nie bekommt, während spätere
+> `destination`-Pfade ihn bekommen, sobald übergeordnete Verzeichnisse schon
+> existieren — deterministisch, nicht zufällig/Casing wie zuvor vermutet.
+> Ticket `ae1df6bf-b435-47c8-bcb2-bf7a96b4c654` (Priorität 80, codex,
+> APPROVED) mit Root Cause, Fix-Vorschlag (mkdir vor resolve, plus defensive
+> Präfix-Normalisierung im Check selbst) und Regressionstest-Kriterien
+> erstellt. Kein Duplikat von `ff5cc3b9`/`caa9fc6f4c` (geschlossen, anderer
+> Fix) oder `4fa85eb8`/`fe7cc4ce09` (andere Absturzklasse). `bb814520`/
+> `dfc60103`-Gate unverändert (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02 weiter
+> pending/unclaimed seit 2026-09-09T10:52:59Z). Kein `update-task` auf die
+> drei OWNER-Decision-Tasks selbst. Volldetail:
+> `docs/ops/evidence/2026-09-07_dukascopy-backfill-20260829_3032534e_execution.md`
+> (Abschnitt "Checked 2026-09-11T06:44Z").
+
 > **Nachtrag 11.09. 05:17Z (Orchestrierungszyklus) — `3032534e` DUKASCOPY,
 > doppeltes Hardening-Ticket bereinigt, Korrektur zur Blocker-Annahme:** die
 > in mehreren vorherigen Zyklen wiederholte Annahme "Downloader-Fix kann erst

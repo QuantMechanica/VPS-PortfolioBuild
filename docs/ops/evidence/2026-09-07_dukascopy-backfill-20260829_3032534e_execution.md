@@ -1333,3 +1333,56 @@ assuming the containment-check logic itself is still wrong). `bb814520`/
 pending/unclaimed since 2026-09-09T10:52:59Z). No `update-task` call on any of
 the three owner-decision tasks — no acceptance criterion newly met. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-11T06:44Z (headless orchestration cycle) — concrete root
+cause found for the prior cycle's "not yet resolved" raw-root recurrence;
+Codex ticket enqueued; no relaunch needed (sibling cycle's PID already alive)
+
+Independently reached the same `ValueError: download destination escaped raw
+root` crash (`GBPAUD/2026/05/16/01h_ticks.bi5`, `06:25:56Z`) from
+`download.log` before seeing the immediately-preceding cycle's entry above
+(file grew from 1274 to 1335 lines between my read and my write — a sibling
+headless cycle relaunched PID `9768` at `06:39:08Z` while I was mid-diagnosis).
+Confirmed PID `9768` is alive and healthy before doing anything further
+(`completed=130363, errors=4, updated_at_utc=2026-09-11T06:42:16Z,
+status=RUNNING` — advancing, not stuck), so **did not** relaunch a third time.
+
+Went one step past the prior cycle's "not yet resolved" note by reading
+`git show caa9fc6f4c -- tools/dukascopy/download_bi5.py` directly instead of
+treating the fix as a black box. The diff shows the fix changed `raw_root =
+out_dir / "raw"` to `raw_root = (out_dir / "raw").resolve()`, but left that
+resolve() call **before** the following line's `raw_root.mkdir(parents=True,
+exist_ok=True)`. On Windows, `Path.resolve()` only returns the OS
+extended-length-prefixed (`\\?\`) form when it can resolve an *existing*
+filesystem object via a handle; resolving a not-yet-created `raw` directory
+returns the plain lexical form, which is what gets stored in `raw_root` for
+the rest of the run. Per-file `destination = (raw_root / relative).resolve()`
+is computed later, once earlier hours of the same symbol/day have already
+created the intervening directories on disk -- at that point Windows *can*
+resolve via a handle and returns the `\\?\`-prefixed form. The two operands
+then carry inconsistent prefixing and `raw_root not in destination.parents`
+spuriously trips, exactly reproducing the observed crash on a *specific*,
+deterministic condition (parent directory pre-existing at resolve time) rather
+than casing or resume-scan order as the prior entry speculated. This is not
+random: it explains both why the fix reduced the crash rate (most files whose
+directories don't yet exist behave consistently either way) and why the same
+class kept recurring (day-level dirs get created mid-run by concurrent
+threads).
+
+Enqueued Codex ops ticket `ae1df6bf-b435-47c8-bcb2-bf7a96b4c654` (priority 80,
+`APPROVED`/codex) with this root cause, the proposed fix (mkdir before
+resolve, plus a defense-in-depth prefix-normalization inside
+`assert_contained_destination` itself so future resolve-timing variance can't
+reintroduce the same class), and acceptance criteria including a regression
+test that reproduces the pre-existing-parent-directory condition and a
+negative test confirming a genuine escape still raises. This is **not** a
+duplicate of the closed `ff5cc3b9`/`caa9fc6f4c` ticket (that one is
+merged and closed; this is a narrower residual defect in its own fix) nor of
+`4fa85eb8`/`fe7cc4ce09` (that is the unrelated `PermissionError`
+progress-write class). Did not touch the running downloader, any terminal,
+T1 import, T_Live/AutoTrading, or any pipeline threshold/verdict.
+`bb814520`/`dfc60103` gate unchanged (`QM5_41394` SP500.DWX/XAUUSD.DWX Q02
+still pending/unclaimed since 2026-09-09T10:52:59Z, reconfirmed via direct
+sqlite read this cycle). No `update-task` call on any of the three
+owner-decision tasks — no acceptance criterion newly met. Task `3032534e`
+remains `IN_PROGRESS`.
