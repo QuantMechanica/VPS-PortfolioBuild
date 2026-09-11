@@ -3190,3 +3190,16 @@ D:/QM/reports/state/post_reboot_check_20260911.md/.json; (5) shutdown /r /t 120.
 rollback one-shot) end with the reboot: next session reads the post-reboot report, verifies T_Live/FTMO
 terminals up (no trading until Monday), commit limit, worker count 10, fleet saturation (target ~10 cells),
 and deletes QM_TMP_PostRebootCheck_0911.
+
+## 2026-09-11T20:15Z — Census cap survived the reboot (logon-session env) -> rollback now (chunk 69)
+
+Post-reboot: commit limit 127 GB (pagefile 64 GB fixed), 10 workers, T_Live + FTMO launched (exit 0), but the
+fleet still held 5-6 cells with only 3 census cells. Diagnostics (34dc6f54b3): opt_census_slot_deferred 3252 per
+scan; dl089_scheduling.effective_limits(10) = (K 8, L 2, G 3) because DL089_CELL_SLOTS=3 had been mirrored into
+the MACHINE scope on 2026-09-10 (my note "cap lives only in the reload env" was wrong) and every process of the
+qm-admin logon session inherits it, launcher filter or not. Removed from machine + user scope 20:1xZ; reload
+chunk 69 pops the inherited var (all 10 workers, staggered). Effective after chunk 69: K 8, L 2, G 6 (code
+default). Rationale: the cap (OWNER 2026-09-10, 48 h) protected Q02/Q04 RAM windows; with the 127 GB commit limit
+that contention is gone, and the OWNER window instruction covers the planned rollback. Lesson: check
+[Environment]::GetEnvironmentVariable(name,'Machine'/'User') AND the logon session env before assuming a lever
+is script-local.
