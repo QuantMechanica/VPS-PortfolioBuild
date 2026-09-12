@@ -1,0 +1,25 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "authority": "router_review_ea:7ac78733-f755-445e-a36c-1e21f7d6b600:QM5_11898",
+  "router_task_id": "7ac78733-f755-445e-a36c-1e21f7d6b600",
+  "source_build_task_id": "ccde1b2a-b70f-466a-bdf6-e626b2af48b4",
+  "ea_id": "QM5_11898",
+  "ea_label": "QM5_11898_trix-signal-line-cross-h1",
+  "source_sha256": "078d0ef3e9b10c64f624a5a1805094d09f77dadd866b2a2a8c6b3fc406c5555b",
+  "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11898_trix-signal-line-cross-h1.md",
+  "repair_class": "CODEX_REVIEW_REWORK",
+  "repair_summary": [
+    "Replaced the wall-clock 96-hour timeout with the card-required count of 96 observed H1 bars.",
+    "Updated SPEC timeout semantics and added Codex-owned mechanics, guardrail, setfile, and SPEC tests.",
+    "Preserved all other reviewed card mechanics and historical Q verdicts."
+  ],
+  "scope": {
+    "compile_ea": true,
+    "q01_smoke": false,
+    "backtest": false,
+    "pipeline_verdict": false,
+    "live": false,
+    "cross_ea": false
+  },
+  "created_at_utc": "2026-09-12T00:00:00Z"
+}

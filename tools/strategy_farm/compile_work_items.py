@@ -2715,6 +2715,22 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_11363_REVIEW_REWORK_AUTHORITY] = {
     "evidence_sha256": "4fdd4cb055e065cf438fbf7ad346a98c6745cbff48ad8886f352039249607353",
 }
 
+# OWNER-rework review task 7ac78733 (2026-09-12): bind the corrected
+# observed-H1-bar timeout to one exact compile-only receipt. Historical Q
+# verdicts remain immutable; this grants no Q01/Q02, live, or gate authority.
+QM5_11898_REVIEW_REWORK_AUTHORITY = (
+    "router_review_ea:7ac78733-f755-445e-a36c-1e21f7d6b600:QM5_11898"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_11898_REVIEW_REWORK_AUTHORITY] = {
+    "ea_id": "11898",
+    "ea_label": "QM5_11898_trix-signal-line-cross-h1",
+    "source_sha256": "078d0ef3e9b10c64f624a5a1805094d09f77dadd866b2a2a8c6b3fc406c5555b",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": "docs/ops/evidence/2026-09-12_qm5_11898_review_rework_compile_authority.json",
+    "evidence_sha256": "6466027634cbeed4487488c81d773b950a0c1782f1afefd267cb2dc2d8cb5d30",
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
