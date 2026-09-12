@@ -1,0 +1,33 @@
+{
+  "schema": "qm.compile-release-evidence/v1",
+  "ea_id": "QM5_41449",
+  "ea_label": "QM5_41449_xauxag-wr2-body-mom",
+  "compile_work_item_id": "4a853420-95d9-4727-a975-c6b9315f1d04",
+  "compile_status": "done",
+  "compile_verdict": "COMPILE_OK",
+  "terminal_claim": "T7",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "build_check_result": "PASS",
+  "reference_tests": {
+    "count": 6,
+    "result": "PASS"
+  },
+  "pacer_audit": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "result": "PASS"
+  },
+  "mq5_sha256": "d6caaae8f0f10479ddc64eee204f569d0cedde0ff3700a4e11742a8108828a7c",
+  "ex5_sha256": "7df5e6ad3868484d2cf8196d117bf96cf3c291049c610862e315c026793ac565",
+  "logical_setfile_sha256": "56e4f9c8967eee9a901d2db76e4795184792764e9b18407a29bfeba1a43835f6",
+  "xau_setfile_sha256": "34dc1183cd45d1d120934ecdcec395a314bdfa3887d1d1a68c0383cf9409f12d",
+  "xag_setfile_sha256": "f80979b5b908ca3b98f4537b1ffa274287f46ede2c6a7c1acf98ab95c78e8369",
+  "evidence_path": "D:/QM/reports/work_items/4a853420-95d9-4727-a975-c6b9315f1d04/QM5_41449/COMPILE_EA/compile_evidence.json",
+  "safety": {
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false
+  }
+}
