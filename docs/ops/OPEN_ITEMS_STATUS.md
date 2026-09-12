@@ -3860,3 +3860,13 @@ and WAL byte size. A missing legacy field or any observed difference forces a fr
 prove unchanged DB -> reuse, committed DML -> fresh, and WAL growth -> fresh; all four wired suites pass 56/56.
 The live farm database and backup directory were not touched, and no retention, lock, queue, terminal, T_Live,
 AutoTrading, registry, or verdict behavior changed.
+
+## 2026-09-12 — QM5_10001 card-fidelity recovery (`27143c34`) REVIEW
+
+RESULT: the later governed GBPJPY Model-4 Q02 completed reliably and moved the first failed layer from
+infrastructure to zero-trade implementation/setup. The card-absent 35-point Tokyo-open spread veto was
+removed; approved entry/exit/risk/news mechanics remain unchanged, and bounded default-off diagnostics plus
+an own-position guard were added. Focused tests pass 3/3 and SPEC validation passes. Governed COMPILE_EA work
+item `d979e50c-9fe4-4f1b-b85c-4a8d6e823546` is accepted but pending under
+`COMPILE_EA_WORKER_ROLLOUT_PENDING`; the hold and Q02 requeue exclusion were not bypassed. No pipeline verdict
+is asserted.
