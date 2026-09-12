@@ -3269,3 +3269,16 @@ No new rerun was valid: the sole code-defect row already has append-only success
 the remaining classes are governance/artifact blocked or authenticated non-infra. Verification: 102 terminal
 claim tests + 63 DSR tests + py_compile PASS. Evidence:
 `docs/ops/evidence/2026-09-12_q08_invalid_rate_cause_and_claim_preflight.md`.
+
+## 2026-09-12T08:25Z — OWNER-DEC-BACKLOG-20260912 applied: classified disposition of RECYCLE (181) + BLOCKED (422)
+
+OWNER (chat ~08:0xZ): rework the ~110 RECYCLE intents, archive 66, get the agy-era rows done, clean or archive
+everything else. Tool: session_tools/dispose_backlog_0912.py (dry-run, then --apply through agent_router
+update_task/connect; append-only journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl).
+Plan counts: RECYCLE archive 85 (61 recycle_count=2, 4 rc=3, 5 card gone, 3 superseded, 12 duplicates) /
+re-queue 95; BLOCKED archive 87 (card gone, terminal/superseded closes, duplicates) / re-queue 221 (deduped per
+EA, priority 30, decision_bound_agent codex = Sol, rework_note) / 88 registry-magic precondition holds + 25
+non-EA dependency holds stay BLOCKED for sweeper ticket 349a8394 / 1 video hold each (release helper).
+Correction of an earlier statement: the 95 "gemini" BLOCKED rows were agy-era BUILD tasks (cards such as
+qp-stress-reversal-sp500, demark-td-*), not research; they are dispositioned by the same rules. Final applied
+counts follow in the next entry.
