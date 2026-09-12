@@ -45,6 +45,15 @@ def test_rendered_ini_is_real_tick_and_shutdown_contract():
     assert "Deposit=100000" in ini and "Currency=USD" in ini and "Leverage=100" in ini
 
 
+def test_prescreen_ini_differs_from_real_ticks_only_by_native_model():
+    kwargs = dict(expert="QM\\EA", symbol="USDJPY.DWX", period="H1",
+                  setfile_name="cell.set", from_date="2021.01.01",
+                  to_date="2021.12.31", report_rel="report.htm")
+    real = canary.render_tester_ini(**kwargs, model=4)
+    prescreen = canary.render_tester_ini(**kwargs, model=1)
+    assert real.replace("Model=4", "Model=1") == prescreen
+
+
 def test_tester_defaults_refuse_invalid_currency(tmp_path, monkeypatch):
     registry = tmp_path / "framework/registry"; registry.mkdir(parents=True)
     (registry / "tester_defaults.json").write_text(json.dumps({
@@ -210,6 +219,8 @@ def test_explicit_modes_preserve_mt5_numbering(model, mode, optimize, code):
     assert f"Model={model}\r\n" in result
     assert f"Optimization={code}\r\n" in result
     assert canary.MODEL_NAMES[model] == mode
+    assert canary.MODEL_EVIDENCE_CLASSES[1] == "PRESCREEN"
+    assert canary.MODEL_EVIDENCE_CLASSES[4] == "REAL_TICKS"
     assert "UseRemote=0" in result and "UseCloud=0" in result
 
 

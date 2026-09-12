@@ -1,0 +1,30 @@
+{
+  "approved_card_commit": "5136355a4aba84db5e5387ffe5ee4aef1e05c4b6",
+  "approved_card_path": "C:/QM/repo/artifacts/cards_approved/QM5_41405_balke-clock-audit-opt.md",
+  "artifact_identity": {
+    "ex5_path": "C:/QM/repo/framework/EAs/QM5_41405_balke-clock-audit-opt/QM5_41405_balke-clock-audit-opt.ex5",
+    "ex5_sha256": "a85371920c43970070b32607410a7245116ea5a667bc3feb0b29c2f9eb9ad33b",
+    "mq5_path": "C:/QM/repo/framework/EAs/QM5_41405_balke-clock-audit-opt/QM5_41405_balke-clock-audit-opt.mq5",
+    "mq5_sha256": "d3d6feff4ac2b4faad2ebb72100bee4a5d7eafa19fcc6629b3327dcf902ff9fa"
+  },
+  "base_setfile_path": "C:/QM/repo/framework/EAs/QM5_41405_balke-clock-audit-opt/sets/QM5_41405_balke-clock-audit-opt_USDJPY.DWX_H1_backtest.set",
+  "base_setfile_sha256": "c5e851850239c170f63e7f1dff5200c3b9c13638a13d8b24dc6254802ad962e7",
+  "declaration_sha256": "b06112c14037a7d781b911f5188bc3920c4ce5322b4a03c33ac9b56f70a801f8",
+  "declared_trial_count": 350,
+  "ea_id": "QM5_41405",
+  "ea_label": "QM5_41405_balke-clock-audit-opt",
+  "engine": "config_sweep",
+  "matrix_csv_path": "C:/QM/repo/docs/ops/evidence/2026-09-11_dee2fc76_stage2_matrix.csv",
+  "matrix_csv_sha256": "7d1e1e79d4590856a7adcddc7ebb75a57520f08bca835409480397444be7c2fe",
+  "prescreen_control_fraction": 0.1,
+  "prescreen_control_seed": "OWNER-DEC-PRESCREEN-OHLC-20260911:WINSWEEP_QM5_41405",
+  "prescreen_evidence_class": "PRESCREEN",
+  "prescreen_keep_fraction": 0.7,
+  "prescreen_model": 1,
+  "priority_reference_ea_id": "QM5_41398",
+  "program_id": "WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025",
+  "schema": "qm.window-sweep.v1",
+  "symbol": "USDJPY.DWX",
+  "timeframe": "H1",
+  "years": [2019, 2020, 2021, 2022, 2023, 2024, 2025]
+}

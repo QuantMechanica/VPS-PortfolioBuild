@@ -66,6 +66,7 @@ TERMINAL_STATUS_BY_TAXONOMY = {
     # 'strategy' so a MEASURED verdict never lands in gate_pass / economic_fail
     # counts. Verdict token: MEASURED.
     "measurement": "done",
+    "prescreen_measurement": "done",
 }
 
 # These are execution/transport residue, not a merit explanation.  If one of
@@ -141,6 +142,8 @@ def verdict_taxonomy(status: Any, verdict: Any) -> str:
         return "invalid"
     if token == "DRAFT_DEFECT":
         return "draft_defect"
+    if token == "PRESCREEN_MEASURED":
+        return "prescreen_measurement"
     if token in {"MEASURED", "SKIPPED_EXCLUDED", "SKIPPED_PRESCREEN"}:
         # DL-089 measurement family and Amendment-1 exclusion disposition —
         # their own taxonomy, never 'strategy'.
@@ -440,6 +443,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
           WHEN {token} = 'INFRA_FAIL' THEN 'infra'
           WHEN {token} LIKE 'INVALID%' THEN 'invalid'
           WHEN {token} = 'DRAFT_DEFECT' THEN 'draft_defect'
+          WHEN {token} = 'PRESCREEN_MEASURED' THEN 'prescreen_measurement'
           WHEN {token} IN ('MEASURED','SKIPPED_EXCLUDED','SKIPPED_PRESCREEN') THEN 'measurement'
           WHEN {token} LIKE 'PASS%' OR {token} LIKE 'FAIL%'
             OR {token} LIKE 'ZERO%' OR {token} LIKE 'RETIR%'
@@ -460,7 +464,7 @@ def install_clean_view(connection: sqlite3.Connection) -> None:
             OR {token} LIKE 'SUPERSEDED%' OR {token} LIKE 'CANCELLED%'
             OR {token} LIKE 'BLOCKED%' OR {token} LIKE 'OBSOLETE%' THEN 'failed'
           WHEN {token} = 'DRAFT_DEFECT'
-            OR {token} IN ('MEASURED','SKIPPED_EXCLUDED','SKIPPED_PRESCREEN')
+            OR {token} IN ('MEASURED','PRESCREEN_MEASURED','SKIPPED_EXCLUDED','SKIPPED_PRESCREEN')
             OR {token} LIKE 'PASS%' OR {token} LIKE 'FAIL%'
             OR {token} LIKE 'ZERO%' OR {token} LIKE 'RETIR%'
             OR {token} LIKE 'REVIEW%' OR {token} LIKE 'NEED_%'

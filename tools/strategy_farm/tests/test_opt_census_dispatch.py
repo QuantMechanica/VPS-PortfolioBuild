@@ -579,6 +579,44 @@ def test_measurement_verdict_remap() -> None:
     )
 
 
+def test_prescreen_measurement_never_becomes_measured() -> None:
+    payload = {"evidence_class": "PRESCREEN", "prescreen_model": 1}
+    verdict, reason, taxonomy = farmctl._apply_measurement_phase_verdict(
+        "OPT_CENSUS", "PASS", "", payload
+    )
+    assert (verdict, reason, taxonomy) == (
+        "PRESCREEN_MEASURED", "opt_census_prescreen_measured", "prescreen_measurement"
+    )
+    assert verdict != farmctl.MEASURED_VERDICT
+    summary = {
+        "result": "PASS", "reason_classes": ["OK"], "evidence_class": "PRESCREEN",
+        "model": 1, "model4_log_marker_detected": False,
+        "runs": [{"total_trades": 20}],
+    }
+    assert farmctl._derive_prescreen_verdict_from_summary(summary) == ("PASS", "")
+    summary["model"] = 4
+    assert farmctl._derive_prescreen_verdict_from_summary(summary)[0] == "INFRA_FAIL"
+
+
+def test_prescreen_clean_view_has_disjoint_taxonomy() -> None:
+    derived = clean.derive_work_item({
+        "id": "p", "status": "done", "verdict": "PRESCREEN_MEASURED", "payload_json": "{}",
+    })
+    assert derived["verdict_taxonomy"] == "prescreen_measurement"
+    assert derived["clean_view_valid"] is True
+    assert clean.allowed_combination("done", "PRESCREEN_MEASURED", "prescreen_measurement")
+
+
+def test_run_smoke_binds_prescreen_class_to_model_one() -> None:
+    text = (farmctl.REPO_ROOT / "framework/scripts/run_smoke.ps1").read_text(
+        encoding="utf-8-sig"
+    )
+    assert '[ValidateSet(1, 4)]' in text
+    assert '[ValidateSet("REAL_TICKS", "PRESCREEN")]' in text
+    assert 'evidence_class = $EvidenceClass' in text
+    assert 'PRESCREEN requires Model=1' in text
+
+
 def test_measured_is_a_canonical_terminal_verdict() -> None:
     assert farmctl.MEASURED_VERDICT == "MEASURED"
     assert "MEASURED" in farmctl.CANONICAL_PARENT_CHILD_VERDICTS

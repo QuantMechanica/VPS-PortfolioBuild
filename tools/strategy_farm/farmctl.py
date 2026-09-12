@@ -533,6 +533,22 @@ Q09_AUTOPILOT_WINDOWS = {
 OPT_CENSUS_PHASE = "OPT_CENSUS"
 MEASUREMENT_PHASES = frozenset({OPT_CENSUS_PHASE})
 MEASURED_VERDICT = "MEASURED"
+PRESCREEN_MEASURED_VERDICT = "PRESCREEN_MEASURED"
+PRESCREEN_EVIDENCE_CLASS = "PRESCREEN"
+
+
+def _opt_census_prescreen_enabled() -> bool:
+    """Default-off fleet switch; orchestrator sets it only on a staggered reload."""
+
+    return os.environ.get("QM_OPT_CENSUS_PRESCREEN_ENABLED", "").strip() == "1"
+
+
+def _is_opt_census_prescreen(phase: Any, payload: Mapping[str, Any]) -> bool:
+    return (
+        str(phase or "").strip().upper() == OPT_CENSUS_PHASE
+        and payload.get("evidence_class") == PRESCREEN_EVIDENCE_CLASS
+        and payload.get("prescreen_model") == 1
+    )
 
 
 def _defect_block_exclusion_clause(
@@ -7369,6 +7385,27 @@ def _derive_verdict_from_summary(summary: dict[str, Any], min_trades: int = 5, p
     return "PASS", ""
 
 
+def _derive_prescreen_verdict_from_summary(
+    summary: dict[str, Any], *, min_trades: int = 5
+) -> tuple[str, str]:
+    """Classify Model-1 transport health without manufacturing Model-4 proof."""
+
+    if (
+        summary.get("evidence_class") != PRESCREEN_EVIDENCE_CLASS
+        or summary.get("model") != 1
+        or summary.get("model4_log_marker_detected") is not False
+    ):
+        return "INFRA_FAIL", "PRESCREEN_EVIDENCE_CLASS_MISMATCH"
+    # Reuse the mature run_smoke transport/result classifier after explicitly
+    # authenticating Model=1. The temporary marker is local classification
+    # input only and is never written back to evidence.
+    classification = dict(summary)
+    classification["model4_log_marker_detected"] = True
+    return _derive_verdict_from_summary(
+        classification, min_trades=min_trades, phase=OPT_CENSUS_PHASE
+    )
+
+
 def _apply_measurement_phase_verdict(
     phase: Any,
     verdict: str,
@@ -7397,6 +7434,12 @@ def _apply_measurement_phase_verdict(
         return verdict, reason, "infra"
     payload["opt_census_underlying_verdict"] = verdict
     payload["opt_census_underlying_reason"] = reason
+    if _is_opt_census_prescreen(phase, payload):
+        return (
+            PRESCREEN_MEASURED_VERDICT,
+            "opt_census_prescreen_measured",
+            "prescreen_measurement",
+        )
     return MEASURED_VERDICT, "opt_census_measured", "measurement"
 
 
@@ -8048,6 +8091,20 @@ def _summary_matches_expected_evidence(summary: dict[str, Any], payload: dict[st
     if summary.get("evidence_schema") != "run_smoke/v2":
         return False
 
+    prescreen = _is_opt_census_prescreen(OPT_CENSUS_PHASE, payload)
+    expected_model = 1 if prescreen else 4
+    expected_evidence_class = PRESCREEN_EVIDENCE_CLASS if prescreen else "REAL_TICKS"
+    if prescreen:
+        if summary.get("model") != expected_model:
+            return False
+    elif summary.get("model") is not None and summary.get("model") != expected_model:
+        return False
+    # New runner summaries bind the evidence class explicitly. Legacy Model-4
+    # summaries predate the field and remain valid; PRESCREEN never gets that
+    # compatibility exception.
+    if summary.get("evidence_class", "REAL_TICKS") != expected_evidence_class:
+        return False
+
     window = summary.get("test_window")
     identity = summary.get("execution_identity")
     if not isinstance(window, dict) or not isinstance(identity, dict):
@@ -8096,6 +8153,8 @@ def _summary_matches_expected_evidence(summary: dict[str, Any], payload: dict[st
             or ini.get("symbol") != payload.get("expected_symbol")
             or ini.get("period") != payload.get("expected_period")
             or ini.get("expert") != payload.get("expected_expert")
+            or (prescreen and ini.get("model") != expected_model)
+            or (not prescreen and ini.get("model") is not None and ini.get("model") != expected_model)
             or not re.fullmatch(r"[0-9a-f]{64}", str(ini.get("sha256") or ""))
         ):
             return False
@@ -9252,6 +9311,22 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
     if fresh_seed_failure:
         return fresh_seed_failure
 
+    has_prescreen_marker = (
+        "prescreen_model" in item_payload
+        or item_payload.get("evidence_class") == PRESCREEN_EVIDENCE_CLASS
+    )
+    prescreen = _is_opt_census_prescreen(phase, item_payload)
+    if has_prescreen_marker and not prescreen:
+        return {"spawned": False, "reason": "opt_census_prescreen_contract_invalid"}
+    if prescreen and not _opt_census_prescreen_enabled():
+        return {
+            "spawned": False,
+            "reason": "opt_census_prescreen_default_off",
+            "activation_env": "QM_OPT_CENSUS_PRESCREEN_ENABLED=1",
+        }
+    tester_model = "1" if prescreen else "4"
+    evidence_class = PRESCREEN_EVIDENCE_CLASS if prescreen else "REAL_TICKS"
+
     cmd = [
         "pwsh.exe", "-NoProfile", "-File",
         str(REPO_ROOT / "framework" / "scripts" / "run_smoke.ps1"),
@@ -9263,7 +9338,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         "-Period", period,
         "-Runs", n_runs,
         "-MinTrades", effective_min_trades,
-        "-Model", "4",
+        "-Model", tester_model,
+        "-EvidenceClass", evidence_class,
         "-SetFile", setfile_path,
         "-ReportRoot", str(report_root),
         "-AllowMissingRealTicksLogMarker",
@@ -9328,6 +9404,8 @@ def _spawn_run_smoke_for_work_item(root: Path, item_row: sqlite3.Row,
         **min_trade_info,
         "logical_symbol": symbol,
         "runner_symbol": runner_symbol,
+        "tester_model": int(tester_model),
+        "evidence_class": evidence_class,
         "p2_run_stage": p2_run_stage,
         "timeout_seconds": timeout_seconds,
         "from_date": from_date,
@@ -12799,6 +12877,7 @@ CANONICAL_PARENT_CHILD_VERDICTS = frozenset({
     # clean-view taxonomy) and OPT_CENSUS rows carry no parent, so it never
     # participates in a Q02→Q10 cascade aggregation.
     "MEASURED",
+    "PRESCREEN_MEASURED",
     # DL-089 Amendment 1: append-only disposition of a declared annual cell
     # excluded by an authenticated earlier-year activity-floor breach. Like
     # MEASURED, this resolves a census row but is never a gate pass.
@@ -13532,18 +13611,25 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                 effective_min_trades = int(payload.get("effective_min_trades")
                                            or summary.get("min_trades_required")
                                            or 5)
-                verdict, reason = _derive_verdict_from_summary(
-                    summary,
-                    min_trades=effective_min_trades,
-                    phase=item["phase"],
-                )
+                if _is_opt_census_prescreen(item["phase"], payload):
+                    verdict, reason = _derive_prescreen_verdict_from_summary(
+                        summary, min_trades=effective_min_trades
+                    )
+                else:
+                    verdict, reason = _derive_verdict_from_summary(
+                        summary,
+                        min_trades=effective_min_trades,
+                        phase=item["phase"],
+                    )
                 updated_payload = _payload_with_pass_recovered_stats(
                     {**payload, "verdict_reason": reason},
                     verdict,
                     summary,
                 )
                 updated_payload["evidence_provenance"] = (
-                    "phase_runner" if item["phase"] in REAL_PHASE_RUNNER_PHASES else "real_mt5"
+                    "phase_runner" if item["phase"] in REAL_PHASE_RUNNER_PHASES
+                    else "prescreen_mt5" if _is_opt_census_prescreen(item["phase"], payload)
+                    else "real_mt5"
                 )
                 verdict, reason, updated_payload["verdict_taxonomy"] = (
                     _apply_measurement_phase_verdict(

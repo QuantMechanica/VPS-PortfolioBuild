@@ -17,8 +17,10 @@ param(
     [int]$Runs = 2,
     [ValidateRange(0, 1000000)]
     [int]$MinTrades = 5,
-    [ValidateSet(4)]
+    [ValidateSet(1, 4)]
     [int]$Model = 4,
+    [ValidateSet("REAL_TICKS", "PRESCREEN")]
+    [string]$EvidenceClass = "REAL_TICKS",
     # Max raised 7200 -> 28800 (2026-07-02): multi-symbol basket Q02 runs pay a
     # one-time cold tick-sync of EVERY member symbol (~10 min/member; a 28-symbol
     # basket like T-WIN needs ~5h). farmctl passes a symbol-scaled timeout capped
@@ -74,6 +76,10 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+if (($Model -eq 1) -ne ($EvidenceClass -ceq "PRESCREEN")) {
+    throw "Model/EvidenceClass mismatch: PRESCREEN requires Model=1 and REAL_TICKS requires Model=4"
+}
 
 $patternWarmupEvidencePath = Join-Path $PSScriptRoot 'pattern_warmup_evidence.ps1'
 if (-not (Test-Path -LiteralPath $patternWarmupEvidencePath -PathType Leaf)) {
@@ -3902,6 +3908,7 @@ $summary = [ordered]@{
     }
     terminal = $Terminal
     model = $Model
+    evidence_class = $EvidenceClass
     period = $Period
     requested_runs = $Runs
     max_run_attempts = $maxRunAttempts

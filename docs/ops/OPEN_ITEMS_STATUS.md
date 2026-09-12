@@ -3344,6 +3344,16 @@ The original ~6,400 scenario remains 4,672 / 1,728. Real-tick Model 4 remains ex
 MEASURED/verdict/counter/book. No launches and no farm rows. Evidence:
 `docs/ops/evidence/2026-09-12_dl089_ohlc_prescreen_amendment_draft.md`.
 
+## 2026-09-12T06:45Z — RESULT fleet OHLC-M1 PRESCREEN class: REVIEW / Default-OFF
+
+Built native Model=1 PRESCREEN declaration, ordinary claim/run, disjoint
+`PRESCREEN_MEASURED` taxonomy, deterministic keep/control promotion with immutable ranking and
+ledger-amendment hashes, and FN>10% suspension reporting. QM5_41405 plan-only dry run validates
+350 cells; its artifact path is absent and production rows=0. Suites: 201 PASS plus 138 PASS;
+PowerShell AST PASS. Activation remains Default-OFF pending orchestrator staggered reload via
+`QM_OPT_CENSUS_PRESCREEN_ENABLED=1`; no production enqueue or terminal launch. Evidence:
+`docs/ops/evidence/2026-09-12_fleet_ohlc_prescreen_build.md`.
+
 ## 2026-09-12T08:35Z — RESULT OWNER-DEC-BACKLOG-20260912 applied (488 rows, 0 refusals)
 
 Journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl: ARCHIVE 172 (-> FAILED with verdict

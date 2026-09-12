@@ -56,6 +56,7 @@ ALLOWED_TERMINALS = frozenset({"T11", "T12"})
 DEFAULT_CPU_LIMIT = float(os.environ.get("QM_CANARY_CPU_LIMIT", "95.0"))
 DEFAULT_RAM_MIN_BYTES = 20 * 1024**3
 MODEL_NAMES = {4: "real-ticks", 1: "ohlc-m1", 0: "generated-ticks", 2: "open-prices"}
+MODEL_EVIDENCE_CLASSES = {4: "REAL_TICKS", 1: "PRESCREEN", 0: "RESEARCH_ONLY", 2: "RESEARCH_ONLY"}
 OPTIMIZATION_MODES = {"off": 0, "complete": 1, "genetic": 2}
 _SAFE_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$")
 
@@ -529,6 +530,7 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         "setfile": {"path": str(request.setfile_path), "sha256": sha256_file(request.setfile_path)},
         "ex5": {"path": str(request.expert_path), "sha256": sha256_file(request.expert_path)},
         "model": request.model, "modelling_mode": MODEL_NAMES[request.model],
+        "evidence_class": MODEL_EVIDENCE_CLASSES[request.model],
         "optimize": request.optimize, "max_agents": request.max_agents,
         "cpu_limit_environment": os.environ.get("QM_CANARY_CPU_LIMIT"),
         "cpu_hard_ceiling_percent": 97.0,
