@@ -85,6 +85,17 @@ bool Strategy_SelectOurPosition(ulong &ticket,
    return false;
 }
 
+int Strategy_PositionAgeH1Bars(const datetime open_time)
+{
+   if(open_time <= 0)
+      return -1;
+
+   // The card defines the timeout in observed H1 bars, not elapsed seconds.
+   // iBarShift counts actual symbol bars and therefore does not age a trade
+   // through weekend/holiday gaps where no H1 bar exists.
+   return iBarShift(_Symbol, PERIOD_H1, open_time, false);
+}
+
 bool CalculateTrixAndSignal(double &trix1, double &sig1, double &trix2, double &sig2)
 {
    trix1 = 0.0; sig1 = 0.0;
@@ -258,8 +269,8 @@ bool Strategy_ExitSignal(const bool is_new_bar)
    if(!Strategy_SelectOurPosition(ticket, position_type, open_price, sl, tp, open_time))
       return false;
 
-   // Check hard timeout: 96 H1 bars (4 days) = 96 * 3600 seconds
-   if(open_time > 0 && (TimeCurrent() - open_time) >= 96 * 3600)
+   // Card-locked hard timeout: close at H1 bar 96 after entry.
+   if(Strategy_PositionAgeH1Bars(open_time) >= 96)
       return true;
 
    // We only check opposite cross on a new closed bar

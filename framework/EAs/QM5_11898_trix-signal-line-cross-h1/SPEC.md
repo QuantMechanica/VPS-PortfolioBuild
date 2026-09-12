@@ -3,8 +3,8 @@
 **EA ID:** QM5_11898
 **Slug:** trix-signal-line-cross-h1
 **Source:** e7b3d2c8-5a91-5d46-9f72-c4b8e1f6d3a5
-**Author of this spec:** gemini
-**Last revised:** 2026-08-10
+**Author of this spec:** gemini; Codex review rework
+**Last revised:** 2026-09-12
 
 ---
 
@@ -29,6 +29,10 @@ Table of every input parameter, its default, range, and meaning.
 | `strategy_target_rr` | 2.0 | 1.0-3.0 | Risk-to-reward ratio for take profit |
 
 Note: framework-level inputs are documented in `framework/V5_FRAMEWORK_DESIGN.md`.
+
+Card-locked constant: the hard timeout is 96 observed `PERIOD_H1` bars after
+the position's entry bar. Weekend, holiday, or other no-bar gaps do not count
+toward the timeout; it is not 96 wall-clock hours.
 
 ---
 
@@ -103,3 +107,4 @@ This card was mechanised from:
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-08-10 | Initial build from card | ccde1b2a-b70f-466a-bdf6-e626b2af48b4 |
+| v2 | 2026-09-12 | Codex review rework | Correct 96-bar timeout from elapsed seconds to observed H1 bars |
