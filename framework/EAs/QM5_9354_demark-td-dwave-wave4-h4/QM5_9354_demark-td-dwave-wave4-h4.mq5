@@ -39,6 +39,8 @@ input group "Strategy"
 // -----------------------------------------------------------------------------
 static datetime last_traded_w3_time = 0;
 static double   last_w4_extreme     = 0.0;
+static datetime pending_w3_time     = 0;
+static double   pending_w4_extreme  = 0.0;
 
 // -----------------------------------------------------------------------------
 // Strategy hooks
@@ -156,7 +158,7 @@ bool FindUpSkeleton(int &w1, int &w2, int &w3)
 {
    int total_bars = iBars(_Symbol, PERIOD_H4);
    int max_lookback = MathMin(300, total_bars - 22);
-   
+
    for(int i_w1 = max_lookback; i_w1 >= 39; i_w1--)
    {
       if(!IsWave1High(i_w1)) continue;
@@ -228,6 +230,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req.reason = "";
    req.symbol_slot = qm_magic_slot_offset;
    req.expiration_seconds = 0;
+   pending_w3_time = 0;
+   pending_w4_extreme = 0.0;
 
    const int magic = QM_FrameworkMagic();
    for(int i = PositionsTotal() - 1; i >= 0; --i)
@@ -282,8 +286,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                   req.sl = stop;
                   req.tp = take;
                   req.reason = "TD_DWAVE_W4_BUY";
-                  last_traded_w3_time = w3_time;
-                  last_w4_extreme = W4L_cand;
+                   pending_w3_time = w3_time;
+                   pending_w4_extreme = W4L_cand;
                   return true;
                }
             }
@@ -335,8 +339,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
                   req.sl = stop;
                   req.tp = take;
                   req.reason = "TD_DWAVE_W4_SELL";
-                  last_traded_w3_time = w3_time;
-                  last_w4_extreme = W4H_cand;
+                   pending_w3_time = w3_time;
+                   pending_w4_extreme = W4H_cand;
                   return true;
                }
             }
@@ -427,20 +431,12 @@ void OnDeinit(const int reason)
 
 void OnTick()
 {
+   QM_FrameworkTrackOpenPositionMae(); // first: no guard may skip Q08 evidence
    if(!QM_KillSwitchCheck()) return;
-   const datetime broker_now = TimeCurrent();
-   if(Strategy_NewsFilterHook(broker_now)) return;
-   
-   bool news_allows = true;
-   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
-      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
-   else
-      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
-   if(!news_allows) return;
-   
    if(QM_FrameworkHandleFridayClose()) return;
-   if(Strategy_NoTradeFilter()) return;
 
+   // Management and card exits must remain available while new entries are
+   // suppressed by spread or news gates.
    Strategy_ManageOpenPosition();
 
    if(Strategy_ExitSignal())
@@ -456,14 +452,32 @@ void OnTick()
       }
    }
 
+   const datetime broker_now = TimeCurrent();
+   if(Strategy_NewsFilterHook(broker_now)) return;
+   
+   bool news_allows = true;
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      news_allows = QM_NewsAllowsTrade2(_Symbol, broker_now, qm_news_temporal, qm_news_compliance);
+   else
+      news_allows = QM_NewsAllowsTrade(_Symbol, broker_now, qm_news_mode_legacy);
+   if(!news_allows) return;
+   if(Strategy_NoTradeFilter()) return;
+
    if(!QM_IsNewBar()) return;
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
    {
       ulong out_ticket = 0;
-      QM_TM_OpenPosition(req, out_ticket);
+      if(QM_TM_OpenPosition(req, out_ticket))
+      {
+         last_traded_w3_time = pending_w3_time;
+         last_w4_extreme = pending_w4_extreme;
+      }
+      pending_w3_time = 0;
+      pending_w4_extreme = 0.0;
    }
 }
 
