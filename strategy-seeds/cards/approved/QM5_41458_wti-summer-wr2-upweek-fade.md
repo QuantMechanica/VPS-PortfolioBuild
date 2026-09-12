@@ -142,7 +142,7 @@ Q02 has one locked baseline and no optimization surface:
 | param | default |
 |---|---:|
 | `strategy_symbol` | `XTIUSD.DWX` |
-| `strategy_label_offset_seconds` | 86400 |
+| `strategy_label_offset_seconds` | 0 |
 | `strategy_entry_grace_minutes` | 180 |
 | `strategy_history_bars` | 30 |
 | `strategy_summer_month_1` | 6 |
@@ -160,6 +160,10 @@ Q02 has one locked baseline and no optimization surface:
 
 Changing the calendar, formation, strict range rank, body predicate, orientation, carrier, stop,
 hold, spread, or retry contract requires a new identity.
+
+The zero-offset label is locked from the observed XTIUSD.DWX D1 Model-4 clock documented in
+`docs/ops/evidence/2026-09-12_qm5_41457_q02_zero_trades_recovery.md`; it avoids inheriting the
+known 86400-second decision-clock mismatch without changing this candidate after results.
 
 ## Source-Defined Rules
 
@@ -233,4 +237,3 @@ AutoTrading, terminal control, or live use.
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
 | Q01 Build Validation | 2026-09-12 | PENDING | build not yet submitted |
 | Q02 Baseline Screening | 2026-09-12 | PENDING | enqueue only after Q01 PASS |
-

@@ -27,6 +27,10 @@ expansion state. The external Strategy Wiki was unavailable and that limitation 
 The card is approved for one fixed-risk branch build and one paced Q02 enqueue only. Q02 owns
 activity and economics; unchanged Q09 alone may establish realized portfolio correlation.
 
+The card locks `strategy_label_offset_seconds=0` from the pre-existing QM5_41457 Model-4
+decision-clock recovery evidence, before this candidate is built or tested. This is an
+infrastructure-label choice, not an observed-result strategy adjustment.
+
 ## Allocation
 
 The atomic `farmctl reserve-ea-ids` command allocated `QM5_41458` to the approved strategy
@@ -36,4 +40,3 @@ identity on 2026-09-12. Magic allocation remains a separate build prerequisite.
 
 No portfolio gate, portfolio admission, live or deploy manifest, `T_Live`, AutoTrading, terminal
 control, manual backtest, or live operation is authorized.
-
