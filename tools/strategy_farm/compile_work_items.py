@@ -2582,6 +2582,37 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# PACER mission (2026-09-12): QM5_20291's three Q02 attempts all used the
+# original August binary and ended in tester infrastructure failures.  Bind one
+# governed compile to the exact low-frequency hot-path repair and its latest
+# failed compile row.  The immutable evidence grants no economic, live,
+# portfolio-gate, or cross-EA authority.
+QM5_20291_Q02_INFRA_REPAIR_AUTHORITY = (
+    "pacer_infra_repair:20260912:QM5_20291"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_20291_Q02_INFRA_REPAIR_AUTHORITY
+] = {
+    "ea_id": "20291",
+    "ea_label": "QM5_20291_xauxag-kurt-rk",
+    "source_sha256": "c5f61fc37344f3b369f5383df1fde6ac926b401679555fc77a2f37c01cd3790b",
+    "predecessors": {
+        "1a1a6f0c-32d2-4182-b901-72bedd371f70": {
+            "source_sha256": "6d28521d28a7f9bbbfae0be250421a80f17137ca2ada485be37166b58999b9fb",
+            "status": "failed",
+            "verdict": "COMPILE_FAIL",
+        }
+    },
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-12_qm5_20291_source_repair_authority.json"
+    ),
+    "evidence_sha256": (
+        "409bca4ff8ed46c912fca55e061de035218d5b80ace8c2f3d9a38d5b548af82a"
+    ),
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})

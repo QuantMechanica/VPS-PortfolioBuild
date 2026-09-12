@@ -512,8 +512,7 @@ bool Strategy_NoTradeFilter()
       qm_magic_slot_offset != 0)
       return true;
    if(MathAbs(RISK_PERCENT) > 1.0e-12 ||
-      MathAbs(RISK_FIXED - 1000.0) > 1.0e-12 ||
-      MathAbs(PORTFOLIO_WEIGHT - 1.0) > 1.0e-12)
+      MathAbs(RISK_FIXED - 1000.0) > 1.0e-12)
       return true;
 
    if(!MathIsValidNumber(qm_stress_reject_probability) ||
@@ -693,16 +692,17 @@ void OnTick()
       Strategy_AdvanceSignal_OnNewBar();
      }
 
-   // Package lifecycle and orphan repair always precede entry-only gates.
+   if(!new_bar)
+      return;
+
+   // Broker-side stops remain tick-driven. Package lifecycle, orphan repair,
+   // and the 40-day time stop only require one deterministic D1 evaluation.
    Strategy_ManageOpenPosition();
    if(Strategy_ExitSignal())
      {
       Strategy_ClosePair(QM_EXIT_STRATEGY);
       return;
      }
-
-   if(!new_bar)
-      return;
 
    QM_EntryRequest req;
    ZeroMemory(req);

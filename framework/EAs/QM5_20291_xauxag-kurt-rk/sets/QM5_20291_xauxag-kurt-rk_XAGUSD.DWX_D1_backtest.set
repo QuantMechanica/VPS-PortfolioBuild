@@ -3,16 +3,16 @@
 ; ea_id:        20291
 ; ea_slug:      xauxag-kurt-rk
 ; ea_version:   v5.0
-; set_version:  s20260906-001
+; set_version:  s20260912-001
 ; symbol:       XAGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   651e9d697ccde5bc0adc21ba3ecc6df94f1df2ee34ace472d39b66873924f0cb
+; build_hash:   a6a5617ccbbca4246ec4e7f46279a79a0b7dfcc73e4db95fa12e6eb52136fd23
 ; author:       Development
-; date:         2026-09-06
+; date:         2026-09-12
 ;==========================================================
 qm_ea_id=20291
 qm_magic_slot_offset=1

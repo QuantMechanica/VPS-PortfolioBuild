@@ -1,0 +1,57 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "pacer_infra_repair:20260912:QM5_20291",
+  "created_at_local": "2026-09-12T01:55:57+02:00",
+  "ea_id": "QM5_20291",
+  "ea_label": "QM5_20291_xauxag-kurt-rk",
+  "mission_priority": 2,
+  "scope": "one append-only governed COMPILE_EA successor for a diverse monthly market-neutral pair whose Q02 attempts are infrastructure-only; no strategy hypothesis, economic verdict, live, portfolio-gate, or cross-EA authority",
+  "governance": {
+    "user_authority": "PACER mission dated 2026-09-12: diagnose, fix, and re-enqueue one built-but-stuck diverse Q02-Q03 EA",
+    "predecessor_compile_work_item_id": "1a1a6f0c-32d2-4182-b901-72bedd371f70",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_mq5_sha256": "6d28521d28a7f9bbbfae0be250421a80f17137ca2ada485be37166b58999b9fb",
+    "predecessor_failure_class": "CANDIDATE_RECHECK_REFUSED",
+    "latest_q02_work_item_id": "a7c3f1dc-9203-4423-830e-7b23e60af18a",
+    "latest_q02_verdict": "INFRA_FAIL",
+    "latest_q02_reason_classes": [
+      "TIMEOUT",
+      "INCOMPLETE_RUNS"
+    ]
+  },
+  "repair": {
+    "current_mq5_sha256": "c5f61fc37344f3b369f5383df1fde6ac926b401679555fc77a2f37c01cd3790b",
+    "changes": [
+      "Remove equality pinning of framework-owned PORTFOLIO_WEIGHT from Strategy_NoTradeFilter.",
+      "Run basket composition, orphan, monthly rebalance, and time-stop management once per D1 bar instead of on every host-symbol tick.",
+      "Preserve per-tick framework MAE tracking, kill-switch handling, Friday-close handling, and broker-side protective stops."
+    ],
+    "strategy_mechanics_changed": false,
+    "entry_frequency": "monthly",
+    "instrument_scope": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ]
+  },
+  "guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_20291_xauxag-kurt-rk/QM5_20291_xauxag-kurt-rk.mq5",
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "required_immediately_before_enqueue": true,
+    "observed_ok": true,
+    "observed_hit_count": 0
+  },
+  "coordination": {
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor",
+    "claim_key": "paced_fleet:diversity_infra_repair:QM5_20291:20260912"
+  },
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}
