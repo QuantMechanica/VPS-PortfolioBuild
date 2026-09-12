@@ -1,6 +1,6 @@
 # QM5_41460_wti-summer-nr2-downweek-cont - Strategy Spec
 
-**EA ID:** QM5_41460  
+**EA ID:** QM5_41460
 **Strategy ID:** `BURAKOV-CRABEL-MOP-WTI-SUMMER-NR2-DOWNWEEK-CONT-20260912_S01`
 
 ## 1. Strategy Logic
