@@ -3430,3 +3430,16 @@ is 0/30, not 28/30. Calendar release belongs to IN_PROGRESS Claude task `bb81452
 and was not bypassed. Binder replay is 0 ready / 2 held; focused verification is
 127 passed. Evidence:
 `docs/ops/evidence/2026-09-12_q09_sealed_plan_hold_binder.md`.
+
+## 2026-09-12T10:25Z — First PRESCREEN program enqueued: shadow calibration on the measured QM5_41405 matrix
+
+Chunk 70 finished 08:16Z (all 10 workers carry QM_Q08_DSR_CONTEXT_PREFLIGHT=1 + QM_OPT_CENSUS_PRESCREEN_ENABLED=1).
+config_sweep enqueue --apply with docs/ops/evidence/2026-09-12_config_sweep_qm5_41405_prescreen_dryrun_declaration.json:
+350 PRESCREEN cells (Model=1, keep 0.70, control 0.10, seed bound to the OWNER decision) inserted as program
+WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025, each payload carrying prescreen_real_work_item_id of the already
+MEASURED real-tick twin. Queue-owner control row 0c2d9ad3 inserted by hand (mirror of a5efb888, EVIDENCE_UNAVAILABLE
+sentinel), queue_order_at 2026-08-18T23:00 so the calibration takes one lane (~4 h at ~40 s per cell). Purpose:
+measure PRESCREEN-vs-real-tick rank fidelity and the FN estimate on 350 cells with known truth BEFORE the
+Nachtrag D signature puts the pre-screen in front of the sealed census. Verdicts of these cells are
+PRESCREEN_MEASURED (never MEASURED); the real-tick verdicts of 41405 are untouched. First-claim proof recorded
+below when it lands.
