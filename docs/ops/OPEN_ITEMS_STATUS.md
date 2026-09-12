@@ -3483,3 +3483,14 @@ fda6370f (scope measurement vs the 2026-08-03 boundary + staged QM5_11167 rebuil
 e37931c2 (monthly tick-data refresh, Default-OFF), bb814520 handed to PIPELINE. Also: af3eac6e returned a second
 time (artifact never regenerated; tier raised to Sol); compile-gate spawn refusal cluster (12 EAs / 24 h) ->
 57fc8b42; T12 identity exact -> ad4eb945 for the LiveUpdate reconciliation; 5ff527e8 duplicate APPROVED.
+
+## 2026-09-12T12:05Z — Dukascopy lane: P1 download COMPLETE; P2/P3 commissioned. f239a2d9 closed.
+
+D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened/progress.json (04:29Z): planned 307,248 hours =
+completed (33,186 downloaded this run, 257,568 resumed, 15,746 no-data hours, 748 errors, concurrency 6, proxy env).
+Status FAIL only because errors > 0. The headless Claude verdict "projected 167 days" referred to its own
+measurement run (2026-09-09) and was stale; 3032534e handed to PIPELINE. Codex 79c942ac (Sol, P86): retry the
+748 error hours, P2 convert (mutable current year, non-FX price scale per the 09-09 probe), P3 splice/verify
+against the T1 tick tail + manifest proposal; the archive write remains an orchestrator step (governed pause).
+f239a2d9 (BLOCKED batch-02) APPROVED after the one-line lede fix by the orchestrator: BLOCKED 103 -> 69.
+Review round complete: 0 rows in REVIEW.
