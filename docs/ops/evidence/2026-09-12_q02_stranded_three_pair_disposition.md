@@ -1,6 +1,6 @@
 # Q02 stranded exhausted pairs — three-pair disposition
 
-Date: 2026-09-12 05:55 UTC  
+Date: 2026-09-12 05:55 UTC
 Router task: `af3eac6e-9745-4e35-9171-0517221e15c9`
 
 ## Result

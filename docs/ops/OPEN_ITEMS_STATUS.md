@@ -3316,6 +3316,15 @@ summary and worker log survive; the source row remains terminal. The other two a
 worker log; missing summary+log) and were not requeued. Live health improved 3 -> 2; focused tests 14 PASS.
 Evidence: `docs/ops/evidence/2026-09-12_q02_stranded_three_pair_disposition.md`.
 
+## 2026-09-12T06:10Z — RESULT T12 identity follow-up: REVIEW / runtime guard refusal
+
+T12 staged fleet-identical EX5 `68d37d3a...37c01` and 2021 s3_l3 setfile `afa42711...f35bf47c`.
+The isolated Model-4 dry-run passed (108 signed history files, 0 T12 agents, CPU mean 85.7%, 37.2 GB free,
+isolation unchanged). The actual attempt was admitted but its first runtime window reached 99.6% versus the
+task-authorized 99% ceiling; the controller stopped only its bound T12 job and recorded REFUSED with no report.
+Thus 2941.71 / 1.03 / 208 remains unproven and no T11+T12 concurrent pilot was admissible. Evidence:
+`docs/ops/evidence/2026-09-12_t12_identity_runtime_guard_refusal.md`.
+
 ## 2026-09-12T08:35Z — RESULT OWNER-DEC-BACKLOG-20260912 applied (488 rows, 0 refusals)
 
 Journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl: ARCHIVE 172 (-> FAILED with verdict
