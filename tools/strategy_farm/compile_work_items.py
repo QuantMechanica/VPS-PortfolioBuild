@@ -2638,6 +2638,30 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# OWNER-rework review task efe9876c (2026-09-12): the Gemini build's MQ5 is
+# card-faithful, but its SPEC and build-result smoke contract failed review.
+# Bind a fresh governed compile receipt to the exact Codex-reviewed source and
+# immutable rework authority. This grants no Q01/Q02, live, or gate authority.
+QM5_11301_REVIEW_REWORK_AUTHORITY = (
+    "router_review_ea:efe9876c-ca5d-4405-ae94-65d804e3c715:QM5_11301"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_11301_REVIEW_REWORK_AUTHORITY
+] = {
+    "ea_id": "11301",
+    "ea_label": "QM5_11301_tc-m5-macd1-stoch-ema5-open-close",
+    "source_sha256": "5a4b0e87cb4c7f4f84b1928bb9ac31fc54827aa8f64f427e96a6bd563905151e",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-12_qm5_11301_review_rework_compile_authority.json"
+    ),
+    "evidence_sha256": (
+        "3d2d897b3ed7e73d7d9eceffc417fddf552db78e50734de012cad5bee44a48b0"
+    ),
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})

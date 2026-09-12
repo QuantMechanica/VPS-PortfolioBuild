@@ -1,0 +1,25 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "authority": "router_review_ea:efe9876c-ca5d-4405-ae94-65d804e3c715:QM5_11301",
+  "router_task_id": "efe9876c-ca5d-4405-ae94-65d804e3c715",
+  "source_build_task_id": "90e1e59d-24cf-4c64-9564-9c78fa247021",
+  "ea_id": "QM5_11301",
+  "ea_label": "QM5_11301_tc-m5-macd1-stoch-ema5-open-close",
+  "source_sha256": "5a4b0e87cb4c7f4f84b1928bb9ac31fc54827aa8f64f427e96a6bd563905151e",
+  "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11301_tc-m5-macd1-stoch-ema5-open-close.md",
+  "repair_class": "CODEX_REVIEW_REWORK",
+  "repair_summary": [
+    "Replaced the incomplete generated SPEC with the canonical seven-section card-fidelity contract.",
+    "Added Codex-owned static tests for mechanics, fixed-risk backtest sets, magic slots, and SPEC structure.",
+    "The reviewed MQ5 source already matches the approved mechanics and is intentionally byte-unchanged."
+  ],
+  "scope": {
+    "compile_ea": true,
+    "q01_smoke": false,
+    "backtest": false,
+    "pipeline_verdict": false,
+    "live": false,
+    "cross_ea": false
+  },
+  "created_at_utc": "2026-09-12T00:00:00Z"
+}
