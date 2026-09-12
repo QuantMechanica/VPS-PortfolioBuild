@@ -1,0 +1,50 @@
+{
+  "artifact_type": "fx_cointegration_paced_cpu_stop",
+  "generated_at_utc": "2026-09-12T09:45:54.3612543Z",
+  "generated_at_local": "2026-09-12T11:45:54+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "94d226f24477b19c620e3209f38356876c8ea987",
+  "mission_outcome": "STOPPED_AT_EXPLICIT_BACKTEST_CPU_CEILING",
+  "routing": {
+    "anchor_q02_repair_available": false,
+    "qm5_12532": "logical-basket Q02 PASS; later Q04 PASS and Q05 FAIL",
+    "qm5_12533": "logical-basket Q02 PASS; later Q04 FAIL",
+    "frozen_scan_relationships": 66,
+    "unbuilt_relationships": 0,
+    "reconciliation_evidence": "docs/research/FX_COINTEGRATION_FALLBACK_AUDIT_CPU_STOP_20260902T204902Z.md",
+    "new_card_or_identity_eligible": false
+  },
+  "capacity_sample": {
+    "source": "Win32_Processor.LoadPercentage",
+    "cpu_average_percent": 99.0,
+    "cpu_maximum_percent": 99.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "ceiling_rule": "average_or_maximum_at_or_above_97_percent",
+    "ceiling_binding": true
+  },
+  "pacer_guard": {
+    "mq5_written": false,
+    "compile_enqueue_attempted": false,
+    "source_pin_audit_required": false
+  },
+  "actions": {
+    "card_or_ea_mutation": false,
+    "registry_or_magic_mutation": false,
+    "compile_or_build_check": false,
+    "q02_enqueue": false,
+    "dispatch_or_backtest": false,
+    "terminal_or_autotrading_action": false,
+    "evidence_commit_only": true
+  },
+  "prohibited_surfaces_touched": {
+    "portfolio_gate": false,
+    "portfolio_kpi": false,
+    "q08_contribution": false,
+    "t_live_manifest": false,
+    "t_live_or_autotrading": false
+  },
+  "worktree_hygiene": {
+    "concurrent_unrelated_changes_preserved": true,
+    "unrelated_changes_excluded_from_commit": true
+  }
+}
