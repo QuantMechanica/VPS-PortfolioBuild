@@ -3870,3 +3870,12 @@ an own-position guard were added. Focused tests pass 3/3 and SPEC validation pas
 item `d979e50c-9fe4-4f1b-b85c-4a8d6e823546` is accepted but pending under
 `COMPILE_EA_WORKER_ROLLOUT_PENDING`; the hold and Q02 requeue exclusion were not bypassed. No pipeline verdict
 is asserted.
+
+## 2026-09-12 — QM5_1249 governed-data preflight retest (`e8f31c15`) REVIEW
+
+RESULT: the blocking condition remains true. The approved carry card and EA require an OWNER-provided monthly
+short-rate CSV, but no exact input exists in the governed data, strategy-farm, or FILE_COMMON locations checked.
+The card simultaneously marks R3 PASS in frontmatter and acknowledges the unavailable OWNER-provided series in
+its assessment. SPEC validation passes, but compilation cannot make the economic input reproducible. Per the
+task's binding retest instruction, no source, compile, or Q02 requeue was performed. Strategy Governance must
+either define and re-approve a governed data contract or reject/retire the card.
