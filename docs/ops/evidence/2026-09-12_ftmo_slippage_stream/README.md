@@ -2,7 +2,7 @@
 
 Task: `f8ffb1c5-83fe-46e7-9bf2-ffa8bbb6e986`  
 Predecessor: `17758960-375c-4ce5-80db-a14c261838dd`  
-State: **IN_PROGRESS — 2/4 symbols complete; two symbols had no fill**
+State: **REVIEW — DEVIATION_2_OF_4_NO_FILL**
 
 ## Read-only design
 
@@ -49,6 +49,33 @@ remains unmet until USDCAD and USOIL.cash produce native fills in a Monday-based
 window (or a broker fill-quality export supplies equivalent evidence). A future
 run must use a new immutable output root and may extend the Monday start through
 the first qualifying fills.
+
+## Single-cycle refresh at 12:36Z
+
+The scheduled Codex cycle repeated the same read-only extraction through
+`2026-09-12T12:36:00Z` into the new immutable root
+`D:/QM/reports/ftmo/slippage_stream/20260907_20260912_taskf8ffb1c5_refresh1236Z`.
+The terminal remained the already-running FTMO demo process 10836 on build
+6182; the receipt authorization records no trade, order, terminal-control,
+launch, or AutoTrading action.
+
+- Manifest SHA-256:
+  `87277101b6d65f534aae264cb2a766ee6ef1343290d06e564a1c6ffdb10f1001`.
+- GBPUSD and EURUSD remain complete with two fills each.
+- USDCAD and USOIL.cash still have zero fills and remain
+  `MISSING_NO_FILL`; this is an observed absence, not imputed slippage.
+- The hash-bound comparator was repointed to the refreshed manifest and rerun.
+  It remains 2/4 `cost_eligible`, selects zero incumbents, and reports the same
+  incomplete-cost disposition. Refreshed `comparison.json` SHA-256 is
+  `1f8d076919b2a2693f5c2824bd434ab9be5c8881364134837e15b30da95f41e6`;
+  `comparison.csv` SHA-256 is
+  `688fe9bea25691d6245f7fda77c3860eec30f7a74d328dae4adc98d392d817af`.
+
+The acceptance request for four complete streams is not achievable from this
+closed observation window without inventing fills or causing trading activity.
+The result is therefore submitted for review as a bounded deviation; any later
+collection must be a separately routed successor after natural native fills or
+an equivalent broker export exists.
 
 ## Comparator result
 

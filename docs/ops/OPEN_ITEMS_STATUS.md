@@ -3798,3 +3798,11 @@ days, authenticated logger evidence, and an independent real-tick marker. The De
 pass identity, 20/20 plus clean-repeat parity, local-only/isolation and CPU/RAM guards, and fail-closed refusal
 rules. No code or launch occurred; a future instrumented adapter still requires canary proof and separate OWNER
 activation before any pass can be `MEASURED`.
+
+## 2026-09-12T12:37Z — FTMO slippage stream refresh (`f8ffb1c5`) REVIEW
+
+RESULT: a new immutable, read-only capture through 12:36Z confirms the prior 2/4 outcome: GBPUSD and EURUSD each
+have two complete request-quote/fill observations; USDCAD and USOIL.cash still have zero native fills and remain
+`MISSING_NO_FILL`. The refreshed hash-bound comparator remains 2/4 `cost_eligible` and selects zero. Four-stream
+acceptance is a bounded deviation rather than a value to impute or create through trading; no order, terminal
+control, AutoTrading action, roster, threshold, or verdict changed.

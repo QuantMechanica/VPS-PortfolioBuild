@@ -7,15 +7,15 @@
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\terminal_snapshot.json": "fbac3a2f3e09e0601f075bd52b781915281fef44e934e88dddec8dfd63192edc",
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\manifest.json": "1ca918b72197422aa6501861d362191f4104cb05802f63bc59f45addeae71e76",
-    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\manifest.json": "dc2fbc3cb675847254f9db82e0705fffebfeaaa310f74be351d9bf8f2804756e",
+    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\manifest.json": "87277101b6d65f534aae264cb2a766ee6ef1343290d06e564a1c6ffdb10f1001",
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\GBPUSD_native_cost_receipt.json": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\EURUSD_native_cost_receipt.json": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USDCAD_native_cost_receipt.json": "055df14a6fc6969072563fa36729b62057b155ac9ecf8dff7e099c668844a5c1",
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
-    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\GBPUSD_slippage_stream.json": "f6faea120055a6f59ba0be14eb487f4852586ee7fc39147b1511d141f55a592c",
-    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\EURUSD_slippage_stream.json": "207bc175ffd83bfda23d46eaf01437043599a7a7b140f6c9c325327796a306f7",
-    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USDCAD_slippage_stream.json": "9998246517f250619cd8b04450c576dffea0d4d2b4e530fe4c14bb2f5810cef1",
-    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USOIL_cash_slippage_stream.json": "42028a25f7d0d6fa658138026cedcbeedce69fb731fac1d68620e98fc0c3d7c3"
+    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\GBPUSD_slippage_stream.json": "b0c3ef85c85662c6591b5787ea553aa8a0718977b3609999be1c6770af0d42c3",
+    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\EURUSD_slippage_stream.json": "6b9d45645010b313bf9c8d94b5fe65a636ecbc2aa99358aa1e14885c31321a30",
+    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USDCAD_slippage_stream.json": "3482bde4af848c1ff699c691e5ab3a07d73ff5f6b2ff2587d12a2b7514033ae2",
+    "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USOIL_cash_slippage_stream.json": "6b0777b9112cf96b3d59a814fa7762a6b40bc4418a853fd76d467ecb2dfe5dca"
   },
   "native_receipt_manifest": {
     "count": 4,
@@ -47,32 +47,32 @@
   "slippage_receipt_manifest": {
     "complete_symbols": 2,
     "cost_model_eligible": false,
-    "generated_at_utc": "2026-09-12T10:57:16.123151+00:00",
+    "generated_at_utc": "2026-09-12T12:37:00.117254+00:00",
     "receipts": [
       {
         "path": "GBPUSD_slippage_stream.json",
-        "sha256": "f6faea120055a6f59ba0be14eb487f4852586ee7fc39147b1511d141f55a592c",
+        "sha256": "b0c3ef85c85662c6591b5787ea553aa8a0718977b3609999be1c6770af0d42c3",
         "symbol": "GBPUSD"
       },
       {
         "path": "EURUSD_slippage_stream.json",
-        "sha256": "207bc175ffd83bfda23d46eaf01437043599a7a7b140f6c9c325327796a306f7",
+        "sha256": "6b9d45645010b313bf9c8d94b5fe65a636ecbc2aa99358aa1e14885c31321a30",
         "symbol": "EURUSD"
       },
       {
         "path": "USDCAD_slippage_stream.json",
-        "sha256": "9998246517f250619cd8b04450c576dffea0d4d2b4e530fe4c14bb2f5810cef1",
+        "sha256": "3482bde4af848c1ff699c691e5ab3a07d73ff5f6b2ff2587d12a2b7514033ae2",
         "symbol": "USDCAD"
       },
       {
         "path": "USOIL_cash_slippage_stream.json",
-        "sha256": "42028a25f7d0d6fa658138026cedcbeedce69fb731fac1d68620e98fc0c3d7c3",
+        "sha256": "6b0777b9112cf96b3d59a814fa7762a6b40bc4418a853fd76d467ecb2dfe5dca",
         "symbol": "USOIL.cash"
       }
     ],
     "schema": "qm.ftmo-request-quote-slippage-manifest/v1",
     "window": {
-      "end_utc": "2026-09-12T10:58:00+00:00",
+      "end_utc": "2026-09-12T12:36:00+00:00",
       "start_utc": "2026-09-07T00:00:00+00:00"
     }
   },
@@ -265,8 +265,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\GBPUSD_native_cost_receipt.json",
       "native_cost_receipt_sha256": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\GBPUSD_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "f6faea120055a6f59ba0be14eb487f4852586ee7fc39147b1511d141f55a592c",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\GBPUSD_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "b0c3ef85c85662c6591b5787ea553aa8a0718977b3609999be1c6770af0d42c3",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
       "stream_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
       "trades": 360,
@@ -377,8 +377,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\EURUSD_native_cost_receipt.json",
       "native_cost_receipt_sha256": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\EURUSD_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "207bc175ffd83bfda23d46eaf01437043599a7a7b140f6c9c325327796a306f7",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\EURUSD_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "6b9d45645010b313bf9c8d94b5fe65a636ecbc2aa99358aa1e14885c31321a30",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
       "stream_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
       "trades": 91,
@@ -428,8 +428,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USDCAD_native_cost_receipt.json",
       "native_cost_receipt_sha256": "055df14a6fc6969072563fa36729b62057b155ac9ecf8dff7e099c668844a5c1",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USDCAD_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "9998246517f250619cd8b04450c576dffea0d4d2b4e530fe4c14bb2f5810cef1",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USDCAD_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "3482bde4af848c1ff699c691e5ab3a07d73ff5f6b2ff2587d12a2b7514033ae2",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
       "stream_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
       "trades": 195,
@@ -540,8 +540,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\GBPUSD_native_cost_receipt.json",
       "native_cost_receipt_sha256": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\GBPUSD_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "f6faea120055a6f59ba0be14eb487f4852586ee7fc39147b1511d141f55a592c",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\GBPUSD_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "b0c3ef85c85662c6591b5787ea553aa8a0718977b3609999be1c6770af0d42c3",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -569,8 +569,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
       "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USOIL_cash_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "42028a25f7d0d6fa658138026cedcbeedce69fb731fac1d68620e98fc0c3d7c3",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USOIL_cash_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "6b0777b9112cf96b3d59a814fa7762a6b40bc4418a853fd76d467ecb2dfe5dca",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -598,8 +598,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
       "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USOIL_cash_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "42028a25f7d0d6fa658138026cedcbeedce69fb731fac1d68620e98fc0c3d7c3",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USOIL_cash_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "6b0777b9112cf96b3d59a814fa7762a6b40bc4418a853fd76d467ecb2dfe5dca",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -627,8 +627,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
       "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USOIL_cash_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "42028a25f7d0d6fa658138026cedcbeedce69fb731fac1d68620e98fc0c3d7c3",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USOIL_cash_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "6b0777b9112cf96b3d59a814fa7762a6b40bc4418a853fd76d467ecb2dfe5dca",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
       "stream_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
       "trades": 82,
@@ -724,8 +724,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
       "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USOIL_cash_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "42028a25f7d0d6fa658138026cedcbeedce69fb731fac1d68620e98fc0c3d7c3",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USOIL_cash_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "6b0777b9112cf96b3d59a814fa7762a6b40bc4418a853fd76d467ecb2dfe5dca",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
       "stream_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
       "trades": 60,
@@ -775,8 +775,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
       "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\USOIL_cash_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "42028a25f7d0d6fa658138026cedcbeedce69fb731fac1d68620e98fc0c3d7c3",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\USOIL_cash_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "6b0777b9112cf96b3d59a814fa7762a6b40bc4418a853fd76d467ecb2dfe5dca",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -911,8 +911,8 @@
       },
       "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\EURUSD_native_cost_receipt.json",
       "native_cost_receipt_sha256": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
-      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5\\EURUSD_slippage_stream.json",
-      "slippage_stream_receipt_sha256": "207bc175ffd83bfda23d46eaf01437043599a7a7b140f6c9c325327796a306f7",
+      "slippage_stream_receipt": "D:\\QM\\reports\\ftmo\\slippage_stream\\20260907_20260912_taskf8ffb1c5_refresh1236Z\\EURUSD_slippage_stream.json",
+      "slippage_stream_receipt_sha256": "6b9d45645010b313bf9c8d94b5fe65a636ecbc2aa99358aa1e14885c31321a30",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {

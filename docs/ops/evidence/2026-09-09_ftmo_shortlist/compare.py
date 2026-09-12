@@ -8,7 +8,7 @@ INTAKE=ROOT/'docs/ops/evidence/2026-09-09_ftmo_acceleration/intake.json'
 TERMS=ROOT/'docs/ops/evidence/2026-09-05_ftmo_current_pool_cost_snapshot.json'
 NATIVE=ROOT/'docs/ops/evidence/2026-09-06_ftmo_demo_install/terminal_snapshot.json'
 RECEIPT_MANIFEST=ROOT/'docs/ops/evidence/2026-09-12_ftmo_native_cost_receipts/manifest.json'
-SLIPPAGE_MANIFEST=Path(r'D:/QM/reports/ftmo/slippage_stream/20260907_20260912_taskf8ffb1c5/manifest.json')
+SLIPPAGE_MANIFEST=Path(r'D:/QM/reports/ftmo/slippage_stream/20260907_20260912_taskf8ffb1c5_refresh1236Z/manifest.json')
 def read(p):return json.loads(p.read_text(encoding='utf-8-sig'))
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def drawdown(values):
