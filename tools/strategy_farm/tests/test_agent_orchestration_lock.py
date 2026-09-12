@@ -93,6 +93,111 @@ def test_headless_skips_while_interactive_flag_is_fresh(tmp_path, monkeypatch) -
     assert "interactive_orchestrator_active" in journal.read_text(encoding="utf-8")
 
 
+def test_touch_interactive_flag_is_fresh_then_stale_after_thirty_minutes(tmp_path) -> None:
+    flag = tmp_path / "INTERACTIVE_ORCHESTRATOR.flag"
+    now = dt.datetime(2026, 9, 12, 12, 0, tzinfo=dt.UTC)
+
+    written = orchestration.touch_interactive_orchestrator_flag(
+        flag_path=flag,
+        pid=4321,
+        host="desk",
+        now=now,
+        owner_token="interactive-test",
+    )
+    fresh = orchestration.interactive_orchestrator_status(flag_path=flag, now=now)
+    stale = orchestration.interactive_orchestrator_status(
+        flag_path=flag,
+        now=now + dt.timedelta(minutes=30, seconds=1),
+    )
+
+    assert written["pid"] == 4321
+    assert written["host"] == "desk"
+    assert written["heartbeat_at"] == now.isoformat()
+    assert fresh["active"] is True
+    assert fresh["reason"] == "interactive_flag_fresh"
+    assert stale["active"] is False
+    assert stale["reason"] == "interactive_flag_stale"
+
+
+def test_interactive_heartbeat_loop_exits_cleanly_when_parent_disappears(
+    tmp_path, monkeypatch
+) -> None:
+    flag = tmp_path / "INTERACTIVE_ORCHESTRATOR.flag"
+    clock = {"value": 0.0}
+    checks = iter((True, True, False))
+    monkeypatch.setattr(
+        orchestration,
+        "get_process_identity",
+        lambda _pid: {"is_running": True, "creation_key": "parent-created-at"},
+    )
+
+    result = orchestration.run_interactive_heartbeat_loop(
+        60,
+        flag_path=flag,
+        parent_pid=9999,
+        monotonic_fn=lambda: clock["value"],
+        sleep_fn=lambda seconds: clock.__setitem__("value", clock["value"] + seconds),
+        now_fn=lambda: dt.datetime(2026, 9, 12, 12, 0, tzinfo=dt.UTC),
+        parent_alive_fn=lambda _pid, _key: next(checks),
+    )
+
+    assert result["ok"] is True
+    assert result["reason"] == "parent_process_missing"
+    assert result["refresh_count"] == 1
+    assert result["flag_removed"] is True
+    assert not flag.exists()
+
+
+def test_interactive_heartbeat_loop_missing_parent_never_writes_flag(
+    tmp_path, monkeypatch
+) -> None:
+    flag = tmp_path / "INTERACTIVE_ORCHESTRATOR.flag"
+    monkeypatch.setattr(orchestration, "get_process_identity", lambda _pid: None)
+
+    result = orchestration.run_interactive_heartbeat_loop(
+        10,
+        flag_path=flag,
+        parent_pid=9999,
+    )
+
+    assert result["reason"] == "parent_process_missing"
+    assert result["refresh_count"] == 0
+    assert not flag.exists()
+
+
+def test_interactive_heartbeat_loop_refreshes_each_ten_minutes(tmp_path, monkeypatch) -> None:
+    flag = tmp_path / "INTERACTIVE_ORCHESTRATOR.flag"
+    clock = {"value": 0.0}
+    observed = []
+    monkeypatch.setattr(
+        orchestration,
+        "get_process_identity",
+        lambda _pid: {"is_running": True, "creation_key": "parent-created-at"},
+    )
+    original_touch = orchestration.touch_interactive_orchestrator_flag
+
+    def record_touch(**kwargs):
+        observed.append(clock["value"])
+        return original_touch(**kwargs)
+
+    monkeypatch.setattr(orchestration, "touch_interactive_orchestrator_flag", record_touch)
+    result = orchestration.run_interactive_heartbeat_loop(
+        21,
+        flag_path=flag,
+        parent_pid=9999,
+        monotonic_fn=lambda: clock["value"],
+        sleep_fn=lambda seconds: clock.__setitem__("value", clock["value"] + seconds),
+        now_fn=lambda: dt.datetime(2026, 9, 12, 12, 0, tzinfo=dt.UTC)
+        + dt.timedelta(seconds=clock["value"]),
+        parent_alive_fn=lambda _pid, _key: True,
+    )
+
+    assert result["reason"] == "duration_elapsed"
+    assert result["refresh_count"] == 3
+    assert observed == [0.0, 600.0, 1200.0]
+    assert result["flag_removed"] is True
+
+
 def test_no_change_evidence_is_reserved_once_per_stable_state_hash(tmp_path) -> None:
     evidence_root = tmp_path / "evidence"
     artifact = evidence_root / "task_state.json"

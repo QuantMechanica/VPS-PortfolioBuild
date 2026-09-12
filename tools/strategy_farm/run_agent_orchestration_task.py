@@ -1105,6 +1105,132 @@ def interactive_orchestrator_status(
     }
 
 
+def touch_interactive_orchestrator_flag(
+    *,
+    flag_path: Path | None = None,
+    pid: int | None = None,
+    host: str | None = None,
+    now: dt.datetime | None = None,
+    owner_token: str | None = None,
+    mode: str = "touch",
+) -> dict[str, Any]:
+    """Atomically publish one heartbeat understood by the headless guard."""
+    path = flag_path or INTERACTIVE_ORCHESTRATOR_FLAG
+    observed = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC)
+    token = owner_token or uuid.uuid4().hex
+    payload = {
+        "schema": "qm.interactive-orchestrator-heartbeat/v1",
+        "pid": int(pid if pid is not None else os.getpid()),
+        "host": str(host or socket.gethostname()),
+        "heartbeat_at": observed.isoformat(),
+        "owner_token": token,
+        "mode": mode,
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_name(f"{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
+    try:
+        with tmp_path.open("x", encoding="utf-8", newline="\n") as handle:
+            json.dump(payload, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(tmp_path, path)
+    finally:
+        tmp_path.unlink(missing_ok=True)
+    return {"written": True, "path": str(path), **payload}
+
+
+def _remove_owned_interactive_flag(path: Path, owner_token: str) -> bool:
+    """Remove only this helper's marker, preserving a newer interactive owner."""
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if str(payload.get("owner_token") or "") != owner_token:
+            return False
+        path.unlink()
+        return True
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
+
+
+def _parent_identity_alive(parent_pid: int, creation_key: str) -> bool:
+    return process_alive(parent_pid, creation_key)
+
+
+def run_interactive_heartbeat_loop(
+    minutes: float,
+    *,
+    flag_path: Path | None = None,
+    parent_pid: int | None = None,
+    heartbeat_interval_seconds: float = 600.0,
+    parent_poll_seconds: float = 5.0,
+    monotonic_fn: Any = time.monotonic,
+    sleep_fn: Any = time.sleep,
+    now_fn: Any = lambda: dt.datetime.now(dt.UTC),
+    parent_alive_fn: Any = _parent_identity_alive,
+) -> dict[str, Any]:
+    """Refresh the interactive marker every ten minutes while its parent lives."""
+    if minutes <= 0:
+        raise ValueError("minutes must be greater than zero")
+    if heartbeat_interval_seconds <= 0 or parent_poll_seconds <= 0:
+        raise ValueError("heartbeat and parent-poll intervals must be greater than zero")
+
+    path = flag_path or INTERACTIVE_ORCHESTRATOR_FLAG
+    observed_parent_pid = int(parent_pid if parent_pid is not None else os.getppid())
+    identity = get_process_identity(observed_parent_pid)
+    creation_key = str((identity or {}).get("creation_key") or "")
+    if not creation_key or not parent_alive_fn(observed_parent_pid, creation_key):
+        return {
+            "ok": True,
+            "reason": "parent_process_missing",
+            "parent_pid": observed_parent_pid,
+            "refresh_count": 0,
+            "path": str(path),
+        }
+
+    owner_token = uuid.uuid4().hex
+    started = monotonic_fn()
+    deadline = started + float(minutes) * 60.0
+    next_heartbeat = started + heartbeat_interval_seconds
+    refresh_count = 0
+    reason = "duration_elapsed"
+    touch_interactive_orchestrator_flag(
+        flag_path=path,
+        pid=observed_parent_pid,
+        now=now_fn(),
+        owner_token=owner_token,
+        mode="loop",
+    )
+    refresh_count += 1
+    try:
+        while monotonic_fn() < deadline:
+            if not parent_alive_fn(observed_parent_pid, creation_key):
+                reason = "parent_process_missing"
+                break
+            current = monotonic_fn()
+            if current >= next_heartbeat:
+                touch_interactive_orchestrator_flag(
+                    flag_path=path,
+                    pid=observed_parent_pid,
+                    now=now_fn(),
+                    owner_token=owner_token,
+                    mode="loop",
+                )
+                refresh_count += 1
+                next_heartbeat = current + heartbeat_interval_seconds
+                continue
+            sleep_fn(min(parent_poll_seconds, deadline - current, next_heartbeat - current))
+    finally:
+        removed = _remove_owned_interactive_flag(path, owner_token)
+    return {
+        "ok": True,
+        "reason": reason,
+        "parent_pid": observed_parent_pid,
+        "refresh_count": refresh_count,
+        "flag_removed": removed,
+        "path": str(path),
+    }
+
+
 def _journal_headless_skip(agent: str, reason: str, detail: dict[str, Any]) -> None:
     """Append a durable admission refusal without creating a Git commit."""
     path = LOG_DIR / "headless_orchestration_skip_journal.jsonl"
@@ -1772,7 +1898,7 @@ def run_agent(
 def main() -> int:
     os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser(description="Run one headless agent orchestration pass.")
-    parser.add_argument("--agent", choices=("codex", "gemini", "claude"), required=True)
+    parser.add_argument("--agent", choices=("codex", "gemini", "claude"))
     parser.add_argument("--dry-run", action="store_true", help="Verify prompt/lock/command without launching the model.")
     # Must remain above the 225-minute agent timeout and the PT4H task limit.
     parser.add_argument("--stale-minutes", type=int, default=250)
@@ -1782,7 +1908,34 @@ def main() -> int:
     parser.add_argument("--dedupe-no-change-task", help="Reserve/reuse one evidence artifact for a stable task-state hash.")
     parser.add_argument("--state-json", type=Path, help="Canonical JSON containing stable blocker facts only.")
     parser.add_argument("--artifact-path", type=Path, help="Existing or planned canonical evidence path for the state hash.")
+    parser.add_argument(
+        "--touch-interactive-flag",
+        action="store_true",
+        help="Write one fresh interactive-orchestrator heartbeat and exit.",
+    )
+    parser.add_argument(
+        "--interactive-heartbeat-loop",
+        action="store_true",
+        help="Refresh the interactive heartbeat every ten minutes while the parent lives.",
+    )
+    parser.add_argument("--minutes", type=float, help="Maximum heartbeat-loop duration in minutes.")
     args = parser.parse_args()
+    if args.touch_interactive_flag and args.interactive_heartbeat_loop:
+        parser.error("interactive heartbeat modes are mutually exclusive")
+    if args.touch_interactive_flag:
+        result = touch_interactive_orchestrator_flag()
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    if args.interactive_heartbeat_loop:
+        if args.minutes is None:
+            parser.error("--interactive-heartbeat-loop requires --minutes N")
+        result = run_interactive_heartbeat_loop(args.minutes)
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
+    if args.minutes is not None:
+        parser.error("--minutes is only valid with --interactive-heartbeat-loop")
+    if not args.agent:
+        parser.error("--agent is required for headless orchestration and no-change dedupe")
     if args.dedupe_no_change_task:
         if args.state_json is None or args.artifact_path is None:
             parser.error("--dedupe-no-change-task requires --state-json and --artifact-path")

@@ -69,6 +69,22 @@ Claude executes assigned `IN_PROGRESS` tasks and marks outputs `REVIEW`; Codex
 then receives/reviews Codex-routable REVIEW work according to router state and
 task payload. No pipeline verdict semantics were changed.
 
+## Interactive-session heartbeat
+
+An interactive Claude orchestration session must publish its presence at session start so the headless scheduled-task lane defers instead of duplicating the operator's cycle:
+
+```text
+python C:/QM/repo/tools/strategy_farm/run_agent_orchestration_task.py --touch-interactive-flag
+```
+
+For sessions longer than 30 minutes, the interactive session launcher should keep the bounded helper alongside the session:
+
+```text
+python C:/QM/repo/tools/strategy_farm/run_agent_orchestration_task.py --interactive-heartbeat-loop --minutes 240
+```
+
+The loop writes `D:/QM/strategy_farm/state/INTERACTIVE_ORCHESTRATOR.flag` immediately, refreshes it every ten minutes, watches the identity of its parent process, and exits/removes only its own marker when the parent disappears or the requested duration expires. It does not acquire, release, or alter any router or headless-session lease. The scheduler remains single-pass; this loop is only an interactive-session companion.
+
 ## Commit / Push
 
 Committed locally on `agents/board-advisor`:

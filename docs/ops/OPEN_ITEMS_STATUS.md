@@ -3888,3 +3888,11 @@ four-filter M5 mechanics and is byte-unchanged. The SPEC is repaired, focused te
 passes, and governed COMPILE_EA work item `a47ea7ad-8731-443c-8c40-9b1c86b0737f` is accepted but pending under
 `COMPILE_EA_WORKER_ROLLOUT_PENDING`. Honest smoke disposition is `deferred_p2_smoke`, not PASS. No Q01/Q02,
 pipeline, live, T_Live, or AutoTrading action occurred; Claude+OWNER close-out remains required.
+
+## 2026-09-12 — Interactive orchestrator heartbeat helper (`408d862e`) REVIEW
+
+RESULT: `run_agent_orchestration_task.py` now provides one-shot `--touch-interactive-flag` and bounded
+`--interactive-heartbeat-loop --minutes N` modes. The atomic marker carries pid/host/heartbeat, the loop
+refreshes every ten minutes, watches a PID-reuse-safe parent identity, and removes only its own marker on exit.
+The existing 30-minute headless guard honours the marker; router/headless lease semantics are unchanged.
+Focused suites pass 20/20 and py_compile passes. No helper loop was started in this scheduled cycle.
