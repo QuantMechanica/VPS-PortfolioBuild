@@ -64,3 +64,11 @@ this task neither duplicates it nor spends a second canary.
 The three-pair acceptance is met by an honest per-pair disposition plus the
 recorded one-canary result. Health is intentionally still 3 until the named
 evidence/compile/history defects produce a non-infra terminal disposition.
+
+## Orchestrator addendum 2026-09-12 (holds question, DB-verified)
+
+No governed evidence-repair hold is created for QM5_12582/XNGUSD.DWX (9 done, 4 failed, 0 pending) or
+QM5_20143/EURUSD.DWX (10 done, 3 failed, 0 pending): every row of both pairs is terminal, so there is no pending
+row a hold could act on. A successor for either pair is gated by the compile-gate cluster ticket 57fc8b42 (source
+of the rework builds does not compile today) and must be enqueued append-only (`farmctl enqueue-backtest
+--append-only-rerun-of`) once a COMPILE_OK receipt exists; the cause-group abort clause stands (no second canary).
