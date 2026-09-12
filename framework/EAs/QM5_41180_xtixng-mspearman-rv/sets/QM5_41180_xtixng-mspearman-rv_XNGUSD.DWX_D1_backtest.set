@@ -3,31 +3,24 @@
 ; ea_id:        41180
 ; ea_slug:      xtixng-mspearman-rv
 ; ea_version:   v5.0
-; set_version:  s20260827-001
+; set_version:  s20260912-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   dc2bdec6019d0260e308e82150e6779186de00b55d0918e5d88ec1107b07b3e6
 ; author:       Development
-; date:         2026-08-27
+; date:         2026-09-12
 ;==========================================================
 qm_ea_id=41180
 qm_magic_slot_offset=1
-qm_rng_seed=42
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-qm_news_temporal=0
-qm_news_compliance=0
-qm_news_stale_max_hours=336
-qm_news_min_impact=high
-qm_news_mode_legacy=0
-qm_friday_close_enabled=false
-qm_friday_close_hour_broker=21
-qm_stress_reject_probability=0.0
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=ea_input_defaults
 strategy_xng_symbol=XNGUSD.DWX
 strategy_endpoint_count=13
 strategy_score_threshold=104

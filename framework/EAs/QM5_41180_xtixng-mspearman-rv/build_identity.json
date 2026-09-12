@@ -1,0 +1,46 @@
+{
+  "task_id": "3882cc71-0697-4d6e-861d-4f3a14febf0f",
+  "compile_work_item_id": "ffd68a3b-fbd4-480d-8f59-4dc4a6e35976",
+  "ea_id": "QM5_41180",
+  "ea_label": "QM5_41180_xtixng-mspearman-rv",
+  "ea_dir": "framework/EAs/QM5_41180_xtixng-mspearman-rv",
+  "build_check_passed": true,
+  "build_check": {
+    "result": "PASS",
+    "exit_code": 0,
+    "failures": 0,
+    "warnings": 3,
+    "report": "D:/QM/reports/framework/21/build_check_20260912_041356.json"
+  },
+  "compile_succeeded": true,
+  "compile_result": "0 errors, 0 warnings",
+  "compile_evidence_path": "D:/QM/reports/work_items/ffd68a3b-fbd4-480d-8f59-4dc4a6e35976/QM5_41180/COMPILE_EA/compile_evidence.json",
+  "compile_log_path": "C:/QM/repo/framework/build/compile/20260912_041358/QM5_41180_xtixng-mspearman-rv.compile.log",
+  "compile_log_sha256": "9dfaaab3f92404fdc778b291c9b7f9e09683ad01d04ff2cb883690d68f6a438b",
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41180_xtixng-mspearman-rv/QM5_41180_xtixng-mspearman-rv.mq5",
+  "mq5_sha256": "225d8abfa334e7840c62e4d3f256c6b5899f6ea19d39f0e7ec23713d597e7d66",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41180_xtixng-mspearman-rv/QM5_41180_xtixng-mspearman-rv.ex5",
+  "ex5_sha256": "298dec7694bb17b39d12c604d45aba54acae7974b206148ba2aa173522ebc5a1",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41180_xtixng-mspearman-rv/sets/QM5_41180_xtixng-mspearman-rv_QM5_41180_XTI_XNG_MSPEARMAN_RV_D1_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41180_xtixng-mspearman-rv/sets/QM5_41180_xtixng-mspearman-rv_XNGUSD.DWX_D1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_41180_xtixng-mspearman-rv/sets/QM5_41180_xtixng-mspearman-rv_XTIUSD.DWX_D1_backtest.set"
+  ],
+  "setfile_sha256": {
+    "QM5_41180_XTI_XNG_MSPEARMAN_RV_D1": "436e0b9a1dece577be31d666414601bdf8758a361e60de7ffc663594678fd41e",
+    "XNGUSD.DWX": "1a1bfd8f07608864514898c03a3350dd7379a84c2b8d49144e006701737010fb",
+    "XTIUSD.DWX": "4b3c2e2a32f58d86779eb159928e6b04560291bbb861c79f626348ff457be275"
+  },
+  "spec_md_path": "C:/QM/repo/framework/EAs/QM5_41180_xtixng-mspearman-rv/SPEC.md",
+  "spec_md_sha256": "1e6015d70cf980f4c0e5cc9988cf4aa05519703a5c1a81e1047ea58b4a410159",
+  "strategy_card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_41180_xtixng-mspearman-rv_card.md",
+  "strategy_card_sha256": "6050f5f740b8cb90ed46a6f0dcab88d198315875ef5d11bcf4f7f106dce281cd",
+  "framework_input_pin_audit": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "ok": true,
+    "hit_count": 0
+  },
+  "focused_tests": "8 passed",
+  "smoke_result": "not_run_compile_only",
+  "q02_carrier": "QM5_41180_XTI_XNG_MSPEARMAN_RV_D1"
+}

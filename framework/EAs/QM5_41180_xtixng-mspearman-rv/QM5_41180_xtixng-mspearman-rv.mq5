@@ -58,8 +58,8 @@ input int    strategy_xti_max_spread_points   = 1500;
 input int    strategy_xng_max_spread_points   = 3000;
 input int    strategy_deviation_points        = 20;
 
-string g_leg_xti = "XTIUSD.DWX";
-string g_leg_xng = "XNGUSD.DWX";
+string g_leg_xti = "";
+string g_leg_xng = "";
 
 bool     g_is_new_bar = false;
 bool     g_entry_ready = false;
@@ -172,15 +172,16 @@ bool Strategy_IsOwnedMagic(const long magic)
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_leg_xti && _Period == PERIOD_D1 &&
-           qm_magic_slot_offset == 0);
+   return (g_leg_xti != "" && _Symbol == g_leg_xti &&
+           _Period == PERIOD_D1 && qm_magic_slot_offset == 0 &&
+           QM_MagicChecked(qm_ea_id, 0, g_leg_xti) > 0);
   }
 
 bool Strategy_InputsValid()
   {
    return (qm_ea_id == 41180 && qm_magic_slot_offset == 0 &&
-            qm_rng_seed == 42 &&
-            strategy_xng_symbol == "XNGUSD.DWX" &&
+            strategy_xng_symbol != "" &&
+            QM_MagicChecked(qm_ea_id, 1, strategy_xng_symbol) > 0 &&
             strategy_endpoint_count == 13 &&
             strategy_score_threshold == 104 &&
             strategy_history_bars_d1 == 900 &&
@@ -195,15 +196,10 @@ bool Strategy_InputsValid()
             strategy_xng_max_spread_points == 3000 &&
             strategy_deviation_points == 20 &&
             MathAbs(RISK_PERCENT) <= 1.0e-12 &&
-            MathAbs(RISK_FIXED - 1000.0) <= 1.0e-12 &&
-            MathAbs(PORTFOLIO_WEIGHT - 1.0) <= 1.0e-12 &&
-            qm_news_temporal == QM_NEWS_TEMPORAL_OFF &&
-            qm_news_compliance == QM_NEWS_COMPLIANCE_NONE &&
-            qm_news_mode_legacy == QM_NEWS_OFF &&
-            qm_news_stale_max_hours == 336 &&
-            qm_news_min_impact == "high" &&
-            !qm_friday_close_enabled && qm_friday_close_hour_broker == 21 &&
-            MathAbs(qm_stress_reject_probability) <= 1.0e-12);
+            RISK_FIXED > 0.0 &&
+            MathIsValidNumber(qm_stress_reject_probability) &&
+            qm_stress_reject_probability >= 0.0 &&
+            qm_stress_reject_probability <= 1.0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)
@@ -1080,6 +1076,7 @@ bool Strategy_PrimeLateSignalAttach()
 
 int OnInit()
   {
+   g_leg_xti = _Symbol;
    g_leg_xng = strategy_xng_symbol;
    if(!Strategy_IsHostChart() || !Strategy_InputsValid())
       return INIT_PARAMETERS_INCORRECT;

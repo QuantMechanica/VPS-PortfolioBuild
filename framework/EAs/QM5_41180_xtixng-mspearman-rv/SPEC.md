@@ -109,7 +109,11 @@ partial exit.
 
 ## Framework Alignment
 
-- no_trade: exact symbols/period/ID/slots and locked risk/news/Friday inputs.
+- no_trade: exact period/ID/registered slots, locked strategy parameters, and
+  the backtest risk mode (`RISK_FIXED>0`, `RISK_PERCENT=0`). The backtest
+  setfile supplies the card-baseline news and Friday settings, but the EA does
+  not pin those framework-owned controls. Stress rejection is validated only
+  as a finite value in the inclusive `[0,1]` range.
 - trade_entry: consumed month, synchronized endpoint selection,
   chronological ratios, strict ranks, exact D/T invariants, inclusive
   contrarian score gate, spread/quote/ATR/stop checks, equal-notional sizing,
