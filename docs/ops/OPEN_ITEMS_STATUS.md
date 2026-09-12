@@ -3502,3 +3502,25 @@ RESULT: REVIEW — `ea9e3c61` traced all 93 prior MATCH EAs with source hashes a
 ## 2026-09-12 — Sunday live attribution refresh
 
 RESULT: REVIEW — `308c8009` snapshotted the current read-only AccountMonitor deal export and added per-magic closes/net/gross/PF/lots/UTC-entry-hour histograms plus separate magic-0 attribution to the existing `QM_NewBook_LiveVsBook_Sunday` path. Proof run exited 0; no T_Live control or trading action occurred.
+
+## 2026-09-12T~08:44Z (orchestration cycle, Claude) — task `90431302` DEC E2-Mittel: 2 calendar-taint holds released; the "mint 63 reruns" step is gated one layer deeper than expected
+
+Ran `news_calendar_scoped_activation.py` fresh (dry-run): 11/28 pending Q10_NEWS rows
+`ADMISSIBLE` under the unchanged B-prime binding (`069b467f8db3...`). Of those 11, only 2
+still carried the calendar-taint hold as their live blocker (`0f7f63e4`/QM5_1567/XAGUSD.DWX
+H4, `2641d5cf`/QM5_10569/XAUUSD.DWX H4) — released both via `farmctl.py release-hold`
+(dry-run then apply, backup taken); the other 8 carry an unrelated
+`NEWS_RUNNER_SPAWN_SILENT_ABORT` hold or are already unblocked. Tried to mint the first of
+the 12 Q10/Q14-relevant append-only reruns named in the task (`blast_radius.csv`
+`phase==Q10, classification==EXPOSED`, 11 PASS + 1 FAIL) via `enqueue-backtest --phase
+Q10_NEWS --append-only-rerun-of ...`: refused, `"No done Q09 PASS work_items found"`.
+Checked all 12 pairs' current `Q09_NEWS` predecessor directly — **none has a PASS
+verdict** (mix of `pending` and `done/REVIEW_REQUIRED`). Root cause: `blast_radius.csv`
+was sized in July against the legacy single-stage `Q10` gate; the live gate now requires
+a genuine `Q09_NEWS` PASS predecessor per pair before a `Q10_NEWS` append-only rerun is
+even mintable — the same `REVIEW_REQUIRED` stuck-class the just-resolved
+`bb814520`/`dfc60103`/`3032534e` incident spent three days on for a different pair
+(`QM5_11167`/`QM5_11196`). Not attempted further this cycle (outside this task's own
+`allowed_actions` to force a Q09_NEWS throughput fix). Full detail + per-row table:
+`docs/ops/evidence/2026-09-12_dec-e2-mittel-news-exposed-reverdict_90431302_execution.md`.
+Task `90431302` stays `IN_PROGRESS`; no `update-task` call (top-level acceptance not met).
