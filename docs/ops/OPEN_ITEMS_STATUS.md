@@ -4002,3 +4002,12 @@ hourly DB backups older than 8 h (12.3 GB freed, 8 kept; mutation backups untouc
 one per launcher call -> 10/10. Findings for tickets: backups dir had grown to 17.7 GB (hourly + per-mutation
 backups of a DB that grew from 0.77 to 1.18 GB today; events table 432,599 rows); the purge relaunch gap
 (7db4e521) recurred. New ticket: backup retention policy + events-table growth.
+
+## 2026-09-12T23:00Z — OWNER go: Edge Lab restart (draft triage + calendar/seasonal direction)
+
+OWNER: "Setz deinen Vorschlag um!" (1) The 182 Edge-Lab drafts in cards_review are triaged in 9 Sonnet batches
+against the charter thesis schema and design box (structural cause, price signature, persistence, falsification,
+Q08/Q11 risk, FTMO fit <= 10 pct DD, horizon, no grid/martingale/HFT, symbols in the .DWX universe, duplicate
+check); on-paper REJECT -> cards_rejected with reason, KEEP -> orchestrator G0 review + approve-card into the
+build queue as variant families, REWORK -> ticket. (2) Astra ticket: calendar/seasonal thesis bank (10-15 theses,
+paper falsification from archive bars, 3 card drafts) + the Unger census finding note.
