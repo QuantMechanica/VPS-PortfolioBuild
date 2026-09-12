@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   254feb0f0c219e91ca8667f594c9d37ec0f5f366df03aa52ed6c12f1b30cc8dc
 ; author:       Development
 ; date:         2026-09-12
 ;==========================================================
@@ -37,6 +37,3 @@ strategy_min_week_bars=3
 strategy_summer_month_1=6
 strategy_required_weeks=2
 strategy_summer_month_5=10
-
-
-

@@ -84,5 +84,5 @@ dominate. No manual backtest, optimization, portfolio-gate edit, admission, depl
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-12 | Initial governed build from approved card |
-
+| v1-q01 | 2026-09-12 | governed compile and strict build check PASS; 10 reference tests and PACER audit PASS; Q02 held at CPU ceiling |
 
