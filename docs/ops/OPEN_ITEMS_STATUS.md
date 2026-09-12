@@ -3215,3 +3215,13 @@ actually warms four declared symbols and recent workers reported `multisymbol_co
 payload to two legs would be a dishonest metadata-only reclassification without splitting and recompiling the
 EA. Evidence: `docs/research/FX_COINTEGRATION_QM5_12507_NONDUPLICATE_HOLD_20260911T221907Z.md` and
 `artifacts/fx_cointegration_qm5_12507_nonduplicate_hold_20260911T221907Z_board_advisor.json`.
+
+## 2026-09-12T00:45Z — RESULT: QM5_41405 stage-2 matrix adjudicated (STAGE2_CONTROL_STANDS)
+
+350/350 cells MEASURED (real ticks). Tool adjudication (session_tools/adjudicate_balke_stage2_41405.py, rules =
+card + stage-A plan sections 4-5, window_sweep.measure costed scoring, ledger authentication): H-CLOCK, H-OUTSIDE,
+H-BUFFER, H-BAND refuted at 1.10x (best challengers c20/c22/c21 plateau 1.72 vs incumbents 1.57-1.72); H-BALKE
+clears the plateau margin (c48 2.53 vs 1.65) but fails the OOS confirmation (OOS median 0.24 vs control 0.91).
+Final configuration unchanged: fixed UTC+3, 00:00-08:00, exit 18, AS_IS, buffer 0, band on. Report
+docs/research/BALKE_STAGE2_RESULT_2026-09-12.md, surface docs/research/balke_stage2_41405/. The config_sweep
+report command only emits a status CSV (no scoring) -- adjudication script is the evidence path.
