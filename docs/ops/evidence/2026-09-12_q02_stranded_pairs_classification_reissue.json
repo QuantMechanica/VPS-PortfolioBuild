@@ -1,8 +1,8 @@
 {
   "schema": "qm.q02_stranded_pairs_classification.v1",
-  "generated_at_utc": "2026-09-12T09:04:35+00:00",
+  "generated_at_utc": "2026-09-12T09:08:00+00:00",
   "mode": "READ_ONLY_ANALYSIS_AND_PROPOSAL_ONLY",
-  "task_id": "5589f742-8071-4aed-942a-2773b90df27f",
+  "task_id": "af3eac6e-9745-4e35-9171-0517221e15c9",
   "source": {
     "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
     "sqlite_data_version": 2,
@@ -12,7 +12,7 @@
     "cohort_pair_count": 3,
     "cohort_work_item_count": 41,
     "cohort_rows_sha256": "c88eee90da9f55c3328ef7e5dd010914479a5d3593f4cb504e3139d4aa92d063",
-    "read_completed_at_utc": "2026-09-12T09:04:35+00:00",
+    "read_completed_at_utc": "2026-09-12T09:08:00+00:00",
     "registry_path": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
     "registry_sha256": "0340e241ed0ef46d94d0dc04eeb9a5f9ce8a386f35db4fe4e71e00a24658ef9d"
   },

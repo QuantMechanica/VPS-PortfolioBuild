@@ -761,7 +761,8 @@ def write_csv(records: list[dict[str, Any]], path: Path) -> None:
             writer.writerow(flat)
 
 
-def build_report(db_path: Path, repo: Path, output_dir: Path, stem: str) -> dict[str, Any]:
+def build_report(db_path: Path, repo: Path, output_dir: Path, stem: str,
+                 task_id: str = "5589f742-8071-4aed-942a-2773b90df27f") -> dict[str, Any]:
     registry_path = repo / "framework" / "registry" / "ea_id_registry.csv"
     registry = load_registry(registry_path)
     cohort_pairs, rows, snapshot_meta = read_snapshot(db_path)
@@ -893,7 +894,7 @@ def build_report(db_path: Path, repo: Path, output_dir: Path, stem: str) -> dict
         "schema": "qm.q02_stranded_pairs_classification.v1",
         "generated_at_utc": generated_at,
         "mode": "READ_ONLY_ANALYSIS_AND_PROPOSAL_ONLY",
-        "task_id": "5589f742-8071-4aed-942a-2773b90df27f",
+        "task_id": task_id,
         "source": {
             "database": str(db_path),
             **snapshot_meta,
@@ -1025,9 +1026,10 @@ def main() -> int:
     parser.add_argument("--repo", type=Path, default=DEFAULT_REPO)
     parser.add_argument("--output-dir", type=Path)
     parser.add_argument("--stem", default=DEFAULT_STEM)
+    parser.add_argument("--task-id", default="5589f742-8071-4aed-942a-2773b90df27f")
     args = parser.parse_args()
     output_dir = args.output_dir or args.repo / "docs" / "ops" / "evidence"
-    result = build_report(args.db, args.repo, output_dir, args.stem)
+    result = build_report(args.db, args.repo, output_dir, args.stem, args.task_id)
     print(json.dumps(result, indent=2))
     return 0
 

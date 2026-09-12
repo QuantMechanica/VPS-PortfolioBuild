@@ -1,6 +1,6 @@
 # Q02 stranded exhausted pairs — reissued live disposition
 
-Date: 2026-09-12 09:04 UTC  
+Date: 2026-09-12 09:04 UTC
 Router task: `af3eac6e-9745-4e35-9171-0517221e15c9`
 
 ## Corrected result
@@ -23,7 +23,7 @@ zero-trade aggregate, so none may be routed to the RETIRE/frequency-floor lane.
 Fresh machine-readable artifacts:
 
 - `docs/ops/evidence/2026-09-12_q02_stranded_pairs_classification_reissue.json`
-  — SHA-256 `589ec550a6f008e8cb25773fea1b67a6cb33c58f434444bb47e53a01d0d8a5a3`;
+  — SHA-256 `132b85102bf62ac5ae7dcba097c50f41553b04173e8207bd7c4d6c8c12b68f0a`;
 - `docs/ops/evidence/2026-09-12_q02_stranded_pairs_classification_reissue.csv`
   — SHA-256 `12750f24f450062f0920b1da56a1d506a975d3e4a7b67fade2a8cd7f1a088a39`.
 
