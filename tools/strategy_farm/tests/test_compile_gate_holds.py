@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 from pathlib import Path
 
@@ -73,6 +74,38 @@ def _seed_compile_failure_cluster(root: Path) -> None:
         _insert_item(conn, "other-ea", phase="Q02", ea_id="QM5_99902")
         farmctl.record_claim_ledger(conn, "T2", "trigger", "priority", FAILED_AT)
         conn.commit()
+
+
+def _current_ea_fixture(monkeypatch, tmp_path: Path) -> dict[str, str]:
+    repo = tmp_path / "repo"
+    label = f"{EA_ID}_compile_hold_fixture"
+    ea_dir = repo / "framework" / "EAs" / label
+    ea_dir.mkdir(parents=True)
+    mq5 = ea_dir / f"{label}.mq5"
+    ex5 = ea_dir / f"{label}.ex5"
+    mq5.write_bytes(b"current source\n")
+    ex5.write_bytes(b"current binary\n")
+    monkeypatch.setattr(farmctl, "REPO_ROOT", repo)
+    return {
+        "ea_label": label,
+        "mq5_path": str(mq5.resolve()),
+        "mq5_sha256": hashlib.sha256(mq5.read_bytes()).hexdigest(),
+        "ex5_path": str(ex5.resolve()),
+        "ex5_sha256": hashlib.sha256(ex5.read_bytes()).hexdigest(),
+    }
+
+
+def _passing_receipt(item_id: str, identity: dict[str, str]) -> dict:
+    return {
+        "schema_version": "qm.compile-ea-evidence/v1",
+        "work_item_id": item_id,
+        "ea_id": EA_ID,
+        "success": True,
+        "compile_result": "PASS",
+        "build_check_result": "PASS",
+        "completed_at": "2026-09-12T10:05:00+00:00",
+        **identity,
+    }
 
 
 def test_compile_gate_hold_is_default_off(monkeypatch, tmp_path: Path) -> None:
@@ -184,15 +217,9 @@ def test_authenticated_newer_compile_ok_releases_without_touching_verdicts(
         {"reason": "compile_gate:COMPILE_FAILED"},
         failed_at=FAILED_AT,
     )
+    identity = _current_ea_fixture(monkeypatch, tmp_path)
     evidence = tmp_path / "compile_evidence.json"
-    receipt = {
-        "schema_version": "qm.compile-ea-evidence/v1",
-        "work_item_id": "compile-ok",
-        "ea_id": EA_ID,
-        "success": True,
-        "compile_result": "PASS",
-        "build_check_result": "PASS",
-    }
+    receipt = _passing_receipt("compile-ok", identity)
     evidence.write_text(json.dumps(receipt), encoding="utf-8")
     with farmctl.connect(root) as conn:
         _insert_item(
@@ -229,6 +256,120 @@ def test_authenticated_newer_compile_ok_releases_without_touching_verdicts(
         assert conn.execute(
             "SELECT COUNT(*) FROM events WHERE event='compile_gate_hold_released'"
         ).fetchone()[0] == 3
+
+
+def test_stale_receipt_hash_mismatch_does_not_release(
+    monkeypatch, tmp_path: Path
+) -> None:
+    root = tmp_path / "farm"
+    _seed_compile_failure_cluster(root)
+    monkeypatch.setenv(farmctl.COMPILE_GATE_HOLD_ENV, "1")
+    farmctl.record_work_item_spawn_refusal(
+        root,
+        _active_trigger(root),
+        "T2",
+        {"reason": "compile_gate:COMPILE_FAILED"},
+        failed_at=FAILED_AT,
+    )
+    identity = _current_ea_fixture(monkeypatch, tmp_path)
+    evidence = tmp_path / "stale_compile_evidence.json"
+    evidence.write_text(
+        json.dumps(_passing_receipt("compile-stale", identity)), encoding="utf-8"
+    )
+    Path(identity["mq5_path"]).write_bytes(b"source changed after compile\n")
+    with farmctl.connect(root) as conn:
+        _insert_item(
+            conn,
+            "compile-stale",
+            phase="COMPILE_EA",
+            status="done",
+            verdict="COMPILE_OK",
+            evidence_path=str(evidence),
+            updated_at="2026-09-12T10:05:00+00:00",
+        )
+        conn.commit()
+
+    result = farmctl.reconcile_compile_gate_holds(root, apply=True)
+
+    assert result["released_count"] == 0
+    with farmctl.connect(root) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1"
+        ).fetchone()[0] == 3
+
+
+def test_missing_artifact_hashes_fail_closed(monkeypatch, tmp_path: Path) -> None:
+    root = tmp_path / "farm"
+    _seed_compile_failure_cluster(root)
+    monkeypatch.setenv(farmctl.COMPILE_GATE_HOLD_ENV, "1")
+    farmctl.record_work_item_spawn_refusal(
+        root,
+        _active_trigger(root),
+        "T2",
+        {"reason": "compile_gate:COMPILE_FAILED"},
+        failed_at=FAILED_AT,
+    )
+    identity = _current_ea_fixture(monkeypatch, tmp_path)
+    identity.pop("mq5_sha256")
+    identity.pop("ex5_sha256")
+    evidence = tmp_path / "hashless_compile_evidence.json"
+    evidence.write_text(
+        json.dumps(_passing_receipt("compile-hashless", identity)), encoding="utf-8"
+    )
+    with farmctl.connect(root) as conn:
+        _insert_item(
+            conn,
+            "compile-hashless",
+            phase="COMPILE_EA",
+            status="done",
+            verdict="COMPILE_OK",
+            evidence_path=str(evidence),
+            updated_at="2026-09-12T10:05:00+00:00",
+        )
+        conn.commit()
+
+    result = farmctl.reconcile_compile_gate_holds(root, apply=True)
+
+    assert result["released_count"] == 0
+    with farmctl.connect(root) as conn:
+        assert conn.execute(
+            "SELECT COUNT(*) FROM work_item_holds WHERE active=1"
+        ).fetchone()[0] == 3
+
+
+def test_receipt_completed_before_hold_fails_closed(
+    monkeypatch, tmp_path: Path
+) -> None:
+    root = tmp_path / "farm"
+    _seed_compile_failure_cluster(root)
+    monkeypatch.setenv(farmctl.COMPILE_GATE_HOLD_ENV, "1")
+    farmctl.record_work_item_spawn_refusal(
+        root,
+        _active_trigger(root),
+        "T2",
+        {"reason": "compile_gate:COMPILE_FAILED"},
+        failed_at=FAILED_AT,
+    )
+    identity = _current_ea_fixture(monkeypatch, tmp_path)
+    receipt = _passing_receipt("compile-old", identity)
+    receipt["completed_at"] = "2026-09-12T09:59:59+00:00"
+    evidence = tmp_path / "old_compile_evidence.json"
+    evidence.write_text(json.dumps(receipt), encoding="utf-8")
+    with farmctl.connect(root) as conn:
+        _insert_item(
+            conn,
+            "compile-old",
+            phase="COMPILE_EA",
+            status="done",
+            verdict="COMPILE_OK",
+            evidence_path=str(evidence),
+            updated_at="2026-09-12T10:05:00+00:00",
+        )
+        conn.commit()
+
+    result = farmctl.reconcile_compile_gate_holds(root, apply=True)
+
+    assert result["released_count"] == 0
 
 
 def test_missing_or_invalid_compile_receipt_cannot_release(

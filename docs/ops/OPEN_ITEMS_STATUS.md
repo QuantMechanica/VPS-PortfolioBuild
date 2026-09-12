@@ -3726,6 +3726,16 @@ conversions (398.7 M ticks), P3 0/24 PASS by design: the governed T1 M1 export s
 window needs coverage to 2026-04-01 incl. both DST windows) and XAUUSD/UK100/XTIUSD carry a ~10x
 Dukascopy-to-DWX price-scale defect (the digits-derived price_scale from the 09-09 probe is wrong for raw tick
 encoding) despite rho >= 0.998 on closes. Manifest proposal emitted as PROPOSAL_BLOCKED (all write flags
-false); nothing written under Bases/Custom or the signed archive. Successor b5f660f9 (Sol): AUDCAD hour,
+ false); nothing written under Bases/Custom or the signed archive. Successor b5f660f9 (Sol): AUDCAD hour,
 T1 export regen through 2026-04-01, first-principles scale mapping for the three symbols, fresh P2/P3 +
 proposal. Archive write = separate orchestrator ceremony after 37/37.
+
+## 2026-09-12T11:35Z — Compile-gate receipt hash hardening (`09a32b16`) REVIEW
+
+RESULT: `COMPILE_GATE_BROKEN_SOURCE` release now requires the immutable
+COMPILE_OK receipt to post-date the hold and pin the current canonical MQ5 and
+EX5 paths plus SHA-256 values. The compile worker emits both identities and
+rechecks the MQ5 after compilation. Changed or missing hashes and old receipts
+fail closed; 35 focused tests pass. The feature flag remains unset/Default-OFF
+and no production hold, verdict, EA, terminal, or task state changed. Evidence:
+`docs/ops/evidence/2026-09-12_compile_gate_receipt_hash_hardening.md`.

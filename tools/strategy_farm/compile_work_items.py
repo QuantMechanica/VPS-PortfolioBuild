@@ -5819,6 +5819,8 @@ def run_compile_work_item(
             raise RuntimeError("CANDIDATE_RECHECK_REFUSED:" + ";".join(candidate.get("reasons") or [candidate.get("reason")]))
         if candidate.get("mq5_sha256") != payload.get("mq5_sha256"):
             raise RuntimeError("SOURCE_CHANGED_AFTER_ENQUEUE")
+        evidence["mq5_path"] = str(candidate["mq5_path"])
+        evidence["mq5_sha256"] = str(candidate["mq5_sha256"])
         sibling_rebind = bool(
             payload.get("append_only_sibling_rebind") is True
             and payload.get("sibling_rebind_contract_version")
@@ -5983,6 +5985,9 @@ def run_compile_work_item(
         )
         evidence["ex5_path"] = str(ex5)
         evidence["ex5_sha256"] = sha256_file(ex5) if ex5.is_file() else None
+        current_mq5_sha256 = sha256_file(Path(evidence["mq5_path"]))
+        if current_mq5_sha256 != evidence["mq5_sha256"]:
+            raise RuntimeError("SOURCE_CHANGED_DURING_COMPILE")
         evidence["setfile_count"] = len(setfiles)
         if sibling_rebind:
             evidence["sibling_rebind"] = {

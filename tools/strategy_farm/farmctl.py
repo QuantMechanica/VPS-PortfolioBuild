@@ -8275,8 +8275,15 @@ def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
                 "source": "subprocess", "error": repr(exc)[:200]}
 
 
-def _authenticated_compile_ok_receipt(row: Mapping[str, Any]) -> dict[str, str] | None:
-    """Authenticate one COMPILE_OK row against its immutable evidence receipt."""
+def _authenticated_compile_ok_receipt(
+    row: Mapping[str, Any], hold_created_at: str
+) -> dict[str, str] | None:
+    """Authenticate COMPILE_OK evidence against the hold and current EA files.
+
+    A database verdict is not sufficient: the receipt must post-date the hold
+    and pin both artifacts that are on disk now.  This prevents a still-valid
+    old receipt from releasing a hold after either the source or binary changed.
+    """
 
     evidence_path = Path(str(row["evidence_path"] or ""))
     if not evidence_path.is_file():
@@ -8296,10 +8303,46 @@ def _authenticated_compile_ok_receipt(row: Mapping[str, Any]) -> dict[str, str] 
         or receipt.get("build_check_result") != "PASS"
     ):
         return None
+    completed_at = _event_time(str(receipt.get("completed_at") or ""))
+    hold_time = _event_time(hold_created_at)
+    if completed_at is None or hold_time is None or completed_at <= hold_time:
+        return None
+
+    ea_label = str(receipt.get("ea_label") or "")
+    ea_id = str(row["ea_id"] or "")
+    if not ea_label.startswith(f"{ea_id}_"):
+        return None
+    ea_root = (REPO_ROOT / "framework" / "EAs").resolve()
+    ea_dir = (ea_root / ea_label).resolve()
+    if ea_dir.parent != ea_root:
+        return None
+    mq5_path = ea_dir / f"{ea_label}.mq5"
+    ex5_path = ea_dir / f"{ea_label}.ex5"
+    receipt_mq5_path = Path(str(receipt.get("mq5_path") or ""))
+    receipt_ex5_path = Path(str(receipt.get("ex5_path") or ""))
+    if (
+        _compile_path_identity(receipt_mq5_path) != _compile_path_identity(mq5_path)
+        or _compile_path_identity(receipt_ex5_path) != _compile_path_identity(ex5_path)
+        or not mq5_path.is_file()
+        or not ex5_path.is_file()
+    ):
+        return None
+    mq5_sha256 = str(receipt.get("mq5_sha256") or "").lower()
+    ex5_sha256 = str(receipt.get("ex5_sha256") or "").lower()
+    if (
+        not re.fullmatch(r"[0-9a-f]{64}", mq5_sha256)
+        or not re.fullmatch(r"[0-9a-f]{64}", ex5_sha256)
+        or _sha256_file(mq5_path) != mq5_sha256
+        or _sha256_file(ex5_path) != ex5_sha256
+    ):
+        return None
     return {
         "work_item_id": str(row["id"]),
         "evidence_path": str(evidence_path.resolve()),
         "evidence_sha256": _sha256_file(evidence_path),
+        "mq5_sha256": mq5_sha256,
+        "ex5_sha256": ex5_sha256,
+        "completed_at": str(receipt["completed_at"]),
         "updated_at": str(row["updated_at"]),
     }
 
@@ -8333,7 +8376,7 @@ def reconcile_compile_gate_holds(
             """,
             (COMPILE_GATE_HOLD_CODE,),
         ).fetchall()
-        receipt_cache: dict[tuple[str, str], dict[str, str] | None] = {}
+        receipt_cache: dict[tuple[str, str, str], dict[str, str] | None] = {}
         for hold in held:
             candidates = conn.execute(
                 """
@@ -8348,9 +8391,15 @@ def reconcile_compile_gate_holds(
             ).fetchall()
             receipt = None
             for candidate in candidates:
-                cache_key = (str(candidate["ea_id"]), str(candidate["id"]))
+                cache_key = (
+                    str(candidate["ea_id"]),
+                    str(candidate["id"]),
+                    str(hold["created_at"]),
+                )
                 if cache_key not in receipt_cache:
-                    receipt_cache[cache_key] = _authenticated_compile_ok_receipt(candidate)
+                    receipt_cache[cache_key] = _authenticated_compile_ok_receipt(
+                        candidate, str(hold["created_at"])
+                    )
                 receipt = receipt_cache[cache_key]
                 if receipt is not None:
                     break
@@ -8363,12 +8412,17 @@ def reconcile_compile_gate_holds(
                 "compile_work_item_id": receipt["work_item_id"],
                 "compile_evidence_path": receipt["evidence_path"],
                 "compile_evidence_sha256": receipt["evidence_sha256"],
+                "compile_mq5_sha256": receipt["mq5_sha256"],
+                "compile_ex5_sha256": receipt["ex5_sha256"],
+                "compile_completed_at": receipt["completed_at"],
             }
             planned.append(plan)
             if apply:
                 note = (
                     f"authenticated COMPILE_OK {receipt['work_item_id']} "
-                    f"receipt_sha256={receipt['evidence_sha256']}"
+                    f"receipt_sha256={receipt['evidence_sha256']} "
+                    f"mq5_sha256={receipt['mq5_sha256']} "
+                    f"ex5_sha256={receipt['ex5_sha256']}"
                 )
                 cursor = conn.execute(
                     """
