@@ -187,42 +187,131 @@ def guarded_db_delete(conn: Any, sql: str, params: tuple = (), *,
     return cur.rowcount
 
 
+def _ensure_spawn_lease_schema(conn: Any) -> None:
+    """Create/upgrade the coordination table without invalidating old callers.
+
+    ``task_key`` remains the exclusion key.  The added owner tuple makes a
+    lease belong to one concrete session instead of the broad agent lane, so a
+    second ``claude`` process cannot renew or release the first one's lease.
+    """
+    conn.execute(
+        """CREATE TABLE IF NOT EXISTS spawn_leases (
+            task_key TEXT PRIMARY KEY, agent_id TEXT NOT NULL,
+            acquired_at TEXT NOT NULL, expires_at TEXT NOT NULL,
+            owner_token TEXT, owner_pid INTEGER, owner_host TEXT,
+            renewed_at TEXT)"""
+    )
+    existing = {str(row[1]) for row in conn.execute("PRAGMA table_info(spawn_leases)")}
+    for name, sql_type in (
+        ("owner_token", "TEXT"),
+        ("owner_pid", "INTEGER"),
+        ("owner_host", "TEXT"),
+        ("renewed_at", "TEXT"),
+    ):
+        if name not in existing:
+            try:
+                conn.execute(f"ALTER TABLE spawn_leases ADD COLUMN {name} {sql_type}")
+            except sqlite3.OperationalError:
+                # Another controller may have completed the same idempotent
+                # migration after our PRAGMA snapshot.
+                refreshed = {
+                    str(row[1]) for row in conn.execute("PRAGMA table_info(spawn_leases)")
+                }
+                if name not in refreshed:
+                    raise
+
+
 def acquire_spawn_lease(conn: Any, task_key: str, agent_id: str, now_iso: str,
-                        expires_iso: str) -> bool:
+                        expires_iso: str, *, owner_token: str | None = None,
+                        owner_pid: int | None = None,
+                        owner_host: str | None = None,
+                        fail_open_on_error: bool = True) -> bool:
     """R-065-3 claim/lease: prevent two spawn paths doing the same work (the
     Task-E duplication). Returns True if the lease was acquired, False if a live
     (non-expired) lease for task_key already exists. Caller passes timestamps so
     the function stays deterministic/testable.
 
-    Lease bugs must never halt the live factory. On storage errors this returns
-    True (fail-open for coordination only) and emits a best-effort audit event.
+    Task-router callers retain the historical fail-open behavior on storage
+    errors. Headless-session callers pass ``fail_open_on_error=False`` because
+    uncertainty there must refuse a duplicate controller. Every error emits a
+    best-effort audit event.
     """
     try:
-        conn.execute(
-            """CREATE TABLE IF NOT EXISTS spawn_leases (
-                task_key TEXT PRIMARY KEY, agent_id TEXT NOT NULL,
-                acquired_at TEXT NOT NULL, expires_at TEXT NOT NULL)"""
+        _ensure_spawn_lease_schema(conn)
+        cursor = conn.execute(
+            """INSERT INTO spawn_leases(
+                   task_key, agent_id, acquired_at, expires_at,
+                   owner_token, owner_pid, owner_host, renewed_at
+               ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+               ON CONFLICT(task_key) DO UPDATE SET
+                   agent_id=excluded.agent_id,
+                   acquired_at=excluded.acquired_at,
+                   expires_at=excluded.expires_at,
+                   owner_token=excluded.owner_token,
+                   owner_pid=excluded.owner_pid,
+                   owner_host=excluded.owner_host,
+                   renewed_at=excluded.renewed_at
+               WHERE spawn_leases.expires_at <= excluded.acquired_at""",
+            (
+                task_key,
+                agent_id,
+                now_iso,
+                expires_iso,
+                owner_token,
+                owner_pid,
+                owner_host,
+                now_iso,
+            ),
         )
-        row = conn.execute("SELECT expires_at FROM spawn_leases WHERE task_key=?", (task_key,)).fetchone()
-        live = row is not None and str(row[0]) > now_iso
-        if live:
-            return False
-        conn.execute(
-            "INSERT OR REPLACE INTO spawn_leases(task_key, agent_id, acquired_at, expires_at) "
-            "VALUES (?, ?, ?, ?)",
-            (task_key, agent_id, now_iso, expires_iso),
-        )
-        return True
+        return bool(cursor.rowcount)
     except Exception as exc:  # pragma: no cover - exercised by caller-safety tests
+        error_mode = "FAIL_OPEN" if fail_open_on_error else "FAIL_CLOSED"
         _audit(agent_id, "spawn.lease", tool="acquire_spawn_lease",
-               args_summary=f"{task_key} [LEASE_ERROR_FAIL_OPEN:{exc!r}]",
-               decision="ALLOW", conn=conn)
-        return True
+               args_summary=f"{task_key} [LEASE_ERROR_{error_mode}:{exc!r}]",
+               decision="ALLOW" if fail_open_on_error else "DENY", conn=conn)
+        return bool(fail_open_on_error)
 
 
-def release_spawn_lease(conn: Any, task_key: str) -> None:
+def renew_spawn_lease(conn: Any, task_key: str, *, owner_token: str,
+                      owner_pid: int, owner_host: str, now_iso: str,
+                      expires_iso: str) -> bool:
+    """Renew only the exact live session owner; foreign/stale owners refuse."""
     try:
-        conn.execute("DELETE FROM spawn_leases WHERE task_key=?", (task_key,))
+        _ensure_spawn_lease_schema(conn)
+        cursor = conn.execute(
+            """UPDATE spawn_leases
+               SET expires_at=?, renewed_at=?
+               WHERE task_key=? AND owner_token=? AND owner_pid=? AND owner_host=?
+                 AND expires_at > ?""",
+            (expires_iso, now_iso, task_key, owner_token, owner_pid, owner_host, now_iso),
+        )
+        return bool(cursor.rowcount)
+    except Exception as exc:  # coordination failure must stop an owner refresh
+        _audit(
+            "controller",
+            "spawn.lease",
+            tool="renew_spawn_lease",
+            args_summary=f"{task_key} [LEASE_ERROR_FAIL_CLOSED:{exc!r}]",
+            decision="DENY",
+            conn=conn,
+        )
+        return False
+
+
+def release_spawn_lease(conn: Any, task_key: str, *, owner_token: str | None = None,
+                        owner_pid: int | None = None,
+                        owner_host: str | None = None) -> None:
+    try:
+        if owner_token is None:
+            # Backward-compatible task-router release.  Concrete orchestration
+            # sessions always provide the full owner tuple below.
+            conn.execute("DELETE FROM spawn_leases WHERE task_key=?", (task_key,))
+            return
+        conn.execute(
+            """DELETE FROM spawn_leases
+               WHERE task_key=? AND owner_token=? AND owner_pid=? AND owner_host=?""",
+            (task_key, owner_token, owner_pid, owner_host),
+        )
     except Exception:
         pass
 

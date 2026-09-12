@@ -3806,3 +3806,12 @@ have two complete request-quote/fill observations; USDCAD and USOIL.cash still h
 `MISSING_NO_FILL`. The refreshed hash-bound comparator remains 2/4 `cost_eligible` and selects zero. Four-stream
 acceptance is a bounded deviation rather than a value to impute or create through trading; no order, terminal
 control, AutoTrading action, roster, threshold, or verdict changed.
+
+## 2026-09-12 — Headless orchestration session race hardening (`1061ff77`) REVIEW
+
+RESULT: the wrapper now holds one renewable 30-minute lease per agent through an exact session token/pid/host;
+the real two-thread test proves only one concurrent Claude controller can win, and a foreign session cannot renew
+or release it. A fresh interactive marker skips before acquisition with a JSONL receipt. Stable blocker-state
+hashes now reserve one reusable evidence artifact and the prompt forbids duplicate timestamped evidence,
+OPEN_ITEMS entries, or no-change commits. Focused launcher/backend tests: 212 passed; Claude dry-run PASS. No
+model, terminal, worker, queue, trading, T_Live, or AutoTrading action occurred.

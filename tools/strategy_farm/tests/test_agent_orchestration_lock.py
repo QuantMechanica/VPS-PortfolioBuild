@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import datetime as dt
 import json
 import os
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 
@@ -38,6 +40,93 @@ def test_headless_prompt_uses_canonical_control_plane_from_task_worktree() -> No
     assert f"python {canonical_farmctl} health" in prompt
     assert "python tools/strategy_farm/agent_router.py status" not in prompt
     assert "`agent_router.py run`, `route-many`, `route-once`, or `replenish`" in prompt
+    assert "--dedupe-no-change-task <task_id>" in prompt
+    assert "make no no-change commit" in prompt
+
+
+def test_two_headless_sessions_cannot_hold_the_same_agent_lease(tmp_path, monkeypatch) -> None:
+    farm_root = tmp_path / "farm"
+    monkeypatch.setattr(orchestration, "FARM_ROOT", farm_root)
+    now = dt.datetime.now(dt.UTC)
+    prepared = orchestration.agent_router.connect(farm_root)
+    prepared.close()
+
+    def acquire(token: str, pid: int):
+        return orchestration.acquire_headless_session_lease(
+            "claude", now=now, session_token=token, owner_pid=pid, owner_host="host-a"
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(lambda args: acquire(*args), [("session-a", 101), ("session-b", 202)]))
+
+    assert sum(int(acquired) for acquired, _lease in results) == 1
+    winner = next(lease for acquired, lease in results if acquired)
+    loser = next(lease for acquired, lease in results if not acquired)
+    assert loser["reason"] == "foreign_live_headless_session"
+    assert loser["existing"]["owner_token"] == winner["session_token"]
+    orchestration.release_headless_session_lease(winner)
+
+
+def test_headless_skips_while_interactive_flag_is_fresh(tmp_path, monkeypatch) -> None:
+    flag = tmp_path / "INTERACTIVE_ORCHESTRATOR.flag"
+    now = dt.datetime.now(dt.UTC)
+    flag.write_text(
+        json.dumps({"pid": 4321, "host": "desk", "heartbeat_at": now.isoformat()}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(orchestration, "INTERACTIVE_ORCHESTRATOR_FLAG", flag)
+    monkeypatch.setattr(orchestration, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setattr(orchestration, "_write_lane_heartbeat", lambda *_a, **_k: None)
+
+    def fail_if_lease_attempted(*_args, **_kwargs):
+        raise AssertionError("interactive guard must run before headless lease acquisition")
+
+    monkeypatch.setattr(orchestration, "acquire_headless_session_lease", fail_if_lease_attempted)
+    result = orchestration.run_agent(
+        "claude", dry_run=False, stale_minutes=250, timeout_minutes=225, max_sessions=1
+    )
+
+    assert result["skipped"] is True
+    assert result["reason"] == "interactive_orchestrator_active"
+    assert result["interactive_guard"]["reason"] == "interactive_flag_fresh"
+    journal = tmp_path / "logs" / "headless_orchestration_skip_journal.jsonl"
+    assert "interactive_orchestrator_active" in journal.read_text(encoding="utf-8")
+
+
+def test_no_change_evidence_is_reserved_once_per_stable_state_hash(tmp_path) -> None:
+    evidence_root = tmp_path / "evidence"
+    artifact = evidence_root / "task_state.json"
+    state = {"blocker": "NO_Q09_PASS", "rows": ["a", "b"]}
+
+    first = orchestration.reserve_no_change_evidence(
+        "claude",
+        "task-1",
+        state,
+        artifact,
+        marker_root=tmp_path / "markers",
+        evidence_root=evidence_root,
+    )
+    second = orchestration.reserve_no_change_evidence(
+        "claude",
+        "task-1",
+        {"rows": ["a", "b"], "blocker": "NO_Q09_PASS"},
+        artifact,
+        marker_root=tmp_path / "markers",
+        evidence_root=evidence_root,
+    )
+    changed = orchestration.reserve_no_change_evidence(
+        "claude",
+        "task-1",
+        {"blocker": "NO_Q09_PASS", "rows": ["a", "b", "c"]},
+        artifact,
+        marker_root=tmp_path / "markers",
+        evidence_root=evidence_root,
+    )
+
+    assert first["write_allowed"] is True
+    assert second["write_allowed"] is False
+    assert second["state_sha256"] == first["state_sha256"]
+    assert changed["write_allowed"] is True
 
 
 def test_live_lock_owner_is_never_displaced_by_age(tmp_path, monkeypatch) -> None:

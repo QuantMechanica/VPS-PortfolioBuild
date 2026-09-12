@@ -9,9 +9,11 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import os
 import shutil
+import socket
 import subprocess
 import sys
 import time
@@ -85,6 +87,10 @@ FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm")
 LOG_DIR = FARM_ROOT / "logs"
 PYTHONW_CRASH_LOG = LOG_DIR / "agent_orchestration_pythonw_crash.log"
 LOCK_DIR = FARM_ROOT / "locks"
+INTERACTIVE_ORCHESTRATOR_FLAG = FARM_ROOT / "state" / "INTERACTIVE_ORCHESTRATOR.flag"
+NO_CHANGE_STATE_DIR = FARM_ROOT / "state" / "orchestration_no_change"
+HEADLESS_SESSION_LEASE_TTL_MINUTES = 30
+INTERACTIVE_FLAG_STALE_MINUTES = 30
 PYTHON_EXE = Path(r"C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe")
 CODEX_FALLBACK = Path(r"C:\Users\Administrator\AppData\Roaming\npm\codex.cmd")
 # Antigravity CLI (agy) — replaces the deprecated gemini-cli for the "gemini" lane
@@ -253,6 +259,14 @@ Cycle:
    returns an empty list. Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
 4. If no task remains, run `python {canonical_farmctl} health` and check QM5_10260 queue state. Do not invent untracked work.
 5. Exit.
+
+No-change dedupe:
+- A recheck whose blocker facts have not changed must not create another timestamped
+  evidence file, OPEN_ITEMS entry, or commit. Put only stable blocker facts and bound
+  hashes/row IDs (no observation timestamp) in a canonical JSON file, then run:
+  `python {REPO_ROOT.as_posix()}/tools/strategy_farm/run_agent_orchestration_task.py --agent {agent} --dedupe-no-change-task <task_id> --state-json <json> --artifact-path <existing_or_planned_evidence>`.
+  Write/commit the planned evidence only when `write_allowed=true`; otherwise reuse
+  `artifact_path` from the response and make no no-change commit.
 
 Hard rules:
 - Do not choose work outside the deterministic router.
@@ -687,6 +701,7 @@ def run_agent_slot(
     stale_minutes: int,
     timeout_minutes: int,
     invocation_profile: dict[str, Any] | None = None,
+    session_lease: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = utc_stamp()
@@ -901,7 +916,7 @@ def run_agent_slot(
                     proc,
                     timeout_minutes * 60,
                     HEARTBEAT_REFRESH_INTERVAL_SECONDS,
-                    lambda: _write_lane_heartbeat(agent, slot=slot),
+                    lambda: _refresh_headless_ownership(agent, slot, session_lease),
                 )
                 payload["ok"] = payload["returncode"] == 0
                 managed_process_finished = managed_pid is not None
@@ -937,6 +952,19 @@ def run_agent_slot(
             payload["push"] = push_worktree_branch(cwd, branch_name(agent, slot))
         return payload
     except Exception as exc:
+        running_proc = locals().get("proc")
+        if running_proc is not None and payload.get("pid") and not managed_process_finished:
+            try:
+                if managed_pid is not None:
+                    stopped = terminate_managed_codex_pid(FARM_ROOT, managed_pid)
+                    payload["exception_stop"] = stopped
+                    managed_process_finished = bool(stopped.get("stopped"))
+                else:
+                    running_proc.kill()
+                    running_proc.wait(timeout=30)
+                    payload["exception_stop"] = {"stopped": True}
+            except Exception as stop_exc:
+                payload["exception_stop"] = {"stopped": False, "error": repr(stop_exc)}
         payload.update({"ok": False, "returncode": 1, "error": repr(exc)})
         if codex_ledger and codex_ledger.get("recorded") and not payload.get("pid"):
             # The message was booked but no process was ever launched: refund
@@ -1011,6 +1039,254 @@ def _parse_dt(value: str) -> dt.datetime | None:
     if parsed.tzinfo is None:
         parsed = parsed.replace(tzinfo=dt.UTC)
     return parsed.astimezone(dt.UTC)
+
+
+def interactive_orchestrator_status(
+    *,
+    flag_path: Path | None = None,
+    now: dt.datetime | None = None,
+    stale_minutes: int = INTERACTIVE_FLAG_STALE_MINUTES,
+) -> dict[str, Any]:
+    """Return an explicit headless-admission decision for the interactive flag.
+
+    A fresh malformed marker also blocks: ambiguity must not create a duplicate
+    interactive/headless session.  A stale marker is reported but ignored.
+    """
+    path = flag_path or INTERACTIVE_ORCHESTRATOR_FLAG
+    observed = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC)
+    if not path.exists():
+        return {"active": False, "reason": "interactive_flag_absent", "path": str(path)}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(payload, dict):
+            raise ValueError("interactive flag must be a JSON object")
+    except Exception as exc:
+        try:
+            age_seconds = max(0.0, observed.timestamp() - path.stat().st_mtime)
+        except OSError:
+            age_seconds = 0.0
+        active = age_seconds <= stale_minutes * 60
+        return {
+            "active": active,
+            "reason": "interactive_flag_malformed_fresh" if active else "interactive_flag_malformed_stale",
+            "path": str(path),
+            "age_seconds": round(age_seconds, 3),
+            "error": repr(exc),
+        }
+    heartbeat_text = str(payload.get("heartbeat_at") or payload.get("heartbeat") or "")
+    heartbeat = _parse_dt(heartbeat_text)
+    if heartbeat is None:
+        try:
+            age_seconds = max(0.0, observed.timestamp() - path.stat().st_mtime)
+        except OSError:
+            age_seconds = 0.0
+        active = age_seconds <= stale_minutes * 60
+        return {
+            "active": active,
+            "reason": (
+                "interactive_flag_missing_heartbeat_fresh"
+                if active
+                else "interactive_flag_missing_heartbeat_stale"
+            ),
+            "path": str(path),
+            "payload": payload,
+            "age_seconds": round(age_seconds, 3),
+        }
+    age_seconds = max(0.0, (observed - heartbeat).total_seconds())
+    active = age_seconds <= stale_minutes * 60
+    return {
+        "active": active,
+        "reason": "interactive_flag_fresh" if active else "interactive_flag_stale",
+        "path": str(path),
+        "pid": payload.get("pid"),
+        "host": payload.get("host"),
+        "heartbeat_at": heartbeat.isoformat(),
+        "age_seconds": round(age_seconds, 3),
+    }
+
+
+def _journal_headless_skip(agent: str, reason: str, detail: dict[str, Any]) -> None:
+    """Append a durable admission refusal without creating a Git commit."""
+    path = LOG_DIR / "headless_orchestration_skip_journal.jsonl"
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        row = {
+            "schema": "qm.headless-orchestration-skip/v1",
+            "at": dt.datetime.now(dt.UTC).isoformat(),
+            "agent": agent,
+            "reason": reason,
+            "detail": detail,
+        }
+        encoded = json.dumps(row, sort_keys=True, separators=(",", ":")) + "\n"
+        with path.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(encoded)
+            handle.flush()
+            os.fsync(handle.fileno())
+    except OSError:
+        pass
+
+
+def acquire_headless_session_lease(
+    agent: str,
+    *,
+    now: dt.datetime | None = None,
+    session_token: str | None = None,
+    owner_pid: int | None = None,
+    owner_host: str | None = None,
+) -> tuple[bool, dict[str, Any]]:
+    """Atomically admit one concrete headless controller for an agent lane."""
+    observed = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC).replace(microsecond=0)
+    token = session_token or uuid.uuid4().hex
+    pid = int(owner_pid or os.getpid())
+    host = owner_host or socket.gethostname()
+    task_key = f"headless_orchestration:{agent}"
+    expires = observed + dt.timedelta(minutes=HEADLESS_SESSION_LEASE_TTL_MINUTES)
+    try:
+        conn = agent_router.connect(FARM_ROOT)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            acquired = agent_router.agent_scopes.acquire_spawn_lease(
+                conn,
+                task_key,
+                agent,
+                observed.isoformat(timespec="seconds"),
+                expires.isoformat(timespec="seconds"),
+                owner_token=token,
+                owner_pid=pid,
+                owner_host=host,
+                fail_open_on_error=False,
+            )
+            existing = None
+            if not acquired:
+                row = conn.execute(
+                    """SELECT agent_id, acquired_at, expires_at, owner_token,
+                              owner_pid, owner_host, renewed_at
+                       FROM spawn_leases WHERE task_key=?""",
+                    (task_key,),
+                ).fetchone()
+                if row is not None:
+                    existing = dict(row)
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as exc:
+        return False, {
+            "task_key": task_key,
+            "reason": "headless_session_lease_error_fail_closed",
+            "error": repr(exc),
+        }
+    info = {
+        "task_key": task_key,
+        "agent": agent,
+        "session_token": token,
+        "owner_pid": pid,
+        "owner_host": host,
+        "acquired_at": observed.isoformat(timespec="seconds"),
+        "expires_at": expires.isoformat(timespec="seconds"),
+    }
+    if not acquired:
+        info.update({"reason": "foreign_live_headless_session", "existing": existing})
+    return bool(acquired), info
+
+
+def renew_headless_session_lease(
+    lease: dict[str, Any], *, now: dt.datetime | None = None
+) -> bool:
+    observed = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC).replace(microsecond=0)
+    expires = observed + dt.timedelta(minutes=HEADLESS_SESSION_LEASE_TTL_MINUTES)
+    try:
+        conn = agent_router.connect(FARM_ROOT)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            renewed = agent_router.agent_scopes.renew_spawn_lease(
+                conn,
+                str(lease["task_key"]),
+                owner_token=str(lease["session_token"]),
+                owner_pid=int(lease["owner_pid"]),
+                owner_host=str(lease["owner_host"]),
+                now_iso=observed.isoformat(timespec="seconds"),
+                expires_iso=expires.isoformat(timespec="seconds"),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        return False
+    if renewed:
+        lease["expires_at"] = expires.isoformat(timespec="seconds")
+    return bool(renewed)
+
+
+def release_headless_session_lease(lease: dict[str, Any]) -> None:
+    try:
+        conn = agent_router.connect(FARM_ROOT)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            agent_router.agent_scopes.release_spawn_lease(
+                conn,
+                str(lease["task_key"]),
+                owner_token=str(lease["session_token"]),
+                owner_pid=int(lease["owner_pid"]),
+                owner_host=str(lease["owner_host"]),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        # Expiry remains the fail-safe if release storage is unavailable.
+        pass
+
+
+def reserve_no_change_evidence(
+    agent: str,
+    task_id: str,
+    state: Any,
+    artifact_path: Path,
+    *,
+    marker_root: Path | None = None,
+    evidence_root: Path | None = None,
+) -> dict[str, Any]:
+    """Atomically reserve one evidence write per stable blocker-state hash."""
+    allowed_root = (evidence_root or (REPO_ROOT / "docs" / "ops" / "evidence")).resolve()
+    artifact = artifact_path.resolve()
+    if not artifact.is_relative_to(allowed_root):
+        raise ValueError(f"artifact path must stay below {allowed_root}")
+    canonical = json.dumps(state, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+    state_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+    root = marker_root or NO_CHANGE_STATE_DIR
+    marker = root / agent / task_id / f"{state_hash}.json"
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema": "qm.orchestration-no-change-state/v1",
+        "agent": agent,
+        "task_id": task_id,
+        "state_sha256": state_hash,
+        "artifact_path": str(artifact),
+        "reserved_at": dt.datetime.now(dt.UTC).isoformat(),
+    }
+    try:
+        fd = os.open(marker, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+    except FileExistsError:
+        existing = json.loads(marker.read_text(encoding="utf-8"))
+        return {
+            "write_allowed": False,
+            "reason": "state_hash_already_recorded",
+            "state_sha256": state_hash,
+            "marker_path": str(marker),
+            "artifact_path": existing.get("artifact_path"),
+        }
+    with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+        json.dump(payload, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    return {
+        "write_allowed": True,
+        "reason": "new_state_hash_reserved",
+        "state_sha256": state_hash,
+        "marker_path": str(marker),
+        "artifact_path": str(artifact),
+    }
 
 
 def _claude_budget_policy() -> dict[str, Any]:
@@ -1320,9 +1596,23 @@ def _write_lane_heartbeat(agent: str, slot: int = 0) -> None:
         pass
 
 
-def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: int, max_sessions: int) -> dict[str, Any]:
-    if not dry_run:
-        _write_lane_heartbeat(agent)
+def _refresh_headless_ownership(
+    agent: str, slot: int, session_lease: dict[str, Any] | None
+) -> None:
+    _write_lane_heartbeat(agent, slot=slot)
+    if session_lease is not None and not renew_headless_session_lease(session_lease):
+        _journal_headless_skip(agent, "headless_session_lease_lost", session_lease)
+        raise RuntimeError("headless session lease renewal refused")
+
+
+def _run_agent_with_session_lease(
+    agent: str,
+    dry_run: bool,
+    stale_minutes: int,
+    timeout_minutes: int,
+    max_sessions: int,
+    session_lease: dict[str, Any] | None,
+) -> dict[str, Any]:
     if agent == "claude" and CLAUDE_DISABLED_FLAG.exists():
         return {
             "agent": agent,
@@ -1398,6 +1688,7 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
                 stale_minutes,
                 timeout_minutes,
                 slot_invocation(0),
+                session_lease,
             )
         ]
     else:
@@ -1411,6 +1702,7 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
                     stale_minutes,
                     timeout_minutes,
                     slot_invocation(slot - 1),
+                    session_lease,
                 )
                 for slot in range(1, session_count + 1)
             ]
@@ -1426,6 +1718,57 @@ def run_agent(agent: str, dry_run: bool, stale_minutes: int, timeout_minutes: in
     }
 
 
+def run_agent(
+    agent: str,
+    dry_run: bool,
+    stale_minutes: int,
+    timeout_minutes: int,
+    max_sessions: int,
+) -> dict[str, Any]:
+    if dry_run:
+        return _run_agent_with_session_lease(
+            agent, dry_run, stale_minutes, timeout_minutes, max_sessions, None
+        )
+
+    _write_lane_heartbeat(agent)
+    interactive = interactive_orchestrator_status()
+    if interactive.get("active"):
+        _journal_headless_skip(agent, "interactive_orchestrator_active", interactive)
+        return {
+            "agent": agent,
+            "ok": True,
+            "returncode": 0,
+            "skipped": True,
+            "reason": "interactive_orchestrator_active",
+            "interactive_guard": interactive,
+        }
+
+    acquired, session_lease = acquire_headless_session_lease(agent)
+    if not acquired:
+        _journal_headless_skip(agent, str(session_lease.get("reason")), session_lease)
+        return {
+            "agent": agent,
+            "ok": True,
+            "returncode": 0,
+            "skipped": True,
+            "reason": session_lease.get("reason", "foreign_live_headless_session"),
+            "session_lease": session_lease,
+        }
+    try:
+        result = _run_agent_with_session_lease(
+            agent,
+            dry_run,
+            stale_minutes,
+            timeout_minutes,
+            max_sessions,
+            session_lease,
+        )
+        result["session_lease"] = session_lease
+        return result
+    finally:
+        release_headless_session_lease(session_lease)
+
+
 def main() -> int:
     os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser(description="Run one headless agent orchestration pass.")
@@ -1436,7 +1779,22 @@ def main() -> int:
     # Leave cleanup headroom below the scheduled task's PT4H execution limit.
     parser.add_argument("--timeout-minutes", type=int, default=225)
     parser.add_argument("--max-sessions", type=int, default=1, help="Claude-only parallel slot count.")
+    parser.add_argument("--dedupe-no-change-task", help="Reserve/reuse one evidence artifact for a stable task-state hash.")
+    parser.add_argument("--state-json", type=Path, help="Canonical JSON containing stable blocker facts only.")
+    parser.add_argument("--artifact-path", type=Path, help="Existing or planned canonical evidence path for the state hash.")
     args = parser.parse_args()
+    if args.dedupe_no_change_task:
+        if args.state_json is None or args.artifact_path is None:
+            parser.error("--dedupe-no-change-task requires --state-json and --artifact-path")
+        state = json.loads(args.state_json.read_text(encoding="utf-8"))
+        result = reserve_no_change_evidence(
+            args.agent,
+            args.dedupe_no_change_task,
+            state,
+            args.artifact_path,
+        )
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 0
     result = run_agent(args.agent, args.dry_run, args.stale_minutes, args.timeout_minutes, args.max_sessions)
     print(json.dumps(result, indent=2, sort_keys=True))
     return int(result.get("returncode", 0) or 0)

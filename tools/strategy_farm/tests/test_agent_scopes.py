@@ -262,3 +262,87 @@ def test_spawn_lease_error_fails_open(monkeypatch):
     assert calls[0][0] == "agent_audit"
     assert calls[0][2] == "spawn.lease"
     assert calls[0][3]["decision"] == "ALLOW"
+
+
+def test_session_owned_spawn_lease_requires_exact_owner_to_renew_and_release():
+    import sqlite3
+
+    c = sqlite3.connect(":memory:")
+    assert sc.acquire_spawn_lease(
+        c,
+        "headless_orchestration:claude",
+        "claude",
+        "2026-09-12T10:00:00+00:00",
+        "2026-09-12T10:30:00+00:00",
+        owner_token="session-a",
+        owner_pid=101,
+        owner_host="host-a",
+    )
+    # Same broad agent id is not ownership: the second concrete session loses.
+    assert not sc.acquire_spawn_lease(
+        c,
+        "headless_orchestration:claude",
+        "claude",
+        "2026-09-12T10:01:00+00:00",
+        "2026-09-12T10:31:00+00:00",
+        owner_token="session-b",
+        owner_pid=202,
+        owner_host="host-a",
+    )
+    assert not sc.renew_spawn_lease(
+        c,
+        "headless_orchestration:claude",
+        owner_token="session-b",
+        owner_pid=202,
+        owner_host="host-a",
+        now_iso="2026-09-12T10:02:00+00:00",
+        expires_iso="2026-09-12T10:32:00+00:00",
+    )
+    assert sc.renew_spawn_lease(
+        c,
+        "headless_orchestration:claude",
+        owner_token="session-a",
+        owner_pid=101,
+        owner_host="host-a",
+        now_iso="2026-09-12T10:02:00+00:00",
+        expires_iso="2026-09-12T10:32:00+00:00",
+    )
+    sc.release_spawn_lease(
+        c,
+        "headless_orchestration:claude",
+        owner_token="session-b",
+        owner_pid=202,
+        owner_host="host-a",
+    )
+    assert c.execute(
+        "SELECT owner_token FROM spawn_leases WHERE task_key=?",
+        ("headless_orchestration:claude",),
+    ).fetchone()[0] == "session-a"
+    sc.release_spawn_lease(
+        c,
+        "headless_orchestration:claude",
+        owner_token="session-a",
+        owner_pid=101,
+        owner_host="host-a",
+    )
+    assert c.execute("SELECT COUNT(*) FROM spawn_leases").fetchone()[0] == 0
+
+
+def test_spawn_lease_error_can_fail_closed_for_headless_coordination(monkeypatch):
+    class BadConn:
+        def execute(self, *_args, **_kwargs):
+            raise RuntimeError("boom")
+
+    calls = _patch_event(monkeypatch)
+    assert not sc.acquire_spawn_lease(
+        BadConn(),
+        "headless_orchestration:claude",
+        "claude",
+        "2026-09-12T10:00:00+00:00",
+        "2026-09-12T10:30:00+00:00",
+        owner_token="session-a",
+        owner_pid=101,
+        owner_host="host-a",
+        fail_open_on_error=False,
+    )
+    assert calls[0][3]["decision"] == "DENY"
