@@ -48,8 +48,8 @@ input double strategy_min_entry_atr_mult     = 0.4;
 input double strategy_max_entry_atr_mult     = 2.5;
 input int    strategy_be_trigger_pips        = 20;
 input int    strategy_be_buffer_pips         = 3;
-input int    strategy_max_spread_points      = 35;
 input int    strategy_news_blackout_minutes  = 15;
+input bool   strategy_debug                  = false;
 
 datetime g_custom_news_cache_bucket = 0;
 bool     g_custom_news_cache_blocked = false;
@@ -92,6 +92,30 @@ bool HasOurPendingStopOrder()
    return false;
   }
 
+bool HasOurOpenPosition()
+  {
+   const int magic = QM_FrameworkMagic();
+   for(int i = PositionsTotal() - 1; i >= 0; --i)
+     {
+      const ulong ticket = PositionGetTicket(i);
+      if(ticket == 0 || !PositionSelectByTicket(ticket))
+         continue;
+      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
+         continue;
+      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
+         return true;
+     }
+   return false;
+  }
+
+void Strategy_DebugDecision(const string event_name, const string reason)
+  {
+   if(strategy_debug)
+      QM_LogEvent(QM_INFO,
+                  event_name,
+                  StringFormat("{\"reason\":\"%s\"}", reason));
+  }
+
 void CancelOurPendingStopOrders()
   {
    const int magic = QM_FrameworkMagic();
@@ -119,30 +143,6 @@ void CancelOurPendingStopOrders()
       string error_class = "";
       QM_TradeContextSend(request, result, error_class);
      }
-  }
-
-bool Strategy_NoTradeFilter()
-  {
-   const int magic = QM_FrameworkMagic();
-   for(int i = PositionsTotal() - 1; i >= 0; --i)
-     {
-      const ulong ticket = PositionGetTicket(i);
-      if(ticket == 0 || !PositionSelectByTicket(ticket))
-         continue;
-      if(PositionGetString(POSITION_SYMBOL) != _Symbol)
-         continue;
-      if((int)PositionGetInteger(POSITION_MAGIC) == magic)
-         return false;
-     }
-
-   if(strategy_max_spread_points > 0)
-     {
-      const int spread_points = (int)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
-      if(spread_points > strategy_max_spread_points)
-         return true;
-     }
-
-   return false;
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -174,18 +174,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       now_dt.min != strategy_tokyo_open_minute)
       return false;
 
-   if(HasOurPendingStopOrder())
+   Strategy_DebugDecision("ENTRY_ATTEMPT", "TOKYO_OPEN");
+
+   if(HasOurOpenPosition())
+     {
+      Strategy_DebugDecision("ENTRY_REJECT", "OPEN_POSITION_EXISTS");
       return false;
+     }
+   if(HasOurPendingStopOrder())
+     {
+      Strategy_DebugDecision("ENTRY_REJECT", "PENDING_STOP_EXISTS");
+      return false;
+     }
 
    const double open_price = iOpen(_Symbol, PERIOD_M15, 0); // perf-allowed: card anchors static levels to the current Tokyo-open bar.
    const double h1_close = iClose(_Symbol, PERIOD_H1, 1); // perf-allowed: single closed-bar bias read after QM_IsNewBar gate.
    if(open_price <= 0.0 || h1_close <= 0.0)
+     {
+      Strategy_DebugDecision("ENTRY_REJECT", "PRICE_DATA_UNAVAILABLE");
       return false;
+     }
 
    const double point = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
    const int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
    if(point <= 0.0)
+     {
+      Strategy_DebugDecision("ENTRY_REJECT", "POINT_UNAVAILABLE");
       return false;
+     }
 
    const double pip = (digits == 3 || digits == 5) ? point * 10.0 : point;
    const double entry_offset = (double)strategy_entry_offset_pips * pip;
@@ -195,11 +211,17 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double rsi = QM_RSI(_Symbol, PERIOD_H1, strategy_rsi_period_h1, 1, PRICE_CLOSE);
    const double stoch_k = QM_Stoch_K(_Symbol, PERIOD_M15, strategy_stoch_k_m15, strategy_stoch_d_m15, strategy_stoch_slow_m15, 1);
    if(atr <= 0.0 || sma <= 0.0 || rsi <= 0.0 || stoch_k <= 0.0)
+     {
+      Strategy_DebugDecision("ENTRY_REJECT", "INDICATOR_DATA_UNAVAILABLE");
       return false;
+     }
 
    if(entry_offset < strategy_min_entry_atr_mult * atr ||
       entry_offset > strategy_max_entry_atr_mult * atr)
+     {
+      Strategy_DebugDecision("ENTRY_REJECT", "ATR_GEOMETRY");
       return false;
+     }
 
    now_dt.hour = strategy_time_stop_hour_broker;
    now_dt.min = 0;
@@ -216,6 +238,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = NormalizeDouble(open_price, _Digits);
       req.tp = NormalizeDouble(open_price + target_offset, _Digits);
       req.reason = "STATIC_FIB_OPEN_LONG";
+      Strategy_DebugDecision("ENTRY_SIGNAL", "LONG");
       return true;
      }
 
@@ -228,9 +251,11 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       req.sl = NormalizeDouble(open_price, _Digits);
       req.tp = NormalizeDouble(open_price - target_offset, _Digits);
       req.reason = "STATIC_FIB_OPEN_SHORT";
+      Strategy_DebugDecision("ENTRY_SIGNAL", "SHORT");
       return true;
      }
 
+   Strategy_DebugDecision("ENTRY_REJECT", "BIAS_FILTER");
    return false;
   }
 
@@ -349,9 +374,6 @@ void OnTick()
 
    const datetime broker_now = TimeCurrent();
    if(QM_FrameworkHandleFridayClose())
-      return;
-
-   if(Strategy_NoTradeFilter())
       return;
 
    Strategy_ManageOpenPosition();

@@ -4,7 +4,7 @@
 **Slug:** `ff-static-fib-open`
 **Source:** `6e967762-b26d-59a3-b076-35c17f2e7c36`
 **Author of this spec:** Codex
-**Last revised:** 2026-06-27
+**Last revised:** 2026-09-12
 
 ---
 
@@ -37,8 +37,8 @@ At Tokyo open, the EA anchors a static price ladder to the current M15 open. It 
 | `strategy_max_entry_atr_mult` | 2.5 | >min | Maximum entry distance as ATR multiple. |
 | `strategy_be_trigger_pips` | 20 | >=0 | Favorable move before breakeven adjustment. |
 | `strategy_be_buffer_pips` | 3 | >=0 | Breakeven buffer in pips. |
-| `strategy_max_spread_points` | 35 | >=0 | Wide-spread block threshold; zero spread is allowed. |
 | `strategy_news_blackout_minutes` | 15 | >=0 | Custom high-impact pre-news blackout window. |
+| `strategy_debug` | false | true/false | Default-off, session-bounded entry diagnostics; no effect on mechanics. |
 
 ---
 
@@ -106,3 +106,4 @@ ENV->mode validation is enforced by `QM_FrameworkInit` (`EA_INPUT_RISK_MODE_MISM
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-06-27 | Initial spec for Q02 INFRA rebuild | build task `1e0f8486-4193-4f89-8c06-59ef47e6f3d6` |
+| v2 | 2026-09-12 | Card-fidelity zero-trade recovery | Removed the unauthorized midnight spread filter, enforced one open position in the entry hook, and added default-off bounded diagnostics. |
