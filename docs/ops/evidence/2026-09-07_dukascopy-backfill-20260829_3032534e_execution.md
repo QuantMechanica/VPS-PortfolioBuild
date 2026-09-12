@@ -2000,3 +2000,37 @@ authority). `farmctl health` FAIL14/WARN18/OK54 -- same chronic FAIL category se
 baselines, no new category. Codex weekly quota now 92% used/8% remaining/`allowed:false`
 (`class_threshold_exceeded`), consistent trend from 89% at the last reading. All three tasks
 remain `IN_PROGRESS`.
+
+**Checkpoint 2026-09-12T07:19Z (real UTC via `date -u`, run started ~07:18Z):** genuinely
+new: work item `9affa7ee` reached a terminal state -- `status=failed`,
+`verdict=INFRA_FAIL`, `diagnostic_completed_at_utc=2026-09-12T07:19:37Z`. Two distinct
+findings, both read-only/non-admitting (`no_gate_verdict=true`, `signed_archive_unchanged=true`,
+confirmed via the `summary.json` at
+`D:\QM\reports\work_items\9affa7ee-64ff-4d7e-87e1-7a12d366499c\QM_DIAG_DWX_M1_OVERLAP\Q00\summary.json`):
+(1) the T1-side DWX M1 export itself ran and produced real data --
+`canonicalization_status=PARTIAL`, 25/37 symbols succeeded (1,735,391 rows, overlap window
+2025-10-01..2026-04-01, manifest at
+`D:\QM\reports\dukascopy\reconciliation_inputs\dwx_m1\20260912_063608\dwx_m1_manifest.json`,
+sha256 `1f7bca13...`), while 12 symbols (AUDCHF, EURJPY, EURUSD, GBPCAD, GBPNZD, GBPUSD,
+GDAXI, NDX, SP500, USDJPY, WS30, XNGUSD) failed with `raw M1 export is empty` -- notably
+this includes majors like EURUSD/GBPUSD/USDJPY, so this is not obviously a thin-symbol/
+index-only gap and warrants a real root-cause look (DWX symbol availability vs. export
+window vs. a T1-side export defect) before anyone treats it as an accepted residual; (2)
+separately, the `work_items` row's own wrapper validation rejected the summary with
+`diagnostic_summary_invalid:invalid DWX M1 overlap export summary:
+error,manifest_binding,manifest_contract,status` -- i.e. the wrapper's validator expects
+fields (`error`, `manifest_binding`, `manifest_contract`, `status`) that this summary schema
+(`qm.dwx-m1-overlap-export-summary/v1`) does not carry under those names, so the
+`INFRA_FAIL`/`failed` outer state reflects a validator/schema mismatch in the wrapper, not
+necessarily a defect in the diagnostic's own real output. Both points are new information the
+tool didn't produce before (the prior `bb3d2f7f` run aborted after only 2/37 symbols
+canonicalized on the old pre-fix code, so this is the first time a near-complete 37-symbol
+picture exists). Not acted on further -- no attempt to fix the wrapper validator or
+re-dispatch, consistent with this task's `allowed_actions` scope and the still-open
+authorization question flagged in the 06:36Z entry above. `bb814520`/`dfc60103` gate
+unchanged (`QM5_11196` Q10_NEWS still `verdict=REVIEW_REQUIRED`, byte-identical). No
+`update-task` call; all three remain `IN_PROGRESS`. **Flagged for OWNER/next review
+alongside the still-open 06:36Z authorization question:** (a) whether the 12 empty-export
+symbols need a T1-side investigation before P3 reconciliation can proceed for them, and (b)
+the wrapper validator's field-name mismatch against its own summary schema looks like a
+pre-existing tool defect independent of this dispatch's authorization status.
