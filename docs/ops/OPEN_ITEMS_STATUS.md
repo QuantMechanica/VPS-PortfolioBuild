@@ -4035,3 +4035,15 @@ source_citation / target_symbols / entry-exit): 10719, 10720, 12001, 12005, 1287
 folded into the Astra rework ticket 4927dcbb with the exact misses; frontmatter target_symbols/timeframe already
 transcribed from the card bodies (no mechanics changed). Net: 149 drafts closed on paper, 9 in the build queue,
 24 in rework, intake pre-screen and calendar/seasonal thesis bank commissioned.
+
+## 2026-09-13T00:40Z — ALERT workers=3, D: 22 GB (third teardown): disk-bomb backtest class identified
+
+20:21Z watch: D: 22 GB (below the 40 GB disk stop), 3 workers. Cause: the Q02 rerun of QM5_9107 XAUUSD.DWX on T8
+(claimed 20:04Z) built a 97 GB tester tick cache (Agent-3001 28 GB + bases 24 GB when measured, larger at peak);
+its first attempt on T1 (17:02Z) did the same (54 GB) and ended ACTIVE_TIMEOUT NO_FORWARD_PROGRESS after 26 min;
+the purge then tore down idle workers and the disk-throttled launcher could not restart them. Actions (GRUEN):
+pruned backups to the last 3 hourly + 3 per-mutation (21 files, 20.9 GB), superseded Dukascopy scratch root
+removed earlier (4 GB), workers restarted one call at a time -> 10/10, D: 95 GB after the cache was released.
+Ticket (Luna): diagnose the class and add a Default-OFF per-run tester-cache budget guard + exact hold after two
+hits. Note: today's backup churn (a 1.2 GB DB backed up per mutation and per hour) is itself a D: consumer ->
+retention ticket f5d30fc9.
