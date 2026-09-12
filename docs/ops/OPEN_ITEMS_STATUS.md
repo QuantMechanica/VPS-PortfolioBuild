@@ -3879,3 +3879,12 @@ The card simultaneously marks R3 PASS in frontmatter and acknowledges the unavai
 its assessment. SPEC validation passes, but compilation cannot make the economic input reproducible. Per the
 task's binding retest instruction, no source, compile, or Q02 requeue was performed. Strategy Governance must
 either define and re-approve a governed data contract or reject/retire the card.
+
+## 2026-09-12 — QM5_11301 Gemini review rework (`efe9876c`) REVIEW
+
+RESULT: Codex reproduced the prior failures: the generated SPEC missed every canonical section, and the build
+artifact used the invalid smoke value `deferred` without evidence. The reviewed MQ5 already matches the approved
+four-filter M5 mechanics and is byte-unchanged. The SPEC is repaired, focused tests pass 3/3, SPEC validation
+passes, and governed COMPILE_EA work item `a47ea7ad-8731-443c-8c40-9b1c86b0737f` is accepted but pending under
+`COMPILE_EA_WORKER_ROLLOUT_PENDING`. Honest smoke disposition is `deferred_p2_smoke`, not PASS. No Q01/Q02,
+pipeline, live, T_Live, or AutoTrading action occurred; Claude+OWNER close-out remains required.
