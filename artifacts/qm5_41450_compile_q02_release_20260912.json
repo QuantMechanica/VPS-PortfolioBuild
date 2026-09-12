@@ -1,0 +1,62 @@
+{
+  "schema": "qm.compile-q02-release-evidence/v1",
+  "recorded_utc": "2026-09-12T03:00:50+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41450",
+  "ea_label": "QM5_41450_xauxag-nr2-body-rv",
+  "strategy": "XAU/XAG synchronized two-week log-ratio range contraction plus strict body reversion",
+  "build": {
+    "compile_work_item_id": "1af3e3ce-ac8b-453e-89d6-c4c077c7971b",
+    "compile_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "terminal_claim": "T5",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_result": "PASS",
+    "reference_test_count": 6,
+    "reference_test_result": "PASS",
+    "guardrail_result": "PASS",
+    "symbol_scope_result": "BASKET_OK",
+    "mq5_sha256": "914f7b9ebb4e7d0f36dc77042a426a4443d27e9859f66a80a9adb2c7243691ca",
+    "ex5_sha256": "b13661d6ae8e7f343dd3142fb17f3c853533c60c1f09f7defed29b55b4756ed6"
+  },
+  "pacer_build_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41450_xauxag-nr2-body-rv/QM5_41450_xauxag-nr2-body-rv.mq5",
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "result": "PASS"
+  },
+  "q02_intake": {
+    "dry_run_eligible": true,
+    "applied": true,
+    "work_item_id": "e518cba9-bfd7-43bb-8e9b-5a6459d86726",
+    "status_at_record": "pending",
+    "logical_symbol": "QM5_41450_XAU_XAG_NR2_BODY_RV_D1",
+    "logical_setfile_sha256": "36fcf97147b684b87eb9a3e4a0d7fb84617099f40ab6e9753c57da378cdb2cee",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/1af3e3ce-ac8b-453e-89d6-c4c077c7971b_e518cba9-bfd7-43bb-8e9b-5a6459d86726.json",
+    "receipt_sha256": "9a0356f40a8e277402436824965e8c9e20b697368d9757cd4d6803e88c66ae9d"
+  },
+  "cpu_ceiling_check": {
+    "samples_percent": [88.0, 84.7, 89.2, 84.4, 85.5],
+    "average_percent": 86.36,
+    "maximum_percent": 89.2,
+    "threshold_percent": 97.0,
+    "below_ceiling": true
+  },
+  "setfile_repair": {
+    "reason": "governed generator emitted empty strategy symbol values in physical sibling sets; first-Q02 validates every canonical set before selecting the manifest-bound logical set",
+    "xau_setfile_sha256": "7aadee3b3bc5ab588ff1d4ee6d2865514025684ecca0cf122cb602eb6a719eca",
+    "xag_setfile_sha256": "361327c9ba893d2e9b18763a46c57de0931f16e209d28ab86ba6b8d8989b75f5",
+    "host_symbol": "XAUUSD.DWX",
+    "companion_symbol": "XAGUSD.DWX"
+  },
+  "safety": {
+    "manual_backtest_run": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}

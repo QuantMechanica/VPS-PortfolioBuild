@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   e927b2156846110d6f47475e03326a546770a356e47bc536ba97aa8aacdedf1f
 ; author:       Development
 ; date:         2026-09-12
 ;==========================================================
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=ea_input_defaults
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41450_xauxag-nr2-body-rv.md
 strategy_history_bars_d1=45
 strategy_atr_sl_mult=3.5
 strategy_max_sessions_per_week=5

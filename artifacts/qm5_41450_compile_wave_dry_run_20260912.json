@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "914f7b9ebb4e7d0f36dc77042a426a4443d27e9859f66a80a9adb2c7243691ca",
+      "ea_id": "QM5_41450",
+      "ea_label": "QM5_41450_xauxag-nr2-body-rv",
+      "expected_mq5_sha256": "914f7b9ebb4e7d0f36dc77042a426a4443d27e9859f66a80a9adb2c7243691ca",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41450_xauxag-nr2-body-rv\\QM5_41450_xauxag-nr2-body-rv.mq5",
+      "work_item_id": "1af3e3ce-ac8b-453e-89d6-c4c077c7971b"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "1af3e3ce-ac8b-453e-89d6-c4c077c7971b",
+  "work_item_id_selectors": [
+    "1af3e3ce-ac8b-453e-89d6-c4c077c7971b"
+  ]
+}

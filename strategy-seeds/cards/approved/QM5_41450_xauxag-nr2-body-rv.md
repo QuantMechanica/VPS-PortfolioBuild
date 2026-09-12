@@ -60,9 +60,12 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: G0_APPROVED_BUILD_PENDING
-q01_status: NOT_STARTED
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: 1af3e3ce-ac8b-453e-89d6-c4c077c7971b
+q01_build_report: D:/QM/reports/work_items/1af3e3ce-ac8b-453e-89d6-c4c077c7971b/QM5_41450/COMPILE_EA/compile_evidence.json
+q02_status: ENQUEUED_PENDING
+q02_work_item: e518cba9-bfd7-43bb-8e9b-5a6459d86726
 force_build: true
 review_focus: "Falsify a two-week XAU/XAG ratio-close range-contraction and strict body-reversion basket outside the certified directional XAU/SP500/NDX/XNG book. Verify synchronized ratio ranges, strict body sign, contrarian package, durable weekly attempt, aggregate fixed risk, atomic repair, and next-week lifecycle. Q09 alone may establish realized decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -231,5 +234,5 @@ optimization, portfolio-gate edits or admission, correlation waivers, deploy/liv
 |---|---|---|---|
 | G0 Source Approval | 2026-09-12 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | NOT_STARTED | build pending |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | only after Q01 PASS and deterministic intake guards |
+| Q01 Build Validation | 2026-09-12 | PASS | compile `1af3e3ce-ac8b-453e-89d6-c4c077c7971b`; `COMPILE_OK`; zero compiler errors/warnings; build check PASS; 6 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-12 | ENQUEUED_PENDING | logical-basket work item `e518cba9-bfd7-43bb-8e9b-5a6459d86726`; fresh CPU maximum 89.2% below 97% ceiling |
