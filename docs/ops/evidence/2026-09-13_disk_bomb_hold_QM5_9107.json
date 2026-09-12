@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789244896533089400,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 12730832
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260912T202856Z_08ea0e3a.sqlite",
+    "reused": false,
+    "reused_from_sidecar": null,
+    "sha256": "dd459dec5414a338412f5057f9a7054ee621461ce146c61dd65a62bcd7246a3f"
+  },
+  "hold_code": "DISK_BOMB_DIAGNOSIS_PENDING",
+  "inserted": 1,
+  "mode": "apply",
+  "reason": "QM5_9107 XAUUSD Q02: 148 INFRA_FAIL of 226 attempts; each attempt builds a 50-100 GB tester tick cache and ends ACTIVE_TIMEOUT NO_FORWARD_PROGRESS, dragging D: under the disk stop and tearing down the fleet via the purge (2026-09-12 17:xxZ, 20:2xZ); held until diagnosis ticket bd212b3b lands",
+  "release_condition": "ticket bd212b3b: root cause + per-run tester cache budget guard; orchestrator releases",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-12T20:29:50+00:00",
+        "hold_code": "DISK_BOMB_DIAGNOSIS_PENDING",
+        "reason": "QM5_9107 XAUUSD Q02: 148 INFRA_FAIL of 226 attempts; each attempt builds a 50-100 GB tester tick cache and ends ACTIVE_TIMEOUT NO_FORWARD_PROGRESS, dragging D: under the disk stop and tearing down the fleet via the purge (2026-09-12 17:xxZ, 20:2xZ); held until diagnosis ticket bd212b3b lands",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-12T20:29:50+00:00",
+        "work_item_id": "942384d1-4ebc-4a08-9cff-5ddd4c9765f3"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-12T01:04:04+00:00",
+        "ea_id": "QM5_9107",
+        "id": "942384d1-4ebc-4a08-9cff-5ddd4c9765f3",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "pending",
+        "symbol": "XTIUSD.DWX",
+        "updated_at": "2026-08-12T01:04:04+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": null,
+  "superseded": 0
+}
