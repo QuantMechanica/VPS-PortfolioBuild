@@ -3390,3 +3390,13 @@ QM_Q08_DSR_CONTEXT_PREFLIGHT=1 and QM_OPT_CENSUS_PRESCREEN_ENABLED=1 in the work
 allowlist from machine scope. Next after chunk 70: first PRESCREEN program = shadow calibration on the already
 measured QM5_41405 matrix (350 cells, real-tick truth exists) to measure FN before the Nachtrag D signature
 puts prescreen in front of the sealed census.
+
+## 2026-09-12T07:40Z — RESULT T12 identity PASS; T11/T12 concurrent pilot REFUSED
+
+T12 Model-4 identity matched the fleet reference exactly: net 2941.71, PF 1.03,
+208 trades. The one-shot T11+T12 pilot then failed closed on both seats because
+pending MT5 LiveUpdate handoffs exited before testing; receipts record 94.56% / 94.34%
+admission CPU and over 40 GiB free RAM, with no report accepted. One T12 agent had
+already reached a 99.94% five-sample runtime CPU mean, so concurrent research beside
+a saturated weekday fleet is not recommended. No T_Live/FTMO or fleet claim action.
+Evidence: `docs/ops/evidence/2026-09-12_t12_identity_and_concurrent_pilot.md`.
