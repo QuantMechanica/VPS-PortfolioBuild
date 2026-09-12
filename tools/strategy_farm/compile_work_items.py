@@ -2613,6 +2613,31 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# OWNER-rework router task 27143c34 (2026-09-12): the latest governed Q02
+# completed reliably but produced zero trades because the implementation added
+# a card-absent 35-point spread veto at the Tokyo-open entry instant. Bind one
+# governed compile to the exact card-fidelity repair and immutable receipt.
+# This grants no backtest, pipeline-verdict, live, or cross-EA authority.
+QM5_10001_CARD_FIDELITY_REPAIR_AUTHORITY = (
+    "router_q02_infra_repair:27143c34-0501-41b4-82cf-bab05cd82edc:QM5_10001"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_10001_CARD_FIDELITY_REPAIR_AUTHORITY
+] = {
+    "ea_id": "10001",
+    "ea_label": "QM5_10001_ff-static-fib-open",
+    "source_sha256": "efef85059bb3bb7fd89c32d34bd1ff8868e34a197e9c7125554d711b6c417aa5",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-12_qm5_10001_source_repair_authority.json"
+    ),
+    "evidence_sha256": (
+        "16e22728106000b5d8681685e26989b18c9609b41bca19228d1c40bf4e8ab422"
+    ),
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})

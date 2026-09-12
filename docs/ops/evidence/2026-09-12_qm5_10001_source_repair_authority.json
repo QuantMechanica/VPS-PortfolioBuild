@@ -1,0 +1,24 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "authority": "router_q02_infra_repair:27143c34-0501-41b4-82cf-bab05cd82edc:QM5_10001",
+  "router_task_id": "27143c34-0501-41b4-82cf-bab05cd82edc",
+  "ea_id": "QM5_10001",
+  "ea_label": "QM5_10001_ff-static-fib-open",
+  "source_sha256": "efef85059bb3bb7fd89c32d34bd1ff8868e34a197e9c7125554d711b6c417aa5",
+  "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10001_ff-static-fib-open.md",
+  "diagnostic_q02_work_item_id": "f7a8275f-55d7-5dc2-b62e-464f3330de89",
+  "diagnostic_q02_verdict": "ZERO_TRADES",
+  "repair_class": "APPROVED_CARD_FIDELITY",
+  "repair_summary": [
+    "Removed an unapproved 35-point spread veto that ran at the Tokyo-open entry instant.",
+    "Added bounded, default-off decision logging and an own-position guard without changing entry, exit, risk, or news-blackout economics."
+  ],
+  "scope": {
+    "compile_ea": true,
+    "backtest": false,
+    "pipeline_verdict": false,
+    "live": false,
+    "cross_ea": false
+  },
+  "created_at_utc": "2026-09-12T00:00:00Z"
+}
