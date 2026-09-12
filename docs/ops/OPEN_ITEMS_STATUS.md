@@ -3307,6 +3307,15 @@ fully reversed to TODO with a narrow second append-only journal entry; no verdic
 Tests: 15 PASS; resolver dry-run 18,280 kept / 0 dropped; status-aware collisions 0. Evidence:
 `docs/ops/evidence/2026-09-12_blocked_agent_task_backlog_disposition.md`.
 
+## 2026-09-12T05:55Z — RESULT Q02 stranded exhausted pairs: REVIEW (3 -> 2)
+
+Fresh row-bound classification found 3 pairs / 40 INFRA_FAIL rows: QM5_10505/XAUUSD and QM5_12582/XNGUSD
+are ONINIT failures; QM5_20143/EURUSD is a NO_HISTORY/init failure. All are INVALID evidence defects, not valid
+zero-trade outcomes. One dry-run-selected append-only canary was admitted for QM5_10505 (`7f4fb7d4`) because its
+summary and worker log survive; the source row remains terminal. The other two are explicit repair holds (missing
+worker log; missing summary+log) and were not requeued. Live health improved 3 -> 2; focused tests 14 PASS.
+Evidence: `docs/ops/evidence/2026-09-12_q02_stranded_three_pair_disposition.md`.
+
 ## 2026-09-12T08:35Z — RESULT OWNER-DEC-BACKLOG-20260912 applied (488 rows, 0 refusals)
 
 Journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl: ARCHIVE 172 (-> FAILED with verdict
