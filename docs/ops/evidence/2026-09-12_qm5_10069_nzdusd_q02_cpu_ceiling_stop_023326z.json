@@ -1,0 +1,99 @@
+{
+  "schema": "qm.paced-fleet-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-12T02:33:46Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "a6c2cd5820",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "frontier": {
+    "frozen_scan_relationships": 66,
+    "unbuilt_relationships": 0,
+    "qm5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL",
+    "qm5_12533": "Q02 PASS; Q04 FAIL"
+  },
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_10069",
+    "ea_label": "QM5_10069_mql5-hs-rev",
+    "symbol": "NZDUSD.DWX",
+    "timeframe": "H1",
+    "source_work_item_id": "727fd995-bf25-4943-bf14-422f59adab65",
+    "source_status": "done",
+    "source_verdict": "INFRA_FAIL",
+    "source_failure": "ONINIT_FAILED;INCOMPLETE_RUNS",
+    "compile_work_item_id": "7deba014-7ca5-4e79-bd20-789bad639b69",
+    "compile_verdict": "COMPILE_OK"
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "d6243b426c4290aae893cc64088aecc9cca6cbf696abfe8792859588a60ba77c",
+    "ex5_sha256": "4f474930fa4c53657df8252416dc55efa7f3bc974ca706d63faacd54b1db7c55",
+    "setfile_sha256": "9e52a5bfafe2585eb86f86c8f6bc8446596d45e79dacaefbf0ab53a975da3dd1",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "qm_magic_slot_offset": 7
+    }
+  },
+  "framework_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_10069_mql5-hs-rev/QM5_10069_mql5-hs-rev.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "requalification_dry_run": {
+    "ok": true,
+    "eligible": true,
+    "would_enqueue": true,
+    "parameter_change_count": 0,
+    "open_successor_count": 0,
+    "applied": false
+  },
+  "cpu_admission": {
+    "ceiling_percent": 97.0,
+    "initial_samples_percent": [
+      84.084748,
+      82.559667,
+      90.633569,
+      84.376811,
+      90.040679
+    ],
+    "initial_average_percent": 86.339095,
+    "initial_maximum_percent": 90.633569,
+    "apply_boundary_samples_percent": [
+      81.456705,
+      93.088616,
+      98.051081,
+      98.536043,
+      93.366752
+    ],
+    "apply_boundary_average_percent": 92.899839,
+    "apply_boundary_maximum_percent": 98.536043,
+    "ceiling_hit": true,
+    "stop_reason": "BACKTEST_CPU_CEILING"
+  },
+  "farm_post_stop": {
+    "active_work_items": 6,
+    "pending_work_items": 6733,
+    "running_factory_terminals": [
+      "T1",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "t_live_observed_only_and_excluded": true
+  },
+  "actions": {
+    "card_created": false,
+    "ea_source_modified": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "manual_dispatch_started": false,
+    "terminal_control_performed": false,
+    "portfolio_gate_modified": false,
+    "live_surface_modified": false
+  },
+  "resume_condition": "Repeat current EX5 hash, source-pin audit, no-open-successor check, dry run, and five-sample CPU admission; apply only if both average and maximum remain strictly below 97 percent at the apply boundary."
+}
