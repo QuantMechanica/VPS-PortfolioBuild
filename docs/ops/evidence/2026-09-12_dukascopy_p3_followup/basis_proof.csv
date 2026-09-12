@@ -1,0 +1,9 @@
+symbol,scope,matched_bars,signed_close_delta_native,close_delta_q05_native,close_delta_q95_native,daily_median_min_native,daily_median_max_native,ols_relation,interpretation
+UK100.DWX,overall,79153,-13.799,-22.323,-9.196,-26.017,-6.908,Dukascopy=0.9821500*DWX+157.9451,provider cash-CFD financing/dividend basis
+UK100.DWX,2025-10,,-11.108,-14.096,-8.423,,,,month-varying basis
+UK100.DWX,2025-11,,-14.190,-17.723,-10.601,,,,month-varying basis
+UK100.DWX,2025-12,,-17.999,-25.996,-14.299,,,,month-varying basis
+XTIUSD.DWX,overall,82357,0.125,0.002,0.385,-0.005,0.465,Dukascopy=1.0262576*DWX-1.41245,continuous-contract roll/financing basis
+XTIUSD.DWX,2025-10,,0.182,-0.005,0.430,,,,month-varying basis
+XTIUSD.DWX,2025-11,,0.072,0.002,0.172,,,,month-varying basis
+XTIUSD.DWX,2025-12,,0.125,0.022,0.205,,,,month-varying basis
