@@ -1,0 +1,77 @@
+{
+  "account": {
+    "currency": "USD",
+    "leverage": 100,
+    "login": 1514536732,
+    "server": "FTMO-Demo"
+  },
+  "authorization": {
+    "autotrading_toggle": false,
+    "order_action": false,
+    "terminal_control": false,
+    "terminal_launch": false,
+    "trade_call": false
+  },
+  "cost_eligible": false,
+  "deals": [],
+  "fill_slippage": {
+    "observations": [],
+    "reason": "No native fill exists for this symbol in the collector window.",
+    "status": "MISSING_NO_FILL",
+    "value_for_cost_model": null
+  },
+  "generated_at_utc": "2026-09-12T08:50:00Z",
+  "margin_1_lot": {
+    "account_currency": "USD",
+    "buy_at_ask_account_currency": 200.46,
+    "sell_at_bid_account_currency": 200.3
+  },
+  "mode": "READ_ONLY_ALREADY_RUNNING_TERMINAL_IPC",
+  "native_commission": {
+    "deal_commission_plus_fee": null,
+    "entry_lots": 0,
+    "round_trip_usd_per_entry_lot": null,
+    "status": "MISSING_NO_FILL"
+  },
+  "orders": [],
+  "quote": {
+    "ask": 100.229,
+    "bid": 100.148,
+    "last": 0.0,
+    "source": "symbol_info_tick_at_capture",
+    "time_msc": 1789170599949
+  },
+  "schema": "qm.ftmo-native-cost-receipt/v1",
+  "symbol": "USOIL.cash",
+  "symbol_spec": {
+    "currency_base": "USD",
+    "currency_margin": "USD",
+    "currency_profit": "USD",
+    "point": 0.001,
+    "swap_long": 5.69,
+    "swap_mode": 1,
+    "swap_rollover3days": 5,
+    "swap_short": -35.75,
+    "trade_calc_mode": 4,
+    "trade_contract_size": 100.0,
+    "trade_tick_size": 0.001,
+    "trade_tick_value": 0.1,
+    "trade_tick_value_loss": 0.1,
+    "trade_tick_value_profit": 0.1,
+    "volume_max": 1000.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "terminal": {
+    "build": 6182,
+    "data_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+    "process": {
+      "executable_path": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+      "process_id": 10836
+    }
+  },
+  "window": {
+    "end_utc": "2026-09-12T08:50:00+00:00",
+    "start_utc": "2026-09-06T19:38:00+00:00"
+  }
+}

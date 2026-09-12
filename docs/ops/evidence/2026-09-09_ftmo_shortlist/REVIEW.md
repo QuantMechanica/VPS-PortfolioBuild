@@ -75,3 +75,12 @@ the old 50%-failure projection. No second 37-symbol download was started. Reques
 the four-symbol overlap through that existing path after its price-scale and
 reconciliation checks, then rerun `compare.py` with a new explicitly bound version.
 The signed 2017–2025 archive and active backtests remain untouched.
+
+## 2026-09-12 native receipt follow-up
+
+Four current, hash-bound symbol receipts are in `../2026-09-12_ftmo_native_cost_receipts/`.
+GBPUSD and EURUSD expose native realised round-trip commission of approximately
+5 USD per entry lot. USDCAD had only a cancelled pending order and USOIL.cash had
+no order/fill. None has a complete request-time executable-quote slippage stream,
+so no receipt is cost-eligible. The hash-bound comparator rerun remains a zero-pair
+roster; no missing cost was replaced with zero.

@@ -3503,6 +3503,10 @@ RESULT: REVIEW — `ea9e3c61` traced all 93 prior MATCH EAs with source hashes a
 
 RESULT: REVIEW — `308c8009` snapshotted the current read-only AccountMonitor deal export and added per-magic closes/net/gross/PF/lots/UTC-entry-hour histograms plus separate magic-0 attribution to the existing `QM_NewBook_LiveVsBook_Sunday` path. Proof run exited 0; no T_Live control or trading action occurred.
 
+## 2026-09-12 — FTMO four-symbol native cost receipts
+
+RESULT: REVIEW — `17758960` produced four hash-bound read-only receipts and reran the shortlist comparator deterministically. GBPUSD/EURUSD expose native commission; USDCAD/USOIL.cash lack fills; all four lack complete executable-quote slippage, so selected incumbents remain zero. No trading or terminal change occurred.
+
 ## 2026-09-12T~08:44Z (orchestration cycle, Claude) — task `90431302` DEC E2-Mittel: 2 calendar-taint holds released; the "mint 63 reruns" step is gated one layer deeper than expected
 
 Ran `news_calendar_scoped_activation.py` fresh (dry-run): 11/28 pending Q10_NEWS rows

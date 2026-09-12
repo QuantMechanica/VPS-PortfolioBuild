@@ -1,0 +1,27 @@
+{
+  "count": 4,
+  "generated_at_utc": "2026-09-12T08:50:00Z",
+  "receipts": [
+    {
+      "path": "GBPUSD_native_cost_receipt.json",
+      "sha256": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
+      "symbol": "GBPUSD"
+    },
+    {
+      "path": "EURUSD_native_cost_receipt.json",
+      "sha256": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
+      "symbol": "EURUSD"
+    },
+    {
+      "path": "USDCAD_native_cost_receipt.json",
+      "sha256": "055df14a6fc6969072563fa36729b62057b155ac9ecf8dff7e099c668844a5c1",
+      "symbol": "USDCAD"
+    },
+    {
+      "path": "USOIL_cash_native_cost_receipt.json",
+      "sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
+      "symbol": "USOIL.cash"
+    }
+  ],
+  "schema": "qm.ftmo-native-cost-receipt-manifest/v1"
+}

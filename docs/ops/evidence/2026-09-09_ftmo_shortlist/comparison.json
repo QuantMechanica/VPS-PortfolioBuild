@@ -1,10 +1,43 @@
 {
   "schema": "qm.ftmo-exposed-shortlist-review/v1",
-  "task_id": "54729be7-8082-4a8c-afcf-e4497e6d9f4a",
+  "task_id": "17758960-375c-4ce5-80db-a14c261838dd",
+  "predecessor_task": "54729be7-8082-4a8c-afcf-e4497e6d9f4a",
   "input_bindings": {
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-09_ftmo_acceleration\\intake.json": "4a94e8c9bae73ac8c280da2723ff3591e285a609271cbe0d8a29424457cc0492",
     "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_ftmo_current_pool_cost_snapshot.json": "90421c5a3764b7f5ba6fb281a71bd27a54910c568341443f2b5389251bb8d99e",
-    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\terminal_snapshot.json": "fbac3a2f3e09e0601f075bd52b781915281fef44e934e88dddec8dfd63192edc"
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_install\\terminal_snapshot.json": "fbac3a2f3e09e0601f075bd52b781915281fef44e934e88dddec8dfd63192edc",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\manifest.json": "1ca918b72197422aa6501861d362191f4104cb05802f63bc59f45addeae71e76",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\GBPUSD_native_cost_receipt.json": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\EURUSD_native_cost_receipt.json": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USDCAD_native_cost_receipt.json": "055df14a6fc6969072563fa36729b62057b155ac9ecf8dff7e099c668844a5c1",
+    "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09"
+  },
+  "native_receipt_manifest": {
+    "count": 4,
+    "generated_at_utc": "2026-09-12T08:50:00Z",
+    "receipts": [
+      {
+        "path": "GBPUSD_native_cost_receipt.json",
+        "sha256": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
+        "symbol": "GBPUSD"
+      },
+      {
+        "path": "EURUSD_native_cost_receipt.json",
+        "sha256": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
+        "symbol": "EURUSD"
+      },
+      {
+        "path": "USDCAD_native_cost_receipt.json",
+        "sha256": "055df14a6fc6969072563fa36729b62057b155ac9ecf8dff7e099c668844a5c1",
+        "symbol": "USDCAD"
+      },
+      {
+        "path": "USOIL_cash_native_cost_receipt.json",
+        "sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
+        "symbol": "USOIL.cash"
+      }
+    ],
+    "schema": "qm.ftmo-native-cost-receipt-manifest/v1"
   },
   "native_spec_observed_at": "2026-09-06T17:28:43Z",
   "native_spec_freshness": "HISTORICAL_SEPT6_NOT_CURRENT_AT_USE",
@@ -95,7 +128,7 @@
     "realized_commission": null
   },
   "account_type": "STANDARD_2STEP_100K_FREE_TRIAL_HISTORICAL_OWNER_RECORD",
-  "cost_class": "NATIVE_SEPT6_SWAP_PLUS_PROVISIONAL_PROVIDER_COMMISSION_NO_MATCHED_SPREAD",
+  "cost_class": "NATIVE_SEPT6_SWAP_PLUS_PROVISIONAL_PROVIDER_COMMISSION_PLUS_CURRENT_PARTIAL_NATIVE_RECEIPTS_NO_MATCHED_SPREAD",
   "pairs": [
     {
       "ea_id": "QM5_10700",
@@ -117,8 +150,38 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [
+          {
+            "deal": 514944708,
+            "fill_price": 1.35446,
+            "order": 537282503,
+            "requested_price": null,
+            "status": "MISSING_REQUEST_PRICE_MARKET_EXECUTION"
+          },
+          {
+            "adverse_price_delta": 1e-05,
+            "deal": 515968269,
+            "fill_price": 1.35471,
+            "fill_time_msc": 1788969240780,
+            "order": 538352378,
+            "request_time_msc": 1788969240616,
+            "requested_price": 1.35472,
+            "status": "REQUEST_PRICE_VS_FILL_ONLY_NO_EXECUTABLE_QUOTE"
+          }
+        ],
+        "reason": "No request-time executable quote is captured; request-price/fill deltas are evidence but not a complete slippage estimator.",
+        "status": "INCOMPLETE_NO_EXECUTABLE_QUOTE",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": -5.86,
+        "entry_lots": 1.17,
+        "round_trip_usd_per_entry_lot": 5.00854701,
+        "status": "OBSERVED_NATIVE_DEALS"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\GBPUSD_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
       "stream_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
       "trades": 360,
@@ -151,8 +214,38 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [
+          {
+            "adverse_price_delta": 9e-05,
+            "deal": 516959813,
+            "fill_price": 1.15975,
+            "fill_time_msc": 1789054497105,
+            "order": 538819928,
+            "request_time_msc": 1788998948874,
+            "requested_price": 1.15984,
+            "status": "REQUEST_PRICE_VS_FILL_ONLY_NO_EXECUTABLE_QUOTE"
+          },
+          {
+            "deal": 518245566,
+            "fill_price": 1.16002,
+            "order": 540748547,
+            "requested_price": null,
+            "status": "MISSING_REQUEST_PRICE_MARKET_EXECUTION"
+          }
+        ],
+        "reason": "No request-time executable quote is captured; request-price/fill deltas are evidence but not a complete slippage estimator.",
+        "status": "INCOMPLETE_NO_EXECUTABLE_QUOTE",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": -1.96,
+        "entry_lots": 0.39,
+        "round_trip_usd_per_entry_lot": 5.02564103,
+        "status": "OBSERVED_NATIVE_DEALS"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\EURUSD_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
       "stream_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1",
       "trades": 91,
@@ -185,8 +278,20 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [],
+        "reason": "No native fill exists for this symbol in the collector window.",
+        "status": "MISSING_NO_FILL",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": null,
+        "entry_lots": 0,
+        "round_trip_usd_per_entry_lot": null,
+        "status": "MISSING_NO_FILL"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USDCAD_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "055df14a6fc6969072563fa36729b62057b155ac9ecf8dff7e099c668844a5c1",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
       "stream_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
       "trades": 195,
@@ -219,8 +324,38 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [
+          {
+            "deal": 514944708,
+            "fill_price": 1.35446,
+            "order": 537282503,
+            "requested_price": null,
+            "status": "MISSING_REQUEST_PRICE_MARKET_EXECUTION"
+          },
+          {
+            "adverse_price_delta": 1e-05,
+            "deal": 515968269,
+            "fill_price": 1.35471,
+            "fill_time_msc": 1788969240780,
+            "order": 538352378,
+            "request_time_msc": 1788969240616,
+            "requested_price": 1.35472,
+            "status": "REQUEST_PRICE_VS_FILL_ONLY_NO_EXECUTABLE_QUOTE"
+          }
+        ],
+        "reason": "No request-time executable quote is captured; request-price/fill deltas are evidence but not a complete slippage estimator.",
+        "status": "INCOMPLETE_NO_EXECUTABLE_QUOTE",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": -5.86,
+        "entry_lots": 1.17,
+        "round_trip_usd_per_entry_lot": 5.00854701,
+        "status": "OBSERVED_NATIVE_DEALS"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\GBPUSD_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "9ec3ae430405d05988d4c2879072d7430917e30be0a4ca09b837f81472ef6db9",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -231,8 +366,20 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [],
+        "reason": "No native fill exists for this symbol in the collector window.",
+        "status": "MISSING_NO_FILL",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": null,
+        "entry_lots": 0,
+        "round_trip_usd_per_entry_lot": null,
+        "status": "MISSING_NO_FILL"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -243,8 +390,20 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [],
+        "reason": "No native fill exists for this symbol in the collector window.",
+        "status": "MISSING_NO_FILL",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": null,
+        "entry_lots": 0,
+        "round_trip_usd_per_entry_lot": null,
+        "status": "MISSING_NO_FILL"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -255,8 +414,20 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [],
+        "reason": "No native fill exists for this symbol in the collector window.",
+        "status": "MISSING_NO_FILL",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": null,
+        "entry_lots": 0,
+        "round_trip_usd_per_entry_lot": null,
+        "status": "MISSING_NO_FILL"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
       "stream_sha256": "67d4fe2cef067e041f01d10e5e6c98312a32b43683eee2da3d0bfa9af296955b",
       "trades": 82,
@@ -335,8 +506,20 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [],
+        "reason": "No native fill exists for this symbol in the collector window.",
+        "status": "MISSING_NO_FILL",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": null,
+        "entry_lots": 0,
+        "round_trip_usd_per_entry_lot": null,
+        "status": "MISSING_NO_FILL"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
       "stream_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
       "stream_sha256": "a792e2635250bcd6df5aa4a290359b54e6d5ffe8fbe10e34d143b74dfe0e8d55",
       "trades": 60,
@@ -369,8 +552,20 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [],
+        "reason": "No native fill exists for this symbol in the collector window.",
+        "status": "MISSING_NO_FILL",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": null,
+        "entry_lots": 0,
+        "round_trip_usd_per_entry_lot": null,
+        "status": "MISSING_NO_FILL"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\USOIL_cash_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "b5d42013221747871d11a6fe44cdb97afb7490172d565d661b669667f2a48c09",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -427,8 +622,38 @@
       "prospective_roster_selected": false,
       "cost_eligible": false,
       "spread_delta": null,
-      "fill_slippage": null,
-      "realized_ftmo_commission": null,
+      "fill_slippage": {
+        "observations": [
+          {
+            "adverse_price_delta": 9e-05,
+            "deal": 516959813,
+            "fill_price": 1.15975,
+            "fill_time_msc": 1789054497105,
+            "order": 538819928,
+            "request_time_msc": 1788998948874,
+            "requested_price": 1.15984,
+            "status": "REQUEST_PRICE_VS_FILL_ONLY_NO_EXECUTABLE_QUOTE"
+          },
+          {
+            "deal": 518245566,
+            "fill_price": 1.16002,
+            "order": 540748547,
+            "requested_price": null,
+            "status": "MISSING_REQUEST_PRICE_MARKET_EXECUTION"
+          }
+        ],
+        "reason": "No request-time executable quote is captured; request-price/fill deltas are evidence but not a complete slippage estimator.",
+        "status": "INCOMPLETE_NO_EXECUTABLE_QUOTE",
+        "value_for_cost_model": null
+      },
+      "realized_ftmo_commission": {
+        "deal_commission_plus_fee": -1.96,
+        "entry_lots": 0.39,
+        "round_trip_usd_per_entry_lot": 5.02564103,
+        "status": "OBSERVED_NATIVE_DEALS"
+      },
+      "native_cost_receipt": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-12_ftmo_native_cost_receipts\\EURUSD_native_cost_receipt.json",
+      "native_cost_receipt_sha256": "60d031733e9ad523ba076fc82960b2ae6a2a60e4a45eee78216c7ee22459a587",
       "reason": "NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE"
     },
     {
@@ -911,7 +1136,7 @@
     }
   ],
   "selected_pairs": [],
-  "selection_reason": "ABSTAIN_UNTIL_CURRENT_IDENTITY_AND_FULL_COST_EVIDENCE",
+  "selection_reason": "ABSTAIN: 0/4 investigation symbols has a complete executable-quote slippage receipt; USDCAD/USOIL.cash also have no native commission fill",
   "investigation_pairs": [
     "QM5_10706:GBPUSD.DWX",
     "QM5_11421:EURUSD.DWX",

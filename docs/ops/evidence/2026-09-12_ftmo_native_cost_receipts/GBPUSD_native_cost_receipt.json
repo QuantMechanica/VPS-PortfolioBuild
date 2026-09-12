@@ -1,0 +1,163 @@
+{
+  "account": {
+    "currency": "USD",
+    "leverage": 100,
+    "login": 1514536732,
+    "server": "FTMO-Demo"
+  },
+  "authorization": {
+    "autotrading_toggle": false,
+    "order_action": false,
+    "terminal_control": false,
+    "terminal_launch": false,
+    "trade_call": false
+  },
+  "cost_eligible": false,
+  "deals": [
+    {
+      "comment": "MON_SWEEP_LONG",
+      "commission": -2.93,
+      "entry": 0,
+      "fee": 0.0,
+      "magic": 107060001,
+      "order": 537282503,
+      "position_id": 537282503,
+      "price": 1.35446,
+      "profit": 0.0,
+      "swap": 0.0,
+      "symbol": "GBPUSD",
+      "ticket": 514944708,
+      "time_msc": 1788879600721,
+      "type": 0,
+      "volume": 1.17
+    },
+    {
+      "comment": "[sl 1.35472]",
+      "commission": -2.93,
+      "entry": 1,
+      "fee": 0.0,
+      "magic": 107060001,
+      "order": 538352378,
+      "position_id": 537282503,
+      "price": 1.35471,
+      "profit": 29.25,
+      "swap": -5.98,
+      "symbol": "GBPUSD",
+      "ticket": 515968269,
+      "time_msc": 1788969240780,
+      "type": 1,
+      "volume": 1.17
+    }
+  ],
+  "fill_slippage": {
+    "observations": [
+      {
+        "deal": 514944708,
+        "fill_price": 1.35446,
+        "order": 537282503,
+        "requested_price": null,
+        "status": "MISSING_REQUEST_PRICE_MARKET_EXECUTION"
+      },
+      {
+        "adverse_price_delta": 1e-05,
+        "deal": 515968269,
+        "fill_price": 1.35471,
+        "fill_time_msc": 1788969240780,
+        "order": 538352378,
+        "request_time_msc": 1788969240616,
+        "requested_price": 1.35472,
+        "status": "REQUEST_PRICE_VS_FILL_ONLY_NO_EXECUTABLE_QUOTE"
+      }
+    ],
+    "reason": "No request-time executable quote is captured; request-price/fill deltas are evidence but not a complete slippage estimator.",
+    "status": "INCOMPLETE_NO_EXECUTABLE_QUOTE",
+    "value_for_cost_model": null
+  },
+  "generated_at_utc": "2026-09-12T08:50:00Z",
+  "margin_1_lot": {
+    "account_currency": "USD",
+    "buy_at_ask_account_currency": 1352.82,
+    "sell_at_bid_account_currency": 1352.67
+  },
+  "mode": "READ_ONLY_ALREADY_RUNNING_TERMINAL_IPC",
+  "native_commission": {
+    "deal_commission_plus_fee": -5.86,
+    "entry_lots": 1.17,
+    "round_trip_usd_per_entry_lot": 5.00854701,
+    "status": "OBSERVED_NATIVE_DEALS"
+  },
+  "orders": [
+    {
+      "comment": "MON_SWEEP_LONG",
+      "magic": 107060001,
+      "position_id": 537282503,
+      "price_current": 1.35449,
+      "price_open": 0.0,
+      "reason": 3,
+      "state": 4,
+      "symbol": "GBPUSD",
+      "ticket": 537282503,
+      "time_done_msc": 1788879600721,
+      "time_setup_msc": 1788879600547,
+      "type": 0,
+      "volume_current": 0.0,
+      "volume_initial": 1.17
+    },
+    {
+      "comment": "[sl 1.35472]",
+      "magic": 107060001,
+      "position_id": 537282503,
+      "price_current": 1.35472,
+      "price_open": 1.35472,
+      "reason": 4,
+      "state": 4,
+      "symbol": "GBPUSD",
+      "ticket": 538352378,
+      "time_done_msc": 1788969240780,
+      "time_setup_msc": 1788969240616,
+      "type": 1,
+      "volume_current": 0.0,
+      "volume_initial": 1.17
+    }
+  ],
+  "quote": {
+    "ask": 1.35282,
+    "bid": 1.35267,
+    "last": 0.0,
+    "source": "symbol_info_tick_at_capture",
+    "time_msc": 1789170896271
+  },
+  "schema": "qm.ftmo-native-cost-receipt/v1",
+  "symbol": "GBPUSD",
+  "symbol_spec": {
+    "currency_base": "GBP",
+    "currency_margin": "GBP",
+    "currency_profit": "USD",
+    "point": 1e-05,
+    "swap_long": -4.34,
+    "swap_mode": 1,
+    "swap_rollover3days": 3,
+    "swap_short": -5.63,
+    "trade_calc_mode": 0,
+    "trade_contract_size": 100000.0,
+    "trade_tick_size": 1e-05,
+    "trade_tick_value": 1.0,
+    "trade_tick_value_loss": 1.0,
+    "trade_tick_value_profit": 1.0,
+    "volume_max": 50.0,
+    "volume_min": 0.01,
+    "volume_step": 0.01
+  },
+  "terminal": {
+    "build": 6182,
+    "data_path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+    "process": {
+      "executable_path": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe",
+      "process_id": 10836
+    }
+  },
+  "window": {
+    "end_utc": "2026-09-12T08:50:00+00:00",
+    "start_utc": "2026-09-06T19:38:00+00:00"
+  }
+}
