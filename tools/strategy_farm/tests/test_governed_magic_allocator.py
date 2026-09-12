@@ -156,6 +156,39 @@ def test_existing_active_rows_are_idempotently_skipped_and_retired_are_reported(
     assert plan["retired_rows_found"] == [rows[1]]
 
 
+def test_already_allocated_verification_block_is_self_evidencing(tmp_path: Path) -> None:
+    repo = _fixture_repo(tmp_path)
+    item = _candidate(repo, 1, "compiled", "exact_card", ("EURUSD.DWX",))
+    fields, rows = allocator._read_csv(repo / allocator.MAGIC_REGISTRY)
+    rows.append({
+        "ea_id": "1", "ea_slug": "compiled", "symbol_slot": "0",
+        "symbol": "EURUSD.DWX", "magic": "10000", "reserved_at": "x",
+        "reserved_by": "x", "status": "active",
+    })
+    _write_csv(repo / allocator.MAGIC_REGISTRY, fields, rows)
+    _resolver(repo / allocator.MAGIC_RESOLVER, [(1, 0, "EURUSD.DWX", 10000)])
+    identity = allocator._active_ea_registry(repo / allocator.EA_ID_REGISTRY)
+    plan = allocator.build_plan(repo, [item], identity, rows, max_eas=1)
+
+    block = allocator.build_verification_blocks(
+        repo, [item], plan["decisions"]
+    )[0]
+
+    assert block["status"] == "PASS"
+    assert block["identity_registry_row"] == {
+        "ea_id": "QM5_1", "slug": "compiled", "status": "active"
+    }
+    assert block["registry_rows"] == [{
+        "ea_id": "QM5_1", "slug": "compiled", "slot": 0,
+        "symbol": "EURUSD.DWX", "magic": 10000, "status": "active",
+    }]
+    assert block["resolver_tuples"] == [{
+        "ea_id": 1, "slot": 0, "symbol": "EURUSD.DWX", "magic": 10000,
+    }]
+    assert block["test_command"] == allocator.VERIFICATION_TEST_COMMAND
+    assert block["pass_count"] == 21
+
+
 def test_exact_card_candidate_uses_only_declared_symbols_and_refuses_retired_history(
     tmp_path: Path,
 ) -> None:

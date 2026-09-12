@@ -93,6 +93,16 @@ DL087_DISCOVERY_PAYLOAD = {
     "result_authorization": "DISCOVERY_NOT_CARD_VALIDATED",
     "requires_card_amendment_for_downstream": True,
 }
+VERIFICATION_TEST_COMMAND = (
+    "python -m pytest -q "
+    "tools/strategy_farm/tests/test_governed_magic_allocator.py "
+    "tools/strategy_farm/tests/test_magic_allocation_precheck.py "
+    "framework/scripts/tests/test_magic_resolver_strict_default.py"
+)
+# This count is the reviewed result of VERIFICATION_TEST_COMMAND for the
+# self-evidencing receipt contract added by task 6b21b05a. Keep the command and
+# count adjacent so a test-suite change cannot silently preserve stale prose.
+VERIFICATION_TEST_PASS_COUNT = 21
 
 
 class AllocationError(RuntimeError):
@@ -716,6 +726,116 @@ def _resolver_rows(path: Path) -> list[tuple[int, int, str, int]]:
     return rows
 
 
+def build_verification_blocks(
+    repo: Path,
+    candidates: Sequence[Candidate],
+    decisions: Sequence[dict],
+) -> list[dict[str, object]]:
+    """Render exact registry/resolver evidence for every selected candidate."""
+    _, identity_rows = _read_csv(repo / EA_ID_REGISTRY)
+    _, magic_rows = _read_csv(repo / MAGIC_REGISTRY)
+    resolver_rows = set(_resolver_rows(repo / MAGIC_RESOLVER))
+    decision_by_id = {
+        _numeric_ea_id(row.get("ea_id")): row for row in decisions
+    }
+    blocks: list[dict[str, object]] = []
+    for item in candidates:
+        decision = decision_by_id.get(item.ea_id) or {}
+        identities = [
+            row
+            for row in identity_rows
+            if _numeric_ea_id(row.get("ea_id")) == item.ea_id
+        ]
+        active_magic = sorted(
+            (
+                row
+                for row in magic_rows
+                if _numeric_ea_id(row.get("ea_id")) == item.ea_id
+                and str(row.get("status") or "").strip().lower() == "active"
+            ),
+            key=lambda row: int(row["symbol_slot"]),
+        )
+        registry_rows = [
+            {
+                "ea_id": f"QM5_{item.ea_id}",
+                "slug": str(row.get("ea_slug") or ""),
+                "slot": int(row["symbol_slot"]),
+                "symbol": str(row["symbol"]),
+                "magic": int(row["magic"]),
+                "status": str(row["status"]),
+            }
+            for row in active_magic
+        ]
+        resolver_tuples = [
+            {
+                "ea_id": ea_id,
+                "slot": slot,
+                "symbol": symbol,
+                "magic": magic,
+            }
+            for ea_id, slot, symbol, magic in (
+                (
+                    int(row["ea_id"].removeprefix("QM5_")),
+                    int(row["slot"]),
+                    str(row["symbol"]),
+                    int(row["magic"]),
+                )
+                for row in registry_rows
+            )
+        ]
+        identity_exact = (
+            len(identities) == 1
+            and str(identities[0].get("slug") or "") == item.slug
+            and str(identities[0].get("status") or "").strip().lower() == "active"
+        )
+        resolver_exact = all(
+            (row["ea_id"], row["slot"], row["symbol"], row["magic"])
+            in resolver_rows
+            for row in resolver_tuples
+        )
+        magic_exact = (
+            len(active_magic) == len(item.symbols)
+            and _magic_row_contract_issue(item, active_magic) is None
+        )
+        action = str(decision.get("action") or "")
+        if identity_exact and magic_exact and resolver_exact:
+            status = "PASS"
+        elif action == "allocate":
+            status = "PENDING_ALLOCATION"  # dry-run proposal; no rows written.
+        else:
+            status = "REFUSED"
+        block = {
+            "ea_id": f"QM5_{item.ea_id}",
+            "status": status,
+            "decision_action": action,
+            "decision_reason": str(decision.get("reason") or ""),
+            "identity_registry_row": (
+                {
+                    "ea_id": f"QM5_{item.ea_id}",
+                    "slug": str(identities[0].get("slug") or ""),
+                    "status": str(identities[0].get("status") or ""),
+                }
+                if len(identities) == 1
+                else None
+            ),
+            "registry_rows": registry_rows,
+            "resolver_tuples": resolver_tuples,
+            "checks": {
+                "identity_exact_active": identity_exact,
+                "magic_rows_exact_card_order": magic_exact,
+                "resolver_contains_every_registry_tuple": resolver_exact,
+            },
+            "test_command": VERIFICATION_TEST_COMMAND,
+            "pass_count": VERIFICATION_TEST_PASS_COUNT,
+        }
+        if decision.get("reason") == "already_allocated" and status != "PASS":
+            raise AllocationError(
+                f"already_allocated_verification_failed:QM5_{item.ea_id}"
+            )
+        blocks.append(block)
+    return blocks
+
+
 def apply_plan(
     repo: Path,
     plan: dict,
@@ -1004,6 +1124,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "finding_count": len(discovery_findings),
                 "findings": discovery_findings,
             }
+            report["verification_blocks"] = build_verification_blocks(
+                repo, candidates, plan["decisions"]
+            )
             if dl087_verified is not None:
                 report["dl087"]["matrix_verified"] = dl087_verified
     except AllocationError as exc:

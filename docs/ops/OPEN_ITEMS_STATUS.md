@@ -3844,3 +3844,11 @@ only: CONFIG_LOCKED is no longer misclassified as stale; long-run rollback tests
 calendar-taint guard; busy-timeout asserts the configured constant; and the cap fall-through uses short Q06
 instead of now-RAM-gated Q09. The mandatory control-arm fixture proves a last-ranked declared control is
 retained outside the natural top keep fraction. No production guard or behavior changed.
+
+## 2026-09-12 — Self-evidencing governed magic precondition (`6b21b05a`) REVIEW
+
+RESULT: governed_magic_allocator receipts now contain one verification block per selected candidate with the
+exact active identity row, normalized magic registry rows (`ea_id`, slug, slot, symbol, magic, status), exact
+resolver tuples, three equality checks, and the reviewed pytest command/pass count. A read-only rerun for the
+already allocated QM5_41435/XTIUSD row reports all checks PASS and binds magic 414350000 at slot 0; 21/21 tests
+pass. No registry, resolver, EA, queue, terminal, T_Live, or AutoTrading state changed.
