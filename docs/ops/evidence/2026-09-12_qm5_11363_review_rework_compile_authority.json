@@ -1,0 +1,18 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "authority": "router_review_ea:c1cd9635-bbc2-4bc4-ad6f-55214584afda:QM5_11363",
+  "router_task_id": "c1cd9635-bbc2-4bc4-ad6f-55214584afda",
+  "source_build_task_id": "71709418-e0ba-4ee0-9532-77ebfa8ce167",
+  "ea_id": "QM5_11363",
+  "ea_label": "QM5_11363_robo-vol-channel-breakout",
+  "source_sha256": "345ba40e37d248081fdb469e39c0fa2d5af43e4d32b0626da26784fe57b15814",
+  "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11363_robo-vol-channel-breakout.md",
+  "repair_class": "CODEX_REVIEW_REWORK",
+  "repair_summary": [
+    "Added the missing canonical seven-section card-to-module SPEC.",
+    "Added Codex-owned static tests for mechanics, fixed-risk sets, magic slots, and SPEC structure.",
+    "The reviewed MQ5 source is card-faithful and intentionally byte-unchanged."
+  ],
+  "scope": {"compile_ea": true, "q01_smoke": false, "backtest": false, "pipeline_verdict": false, "live": false, "cross_ea": false},
+  "created_at_utc": "2026-09-12T00:00:00Z"
+}

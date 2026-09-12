@@ -2686,6 +2686,35 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# Missing-SPEC reworks d55f1d63/c1cd9635 (2026-09-12): exact-source compile
+# receipts only. Historical Q verdicts remain immutable; these bindings grant
+# no Q01/Q02, live, cross-EA, or pipeline authority.
+QM5_11362_REVIEW_REWORK_AUTHORITY = (
+    "router_review_ea:d55f1d63-c35e-4462-b42f-96a05668e1a7:QM5_11362"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_11362_REVIEW_REWORK_AUTHORITY] = {
+    "ea_id": "11362",
+    "ea_label": "QM5_11362_robo-one-two-bb-reversal",
+    "source_sha256": "dba398585ad06053e26d98f40b800a320a218cf93f14d67fdb0bfcb9c02f85f9",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": "docs/ops/evidence/2026-09-12_qm5_11362_review_rework_compile_authority.json",
+    "evidence_sha256": "2cf52998f67ceffc95747245ff26b25fec1c58e205251299e84f06983151cf80",
+}
+
+QM5_11363_REVIEW_REWORK_AUTHORITY = (
+    "router_review_ea:c1cd9635-bbc2-4bc4-ad6f-55214584afda:QM5_11363"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_11363_REVIEW_REWORK_AUTHORITY] = {
+    "ea_id": "11363",
+    "ea_label": "QM5_11363_robo-vol-channel-breakout",
+    "source_sha256": "345ba40e37d248081fdb469e39c0fa2d5af43e4d32b0626da26784fe57b15814",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": "docs/ops/evidence/2026-09-12_qm5_11363_review_rework_compile_authority.json",
+    "evidence_sha256": "4fdd4cb055e065cf438fbf7ad346a98c6745cbff48ad8886f352039249607353",
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})

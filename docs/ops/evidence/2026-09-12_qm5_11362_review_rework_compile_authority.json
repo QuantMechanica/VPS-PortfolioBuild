@@ -1,0 +1,18 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "authority": "router_review_ea:d55f1d63-c35e-4462-b42f-96a05668e1a7:QM5_11362",
+  "router_task_id": "d55f1d63-c35e-4462-b42f-96a05668e1a7",
+  "source_build_task_id": "a5d43bb7-8921-451d-9f42-8814162ae04d",
+  "ea_id": "QM5_11362",
+  "ea_label": "QM5_11362_robo-one-two-bb-reversal",
+  "source_sha256": "dba398585ad06053e26d98f40b800a320a218cf93f14d67fdb0bfcb9c02f85f9",
+  "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11362_robo-one-two-bb-reversal.md",
+  "repair_class": "CODEX_REVIEW_REWORK",
+  "repair_summary": [
+    "Added the missing canonical seven-section card-to-module SPEC.",
+    "Added Codex-owned static tests for mechanics, fixed-risk sets, magic slots, and SPEC structure.",
+    "The reviewed MQ5 source is card-faithful and intentionally byte-unchanged."
+  ],
+  "scope": {"compile_ea": true, "q01_smoke": false, "backtest": false, "pipeline_verdict": false, "live": false, "cross_ea": false},
+  "created_at_utc": "2026-09-12T00:00:00Z"
+}
