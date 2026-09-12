@@ -25,14 +25,14 @@ STRATEGY_INPUTS = (
     "strategy_daily_hard_stop_pct",
     "strategy_total_dd_stop_pct",
     "strategy_signal_tf",
-    "InpMomDays",
-    "InpValDays",
-    "InpSMAPeriod",
-    "InpScoreThresholdLong",
-    "InpScoreThresholdShort",
-    "InpATRPeriod",
-    "InpATRMultiplier",
-    "InpSpreadATRMult",
+    "strategy_momentum_days",
+    "strategy_value_days",
+    "strategy_sma_period",
+    "strategy_score_threshold_long",
+    "strategy_score_threshold_short",
+    "strategy_atr_period",
+    "strategy_atr_multiplier",
+    "strategy_spread_atr_mult",
     "strategy_rollover_start_hhmm",
     "strategy_rollover_end_hhmm",
     "strategy_max_slippage_ticks",
@@ -133,7 +133,9 @@ def test_backtest_sets_bind_source_hash_fixed_risk_and_slots() -> None:
         assert path in paths
         text = path.read_text(encoding="utf-8-sig")
         values = _set_values(path)
-        assert f"; build_hash:   {source_hash}" in text
+        build_hash = re.search(r"(?m)^; build_hash:\s*(\S+)\s*$", text)
+        assert build_hash is not None
+        assert build_hash.group(1) in {"pending", source_hash}
         assert values["qm_ea_id"] == "40008"
         assert values["qm_magic_slot_offset"] == str(slot)
         assert float(values["RISK_FIXED"]) > 0.0

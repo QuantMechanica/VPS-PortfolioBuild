@@ -54,14 +54,14 @@ input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
 input ENUM_TIMEFRAMES strategy_signal_tf         = PERIOD_D1;
-input int             InpMomDays                 = 252;    // 1-year momentum lookback trading days
-input int             InpValDays                 = 1260;   // 5-year valuation mean lookback trading days
-input int             InpSMAPeriod               = 200;    // Macro trend baseline SMA period
-input double          InpScoreThresholdLong      = 0.70;   // Combined score threshold for long entry
-input double          InpScoreThresholdShort     = 0.30;   // Combined score threshold for short entry
-input int             InpATRPeriod               = 14;     // Stop Loss ATR period
-input double          InpATRMultiplier           = 2.5;    // Stop Loss ATR multiplier
-input double          InpSpreadATRMult           = 1.8;    // Max spread multiplier vs ATR(14, D1)
+input int             strategy_momentum_days       = 252;  // 1-year momentum lookback trading days
+input int             strategy_value_days          = 1260; // 5-year valuation mean lookback trading days
+input int             strategy_sma_period          = 200;  // Macro trend baseline SMA period
+input double          strategy_score_threshold_long = 0.70; // Combined score threshold for long entry
+input double          strategy_score_threshold_short = 0.30; // Combined score threshold for short entry
+input int             strategy_atr_period          = 14;   // Stop Loss ATR period
+input double          strategy_atr_multiplier      = 2.5;  // Stop Loss ATR multiplier
+input double          strategy_spread_atr_mult     = 1.8;  // Max spread multiplier vs ATR(14, D1)
 input int             strategy_rollover_start_hhmm = 2355;
 input int             strategy_rollover_end_hhmm   = 5;
 input int             strategy_max_slippage_ticks  = 3;    // Card: max market-order deviation in ticks
@@ -103,16 +103,17 @@ bool Strategy_ValidateInputs()
       return false;
    if(strategy_signal_tf != PERIOD_D1)
       return false;
-   if(InpMomDays < 150 || InpMomDays > 300 ||
-      InpValDays < 750 || InpValDays > 1500 || InpValDays <= InpMomDays ||
-      InpSMAPeriod < 50 || InpSMAPeriod > 300 ||
-      InpATRPeriod < 10 || InpATRPeriod > 30 ||
-      InpATRMultiplier < 1.5 || InpATRMultiplier > 4.0 ||
-      InpSpreadATRMult < 1.0 || InpSpreadATRMult > 3.0)
+   if(strategy_momentum_days < 150 || strategy_momentum_days > 300 ||
+      strategy_value_days < 750 || strategy_value_days > 1500 ||
+      strategy_value_days <= strategy_momentum_days ||
+      strategy_sma_period < 50 || strategy_sma_period > 300 ||
+      strategy_atr_period < 10 || strategy_atr_period > 30 ||
+      strategy_atr_multiplier < 1.5 || strategy_atr_multiplier > 4.0 ||
+      strategy_spread_atr_mult < 1.0 || strategy_spread_atr_mult > 3.0)
       return false;
-   if(InpScoreThresholdLong < 0.60 || InpScoreThresholdLong > 0.85 ||
-      InpScoreThresholdShort < 0.15 || InpScoreThresholdShort > 0.40 ||
-      InpScoreThresholdLong <= InpScoreThresholdShort)
+   if(strategy_score_threshold_long < 0.60 || strategy_score_threshold_long > 0.85 ||
+      strategy_score_threshold_short < 0.15 || strategy_score_threshold_short > 0.40 ||
+      strategy_score_threshold_long <= strategy_score_threshold_short)
       return false;
    if(strategy_rollover_start_hhmm < 0 || strategy_rollover_start_hhmm > 2359 ||
       strategy_rollover_end_hhmm < 0 || strategy_rollover_end_hhmm > 2359 ||
@@ -185,17 +186,17 @@ void AdvanceState_OnNewBar()
          my_idx = i;
 
       const int nbars = iBars(sym, strategy_signal_tf); // perf-allowed: single universe count on D1 new bar
-      if(nbars < InpValDays + 2)
+      if(nbars < strategy_value_days + 2)
          continue;
 
       const double p1     = iClose(sym, strategy_signal_tf, 1);                  // perf-allowed: closed-bar calculation
-      const double p_mom  = iClose(sym, strategy_signal_tf, 1 + InpMomDays);     // perf-allowed: closed-bar calculation
+      const double p_mom  = iClose(sym, strategy_signal_tf, 1 + strategy_momentum_days); // perf-allowed: closed-bar calculation
       if(p1 <= 0.0 || p_mom <= 0.0)
          continue;
 
-      const double mean_val = QM_SMA(sym, strategy_signal_tf, InpValDays, 1, PRICE_CLOSE);
-      const double bb_upper = QM_BB_Upper(sym, strategy_signal_tf, InpValDays, 1.0, 1, PRICE_CLOSE);
-      const double bb_mid   = QM_BB_Middle(sym, strategy_signal_tf, InpValDays, 1.0, 1, PRICE_CLOSE);
+      const double mean_val = QM_SMA(sym, strategy_signal_tf, strategy_value_days, 1, PRICE_CLOSE);
+      const double bb_upper = QM_BB_Upper(sym, strategy_signal_tf, strategy_value_days, 1.0, 1, PRICE_CLOSE);
+      const double bb_mid   = QM_BB_Middle(sym, strategy_signal_tf, strategy_value_days, 1.0, 1, PRICE_CLOSE);
       const double std_val  = bb_upper - bb_mid;
 
       if(mean_val <= 0.0 || std_val <= 0.0)
@@ -238,9 +239,9 @@ void AdvanceState_OnNewBar()
    const double norm_rank_v = (double)(rank_v - 1) / (double)(valid_count - 1);
 
    g_last_combined_score = 0.50 * norm_rank_m + 0.50 * norm_rank_v;
-   g_last_sma_200        = QM_SMA(_Symbol, strategy_signal_tf, InpSMAPeriod, 1, PRICE_CLOSE);
+   g_last_sma_200        = QM_SMA(_Symbol, strategy_signal_tf, strategy_sma_period, 1, PRICE_CLOSE);
    g_last_close1         = iClose(_Symbol, strategy_signal_tf, 1); // perf-allowed: closed-bar calculation
-   g_last_atr1           = QM_ATR(_Symbol, strategy_signal_tf, InpATRPeriod, 1);
+   g_last_atr1           = QM_ATR(_Symbol, strategy_signal_tf, strategy_atr_period, 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -263,7 +264,7 @@ bool Strategy_NoTradeFilter()
    if(ask > bid && g_last_atr1 > 0.0)
    {
       const double spread = ask - bid;
-      if(spread > InpSpreadATRMult * g_last_atr1)
+      if(spread > strategy_spread_atr_mult * g_last_atr1)
          return true;
    }
 
@@ -287,12 +288,12 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(g_last_close1 <= 0.0 || g_last_sma_200 <= 0.0 || g_last_atr1 <= 0.0)
       return false;
 
-   const double sl_dist = InpATRMultiplier * g_last_atr1;
+   const double sl_dist = strategy_atr_multiplier * g_last_atr1;
    if(sl_dist <= 0.0)
       return false;
 
    // Long Entry: CombinedScore >= 0.70 AND Close[1] > SMA(200)[1]
-   if(g_last_combined_score >= InpScoreThresholdLong && g_last_close1 > g_last_sma_200)
+   if(g_last_combined_score >= strategy_score_threshold_long && g_last_close1 > g_last_sma_200)
    {
       const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       if(ask <= 0.0)
@@ -310,7 +311,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    }
 
    // Short Entry: CombinedScore <= 0.30 AND Close[1] < SMA(200)[1]
-   if(g_last_combined_score <= InpScoreThresholdShort && g_last_close1 < g_last_sma_200)
+   if(g_last_combined_score <= strategy_score_threshold_short && g_last_close1 < g_last_sma_200)
    {
       const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
       if(bid <= 0.0)

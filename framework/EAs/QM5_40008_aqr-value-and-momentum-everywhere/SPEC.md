@@ -28,14 +28,14 @@ The strategy implements the AQR Value and Momentum Everywhere Multi-Asset Engine
 | Parameter | Default | Range | Meaning |
 |---|---|---|---|
 | `strategy_signal_tf` | `PERIOD_D1` | `D1` | Execution and indicator timeframe |
-| `InpMomDays` | `252` | `100-300` | 1-year momentum lookback trading days |
-| `InpValDays` | `1260` | `500-1500` | 5-year valuation mean lookback trading days |
-| `InpSMAPeriod` | `200` | `50-300` | Macro trend baseline SMA period |
-| `InpScoreThresholdLong` | `0.70` | `0.60-0.85` | Combined score threshold for long entry |
-| `InpScoreThresholdShort` | `0.30` | `0.15-0.40` | Combined score threshold for short entry |
-| `InpATRPeriod` | `14` | `10-30` | Stop Loss ATR period |
-| `InpATRMultiplier` | `2.5` | `1.5-4.0` | Stop Loss ATR multiplier |
-| `InpSpreadATRMult` | `1.8` | `1.0-3.0` | Max spread multiplier vs ATR(14, D1) |
+| `strategy_momentum_days` | `252` | `150-300` | 1-year momentum lookback trading days |
+| `strategy_value_days` | `1260` | `750-1500` | 5-year valuation mean lookback trading days |
+| `strategy_sma_period` | `200` | `50-300` | Macro trend baseline SMA period |
+| `strategy_score_threshold_long` | `0.70` | `0.60-0.85` | Combined score threshold for long entry |
+| `strategy_score_threshold_short` | `0.30` | `0.15-0.40` | Combined score threshold for short entry |
+| `strategy_atr_period` | `14` | `10-30` | Stop Loss ATR period |
+| `strategy_atr_multiplier` | `2.5` | `1.5-4.0` | Stop Loss ATR multiplier |
+| `strategy_spread_atr_mult` | `1.8` | `1.0-3.0` | Max spread multiplier vs ATR(14, D1) |
 | `strategy_rollover_start_hhmm` | `2355` | `0-2359` | Start time for daily rollover blackout window |
 | `strategy_rollover_end_hhmm` | `5` | `0-2359` | End time for daily rollover blackout window |
 | `strategy_max_slippage_ticks` | `3` | `1-3` | Maximum market-order deviation, converted from ticks to broker points |
@@ -105,3 +105,4 @@ The strategy implements the AQR Value and Momentum Everywhere Multi-Asset Engine
 | v1 | 2026-08-18 | Initial build | Task 3e8438fe-884f-4337-974d-7c8c2a1dd459 |
 | v2 | 2026-08-23 | Complete cross-asset rank overhaul & card loss limits | Resolves Codex review findings |
 | v3 | 2026-08-24 | Review rework | Framework calendar cadence, 3-tick execution tolerance, complete-universe fail-closed rank |
+| v4 | 2026-09-13 | Build-guard normalization | Strategy inputs use the required `strategy_*` namespace across source and backtest artifacts |
