@@ -3789,3 +3789,12 @@ COMPILE_OK 1fb4d6f0, Q02 4 PASS + SP500 pending); no duplicate rebuild. 35-row a
 TIMESTAMP_DEFECT 6, SPAWN_SILENT_ABORT 3, AWAITING_SEALED_PLAN 2) and the 8-source cohort plan reconcile with the
 DB. Held legacy rows advance only through their own successor identities; cohort stage 1 (11196, 10148) gets a
 follow-up ticket once 41394 clears Q02 on SP500. Review round 5 closed (fda6370f, 09a32b16, e37931c2); 0 in REVIEW.
+
+## 2026-09-12 — MT5 local-agent pass evidence contract (`cbacb01b`) REVIEW
+
+RESULT: standard MT5 optimizer output remains `PRESCREEN`-only even with `Model=4`: it cannot equal the current
+single-cell real-tick receipt because it lacks per-pass native-report bytes, canonical closed-trade bytes, entry
+days, authenticated logger evidence, and an independent real-tick marker. The Default-OFF contract defines full
+pass identity, 20/20 plus clean-repeat parity, local-only/isolation and CPU/RAM guards, and fail-closed refusal
+rules. No code or launch occurred; a future instrumented adapter still requires canary proof and separate OWNER
+activation before any pass can be `MEASURED`.
