@@ -51,6 +51,12 @@ MT5_ROOT = Path(r"D:\QM\mt5")
 REPORTS_ROOT = Path(r"D:\QM\reports\research")
 REPO_ROOT = Path(r"C:\QM\repo")
 ALLOWED_TERMINALS = frozenset({"T11", "T12"})
+SYSTEM_TERMINAL_PROFILE_ROOT = Path(
+    r"C:\Windows\System32\config\systemprofile\AppData\Roaming\MetaQuotes\Terminal")
+RESEARCH_PROFILE_HASHES = {
+    "T11": "F5D9412A6437C1548F3DA4241E8C78A6",
+    "T12": "D033A12192D0AC53D574B7C2799994E6",
+}
 # The research lane defaults to 95%; an override remains capped at the task's
 # 97% hard ceiling. Admission uses five 60-second samples; runtime five seconds.
 DEFAULT_CPU_LIMIT = float(os.environ.get("QM_CANARY_CPU_LIMIT", "95.0"))
@@ -224,6 +230,50 @@ def check_resources(*, terminal: str, max_agents: int, cpu_samples: int, sample_
     if average > cpu_limit:
         raise CanaryRefused(f"CPU guard: {len(samples)}-sample fleet average {average:.3f} > {cpu_limit}",
                             observation=observation)
+    return observation
+
+
+def inspect_liveupdate_handoff(*, terminal: str, mt5_root: Path = MT5_ROOT,
+                               profile_root: Path = SYSTEM_TERMINAL_PROFILE_ROOT) -> dict[str, Any]:
+    """Fail closed if an exact research seat has a staged MT5 update payload.
+
+    The profile hash is bound to the terminal root through MetaTrader's own
+    ``origin.txt``. Non-production roots used by unit tests are reported but do
+    not inspect the host SYSTEM profile.
+    """
+
+    target = terminal.upper()
+    terminal_root = (mt5_root / target).resolve()
+    if mt5_root.resolve() != MT5_ROOT.resolve():
+        return {"status": "TEST_ROOT_NOT_ENFORCED", "terminal_root": str(terminal_root)}
+    profile_hash = RESEARCH_PROFILE_HASHES[target]
+    profile_path = profile_root / profile_hash
+    origin_path = profile_path / "origin.txt"
+    if not origin_path.is_file():
+        raise CanaryRefused(f"missing LiveUpdate identity file: {origin_path}")
+    origin_bytes = origin_path.read_bytes()
+    origin_encoding = "utf-16" if origin_bytes.startswith((b"\xff\xfe", b"\xfe\xff")) else "utf-8-sig"
+    origin = origin_bytes.decode(origin_encoding).strip().rstrip("\\/")
+    if Path(origin).resolve() != terminal_root:
+        raise CanaryRefused(f"LiveUpdate identity mismatch: {origin!r} != {str(terminal_root)!r}")
+    liveupdate = profile_path / "liveupdate"
+    payloads = [] if not liveupdate.is_dir() else [
+        {"path": str(path), "size": path.stat().st_size, "sha256": sha256_file(path)}
+        for path in sorted(liveupdate.rglob("*")) if path.is_file()
+    ]
+    observation = {
+        "status": "CLEAR" if not payloads else "PENDING_HANDOFF",
+        "terminal_root": str(terminal_root),
+        "profile_hash": profile_hash,
+        "origin_path": str(origin_path),
+        "origin": origin,
+        "liveupdate_path": str(liveupdate),
+        "liveupdate_present": liveupdate.is_dir(),
+        "pending_payload_count": len(payloads),
+        "pending_payloads": payloads,
+    }
+    if payloads:
+        raise CanaryRefused("pending MT5 LiveUpdate handoff payload", observation=observation)
     return observation
 
 
@@ -557,6 +607,8 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
         }
         receipt["history_audit"] = verify_private_history(terminal=request.terminal, symbol=request.symbol,
             farm_root=farm_root, mt5_root=mt5_root)
+        receipt["liveupdate_handoff"] = inspect_liveupdate_handoff(
+            terminal=request.terminal, mt5_root=mt5_root)
         receipt["resource_guard"] = resource_check(terminal=request.terminal, max_agents=request.max_agents,
             cpu_samples=5, sample_seconds=float(os.environ.get("QM_CANARY_ADMISSION_SAMPLE_SECONDS", "60.0")), mt5_root=mt5_root)  # orchestrator 2026-09-11: batch pilots may shorten admission sampling (receipted)
         if request.dry_run:

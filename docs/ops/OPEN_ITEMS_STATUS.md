@@ -3507,6 +3507,10 @@ RESULT: REVIEW — `308c8009` snapshotted the current read-only AccountMonitor d
 
 RESULT: REVIEW — `17758960` produced four hash-bound read-only receipts and reran the shortlist comparator deterministically. GBPUSD/EURUSD expose native commission; USDCAD/USOIL.cash lack fills; all four lack complete executable-quote slippage, so selected incumbents remain zero. No trading or terminal change occurred.
 
+## 2026-09-12 — T11/T12 LiveUpdate reconciliation and concurrent pilot
+
+RESULT: REVIEW — `ad4eb945` quarantined the six staged build-6182 files, installed a reversible SYSTEM write-deny on the two exact LiveUpdate directories, and added fail-closed handoff evidence to `research_canary.py`. Both dry runs passed clear. The one authorized concurrent pilot produced T12's 2,941.71 / 1.03 / 208 identity but a zero-trade T11 report and 99.9% CPU means; weekday co-scheduling is not approved. The initially tested whole-program firewall rules were removed after they proved too broad; final ACL-only control remains in place for review.
+
 ## 2026-09-12T~08:44Z (orchestration cycle, Claude) — task `90431302` DEC E2-Mittel: 2 calendar-taint holds released; the "mint 63 reruns" step is gated one layer deeper than expected
 
 Ran `news_calendar_scoped_activation.py` fresh (dry-run): 11/28 pending Q10_NEWS rows

@@ -140,6 +140,41 @@ def test_stage_is_hash_bound_for_t12_and_writes_seat_receipt(tmp_path, monkeypat
     assert (mt5 / "T12" / "MQL5" / "Experts" / "x.ex5").read_bytes() == b"expert"
 
 
+def test_liveupdate_handoff_is_bound_to_origin_and_fails_closed(tmp_path, monkeypatch):
+    mt5 = tmp_path / "mt5"
+    terminal = mt5 / "T11"
+    terminal.mkdir(parents=True)
+    profiles = tmp_path / "system-profiles"
+    profile = profiles / canary.RESEARCH_PROFILE_HASHES["T11"]
+    liveupdate = profile / "liveupdate"
+    liveupdate.mkdir(parents=True)
+    (profile / "origin.txt").write_text(str(terminal), encoding="utf-16")
+    payload = liveupdate / "terminal64.exe"
+    payload.write_bytes(b"staged update")
+    monkeypatch.setattr(canary, "MT5_ROOT", mt5)
+
+    with pytest.raises(canary.CanaryRefused, match="pending MT5 LiveUpdate") as exc:
+        canary.inspect_liveupdate_handoff(terminal="T11", mt5_root=mt5, profile_root=profiles)
+    assert exc.value.observation["status"] == "PENDING_HANDOFF"
+    assert exc.value.observation["pending_payload_count"] == 1
+
+    payload.unlink()
+    clear = canary.inspect_liveupdate_handoff(terminal="T11", mt5_root=mt5, profile_root=profiles)
+    assert clear["status"] == "CLEAR"
+
+
+def test_liveupdate_handoff_refuses_wrong_origin(tmp_path, monkeypatch):
+    mt5 = tmp_path / "mt5"
+    (mt5 / "T12").mkdir(parents=True)
+    profiles = tmp_path / "system-profiles"
+    profile = profiles / canary.RESEARCH_PROFILE_HASHES["T12"]
+    profile.mkdir(parents=True)
+    (profile / "origin.txt").write_text(str(mt5 / "T11"), encoding="utf-8")
+    monkeypatch.setattr(canary, "MT5_ROOT", mt5)
+    with pytest.raises(canary.CanaryRefused, match="identity mismatch"):
+        canary.inspect_liveupdate_handoff(terminal="T12", mt5_root=mt5, profile_root=profiles)
+
+
 @pytest.mark.parametrize("optimize", ["off", "complete", "genetic"])
 def test_run_captures_relative_report_and_binds_tester_contract(tmp_path, monkeypatch, optimize):
     farm = _farm(tmp_path)
