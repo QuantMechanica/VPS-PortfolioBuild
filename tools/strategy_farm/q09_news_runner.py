@@ -1016,14 +1016,18 @@ def validate_scoped_q09_pass_execution_anchor(
     identities = input_manifest.get("identities") or {}
     source_paths = input_manifest.get("source_paths") or {}
     baseline = anchor.get("baseline_run") or {}
+    execution_symbol = str(anchor.get("execution_symbol") or anchor.get("symbol") or "")
     if (
-        anchor.get("scope") != "OWNER_B_PRIME_EXACT_ALLOWLIST"
+        anchor.get("scope") not in {
+            "OWNER_B_PRIME_EXACT_ALLOWLIST",
+            "Q09_AUTOSEAL_EXACT_PASS",
+        }
         or anchor.get("pipeline_verdict_created") is not False
         or source.get("phase") != "Q09"
         or source.get("verdict") != "PASS"
         or summary.get("result") != "PASS"
-        or str(source.get("symbol") or "") != str(anchor.get("symbol") or "")
-        or str(summary.get("symbol") or "") != str(anchor.get("symbol") or "")
+        or str(source.get("symbol") or "") != execution_symbol
+        or str(summary.get("symbol") or "") != execution_symbol
         or str(summary.get("period") or "").upper()
         != str(baseline.get("period") or "").upper()
         or str(source.get("history_from") or "")

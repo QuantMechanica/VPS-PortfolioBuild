@@ -3325,6 +3325,15 @@ task-authorized 99% ceiling; the controller stopped only its bound T12 job and r
 Thus 2941.71 / 1.03 / 208 remains unproven and no T11+T12 concurrent pilot was admissible. Evidence:
 `docs/ops/evidence/2026-09-12_t12_identity_runtime_guard_refusal.md`.
 
+## 2026-09-12T06:23Z — RESULT Q09 sealed-plan hold binder: REVIEW (30 -> 2)
+
+The dry-run census reproduced 16 lineage-derivation, 6 Q08-vintage and 8 plan-binding failures.
+The deterministic Q09 PASS anchor binder authored immutable, hash-bound `q09-news-run-plan/v2`
+artifacts and released 28 activation holds through the ordinary guarded helper. All 28 rows are
+pending, unclaimed, RUNNABLE_BOUND and hold-free; 2 remain fail-closed (one has no exact Q09 PASS
+source; one has a PASS-row/FAIL-summary contradiction). Focused tests: 117 PASS. Evidence:
+`docs/ops/evidence/2026-09-12_q09_sealed_plan_hold_binder.md`.
+
 ## 2026-09-12T08:35Z — RESULT OWNER-DEC-BACKLOG-20260912 applied (488 rows, 0 refusals)
 
 Journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl: ARCHIVE 172 (-> FAILED with verdict
