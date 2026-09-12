@@ -3454,3 +3454,11 @@ list. Row = INFRA_FAIL worker_crashed_handling_item. Program parked at the queue
 queue_order_at 2026-12-31); 519c11fe re-opened to TODO with the exact fix (governed schema migration + pre-write
 taxonomy validation + append-only rerun + documented first-claim proof). LESSON: a dry run that never writes a
 verdict does not prove a new cell class; the first-claim proof must include the verdict write.
+
+## 2026-09-12T10:50Z — Governed hold PRESCREEN_SCHEMA_FIX_PENDING on the 347 pending PRESCREEN cells
+
+Parking by queue order was not enough: a second cell (35a985c0, T4) was claimed from the tail and crashed the
+worker the same way. governed_work_item_hold.py apply (backup taken, docs/ops/evidence/2026-09-12_prescreen_schema_hold.json):
+347 rows held with hold code PRESCREEN_SCHEMA_FIX_PENDING; release condition = 519c11fe schema migration + tests +
+one PRESCREEN_MEASURED verdict visible on an append-only rerun of 62538f30. Two failed rows (62538f30, 35a985c0)
+stay as evidence; the ticket reruns them append-only after the fix.
