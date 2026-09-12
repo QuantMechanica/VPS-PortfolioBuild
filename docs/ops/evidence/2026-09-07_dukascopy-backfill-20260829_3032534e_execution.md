@@ -1689,3 +1689,45 @@ FAIL15/WARN17/OK52 (`checked_at=16:05:47Z`) -- same chronic category set as prio
 (FAIL15/WARN18-20/OK51-52), no new FAIL category. No acceptance criterion newly met on any
 of the three owner-decision tasks; no `update-task` call made. All three remain
 `IN_PROGRESS`.
+
+## Checked 2026-09-12T00:03-00:05Z (headless orchestration cycle) -- longest unrelaunched crash gap of the incident, relaunched, gate still unchanged
+
+Genuinely new since the `19:44Z` checkpoint (progress.json's last write before this cycle):
+no `download_bi5.py` process was alive on the host (`Get-CimInstance Win32_Process`, full
+command-line enumeration, zero matches) while `progress.json` still read `status=RUNNING`
+with `updated_at_utc=2026-09-11T19:44:55.748Z`. `hour_ledger.jsonl` tail confirmed the crash
+timestamp: last two entries recorded `2026-09-11T19:45:08.376Z` (`USDJPY.DWX` hour retries
+exhausted, `state=failed`) -- i.e. the process died ~19:45Z and was **not** auto-relaunched
+by any sibling cycle for over 4h18min (until this cycle at `00:03:38Z`), the longest
+unrelaunched gap in the whole incident (prior gaps were consistently closed within
+30-40min by a sibling headless cycle). `hour_ledger.jsonl` intact at `261663` lines, no
+truncation, no data loss. Relaunched the identical resume command (within `3032534e`'s own
+pre-authorized `allowed_actions`, not new scope; `ae1df6bf` -- the root-cause fix ticket --
+still `APPROVED`/unassigned/unworked since `06:42:08Z`, now >17h unworked):
+
+```
+python tools/dukascopy/download_bi5.py \
+  --out D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened \
+  --splice-csv D:/QM/reports/dukascopy/splice/20260909_010553/tick_tail.csv \
+  --rate 5 --timeout 15 --retries 5 --concurrency 6 --backoff-base 1 --backoff-cap 8
+```
+
+Launched detached via `Start-Process` (PID `6936`, `2026-09-12T02:03:50+02:00` local =
+`00:03:50Z`), working directory `C:\QM\repo`. Verified single-writer state via full
+`Win32_Process` command-line enumeration (only PID `6936` present, no duplicate spawn).
+`progress.json` confirmed resume working correctly ~1min post-launch:
+`started_at_utc=2026-09-12T00:04:31.242Z`, `resumed=3001 completed=3001 downloaded=0
+errors=0 status=RUNNING` -- climbing normally from the `261663`-line ledger baseline (same
+startup-transient pattern as every prior relaunch, not a regression).
+
+`bb814520`/`dfc60103` gate re-checked via direct DB query, unchanged since the `19:19Z`
+checkpoint: `b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`;
+`46167bd9` still `APPROVED`/claude not routed since `2026-09-10T22:16:06Z`; `ae1df6bf` still
+`APPROVED`/unassigned since `06:42:08Z`. `QM5_41394` XAUUSD.DWX Q04 still `pending`/
+unclaimed, `updated_at=2026-09-11T10:51:37Z` (now ~13h12min static) -- ordinary queue depth,
+not this task's authority. Codex weekly quota confirmed still exhausted via
+`agent_router.py status`: `weekly_used_pct=87.0`, `last_gate.allowed=false`,
+`reason=class_threshold_exceeded` -- consistent explanation for `b66b5ccc`/`ae1df6bf`
+staying unworked, outside this task's `allowed_actions` to fix. No acceptance criterion
+newly met on any of the three owner-decision tasks; no `update-task` call made. All three
+remain `IN_PROGRESS`.
