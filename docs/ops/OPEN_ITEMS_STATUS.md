@@ -4026,3 +4026,12 @@ states expected_dd 12-15 pct as boilerplate. Dispositions: 8 KEEP + 8 DD-only re
 target_symbols / timeframe literal / entry-exit sections) -> mechanical transcription where the body states the
 universe, otherwise into the rework ticket. Astra rework ticket 4927dcbb (17 substantive reworks); intake pre-screen
 ticket 47a70f66 (Luna, Default-OFF); calendar/seasonal thesis bank ticket 3941072e (Astra).
+
+## 2026-09-13T00:05Z — Edge Lab triage: final dispositions
+
+Approved at G0 (build tasks enqueued): index-cash-open-gap-fade (PENDING_68333E26), QM5_11924, 11926, 11927, 11932,
+11933, 11935, 11939, 11941 (9). Seven KEEP cards still fail the card-contract validator (body sections
+source_citation / target_symbols / entry-exit): 10719, 10720, 12001, 12005, 12879, 12030, PENDING_A38AF97C ->
+folded into the Astra rework ticket 4927dcbb with the exact misses; frontmatter target_symbols/timeframe already
+transcribed from the card bodies (no mechanics changed). Net: 149 drafts closed on paper, 9 in the build queue,
+24 in rework, intake pre-screen and calendar/seasonal thesis bank commissioned.
