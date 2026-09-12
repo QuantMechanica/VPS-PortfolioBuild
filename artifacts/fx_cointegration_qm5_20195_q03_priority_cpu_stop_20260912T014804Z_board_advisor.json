@@ -1,0 +1,119 @@
+{
+  "schema_version": "qm.fx-cointegration-q03-priority-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-12T01:48:39.2725027Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "9648d20a93768ed9f98a10df365fe1dadabee31c",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_20195",
+    "slug": "nzd-eurgbp-coint",
+    "pair": [
+      "NZDUSD.DWX",
+      "EURGBP.DWX"
+    ],
+    "logical_symbol": "QM5_20195_NZDUSD_EURGBP_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "scan_rank": 12,
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "method_source": "strategy-seeds/sources/SRC02/raw/cointegration_pair_family.md",
+    "approved_card": "artifacts/cards_approved/QM5_20195_nzd-eurgbp-coint_card.md"
+  },
+  "frontier": {
+    "scan_relationships": 66,
+    "unbuilt_relationships": 0,
+    "qm5_12532_q02": "PASS",
+    "qm5_12532_downstream": "Q04 PASS; Q05 FAIL",
+    "qm5_12533_q02": "PASS",
+    "qm5_12533_downstream": "Q04 FAIL"
+  },
+  "build_preflight": {
+    "g0_status": "APPROVED",
+    "strategy_status": "APPROVED",
+    "ex5_exists": true,
+    "basket_manifest_exists": true,
+    "basket_symbols": [
+      "NZDUSD.DWX",
+      "EURGBP.DWX",
+      "GBPUSD.DWX",
+      "EURUSD.DWX"
+    ],
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    },
+    "pacer_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_20195_nzd-eurgbp-coint/QM5_20195_nzd-eurgbp-coint.mq5",
+      "exit_code": 0,
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0,
+      "hits": []
+    }
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "23ce5192a6faf318345ca6ae5561a206c4cd15a6d24e7ccdf5cbfb4e41d74496",
+    "ex5_sha256": "909c1622e913fa77129aad70ece7529d7a073b9c421791c743ed86775a0b6cf6",
+    "basket_manifest_sha256": "a51f1083ee914d4c032da40233aedaa64118998f917e17f0966f365de1799c29",
+    "logical_setfile_sha256": "585f398945b2aa596b1a68994c02eaba1a829d90fbd95a3f55ca6b87ba7d99a9"
+  },
+  "q02_evidence": {
+    "canonical_verdict": "PASS",
+    "promoted_from_work_item_id": "bb538363-c4c2-4899-8b65-ceda04be813b"
+  },
+  "q03_priority_action": {
+    "work_item_id": "59fa650c-22f2-4608-bb98-15180abc2aca",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "created_at_utc": "2026-08-01T13:15:51+00:00",
+    "priority_track_before": null,
+    "priority_track_after": true,
+    "marked_at_utc": "2026-09-12T01:48:04+00:00",
+    "reason": "OWNER mission: advance existing market-neutral FX cointegration sleeve when 66-pair frontier has no unbuilt relationships",
+    "same_identity_row_created": false,
+    "requeue_performed": false
+  },
+  "capacity_stop": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      97.851801,
+      95.220169,
+      89.162484,
+      92.679841,
+      93.470325
+    ],
+    "cpu_average_percent": 93.676924,
+    "cpu_maximum_percent": 97.851801,
+    "cpu_ceiling_hit": true,
+    "free_physical_memory_gib": 40.648,
+    "total_visible_memory_gib": 63.12,
+    "active_work_items": 8,
+    "pending_work_items": 6830,
+    "running_factory_terminals": [
+      "T10",
+      "T2",
+      "T3",
+      "T6",
+      "T7",
+      "T8",
+      "T9"
+    ],
+    "manual_dispatch_started": false,
+    "stop_reason": "BACKTEST_CPU_CEILING"
+  },
+  "actions": {
+    "card_created": false,
+    "ea_source_modified": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "q03_enqueued": false,
+    "q03_priority_marked": true,
+    "duplicate_work_item_created": false,
+    "terminal_control_performed": false,
+    "portfolio_gate_modified": false,
+    "live_surface_modified": false
+  }
+}
