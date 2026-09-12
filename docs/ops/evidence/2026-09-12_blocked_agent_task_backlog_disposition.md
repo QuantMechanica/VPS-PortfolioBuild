@@ -2,7 +2,7 @@
 
 ## Result
 
-Follow-up task `f239a2d9-2259-4084-bc65-21cf0e50e2b5` to original task
+Follow-up task `f239a2d9-09ef-48f1-929b-c7f401873bac` to original task
 `349a8394-090d-431c-8037-72c3bc04c1c2` is ready for REVIEW. A new
 default-read-only sweeper classifies every BLOCKED task, requires a fresh governed
 magic-allocation precheck, and permits state changes only through an explicit class,
