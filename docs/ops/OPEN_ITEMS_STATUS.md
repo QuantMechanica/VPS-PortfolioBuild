@@ -3528,3 +3528,14 @@ even mintable — the same `REVIEW_REQUIRED` stuck-class the just-resolved
 `allowed_actions` to force a Q09_NEWS throughput fix). Full detail + per-row table:
 `docs/ops/evidence/2026-09-12_dec-e2-mittel-news-exposed-reverdict_90431302_execution.md`.
 Task `90431302` stays `IN_PROGRESS`; no `update-task` call (top-level acceptance not met).
+
+## 2026-09-12T~08:46Z (orchestration cycle, Claude) — task `49a8c88b` DEC E4: OOS-2026 window repair still correctly blocked, calendar gap unchanged
+
+Read the active `news_calendar_2015_2025.csv` directly: still zero rows between
+2025-04-07 and 2026-07-20 (unchanged from the 2026-09-05 finding); the OOS-2026 campaign
+window (2026-01-01..04-06) is entirely inside that gap. The B-prime USD-only gate
+criterion that unblocked `90431302` does not add calendar rows and does not satisfy this
+task's literal precondition. No `repair-oos-window --apply` attempted (would measure the
+OOS window without real news data). Full detail:
+`docs/ops/evidence/2026-09-12_dec-e4-oos-window-repair-precondition_49a8c88b_execution.md`.
+Task `49a8c88b` stays `IN_PROGRESS`; no `update-task` call.
