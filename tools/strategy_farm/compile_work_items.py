@@ -2731,6 +2731,22 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_11898_REVIEW_REWORK_AUTHORITY] = {
     "evidence_sha256": "6466027634cbeed4487488c81d773b950a0c1782f1afefd267cb2dc2d8cb5d30",
 }
 
+# OWNER-rework review task 982fe1f3 (2026-09-12): bind the transactional
+# skeleton-state and exit-wiring repair to one compile-only receipt. This
+# grants no Q01/Q02, live, cross-EA, or gate authority.
+QM5_9354_REVIEW_REWORK_AUTHORITY = (
+    "router_review_ea:982fe1f3-c9e2-430b-a080-093f59a5b012:QM5_9354"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_9354_REVIEW_REWORK_AUTHORITY] = {
+    "ea_id": "9354",
+    "ea_label": "QM5_9354_demark-td-dwave-wave4-h4",
+    "source_sha256": "833fe31bac63affbe9d234cdfe5031cebdba1fb11eeedf1b553cc43ad48e5f28",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": "docs/ops/evidence/2026-09-12_qm5_9354_review_rework_compile_authority.json",
+    "evidence_sha256": "de5c86b5c945c3ee61dae0963fb76197551546a175406d9ac8c593dd5468f555",
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
