@@ -3896,3 +3896,17 @@ RESULT: `run_agent_orchestration_task.py` now provides one-shot `--touch-interac
 refreshes every ten minutes, watches a PID-reuse-safe parent identity, and removes only its own marker on exit.
 The existing 30-minute headless guard honours the marker; router/headless lease semantics are unchanged.
 Focused suites pass 20/20 and py_compile passes. No helper loop was started in this scheduled cycle.
+
+## 2026-09-12T19:05Z — Review round 6 closed (7 rows); compile-wave release of the 2026-08-27 rollout holds
+
+APPROVED: b5f660f9 Dukascopy P3 redo (37/37 explained, price_scale decoupled from digits at code level, 12 symbols
+with empty governed T1 export, proposal blocked; successor f12fbdb3 = T1 export coverage + UK100/XTIUSD basis);
+b32462f2 test hygiene (98/98; the SH-3 taxonomy CHECK failure of test_q09_live_news_diagnostic is folded into the
+schema-migration ticket 519c11fe, which must admit review + prescreen_measurement); 6b21b05a self-evidencing
+precondition block; e93dffb6 backup-reuse DML-sensitive identity (56/56); 27143c34 QM5_10001 rework (card-absent
+spread veto removed, compile queued); efe9876c QM5_11301 rework (SPEC repaired, compile queued); e8f31c15
+QM5_1249 honest stop (card needs an OWNER-provided short-rate CSV -> OWNER decision on the board, recommendation
+retire). Compile holds: 30 COMPILE_EA rows carried COMPILE_EA_WORKER_ROLLOUT_PENDING since 2026-08-27 although the
+reviewed worker has been on the whole fleet for weeks; release_compile_wave --apply released the 10 source-fresh
+rows (artifacts/qm5_compile_wave_rollout_release_20260912.json); 20 stale-source rows stay held for
+supersession (reconcile_compile_rollout_holds needs successors for QM5_1538 first). Counter 24/25 at 14:11Z.
