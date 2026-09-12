@@ -1,0 +1,69 @@
+{
+  "schema": "qm.zero-trades-recovery/v1",
+  "recorded_utc": "2026-09-12T13:37:50+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41457",
+  "ea_label": "QM5_41457_wti-summer-nr2-upweek-fade",
+  "work_item_id": "898e154f-f42d-4836-b0e2-e37ceb984e77",
+  "result": "ZERO_TRADES_RECOVERY_REQUIRED",
+  "execution": {
+    "evidence_class": "REAL_TICKS",
+    "model": 4,
+    "symbol": "XTIUSD.DWX",
+    "period": "D1",
+    "from_date": "2018.07.02",
+    "to_date": "2022.12.31",
+    "terminal": "T10",
+    "attempted_runs": 1,
+    "run_status": "OK",
+    "init_ok": true,
+    "oninit_failure": false,
+    "binary_and_set_stable": true,
+    "total_trades": 0,
+    "minimum_trades_required": 25
+  },
+  "event_counts": {
+    "logger_events": 1174,
+    "equity_snapshots": 1163,
+    "strategy_state": 0,
+    "entry_attempts": 0,
+    "orders": 0,
+    "trades": 0
+  },
+  "layer_classification": {
+    "harness_and_report": "PASS",
+    "binary_set_symbol_history_and_init": "PASS",
+    "entry_decision_clock": "FAIL_UNREACHED",
+    "order_path": "NOT_REACHED",
+    "economic_hypothesis": "NOT_ADJUDICATED"
+  },
+  "leading_diagnosis": {
+    "status": "HIGH_CONFIDENCE_INFERENCE_REQUIRES_INSTRUMENTED_CONFIRMATION",
+    "configured_strategy_label_offset_seconds": 86400,
+    "runtime_offset_candidate_seconds": 0,
+    "code_path": "Strategy_LabelOffsetSeconds returns -1 on configured/detected mismatch before STRATEGY_STATE logging",
+    "first_observable_failure": "No STRATEGY_STATE event across 1,163 new-bar equity snapshots"
+  },
+  "repair": {
+    "applied": false,
+    "retry_enqueued": false,
+    "strategy_mechanics_changed": false,
+    "reason": "A locked-card input correction and post-Q02 rebuild require an explicit governed source-repair path outside this single build-and-enqueue mission."
+  },
+  "identity": {
+    "summary_path": "D:/QM/reports/work_items/898e154f-f42d-4836-b0e2-e37ceb984e77/QM5_41457/20260912_132946/summary.json",
+    "summary_sha256": "8a05cdc438b7ebbbae7981f9885cdb5255aba056a67da47705969a595c4d7426",
+    "logger_sample_sha256": "05c83fce69838e04ab90b499921bffb7a944c062d0b7f4abe43070ed18c76dae",
+    "report_sha256": "bb433f49b59656df332cc7d5ff50479f5185bac721a06565184a980c2ceafa49",
+    "mq5_sha256": "96bc38013512bf2f24aa9c33a20dff5825918c2fde5f16c1561d4315b1536bbf",
+    "ex5_sha256": "74a78c846ea5398ba45230ee0f9d66a31916553e9e4889ab9c8f8f3bf3b7be95",
+    "setfile_sha256": "005eece3af33b9e38ef64c29d61717e3924d38090750774f5af1237f53cb1454"
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false,
+    "terminal_control": false
+  }
+}

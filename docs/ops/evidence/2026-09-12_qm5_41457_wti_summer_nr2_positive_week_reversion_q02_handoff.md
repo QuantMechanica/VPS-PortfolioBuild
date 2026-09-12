@@ -43,6 +43,19 @@ fixed-risk setfile, and returned eligible. Five fresh whole-host CPU samples wer
 The deterministic apply created work item `898e154f-f42d-4836-b0e2-e37ceb984e77`. T10 had
 claimed the row at handoff. No manual backtest was run.
 
+## Q02 Result
+
+After this handoff was recorded, T10 completed the bound 2018-07-02 through 2022-12-31
+Model-4 run. The harness, binary, setfile, symbol, history, and initialization evidence were valid,
+but the run produced zero trades. Its authenticated logger sample contains 1,163
+`EQUITY_SNAPSHOT` events and no `STRATEGY_STATE`, entry-attempt, order, or trade events. The first
+observable failed layer is therefore the entry decision clock, before order handling or economics.
+
+The leading setup diagnosis is the locked `strategy_label_offset_seconds=86400` disagreeing with
+the standard D1 label observed by this runtime. That inference requires an instrumented confirmation
+before repair. No strategy mechanic, locked input, source, binary, queue row, or portfolio status was
+changed. See `docs/ops/evidence/2026-09-12_qm5_41457_q02_zero_trades_recovery.md`.
+
 ## Safety Boundary
 
 No portfolio gate or T_Live/deploy manifest was touched. No terminal was controlled, AutoTrading

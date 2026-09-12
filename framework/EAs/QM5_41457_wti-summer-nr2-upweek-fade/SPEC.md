@@ -83,3 +83,4 @@ dominate. No manual backtest, optimization, portfolio-gate edit, admission, depl
 | v1 | 2026-09-12 | Initial governed build from approved card |
 | v1-q01 | 2026-09-12 | Governed T9 compile and strict build check PASS; 10 reference tests and PACER audit PASS |
 | v1-q02 | 2026-09-12 | Deterministic first-Q02 intake accepted; work item `898e154f-f42d-4836-b0e2-e37ceb984e77` claimed by T10 at handoff |
+| v1-q02-result | 2026-09-12 | Valid Model-4 Q02 completed with zero trades; 1,163 equity snapshots but no strategy-state or entry events, so the decision clock is classified unreachable and recovery is required |

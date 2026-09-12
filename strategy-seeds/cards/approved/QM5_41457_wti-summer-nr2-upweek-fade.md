@@ -64,9 +64,13 @@ pipeline_phase: Q02
 q01_status: PASS
 q01_compile_work_item: 30f44818-ac75-4fb4-97e2-06130d8066f2
 q01_build_report: D:/QM/reports/work_items/30f44818-ac75-4fb4-97e2-06130d8066f2/QM5_41457/COMPILE_EA/compile_evidence.json
-q02_status: ENQUEUED_ACTIVE
+q02_status: ZERO_TRADES_RECOVERY_REQUIRED
 q02_work_item: 898e154f-f42d-4836-b0e2-e37ceb984e77
 q02_receipt: D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/30f44818-ac75-4fb4-97e2-06130d8066f2_898e154f-f42d-4836-b0e2-e37ceb984e77.json
+q02_result_report: D:/QM/reports/work_items/898e154f-f42d-4836-b0e2-e37ceb984e77/QM5_41457/20260912_132946/summary.json
+q02_result_sha256: 8a05cdc438b7ebbbae7981f9885cdb5255aba056a67da47705969a595c4d7426
+q02_zero_trade_layer: ENTRY_DECISION_CLOCK_UNREACHED
+q02_zero_trade_recovery: docs/ops/evidence/2026-09-12_qm5_41457_q02_zero_trades_recovery.md
 force_build: true
 review_focus: "Falsify a WTI June-October range-contraction positive-week short fade distinct from the certified XNG oscillator, unconditional summer short, generic summer momentum/reversal, winter contraction body fade, and winter contraction CLV fade. Verify exact weeks, strict inequalities, short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -215,9 +219,11 @@ portfolio correlation.
 Q01 must verify eligible and ineligible months, two exact weeks, session-count bounds, strict
 range contraction, range tie, strict positive body, zero/negative-body flat states, short-only
 orientation, current-week exclusion, durable attempt, frozen stop, next-week exit, card lint,
-resolver, PACER audit, reference tests, and strict compile/build checks. Q02 retires on zero trades,
-fewer than five completed positions in a full scored year, nonpositive governed economics, or
-contract mismatch. No weak result may be tuned into survival.
+resolver, PACER audit, reference tests, and strict compile/build checks. Q02 retires on zero trades
+only after decision-clock and entry observability prove the strategy was exercised; otherwise the
+run enters zero-trades recovery. Fewer than five completed positions in a full scored year,
+nonpositive governed economics, or contract mismatch also retires it. No weak result may be tuned
+into survival.
 
 ## Safety Boundary
 
@@ -233,4 +239,4 @@ AutoTrading, terminal control, or live use.
 | G0 Source Approval | 2026-09-12 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
 | Q01 Build Validation | 2026-09-12 | PASS | governed T9 compile; zero compiler errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits |
-| Q02 Baseline Screening | 2026-09-12 | ENQUEUED_ACTIVE | deterministic intake `898e154f-f42d-4836-b0e2-e37ceb984e77`; claimed by T10 at handoff |
+| Q02 Baseline Screening | 2026-09-12 | ZERO_TRADES_RECOVERY_REQUIRED | valid Model-4 run completed with 1,163 equity snapshots but zero strategy-state, entry, order, or trade events; decision clock was never reached; see recovery evidence |
