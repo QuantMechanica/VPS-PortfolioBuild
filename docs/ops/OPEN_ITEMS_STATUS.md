@@ -3718,3 +3718,14 @@ UK100/XTIUSD expose scale/basis defects despite rho >=0.99793. Manifest proposal
 is `PROPOSAL_BLOCKED`; no archive/custom-history/terminal write occurred.
 Focused tests: 19 passed. Evidence:
 `docs/ops/evidence/2026-09-12_dukascopy_p2_p3_tail_execution.md`.
+
+## 2026-09-12T14:50Z — Dukascopy P2/P3 APPROVED (fail-closed): archive proposal BLOCKED for real reasons
+
+79c942ac: P1 tail resolved (307,580/307,581 hours, one AUDCAD hour transient), P2 36/37 checksum-bound scratch
+conversions (398.7 M ticks), P3 0/24 PASS by design: the governed T1 M1 export stops at 2025-12-31 (overlap
+window needs coverage to 2026-04-01 incl. both DST windows) and XAUUSD/UK100/XTIUSD carry a ~10x
+Dukascopy-to-DWX price-scale defect (the digits-derived price_scale from the 09-09 probe is wrong for raw tick
+encoding) despite rho >= 0.998 on closes. Manifest proposal emitted as PROPOSAL_BLOCKED (all write flags
+false); nothing written under Bases/Custom or the signed archive. Successor b5f660f9 (Sol): AUDCAD hour,
+T1 export regen through 2026-04-01, first-principles scale mapping for the three symbols, fresh P2/P3 +
+proposal. Archive write = separate orchestrator ceremony after 37/37.
