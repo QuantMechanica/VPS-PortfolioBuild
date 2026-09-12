@@ -61,6 +61,10 @@ For each OWNER-named idle seat, one at a time:
 5. Re-apply the research LiveUpdate ACL guard where applicable, then inspect it
    for zero pending payloads, an exact SYSTEM write deny, no whole-program
    firewall rule, and the correct `origin.txt` binding.
+6. Inspect the guard again after every governed terminal/tester run and re-arm
+   it before leaving the seat. A terminal may consume or remove an empty
+   LiveUpdate directory as part of normal shutdown; the profile-level
+   delete-child deny closes that parent-ACL bypass.
 
 The vendor installer or a staged LiveUpdate payload may be used only when an
 OWNER decision explicitly requires it and the payload is hash-pinned. It must

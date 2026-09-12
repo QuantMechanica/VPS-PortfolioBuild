@@ -192,6 +192,7 @@ def test_run_captures_relative_report_and_binds_tester_contract(tmp_path, monkey
     expert = experts / "x.ex5"; expert.write_bytes(b"expert")
     setfile = profiles / "x.set"; setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\nstart=0||0||1||9||Y\n")
     (terminal / "terminal64.exe").write_bytes(b"test double")
+    (terminal / "metatester64.exe").write_bytes(b"tester double")
     monkeypatch.setattr(canary, "REPO_ROOT", repo)
     monkeypatch.setattr(canary, "verify_private_history", lambda **kw: {"status": "test double"})
     monkeypatch.setattr(canary, "suspended_runner_creation_flags", lambda: 0)
@@ -213,6 +214,10 @@ def test_run_captures_relative_report_and_binds_tester_contract(tmp_path, monkey
         reports_root=tmp_path / "reports", resource_check=lambda **kw: {})
     assert receipt["status"] == "COMPLETED_REVIEW_REQUIRED"
     assert receipt["isolation_unchanged"] is True
+    assert receipt["terminal_executable"]["sha256"] == canary.sha256_file(terminal / "terminal64.exe")
+    assert receipt["tester_executable"]["sha256"] == canary.sha256_file(terminal / "metatester64.exe")
+    assert "file_version" in receipt["terminal_executable"]
+    assert "file_version" in receipt["tester_executable"]
     assert Path(receipt["report"]["path"]).is_file()
     if optimize != "off":
         assert receipt["optimization_table"]["pass_count"] == 1

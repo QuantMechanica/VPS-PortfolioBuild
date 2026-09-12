@@ -3607,6 +3607,18 @@ errors; all historic terminal evidence remains untouched. Production dry run:
 0 holds / 0 release-ready. Focused tests: 32 passed. Evidence:
 `docs/ops/evidence/2026-09-12_compile_gate_broken_source_holds.md`.
 
+## 2026-09-12T10:20Z — T11/T12 governed build-6182 update (`4291c7ef`) REVIEW
+
+Runbook-first commit `a7b4ef579b`; T11/T12 terminal and tester binaries now
+match the T1 6182 golden hashes, with protected roots unchanged and rollback
+copies retained. T12's build-6182 identity is an exact 2,941.71 / 1.03 / 208
+match to 6140. The one ACL-only concurrent pilot again produced a zero-trade
+T11 result while T12 matched; CPU reached a 100% five-sample mean, so weekday
+concurrency remains withheld. A post-run inspection proved the directory-only
+guard could disappear on shutdown; it was re-armed with an exact profile
+delete-child deny and finishes `GUARD_PRESENT`. Evidence:
+`docs/ops/evidence/2026-09-12_t11_t12_6182_governed_update.md`.
+
 ## 2026-09-12T10:05Z (orchestration cycle, Claude) — re-verification checkpoint on all 3 IN_PROGRESS claude tasks: unchanged, nothing actionable this cycle
 
 Independent re-check ~1h after the 09:06Z checkpoint, before doing any new work:

@@ -43,6 +43,21 @@ function Get-SeatState {
     $liveUpdatePath = Join-Path $profilePath 'liveupdate'
     $payloads = @()
     $writeDeny = @()
+    $profileDeleteChildDeny = @((Get-Acl -LiteralPath $profilePath).Access | Where-Object {
+        -not $_.IsInherited -and
+        $_.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Deny -and
+        $_.IdentityReference.Value -eq 'NT AUTHORITY\SYSTEM' -and
+        $_.FileSystemRights -eq [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -and
+        $_.InheritanceFlags -eq [System.Security.AccessControl.InheritanceFlags]::None
+    } | ForEach-Object {
+        [ordered]@{
+            identity = $_.IdentityReference.Value
+            type = [string]$_.AccessControlType
+            rights = [string]$_.FileSystemRights
+            inheritance = [string]$_.InheritanceFlags
+            propagation = [string]$_.PropagationFlags
+        }
+    })
     if (Test-Path -LiteralPath $liveUpdatePath -PathType Container) {
         $payloads = @(Get-ChildItem -LiteralPath $liveUpdatePath -File -Recurse | ForEach-Object {
             [ordered]@{
@@ -80,6 +95,7 @@ function Get-SeatState {
         pending_payload_count = $payloads.Count
         pending_payloads = $payloads
         explicit_system_write_deny = $writeDeny
+        explicit_profile_delete_child_deny = $profileDeleteChildDeny
         firewall_rule = if ($rule) { [ordered]@{
             display_name = $rule.DisplayName
             enabled = [string]$rule.Enabled
@@ -152,6 +168,24 @@ if ($Mode -eq 'Apply') {
             Set-Acl -LiteralPath $state.liveupdate_path -AclObject $acl
             $actions += [ordered]@{ action = 'deny_system_liveupdate_writes'; seat = $seat.Seat; path = $state.liveupdate_path; rights = [string]$rights }
         }
+        $profileAcl = Get-Acl -LiteralPath $state.profile_path
+        $profileDeny = @($profileAcl.Access | Where-Object {
+            -not $_.IsInherited -and $_.AccessControlType -eq 'Deny' -and
+            $_.IdentityReference.Value -eq 'NT AUTHORITY\SYSTEM' -and
+            $_.FileSystemRights -eq [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -and
+            $_.InheritanceFlags -eq [System.Security.AccessControl.InheritanceFlags]::None
+        })
+        if ($profileDeny.Count -eq 0 -and $PSCmdlet.ShouldProcess($state.profile_path, 'Deny SYSTEM delete-child bypass of the protected LiveUpdate directory')) {
+            $profileRule = [System.Security.AccessControl.FileSystemAccessRule]::new(
+                'NT AUTHORITY\SYSTEM',
+                [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles,
+                [System.Security.AccessControl.InheritanceFlags]::None,
+                [System.Security.AccessControl.PropagationFlags]::None,
+                [System.Security.AccessControl.AccessControlType]::Deny)
+            [void]$profileAcl.AddAccessRule($profileRule)
+            Set-Acl -LiteralPath $state.profile_path -AclObject $profileAcl
+            $actions += [ordered]@{ action = 'deny_system_profile_delete_child'; seat = $seat.Seat; path = $state.profile_path; rights = 'DeleteSubdirectoriesAndFiles' }
+        }
     }
 }
 elseif ($Mode -eq 'Restore') {
@@ -162,6 +196,20 @@ elseif ($Mode -eq 'Restore') {
             $actions += [ordered]@{ action = 'remove_outbound_block'; seat = $seat.Seat; display_name = $seat.FirewallName }
         }
         $state = $before | Where-Object seat -eq $seat.Seat
+        $profileAcl = Get-Acl -LiteralPath $state.profile_path
+        $profileDenyRules = @($profileAcl.Access | Where-Object {
+            -not $_.IsInherited -and $_.AccessControlType -eq 'Deny' -and
+            $_.IdentityReference.Value -eq 'NT AUTHORITY\SYSTEM' -and
+            $_.FileSystemRights -eq [System.Security.AccessControl.FileSystemRights]::DeleteSubdirectoriesAndFiles -and
+            $_.InheritanceFlags -eq [System.Security.AccessControl.InheritanceFlags]::None
+        })
+        foreach ($profileDenyRule in $profileDenyRules) {
+            [void]$profileAcl.RemoveAccessRuleSpecific($profileDenyRule)
+        }
+        if ($profileDenyRules.Count -gt 0 -and $PSCmdlet.ShouldProcess($state.profile_path, 'Remove exact SYSTEM profile delete-child deny')) {
+            Set-Acl -LiteralPath $state.profile_path -AclObject $profileAcl
+            $actions += [ordered]@{ action = 'remove_system_profile_delete_child_deny'; seat = $seat.Seat; path = $state.profile_path }
+        }
         if (Test-Path -LiteralPath $state.liveupdate_path -PathType Container) {
             $acl = Get-Acl -LiteralPath $state.liveupdate_path
             $denyRules = @($acl.Access | Where-Object {
@@ -196,6 +244,7 @@ $after = @($seats | ForEach-Object { Get-SeatState $_ })
 $guardReady = @($after | Where-Object {
     $_.pending_payload_count -ne 0 -or
     @($_.explicit_system_write_deny).Count -eq 0 -or
+    @($_.explicit_profile_delete_child_deny).Count -eq 0 -or
     $_.firewall_rule
 }).Count -eq 0
 $result = if ($Mode -eq 'Apply' -and $guardReady) {

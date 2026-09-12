@@ -87,6 +87,63 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+class _VsFixedFileInfo(ctypes.Structure):
+    _fields_ = [
+        ("signature", ctypes.c_uint32),
+        ("structure_version", ctypes.c_uint32),
+        ("file_version_ms", ctypes.c_uint32),
+        ("file_version_ls", ctypes.c_uint32),
+        ("product_version_ms", ctypes.c_uint32),
+        ("product_version_ls", ctypes.c_uint32),
+        ("file_flags_mask", ctypes.c_uint32),
+        ("file_flags", ctypes.c_uint32),
+        ("file_os", ctypes.c_uint32),
+        ("file_type", ctypes.c_uint32),
+        ("file_subtype", ctypes.c_uint32),
+        ("file_date_ms", ctypes.c_uint32),
+        ("file_date_ls", ctypes.c_uint32),
+    ]
+
+
+def windows_file_version(path: Path) -> str | None:
+    """Read a PE fixed-file version without starting the executable."""
+
+    if os.name != "nt":
+        return None
+    version_api = ctypes.windll.version
+    size = version_api.GetFileVersionInfoSizeW(str(path), None)
+    if not size:
+        return None
+    buffer = ctypes.create_string_buffer(size)
+    if not version_api.GetFileVersionInfoW(str(path), 0, size, buffer):
+        return None
+    pointer = ctypes.c_void_p()
+    length = ctypes.c_uint()
+    if not version_api.VerQueryValueW(buffer, "\\", ctypes.byref(pointer), ctypes.byref(length)):
+        return None
+    if length.value < ctypes.sizeof(_VsFixedFileInfo):
+        return None
+    info = ctypes.cast(pointer, ctypes.POINTER(_VsFixedFileInfo)).contents
+    if info.signature != 0xFEEF04BD:
+        return None
+    return ".".join(str(part) for part in (
+        info.file_version_ms >> 16,
+        info.file_version_ms & 0xFFFF,
+        info.file_version_ls >> 16,
+        info.file_version_ls & 0xFFFF,
+    ))
+
+
+def executable_identity(path: Path) -> dict[str, Any]:
+    if not path.is_file():
+        raise CanaryRefused(f"missing executable: {path}")
+    return {
+        "path": str(path),
+        "sha256": sha256_file(path),
+        "file_version": windows_file_version(path),
+    }
+
+
 def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8", newline="\n") as stream:
@@ -609,6 +666,10 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
             farm_root=farm_root, mt5_root=mt5_root)
         receipt["liveupdate_handoff"] = inspect_liveupdate_handoff(
             terminal=request.terminal, mt5_root=mt5_root)
+        exe = terminal_root / "terminal64.exe"
+        tester_exe = terminal_root / "metatester64.exe"
+        receipt["terminal_executable"] = executable_identity(exe)
+        receipt["tester_executable"] = executable_identity(tester_exe)
         receipt["resource_guard"] = resource_check(terminal=request.terminal, max_agents=request.max_agents,
             cpu_samples=5, sample_seconds=float(os.environ.get("QM_CANARY_ADMISSION_SAMPLE_SECONDS", "60.0")), mt5_root=mt5_root)  # orchestrator 2026-09-11: batch pilots may shorten admission sampling (receipted)
         if request.dry_run:
@@ -621,10 +682,6 @@ def run(request: CanaryRequest, *, farm_root: Path = FARM_ROOT, mt5_root: Path =
                 raise CanaryRefused(f"T11 already has a process: pid={candidate.pid}")
         if sha256_file(request.expert_path) != receipt["ex5"]["sha256"] or sha256_file(request.setfile_path) != receipt["setfile"]["sha256"]:
             raise CanaryRefused("staged input changed during admission")
-        exe = terminal_root / "terminal64.exe"
-        if not exe.is_file():
-            raise CanaryRefused(f"missing T11 terminal executable: {exe}")
-        receipt["terminal_executable"] = {"path": str(exe), "sha256": sha256_file(exe)}
         # Orchestrator 2026-09-11: every T11 launch today (journal 06:43/07:22/11:41 local) spawned
         # MT5 LiveUpdate from the SYSTEM-profile roaming dir and exited 0 within 0.2 s -> no test,
         # no report. /skipupdate keeps the canary on the fleet build and lets the tester run.
