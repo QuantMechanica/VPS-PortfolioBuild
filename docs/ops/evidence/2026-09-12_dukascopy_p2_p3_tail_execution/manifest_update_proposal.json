@@ -1,0 +1,50 @@
+{
+  "schema": "qm.dukascopy-signed-manifest-update-proposal/v1",
+  "task_id": "79c942ac-bebb-4dd4-a4ff-281d5d11dac7",
+  "decision": "PROPOSAL_BLOCKED",
+  "archive_write_authorized": false,
+  "production_splice_authorized": false,
+  "signed_2017_2025_archive_write_performed": false,
+  "t1_custom_history_write_performed": false,
+  "candidate_conversion_root": "D:/QM/reports/dukascopy/conversion/20260912_0919_task79c942ac",
+  "candidate_symbol_count": 36,
+  "required_symbol_count": 37,
+  "candidate_inventory": {
+    "path": "docs/ops/evidence/2026-09-12_dukascopy_p2_p3_tail_execution/conversion_inventory.csv",
+    "sha256": "695967dd2ce7b43c9e7aae6050cb11efce9e19d50657bd6c471c6f10f3369684"
+  },
+  "p1": {
+    "root": "D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened",
+    "planned_hours": 307581,
+    "resolved_hours": 307580,
+    "errors": 1,
+    "download_receipt_sha256": "7d9008161a90020b447d0a69a3f9dbf7ab7b1b84c8459e00c8dd11937557a18f",
+    "download_manifest_sha256": "775a0690e37b38a7183a6c4679e778bd50ed98f2eb42538aa1e54039f4fc1657",
+    "hour_ledger_sha256": "025bc3ea461a2e0d1382f73f6be0b927fed199e1a38dc09eeff41df9ce5574fd",
+    "unresolved": {
+      "symbol": "AUDCAD.DWX",
+      "hour_utc": "2026-09-11T17:00:00Z",
+      "url": "https://datafeed.dukascopy.com/datafeed/AUDCAD/2026/08/11/17h_ticks.bi5",
+      "classification": "UNRESOLVED_TRANSIENT_AFTER_REPEATED_RETRIES"
+    }
+  },
+  "p3": {
+    "governed_t1_export": "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260912_063608",
+    "export_manifest_sha256": "1f7bca135b3903cb24788a3b362c978dd4a32ad1b108edd0bacfcf2f87cc7c92",
+    "export_receipt_sha256": "e817bd3f666a898907bc1d23d1608b59e8e1dcc7109a96ff4db8fab2331a2c22",
+    "populated_symbols": 25,
+    "reconciled_symbols": 24,
+    "pass_symbols": 0,
+    "status": "FAIL"
+  },
+  "blocking_preconditions": [
+    "P1 must authenticate all 307581 planned hours or explicitly resolve the remaining AUDCAD hour under a reviewed unavailable-data policy",
+    "AUDCAD must receive a checksum-bound conversion sidecar",
+    "the governed T1 export must contain all 37 symbols through 2026-04-01 and both required DST windows",
+    "the reviewed XAUUSD Dukascopy price scale must be corrected and conversion regenerated; current values are approximately 10x DWX",
+    "UK100 and XTIUSD scale/basis mismatches must be resolved",
+    "every symbol must pass overlap window, >=99% bilateral coverage, price, DST-zero-offset, and compute checks",
+    "a separate orchestrator/OWNER-governed archive-write authorization must be issued"
+  ],
+  "next_action": "Do not apply. Repair source/export/metadata inputs, regenerate into fresh immutable scratch roots, rerun P3, and submit a new proposal."
+}

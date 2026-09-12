@@ -3706,3 +3706,15 @@ remain `MISSING_NO_FILL`. The hash-bound comparator now reports 2/4
 until native fills exist for the other two. Focused tests: 34 passed. No EA,
 scheduler, terminal, trading, or AutoTrading mutation. Evidence:
 `docs/ops/evidence/2026-09-12_ftmo_slippage_stream/README.md`.
+
+## 2026-09-12T11:22Z — Dukascopy P1/P2/P3 tail (`79c942ac`) REVIEW
+
+P1 resolved 307,580/307,581 hours; the lone AUDCAD 2026-09-11 17:00Z hour
+remains transient after two five-attempt runs. P2 produced 36 checksum-bound
+scratch conversions (398,733,724 ticks; zero temp files). P3 covered the full
+24-symbol intersection and failed closed: 0/24 full passes because the governed
+T1 export ends in December 2025, all coverage is below 99%, and XAUUSD plus
+UK100/XTIUSD expose scale/basis defects despite rho >=0.99793. Manifest proposal
+is `PROPOSAL_BLOCKED`; no archive/custom-history/terminal write occurred.
+Focused tests: 19 passed. Evidence:
+`docs/ops/evidence/2026-09-12_dukascopy_p2_p3_tail_execution.md`.

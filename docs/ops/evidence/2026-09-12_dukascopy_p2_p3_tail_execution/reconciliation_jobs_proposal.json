@@ -1,0 +1,56 @@
+{
+  "schema": "qm.dukascopy-reconciliation-jobs-proposal/v1",
+  "task_id": "79c942ac-bebb-4dd4-a4ff-281d5d11dac7",
+  "status": "EXECUTED_SCRATCH_FAIL_CLOSED",
+  "production_splice_authorized": false,
+  "dukascopy_conversion_root": "D:/QM/reports/dukascopy/conversion/20260912_0919_task79c942ac",
+  "dwx_export_root": "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260912_063608/dwx_m1",
+  "symbols": [
+    "AUDJPY.DWX",
+    "AUDNZD.DWX",
+    "AUDUSD.DWX",
+    "CADCHF.DWX",
+    "CADJPY.DWX",
+    "CHFJPY.DWX",
+    "EURAUD.DWX",
+    "EURCAD.DWX",
+    "EURCHF.DWX",
+    "EURGBP.DWX",
+    "EURNZD.DWX",
+    "GBPAUD.DWX",
+    "GBPCHF.DWX",
+    "GBPJPY.DWX",
+    "NZDCAD.DWX",
+    "NZDCHF.DWX",
+    "NZDJPY.DWX",
+    "NZDUSD.DWX",
+    "UK100.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "XAGUSD.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+  ],
+  "symbol_count": 24,
+  "excluded": {
+    "AUDCAD.DWX": "P1 has one unresolved authenticated source hour, so no conversion sidecar exists",
+    "12_symbols": "governed T1 export emitted zero bars; see report",
+    "remaining_converted_symbols": "not present in the governed T1 export"
+  },
+  "scratch_runs": [
+    {
+      "symbols": 22,
+      "jobs": "D:/QM/reports/dukascopy/reconciliation/20260912_1026_task79c942ac_all_available/jobs.json",
+      "result": "D:/QM/reports/dukascopy/reconciliation/20260912_1026_task79c942ac_all_available/results_22/reconciliation_summary.json",
+      "result_sha256": "6817900f62d91d22d8c94e0bfba95678f77d42d98a54b668c9037503d37f19a8",
+      "status": "FAIL"
+    },
+    {
+      "symbols": 2,
+      "jobs": "D:/QM/reports/dukascopy/reconciliation/20260912_1026_task79c942ac_all_available/jobs_metals.json",
+      "result": "D:/QM/reports/dukascopy/reconciliation/20260912_1026_task79c942ac_all_available/results_metals/reconciliation_summary.json",
+      "result_sha256": "5ef271c85aaee4a8889a50119a863bddcb97ba89c0b0d40754edd80b41837e0a",
+      "status": "FAIL"
+    }
+  ]
+}
