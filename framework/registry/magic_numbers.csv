@@ -18426,3 +18426,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9225,mql5-rvi-ma,0,EURUSD.DWX,92250000,2026-09-12,Codex governed allocator,active
 9225,mql5-rvi-ma,1,GBPUSD.DWX,92250001,2026-09-12,Codex governed allocator,active
 9225,mql5-rvi-ma,2,XAUUSD.DWX,92250002,2026-09-12,Codex governed allocator,active
+41452,xauxag-wr2-clv-mom,0,XAUUSD.DWX,414520000,2026-09-12,Codex governed allocator,active
+41452,xauxag-wr2-clv-mom,1,XAGUSD.DWX,414520001,2026-09-12,Codex governed allocator,active
