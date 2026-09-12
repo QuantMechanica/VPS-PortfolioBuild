@@ -1,5 +1,18 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 12.09. 05:38Z — Pending artifact binding drift vollständig klassifiziert:**
+> Read-only Census: 518 gebundene pending Rows geprüft, 63 `CONTENT_CHANGED`
+> Bindings auf 33 historischen Rows / 23 EAs. Exakt ein finaler Build bestand
+> den dry-run-first Requalifizierungs-Gate: QM5_10269 `0be0a1d1` wurde
+> append-only durch den aktuellen hashgebundenen Q02 `127aab04` ersetzt
+> (COMPILE_EA `3a92321c`, Fixed Risk 1000/0). Neun vorher claimbare Rows
+> erhielten nach Plan-Readback exakte non-restart Holds. Ergebnis: 10
+> superseded, 27 held (vier überlappen), 1 runnable successor; jede der 33 angezeigten Rows hat
+> einen dokumentierten Grund. Keine Status-/Verdict-/Evidence-Überschreibung,
+> kein Terminal-/Live-/FTMO-Eingriff. Evidence:
+> `docs/ops/evidence/2026-09-12_pending_artifact_binding_drift_disposition.md`
+> und `2026-09-12_pending_artifact_binding_census.json`.
+
 > **Nachtrag 11.09. 17:07Z (Orchestrierungszyklus, Claude) — alle drei IN_PROGRESS-Tasks (`bb814520`,
 > `dfc60103`, `3032534e`) weiter extern blockiert, kein Akzeptanzkriterium erfüllt, kein `update-task`:**
 > Evidence-Tail gelesen vor jeder Prüfung (Suppressionsregel). Direktabfrage der DB bestätigt den

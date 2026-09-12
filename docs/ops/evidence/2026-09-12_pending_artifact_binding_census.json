@@ -1,0 +1,994 @@
+{
+  "bound_pending_rows_checked": 518,
+  "class_counts": {
+    "CONTENT_CHANGED": 63
+  },
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "disposition_counts": {
+    "GOVERNED_APPEND_ONLY_SETFILE_SUCCESSOR_REQUIRED": 2,
+    "GOVERNED_BUILD_SUCCESSOR_REQUIRED": 31
+  },
+  "drifted_rows": 33,
+  "mismatched_bindings": 63,
+  "rows": [
+    {
+      "claimed_by": null,
+      "created_at": "2026-06-27T18:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10203",
+      "findings": [
+        {
+          "actual_sha256": "f69024c5470c44f4f2e847ce3fba37a67d2704241b4257da7e1a2188b19dd85b",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "03c56bce49ce6b126888277fc444efcf4a6a0176bf427cea77b030cabd824631",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10203_tv-actionzone-atr-rev\\QM5_10203_tv-actionzone-atr-rev.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+        "reason": "Current MQ5 differs beyond newline normalization from the sealed Q02 source after reviewed SL/TP normalization commit 3d853ab6b; the old row cannot authenticate the edited source.",
+        "release_on_restart": false
+      },
+      "id": "8abafefb-53b8-45a5-992f-32dba3685495",
+      "phase": "Q02",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-13T15:01:47+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-07-29T21:47:14+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_20181",
+      "findings": [
+        {
+          "actual_sha256": "952a9484c91634ae0ccf4ef28b5904784df71c41e6ca664792970a497a1d37a0",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "8c15434a0c1f5f0e76a1777f19977baae8e99439859ae6f5ffd604436c09e0f5",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\QM5_20181_ftmo-joint-multisym-timer.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "891c63fffd4b05a59c68cb760238925ba053bb99b59223e0268dbcf19f39f660",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "3b7a1cdfd7b1836608ee47bfd9bffce939bec97f07badd9813583f9726684ff0",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\sets\\QM5_20181_ftmo-joint-multisym-timer_USDJPY.DWX_H1_book2_9936_10145.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "FTMO_BOOK3_Q02_ISOLATED_ONLY",
+        "reason": "OWNER-preregistered FTMO Book-3 Q02 fidelity ladder; isolated T10 execution only",
+        "release_on_restart": false
+      },
+      "id": "824ca951-5d8d-58c7-adc3-c5b810c5587c",
+      "phase": "Q02",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-07-29T21:47:14+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-07-29T21:47:14+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_20181",
+      "findings": [
+        {
+          "actual_sha256": "952a9484c91634ae0ccf4ef28b5904784df71c41e6ca664792970a497a1d37a0",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "8c15434a0c1f5f0e76a1777f19977baae8e99439859ae6f5ffd604436c09e0f5",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\QM5_20181_ftmo-joint-multisym-timer.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "dae20356a85db2d56240021d7091659941ecd5fe1eb4f42e4fca798e0b93ff0f",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "c043caddc02335264ab0e83f99633d23963f538fac32645ee56e26d9a4afa5a7",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\sets\\QM5_20181_ftmo-joint-multisym-timer_USDJPY.DWX_H1_book3_9936_10145_13108.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "FTMO_BOOK3_Q02_ISOLATED_ONLY",
+        "reason": "OWNER-preregistered FTMO Book-3 Q02 fidelity ladder; isolated T10 execution only",
+        "release_on_restart": false
+      },
+      "id": "a0d6400a-4f31-5855-a876-e6192e961ecd",
+      "phase": "Q02",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-07-31T05:04:38.444824Z"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-16T11:08:27+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10593",
+      "findings": [
+        {
+          "actual_sha256": "959e2e2c86aef788f96c50f5b8afa5310be7816da8264c6342acf0538a92d40b",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "5cc4aadee69a9cbb0127bf3a0ded875ebb57f5cf93cf9368f21645ffb8670ee8",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10593_mql5-adxhull\\QM5_10593_mql5-adxhull.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "100c352c74ef86b852a155c4242c5c91cbffafef18db8dcfd761d08ecf9d9b15",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "ba26730f4afb18a61024866d7ef2886ef01402a5ffdf170f7ec599fc3825cdf6",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10593_mql5-adxhull\\sets\\QM5_10593_mql5-adxhull_XAUUSD.DWX_H4_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+        "reason": "Pending row bound artifact changed after enqueue; dispatch must remain fail-closed until governed successor build.",
+        "release_on_restart": false
+      },
+      "id": "8084f025-361f-42cc-9595-55c5d8087f2a",
+      "phase": "Q04",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-16T11:08:27+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-16T11:08:37+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10649",
+      "findings": [
+        {
+          "actual_sha256": "3bb85b8d7726ae975826cf5f578fbbaaa0ea3a8c6f62fdc69f3d1dae822844b0",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "9761025cec620d64929bb5bdcf4fb5625b88d3c01db08ae722013629230613ac",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10649_tv-stoch-sltp\\QM5_10649_tv-stoch-sltp.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "c9a66aeaa938889188c80040491bd859c8bc926c1e90346ad7f841e56c9f038d",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "6763f343a9173166ce201398bf566d4fac38fe76730dfe9702213f20b4a3627a",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10649_tv-stoch-sltp\\QM5_10649_tv-stoch-sltp.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "867c292fc64fbd256c053fbcfa8d17377eb0f46e569bc9a5f10cdecca01367c8",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "6a4a6f92837f459d4af32879e475409cdfb5977e8aafd8a4723e07f1a53f05a6",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10649_tv-stoch-sltp\\sets\\QM5_10649_tv-stoch-sltp_XAUUSD.DWX_M15_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+        "reason": "Current EX5, MQ5, and setfile differ beyond newline normalization from the sealed Q04 bindings after commit 92e590b3b; the old row cannot authenticate the repaired implementation.",
+        "release_on_restart": false
+      },
+      "id": "c2ce418a-1597-436e-8420-07d1618cac5e",
+      "phase": "Q04",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-08-16T11:08:37+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-16T11:09:45+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_1443",
+      "findings": [
+        {
+          "actual_sha256": "b4d7a68e984b3a40de3ef28037649a5933abfdcb474ba39854899489f05ee442",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "a3069dc4f27bbf79adb499a608d51e564ef8e09dce3398a7c5ab3e92ed8d7708",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1443_demark-td-lines-h4\\QM5_1443_demark-td-lines-h4.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+        "reason": "Current MQ5 differs beyond newline normalization from the sealed Q04 source after reviewed SL/TP normalization commit 3d853ab6b; the old row cannot authenticate the edited source.",
+        "release_on_restart": false
+      },
+      "id": "48f156eb-87b1-4d39-b18d-f8c9914cb2c5",
+      "phase": "Q04",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-16T11:09:45+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-17T19:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_33007",
+      "findings": [
+        {
+          "actual_sha256": "5ea0a2defa9a339ab5f6f1e1e1d46657b582ed7167ce719fb8316e37e845e4d3",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "5bca9db2ae469ea0112da9483ac7bcb3358d8834b910a346b0de657eafd314a0",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_33007_george-pruitt-king-keltner-trend-buster\\QM5_33007_george-pruitt-king-keltner-trend-buster.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "58a549b3c0a3a004bf1017b10a0bdede635af9b27243536b53666a2b6f772e99",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "e304aa0a0bdf3380911349cdb2e0b1c546e9f43a7649aa46080b9cf5c3af6b74",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_33007_george-pruitt-king-keltner-trend-buster\\QM5_33007_george-pruitt-king-keltner-trend-buster.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "38f532600d6ec5c0577742aaa25a2cd9ad4ba4e0223d84c3f822de48ac666e77",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "fbcde36d51ce42a6121661d6718123e47d530a2dc17c7e229811b20f691c5d71",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_33007_george-pruitt-king-keltner-trend-buster\\sets\\QM5_33007_george-pruitt-king-keltner-trend-buster_SP500.DWX_H4_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "REVIEW_FAIL_PIPELINE_ENTRY_BLOCKED",
+        "reason": "open review_ea 85fd5256 returned FAIL; E3 bars pipeline entry until the EA is repaired and re-reviewed",
+        "release_on_restart": false
+      },
+      "id": "8322d8c7-5c40-49d7-b8c9-84cbf100d102",
+      "phase": "Q02",
+      "symbol": "SP500.DWX",
+      "updated_at": "2026-08-17T20:08:24+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-17T20:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_35005",
+      "findings": [
+        {
+          "actual_sha256": "8c5457fc7cc7b10af168f89089b7320a5118d43078f87ed73232de18bbe0d4fc",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "deb2750e74c65a7cfe518844a6ca423df52e1fd0eed87d1862d2d106e1050d00",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "5eb4dbf5c24040bf983933394eff5a09ae0b1ea38796c077fa918847fbb7d39c",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "f32d8afb74de6c7549cad0a16a57f9d416ea0d2ffa6a0ac0ed04eef0b7ad95c9",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_EURJPY.DWX_H1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+        "reason": "no review_ea has ever completed for this EA; E3 requires a completed review before pipeline entry",
+        "release_on_restart": false
+      },
+      "id": "61f887b7-2b73-4471-ab36-0944b65dedfb",
+      "phase": "Q02",
+      "symbol": "EURJPY.DWX",
+      "updated_at": "2026-08-17T22:18:32+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-17T20:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_35005",
+      "findings": [
+        {
+          "actual_sha256": "8c5457fc7cc7b10af168f89089b7320a5118d43078f87ed73232de18bbe0d4fc",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "deb2750e74c65a7cfe518844a6ca423df52e1fd0eed87d1862d2d106e1050d00",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "bbc838facbd272824da0134aadc81cee5704989d63c8bbf42c2465ca0e16f4b4",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "68ca01123b85ff77cacfc69bc641c4378deee8a66bffbb3239f451bb589c397a",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_EURUSD.DWX_H1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+        "reason": "no review_ea has ever completed for this EA; E3 requires a completed review before pipeline entry",
+        "release_on_restart": false
+      },
+      "id": "62156a75-50ce-4679-bce2-6127615cd89d",
+      "phase": "Q02",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-17T22:19:58+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-17T20:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_35004",
+      "findings": [
+        {
+          "actual_sha256": "e64d26cb59200572fb64a4b1bf4203c80e2bc640c2284afbfc429e368392622c",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "7a8c80c5878c32528c1cce2396d988394f5add9ef806f724e694df21cde535a8",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "fc18d6cd751c2fd4ca2c0df05c455697b5cda035e71cfdbed3ed271f1eafcca7",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "982852da998995b9309354591168b0cc574776ecb5e3ff039c2a3fc76b2f86c9",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_GBPUSD.DWX_M15_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+        "reason": "no review_ea has ever completed for this EA; E3 requires a completed review before pipeline entry",
+        "release_on_restart": false
+      },
+      "id": "869ea74a-dec7-4542-a583-bea9c719a6d4",
+      "phase": "Q02",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-17T22:13:40+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-17T20:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_35004",
+      "findings": [
+        {
+          "actual_sha256": "e64d26cb59200572fb64a4b1bf4203c80e2bc640c2284afbfc429e368392622c",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "7a8c80c5878c32528c1cce2396d988394f5add9ef806f724e694df21cde535a8",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "ab095abf1e7e9c6d1a7a32ec110bfc085a6cbd252f143980000922b7649e105a",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "e4ccfbd8211e68e9fc0355d3849bc9d843bb905ce5aa4000a34d5d266a2e443f",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_USDCHF.DWX_M15_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+        "reason": "no review_ea has ever completed for this EA; E3 requires a completed review before pipeline entry",
+        "release_on_restart": false
+      },
+      "id": "87cbb87c-b6d1-4259-ac70-69dc29459cf7",
+      "phase": "Q02",
+      "symbol": "USDCHF.DWX",
+      "updated_at": "2026-08-17T22:15:36+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-17T20:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_35004",
+      "findings": [
+        {
+          "actual_sha256": "e64d26cb59200572fb64a4b1bf4203c80e2bc640c2284afbfc429e368392622c",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "7a8c80c5878c32528c1cce2396d988394f5add9ef806f724e694df21cde535a8",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "fbaa1e7d1b41fa257000607cc41c49b7cac96f3b51e12ad0f8a55c879a77b450",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "418ea9a8b4297175ebf887ee4a540228e718b0f76ed34ac736e9775410a4ce24",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_EURUSD.DWX_M15_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+        "reason": "no review_ea has ever completed for this EA; E3 requires a completed review before pipeline entry",
+        "release_on_restart": false
+      },
+      "id": "8d9f6d2a-cbf1-438e-9b70-ab6089eb4bec",
+      "phase": "Q02",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-17T22:12:27+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-17T20:52:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_35005",
+      "findings": [
+        {
+          "actual_sha256": "8c5457fc7cc7b10af168f89089b7320a5118d43078f87ed73232de18bbe0d4fc",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "deb2750e74c65a7cfe518844a6ca423df52e1fd0eed87d1862d2d106e1050d00",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "47c462253ba849d42739aa64a9ca3f4aafff4515b5c271f811d2ff708bed82ba",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "52e84426f3b6299498bb668d6f9a148b72f0f13932fe961d37773ee138489cab",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_GBPUSD.DWX_H1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+        "reason": "no review_ea has ever completed for this EA; E3 requires a completed review before pipeline entry",
+        "release_on_restart": false
+      },
+      "id": "ee0914f4-cede-4007-9b5b-8fb64bddaa53",
+      "phase": "Q02",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-17T22:22:00+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-21T14:20:33+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_20096",
+      "findings": [
+        {
+          "actual_sha256": "4a60bfcdbae583c3413902a7eb7ad901e1cc03a18d55860ff9b0d3ecee334d2f",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "531e8e75094cc5756de7326d0efdb6d51ad0578f10b7f3fb22832ce8cd8dc3a9",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20096_ha-stoch-h4-swing\\QM5_20096_ha-stoch-h4-swing.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "3a305baf207c9dd31c0fa06f468e40ee244139d1fe3d98b67961b99ff3c9b3c3",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "c915f899627ac7160506dce95d1b5d84af2570b29476ef0bec16e714aec9d7cb",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20096_ha-stoch-h4-swing\\sets\\QM5_20096_ha-stoch-h4-swing_USDCHF.DWX_H4_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+        "reason": "Pending row bound artifact changed after enqueue; dispatch must remain fail-closed until governed successor build.",
+        "release_on_restart": false
+      },
+      "id": "256846e2-edce-4354-a346-0a428dafcc1b",
+      "phase": "Q02",
+      "symbol": "USDCHF.DWX",
+      "updated_at": "2026-08-21T14:20:33+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-21T15:06:14+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10717",
+      "findings": [
+        {
+          "actual_sha256": "3d5680d0022df60ca523630822515e5f1cf86a2e7bc4d512eda45065cb8ce463",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "72c118b0a30fc32d0b6bcf921a632bfd8175048431b0547b87f249b841053f0a",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\QM5_10717_edgelab-xsec-fx-momentum.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "0278b5ddef713e76617c4ae4bc9c97b21217e88578e36a1a09d5ebe10faef970",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "1fa4d2fdceaba1fb727ca5d8962964be400490a9546fcb77a8b8579d345e9f7e",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\QM5_10717_edgelab-xsec-fx-momentum.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "e6cf041bce7de65c935edbeab71bd5c5e6f6524dcbc5732f280ad3ad3684548b",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "4d34f1a3ab50cee7154f979977428e8462b5a9d3ab0f84c41be3b453dc81087c",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\sets\\QM5_10717_edgelab-xsec-fx-momentum_FX8_BASKET_D1_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": null,
+      "id": "7dd70134-a2a0-4ecf-a706-5f4609a094be",
+      "phase": "Q02",
+      "symbol": "FX8_BASKET_D1",
+      "updated_at": "2026-08-21T15:06:14+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-23T18:57:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10718",
+      "findings": [
+        {
+          "actual_sha256": "10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "0f1ec072c7c91376755cdaca64949097f9bb64f58aabcca317efbde41d185b4e",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10718_edgelab-regime-filtered-carry\\QM5_10718_edgelab-regime-filtered-carry.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "92fa06a272aa4805e31c6caac4f1ad9feeaf91fec18c349a616bf2cae00f8f00",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "a1c670d39169670420e4b75a832e94003a74a8551bb04986d51779d13e0d9e1b",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10718_edgelab-regime-filtered-carry\\QM5_10718_edgelab-regime-filtered-carry.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "0fada056ff5be3ccc2629bf078cf785aaac6096911595c4d35db5315d3037ab1",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "8015e69d86292dcee413b89e0b54262bd61a741659824c136cdbe18aacb3b020",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10718_edgelab-regime-filtered-carry\\sets\\QM5_10718_edgelab-regime-filtered-carry_USDCHF.DWX_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+        "reason": "Current COMPILE_EA is final, but the changed build invalidates the pending Q03 predecessor chain; a governed current-identity Q02 must pass before Q03 can be recreated.",
+        "release_on_restart": false
+      },
+      "id": "c65a8b39-224e-431a-a9ea-e54161686b94",
+      "phase": "Q03",
+      "symbol": "USDCHF.DWX",
+      "updated_at": "2026-08-23T18:57:58+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-25T19:18:01+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10269",
+      "findings": [
+        {
+          "actual_sha256": "284d46702d34032f95322197fed9295d6e4296ffd387da49c5aa76b7961aecf6",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "13e0f1e170447b6a951a19f617b8f8534337bc428219467d48f0d7a57cb8680c",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\QM5_10269_gawd-wma30-trend.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "2799f17f978586bc37ada65ed33e18d31629122e193c4ff9136f3f53e1ca665a",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\QM5_10269_gawd-wma30-trend.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "980070777d3e6259e9d5737492da72c6e1ea9c9c31105d4590745d886dc26529",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "ff235ce456cea3bd6b4d5a9b84c3c7b6cd15d6e26dff8fd666fb984330c75d80",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\sets\\QM5_10269_gawd-wma30-trend_NDX.DWX_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": null,
+      "id": "0be0a1d1-6aa2-4d1b-ae24-50a6c21b93a9",
+      "phase": "Q02",
+      "symbol": "NDX.DWX",
+      "updated_at": "2026-08-25T19:18:01+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-25T20:10:28+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_20143",
+      "findings": [
+        {
+          "actual_sha256": "6d15f3be593bfefa572122808cdd5a925aa867fe0a74f28a1a0221728dfe6b16",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "38d9ed0f54c3f9baf0f0447448db8748ef9a23b3bb014ea7fe2f18921bd7db4d",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20143_macd-bb-campaign-m5\\QM5_20143_macd-bb-campaign-m5.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_REBUILD_IN_PROGRESS",
+        "reason": "COMPILE_EA 4144f8f2 remains pending; no final governed compile receipt exists for the current source.",
+        "release_on_restart": false
+      },
+      "id": "8be76d81-2983-4acb-a733-0b653b244be2",
+      "phase": "Q02",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-08-25T20:10:28+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-29T08:10:44.486306+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_11421",
+      "findings": [
+        {
+          "actual_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": null,
+      "id": "f81a14df-14ef-5f15-b808-d19b8c13348c",
+      "phase": "Q14",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-08-29T08:10:44.486306+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-31T04:26:45+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_20202",
+      "findings": [
+        {
+          "actual_sha256": "b650ad829dac2abb18eb52fce7f6443596753d5cd795073148390f6bda9b8d9a",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "fe08254102474401c7be42c596d65e6f5483476a7262952ee3e9f20c6ad59861",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20202_xauxag-rev18\\QM5_20202_xauxag-rev18.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "62e321cd35d115dcdfe6ce3ec2dbe09e7f73cf6e23399586aa774d8c70a39346",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "30c90265641d4e4c2585e0977826b26b9ba28f59f9c9e3e8cc835c21d6e20b9d",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20202_xauxag-rev18\\QM5_20202_xauxag-rev18.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "09c5c020519e6985bceb7090003940fac0d56535b2f816959e96c812767c2e5d",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "0f024338c8024a48a6cf6cfaa2a92f95b4e82d76722b9291e10b214528b6e973",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20202_xauxag-rev18\\sets\\QM5_20202_xauxag-rev18_QM5_20202_XAU_XAG_REV18_D1_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+        "reason": "Current COMPILE_EA is final, but the changed build invalidates the pending Q03 predecessor chain; a governed current-identity Q02 must pass before Q03 can be recreated.",
+        "release_on_restart": false
+      },
+      "id": "cbfb5a62-9a53-43a4-a98e-cb13a730a001",
+      "phase": "Q03",
+      "symbol": "QM5_20202_XAU_XAG_REV18_D1",
+      "updated_at": "2026-08-31T04:26:45+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-08-31T04:27:01+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_20275",
+      "findings": [
+        {
+          "actual_sha256": "5583f594d0d0bf2358c965194a84ff58e2f71f630643a08324c43372c900c2a0",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "0b91aa559f19500f602eb584ee5135ba27ba735d0a13dd702aafe09a05d253cb",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20275_gsr-runfade\\QM5_20275_gsr-runfade.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "d079a78ce03718a34779711286a88ca82a9bb7a7a58efa1eedad8d82266b28b7",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "c895b2f70a9610f24f8fa9b0a07f085965fb81b71412a701a860856f967b9bc7",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20275_gsr-runfade\\QM5_20275_gsr-runfade.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "3068ea01066f39a54ec81011183c6d16f206dfb3ecdc3d2bd0ed3c327c5526d1",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "6a5762945fe0a2f1418cc23e784085672d2a672d0d8d1ff0cc7b52d526c34e88",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20275_gsr-runfade\\sets\\QM5_20275_gsr-runfade_QM5_20275_XAU_XAG_RUNFADE_D1_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+        "reason": "Current COMPILE_EA is final, but the changed build invalidates the pending Q03 predecessor chain; a governed current-identity Q02 must pass before Q03 can be recreated.",
+        "release_on_restart": false
+      },
+      "id": "c5ff6aa2-b0e1-4e96-9d4e-71123d832591",
+      "phase": "Q03",
+      "symbol": "QM5_20275_XAU_XAG_RUNFADE_D1",
+      "updated_at": "2026-08-31T04:27:01+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-02T16:30:00+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10700",
+      "findings": [
+        {
+          "actual_sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "0126116d7ffa2b4a952a4962c8035973e11c57bdd423076ee6080458d6c438d8",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "064d670b736e5125a1def88c10ba00f68fc43253ee904b3d82168d8e2380b850",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "26bfd4db75876aed3ccadc5d1d3dad0477b794e057721d230181b1ac730378b5",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.mq5",
+          "role": "mq5"
+        },
+        {
+          "actual_sha256": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "c66b07bd369b6847b88859aacd1ae2f8484c9b8ee9445480494c897fbeb56bb6",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "AWAITING_OWNER_RECOMPILE_DECISION",
+        "reason": "CEO 2026-09-03 01:30Z: parked pending OWNER decision (Sunday package, Vorlage RECOMPILE-PRE-0803). The parent QM5_10700 binary is dated 2026-07-24 and predates the qm_news_calendar_* provenance inputs (QM_NewsFilter.mqh, f0102fbcf 2026-08-03); the live 11910/NZDUSD replacement a6dbacf5 proved that such binaries fail every Q10_NEWS cell with 'MT5 report effective input qm_news_calendar_bundle_id mismatch'. A governed recompile is ROT (active inventory) and would mint a NEW identity from Q02, so this exact Q07 rerun on the old binary cannot feed a valid Q10 path either way; holding it saves ~1 h tester time. Release if OWNER declines the recompile and wants the old-identity evidence anyway.",
+        "release_on_restart": false
+      },
+      "id": "3815515b-db22-439c-8603-a988b0bf0867",
+      "phase": "Q07",
+      "symbol": "XAUUSD.DWX",
+      "updated_at": "2026-09-02T16:30:21+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-03T01:43:21.454484+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_11421",
+      "findings": [
+        {
+          "actual_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING",
+        "reason": "DL-089 matrix service is installed on disk; keep old resident generic workers excluded until the governed worker restart loads the routing guard",
+        "release_on_restart": true
+      },
+      "id": "19761d0c-3877-587d-a5cd-a8e48291cdf7",
+      "phase": "Q12",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-03T01:43:21.454484+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-04T04:03:22+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10116",
+      "findings": [
+        {
+          "actual_sha256": "2f0922a9a70cbaf2f90d9da85cb77c4ee6abbdcb21793ab84244a85aac06b2a5",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "4ef8889ddd285ee0b20c172a69303abee88b88c8ca2fdf9bd48be96b5b707324",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10116_tv-multi-ma-exit\\QM5_10116_tv-multi-ma-exit.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "COMPILED_MAGIC_REGISTRY_STALE",
+        "reason": "Same cf4c53f382fb EX5 failed OnInit on two expanded FX symbols: EA_MAGIC_NOT_REGISTERED. Canonical registry contains the slots; rebuild and fresh binary-bound Q02 qualification required, not repeated runs of this artifact.",
+        "release_on_restart": false
+      },
+      "id": "90f77b53-a02c-4a7f-a71d-096f17418888",
+      "phase": "Q02",
+      "symbol": "USDCHF.DWX",
+      "updated_at": "2026-09-04T04:03:22+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-04T04:03:23+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10116",
+      "findings": [
+        {
+          "actual_sha256": "2f0922a9a70cbaf2f90d9da85cb77c4ee6abbdcb21793ab84244a85aac06b2a5",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "4ef8889ddd285ee0b20c172a69303abee88b88c8ca2fdf9bd48be96b5b707324",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10116_tv-multi-ma-exit\\QM5_10116_tv-multi-ma-exit.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "COMPILED_MAGIC_REGISTRY_STALE",
+        "reason": "Same cf4c53f382fb EX5 failed OnInit on two expanded FX symbols: EA_MAGIC_NOT_REGISTERED. Canonical registry contains the slots; rebuild and fresh binary-bound Q02 qualification required, not repeated runs of this artifact.",
+        "release_on_restart": false
+      },
+      "id": "83ac79f0-daee-4c96-9625-c23f4d9b6109",
+      "phase": "Q02",
+      "symbol": "USDJPY.DWX",
+      "updated_at": "2026-09-04T04:03:23+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-06T00:53:36+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_41359",
+      "findings": [
+        {
+          "actual_sha256": "37f412e01997347f8a252209088cd68b51877c5cc4b9b87391735b50ded91b3e",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "d6b2720bdfdd6c5bcb02c98105bc1658b8b1ee3f163de666dd6aa34509962c10",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\QM5_41359_xtixng-waccel-rv.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "e7848c86c8682a4208455f6de975a99e89cc85d8964f271ad5fd1d5b53dc7488",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "389359663ae529f3e884122e9d2c583f6ae968ef68b5e1a988eb61830693bedc",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_QM5_41359_XTI_XNG_WACCEL_RV_D1_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": null,
+      "id": "00cf2ac1-4083-4c6b-9de5-d14e841b411e",
+      "phase": "Q02",
+      "symbol": "QM5_41359_XTI_XNG_WACCEL_RV_D1",
+      "updated_at": "2026-09-06T00:53:36+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-06T01:55:15+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_41360",
+      "findings": [
+        {
+          "actual_sha256": "31969bc7352cf8d3c329525d38b0b549e5ba889feba66e488f1f20a80a8a51c5",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "a866080dbbfca28287ee0e16571844a096542adda9709e173fce911bef1c6c94",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\QM5_41360_xtixng-wretr-rv.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "22b6e0eaa504c0279531f60c678ef34c068a575843c019e8b4f15fae07a935ff",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "a5a16ae6db32d33c258ae7042653240c2c4334cba983306aa962ac30ea8af987",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_QM5_41360_XTI_XNG_WRETR_RV_D1_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": null,
+      "id": "8f4c4610-bbe8-4de3-aa83-c433e9b6145e",
+      "phase": "Q02",
+      "symbol": "QM5_41360_XTI_XNG_WRETR_RV_D1",
+      "updated_at": "2026-09-06T01:55:15+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-06T02:50:08+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_41361",
+      "findings": [
+        {
+          "actual_sha256": "c864cf1e284c770f32442102fafec91c114a9cf70c1a7da5f34f2109b9491704",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "8f770e63c532e13991818b1b6f2f0924f5c8725b98b2ff53da0a9b0d22e3d3ea",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\QM5_41361_xtixng-commonshock-rv.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "d06919ec5d8be3d8eb207a6ed588bd72274b1935e241c0426731070f83cdb326",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "21ccfa90d993c32b28421795438713f0047c2ee7f3efa0bc5119e700dec9e36a",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": null,
+      "id": "ecc8e269-5a19-4cda-8c4e-0906d4f93791",
+      "phase": "Q02",
+      "symbol": "QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1",
+      "updated_at": "2026-09-06T02:50:08+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-06T08:36:58+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_41362",
+      "findings": [
+        {
+          "actual_sha256": "1cff1132dc7363ee04dcde6843128ce62640367db812868bfc65e5b0bfb2e463",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "0cb69e960bbc337863f404ae4ec8f46f810164cb212a0e2c017a7bcecc553b91",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\QM5_41362_xtixng-wdecel-cont.ex5",
+          "role": "ex5"
+        },
+        {
+          "actual_sha256": "76bf2ee1cd347d554cd7e7853aa215a371bfc452711d687a1b41ece346e8cdce",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "608a6822c137c8cabef9a5f08720c5270452ca362083d7af187a91d87721c759",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_QM5_41362_XTI_XNG_WDECEL_CONT_D1_D1_backtest.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_SOURCE_SET_UNRECOVERABLE",
+        "reason": "Dry-run requalification refused because the immutable source setfile bytes cannot be recovered; no auditable parameter diff can be proved.",
+        "release_on_restart": false
+      },
+      "id": "a126c45e-3153-4c9f-a35b-67f153d8d709",
+      "phase": "Q02",
+      "symbol": "QM5_41362_XTI_XNG_WDECEL_CONT_D1",
+      "updated_at": "2026-09-06T08:36:58+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-09T12:33:34.301720+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_11421",
+      "findings": [
+        {
+          "actual_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_REBUILD_IN_PROGRESS",
+        "reason": "Latest COMPILE_EA is not COMPILE_OK for the current MQ5; these pending DL-089 rows cannot bind a final build.",
+        "release_on_restart": false
+      },
+      "id": "03392b1f-05a0-5fe1-807a-ea9bafa0a4bd",
+      "phase": "Q12",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-09T12:33:34.301720+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-09T12:33:35.710386+00:00",
+      "disposition": "GOVERNED_APPEND_ONLY_SETFILE_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10706",
+      "findings": [
+        {
+          "actual_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "275e66e9e6151277ba180b4d7c3a786804a9a7346687dd034ee6d9c8d3e444ac",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_SETFILE_SUCCESSOR_REQUIRED",
+        "reason": "Setfile CONTENT_CHANGED after queueing; no governed COMPILE_EA receipt or phase-specific append-only successor currently proves the new DL-089 execution identity.",
+        "release_on_restart": false
+      },
+      "id": "6d307198-f1ef-561c-82a7-3c15c3a82a8d",
+      "phase": "Q12",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-09-09T12:33:35.710386+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-09T12:43:39.928939+00:00",
+      "disposition": "GOVERNED_BUILD_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_11421",
+      "findings": [
+        {
+          "actual_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "role": "mq5"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_REBUILD_IN_PROGRESS",
+        "reason": "Latest COMPILE_EA is not COMPILE_OK for the current MQ5; these pending DL-089 rows cannot bind a final build.",
+        "release_on_restart": false
+      },
+      "id": "0840d7a5-299f-5720-a0f9-9ca6e4c7c5ab",
+      "phase": "Q12",
+      "symbol": "EURUSD.DWX",
+      "updated_at": "2026-09-09T12:43:39.928939+00:00"
+    },
+    {
+      "claimed_by": null,
+      "created_at": "2026-09-09T12:43:41.101991+00:00",
+      "disposition": "GOVERNED_APPEND_ONLY_SETFILE_SUCCESSOR_REQUIRED",
+      "ea_id": "QM5_10706",
+      "findings": [
+        {
+          "actual_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d",
+          "classification": "CONTENT_CHANGED",
+          "expected_sha256": "275e66e9e6151277ba180b4d7c3a786804a9a7346687dd034ee6d9c8d3e444ac",
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "role": "setfile"
+        }
+      ],
+      "hold": {
+        "hold_code": "ARTIFACT_BINDING_SETFILE_SUCCESSOR_REQUIRED",
+        "reason": "Setfile CONTENT_CHANGED after queueing; no governed COMPILE_EA receipt or phase-specific append-only successor currently proves the new DL-089 execution identity.",
+        "release_on_restart": false
+      },
+      "id": "cb81c67c-801d-5e69-a8da-6cd881de3404",
+      "phase": "Q12",
+      "symbol": "GBPUSD.DWX",
+      "updated_at": "2026-09-09T12:43:41.101991+00:00"
+    }
+  ],
+  "schema": "qm.pending-artifact-binding-census.v1"
+}
