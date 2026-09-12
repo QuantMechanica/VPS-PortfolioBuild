@@ -1,0 +1,59 @@
+{
+  "schema": "qm.paced-fleet-cpu-ceiling-stop/v1",
+  "recorded_at_utc": "2026-09-12T02:21:11Z",
+  "branch": "agents/board-advisor",
+  "coordination_task_id": "374ba9a6-478d-4df3-9881-4c99d143f967",
+  "claim_key": "paced_fleet:infra_recovery:QM5_10069:NZDUSD.DWX:20260912",
+  "ea_id": "QM5_10069",
+  "ea_label": "QM5_10069_mql5-hs-rev",
+  "symbol": "NZDUSD.DWX",
+  "timeframe": "H1",
+  "source_work_item_id": "727fd995-bf25-4943-bf14-422f59adab65",
+  "compile_work_item_id": "7deba014-7ca5-4e79-bd20-789bad639b69",
+  "compile_verdict": "COMPILE_OK",
+  "mq5_sha256": "d6243b426c4290aae893cc64088aecc9cca6cbf696abfe8792859588a60ba77c",
+  "ex5_sha256": "4f474930fa4c53657df8252416dc55efa7f3bc974ca706d63faacd54b1db7c55",
+  "setfile_sha256": "9e52a5bfafe2585eb86f86c8f6bc8446596d45e79dacaefbf0ab53a975da3dd1",
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "qm_magic_slot_offset": 7
+  },
+  "framework_input_pin_audit": {
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "requalification_dry_run": {
+    "ok": true,
+    "eligible": true,
+    "would_enqueue": true,
+    "parameter_change_count": 0,
+    "source_verdict": "INFRA_FAIL",
+    "source_failure": "ONINIT_FAILED;INCOMPLETE_RUNS",
+    "applied": false
+  },
+  "cpu_ceiling": {
+    "ceiling_pct": 97,
+    "samples_pct": [99, 100, 100, 100, 100],
+    "average_pct": 99.8,
+    "maximum_pct": 100,
+    "trigger": "average_and_maximum_at_or_above_ceiling",
+    "sampled_at_utc_end": "2026-09-12T02:21:10.0711087Z"
+  },
+  "factory_terminals_running": ["T1", "T3", "T4", "T5", "T6", "T7", "T10"],
+  "outcome": "NOT_ENQUEUED_CPU_CEILING",
+  "mutations_refused": [
+    "Q02 successor enqueue",
+    "compile enqueue",
+    "manual smoke or backtest launch"
+  ],
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false,
+    "deploy_manifest_touched": false
+  },
+  "resume_condition": "Repeat the exact EX5 hash, source-pin audit, open-successor check, and five-sample CPU check. Apply requalify-q02 only when both average and maximum CPU are strictly below 97 percent."
+}
