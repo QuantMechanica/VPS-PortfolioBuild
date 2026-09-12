@@ -1,0 +1,8 @@
+{
+  "engine": "config_sweep",
+  "measured": 350,
+  "program_id": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+  "report_path": "docs\\research\\balke_stage2_41405\\status_20260912.csv",
+  "rows": 350,
+  "schema": "qm.window-sweep.v1"
+}

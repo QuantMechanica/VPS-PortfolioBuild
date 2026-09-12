@@ -469,7 +469,7 @@ class SameCalendarRamsayEReferenceTests(unittest.TestCase):
             "qm_news_mode_legacy      = QM_NEWS_OFF;",
             "qm_friday_close_enabled       = false;",
             "qm_stress_reject_probability  = 0.0;",
-            'const string g_symbol = "XTIUSD.DWX";',
+            "PositionGetString(POSITION_SYMBOL) == _Symbol",
             "strategy_history_years       = 5;",
             "strategy_scale_multiplier    = 1.4826;",
             "strategy_ramsay_a            = 0.3;",
@@ -527,6 +527,7 @@ class SameCalendarRamsayEReferenceTests(unittest.TestCase):
             "radicand",
         ):
             self.assertNotIn(banned, source.lower())
+        self.assertNotIn('const string g_symbol = "XTIUSD.DWX";', source)
         self.assertNotIn("SymbolInfoInteger(_Symbol, SYMBOL_SPREAD)", source)
 
         prepare = source[

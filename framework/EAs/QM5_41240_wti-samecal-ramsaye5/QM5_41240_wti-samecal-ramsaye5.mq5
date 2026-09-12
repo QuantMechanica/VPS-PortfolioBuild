@@ -55,8 +55,6 @@ input double strategy_atr_sl_mult         = 3.5;
 input int    strategy_max_hold_days       = 40;
 input int    strategy_max_spread_points   = 1500;
 
-const string g_symbol = "XTIUSD.DWX";
-
 int      g_last_attempt_month_key = 0;
 string   g_attempt_state_key      = "";
 bool     g_strategy_new_d1_bar    = false;
@@ -76,7 +74,9 @@ string   g_signal_state           = "idle";
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_symbol && _Period == PERIOD_D1);
+   // QM_FrameworkInit binds slot 0 to the governed symbol.  The strategy
+   // trades the chart symbol so the same binary remains broker-suffix safe.
+   return (_Period == PERIOD_D1);
   }
 
 int Strategy_DateKeyForTime(const datetime value)
@@ -237,7 +237,7 @@ void Strategy_DetectDecisionClockOnNewBar()
 
 bool Strategy_IsOwnedPosition()
   {
-   return (PositionGetString(POSITION_SYMBOL) == g_symbol &&
+   return (PositionGetString(POSITION_SYMBOL) == _Symbol &&
            (int)PositionGetInteger(POSITION_MAGIC) == QM_FrameworkMagic());
   }
 
@@ -294,7 +294,7 @@ bool Strategy_MonthAlreadyEntered(const int month_key)
       const ulong deal_ticket = HistoryDealGetTicket(index);
       if(deal_ticket == 0 ||
          (int)HistoryDealGetInteger(deal_ticket, DEAL_MAGIC) != magic ||
-         HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != g_symbol)
+         HistoryDealGetString(deal_ticket, DEAL_SYMBOL) != _Symbol)
          continue;
 
       const ENUM_DEAL_ENTRY entry_kind =
@@ -710,14 +710,6 @@ bool Strategy_NoTradeFilter()
       !QM_InputRequireLong("qm_magic_slot_offset", qm_magic_slot_offset, 0) ||
       !QM_InputRequireDouble("RISK_PERCENT", RISK_PERCENT, 0.0, 1.0e-12) ||
       !QM_InputRequireDouble("RISK_FIXED", RISK_FIXED, 1000.0, 1.0e-12) ||
-      !QM_InputRequireDouble("PORTFOLIO_WEIGHT", PORTFOLIO_WEIGHT, 1.0, 1.0e-12) ||
-      !QM_InputRequireLong("qm_news_temporal", qm_news_temporal, QM_NEWS_TEMPORAL_OFF) ||
-      !QM_InputRequireLong("qm_news_compliance", qm_news_compliance, QM_NEWS_COMPLIANCE_NONE) ||
-      !QM_InputRequireLong("qm_news_mode_legacy", qm_news_mode_legacy, QM_NEWS_OFF) ||
-      !QM_InputRequireLong("qm_news_stale_max_hours", qm_news_stale_max_hours, 336) ||
-      !QM_InputRequireString("qm_news_min_impact", qm_news_min_impact, "high") ||
-      !QM_InputRequireLong("qm_friday_close_enabled", qm_friday_close_enabled, false) ||
-      !QM_InputRequireLong("qm_friday_close_hour_broker", qm_friday_close_hour_broker, 21) ||
       !QM_InputRequireLong("strategy_history_years", strategy_history_years, 5) ||
       !QM_InputRequireDouble("strategy_scale_multiplier", strategy_scale_multiplier, 1.4826, 1.0e-12) ||
       !QM_InputRequireDouble("strategy_ramsay_a", strategy_ramsay_a, 0.3, 1.0e-12) ||
@@ -728,6 +720,10 @@ bool Strategy_NoTradeFilter()
       !QM_InputRequireDouble("strategy_atr_sl_mult", strategy_atr_sl_mult, 3.5, 1.0e-12) ||
       !QM_InputRequireLong("strategy_max_hold_days", strategy_max_hold_days, 40) ||
       !QM_InputRequireLong("strategy_max_spread_points", strategy_max_spread_points, 1500))
+      return true;
+   if(!MathIsValidNumber(qm_stress_reject_probability) ||
+      qm_stress_reject_probability < 0.0 ||
+      qm_stress_reject_probability > 1.0)
       return true;
    return false;
   }
@@ -820,7 +816,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   if(!SymbolSelect(g_symbol, true) ||
+   if(!SymbolSelect(_Symbol, true) ||
       !Strategy_IsHostChart() || qm_ea_id != 41240 ||
       qm_magic_slot_offset != 0)
       return INIT_PARAMETERS_INCORRECT;
@@ -861,7 +857,7 @@ int OnInit()
    Strategy_LoadAttemptState(TimeCurrent());
 
    string warmup_symbols[1];
-   warmup_symbols[0] = g_symbol;
+   warmup_symbols[0] = _Symbol;
    QM_SymbolGuardInit(warmup_symbols);
    QM_BasketWarmupHistory(warmup_symbols,
                           PERIOD_D1,
