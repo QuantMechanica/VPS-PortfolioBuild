@@ -546,11 +546,14 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         db.insert(
             "capped-news", news_phase, "CAP.DWX", raw_payload_json=binding,
         )
-        db.insert("free-q09", "Q09", "FREE.DWX")
+        # Q09 is itself a RAM-gated long run. Use an ordinary short gate to
+        # prove that a capped Q10 row falls through without weakening either
+        # long-run guard.
+        db.insert("free-q06", "Q06", "FREE.DWX")
         with patch.dict("os.environ", {farmctl.TOPDOWN_GATE_PRIORITY_ENV: "1"}):
             claim = terminal_worker.claim_atomic(db.root, "T1")
         self.assertTrue(claim.get("claimed"), claim)
-        self.assertEqual(claim["item"]["id"], "free-q09")
+        self.assertEqual(claim["item"]["id"], "free-q06")
         self.assertEqual(
             claim.get("longrun_cap_skipped"), None,
             "a successful lower-gate claim proves the cap did not idle the slot",

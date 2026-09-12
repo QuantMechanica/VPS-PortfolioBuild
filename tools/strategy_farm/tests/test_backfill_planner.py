@@ -142,7 +142,7 @@ def test_q10_pass_above_news_hole_is_capped_not_skipped() -> None:
     assert pairs["QM5_FULL"]["rank"] < hole["rank"]
 
 
-def test_config_locked_q09_news_is_rebind_not_reusable() -> None:
+def test_stale_q09_news_is_rebind_not_reusable() -> None:
     connection = _connection()
     payload = {"expected_ex5_sha256": "a" * 64, "expected_setfile_sha256": "b" * 64}
     for gate in PRE_NEWS_CHAIN:
@@ -153,7 +153,7 @@ def test_config_locked_q09_news_is_rebind_not_reusable() -> None:
     )
     _insert(
         connection, "cl-news", NEWS_PHASE, "QM5_CL", "USDCHF.DWX",
-        status="failed", verdict="CONFIG_LOCKED", payload=payload,
+        status="failed", verdict="SUPERSEDED", payload=payload,
     )
     successor = planner.GATE_CHAIN[planner.GATE_INDEX[NEWS_GATE] + 1]
     _insert(connection, f"cl-{successor}", successor, "QM5_CL", "USDCHF.DWX", payload=payload)
@@ -161,8 +161,9 @@ def test_config_locked_q09_news_is_rebind_not_reusable() -> None:
     result = planner.build_plan(connection, _census_rows(connection))
     row = next(item for item in result["rows"] if item["record_type"] == "PAIR")
 
-    # CONFIG_LOCKED is a census STALE class; it must be re-bound at Q09, never
-    # silently treated as a reusable/valid Q09_NEWS resting state that skips it.
+    # SUPERSEDED is a census STALE class; it must be re-bound at Q09. The
+    # ratified CONFIG_LOCKED verdict is now a PASS token and belongs in a
+    # separate successful-news fixture.
     assert row["highest_contiguous_valid_gate"] == NEWS_PREDECESSOR
     assert row["target_gate"] == NEWS_GATE
     assert row["action"] == "REBIND_STALE"

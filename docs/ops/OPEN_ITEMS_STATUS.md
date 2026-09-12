@@ -3836,3 +3836,11 @@ not-run explanations: 37/37 outcomes are accounted for, but 0 pass. XAU now pass
 UK100/XTI remain outside tolerance. The manifest proposal is `PROPOSAL_BLOCKED` with
 `archive_write_authorized=false` and `production_splice_authorized=false`. No terminal, archive,
 production history, T_Live, AutoTrading, registry, or verdict state was changed.
+
+## 2026-09-12 — PRESCREEN follow-up test hygiene (`b32462f2`) REVIEW
+
+RESULT: the exact named baseline reproduced five failures and now passes 98/98. Repairs are fixture/test
+only: CONFIG_LOCKED is no longer misclassified as stale; long-run rollback tests isolate the independent
+calendar-taint guard; busy-timeout asserts the configured constant; and the cap fall-through uses short Q06
+instead of now-RAM-gated Q09. The mandatory control-arm fixture proves a last-ranked declared control is
+retained outside the natural top keep fraction. No production guard or behavior changed.

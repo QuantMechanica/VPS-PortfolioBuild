@@ -155,3 +155,129 @@ def test_prescreen_apply_is_default_off(tmp_path, monkeypatch):
         assert "default-off" in str(exc)
     else:
         assert False
+
+
+def test_prescreen_promotion_retains_declared_control_when_not_top_ranked(
+    tmp_path, monkeypatch
+):
+    declaration = _prescreen_declaration(tmp_path, monkeypatch)
+    declaration_path = tmp_path / "prescreen_declaration.json"
+    sweep._write(declaration_path, declaration)
+    plan = sweep.plan(declaration_path, tmp_path / "artifact")
+    db = tmp_path / "farm.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.execute("""CREATE TABLE work_items(
+            id TEXT PRIMARY KEY,kind TEXT,phase TEXT,ea_id TEXT,symbol TEXT,
+            setfile_path TEXT,status TEXT,verdict TEXT,attempt_count INT,
+            payload_json TEXT,evidence_path TEXT,created_at TEXT,updated_at TEXT)""")
+        conn.execute("INSERT INTO work_items VALUES ('reference','x','OPT_CENSUS','QM5_41405','USDJPY.DWX','x','pending',NULL,0,?,NULL,'x','x')", (json.dumps({"opt_census_frontier_priority": True}),))
+    monkeypatch.setenv(sweep.PRESCREEN_ENABLE_ENV, "1")
+    sweep.enqueue(plan, db=db, apply=True)
+    with sqlite3.connect(db) as conn:
+        for cell in plan["cells"]:
+            # c00 is the sealed mandatory control and deliberately ranks last.
+            score = float(cell["config"])
+            evidence = _summary(
+                tmp_path / "prescreen" / f"{cell['work_item_id']}.json",
+                evidence_class="PRESCREEN", model=1, score=score,
+            )
+            conn.execute(
+                "UPDATE work_items SET status='done',"
+                "verdict='PRESCREEN_MEASURED',evidence_path=? WHERE id=?",
+                (str(evidence), cell["work_item_id"]),
+            )
+        conn.commit()
+
+    snapshot, amendment, _payloads = sweep._promotion_documents(
+        plan, db=db, keep=0.5, control=0.5
+    )
+    assert snapshot["mandatory_control_arm"] == "c00"
+    assert snapshot["ranking"][-1]["arm"] == "c00"
+    assert "c00" in snapshot["keep_arms"]
+    assert all(
+        cell["promotion_role"] == "KEEP"
+        for cell in amendment["real_cells"]
+        if cell["arm"] == "c00"
+    )
+
+
+def test_prescreen_rerun_is_append_only_and_idempotent(tmp_path, monkeypatch):
+    declaration = _prescreen_declaration(tmp_path, monkeypatch)
+    declaration_path = tmp_path / "prescreen_declaration.json"
+    sweep._write(declaration_path, declaration)
+    plan = sweep.plan(declaration_path, tmp_path / "artifact")
+    db = tmp_path / "farm.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.execute("""CREATE TABLE work_items(
+            id TEXT PRIMARY KEY,kind TEXT,phase TEXT,ea_id TEXT,symbol TEXT,
+            setfile_path TEXT,status TEXT,verdict TEXT,attempt_count INT,
+            parent_task_id TEXT,evidence_path TEXT,claimed_by TEXT,
+            payload_json TEXT,created_at TEXT,updated_at TEXT)""")
+        owner_payload = {
+            "queue_owner": True,
+            "program_id": declaration["program_id"],
+            "queue_order_at": "2026-12-31T00:00:00+00:00",
+        }
+        conn.execute(
+            "INSERT INTO work_items VALUES "
+            "('owner','control','WINDOW_SWEEP_OWNER','QM5_41405','USDJPY.DWX',"
+            "'owner','done','DECLARED',0,NULL,'EVIDENCE_UNAVAILABLE',NULL,?,'x','x')",
+            (json.dumps(owner_payload),),
+        )
+        conn.execute(
+            "INSERT INTO work_items VALUES "
+            "('reference','backtest','OPT_CENSUS','QM5_41405','USDJPY.DWX',"
+            "'reference','pending',NULL,0,NULL,NULL,NULL,?,'x','x')",
+            (json.dumps({"opt_census_frontier_priority": True}),),
+        )
+    monkeypatch.setenv(sweep.PRESCREEN_ENABLE_ENV, "1")
+    sweep.enqueue(plan, db=db, apply=True)
+    source_id = plan["cells"][0]["work_item_id"]
+    with sqlite3.connect(db) as conn:
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()[0])
+        payload.update({"pid": 42, "verdict_reason": "schema_drift"})
+        conn.execute(
+            "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',"
+            "evidence_path='EVIDENCE_UNAVAILABLE:schema_drift',payload_json=? "
+            "WHERE id=?", (json.dumps(payload), source_id),
+        )
+        conn.commit()
+        source_before = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+    reason = "PRESCREEN_SCHEMA_TAXONOMY_REPAIRED"
+    dry = sweep.append_only_prescreen_rerun(source_id, reason=reason, db=db)
+    assert dry["existing"] is None
+    first = sweep.append_only_prescreen_rerun(
+        source_id, reason=reason, db=db, apply=True
+    )
+    second = sweep.append_only_prescreen_rerun(
+        source_id, reason=reason, db=db, apply=True
+    )
+    assert first["inserted"] == 1
+    assert second["existing"]["id"] == first["rerun_work_item_id"]
+    with sqlite3.connect(db) as conn:
+        source_after = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (source_id,)
+        ).fetchone()
+        rerun = conn.execute(
+            "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+            (first["rerun_work_item_id"],),
+        ).fetchone()
+        owner = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id='owner'"
+        ).fetchone()[0])
+    assert source_after == source_before
+    rerun_payload = json.loads(rerun[2])
+    assert rerun[:2] == ("pending", None)
+    assert rerun_payload["append_only_rerun_of_work_item"] == source_id
+    assert "pid" not in rerun_payload and "verdict_reason" not in rerun_payload
+    assert owner["queue_order_at"] == sweep.PRESCREEN_RECOVERY_QUEUE_ORDER
+    _ledger_path, authenticated = sweep.authenticate_ledger(rerun_payload)
+    declared = next(
+        cell for cell in authenticated["cells"]
+        if cell["cell_key"] == rerun_payload["cell_key"]
+    )
+    assert declared["work_item_id"] == first["rerun_work_item_id"]

@@ -377,10 +377,15 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
             phase=terminal_worker._Q09_NEWS_PHASE, payload=standard_payload, ea_id="QM5_5",
         )
 
-        with patch.dict("os.environ", {policy.DISABLE_ENV_VAR: "1"}):
+        # The news-calendar taint guard is independently covered elsewhere.
+        # Isolate this fixture to the long-run rollback switch.
+        with patch(
+            "tools.strategy_farm.news_calendar_taint.guard_claim",
+            return_value=None,
+        ), patch.dict("os.environ", {policy.DISABLE_ENV_VAR: "1"}):
             result = terminal_worker.claim_atomic(self.root, "T5")
 
-        self.assertTrue(result.get("claimed"))
+        self.assertTrue(result.get("claimed"), result)
         self.assertEqual(result["item"]["id"], "pending-standard-5")
 
     def test_policy_disabled_allows_third_expansion_to_claim(self) -> None:
@@ -398,10 +403,13 @@ class ClaimAtomicIntegrationTests(unittest.TestCase):
         self._insert("pending-3", "USDJPY.DWX", phase=terminal_worker._Q09_NEWS_PHASE,
                       status="pending", payload=expanded_payload, ea_id="QM5_3")
 
-        with patch.dict("os.environ", {policy.DISABLE_ENV_VAR: "1"}):
+        with patch(
+            "tools.strategy_farm.news_calendar_taint.guard_claim",
+            return_value=None,
+        ), patch.dict("os.environ", {policy.DISABLE_ENV_VAR: "1"}):
             result = terminal_worker.claim_atomic(self.root, "T3")
 
-        self.assertTrue(result.get("claimed"))
+        self.assertTrue(result.get("claimed"), result)
         self.assertEqual(result["item"]["id"], "pending-3")
 
 

@@ -50,6 +50,9 @@ def test_configure_connection_applies_short_busy_timeout() -> None:
     connection = sqlite3.connect(":memory:")
     try:
         sqlite_busy.configure_connection(connection)
-        assert connection.execute("PRAGMA busy_timeout").fetchone()[0] == 750
+        assert (
+            connection.execute("PRAGMA busy_timeout").fetchone()[0]
+            == sqlite_busy.BUSY_TIMEOUT_MS
+        )
     finally:
         connection.close()
