@@ -73,3 +73,4 @@ feed, retry, scale-in, grid, pyramid, target, trail, break-even move, or partial
 | Version | Date | Reason |
 |---|---|---|
 | v1 | 2026-09-12 | initial approved build identity |
+| v1-q01 | 2026-09-12 | governed T1 compile and strict build check PASS; reference tests and PACER audit PASS; Q02 stopped at CPU ceiling |

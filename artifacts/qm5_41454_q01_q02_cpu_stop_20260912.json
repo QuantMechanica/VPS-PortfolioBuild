@@ -1,0 +1,59 @@
+{
+  "schema": "qm.q01-q02-enqueue-evidence/v1",
+  "recorded_utc": "2026-09-12T10:25:00+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41454",
+  "ea_label": "QM5_41454_xauxag-nr2-body-mom",
+  "strategy": "XAU/XAG synchronized two-week log-ratio range contraction plus strict weekly-body continuation",
+  "non_duplicate_verdict": "DISTINCT_XAUXAG_TWO_WEEK_RATIO_RANGE_CONTRACTION_BODY_CONTINUATION_AFTER_FAMILY_REVIEW",
+  "build": {
+    "compile_work_item_id": "78dda301-df4d-4fee-9d98-2f8f5fe6e245",
+    "compile_verdict": "COMPILE_OK",
+    "terminal_claim": "T1",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_warnings": 3,
+    "reference_test_count": 6,
+    "mq5_sha256": "f8d3e2b93960f19cbd768df6ed16153af77a3e873be74cec21faa4001d9af2bc",
+    "ex5_sha256": "776f5057cb63e26f90d1ed58ae5612b845eeacec5f92900cea6d1c81649d9529",
+    "compile_evidence": "D:/QM/reports/work_items/78dda301-df4d-4fee-9d98-2f8f5fe6e245/QM5_41454/COMPILE_EA/compile_evidence.json"
+  },
+  "pacer_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41454_xauxag-nr2-body-mom/QM5_41454_xauxag-nr2-body-mom.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "canary_symbol": "QM5_41454_XAU_XAG_NR2_BODY_MOM_D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "evidence": "artifacts/qm5_41454_q02_intake_dry_run_20260912.json"
+  },
+  "cpu_ceiling_check": {
+    "source": "psutil.cpu_percent whole host",
+    "samples_percent": [85.6, 94.5, 95.6, 98.1, 97.1],
+    "average_percent": 94.18,
+    "maximum_percent": 98.1,
+    "threshold_percent": 97.0,
+    "below_ceiling": false
+  },
+  "q02": {
+    "applied": false,
+    "work_item_id": null,
+    "status_at_record": "NOT_ENQUEUED_CPU_CEILING"
+  },
+  "scope": {
+    "q02_row_created": false,
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
