@@ -3825,3 +3825,14 @@ local-agent pass evidence contract (docs/ops/MT5_LOCAL_AGENT_LANE_CONTRACT_2026-
 optimizer stays PRESCREEN-only; MEASURED would need byte-exact per-pass evidence and a 20/20 parity canary that
 does not exist. OWNER takeaway: the optimizer can pre-screen faster, never replace per-cell real-tick backtests.
 Chunk 71 finished 13:20Z (compile-gate hold active fleet-wide). Pending review: 1061ff77 (lease race fix).
+
+## 2026-09-12 — Dukascopy P3 redo (`b5f660f9`) REVIEW
+
+RESULT: the sole AUDCAD source hour resolved, completing P1 at 307,581/307,581. A first-principles
+BI5 probe corrected UK100/XAUUSD/XTIUSD provider divisors to 1000 without changing broker point values.
+The governed read-only T1 export produced 25 symbols and 12 exact empty-history failures; all populated
+files stop in December 2025. Consolidated P3 therefore has 25 executed failures plus 12 per-symbol
+not-run explanations: 37/37 outcomes are accounted for, but 0 pass. XAU now passes its price check;
+UK100/XTI remain outside tolerance. The manifest proposal is `PROPOSAL_BLOCKED` with
+`archive_write_authorized=false` and `production_splice_authorized=false`. No terminal, archive,
+production history, T_Live, AutoTrading, registry, or verdict state was changed.

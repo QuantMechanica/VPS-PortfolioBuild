@@ -1,0 +1,67 @@
+{
+  "schema": "qm.dukascopy-manifest-update-proposal/v1",
+  "task_id": "b5f660f9-29ea-4cc9-a67d-38e3cd877153",
+  "status": "PROPOSAL_BLOCKED",
+  "archive_write_authorized": false,
+  "production_splice_authorized": false,
+  "signed_archive_unchanged": true,
+  "p1": {
+    "resolved_hours": 307581,
+    "planned_hours": 307581,
+    "last_retry_symbol": "AUDCAD.DWX",
+    "last_retry_hour_utc": "2026-09-11T17:00:00Z",
+    "last_retry_status": "PASS",
+    "last_retry_downloaded": 1,
+    "last_retry_errors": 0,
+    "download_receipt": "D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened/download_receipt.json",
+    "download_receipt_sha256": "e1682711ac7ce77f31d1fd604c05bdcc37ba8f3ab68c8fea25a29e9f690f66e0",
+    "download_manifest": "D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened/download_manifest.jsonl",
+    "download_manifest_sha256": "a7d9fe65494f126f7cf468bb7158396469801f52a95db2868c5b21afb1dade42"
+  },
+  "p2": {
+    "fresh_task_conversion_root": "D:/QM/reports/dukascopy/conversion/20260912_1300_taskb5f660f9",
+    "fresh_task_sidecars": 9,
+    "fresh_task_temp_files": 0,
+    "p3_fresh_inputs": 8,
+    "p3_hash_bound_predecessor_inputs": 17,
+    "corrected_provider_price_scales": {
+      "UK100.DWX": 1000,
+      "XAUUSD.DWX": 1000,
+      "XTIUSD.DWX": 1000
+    },
+    "price_scale_proposal": "docs/ops/evidence/2026-09-12_dukascopy_p3_redo/dukascopy_price_scale.csv",
+    "price_scale_proposal_sha256": "2dbf6f6662243fa8abd2982543a092a6765c8f62358f9d90270d46efc3299db1",
+    "conversion_inventory": "docs/ops/evidence/2026-09-12_dukascopy_p3_redo/conversion_inventory.csv",
+    "conversion_inventory_sha256": "158930a84f39c58bf3d9a78eebb1c4e584879235b8cf988d3d3aba2c6a1ec6a6"
+  },
+  "p3": {
+    "attempted_symbols": 37,
+    "executed_symbols": 25,
+    "not_run_symbols": 12,
+    "passed_symbols": 0,
+    "failed_symbols": 37,
+    "price_check_passed": 23,
+    "compute_check_passed": 25,
+    "required_overlap_window_passed": 0,
+    "session_coverage_passed": 0,
+    "dst_check_passed": 0,
+    "governed_t1_manifest": "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260912_125000/dwx_m1_manifest.json",
+    "governed_t1_manifest_sha256": "4f69fe5b03722074de87caa42bd3faa6c211943db8f564b40e7c396c79d6eb74",
+    "governed_t1_receipt_sha256": "95f073947e6292c7092feacceea12fb38c61a67de37d99dd8df185a7865706ef",
+    "summary_sha256": "e6798deaa0686494b5ef20b1135a20fcd0bf5b7cce522243a06218274fa8ff3f",
+    "per_symbol_outcomes_sha256": "bc2fa66f7bf305c2d1ff2daf2db1a4e9ce3882b6b279741652127c1ccd846fbd"
+  },
+  "blockers": [
+    "T1 produced empty raw M1 exports for 12 named symbols",
+    "all 25 populated T1 exports end in December 2025 and omit the required March 2026 US-DST transition",
+    "bilateral session coverage is below 99 percent for all 25 executed symbols",
+    "UK100.DWX and XTIUSD.DWX remain outside the spread-relative close-price tolerance after provider-scale correction",
+    "AUDCAD.DWX, AUDNZD.DWX, CADCHF.DWX, EURNZD.DWX and GBPCHF.DWX do not align at zero seconds in the observed November 2025 DST window"
+  ],
+  "ceremony_preconditions": [
+    "obtain a governed 37-symbol T1 export through 2026-04-01",
+    "rerun all 37 P3 reconciliations and obtain PASS for every fixed check",
+    "resolve the remaining UK100.DWX and XTIUSD.DWX level/basis defects",
+    "obtain separate OWNER authorization before any archive or production splice write"
+  ]
+}

@@ -44,12 +44,13 @@ def _write_nonfx_metadata(path: Path) -> None:
         for index, symbol in enumerate(sorted(common.NON_FX_INSTRUMENTS), start=1):
             # Synthetic contract fixtures deliberately do not encode or guess
             # any broker's actual per-symbol values.
-            digits = index % 6
+            digits = 2 if symbol == "XTIUSD.DWX" else index % 6
+            provider_scale = 1000 if symbol == "XTIUSD.DWX" else 10 ** digits
             writer.writerow({
                 "symbol": symbol,
                 "digits": digits,
                 "point": format(10.0 ** -digits, ".12g"),
-                "price_scale": 10 ** digits,
+                "price_scale": provider_scale,
             })
 
 
@@ -289,6 +290,8 @@ def test_nonfx_receipt_supplies_converter_and_reconciler_without_silent_defaults
     loaded = common.load_nonfx_instrument_metadata(metadata)
     assert set(loaded) == set(common.NON_FX_INSTRUMENTS)
     xti_metadata = loaded["XTIUSD.DWX"]
+    assert xti_metadata["price_scale"] == 1000
+    assert xti_metadata["price_scale"] != 10 ** int(xti_metadata["digits"])
 
     hour = dt.datetime(2026, 1, 5, tzinfo=UTC)
     content = _bi5([(1000, 110002, 110000, 1.0, 1.0)])

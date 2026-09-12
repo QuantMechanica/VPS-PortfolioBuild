@@ -203,7 +203,12 @@ NONFX_METADATA_HEADER = ["symbol", "digits", "point", "price_scale"]
 
 
 def load_nonfx_instrument_metadata(path: Path) -> dict[str, dict[str, object]]:
-    """Load the exact nine-row T1 broker-spec receipt; never derive CFD values."""
+    """Load nine broker-point rows plus reviewed Dukascopy raw-price scales.
+
+    MT5 ``digits``/``point`` describe the DWX destination symbol. Dukascopy's
+    BI5 integer divisor is a provider encoding and is deliberately independent;
+    deriving it as ``10**digits`` caused 10x/100x level defects for CFDs.
+    """
     rows: dict[str, dict[str, object]] = {}
     with Path(path).open(encoding="utf-8-sig", newline="") as handle:
         reader = csv.DictReader(handle)
@@ -220,7 +225,9 @@ def load_nonfx_instrument_metadata(path: Path) -> dict[str, dict[str, object]]:
                 or not 0 <= digits <= 12
                 or not math.isfinite(point)
                 or point <= 0.0
-                or price_scale != 10 ** digits
+                or price_scale <= 0
+                or price_scale > 10**12
+                or 10 ** round(math.log10(price_scale)) != price_scale
             ):
                 raise ValueError(f"invalid non-FX instrument metadata row: {symbol!r}")
             rows[symbol] = {
