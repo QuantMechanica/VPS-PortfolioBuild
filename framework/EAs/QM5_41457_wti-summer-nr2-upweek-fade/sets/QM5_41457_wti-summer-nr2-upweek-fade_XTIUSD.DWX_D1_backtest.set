@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b432b114698059f526559237b247e1815190e7f9c2f74ae802e420e6ad47f139
 ; author:       Development
 ; date:         2026-09-12
 ;==========================================================
@@ -22,18 +22,18 @@ PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41457_wti-summer-nr2-upweek-fade.md
 strategy_symbol=XTIUSD.DWX
-strategy_label_offset_seconds=86400
-strategy_entry_grace_minutes=180
 strategy_history_bars=30
-strategy_summer_month_1=6
-strategy_summer_month_2=7
-strategy_summer_month_3=8
-strategy_summer_month_4=9
-strategy_summer_month_5=10
-strategy_required_weeks=2
-strategy_min_week_bars=3
-strategy_max_week_bars=5
-strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
+strategy_summer_month_2=7
+strategy_max_week_bars=5
 strategy_max_hold_days=10
 strategy_max_spread_points=1500
+strategy_atr_period_d1=20
+strategy_summer_month_4=9
+strategy_entry_grace_minutes=180
+strategy_label_offset_seconds=86400
+strategy_summer_month_3=8
+strategy_min_week_bars=3
+strategy_summer_month_1=6
+strategy_required_weeks=2
+strategy_summer_month_5=10

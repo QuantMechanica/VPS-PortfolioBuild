@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "30f44818-ac75-4fb4-97e2-06130d8066f2"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260912T132740_349545Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260912T132702Z_b0d0a609.sqlite",
+    "reused": false,
+    "sha256": "8abd240b7ea1c6183725efc5b0f15323716756be526707045106ae0829b78737"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "96bc38013512bf2f24aa9c33a20dff5825918c2fde5f16c1561d4315b1536bbf",
+      "ea_id": "QM5_41457",
+      "ea_label": "QM5_41457_wti-summer-nr2-upweek-fade",
+      "expected_mq5_sha256": "96bc38013512bf2f24aa9c33a20dff5825918c2fde5f16c1561d4315b1536bbf",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41457_wti-summer-nr2-upweek-fade\\QM5_41457_wti-summer-nr2-upweek-fade.mq5",
+      "work_item_id": "30f44818-ac75-4fb4-97e2-06130d8066f2"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-12T13:27:40+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "30f44818-ac75-4fb4-97e2-06130d8066f2",
+  "work_item_id_selectors": [
+    "30f44818-ac75-4fb4-97e2-06130d8066f2"
+  ]
+}
