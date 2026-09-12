@@ -3568,3 +3568,14 @@ adjudication. All 3 tasks correctly stay `IN_PROGRESS`, blocked on external stat
 (Q09_NEWS pipeline throughput; news-calendar backfill) outside these tasks' own
 `allowed_actions`. Re-check next cycle; do not re-litigate from scratch unless the
 calendar file or the 12 pairs' `Q09_NEWS` verdicts change.
+
+## 2026-09-12T13:10Z — Review round 3 (5 rows) closed; REVIEW empty
+
+APPROVED: ea9e3c61 fleet clock audit part 2 (93 traces verified, 8 stop-pending EAs, no action without a GELB
+measurement cohort); 308c8009 live attribution refresh (24 sleeves + manual reconciled to -2493.10, Sunday hook
+proven); 17758960 FTMO native cost receipts partial (0 incumbents cost-eligible, slippage stream missing ->
+f8ffb1c5); ad4eb945 LiveUpdate reconciliation (ACL guard T11/T12, one pilot, weekday use withheld); af3eac6e
+stranded pairs on the third submission with an orchestrator addendum (no pending rows -> no holds; successors
+gated by 57fc8b42). OWNER question "Wie updaten wir T1-T12": fleet + T_Live + FTMO on build 6182 since 2026-09-06
+(uncontrolled LiveUpdate), T11/T12 on 6140; governed update runbook proposed (golden copy, reproducibility check
+on the reference cell, fleet ceremony under Factory OFF, tester build in the evidence contract), awaiting OWNER.
