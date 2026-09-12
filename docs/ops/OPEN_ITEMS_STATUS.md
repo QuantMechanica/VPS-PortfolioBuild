@@ -3471,3 +3471,15 @@ handoff: /skipupdate suppresses the check at launch but not an update already st
 (build 6182 pre-staged on T12 09:36Z). Follow-up ad4eb945 (Sol): disable background update polling on
 T11/T12 only, pre-clear staged updates, then the concurrent pilot. 5ff527e8 APPROVED as a value-adding duplicate
 of 348af875.
+
+## 2026-09-12T11:45Z — Q09 chain head: decided OWNER decision was reported OPEN for three days; executed now
+
+b982a763 APPROVED partial (28/28 bound rows held by NEWS_CALENDAR_TAINTED, 31 taint holds active). The taint
+dependency task bb814520 (headless Claude lane) reported every cycle since 2026-09-09 "still blocked on
+OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909 (status=OPEN)" -- the decision file shows status DECIDED, last_decision
+YES at 2026-09-09T04:18Z with the OWNER note "B und zusaetzlich monatlich Tickdaten aktualisieren". Defect of the
+headless checker (to be fixed in the ClaudeOrchestration cycle code -- separate item). Executed: Codex ticket
+fda6370f (scope measurement vs the 2026-08-03 boundary + staged QM5_11167 rebuild as new identity, cohort plan),
+e37931c2 (monthly tick-data refresh, Default-OFF), bb814520 handed to PIPELINE. Also: af3eac6e returned a second
+time (artifact never regenerated; tier raised to Sol); compile-gate spawn refusal cluster (12 EAs / 24 h) ->
+57fc8b42; T12 identity exact -> ad4eb945 for the LiveUpdate reconciliation; 5ff527e8 duplicate APPROVED.
