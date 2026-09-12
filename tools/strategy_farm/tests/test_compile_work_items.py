@@ -433,6 +433,26 @@ def test_qm5_11533_q02_compile_infra_repair_authority_is_exact_label_bound() -> 
     )
 
 
+def test_qm5_41005_q02_compile_infra_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_41005_richard-donchian-50day-cta-benchmark"
+
+    assert compile_work_items.QM5_41005_Q02_COMPILE_INFRA_REPAIR_EA_LABELS == {
+        label
+    }
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_41005_Q02_COMPILE_INFRA_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41006_unrelated-d1",
+        compile_work_items.QM5_41005_Q02_COMPILE_INFRA_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_build_rework:wrong-task",
+    )
+
+
 def test_qm5_10038_q02_stale_magic_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_10038_ff-4x25ema-mtf-h4"
 

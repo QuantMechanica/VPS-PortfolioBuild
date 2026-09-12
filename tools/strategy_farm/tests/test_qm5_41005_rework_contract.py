@@ -51,11 +51,11 @@ def test_card_mechanism_uses_one_bounded_new_bar_channel_buffer() -> None:
     assert "copied!=required||ArraySize(rates)<required" in compact
     assert "for(inti=1;i<=lookback;++i)" in compact
     assert "rates[0].close" in compact
-    assert "CalculateDonchianBreakout(rates,InpEntryLookback,g_entry_breakout)" in compact
-    assert "CalculateDonchianBreakout(rates,InpExitLookback,g_exit_breakout)" in compact
-    assert "QM_ATR(_Symbol,PERIOD_D1,InpAtrPeriod,1)" in compact
-    assert "ask-InpAtrSlMult*g_stop_atr" in compact
-    assert "bid+InpAtrSlMult*g_stop_atr" in compact
+    assert "CalculateDonchianBreakout(rates,strategy_entry_lookback,g_entry_breakout)" in compact
+    assert "CalculateDonchianBreakout(rates,strategy_exit_lookback,g_exit_breakout)" in compact
+    assert "QM_ATR(_Symbol,PERIOD_D1,strategy_atr_period,1)" in compact
+    assert "ask-strategy_atr_sl_mult*g_stop_atr" in compact
+    assert "bid+strategy_atr_sl_mult*g_stop_atr" in compact
 
 
 def test_execution_and_loss_limit_contracts_are_wired() -> None:
@@ -67,10 +67,10 @@ def test_execution_and_loss_limit_contracts_are_wired() -> None:
         "QM_FRIDAY_CLOSE_FRAMEWORK_OVERRIDE,"
         '"DXZ_LEGACY_BOOK_POLICY_REQUAL_REQUIRED")'
     ) in compact
-    assert "InpDailyLossEntryHaltPct/100.0" in compact
+    assert "strategy_daily_loss_entry_halt_pct/100.0" in compact
     assert (
         "QM_KillSwitchInit(qm_ea_id,QM_FrameworkMagic(),"
-        "InpDailyHardStopPct,InpTotalDrawdownStopPct,1.0)"
+        "strategy_daily_hard_stop_pct,strategy_total_drawdown_stop_pct,1.0)"
     ) in compact
     assert "QM_BrokerToUTC(TimeCurrent())" in compact
 
@@ -102,14 +102,14 @@ def test_every_declared_strategy_input_is_consumed_and_sealed_in_all_sets() -> N
 
     assert len(SETS) == 4
     assert set(inputs) == {
-        "InpEntryLookback",
-        "InpExitLookback",
-        "InpAtrPeriod",
-        "InpAtrSlMult",
-        "InpSpreadAtrMult",
-        "InpDailyLossEntryHaltPct",
-        "InpDailyHardStopPct",
-        "InpTotalDrawdownStopPct",
+        "strategy_entry_lookback",
+        "strategy_exit_lookback",
+        "strategy_atr_period",
+        "strategy_atr_sl_mult",
+        "strategy_spread_atr_mult",
+        "strategy_daily_loss_entry_halt_pct",
+        "strategy_daily_hard_stop_pct",
+        "strategy_total_drawdown_stop_pct",
     }
     for name in inputs:
         assert len(re.findall(rf"\b{re.escape(name)}\b", source)) > 1, name

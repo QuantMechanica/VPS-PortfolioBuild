@@ -34,14 +34,14 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
-input int    InpEntryLookback           = 50;     // Donchian entry breakout bars
-input int    InpExitLookback            = 20;     // Donchian exit channel bars
-input int    InpAtrPeriod               = 20;     // ATR period for stop loss
-input double InpAtrSlMult               = 3.0;    // ATR stop loss multiplier
-input double InpSpreadAtrMult           = 1.8;    // Max spread as multiple of D1 ATR(14)
-input double InpDailyLossEntryHaltPct   = 2.0;    // Account realised-loss entry halt
-input double InpDailyHardStopPct        = 2.5;    // Daily equity-loss hard stop
-input double InpTotalDrawdownStopPct    = 5.0;    // Portfolio drawdown hard stop
+input int    strategy_entry_lookback             = 50;  // Donchian entry breakout bars
+input int    strategy_exit_lookback              = 20;  // Donchian exit channel bars
+input int    strategy_atr_period                 = 20;  // ATR period for stop loss
+input double strategy_atr_sl_mult                = 3.0; // ATR stop loss multiplier
+input double strategy_spread_atr_mult            = 1.8; // Max spread as multiple of D1 ATR(14)
+input double strategy_daily_loss_entry_halt_pct  = 2.0; // Account realised-loss entry halt
+input double strategy_daily_hard_stop_pct        = 2.5; // Daily equity-loss hard stop
+input double strategy_total_drawdown_stop_pct    = 5.0; // Portfolio drawdown hard stop
 
 double g_spread_atr       = 0.0;
 double g_stop_atr         = 0.0;
@@ -100,7 +100,7 @@ void StrategyRefreshDailyEntryHalt(const bool force_refresh)
    const double day_start_balance = AccountInfoDouble(ACCOUNT_BALANCE) - realised;
    if(day_start_balance <= 0.0)
       return;
-   g_daily_entry_halt = (realised <= -(InpDailyLossEntryHaltPct / 100.0) * day_start_balance);
+   g_daily_entry_halt = (realised <= -(strategy_daily_loss_entry_halt_pct / 100.0) * day_start_balance);
 }
 
 bool CalculateDonchianBreakout(const MqlRates &rates[],
@@ -138,10 +138,10 @@ void AdvanceState_OnNewBar()
    g_exit_breakout = 0;
    g_state_ready = false;
 
-   if(InpEntryLookback < 1 || InpExitLookback < 1 || InpAtrPeriod < 1)
+   if(strategy_entry_lookback < 1 || strategy_exit_lookback < 1 || strategy_atr_period < 1)
       return;
 
-   const int max_lookback = (InpEntryLookback > InpExitLookback) ? InpEntryLookback : InpExitLookback;
+   const int max_lookback = (strategy_entry_lookback > strategy_exit_lookback) ? strategy_entry_lookback : strategy_exit_lookback;
    const int required = max_lookback + 1;
    MqlRates rates[];
    ArraySetAsSeries(rates, true);
@@ -150,14 +150,14 @@ void AdvanceState_OnNewBar()
       return;
 
    const double spread_atr = QM_ATR(_Symbol, PERIOD_D1, 14, 1);
-   const double stop_atr = QM_ATR(_Symbol, PERIOD_D1, InpAtrPeriod, 1);
+   const double stop_atr = QM_ATR(_Symbol, PERIOD_D1, strategy_atr_period, 1);
    if(spread_atr <= 0.0 || stop_atr <= 0.0)
       return;
 
    g_spread_atr = spread_atr;
    g_stop_atr = stop_atr;
-   if(!CalculateDonchianBreakout(rates, InpEntryLookback, g_entry_breakout) ||
-      !CalculateDonchianBreakout(rates, InpExitLookback, g_exit_breakout))
+   if(!CalculateDonchianBreakout(rates, strategy_entry_lookback, g_entry_breakout) ||
+      !CalculateDonchianBreakout(rates, strategy_exit_lookback, g_exit_breakout))
       return;
    g_state_ready = true;
 }
@@ -176,7 +176,7 @@ bool Strategy_NoTradeFilter()
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    if(ask > 0.0 && bid > 0.0 && ask > bid)
    {
-      if(g_spread_atr > 0.0 && (ask - bid) > InpSpreadAtrMult * g_spread_atr)
+      if(g_spread_atr > 0.0 && (ask - bid) > strategy_spread_atr_mult * g_spread_atr)
          return true;
    }
 
@@ -211,7 +211,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_BUY;
       req.price = 0.0;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, ask - InpAtrSlMult * g_stop_atr);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, ask - strategy_atr_sl_mult * g_stop_atr);
       req.tp = 0.0;
       req.reason = "DONCHIAN50_BUY";
       req.symbol_slot = qm_magic_slot_offset;
@@ -226,7 +226,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
       req.type = QM_SELL;
       req.price = 0.0;
-      req.sl = QM_StopRulesNormalizePrice(_Symbol, bid + InpAtrSlMult * g_stop_atr);
+      req.sl = QM_StopRulesNormalizePrice(_Symbol, bid + strategy_atr_sl_mult * g_stop_atr);
       req.tp = 0.0;
       req.reason = "DONCHIAN50_SELL";
       req.symbol_slot = qm_magic_slot_offset;
@@ -277,12 +277,12 @@ bool Strategy_NewsFilterHook(const datetime broker_time) { return false; }
 
 int OnInit()
 {
-   if(InpEntryLookback < 30 || InpEntryLookback > 80 ||
-      InpExitLookback < 10 || InpExitLookback > 30 ||
-      InpAtrPeriod < 1 || InpAtrSlMult <= 0.0 || InpSpreadAtrMult <= 0.0 ||
-      InpDailyLossEntryHaltPct <= 0.0 || InpDailyLossEntryHaltPct > 100.0 ||
-      InpDailyHardStopPct <= 0.0 || InpDailyHardStopPct > 100.0 ||
-      InpTotalDrawdownStopPct <= 0.0 || InpTotalDrawdownStopPct > 100.0)
+   if(strategy_entry_lookback < 30 || strategy_entry_lookback > 80 ||
+      strategy_exit_lookback < 10 || strategy_exit_lookback > 30 ||
+      strategy_atr_period < 1 || strategy_atr_sl_mult <= 0.0 || strategy_spread_atr_mult <= 0.0 ||
+      strategy_daily_loss_entry_halt_pct <= 0.0 || strategy_daily_loss_entry_halt_pct > 100.0 ||
+      strategy_daily_hard_stop_pct <= 0.0 || strategy_daily_hard_stop_pct > 100.0 ||
+      strategy_total_drawdown_stop_pct <= 0.0 || strategy_total_drawdown_stop_pct > 100.0)
       return INIT_PARAMETERS_INCORRECT;
 
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT, RISK_FIXED, PORTFOLIO_WEIGHT,
@@ -298,8 +298,8 @@ int OnInit()
 
    if(!QM_KillSwitchInit(qm_ea_id,
                           QM_FrameworkMagic(),
-                          InpDailyHardStopPct,
-                          InpTotalDrawdownStopPct,
+                          strategy_daily_hard_stop_pct,
+                          strategy_total_drawdown_stop_pct,
                           1.0))
       return INIT_FAILED;
 
