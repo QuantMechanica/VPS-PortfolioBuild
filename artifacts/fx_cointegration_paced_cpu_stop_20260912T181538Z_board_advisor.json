@@ -1,0 +1,86 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-stop/v1",
+  "recorded_at_utc": "2026-09-12T18:15:38.0554379Z",
+  "recorded_at_local": "2026-09-12T20:15:38+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "728e13b4204b2c439c61f0cee49cb6151aa9e44d",
+  "outcome": "CPU_CEILING_STOP",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_relationship",
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "priority_reason": "owner_2026-08-30_fx_portfolio_existing_logical_basket_fallback",
+    "open_exact_identity_count": 1,
+    "duplicate_enqueue_refused": true
+  },
+  "anchor_status": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "cpu_gate": {
+    "samples_percent": [
+      70.901,
+      69.565,
+      74.807,
+      78.420,
+      98.180
+    ],
+    "average_percent": 78.375,
+    "maximum_percent": 98.180,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": true,
+    "stop_latched_for_run": true
+  },
+  "farm_snapshot_at_admission": {
+    "active_work_items": 5,
+    "active_phase_counts": {
+      "OPT_CENSUS": 3,
+      "Q02": 1,
+      "Q07": 1
+    },
+    "pending_work_items_at_followup_read": 5810,
+    "factory_terminal_count": 5,
+    "factory_terminals": [
+      "T3",
+      "T5",
+      "T6",
+      "T8",
+      "T9"
+    ],
+    "t_live_observed": false
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "actions": {
+    "mq5_written": false,
+    "pin_audit_triggered": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "q02_requeued": false,
+    "dispatch_tick_run": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "work_item_mutated": false,
+    "portfolio_surface_touched": false,
+    "live_surface_touched": false
+  }
+}
