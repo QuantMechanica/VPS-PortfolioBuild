@@ -3443,3 +3443,14 @@ measure PRESCREEN-vs-real-tick rank fidelity and the FN estimate on 350 cells wi
 Nachtrag D signature puts the pre-screen in front of the sealed census. Verdicts of these cells are
 PRESCREEN_MEASURED (never MEASURED); the real-tick verdicts of 41405 are untouched. First-claim proof recorded
 below when it lands.
+
+## 2026-09-12T10:35Z — PRESCREEN first-claim proof FAILED: work_items CHECK constraint rejects the new taxonomy
+
+Cell 62538f30 (T5) claimed within a minute of the queue-order change, tester.ini Model=1, backtest OK (summary
+PASS, model 1, 0 non-OK) -- then the worker crashed on the verdict write: IntegrityError, CHECK constraint
+sh3_enforced=0 OR verdict_taxonomy IN (draft_defect, governance, infra, invalid, measurement, open, review,
+strategy, unknown, artifact, build, implementation); the build's taxonomy prescreen_measurement is not in that
+list. Row = INFRA_FAIL worker_crashed_handling_item. Program parked at the queue tail (owner 0c2d9ad3
+queue_order_at 2026-12-31); 519c11fe re-opened to TODO with the exact fix (governed schema migration + pre-write
+taxonomy validation + append-only rerun + documented first-claim proof). LESSON: a dry run that never writes a
+verdict does not prove a new cell class; the first-claim proof must include the verdict write.
