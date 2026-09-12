@@ -84,3 +84,15 @@ GBPUSD and EURUSD expose native realised round-trip commission of approximately
 no order/fill. None has a complete request-time executable-quote slippage stream,
 so no receipt is cost-eligible. The hash-bound comparator rerun remains a zero-pair
 roster; no missing cost was replaced with zero.
+
+## 2026-09-12 request-quote stream follow-up
+
+The first complete Monday-based window is now bound at
+`D:/QM/reports/ftmo/slippage_stream/20260907_20260912_taskf8ffb1c5` (manifest
+SHA-256 `dc2fbc3cb675847254f9db82e0705fffebfeaaa310f74be351d9bf8f2804756e`).
+Broker tick history supplies fresh request-time executable quotes for all two
+GBPUSD and two EURUSD fills, making those two native receipts cost-eligible.
+USDCAD and USOIL.cash remain `MISSING_NO_FILL`, so the four-symbol requirement
+and matched-spread closure remain open. Selected roster remains zero. Full
+method, hashes, and exclusions:
+`../2026-09-12_ftmo_slippage_stream/README.md`.

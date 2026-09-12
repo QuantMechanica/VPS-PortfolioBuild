@@ -8,6 +8,7 @@ INTAKE=ROOT/'docs/ops/evidence/2026-09-09_ftmo_acceleration/intake.json'
 TERMS=ROOT/'docs/ops/evidence/2026-09-05_ftmo_current_pool_cost_snapshot.json'
 NATIVE=ROOT/'docs/ops/evidence/2026-09-06_ftmo_demo_install/terminal_snapshot.json'
 RECEIPT_MANIFEST=ROOT/'docs/ops/evidence/2026-09-12_ftmo_native_cost_receipts/manifest.json'
+SLIPPAGE_MANIFEST=Path(r'D:/QM/reports/ftmo/slippage_stream/20260907_20260912_taskf8ffb1c5/manifest.json')
 def read(p):return json.loads(p.read_text(encoding='utf-8-sig'))
 def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
 def drawdown(values):
@@ -21,10 +22,14 @@ def correlation(a,b):
     x=[a.get(d,0) for d in days];y=[b.get(d,0) for d in days]
     if len(days)<30 or not statistics.pstdev(x) or not statistics.pstdev(y):return None,len(days)
     return statistics.correlation(x,y),len(days)
-def analyze(pair,term_source,native,receipt):
+def analyze(pair,term_source,native,receipt,slippage_receipt):
     row={'ea_id':pair['ea_id'],'symbol':pair['symbol'],'evidence_class':'EXPOSED_HISTORICAL_EXPLORATORY_NOT_CURRENT_BINARY','news_reason':pair['active_reader_result']['reason_code'],'prospective_roster_selected':False,'cost_eligible':False,'spread_delta':None,'fill_slippage':None,'realized_ftmo_commission':None}
     if receipt:
         row.update(native_cost_receipt=receipt['_path'],native_cost_receipt_sha256=receipt['_sha256'],fill_slippage=receipt['fill_slippage'],realized_ftmo_commission=receipt['native_commission'],cost_eligible=bool(receipt['cost_eligible']))
+    if slippage_receipt:
+        slippage=slippage_receipt['stream']
+        commission=(receipt or {}).get('native_commission') or {}
+        row.update(slippage_stream_receipt=slippage_receipt['_path'],slippage_stream_receipt_sha256=slippage_receipt['_sha256'],fill_slippage=slippage,cost_eligible=commission.get('status')=='OBSERVED_NATIVE_DEALS' and slippage.get('status')=='COMPLETE' and slippage.get('value_for_cost_model') is not None)
     old=pair['historical_cost_projection_before_spread']
     if old is None:return dict(row,reason='NO_EXPOSED_COST_STREAM_IN_FROZEN_INTAKE'),{}
     sleeve=next(s for s in term_source['sleeves'] if s['sleeve_id']==old['sleeve_id'])
@@ -52,10 +57,15 @@ def main():
         p=RECEIPT_MANIFEST.parent/item['path']
         if sha(p)!=item['sha256']:raise ValueError(f'native receipt hash drift: {p}')
         receipt=read(p);receipt['_path']=str(p);receipt['_sha256']=item['sha256'];receipts[item['symbol']]=receipt
+    slippage_manifest=read(SLIPPAGE_MANIFEST);slippage_receipts={}
+    for item in slippage_manifest['receipts']:
+        p=SLIPPAGE_MANIFEST.parent/item['path']
+        if sha(p)!=item['sha256']:raise ValueError(f'slippage receipt hash drift: {p}')
+        receipt=read(p);receipt['_path']=str(p);receipt['_sha256']=item['sha256'];slippage_receipts[item['symbol']]=receipt
     rows=[];daily={}
     for pair in intake['pairs']:
         native_symbol='USOIL.cash' if pair['symbol']=='XTIUSD.DWX' else pair['symbol'].removesuffix('.DWX')
-        row,series=analyze(pair,terms,native,receipts.get(native_symbol));rows.append(row)
+        row,series=analyze(pair,terms,native,receipts.get(native_symbol),slippage_receipts.get(native_symbol));rows.append(row)
         if series:daily[pair['ea_id']+':'+pair['symbol']]=series
     correlations=[];keys=sorted(daily)
     for i,a in enumerate(keys):
@@ -63,9 +73,11 @@ def main():
             r,n=correlation(daily[a],daily[b]);correlations.append({'a':a,'b':b,'pearson_closed_daily_cash':r,'overlap_calendar_days':n,'zero_filled_nonexit_days':True,'not_mark_to_market':True})
     sensitivity=[{'ea_id':r['ea_id'],'symbol':r['symbol'],'additional_roundtrip_usd_per_target_lot':q,'provisional_net_after_additional_cost':r['provisional_net_before_spread']-q*r['target_lots_rt']} for r in rows if 'target_lots_rt' in r for q in (0,1,2,5,10,20,50)]
     units={'contract_size':'UNDERLYING_UNITS_PER_TARGET_LOT','swap_long':'POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT','swap_short':'POINTS_PER_TARGET_LOT_PER_ROLLOVER_UNIT','swap_triple_day':'MT5_SUNDAY_0','lot_min':None,'lot_step':None,'tick_size':None,'tick_value_account_currency':None,'margin_order_calc':None,'realized_commission':None}
-    bindings={str(p):sha(p) for p in (INTAKE,TERMS,NATIVE,RECEIPT_MANIFEST)}
+    bindings={str(p):sha(p) for p in (INTAKE,TERMS,NATIVE,RECEIPT_MANIFEST,SLIPPAGE_MANIFEST)}
     bindings.update({r['_path']:r['_sha256'] for r in receipts.values()})
-    result={'schema':'qm.ftmo-exposed-shortlist-review/v1','task_id':'17758960-375c-4ce5-80db-a14c261838dd','predecessor_task':'54729be7-8082-4a8c-afcf-e4497e6d9f4a','input_bindings':bindings,'native_receipt_manifest':receipt_manifest,'native_spec_observed_at':native['checked_at_utc'],'native_spec_freshness':'HISTORICAL_SEPT6_NOT_CURRENT_AT_USE','native_specs':native['symbols'],'native_units_and_gaps':units,'account_type':'STANDARD_2STEP_100K_FREE_TRIAL_HISTORICAL_OWNER_RECORD','cost_class':'NATIVE_SEPT6_SWAP_PLUS_PROVISIONAL_PROVIDER_COMMISSION_PLUS_CURRENT_PARTIAL_NATIVE_RECEIPTS_NO_MATCHED_SPREAD','pairs':rows,'correlations':correlations,'sensitivity':sensitivity,'selected_pairs':[],'selection_reason':'ABSTAIN: 0/4 investigation symbols has a complete executable-quote slippage receipt; USDCAD/USOIL.cash also have no native commission fill','investigation_pairs':['QM5_10706:GBPUSD.DWX','QM5_11421:EURUSD.DWX','QM5_11422:USDCAD.DWX','QM5_13054:XTIUSD.DWX'],'reuse_tasks':['3032534e-eaf0-5b68-b09f-2127ebb315b0','f6d18a6e-0170-47c7-bbfd-e1b33d9d01c8'],'new_downloads':0,'native_runs':0}
+    bindings.update({r['_path']:r['_sha256'] for r in slippage_receipts.values()})
+    eligible=sum(bool(r.get('cost_eligible')) for r in rows)
+    result={'schema':'qm.ftmo-exposed-shortlist-review/v1','task_id':'f8ffb1c5-83fe-46e7-9bf2-ffa8bbb6e986','predecessor_task':'17758960-375c-4ce5-80db-a14c261838dd','input_bindings':bindings,'native_receipt_manifest':receipt_manifest,'slippage_receipt_manifest':slippage_manifest,'native_spec_observed_at':native['checked_at_utc'],'native_spec_freshness':'HISTORICAL_SEPT6_NOT_CURRENT_AT_USE','native_specs':native['symbols'],'native_units_and_gaps':units,'account_type':'STANDARD_2STEP_100K_FREE_TRIAL_HISTORICAL_OWNER_RECORD','cost_class':'NATIVE_SEPT6_SWAP_PLUS_PROVISIONAL_PROVIDER_COMMISSION_PLUS_REQUEST_TIME_BROKER_TICK_SLIPPAGE_NO_MATCHED_SPREAD','pairs':rows,'correlations':correlations,'sensitivity':sensitivity,'selected_pairs':[],'selection_reason':f'ABSTAIN: {eligible}/4 investigation symbols are cost_eligible; USDCAD/USOIL.cash have no native fill/commission/slippage sample and matched spread remains incomplete','investigation_pairs':['QM5_10706:GBPUSD.DWX','QM5_11421:EURUSD.DWX','QM5_11422:USDCAD.DWX','QM5_13054:XTIUSD.DWX'],'reuse_tasks':['3032534e-eaf0-5b68-b09f-2127ebb315b0','f6d18a6e-0170-47c7-bbfd-e1b33d9d01c8'],'new_downloads':0,'native_runs':0}
     (OUT/'comparison.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n',encoding='utf-8')
     fields=list(dict.fromkeys(k for r in rows for k in r))
     with (OUT/'comparison.csv').open('w',encoding='utf-8',newline='') as f:

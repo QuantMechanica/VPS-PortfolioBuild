@@ -1,17 +1,18 @@
 {
   "repeat_identical": true,
-  "comparison_sha256": "55ccdd1003567a479d14de0a63ae2278952723645c5f679a3a583d9d5db8c188",
-  "comparison_csv_sha256": "706e67f2a131bd00bf4d29351f796c35e65f3b21a3a0cbd5192190a512f5524d",
+  "comparison_sha256": "ee81a7f54e9d6f7507b6537c3a56a980cc8b1a0cef39d269d016d3da9c1344fa",
+  "comparison_csv_sha256": "5529a7b4433a1f68293b38f1d87595dde6ced9b27c36ab9ae85ed11359f24f47",
   "intake_pairs": 16,
   "exposed_hashes_verified": 7,
   "unscored": 9,
   "selected": 0,
-  "tests": "receipt manifest count=4; all receipt hashes verified; repeat compare output identical",
+  "tests": "native + slippage manifest counts=4; all receipt hashes verified; repeat compare output identical; 34 focused tests passed",
   "native_receipts": 4,
-  "native_receipts_cost_eligible": 0,
+  "slippage_receipts": 4,
+  "native_receipts_cost_eligible": 2,
   "native_inputs_still_missing": [
     "matched_spread",
-    "complete_request_time_executable_quote_slippage",
+    "complete_request_time_executable_quote_slippage_USDCAD_USOIL_cash",
     "realized_commission_USDCAD_USOIL_cash"
   ]
 }

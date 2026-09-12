@@ -3694,3 +3694,15 @@ path/SHA while stale, missing, schema-changed, or disabled cases still fall back
 to a fresh backup. Focused verification: 55 passed; compileall and diff-check
 passed. No production database or backup directory was mutated. Evidence:
 `docs/ops/evidence/2026-09-12_governed_state_backup_reuse_shared_helper.md`.
+
+## 2026-09-12T10:58Z — FTMO request-quote slippage stream (`f8ffb1c5`) IN_PROGRESS
+
+Added a one-shot, identity-pinned read-only extractor that reconstructs the
+latest executable broker quote at each request/trigger timestamp from MT5 tick
+history. The completed Monday–Friday window produced complete GBPUSD and EURUSD
+streams (2 fills each; quote ages 7–88 ms), while USDCAD and USOIL.cash correctly
+remain `MISSING_NO_FILL`. The hash-bound comparator now reports 2/4
+`cost_eligible` and still selects zero; four-symbol acceptance remains open
+until native fills exist for the other two. Focused tests: 34 passed. No EA,
+scheduler, terminal, trading, or AutoTrading mutation. Evidence:
+`docs/ops/evidence/2026-09-12_ftmo_slippage_stream/README.md`.
