@@ -60,9 +60,12 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: 49ee8a59-75e6-44d6-a55e-469437808f4c
+q01_build_report: D:/QM/reports/work_items/49ee8a59-75e6-44d6-a55e-469437808f4c/QM5_41462/COMPILE_EA/compile_evidence.json
+q02_status: ENQUEUED
+q02_work_item: 8e71be6c-790a-48d3-ac3e-265acba7fd95
 force_build: true
 review_focus: "Falsify a WTI June-October upper-tercile weekly-close reversion distinct from the certified XNG oscillator, unconditional summer short, lower-tercile continuation, and two-week range/body variants. Verify exact completed week, strict CLV inequality, no range/body predicates, short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -253,6 +256,5 @@ live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-12 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-12 | PENDING | build not yet generated |
-| Q02 Baseline Screening | 2026-09-12 | PENDING | enqueue only after Q01 and CPU admission |
-
+| Q01 Build Validation | 2026-09-12 | PASS | compile `49ee8a59-75e6-44d6-a55e-469437808f4c`; `COMPILE_OK`; 0 compiler errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-12 | ENQUEUED | exactly one fixed-risk `XTIUSD.DWX` D1 canary `8e71be6c-790a-48d3-ac3e-265acba7fd95`; CPU maximum 96.7% immediately before successful intake; result not awaited |

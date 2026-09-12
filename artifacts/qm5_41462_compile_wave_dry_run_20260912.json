@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "1e9b3623eee0f99b4e9fdc99abd142bed35cd20e5e2b47cc0faab9e45c8e3741",
+      "ea_id": "QM5_41462",
+      "ea_label": "QM5_41462_wti-summer-hclv-fade",
+      "expected_mq5_sha256": "1e9b3623eee0f99b4e9fdc99abd142bed35cd20e5e2b47cc0faab9e45c8e3741",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41462_wti-summer-hclv-fade\\QM5_41462_wti-summer-hclv-fade.mq5",
+      "work_item_id": "49ee8a59-75e6-44d6-a55e-469437808f4c"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "49ee8a59-75e6-44d6-a55e-469437808f4c",
+  "work_item_id_selectors": [
+    "49ee8a59-75e6-44d6-a55e-469437808f4c"
+  ]
+}

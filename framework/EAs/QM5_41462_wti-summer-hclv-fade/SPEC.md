@@ -97,4 +97,4 @@ backtest, optimization, portfolio-gate edit, admission, deploy/live manifest,
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-12 | Initial governed build from approved card |
-
+| v1-q02 | 2026-09-12 | PACER audit and 10 reference tests PASS; strict compile/build PASS; exactly one fixed-risk Q02 canary enqueued below CPU ceiling |
