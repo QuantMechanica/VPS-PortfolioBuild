@@ -3378,3 +3378,15 @@ pairs OPS_FIX_REQUIRED -> TODO (canary 7f4fb7d4 failed after the verdict with sp
 NEWS_CALENDAR_TAINTED within 2 min; artifact overclaimed "28 hold-free"; taint dependency = Claude task bb814520).
 Pending: 519c11fe prescreen class (review running). Lesson repeated: verify outcomes against the LIVE state after
 apply, not against the intended state (two overclaims caught).
+
+## 2026-09-12T09:40Z — 519c11fe PRESCREEN class APPROVED; reload chunk 70 started
+
+Review (Sonnet): commit 2fd096cd2f = Default-OFF Model=1 PRESCREEN class (switch QM_OPT_CENSUS_PRESCREEN_ENABLED
+at enqueue/promote/dispatch, run_smoke.ps1 fail-closed), PRESCREEN_MEASURED disjoint from MEASURED (test),
+idempotent promote with self-hashed ranking snapshot + ledger amendment, FN report with 10 pct suspension, 41405
+dry run with 0 production rows, 95/95 tests. Follow-up b32462f2 (Luna): control_arm fixture + 5 pre-existing
+unrelated test failures. Chunk 70 (session_tools/reload_chunk70.py, all workers, staggered) activates
+QM_Q08_DSR_CONTEXT_PREFLIGHT=1 and QM_OPT_CENSUS_PRESCREEN_ENABLED=1 in the worker env; no census cap; L=2 +
+allowlist from machine scope. Next after chunk 70: first PRESCREEN program = shadow calibration on the already
+measured QM5_41405 matrix (350 cells, real-tick truth exists) to measure FN before the Nachtrag D signature
+puts prescreen in front of the sealed census.
