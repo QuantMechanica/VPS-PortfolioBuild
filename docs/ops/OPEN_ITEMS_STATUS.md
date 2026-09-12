@@ -3307,7 +3307,7 @@ fully reversed to TODO with a narrow second append-only journal entry; no verdic
 Tests: 15 PASS; resolver dry-run 18,280 kept / 0 dropped; status-aware collisions 0. Evidence:
 `docs/ops/evidence/2026-09-12_blocked_agent_task_backlog_disposition.md`.
 
-## 2026-09-12T08:08Z — RESULT `5ff527e8` duplicate Q08 PASS-class review replayed
+## 2026-09-12T07:56Z — RESULT `5ff527e8` duplicate Q08 PASS-class review replayed
 
 The exact immutable review of `3e7f5752c2` was already delivered as `348af875`,
 accepted, and its three low findings applied in `f0738ca5d3`. Replay verdict remains
@@ -3410,7 +3410,7 @@ already reached a 99.94% five-sample runtime CPU mean, so concurrent research be
 a saturated weekday fleet is not recommended. No T_Live/FTMO or fleet claim action.
 Evidence: `docs/ops/evidence/2026-09-12_t12_identity_and_concurrent_pilot.md`.
 
-## 2026-09-12T08:00Z — RESULT BLOCKED backlog follow-up ready for REVIEW
+## 2026-09-12T07:54Z — RESULT BLOCKED backlog follow-up ready for REVIEW
 
 Task `f239a2d9`: BLOCKED fell 103 -> 69. Batch 02 allocated 32 magic rows for nine
 cards and returned ten registry-ready rows to TODO. The exact 24-row OWNER manifest
@@ -3420,3 +3420,13 @@ allocation candidates, 50 exact card/identity holds, and one untouched OWNER-vid
 row. Verification: 17 tests PASS, py_compile PASS, zero status-aware magic
 collisions, zero retired-row deletions. Evidence:
 `docs/ops/evidence/2026-09-12_blocked_agent_task_backlog_disposition.md`.
+
+## 2026-09-12T07:59Z — RESULT Q09 sealed-plan binder corrected live-state verdict
+
+Task `b982a763`: the binder deterministically repaired 28/30 sealed-plan failures;
+two remain fail-closed for missing/contradictory Q09 evidence. Corrected live audit:
+all 28 plan-bound rows still carry `NEWS_CALENDAR_TAINTED`, so ordinary-claim state
+is 0/30, not 28/30. Calendar release belongs to IN_PROGRESS Claude task `bb814520`
+and was not bypassed. Binder replay is 0 ready / 2 held; focused verification is
+127 passed. Evidence:
+`docs/ops/evidence/2026-09-12_q09_sealed_plan_hold_binder.md`.

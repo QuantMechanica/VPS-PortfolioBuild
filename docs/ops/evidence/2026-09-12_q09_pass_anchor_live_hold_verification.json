@@ -1,0 +1,65 @@
+{
+  "schema": "qm.q09-pass-anchor-live-hold-verification/v1",
+  "observed_at_utc": "2026-09-12T07:59:25Z",
+  "source_plan": "C:/QM/repo/docs/ops/evidence/2026-09-12_q09_pass_anchor_plan.json",
+  "source_apply": "C:/QM/repo/docs/ops/evidence/2026-09-12_q09_pass_anchor_apply.json",
+  "postreview_binder_dry_run": "C:/QM/repo/docs/ops/evidence/2026-09-12_q09_pass_anchor_postreview_dry_run.json",
+  "counts": {
+    "rows": 30,
+    "pending": 30,
+    "claimed": 0,
+    "run_plan_bound": 28,
+    "awaiting_sealed_plan": 2,
+    "zero_active_holds": 0,
+    "news_calendar_tainted": 28,
+    "q09_awaiting_sealed_plan": 2
+  },
+  "active_hold_groups": {
+    "NEWS_CALENDAR_TAINTED": {
+      "count": 28,
+      "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md",
+      "dependency_task": "bb814520-3364-5355-97b6-27f662f3ed8b",
+      "work_item_ids": [
+        "d81d9ea8-b802-4c38-8fc9-8bdbab6ef75c",
+        "84608819-5253-4df0-871c-6eb4750c3435",
+        "72992810-aaf1-4fa8-9c12-c778bda0ae87",
+        "70171429-8d84-49bd-8082-7034c924dbf4",
+        "e8ec3223-886a-400b-ba1b-096a82cebd9f",
+        "cec67ad5-2ca5-4d84-b347-a0c370415329",
+        "58ae0036-5bc4-4711-8bfa-eb3465af298b",
+        "9f691044-d481-4f69-8823-267d80fff89d",
+        "9b69d492-82df-4703-9350-fea30afac98f",
+        "f3f1cedc-c0d6-4485-917c-7f3b98957453",
+        "15e7deca-13e8-4760-9e8e-5918040f948d",
+        "42c8debd-ca2a-4618-8aaf-b9c3ee379f61",
+        "a8e36fba-36e7-419a-9d2b-5b3116cbdde2",
+        "120d68ff-bf61-4b16-abf8-1867aee53bb3",
+        "60ce66e6-8c40-493a-aa8f-40c8714a3e85",
+        "bd840961-23a1-4fea-99ce-2e285c0d1914",
+        "9d3f470e-5071-4398-86c7-7de4be979c3d",
+        "d3312a9e-038a-4ab8-b392-0dbdfa2728e0",
+        "1d9a2d26-4407-4554-acbb-4e4c258f0b04",
+        "0f7f63e4-9244-4c60-8610-ea068c5fc64e",
+        "fb127697-b89e-4d52-9bd5-0d92d95e9125",
+        "10449264-8fa1-47f5-a3d7-adb28cee934d",
+        "83826f05-3d85-4cac-8177-e3f7cd25c7e8",
+        "2641d5cf-6e1c-43d1-92b2-05c9d6f54d82",
+        "b6bdac29-b608-4016-9394-2be6f34cc9a3",
+        "9a85fb74-4c31-4a74-8e8c-c332cf1b802e",
+        "bb02b701-0d7c-4de7-82b2-87d917f8dd1b",
+        "e0cbdd1a-1cfe-4bbe-8ebe-a4b4c26d151f"
+      ]
+    },
+    "Q09_AWAITING_SEALED_PLAN": {
+      "count": 2,
+      "work_item_ids": [
+        "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+        "8b233bbf-4ed6-4c27-a3d2-5e940c9248ab"
+      ]
+    }
+  },
+  "ordinary_claim_predicate": {
+    "claimable_count": 0,
+    "reason": "Every row has at least one active work_item_holds row; no hold was released by this verification."
+  }
+}

@@ -13,10 +13,12 @@ completed Q09 PASS execution anchor, authored and hash-bound an immutable
 28 rows. It did not edit any historical row or verdict.
 
 Post-apply verification authenticated every one of the 28 plan/anchor bundles
-against the live database and current files. All 28 rows are pending, unclaimed,
-`RUNNABLE_BOUND`, `terminal_claimable=true`, and have zero active holds, so they
-now enter only through the ordinary worker claim predicate. Two rows remain
-held because no defensible execution anchor exists.
+against the live database and current files. The sealed-plan layer is repaired:
+all 28 rows are pending, unclaimed, `RUNNABLE_BOUND`, and
+`terminal_claimable=true`. However, a later live-state audit corrected the initial
+zero-hold claim: all 28 retain the independent `NEWS_CALENDAR_TAINTED` hold, so none
+currently passes the ordinary worker claim predicate. Two rows remain on
+`Q09_AWAITING_SEALED_PLAN` because no defensible execution anchor exists.
 
 Dry-run receipt: `docs/ops/evidence/2026-09-12_q09_pass_anchor_plan.json`  
 Apply receipt: `docs/ops/evidence/2026-09-12_q09_pass_anchor_apply.json`
@@ -37,7 +39,7 @@ Apply receipt: `docs/ops/evidence/2026-09-12_q09_pass_anchor_apply.json`
 `f3f1cedc-c0d6-4485-917c-7f3b98957453`, `15e7deca-13e8-4760-9e8e-5918040f948d`,
 `42c8debd-ca2a-4618-8aaf-b9c3ee379f61`, `a8e36fba-36e7-419a-9d2b-5b3116cbdde2`,
 `120d68ff-bf61-4b16-abf8-1867aee53bb3`, `60ce66e6-8c40-493a-aa8f-40c8714a3e85`,
-`bd840961-23a1-4fea-99ce-2e24d0f1ca78`, `9d3f470e-5071-4398-86c7-7de4be979c3d`,
+`bd840961-23a1-4fea-99ce-2e285c0d1914`, `9d3f470e-5071-4398-86c7-7de4be979c3d`,
 `d3312a9e-038a-4ab8-b392-0dbdfa2728e0`, `1d9a2d26-4407-4554-acbb-4e4c258f0b04`.
 
 `Q09_AUTOSEAL_VALIDATE_Q08_VINTAGE_FAILED` (6):
@@ -71,9 +73,21 @@ runtime validator checks each in its proper domain.
 
 - Dry run: 30 total / 28 ready / 2 held / 0 applied.
 - Apply: 28 applied / 28 hold releases / 1,120 planned Model-4 cells.
-- Post-apply: 28 authenticated; 28 pending and unclaimed; zero active holds.
-- Focused suite: **117 passed** (`test_q09_pass_anchor_binder`, scoped-anchor,
+- Corrected live state: 28 authenticated and plan-bound, but 28
+  `NEWS_CALENDAR_TAINTED`; the two unbound rows retain
+  `Q09_AWAITING_SEALED_PLAN`; ordinary-claim count is **0/30**.
+- Focused suite: **127 passed** (`test_q09_pass_anchor_binder`, scoped-anchor,
   farmctl integration, Q09 contract/runner/schema, and autoseal census tests).
 - The binder is read-only unless `--apply` is explicit and uses one immediate
   transaction per row. Historical evidence and verdicts are immutable inputs.
 
+Live evidence:
+`docs/ops/evidence/2026-09-12_q09_pass_anchor_live_hold_verification.json`.
+The binder replay is
+`docs/ops/evidence/2026-09-12_q09_pass_anchor_postreview_dry_run.json` and returns
+exactly the two preserved failures (0 ready / 2 held). The calendar hold reason
+points to `docs/ops/evidence/2026-09-05_news_calendar_diagnose.md`; its governed
+release remains owned by Claude task `bb814520`, which is still IN_PROGRESS and
+blocked on `OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT-20260909`. This task did not use a
+manual hold release and cannot truthfully claim end-to-end claimability until that
+independent dependency is resolved.
