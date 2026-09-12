@@ -3921,3 +3921,15 @@ retire). Compile holds: 30 COMPILE_EA rows carried COMPILE_EA_WORKER_ROLLOUT_PEN
 reviewed worker has been on the whole fleet for weeks; release_compile_wave --apply released the 10 source-fresh
 rows (artifacts/qm5_compile_wave_rollout_release_20260912.json); 20 stale-source rows stay held for
 supersession (reconcile_compile_rollout_holds needs successors for QM5_1538 first). Counter 24/25 at 14:11Z.
+
+## 2026-09-12T19:40Z — ALERT workers=7: purge teardown + relaunch gap; D: churn from Dukascopy scratch roots
+
+15:21Z watch: 7 of 10 workers. Cause: tester_cache_purge (LowWaterGB 60, teardown class) stopped the idle workers
+T1,T2,T6,T7,T8 at 15:20Z because D: was 59.8 GB and relaunched only some of them (log: "missing workers
+requested via interactive-session token launcher ... LAUNCHED pid=19080"); T6/T7/T8 stayed down until
+start_terminal_workers.py --dedupe at 15:4xZ (no crash, no traceback). Ticket 7db4e521 (Luna): relaunch
+verification + retry inside the purge. D: swung 73 -> 39.9 -> 67 -> 60 GB between 14:00Z and 15:20Z (below the
+40 GB disk stop once) driven by the Dukascopy P3 scratch conversions (21 GB under D:/QM/reports/dukascopy/
+conversion, 16.9 GB of it the superseded 79c942ac root). The superseded root was deleted (reproducible from the
+4.6 GB raw backfill; inventory hashes live in docs/ops/evidence). Rule for the lane: one scratch root at a time,
+superseded roots deleted by the ticket that supersedes them; state the scratch budget in every P2/P3 ticket.
