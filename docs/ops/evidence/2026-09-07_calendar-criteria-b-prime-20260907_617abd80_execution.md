@@ -507,3 +507,26 @@ overall FAIL15/WARN20/OK51 (checked_at 11:34:55Z) -- same chronic FAIL/WARN cate
 the prior 10:47Z FAIL14/WARN17/OK55 baseline (codex_zero_activity FAIL still
 repo_dirty_build_guard-blocked by uncommitted artifacts, unrelated to and outside these three
 tasks' scope; no new FAIL category). All three tasks remain `IN_PROGRESS`.
+
+## Checked 2026-09-12T05:06Z real UTC (`date -u`) (headless orchestration cycle) -- all three gating sub-tickets landed PASSED; top-level acceptance still unmet
+
+Genuinely new since the 04:37-04:42Z checkpoints: direct DB read shows `b66b5ccc`
+(codex), `46167bd9` (claude) and `ae1df6bf` (unassigned) all transitioned to
+`state=PASSED` at the identical `updated_at=2026-09-12T04:55:15+00:00` -- a batch
+close, likely from a sibling cycle or codex catching up after its quota-gated stall.
+This is the first state change on any of these three sub-tickets since they were
+first observed `APPROVED`/unworked on 2026-09-09/09-10.
+
+However, per the standing analysis (memory `project_qm_ownerdec_tasks_stuck_on_q02_gate_quota_critical_2026-09-09`,
+addendum 2026-09-11T10:53Z): the real remaining blocker to `bb814520`/`dfc60103` is
+`QM5_11167`/`QM5_11196` XAUUSD.DWX Q10_NEWS itself reaching a PASS/FAIL verdict
+(11167-native-canary-authentication chain), not the sub-tickets landing per se.
+Re-checked directly: both `QM5_11167` Q10_NEWS (`6797ed1c`, `updated_at=2026-09-08T17:32:10Z`)
+and `QM5_11196` Q10_NEWS (`a909ee18`, `updated_at=2026-09-10T22:58:05Z`) are still
+`status=done`/`verdict=REVIEW_REQUIRED` -- unchanged, not fresh this cycle. So none
+of `bb814520`'s or `dfc60103`'s top-level acceptance criteria are newly met despite
+the sub-ticket close. `QM5_41394` XAUUSD.DWX Q04 (`5f3f323d`) still `pending`/unclaimed
+since `2026-09-11T10:51:37Z` (~18h, ordinary queue depth, not this task's authority).
+
+No `update-task` call made on `bb814520`/`dfc60103` -- no acceptance criterion
+satisfied. Both remain `IN_PROGRESS`.

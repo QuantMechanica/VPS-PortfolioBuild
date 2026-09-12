@@ -1845,3 +1845,91 @@ checkpoint: `b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:
 (~17.75h static) -- ordinary queue depth, not this task's authority. No acceptance criterion
 newly met on any of the three owner-decision tasks; no `update-task` call made. All three
 remain `IN_PROGRESS`.
+
+## Checked 2026-09-12T05:03:33Z real UTC (`date -u`) (headless orchestration cycle) -- all three sub-tickets (`b66b5ccc`/`46167bd9`/`ae1df6bf`) flipped `APPROVED`->`PASSED` at `04:55:15Z`; `ae1df6bf`'s closure carries no `artifact_path`/`verdict` -- flagging, not trusting blind
+
+Genuinely new since the 04:36-37Z checkpoint (first check outside the ~20min suppression
+window per this file's own memory-lesson rule): direct `agent_tasks` query shows
+`b66b5ccc-7826-4c60-9d64-2bb5d3fb09c3`, `46167bd9-fe1b-5443-bda9-5e8181dcc185`, and
+`ae1df6bf-b435-47c8-bcb2-bf7a96b4c654` all transitioned `state=PASSED` with an identical
+`updated_at=2026-09-12T04:55:15+00:00` -- 8 minutes before this check, i.e. a single batched
+closeout event, not three independent reviews landing coincidentally.
+
+`b66b5ccc` and `46167bd9` carry real `artifact_path`/`verdict` text (Q02 rebuild PASS for
+QM5_41394/EURUSD.DWX D1, work_item `58b36f74`, `real_ticks_marker=true`; and an
+`INDEPENDENT_ORCHESTRATOR_CLOSEOUT`-style Sonnet-verification note citing commit
+`58ad7cbd20` + the QM5_41394 EA dir + an evidence json) -- the verdict prose itself
+references events from 2026-09-09, i.e. the underlying work was already done days ago and
+this closeout is a late state-column catch-up, not fresh work invented at 04:55Z. Consistent
+with lesson 1 (`APPROVED` is ambiguous between "queued" and "review passed, not yet closed").
+
+`ae1df6bf` is the anomaly: `artifact_path IS NULL` and `verdict IS NULL` despite
+`state=PASSED`. This ticket's whole purpose was a code fix for the `assert_contained_destination`
+resolve()/mkdir-ordering hazard (lesson 10). Checked `tools/dukascopy/download_bi5.py` this
+cycle: `git log --all -- tools/dukascopy/` between `2026-09-11T06:00Z` and now shows only
+`fe7cc4ce09` ("harden dukascopy progress writes", the *different*, already-landed
+fixed-tmp-filename fix from lesson 9) -- no commit touches `assert_contained_destination`
+or reorders `raw_root.resolve()` (download_bi5.py:369) relative to `raw_root.mkdir()`
+(download_bi5.py:370). The resolve-before-mkdir ordering this ticket was meant to fix
+appears structurally unchanged at lines 369-370. Per the Hard Rule "Evidence over claims,"
+a `PASSED` state with zero evidence attached does not establish the fix landed -- treating
+this as **not verified fixed**, only as *administratively closed*. This is moot for the
+current P1 download run specifically (see below: it already reached 100% completion and
+has no live process, so the crash-loop this ticket targeted cannot recur *for this run*),
+but the underlying code hazard should not be assumed fixed for any future/resumed download
+without an actual diff. Not this task's authority to reopen a `PASSED` review or force a
+code change; flagging for the next OWNER/Codex touch on this lineage.
+
+Re-confirmed via `Get-CimInstance Win32_Process`: no `download_bi5.py` process alive (matches
+the terminal 100%-complete state logged at 04:36-37Z, not a new crash needing relaunch).
+`QM5_41394` XAUUSD.DWX Q04 (`5f3f323d`) unchanged: still `pending`/unclaimed since
+`2026-09-11T10:51:37Z` (~18.2h) -- this remains the actual gate for `bb814520`/`dfc60103`
+per the 2026-09-11T10:53Z addendum (11196's own Q10_NEWS PASS/FAIL, not `b66b5ccc` landing
+per se), so even with all three sub-tickets now closed, **no top-level acceptance criterion
+on any of the three parent tasks is newly met**. `QM5_10260` Q08 re-confirmed `FAIL_HARD`
+unchanged (static since 2026-06-26); its own Q04 predecessor row (`a0a0128f`) still `pending`
+since `2026-09-02T10:12:57Z`. Fresh `farmctl health`: `FAIL13/WARN19/OK53`
+(`checked_at=2026-09-12T05:04:26Z`) -- `codex_zero_activity`/`codex_auth_broken` now
+attribute to `repo_dirty_build_guard` (2 uncommitted files in canonical repo), not auth;
+P3 reconciliation's blocker (`ba2a478e`, governed M1 export tool, `APPROVED`/codex) was not
+re-queried this cycle since the 04:37Z milestone already covered it and nothing in this
+cycle's evidence suggests it moved. No `update-task` call made on any of the three parent
+tasks. All three remain `IN_PROGRESS`.
+
+## Checked 2026-09-12T05:06Z real UTC (`date -u`) (headless orchestration cycle) -- `ba2a478e` (M1 export tool build) landed PASSED; dry-run re-validated clean; production `--apply` dispatch still not self-authorized
+
+Genuinely new: direct DB read shows `ba2a478e-f437-404b-843b-a1def6f2cf4c`
+(Codex ticket to build the governed DWX-side M1 export diagnostic that P3
+reconciliation depends on) transitioned `APPROVED` -> `PASSED`,
+`updated_at=2026-09-12T04:55:15+00:00` -- same batch timestamp as
+`b66b5ccc`/`46167bd9`/`ae1df6bf` on the sibling calendar-criteria task, consistent
+with a codex catch-up wave after its quota-gated stall. `download_bi5.py` P1
+confirmed still terminally exited (no live process via full
+`Get-CimInstance Win32_Process` command-line scan) -- same 100%-complete state as
+the 04:36Z checkpoint, not a new download event.
+
+Re-ran `python tools/strategy_farm/dwx_m1_overlap_export_work_item.py
+--authority-task-id 3032534e-eaf0-5b68-b09f-2127ebb315b0` (no `--apply`, read-only
+dry-run mode) to check whether the now-PASSED build changed the plan: still
+validates clean (`read_only=true`, `no_gate_verdict=true`, `priority_track=true`,
+`phase=Q00`, `symbol=DWX_UNIVERSE`, output would land under
+`D:\QM\reports\dukascopy\reconciliation_inputs\dwx_m1\20260912_050608`), no
+`enqueued` row produced without `--apply`. This confirms the tool is built and
+ready but the actual production dispatch against T1 is still gated behind the same
+boundary flagged at 04:37Z: `ba2a478e`'s own README states the first production T1
+dispatch is not authorized by the build ticket itself, and this task's
+`allowed_actions` do not by name enumerate that specific `--apply` dispatch (the
+enumerated "read-only T1 tick-tail probe" refers to the P0 splice-timestamp probe,
+a different diagnostic). Not self-authorized this cycle either, consistent with
+every prior checkpoint's containment discipline.
+
+**Recommendation for OWNER/next review, restated now that the build is PASSED (not
+just APPROVED):** authorize `python tools/strategy_farm/dwx_m1_overlap_export_work_item.py
+--authority-task-id 3032534e-eaf0-5b68-b09f-2127ebb315b0 --apply` as the concrete
+unblock for P3 reconciliation -- read-only T1 diagnostic, no gate verdict, no
+T_Live/AutoTrading, queued via ordinary factory claim, does not preempt active
+backtests.
+
+No `update-task` call made on `3032534e` -- no top-level acceptance criterion newly
+met (P3 reconciliation still has no real per-symbol report). Task remains
+`IN_PROGRESS`.
