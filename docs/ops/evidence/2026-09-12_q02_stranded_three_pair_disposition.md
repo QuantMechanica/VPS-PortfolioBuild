@@ -1,60 +1,66 @@
-# Q02 stranded exhausted pairs — three-pair disposition
+# Q02 stranded exhausted pairs — reissued live disposition
 
-Date: 2026-09-12 05:55 UTC
+Date: 2026-09-12 09:04 UTC  
 Router task: `af3eac6e-9745-4e35-9171-0517221e15c9`
 
-## Result
+## Corrected result
 
-The live health cohort contained exactly three EA/symbol pairs and 40 terminal
-INFRA_FAIL rows. A fresh read-only classifier bound each result to its row evidence,
-verdict reason, current setfile, and canonical registry identity. All three are
-evidence defects; none is an authenticated zero-trade/frequency-floor outcome.
+**REVIEW — three pairs dispositioned; one prior governed canary failed before
+MT5 at the compile gate; no second canary or requeue.** A fresh read-only
+classifier regenerated the artifact after the two review returns. The live
+cohort is three pairs / 41 terminal INFRA_FAIL rows, not the earlier claimed
+3 -> 2 improvement.
 
-One governed, append-only canary was admitted for the only first-sequence candidate
-whose summary and worker log both still exist. The other two remain in evidence-repair
-disposition and were not requeued. Consequently `q02_stranded_exhausted_pairs`
-improved from **3 to 2** without changing any historical row.
+All three pairs are evidence/implementation defects. None has an authenticated
+zero-trade aggregate, so none may be routed to the RETIRE/frequency-floor lane.
 
-| Pair | Terminal rows | Row-bound cause | Evidence | Disposition |
-|---|---:|---|---|---|
-| `QM5_10505 / XAUUSD.DWX` | 14 | `ONINIT_FAILED; INCOMPLETE_RUNS` | source `cc347183`; summary and worker log present | One append-only Q02 canary `7f4fb7d4-4fa0-4233-b1d1-f3c912ea12ff` pending. Stop before a second pair until its terminal result is reviewed |
-| `QM5_12582 / XNGUSD.DWX` | 13 | `ONINIT_FAILED; INCOMPLETE_RUNS` | source `ae468d0f`; summary present, worker log absent | Evidence-repair hold. Do not blind-requeue; recover/attribute the exact init event first |
-| `QM5_20143 / EURUSD.DWX` | 13 | `NO_HISTORY; ONINIT_FAILED; INCOMPLETE_RUNS` | source `57af5db0`; summary and worker log absent | Evidence-repair/history-coverage hold. Do not requeue without exact-window coverage and restorable row evidence |
+| Pair | Rows | Row-bound evidence | Current disposition |
+|---|---:|---|---|
+| `QM5_10505 / XAUUSD.DWX` | 15 | `cc347183` summary SHA `697d26e8...ecbe1` and worker log exist; result `ONINIT_FAILED; INCOMPLETE_RUNS` | Prior single canary `7f4fb7d4` was claimed on T8, passed private-history and EX5 staging, then failed `spawn_refusal:compile_gate:COMPILE_FAILED`. Keep in compile-gate evidence repair; do not requeue here |
+| `QM5_12582 / XNGUSD.DWX` | 13 | `ae468d0f` summary SHA `be8bb2a1...e9ca3d` exists; worker log absent; result `ONINIT_FAILED; INCOMPLETE_RUNS`; historical lock-storm overlay | Evidence recovery/implementation preflight. Fresh classifier nominates it as the next theoretical candidate, but the task's at-most-one canary budget was already consumed; no requeue |
+| `QM5_20143 / EURUSD.DWX` | 13 | row reason `NO_HISTORY; ONINIT_FAILED; INCOMPLETE_RUNS`; bound summary and worker log both absent | History-coverage plus evidence recovery. No canary or requeue without exact-window coverage and restorable evidence |
 
-The machine-readable census is
-`docs/ops/evidence/2026-09-12_q02_stranded_pairs_classification.json`; its CSV
-companion contains the compact pair table. JSON SHA-256:
-`9a8da10ee4065ac461a1f773ff6b3a601d31806eed6131aa0ad1a0ed6d27122d`.
+Fresh machine-readable artifacts:
 
-## Canary binding
+- `docs/ops/evidence/2026-09-12_q02_stranded_pairs_classification_reissue.json`
+  — SHA-256 `589ec550a6f008e8cb25773fea1b67a6cb33c58f434444bb47e53a01d0d8a5a3`;
+- `docs/ops/evidence/2026-09-12_q02_stranded_pairs_classification_reissue.csv`
+  — SHA-256 `12750f24f450062f0920b1da56a1d506a975d3e4a7b67fade2a8cd7f1a088a39`.
 
-The dry-run classifier selected `QM5_10505 / XAUUSD.DWX` as sequence 1 in the
-ONINIT group. Before admission:
+The snapshot classification is `INVALID_EVIDENCE_DEFECT=3`, with primary
+causes `ONINIT_FAILED=2` and `NO_HISTORY_TRANSIENT=1`. It contains 0 valid
+zero-trade rows and 0 retire draft rows. The older classification files and
+commits remain untouched as historical evidence.
 
-- source terminal row and row-bound summary/log existed;
-- canonical EX5 SHA-256 was
-  `cc702479b617074e190b94833eb60cb9f9b5571cbfe6e39747633223b7a03bbb`;
-- setfile SHA-256 was
-  `d13392b780774adcc8ef1b0816d8c824c3accd430731ba404f726f8c47d567a9`;
-- setfile audit found no missing or duplicate header/input defect.
+## Prior canary outcome, bound to the live row
 
-`farmctl enqueue-backtest` then created exactly one successor,
-`7f4fb7d4-4fa0-4233-b1d1-f3c912ea12ff`, with
-`append_only_rerun_of_work_item=cc347183-5365-427e-b815-3879639c0d42` and the
-current EX5 hash. The source row remains terminal. No terminal was launched or
-interrupted by this action.
+The only task canary is append-only row
+`7f4fb7d4-4fa0-4233-b1d1-f3c912ea12ff`, whose payload binds source row
+`cc347183-5365-427e-b815-3879639c0d42`, EX5 `cc702479...3bbb`, setfile
+`d13392b7...67a9`, `RISK_FIXED=1000`, and `RISK_PERCENT=0`. Its live terminal
+state is:
+
+- `status=failed`, `verdict=INFRA_FAIL`;
+- `evidence_path=EVIDENCE_UNAVAILABLE:spawn_refusal:compile_gate:COMPILE_FAILED`;
+- claimed by T8 at 06:16:30 UTC;
+- custom-history admission/copy-on-claim passed for 108 private XAUUSD files;
+- no MT5 report exists because the compile gate refused before spawn.
+
+This is an infrastructure/compile preflight result, not a strategy frequency
+measurement. It does not terminally disposition the pair outside the health
+cohort. The separate compile-gate cluster ticket may repair that shared cause;
+this task neither duplicates it nor spends a second canary.
 
 ## Verification
 
-- live health readback: `FAIL value=2` (down from 3; the two explicit repair holds)
-- focused health and rerun-contract tests: **14 PASS**
-- classifier: 3 pairs / 40 rows; `ONINIT_FAILED=2`, `NO_HISTORY_TRANSIENT=1`
-- classification: `INVALID_EVIDENCE_DEFECT=3`, `VALID_ZERO_TRADES=0`
-- no T_Live/FTMO action; no historical verdict/evidence mutation
+- direct read-only `health.chk_q02_stranded_exhausted_pairs`: `FAIL value=3`;
+- focused health contract: **11 passed**;
+- fresh classifier: 3 pairs / 41 rows, 3 invalid evidence defects, 0 valid
+  zero-trade, 0 retire candidates;
+- historical rows and their verdict/evidence paths are unchanged;
+- no T_Live/FTMO, terminal launch, active-backtest interruption, or queue
+  mutation in this reissue.
 
-## Review disposition
-
-`REVIEW`: accept the one canary and the two fail-closed repair dispositions. Do not
-admit `QM5_12582` unless the first canary has a reviewed terminal disposition and an
-exact init cause is attributable. Do not admit `QM5_20143` without both evidence
-recovery and an exact requested-window history coverage proof.
+The three-pair acceptance is met by an honest per-pair disposition plus the
+recorded one-canary result. Health is intentionally still 3 until the named
+evidence/compile/history defects produce a non-infra terminal disposition.
