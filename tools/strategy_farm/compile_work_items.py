@@ -145,6 +145,18 @@ Q02_INFRA_SOURCE_REPAIR_AUTHORITY = (
 Q02_INFRA_SOURCE_REPAIR_EA_LABELS = frozenset({
     "QM5_11900_kobasfx-4ema-macd-sentiment-h1",
 })
+# Exact paced-fleet authority for the QM5_11533 EURUSD Q02 infrastructure
+# recovery.  Its existing binary is stale against the current source and the
+# sealed Q02 predecessor failed before tester launch because the legacy
+# compile gate had no governed include-mirror binding.  This task/label pair
+# permits one append-only, source-hash-bound COMPILE_EA row and grants no
+# strategy, backtest, gate-verdict, cross-EA, or live authority.
+QM5_11533_Q02_COMPILE_INFRA_REPAIR_AUTHORITY = (
+    "router_q02_infra_repair:26226e74-14de-4a39-b8ac-7bfa4bac1e10"
+)
+QM5_11533_Q02_COMPILE_INFRA_REPAIR_EA_LABELS = frozenset({
+    "QM5_11533_carter-t-h1-ema3-5-13-21-80-rsi21",
+})
 # Exact paced-fleet authority for the QM5_10038 FX diversification repair.
 # Its June binary predates the August magic-slot expansion and therefore
 # rejects slots 4+ with EA_MAGIC_NOT_REGISTERED.  The current source is
@@ -3112,6 +3124,10 @@ def _source_repair_authorized(
         or (
             authority == Q02_INFRA_SOURCE_REPAIR_AUTHORITY
             and ea_label in Q02_INFRA_SOURCE_REPAIR_EA_LABELS
+        )
+        or (
+            authority == QM5_11533_Q02_COMPILE_INFRA_REPAIR_AUTHORITY
+            and ea_label in QM5_11533_Q02_COMPILE_INFRA_REPAIR_EA_LABELS
         )
         or (
             authority == QM5_10038_Q02_STALE_MAGIC_REPAIR_AUTHORITY

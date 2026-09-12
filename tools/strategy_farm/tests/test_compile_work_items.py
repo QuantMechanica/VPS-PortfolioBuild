@@ -413,6 +413,26 @@ def test_q02_infra_source_repair_authority_is_exact_label_bound() -> None:
     )
 
 
+def test_qm5_11533_q02_compile_infra_repair_authority_is_exact_label_bound() -> None:
+    label = "QM5_11533_carter-t-h1-ema3-5-13-21-80-rsi21"
+
+    assert compile_work_items.QM5_11533_Q02_COMPILE_INFRA_REPAIR_EA_LABELS == {
+        label
+    }
+    assert compile_work_items._source_repair_authorized(
+        label,
+        compile_work_items.QM5_11533_Q02_COMPILE_INFRA_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_11534_unrelated-h1",
+        compile_work_items.QM5_11533_Q02_COMPILE_INFRA_REPAIR_AUTHORITY,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        label,
+        "router_q02_infra_repair:wrong-task",
+    )
+
+
 def test_qm5_10038_q02_stale_magic_repair_authority_is_exact_label_bound() -> None:
     label = "QM5_10038_ff-4x25ema-mtf-h4"
 
