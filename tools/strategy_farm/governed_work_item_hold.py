@@ -14,6 +14,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import sqlite3
 from pathlib import Path
@@ -23,6 +24,11 @@ try:
     from tools.strategy_farm.sqlite_busy import retry_sqlite_busy
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     from sqlite_busy import retry_sqlite_busy  # type: ignore
+
+try:
+    from tools.strategy_farm import db_backup_reuse
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import db_backup_reuse  # type: ignore
 
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
@@ -163,20 +169,28 @@ def inspect_targets(
     return result
 
 
-def sqlite_backup(db: Path, backup_dir: Path) -> tuple[Path, str]:
-    backup_dir.mkdir(parents=True, exist_ok=True)
-    stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
-    destination = backup_dir / f"farm_state_before_governed_hold_{stamp}.sqlite"
-    if destination.exists():
-        raise HoldError(f"backup_exists:{destination}")
-    source = sqlite3.connect(db, timeout=30)
-    target = sqlite3.connect(destination)
+def sqlite_backup_resolution(db: Path, backup_dir: Path) -> dict[str, Any]:
+    raw_age = os.environ.get("QM_TOOL_BACKUP_REUSE_MAX_AGE_MINUTES", "60")
     try:
-        source.backup(target)
-    finally:
-        target.close()
-        source.close()
-    return destination, sha256_file(destination)
+        max_age = float(raw_age)
+    except ValueError:
+        max_age = 60.0
+    with sqlite3.connect(db, timeout=30) as conn:
+        resolved = db_backup_reuse.resolve_backup(
+            conn,
+            db,
+            backup_dir,
+            timeout_seconds=60.0,
+            reuse_max_age_minutes=max_age,
+            backup_label="governed_hold",
+        )
+    return {**resolved, "path": str(resolved["path"])}
+
+
+def sqlite_backup(db: Path, backup_dir: Path) -> tuple[Path, str]:
+    """Compatibility tuple for callers that only bind backup path + hash."""
+    resolved = sqlite_backup_resolution(db, backup_dir)
+    return Path(resolved["path"]), str(resolved["sha256"])
 
 
 def apply_holds(
@@ -191,7 +205,9 @@ def apply_holds(
     release_condition: str,
     supersede_hold_code: str | None = None,
 ) -> dict[str, Any]:
-    backup_path, backup_sha = sqlite_backup(db, backup_dir)
+    backup_resolution = sqlite_backup_resolution(db, backup_dir)
+    backup_path = Path(backup_resolution["path"])
+    backup_sha = str(backup_resolution["sha256"])
 
     def _apply_once() -> dict[str, Any]:
         now = utc_now()
@@ -243,6 +259,7 @@ def apply_holds(
                         "superseded_hold": dict(existing),
                         "backup_path": str(backup_path),
                         "backup_sha256": backup_sha,
+                        "backup_reused": bool(backup_resolution["reused"]),
                     }
                     conn.execute(
                         "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
@@ -288,6 +305,7 @@ def apply_holds(
                     "release_on_restart": False,
                     "backup_path": str(backup_path),
                     "backup_sha256": backup_sha,
+                    "backup_reused": bool(backup_resolution["reused"]),
                 }
                 conn.execute(
                     "INSERT INTO events(ts,entity_type,entity_id,event,detail_json) "
@@ -316,7 +334,7 @@ def apply_holds(
                 "already_held": already_held,
                 "superseded": superseded,
                 "supersede_hold_code": supersede_hold_code,
-                "backup": {"path": str(backup_path), "sha256": backup_sha},
+                "backup": backup_resolution,
                 "rows": after,
                 "all_unclaimable": True,
             }

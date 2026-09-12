@@ -25154,12 +25154,12 @@ def _normpath_key(value: Any) -> str:
     return os.path.normcase(os.path.normpath(str(value or "")))
 
 
-def _governed_state_backup(root: Path, label: str) -> tuple[Path, str]:
-    """Resolve one rolling-window rollback anchor for governed tool mutations."""
+def _governed_state_backup_resolution(root: Path, label: str) -> dict[str, Any]:
+    """Resolve one rolling-window rollback anchor with receipt metadata."""
     try:
-        from . import release_compile_wave as backup_policy
+        from . import db_backup_reuse as backup_policy
     except ImportError:
-        import release_compile_wave as backup_policy
+        import db_backup_reuse as backup_policy
     src = db_path(root)
     backup_dir = root / "state" / "backups"
     raw_age = os.environ.get("QM_TOOL_BACKUP_REUSE_MAX_AGE_MINUTES", "60")
@@ -25168,7 +25168,7 @@ def _governed_state_backup(root: Path, label: str) -> tuple[Path, str]:
     except ValueError:
         max_age = 60.0
     with sqlite3.connect(str(src)) as conn:
-        resolved = backup_policy._resolve_backup(
+        resolved = backup_policy.resolve_backup(
             conn,
             src,
             backup_dir,
@@ -25176,6 +25176,12 @@ def _governed_state_backup(root: Path, label: str) -> tuple[Path, str]:
             reuse_max_age_minutes=max_age,
             backup_label=label,
         )
+    return {**resolved, "path": str(resolved["path"])}
+
+
+def _governed_state_backup(root: Path, label: str) -> tuple[Path, str]:
+    """Compatibility tuple for governed callers that only bind path + hash."""
+    resolved = _governed_state_backup_resolution(root, label)
     return Path(resolved["path"]), str(resolved["sha256"])
 
 
@@ -25500,7 +25506,9 @@ def record_q01_smoke_successor(
     # Pre-mutation snapshot BEFORE taking the fleet-wide mutation lock: the
     # online backup of a ~700 MB database takes tens of seconds and must not
     # stall every worker claim.  The BEGIN IMMEDIATE CAS below is the guard.
-    backup_path, backup_sha = _governed_state_backup(root, "q01_smoke_successor")
+    backup_resolution = _governed_state_backup_resolution(root, "q01_smoke_successor")
+    backup_path = Path(backup_resolution["path"])
+    backup_sha = str(backup_resolution["sha256"])
     lock = FactoryMutationLock(
         path_for_factory_flag(factory_off_flag_path(root)),
         owner=f"record_q01_smoke_successor:{build_task_id}",
@@ -25545,6 +25553,7 @@ def record_q01_smoke_successor(
                     "artifact_sha256": auth["artifact_sha256"],
                     "backup_path": str(backup_path),
                     "backup_sha256": backup_sha,
+                    "backup_reused": bool(backup_resolution["reused"]),
                 })
                 conn.commit()
             except Exception:
@@ -25575,7 +25584,7 @@ def record_q01_smoke_successor(
         **plan,
         "latest_smoke_result_after": (latest or {}).get("smoke_result"),
         "q01_smoke_admission_after": admission,
-        "backup": {"path": str(backup_path), "sha256": backup_sha},
+        "backup": backup_resolution,
         "factory_mutation_lock_release": lock.release_status,
     }
 
@@ -25824,7 +25833,9 @@ def release_work_item_hold(
         refusal = _inspect(pre_conn)
     if refusal is not None:
         return refusal
-    backup_path, backup_sha = _governed_state_backup(root, "hold_release")
+    backup_resolution = _governed_state_backup_resolution(root, "hold_release")
+    backup_path = Path(backup_resolution["path"])
+    backup_sha = str(backup_resolution["sha256"])
     lock = FactoryMutationLock(
         path_for_factory_flag(factory_off_flag_path(root)),
         owner=f"release_work_item_hold:{work_item_id}",
@@ -25889,6 +25900,7 @@ def release_work_item_hold(
                                 "released_at": now,
                                 "backup_path": str(backup_path),
                                 "backup_sha256": backup_sha,
+                                "backup_reused": bool(backup_resolution["reused"]),
                                 "released_by": "farmctl.release_work_item_hold",
                             }, sort_keys=True),
                         ),
@@ -25901,6 +25913,7 @@ def release_work_item_hold(
                     "released_at": now,
                     "backup_path": str(backup_path),
                     "backup_sha256": backup_sha,
+                    "backup_reused": bool(backup_resolution["reused"]),
                     "ledger_idempotency_key": ledger_key,
                 })
                 wi_after = conn.execute(
@@ -25948,7 +25961,7 @@ def release_work_item_hold(
         lock.__exit__(None, None, None)
 
     if result.get("released"):
-        result["backup"] = {"path": str(backup_path), "sha256": backup_sha}
+        result["backup"] = backup_resolution
         result["factory_mutation_lock_release"] = lock.release_status
     return result
 

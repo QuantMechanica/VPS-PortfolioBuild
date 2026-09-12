@@ -28,6 +28,11 @@ except ModuleNotFoundError:
     except ModuleNotFoundError:
         from factory_mutation_lock import FactoryMutationLock  # script-style import (sys.path = tools/strategy_farm)
 
+try:
+    from tools.strategy_farm import db_backup_reuse
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import db_backup_reuse  # type: ignore
+
 
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_REPO = Path(r"C:\QM\repo")
@@ -349,45 +354,16 @@ def _resolve_backup(
     skip).
     """
 
-    live_identity = _db_identity(conn, db)
-    if live_identity is not None and reuse_max_age_minutes > 0:
-        reusable = _find_reusable_backup(backup_dir, live_identity, reuse_max_age_minutes)
-        if reusable is not None:
-            backup_path, backup_sha, sidecar_path = reusable
-            cap_receipt = _cap_tool_backup_class(backup_dir, backup_label)
-            return {
-                "path": backup_path,
-                "sha256": backup_sha,
-                "reused": True,
-                "reused_from_sidecar": str(sidecar_path),
-                "identity": live_identity,
-                "identity_established": True,
-                "cap_receipt": cap_receipt,
-            }
-
-    backup_path, backup_sha = _backup(
-        db, backup_dir, timeout_seconds=timeout_seconds, backup_label=backup_label
+    return db_backup_reuse.resolve_backup(
+        conn,
+        db,
+        backup_dir,
+        timeout_seconds=timeout_seconds,
+        reuse_max_age_minutes=reuse_max_age_minutes,
+        backup_label=backup_label,
+        backup_func=_backup,
+        cap_func=_cap_tool_backup_class,
     )
-    # Re-derive identity post-backup if the pre-backup read failed (e.g. a
-    # table was briefly unreadable); a sidecar is written on a best-effort
-    # basis only -- its absence never blocks the backup that already
-    # succeeded, it just means future calls cannot reuse this snapshot.
-    identity_for_sidecar = live_identity if live_identity is not None else _db_identity(conn, db)
-    if identity_for_sidecar is not None:
-        try:
-            _write_identity_sidecar(backup_path, identity_for_sidecar, backup_sha)
-        except OSError:
-            pass
-    cap_receipt = _cap_tool_backup_class(backup_dir, backup_label)
-    return {
-        "path": backup_path,
-        "sha256": backup_sha,
-        "reused": False,
-        "reused_from_sidecar": None,
-        "identity": identity_for_sidecar,
-        "identity_established": identity_for_sidecar is not None,
-        "cap_receipt": cap_receipt,
-    }
 
 
 def _acquire_backup_write_guard(

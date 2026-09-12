@@ -96,6 +96,24 @@ def test_repeated_apply_is_idempotent(tmp_path: Path) -> None:
         assert all(detail["release_on_restart"] is False for detail in details)
 
 
+def test_repeated_apply_reuses_fresh_governed_backup(tmp_path: Path) -> None:
+    db = _db(tmp_path)
+    backup_dir = tmp_path / "backups"
+    first = hold.apply_holds(db, backup_dir, TARGETS, **COMMON)
+    second = hold.apply_holds(db, backup_dir, TARGETS, **COMMON)
+
+    assert first["backup"]["reused"] is False
+    assert second["backup"]["reused"] is True
+    assert second["backup"]["path"] == first["backup"]["path"]
+    assert second["backup"]["sha256"] == first["backup"]["sha256"]
+    backups = list(backup_dir.glob("farm_state_before_governed_hold_*.sqlite"))
+    assert backups == [Path(first["backup"]["path"])]
+    sidecar = backups[0].with_name(backups[0].name + ".identity.json")
+    receipt = json.loads(sidecar.read_text(encoding="utf-8"))
+    assert receipt["backup_sha256"] == first["backup"]["sha256"]
+    assert receipt["source_path"] == str(db.resolve())
+
+
 def test_supersede_hold_code_rearms_in_place_and_records_prior_hold(tmp_path: Path) -> None:
     db = _db(tmp_path)
     with sqlite3.connect(db) as conn:

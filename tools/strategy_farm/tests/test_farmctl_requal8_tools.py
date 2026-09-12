@@ -363,6 +363,43 @@ def test_release_hold_happy_path(tmp_path: Path) -> None:
     assert wi_after == wi_before
 
 
+def test_successor_and_hold_release_reuse_same_fresh_backup(tmp_path: Path) -> None:
+    root, _art = _seed_build_and_smoke(tmp_path)
+    now = farmctl.utc_now()
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "INSERT INTO work_items("
+            "id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,payload_json,created_at,updated_at"
+            ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                HOLD_WID, "backtest", "Q09", EA_ID, SYMBOL, "/tmp/held.set",
+                "pending", None, 0, json.dumps({"held": True}), now, now,
+            ),
+        )
+        conn.execute(
+            "INSERT INTO work_item_holds("
+            "work_item_id,hold_code,reason,active,release_on_restart,created_at,updated_at,released_at,release_note"
+            ") VALUES(?,?,?,1,0,?,?,NULL,NULL)",
+            (HOLD_WID, HOLD_CODE, "awaiting sealed plan", now, now),
+        )
+        conn.commit()
+
+    successor = farmctl.record_q01_smoke_successor(root, BUILD_TASK_ID, SMOKE_WID)
+    released = farmctl.release_work_item_hold(root, HOLD_WID, HOLD_CODE, RELEASE_NOTE)
+
+    assert successor["recorded"] is True
+    assert released["released"] is True
+    assert successor["backup"]["reused"] is False
+    assert released["backup"]["reused"] is True
+    assert released["backup"]["path"] == successor["backup"]["path"]
+    assert released["backup"]["sha256"] == successor["backup"]["sha256"]
+    backups = list((root / "state" / "backups").glob("*.sqlite"))
+    assert backups == [Path(successor["backup"]["path"])]
+    sidecar = backups[0].with_name(backups[0].name + ".identity.json")
+    receipt = json.loads(sidecar.read_text(encoding="utf-8"))
+    assert receipt["backup_sha256"] == successor["backup"]["sha256"]
+
+
 def test_release_hold_cas_mismatch_refuses(tmp_path: Path) -> None:
     root = _seed_hold(tmp_path)
     res = farmctl.release_work_item_hold(root, HOLD_WID, "WRONG_HOLD_CODE", RELEASE_NOTE)

@@ -3683,3 +3683,14 @@ inline compile refused in the live factory for EAs whose source changed after th
 source breakage; nothing re-enqueued). Hardening follow-up (sha pinning of the release receipt) before activation
 via reload chunk 71 with QM_COMPILE_GATE_HOLD_ENABLED=1. Counter 23/25 at 10:12Z (up from 22). Census cells/h
 dropped to ~50 because the fast 41405 matrix is finished and the remaining programs are slower per-year cells.
+
+## 2026-09-12T10:53Z — Shared governed backup reuse (`4ce6ec32`) REVIEW
+
+Extracted the established rolling-window SQLite backup policy into
+`db_backup_reuse.py` and wired compile-wave, both named farmctl writers, and
+`governed_work_item_hold` to it. Writer receipts now expose `reused` and audit
+rows record `backup_reused`; cross-writer tests prove reuse of the same exact
+path/SHA while stale, missing, schema-changed, or disabled cases still fall back
+to a fresh backup. Focused verification: 55 passed; compileall and diff-check
+passed. No production database or backup directory was mutated. Evidence:
+`docs/ops/evidence/2026-09-12_governed_state_backup_reuse_shared_helper.md`.
