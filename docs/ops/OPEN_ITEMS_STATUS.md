@@ -3511,6 +3511,10 @@ RESULT: REVIEW — `17758960` produced four hash-bound read-only receipts and re
 
 RESULT: REVIEW — `ad4eb945` quarantined the six staged build-6182 files, installed a reversible SYSTEM write-deny on the two exact LiveUpdate directories, and added fail-closed handoff evidence to `research_canary.py`. Both dry runs passed clear. The one authorized concurrent pilot produced T12's 2,941.71 / 1.03 / 208 identity but a zero-trade T11 report and 99.9% CPU means; weekday co-scheduling is not approved. The initially tested whole-program firewall rules were removed after they proved too broad; final ACL-only control remains in place for review.
 
+## 2026-09-12 — Q02 stranded three-pair reissue
+
+RESULT: REVIEW — `af3eac6e` was regenerated against live state after two review returns: 3 pairs / 41 INFRA_FAIL rows remain, all `INVALID_EVIDENCE_DEFECT`; valid zero-trade and retire counts are zero. The sole earlier canary `7f4fb7d4` failed before MT5 with `spawn_refusal:compile_gate:COMPILE_FAILED`, so health correctly stayed 3 -> 3. QM5_10505 is compile-gate repair, QM5_12582 evidence/implementation repair, and QM5_20143 history/evidence repair. No second canary or queue mutation occurred.
+
 ## 2026-09-12T~08:44Z (orchestration cycle, Claude) — task `90431302` DEC E2-Mittel: 2 calendar-taint holds released; the "mint 63 reruns" step is gated one layer deeper than expected
 
 Ran `news_calendar_scoped_activation.py` fresh (dry-run): 11/28 pending Q10_NEWS rows
@@ -3543,3 +3547,24 @@ task's literal precondition. No `repair-oos-window --apply` attempted (would mea
 OOS window without real news data). Full detail:
 `docs/ops/evidence/2026-09-12_dec-e4-oos-window-repair-precondition_49a8c88b_execution.md`.
 Task `49a8c88b` stays `IN_PROGRESS`; no `update-task` call.
+
+## 2026-09-12T09:06Z (orchestration cycle, Claude) — re-verification checkpoint on all 3 IN_PROGRESS claude tasks: unchanged, nothing actionable this cycle
+
+Independently re-ran the checks behind the two entries above (routed ~08:33-08:37Z, last
+checkpointed ~08:44-08:46Z), ~20 minutes later, before doing any new work:
+
+- `90431302` (E2-Mittel): re-queried `Q09_NEWS` status for all 12 Q10/Q14-relevant exposed
+  pairs directly against `farm_state.sqlite` — identical mix of `pending` /
+  `done:REVIEW_REQUIRED` as the last checkpoint; still zero with a PASS predecessor, so
+  still nothing mintable. No new admissible calendar-taint holds beyond the 2 already
+  released.
+- `1721f3a1` / `49a8c88b` (E1/E4): re-read `news_calendar_2015_2025.csv` (48,718 rows) —
+  gap between 2025-04-07 and 2026-07-20 unchanged, 0 rows in the 2026-01-01..04-06
+  campaign window. Precondition still unmet.
+
+No `repair-oos-window --apply`, no rerun minting, no `update-task` calls made — would
+either be refused by the tool's own fail-closed checks or, if forced, would not be a valid
+adjudication. All 3 tasks correctly stay `IN_PROGRESS`, blocked on external state
+(Q09_NEWS pipeline throughput; news-calendar backfill) outside these tasks' own
+`allowed_actions`. Re-check next cycle; do not re-litigate from scratch unless the
+calendar file or the 12 pairs' `Q09_NEWS` verdicts change.
