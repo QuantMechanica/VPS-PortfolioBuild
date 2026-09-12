@@ -1,0 +1,56 @@
+{
+  "schema": "qm.paced_fleet.diversity_triage_stop.v1",
+  "recorded_at_utc": "2026-09-12T05:55:52.9336767Z",
+  "branch": "agents/board-advisor",
+  "mission_lane": "diversity_and_funnel_throughput",
+  "outcome": "STOP_CPU_CEILING",
+  "selection_audit": {
+    "priority_1_build": {
+      "result": "NO_ELIGIBLE_NON_DUPLICATE_BUILD",
+      "farmctl_inventory_command": "python tools/strategy_farm/farmctl.py magic-allocation-inventory",
+      "ready_finding_count": 0,
+      "reason": "No approved card reported ready=true with the required deterministic EA identity and active magic allocation. The apparent build backlog is composed of already-built duplicate tasks or cards requiring governed allocation/card repair. No EA source was written."
+    },
+    "priority_2_repair": {
+      "result": "NO_COLLISION_FREE_REPAIR_MUTATED",
+      "highest_value_candidate": "QM5_12943",
+      "instrument": "EURUSD.DWX",
+      "failure_work_item_id": "f322d7b0-173a-4fb8-9784-8d52dbdfef19",
+      "latest_failure": "Q02 INFRA_FAIL: compile_gate:COMPILE_FAILED",
+      "existing_compile_work_item_id": "7017bc20-56bc-45a4-be48-22ddff35b63f",
+      "existing_compile_status": "pending",
+      "existing_compile_activation_held": true,
+      "existing_compile_hold_reason": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+      "reason": "A second compile or repair claim would duplicate already-enqueued held work. Other recent diverse failures either had open Q02/Q03 work, pending farm tasks, active repair ownership, or a later economic verdict."
+    },
+    "priority_3_new_edge": {
+      "result": "NOT_STARTED",
+      "reason": "The binding CPU ceiling stop was reached before any new build or backtest enqueue could be admitted."
+    }
+  },
+  "capacity_preflight": {
+    "command": "Get-Counter '\\Processor(_Total)\\% Processor Time' -SampleInterval 1 -MaxSamples 5",
+    "samples_percent": [
+      99.14,
+      98.93,
+      94.43,
+      98.46,
+      99.62
+    ],
+    "average_percent": 98.12,
+    "maximum_percent": 99.62,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": true,
+    "decision": "Stop immediately; do not enqueue compile or backtest work."
+  },
+  "build_guard": {
+    "mq5_written": false,
+    "framework_input_pin_audit_required": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "farm_db_mutated": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "portfolio_gate_touched": false
+  }
+}
