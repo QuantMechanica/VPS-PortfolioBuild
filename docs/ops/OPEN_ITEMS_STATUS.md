@@ -3969,3 +3969,11 @@ crashed cells landed INFRA_FAIL G1_NO_REAL_TICKS because the worker Model-1 clas
 Order after the fix: chunk 72 reload -> one append-only rerun -> PRESCREEN_MEASURED visible -> queue-owner lever
 back to 2026-08-18T23:00 -> release the 347 PRESCREEN_SCHEMA_FIX_PENDING holds -> calibration (~4 h) -> FN
 estimate -> Nachtrag D signature. Review round 7 closed otherwise (19 rows); compile waves 1+2 released 20 rows.
+
+## 2026-09-12T21:30Z — OWNER-DEC-NO-STOP-AT-25-20260912
+
+OWNER chat ~21:2xZ: "Wenn die 25 erreicht sind nicht stoppen! Wir arbeiten, bis die Queue auf 0 ist und wir alle
+Strategie Ideen durch die Pipeline und gegebenenfalls optimiert haben!" Reading: the counter target 25 (Drive-to-25,
+OWNER-DEC-A1) is a milestone, not a stop condition; the factory keeps running until the work-item queue is empty
+and every strategy idea has a terminal pipeline verdict (Q02-Q13) and, where eligible, the optimization branch
+(Q14-Q16). No throttling of backtests at 25; the counter keeps counting.
