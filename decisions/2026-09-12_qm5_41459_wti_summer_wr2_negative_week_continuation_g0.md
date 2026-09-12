@@ -35,11 +35,10 @@ infrastructure-label choice, not an observed-result strategy adjustment.
 
 ## Allocation
 
-The approved identity is eligible for atomic allocation through `farmctl reserve-ea-ids`.
-Magic allocation remains a separate build prerequisite.
+The atomic `farmctl reserve-ea-ids` command allocated `QM5_41459` to the approved strategy
+identity on 2026-09-12. Magic allocation remains a separate build prerequisite.
 
 ## Safety Boundary
 
 No portfolio gate, portfolio admission, live or deploy manifest, `T_Live`, AutoTrading, terminal
 control, manual backtest, or live operation is authorized.
-
