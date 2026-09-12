@@ -3579,3 +3579,11 @@ stranded pairs on the third submission with an orchestrator addendum (no pending
 gated by 57fc8b42). OWNER question "Wie updaten wir T1-T12": fleet + T_Live + FTMO on build 6182 since 2026-09-06
 (uncontrolled LiveUpdate), T11/T12 on 6140; governed update runbook proposed (golden copy, reproducibility check
 on the reference cell, fleet ceremony under Factory OFF, tester build in the evidence contract), awaiting OWNER.
+
+## 2026-09-12T13:30Z — OWNER: T11/T12 controlled update in the weekend window; Nachtrag D waits for the calibration
+
+OWNER chat ~13:2xZ. Codex ticket (Sol, P85) = governed MT5 update runbook (docs/ops/MT5_TERMINAL_UPDATE_RUNBOOK.md)
++ first application on T11/T12 (6140 -> 6182, guard lifted and re-armed, identity smoke on 6182 vs the 6140
+result, then the concurrent pilot under ACL-only control); fleet/T_Live/FTMO untouched; window until
+2026-09-13T20:00Z. Nachtrag D stays on the board as WAITING for the FN measurement (blocked by the PRESCREEN
+schema fix 519c11fe).
