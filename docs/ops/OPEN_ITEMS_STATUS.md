@@ -3781,3 +3781,11 @@ all workers, staggered) sets QM_COMPILE_GATE_HOLD_ENABLED=1 on top of the chunk-
 EAs whose source changed become exact holds COMPILE_GATE_BROKEN_SOURCE released by the next authenticated
 COMPILE_OK, instead of terminal INFRA_FAIL rows. e37931c2 APPROVED (monthly tick-data refresh control, doubly
 Default-OFF, per-execution OWNER card pre-registered on the board, blocked until P3 37/37).
+
+## 2026-09-12T16:40Z — fda6370f APPROVED: legacy-calendar Option B already executed via QM5_41394; REVIEW empty
+
+QM5_41394 (weiss-ichi2-ma-calendar-r1) is the governed new-identity successor of QM5_11167 (shared source,
+COMPILE_OK 1fb4d6f0, Q02 4 PASS + SP500 pending); no duplicate rebuild. 35-row affected scope (holds TAINTED 21,
+TIMESTAMP_DEFECT 6, SPAWN_SILENT_ABORT 3, AWAITING_SEALED_PLAN 2) and the 8-source cohort plan reconcile with the
+DB. Held legacy rows advance only through their own successor identities; cohort stage 1 (11196, 10148) gets a
+follow-up ticket once 41394 clears Q02 on SP500. Review round 5 closed (fda6370f, 09a32b16, e37931c2); 0 in REVIEW.
