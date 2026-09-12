@@ -3933,3 +3933,11 @@ verification + retry inside the purge. D: swung 73 -> 39.9 -> 67 -> 60 GB betwee
 conversion, 16.9 GB of it the superseded 79c942ac root). The superseded root was deleted (reproducible from the
 4.6 GB raw backfill; inventory hashes live in docs/ops/evidence). Rule for the lane: one scratch root at a time,
 superseded roots deleted by the ticket that supersedes them; state the scratch budget in every P2/P3 ticket.
+
+## 2026-09-12T20:20Z — RESULT: five re-queued rows closed as SUPERSEDED / NO_ACTION (orchestrator consolidated RESULT)
+
+Verified read-only against work_items (Sonnet batch review): 32d9b93a QM5_1236 EURUSD superseded by disposition
+cd22436c (Q02 INVALID, OWNER-DEC-STRANDED-182); 076c4a69 QM5_1229 EURCHF superseded by successor 8faa0e69 (Q02
+FAIL MIN_TRADES_NOT_MET); 1840919d QM5_11619 AUDUSD/EURUSD/GBPUSD have later canonical Q02/Q04 dispositions;
+f790fa19 QM5_1192 XTIUSD invalidated by f61cb6d8; 32f4b9dc QM5_10008 GBPUSD invalidated by cec8911f. No row
+enqueued or changed by these tasks. The workers omitted the RESULT lines; recorded here in one entry.
