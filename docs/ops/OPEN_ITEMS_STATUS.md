@@ -3815,3 +3815,13 @@ or release it. A fresh interactive marker skips before acquisition with a JSONL 
 hashes now reserve one reusable evidence artifact and the prompt forbids duplicate timestamped evidence,
 OPEN_ITEMS entries, or no-change commits. Focused launcher/backend tests: 212 passed; Claude dry-run PASS. No
 model, terminal, worker, queue, trading, T_Live, or AutoTrading action occurred.
+
+## 2026-09-12T17:10Z — Reviews: FTMO slippage stream APPROVED partial (2/4), local-agent lane contract APPROVED
+
+f8ffb1c5: read-only collector (prove_running gate, no order/terminal calls); GBPUSD/EURUSD complete with
+request-time quotes (2 fills each), USDCAD/USOIL.cash MISSING_NO_FILL = no deals in the capture-only M13 book this
+week; Monday-start window honoured; compare.py cost_eligible 2/4, zero incumbents selected. cbacb01b: MetaTester
+local-agent pass evidence contract (docs/ops/MT5_LOCAL_AGENT_LANE_CONTRACT_2026-09-12.md) -- the standard
+optimizer stays PRESCREEN-only; MEASURED would need byte-exact per-pass evidence and a 20/20 parity canary that
+does not exist. OWNER takeaway: the optimizer can pre-screen faster, never replace per-cell real-tick backtests.
+Chunk 71 finished 13:20Z (compile-gate hold active fleet-wide). Pending review: 1061ff77 (lease race fix).
