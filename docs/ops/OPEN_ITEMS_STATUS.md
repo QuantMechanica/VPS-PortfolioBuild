@@ -3494,3 +3494,7 @@ measurement run (2026-09-09) and was stale; 3032534e handed to PIPELINE. Codex 7
 against the T1 tick tail + manifest proposal; the archive write remains an orchestrator step (governed pause).
 f239a2d9 (BLOCKED batch-02) APPROVED after the one-line lede fix by the orchestrator: BLOCKED 103 -> 69.
 Review round complete: 0 rows in REVIEW.
+
+## 2026-09-12 — Fleet clock audit part 2
+
+RESULT: REVIEW — `ea9e3c61` traced all 93 prior MATCH EAs with source hashes and file:line evidence: 85 market/no-pending controls, 6 possible opposite-only survivors, 1 explicit skip, and 1 undefined strategy-level crossed-price rule. Ranked top 10 and governed re-measurement proposal recorded; zero work items created.
