@@ -1985,3 +1985,18 @@ symbols this time) or `COMPLETE` if all 37 happen to have valid raw data this ru
 claimed) or does it need the explicit sign-off every checkpoint since 04:07Z withheld?** No
 `update-task` call made on `3032534e` this entry either way -- no top-level acceptance
 criterion is newly met regardless of the answer. Task remains `IN_PROGRESS`.
+
+**Checkpoint 2026-09-12T07:17Z (real UTC via `date -u`):** genuinely new: work item `9affa7ee`
+(the diagnostic flagged above pending OWNER's authorization ruling) transitioned from queued
+to `status=active`, `claimed_by=T1`, `updated_at=2026-09-12T07:11:37Z` -- the resident T1
+worker claimed and is now running it via its ordinary factory claim, as anticipated in the
+prior entry's disposition note. This confirms the predicted downstream effect but does not
+resolve the flagged authorization question; still no `update-task` call, still no top-level
+acceptance criterion met. `bb814520`/`dfc60103` gate unchanged: `QM5_11196` Q10_NEWS still
+`verdict=REVIEW_REQUIRED`, `updated_at=2026-09-10T22:58:05Z`, byte-identical to every prior
+checkpoint. `QM5_41394` XAUUSD Q04 (`5f3f323d`) still `pending`/unclaimed, `updated_at`
+unchanged at `2026-09-11T10:51:37Z` (~20.4h stale, still ordinary queue depth not this task's
+authority). `farmctl health` FAIL14/WARN18/OK54 -- same chronic FAIL category set as all prior
+baselines, no new category. Codex weekly quota now 92% used/8% remaining/`allowed:false`
+(`class_threshold_exceeded`), consistent trend from 89% at the last reading. All three tasks
+remain `IN_PROGRESS`.
