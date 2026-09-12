@@ -3296,6 +3296,17 @@ Correction of an earlier statement: the 95 "gemini" BLOCKED rows were agy-era BU
 qp-stress-reversal-sp500, demark-td-*), not research; they are dispositioned by the same rules. Final applied
 counts follow in the next entry.
 
+## 2026-09-12T08:50Z — RESULT BLOCKED sweeper batch 01: REVIEW (114 -> 103)
+
+Default-read-only `blocked_agent_task_sweeper.py` classifies the complete BLOCKED census and gates every
+mutation by explicit class and positive batch limit. Governed registry allocation added 9 EAs / 34 magic rows;
+with one already-ready row, 10 build tasks returned to TODO through the ordinary predicate. One terminal review
+closed FAILED. Remaining: 27 allocation candidates, 50 exact card/identity holds, 24 dependency/OWNER holds,
+1 next-batch-ready row, and 1 untouched video row. A concurrent-scope race on 74 already-requeued agy rows was
+fully reversed to TODO with a narrow second append-only journal entry; no verdict/artifact was overwritten.
+Tests: 15 PASS; resolver dry-run 18,280 kept / 0 dropped; status-aware collisions 0. Evidence:
+`docs/ops/evidence/2026-09-12_blocked_agent_task_backlog_disposition.md`.
+
 ## 2026-09-12T08:35Z — RESULT OWNER-DEC-BACKLOG-20260912 applied (488 rows, 0 refusals)
 
 Journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl: ARCHIVE 172 (-> FAILED with verdict

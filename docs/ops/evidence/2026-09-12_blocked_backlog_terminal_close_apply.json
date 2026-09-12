@@ -1,0 +1,18 @@
+{
+  "applied": [
+    {
+      "class": "TERMINAL_CLOSE",
+      "reason": "close_text_records_failed_review",
+      "task_id": "1b00f708-37d1-4a9d-b344-a051cde8c809",
+      "to_state": "FAILED"
+    }
+  ],
+  "applied_count": 1,
+  "apply_classes": [
+    "TERMINAL_CLOSE"
+  ],
+  "limit": 10,
+  "mode": "apply",
+  "schema": "qm.blocked-agent-task-sweeper/v1",
+  "skipped": []
+}

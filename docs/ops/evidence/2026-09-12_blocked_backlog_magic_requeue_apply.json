@@ -1,0 +1,249 @@
+{
+  "applied": [
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "5fa16349-5252-448a-8f5d-8a7d77306f9b",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "ab03acbe-5428-45e0-ad87-876f07591e73",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "0568432f-2e9e-4ebc-9a91-808eac072508",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "4382291e-4a39-4eda-a38d-745805885817",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "aca126f7-1caf-4769-828a-129b2e315d4a",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "2cdbbe4e-095e-4f53-89a2-243ecc4ae615",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "7b3784ed-633a-45c9-9762-707630923a80",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "52ee2c30-429a-4eed-b0e5-b00379fcd0f0",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "2189218c-3a65-4ca3-baba-5d63d0401d25",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "973e3dce-3504-408a-8c8e-89de1eab6366",
+      "to_state": "TODO"
+    }
+  ],
+  "applied_count": 10,
+  "apply_classes": [
+    "MAGIC_PRECONDITION"
+  ],
+  "limit": 10,
+  "mode": "apply",
+  "schema": "qm.blocked-agent-task-sweeper/v1",
+  "skipped": [
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "d68dcd1b-0f7e-4fd8-b033-4815f0811c97"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "fddbb404-f6fe-46ee-9d1e-1589d07be3d9"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "932dde11-f11f-41c1-83df-c7afd521bd3e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "0a9b9637-30c5-4de4-8833-809ea92d5cbd"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "123a5ce6-5595-4f74-8ee9-3d591a168ad9"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "1477e9b6-1288-4a1f-bf79-d61c3a185c23"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "5e7ee21a-5fe8-48e9-870f-18bec88fc5ce"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "c6387b4b-f0b0-4021-8606-6f68a35a79f2"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "6cf3af36-e15e-4af0-857b-d0f99eefe6f6"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "bd4171e3-56e3-4d5b-96a6-684a49f2b8f4"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "bff7eda1-2b00-4170-8a02-1afbffcd5c70"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "c15f2390-4c8e-432d-bcfa-600807db676b"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "ae818e35-7732-4ec4-89ba-5d353cdbcf3e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "d90e7498-f47f-4dba-8d2a-674bb0569909"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "04125547-feee-4d50-9423-eac60e1eec8a"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "70805206-74fb-455f-876f-11776e8c5621"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "13d9b822-c4ed-489e-9f32-27accae6ff5f"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "3129e748-59f4-445a-9d11-12f6fca5fd97"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "69bced3f-e859-43bb-bf24-60f17e23e9d0"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "30bbd5e2-ea7b-46d3-96a1-5cd0050117d8"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "b1bcaee2-efb6-4226-9578-bff538852f87"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "8511bd8a-6f24-4e78-a416-40699fcf9d0d"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "b5905d19-0976-41e0-9b5d-9b170993c8db"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "fcd84ecd-cb3d-4f2c-be69-6d34bc940761"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "99efdb31-1df6-4aa5-9102-bf7e250c149f"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "5fca8ef3-c38a-4e48-bdf8-0325a297434d"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "8d108839-29ec-4569-8039-109f7bbfcb15"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "ef0f2333-e00f-41ce-9ecd-5d9f540cf3be"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "2201ca64-2342-41f6-97ea-f34a31b48d92"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "1fd88db4-fbd1-49a2-83c6-293bdf9cb11b"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "5297d50e-314d-4557-8f14-9463bcf7fc3e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "fcaeb2ee-6c92-4d57-8a8b-fe71deb585e9"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "afe18aff-644c-43da-84b3-7e725212ba61"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "d76d758e-d4d6-4898-a958-15e9bdf4e853"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "3fdd2c8d-4e16-4a92-bb8a-7258a674a68b"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "8262515b-4563-4db8-9c4e-7b4b4927e178"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "f1d3f7a3-1999-48e5-ada5-caac982e382d"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "181b8a00-f226-4240-8649-a4b246f8c9ad"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "084be1d0-8d08-4c36-b672-5ff5befdd89e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "6a79738c-7643-4d5b-95e3-d8906b029178"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "35c9e6ad-0be4-4539-8572-554fb390b4a6"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "3cd229bb-8900-4dac-9367-3dbfaf84f67c"
+    },
+    {
+      "reason": "not_ready:HOLD:registry_identity_conflict",
+      "task_id": "f99873db-5daa-4579-8c4d-cdc8bb0d159c"
+    },
+    {
+      "reason": "not_ready:HOLD:registry_identity_conflict",
+      "task_id": "cc5c1221-1289-4d5a-8a18-2d5d15bd63cd"
+    }
+  ]
+}
