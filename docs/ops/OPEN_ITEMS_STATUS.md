@@ -3587,3 +3587,12 @@ OWNER chat ~13:2xZ. Codex ticket (Sol, P85) = governed MT5 update runbook (docs/
 result, then the concurrent pilot under ACL-only control); fleet/T_Live/FTMO untouched; window until
 2026-09-13T20:00Z. Nachtrag D stays on the board as WAITING for the FN measurement (blocked by the PRESCREEN
 schema fix 519c11fe).
+
+## 2026-09-12T09:20Z — Q-backup calendar continuity acknowledgment (`3b334176`) REVIEW
+
+The irrecoverable 2026-08-18 nightly gap now has a governed record with its
+DriveFS-mount root cause and durable evidence path. The health check accepts
+only structurally valid records whose evidence exists and continues to fail
+closed on malformed acknowledgments. Current `backup_calendar_continuity=OK`;
+focused tests: 5 passed. Evidence:
+`docs/ops/evidence/2026-09-12_backup_calendar_continuity_acknowledgment.md`.

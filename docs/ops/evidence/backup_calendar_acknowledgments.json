@@ -1,0 +1,12 @@
+{
+  "schema": "qm.backup-calendar-acknowledgments/v1",
+  "acknowledgments": [
+    {
+      "date": "2026-08-18",
+      "acknowledged_at_utc": "2026-09-12T09:20:00Z",
+      "authority": "router-task:3b334176-a874-4003-b411-08e5fc1ab0bf",
+      "reason": "The scheduled qm-admin backup session could not see the GoogleDriveFS G: mount after its bounded 15-minute wait. Later nightly backups completed successfully; this record acknowledges the irrecoverable calendar gap without representing it as a successful backup.",
+      "evidence_path": "docs/ops/evidence/2026-08-22_sp_d6_backup_gap_root_cause_and_alarm.md"
+    }
+  ]
+}

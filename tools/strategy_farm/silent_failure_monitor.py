@@ -210,6 +210,9 @@ BACKUP_LOG = REPORTS_STATE / "backup_nightly.log"
 LIVE_UPTIME_STATE = REPORTS_STATE / "live_uptime_watchdog.json"
 LIVE_LAUNCHER_EVENTS = REPORTS_STATE / "live_launcher_events.jsonl"
 REPO_ROOT = Path(__file__).resolve().parents[2]
+BACKUP_CONTINUITY_ACKNOWLEDGMENTS = (
+    REPO_ROOT / "docs" / "ops" / "evidence" / "backup_calendar_acknowledgments.json"
+)
 FTMO_LAUNCHER_VERIFIER = REPO_ROOT / "tools" / "strategy_farm" / "verify_ftmo_demo_instrumentation_contract.ps1"
 TLIVE_LAUNCHER_VERIFIER = REPO_ROOT / "tools" / "strategy_farm" / "prepare_dxz_v2_liveops_profile.ps1"
 
@@ -885,6 +888,7 @@ def check_backup_calendar_continuity(
     *,
     now: dt.datetime | None = None,
     start_date: dt.date | None = None,
+    acknowledgments_path: Path | None = None,
 ) -> dict:
     """Alarm when any expected nightly calendar date lacks a successful end.
 
@@ -944,7 +948,54 @@ def check_backup_calendar_continuity(
     while cursor <= expected_end:
         expected_dates.append(cursor)
         cursor += dt.timedelta(days=1)
-    missing = [day for day in expected_dates if day not in successes]
+    acknowledgment_file = acknowledgments_path or BACKUP_CONTINUITY_ACKNOWLEDGMENTS
+    acknowledged: dict[dt.date, dict[str, str]] = {}
+    acknowledgment_error: str | None = None
+    if acknowledgment_file.is_file():
+        try:
+            payload = json.loads(acknowledgment_file.read_text(encoding="utf-8"))
+            if payload.get("schema") != "qm.backup-calendar-acknowledgments/v1":
+                raise ValueError("unsupported acknowledgment schema")
+            records = payload.get("acknowledgments")
+            if not isinstance(records, list):
+                raise ValueError("acknowledgments must be an array")
+            for index, record in enumerate(records):
+                if not isinstance(record, dict):
+                    raise ValueError(f"acknowledgments[{index}] must be an object")
+                day = dt.date.fromisoformat(str(record.get("date", "")))
+                reason = str(record.get("reason", "")).strip()
+                evidence_path = str(record.get("evidence_path", "")).strip()
+                acknowledged_at = str(record.get("acknowledged_at_utc", "")).strip()
+                authority = str(record.get("authority", "")).strip()
+                if not all((reason, evidence_path, acknowledged_at, authority)):
+                    raise ValueError(
+                        f"acknowledgments[{index}] requires reason, evidence_path, "
+                        "acknowledged_at_utc, and authority"
+                    )
+                parsed_at = dt.datetime.fromisoformat(acknowledged_at.replace("Z", "+00:00"))
+                if parsed_at.tzinfo is None:
+                    raise ValueError(f"acknowledgments[{index}] timestamp lacks UTC offset")
+                evidence = Path(evidence_path)
+                if not evidence.is_absolute():
+                    evidence = REPO_ROOT / evidence
+                if not evidence.is_file():
+                    raise ValueError(
+                        f"acknowledgments[{index}] evidence is missing: {evidence}"
+                    )
+                if day in acknowledged:
+                    raise ValueError(f"duplicate acknowledgment date: {day.isoformat()}")
+                acknowledged[day] = {
+                    "reason": reason,
+                    "evidence_path": str(evidence.resolve()),
+                    "acknowledged_at_utc": acknowledged_at,
+                    "authority": authority,
+                }
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            acknowledgment_error = str(exc)
+            acknowledged = {}
+    missing = [
+        day for day in expected_dates if day not in successes and day not in acknowledged
+    ]
     if missing:
         missing_text = ",".join(day.isoformat() for day in missing)
         fatal_details = [
@@ -953,6 +1004,8 @@ def check_backup_calendar_continuity(
             if fatal_by_date.get(day)
         ]
         suffix = f"; logged causes={'; '.join(fatal_details)}" if fatal_details else ""
+        if acknowledgment_error:
+            suffix += f"; acknowledgment record invalid={acknowledgment_error}"
         return finding(
             "backup_calendar_continuity",
             FAIL,
@@ -962,13 +1015,21 @@ def check_backup_calendar_continuity(
             hint="Investigate the named calendar dates; a later healthy run does not close the gap.",
             evidence=str(path),
         )
+    acknowledged_dates = sorted(
+        day.isoformat() for day in acknowledged if activation <= day <= expected_end
+    )
+    acknowledged_suffix = (
+        f"; governed acknowledgments={','.join(acknowledged_dates)}"
+        if acknowledged_dates else ""
+    )
     return finding(
         "backup_calendar_continuity",
         OK,
-        f"every nightly date {activation.isoformat()}..{expected_end.isoformat()} has failures=0",
+        f"every nightly date {activation.isoformat()}..{expected_end.isoformat()} "
+        f"has failures=0 or a governed acknowledgment{acknowledged_suffix}",
         value=0,
         threshold=0,
-        evidence=str(path),
+        evidence=f"{path}; {acknowledgment_file}",
     )
 
 
