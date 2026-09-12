@@ -8195,6 +8195,16 @@ def _summary_matches_expected_evidence(summary: dict[str, Any], payload: dict[st
 # closes the QM5_10005-style ex5_missing failure mode at the dispatch boundary
 # instead of letting the backtest fail with FATAL missing EA binary downstream.
 COMPILE_EA_SCRIPT = REPO_ROOT / "tools" / "strategy_farm" / "compile_ea.py"
+COMPILE_GATE_HOLD_ENV = "QM_COMPILE_GATE_HOLD_ENABLED"
+COMPILE_GATE_HOLD_CODE = "COMPILE_GATE_BROKEN_SOURCE"
+COMPILE_GATE_HOLD_PHASES = ("Q02", "Q03", "Q04")
+
+
+def compile_gate_hold_enabled(environ: Mapping[str, str] | None = None) -> bool:
+    """Return whether compile-refusal hold/release behavior is activated."""
+
+    source = os.environ if environ is None else environ
+    return str(source.get(COMPILE_GATE_HOLD_ENV, "")).strip() == "1"
 
 
 def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
@@ -8218,6 +8228,19 @@ def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
                         "ex5_size": ex5_stat.st_size}
         except OSError:
             pass
+
+    # The reviewed hold path is queue-only: dispatch never invokes MetaEditor
+    # or include mirroring itself. A governed COMPILE_EA row must produce the
+    # authenticated receipt that later releases the pending Q02/Q03/Q04 rows.
+    if compile_gate_hold_enabled():
+        return {
+            "allowed": False,
+            "verdict": "COMPILE_EA_REQUIRED",
+            "source": "compile_queue",
+            "reason": "source is newer than the cached EX5 or the EX5 is missing",
+            "mq5_path": str(mq5),
+            "ex5_path": str(ex5),
+        }
 
     # Source changed or ex5 missing — call compile_ea.py for fresh build + validator
     if not COMPILE_EA_SCRIPT.exists():
@@ -8250,6 +8273,133 @@ def _compile_gate_check(ea_dir_name: str) -> dict[str, Any]:
     except json.JSONDecodeError as exc:
         return {"allowed": False, "verdict": "COMPILE_BAD_JSON",
                 "source": "subprocess", "error": repr(exc)[:200]}
+
+
+def _authenticated_compile_ok_receipt(row: Mapping[str, Any]) -> dict[str, str] | None:
+    """Authenticate one COMPILE_OK row against its immutable evidence receipt."""
+
+    evidence_path = Path(str(row["evidence_path"] or ""))
+    if not evidence_path.is_file():
+        return None
+    try:
+        receipt = json.loads(evidence_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(receipt, dict):
+        return None
+    if (
+        receipt.get("schema_version") != "qm.compile-ea-evidence/v1"
+        or receipt.get("work_item_id") != row["id"]
+        or receipt.get("ea_id") != row["ea_id"]
+        or receipt.get("success") is not True
+        or receipt.get("compile_result") != "PASS"
+        or receipt.get("build_check_result") != "PASS"
+    ):
+        return None
+    return {
+        "work_item_id": str(row["id"]),
+        "evidence_path": str(evidence_path.resolve()),
+        "evidence_sha256": _sha256_file(evidence_path),
+        "updated_at": str(row["updated_at"]),
+    }
+
+
+def reconcile_compile_gate_holds(
+    root: Path,
+    *,
+    apply: bool = False,
+    released_at: str | None = None,
+) -> dict[str, Any]:
+    """Plan or release exact compile-gate holds after authenticated COMPILE_OK.
+
+    This service never changes a work-item verdict. A held pending row becomes
+    claimable only when a newer same-EA COMPILE_EA row and its immutable receipt
+    both authenticate as PASS.
+    """
+
+    init_db(root)
+    now = released_at or utc_now()
+    planned: list[dict[str, str]] = []
+    with connect(root) as conn:
+        if apply:
+            conn.execute("BEGIN IMMEDIATE")
+        held = conn.execute(
+            """
+            SELECT h.work_item_id,h.created_at,w.ea_id,w.phase
+            FROM work_item_holds h
+            JOIN work_items w ON w.id=h.work_item_id
+            WHERE h.hold_code=? AND h.active=1 AND w.status='pending'
+            ORDER BY w.ea_id,h.created_at,h.work_item_id
+            """,
+            (COMPILE_GATE_HOLD_CODE,),
+        ).fetchall()
+        receipt_cache: dict[tuple[str, str], dict[str, str] | None] = {}
+        for hold in held:
+            candidates = conn.execute(
+                """
+                SELECT id,ea_id,evidence_path,updated_at
+                FROM work_items
+                WHERE ea_id=? AND phase='COMPILE_EA'
+                  AND status='done' AND verdict='COMPILE_OK'
+                  AND updated_at>?
+                ORDER BY updated_at DESC,id DESC
+                """,
+                (hold["ea_id"], hold["created_at"]),
+            ).fetchall()
+            receipt = None
+            for candidate in candidates:
+                cache_key = (str(candidate["ea_id"]), str(candidate["id"]))
+                if cache_key not in receipt_cache:
+                    receipt_cache[cache_key] = _authenticated_compile_ok_receipt(candidate)
+                receipt = receipt_cache[cache_key]
+                if receipt is not None:
+                    break
+            if receipt is None:
+                continue
+            plan = {
+                "work_item_id": str(hold["work_item_id"]),
+                "ea_id": str(hold["ea_id"]),
+                "phase": str(hold["phase"]),
+                "compile_work_item_id": receipt["work_item_id"],
+                "compile_evidence_path": receipt["evidence_path"],
+                "compile_evidence_sha256": receipt["evidence_sha256"],
+            }
+            planned.append(plan)
+            if apply:
+                note = (
+                    f"authenticated COMPILE_OK {receipt['work_item_id']} "
+                    f"receipt_sha256={receipt['evidence_sha256']}"
+                )
+                cursor = conn.execute(
+                    """
+                    UPDATE work_item_holds
+                    SET active=0,updated_at=?,released_at=?,release_note=?
+                    WHERE work_item_id=? AND hold_code=? AND active=1
+                    """,
+                    (now, now, note, hold["work_item_id"], COMPILE_GATE_HOLD_CODE),
+                )
+                if cursor.rowcount != 1:
+                    raise RuntimeError(
+                        f"compile-gate hold release CAS failed: {hold['work_item_id']}"
+                    )
+                event(
+                    conn,
+                    "work_item",
+                    str(hold["work_item_id"]),
+                    "compile_gate_hold_released",
+                    plan,
+                )
+        if apply:
+            conn.commit()
+    return {
+        "enabled": compile_gate_hold_enabled(),
+        "apply": apply,
+        "hold_code": COMPILE_GATE_HOLD_CODE,
+        "held_count": len(held),
+        "release_ready_count": len(planned),
+        "released_count": len(planned) if apply else 0,
+        "rows": planned,
+    }
 
 
 def _compile_path_identity(path: Path) -> str:
@@ -10690,6 +10840,111 @@ def record_work_item_spawn_refusal(
                 "spawn refusal evidence requires the caller's active claim: "
                 f"work_item={work_item_id} terminal={terminal}"
             )
+        if (
+            compile_gate_hold_enabled()
+            and reason.startswith("compile_gate:")
+            and str(current["phase"]) in COMPILE_GATE_HOLD_PHASES
+        ):
+            original_payload = str(item_row["payload_json"] or "{}")
+            original_evidence = item_row["evidence_path"]
+            cursor = conn.execute(
+                """
+                UPDATE work_items
+                SET status='pending',verdict=NULL,claimed_by=NULL,
+                    evidence_path=?,payload_json=?,updated_at=?
+                WHERE id=? AND status='active' AND upper(claimed_by)=upper(?)
+                """,
+                (original_evidence, original_payload, now, work_item_id, terminal),
+            )
+            if cursor.rowcount != 1:
+                conn.rollback()
+                raise RuntimeError(
+                    f"compile-gate deferral claim changed: {work_item_id}"
+                )
+            retract_claim_ledger(conn, terminal, work_item_id, now)
+            pending = conn.execute(
+                """
+                SELECT id,phase FROM work_items
+                WHERE ea_id=(SELECT ea_id FROM work_items WHERE id=?)
+                  AND status='pending' AND phase IN (?,?,?)
+                ORDER BY created_at,id
+                """,
+                (work_item_id, *COMPILE_GATE_HOLD_PHASES),
+            ).fetchall()
+            held_ids: list[str] = []
+            conflicted_ids: list[str] = []
+            hold_reason = (
+                f"{reason}; originating_work_item={work_item_id}; "
+                "release requires a newer authenticated COMPILE_OK receipt for the same EA"
+            )
+            for pending_row in pending:
+                hold_cursor = conn.execute(
+                    """
+                    INSERT INTO work_item_holds(
+                      work_item_id,hold_code,reason,active,release_on_restart,
+                      created_at,updated_at
+                    ) VALUES(?,?,?,1,0,?,?)
+                    ON CONFLICT(work_item_id) DO UPDATE SET
+                      hold_code=excluded.hold_code,reason=excluded.reason,active=1,
+                      release_on_restart=0,created_at=excluded.created_at,
+                      updated_at=excluded.updated_at,released_at=NULL,release_note=NULL
+                    WHERE work_item_holds.active=0
+                       OR work_item_holds.hold_code=excluded.hold_code
+                    """,
+                    (
+                        pending_row["id"], COMPILE_GATE_HOLD_CODE, hold_reason,
+                        now, now,
+                    ),
+                )
+                if hold_cursor.rowcount == 1:
+                    held_ids.append(str(pending_row["id"]))
+                    event(
+                        conn,
+                        "work_item",
+                        str(pending_row["id"]),
+                        "compile_gate_hold_installed",
+                        {
+                            "hold_code": COMPILE_GATE_HOLD_CODE,
+                            "originating_work_item_id": work_item_id,
+                            "reason": reason,
+                        },
+                    )
+                else:
+                    conflicted_ids.append(str(pending_row["id"]))
+            if work_item_id not in held_ids:
+                conn.rollback()
+                raise RuntimeError(
+                    "compile-gate deferral could not hold its originating work item"
+                )
+            refusal = {
+                "deferred_at_utc": now,
+                "phase": str(current["phase"]),
+                "reason": reason,
+                "terminal": str(terminal).upper(),
+                "hold_code": COMPILE_GATE_HOLD_CODE,
+                "held_work_item_ids": held_ids,
+                "hold_conflict_work_item_ids": conflicted_ids,
+                "compile_gate": spawn.get("compile_gate"),
+            }
+            event(
+                conn,
+                "work_item",
+                work_item_id,
+                "compile_gate_spawn_deferred",
+                refusal,
+            )
+            conn.commit()
+            return {
+                "work_item_id": work_item_id,
+                "verdict": None,
+                "verdict_reason": reason,
+                "event": "compile_gate_spawn_deferred",
+                "recorded_at_utc": now,
+                "hold_code": COMPILE_GATE_HOLD_CODE,
+                "held_count": len(held_ids),
+                "held_work_item_ids": held_ids,
+                "hold_conflict_work_item_ids": conflicted_ids,
+            }
         try:
             payload = json.loads(current["payload_json"] or "{}")
         except (TypeError, json.JSONDecodeError):
@@ -13525,6 +13780,19 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
         }
         _dispatch_diag("dispatch_skip_locked", result)
         return result
+    compile_gate_holds = (
+        reconcile_compile_gate_holds(root, apply=True, released_at=started_iso)
+        if compile_gate_hold_enabled()
+        else {
+            "enabled": False,
+            "apply": False,
+            "hold_code": COMPILE_GATE_HOLD_CODE,
+            "held_count": 0,
+            "release_ready_count": 0,
+            "released_count": 0,
+            "rows": [],
+        }
+    )
     _dispatch_diag("dispatch_start", {"timeout_minutes": timeout_minutes})
     running_mt5_terminals = _running_mt5_terminals()
 
@@ -14193,7 +14461,11 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
                     failed_at=started_iso,
                 )
                 actions.append({
-                    "action": "spawn_failed",
+                    "action": (
+                        "compile_gate_deferred"
+                        if refusal_evidence.get("event") == "compile_gate_spawn_deferred"
+                        else "spawn_failed"
+                    ),
                     "item_id": item["id"],
                     "reason": spawn.get("reason"),
                     "refusal_evidence": refusal_evidence,
@@ -14343,6 +14615,7 @@ def dispatch_work_items(root: Path, timeout_minutes: float = 60.0) -> dict[str, 
 
     result = {
         "actions": actions,
+        "compile_gate_holds": compile_gate_holds,
         "busy_terminals": sorted(busy_terminals),
         "free_terminals": [t for t in factory_terminals if t not in busy_terminals],
         "scanned_at": started_iso,

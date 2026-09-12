@@ -3596,3 +3596,13 @@ only structurally valid records whose evidence exists and continues to fail
 closed on malformed acknowledgments. Current `backup_calendar_continuity=OK`;
 focused tests: 5 passed. Evidence:
 `docs/ops/evidence/2026-09-12_backup_calendar_continuity_acknowledgment.md`.
+
+## 2026-09-12T09:58Z — Compile-gate refusal holds (`57fc8b42`) REVIEW
+
+Added the Default-OFF exact `COMPILE_GATE_BROKEN_SOURCE` hold: pending
+Q02/Q03/Q04 rows are restored without a verdict after a compile-gate refusal
+and auto-release only on a newer authenticated same-EA `COMPILE_OK` receipt.
+The 12-row cluster is `INCLUDE_MIRROR_REFUSED`, not demonstrated source compile
+errors; all historic terminal evidence remains untouched. Production dry run:
+0 holds / 0 release-ready. Focused tests: 32 passed. Evidence:
+`docs/ops/evidence/2026-09-12_compile_gate_broken_source_holds.md`.
