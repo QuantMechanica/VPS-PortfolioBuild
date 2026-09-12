@@ -3959,3 +3959,13 @@ H1 bars via iBarShift 3d59a268f8, 4/4 tests, compile 61a4a778); 982fe1f3 QM5_935
 exit-first OnTick 3fc7fd8364, 4/4 tests, compile 030c32c3). All: symbols as inputs, no news-archive read, no ad hoc
 .ex5, old rows untouched. All five compiles are born with the COMPILE_EA_WORKER_ROLLOUT_PENDING activation hold
 (compile_work_items.COMPILE_ACTIVATION_HOLD_CODE) and need a compile-wave release -- structural, see next entry.
+
+## 2026-09-12T21:10Z — 519c11fe PRESCREEN schema recovery: migration applied, two gaps -> OPS_FIX_REQUIRED -> TODO
+
+Live SH-3 CHECK now admits prescreen_measurement and review (governed backups verified). Gaps: (1) the new
+fail-closed validator raises VerdictTaxonomyContractError that no completion-write site catches -> still a
+worker crash class; (2) test_q09_live_news_diagnostic regressed (fixture DB not migrated). Reruns of the two
+crashed cells landed INFRA_FAIL G1_NO_REAL_TICKS because the worker Model-1 classifier fix is not loaded yet.
+Order after the fix: chunk 72 reload -> one append-only rerun -> PRESCREEN_MEASURED visible -> queue-owner lever
+back to 2026-08-18T23:00 -> release the 347 PRESCREEN_SCHEMA_FIX_PENDING holds -> calibration (~4 h) -> FN
+estimate -> Nachtrag D signature. Review round 7 closed otherwise (19 rows); compile waves 1+2 released 20 rows.
