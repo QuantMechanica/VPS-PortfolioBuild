@@ -1,6 +1,6 @@
 # T12 identity smoke and T11/T12 concurrent pilot
 
-Date: 2026-09-12 07:34–07:38 UTC  
+Date: 2026-09-12 07:34–07:38 UTC
 Router task: `c2396a30-2724-4ac8-9f13-deb299c6ef95`
 
 ## Result
