@@ -1,0 +1,64 @@
+{
+  "schema": "qm.q01-q02-enqueue-evidence/v1",
+  "recorded_utc": "2026-09-12T11:30:00+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41455",
+  "ea_label": "QM5_41455_xauxag-wr2-body-rv",
+  "strategy": "XAU/XAG synchronized two-week log-ratio range expansion plus strict weekly-body reversion",
+  "non_duplicate_verdict": "DISTINCT_XAUXAG_TWO_WEEK_RATIO_RANGE_EXPANSION_BODY_REVERSION_AFTER_FAMILY_REVIEW",
+  "build": {
+    "compile_work_item_id": "dc07e377-35c1-4d98-8682-c9b83d1badd3",
+    "compile_verdict": "COMPILE_OK",
+    "terminal_claim": "T3",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_warnings": 3,
+    "reference_test_count": 6,
+    "reference_subtest_count": 9,
+    "mq5_sha256": "2e1fd40e6d5016ec3a5d4ef78593d8c92768c27237b058d79d53260b2005c168",
+    "ex5_sha256": "da0c5792e2513a4f81800e4e392a8fc481025902c757d357962a9ce0bba8b434",
+    "compile_evidence": "D:/QM/reports/work_items/dc07e377-35c1-4d98-8682-c9b83d1badd3/QM5_41455/COMPILE_EA/compile_evidence.json"
+  },
+  "pacer_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41455_xauxag-wr2-body-rv/QM5_41455_xauxag-wr2-body-rv.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "q02_intake": {
+    "dry_run_eligible": true,
+    "dry_run_would_enqueue": true,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "logical_symbol": "QM5_41455_XAU_XAG_WR2_BODY_RV_D1",
+    "logical_setfile_sha256": "570490decb797d590be7e6e04376174049776d427b4e9cbda5357cfe8cdc4b44",
+    "applied": true,
+    "work_item_id": "d22217c3-bc38-4d9f-accd-20a589d988fc",
+    "receipt_sha256": "76b3b5c348ec5c38624cb2722a118706c35160fc884309f22a0dffdfd1a4bda4",
+    "status_at_record": "pending"
+  },
+  "cpu_ceiling_check": {
+    "source": "psutil.cpu_percent whole host",
+    "samples_percent": [50.4, 51.3, 56.3, 40.8, 48.1],
+    "average_percent": 49.38,
+    "maximum_percent": 56.3,
+    "threshold_percent": 97.0,
+    "below_ceiling": true
+  },
+  "transient_intake_attempt": {
+    "first_apply_result": "sqlite3.OperationalError: database is locked",
+    "mutation_reached": false,
+    "readback_q02_rows_after_failure": 0,
+    "retry_result": "APPLIED"
+  },
+  "scope": {
+    "q02_row_created": true,
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}

@@ -10,7 +10,7 @@
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   aa0c980a527377234b8a89172e9c99e3756688bbe669835dbd64ac5b78f4ac32
 ; author:       Development
 ; date:         2026-09-12
 ;==========================================================
@@ -37,4 +37,3 @@ strategy_notional_ratio=1.0
 strategy_min_sessions_per_week=3
 strategy_host_symbol=XAUUSD.DWX
 strategy_companion_symbol=XAGUSD.DWX
-
