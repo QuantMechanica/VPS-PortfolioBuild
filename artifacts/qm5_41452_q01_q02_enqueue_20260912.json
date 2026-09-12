@@ -1,0 +1,66 @@
+{
+  "schema": "qm.q01-q02-enqueue-evidence/v1",
+  "recorded_utc": "2026-09-12T06:40:47+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41452",
+  "ea_label": "QM5_41452_xauxag-wr2-clv-mom",
+  "strategy": "XAU/XAG synchronized two-week log-ratio range expansion plus outer-quartile continuation",
+  "non_duplicate_verdict": "DISTINCT_XAUXAG_TWO_WEEK_RATIO_RANGE_EXPANSION_OUTER_QUARTILE_CONTINUATION_AFTER_FAMILY_REVIEW",
+  "build": {
+    "compile_work_item_id": "7bfbc3bc-bfc6-4496-b896-4efcd0aba437",
+    "compile_verdict": "COMPILE_OK",
+    "terminal_claim": "T8",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_warnings": 3,
+    "reference_test_count": 6,
+    "mq5_sha256": "1594d67d8e7890c0f73a17e45b4335bf1ef425a3bd6c959939d4594758d0e127",
+    "ex5_sha256": "ef8d2e85935e364fa251b635daddc728710fe622e16599981d3bc6ec77e46890",
+    "compile_evidence": "D:/QM/reports/work_items/7bfbc3bc-bfc6-4496-b896-4efcd0aba437/QM5_41452/COMPILE_EA/compile_evidence.json"
+  },
+  "pacer_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41452_xauxag-wr2-clv-mom/QM5_41452_xauxag-wr2-clv-mom.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "q02_intake_dry_run": {
+    "eligible": true,
+    "would_enqueue": true,
+    "reason": "ELIGIBLE",
+    "logical_symbol": "QM5_41452_XAU_XAG_WR2_CLV_MOM_D1",
+    "logical_setfile_sha256": "854619cd65c962c45551849054a0d5a8fac1c6dac119512704f2d159c141a117",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "setfile_count": 3,
+    "magic_active_row_count": 2
+  },
+  "cpu_ceiling_check": {
+    "recorded_utc": "2026-09-12T06:40:41.687967+00:00",
+    "source": "psutil.cpu_percent whole host",
+    "samples_percent": [72.5, 71.2, 66.5, 70.4, 74.9],
+    "average_percent": 71.1,
+    "maximum_percent": 74.9,
+    "threshold_percent": 97.0,
+    "below_ceiling": true
+  },
+  "q02": {
+    "applied": true,
+    "work_item_id": "28433272-cc99-48ba-bb04-cc8dcda8a817",
+    "status_at_record": "pending",
+    "logical_symbol": "QM5_41452_XAU_XAG_WR2_CLV_MOM_D1",
+    "setfile_sha256": "854619cd65c962c45551849054a0d5a8fac1c6dac119512704f2d159c141a117",
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/7bfbc3bc-bfc6-4496-b896-4efcd0aba437_28433272-cc99-48ba-bb04-cc8dcda8a817.json",
+    "receipt_sha256": "0534ae53ed647c63670c288a93ece76c542e7f6483ebb75a271c95c7b15277b6"
+  },
+  "scope": {
+    "q02_row_created": true,
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}
