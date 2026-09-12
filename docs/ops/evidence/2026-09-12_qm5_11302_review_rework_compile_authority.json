@@ -1,0 +1,25 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "authority": "router_review_ea:dfc248dc-ce63-4b55-bbfb-1ff701db0d91:QM5_11302",
+  "router_task_id": "dfc248dc-ce63-4b55-bbfb-1ff701db0d91",
+  "source_build_task_id": "5dc30880-b500-4eda-9cca-783b9c000fc6",
+  "ea_id": "QM5_11302",
+  "ea_label": "QM5_11302_tc-m5-bb-stoch-extreme-reversal",
+  "source_sha256": "f5d4a48ec06728e5cda79d1a08ebf9702d99dbacb67625ad77b9e8857eeb4863",
+  "approved_card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11302_tc-m5-bb-stoch-extreme-reversal.md",
+  "repair_class": "CODEX_REVIEW_REWORK",
+  "repair_summary": [
+    "Replaced the incomplete generated SPEC with the canonical seven-section card-fidelity contract.",
+    "Added Codex-owned static tests for mechanics, fixed-risk backtest sets, magic slots, and SPEC structure.",
+    "The reviewed MQ5 source already matches the approved mechanics and is intentionally byte-unchanged."
+  ],
+  "scope": {
+    "compile_ea": true,
+    "q01_smoke": false,
+    "backtest": false,
+    "pipeline_verdict": false,
+    "live": false,
+    "cross_ea": false
+  },
+  "created_at_utc": "2026-09-12T00:00:00Z"
+}
