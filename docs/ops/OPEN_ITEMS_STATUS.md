@@ -3498,3 +3498,7 @@ Review round complete: 0 rows in REVIEW.
 ## 2026-09-12 — Fleet clock audit part 2
 
 RESULT: REVIEW — `ea9e3c61` traced all 93 prior MATCH EAs with source hashes and file:line evidence: 85 market/no-pending controls, 6 possible opposite-only survivors, 1 explicit skip, and 1 undefined strategy-level crossed-price rule. Ranked top 10 and governed re-measurement proposal recorded; zero work items created.
+
+## 2026-09-12 — Sunday live attribution refresh
+
+RESULT: REVIEW — `308c8009` snapshotted the current read-only AccountMonitor deal export and added per-magic closes/net/gross/PF/lots/UTC-entry-hour histograms plus separate magic-0 attribution to the existing `QM_NewBook_LiveVsBook_Sunday` path. Proof run exited 0; no T_Live control or trading action occurred.

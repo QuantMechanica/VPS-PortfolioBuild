@@ -45,6 +45,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $py    = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $tool  = 'C:\QM\repo\tools\strategy_farm\portfolio\portfolio_live_forward_from_logs.py'
+$attribTool = 'C:\QM\repo\tools\strategy_farm\portfolio\live_deal_attribution.py'
 $stamp = (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
 $date  = (Get-Date).ToString('yyyyMMdd')
 $out   = Join-Path $OutDir "livevsbook_sunday_$date.json"
@@ -123,4 +124,24 @@ if ($RequireSigned) {
 $ErrorActionPreference = 'Continue'
 & $py @argsList 2>&1 |
     Tee-Object -Variable result | Out-File -Append -Encoding utf8 $log
-"$stamp  DONE exit=$LASTEXITCODE" | Out-File -Append -Encoding utf8 $log
+$compareExit = $LASTEXITCODE
+
+# The AccountMonitor owns and refreshes this read-only broker-history export.
+# Snapshot it and append per-magic realised attribution to the existing Sunday
+# path; this does not start/stop T_Live or interact with trading state.
+$dealSource = 'C:\QM\mt5\T_Live\MT5_Base\MQL5\Files\QM\journal\live_deals_normalized.csv'
+$pointer = 'D:\QM\reports\state\live_deployment_pointer.json'
+$attribDir = Join-Path 'D:\QM\reports\portfolio\live_attribution' $date
+& $py $attribTool `
+    --source $dealSource `
+    --pointer $pointer `
+    --start-utc '2026-07-24T00:00:00Z' `
+    --generated-at-utc $stamp `
+    --out-dir $attribDir 2>&1 |
+    Tee-Object -Variable attributionResult | Out-File -Append -Encoding utf8 $log
+$attribExit = $LASTEXITCODE
+
+"$stamp  DONE compare_exit=$compareExit attribution_exit=$attribExit attribution_dir=$attribDir" |
+    Out-File -Append -Encoding utf8 $log
+if ($compareExit -ne 0) { exit $compareExit }
+exit $attribExit
