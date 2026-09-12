@@ -3941,3 +3941,11 @@ cd22436c (Q02 INVALID, OWNER-DEC-STRANDED-182); 076c4a69 QM5_1229 EURCHF superse
 FAIL MIN_TRADES_NOT_MET); 1840919d QM5_11619 AUDUSD/EURUSD/GBPUSD have later canonical Q02/Q04 dispositions;
 f790fa19 QM5_1192 XTIUSD invalidated by f61cb6d8; 32f4b9dc QM5_10008 GBPUSD invalidated by cec8911f. No row
 enqueued or changed by these tasks. The workers omitted the RESULT lines; recorded here in one entry.
+
+## 2026-09-12T20:35Z — Six rework rows closed as honest precondition stops (batch review)
+
+Class A (registry identity row missing, magic rows present): QM5_1627, QM5_1628 -> governed precondition ticket
+(Luna) then re-route. Class B (OWNER card decisions, on the board with recommendations): QM5_11689 and QM5_12352
+use the non-canonical GER40.DWX (factory symbol = GDAXI.DWX) -> amend cards; QM5_20179 (self-inconsistent card,
+18 pct DD) and QM5_2076 (20 pct DD) breach the Edge Lab 10 pct cap -> retire unless redesigned. No source,
+registry or compile mutation in any of the six.
