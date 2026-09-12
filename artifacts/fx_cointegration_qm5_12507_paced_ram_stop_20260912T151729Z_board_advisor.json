@@ -1,0 +1,108 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-stop/v1",
+  "recorded_at_utc": "2026-09-12T15:17:29.8622147Z",
+  "recorded_at_local": "2026-09-12T17:17:29.8678436+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "e60b99086789930fc0216029f361333e5375624c",
+  "outcome": "RAM_ADMISSION_STOP",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_relationship",
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "active_hold_count": 0,
+    "priority_track": true,
+    "priority_reason": "owner_2026-08-30_fx_portfolio_existing_logical_basket_fallback",
+    "open_exact_identity_count": 1,
+    "duplicate_enqueue_refused": true
+  },
+  "anchor_status": {
+    "QM5_12532": "Q02_PASS_THEN_Q05_FAIL",
+    "QM5_12533": "Q02_PASS_THEN_Q04_FAIL"
+  },
+  "cpu_gate": {
+    "samples_percent": [
+      87.897873,
+      82.653723,
+      78.827042,
+      71.194609,
+      69.632147
+    ],
+    "average_percent": 78.041079,
+    "maximum_percent": 87.897873,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": false
+  },
+  "ram_gate": {
+    "classification": "heavy_or_unknown_multisymbol",
+    "basket_symbol_count": 4,
+    "reservation_gib": 44.0,
+    "post_reservation_floor_gib": 14.0,
+    "required_free_gib": 58.0,
+    "observed_free_gib": 28.88,
+    "total_physical_gib": 63.12,
+    "admitted": false
+  },
+  "farm_snapshot": {
+    "active_work_items": 5,
+    "pending_work_items": 5945,
+    "factory_terminal_count": 5,
+    "factory_terminal_paths": [
+      "D:/QM/mt5/T1/terminal64.exe",
+      "D:/QM/mt5/T5/terminal64.exe",
+      "D:/QM/mt5/T7/terminal64.exe",
+      "D:/QM/mt5/T9/terminal64.exe",
+      "D:/QM/mt5/T10/terminal64.exe"
+    ],
+    "t_live_observed": true,
+    "other_terminal_count": 1
+  },
+  "framework_input_pin_audit": {
+    "source": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "symbol_scope_audit": {
+    "verdict": "BASKET_OK",
+    "violation_count": 0,
+    "symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX"
+    ]
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "actions": {
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "q02_requeued": false,
+    "dispatch_tick_run": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "work_item_mutated": false,
+    "portfolio_surface_touched": false,
+    "live_surface_touched": false
+  }
+}
