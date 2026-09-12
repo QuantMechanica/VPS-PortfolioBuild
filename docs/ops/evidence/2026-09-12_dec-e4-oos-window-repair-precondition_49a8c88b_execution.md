@@ -30,3 +30,13 @@ fix without real news-event data for the target window — exactly the outcome t
 Vorlage explicitly flagged as unacceptable ("Nachfolgerläufe würden ohne News-Events
 messen"). Task `49a8c88b` correctly stays `IN_PROGRESS`, blocked on the calendar backfill,
 not on anything within this task's own authority. No `update-task` call made.
+
+## Cross-reference: task `1721f3a1` (the named execution record) is the same block
+
+`1721f3a1` ("OOS-2026 confirmation window repair"; routed to claude 2026-09-12T08:37:17Z,
+same cycle) is the execution-record task `49a8c88b`'s own payload names as "stays the
+execution record" — same repair (`wf_1e969f7f`), same acceptance clause requiring
+successor rows to carry a genuine `2026.01.01-2026.04.06` window with real calendar
+coverage. It is blocked by the identical calendar-gap finding above, not a separate
+issue. Not re-investigated from scratch; stays `IN_PROGRESS` alongside `49a8c88b`. No
+`update-task` call made on `1721f3a1` either.
