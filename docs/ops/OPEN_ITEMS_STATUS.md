@@ -3400,3 +3400,14 @@ admission CPU and over 40 GiB free RAM, with no report accepted. One T12 agent h
 already reached a 99.94% five-sample runtime CPU mean, so concurrent research beside
 a saturated weekday fleet is not recommended. No T_Live/FTMO or fleet claim action.
 Evidence: `docs/ops/evidence/2026-09-12_t12_identity_and_concurrent_pilot.md`.
+
+## 2026-09-12T08:00Z — RESULT BLOCKED backlog follow-up ready for REVIEW
+
+Task `f239a2d9`: BLOCKED fell 103 -> 69. Batch 02 allocated 32 magic rows for nine
+cards and returned ten registry-ready rows to TODO. The exact 24-row OWNER manifest
+archived 22 stale/non-executable rows and requeued two evidence-pinned tasks; all
+prior verdicts and artifact paths remain auditable. The remaining 69 are 18 future
+allocation candidates, 50 exact card/identity holds, and one untouched OWNER-video
+row. Verification: 17 tests PASS, py_compile PASS, zero status-aware magic
+collisions, zero retired-row deletions. Evidence:
+`docs/ops/evidence/2026-09-12_blocked_agent_task_backlog_disposition.md`.

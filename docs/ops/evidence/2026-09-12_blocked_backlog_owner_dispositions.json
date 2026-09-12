@@ -1,0 +1,152 @@
+{
+  "schema": "qm.blocked-agent-task-owner-disposition/v1",
+  "decision": "OWNER-DEC-BACKLOG-20260912",
+  "rows": [
+    {
+      "task_id": "3a32ab4b-807f-4367-8ce1-fcfca1b2e6a8",
+      "disposition": "FAILED",
+      "reason": "unactionable legacy handoff has no title, acceptance, blocker, or evidence",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-09-12_blocked_backlog_batch02_plan.json"
+    },
+    {
+      "task_id": "61cfbaf3-a51d-437d-923c-a3eeff7f5116",
+      "disposition": "FAILED",
+      "reason": "T5-only tester-rebuild premise was disproved by the cross-terminal BarsCalculated cohort",
+      "evidence_path": "C:/QM/repo/docs/ops/CODEX_BRIEF_mnt_review_corrections_2026-07-28.md"
+    },
+    {
+      "task_id": "a3ba2414-a8ae-4809-b1ba-3cc168649e00",
+      "disposition": "FAILED",
+      "reason": "304 built-but-never-gated premise is stale; the current queue is governed by the build and enqueue pump",
+      "evidence_path": "C:/QM/repo/docs/ops/OPEN_ITEMS_STATUS.md"
+    },
+    {
+      "task_id": "14487282-3868-43cb-b22d-00ea049de0b8",
+      "disposition": "FAILED",
+      "reason": "legacy 41-row Q09 rerun batch is superseded by the current sealed-plan binder and taint recovery work",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-09-12_q09_sealed_plan_hold_binder.md"
+    },
+    {
+      "task_id": "84c988e6-fe11-47ed-b9f3-413096628bd2",
+      "disposition": "FAILED",
+      "reason": "News Contract V2 has a canonical implemented contract and this unpinned duplicate is stale",
+      "evidence_path": "C:/QM/repo/docs/ops/NEWS_CALENDAR_CONTRACT_V2_2026-08-22.md"
+    },
+    {
+      "task_id": "1437b4f1-1cb5-420e-98d8-e74e33fc0cb0",
+      "disposition": "FAILED",
+      "reason": "unbounded contaminated-epoch ticket is superseded by row-bound append-only Q09 recovery",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-09-12_q09_sealed_plan_hold_binder.md"
+    },
+    {
+      "task_id": "3aa38252-fea5-4b51-b082-4a3f56da3a05",
+      "disposition": "FAILED",
+      "reason": "vault-redaction backlog was triaged by the dedicated vault cleanup and is not a current executable pin",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-08-23_vault_todo_cleanup.md"
+    },
+    {
+      "task_id": "42d5b50b-209c-458a-88c0-5b2335a2bf27",
+      "disposition": "FAILED",
+      "reason": "generic execution-cost-model ticket has no dataset or phase pin and is superseded by current FTMO evidence tracks",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-09-12_blocked_backlog_batch02_plan.json"
+    },
+    {
+      "task_id": "2f36c28c-6430-4a55-8af7-8d213f372cc6",
+      "disposition": "FAILED",
+      "reason": "generic pre-delete dry-run ticket is superseded by the manifested backup-retention workflow",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-08-31_b327c0fe_backup_retention_phase1_manifest.csv"
+    },
+    {
+      "task_id": "3d68f538-ffd9-48ed-a4b9-bfab1b33f7e2",
+      "disposition": "FAILED",
+      "reason": "unpinned FTMO cost-filter backlog is superseded by current measured trial and portfolio work",
+      "evidence_path": "C:/QM/repo/docs/ops/OPEN_ITEMS_STATUS.md"
+    },
+    {
+      "task_id": "41aa55bc-0780-474d-8f26-332db8fb9e1b",
+      "disposition": "FAILED",
+      "reason": "restore drill remains OWNER-key dependent and the stale unpinned task is archived under the backlog decision",
+      "evidence_path": "C:/QM/repo/docs/ops/OPEN_ITEMS_STATUS.md"
+    },
+    {
+      "task_id": "74a78403-733e-40c7-a80e-f222f36c942f",
+      "disposition": "FAILED",
+      "reason": "backup encryption is explicitly deferred by OWNER-DEC-BACKUP-KEY and this stale row has no executable authority",
+      "evidence_path": "C:/QM/repo/docs/ops/OPEN_ITEMS_STATUS.md"
+    },
+    {
+      "task_id": "f8cf3ca4-e4e0-43a8-80fa-c36f3d97e537",
+      "disposition": "FAILED",
+      "reason": "point-in-time event semantics are covered by the canonical news-calendar contract; duplicate row archived",
+      "evidence_path": "C:/QM/repo/docs/ops/NEWS_CALENDAR_CONTRACT_V2_2026-08-22.md"
+    },
+    {
+      "task_id": "74e72403-399b-41c9-8627-0fdaa0bc8e08",
+      "disposition": "FAILED",
+      "reason": "Q10.1-Q10.3 numbering was superseded by the OWNER-approved linear v4 manifest",
+      "evidence_path": "C:/QM/repo/docs/ops/rebaseline/STRATEGY_ARCHIVE_V4_RECONCILIATION_2026-08-23.md"
+    },
+    {
+      "task_id": "942fd7c2-c094-40f8-8e45-49730c88ec17",
+      "disposition": "FAILED",
+      "reason": "immutable second-copy request lacks a current trust-domain authority and is archived with the deferred backup program",
+      "evidence_path": "C:/QM/repo/docs/ops/OPEN_ITEMS_STATUS.md"
+    },
+    {
+      "task_id": "8c46a30d-5aab-46a1-aeb5-2ca9507d3014",
+      "disposition": "FAILED",
+      "reason": "standalone blackout-view backlog is superseded by the canonical calendar contract and current Q09 tooling",
+      "evidence_path": "C:/QM/repo/docs/ops/NEWS_CALENDAR_CONTRACT_V2_2026-08-22.md"
+    },
+    {
+      "task_id": "3c365266-68b6-4474-87ac-9049af52c7ec",
+      "disposition": "FAILED",
+      "reason": "destructive placeholder cleanup lacks fresh OWNER deletion authority and is archived without deleting anything",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-08-23_vault_todo_cleanup.md"
+    },
+    {
+      "task_id": "5578e607-5c07-4c17-bef1-a1d09024282e",
+      "disposition": "FAILED",
+      "reason": "legacy four-sleeve Q11 request is not pinned to the current book manifest and cannot yield current pipeline evidence",
+      "evidence_path": "C:/QM/repo/docs/ops/OPEN_ITEMS_STATUS.md"
+    },
+    {
+      "task_id": "027fb63f-07a8-4799-a3e3-5c6fd3558d4b",
+      "disposition": "FAILED",
+      "reason": "camofox integration stopped at a blocked host preflight and is outside the active deterministic research lane",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-09-02_027fb63f_camofox_host_preflight.md"
+    },
+    {
+      "task_id": "8f0b1b9e-9e5c-5922-9a4e-b266a4fa385e",
+      "disposition": "FAILED",
+      "reason": "same-program fleet activation was explicitly rolled back after reproducing the decline loop",
+      "evidence_path": "C:/QM/repo/docs/ops/CEO_AUDIT_2026-09-02.md"
+    },
+    {
+      "task_id": "4ce6ec32-a28a-491a-b4ec-5d17a756ff0c",
+      "disposition": "TODO",
+      "reason": "three concrete backup writers remain a bounded code task with a current canonical implementation target",
+      "evidence_path": "C:/QM/repo/tools/strategy_farm/farmctl.py",
+      "prerequisite_pin": "exact writers: farmctl._governed_state_backup, farmctl.release_work_item_hold, farmctl.record_q01_smoke_successor, and governed_work_item_hold.sqlite_backup"
+    },
+    {
+      "task_id": "5ff527e8-c6e4-408e-a9d0-a53063c32382",
+      "disposition": "TODO",
+      "reason": "independent review remains concrete and evidence-pinned to immutable commit 3e7f5752c2",
+      "evidence_path": "C:/QM/repo/decisions/2026-09-02_owner_receipts_ceo_asks.md",
+      "prerequisite_pin": "review immutable commit 3e7f5752c2 only; produce the requested written verdict without merging"
+    },
+    {
+      "task_id": "7cc4ab4c-ae16-4eb7-9409-4ce5ff179d77",
+      "disposition": "FAILED",
+      "reason": "stale FTMO scenario request has no provider account or current manifest pin and is archived without touching FTMO",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-09-12_blocked_backlog_batch02_plan.json"
+    },
+    {
+      "task_id": "235e5119-061d-406a-a58c-4d7d6cd3535a",
+      "disposition": "FAILED",
+      "reason": "unactionable row has no title, assigned owner, blocker, specification, or acceptance evidence",
+      "evidence_path": "C:/QM/repo/docs/ops/evidence/2026-09-12_blocked_backlog_batch02_plan.json"
+    }
+  ]
+}

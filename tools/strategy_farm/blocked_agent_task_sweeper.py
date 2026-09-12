@@ -2,9 +2,10 @@
 """Classify and disposition stale BLOCKED agent tasks.
 
 Dry-run is the default. Apply is intentionally class-scoped and bounded. It
-never deletes a task, never changes a prior verdict/artifact, and appends the
-transition record to ``payload.blocked_backlog_journal`` in the same SQLite
-transaction as the state change.
+never deletes a task or changes a prior artifact, and appends the transition
+record to ``payload.blocked_backlog_journal`` in the same SQLite transaction as
+the state change. OWNER-authorized archive rows add an ARCHIVED prefix while
+retaining any prior verdict verbatim both inline and in the journal.
 """
 from __future__ import annotations
 
@@ -28,6 +29,7 @@ DEFAULT_ROOT = Path("D:/QM/strategy_farm")
 DEFAULT_CARDS = DEFAULT_ROOT / "artifacts" / "cards_approved"
 SCHEMA = "qm.blocked-agent-task-sweeper/v1"
 JOURNAL_SCHEMA = "qm.blocked-agent-task-disposition/v1"
+OWNER_MANIFEST_SCHEMA = "qm.blocked-agent-task-owner-disposition/v1"
 
 VIDEO_RE = re.compile(r"video_analysis|router_human_lane_hold|OWNER-VID", re.I)
 MAGIC_RE = re.compile(
@@ -230,6 +232,103 @@ def build_legacy_restore_plan(root: Path) -> dict[str, Any]:
     }
 
 
+def build_owner_disposition_plan(
+    root: Path,
+    manifest_path: Path,
+    *,
+    repo: Path = REPO,
+    cards_dir: Path = DEFAULT_CARDS,
+) -> dict[str, Any]:
+    """Bind explicit OWNER dispositions to the current dependency-hold census."""
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if manifest.get("schema") != OWNER_MANIFEST_SCHEMA:
+        raise ValueError(f"owner disposition manifest must use {OWNER_MANIFEST_SCHEMA}")
+    if manifest.get("decision") != "OWNER-DEC-BACKLOG-20260912":
+        raise ValueError("owner disposition manifest has the wrong decision")
+    entries = manifest.get("rows")
+    if not isinstance(entries, list) or not entries:
+        raise ValueError("owner disposition manifest requires non-empty rows")
+    by_id: dict[str, dict[str, Any]] = {}
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise ValueError("owner disposition rows must be objects")
+        task_id = str(entry.get("task_id") or "")
+        if not task_id or task_id in by_id:
+            raise ValueError(f"owner disposition task id missing or duplicate: {task_id!r}")
+        disposition = str(entry.get("disposition") or "")
+        if disposition not in {"FAILED", "TODO"}:
+            raise ValueError(f"unsupported owner disposition for {task_id}: {disposition}")
+        if not str(entry.get("reason") or "").strip():
+            raise ValueError(f"owner disposition reason missing for {task_id}")
+        evidence_path = Path(str(entry.get("evidence_path") or ""))
+        if not str(evidence_path) or not evidence_path.exists():
+            raise ValueError(f"owner disposition evidence missing for {task_id}: {evidence_path}")
+        if disposition == "TODO" and not str(entry.get("prerequisite_pin") or "").strip():
+            raise ValueError(f"TODO owner disposition requires prerequisite_pin for {task_id}")
+        by_id[task_id] = entry
+
+    base = build_plan(root, repo=repo, cards_dir=cards_dir)
+    current = {
+        row["task_id"]: row
+        for row in base["rows"]
+        if row["class"] == "DEPENDENCY_HOLD"
+    }
+    missing = sorted(set(by_id) - set(current))
+    if missing:
+        con = agent_router.connect(root)
+        try:
+            already_applied = set()
+            for task_id in missing:
+                row = con.execute("SELECT * FROM agent_tasks WHERE id=?", (task_id,)).fetchone()
+                entry = by_id[task_id]
+                journal = _payload(row).get("blocked_backlog_journal", []) if row is not None else []
+                matches = any(
+                    isinstance(item, dict)
+                    and item.get("class") == "OWNER_BACKLOG"
+                    and item.get("to_state") == entry["disposition"]
+                    and item.get("reason") == entry["reason"]
+                    for item in journal
+                )
+                if row is not None and matches:
+                    already_applied.add(task_id)
+            unresolved = sorted(set(missing) - already_applied)
+        finally:
+            con.close()
+        if unresolved:
+            raise ValueError(f"owner disposition rows are not current dependency holds: {unresolved}")
+    else:
+        already_applied = set()
+    findings = []
+    for task_id, entry in by_id.items():
+        if task_id in already_applied:
+            continue
+        row = current[task_id]
+        findings.append({
+            **row,
+            "class": "OWNER_BACKLOG",
+            "disposition": entry["disposition"],
+            "reason": entry["reason"],
+            "evidence_path": str(Path(entry["evidence_path"]).resolve()),
+            "prerequisite_pin": entry.get("prerequisite_pin"),
+            "archive_verdict": (
+                f"ARCHIVED (OWNER-DEC-BACKLOG-20260912): {entry['reason']}"
+                if entry["disposition"] == "FAILED" else None
+            ),
+        })
+    counts = collections.Counter((x["class"], x["disposition"]) for x in findings)
+    return {
+        "schema": SCHEMA,
+        "mode": "plan",
+        "decision": manifest["decision"],
+        "manifest_path": str(manifest_path.resolve()),
+        "blocked_count": base["blocked_count"],
+        "selected_count": len(findings),
+        "already_applied_count": len(already_applied),
+        "counts": {f"{key[0]}:{key[1]}": value for key, value in sorted(counts.items())},
+        "rows": findings,
+    }
+
+
 def apply_plan(
     root: Path,
     plan: dict[str, Any],
@@ -238,7 +337,7 @@ def apply_plan(
     limit: int,
     now: str | None = None,
 ) -> dict[str, Any]:
-    allowed = {"MAGIC_PRECONDITION", "TERMINAL_CLOSE", "LEGACY_RESEARCH", "LEGACY_REQUEUE_RESTORE"}
+    allowed = {"MAGIC_PRECONDITION", "TERMINAL_CLOSE", "LEGACY_RESEARCH", "LEGACY_REQUEUE_RESTORE", "OWNER_BACKLOG"}
     if not apply_classes or not apply_classes <= allowed:
         raise ValueError(f"apply_classes must be a non-empty subset of {sorted(allowed)}")
     if limit <= 0:
@@ -282,12 +381,24 @@ def apply_plan(
                 "previous_verdict": row["verdict"],
                 "previous_verdict_sha256": hashlib.sha256(str(row["verdict"] or "").encode()).hexdigest(),
             }
+            for key in ("evidence_path", "prerequisite_pin"):
+                if finding.get(key):
+                    entry[key] = finding[key]
             journal.append(entry)
             payload["blocked_backlog_journal"] = journal
             payload[agent_router.DECISION_BOUND_PAYLOAD_FIELD] = "codex" if target == "TODO" else payload.get(agent_router.DECISION_BOUND_PAYLOAD_FIELD)
+            if finding.get("prerequisite_pin"):
+                payload["backlog_requeue_pin"] = finding["prerequisite_pin"]
+            verdict = row["verdict"]
+            if finding["class"] == "OWNER_BACKLOG" and target == "FAILED":
+                archive_verdict = finding["archive_verdict"]
+                if str(verdict or "").strip():
+                    verdict = f"{archive_verdict}\n\nPRIOR_VERDICT_PRESERVED:\n{verdict}"
+                else:
+                    verdict = archive_verdict
             cursor = con.execute(
-                "UPDATE agent_tasks SET state=?, assigned_agent=?, payload_json=?, updated_at=? WHERE id=? AND state=?",
-                (target, None if target == "TODO" else row["assigned_agent"], json.dumps(payload, sort_keys=True), at, row["id"], expected_state),
+                "UPDATE agent_tasks SET state=?, assigned_agent=?, verdict=?, payload_json=?, updated_at=? WHERE id=? AND state=?",
+                (target, None if target == "TODO" else row["assigned_agent"], verdict, json.dumps(payload, sort_keys=True), at, row["id"], expected_state),
             )
             if cursor.rowcount != 1:
                 con.rollback()
@@ -316,7 +427,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
     parser.add_argument("--repo", type=Path, default=REPO)
     parser.add_argument("--cards-dir", type=Path, default=DEFAULT_CARDS)
-    parser.add_argument("--apply-class", action="append", choices=("MAGIC_PRECONDITION", "TERMINAL_CLOSE", "LEGACY_RESEARCH", "LEGACY_REQUEUE_RESTORE"))
+    parser.add_argument("--apply-class", action="append", choices=("MAGIC_PRECONDITION", "TERMINAL_CLOSE", "LEGACY_RESEARCH", "LEGACY_REQUEUE_RESTORE", "OWNER_BACKLOG"))
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--output", type=Path)
     parser.add_argument(
@@ -325,21 +436,34 @@ def main(argv: list[str] | None = None) -> int:
         help="Also classify TODO rows whose append-only journal proves they were legacy agy RECYCLE rows",
     )
     parser.add_argument(
+        "--owner-disposition-manifest",
+        type=Path,
+        help="Exact OWNER_BACKLOG rows; generic dependency holds remain read-only",
+    )
+    parser.add_argument(
         "--restore-legacy-requeues",
         action="store_true",
         help="Select only the exact FAILED rows written by the superseded legacy-archive interpretation",
     )
     args = parser.parse_args(argv)
-    plan = (
-        build_legacy_restore_plan(args.root)
-        if args.restore_legacy_requeues
-        else build_plan(
+    if args.owner_disposition_manifest and (args.restore_legacy_requeues or args.include_requeued_legacy):
+        parser.error("--owner-disposition-manifest cannot be combined with legacy modes")
+    if args.owner_disposition_manifest:
+        plan = build_owner_disposition_plan(
+            args.root,
+            args.owner_disposition_manifest,
+            repo=args.repo,
+            cards_dir=args.cards_dir,
+        )
+    elif args.restore_legacy_requeues:
+        plan = build_legacy_restore_plan(args.root)
+    else:
+        plan = build_plan(
             args.root,
             repo=args.repo,
             cards_dir=args.cards_dir,
             include_requeued_legacy=args.include_requeued_legacy,
         )
-    )
     result = (
         apply_plan(args.root, plan, apply_classes=set(args.apply_class), limit=args.limit)
         if args.apply_class

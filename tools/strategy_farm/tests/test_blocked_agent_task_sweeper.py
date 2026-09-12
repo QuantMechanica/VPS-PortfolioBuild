@@ -111,3 +111,53 @@ def test_requeued_legacy_agy_is_included_only_with_explicit_switch(tmp_path: Pat
     assert row["state"] == "TODO"
     assert len(json.loads(row["payload_json"])["blocked_backlog_journal"]) == 2
     con.close()
+
+
+def test_owner_manifest_is_exact_evidence_pinned_and_append_only(tmp_path: Path):
+    root = tmp_path / "farm"; db = _db(root)
+    _insert(db, task_id="archive", verdict=None, task_type="ops_issue", payload={"title":"old"})
+    _insert(db, task_id="requeue", verdict=None, task_type="ops_issue", payload={"title":"valid"})
+    evidence = tmp_path / "evidence.md"; evidence.write_text("proof")
+    manifest = tmp_path / "owner.json"
+    manifest.write_text(json.dumps({
+        "schema": sweeper.OWNER_MANIFEST_SCHEMA,
+        "decision": "OWNER-DEC-BACKLOG-20260912",
+        "rows": [
+            {"task_id":"archive", "disposition":"FAILED", "reason":"superseded", "evidence_path":str(evidence)},
+            {"task_id":"requeue", "disposition":"TODO", "reason":"still actionable", "evidence_path":str(evidence), "prerequisite_pin":"commit abc"},
+        ],
+    }))
+    cards = tmp_path / "cards"; cards.mkdir()
+    plan = sweeper.build_owner_disposition_plan(root, manifest, repo=tmp_path, cards_dir=cards)
+    assert plan["counts"] == {"OWNER_BACKLOG:FAILED": 1, "OWNER_BACKLOG:TODO": 1}
+    result = sweeper.apply_plan(root, plan, apply_classes={"OWNER_BACKLOG"}, limit=2, now="2026-09-12T00:00:00+00:00")
+    assert result["applied_count"] == 2
+    con = sqlite3.connect(db); con.row_factory = sqlite3.Row
+    archived = con.execute("SELECT * FROM agent_tasks WHERE id='archive'").fetchone()
+    requeued = con.execute("SELECT * FROM agent_tasks WHERE id='requeue'").fetchone()
+    assert archived["state"] == "FAILED"
+    assert archived["verdict"] == "ARCHIVED (OWNER-DEC-BACKLOG-20260912): superseded"
+    assert requeued["state"] == "TODO" and requeued["assigned_agent"] is None
+    payload = json.loads(requeued["payload_json"])
+    assert payload["backlog_requeue_pin"] == "commit abc"
+    assert payload["blocked_backlog_journal"][0]["evidence_path"] == str(evidence.resolve())
+    con.close()
+    repeat = sweeper.build_owner_disposition_plan(root, manifest, repo=tmp_path, cards_dir=cards)
+    assert repeat["selected_count"] == 0
+    assert repeat["already_applied_count"] == 2
+
+
+def test_owner_archive_prefixes_and_preserves_prior_verdict(tmp_path: Path):
+    root = tmp_path / "farm"; db = _db(root)
+    _insert(db, verdict="existing evidence", task_type="ops_issue", payload={"title":"old"})
+    finding = {"task_id":"t1", "state":"BLOCKED", "class":"OWNER_BACKLOG", "disposition":"FAILED", "reason":"old", "archive_verdict":"ARCHIVED: old"}
+    result = sweeper.apply_plan(root, {"rows":[finding]}, apply_classes={"OWNER_BACKLOG"}, limit=1)
+    assert result["applied_count"] == 1
+    assert result["skipped"] == []
+    con = sqlite3.connect(db); con.row_factory = sqlite3.Row
+    row = con.execute("SELECT state,verdict,payload_json FROM agent_tasks").fetchone()
+    assert row["state"] == "FAILED"
+    assert row["verdict"] == "ARCHIVED: old\n\nPRIOR_VERDICT_PRESERVED:\nexisting evidence"
+    journal = json.loads(row["payload_json"])["blocked_backlog_journal"]
+    assert journal[0]["previous_verdict"] == "existing evidence"
+    con.close()

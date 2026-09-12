@@ -1,0 +1,325 @@
+{
+  "applied": [
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "3f4980fb-90b5-49c2-9b22-fc2938b43efb",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "8ff4de4c-7e6e-4a65-ad2f-7a8bf5788c68",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "f0dd1187-ac39-4a61-8e38-77b26f600d71",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "1f7c24c5-553a-4469-b6b7-7a507200841d",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "afed7b7c-0259-4256-acad-f22224babdab",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "0330fade-59e5-4c59-ab04-03500b2fb85a",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "bb6235da-2157-418f-ab00-7e0c3be0d6e2",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "b994c320-b03a-423d-ab94-fb69b90a38f0",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "1017e601-92b0-4c72-a1f5-b5e0531416cf",
+      "to_state": "TODO"
+    },
+    {
+      "class": "MAGIC_PRECONDITION",
+      "reason": "fresh_precheck_ready",
+      "task_id": "66329779-aa43-4905-97da-7fabc11823d3",
+      "to_state": "TODO"
+    }
+  ],
+  "applied_count": 10,
+  "apply_classes": [
+    "MAGIC_PRECONDITION"
+  ],
+  "limit": 10,
+  "mode": "apply",
+  "schema": "qm.blocked-agent-task-sweeper/v1",
+  "skipped": [
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "d68dcd1b-0f7e-4fd8-b033-4815f0811c97"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "fddbb404-f6fe-46ee-9d1e-1589d07be3d9"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "932dde11-f11f-41c1-83df-c7afd521bd3e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "0a9b9637-30c5-4de4-8833-809ea92d5cbd"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "123a5ce6-5595-4f74-8ee9-3d591a168ad9"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "1477e9b6-1288-4a1f-bf79-d61c3a185c23"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "5e7ee21a-5fe8-48e9-870f-18bec88fc5ce"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "c6387b4b-f0b0-4021-8606-6f68a35a79f2"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "6cf3af36-e15e-4af0-857b-d0f99eefe6f6"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "bd4171e3-56e3-4d5b-96a6-684a49f2b8f4"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "bff7eda1-2b00-4170-8a02-1afbffcd5c70"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "c15f2390-4c8e-432d-bcfa-600807db676b"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "ae818e35-7732-4ec4-89ba-5d353cdbcf3e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "d90e7498-f47f-4dba-8d2a-674bb0569909"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "04125547-feee-4d50-9423-eac60e1eec8a"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "70805206-74fb-455f-876f-11776e8c5621"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "13d9b822-c4ed-489e-9f32-27accae6ff5f"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "3129e748-59f4-445a-9d11-12f6fca5fd97"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "69bced3f-e859-43bb-bf24-60f17e23e9d0"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "30bbd5e2-ea7b-46d3-96a1-5cd0050117d8"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "b1bcaee2-efb6-4226-9578-bff538852f87"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "8511bd8a-6f24-4e78-a416-40699fcf9d0d"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "b5905d19-0976-41e0-9b5d-9b170993c8db"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "fcd84ecd-cb3d-4f2c-be69-6d34bc940761"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "99efdb31-1df6-4aa5-9102-bf7e250c149f"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "5fca8ef3-c38a-4e48-bdf8-0325a297434d"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "8d108839-29ec-4569-8039-109f7bbfcb15"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "ef0f2333-e00f-41ce-9ecd-5d9f540cf3be"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "2201ca64-2342-41f6-97ea-f34a31b48d92"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "1fd88db4-fbd1-49a2-83c6-293bdf9cb11b"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "5297d50e-314d-4557-8f14-9463bcf7fc3e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "fcaeb2ee-6c92-4d57-8a8b-fe71deb585e9"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "afe18aff-644c-43da-84b3-7e725212ba61"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "d76d758e-d4d6-4898-a958-15e9bdf4e853"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "3fdd2c8d-4e16-4a92-bb8a-7258a674a68b"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "8262515b-4563-4db8-9c4e-7b4b4927e178"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "f1d3f7a3-1999-48e5-ada5-caac982e382d"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "181b8a00-f226-4240-8649-a4b246f8c9ad"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "084be1d0-8d08-4c36-b672-5ff5befdd89e"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "6a79738c-7643-4d5b-95e3-d8906b029178"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "35c9e6ad-0be4-4539-8572-554fb390b4a6"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "3cd229bb-8900-4dac-9367-3dbfaf84f67c"
+    },
+    {
+      "reason": "not_ready:HOLD:registry_identity_conflict",
+      "task_id": "f99873db-5daa-4579-8c4d-cdc8bb0d159c"
+    },
+    {
+      "reason": "not_ready:HOLD:registry_identity_conflict",
+      "task_id": "cc5c1221-1289-4d5a-8a18-2d5d15bd63cd"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "ffdb2772-97b1-4615-8871-196a23805834"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "8c3ddf84-4b96-467f-8893-b59e85840d95"
+    },
+    {
+      "reason": "not_ready:HOLD:card_target_symbols_missing_or_invalid",
+      "task_id": "6a0ae4d5-66d4-4a37-9323-38e1224236db"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "63c1032c-1534-482a-a399-efe2600f8356"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "524cca67-50b7-409a-a13c-7860dc61148d"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "add54a46-19bc-415c-810d-0f117f5cf2ae"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "3ff472a0-8f53-4558-ae66-459a29c77da2"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "aaf5545d-ea51-4dab-9332-8f0784d9c663"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "04dd4c02-2889-4a31-bf5c-630843571d34"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "b770de57-f359-4d11-9b5e-1f7f141e26b6"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:ea_id_not_registered",
+      "task_id": "230cacde-3610-417a-898a-39de1926bfe4"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "4f53ec6b-9e40-4266-9a59-dbd707316c2e"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:ea_id_not_registered",
+      "task_id": "fa98372d-3350-4ddd-b904-2a00a72bbd05"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:ea_id_not_registered",
+      "task_id": "31609b87-fa05-441e-b957-09058a694b1c"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:never_allocated",
+      "task_id": "f3093ecd-e820-4224-9c22-e248300d50e8"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:ea_id_not_registered",
+      "task_id": "3497999a-779c-4450-984f-f655503c814f"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:ea_id_not_registered",
+      "task_id": "49e87f75-7bf9-4d6a-a107-62ef0426804b"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:ea_id_not_registered",
+      "task_id": "9624a863-1b3c-4e4a-81b9-697701c1328e"
+    },
+    {
+      "reason": "not_ready:ALLOCATE:ea_id_not_registered",
+      "task_id": "41e19827-7abe-4297-8ba5-db83aeccb3c5"
+    }
+  ]
+}
