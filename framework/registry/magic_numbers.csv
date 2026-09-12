@@ -18386,3 +18386,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41447,wti-winter-nr2-clv-mom,0,XTIUSD.DWX,414470000,2026-09-11,Codex governed allocator,active
 41448,xauxag-wr2-clv-rv,0,XAUUSD.DWX,414480000,2026-09-11,Codex governed allocator,active
 41448,xauxag-wr2-clv-rv,1,XAGUSD.DWX,414480001,2026-09-11,Codex governed allocator,active
+41449,xauxag-wr2-body-mom,0,XAUUSD.DWX,414490000,2026-09-12,Codex governed allocator,active
+41449,xauxag-wr2-body-mom,1,XAGUSD.DWX,414490001,2026-09-12,Codex governed allocator,active
