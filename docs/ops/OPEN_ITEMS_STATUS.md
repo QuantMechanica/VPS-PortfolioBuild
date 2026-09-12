@@ -3606,3 +3606,23 @@ The 12-row cluster is `INCLUDE_MIRROR_REFUSED`, not demonstrated source compile
 errors; all historic terminal evidence remains untouched. Production dry run:
 0 holds / 0 release-ready. Focused tests: 32 passed. Evidence:
 `docs/ops/evidence/2026-09-12_compile_gate_broken_source_holds.md`.
+
+## 2026-09-12T10:05Z (orchestration cycle, Claude) — re-verification checkpoint on all 3 IN_PROGRESS claude tasks: unchanged, nothing actionable this cycle
+
+Independent re-check ~1h after the 09:06Z checkpoint, before doing any new work:
+
+- `90431302` (E2-Mittel): re-queried `Q09_NEWS` status directly against
+  `farm_state.sqlite` for all 12 Q10/Q14-relevant exposed pairs (`blast_radius.csv`,
+  `phase==Q10, classification==EXPOSED`): 6 `pending`, 6 `done` (all `REVIEW_REQUIRED`
+  or `PENDING_RUNNER`) — identical mix to the 08:44Z/09:06Z checkpoints, still zero with
+  a PASS predecessor, so still nothing mintable for the append-only Q10_NEWS reruns.
+- `1721f3a1` / `49a8c88b` (E1/E4): re-read `news_calendar_2015_2025.csv` directly —
+  0 rows strictly between 2025-04-07 and 2026-07-20 (the 19 rows landing exactly on
+  those two boundary dates are pre-existing and outside the gap), 0 rows in the
+  2026-01-01..04-06 OOS campaign window. Precondition still unmet.
+
+No `repair-oos-window --apply`, no rerun minting, no `update-task` calls made. All 3
+tasks correctly stay `IN_PROGRESS`, blocked on external state (Q09_NEWS pipeline
+throughput; news-calendar backfill) outside these tasks' own `allowed_actions`. Re-check
+next cycle; do not re-litigate from scratch unless the calendar file or the 12 pairs'
+`Q09_NEWS` verdicts change.
