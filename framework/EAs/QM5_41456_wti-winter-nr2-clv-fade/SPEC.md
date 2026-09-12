@@ -82,3 +82,5 @@ AutoTrading, terminal control, or live operation is authorized.
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-12 | Initial governed build from approved card |
+| v1-q01 | 2026-09-12 | Governed T5 compile and strict build check PASS; 12 reference tests and PACER audit PASS |
+| v1-q02 | 2026-09-12 | Deterministic first-Q02 intake accepted; work item `39ecd610-2e9c-4b80-b7a4-f0da802ce21d` claimed by T6 at handoff |

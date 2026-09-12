@@ -1,0 +1,70 @@
+{
+  "schema": "qm.q01-q02-enqueue-evidence/v1",
+  "recorded_utc": "2026-09-12T12:31:00+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41456",
+  "ea_label": "QM5_41456_wti-winter-nr2-clv-fade",
+  "strategy": "WTI November-May strict two-week range contraction plus outer-quartile weekly close reversion",
+  "non_duplicate_verdict": "DISTINCT_WTI_NOVEMBER_MAY_NR2_OUTER_QUARTILE_SYMMETRIC_REVERSION_AFTER_FAMILY_REVIEW",
+  "build": {
+    "compile_work_item_id": "592cfacb-3683-45e5-aae8-0f524eb05223",
+    "compile_verdict": "COMPILE_OK",
+    "terminal_claim": "T5",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "build_check_warnings": 3,
+    "reference_test_count": 12,
+    "mq5_sha256": "fb3d0f77eca25813ffb577c2def0d517ebe8af8a4d030f72c7fcb5ed663aa52a",
+    "ex5_sha256": "dc991dade392ebb6e1679a84b62cb2e8de392785df1d4ae8aa84552048adb531",
+    "compile_evidence": "D:/QM/reports/work_items/592cfacb-3683-45e5-aae8-0f524eb05223/QM5_41456/COMPILE_EA/compile_evidence.json"
+  },
+  "pacer_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41456_wti-winter-nr2-clv-fade/QM5_41456_wti-winter-nr2-clv-fade.mq5",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "compile_release_cpu_ceiling_check": {
+    "source": "psutil.cpu_percent whole host",
+    "samples_percent": [85.2, 62.6, 60.3, 58.6, 66.9],
+    "average_percent": 66.72,
+    "maximum_percent": 85.2,
+    "threshold_percent": 97.0,
+    "below_ceiling": true
+  },
+  "q02_intake": {
+    "dry_run_eligible": true,
+    "dry_run_would_enqueue": true,
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "setfile_sha256": "14f88abc0fcdb294b50e439d80e6c3bf8aa8c9c7a9cd8da53cf414f07d6a2bfe",
+    "applied": true,
+    "work_item_id": "39ecd610-2e9c-4b80-b7a4-f0da802ce21d",
+    "receipt_sha256": "c51d33b006117b50a724e38f591a297e72f985ccb80ceffc11ca4de7dc5e74a4",
+    "status_at_record": "active",
+    "claimed_by": "T6"
+  },
+  "q02_cpu_ceiling_check": {
+    "source": "psutil.cpu_percent whole host",
+    "samples_percent": [89.2, 90.8, 84.9, 88.9, 84.3],
+    "average_percent": 87.62,
+    "maximum_percent": 90.8,
+    "threshold_percent": 97.0,
+    "below_ceiling": true
+  },
+  "compile_enqueue_retry": {
+    "first_attempt": "sqlite3.OperationalError: database is locked",
+    "mutation_reached": false,
+    "retry_result": "ENQUEUED_HELD"
+  },
+  "scope": {
+    "q02_row_created": true,
+    "manual_backtest_run": false,
+    "terminal_control": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "live_manifest_touched": false,
+    "autotrading_toggled": false
+  }
+}

@@ -61,8 +61,12 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q01_compile_work_item: 592cfacb-3683-45e5-aae8-0f524eb05223
+q01_build_report: D:/QM/reports/work_items/592cfacb-3683-45e5-aae8-0f524eb05223/QM5_41456/COMPILE_EA/compile_evidence.json
+q02_status: ENQUEUED_ACTIVE
+q02_work_item: 39ecd610-2e9c-4b80-b7a4-f0da802ce21d
+q02_receipt: D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/592cfacb-3683-45e5-aae8-0f524eb05223_39ecd610-2e9c-4b80-b7a4-f0da802ce21d.json
 force_build: true
 review_focus: "Falsify a WTI November-May range-contraction outer-quartile fade distinct from the certified XNG oscillator, WTI winter range-expansion fade, contraction continuation, contraction body fade, and same-sign weekly-return fade. Verify exact weeks, strict inequalities, both contrarian sides, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -234,5 +238,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-12 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
-| Q01 Build Validation | - | PENDING_BUILD | approved for branch-only build |
-| Q02 Baseline Screening | - | NOT_ENQUEUED | requires governed compile and CPU gate |
+| Q01 Build Validation | 2026-09-12 | PASS | governed T5 compile; zero compiler errors/warnings; strict build check PASS; 12 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-12 | ENQUEUED_ACTIVE | deterministic intake `39ecd610-2e9c-4b80-b7a4-f0da802ce21d`; claimed by T6 at handoff |

@@ -1,0 +1,32 @@
+{
+  "applied": false,
+  "canary": {
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41456_wti-winter-nr2-clv-fade\\sets\\QM5_41456_wti-winter-nr2-clv-fade_XTIUSD.DWX_D1_backtest.set",
+    "setfile_sha256": "14f88abc0fcdb294b50e439d80e6c3bf8aa8c9c7a9cd8da53cf414f07d6a2bfe",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1"
+  },
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\592cfacb-3683-45e5-aae8-0f524eb05223\\QM5_41456\\COMPILE_EA\\compile_evidence.json",
+  "compile_work_item_id": "592cfacb-3683-45e5-aae8-0f524eb05223",
+  "deferred": [],
+  "dry_run": true,
+  "ea_id": "QM5_41456",
+  "eligible": true,
+  "ex5_sha256": "dc991dade392ebb6e1679a84b62cb2e8de392785df1d4ae8aa84552048adb531",
+  "magic": {
+    "active_row_count": 1,
+    "issues": [],
+    "ok": true,
+    "target_symbols": ["XTIUSD.DWX"]
+  },
+  "reason": "ELIGIBLE",
+  "schema": "qm.first-q02-intake/v1",
+  "setfile_checks": [
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_sha256": "14f88abc0fcdb294b50e439d80e6c3bf8aa8c9c7a9cd8da53cf414f07d6a2bfe"
+    }
+  ],
+  "would_enqueue": true
+}
