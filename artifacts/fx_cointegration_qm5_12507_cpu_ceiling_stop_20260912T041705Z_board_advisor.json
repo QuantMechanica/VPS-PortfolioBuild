@@ -1,0 +1,89 @@
+{
+  "schema_version": "qm.fx-cointegration-capacity-stop/v1",
+  "observed_at_utc": "2026-09-12T04:17:05.0877210Z",
+  "branch": "agents/board-advisor",
+  "head_before": "529763c7d91a75624bd301bbf7f5da2846673186",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "ea_slug": "pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "scan_source_sha256": "E513CC785DF2DFC7C74F2D89A03C47A9A90E00DCC9E14902839EE80946C13DF7",
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md",
+    "duplicate_guard_sha256": "1DF9AD6635D84346090F7FA5848C882D34E5D03043CD107F101C95CC44995772",
+    "anchors": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "existing_work_item": {
+    "id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "priority_reason": "owner_2026-08-30_fx_portfolio_existing_logical_basket_fallback",
+    "basket_symbol_count": 4,
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX"
+    ],
+    "created_at_utc": "2026-08-29T12:08:11+00:00",
+    "updated_at_utc": "2026-08-29T12:08:11+00:00"
+  },
+  "pacer_input_pin_audit": {
+    "source": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "source_sha256": "569CC4E32CBE9B83AB4F30CE8881FF8C1ED24357F7BE6503C23338087787CF0C",
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "basket_manifest": {
+    "path": "framework/EAs/QM5_12507_pair-coint-z/basket_manifest.json",
+    "sha256": "195CF0517E6E99649E0F40C259CEA93E9AF5A05CFC913FE901A33C39896FEA56"
+  },
+  "risk_contract": {
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "setfile_sha256": "F8F7DA7F72FA60AB37E4E4D1A9E64D1B83E8E122B29EE35C613FEB25236BAC99",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0
+  },
+  "cpu_gate": {
+    "ceiling_percent": 97.0,
+    "samples_percent": [
+      77.0,
+      100.0,
+      100.0,
+      100.0,
+      97.0
+    ],
+    "average_percent": 94.8,
+    "maximum_percent": 100.0,
+    "ceiling_hit": true
+  },
+  "actions": {
+    "card_created": false,
+    "ea_changed": false,
+    "compile_enqueued": false,
+    "duplicate_q02_created": false,
+    "q02_dispatched": false,
+    "tester_launched": false,
+    "terminal_reserved": false,
+    "queue_mutated": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "decision": "STOP_CPU_CEILING_PRESERVE_EXISTING_PENDING_Q02"
+}
