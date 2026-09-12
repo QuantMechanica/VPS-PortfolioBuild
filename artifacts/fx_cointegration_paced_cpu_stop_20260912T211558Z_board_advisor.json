@@ -1,0 +1,107 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-stop/v1",
+  "recorded_at_utc": "2026-09-12T21:15:58.9088084Z",
+  "recorded_at_local": "2026-09-12T23:15:58.9132982+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "8d740e74dc066cdee5529b9705b0b9a912cb5fbe",
+  "outcome": "CPU_CEILING_STOP",
+  "frontier": {
+    "scan_relationship_count": 66,
+    "unbuilt_relationship_count": 0,
+    "duplicate_guard": "docs/research/FX_COINTEGRATION_FRONTIER_DUPLICATE_GUARD_2026-07-24.md"
+  },
+  "anchor_status": {
+    "QM5_12532": {
+      "logical_q02_work_item_id": "e4890d77-b865-4a48-b946-315faefca920",
+      "logical_q02": "PASS",
+      "latest_terminal_gate": "Q05_FAIL",
+      "current_oninit_or_no_history_block": false
+    },
+    "QM5_12533": {
+      "logical_q02_work_item_id": "76cb11ee-7e9d-4d75-be9d-626c205bca62",
+      "logical_q02": "PASS",
+      "latest_terminal_gate": "Q04_FAIL",
+      "current_oninit_or_no_history_block": false
+    }
+  },
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_relationship",
+    "ea_id": "QM5_12507",
+    "ea_label": "QM5_12507_pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "verdict": null,
+    "attempt_count": 0,
+    "claimed_by": null,
+    "priority_track": true,
+    "priority_reason": "owner_2026-08-30_fx_portfolio_existing_logical_basket_fallback",
+    "open_exact_identity_count": 1,
+    "duplicate_enqueue_refused": true
+  },
+  "capacity": {
+    "sampling_method": "Get-Counter \\Processor(_Total)\\% Processor Time -SampleInterval 1 -MaxSamples 5",
+    "cpu_samples_percent": [
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ],
+    "cpu_average_percent": 100.0,
+    "cpu_maximum_percent": 100.0,
+    "cpu_hard_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": true,
+    "stop_latched_for_run": true,
+    "d_free_gib": 84.985,
+    "active_governed_work_items": 5,
+    "active_phase_counts": {
+      "OPT_CENSUS": 3,
+      "Q07": 1,
+      "Q08": 1
+    },
+    "active_factory_terminals": [
+      "T3",
+      "T5",
+      "T6",
+      "T9",
+      "T10"
+    ],
+    "t_live_observed_read_only_and_excluded": true
+  },
+  "artifact_bindings": {
+    "mq5_path": "C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "pacer_build_guard": {
+    "mq5_written_or_edited_this_run": false,
+    "source_pin_audit_required_this_run": false,
+    "compile_enqueue_attempted": false,
+    "note": "No generated MQ5 was written. The mandatory post-write pre-compile audit therefore did not trigger."
+  },
+  "actions": {
+    "card_created_or_edited": false,
+    "ea_source_written_or_edited": false,
+    "compile_enqueued": false,
+    "q02_enqueued_or_requeued": false,
+    "dispatch_tick_run": false,
+    "tester_launched": false,
+    "terminal_controlled": false,
+    "farm_database_changed": false,
+    "portfolio_surface_touched": false,
+    "live_surface_touched": false
+  },
+  "stop_reason": "The fresh five-sample whole-host CPU window hit 100 percent on every sample. Per the mission's explicit CPU ceiling, work stopped before selection mutation, build, compile enqueue, Q02 enqueue, dispatch, or terminal control."
+}
