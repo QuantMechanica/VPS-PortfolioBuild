@@ -33,6 +33,21 @@ PRESCREEN_EVIDENCE_CLASS = "PRESCREEN"
 PRESCREEN_VERDICT = "PRESCREEN_MEASURED"
 REAL_EVIDENCE_CLASS = "REAL_TICKS"
 PRESCREEN_ENABLE_ENV = "QM_OPT_CENSUS_PRESCREEN_ENABLED"
+PRESCREEN_RECOVERY_QUEUE_ORDER = "2026-08-18T23:00:00+00:00"
+
+_RERUN_RUNTIME_KEYS = frozenset({
+    "artifact_identity", "claimed_at_iso", "claimed_by_worker_pid",
+    "commit_reservation_class",
+    "commit_reservation_gb", "commit_reservation_until_utc",
+    "custom_history_copy_on_claim", "custom_history_post_copy_audit_sha256",
+    "custom_history_pre_copy_audit_sha256", "dispatch_ex5_verified_at",
+    "evidence_provenance", "final_failure", "job_object_assigned",
+    "job_object_mode", "job_object_registry_key",
+    "log_path", "pid", "primary_thread_resumed", "process_creation_key",
+    "process_image_path", "process_started_at_epoch", "process_started_suspended",
+    "report_root", "run_smoke_exit_code", "staged_ex5", "started_at_iso", "terminal",
+    "verdict_reason", "verdict_taxonomy", "worker_crash_traceback_tail",
+})
 
 
 class ConfigSweepError(ValueError):
@@ -82,6 +97,170 @@ def _read(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ConfigSweepError("JSON root must be an object")
     return value
+
+
+def append_only_prescreen_rerun(
+    source_work_item_id: str,
+    *,
+    reason: str,
+    db: Path = DB,
+    apply: bool = False,
+) -> dict[str, Any]:
+    """Clone one failed PRESCREEN cell without rewriting its audit row."""
+
+    reason = str(reason or "").strip()
+    if not reason:
+        raise ConfigSweepError("append-only PRESCREEN rerun requires a reason")
+    mode = "rw" if apply else "ro"
+    conn = sqlite3.connect(
+        f"file:{db.resolve().as_posix()}?mode={mode}", uri=True, timeout=60
+    )
+    conn.row_factory = sqlite3.Row
+    try:
+        source = conn.execute(
+            "SELECT * FROM work_items WHERE id=?", (source_work_item_id,)
+        ).fetchone()
+        if source is None:
+            raise ConfigSweepError("PRESCREEN rerun source is missing")
+        payload = json.loads(source["payload_json"] or "{}")
+        if (
+            source["phase"] != "OPT_CENSUS"
+            or source["status"] not in {"done", "failed"}
+            or source["verdict"] != "INFRA_FAIL"
+            or payload.get("sweep_engine") != ENGINE
+            or payload.get("evidence_class") != PRESCREEN_EVIDENCE_CLASS
+            or payload.get("prescreen_model") != PRESCREEN_MODEL
+        ):
+            raise ConfigSweepError("source is not a terminal failed PRESCREEN cell")
+        rerun_id = str(uuid.uuid5(
+            NAMESPACE, f"prescreen-rerun:{source_work_item_id}:{reason}"
+        ))
+        ledger_path = Path(str(payload.get("ledger_path") or ""))
+        ledger = _read(ledger_path)
+        amendment_unsigned = {
+            "schema": "qm.config-sweep-prescreen-rerun/v1",
+            "program_id": payload.get("program_id"),
+            "declaration_sha256": payload.get("declaration_sha256"),
+            "ledger_sha256": ledger.get("ledger_sha256"),
+            "cell_key": payload.get("cell_key"),
+            "source_work_item_id": source_work_item_id,
+            "rerun_work_item_id": rerun_id,
+            "reason": reason,
+        }
+        amendment = {
+            **amendment_unsigned,
+            "amendment_sha256": _seal(amendment_unsigned),
+        }
+        amendment_path = ledger_path.parent / "reruns" / f"{rerun_id}.json"
+        amendment_file_sha = _document_sha(amendment)
+        existing = conn.execute(
+            "SELECT id,status,verdict,claimed_by,payload_json FROM work_items WHERE id=?",
+            (rerun_id,),
+        ).fetchone()
+        result = {
+            "apply": apply,
+            "source_work_item_id": source_work_item_id,
+            "rerun_work_item_id": rerun_id,
+            "program_id": payload.get("program_id"),
+            "existing": (
+                {key: existing[key] for key in ("id", "status", "verdict", "claimed_by")}
+                if existing else None
+            ),
+            "rerun_amendment_path": str(amendment_path),
+            "rerun_amendment_file_sha256": amendment_file_sha,
+        }
+        if not apply:
+            return result
+        if existing:
+            if (
+                existing["status"] != "pending"
+                or existing["verdict"] is not None
+                or existing["claimed_by"] is not None
+            ):
+                raise ConfigSweepError(
+                    "existing PRESCREEN rerun is no longer safe to amend"
+                )
+            existing_payload = json.loads(existing["payload_json"] or "{}")
+            expected_binding = {
+                "append_only_rerun_work_item_id": rerun_id,
+                "prescreen_rerun_amendment_path": str(amendment_path),
+                "prescreen_rerun_amendment_file_sha256": amendment_file_sha,
+            }
+            if all(existing_payload.get(k) == v for k, v in expected_binding.items()):
+                return result
+            _write_immutable(amendment_path, amendment)
+            existing_payload.update(expected_binding)
+            now = dt.datetime.now(dt.timezone.utc).isoformat()
+            conn.execute("BEGIN IMMEDIATE")
+            changed = conn.execute(
+                "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=? "
+                "AND status='pending' AND verdict IS NULL AND claimed_by IS NULL",
+                (json.dumps(existing_payload, sort_keys=True), now, rerun_id),
+            ).rowcount
+            if changed != 1:
+                raise ConfigSweepError("existing PRESCREEN rerun changed during amend")
+            conn.commit()
+            result["existing_amended"] = 1
+            return result
+        for key in _RERUN_RUNTIME_KEYS:
+            payload.pop(key, None)
+        _write_immutable(amendment_path, amendment)
+        payload.update({
+            "append_only_rerun": True,
+            "append_only_rerun_of_work_item": source_work_item_id,
+            "append_only_rerun_work_item_id": rerun_id,
+            "append_only_rerun_reason": reason,
+            "source_agent_task": "519c11fe-6b03-4e45-8f88-cb487382e492",
+            "priority_track": True,
+            "prescreen_rerun_amendment_path": str(amendment_path),
+            "prescreen_rerun_amendment_file_sha256": amendment_file_sha,
+        })
+        columns = [str(row[1]) for row in conn.execute("PRAGMA table_info(work_items)")]
+        now = dt.datetime.now(dt.timezone.utc).isoformat()
+        values = []
+        for column in columns:
+            if column == "id": value = rerun_id
+            elif column == "status": value = "pending"
+            elif column in {"verdict", "evidence_path", "claimed_by", "verdict_taxonomy", "verdict_taxonomy_stored"}: value = None
+            elif column == "attempt_count": value = 0
+            elif column == "payload_json": value = json.dumps(payload, sort_keys=True)
+            elif column in {"created_at", "updated_at"}: value = now
+            elif column == "clean_status_stored": value = "pending"
+            elif column == "sh3_enforced": value = 1
+            else: value = source[column]
+            values.append(value)
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            f"INSERT INTO work_items({','.join(columns)}) VALUES({','.join('?' for _ in columns)})",
+            values,
+        )
+        owners = conn.execute(
+            "SELECT id,payload_json FROM work_items WHERE kind='control' "
+            "AND json_extract(payload_json,'$.queue_owner')=1 "
+            "AND json_extract(payload_json,'$.program_id')=?",
+            (payload.get("program_id"),),
+        ).fetchall()
+        if len(owners) != 1:
+            raise ConfigSweepError("PRESCREEN program must have exactly one queue owner")
+        owner_payload = json.loads(owners[0]["payload_json"])
+        owner_payload.update({
+            "queue_order_at": PRESCREEN_RECOVERY_QUEUE_ORDER,
+            "queue_order_reason": "schema-fixed append-only PRESCREEN proof",
+        })
+        conn.execute(
+            "UPDATE work_items SET payload_json=?,updated_at=? WHERE id=?",
+            (json.dumps(owner_payload, sort_keys=True), now, owners[0]["id"]),
+        )
+        conn.commit()
+        result["inserted"] = 1
+        result["queue_owner_work_item_id"] = owners[0]["id"]
+        return result
+    except Exception:
+        if apply:
+            conn.rollback()
+        raise
+    finally:
+        conn.close()
 
 
 def _approved_card_commit(card: Path, expected: str) -> None:
@@ -251,6 +430,42 @@ def authenticate_ledger(payload: Mapping[str, Any]) -> tuple[Path, dict[str, Any
     if stated != _seal(unsigned) or ledger.get("declaration_sha256") != declaration["declaration_sha256"]:
         raise ConfigSweepError("ledger binding mismatch")
     cells_value = list(ledger.get("cells", []))
+    rerun_amendment_path_raw = payload.get("prescreen_rerun_amendment_path")
+    if rerun_amendment_path_raw:
+        rerun_path = Path(str(rerun_amendment_path_raw))
+        rerun = _read(rerun_path)
+        unsigned_rerun = dict(rerun)
+        rerun_seal = unsigned_rerun.pop("amendment_sha256", None)
+        if (
+            rerun.get("schema") != "qm.config-sweep-prescreen-rerun/v1"
+            or rerun_seal != _seal(unsigned_rerun)
+            or _hash(rerun_path)
+            != payload.get("prescreen_rerun_amendment_file_sha256")
+            or rerun.get("program_id") != ledger.get("program_id")
+            or rerun.get("declaration_sha256") != declaration["declaration_sha256"]
+            or rerun.get("ledger_sha256") != ledger.get("ledger_sha256")
+            or rerun.get("cell_key") != payload.get("cell_key")
+            or rerun.get("source_work_item_id")
+            != payload.get("append_only_rerun_of_work_item")
+            or rerun.get("rerun_work_item_id")
+            != payload.get("append_only_rerun_work_item_id")
+            or rerun.get("reason") != payload.get("append_only_rerun_reason")
+        ):
+            raise ConfigSweepError("PRESCREEN rerun amendment binding mismatch")
+        source_id = str(rerun.get("source_work_item_id") or "")
+        target_index = next(
+            (
+                index for index, item in enumerate(cells_value)
+                if item.get("cell_key") == rerun.get("cell_key")
+                and str(item.get("work_item_id") or "") == source_id
+            ),
+            None,
+        )
+        if target_index is None:
+            raise ConfigSweepError("PRESCREEN rerun source absent from ledger")
+        replacement = dict(cells_value[target_index])
+        replacement["work_item_id"] = str(rerun["rerun_work_item_id"])
+        cells_value[target_index] = replacement
     amendment_path_raw = payload.get("promotion_amendment_path")
     if amendment_path_raw:
         amendment_path = Path(str(amendment_path_raw))
@@ -611,7 +826,18 @@ def main() -> int:
             item.add_argument("--keep", type=float, required=True); item.add_argument("--control", type=float, default=0.10); item.add_argument("--apply", action="store_true")
         if command == "prescreen-report":
             item.add_argument("--promotion-amendment", type=Path, required=True); item.add_argument("--output", type=Path, required=True)
-    args = parser.parse_args(); value = plan(args.declaration, args.artifact, controls_only=args.controls_only)
+    rerun = sub.add_parser("prescreen-rerun")
+    rerun.add_argument("--source-work-item-id", required=True)
+    rerun.add_argument("--reason", required=True)
+    rerun.add_argument("--db", type=Path, default=DB)
+    rerun.add_argument("--apply", action="store_true")
+    args = parser.parse_args()
+    if args.command == "prescreen-rerun":
+        result = append_only_prescreen_rerun(
+            args.source_work_item_id, reason=args.reason, db=args.db, apply=args.apply
+        )
+        print(json.dumps(result, sort_keys=True)); return 0
+    value = plan(args.declaration, args.artifact, controls_only=args.controls_only)
     if args.command == "plan": result = {key: value[key] for key in ("program_id", "planned_trials", "controls_only")}
     elif args.command == "enqueue": result = enqueue(value, apply=args.apply)
     elif args.command == "report": result = report(value, output=args.output)

@@ -3897,6 +3897,17 @@ refreshes every ten minutes, watches a PID-reuse-safe parent identity, and remov
 The existing 30-minute headless guard honours the marker; router/headless lease semantics are unchanged.
 Focused suites pass 20/20 and py_compile passes. No helper loop was started in this scheduled cycle.
 
+## 2026-09-12 — PRESCREEN schema and worker-classifier recovery (`519c11fe`) REVIEW
+
+RESULT: SH-3 now admits the disjoint `prescreen_measurement` taxonomy and completion writers fail early on
+schema drift. Two append-only successors were claimed normally and produced valid Model=1 PASS reports with
+98/78 trades, proving enqueue/claim/run/metric extraction, but the resident worker then incorrectly applied the
+Model-4 real-tick gate and stored immutable `INFRA_FAIL:G1_NO_REAL_TICKS` rows. That second classifier defect is
+now repaired and covered; 68/68 focused tests plus py_compile pass. No worker was reloaded or terminal interrupted.
+The orchestrator must stagger-reload workers, dry-run one further append-only rerun, verify
+`PRESCREEN_MEASURED` (never `MEASURED`), then run promote/control/FN. All 347 holds remain active; restore the
+temporary queue-owner order before release.
+
 ## 2026-09-12T19:05Z — Review round 6 closed (7 rows); compile-wave release of the 2026-08-27 rollout holds
 
 APPROVED: b5f660f9 Dukascopy P3 redo (37/37 explained, price_scale decoupled from digits at code level, 12 symbols

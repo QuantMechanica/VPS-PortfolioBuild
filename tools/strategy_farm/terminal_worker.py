@@ -7459,6 +7459,23 @@ def _mirror_real_phase_artifacts(item: sqlite3.Row, summary_path: Path, verdict:
         shutil.copy2(source, target_dir / source.name)
 
 
+def _derive_worker_run_verdict(
+    phase: str,
+    payload: dict[str, Any],
+    summary: dict[str, Any],
+    *,
+    min_trades: int,
+) -> tuple[str, str]:
+    """Use the Model-1 classifier for declared OPT_CENSUS PRESCREEN cells."""
+    if farmctl._is_opt_census_prescreen(phase, payload):
+        return farmctl._derive_prescreen_verdict_from_summary(
+            summary, min_trades=min_trades
+        )
+    return farmctl._derive_verdict_from_summary(
+        summary, min_trades=min_trades, phase=phase
+    )
+
+
 def _launch_gate_max() -> int:
     """Concurrent-launch cap, overridable at runtime via launch_gate_max.txt."""
     try:
@@ -8301,13 +8318,20 @@ def _finish_work_item(
                         or summary.get("min_trades_required")
                         or 5
                     )
-                    verdict, reason = farmctl._derive_verdict_from_summary(
+                    verdict, reason = _derive_worker_run_verdict(
+                        str(item["phase"]),
+                        payload,
                         summary,
                         min_trades=effective_min_trades,
-                        phase=item["phase"],
                     )
                     _mirror_real_phase_artifacts(item, summary_path, verdict)
-                    payload["evidence_provenance"] = "phase_runner" if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES else "real_mt5"
+                    payload["evidence_provenance"] = (
+                        "phase_runner"
+                        if item["phase"] in farmctl.REAL_PHASE_RUNNER_PHASES
+                        else "prescreen_mt5"
+                        if farmctl._is_opt_census_prescreen(item["phase"], payload)
+                        else "real_mt5"
+                    )
                     # Measurement family (OPT_CENSUS): a healthy completion is
                     # MEASURED, never a gate PASS/FAIL; INFRA_FAIL keeps the infra
                     # path. Non-measurement phases pass through unchanged.

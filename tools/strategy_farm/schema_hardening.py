@@ -50,17 +50,21 @@ if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 
 from work_item_clean_view import clean_status, verdict_taxonomy  # noqa: E402
-from artifact_identity import IDENTITY_COLUMNS, SHA256_COLUMNS  # noqa: E402
+from artifact_identity import (  # noqa: E402
+    IDENTITY_COLUMNS,
+    SHA256_COLUMNS,
+    VERDICT_TAXONOMIES,
+)
+from factory_mutation_lock import (  # noqa: E402
+    DEFAULT_PATH as FACTORY_MUTATION_LOCK,
+    FactoryMutationLock,
+)
 
 DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 STORED_TAXONOMY = "verdict_taxonomy_stored"
 STORED_STATUS = "clean_status_stored"
 CHUNK = 5000
-SH3_TAXONOMIES = (
-    "draft_defect", "governance", "infra", "invalid", "measurement",
-    "open", "review", "strategy", "unknown", "artifact", "build",
-    "implementation",
-)
+SH3_TAXONOMIES = VERDICT_TAXONOMIES
 SH3_MATERIALIZE_INSERT_TRIGGER = "trg_work_items_sh3_materialize_insert"
 SH3_MATERIALIZE_UPDATE_TRIGGER = "trg_work_items_sh3_materialize_update"
 
@@ -358,17 +362,35 @@ def _sh3_trigger_sql(name: str, event: str) -> str:
     """
 
 
-def _backup_database(con: sqlite3.Connection, backup_path: Path) -> None:
+def _backup_database_locked_snapshot(
+    con: sqlite3.Connection, backup_path: Path
+) -> None:
+    """Back up the exact preimage protected by caller's BEGIN IMMEDIATE.
+
+    SQLite's backup API cannot advance when its source is the connection that
+    owns the write transaction.  A second read-only connection sees the same
+    committed snapshot while BEGIN IMMEDIATE blocks completion writers.
+    """
+
     backup_path = backup_path.resolve()
     if backup_path.exists():
         raise FileExistsError(f"refusing to overwrite backup: {backup_path}")
     backup_path.parent.mkdir(parents=True, exist_ok=True)
+    database_rows = con.execute("PRAGMA database_list").fetchall()
+    database_path = next(
+        (str(row[2]) for row in database_rows if str(row[1]) == "main"), ""
+    )
+    if not database_path:
+        raise RuntimeError("SH-3 backup requires a file-backed main database")
+    normalized = str(Path(database_path).resolve()).replace("\\", "/")
+    source = sqlite3.connect(f"file:{normalized}?mode=ro", uri=True, timeout=30)
     target = sqlite3.connect(str(backup_path))
     try:
-        con.backup(target)
+        source.backup(target)
         target.commit()
     finally:
         target.close()
+        source.close()
 
 
 def migrate_sh3(con: sqlite3.Connection, backup_path: Path) -> dict:
@@ -376,9 +398,6 @@ def migrate_sh3(con: sqlite3.Connection, backup_path: Path) -> dict:
     migrate_sh2(con)
     con.commit()
     old_columns, definitions = _work_items_column_definitions(con)
-    before_count = int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
-    before_digest = _row_digest(con, old_columns)
-    _backup_database(con, backup_path)
     schema_objects: list[tuple[str, str, str]] = []
     seen_objects: set[tuple[str, str]] = set()
     for obj_type, name, sql in con.execute(
@@ -414,6 +433,9 @@ def migrate_sh3(con: sqlite3.Connection, backup_path: Path) -> dict:
     con.execute("PRAGMA foreign_keys=OFF")
     con.execute("BEGIN IMMEDIATE")
     try:
+        before_count = int(con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0])
+        before_digest = _row_digest(con, old_columns)
+        _backup_database_locked_snapshot(con, backup_path)
         # SQLite validates all dependent schema text during ALTER TABLE. Remove
         # dependent views/triggers only inside this transaction and reinstall their
         # exact SQL after the swap; rollback restores them automatically on failure.
@@ -523,7 +545,20 @@ def main() -> int:
         else:
             if args.backup is None:
                 ap.error("migrate-sh3 --apply requires --backup")
-            out["sh3_migration"] = migrate_sh3(con, args.backup)
+            db_path = Path(args.db).resolve()
+            lock_path = (
+                FACTORY_MUTATION_LOCK
+                if db_path == DB.resolve()
+                else db_path.with_suffix(db_path.suffix + ".mutation.lock")
+            )
+            with FactoryMutationLock(
+                lock_path, owner="schema_hardening:migrate-sh3"
+            ) as mutation_lock:
+                out["sh3_migration"] = migrate_sh3(con, args.backup)
+                out["sh3_migration"]["mutation_lock"] = {
+                    "path": str(lock_path),
+                    "nonce": mutation_lock.nonce,
+                }
             out["sh3_after"] = validate_sh3(con)
     con.close()
     print(json.dumps(out, indent=1))

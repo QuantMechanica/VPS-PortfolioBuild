@@ -26,6 +26,52 @@ IDENTITY_COLUMNS = (
     "news_calendar_sha256",
 )
 
+# Canonical SH-3 verdict taxonomy contract.  Completion writers and the table
+# rebuild consume this same tuple so a newly introduced verdict class cannot be
+# accepted by Python while remaining impossible to persist in SQLite.
+VERDICT_TAXONOMIES = (
+    "draft_defect", "governance", "infra", "invalid", "measurement",
+    "prescreen_measurement", "open", "review", "strategy", "unknown",
+    "artifact", "build", "implementation",
+)
+
+
+class VerdictTaxonomyContractError(RuntimeError):
+    """A completion taxonomy is unknown or unsupported by the live schema."""
+
+
+def validate_verdict_taxonomy_write(
+    conn: sqlite3.Connection, taxonomy: str
+) -> str:
+    """Fail before the completion UPDATE when code and SH-3 schema diverge.
+
+    Pre-SH-3 fixture databases have no taxonomy CHECK and remain supported.
+    An SH-3 table exposes its generated contract in ``sqlite_master``; checking
+    that DDL gives workers an actionable contract error instead of a raw
+    ``sqlite3.IntegrityError`` after an otherwise successful tester run.
+    """
+
+    token = str(taxonomy or "").strip().lower()
+    if token not in VERDICT_TAXONOMIES:
+        raise VerdictTaxonomyContractError(
+            f"verdict taxonomy is not in the canonical contract: {token!r}"
+        )
+    have = table_columns(conn)
+    if "verdict_taxonomy" not in have or "sh3_enforced" not in have:
+        return token
+    row = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='work_items'"
+    ).fetchone()
+    ddl = str(row[0] or "") if row else ""
+    if "CHECK" in ddl.upper():
+        quoted = "'" + token.replace("'", "''") + "'"
+        if quoted not in ddl:
+            raise VerdictTaxonomyContractError(
+                "live work_items SH-3 constraint does not admit canonical "
+                f"taxonomy {token!r}; apply the governed schema migration first"
+            )
+    return token
+
 SHA256_COLUMNS = frozenset(
     {"ex5_sha256", "setfile_sha256", "mq5_sha256", "include_closure_sha256",
      "news_calendar_sha256"}
@@ -326,6 +372,7 @@ def identity_update_clause(
     taxonomy: str,
 ) -> tuple[str, list[Any]]:
     """SQL assignment fragment for schemas before or after the OFF migration."""
+    taxonomy = validate_verdict_taxonomy_write(conn, taxonomy)
     have = table_columns(conn)
     assignments: list[str] = []
     values: list[Any] = []

@@ -7,7 +7,11 @@ from pathlib import Path
 import pytest
 
 from tools.strategy_farm import farmctl, schema_hardening
-from tools.strategy_farm.artifact_identity import prepare_completion
+from tools.strategy_farm.artifact_identity import (
+    VerdictTaxonomyContractError,
+    identity_update_clause,
+    prepare_completion,
+)
 
 
 HASH_A = "a" * 64
@@ -159,6 +163,20 @@ def test_sh3_rebuild_preserves_history_and_constrains_new_writes(tmp_path: Path)
         "done", "PASS", "strategy", HASH_A, HASH_B, "2017.01.01", "2022.12.31",
     )
 
+    _insert(con, "new-prescreen", "pending", None, {})
+    con.execute(
+        "UPDATE work_items SET status='done',verdict='PRESCREEN_MEASURED',"
+        "payload_json=? WHERE id='new-prescreen'",
+        (json.dumps({"verdict_taxonomy": "prescreen_measurement"}),),
+    )
+    prescreen = con.execute(
+        "SELECT status,verdict,verdict_taxonomy,sh3_enforced "
+        "FROM work_items WHERE id='new-prescreen'"
+    ).fetchone()
+    assert prescreen == (
+        "done", "PRESCREEN_MEASURED", "prescreen_measurement", 1,
+    )
+
     _insert(con, "new-partial", "pending", None, {})
     con.execute(
         "UPDATE work_items SET status='done',verdict='FAIL',payload_json=? WHERE id='new-partial'",
@@ -181,4 +199,28 @@ def test_sh3_rebuild_preserves_history_and_constrains_new_writes(tmp_path: Path)
             "'blank-phase','backtest','','QM5_1','EURUSD.DWX','x.set','pending',0,'{}',"
             "'2026-01-01T00:00:00Z','2026-01-01T00:00:00Z')"
         )
+    con.close()
+
+def test_completion_prewrite_rejects_schema_taxonomy_drift(tmp_path: Path) -> None:
+    con = _legacy_db(tmp_path / "farm.sqlite")
+    schema_hardening.migrate_sh3(con, tmp_path / "pre_sh3.sqlite")
+    ddl = con.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='work_items'"
+    ).fetchone()[0]
+    assert "'prescreen_measurement'" in ddl
+    # Simulate the exact production drift without attempting a completion
+    # write: the pre-write guard reads the live table contract.
+    drifted = ddl.replace(",'prescreen_measurement'", "")
+    con.execute("PRAGMA writable_schema=ON")
+    con.execute(
+        "UPDATE sqlite_master SET sql=? WHERE type='table' AND name='work_items'",
+        (drifted,),
+    )
+    con.execute("PRAGMA writable_schema=OFF")
+    con.commit()
+    with pytest.raises(
+        VerdictTaxonomyContractError,
+        match="governed schema migration",
+    ):
+        identity_update_clause(con, {}, "prescreen_measurement")
     con.close()
