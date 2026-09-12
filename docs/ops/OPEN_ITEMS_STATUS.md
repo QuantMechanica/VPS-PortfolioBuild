@@ -3307,6 +3307,15 @@ fully reversed to TODO with a narrow second append-only journal entry; no verdic
 Tests: 15 PASS; resolver dry-run 18,280 kept / 0 dropped; status-aware collisions 0. Evidence:
 `docs/ops/evidence/2026-09-12_blocked_agent_task_backlog_disposition.md`.
 
+## 2026-09-12T08:08Z — RESULT `5ff527e8` duplicate Q08 PASS-class review replayed
+
+The exact immutable review of `3e7f5752c2` was already delivered as `348af875`,
+accepted, and its three low findings applied in `f0738ca5d3`. Replay verdict remains
+**PASS-with-findings**, with all findings resolved. Focused current verification:
+86 passed, 1 skipped across the bundle, release-status, dual-builder, and DSR
+consumer suites. No implementation or operational state changed. Evidence:
+`docs/ops/evidence/2026-09-04_review_bundle_q08_passclass.md`.
+
 ## 2026-09-12T05:55Z — RESULT Q02 stranded exhausted pairs: REVIEW (3 -> 2)
 
 Fresh row-bound classification found 3 pairs / 40 INFRA_FAIL rows: QM5_10505/XAUUSD and QM5_12582/XNGUSD

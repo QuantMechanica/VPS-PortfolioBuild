@@ -73,3 +73,27 @@ Durable companions: `2026-09-04_review_bundle_q08_passclass_probe.py`,
 `2026-09-04_review_bundle_q08_passclass_probe.json`, and
 `2026-09-04_review_bundle_q08_passclass_proposed.diff` in this directory.
 The diff is the minimal proposed production/test correction, retained for review.
+
+## 2026-09-12 replay close-out (`5ff527e8`)
+
+The backlog sweeper requeued the older review row before detecting that the exact
+review had already been completed as task `348af875` and accepted in
+`OPEN_ITEMS_STATUS.md:845`. This replay changes no implementation and does not merge
+anything. The immutable review verdict remains **PASS-with-findings**.
+
+All three low findings are now resolved by `f0738ca5d3`: instant-aware deterministic
+ordering is present at `assemble_stream_bundle.py:160` and `:203`; mixed
+PASS/FAIL_SOFT ordering and loader verification are covered at
+`test_assemble_stream_bundle.py:343`; and the refusal names the PASS-class at
+`assemble_stream_bundle.py:306`. The current census still defines FAIL_SOFT as the
+sole additional gate-scoped Q08 pass token at `rebaseline_census.py:182`.
+
+Focused replay verification on the canonical branch:
+
+- `test_assemble_stream_bundle.py`, `test_release_status.py`,
+  `test_dual_book_builders.py`, `test_dsr_single_configuration.py`, and
+  `test_dsr_cohort.py`: **86 passed, 1 skipped**.
+- `3e7f5752c2` is an ancestor of the canonical review branch; the only later changes
+  to the reviewed files are the accepted finding fixes in `f0738ca5d3`.
+- No new finding was identified; no queue, verdict, T_Live/FTMO, or book-build
+  operation was performed by the replay.
