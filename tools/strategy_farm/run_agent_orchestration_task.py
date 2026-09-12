@@ -1191,7 +1191,7 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
             assigned = str(row["assigned_agent"] or "")
             # A human-owned task is never offered to an automated lane, even
             # if a stale assignment or registry drift says otherwise.
-            human_holder = agent_router._human_lane_holder(con, required)
+            human_holder = agent_router._human_lane_holder(con, required, root=FARM_ROOT)
             if human_holder is not None and human_holder != agent:
                 continue
             # Decision-bound rows belong to one lane only (doctrine

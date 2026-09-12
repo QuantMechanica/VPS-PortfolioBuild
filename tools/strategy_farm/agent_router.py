@@ -24,6 +24,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -224,8 +225,260 @@ AGENT_EXTRA_REQUIRED_CAPABILITIES: dict[str, set[str]] = {
     # is bot-blocked on YouTube — so the lane could never deliver, and a video
     # ticket sitting there was indistinguishable from ordinary backlog. OWNER
     # holds this capability personally now.
+    #
+    # OWNER 2026-09-09 (annex in "AI Agent Routing and Role Contracts.md")
+    # re-opened this for the AI seats under a CAPTIONS-FIRST contract: the seats
+    # do the caption work, on-screen-only content stays a documented GAP and a
+    # frame-list ask for OWNER. That is not a silent redefinition of this map —
+    # it is gated behind `video_analysis_ai_lanes_enabled()` (default OFF) and
+    # applied by `effective_lane_capabilities()`.
     "owner": {"video_analysis"},
 }
+
+VIDEO_ANALYSIS_CAPABILITY = "video_analysis"
+# Default-OFF switch for the captions-first AI video lane (OWNER 2026-09-09).
+# Env wins over the flag file so an operator can dry-run one command without
+# changing shared runtime state; the flag file is how the orchestrator arms the
+# scheduled router. Both are explicit: no implicit activation anywhere.
+VIDEO_ANALYSIS_AI_LANES_ENV = "QM_VIDEO_ANALYSIS_AI_LANES"
+VIDEO_ANALYSIS_AI_LANES_FLAG = "VIDEO_ANALYSIS_AI_LANES.flag"
+# Ordered by intended preference. `gemini`/agy is deliberately NOT here: it
+# hallucinates on this task class (49/50 negative build-wave review 2026-08-21)
+# and, at cost_rank 10, would become the DEFAULT video seat the moment it
+# declared the capability. It stays last by staying out.
+VIDEO_ANALYSIS_AI_LANES: tuple[str, ...] = ("codex", "claude")
+VIDEO_ANALYSIS_TRANSCRIPT_TOOL = "tools/strategy_farm/fetch_transcript.py"
+VIDEO_ANALYSIS_EVIDENCE_DIR = "docs/research"
+VIDEO_ANALYSIS_EVIDENCE_PATTERN = "docs/research/VIDEO_<video_id>_<topic>_<YYYY-MM-DD>.md"
+VIDEO_ANALYSIS_WORKED_EXAMPLE = (
+    "docs/research/VIDEO_Pay-JP34YSI_BALKE_USDJPY_CLOCK_2026-09-09.md"
+)
+VIDEO_ANALYSIS_OWNER_SURFACE = "12 ToDo/AI ToDos/OWNER Videoanalysen.md"
+VIDEO_ANALYSIS_AUTHORITY = (
+    "OWNER 2026-09-09: video research is executed by the AI seats captions-first; "
+    "on-screen-only content is a documented evidence GAP and a numbered frame-list "
+    "ask for OWNER, never guessed."
+)
+
+
+def _truthy_env(raw: str | None) -> bool | None:
+    """Tri-state env read: True / False / unset-or-unparseable (None)."""
+    if raw is None:
+        return None
+    value = raw.strip().lower()
+    if value in {"1", "true", "yes", "on", "enabled"}:
+        return True
+    if value in {"0", "false", "no", "off", "disabled", ""}:
+        return False
+    return None
+
+
+def video_analysis_ai_lanes_enabled(root: Path = DEFAULT_ROOT) -> bool:
+    """Is the captions-first AI video lane armed? DEFAULT OFF.
+
+    OFF reproduces the OWNER-only behaviour exactly (hold with
+    `awaiting_human_lane:owner`), so the switch is a true rollback point.
+    """
+    env = _truthy_env(os.environ.get(VIDEO_ANALYSIS_AI_LANES_ENV))
+    if env is not None:
+        return env
+    try:
+        return (Path(root) / "state" / VIDEO_ANALYSIS_AI_LANES_FLAG).exists()
+    except OSError:  # pragma: no cover - defensive
+        return False
+
+
+def video_analysis_switch_state(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
+    """Explain the switch for operator surfaces and evidence records."""
+    flag_path = Path(root) / "state" / VIDEO_ANALYSIS_AI_LANES_FLAG
+    env_raw = os.environ.get(VIDEO_ANALYSIS_AI_LANES_ENV)
+    return {
+        "enabled": video_analysis_ai_lanes_enabled(root),
+        "env_var": VIDEO_ANALYSIS_AI_LANES_ENV,
+        "env_value": env_raw,
+        "flag_path": str(flag_path),
+        "flag_present": flag_path.exists(),
+        "ai_lanes": list(VIDEO_ANALYSIS_AI_LANES),
+        "authority": VIDEO_ANALYSIS_AUTHORITY,
+    }
+
+
+def effective_lane_capabilities(
+    agent_id: str,
+    capabilities: list[str] | tuple[str, ...],
+    *,
+    ai_video_lanes: bool,
+) -> list[str]:
+    """Capabilities a lane declares under the current switch state.
+
+    The ONLY switch-dependent difference: `codex` and `claude` declare
+    `video_analysis` while the captions-first lane is armed. Nothing is ever
+    removed, and `gemini`/`owner` are untouched in both states.
+    """
+    declared = list(capabilities)
+    if not ai_video_lanes:
+        return declared
+    if agent_id in VIDEO_ANALYSIS_AI_LANES and VIDEO_ANALYSIS_CAPABILITY not in declared:
+        declared.append(VIDEO_ANALYSIS_CAPABILITY)
+    return declared
+
+
+def _human_lane_owned_capabilities(agent_id: str, root: Path = DEFAULT_ROOT) -> set[str]:
+    """Capabilities for which `agent_id` is the ONLY possible executor.
+
+    While the captions-first lane is armed, `video_analysis` is no longer
+    human-exclusive, so the human-lane hold must not fire for it — otherwise
+    the AI lanes would declare a capability they are never offered.
+    """
+    owned = set(AGENT_EXTRA_REQUIRED_CAPABILITIES.get(agent_id, set()))
+    if video_analysis_ai_lanes_enabled(root):
+        owned.discard(VIDEO_ANALYSIS_CAPABILITY)
+    return owned
+
+
+_YOUTUBE_URL_RE = re.compile(
+    r"https?://(?:www\.)?(?:youtube\.com/(?:watch\?[^\s\"']*v=|shorts/|embed/|live/)|youtu\.be/)"
+    r"([A-Za-z0-9_-]{6,})",
+)
+VIDEO_URL_PAYLOAD_FIELDS = ("videos", "video_urls", "urls", "video", "video_url", "sources")
+
+
+def extract_video_references(payload: Mapping[str, Any] | None) -> list[dict[str, str]]:
+    """Every video URL a video_analysis payload carries, de-duplicated in order.
+
+    Explicit list fields first (that is where enqueue puts them), then a scan of
+    the serialized payload so a URL mentioned only in prose still reaches the
+    seat. A payload that carries no URL yields an empty list — the contract then
+    tells the seat to ask rather than to invent one.
+    """
+    task_payload = dict(payload or {})
+    candidates: list[str] = []
+    for field in VIDEO_URL_PAYLOAD_FIELDS:
+        raw = task_payload.get(field)
+        if isinstance(raw, str):
+            candidates.append(raw)
+        elif isinstance(raw, (list, tuple)):
+            candidates.extend(str(item) for item in raw)
+    try:
+        candidates.append(json.dumps(task_payload, sort_keys=True, default=str))
+    except (TypeError, ValueError):  # pragma: no cover - defensive
+        pass
+    seen: set[str] = set()
+    references: list[dict[str, str]] = []
+    for candidate in candidates:
+        for match in _YOUTUBE_URL_RE.finditer(str(candidate)):
+            video_id = match.group(1)
+            if video_id in seen:
+                continue
+            seen.add(video_id)
+            references.append({"video_id": video_id, "url": match.group(0)})
+    return references
+
+
+def render_video_analysis_dispatch_prompt(contract: Mapping[str, Any]) -> str:
+    """The captions-first instruction block handed to the executing seat."""
+    videos = list(contract.get("videos") or [])
+    if videos:
+        video_lines = "\n".join(
+            f"  {index}. {item.get('url')} (video_id {item.get('video_id')}) -> "
+            f"python {VIDEO_ANALYSIS_TRANSCRIPT_TOOL} {item.get('video_id')}"
+            for index, item in enumerate(videos, start=1)
+        )
+    else:
+        video_lines = (
+            "  (no video URL in the payload — do NOT search for a substitute; "
+            "report the missing URL back on the task instead)"
+        )
+    return "\n".join(
+        [
+            "VIDEO ANALYSIS — CAPTIONS-FIRST CONTRACT (OWNER 2026-09-09).",
+            VIDEO_ANALYSIS_AUTHORITY,
+            "",
+            "1. Captions first. For EVERY video URL in this payload run:",
+            video_lines,
+            "   Record the access method and the transcript path you worked from.",
+            "2. Write ONE evidence file per analysis under "
+            f"{VIDEO_ANALYSIS_EVIDENCE_DIR}, named {VIDEO_ANALYSIS_EVIDENCE_PATTERN}, "
+            f"in the style of {VIDEO_ANALYSIS_WORKED_EXAMPLE}: every claim carries an "
+            "[hh:mm:ss] caption timestamp of the cited video. A claim without a "
+            "timestamp is not evidence and does not belong in the file.",
+            "3. On-screen-only content (input sheets, key-figure screens, chart axes) "
+            "is an evidence GAP. Mark it NICHT GEZEIGT / NOT SHOWN in the file and "
+            "collect those questions as a NUMBERED frame list (video_id + [hh:mm:ss] + "
+            "the one question per frame) for OWNER on the vault page "
+            f"\"{VIDEO_ANALYSIS_OWNER_SURFACE}\". Keep it short: OWNER's time is the "
+            "scarcest seat.",
+            "4. NEVER fill a visual gap by guessing, estimating, or inferring from a "
+            "prior artifact. No screenshot-free claim about on-screen numbers. A "
+            "documented gap is a valid, complete result; an invented number poisons "
+            "the card chain.",
+            "5. Close the task with --artifact-path pointing at the evidence file. If "
+            "captions are unavailable for a video (no transcript, proxies exhausted), "
+            "say so explicitly with the attempt evidence and leave the video as a GAP.",
+        ]
+    )
+
+
+def video_analysis_dispatch_contract(
+    payload: Mapping[str, Any] | None,
+    *,
+    task_id: str | None = None,
+    agent: str | None = None,
+    root: Path = DEFAULT_ROOT,
+) -> dict[str, Any]:
+    """The machine-readable half of the captions-first dispatch contract."""
+    videos = extract_video_references(payload)
+    contract: dict[str, Any] = {
+        "schema": "qm.video_analysis_dispatch_contract.v1",
+        "authority": VIDEO_ANALYSIS_AUTHORITY,
+        "task_id": task_id,
+        "agent": agent,
+        "videos": videos,
+        "transcript_tool": VIDEO_ANALYSIS_TRANSCRIPT_TOOL,
+        "transcript_commands": [
+            f"python {VIDEO_ANALYSIS_TRANSCRIPT_TOOL} {item['video_id']}" for item in videos
+        ],
+        "evidence_dir": VIDEO_ANALYSIS_EVIDENCE_DIR,
+        "evidence_path_pattern": VIDEO_ANALYSIS_EVIDENCE_PATTERN,
+        "worked_example": VIDEO_ANALYSIS_WORKED_EXAMPLE,
+        "owner_frame_list_surface": VIDEO_ANALYSIS_OWNER_SURFACE,
+        "timestamp_rule": "every claim carries an [hh:mm:ss] caption timestamp",
+        "gap_rule": "on-screen-only content is marked NICHT GEZEIGT and listed as a numbered OWNER frame ask",
+        "prohibitions": [
+            "never guess, estimate or infer on-screen content",
+            "never reuse a prior artifact's unsourced claim as a prior",
+            "never claim a frame was viewed without naming the access method",
+        ],
+        "switch": video_analysis_switch_state(root),
+    }
+    contract["instructions"] = render_video_analysis_dispatch_prompt(contract)
+    return contract
+
+
+def task_requires_video_analysis(
+    required: set[str] | None = None,
+    *,
+    skills: set[str] | list[str] | None = None,
+    payload: Mapping[str, Any] | None = None,
+) -> bool:
+    """Does this row structurally require `video_analysis`?
+
+    Checks every channel a row can carry the requirement through: routing
+    capabilities, the declared skills column, and the persisted human-lane hold
+    (rows parked before the capability was even a column entry).
+    """
+    if VIDEO_ANALYSIS_CAPABILITY in set(required or ()):
+        return True
+    if VIDEO_ANALYSIS_CAPABILITY in set(skills or ()):
+        return True
+    task_payload = dict(payload or {})
+    if VIDEO_ANALYSIS_CAPABILITY in set(payload_required_capabilities(task_payload)):
+        return True
+    hold = task_payload.get("router_human_lane_hold")
+    if isinstance(hold, Mapping):
+        if VIDEO_ANALYSIS_CAPABILITY in set(hold.get("required") or ()):
+            return True
+    return False
 
 # Lanes with NO automated worker. A task whose requirements only a human lane
 # can satisfy must never be silently skipped (that is what made the blind agy
@@ -808,8 +1061,14 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
                 "canonical registry writer generation contract is not authorized: "
                 + _json(writer_contract)
             )
+        ai_video_lanes = video_analysis_ai_lanes_enabled(root)
         for agent_id, cfg in DEFAULT_AGENT_REGISTRY.items():
             effective = dict(cfg)
+            effective["capabilities"] = effective_lane_capabilities(
+                agent_id,
+                effective.get("capabilities", []),
+                ai_video_lanes=ai_video_lanes,
+            )
             if agent_id == "claude" and claude_disabled_flag.exists():
                 effective["enabled"] = False
                 effective["max_parallel"] = 0
@@ -1295,7 +1554,12 @@ def _record_capability_warning(
     _record_lease_event(conn, task["id"], "routing_capability_unroutable", warning)
 
 
-def _human_lane_holder(conn: sqlite3.Connection, required: set[str]) -> str | None:
+def _human_lane_holder(
+    conn: sqlite3.Connection,
+    required: set[str],
+    *,
+    root: Path = DEFAULT_ROOT,
+) -> str | None:
     """Name the human lane that alone can satisfy `required`, if any.
 
     A human lane is declared in the registry but has no worker process
@@ -1308,6 +1572,10 @@ def _human_lane_holder(conn: sqlite3.Connection, required: set[str]) -> str | No
     ordinary review/research ticket would be held for OWNER whenever the AI
     lanes are merely at capacity, because their requirements happen to be a
     subset of the human lane's declared set.
+
+    Ownership is switch-aware (``_human_lane_owned_capabilities``): while the
+    captions-first video lane is armed, `video_analysis` is no longer
+    human-exclusive and the hold stops firing for it. Default OFF.
     """
     if not required:
         return None
@@ -1317,7 +1585,7 @@ def _human_lane_holder(conn: sqlite3.Connection, required: set[str]) -> str | No
         agent_id = str(row["agent_id"])
         if agent_id not in HUMAN_LANES:
             continue
-        owned = set(AGENT_EXTRA_REQUIRED_CAPABILITIES.get(agent_id, set()))
+        owned = _human_lane_owned_capabilities(agent_id, root)
         if not (required & owned):
             continue
         capabilities = set(json.loads(row["capabilities_json"] or "[]"))
@@ -1557,7 +1825,7 @@ def route_once(
                     skipped.append(task["id"])
                     continue
             if not agents:
-                holder = _human_lane_holder(conn, required)
+                holder = _human_lane_holder(conn, required, root=root)
                 if holder is not None:
                     hold = {
                         "code": "ROUTER_AWAITING_HUMAN_LANE",
@@ -1664,6 +1932,32 @@ def route_once(
         payload.pop("router_decision_bound_hold", None)
         payload["routed_at"] = now
         payload["required_capabilities"] = sorted(required)
+        # Captions-first dispatch contract (OWNER 2026-09-09). A video row must
+        # never reach a seat as an ordinary research ticket: the execution rules
+        # travel WITH the dispatch, in the payload the seat actually reads, so
+        # they cannot be lost by a lane whose prompt template is out of date.
+        if task_requires_video_analysis(
+            required,
+            skills=set(json.loads(task["required_skills_json"] or "[]")),
+            payload=payload,
+        ):
+            contract = video_analysis_dispatch_contract(
+                payload,
+                task_id=str(task["id"]),
+                agent=str(agent["agent_id"]),
+                root=root,
+            )
+            payload["video_analysis_contract"] = contract
+            _record_lease_event(
+                conn,
+                task["id"],
+                "video_analysis_captions_first_dispatch",
+                {
+                    "agent": str(agent["agent_id"]),
+                    "videos": [item["video_id"] for item in contract["videos"]],
+                    "switch": contract["switch"],
+                },
+            )
         if gate.get("enforced"):
             payload["quota_gate"] = gate
             if gate.get("tier_escalation"):
@@ -3012,6 +3306,43 @@ def sync_q11_candidates(
     }
 
 
+def render_task_video_contract(root: Path, task_id: str) -> dict[str, Any]:
+    """Read-only: what a seat WOULD be told if this row were dispatched now."""
+    with closing(connect(root)) as conn:
+        row = conn.execute(
+            "SELECT id, state, task_type, assigned_agent, required_capabilities_json, "
+            "required_skills_json, payload_json FROM agent_tasks WHERE id=?",
+            (task_id,),
+        ).fetchone()
+    if row is None:
+        return {"rendered": False, "reason": "task_not_found", "task_id": task_id}
+    try:
+        payload = json.loads(row["payload_json"] or "{}")
+    except (TypeError, json.JSONDecodeError):
+        payload = {}
+    required = set(json.loads(row["required_capabilities_json"] or "[]"))
+    skills = set(json.loads(row["required_skills_json"] or "[]"))
+    if not task_requires_video_analysis(required, skills=skills, payload=payload):
+        return {
+            "rendered": False,
+            "reason": "task_does_not_require_video_analysis",
+            "task_id": task_id,
+            "state": row["state"],
+        }
+    return {
+        "rendered": True,
+        "task_id": task_id,
+        "state": row["state"],
+        "assigned_agent": row["assigned_agent"],
+        "contract": video_analysis_dispatch_contract(
+            payload,
+            task_id=task_id,
+            agent=row["assigned_agent"],
+            root=root,
+        ),
+    }
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=DEFAULT_ROOT)
@@ -3078,6 +3409,15 @@ def main(argv: list[str] | None = None) -> int:
                           help="legacy mirror-all (skip the DL-064 R-064-2 diversification gate)")
     sync_q11.add_argument("--venue", choices=("dxz", "ftmo"), default="dxz")
     sync_q11.add_argument("--order-dir", type=Path, default=book_build_guard.DEFAULT_ORDER_DIR)
+    video_contract = sub.add_parser(
+        "video-contract",
+        help="Render the captions-first video dispatch contract for one task (read-only)",
+    )
+    video_contract.add_argument("task_id")
+    sub.add_parser(
+        "video-lane-status",
+        help="Report the captions-first video lane switch state (read-only)",
+    )
     update = sub.add_parser("update-task")
     update.add_argument("task_id")
     update.add_argument("--state", required=True, choices=sorted(TASK_STATES))
@@ -3152,6 +3492,10 @@ def main(argv: list[str] | None = None) -> int:
             venue=args.venue,
             order_dir=args.order_dir,
         )
+    elif args.command == "video-contract":
+        result = render_task_video_contract(args.root, args.task_id)
+    elif args.command == "video-lane-status":
+        result = video_analysis_switch_state(args.root)
     elif args.command == "update-task":
         result = update_task(
             args.root,
