@@ -18460,3 +18460,5 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 9273,mql5-rsi-hidden-div,1,GBPJPY.DWX,92730001,2026-09-12,Codex governed allocator,active
 9273,mql5-rsi-hidden-div,2,XAUUSD.DWX,92730002,2026-09-12,Codex governed allocator,active
 9273,mql5-rsi-hidden-div,3,GER40.DWX,92730003,2026-09-12,Codex governed allocator,active
+41453,xauxag-nr2-clv-rv,0,XAUUSD.DWX,414530000,2026-09-12,Codex governed allocator,active
+41453,xauxag-nr2-clv-rv,1,XAGUSD.DWX,414530001,2026-09-12,Codex governed allocator,active
