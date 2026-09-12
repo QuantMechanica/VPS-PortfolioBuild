@@ -3740,6 +3740,17 @@ fail closed; 35 focused tests pass. The feature flag remains unset/Default-OFF
 and no production hold, verdict, EA, terminal, or task state changed. Evidence:
 `docs/ops/evidence/2026-09-12_compile_gate_receipt_hash_hardening.md`.
 
+## 2026-09-12T11:32Z — Monthly Dukascopy refresh control (`e37931c2`) REVIEW
+
+RESULT: defined the prior-month day-3 cadence and built a double Default-OFF
+scheduled-task/admission layer. Apply requires a live OWNER/Claude-approved,
+self-hashed manifest update, exact Factory-OFF hash, zero active claims, 37/37
+P3 PASS, and the shared archive-year writer lock. The scheduled entry point
+never writes history; current 0/24 P3 evidence blocks activation. Focused tests:
+32 passed. Installer dry run changed no task state. The required future pause
+is recorded in an OPEN OWNER card. Evidence:
+`docs/ops/evidence/2026-09-12_dukascopy_monthly_refresh_default_off.md`.
+
 ## 2026-09-12T15:30Z — T11/T12 on build 6182 (governed update runbook applied); review round 4 closed
 
 4291c7ef APPROVED: docs/ops/MT5_TERMINAL_UPDATE_RUNBOOK.md written and applied to the research seats only; T11/T12

@@ -1,0 +1,27 @@
+{
+  "schema": "qm.proposed-scheduled-task/v1",
+  "task_name": "QM_Dukascopy_MonthlyCustomHistoryRefresh",
+  "status": "PROPOSED_DISABLED",
+  "schedule": {
+    "timezone": "Europe/Berlin",
+    "day_of_month": 3,
+    "local_time": "03:10",
+    "target": "previous_calendar_month"
+  },
+  "execution": {
+    "command": "C:/Python311/python.exe C:/QM/repo/tools/dukascopy/monthly_refresh.py",
+    "working_directory": "C:/QM/repo",
+    "default_result": "DEFAULT_OFF",
+    "enable_environment": "QM_DUKASCOPY_MONTHLY_REFRESH_ENABLED=1",
+    "installer": "tools/dukascopy/install_monthly_refresh_task.ps1"
+  },
+  "controls": [
+    "task is registered Disabled and the runner is independently Default-OFF",
+    "apply requires a live OWNER window, Claude APPROVED review, exact FACTORY_OFF hash and zero active claims",
+    "P3 must be 37/37 PASS and the signed manifest update must authorize the exact month and mutable year",
+    "one create-exclusive archive-year lock prevents the backfill and monthly lanes from sharing a writer window",
+    "scheduled entry point never downloads, imports, copies history, controls a terminal, or touches T_Live"
+  ],
+  "runbook": "docs/ops/DUKASCOPY_MONTHLY_REFRESH_RUNBOOK_2026-09-12.md",
+  "registration_authority": "SEPARATE_OWNER_RELEASE_REQUIRED"
+}
