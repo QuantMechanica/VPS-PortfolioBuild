@@ -1,0 +1,134 @@
+{
+  "schema_version": "qm.fx-cointegration-hard-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-12T22:18:30Z",
+  "recorded_at_local": "2026-09-13T00:18:30+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "ac347d06f41142f9417619fa0ca49c64d5324df4",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "ea_slug": "pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "timeframe": "H1",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "active_hold_count": 0,
+    "priority_track": true,
+    "claim_order_rank": 20,
+    "claimable_pending_count": 2051,
+    "duplicate_work_item_created": false,
+    "queue_mutated": false,
+    "prior_q01": {
+      "work_item_id": "7d1a179d-4d25-5d37-a69a-3a52fd78ae63",
+      "verdict": "PASS",
+      "observed_leg_trades": 632
+    }
+  },
+  "anchors": [
+    {
+      "ea_id": "QM5_12532",
+      "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+      "terminal_path": [
+        "Q02:PASS",
+        "Q04:PASS",
+        "Q05:FAIL"
+      ],
+      "q02_blocked_oninit_or_no_history": false
+    },
+    {
+      "ea_id": "QM5_12533",
+      "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+      "terminal_path": [
+        "Q02:PASS",
+        "Q04:FAIL"
+      ],
+      "q02_blocked_oninit_or_no_history": false
+    }
+  ],
+  "pacer_guard": {
+    "source_written_or_edited": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "audit_exit_code": 0,
+    "audit_ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "finding_count": 0,
+    "findings": [],
+    "compile_enqueued": false
+  },
+  "risk_contract": {
+    "setfile": "framework/EAs/QM5_12507_pair-coint-z/sets/QM5_12507_pair-coint-z_QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1_H1_backtest.set",
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "capacity": {
+    "sample_interval_seconds": 2,
+    "samples": [
+      {
+        "timestamp_utc": "2026-09-12T22:18:18.8520139Z",
+        "percent": 91.0
+      },
+      {
+        "timestamp_utc": "2026-09-12T22:18:21.8868517Z",
+        "percent": 99.0
+      },
+      {
+        "timestamp_utc": "2026-09-12T22:18:24.9062292Z",
+        "percent": 100.0
+      },
+      {
+        "timestamp_utc": "2026-09-12T22:18:27.9392640Z",
+        "percent": 97.0
+      },
+      {
+        "timestamp_utc": "2026-09-12T22:18:30.9559591Z",
+        "percent": 71.0
+      }
+    ],
+    "average_percent": 91.6,
+    "maximum_percent": 100.0,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": true,
+    "factory_terminals_observed": [
+      "T1",
+      "T3",
+      "T6",
+      "T9",
+      "T10"
+    ],
+    "enabled_worker_daemons": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ]
+  },
+  "actions": {
+    "card_created": false,
+    "ea_created_or_changed": false,
+    "basket_manifest_changed": false,
+    "registry_or_magic_changed": false,
+    "q02_appended": false,
+    "work_item_claimed": false,
+    "dispatch_started": false,
+    "tester_started": false,
+    "terminal_controlled": false,
+    "portfolio_gate_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "stop_reason": "BACKTEST_CPU_CEILING_MAX_GE_97"
+}
