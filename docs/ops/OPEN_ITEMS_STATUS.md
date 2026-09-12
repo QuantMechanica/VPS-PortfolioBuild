@@ -3949,3 +3949,13 @@ Class A (registry identity row missing, magic rows present): QM5_1627, QM5_1628 
 use the non-canonical GER40.DWX (factory symbol = GDAXI.DWX) -> amend cards; QM5_20179 (self-inconsistent card,
 18 pct DD) and QM5_2076 (20 pct DD) breach the Edge Lab 10 pct cap -> retire unless redesigned. No source,
 registry or compile mutation in any of the six.
+
+## 2026-09-12T20:45Z — RESULT: five reworks APPROVED (orchestrator consolidated RESULT; workers omitted the lines)
+
+dfc248dc QM5_11302 (SPEC 7-section contract restored 670bcaad55, smoke schema corrected, source byte-unchanged,
+compile 63571c00 pending); c1cd9635 QM5_11363 (card-faithful SPEC 4e144a48c3, evidence file, compile 1f0e31f8);
+d55f1d63 QM5_11362 (SPEC e3998d97b2, compile 6f14b8f3); 7ac78733 QM5_11898 (96-bar timeout repaired to observed
+H1 bars via iBarShift 3d59a268f8, 4/4 tests, compile 61a4a778); 982fe1f3 QM5_9354 (transactional pre-open state,
+exit-first OnTick 3fc7fd8364, 4/4 tests, compile 030c32c3). All: symbols as inputs, no news-archive read, no ad hoc
+.ex5, old rows untouched. All five compiles are born with the COMPILE_EA_WORKER_ROLLOUT_PENDING activation hold
+(compile_work_items.COMPILE_ACTIVATION_HOLD_CODE) and need a compile-wave release -- structural, see next entry.
