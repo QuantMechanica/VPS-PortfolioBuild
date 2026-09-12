@@ -3242,3 +3242,17 @@ re-issue Model=1 (P95), b982a763 Q09 autoseal holds (P90), 5a6eea33 binding drif
 47 pct (P85), af3eac6e Q02 stranded pairs (P70, Luna), 3b334176 backup-gap ack (P60, Luna). Opus agent (worktree)
 builds the video-lane re-route (OWNER 2026-09-09: AI seats, captions-first) with a batched release helper for
 the ~420 BLOCKED video tickets (Default-OFF).
+
+## 2026-09-12T07:50Z — RESULT video lane re-route (Opus, worktree) + RECYCLE analysis
+
+Video lane: commit dd205e3fd0 (built in an isolated worktree, 26 new tests, 309 router tests green): video_analysis
+servable by codex + claude captions-first (fetch_transcript.py per URL, VIDEO_<id>_*.md evidence with caption
+timestamps, numbered frame list for the OWNER on "OWNER Videoanalysen.md", never guess), gemini/agy excluded,
+Default-OFF switch QM_VIDEO_ANALYSIS_AI_LANES=1 or D:\QM\strategy_farm\state\VIDEO_ANALYSIS_AI_LANES.flag,
+release helper release_video_analysis_holds.py (dry-run default, --limit --apply, fail-closed while OFF).
+FINDING: only 2 of 422 BLOCKED rows are video holds (c993c011, d2bc5e78); the 420 others are August precondition
+holds (registry/magic, ~97), terminal closes mislabeled BLOCKED (~35), RETEST 08-21 (~20), gemini research (95)
+-> Codex ticket 349a8394 (BLOCKED disposition sweeper). Next: arm the switch for one dry run, release c993c011
+with --limit 1, watch one captions-first artifact land.
+RECYCLE (181): 40 card gone, 26 superseded, ~110 rework intents for existing EAs (card fidelity) -> OWNER Vorlage
+corrected on the board (classified disposition, paced re-queue, not blanket archive).
