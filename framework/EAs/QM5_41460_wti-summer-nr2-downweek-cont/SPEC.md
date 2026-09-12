@@ -95,3 +95,4 @@ authorized.
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-12 | Initial governed build from approved card |
+| v1-q02 | 2026-09-12 | PACER audit, 10 reference tests, strict compile/build PASS; Q02 FAIL (`MIN_TRADES_NOT_MET`, 23 versus 25 floor); no rerun |

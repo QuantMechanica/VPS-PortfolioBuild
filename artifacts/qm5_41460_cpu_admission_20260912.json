@@ -1,0 +1,15 @@
+{
+  "recorded_utc": "2026-09-12T17:45:08.225829+00:00",
+  "source": "psutil.cpu_percent whole host",
+  "samples_percent": [
+    87.0,
+    73.9,
+    74.0,
+    80.6,
+    85.1
+  ],
+  "average_percent": 80.12,
+  "maximum_percent": 87.0,
+  "threshold_percent": 97.0,
+  "below_ceiling": true
+}

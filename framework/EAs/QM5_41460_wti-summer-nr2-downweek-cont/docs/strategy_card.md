@@ -60,9 +60,14 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: PENDING
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: ff9f513f-bef0-4fff-9053-0b267b98b5ba
+q01_build_report: D:/QM/reports/work_items/ff9f513f-bef0-4fff-9053-0b267b98b5ba/QM5_41460/COMPILE_EA/compile_evidence.json
+q02_status: FAIL
+q02_work_item: dba9a0cb-f6b8-417a-a8fb-69595fa8288f
+q02_reason: MIN_TRADES_NOT_MET
+q02_report: D:/QM/reports/work_items/dba9a0cb-f6b8-417a-a8fb-69595fa8288f/QM5_41460/20260912_174552/summary.json
 force_build: true
 review_focus: "Falsify a WTI June-October range-contraction negative-week short continuation distinct from the certified XNG oscillator, unconditional summer short, generic summer momentum, positive-week fade, and winter NR2 rules. Verify exact weeks, strict inequalities, short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -238,5 +243,5 @@ AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-12 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-12 | PENDING | build not yet submitted |
-| Q02 Baseline Screening | 2026-09-12 | PENDING | enqueue only after Q01 PASS and CPU admission |
+| Q01 Build Validation | 2026-09-12 | PASS | compile `ff9f513f-bef0-4fff-9053-0b267b98b5ba`; `COMPILE_OK`; 0 compiler errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-12 | FAIL | `MIN_TRADES_NOT_MET`: 23 trades versus the 25-trade floor; PF 1.24, net +647.68, DD 1.90%; no rerun or downstream phase |
