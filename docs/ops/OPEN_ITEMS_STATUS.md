@@ -3739,3 +3739,14 @@ rechecks the MQ5 after compilation. Changed or missing hashes and old receipts
 fail closed; 35 focused tests pass. The feature flag remains unset/Default-OFF
 and no production hold, verdict, EA, terminal, or task state changed. Evidence:
 `docs/ops/evidence/2026-09-12_compile_gate_receipt_hash_hardening.md`.
+
+## 2026-09-12T15:30Z — T11/T12 on build 6182 (governed update runbook applied); review round 4 closed
+
+4291c7ef APPROVED: docs/ops/MT5_TERMINAL_UPDATE_RUNBOOK.md written and applied to the research seats only; T11/T12
+= 5.0.0.6182 (T1 golden hashes), protected roots hash-identical, T12 identity smoke on 6182 exact vs 6140 (no
+evidence-epoch break for the reference cell), guard re-armed, 14-terminal table verified. T11 zero-trade in the
+concurrent pilot persists under CPU saturation (a Dukascopy job co-ran); weekday co-scheduling of research seats
+stays NOT approved. Also closed this round: 79c942ac Dukascopy P2/P3 (fail-closed, successor b5f660f9), 1f4dfc3f
+41453 precondition, 4ce6ec32 backup reuse (addendum + hardening e93dffb6), 3b334176 backup ack, 57fc8b42
+compile-gate holds (hardening 09a32b16 before activation). REVIEW empty. Headless ClaudeOrchestration task
+disabled for the interactive session (duplicate-cycle race, fix ticket 1061ff77); re-enable at session end.
