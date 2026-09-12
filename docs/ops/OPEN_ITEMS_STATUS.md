@@ -3991,3 +3991,14 @@ filter (zero-filter valid). Interpretation: the Unger patterns add no robust out
 filter on these EAs; the census is answering its question negatively. Remaining open programs (13213 Balke
 USDJPY, 11660, 13013 partial, 10403, 10706/11881/11422 partial) finish under the same sealed rule (faster once
 the PRESCREEN class + Nachtrag D are live). No rule change (ROT).
+
+## 2026-09-12T22:35Z — ALERT workers=7 + D: 44 GB (second purge teardown of the day)
+
+17:19Z purge (D: 44.7 GB) stopped the idle workers T4,T5,T8,T10 and relaunched only "6 daemons"; the launcher
+was THROTTLED by disk (additional_capacity 1 per call). D: fell 91.5 -> 44.7 GB within 19 min because the T1 Q02
+run of QM5_9107 XAUUSD (claimed 17:02Z) builds a 54 GB tester tick cache (Agent-3002 31 GB + bases/ticks 22.6 GB)
+-- ordinary full-history real-tick behaviour, protected from the purge while active. Actions (GRUEN): pruned
+hourly DB backups older than 8 h (12.3 GB freed, 8 kept; mutation backups untouched), started the missing workers
+one per launcher call -> 10/10. Findings for tickets: backups dir had grown to 17.7 GB (hourly + per-mutation
+backups of a DB that grew from 0.77 to 1.18 GB today; events table 432,599 rows); the purge relaunch gap
+(7db4e521) recurred. New ticket: backup retention policy + events-table growth.
