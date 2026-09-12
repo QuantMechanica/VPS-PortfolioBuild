@@ -3674,3 +3674,12 @@ correctly stay `IN_PROGRESS`, blocked on external state (Q09_NEWS pipeline throu
 news-calendar backfill) outside their own authority. Re-check next cycle; do not
 re-litigate from scratch unless the calendar file or the 12 pairs' `Q09_NEWS` verdicts
 change.
+
+## 2026-09-12T14:20Z — Reviews: backup acknowledgment + compile-gate holds APPROVED; counter 23/25
+
+3b334176 APPROVED (governed acknowledgment for the 2026-08-18 backup gap, check fail-closed, 5 tests). 57fc8b42
+APPROVED (Default-OFF hold COMPILE_GATE_BROKEN_SOURCE, cd1d4e3ad8; the 12-row cluster is INCLUDE_MIRROR_REFUSED =
+inline compile refused in the live factory for EAs whose source changed after the rework re-queue, not confirmed
+source breakage; nothing re-enqueued). Hardening follow-up (sha pinning of the release receipt) before activation
+via reload chunk 71 with QM_COMPILE_GATE_HOLD_ENABLED=1. Counter 23/25 at 10:12Z (up from 22). Census cells/h
+dropped to ~50 because the fast 41405 matrix is finished and the remaining programs are slower per-year cells.
