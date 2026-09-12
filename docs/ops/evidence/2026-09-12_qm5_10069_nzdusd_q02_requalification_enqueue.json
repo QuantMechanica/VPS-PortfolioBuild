@@ -1,0 +1,85 @@
+{
+  "schema_version": "qm.fx-existing-fallback-q02-enqueue/v1",
+  "recorded_at_utc": "2026-09-12T17:19:08.8983199Z",
+  "recorded_at_local": "2026-09-12T19:19:08.8985994+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "c3411c90a340319e7cc75abde31fe8b19ec1dca7",
+  "frontier": {
+    "relationships_scanned": 66,
+    "unbuilt_pair_found": false,
+    "anchor_status": {
+      "QM5_12532": "Q02_PASS_Q04_PASS_Q05_FAIL",
+      "QM5_12533": "Q02_PASS_Q04_FAIL"
+    }
+  },
+  "selection": {
+    "mode": "existing_forex_fallback",
+    "ea_id": "QM5_10069",
+    "slug": "mql5-hs-rev",
+    "symbol": "NZDUSD.DWX",
+    "timeframe": "H1",
+    "structural": true,
+    "expected_trades_per_year_per_symbol": 20,
+    "source_work_item_id": "727fd995-bf25-4943-bf14-422f59adab65",
+    "compile_work_item_id": "7deba014-7ca5-4e79-bd20-789bad639b69",
+    "successor_work_item_id": "1f5ada0e-2ffd-4289-b369-91201e44fe8d",
+    "successor_initial_status": "active",
+    "successor_initial_claimed_by": "T7",
+    "successor_initial_attempt_count": 0,
+    "successor_initial_verdict": null,
+    "parameter_change_count": 0,
+    "duplicate_enqueue": false
+  },
+  "pacer_guard": {
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "audit_run_precautionarily": true,
+    "audit_exit_code": 0,
+    "audit_finding": "EA_FRAMEWORK_INPUT_PINNED",
+    "audit_hit_count": 0
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "d6243b426c4290aae893cc64088aecc9cca6cbf696abfe8792859588a60ba77c",
+    "ex5_sha256": "4f474930fa4c53657df8252416dc55efa7f3bc974ca706d63faacd54b1db7c55",
+    "setfile_sha256": "9e52a5bfafe2585eb86f86c8f6bc8446596d45e79dacaefbf0ab53a975da3dd1",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1,
+    "qm_ea_id": 10069,
+    "qm_magic_slot_offset": 7
+  },
+  "requalification": {
+    "dry_run_ok": true,
+    "dry_run_eligible": true,
+    "dry_run_would_enqueue": true,
+    "applied": true,
+    "runtime_receipt_path": "D:/QM/strategy_farm/artifacts/receipts/q02_post_binding_requalification/727fd995-bf25-4943-bf14-422f59adab65_1f5ada0e-2ffd-4289-b369-91201e44fe8d.json",
+    "runtime_receipt_sha256": "d8211d19931d7d2f7bb162b259dc84e9a98ca0711494f49f0f8c179ce0f501f6"
+  },
+  "cpu_gate": {
+    "ceiling_percent": 97,
+    "initial_samples_percent": [71.780189, 72.143308, 75.795872, 68.269507, 59.182719],
+    "initial_average_percent": 69.434319,
+    "initial_maximum_percent": 75.795872,
+    "apply_boundary_samples_percent": [76.369872, 54.513069, 51.002695, 63.577829, 73.24482],
+    "apply_boundary_average_percent": 63.741657,
+    "apply_boundary_maximum_percent": 76.369872,
+    "post_enqueue_samples_percent": [50.640803, 52.759691, 69.159153, 58.33547, 63.498461],
+    "post_enqueue_average_percent": 58.878715,
+    "post_enqueue_maximum_percent": 69.159153,
+    "ceiling_hit": false
+  },
+  "farm_snapshot": {
+    "active_work_items": 6,
+    "pending_work_items": 5847
+  },
+  "actions": {
+    "q02_enqueued": true,
+    "dispatch_tick_run": false,
+    "terminal_reserved": false,
+    "tester_launched_by_this_run": false,
+    "terminal_controlled": false,
+    "portfolio_surface_touched": false,
+    "live_surface_touched": false
+  }
+}
