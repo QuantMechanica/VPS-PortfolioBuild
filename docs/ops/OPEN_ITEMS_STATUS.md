@@ -3363,3 +3363,18 @@ TODO 329, BLOCKED 114 (88 registry/magic precondition + 25 non-EA dependency hol
 hold), RECYCLE 1 (video hold), FAILED 228, PIPELINE 215, PASSED 1319. Pacing: the 316 rework tasks sit below every
 ops ticket (priority 30 vs 60-95) and are dispatched to Codex (Sol) by the router after the ~09:00Z reset under the
 quota governor.
+
+## 2026-09-12T09:20Z — Review round (8 Codex returns, Sonnet fan-out, one reviewer per row)
+
+Closed: c955da7f Q08 INVALID APPROVED (default-OFF claim preflight 25df518e7e, flag QM_Q08_DSR_CONTEXT_PREFLIGHT to
+activate in reload chunk 70; 102+63 tests re-run by the reviewer); 5a6eea33 binding drift APPROVED (33/33
+classified, DB-confirmed; test evidence gap noted, reviewer ran 20 tests); 349a8394 BLOCKED sweeper APPROVED
+partial (BLOCKED 114 -> 103, governed allocator batch-01, 74-row misstep fully reversed; follow-up f239a2d9 for the
+24 non-EA holds, 27 allocation candidates, 50 exact holds, doc lede); cb065930 Nachtrag D draft APPROVED (numbers
+reproduced against live ledgers; OWNER sign-off sentence on the board); 2c3cb09e T12 refusal APPROVED as honest
+refusal (successor c2396a30 in the weekend window with the CPU guard at 100). Returned: af3eac6e Q02 stranded
+pairs OPS_FIX_REQUIRED -> TODO (canary 7f4fb7d4 failed after the verdict with spawn_refusal:compile_gate, health
+3 -> 3 not 3 -> 2); b982a763 Q09 binder OPS_FIX_REQUIRED -> TODO (27/28 released rows re-held by
+NEWS_CALENDAR_TAINTED within 2 min; artifact overclaimed "28 hold-free"; taint dependency = Claude task bb814520).
+Pending: 519c11fe prescreen class (review running). Lesson repeated: verify outcomes against the LIVE state after
+apply, not against the intended state (two overclaims caught).
