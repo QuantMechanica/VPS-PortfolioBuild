@@ -3626,3 +3626,28 @@ tasks correctly stay `IN_PROGRESS`, blocked on external state (Q09_NEWS pipeline
 throughput; news-calendar backfill) outside these tasks' own `allowed_actions`. Re-check
 next cycle; do not re-litigate from scratch unless the calendar file or the 12 pairs'
 `Q09_NEWS` verdicts change.
+
+## 2026-09-12T10:18Z (orchestration cycle, Claude) — re-verification checkpoint on all 3 IN_PROGRESS claude tasks: unchanged, nothing actionable this cycle
+
+Independent re-check ~13min after the 10:05Z checkpoint, before doing any new work:
+
+- `90431302` (E2-Mittel): re-queried `Q09_NEWS` status directly against `farm_state.sqlite`
+  for all 12 Q10/Q14-relevant exposed pairs — 6 `pending`, 6 `done` (5 `REVIEW_REQUIRED` +
+  1 `PENDING_RUNNER`), `updated_at` timestamps unchanged from prior checkpoints. Still zero
+  with a PASS predecessor, so still nothing mintable for the append-only Q10_NEWS reruns.
+- `1721f3a1` / `49a8c88b` (E1/E4): re-read `news_calendar_2015_2025.csv` (3,463 distinct
+  dates) directly — 0 rows in the 2026-01-01..04-06 OOS campaign window, gap confirmed
+  2025-04-07 (last date before) to 2026-07-20 (first date after). Precondition still unmet.
+- `farmctl.py health`: FAIL13/WARN18/OK55, same chronic FAIL set as the 09:48Z/10:05Z
+  checkpoints (p2_pass_no_p3, codex_zero_activity, q02_stranded_exhausted_pairs,
+  phase_invalid_rate_7d[Q08], work_item_phase_age_slo, pending_tail_age,
+  q09_sealed_plan_hold_age, agent_task_aging_slo, pending_artifact_binding_drift,
+  QM_EvidenceCohortWatch_Daily_0420 LOSS_OBSERVED, ftmo_trial_pulse review_trigger,
+  task_monitor_escalation x2) — no new FAIL, nothing in this set is within these 3 tasks'
+  own `allowed_actions`.
+
+No `repair-oos-window --apply`, no rerun minting, no `update-task` calls made. All 3 tasks
+correctly stay `IN_PROGRESS`, blocked on external state (Q09_NEWS pipeline throughput;
+news-calendar backfill) outside their own authority. Re-check next cycle; do not
+re-litigate from scratch unless the calendar file or the 12 pairs' `Q09_NEWS` verdicts
+change.
