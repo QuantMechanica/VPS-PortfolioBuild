@@ -3462,3 +3462,12 @@ worker the same way. governed_work_item_hold.py apply (backup taken, docs/ops/ev
 347 rows held with hold code PRESCREEN_SCHEMA_FIX_PENDING; release condition = 519c11fe schema migration + tests +
 one PRESCREEN_MEASURED verdict visible on an append-only rerun of 62538f30. Two failed rows (62538f30, 35a985c0)
 stay as evidence; the ticket reruns them append-only after the fix.
+
+## 2026-09-12T11:10Z — T12 research seat VALID (identity exact); concurrent pilot blocked by LiveUpdate staging
+
+c2396a30 APPROVED: T12 identity smoke = fleet cell exactly (net 2941.71 / PF 1.03 / 208 trades, real ticks,
+receipt 20260912_073454_0eed25d2). The T11+T12 concurrent pilot failed closed on a pending MT5 LiveUpdate
+handoff: /skipupdate suppresses the check at launch but not an update already staged by a background poll
+(build 6182 pre-staged on T12 09:36Z). Follow-up ad4eb945 (Sol): disable background update polling on
+T11/T12 only, pre-clear staged updates, then the concurrent pilot. 5ff527e8 APPROVED as a value-adding duplicate
+of 348af875.
