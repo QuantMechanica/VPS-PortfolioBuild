@@ -3334,6 +3334,16 @@ pending, unclaimed, RUNNABLE_BOUND and hold-free; 2 remain fail-closed (one has 
 source; one has a PASS-row/FAIL-summary contradiction). Focused tests: 117 PASS. Evidence:
 `docs/ops/evidence/2026-09-12_q09_sealed_plan_hold_binder.md`.
 
+## 2026-09-12T06:28Z — RESULT DL-089 OHLC-M1 Nachtrag D: REVIEW / OWNER signature required
+
+Drafted the exact append-only plan/ledger amendment, a live 13-program numbers table, rollback,
+and the requested 15-line German OWNER card. The 2026-09-12 06:25Z read-only snapshot is 4,579
+pending DL-089 cells: at 70% keep plus 10% of drops, cell-level upper-bound arithmetic gives
+3,355 real confirmations and 1,224 saved real-tick cells (24.48–27.20 gross fleet hours).
+The original ~6,400 scenario remains 4,672 / 1,728. Real-tick Model 4 remains exclusive for
+MEASURED/verdict/counter/book. No launches and no farm rows. Evidence:
+`docs/ops/evidence/2026-09-12_dl089_ohlc_prescreen_amendment_draft.md`.
+
 ## 2026-09-12T08:35Z — RESULT OWNER-DEC-BACKLOG-20260912 applied (488 rows, 0 refusals)
 
 Journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl: ARCHIVE 172 (-> FAILED with verdict
