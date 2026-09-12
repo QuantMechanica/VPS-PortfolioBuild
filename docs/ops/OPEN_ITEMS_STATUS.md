@@ -3619,6 +3619,17 @@ guard could disappear on shutdown; it was re-armed with an exact profile
 delete-child deny and finishes `GUARD_PRESENT`. Evidence:
 `docs/ops/evidence/2026-09-12_t11_t12_6182_governed_update.md`.
 
+## 2026-09-12T10:23Z — QM5_41453 governed magic precondition (`1f4dfc3f`) REVIEW
+
+The routed `never_allocated` diagnosis was superseded before execution by the
+governed allocator/build commits `f5922dadb0` and `4599f9a307`. A fresh exact-
+card dry run now returns `already_allocated` with one active identity and the
+two exact active tuples: slot 0 XAUUSD.DWX / 414530000 and slot 1 XAGUSD.DWX /
+414530001. Resolver regeneration dry-run kept 18,318 rows with zero dropped;
+the card/directory/registry/resolver tuple precheck passed. No retired row was
+revived and this task made no registry mutation. Evidence:
+`docs/ops/evidence/2026-09-12_qm5_41453_governed_magic_precondition.json`.
+
 ## 2026-09-12T10:05Z (orchestration cycle, Claude) — re-verification checkpoint on all 3 IN_PROGRESS claude tasks: unchanged, nothing actionable this cycle
 
 Independent re-check ~1h after the 09:06Z checkpoint, before doing any new work:
