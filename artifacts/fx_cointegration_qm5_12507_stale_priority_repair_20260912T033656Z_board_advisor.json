@@ -1,0 +1,110 @@
+{
+  "schema_version": "qm.fx-cointegration-stale-priority-repair/v1",
+  "recorded_at_utc": "2026-09-12T03:38:14.4774481Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "bfeaf7cd828bbf722b6151a41d598b7366bbe37c",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "frontier": {
+    "scan_source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "scan_relationships": 66,
+    "unbuilt_relationships": 0,
+    "qm5_12532": "Q02 PASS; Q04 PASS; Q05 FAIL",
+    "qm5_12533": "Q02 PASS; Q04 FAIL"
+  },
+  "selected_existing_forex_fallback": {
+    "ea_id": "QM5_12507",
+    "slug": "pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "q02_work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "q02_status": "pending",
+    "q02_claimed_by": null,
+    "q02_attempt_count": 0,
+    "q02_verdict": null,
+    "q02_priority_track": true,
+    "post_repair_claim_rank": 30,
+    "eligible_pending_rows": 3395
+  },
+  "stale_priority_repair": {
+    "ea_id": "QM5_20195",
+    "pair": [
+      "NZDUSD.DWX",
+      "EURGBP.DWX"
+    ],
+    "q03_work_item_id": "59fa650c-22f2-4608-bb98-15180abc2aca",
+    "q03_status": "pending",
+    "q03_priority_track_before": true,
+    "q03_priority_track_after": false,
+    "marked_at_utc": "2026-09-12T03:36:56+00:00",
+    "post_repair_claim_rank": 2921,
+    "terminal_q04_work_item_id": "b14b5edf-ffdd-4439-a2ed-dc4930d65029",
+    "terminal_q04_status": "done",
+    "terminal_q04_verdict": "FAIL",
+    "terminal_q04_verdict_taxonomy": "strategy",
+    "terminal_q04_reason": "F1:pf_net=0.919;F2:pf_net=0.860;F3:pf_net=0.752 || lowfreq:FAIL:lowfreq_pooled_pf_below_floor;pool:pf_net=0.868,pooled_trades=42,active_years=3/3",
+    "row_appended": false,
+    "row_requeued": false,
+    "status_or_verdict_changed": false
+  },
+  "pacer_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "symbol_scope": {
+    "verdict": "BASKET_OK",
+    "violation_count": 0,
+    "basket_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "NDX.DWX",
+      "WS30.DWX"
+    ]
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+  },
+  "capacity": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [45, 56, 55, 42, 62],
+    "cpu_average_percent": 52.0,
+    "cpu_maximum_percent": 62.0,
+    "cpu_ceiling_hit": false,
+    "free_physical_memory_gib": 29.809,
+    "total_visible_memory_gib": 63.12,
+    "ram_class": "heavy_or_unknown_multisymbol",
+    "reservation_gib": 44.0,
+    "post_reservation_floor_gib": 14.0,
+    "required_free_memory_gib": 58.0,
+    "ram_admission_met": false,
+    "active_work_items": 6,
+    "pending_work_items": 6610
+  },
+  "actions": {
+    "card_created": false,
+    "ea_source_modified": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "duplicate_work_item_created": false,
+    "stale_priority_unset": true,
+    "dispatch_started": false,
+    "terminal_control_performed": false,
+    "portfolio_gate_modified": false,
+    "live_surface_modified": false
+  }
+}
