@@ -1,0 +1,55 @@
+{
+  "candidate": {
+    "author": "Karsten Schweikert; Toby Crabel; CME Group; OpenAI Codex",
+    "mechanic": "XAU/XAG two synchronized completed weeks; newest strict narrower log-ratio close range; fade strict newest ratio-week body with equal-notional opposed legs; one-week hold",
+    "slug": "xauxag-nr2-body-rv",
+    "strategy_id": "SCHWEIKERT-CRABEL-CME-XAUXAG-NR2-BODY-RV-20260912_S01"
+  },
+  "error": null,
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-12T02:47:27+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41449_xauxag-wr2-body-mom.md",
+      "score": 1.0,
+      "slug": "xauxag-wr2-body-mom",
+      "source": "card",
+      "strategy_id": "FMR-CRABEL-CME-XAUXAG-WR2-BODY-MOM-20260912_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41448_xauxag-wr2-clv-rv.md",
+      "score": 0.75,
+      "slug": "xauxag-wr2-clv-rv",
+      "source": "card",
+      "strategy_id": "SCHWEIKERT-CRABEL-CME-XAUXAG-WR2-CLV-RV-20260912_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4930,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1540,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\QuantMechanica - Company Reference\\09 Strategy Wiki\\strategies",
+      "count": 45,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "OK"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}

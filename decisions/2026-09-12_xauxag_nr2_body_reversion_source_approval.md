@@ -1,0 +1,69 @@
+# XAU/XAG NR2 Body Reversion - Source Approval
+
+Date: 2026-09-12
+
+Decision: `APPROVED_SOURCE` for one bounded V5 Strategy Card, deterministic EA-ID and magic
+allocation, one branch-only non-live build, governed Q01 compile validation, and one paced Q02
+enqueue if the whole-host CPU ceiling and deterministic intake guards permit.
+
+Authority: the current explicit OWNER commodity/energy diversification mission on branch
+`agents/board-advisor`.
+
+## Approved Source Basis
+
+The following committed bounded records were read completely before approval:
+
+1. `strategy-seeds/sources/SCHWEIKERT-XAUXAG-RATIO-2026/source.md`, covering Karsten Schweikert
+   (2018), *Journal of Banking & Finance* 88, 44-51, DOI
+   `10.1016/j.jbankfin.2017.11.010`, and its state-dependent gold/silver relation lineage;
+2. `strategy-seeds/sources/CME-GSR-SPREAD-2025/source.md`, CME's governed gold/silver ratio and
+   intermarket-spread carrier record;
+3. `strategy-seeds/sources/SCHWEIKERT-CME-XAUXAG-WCLOSE-EXTREME-RV-2026/source.md`, the approved
+   peer-reviewed-plus-exchange weekly relative-value translation; and
+4. `strategy-seeds/sources/CRABEL-MOP-WTI-WR4-CLOSE-MOM-2026/source.md`, the approved reputable
+   range-state and Monday-anchored completed-week construction packet.
+
+The source-of-record translation is
+`strategy-seeds/sources/SCHWEIKERT-CRABEL-CME-XAUXAG-NR2-BODY-RV-20260912/source.md`. None of the
+parents tests the exact two-week ratio-range contraction and body fade on Darwinex CFDs.
+
+## Locked Mechanic
+
+At the first tradable D1 bar of each normalized week, reconstruct the two immediately completed,
+consecutive, synchronized XAU/XAG weeks. Form daily log-ratio closes and require the newest weekly
+ratio-close range to be strictly narrower than its predecessor. Fade only a strict newest-week
+ratio body: sell XAU/buy XAG after a positive body and buy XAU/sell XAG after a negative body.
+Use opposed equal-notional legs, consume the week before fallible gates, close in the next
+normalized week, and enforce frozen `3.5*ATR(20,D1)` per-leg hard stops under one aggregate
+fixed-risk budget.
+
+## Reputable-Source Criteria
+
+- R1 `PASS_WITH_CROSS_SOURCE_AND_WEEKLY_TRANSLATION_RISK`: peer-reviewed gold/silver relation,
+  CME carrier, and reputable range-state lineage; the exact contraction/body-fade conjunction is
+  untested.
+- R2 `PASS`: timestamps, synchronization, ranges, body sign, direction, attempt, risk, stops,
+  and lifecycle are deterministic.
+- R3 `PASS_WITH_SYNCHRONIZATION_AND_CONTINUOUS_CFD_BASIS_RISK`: registered native
+  `XAUUSD.DWX` and `XAGUSD.DWX` D1 data supply every runtime market input.
+- R4 `PASS`: deterministic native arithmetic only, without ML, banned signal indicator, external
+  runtime feed, grid, martingale, scale-in, or pyramid.
+
+## Non-Duplicate Decision
+
+The canonical checker scanned 4,930 registry rows, 1,540 repository cards, and 45 Strategy Wiki
+records and found no exact identity. It raised `QM5_41448` and `QM5_41449` for manual review. The
+durable receipt is
+`artifacts/qm5_candidate_xauxag_nr2_body_rv_dedup_preallocation_20260912.json`.
+
+`QM5_41448` requires strict range expansion and a strict outer-quartile final ratio close; it
+ignores body sign. `QM5_41449` also requires expansion and continues the strict body. The proposed
+card instead requires strict contraction and fades its strict body. No reviewed earlier family
+uses that joint state and side. Verdict:
+`DISTINCT_XAUXAG_TWO_WEEK_RATIO_RANGE_CONTRACTION_BODY_REVERSION_AFTER_FAMILY_REVIEW`.
+
+## Safety Boundary
+
+This approval excludes manual backtests, optimization, demo/shadow/live/stress presets, terminal
+control, AutoTrading, `T_Live`, deploy/live manifests, portfolio-gate edits, portfolio admission,
+decorrelation claims, and correlation waivers.
