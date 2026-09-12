@@ -1731,3 +1731,27 @@ not this task's authority. Codex weekly quota confirmed still exhausted via
 staying unworked, outside this task's `allowed_actions` to fix. No acceptance criterion
 newly met on any of the three owner-decision tasks; no `update-task` call made. All three
 remain `IN_PROGRESS`.
+
+## Checked 2026-09-12T05:48Z (headless orchestration cycle) -- longest crash-free stretch of the whole incident, nearing completion, gate still unchanged
+
+Genuinely new since the `03:03Z` memory checkpoint (~2h45min gap, beyond the suppression
+window): downloader PID `6936` (the same process launched `2026-09-12T00:03:50` local /
+`00:04:31Z` UTC) is now **~5h44min crash-free**, confirmed single live writer via full
+`Get-CimInstance Win32_Process` command-line enumeration (no duplicate spawn). This is the
+longest stable stretch of the entire incident, beating the prior ~3h record. `progress.json`
+(`updated_at_utc=2026-09-12T03:47:52Z`, fresh): `completed=299218` of `planned=307248`
+(97.4%, `errors=631`, `no_data=13172`, `downloaded=27847`) -- very close to the full plan;
+once `completed` reaches `307248` and `status` flips off `RUNNING`, P3 reconciliation
+(`reconcile_overlap.py`) becomes runnable, the next real actionable step for this task's own
+`allowed_actions`. No relaunch needed this cycle.
+
+`bb814520`/`dfc60103` gate re-checked via direct DB query, unchanged since every prior
+checkpoint: `b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`;
+`46167bd9` still `APPROVED`/claude not routed since `2026-09-10T22:16:06Z`; `ae1df6bf` still
+`APPROVED`/unassigned since `06:42:08Z` (now >23h unworked). `QM5_41394` XAUUSD.DWX Q04
+(work item `5f3f323d`) still `pending`/unclaimed, `updated_at=2026-09-11T10:51:37Z` (now
+~19h static) -- ordinary queue depth, not this task's authority. `agent_router.py status`
+confirms codex weekly quota now `weekly_used_pct=89.0`/`weekly_remaining_pct=11.0` (up from
+87% at the last reading) -- same exhaustion class, not a new blocker. No acceptance
+criterion newly met on any of the three owner-decision tasks; no `update-task` call made.
+All three remain `IN_PROGRESS`.
