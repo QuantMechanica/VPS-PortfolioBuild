@@ -16,6 +16,7 @@ sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
 import farmctl  # noqa: E402
 import terminal_worker  # noqa: E402
+from tools.strategy_farm import dsr_cohort  # noqa: E402
 
 LEGACY_WORKER_STARTER = REPO / "tools" / "strategy_farm" / "start_terminal_workers.ps1"
 FACTORY_WATCHDOG = REPO / "tools" / "strategy_farm" / "factory_watchdog.ps1"
@@ -124,6 +125,62 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         source = LEGACY_WORKER_STARTER.read_text(encoding="utf-8")
         self.assertIn('Join-Path $stateDir "disabled_terminals.txt"', source)
         self.assertIn("$_ -notin $disabledTerminals", source)
+
+    def test_q08_dsr_context_preflight_is_default_off(self) -> None:
+        payload: dict[str, object] = {}
+        with patch.dict(os.environ, {"QM_DSR_V2": "1"}, clear=False), patch.object(
+            dsr_cohort,
+            "attach",
+            return_value={"status": "UNAVAILABLE", "reason": "DECLARATION_REQUIRED"},
+        ):
+            os.environ.pop(terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV, None)
+            result = terminal_worker._seal_q08_dsr_at_claim(
+                object(), {"phase": "Q08", "id": "q08"}, payload
+            )
+        self.assertTrue(result["claimable"])
+        self.assertEqual(result["status"], "UNAVAILABLE")
+
+    def test_q08_dsr_context_preflight_blocks_unsealed_context_when_enabled(self) -> None:
+        payload: dict[str, object] = {}
+        with patch.dict(
+            os.environ,
+            {
+                "QM_DSR_V2": "1",
+                terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+            },
+            clear=False,
+        ), patch.object(
+            dsr_cohort,
+            "attach",
+            return_value={"status": "UNAVAILABLE", "reason": "DECLARATION_REQUIRED"},
+        ):
+            result = terminal_worker._seal_q08_dsr_at_claim(
+                object(), {"phase": "Q08", "id": "q08"}, payload
+            )
+        self.assertFalse(result["claimable"])
+        self.assertEqual(result["reason"], "DECLARATION_REQUIRED")
+
+    def test_q08_dsr_context_preflight_accepts_hash_bound_seal(self) -> None:
+        payload: dict[str, object] = {
+            "dsr_context": {"path": "D:/sealed/context.json", "sha256": "a" * 64}
+        }
+        with patch.dict(
+            os.environ,
+            {
+                "QM_DSR_V2": "1",
+                terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+            },
+            clear=False,
+        ), patch.object(
+            dsr_cohort,
+            "attach",
+            return_value={"status": "SEALED", "producer_schema": "qm.dsr-cohort/v1"},
+        ):
+            result = terminal_worker._seal_q08_dsr_at_claim(
+                object(), {"phase": "Q08", "id": "q08"}, payload
+            )
+        self.assertTrue(result["claimable"])
+        self.assertEqual(result["status"], "SEALED")
 
     def test_longrun_ram_probe_reuses_prelock_process_snapshot(self) -> None:
         with self._root() as tmp:

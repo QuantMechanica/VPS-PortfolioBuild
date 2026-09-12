@@ -248,6 +248,13 @@ IDLE_CLAIM_CACHE_TTL_SECONDS_ENV = "QM_IDLE_CLAIM_CACHE_TTL_SECONDS"
 IDLE_CLAIM_CACHE_MAX_TTL_SECONDS = 8.0
 IDLE_CLAIM_CACHE_RESOURCE_BUCKET_GB = 2.0
 _IDLE_CLAIM_CACHE: dict[tuple[str, str], dict[str, Any]] = {}
+# Default-OFF rollout guard: when DSR V2 is active, do not spend a real-tick
+# Q08 slot on a candidate whose immutable selection context could not be sealed.
+# The candidate remains pending and is reconsidered by the ordinary claim
+# predicate, so a later card/ledger repair releases it without a hand-edited
+# hold or verdict mutation.  Only an orchestrator-managed worker reload may
+# enable this on the fleet.
+Q08_DSR_CONTEXT_PREFLIGHT_ENV = "QM_Q08_DSR_CONTEXT_PREFLIGHT"
 ORDINARY_COMMIT_RESERVATION_GB = 8.0
 WATCHDOG_RESET_BLOCK_FILENAME = "WATCHDOG_RESET_PENDING.json"
 # Multi-symbol real-tick jobs need materially more launch headroom than ordinary
@@ -4582,15 +4589,34 @@ def _seal_q08_dsr_at_claim(
     conn: sqlite3.Connection,
     item: Mapping[str, Any],
     payload: dict[str, Any],
-) -> None:
+) -> dict[str, Any]:
     """Refresh a Q08 DSR binding after its immutable claim time is known."""
     if str(_work_item_value(item, "phase", "") or "").upper() != "Q08":
-        return
+        return {"claimable": True, "status": "NOT_APPLICABLE"}
     try:
         from tools.strategy_farm import dsr_cohort
     except ModuleNotFoundError:
         import dsr_cohort
-    dsr_cohort.attach(conn, dict(item), payload)
+    status = dsr_cohort.attach(conn, dict(item), payload)
+    preflight_enabled = (
+        os.environ.get(Q08_DSR_CONTEXT_PREFLIGHT_ENV) == "1"
+        and os.environ.get("QM_DSR_V2") == "1"
+    )
+    binding = payload.get("dsr_context")
+    sealed = (
+        isinstance(status, dict)
+        and status.get("status") == "SEALED"
+        and isinstance(binding, dict)
+        and bool(binding.get("path"))
+        and bool(binding.get("sha256"))
+    )
+    if not preflight_enabled or sealed:
+        return {"claimable": True, **(status if isinstance(status, dict) else {})}
+    return {
+        "claimable": False,
+        "status": "UNAVAILABLE",
+        "reason": str((status or {}).get("reason") or "DSR_CONTEXT_NOT_SEALED"),
+    }
 
 
 def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
@@ -5094,6 +5120,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     for row in conn.execute("SELECT ea_id, payload_json FROM work_items WHERE status='active'")
                 )
                 skipped_history: list[dict[str, Any]] = []
+                skipped_q08_dsr_context: list[dict[str, Any]] = []
                 skipped_launch_cooldown: list[dict[str, Any]] = []
                 skipped_multisym_ram: list[dict[str, Any]] = []
                 skipped_multisym_commit: list[dict[str, Any]] = []
@@ -5601,7 +5628,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         "claimed_by_worker_pid": os.getpid(),
                         "terminal": terminal,
                     })
-                    _seal_q08_dsr_at_claim(conn, item, payload)
+                    dsr_preflight = _seal_q08_dsr_at_claim(conn, item, payload)
+                    if not dsr_preflight.get("claimable", True):
+                        skipped_q08_dsr_context.append({
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            "reason": dsr_preflight.get("reason"),
+                        })
+                        continue
                     if compile_only_due_to_commit_headroom:
                         payload.update({
                             "claim_admission_mode": "compile_only_under_reservation_pressure",
@@ -5702,6 +5736,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                     "claimed": False,
                     "reason": "no_pending_claimable",
                     "history_skipped": skipped_history,
+                    "q08_dsr_context_skipped": skipped_q08_dsr_context,
                     "launch_cooldown_skipped": skipped_launch_cooldown,
                     "multisymbol_ram_skipped": skipped_multisym_ram,
                     "ram_class_skipped": skipped_ram_class,
@@ -6355,7 +6390,15 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     "targeted_factory_off_run": True,
                     "terminal": terminal,
                 })
-                _seal_q08_dsr_at_claim(conn, item, payload)
+                dsr_preflight = _seal_q08_dsr_at_claim(conn, item, payload)
+                if not dsr_preflight.get("claimable", True):
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "q08_dsr_context_unavailable",
+                        "item_id": item_id,
+                        "dsr_context_reason": dsr_preflight.get("reason"),
+                    }
                 _set_commit_reservation(
                     payload,
                     claimed_at_iso=now,

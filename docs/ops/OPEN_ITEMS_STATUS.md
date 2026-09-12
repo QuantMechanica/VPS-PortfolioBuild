@@ -3256,3 +3256,16 @@ holds (registry/magic, ~97), terminal closes mislabeled BLOCKED (~35), RETEST 08
 with --limit 1, watch one captions-first artifact land.
 RECYCLE (181): 40 card gone, 26 superseded, ~110 rework intents for existing EAs (card fidelity) -> OWNER Vorlage
 corrected on the board (classified disposition, paced re-queue, not blanket archive).
+
+## 2026-09-12T05:28Z — RESULT: Q08 INVALID cause audit + default-OFF DSR claim preflight
+
+The ticket snapshot advanced to 26/54 Q08 INVALID rows. All 26 aggregate paths are readable; 24 rows entered
+Q08 with `dsr_context_status=UNAVAILABLE`, nine overlap legacy zero-`strategy_*` sets, seven overlap
+authenticated neighborhood runs whose perturbations all failed initialization, one was the already-fixed DSR
+EA-label mismatch, and two include thin-sample gates. Added `QM_Q08_DSR_CONTEXT_PREFLIGHT=1` behind a Default-OFF
+worker guard: with DSR V2 active, an unavailable candidate remains pending and is retried through the ordinary
+claim predicate after its declaration/card/ledger source is repaired; no manual hold or verdict mutation.
+No new rerun was valid: the sole code-defect row already has append-only successor `89ea5894` (`FAIL_SOFT`), and
+the remaining classes are governance/artifact blocked or authenticated non-infra. Verification: 102 terminal
+claim tests + 63 DSR tests + py_compile PASS. Evidence:
+`docs/ops/evidence/2026-09-12_q08_invalid_rate_cause_and_claim_preflight.md`.
