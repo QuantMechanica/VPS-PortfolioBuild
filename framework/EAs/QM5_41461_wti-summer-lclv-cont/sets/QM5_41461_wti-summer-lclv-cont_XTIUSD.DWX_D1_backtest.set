@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41461
+; ea_slug:      wti-summer-lclv-cont
+; ea_version:   v5.0
+; set_version:  s20260912-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   pending
+; author:       Development
+; date:         2026-09-12
+;==========================================================
+qm_ea_id=41461
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41461_wti-summer-lclv-cont.md
+strategy_symbol=XTIUSD.DWX
+strategy_label_offset_seconds=0
+strategy_entry_grace_minutes=180
+strategy_history_bars=20
+strategy_summer_month_1=6
+strategy_summer_month_2=7
+strategy_summer_month_3=8
+strategy_summer_month_4=9
+strategy_summer_month_5=10
+strategy_min_week_bars=3
+strategy_max_week_bars=5
+strategy_clv_cutoff=0.333333333333
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=10
+strategy_max_spread_points=1500
