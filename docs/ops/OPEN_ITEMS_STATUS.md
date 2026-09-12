@@ -3225,3 +3225,20 @@ clears the plateau margin (c48 2.53 vs 1.65) but fails the OOS confirmation (OOS
 Final configuration unchanged: fixed UTC+3, 00:00-08:00, exit 18, AS_IS, buffer 0, band on. Report
 docs/research/BALKE_STAGE2_RESULT_2026-09-12.md, surface docs/research/balke_stage2_41405/. The config_sweep
 report command only emits a status CSV (no scoring) -- adjudication script is the evidence path.
+
+## 2026-09-12T07:10Z — Build lane unblocked (dirty guard, not auth); reviews drained; Aging/Stranded block commissioned
+
+OWNER (Morgenbriefing reply): Codex resets ~09:00Z; use Sol + Opus/Sonnet for open programming; is Codex auth
+broken?; resolve the Aging/Stranded block. Findings: health check codex_auth_broken explicitly says NOT auth --
+repo_dirty_build_guard blocked builds (75 pending, 0 activity 3h). Repaired GRUEN: generated q05/q06 stress sets,
+pump/compile-wave artifacts, window-sweep surfaces, agent evidence files, refreshed calendar seed hashes and the
+QM5_41240 symbol-input source fix committed (bec7808e89, 76dca44dab, ..., 3d758eab06); stray root files removed;
+_repo_dirty_status blocked=False (26 generated entries remain: 10 rebuilt .ex5 without receipts + 16 sets, non-blocking).
+reconcile-exits --state APPROVED --apply: 603 APPROVED->PASSED, 40 APPROVED->PIPELINE (RECYCLE->TODO 181 = OWNER
+capacity decision, on the board). Reviews closed: ef55f2ff APPROVED (withhold justified: Model=1 is OHLC-M1,
+Model=2 open prices), 95081591 APPROVED (T12 staged, smoke refused by CPU guard, follow-up), f7f39835 APPROVED
+(1557 precondition READY). New Codex tickets (session_tools/enqueue_aging_block_0912.py): 519c11fe prescreen
+re-issue Model=1 (P95), b982a763 Q09 autoseal holds (P90), 5a6eea33 binding drift (P85), c955da7f Q08 INVALID
+47 pct (P85), af3eac6e Q02 stranded pairs (P70, Luna), 3b334176 backup-gap ack (P60, Luna). Opus agent (worktree)
+builds the video-lane re-route (OWNER 2026-09-09: AI seats, captions-first) with a batched release helper for
+the ~420 BLOCKED video tickets (Default-OFF).
