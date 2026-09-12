@@ -1,0 +1,98 @@
+{
+  "schema_version": "qm.fx-cointegration-paced-capacity-stop/v1",
+  "recorded_at_utc": "2026-09-11T21:16:14.5241694Z",
+  "recorded_at_local": "2026-09-11T23:16:14.5237291+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "cf212b32ede650fe0831dcf6d15041e8587c4566",
+  "mission": "grow_certified_v5_portfolio_new_forex_sleeves",
+  "selection": {
+    "mode": "existing_forex_fallback_no_unbuilt_66_pair_candidate",
+    "ea_id": "QM5_12507",
+    "slug": "pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251"
+  },
+  "frontier": {
+    "scan_relationships": 66,
+    "unbuilt_relationships": 0,
+    "qm5_12532_q02": "PASS",
+    "qm5_12532_downstream": "Q04 PASS; Q05 FAIL",
+    "qm5_12533_q02": "PASS",
+    "qm5_12533_downstream": "Q04 FAIL"
+  },
+  "pacer_input_pin_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "artifact_bindings": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "q02_work_item": {
+    "status": "pending",
+    "verdict": null,
+    "claimed_by": null,
+    "attempt_count": 0,
+    "priority_track": true,
+    "created_at_utc": "2026-08-29T12:08:11+00:00",
+    "updated_at_utc": "2026-08-29T12:08:11+00:00",
+    "duplicate_work_item_created": false
+  },
+  "capacity": {
+    "cpu_ceiling_percent": 97.0,
+    "cpu_samples_percent": [
+      35.570315,
+      30.931576,
+      32.580188,
+      31.528340,
+      31.559061
+    ],
+    "cpu_average_percent": 32.433896,
+    "cpu_maximum_percent": 35.570315,
+    "cpu_ceiling_hit": false,
+    "free_physical_memory_gib": 28.798,
+    "total_visible_memory_gib": 63.12,
+    "heavy_multisymbol_memory_floor_gib": 58.0,
+    "memory_admission_pass": false,
+    "active_work_items": 7,
+    "pending_work_items": 7345,
+    "running_factory_terminals": [
+      "T1",
+      "T3",
+      "T5",
+      "T7",
+      "T8",
+      "T9",
+      "T10"
+    ],
+    "manual_dispatch_admissible": false,
+    "stop_reason": "RAM_BELOW_HEAVY_MULTISYMBOL_FLOOR"
+  },
+  "actions": {
+    "card_created": false,
+    "ea_source_modified": false,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "q02_requeued": false,
+    "priority_mutated": false,
+    "manual_dispatch_started": false,
+    "terminal_control_performed": false,
+    "portfolio_gate_modified": false,
+    "live_surface_modified": false
+  }
+}

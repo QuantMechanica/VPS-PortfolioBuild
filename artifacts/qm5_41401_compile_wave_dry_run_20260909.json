@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "00ee471ed07042855612bd14673b1a5039bc7bf2d7ea325f3ba97eed3e0137ae",
+      "ea_id": "QM5_41401",
+      "ea_label": "QM5_41401_xng-shoulder-w2fade",
+      "expected_mq5_sha256": "00ee471ed07042855612bd14673b1a5039bc7bf2d7ea325f3ba97eed3e0137ae",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41401_xng-shoulder-w2fade\\QM5_41401_xng-shoulder-w2fade.mq5",
+      "work_item_id": "3b2dc38a-a79f-429f-b943-ff9755ad3b56"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "3b2dc38a-a79f-429f-b943-ff9755ad3b56",
+  "work_item_id_selectors": [
+    "3b2dc38a-a79f-429f-b943-ff9755ad3b56"
+  ]
+}
