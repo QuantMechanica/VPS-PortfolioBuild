@@ -18468,3 +18468,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41455,xauxag-wr2-body-rv,1,XAGUSD.DWX,414550001,2026-09-12,Codex governed allocator,active
 41456,wti-winter-nr2-clv-fade,0,XTIUSD.DWX,414560000,2026-09-12,Codex governed allocator,active
 41457,wti-summer-nr2-upweek-fade,0,XTIUSD.DWX,414570000,2026-09-12,Codex governed allocator,active
+41458,wti-summer-wr2-upweek-fade,0,XTIUSD.DWX,414580000,2026-09-12,Codex governed allocator,active
