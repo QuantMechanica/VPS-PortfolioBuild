@@ -1755,3 +1755,93 @@ confirms codex weekly quota now `weekly_used_pct=89.0`/`weekly_remaining_pct=11.
 87% at the last reading) -- same exhaustion class, not a new blocker. No acceptance
 criterion newly met on any of the three owner-decision tasks; no `update-task` call made.
 All three remain `IN_PROGRESS`.
+
+## Checked 2026-09-12T04:32Z (headless orchestration cycle, real UTC via `date -u`) -- P1 download run reached terminal completion
+
+Genuinely new since the `03:47:52Z` progress.json reading cited in the prior (mislabeled
+`05:48Z`) checkpoint: PID `6936` is **no longer running** -- confirmed via full
+`Get-CimInstance Win32_Process` command-line enumeration, only this cycle's own transient
+PowerShell query processes matched `download_bi5` (the known false-positive pattern, not a
+duplicate spawn). `download_receipt.json` (`completed_at_utc=2026-09-12T04:29:02.859Z`,
+`hour_ledger.jsonl` tail confirms the same timestamp on its final entries) shows the run
+finished all planned hours: `completed=307248` of `planned=307248`/`full_plan_hours=307248`
+(100%), `downloaded=33186`, `errors=748`, `no_data=15746`, `resumed=257568`,
+`success_rate=0.9976` (excludes `no_data`, which is expected off-session/holiday coverage
+for FX+index hours, not a defect), `status=FAIL` (the tool is fail-closed: any nonzero
+`errors` count yields `FAIL`, distinct from a crash -- this is a clean, non-crashed
+terminal state, elapsed `15871.6s` / `4h24min` for `49680` new hours this run at
+`1158.7` hours/min). This is the first time this run has reached 100% completion; P1 (the
+download step) is now done for all 37 symbols across the full `20260909T191800Z_hardened`
+plan.
+
+Next actionable step per this task's own `allowed_actions` ("the reconciliation compute
+(< 2h)") is P2 (`convert_to_import.py`, per-symbol, needs manifest/raw-root/splice-utc/
+price-scale args) then P3 (`reconcile_overlap.py`). Per the `2026-09-11T07:20Z` "Current
+state" note (memory `project_qm_ownerdec_tasks_stuck_on_q02_gate_quota_critical_2026-09-09`),
+P3 for the real Freigabe-Gate still needs the DWX-side M1 export for the overlap window
+actually run against T1 (a separate governed dispatch, not yet authorized/enqueued as of
+that note) before `reconcile_overlap.py` can produce a real report -- not verified changed
+this cycle. Running the full 37-symbol P2 conversion + P3 reconciliation is a multi-artifact,
+multi-hour undertaking (per-symbol manifest/price-scale/instrument-metadata inputs) that does
+not fit inside one quick single-pass headless cycle without risking corner-cutting; leaving
+this as the concrete next step for a dedicated pass rather than attempting it hastily here.
+
+748 error hours (retries-exhausted per `hour_ledger.jsonl`, `state=failed`) exist across the
+37 symbols; whether these fall inside or outside the plan's implicit tolerance has not been
+assessed this cycle (not one of the four top-level acceptance criteria, which concern the
+reconciliation CSV/report and import gate, not the raw download's own error count) -- worth
+a per-symbol error-count breakdown before P4 import if any single symbol's error concentration
+looks anomalous, but not blocking P2/P3 from starting.
+
+`bb814520`/`dfc60103` gate re-checked via direct DB query, unchanged since every prior
+checkpoint: `b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`;
+`46167bd9` still `APPROVED`/claude not routed since `2026-09-10T22:16:06Z`; `ae1df6bf` still
+`APPROVED`/unassigned since `06:42:08Z` (now >21h50min unworked). `QM5_41394` XAUUSD.DWX Q04
+(work item `5f3f323d`) still `pending`/unclaimed, `updated_at=2026-09-11T10:51:37Z` (now
+~17h40min static) -- ordinary queue depth, not this task's authority. `agent_router.py
+status` confirms codex weekly quota now `weekly_used_pct=90.0`/`allowed:false`/
+`class_threshold_exceeded` -- same exhaustion class, not a new blocker. No acceptance
+criterion newly met on any of the three owner-decision tasks; no `update-task` call made.
+All three remain `IN_PROGRESS`.
+
+## Checked 2026-09-12T04:36:46Z real UTC (`date -u`) (headless orchestration cycle) -- download plan reached 100% completion for the first time; `status=FAIL` is the tool's zero-error-only label, not a crash; P3 still blocked one layer down on the Codex-built M1 export tool
+
+Genuinely new since the prior entry (mislabeled "05:48Z", actually ~04:07Z real UTC per the
+memory file's own lesson 11 on the local-time-vs-Z bug -- this entry uses a `date -u`-verified
+timestamp): downloader PID `6936`'s `progress.json` (`D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened/progress.json`,
+`updated_at_utc=2026-09-12T04:29:02.849Z`) now shows `completed=307248` of `planned=307248`
+(100%, `errors=748`, `no_data=15746`, `downloaded=33186`, `resumed=257568`) -- the full
+plan has been attempted for the first time in this incident. `status` reads `"FAIL"`, not
+`"done"`; checked `tools/dukascopy/download_bi5.py:580-584` to confirm what that means:
+`final_status = "PASS" if counters["errors"] == 0 else "FAIL"` -- i.e. the tool's status
+field is a strict zero-errors-only pass/fail label, not a crash/live indicator. `errors=748`
+is 0.24% of the 307248-hour plan and `no_data=15746` (5.1%) is expected weekend/holiday
+coverage, not evidence of a defect. Confirmed via full `Get-CimInstance Win32_Process`
+command-line scan that no `download_bi5.py` process is alive anymore (the run has actually
+exited, not just paused) -- this is a real, final terminal state for the P1 download step,
+not another mid-run snapshot.
+
+Re-read the task's own prior "next step" note ("once `completed` reaches `307248` ... P3
+reconciliation becomes runnable") before assuming P3 is now unblocked -- per lesson 7, a
+paraphrased note can drop a harder constraint. Re-checked the fuller 2026-09-11T00:48Z entry
+below/above (`## Checked 2026-09-10T23:5xZ ...`): `reconcile_overlap.py` requires a governed
+DWX-side M1 export CSV per symbol, which does not exist yet -- it depends on Codex ticket
+`ba2a478e-f437-404b-843b-a1def6f2cf4c` (build a new read-only MQL5 diagnostic + Python
+enqueuer to produce it), re-checked via direct sqlite read this cycle: still
+`state=APPROVED`, `assigned_agent=codex`, `updated_at=2026-09-11T00:48:54+00:00` (unstarted,
+~28h). So P1 (download) reaching 100% is real, durable progress, but P3 reconciliation
+remains gated one layer down on `ba2a478e`, which is itself gated on Codex's weekly quota
+(`agent_router.py status`: `weekly_used_pct=90.0`/`weekly_remaining_pct=10.0`/
+`allowed=false`/`reason=class_threshold_exceeded` -- same exhaustion class as every prior
+checkpoint, up from 89% at the last reading). Correcting the prior entry's framing: "P3
+becomes runnable" should have read "P1 becomes done," since P3's own missing input was
+already known and logged separately.
+
+`bb814520`/`dfc60103` gate re-checked via direct DB query, unchanged since every prior
+checkpoint: `b66b5ccc` still `APPROVED`/codex unstarted since `2026-09-09T11:19:40Z`;
+`46167bd9` still `APPROVED`/claude not routed since `2026-09-10T22:16:06Z`; `ae1df6bf` still
+`APPROVED`/unassigned since `06:42:08Z` (now ~22h unworked). `QM5_41394` XAUUSD.DWX Q04
+(work item `5f3f323d`) still `pending`/unclaimed, `updated_at=2026-09-11T10:51:37Z`
+(~17.75h static) -- ordinary queue depth, not this task's authority. No acceptance criterion
+newly met on any of the three owner-decision tasks; no `update-task` call made. All three
+remain `IN_PROGRESS`.
