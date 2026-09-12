@@ -3282,3 +3282,13 @@ non-EA dependency holds stay BLOCKED for sweeper ticket 349a8394 / 1 video hold 
 Correction of an earlier statement: the 95 "gemini" BLOCKED rows were agy-era BUILD tasks (cards such as
 qp-stress-reversal-sp500, demark-td-*), not research; they are dispositioned by the same rules. Final applied
 counts follow in the next entry.
+
+## 2026-09-12T08:35Z — RESULT OWNER-DEC-BACKLOG-20260912 applied (488 rows, 0 refusals)
+
+Journal docs/ops/evidence/2026-09-12_backlog_disposition_journal.jsonl: ARCHIVE 172 (-> FAILED with verdict
+"ARCHIVED (OWNER-DEC-BACKLOG-20260912) ..."), REQUEUE 316 (-> TODO, priority 30, decision_bound_agent codex,
+assigned_agent cleared through the canonical router connection, rework_note in payload). Task states after:
+TODO 329, BLOCKED 114 (88 registry/magic precondition + 25 non-EA dependency holds for sweeper 349a8394 + 1 video
+hold), RECYCLE 1 (video hold), FAILED 228, PIPELINE 215, PASSED 1319. Pacing: the 316 rework tasks sit below every
+ops ticket (priority 30 vs 60-95) and are dispatched to Codex (Sol) by the router after the ~09:00Z reset under the
+quota governor.
