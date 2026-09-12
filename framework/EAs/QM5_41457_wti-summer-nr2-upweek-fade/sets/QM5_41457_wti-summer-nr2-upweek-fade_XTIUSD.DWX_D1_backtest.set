@@ -1,0 +1,39 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41457
+; ea_slug:      wti-summer-nr2-upweek-fade
+; ea_version:   v5.0
+; set_version:  s20260912-001
+; symbol:       XTIUSD.DWX
+; timeframe:    D1
+; environment:  backtest
+; magic_slot:   0
+; risk_mode:    FIXED
+; portfolio_weight: 1
+; build_hash:   96bc38013512bf2f24aa9c33a20dff5825918c2fde5f16c1561d4315b1536bbf
+; author:       Development
+; date:         2026-09-12
+;==========================================================
+qm_ea_id=41457
+qm_magic_slot_offset=0
+RISK_FIXED=1000
+RISK_PERCENT=0
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41457_wti-summer-nr2-upweek-fade.md
+strategy_symbol=XTIUSD.DWX
+strategy_label_offset_seconds=86400
+strategy_entry_grace_minutes=180
+strategy_history_bars=30
+strategy_summer_month_1=6
+strategy_summer_month_2=7
+strategy_summer_month_3=8
+strategy_summer_month_4=9
+strategy_summer_month_5=10
+strategy_required_weeks=2
+strategy_min_week_bars=3
+strategy_max_week_bars=5
+strategy_atr_period_d1=20
+strategy_atr_sl_mult=3.5
+strategy_max_hold_days=10
+strategy_max_spread_points=1500
