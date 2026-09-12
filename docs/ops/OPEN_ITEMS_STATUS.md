@@ -3771,3 +3771,13 @@ stays NOT approved. Also closed this round: 79c942ac Dukascopy P2/P3 (fail-close
 41453 precondition, 4ce6ec32 backup reuse (addendum + hardening e93dffb6), 3b334176 backup ack, 57fc8b42
 compile-gate holds (hardening 09a32b16 before activation). REVIEW empty. Headless ClaudeOrchestration task
 disabled for the interactive session (duplicate-cycle race, fix ticket 1061ff77); re-enable at session end.
+
+## 2026-09-12T16:15Z — Compile-gate hold hardened and activated (chunk 71); monthly refresh control approved
+
+09a32b16 APPROVED (receipt mq5/ex5 sha pinning against fresh on-disk hashes, temporal ordering, fail-closed;
+8/8 hold tests; one unrelated pre-existing failure in test_q09_live_news_diagnostic -> artifact_identity
+CHECK-string matching, noted for test hygiene b32462f2). Reload chunk 71 (session_tools/reload_chunk71.py,
+all workers, staggered) sets QM_COMPILE_GATE_HOLD_ENABLED=1 on top of the chunk-70 flags: spawn refusals of
+EAs whose source changed become exact holds COMPILE_GATE_BROKEN_SOURCE released by the next authenticated
+COMPILE_OK, instead of terminal INFRA_FAIL rows. e37931c2 APPROVED (monthly tick-data refresh control, doubly
+Default-OFF, per-execution OWNER card pre-registered on the board, blocked until P3 37/37).
