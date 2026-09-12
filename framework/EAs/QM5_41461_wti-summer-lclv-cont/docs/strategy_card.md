@@ -61,8 +61,11 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: PENDING
-q02_status: PENDING
+q01_status: PASS
+q01_compile_work_item: c43db5ca-c6a6-42f8-93b7-e3636160d967
+q01_build_report: D:/QM/reports/work_items/c43db5ca-c6a6-42f8-93b7-e3636160d967/QM5_41461/COMPILE_EA/compile_evidence.json
+q02_status: ENQUEUED
+q02_work_item: 17693447-ad67-424d-8b8c-085989669975
 force_build: true
 review_focus: "Falsify a WTI June-October lower-tercile weekly-close continuation distinct from the certified XNG oscillator, unconditional summer short, two-sign summer continuation, and range-ranked/body-sign variants. Verify exact completed week, strict CLV inequality, no range/body predicate, short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -238,5 +241,5 @@ AutoTrading, terminal control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-12 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-12 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-12 | PENDING | governed compile required |
-| Q02 Baseline Screening | 2026-09-12 | PENDING | paced enqueue required after Q01 PASS |
+| Q01 Build Validation | 2026-09-12 | PASS | compile `c43db5ca-c6a6-42f8-93b7-e3636160d967`; `COMPILE_OK`; 0 compiler errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-12 | ENQUEUED | exactly one fixed-risk `XTIUSD.DWX` D1 canary `17693447-ad67-424d-8b8c-085989669975`; CPU maximum 61.3% immediately before successful intake; result not awaited |
