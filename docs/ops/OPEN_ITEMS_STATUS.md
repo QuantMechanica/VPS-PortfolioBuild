@@ -3852,3 +3852,11 @@ exact active identity row, normalized magic registry rows (`ea_id`, slug, slot, 
 resolver tuples, three equality checks, and the reviewed pytest command/pass count. A read-only rerun for the
 already allocated QM5_41435/XTIUSD row reports all checks PASS and binds magic 414350000 at slot 0; 21/21 tests
 pass. No registry, resolver, EA, queue, terminal, T_Live, or AutoTrading state changed.
+
+## 2026-09-12 — Governed backup reuse DML identity hardening (`e93dffb6`) REVIEW
+
+RESULT: backup reuse now requires exact source path, schema version, database mtime_ns, database byte size,
+and WAL byte size. A missing legacy field or any observed difference forces a fresh online backup. Fixtures
+prove unchanged DB -> reuse, committed DML -> fresh, and WAL growth -> fresh; all four wired suites pass 56/56.
+The live farm database and backup directory were not touched, and no retention, lock, queue, terminal, T_Live,
+AutoTrading, registry, or verdict behavior changed.

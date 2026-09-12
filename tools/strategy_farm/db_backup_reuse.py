@@ -91,14 +91,11 @@ def identity_sidecar_path(backup_path: Path) -> Path:
 
 
 def db_identity(conn: sqlite3.Connection, db: Path) -> dict[str, Any] | None:
-    """Return the rolling-window identity used by the established policy.
-
-    DML details are receipts, not match keys.  Governed DML in one fresh window
-    intentionally shares the original pre-window rollback anchor; a schema
-    generation change starts a new window.
-    """
+    """Return the exact cheap identity required for backup reuse."""
     try:
         stat = db.stat()
+        wal_path = Path(str(db) + "-wal")
+        wal_size = wal_path.stat().st_size if wal_path.is_file() else 0
         schema_version = int(conn.execute("PRAGMA schema_version").fetchone()[0])
     except (OSError, sqlite3.Error, TypeError, IndexError):
         return None
@@ -107,6 +104,7 @@ def db_identity(conn: sqlite3.Connection, db: Path) -> dict[str, Any] | None:
         "schema_version": schema_version,
         "source_mtime_ns": stat.st_mtime_ns,
         "source_size": stat.st_size,
+        "source_wal_size": wal_size,
     }
 
 
@@ -114,6 +112,9 @@ def identities_match(a: dict[str, Any], b: dict[str, Any]) -> bool:
     return (
         a.get("source_path") == b.get("source_path")
         and a.get("schema_version") == b.get("schema_version")
+        and a.get("source_mtime_ns") == b.get("source_mtime_ns")
+        and a.get("source_size") == b.get("source_size")
+        and a.get("source_wal_size") == b.get("source_wal_size")
     )
 
 

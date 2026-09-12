@@ -363,7 +363,7 @@ def test_release_hold_happy_path(tmp_path: Path) -> None:
     assert wi_after == wi_before
 
 
-def test_successor_and_hold_release_reuse_same_fresh_backup(tmp_path: Path) -> None:
+def test_successor_dml_forces_fresh_hold_release_backup(tmp_path: Path) -> None:
     root, _art = _seed_build_and_smoke(tmp_path)
     now = farmctl.utc_now()
     with farmctl.connect(root) as conn:
@@ -390,14 +390,19 @@ def test_successor_and_hold_release_reuse_same_fresh_backup(tmp_path: Path) -> N
     assert successor["recorded"] is True
     assert released["released"] is True
     assert successor["backup"]["reused"] is False
-    assert released["backup"]["reused"] is True
-    assert released["backup"]["path"] == successor["backup"]["path"]
-    assert released["backup"]["sha256"] == successor["backup"]["sha256"]
-    backups = list((root / "state" / "backups").glob("*.sqlite"))
-    assert backups == [Path(successor["backup"]["path"])]
-    sidecar = backups[0].with_name(backups[0].name + ".identity.json")
-    receipt = json.loads(sidecar.read_text(encoding="utf-8"))
-    assert receipt["backup_sha256"] == successor["backup"]["sha256"]
+    assert released["backup"]["reused"] is False
+    assert released["backup"]["path"] != successor["backup"]["path"]
+    assert released["backup"]["sha256"] != successor["backup"]["sha256"]
+    backups = set((root / "state" / "backups").glob("*.sqlite"))
+    assert backups == {
+        Path(successor["backup"]["path"]), Path(released["backup"]["path"])
+    }
+    for result in (successor, released):
+        path = Path(result["backup"]["path"])
+        receipt = json.loads(
+            path.with_name(path.name + ".identity.json").read_text(encoding="utf-8")
+        )
+        assert receipt["backup_sha256"] == result["backup"]["sha256"]
 
 
 def test_release_hold_cas_mismatch_refuses(tmp_path: Path) -> None:

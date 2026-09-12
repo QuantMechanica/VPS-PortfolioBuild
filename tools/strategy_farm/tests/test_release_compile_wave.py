@@ -152,8 +152,8 @@ def test_resolve_backup_reuses_fresh_identity_matched_backup(tmp_path):
     assert len(list(backup_dir.glob("*.sqlite"))) == 1
 
 
-def test_resolve_backup_reuses_after_dml_within_rolling_window(tmp_path):
-    """Governed DML in the same window keeps one pre-window rollback anchor."""
+def test_resolve_backup_forces_fresh_anchor_after_dml(tmp_path):
+    """Any observed DML identity change forces a fresh rollback anchor."""
     db, _, _ = _fixture(tmp_path)
     backup_dir = tmp_path / "backups"
     conn = sqlite3.connect(db)
@@ -166,9 +166,36 @@ def test_resolve_backup_reuses_after_dml_within_rolling_window(tmp_path):
     finally:
         conn.close()
 
-    assert second["reused"] is True
-    assert second["path"] == first["path"]
-    assert len(list(backup_dir.glob("*.sqlite"))) == 1
+    assert second["reused"] is False
+    assert second["path"] != first["path"]
+    assert len(list(backup_dir.glob("*.sqlite"))) == 2
+
+
+def test_resolve_backup_forces_fresh_anchor_when_wal_size_changes(tmp_path):
+    """A WAL-only DML change cannot reuse the earlier anchor."""
+    db, _, _ = _fixture(tmp_path)
+    backup_dir = tmp_path / "backups"
+    conn = sqlite3.connect(db)
+    try:
+        assert conn.execute("PRAGMA journal_mode=WAL").fetchone()[0] == "wal"
+        conn.execute("PRAGMA wal_autocheckpoint=0")
+        first = rollout._resolve_backup(
+            conn, db, backup_dir,
+            timeout_seconds=5.0, reuse_max_age_minutes=60.0,
+        )
+        first_identity = first["identity"]
+        conn.execute("INSERT INTO agent_tasks(id) VALUES(?)", ("w" * 3000,))
+        conn.commit()
+        second = rollout._resolve_backup(
+            conn, db, backup_dir,
+            timeout_seconds=5.0, reuse_max_age_minutes=60.0,
+        )
+    finally:
+        conn.close()
+
+    assert first_identity["source_wal_size"] < second["identity"]["source_wal_size"]
+    assert second["reused"] is False
+    assert second["path"] != first["path"]
 
 
 def test_resolve_backup_ignores_sidecar_older_than_reuse_window(tmp_path):

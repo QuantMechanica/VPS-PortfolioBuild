@@ -257,7 +257,7 @@ def test_apply_appends_one_unboosted_canary_deferral_and_receipt(tmp_path: Path)
     assert second["reason"] == "existing_q02_row"
 
 
-def test_governed_backup_reuses_across_tool_classes_after_dml(tmp_path: Path) -> None:
+def test_governed_backup_forces_fresh_across_tool_classes_after_dml(tmp_path: Path) -> None:
     fixture = _fixture(tmp_path)
     root = fixture["root"]
     first_path, first_sha = farmctl._governed_state_backup(root, "hold_release")
@@ -268,9 +268,9 @@ def test_governed_backup_reuses_across_tool_classes_after_dml(tmp_path: Path) ->
         )
         conn.commit()
     second_path, second_sha = farmctl._governed_state_backup(root, "first_q02_intake")
-    assert second_path == first_path
-    assert second_sha == first_sha
-    assert len(list((root / "state" / "backups").glob("*.sqlite"))) == 1  # type: ignore[operator]
+    assert second_path != first_path
+    assert second_sha != first_sha
+    assert len(list((root / "state" / "backups").glob("*.sqlite"))) == 2  # type: ignore[operator]
 
 
 def _bad_row_contract(fixture: dict[str, object]) -> None:
