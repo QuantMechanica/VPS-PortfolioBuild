@@ -1,0 +1,900 @@
+{
+ "moved": [
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10721_edge-lab-t1-fx-relative-momentum.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10721_edge-lab-t1-fx-relative-momentum.md",
+   "ea_id": "QM5_10721",
+   "reason": "Functional duplicate of already-APPROVED QM5_10717 (same T1: 8-major rank, weekly rebalance, top/bottom rotation, D1). No new mechanic."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10722_edge-lab-t2-fx-filtered-carry.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10722_edge-lab-t2-fx-filtered-carry.md",
+   "ea_id": "QM5_10722",
+   "reason": "Functional duplicate of already-APPROVED QM5_10718 (same T2: swap-rank carry, weekly rebalance, realized-vol regime filter)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10864_edge-lab-d1-momentum-v1.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10864_edge-lab-d1-momentum-v1.md",
+   "ea_id": "10864",
+   "reason": "Already g0_status REJECTED on file (uncited academic claim, unspecified EMA smoothing/rank-to-trade mapping); superseded by QM5_10721/QM5_10717."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10865_edge-lab-d1-carry-v1.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10865_edge-lab-d1-carry-v1.md",
+   "ea_id": "10865",
+   "reason": "Already g0_status REJECTED on file: relies on VIX and historical swap-rank data unavailable in governed DWX/native backtests; uncited claim."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10889_el-d1-t8-macro-cycle.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10889_el-d1-t8-macro-cycle.md",
+   "ea_id": "10889",
+   "reason": "Already g0_status REJECTED: needs 10Y-2Y government yield-curve data, not available anywhere in the DWX symbol matrix; formula unspecified."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10890_el-d1-t9-cbi-rs.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10890_el-d1-t9-cbi-rs.md",
+   "ea_id": "10890",
+   "reason": "Already g0_status REJECTED: no source; intervention-zone, suppression, and RS conditions are discretionary, not closed-form deterministic rules."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10891_el-d2-t10-fomc-drift.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10891_el-d2-t10-fomc-drift.md",
+   "ea_id": "10891",
+   "reason": "Already g0_status REJECTED: pre-FOMC drift anomaly asserted with no durable citation or track record (R1 fail)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10893_el-d4-t12-ls-ob-micro.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10893_el-d4-t12-ls-ob-micro.md",
+   "ea_id": "10893",
+   "reason": "Already g0_status REJECTED: no source; SMC 'Market Structure Shift' and 'Order Block' lack deterministic definitions, textbook curve-fit-prone pattern."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10894_el-d1-t13-ctot-momentum.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10894_el-d1-t13-ctot-momentum.md",
+   "ea_id": "10894",
+   "reason": "Already g0_status REJECTED: NOK has no DWX symbol at all, and Copper/Iron Ore have no DWX feed; synthetic ToT index is unbuildable in this venue."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10900_ftmo-system-overview-v2.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10900_ftmo-system-overview-v2.md",
+   "ea_id": "10900",
+   "reason": "Not a testable thesis: a general risk/timing policy doc, no price signature, no entry rule, expected_trades_per_year=0; also missing Q08/Q11 section."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10901_ftmo-set-up-1-quick-move-v2.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10901_ftmo-set-up-1-quick-move-v2.md",
+   "ea_id": "10901",
+   "reason": "Generic 07:30-08:00 London opening-range breakout, near-duplicate of dozens of approved London-ORB cards (e.g. QM5_11314, QM5_12562, QM5_1120); missing Q08/Q11 section."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_10902_ftmo-set-up-2-fibs-retracement-v2.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_10902_ftmo-set-up-2-fibs-retracement-v2.md",
+   "ea_id": "10902",
+   "reason": "Persistence claim is 'self-fulfilling Fibonacci expectations' - unfalsifiable folklore, not a structural cause; near-duplicate of existing approved Fib/ABC cards; no Q08/Q11 section."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11917_el-d1-t14-simons-leadlag.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11917_el-d1-t14-simons-leadlag.md",
+   "ea_id": "11917",
+   "reason": "Already g0_status REJECTED: 'Simons/Medallion' analogy is not evidence; velocity/correlation-adjustment/pair-construction/crisis-filter left undefined."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11918_el-d1-t5-bond-convergence.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11918_el-d1-t5-bond-convergence.md",
+   "ea_id": "11918",
+   "reason": "Already g0_status REJECTED: no source; needs 2Y government-bond-yield history, unavailable in DWX; FX-valuation mapping unspecified."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11919_el-d2-t6-cb-exp-gap.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11919_el-d2-t6-cb-exp-gap.md",
+   "ea_id": "11919",
+   "reason": "Already g0_status REJECTED: no source; 'matches consensus' and trade-pair selection undefined; 5-10 day hold is discretionary, not closed-form."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11920_el-d1-t7-vol-premium.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11920_el-d1-t7-vol-premium.md",
+   "ea_id": "11920",
+   "reason": "Already g0_status REJECTED: no source; calls realized-vol compression a VRP without options-market grounding; VIX-equivalent gate and pair construction unspecified."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11921_rb-range-breakout.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11921_rb-range-breakout.md",
+   "ea_id": "QM5_11921",
+   "reason": "Duplicate of approved QM5_12832 Balke range-breakout primitive; multi-symbol/optional-filter alternatives not one buildable rule; DE40/US30 not in DWX matrix."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11922_rb-go-long.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11922_rb-go-long.md",
+   "ea_id": "QM5_11922",
+   "reason": "Duplicate of approved QM5_13036 Balke Go Long; 2%/day stop is not per-trade sizing; DE40/US30/USTech not in DWX matrix."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11923_rb-turnaround-tue.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11923_rb-turnaround-tue.md",
+   "ea_id": "QM5_11923",
+   "reason": "Duplicate of approved QM5_12788/QM5_12836 Turnaround Tuesday primitive; DE40/US30/USTech not in DWX matrix."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11925_rb-open-scalp.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11925_rb-open-scalp.md",
+   "ea_id": "QM5_11925",
+   "reason": "No source citation, no target symbol, no pending-order expiry rule, no deterministic time exit; schema is not implementable as-is."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11928_rb-crypto-prev-day.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11928_rb-crypto-prev-day.md",
+   "ea_id": "QM5_11928",
+   "reason": "Crypto is outside the FTMO+DXZ DWX universe; execution timeframe, SL/TP percentages and time-exit minutes are all undefined."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11929_sts-3wicks-reversal.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11929_sts-3wicks-reversal.md",
+   "ea_id": "QM5_11929",
+   "reason": "research_sts has no durable source citation; 'shared extreme' tolerance and swing/level definitions absent; take-profit falls back to discretionary 'next structure level'."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11930_carver-ewm-volat.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11930_carver-ewm-volat.md",
+   "ea_id": "QM5_11930",
+   "reason": "Author concedes: Carver's actual edge is 28-instrument vol-targeted cross-sectional allocation; single-symbol EWMAC flip drops exactly that mechanism. Always-in-market flip also can't respect a news blackout."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11931_qp-spy-overnight-gap.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11931_qp-spy-overnight-gap.md",
+   "ea_id": "QM5_11931",
+   "reason": "Thesis requires a cash-session close/open discontinuity; SP500.DWX is a continuous 24h CFD with no such gap, so the defining signal cannot exist on governed data despite otherwise clean spec."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11934_ff-nel-4h-macd.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11934_ff-nel-4h-macd.md",
+   "ea_id": "QM5_11934",
+   "reason": "Zero-Line-Reject entry depends on discretionary 'pullback without crossing' / 'bounce off EMA' language; stop uses undefined 'previous swing'; exit is an undefined trailing stop."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11936_ff-millipede-pipeasy.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11936_ff-millipede-pipeasy.md",
+   "ea_id": "QM5_11936",
+   "reason": "Core 'stacking' rule adds a new leg at every Daily Open while prior legs are at BE — this is pyramiding/averaging-in, contradicting the card's own no-averaging block. Weekly/Monthly hold also exceeds the H1-D1 swing horizon box."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11938_ff-paulus-4h-trend.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11938_ff-paulus-4h-trend.md",
+   "ea_id": "QM5_11938",
+   "reason": "SuperTrend has a period but no ATR multiplier; 'BB MACD dots turn Green/Red' has no defined color/threshold rule; both require inventing parameters not in source."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11940_ff-two-stroke-chow.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11940_ff-two-stroke-chow.md",
+   "ea_id": "QM5_11940",
+   "reason": "'Tight consolidation' has no mechanical width definition; opens two simultaneous positions with divergent, non-closed-form management."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11942_ff-10gmt-ema50.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11942_ff-10gmt-ema50.md",
+   "ea_id": 11942,
+   "reason": "DD 12%>10% box; generic EMA50-cross truism, no real structural cause; family already saturated (12+ EMA50 cards approved)"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11946_ff-genesis-matrix.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11946_ff-genesis-matrix.md",
+   "ea_id": 11946,
+   "reason": "g0 REJECTED: proprietary composite (TVI/T3/GannHiLo) undefined, cannot mechanize without inventing formulas; also duplicate of approved genesis-matrix cards"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11947_ff-baguba-pullback.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11947_ff-baguba-pullback.md",
+   "ea_id": 11947,
+   "reason": "g0 REJECTED: currency-strength index formula undefined, needs multi-pair aggregation, discretionary TMA slope call"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11949_ff-london-7am-break.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11949_ff-london-7am-break.md",
+   "ea_id": 11949,
+   "reason": "Near-duplicate of the already-large approved London-open-breakout family (10+ variants incl. bigben/carter/tc); adds no new mechanism; DD 12%>box"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11951_ff-extreme-tma.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11951_ff-extreme-tma.md",
+   "ea_id": 11951,
+   "reason": "g0 REJECTED: TMA is centered/repainting (invalid on closed bars), slope units undefined, exit is unresolved conservative-or-standard branch"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11952_ff-mad-scalper.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11952_ff-mad-scalper.md",
+   "ea_id": 11952,
+   "reason": "g0 REJECTED: 'Shade' color and DoubleCCI periods undefined; also M1 timeframe borders HFT box, 1000 trades/yr scalp"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11953_ff-g7-strategy.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11953_ff-g7-strategy.md",
+   "ea_id": 11953,
+   "reason": "g0 REJECTED: Fib zone anchored to undefined 'current move', 'bounces off' is discretionary, SL over-parameterized (5-10, min20/max60)"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11954_ff-jarroo-boss.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11954_ff-jarroo-boss.md",
+   "ea_id": 11954,
+   "reason": "g0 REJECTED: HCR/LCS level lookback and selection rule undefined ('at least 2 bodies failed to close beyond' over what range)"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11955_breakout-momentum-scalp.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11955_breakout-momentum-scalp.md",
+   "ea_id": 11955,
+   "reason": "Targets Forex+Gold+Crypto; crypto not in dwx_symbol_matrix universe; 1.5-pip BE trigger + 1-pip trail borders HFT; no target_symbols/thesis schema"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11957_hft-momentum-ny.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11957_hft-momentum-ny.md",
+   "ea_id": 11957,
+   "reason": "Self-declared 'NON-COMPLIANT' HFT (dynamic pending-order refresh, scale-in) - explicit charter violation, card itself says disqualified"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11958_bollinger-rsi-meanrev.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11958_bollinger-rsi-meanrev.md",
+   "ea_id": 11958,
+   "reason": "Internal contradiction: 4-sigma BB touches are statistically near-impossible yet card claims 100 trades/yr; no structural cause or falsification"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11959_time-range-bo-fade.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11959_time-range-bo-fade.md",
+   "ea_id": 11959,
+   "reason": "No mechanical rule selects breakout vs fade by 'regime' - discretionary, same defect class as g0-rejected cards; range window undefined per-symbol"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11960_ai-ema-rsi-exhaustion.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11960_ai-ema-rsi-exhaustion.md",
+   "ea_id": 11960,
+   "reason": "Lineage tagged research_ai_gen - exactly the AI-generated indicator-mining the charter forbids; 'X%' stretch threshold left undefined"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11961_ai-sar-stop-activation.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11961_ai-sar-stop-activation.md",
+   "ea_id": 11961,
+   "reason": "AI-generated lineage (charter-forbidden) AND no initial stop loss ('stealth SL' until -60pts) = uncontrolled risk, breaks the DD box outright"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11963_nnfx-mcginley-tdfi.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11963_nnfx-mcginley-tdfi.md",
+   "ea_id": 11963,
+   "reason": "TDFI/Williams Proxy Index formulas undefined, 'Lesson 16' is an unresolved external reference - same defect class as genesis-matrix g0 reject"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11964_nnfx-supercycle-surge.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11964_nnfx-supercycle-surge.md",
+   "ea_id": 11964,
+   "reason": "5-indicator soup (SuperSmoother/STC/CHOP/ATR/Aroon), no structural cause, no falsification test, no symbol named; NNFX family already 15+ approved variants."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11965_nnfx-algotrade-pro.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11965_nnfx-algotrade-pro.md",
+   "ea_id": 11965,
+   "reason": "Another NNFX indicator stack (HMA/UT Bot/PCM/WAE/Aroon), no economic rationale, no falsification, no symbol; duplicates saturated NNFX family."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11966_systematic-fx-carry-vol-filt.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11966_systematic-fx-carry-vol-filt.md",
+   "ea_id": 11966,
+   "reason": "Real thesis (Lustig carry + vol filter) but near-identical to already-approved carry+vol-filter card; G10 universe includes SEK/NOK not in DWX matrix."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11967_crypto-funding-momentum.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11967_crypto-funding-momentum.md",
+   "ea_id": 11967,
+   "reason": "BTCUSD/ETHUSD not in dwx_symbol_matrix.csv (no crypto in factory universe); funding-rate data not available in MT5 tester despite r3 claim."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11968_smc-fvg-mechanical.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11968_smc-fvg-mechanical.md",
+   "ea_id": 11968,
+   "reason": "Generic FVG midpoint-fill entry, no symbol named; FVG/SMC family already has 15+ approved cards (fvg-retrace, fvg-rr1, ob-vol-fvg, etc)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11969_commodity-price-momentum-rotation.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11969_commodity-price-momentum-rotation.md",
+   "ea_id": 11969,
+   "reason": "12m commodity momentum rotation duplicates approved comm-mom12m card; universe includes Brent/Copper which are not in dwx_symbol_matrix.csv."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11970_mql5-mech-engulfing.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11970_mql5-mech-engulfing.md",
+   "ea_id": 11970,
+   "reason": "Mechanized engulfing pattern, no symbol, no structural cause; engulfing family already saturated with approved variants."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11971_mql5-123-trend.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11971_mql5-123-trend.md",
+   "ea_id": 11971,
+   "reason": "Sperandeo 1-2-3 reversal on ZigZag: exact same author/pattern already approved as a card. Direct duplicate, no new element."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11973_mql5-stat-arb-pairs.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11973_mql5-stat-arb-pairs.md",
+   "ea_id": 11973,
+   "reason": "EURUSD/GBPUSD z-score pairs trade duplicates several already-approved cointegration/pairs-z cards; no new mechanism."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11974_mql5-seo-harmonic-x3.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11974_mql5-seo-harmonic-x3.md",
+   "ea_id": 11974,
+   "reason": "Gartley/Bat harmonic patterns already have 4 dedicated approved XABCD cards plus Shark/Cypher/5-0; pure re-skin, no symbol given."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11975_mql5-ml-rf-sentiment.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11975_mql5-ml-rf-sentiment.md",
+   "ea_id": 11975,
+   "reason": "Embeds a pre-trained Random Forest model in the EA (r4_ml_forbidden explicitly set false); Hard Rule 14 violation regardless of thesis quality."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11976_mql5-tick-vol-scalp.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11976_mql5-tick-vol-scalp.md",
+   "ea_id": 11976,
+   "reason": "Explicit sub-second/tick execution (1-second tick count trigger, FOK, 1-pip trail, seconds-to-minutes horizon) violates the charter's no-HFT design box directly."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11977_mql5-ema-rsi-trend.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11977_mql5-ema-rsi-trend.md",
+   "ea_id": 11977,
+   "reason": "Generic EMA100+RSI9 trend continuation, no symbol, no structural cause; dozens of near-identical EMA/RSI cards already approved."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11978_bp-cowabunga-system.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11978_bp-cowabunga-system.md",
+   "ea_id": 11978,
+   "reason": "Famous public BabyPips system (Cowabunga) = precisely the 'crowded, already arbitraged' failure mode the charter opens by warning about; no structural cause, no symbol."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11979_bp-3-little-pigs.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11979_bp-3-little-pigs.md",
+   "ea_id": 11979,
+   "reason": "Another famous public BabyPips MTF-SMA system; crowded/arbitraged folklore pattern, no structural cause, no falsification, no symbol."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11980_bp-amazing-crossover.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11980_bp-amazing-crossover.md",
+   "ea_id": 11980,
+   "reason": "5/10 EMA cross + RSI50 filter, always-in-market reverse-on-signal; generic crossover crowded family, no structural cause, no symbol."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11981_bp-psar-ema-system.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11981_bp-psar-ema-system.md",
+   "ea_id": 11981,
+   "reason": "EMA50 + PSAR flip on H1 is a near-literal duplicate of an already-approved PSAR/EMA card; no structural cause, no symbol."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11982_bp-inside-bar-mom.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11982_bp-inside-bar-mom.md",
+   "ea_id": 11982,
+   "reason": "Inside-bar breakout with mother-bar-based SL/TP; an approved card with the identical slug 'inside-bar-mom' already exists. Exact duplicate."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11983_bp-bollinger-reversion.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11983_bp-bollinger-reversion.md",
+   "ea_id": 11983,
+   "reason": "Card title 'Short-Term Bollinger Reversion 2.0' matches an already-approved card's title/mechanism verbatim. Exact duplicate."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11984_bp-stoch-crossover-pullback.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11984_bp-stoch-crossover-pullback.md",
+   "ea_id": 11984,
+   "reason": "SMA100/200 trend + Stochastic pullback duplicates an already-approved SMA+Stoch card; no structural cause, no symbol."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11985_ff-ghost-cci-hs.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11985_ff-ghost-cci-hs.md",
+   "ea_id": 11985,
+   "reason": "No structural cause; subjective oscillator H&S peak-ID is non-deterministic; no persistence/falsification test given."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11986_ff-vegas-tunnel-144.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11986_ff-vegas-tunnel-144.md",
+   "ea_id": 11986,
+   "reason": "Duplicate: 5+ vegas-tunnel/vegas-wave 144/169 variants already approved incl. an '-alt' iteration; no new angle."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11987_ff-wind-runner-scalp.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11987_ff-wind-runner-scalp.md",
+   "ea_id": 11987,
+   "reason": "Thesis drifts into M1 alongside M5; indicator-soup scalp with no structural cause, persistence or falsification test."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11988_connors-rsi-2-meanrev.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11988_connors-rsi-2-meanrev.md",
+   "ea_id": 11988,
+   "reason": "Duplicate: ~10 approved RSI(2)/200SMA mean-reversion variants already exist across ids 1235-41197."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11989_connors-double-7.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11989_connors-double-7.md",
+   "ea_id": 11989,
+   "reason": "Duplicate: ~9 approved 'Double 7' 7-day-high/low variants already exist across ids 1242-41343."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11990_ff-rubber-band-bb.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11990_ff-rubber-band-bb.md",
+   "ea_id": 11990,
+   "reason": "Near-duplicate of approved QM5_3001 Rubber Band (same lower-BB+RSI extreme to mid-band mechanism); subjective candle trigger."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11991_cup-vix-divergence.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11991_cup-vix-divergence.md",
+   "ea_id": 11991,
+   "reason": "VIX index has no data feed anywhere in the framework/registry; external signal is unsourceable despite r3 claim."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11993_cup-time-bias-serafini.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11993_cup-time-bias-serafini.md",
+   "ea_id": 11993,
+   "reason": "Self-admits the bias window is walk-forward-optimized, not structurally caused -- exactly the parameter-mining the charter forbids."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11994_cup-cot-commercial-trend.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11994_cup-cot-commercial-trend.md",
+   "ea_id": 11994,
+   "reason": "Requires weekly CFTC COT positioning data; no COT feed exists anywhere in D:\\QM\\data or the framework registries."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11995_cup-fib-set-forget.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11995_cup-fib-set-forget.md",
+   "ea_id": 11995,
+   "reason": "ZigZag repaint breaks backtest/live determinism; Fib folklore only, no structural cause; overlaps existing fib cards."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11996_qc-dual-thrust.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11996_qc-dual-thrust.md",
+   "ea_id": 11996,
+   "reason": "Duplicate: 6 approved Dual Thrust variants already exist (ids 9181, 11263, 12474, 12497, 12499, 37002)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11998_ssrn-fx-vrp-straddle.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11998_ssrn-fx-vrp-straddle.md",
+   "ea_id": 11998,
+   "reason": "Options straddle + daily delta-hedging is not buildable as an MT5 spot/CFD EA; no options/IV instrument exists on the platform."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_11999_academic-macro-surprise-mom.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_11999_academic-macro-surprise-mom.md",
+   "ea_id": 11999,
+   "reason": "Requires Bloomberg/Citigroup Economic Surprise Index; no such fundamental-data feed exists in the factory."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12000_ano-pfs-time-asymmetry.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12000_ano-pfs-time-asymmetry.md",
+   "ea_id": 12000,
+   "reason": "M2 timeframe breaches the M5-M15 scalping floor (sub-minute-adjacent, near-HFT); subjective candle trigger; no persistence given."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12002_ano-triple-witching-mr.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12002_ano-triple-witching-mr.md",
+   "ea_id": 12002,
+   "reason": "expected_trades_per_year=4, below the Q02 floor of 5/yr regardless of thesis quality -- statistically unusable."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12004_ssrn-vanna-skew-harvest.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12004_ssrn-vanna-skew-harvest.md",
+   "ea_id": 12004,
+   "reason": "Options risk-reversal + vanna hedge not buildable as an MT5 spot/CFD EA; also trades/yr=4 is below the Q02 floor."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12006_ssrn-crash-neutral-carry.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12006_ssrn-crash-neutral-carry.md",
+   "ea_id": 12006,
+   "reason": "Options-hedge overlay (OTM puts) not buildable in MT5 EA; no options infra; EM legs outside symbol universe."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12008_qc-vladimir-in-out.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12008_qc-vladimir-in-out.md",
+   "ea_id": 12008,
+   "reason": "Trades QQQ/IWF/TLT/IEF US equity ETFs; none exist in dwx_symbol_matrix.csv universe."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12009_qc-liquid-value.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12009_qc-liquid-value.md",
+   "ea_id": 12009,
+   "reason": "Top-500 US stocks long/short on EPS earnings yield; individual equities and fundamental data unavailable."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12010_qc-vrp-jade-lizard.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12010_qc-vrp-jade-lizard.md",
+   "ea_id": 12010,
+   "reason": "SPY options straddle+OTM put strategy; no options trading capability in MT5, SPY not in universe."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12011_qc-asset-class-tf.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12011_qc-asset-class-tf.md",
+   "ea_id": 12011,
+   "reason": "SPY/TLT/VNQ/GSG US ETF trend-following; none exist in the DWX symbol universe."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12012_qc-january-barometer.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12012_qc-january-barometer.md",
+   "ea_id": 12012,
+   "reason": "SPY not in universe; expected 1 trade/yr, far below Q02 floor of 5."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12013_qc-pairs-kalman.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12013_qc-pairs-kalman.md",
+   "ea_id": 12013,
+   "reason": "EWA/EWC and NVDA/AMD equities outside universe; concept duplicates approved QM5_9415 kalman-pair."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12014_qc-fx-multi-factor-alpha.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12014_qc-fx-multi-factor-alpha.md",
+   "ea_id": 12014,
+   "reason": "Combines carry+momentum+value already covered by approved QM5_1067/1070/1091/1092/1179; carry leg needs unavailable historical swap data."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12015_qc-fx-currency-strength-index.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12015_qc-fx-currency-strength-index.md",
+   "ea_id": 12015,
+   "reason": "Currency-strength ranking already approved as QM5_31003 london-open-currency-strength-dispersion; no new mechanism."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12016_qc-fx-short-term-rates-lag.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12016_qc-fx-short-term-rates-lag.md",
+   "ea_id": 12016,
+   "reason": "Needs live 2Y sovereign bond-yield-spread feed; no such data source in framework despite r3_data_available claiming true."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12017_qc-fx-big-mac-ppp.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12017_qc-fx-big-mac-ppp.md",
+   "ea_id": 12017,
+   "reason": "Needs external semi-annual Big Mac dataset not in framework; 2 trades/yr below Q02 floor of 5."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12019_ru-garch-quantile-action.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12019_ru-garch-quantile-action.md",
+   "ea_id": 12019,
+   "reason": "GARCH-derived dynamic action points duplicate approved QM5_37008 garch-volatility-forecast-breakout mechanism."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12020_ru-fourier-extrapolation.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12020_ru-fourier-extrapolation.md",
+   "ea_id": 12020,
+   "reason": "FFT sinusoid extrapolation on non-stationary price has no structural/behavioral cause; classic curve-fit trap, no real persistence argument."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12021_ru-hmm-regime-switching.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12021_ru-hmm-regime-switching.md",
+   "ea_id": 12021,
+   "reason": "Hidden Markov Model + Viterbi decoding is a statistical/ML classifier, borderline Hard Rule 14 (no ML in EA); underlying edge is generic EMA-cross + pivot bounce already saturated."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12022_prop-london-ny-breakout.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12022_prop-london-ny-breakout.md",
+   "ea_id": 12022,
+   "reason": "Direct duplicate of the oversaturated approved London/NY opening-range-breakout family (e.g. QM5_1120, QM5_11429, QM5_12562)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12023_prop-ict-silver-bullet.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12023_prop-ict-silver-bullet.md",
+   "ea_id": 12023,
+   "reason": "Exact duplicate of already-approved ICT Silver Bullet cards (QM5_1233, QM5_12571, QM5_10694)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12024_prop-ict-unicorn.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12024_prop-ict-unicorn.md",
+   "ea_id": 12024,
+   "reason": "Breaker+FVG confluence near-duplicates the extensive approved SMC/ICT order-block family (QM5_10729, QM5_12536)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12025_prop-nq-vwap-reversion.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12025_prop-nq-vwap-reversion.md",
+   "ea_id": 12025,
+   "reason": "NDX VWAP mean reversion duplicates approved QM5_1204 zarattini-vwap-ndx and QM5_10752 nq-vwap-orb."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12026_prop-gold-m15-trend.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12026_prop-gold-m15-trend.md",
+   "ea_id": 12026,
+   "reason": "Generic EMA-stack pullback trend system on gold, no distinguishing cause; oversaturated approved gold trend family."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12027_ru-spider-gold-smc.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12027_ru-spider-gold-smc.md",
+   "ea_id": 12027,
+   "reason": "Session liquidity-sweep+MSS on gold duplicates approved QM5_10867/QM5_12537/QM5_31004; optional 'leg stacking' clause also risks reading as averaging-in."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12028_ru-silent-ilan-fixed.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12028_ru-silent-ilan-fixed.md",
+   "ea_id": 12028,
+   "reason": "Opens same-size 2nd/3rd position against an open loser (averaging into losers) - hard-rule violation regardless of 'fixed lot' framing; no falsification/persistence."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12029_ru-ppr-reversal-mech.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12029_ru-ppr-reversal-mech.md",
+   "ea_id": 12029,
+   "reason": "Generic false-breakout/trap PA reversal, redundant with existing 123-reversal/Brooks-failed-break family; no falsification test or persistence beyond folklore claim."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12031_ru-t101-basket-hedge.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12031_ru-t101-basket-hedge.md",
+   "ea_id": 12031,
+   "reason": "Trigger ('boundary jump' among 14-pair virtual-account P/L ranks) is not a precise deterministic formula - unbuildable mechanically as stated."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12032_ru-skyline-relative-mom.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12032_ru-skyline-relative-mom.md",
+   "ea_id": 12032,
+   "reason": "Near-duplicate of the already heavily-represented cross-sectional/dual momentum family (top-N ROC rotation, 200SMA filter, monthly rebalance); no novel differentiation."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12033_ru-twister-gold-veto.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12033_ru-twister-gold-veto.md",
+   "ea_id": 12033,
+   "reason": "5-independent-filter 'unanimous confluence' stack is indicator-mining/curve-fit by construction, not a single structural cause - exactly the anti-pattern the charter bans."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12034_ru-adaptive-breakthrough.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12034_ru-adaptive-breakthrough.md",
+   "ea_id": 12034,
+   "reason": "No articulated economic/behavioural structural cause beyond indicator mechanics ('fractal efficiency'); just another always-in reversal-breakout system, redundant with breakout inventory."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12035_ru-cluster-delta-cvd.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12035_ru-cluster-delta-cvd.md",
+   "ea_id": 12035,
+   "reason": "Depends on 'futures-based Cumulative Volume Delta mapped to FX' - real order-flow volume delta is not available for MT5 FX tick data; r3_data_available claim is unsubstantiated."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12036_ru-fisher-rsi-square.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12036_ru-fisher-rsi-square.md",
+   "ea_id": 12036,
+   "reason": "Standard Inverse-Fisher-on-RSI oscillator crossover; near-duplicate of existing Fisher-transform family already in inventory, no differentiated persistence rationale."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12038_ru-poc-retest-vol.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12038_ru-poc-retest-vol.md",
+   "ea_id": 12038,
+   "reason": "Near-exact duplicate of already-approved volume-profile POC retest card; same mechanism (prior-session POC touch + rejection candle, VA target)."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12039_ru-ctr-box-breakout.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12039_ru-ctr-box-breakout.md",
+   "ea_id": 12039,
+   "reason": "Rolling-window box + ATR-expansion + H4-trend breakout is a parameter tweak on an already saturated box/range-breakout inventory; no novel structural edge."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12041_ru-tick-density-hft.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12041_ru-tick-density-hft.md",
+   "ea_id": 12041,
+   "reason": "Explicit sub-minute/tick-level scalping ('Seconds to Minutes', tick-density trigger) - direct violation of the charter's No-HFT design-box constraint."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12042_ru-safe-dynamic-grid.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12042_ru-safe-dynamic-grid.md",
+   "ea_id": 12042,
+   "reason": "Card itself admits 'Fails No Grid hard rule' - dynamic recovery grid with up to 5 layers; self-flagged hard-rule violation, not a benchmarking exception."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12043_ru-adaptive-walkforward.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12043_ru-adaptive-walkforward.md",
+   "ea_id": 12043,
+   "reason": "Only 1 of 3 promised parameter-set rule blocks (Trend) is actually specified; weekly self-selection on trailing 30-day Sharpe is an in-sample optimization loop, high snooping risk."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12044_pro-delta-absorption.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12044_pro-delta-absorption.md",
+   "ea_id": 12044,
+   "reason": "Requires Cumulative Volume Delta on 'Liquid Futures or USD Majors mapped via Volume Delta' - true order-flow delta is not available in our FX tick-data environment."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12045_pro-inst-mean-rev.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12045_pro-inst-mean-rev.md",
+   "ea_id": 12045,
+   "reason": "Generic 200SMA-fair-value + 2SD Bollinger/RSI-extreme fade; duplicates the already large BB/RSI extreme mean-reversion family with no new mechanism."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12046_pro-brooks-h2l2.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12046_pro-brooks-h2l2.md",
+   "ea_id": 12046,
+   "reason": "Al Brooks 'High 2 / Low 2' continuation is already in the approved inventory under the identical mechanism."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12047_pro-nr7-contraction.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12047_pro-nr7-contraction.md",
+   "ea_id": 12047,
+   "reason": "Crabel NR7 volatility-contraction breakout already exists in approved inventory under near-identical mechanism."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12048_pro-vola-squeeze.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12048_pro-vola-squeeze.md",
+   "ea_id": 12048,
+   "reason": "John Carter Bollinger/Keltner squeeze is already represented multiple times in approved inventory (TTM Squeeze family); no differentiation offered."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12049_pro-liquidity-void-fill.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12049_pro-liquidity-void-fill.md",
+   "ea_id": 12049,
+   "reason": "Fair-Value-Gap / liquidity-void fill mean reversion duplicates the already-approved inverse-FVG reversal card; SMC direction is last-priority and this offers no new mechanism."
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12050_pro-orb-5min-opt.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12050_pro-orb-5min-opt.md",
+   "ea_id": 12050,
+   "reason": "No structural cause/persistence/falsification sections; 5-min ORB scalp is a near-duplicate cluster of ~120 existing ORB cards"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12051_yt-rayner-200day-tf.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12051_yt-rayner-200day-tf.md",
+   "ea_id": 12051,
+   "reason": "Schema missing entirely; 6x ATR trailing stop implies uncapped drawdown, violates <=10% total DD box"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12052_yt-secret-bb-squeeze.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12052_yt-secret-bb-squeeze.md",
+   "ea_id": 12052,
+   "reason": "No structural cause/persistence/falsification; indicator-mining BB+RSI breakout, no edge thesis, no symbols named"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12053_yt-tsg-tdi-allinone.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12053_yt-tsg-tdi-allinone.md",
+   "ea_id": 12053,
+   "reason": "Schema missing; near-duplicate of approved QM5_10016 TDI/EMA H1 family; no symbols, no structural cause"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12054_yt-triple-supertrend-ema.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12054_yt-triple-supertrend-ema.md",
+   "ea_id": 12054,
+   "reason": "Schema missing; 'viral 2024' claim is unverifiable; triple-supertrend cluster already covered by approved supertrend cards"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12056_yt-apex-swing-smc.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12056_yt-apex-swing-smc.md",
+   "ea_id": 12056,
+   "reason": "Schema missing entirely; SMC liquidity-sweep/FVG déjà covered by ~40 approved ict/smc cards, no symbols"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12057_yt-3step-checklist-day.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12057_yt-3step-checklist-day.md",
+   "ea_id": 12057,
+   "reason": "No structural cause/falsification/symbols; discretionary 'narrative' bias step is not mechanical/deterministic as written"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12058_yt-ema-rsi-2025.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12058_yt-ema-rsi-2025.md",
+   "ea_id": 12058,
+   "reason": "Generic EMA cross + RSI filter, no structural cause, no symbols; indistinguishable from dozens of approved ema-rsi cards"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12059_yt-rockzfx-1cdt.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12059_yt-rockzfx-1cdt.md",
+   "ea_id": 12059,
+   "reason": "Schema missing; pure price-action pullback pattern with no stated edge cause and no symbols; nothing distinguishes it from noise"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12060_yt-orb-vwap-bias.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12060_yt-orb-vwap-bias.md",
+   "ea_id": 12060,
+   "reason": "expected 250 trades/yr/symbol on 15m scalp is HFT-adjacent territory; schema missing; near-duplicate of approved orb+vwap cluster"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12061_yt-ict-amd-po3.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12061_yt-ict-amd-po3.md",
+   "ea_id": 12061,
+   "reason": "Schema missing, no symbols; AMD/PO3 session-manipulation thesis is a direct duplicate of approved ICT killzone/judas cards"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12062_yt-karyong-structure.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12062_yt-karyong-structure.md",
+   "ea_id": 12062,
+   "reason": "Schema missing entirely; generic HH/HL fib-retrace pattern, no symbols, no falsification, subjective 'confluence' criterion"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12063_yt-prob-tdt-levels.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12063_yt-prob-tdt-levels.md",
+   "ea_id": 12063,
+   "reason": "M1 analysis timeframe violates no-sub-minute/no-HFT box; proprietary undefined indicator; schema missing; no symbols"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12065_yt-ict-ote-fib.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12065_yt-ict-ote-fib.md",
+   "ea_id": 12065,
+   "reason": "Schema missing, no symbols; direct duplicate of approved ICT OTE/fib-displacement card family"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12066_yt-ema-stack-momentum.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12066_yt-ema-stack-momentum.md",
+   "ea_id": 12066,
+   "reason": "Generic triple-EMA trend-stack pullback, no structural cause/falsification, no symbols; indistinguishable from approved trend cards"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12067_yt-smc-orderblock-mitigation.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12067_yt-smc-orderblock-mitigation.md",
+   "ea_id": 12067,
+   "reason": "Schema missing, no symbols; order-block mitigation is a direct duplicate of multiple approved SMC/OB cards"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12068_yt-ha-smoothed-scalp.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12068_yt-ha-smoothed-scalp.md",
+   "ea_id": 12068,
+   "reason": "M1 timeframe with 1000 trades/yr/symbol is HFT/sub-minute, violates design box outright; schema missing; no symbols"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12878_bp-simple-system-32-review.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12878_bp-simple-system-32-review.md",
+   "ea_id": 12878,
+   "reason": "Schema missing, no symbols; indicator-on-indicator (BB-on-Stochastic) mining with no stated economic cause; scale-out ladder adds discretion"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12880_ftmo-set-up-4-fibs-break-out-v3.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12880_ftmo-set-up-4-fibs-break-out-v3.md",
+   "ea_id": "QM5_12880",
+   "reason": "Superseded draft (v4 exists); Fib-extension target is numerology not structural cause; no source citation"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12881_ftmo-set-up-4-fibs-break-out-v4.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12881_ftmo-set-up-4-fibs-break-out-v4.md",
+   "ea_id": "QM5_12881",
+   "reason": "g0 APPROVED but no source evidence; 'break in symmetry' isn't a structural cause; range-breakout niche already saturated"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12882_ftmo-set-up-3-20-ma-v2.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12882_ftmo-set-up-3-20-ma-v2.md",
+   "ea_id": "QM5_12882",
+   "reason": "Superseded draft (v3/v4 exist); MA-bounce + candle-pattern soup is indicator mining, not structural cause"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12883_ftmo-set-up-3-20-ma-v3.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12883_ftmo-set-up-3-20-ma-v3.md",
+   "ea_id": "QM5_12883",
+   "reason": "Superseded draft (v4 exists); adds NAS100/US30 which are outside the DWX symbol universe"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12884_ftmo-set-up-3-20-ma-v4.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12884_ftmo-set-up-3-20-ma-v4.md",
+   "ea_id": "QM5_12884",
+   "reason": "NAS100/US30 not in dwx_symbol_matrix.csv; 'self-fulfilling SMA' claim has no real structural cause; no citation"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12885_ftmo-set-up-1-quick-move-v3.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12885_ftmo-set-up-1-quick-move-v3.md",
+   "ea_id": "QM5_12885",
+   "reason": "Superseded draft (v4/v5 exist), no source citation, identical mechanism to later versions"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12886_ftmo-set-up-1-quick-move-v4.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12886_ftmo-set-up-1-quick-move-v4.md",
+   "ea_id": "QM5_12886",
+   "reason": "Superseded draft (v5 adds real source citation); wording-only rework of same rules"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12887_ftmo-set-up-1-quick-move-v5.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12887_ftmo-set-up-1-quick-move-v5.md",
+   "ea_id": "QM5_12887",
+   "reason": "London-open opening-range breakout already approved as QM5_12562/QM5_1120/QM5_11020; adds no new mechanism"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12888_ftmo-set-up-2-fibs-retracement-v3.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12888_ftmo-set-up-2-fibs-retracement-v3.md",
+   "ea_id": "QM5_12888",
+   "reason": "Superseded draft (v4/v5 exist); 61.8% Fib fade is a crowded, well-arbitraged retail pattern"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12889_ftmo-set-up-2-fibs-retracement-v4.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12889_ftmo-set-up-2-fibs-retracement-v4.md",
+   "ea_id": "QM5_12889",
+   "reason": "Superseded draft (v5 exists); same crowded Fib-retracement thesis, no citation, no persistence mechanism"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12890_ftmo-set-up-2-fibs-retracement-v5.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12890_ftmo-set-up-2-fibs-retracement-v5.md",
+   "ea_id": "QM5_12890",
+   "reason": "g0 APPROVED with no R1 evidence recorded; 'Golden Ratio self-organizing point' is folklore, not structural cause"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12891_ftmo-system-overview-v3.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12891_ftmo-system-overview-v3.md",
+   "ea_id": "QM5_12891",
+   "reason": "Not a tradeable EA: 0 trades/year, no entry logic of its own, duplicates existing risk/Q08/Q11 framework rules"
+  },
+  {
+   "from": "D:/QM/strategy_farm/artifacts/cards_review/QM5_12892_ftmo-system-overview-v4.md",
+   "to": "D:/QM/strategy_farm/artifacts/cards_rejected\\QM5_12892_ftmo-system-overview-v4.md",
+   "ea_id": "QM5_12892",
+   "reason": "Superseded meta-doc rework; still no entry mechanism, no r1-r4 frontmatter, references non-FX VIX filter"
+  }
+ ],
+ "missing": [],
+ "at_utc": "2026-09-12T18:09:38+00:00"
+}

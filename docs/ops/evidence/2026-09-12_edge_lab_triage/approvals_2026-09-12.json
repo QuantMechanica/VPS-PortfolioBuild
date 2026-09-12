@@ -1,0 +1,98 @@
+[
+ {
+  "ea_id": "PENDING_68333E26",
+  "slug": "index-cash-open-gap-fade",
+  "ok": true,
+  "out": " \"slug\": \"index-cash-open-gap-fade\",       \"target_symbols\": [         \"GDAXI.DWX\",         \"WS30.DWX\",         \"UK100.DWX\"       ]     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"b9d39876-fcfb-4e9d-a526-48bd48017e32\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "PENDING_A38AF97C",
+  "slug": "carney-ab-cd-pattern-h1-density",
+  "ok": true,
+  "out": "{   \"approved\": false,   \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_review\\\\PENDING_A38AF97C_carney-ab-cd-pattern-h1-density.md\",   \"missing\": [     \"entry\",     \"exit\"   ],   \"reason\": \"card_body_incomplete\" } "
+ },
+ {
+  "ea_id": "QM5_10719",
+  "slug": "edge-lab-t3-fx-short-reversion",
+  "ok": true,
+  "out": "{   \"approved\": false,   \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_review\\\\QM5_10719_edge-lab-t3-fx-short-reversion.md\",   \"issues\": [     \"schema_missing_frontmatter:target_symbols\"   ],   \"reason\": \"card_contract_invalid\" } "
+ },
+ {
+  "ea_id": "QM5_10720",
+  "slug": "edge-lab-t4-safehaven-rotation",
+  "ok": true,
+  "out": "{   \"approved\": false,   \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_review\\\\QM5_10720_edge-lab-t4-safehaven-rotation.md\",   \"issues\": [     \"schema_missing_frontmatter:target_symbols\"   ],   \"reason\": \"card_contract_invalid\" } "
+ },
+ {
+  "ea_id": "QM5_11924",
+  "slug": "rb-mean-reversion",
+  "ok": true,
+  "out": "reversion\",       \"target_symbols\": [         \"EURUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"f7741b0c-bc4d-4e9e-8c35-78c461bd85d2\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "QM5_11926",
+  "slug": "rb-rsi-ma-filter",
+  "ok": true,
+  "out": "ma-filter\",       \"target_symbols\": [         \"EURUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"a655c32e-37d2-4600-b447-cdf8da9a5a6c\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "QM5_11927",
+  "slug": "rb-atr-candle-break",
+  "ok": true,
+  "out": "dle-break\",       \"target_symbols\": [         \"XAUUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"3608d2b9-9a7c-4b84-94dc-b8f54f5285ce\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "QM5_11932",
+  "slug": "ff-tms-big-e",
+  "ok": true,
+  "out": "tms-big-e\",       \"target_symbols\": [         \"EURUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"978e43cc-79ef-4102-8244-d2d22cfc0599\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "QM5_11933",
+  "slug": "ff-holo-tooslow",
+  "ok": true,
+  "out": "o-tooslow\",       \"target_symbols\": [         \"EURUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"64890752-9193-4f85-bb07-83e66116c65a\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "QM5_11935",
+  "slug": "ff-sonic-r",
+  "ok": true,
+  "out": "f-sonic-r\",       \"target_symbols\": [         \"EURUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"ea670dd1-742a-40c1-9465-47e40589390a\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "QM5_11939",
+  "slug": "ff-j16-pin-rejection",
+  "ok": true,
+  "out": "rejection\",       \"target_symbols\": [         \"EURUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"4dea0439-9084-4dca-ab9b-38489ff8f63e\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": "QM5_11941",
+  "slug": "ff-inst-code-levels",
+  "ok": true,
+  "out": "de-levels\",       \"target_symbols\": [         \"GBPUSD.DWX\"       ],       \"target_symbols_valid\": true,       \"total_magic_rows\": 0     },     \"task\": {       \"enqueued\": true,       \"state\": \"TODO\",       \"task_id\": \"01cfe141-09fb-4664-951a-acbd4bed8512\",       \"task_type\": \"ops_issue\"     }   } } "
+ },
+ {
+  "ea_id": 12001,
+  "slug": "ano-totm-ultimo",
+  "ok": true,
+  "out": "{   \"approved\": false,   \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_review\\\\QM5_12001_ano-totm-ultimo.md\",   \"issues\": [     \"schema_missing_frontmatter:target_symbols\",     \"schema_missing_body:timeframe_literal\"   ],   \"reason\": \"card_contract_invalid\" } "
+ },
+ {
+  "ea_id": 12005,
+  "slug": "ssrn-short-horizon-xmom",
+  "ok": true,
+  "out": "{   \"approved\": false,   \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_review\\\\QM5_12005_ssrn-short-horizon-xmom.md\",   \"issues\": [     \"schema_missing_frontmatter:target_symbols\",     \"schema_missing_body:timeframe_literal\"   ],   \"reason\": \"card_contract_invalid\" } "
+ },
+ {
+  "ea_id": 12030,
+  "slug": "ru-basket-zscore-arb",
+  "ok": true,
+  "out": "{   \"approved\": false,   \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_review\\\\QM5_12030_ru-basket-zscore-arb.md\",   \"issues\": [     \"schema_missing_frontmatter:target_symbols\",     \"schema_missing_body:timeframe_literal\"   ],   \"reason\": \"card_contract_invalid\" } "
+ },
+ {
+  "ea_id": 12879,
+  "slug": "ftmo-set-up-4-fibs-break-out-v2",
+  "ok": true,
+  "out": "{   \"approved\": false,   \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_review\\\\QM5_12879_ftmo-set-up-4-fibs-break-out-v2.md\",   \"issues\": [     \"schema_missing_frontmatter:target_symbols\"   ],   \"reason\": \"card_contract_invalid\" } "
+ }
+]

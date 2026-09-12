@@ -4011,3 +4011,18 @@ Q08/Q11 risk, FTMO fit <= 10 pct DD, horizon, no grid/martingale/HFT, symbols in
 check); on-paper REJECT -> cards_rejected with reason, KEEP -> orchestrator G0 review + approve-card into the
 build queue as variant families, REWORK -> ticket. (2) Astra ticket: calendar/seasonal thesis bank (10-15 theses,
 paper falsification from archive bars, 3 card drafts) + the Unger census finding note.
+
+## 2026-09-12T23:40Z — Edge Lab draft triage executed (182 drafts): 8 KEEP, 25 REWORK, 149 REJECT
+
+Nine Sonnet batches against the charter schema and design box (evidence docs/ops/evidence/2026-09-12_edge_lab_triage/).
+REJECT 149 -> moved to D:/QM/strategy_farm/artifacts/cards_rejected with frontmatter status/g0_status REJECTED,
+rejection_reason and an appended rationale (rejections_2026-09-12.json). Dominant kill classes: near-duplicates of
+already approved families (ORB, ICT/SMC, EMA-cross, Connors, Balke), retail-course harvests without structural
+cause, symbols/feeds outside the .DWX universe (crypto, VIX, COT, options, CVD, equities), grid/martingale/HFT/ML
+violations. Systematic finding: the intake template never carried the charter sections; every "closed-form" card
+states expected_dd 12-15 pct as boilerplate. Dispositions: 8 KEEP + 8 DD-only reworks -> G0 approve-card at the
+10 pct box expectation (sizing estimate, gates measure): 9 approved and build tasks enqueued (index-cash-open-gap-fade,
+11924, 11926, 11927, 11932, 11933, 11935, 11939, 11941); 7 refused by the card-contract validator (missing
+target_symbols / timeframe literal / entry-exit sections) -> mechanical transcription where the body states the
+universe, otherwise into the rework ticket. Astra rework ticket 4927dcbb (17 substantive reworks); intake pre-screen
+ticket 47a70f66 (Luna, Default-OFF); calendar/seasonal thesis bank ticket 3941072e (Astra).
