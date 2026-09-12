@@ -1,0 +1,112 @@
+{
+  "schema_version": "qm.fx-cointegration-cpu-stop/v1",
+  "recorded_at_utc": "2026-09-12T06:16:04Z",
+  "recorded_at_local": "2026-09-12T08:16:04+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "9653865003dc462b7c75aca95b7345835a9bc263",
+  "mission_outcome": "STOPPED_AT_BINDING_BACKTEST_CPU_CEILING",
+  "frontier": {
+    "source_record": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationships_scanned": 66,
+    "unbuilt_pair_found": false,
+    "duplicate_guard": "The frozen scan is already fully represented; no new card, EA, compile row, or Q02 row was created."
+  },
+  "anchor_triage": {
+    "QM5_12532": {
+      "pair": "AUDUSD.DWX/NZDUSD.DWX",
+      "q02": "PASS",
+      "later_terminal_state": "Q04 PASS, Q05 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    },
+    "QM5_12533": {
+      "pair": "EURJPY.DWX/GBPJPY.DWX",
+      "q02": "PASS",
+      "later_terminal_state": "Q04 FAIL",
+      "q02_oninit_or_no_history_blocker": false
+    }
+  },
+  "selected_existing_pair": {
+    "ea_id": "QM5_12507",
+    "slug": "pair-coint-z",
+    "pair": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ],
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "timeframe": "H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "phase": "Q02",
+    "status": "pending",
+    "attempt_count": 0,
+    "claimed_by": null,
+    "verdict": null,
+    "priority_track": true,
+    "active_hold_count": 0,
+    "exact_open_identity_count": 1,
+    "duplicate_enqueue_performed": false
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "PORTFOLIO_WEIGHT": 1
+  },
+  "artifact_identity": {
+    "mq5_sha256": "569cc4e32cbe9b83ab4f30ce8881ff8c1ed24357f7be6503c23338087787cf0c",
+    "ex5_sha256": "b9baf4b48e02b9ced91b2d86d24b87245b595b506d1763b279e36bb9074ba4aa",
+    "basket_manifest_sha256": "195cf0517e6e99649e0f40c259cea93e9af5a05cfc913fe901a33c39896fea56",
+    "logical_setfile_sha256": "f8f7da7f72fa60ab37e4e4d1a9e64d1b83e8e122b29ee35c613feb25236bac99"
+  },
+  "build_guard": {
+    "generated_mq5_written": false,
+    "compile_enqueued": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12507_pair-coint-z/QM5_12507_pair-coint-z.mq5",
+    "audit_exit_code": 0,
+    "audit_ok": true,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0,
+    "hits": []
+  },
+  "capacity_preflight": {
+    "cpu_samples_percent": [
+      72.9667132398625,
+      76.6220233237478,
+      86.4357646336532,
+      92.7995029192335,
+      100.0
+    ],
+    "cpu_average_percent": 85.76480044337936,
+    "cpu_maximum_percent": 100.0,
+    "cpu_ceiling_percent": 97.0,
+    "cpu_ceiling_hit": true,
+    "binding_measure": "maximum_percent",
+    "free_physical_memory_gib": 34.642,
+    "total_physical_memory_gib": 63.12,
+    "active_work_item_count": 5,
+    "pending_work_item_count": 6265,
+    "running_factory_terminals_observed_at_utc": "2026-09-12T06:14:56Z",
+    "running_factory_terminals": [
+      "T1",
+      "T4",
+      "T9"
+    ]
+  },
+  "actions": {
+    "strategy_card_created": false,
+    "ea_created_or_modified": false,
+    "registry_or_magic_modified": false,
+    "q02_enqueued_or_requeued": false,
+    "queue_mutated": false,
+    "dispatch_tick_run": false,
+    "tester_or_terminal_started": false,
+    "reason": "The exact governed Q02 row already exists and the fresh CPU sample hit the binding 97 percent ceiling."
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "live_manifest_touched": false
+  }
+}
