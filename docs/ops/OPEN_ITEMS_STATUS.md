@@ -3751,6 +3751,16 @@ never writes history; current 0/24 P3 evidence blocks activation. Focused tests:
 is recorded in an OPEN OWNER card. Evidence:
 `docs/ops/evidence/2026-09-12_dukascopy_monthly_refresh_default_off.md`.
 
+## 2026-09-12T11:45Z — Q09 legacy rebuild reissue (`fda6370f`) REVIEW
+
+RESULT: suppressed a duplicate QM5_11167 rebuild after verifying the already
+APPROVED successor `QM5_41394`: governed COMPILE_OK/build PASS, matching source
+and EX5 hashes, five Q02 rows enqueued (four worker PASS, one pending), and the
+old identity untouched. Refreshed the exact 35-row affected scope with current
+holds and documented the staged eight-source follow-up cohort plan. No queue,
+registry, EA, verdict, hold, priority, or terminal state changed. Evidence:
+`docs/ops/evidence/2026-09-12_q09_legacy_rebuild_reissue_resolution.md`.
+
 ## 2026-09-12T15:30Z — T11/T12 on build 6182 (governed update runbook applied); review round 4 closed
 
 4291c7ef APPROVED: docs/ops/MT5_TERMINAL_UPDATE_RUNBOOK.md written and applied to the research seats only; T11/T12
