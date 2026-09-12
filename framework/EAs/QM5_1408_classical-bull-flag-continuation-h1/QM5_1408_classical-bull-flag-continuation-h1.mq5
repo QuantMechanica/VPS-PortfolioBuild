@@ -69,8 +69,6 @@ const int STRATEGY_LIFECYCLE_NONE     = 0;
 const int STRATEGY_LIFECYCLE_PENDING  = 1;
 const int STRATEGY_LIFECYCLE_POSITION = 2;
 
-int      g_h_atr_h1 = INVALID_HANDLE;
-int      g_h_sma_h4 = INVALID_HANDLE;
 string   g_state_prefix = "";
 bool     g_setup_valid = false;
 int      g_lifecycle_phase = STRATEGY_LIFECYCLE_NONE;
@@ -181,40 +179,6 @@ void Strategy_LoadState()
       Strategy_ResetMemoryState();
   }
 
-bool Strategy_InitIndicators()
-  {
-   g_h_atr_h1 = iATR(_Symbol, strategy_tf, strategy_atr_period);
-   if(g_h_atr_h1 == INVALID_HANDLE)
-     {
-      PrintFormat("QM5_%d: failed to create ATR handle", qm_ea_id);
-      return false;
-     }
-   if(strategy_macro_bias_enabled)
-     {
-      g_h_sma_h4 = iMA(_Symbol, PERIOD_H4, strategy_macro_sma_period, 0, MODE_SMA, PRICE_CLOSE);
-      if(g_h_sma_h4 == INVALID_HANDLE)
-        {
-         PrintFormat("QM5_%d: failed to create H4 SMA handle", qm_ea_id);
-         return false;
-        }
-     }
-   return true;
-  }
-
-void Strategy_ReleaseIndicators()
-  {
-   if(g_h_atr_h1 != INVALID_HANDLE)
-     {
-      IndicatorRelease(g_h_atr_h1);
-      g_h_atr_h1 = INVALID_HANDLE;
-     }
-   if(g_h_sma_h4 != INVALID_HANDLE)
-     {
-      IndicatorRelease(g_h_sma_h4);
-      g_h_sma_h4 = INVALID_HANDLE;
-     }
-  }
-
 bool Strategy_SelectOurPosition(ulong &ticket)
   {
    const int magic = QM_FrameworkMagic();
@@ -289,8 +253,8 @@ void Strategy_InvalidateSetup(const string reason)
    Strategy_RemoveOurPendingOrders(reason);
    const datetime current_bar = iTime(_Symbol, strategy_tf, 0); // perf-allowed: fixed current-bar timestamp at one lifecycle transition.
    const datetime basis = (current_bar > 0) ? current_bar : TimeCurrent();
-   g_pattern_block_until = basis +
-      (long)MathMax(0, strategy_reuse_guard_bars) * Strategy_PeriodSeconds();
+   g_pattern_block_until = (datetime)((long)basis +
+      (long)MathMax(0, strategy_reuse_guard_bars) * Strategy_PeriodSeconds());
    Strategy_ClearSetupState();
    PrintFormat("QM5_%d: bull-flag setup invalidated: %s", qm_ea_id, reason);
   }
@@ -322,16 +286,7 @@ bool Strategy_ReuseGuardActive()
 
 bool Strategy_ReadAtr(double &atr)
   {
-   atr = 0.0;
-   if(g_h_atr_h1 == INVALID_HANDLE)
-      return false;
-   double values[1];
-   const int copied = CopyBuffer(g_h_atr_h1, 0, 1, 1, values);
-   if(copied < 1)
-      return false;
-   if(ArraySize(values) < 1)
-      return false;
-   atr = values[0];
+   atr = QM_ATR(_Symbol, strategy_tf, strategy_atr_period, 1);
    return (atr > 0.0 && MathIsValidNumber(atr));
   }
 
@@ -349,22 +304,20 @@ bool Strategy_MacroBias()
   {
    if(!strategy_macro_bias_enabled)
       return true;
-   if(g_h_sma_h4 == INVALID_HANDLE)
-      return false;
-   double sma_values[2];
-   const int copied_sma = CopyBuffer(g_h_sma_h4, 0, 1, 2, sma_values);
-   if(copied_sma < 2)
-      return false;
-   if(ArraySize(sma_values) < 2)
+   const double sma_closed =
+      QM_SMA(_Symbol, PERIOD_H4, strategy_macro_sma_period, 1, PRICE_CLOSE);
+   const double sma_prior =
+      QM_SMA(_Symbol, PERIOD_H4, strategy_macro_sma_period, 2, PRICE_CLOSE);
+   if(sma_closed <= 0.0 || sma_prior <= 0.0 ||
+      !MathIsValidNumber(sma_closed) || !MathIsValidNumber(sma_prior))
       return false;
    MqlRates h1_rates[];
    ArraySetAsSeries(h1_rates, true);
    const int copied_rates = CopyRates(_Symbol, strategy_tf, 1, 1, h1_rates); // perf-allowed: one closed strategy bar, entry path only.
    if(copied_rates < 1 || ArraySize(h1_rates) < 1)
       return false;
-   // CopyBuffer stores older shift 2 at [0], newer shift 1 at [1].
-   const bool sma_rising = (sma_values[1] >= sma_values[0]);
-   const bool price_above = (h1_rates[0].close > sma_values[1]);
+   const bool sma_rising = (sma_closed >= sma_prior);
+   const bool price_above = (h1_rates[0].close > sma_closed);
    return (sma_rising && price_above);
   }
 
@@ -722,8 +675,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
      }
    if(g_setup_valid)
      {
-      const datetime expiry = g_setup_created_bar_time +
-         (long)STRATEGY_PENDING_VALID_BARS * Strategy_PeriodSeconds();
+      const datetime expiry = (datetime)((long)g_setup_created_bar_time +
+         (long)STRATEGY_PENDING_VALID_BARS * Strategy_PeriodSeconds());
       if(g_setup_created_bar_time <= 0 || TimeCurrent() >= expiry)
         {
          Strategy_InvalidateSetup("eight_bar_expiry");
@@ -744,8 +697,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       !Strategy_RemoveOurPendingOrders("per_bar_reprice"))
       return false;
 
-   const datetime expiry = candidate.created_bar_time +
-      (long)STRATEGY_PENDING_VALID_BARS * Strategy_PeriodSeconds();
+   const datetime expiry = (datetime)((long)candidate.created_bar_time +
+      (long)STRATEGY_PENDING_VALID_BARS * Strategy_PeriodSeconds());
    const long seconds_remaining = (long)(expiry - TimeCurrent());
    if(seconds_remaining <= 0)
      {
@@ -794,8 +747,8 @@ void Strategy_ManageOpenPosition()
    if(g_lifecycle_phase != STRATEGY_LIFECYCLE_POSITION)
      {
       g_lifecycle_phase = STRATEGY_LIFECYCLE_POSITION;
-      const datetime cooldown_end = position_time +
-         (long)MathMax(0, strategy_reuse_guard_bars) * Strategy_PeriodSeconds();
+      const datetime cooldown_end = (datetime)((long)position_time +
+         (long)MathMax(0, strategy_reuse_guard_bars) * Strategy_PeriodSeconds());
       if(cooldown_end > g_pattern_block_until)
          g_pattern_block_until = cooldown_end;
       Strategy_PersistState();
@@ -924,9 +877,6 @@ int OnInit()
                         qm_rng_seed, qm_stress_reject_probability,
                         qm_news_temporal, qm_news_compliance))
       return INIT_FAILED;
-   if(!Strategy_InitIndicators())
-      return INIT_FAILED;
-
    g_state_prefix = StringFormat("QM5.1408.%I64d.%d.%s.",
                                  AccountInfoInteger(ACCOUNT_LOGIN),
                                  QM_FrameworkMagic(), _Symbol);
@@ -937,8 +887,8 @@ int OnInit()
    const bool has_pending = Strategy_SelectOurPendingOrder(pending_ticket);
    if(!has_position && !has_pending)
      {
-      const datetime pending_expiry = g_setup_created_bar_time +
-         (long)STRATEGY_PENDING_VALID_BARS * Strategy_PeriodSeconds();
+      const datetime pending_expiry = (datetime)((long)g_setup_created_bar_time +
+         (long)STRATEGY_PENDING_VALID_BARS * Strategy_PeriodSeconds());
       if(g_setup_valid &&
          g_lifecycle_phase == STRATEGY_LIFECYCLE_PENDING &&
          g_setup_created_bar_time > 0 &&
@@ -950,8 +900,8 @@ int OnInit()
         }
       else
         {
-         const datetime maximum_valid_block = TimeCurrent() +
-            (long)MathMax(0, strategy_reuse_guard_bars) * Strategy_PeriodSeconds();
+         const datetime maximum_valid_block = (datetime)((long)TimeCurrent() +
+            (long)MathMax(0, strategy_reuse_guard_bars) * Strategy_PeriodSeconds());
          if(g_pattern_block_until > maximum_valid_block)
             g_pattern_block_until = 0;
          Strategy_ClearSetupState();
@@ -984,7 +934,6 @@ int OnInit()
 void OnDeinit(const int reason)
   {
    Strategy_PersistState();
-   Strategy_ReleaseIndicators();
    QM_FrameworkShutdown();
   }
 

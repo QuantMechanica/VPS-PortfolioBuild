@@ -2637,6 +2637,63 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# PACER mission (2026-09-12): QM5_1408's reviewed H1 source rework is newer
+# than its compiled binary, so its only Q02 row was refused before MT5 launch.
+# Bind one governed rebuild to the exact current source and immutable diagnosis
+# receipt. This grants no strategy, backtest verdict, pipeline-gate, live,
+# portfolio-gate, or cross-EA authority.
+QM5_1408_Q02_STALE_BINARY_REBUILD_AUTHORITY = (
+    "pacer_q02_infra_repair:20260912:QM5_1408"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_1408_Q02_STALE_BINARY_REBUILD_AUTHORITY
+] = {
+    "ea_id": "1408",
+    "ea_label": "QM5_1408_classical-bull-flag-continuation-h1",
+    "source_sha256": "5356de500520d4f1a6532986111f8d0592ca7934de3d8de1616123fafd8cd7d4",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-12_qm5_1408_stale_binary_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "ea4708764cb8cab5077b40a82bba171330bbe7d4761eb2b2fee9c766cc47dfdb"
+    ),
+}
+
+# The first QM5_1408 recovery compile proved the current source compiles, then
+# strict build checking rejected its EA-owned indicator handles, raw buffer
+# reads, and warning-43 datetime conversions. Bind one append-only successor to
+# the pooled-reader conformance repair and that exact failed compile. This
+# grants no strategy, backtest verdict, pipeline-gate, live, portfolio-gate,
+# or cross-EA authority.
+QM5_1408_INDICATOR_CONFORMANCE_REPAIR_AUTHORITY = (
+    "pacer_q02_infra_repair:20260912:QM5_1408:conformance_v2"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_1408_INDICATOR_CONFORMANCE_REPAIR_AUTHORITY
+] = {
+    "ea_id": "1408",
+    "ea_label": "QM5_1408_classical-bull-flag-continuation-h1",
+    "source_sha256": "891125345dd7ad3231ef714e64759527e238e784fa1e71374f9cdbc262c76fdd",
+    "predecessors": {
+        "1f118182-41af-417e-a26c-e9da8f56b074": {
+            "source_sha256": "5356de500520d4f1a6532986111f8d0592ca7934de3d8de1616123fafd8cd7d4",
+            "status": "failed",
+            "verdict": "COMPILE_FAIL",
+        }
+    },
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-12_qm5_1408_indicator_conformance_repair_authority.json"
+    ),
+    "evidence_sha256": (
+        "5f94b0f9176cb5b020c876c884db6fe742af165edec38ba3859f95b61f78096b"
+    ),
+}
+
 # OWNER-rework router task 27143c34 (2026-09-12): the latest governed Q02
 # completed reliably but produced zero trades because the implementation added
 # a card-absent 35-point spread veto at the Tokyo-open entry instant. Bind one

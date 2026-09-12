@@ -1,0 +1,62 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "pacer_q02_infra_repair:20260912:QM5_1408:conformance_v2",
+  "created_at_local": "2026-09-12T22:49:00+02:00",
+  "ea_id": "QM5_1408",
+  "ea_label": "QM5_1408_classical-bull-flag-continuation-h1",
+  "mission_priority": 2,
+  "scope": "one append-only governed COMPILE_EA successor for the exact framework-conformance repair diagnosed by the failed stale-binary rebuild; no strategy hypothesis, economic verdict, pipeline-gate, live, portfolio-gate, or cross-EA authority",
+  "predecessor": {
+    "compile_work_item_id": "1f118182-41af-417e-a26c-e9da8f56b074",
+    "status": "failed",
+    "verdict": "COMPILE_FAIL",
+    "mq5_sha256": "5356de500520d4f1a6532986111f8d0592ca7934de3d8de1616123fafd8cd7d4",
+    "metaeditor_result": "PASS",
+    "metaeditor_errors": 0,
+    "metaeditor_warnings": 6,
+    "build_check_result": "FAIL",
+    "failure_classes": [
+      "BUILD_CHECK_STRICT_WARNINGS",
+      "EA_PERF_RAW_INDICATOR_CALL",
+      "EA_FRAMEWORK_RAW_COPYBUFFER"
+    ],
+    "evidence_path": "D:\\QM\\reports\\work_items\\1f118182-41af-417e-a26c-e9da8f56b074\\QM5_1408\\COMPILE_EA\\compile_evidence.json"
+  },
+  "repair": {
+    "current_mq5_sha256": "891125345dd7ad3231ef714e64759527e238e784fa1e71374f9cdbc262c76fdd",
+    "changes": [
+      "Replace EA-owned iATR handle and CopyBuffer read with pooled QM_ATR on closed shift 1.",
+      "Replace EA-owned H4 iMA handle and CopyBuffer read with pooled QM_SMA reads on closed shifts 1 and 2.",
+      "Remove manual IndicatorRelease calls because QM_FrameworkShutdown owns pooled-handle cleanup.",
+      "Make six datetime arithmetic conversions explicit to eliminate compiler warning 43 without changing timestamps."
+    ],
+    "strategy_mechanics_changed": false,
+    "host_timeframe": "H1",
+    "instrument_scope_count": 14
+  },
+  "validation": {
+    "static_test_command": "python -m pytest -q tools/strategy_farm/tests/test_qm5_1408_rework_static.py",
+    "static_test_result": "PASS_4",
+    "framework_input_pin_audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_1408_classical-bull-flag-continuation-h1/QM5_1408_classical-bull-flag-continuation-h1.mq5",
+    "framework_input_pin_audit_predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "framework_input_pin_audit_required_immediately_before_enqueue": true,
+    "framework_input_pin_audit_observed_ok": true,
+    "framework_input_pin_audit_observed_hit_count": 0,
+    "fixed_risk_setfile_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "active_symbol_slot_count": 14
+    }
+  },
+  "coordination": {
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor",
+    "claim_key": "paced_fleet:diversity_infra_repair:QM5_1408:20260912:conformance_v2"
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}
