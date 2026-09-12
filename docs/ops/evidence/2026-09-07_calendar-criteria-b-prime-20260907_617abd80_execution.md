@@ -530,3 +530,31 @@ since `2026-09-11T10:51:37Z` (~18h, ordinary queue depth, not this task's author
 
 No `update-task` call made on `bb814520`/`dfc60103` -- no acceptance criterion
 satisfied. Both remain `IN_PROGRESS`.
+
+## Checked 2026-09-12T06:02Z real UTC (`date -u`) (headless orchestration cycle) -- correction: acceptance target is the QM5_41394 rebuild, not the old 11167/11196 rows
+
+Re-verified `b66b5ccc` directly (state=PASSED, assigned=codex, updated_at=2026-09-12T04:55:15Z,
+unchanged from the 05:06Z checkpoint) and read its full `payload_json.objective` for the
+first time this incident. Correction to the standing analysis: `b66b5ccc`'s actual scope was
+**not** a fix applied to the existing `QM5_11167` binary -- it explicitly rebuilds 11167 as a
+**brand-new identity** ("new ea_id, new magic ... Do not reuse or claim continuity with the
+old ea_id's Q02-Q09 verdicts ... Leave the old QM5_11167 binary, its Q10_NEWS rows
+(f625d9aa, 6797ed1c) and all other cohort EAs completely untouched"). Its own verdict
+confirms the rebuilt identity is `QM5_41394` (Q02 PASS confirmed for the EURUSD leg,
+2026-09-09). Consequences:
+- `QM5_11167` (`6797ed1c`, REVIEW_REQUIRED since 2026-09-08T17:32:10Z) and `QM5_11196`
+  (`a909ee18`, REVIEW_REQUIRED since 2026-09-10T22:58:05Z) will **never** transition off
+  REVIEW_REQUIRED -- they are permanently frozen by `b66b5ccc`'s own terms, not merely stale.
+  Future cycles should stop polling these two rows as the acceptance target.
+- The real acceptance-relevant object is `QM5_41394` reaching Q10_NEWS PASS/FAIL. It has not:
+  XAUUSD.DWX Q04 (`5f3f323d`) is still `pending`/unclaimed since 2026-09-11T10:51:37Z (~19h,
+  ordinary queue depth), and its 3 sibling legs (EURUSD/USDJPY/XTIUSD) each died at Q04
+  (3-for-3) before ever reaching Q10_NEWS -- so `QM5_41394` is several gates away from the
+  acceptance criterion, not "one rerun away" as prior entries' phrasing could imply.
+- `dfc60103`'s literal allowed-action text ("farmctl enqueue-backtest
+  --append-only-rerun-of f625d9aa for 11167") targets the old, now-frozen identity and was
+  NOT executed this cycle -- running it would act against `b66b5ccc`'s explicit resolution
+  path (leave old 11167 untouched) rather than advance the actual fix.
+
+No `update-task` call made; no acceptance criterion newly met. All three tasks remain
+`IN_PROGRESS`.

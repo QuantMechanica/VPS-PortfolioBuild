@@ -521,3 +521,14 @@ Q02 was claimed/`active` on T2 at `09:50:49Z` but reverted to `pending`/unclaime
 no Q02 verdict produced. This task's own gate (11167/XAUUSD Q10_NEWS rerun ending PASS/FAIL)
 is unaffected and still unmet. No ticket, rebuild, release, or verdict change made. Task
 remains `IN_PROGRESS`.
+
+## Checked 2026-09-12T06:02Z real UTC (`date -u`) (headless orchestration cycle) -- see bb814520's file for a correction
+
+See `bb814520`'s file (2026-09-12T06:02Z entry) for a correction to the standing analysis:
+`b66b5ccc` rebuilt 11167 under a brand-new identity (`QM5_41394`), leaving the old
+`QM5_11167`/`QM5_11196` rows permanently untouched per its own explicit terms. This task's
+literal allowed-action text referencing an append-only rerun of `f625d9aa` (old 11167)
+targets a row the chosen fix path explicitly freezes -- not executed, to avoid acting
+against `b66b5ccc`'s resolution. The real gate is `QM5_41394` reaching Q10_NEWS, still
+several gates away (Q04 pending/unclaimed since 2026-09-11T10:51:37Z). No `update-task`
+call; task remains `IN_PROGRESS`.
