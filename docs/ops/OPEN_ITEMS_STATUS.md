@@ -3977,3 +3977,17 @@ Strategie Ideen durch die Pipeline und gegebenenfalls optimiert haben!" Reading:
 OWNER-DEC-A1) is a milestone, not a stop condition; the factory keeps running until the work-item queue is empty
 and every strategy idea has a terminal pipeline verdict (Q02-Q13) and, where eligible, the optimization branch
 (Q14-Q16). No throttling of backtests at 25; the counter keeps counting.
+
+## 2026-09-12T21:50Z — Unger pattern census (DL-089): interim finding after 27 adjudicated programs
+
+Source: D:/QM/strategy_farm/artifacts/opt_census/DL089_*/q12_selection_receipt.json (27 programs). Result: 27/27
+NO_FILTER_CHANGE, 0 pattern arms adopted. 18 programs: the sealed annual selection (return_to_maxdd, 2/3-year
+quorum at +5 pct, activity floor 10) selected no arm at all -- combo == baseline in every WF year. 8 programs
+(10700, 10706, 11708, 12855, 20266, 21501, 21502, 21507) selected arms in-sample but failed the walk-forward
+stability gate (subset consistency >= 2/3 windows AND not-worse in >= 3/4 test years). Near misses: 10706 GBPUSD
+BUY-52 (subset 3/3, not-worse 2/3, 2022 combo 1.04 vs baseline 0.56); 11708 EURUSD SELL 11/53/79 (not-worse 4/4,
+subset 0/2 -- the selected arm set did not persist across windows). 1 program (11421) READY_FOR_Q15 with zero
+filter (zero-filter valid). Interpretation: the Unger patterns add no robust out-of-sample edge as a bolt-on
+filter on these EAs; the census is answering its question negatively. Remaining open programs (13213 Balke
+USDJPY, 11660, 13013 partial, 10403, 10706/11881/11422 partial) finish under the same sealed rule (faster once
+the PRESCREEN class + Nachtrag D are live). No rule change (ROT).
