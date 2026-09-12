@@ -1,0 +1,260 @@
+{
+  "applied": 10,
+  "applied_work_item_ids": [
+    "4144f8f2-796f-40bf-b376-04f3b7f37ac2",
+    "11be44a2-33f5-49f9-af41-8efba6f10151",
+    "10749d8d-429e-4903-b291-2f02f20853ad",
+    "7017bc20-56bc-45a4-be48-22ddff35b63f",
+    "92797bae-0f0d-45cb-872d-6f0bcccb258d",
+    "2542dde0-cc7e-47f7-b826-f07510a82f0e",
+    "d979e50c-9fe4-4f1b-b85c-4a8d6e823546",
+    "a47ea7ad-8731-443c-8c40-9b1c86b0737f",
+    "63571c00-38cb-4343-8d6d-22b597bb226c",
+    "6f14b8f3-b48b-46da-b9d0-70be44778b50"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260912T153332_724497Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260912T153315Z_441043a5.sqlite",
+    "reused": false,
+    "sha256": "a891d3b79e792b1c256aac7ffb8601437104e5b4f4734283aa33e329a753f36a"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [
+    {
+      "actual_mq5_sha256": "95d2a4ae8b4621fe7290164f650c766885a6964c137363d0427622762ca7e7a3",
+      "ea_id": "QM5_41176",
+      "ea_label": "QM5_41176_wti-mwilcoxon-shift-tr",
+      "expected_mq5_sha256": "23ca6f5cef5bbbb0dc1151cdfc4dfc857e752f8b1707697490d8105e5b2244c2",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41176_wti-mwilcoxon-shift-tr\\QM5_41176_wti-mwilcoxon-shift-tr.mq5",
+      "work_item_id": "f89d82e9-f4e2-4567-b8f2-464d4997ce09"
+    },
+    {
+      "actual_mq5_sha256": "5e373104ee5bf0f0428c5c277e0d8ecea10e83fcae80386d27ddb74b58a1e6be",
+      "ea_id": "QM5_41179",
+      "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+      "expected_mq5_sha256": "74e7f100f5d59c4e089971a4ddb1392ed219eb1be942d9a444bf2a133ddd27d3",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41179_xtixng-mcoxstuart-rv\\QM5_41179_xtixng-mcoxstuart-rv.mq5",
+      "work_item_id": "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82"
+    },
+    {
+      "actual_mq5_sha256": "e401421c63ff2c5933099b834835469faddabe3cf8efe756a94a6eb8d16a54b2",
+      "ea_id": "QM5_41189",
+      "ea_label": "QM5_41189_xtixng-mlad-rv",
+      "expected_mq5_sha256": "3d0ba8910acab5ac7b206184912c3a95b935a28ea520975c95f9a606be8048c1",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41189_xtixng-mlad-rv\\QM5_41189_xtixng-mlad-rv.mq5",
+      "work_item_id": "e5505264-01c4-4102-b3cd-9a275a6839ee"
+    },
+    {
+      "actual_mq5_sha256": "f4d84bdfac61ad54b02e305c9f1f75b8f82ab0f0228ad156ef9f65acdd17e889",
+      "ea_id": "QM5_1538",
+      "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+      "expected_mq5_sha256": "0bbcf752c7b5e7c03832e411529f03bd972564f10e75630e393020428357ff47",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1538_aa-tsmom-1-3-12\\QM5_1538_aa-tsmom-1-3-12.mq5",
+      "work_item_id": "674da780-53ef-4e37-993c-b02ca4f0a243"
+    },
+    {
+      "actual_mq5_sha256": "f4d84bdfac61ad54b02e305c9f1f75b8f82ab0f0228ad156ef9f65acdd17e889",
+      "ea_id": "QM5_1538",
+      "ea_label": "QM5_1538_aa-tsmom-1-3-12",
+      "expected_mq5_sha256": "78c02c2f7342cdf1b8af0e88ae05dadbd0e1c765ff9a801f9e89b5ef7054f7f7",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1538_aa-tsmom-1-3-12\\QM5_1538_aa-tsmom-1-3-12.mq5",
+      "work_item_id": "550b62ec-516d-4fba-b845-e0b1d61e9437"
+    },
+    {
+      "actual_mq5_sha256": "fec27056d36dc5738a327e4340f189d924201380864e3c3bd05488e3f20534aa",
+      "ea_id": "QM5_41192",
+      "ea_label": "QM5_41192_xtixng-mdaily-hl-rv",
+      "expected_mq5_sha256": "630cf4a9c18a2ec5ff4d86b04df000a48a4ecf793e09d8d028f3d094a7cf238d",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41192_xtixng-mdaily-hl-rv\\QM5_41192_xtixng-mdaily-hl-rv.mq5",
+      "work_item_id": "0d00bf54-535c-4049-ad7f-fde0c6b13f12"
+    },
+    {
+      "actual_mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+      "ea_id": "QM5_41142",
+      "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+      "expected_mq5_sha256": "1bb336bbbd3b9e06730ea830b94a7c3bff9c4387f88920c43754757be5fe3c0f",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+      "work_item_id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc"
+    },
+    {
+      "actual_mq5_sha256": "0a5cdfd0f1a207c569d5032e5afb31848f7df519d1d176058a285b4b0f92838f",
+      "ea_id": "QM5_41352",
+      "ea_label": "QM5_41352_wti-adf-vr-agree-tr",
+      "expected_mq5_sha256": "8f30b07b7f29445e6264d14be4b54e8aad516cbc2cf68c1e741d300b7c68b99a",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41352_wti-adf-vr-agree-tr\\QM5_41352_wti-adf-vr-agree-tr.mq5",
+      "work_item_id": "494b3cf3-1f24-4e33-bccf-673c7b3b5f64"
+    },
+    {
+      "actual_mq5_sha256": "38654686a68a119770c0e6cb24329e15cba822ca6a836d5226fab0a2bbb015f2",
+      "ea_id": "QM5_41356",
+      "ea_label": "QM5_41356_xauxag-mwinsor2-rv",
+      "expected_mq5_sha256": "9787b672b27cdc137fcf60824e2f097c09d29c2cb0650785aafb555991002e1a",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41356_xauxag-mwinsor2-rv\\QM5_41356_xauxag-mwinsor2-rv.mq5",
+      "work_item_id": "4b3201a2-0087-42dd-801e-497058f40900"
+    },
+    {
+      "actual_mq5_sha256": "b11bdc719cead280afd8b7d70ec931f4764bb7b345545a29e3694acd4c292f8f",
+      "ea_id": "QM5_41368",
+      "ea_label": "QM5_41368_xtixng-cs-leadswitch-rv",
+      "expected_mq5_sha256": "32952f70d1f538c3a1c144cfebe51e2ea81ae711789f66b62b23eac3889c9925",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41368_xtixng-cs-leadswitch-rv\\QM5_41368_xtixng-cs-leadswitch-rv.mq5",
+      "work_item_id": "f5b3ca81-59cc-4b06-ae1a-963971f59933"
+    },
+    {
+      "actual_mq5_sha256": "a41a4e389bc1f8a4cef1dd5deadc3e7b01c08df140a9f85b962f9299d281078f",
+      "ea_id": "QM5_41382",
+      "ea_label": "QM5_41382_wti-tsmom6-h2",
+      "expected_mq5_sha256": "1dcb9bed2c29656885d603fb0aead099c7c2d71449d7b510ed479fcd9459261b",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41382_wti-tsmom6-h2\\QM5_41382_wti-tsmom6-h2.mq5",
+      "work_item_id": "25e63e1b-3a8e-4edc-87a6-5869a7878f80"
+    },
+    {
+      "actual_mq5_sha256": "d6243b426c4290aae893cc64088aecc9cca6cbf696abfe8792859588a60ba77c",
+      "ea_id": "QM5_10069",
+      "ea_label": "QM5_10069_mql5-hs-rev",
+      "expected_mq5_sha256": "b74e0a8ec9397a404a22cf798eb16793a2a517015252def2e99171ede5a644ea",
+      "reason": "SOURCE_SHA_STALE_OR_MISSING",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10069_mql5-hs-rev\\QM5_10069_mql5-hs-rev.mq5",
+      "work_item_id": "7b58b41d-6175-4841-9f46-b3025387b73d"
+    },
+    {
+      "actual_mq5_sha256": "345ba40e37d248081fdb469e39c0fa2d5af43e4d32b0626da26784fe57b15814",
+      "ea_id": "QM5_11363",
+      "ea_label": "QM5_11363_robo-vol-channel-breakout",
+      "expected_mq5_sha256": "345ba40e37d248081fdb469e39c0fa2d5af43e4d32b0626da26784fe57b15814",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11363_robo-vol-channel-breakout\\QM5_11363_robo-vol-channel-breakout.mq5",
+      "work_item_id": "1f0e31f8-de6d-4a51-a82d-59d507d24c1d"
+    },
+    {
+      "actual_mq5_sha256": "078d0ef3e9b10c64f624a5a1805094d09f77dadd866b2a2a8c6b3fc406c5555b",
+      "ea_id": "QM5_11898",
+      "ea_label": "QM5_11898_trix-signal-line-cross-h1",
+      "expected_mq5_sha256": "078d0ef3e9b10c64f624a5a1805094d09f77dadd866b2a2a8c6b3fc406c5555b",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11898_trix-signal-line-cross-h1\\QM5_11898_trix-signal-line-cross-h1.mq5",
+      "work_item_id": "61a4a778-1f60-4f1e-bfdf-207add893592"
+    },
+    {
+      "actual_mq5_sha256": "833fe31bac63affbe9d234cdfe5031cebdba1fb11eeedf1b553cc43ad48e5f28",
+      "ea_id": "QM5_9354",
+      "ea_label": "QM5_9354_demark-td-dwave-wave4-h4",
+      "expected_mq5_sha256": "833fe31bac63affbe9d234cdfe5031cebdba1fb11eeedf1b553cc43ad48e5f28",
+      "reason": "LATER_WAVE",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9354_demark-td-dwave-wave4-h4\\QM5_9354_demark-td-dwave-wave4-h4.mq5",
+      "work_item_id": "030c32c3-c47d-4b7e-922e-f9af38c3cb1d"
+    }
+  ],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 25,
+  "max_items": 10,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "6d15f3be593bfefa572122808cdd5a925aa867fe0a74f28a1a0221728dfe6b16",
+      "ea_id": "QM5_20143",
+      "ea_label": "QM5_20143_macd-bb-campaign-m5",
+      "expected_mq5_sha256": "6d15f3be593bfefa572122808cdd5a925aa867fe0a74f28a1a0221728dfe6b16",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20143_macd-bb-campaign-m5\\QM5_20143_macd-bb-campaign-m5.mq5",
+      "work_item_id": "4144f8f2-796f-40bf-b376-04f3b7f37ac2"
+    },
+    {
+      "actual_mq5_sha256": "23bc76a30cadb074ca66c66ffcd9a5602222cd1649232a433ed29510d0c4c5cf",
+      "ea_id": "QM5_9406",
+      "ea_label": "QM5_9406_qs-daily-mac",
+      "expected_mq5_sha256": "23bc76a30cadb074ca66c66ffcd9a5602222cd1649232a433ed29510d0c4c5cf",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9406_qs-daily-mac\\QM5_9406_qs-daily-mac.mq5",
+      "work_item_id": "11be44a2-33f5-49f9-af41-8efba6f10151"
+    },
+    {
+      "actual_mq5_sha256": "a82d69e1cf4691f741a0053d047f3b32c2fb34f9492c6ea620584d0984450d8d",
+      "ea_id": "QM5_39005",
+      "ea_label": "QM5_39005_forexfactory-genesis-matrix-scalper",
+      "expected_mq5_sha256": "a82d69e1cf4691f741a0053d047f3b32c2fb34f9492c6ea620584d0984450d8d",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_39005_forexfactory-genesis-matrix-scalper\\QM5_39005_forexfactory-genesis-matrix-scalper.mq5",
+      "work_item_id": "10749d8d-429e-4903-b291-2f02f20853ad"
+    },
+    {
+      "actual_mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+      "ea_id": "QM5_12943",
+      "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+      "expected_mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12943_robopip-hlhb-trend-catcher-h1\\QM5_12943_robopip-hlhb-trend-catcher-h1.mq5",
+      "work_item_id": "7017bc20-56bc-45a4-be48-22ddff35b63f"
+    },
+    {
+      "actual_mq5_sha256": "27da9fb5c285dc78d5bd2ca2a1185c131de6511aa7026d42ea8fd0952df51b34",
+      "ea_id": "QM5_12351",
+      "ea_label": "QM5_12351_alp-ema12-26",
+      "expected_mq5_sha256": "27da9fb5c285dc78d5bd2ca2a1185c131de6511aa7026d42ea8fd0952df51b34",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12351_alp-ema12-26\\QM5_12351_alp-ema12-26.mq5",
+      "work_item_id": "92797bae-0f0d-45cb-872d-6f0bcccb258d"
+    },
+    {
+      "actual_mq5_sha256": "b1284ebd78911dc3392154348bcf36bae8010159ed1e2791b3ac1ff4613c56c7",
+      "ea_id": "QM5_1557",
+      "ea_label": "QM5_1557_aa-zak-psma10",
+      "expected_mq5_sha256": "b1284ebd78911dc3392154348bcf36bae8010159ed1e2791b3ac1ff4613c56c7",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1557_aa-zak-psma10\\QM5_1557_aa-zak-psma10.mq5",
+      "work_item_id": "2542dde0-cc7e-47f7-b826-f07510a82f0e"
+    },
+    {
+      "actual_mq5_sha256": "efef85059bb3bb7fd89c32d34bd1ff8868e34a197e9c7125554d711b6c417aa5",
+      "ea_id": "QM5_10001",
+      "ea_label": "QM5_10001_ff-static-fib-open",
+      "expected_mq5_sha256": "efef85059bb3bb7fd89c32d34bd1ff8868e34a197e9c7125554d711b6c417aa5",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10001_ff-static-fib-open\\QM5_10001_ff-static-fib-open.mq5",
+      "work_item_id": "d979e50c-9fe4-4f1b-b85c-4a8d6e823546"
+    },
+    {
+      "actual_mq5_sha256": "5a4b0e87cb4c7f4f84b1928bb9ac31fc54827aa8f64f427e96a6bd563905151e",
+      "ea_id": "QM5_11301",
+      "ea_label": "QM5_11301_tc-m5-macd1-stoch-ema5-open-close",
+      "expected_mq5_sha256": "5a4b0e87cb4c7f4f84b1928bb9ac31fc54827aa8f64f427e96a6bd563905151e",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11301_tc-m5-macd1-stoch-ema5-open-close\\QM5_11301_tc-m5-macd1-stoch-ema5-open-close.mq5",
+      "work_item_id": "a47ea7ad-8731-443c-8c40-9b1c86b0737f"
+    },
+    {
+      "actual_mq5_sha256": "f5d4a48ec06728e5cda79d1a08ebf9702d99dbacb67625ad77b9e8857eeb4863",
+      "ea_id": "QM5_11302",
+      "ea_label": "QM5_11302_tc-m5-bb-stoch-extreme-reversal",
+      "expected_mq5_sha256": "f5d4a48ec06728e5cda79d1a08ebf9702d99dbacb67625ad77b9e8857eeb4863",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11302_tc-m5-bb-stoch-extreme-reversal\\QM5_11302_tc-m5-bb-stoch-extreme-reversal.mq5",
+      "work_item_id": "63571c00-38cb-4343-8d6d-22b597bb226c"
+    },
+    {
+      "actual_mq5_sha256": "dba398585ad06053e26d98f40b800a320a218cf93f14d67fdb0bfcb9c02f85f9",
+      "ea_id": "QM5_11362",
+      "ea_label": "QM5_11362_robo-one-two-bb-reversal",
+      "expected_mq5_sha256": "dba398585ad06053e26d98f40b800a320a218cf93f14d67fdb0bfcb9c02f85f9",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11362_robo-one-two-bb-reversal\\QM5_11362_robo-one-two-bb-reversal.mq5",
+      "work_item_id": "6f14b8f3-b48b-46da-b9d0-70be44778b50"
+    }
+  ],
+  "release_count": 10,
+  "released_at": "2026-09-12T15:33:32+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": null,
+  "work_item_id_selectors": []
+}
