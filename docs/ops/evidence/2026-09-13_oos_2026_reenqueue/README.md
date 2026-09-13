@@ -1,7 +1,7 @@
 # OOS-2026 confirmation campaign — append-only window re-enqueue (2026-09-13)
 
-Prepared by the pipeline lane (dry-run only; **nothing applied**). The orchestrator
-applies via the single script in the last section.
+Prepared by the pipeline lane (dry-run only), applied by the orchestrator
+2026-09-13T21:06:00Z. See `## Applied` below for the result and receipt.
 
 ## What this fixes
 
@@ -115,3 +115,26 @@ python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --
 
 Scope to named rows with repeated `--work-item-id <id>` (fail-closed). The apply
 path refuses to overwrite an existing receipt.
+
+## Applied (2026-09-13T21:06:00Z)
+
+Ran `apply_oos_2026_reenqueue_0913.py --apply`: 37 pending rows patched to the
+2026 window, 37 `OOS_WINDOW_MISMATCH` holds released, 15 append-only successors
+minted for the `done`/`REVIEW_REQUIRED` rows, 3 tainted rows left unchanged.
+Receipt: `repair_receipt.json`. Pre-mutation state backup:
+`D:\QM\strategy_farm\state\backups\farm_state_before_oos_window_repair_20260913T210627Z_cbd641af.sqlite`
+(sha256 `58764cfad4a8dde3c38ddcc61c4b348fc0d78ae54236c21cf33b133fdc22d534`).
+Verified one minted successor (`8eea2250-4958-5f1c-9a6b-0670091dcc17`) carries
+`from_date=2026.01.01 to_date=2026.04.06 window_from_utc=2026-01-01T00:00:00Z
+window_to_utc=2026-04-06T23:59:59Z`.
+
+**Acceptance gap (documented, not a defect of this apply):** "first successor
+run's tester.ini shows the 2026 window" cannot be observed yet — every patched/
+minted row still carries `phase=Q09_NEWS`, and the active NEWS runner binds only
+`Q10_NEWS` (`farmctl._news_lane_spawn_refusal` → `news_lane_mismatch`), so none
+of these 52 rows can be claimed by a terminal worker until the
+`Q09_NEWS -> Q10_NEWS` lane migration lands. Even after that migration, standing
+containment re-holds new `Q09_NEWS`/`Q10_NEWS` rows under
+`NEWS_CALENDAR_TIMESTAMP_DEFECT` until E1 (tester-branch DST calendar repair)
+lands. This ticket's scope (window correctness) is done; the lane migration and
+E1 are separate, already-tracked blockers — not re-opened here.
