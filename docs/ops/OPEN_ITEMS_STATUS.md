@@ -4383,3 +4383,15 @@ authority router_ops_issue:5c4b7c23, commit f4b17fcdb0); rollout holds released.
 the five new identities and apply set_priority_track (registry entries e7a97eb835). Staging rebuilt at 11.0 %/1.5 %:
 manifest_v2_28_r11.json (sum 11.000000), burn-in 9.801 %, copy plan dry-run PASS 8/8, Q16 Rev 3. Notes: 13128/NDX
 rises to 1.10 pts (cap-driven, ~10 % of book risk); worst day at 11.0 is -0.856 vs the bar -0.857 (no reserve).
+
+## 2026-09-13T17:00Z Freeze conditions 1 and 3 brought to the OWNER's single act each
+Condition 1 (pointer): the signing route is circular (guard refuses the signed mint on an ACTIVE freeze); the identity
+route is prepared: read-only observation r4 (24 sleeves, 9.7499 %, all fingerprints = baseline) + inert proposal
+docs/ops/evidence/2026-09-13_m06_attest_current/proposal_r4 (sha 80af939c..., ELIGIBLE_FOR_OWNER_REVIEW; r2/r3 were
+refused because the observation must carry the qm.live-identity-observation/v1 bindings). Mission Control card
+OWNER-DEC-LIVE-IDENTITY-CURRENT-80af939c... - one YES receipt with the exact selected_effect makes the consumers read
+OWNER_ATTESTED_CURRENT_IDENTITY. Condition 3 (governor): watcher task QM_StrategyFarm_GovernorDryRunWatch installed
+(dry-run, PT5M, rc 0), OWNER_SIGNED policy candidate f2baf21a..., activation draft 5ab3b819..., order draft with
+GOVERNOR-ENFORCE: ACTIVATE DXZ 2026-09-13; adapter chain proven down to the executor's design refusal on level 1.
+Mission Control card OWNER-DEC-GOVERNOR-V2-ENFORCE-20260913. risk_freeze LIFT_CONDITIONS texts updated (2165bd9cb2).
+Condition 2 (news contract v2): consumer cutover + Q10_NEWS lane closure in progress (orchestrator lane).
