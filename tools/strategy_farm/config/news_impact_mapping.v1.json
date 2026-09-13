@@ -1,0 +1,67 @@
+{
+  "schema_version": "qm.news_impact_mapping.v1",
+  "rules_id": "qm.news_impact_mapping.v1",
+  "owner_decision": "OWNER-DEC-NEWS-MAPPING",
+  "owner_decision_date": "2026-08-22",
+  "owner_decision_records": [
+    "decisions/2026-08-22_news_impact_taxonomy.md",
+    "decisions/2026-08-22_owner_decisions_evening_batch.md#6"
+  ],
+  "contract": "docs/ops/NEWS_CALENDAR_CONTRACT_V2_2026-08-22.md",
+  "contract_schema_version": "qm.news_calendar_semantics_contract.v2",
+  "dst_rule_version": "qm.dst_rule.us.v1",
+  "authoritative_source": "forex_factory_calendar_clean.csv",
+  "audit_trail_sources": [
+    "news_calendar_2015_2025.csv"
+  ],
+  "source_field": "Impact",
+  "timestamp_field": "DateTime_UTC",
+  "timestamp_formats": [
+    "%Y.%m.%d %H:%M",
+    "%Y.%m.%d %H:%M:%S",
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%dT%H:%M:%S"
+  ],
+  "currency_field": "Currency",
+  "event_field": "Event",
+  "identity_fields": [
+    "timestamp_utc",
+    "currency",
+    "event"
+  ],
+  "excluded_fields": [
+    "Actual",
+    "Forecast",
+    "Previous",
+    "DateTime_EET",
+    "Date"
+  ],
+  "labels": {
+    "high": {
+      "rank": 3,
+      "gating": true,
+      "aliases": ["high", "hoch", "red", "3"]
+    },
+    "medium": {
+      "rank": 2,
+      "gating": true,
+      "aliases": ["medium", "mittel", "moderate", "orange", "2"]
+    },
+    "low": {
+      "rank": 1,
+      "gating": true,
+      "aliases": ["low", "niedrig", "yellow", "1"]
+    },
+    "holiday": {
+      "rank": 0,
+      "gating": false,
+      "aliases": ["holiday", "bank holiday", "non-economic", "none", "0"]
+    }
+  },
+  "unmapped_label_policy": "fail_closed",
+  "duplicate_policy": "collapse_identical_impact_else_reject",
+  "default_enabled": false,
+  "consumer_optin_required": true,
+  "live_path_forbidden": true,
+  "live_path_note": "DL-080 / OWNER 2026-09-06: live EAs use the native MT5 calendar, fail-closed. This mapping is factory evidence semantics only and must never be wired into an ENV=live news path."
+}
