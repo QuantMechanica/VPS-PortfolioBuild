@@ -4395,3 +4395,17 @@ OWNER_ATTESTED_CURRENT_IDENTITY. Condition 3 (governor): watcher task QM_Strateg
 GOVERNOR-ENFORCE: ACTIVATE DXZ 2026-09-13; adapter chain proven down to the executor's design refusal on level 1.
 Mission Control card OWNER-DEC-GOVERNOR-V2-ENFORCE-20260913. risk_freeze LIFT_CONDITIONS texts updated (2165bd9cb2).
 Condition 2 (news contract v2): consumer cutover + Q10_NEWS lane closure in progress (orchestrator lane).
+
+## 2026-09-13T17:20Z News contract v2 consumer cutover shipped (flag), Q10_NEWS lane 84/95 closed, attestation r5
+Commit b9daf49ec8: p8_news_driver/news_calendar_gate/q09_news_runner resolve impact through qm.news_impact_mapping.v1
+when QM_NEWS_IMPACT_MAPPING_V2=1 (flag-off byte-identity asserted by tests; new Q10_NEWS evidence carries
+evidence_authority NEWS_CONTRACT_V2 + mapping_version + authoritative_source + dst_rule_version). Flag set in the machine
+scope 17:1xZ (between waves: no NEWS run active); workers take it on their next reload (chunk 75 in flight fills it from
+the machine scope; a chunk 76 covers the five workers reloaded before). Q10_NEWS lane: 4 CONFIG_LOCKED successors via
+farmctl readjudicate-news-8cell, 36 supersession edges, 46 INVALID_EVIDENCE (cells empty / incomplete), 2 aged out;
+11 residual REVIEW_REQUIRED remain (control_or_policy_off_not_qualifiable) -> rerun or ROT rule change; 52 pending stay
+held (taint 28, timestamp defect 12, spawn silent abort 9, sealed plan 2, 1 unheld). Receipts D:/QM/strategy_farm/
+artifacts/q10_news_review_dispositions_20260913/. NEWS-CONTRACT-V2 stays PARTIAL for four named reasons: section 6
+known_at_utc not implemented, section 8 cross-language DST sweep + 7.30 % regression re-run missing, 11 residual rows,
+flag only just activated. Attestation proposal re-minted after the risk_freeze text edit: r5 sha 8b06c6c8...
+ELIGIBLE_FOR_OWNER_REVIEW; Mission Control card OWNER-DEC-LIVE-IDENTITY-CURRENT-8b06c6c8... (r4 card superseded).
