@@ -4409,3 +4409,14 @@ artifacts/q10_news_review_dispositions_20260913/. NEWS-CONTRACT-V2 stays PARTIAL
 known_at_utc not implemented, section 8 cross-language DST sweep + 7.30 % regression re-run missing, 11 residual rows,
 flag only just activated. Attestation proposal re-minted after the risk_freeze text edit: r5 sha 8b06c6c8...
 ELIGIBLE_FOR_OWNER_REVIEW; Mission Control card OWNER-DEC-LIVE-IDENTITY-CURRENT-8b06c6c8... (r4 card superseded).
+
+## 2026-09-13T17:45Z Four compile refusals cleared (commit e6ad6ee47a); Q02 entry for rebuilt identities = requal path
+The four COMPILE_FAIL rows were build-gate governance classes, not syntax: EA_Q08_MAE_HOOK_MISSING (the Python rule
+demands the direct QM_FrameworkTrackOpenPositionMae() call; 12969/13054/13117 only had the kill-switch fallback),
+EA_SYMBOL_NOT_IN_DWX_MATRIX (13054 stale XBRUSD.DWX set removed), EA_SYMBOL_NOT_IN_CARD_UNIVERSE (basket conversion
+references EURUSD/EURAUD, GBPUSD/USDJPY -> additive card reference_symbols contract in build_gate_hardening with the
+EA_SYMBOL_REFERENCE_DECLARED_FOR_TRADED_SLOT guard; 54 tests). Successor compiles 7022358c (12778), f32ddc4a (12969),
+62c3f0de (13117), fde9660b (13054) queued, holds released; 21505 already COMPILE_OK. Chain entry: a rebuilt binary is a
+new identity and neither the Q02 append-only rerun (source changed) nor intake-first-q02 (existing Q02 rows) opens Q02
+under the old ea_id; the DL-089 wave-1 precedent is a serial requal pair with a NEW 412xx identity + recovery card ->
+intake-first-q02 -> priority track. That workflow is running for all five (orchestrator lane).
