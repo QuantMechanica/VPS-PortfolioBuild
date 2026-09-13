@@ -1,0 +1,1446 @@
+{
+  "schema": "qm.oos-2026-reenqueue-plan/v1",
+  "generated_at_utc": "2026-09-13",
+  "read_only_source": true,
+  "campaign_id": "oos-2026-confirmation-v1",
+  "database": "D:/QM/strategy_farm/state/farm_state.sqlite",
+  "campaign_plan_path": "D:/QM/strategy_farm/artifacts/oos_2026_confirmation_v1/campaign_plan.json",
+  "campaign_plan_sha256": "6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad",
+  "window_binding": {
+    "how_bound": "CAMPAIGN CONTRACT (campaign_plan.json full_from_utc/full_to_utc). NOT --target-setfile.",
+    "why_not_setfile": "single-symbol Q09_NEWS rows carry the window in payload keys from_date/to_date/window_from_utc/window_to_utc; farmctl's spawn builder reads these (_basket_payload_date_window returns None for single symbols, hence the 2024 fallback). repair-oos-window injects them from the plan and stamps q09_dispatch_binding_sha256 + the campaign_plan sha the spawn re-verifies.",
+    "correct_window": {
+      "from_date": "2026.01.01",
+      "to_date": "2026.04.06",
+      "window_from_utc": "2026-01-01T00:00:00Z",
+      "window_to_utc": "2026-04-06T23:59:59Z"
+    }
+  },
+  "lane_state": {
+    "active_news_phase": "Q10_NEWS",
+    "rows_stored_on_phase": "Q09_NEWS (historical lane)",
+    "news_storage_lanes": [
+      "Q10_NEWS",
+      "Q09_NEWS"
+    ]
+  },
+  "canonical_apply_command": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt.json",
+  "wrapper_apply_command": "python -X utf8 tools/strategy_farm/session_tools/apply_oos_2026_reenqueue_0913.py --apply",
+  "canonical_hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+  "dry_run_verification": {
+    "command": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --out <receipt>",
+    "supports_dry_run": true,
+    "mode": "DRY_RUN",
+    "counts": {
+      "campaign_rows": 55,
+      "done_to_succeed": 15,
+      "holds_to_release": 37,
+      "pending_to_patch": 37,
+      "skipped": 0,
+      "unchanged": 3
+    }
+  },
+  "counts": {
+    "held_rows_oos_window_mismatch_to_patch": 37,
+    "holds_to_release": 37,
+    "done_rows_2024_to_succeed_append_only": 15,
+    "unchanged_tainted_out_of_scope": 3
+  },
+  "downstream_blockers_after_window_repair": [
+    {
+      "blocker": "NEWS_LANE_MISMATCH",
+      "detail": "All 37 patched rows and the 15 minted successors keep phase=Q09_NEWS (historical). The active NEWS runner binds Q10_NEWS only; farmctl._news_lane_spawn_refusal returns pending_runner/news_lane_mismatch for Q09_NEWS rows and refuses to run them (never as run_smoke). => window repair does NOT make the cohort executable; a separate lane migration Q09_NEWS->Q10_NEWS is required. report-misphased-rows (misphased_rows.json) is the read-only surface for that disposition."
+    },
+    {
+      "blocker": "NEWS_CALENDAR_TIMESTAMP_DEFECT",
+      "detail": "Standing containment rule (OPEN_ITEMS 2026-09-05): every dispatch tick holds NEW Q09_NEWS/Q10_NEWS rows with NEWS_CALENDAR_TIMESTAMP_DEFECT until E1 (tester-branch DST calendar repair, QM_NewsFilter.mqh:2022). As of 2026-09-13 the defect is still contained (12 active Q10_NEWS timestamp-defect holds; risk freeze ACTIVE). A correctly-windowed, correctly-laned row would be re-held under NEWS_CALENDAR_TIMESTAMP_DEFECT until E1 lands. Live path unaffected (native MT5 calendar, DL-080)."
+    }
+  ],
+  "done_rows_disposition_finding": {
+    "need_separate_retire2": false,
+    "reason": "The 15 done rows' wrong-lane/wrong-window (2024, run_smoke) evidence was ALREADY adjudicated INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT) by the q09-news-review-lane-closure on 2026-09-13T16:01Z (append-only kind=disposition ADJUDICATION_RECEIPT rows + supersede edges, source_encoding orchestrator:q09-news-review-lane-closure/v1). repair-oos-window mints the corrected 2026-window RERUNS append-only and records its own supersede edge (source_encoding repair:oos-2026-window/v1); the two edges coexist (different encodings, complementary). apply_q09_retire2_dispositions.py is NOT required here and would duplicate the already-recorded INVALID_EVIDENCE adjudication."
+  },
+  "pending_patches_37": [
+    {
+      "work_item_id": "1ab6156f-dfc1-5e03-aae7-db461d025b5c",
+      "ea_id": "QM5_13301",
+      "symbol": "GDAXI.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "a10cbbbd4935a34848a35a6a869424653a58cb9cfc53cd52dbbbe6dd18603c00",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 1ab6156f-dfc1-5e03-aae7-db461d025b5c --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_1ab6156f-dfc1-5e03-aae7-db461d025b5c.json"
+    },
+    {
+      "work_item_id": "1ffcb576-bf27-5063-a384-685355910c3a",
+      "ea_id": "QM5_10939",
+      "symbol": "GBPUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "6b48db84fbbe37a60e7e9635919ba301150a1f1408e0605c265117d18f084313",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 1ffcb576-bf27-5063-a384-685355910c3a --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_1ffcb576-bf27-5063-a384-685355910c3a.json"
+    },
+    {
+      "work_item_id": "0d112806-ee2a-5d0a-9382-33a353cf8efe",
+      "ea_id": "QM5_10911",
+      "symbol": "GDAXI.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "de03d8159d763f1f24c3c6e2290271efc4c6e46409a3261c9ba8bb3e23a5fe64",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 0d112806-ee2a-5d0a-9382-33a353cf8efe --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_0d112806-ee2a-5d0a-9382-33a353cf8efe.json"
+    },
+    {
+      "work_item_id": "033e7bc3-715e-5c71-b368-c00ea2594598",
+      "ea_id": "QM5_13128",
+      "symbol": "NDX.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "1f6f9021103d73997c8af9ec6cfa223d7d1ddaba5daeebb2f685d8a37ce0eb66",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 033e7bc3-715e-5c71-b368-c00ea2594598 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_033e7bc3-715e-5c71-b368-c00ea2594598.json"
+    },
+    {
+      "work_item_id": "f8f75276-2256-5e06-a58b-2756e5c1ebe0",
+      "ea_id": "QM5_10440",
+      "symbol": "NDX.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "f4bba5de5b19686815355c991ed1746a760a58053fc27e42e71d937f2fd47e28",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id f8f75276-2256-5e06-a58b-2756e5c1ebe0 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_f8f75276-2256-5e06-a58b-2756e5c1ebe0.json"
+    },
+    {
+      "work_item_id": "a800efb5-e0db-5f99-b982-9b2bf49108b5",
+      "ea_id": "QM5_11132",
+      "symbol": "SP500.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "cfdc26f6f2c23b743b425ee3546788890125e407e6e6d0cc86b8cf3a21f9ab6b",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id a800efb5-e0db-5f99-b982-9b2bf49108b5 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_a800efb5-e0db-5f99-b982-9b2bf49108b5.json"
+    },
+    {
+      "work_item_id": "004eda49-6ba3-5a9d-8979-cfc7517948e2",
+      "ea_id": "QM5_12567",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "f5b58ff93f4a78f48a8e1ae297d74f8791565c53d4009b6afe3c940906be4302",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 004eda49-6ba3-5a9d-8979-cfc7517948e2 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_004eda49-6ba3-5a9d-8979-cfc7517948e2.json"
+    },
+    {
+      "work_item_id": "d6601d01-e9fa-5996-b73e-d52da5e9f78a",
+      "ea_id": "QM5_12989",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "473fd8a88ac1b23af5cde1a8fdaabbdc9f30ee1fb6eb0c46dd9445959b8c0b26",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id d6601d01-e9fa-5996-b73e-d52da5e9f78a --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_d6601d01-e9fa-5996-b73e-d52da5e9f78a.json"
+    },
+    {
+      "work_item_id": "a61f1a02-f630-5f1f-a9d7-ef1af84627f8",
+      "ea_id": "QM5_1556",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "c7c8f265409a75d590054295559ec957054db872840326155875605b88bf54b5",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id a61f1a02-f630-5f1f-a9d7-ef1af84627f8 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_a61f1a02-f630-5f1f-a9d7-ef1af84627f8.json"
+    },
+    {
+      "work_item_id": "ffd9ef4d-0946-5671-93c0-d9047ebd3270",
+      "ea_id": "QM5_10145",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "13be908ffdb7a7ec3a1b3f2ed4aec0423d6b6a22055c39cd3109981626ddf0b2",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id ffd9ef4d-0946-5671-93c0-d9047ebd3270 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_ffd9ef4d-0946-5671-93c0-d9047ebd3270.json"
+    },
+    {
+      "work_item_id": "890a117c-e5be-5e03-bcae-027ede31f478",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "4a1cc3847fd63966fc3fd17f012358657446f42ca8d936959485c2b7debba852",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 890a117c-e5be-5e03-bcae-027ede31f478 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_890a117c-e5be-5e03-bcae-027ede31f478.json"
+    },
+    {
+      "work_item_id": "055cdabb-da68-5328-80b8-9012f291d466",
+      "ea_id": "QM5_11422",
+      "symbol": "USDCAD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "60cd5792435bb5a8398b8b1060586f5e855e9b74d4e5ff68f386571668fd0590",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 055cdabb-da68-5328-80b8-9012f291d466 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_055cdabb-da68-5328-80b8-9012f291d466.json"
+    },
+    {
+      "work_item_id": "15d41b29-d3ac-5774-804f-f3f3981696e9",
+      "ea_id": "QM5_11881",
+      "symbol": "GBPUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "78ee4832c258b747700ec157ad5555be9073fb0719383514317cf29da7272935",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 15d41b29-d3ac-5774-804f-f3f3981696e9 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_15d41b29-d3ac-5774-804f-f3f3981696e9.json"
+    },
+    {
+      "work_item_id": "d1729472-6047-5906-a8e6-1b51d8845d30",
+      "ea_id": "QM5_12849",
+      "symbol": "XTIUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "7ee85c5e2644ccd7b77876ae865fb50f15f14b2e9468196e07b72cb2c2a4d0b0",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id d1729472-6047-5906-a8e6-1b51d8845d30 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_d1729472-6047-5906-a8e6-1b51d8845d30.json"
+    },
+    {
+      "work_item_id": "d9541e3a-9afc-594d-881e-dc2b13a5f95d",
+      "ea_id": "QM5_12855",
+      "symbol": "XTIUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "3021416d1f0ccadd851e9baf3bac8590a04fa62cdbda2df4bb35221049b048c5",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id d9541e3a-9afc-594d-881e-dc2b13a5f95d --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_d9541e3a-9afc-594d-881e-dc2b13a5f95d.json"
+    },
+    {
+      "work_item_id": "9202acef-e841-5fea-a695-a95437ceb807",
+      "ea_id": "QM5_13054",
+      "symbol": "XTIUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "14189426173573ff3a5f2933e1889d8f96c28abeea2be18d79fc65325271e786",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 9202acef-e841-5fea-a695-a95437ceb807 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_9202acef-e841-5fea-a695-a95437ceb807.json"
+    },
+    {
+      "work_item_id": "af09850e-2c55-59dc-9744-19716b3c4e2d",
+      "ea_id": "QM5_1537",
+      "symbol": "XAGUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "e3b08a6610d912a195c19e2861e2fb42ade7acd1cb56a4118b8502c4dd2ed394",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id af09850e-2c55-59dc-9744-19716b3c4e2d --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_af09850e-2c55-59dc-9744-19716b3c4e2d.json"
+    },
+    {
+      "work_item_id": "03279258-a3d1-5137-ae8e-8e937e6c909f",
+      "ea_id": "QM5_20048",
+      "symbol": "XTIUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "6ab4bd4adb340c00c363d81a17f891e90c25dba70b1f0b2484b3599290ba281f",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 03279258-a3d1-5137-ae8e-8e937e6c909f --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_03279258-a3d1-5137-ae8e-8e937e6c909f.json"
+    },
+    {
+      "work_item_id": "7459c6d4-d6be-5606-8ed4-aeb72f0be504",
+      "ea_id": "QM5_20266",
+      "symbol": "XTIUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "0ec891c10c58c33bfdfbf5e63ebc9ccc596474cd2e8b40d829612e3bd84041c1",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 7459c6d4-d6be-5606-8ed4-aeb72f0be504 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_7459c6d4-d6be-5606-8ed4-aeb72f0be504.json"
+    },
+    {
+      "work_item_id": "95d49279-e099-5589-a112-750fe5d534b8",
+      "ea_id": "QM5_21505",
+      "symbol": "XAGUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "018dad2813232270ed44a61e2f62413c0940f4c9ffcc0a95c3981add05cfa800",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 95d49279-e099-5589-a112-750fe5d534b8 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_95d49279-e099-5589-a112-750fe5d534b8.json"
+    },
+    {
+      "work_item_id": "20127f25-36d0-54ac-ad55-567dbbee9b49",
+      "ea_id": "QM5_9641",
+      "symbol": "WS30.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "74adc154304620d166e30b1d9ef2e36220695c5a4351deb7430ac53316cca438",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 20127f25-36d0-54ac-ad55-567dbbee9b49 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_20127f25-36d0-54ac-ad55-567dbbee9b49.json"
+    },
+    {
+      "work_item_id": "896259f9-eb2a-52ba-ad93-5d152eaf990b",
+      "ea_id": "QM5_11288",
+      "symbol": "USDJPY.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "a78782bb9ac3032451eed99f353187534d6b3e11b5a67158b548937b13a79bb7",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 896259f9-eb2a-52ba-ad93-5d152eaf990b --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_896259f9-eb2a-52ba-ad93-5d152eaf990b.json"
+    },
+    {
+      "work_item_id": "fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360",
+      "ea_id": "QM5_13128",
+      "symbol": "NDX.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "0f5ef98c79f095cdc0ef432e25bf24ae3e8e5d483d211165cda34a47e9684989",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360.json"
+    },
+    {
+      "work_item_id": "33b3bb40-f4e9-5bc4-a873-5e6a04069ca3",
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "db5ce233a97d5347b5095d8836a27aa56d02d45b3f1a0ca5771620352df22391",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 33b3bb40-f4e9-5bc4-a873-5e6a04069ca3 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_33b3bb40-f4e9-5bc4-a873-5e6a04069ca3.json"
+    },
+    {
+      "work_item_id": "6607ae07-b581-586f-9374-ec2673ad42b8",
+      "ea_id": "QM5_13013",
+      "symbol": "NDX.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "a55fb8ae6948a0182f705dbe2f4f78ae3f844b9f1b1483da42f9a57650d2dbcc",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 6607ae07-b581-586f-9374-ec2673ad42b8 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_6607ae07-b581-586f-9374-ec2673ad42b8.json"
+    },
+    {
+      "work_item_id": "ca876575-d5ae-56b9-ba3b-5b5e9f6f7320",
+      "ea_id": "QM5_20188",
+      "symbol": "USDJPY.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "2f9e2884447b5918ad4183e294fe45bd37109cc637a5e7d41498ebca5ff615ee",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id ca876575-d5ae-56b9-ba3b-5b5e9f6f7320 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_ca876575-d5ae-56b9-ba3b-5b5e9f6f7320.json"
+    },
+    {
+      "work_item_id": "d6532bee-4c7b-560c-b4b8-add78fe6f364",
+      "ea_id": "QM5_10123",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "117621191db47b18649b1b5e58eb15a89b20666acf56347da0013a643f638460",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id d6532bee-4c7b-560c-b4b8-add78fe6f364 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_d6532bee-4c7b-560c-b4b8-add78fe6f364.json"
+    },
+    {
+      "work_item_id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa",
+      "ea_id": "QM5_10142",
+      "symbol": "SP500.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "c5dd0c7825cd139f32f1ea58e51f1e5b9d80d19040907ba86fd867683a3b7a8b",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id eaf6fe05-7807-5e13-9031-5b6b01019aaa --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_eaf6fe05-7807-5e13-9031-5b6b01019aaa.json"
+    },
+    {
+      "work_item_id": "bfd0e872-b4dc-5e2b-8948-8ebe18d14251",
+      "ea_id": "QM5_10146",
+      "symbol": "AUDUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "5c9a40cd33aec873ca7153d644c0a191d7de87f307bb842c4876d1fb29a310ef",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id bfd0e872-b4dc-5e2b-8948-8ebe18d14251 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_bfd0e872-b4dc-5e2b-8948-8ebe18d14251.json"
+    },
+    {
+      "work_item_id": "5e308792-a65e-5b7a-a608-78381c18201e",
+      "ea_id": "QM5_11294",
+      "symbol": "GDAXI.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "1e6dd46ecdf7aa21aafdcc44cb7276d1377d04e05fa4fa757f207864843c1707",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 5e308792-a65e-5b7a-a608-78381c18201e --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_5e308792-a65e-5b7a-a608-78381c18201e.json"
+    },
+    {
+      "work_item_id": "78d6e7f9-4355-59a8-8d37-9bb317ca86d8",
+      "ea_id": "QM5_12623",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "c32d4c3e695fdf99bbb15973159d92948df77a09651027962a667998a25f09cc",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 78d6e7f9-4355-59a8-8d37-9bb317ca86d8 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_78d6e7f9-4355-59a8-8d37-9bb317ca86d8.json"
+    },
+    {
+      "work_item_id": "f67de388-706f-5c01-9d51-b2274bbb4dd8",
+      "ea_id": "QM5_12708",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "8e6feaeee286eb5a962bc83dddd97d8d059cbb19c7970423739e3f44fe045462",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id f67de388-706f-5c01-9d51-b2274bbb4dd8 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_f67de388-706f-5c01-9d51-b2274bbb4dd8.json"
+    },
+    {
+      "work_item_id": "44a48aa1-6dfb-53cc-a97f-dcdb8fd3cd86",
+      "ea_id": "QM5_41161",
+      "symbol": "GBPUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "5733c61db3e03761c22c146695c1335a1290eab5ad05569db4727459f9395feb",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 44a48aa1-6dfb-53cc-a97f-dcdb8fd3cd86 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_44a48aa1-6dfb-53cc-a97f-dcdb8fd3cd86.json"
+    },
+    {
+      "work_item_id": "b8bedf49-a8c7-5373-b2e5-950d5367cb74",
+      "ea_id": "QM5_10128",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "a0a6d8c718fde82c83f53fbebd11a4c5c161ef43be6560802dce281a4258afb3",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id b8bedf49-a8c7-5373-b2e5-950d5367cb74 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_b8bedf49-a8c7-5373-b2e5-950d5367cb74.json"
+    },
+    {
+      "work_item_id": "7db96266-f85e-55a7-b299-31b94028ae7b",
+      "ea_id": "QM5_10183",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "170539fc1bd172ca4034ee1c1ea868548dbc7f573d44839616041b578d615180",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 7db96266-f85e-55a7-b299-31b94028ae7b --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_7db96266-f85e-55a7-b299-31b94028ae7b.json"
+    },
+    {
+      "work_item_id": "9de7b79c-ed84-5ebe-a4dc-4670e86b4976",
+      "ea_id": "QM5_11881",
+      "symbol": "SP500.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "ed02cf73e8380ed9a022a7d5e8634f4c43dd6db546a3e74fc9b092bcfaccd40d",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 9de7b79c-ed84-5ebe-a4dc-4670e86b4976 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_9de7b79c-ed84-5ebe-a4dc-4670e86b4976.json"
+    },
+    {
+      "work_item_id": "421b36a2-c904-59c5-b747-cabe8da1909b",
+      "ea_id": "QM5_13036",
+      "symbol": "GDAXI.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "pending",
+      "current_bound_window": {
+        "from_date": null,
+        "to_date": null,
+        "note": "no from_date/to_date bound in payload -> spawn falls back to DEFAULT_RUN_SMOKE_YEAR 2024 (root cause)"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06",
+        "window_from_utc": "2026-01-01T00:00:00Z",
+        "window_to_utc": "2026-04-06T23:59:59Z"
+      },
+      "action": "patch_window_into_payload_and_release_hold",
+      "hold_code": "OOS_WINDOW_MISMATCH",
+      "hold_reason_verbatim": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only.",
+      "hold_release_note": "OOS-2026 explicit window contract repaired: 2026.01.01..2026.04.06 written into the payload; campaign_plan_sha256=6ade6b3491dabe74773abc2bfb31d597f48db78f01ece41759667b9b5088dfad; Astra task e544e3b8",
+      "before_payload_sha256": "a7eacf4bf10ea527317b2b7e8611809ea858deda41e21182dff16584dd2cf679",
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 421b36a2-c904-59c5-b747-cabe8da1909b --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_421b36a2-c904-59c5-b747-cabe8da1909b.json"
+    }
+  ],
+  "done_successors_15": [
+    {
+      "work_item_id": "a8b55d1c-9add-5015-a9a0-58dedd0f2894",
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "8eea2250-4958-5f1c-9a6b-0670091dcc17",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "a8b55d1c-9add-5015-a9a0-58dedd0f2894"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "77c91b9efd7ac61ca4036b8e07cd215f8052f1d378ab1f1f6a45b7d3cfc14bad",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "590b7691-1558-5fb6-8adc-65572e673c1c",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id a8b55d1c-9add-5015-a9a0-58dedd0f2894 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_a8b55d1c-9add-5015-a9a0-58dedd0f2894.json"
+    },
+    {
+      "work_item_id": "0db8ceec-7339-557c-9e14-951e52cebe71",
+      "ea_id": "QM5_1567",
+      "symbol": "EURUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "55a08a4c-86a5-57a5-9f5f-380a560fa49c",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "0db8ceec-7339-557c-9e14-951e52cebe71"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "c40f2ce798f30bf93707924f13785ff9d51d71458ea52c4e8e20ba45b7be8b17",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "b43f4c18-b6f4-5835-969f-b4ae4943fbdc",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 0db8ceec-7339-557c-9e14-951e52cebe71 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_0db8ceec-7339-557c-9e14-951e52cebe71.json"
+    },
+    {
+      "work_item_id": "a257b4e9-3984-55b9-98cb-add4591e04fa",
+      "ea_id": "QM5_10919",
+      "symbol": "XTIUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "2cc205e5-014e-5355-ac9d-2d2e54c2f812",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "a257b4e9-3984-55b9-98cb-add4591e04fa"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "1b375d776e0febf46dc8e7c186c4e2bf74ac344492920fcedcdfc10cab4d89cf",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "0daca514-2172-5e95-831d-cfe49bcb7369",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id a257b4e9-3984-55b9-98cb-add4591e04fa --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_a257b4e9-3984-55b9-98cb-add4591e04fa.json"
+    },
+    {
+      "work_item_id": "57dcceb8-6696-566f-b7bf-ce3a8cd35f8e",
+      "ea_id": "QM5_11165",
+      "symbol": "AUDCAD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "d8a69e4f-e049-5404-8a57-711d89416af7",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "57dcceb8-6696-566f-b7bf-ce3a8cd35f8e"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "f60daccc6189f2148ad394ebf4f558afb825cfc8c2139231e9ba8921b6e12909",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "13427d3b-e6d7-5b8d-a753-a7f6a527488e",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 57dcceb8-6696-566f-b7bf-ce3a8cd35f8e --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_57dcceb8-6696-566f-b7bf-ce3a8cd35f8e.json"
+    },
+    {
+      "work_item_id": "e6e4eebe-49e2-54a7-866c-1290279b3daf",
+      "ea_id": "QM5_11421",
+      "symbol": "AUDUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "194393b6-be3f-5ce7-9b67-98d326d2928e",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "e6e4eebe-49e2-54a7-866c-1290279b3daf"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "62c6f674039edd4745754db8e7bf84f03f0db0ad72eb8664afe6b639c83204aa",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "25f92708-28d7-5b91-ba60-e356e1c0918c",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id e6e4eebe-49e2-54a7-866c-1290279b3daf --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_e6e4eebe-49e2-54a7-866c-1290279b3daf.json"
+    },
+    {
+      "work_item_id": "f4310f9a-0b8a-5017-bc22-5be3e484d6af",
+      "ea_id": "QM5_11165",
+      "symbol": "EURUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "b6804b25-3748-5d4f-83da-e125ce347ff8",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "f4310f9a-0b8a-5017-bc22-5be3e484d6af"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "30252bd62873d7562b249c81f1777951fb21cd691b57283ed77223b4247b344a",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "62aeed00-976e-5636-be01-f892cf67e4d1",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id f4310f9a-0b8a-5017-bc22-5be3e484d6af --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_f4310f9a-0b8a-5017-bc22-5be3e484d6af.json"
+    },
+    {
+      "work_item_id": "809e6347-8c76-5263-9e62-9e861ac2f7db",
+      "ea_id": "QM5_11421",
+      "symbol": "EURUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "cb479ecb-e6ce-5b9b-a545-006255ae1873",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "809e6347-8c76-5263-9e62-9e861ac2f7db"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "a28a151babe5a1a161707dc4f306350eece0080991b1516a0f3d23bbe2b7f672",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "4ded8a4e-d2d5-5257-9eb1-5bc62d708f71",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 809e6347-8c76-5263-9e62-9e861ac2f7db --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_809e6347-8c76-5263-9e62-9e861ac2f7db.json"
+    },
+    {
+      "work_item_id": "bbe69845-0075-5268-9296-fff69d9d9dab",
+      "ea_id": "QM5_11708",
+      "symbol": "EURUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "32bc6df5-edb1-5637-a482-a13843e3cc72",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "bbe69845-0075-5268-9296-fff69d9d9dab"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "e33cb48bc14dc3d622ed3cd7044b143567ea7919a311b924c8febb48a131c539",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "85b063b6-036c-58f0-b228-11e2a4dbcc0d",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id bbe69845-0075-5268-9296-fff69d9d9dab --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_bbe69845-0075-5268-9296-fff69d9d9dab.json"
+    },
+    {
+      "work_item_id": "a96cf5c2-9c3f-5bac-8f41-0c695f5f5953",
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "347f53a7-2b24-591a-b4c6-b4a6efde4420",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "a96cf5c2-9c3f-5bac-8f41-0c695f5f5953"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "e873eca57f2f439eb6ed2a2324752002a0f8834d099eb4657b462b40f98e5b23",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "01080a6f-1023-511c-b05a-2152bd1a148a",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id a96cf5c2-9c3f-5bac-8f41-0c695f5f5953 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_a96cf5c2-9c3f-5bac-8f41-0c695f5f5953.json"
+    },
+    {
+      "work_item_id": "acb3592c-3f31-5efe-bc12-344213600f1c",
+      "ea_id": "QM5_12969",
+      "symbol": "USDJPY.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "e28e7451-edfe-5133-9806-30de419a5438",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "acb3592c-3f31-5efe-bc12-344213600f1c"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "3ee424a46d1ea1b9fbc4850527d04badcd812f1c792b5fe1d076a497f9c5930f",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "2c1dc400-a22b-52a9-8bd0-c2501c0b9fcc",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id acb3592c-3f31-5efe-bc12-344213600f1c --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_acb3592c-3f31-5efe-bc12-344213600f1c.json"
+    },
+    {
+      "work_item_id": "ccc5ea5b-e3bf-56c2-985b-bcb5387a6942",
+      "ea_id": "QM5_10403",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "de236098-a727-51f3-a82a-71beeb88c127",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "ccc5ea5b-e3bf-56c2-985b-bcb5387a6942"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "a0172aa512e830b32653e5d9e3cf580ce6f6367def26152069ef9f1c09ad9545",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "67f7a073-e53b-5c73-9f86-dd9963052d7a",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id ccc5ea5b-e3bf-56c2-985b-bcb5387a6942 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_ccc5ea5b-e3bf-56c2-985b-bcb5387a6942.json"
+    },
+    {
+      "work_item_id": "3c1c84db-766a-5605-91c1-4ae4bf01ef44",
+      "ea_id": "QM5_10513",
+      "symbol": "XAUUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "691e21c2-6f38-5911-b5e6-bd767131c461",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "3c1c84db-766a-5605-91c1-4ae4bf01ef44"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "44d6c00a3316e5f75794ffc0d075ac6f27b6b23508a182b50abc312239b8f23d",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "6c032d95-ebec-51b3-97db-0cfd06336d4e",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 3c1c84db-766a-5605-91c1-4ae4bf01ef44 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_3c1c84db-766a-5605-91c1-4ae4bf01ef44.json"
+    },
+    {
+      "work_item_id": "8d88ebda-af7a-51cc-a55c-0b2a56132c9a",
+      "ea_id": "QM5_12567",
+      "symbol": "XNGUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "0a7e5814-1e2b-5b31-a2a1-8cf9571b9f74",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "8d88ebda-af7a-51cc-a55c-0b2a56132c9a"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "76d3cb9e7b7f83584ed6a0da102bfa1a92b37459f1674930f75e1d560d9acd4d",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "a5dee066-6709-5679-8c30-2886bb8d0e4f",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 8d88ebda-af7a-51cc-a55c-0b2a56132c9a --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_8d88ebda-af7a-51cc-a55c-0b2a56132c9a.json"
+    },
+    {
+      "work_item_id": "379f7fa2-8282-5e04-a541-0f0f1289f91c",
+      "ea_id": "QM5_13117",
+      "symbol": "EURGBP.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "fd42b085-e29f-502a-a77f-2820084d8e01",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "379f7fa2-8282-5e04-a541-0f0f1289f91c"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "c5d3631a2f82672c29bbcf75931b0cdf72791f8adb8399ed81b7a1aed7dd46c0",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "90c975fc-cadd-569f-ab91-16295040e6c8",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 379f7fa2-8282-5e04-a541-0f0f1289f91c --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_379f7fa2-8282-5e04-a541-0f0f1289f91c.json"
+    },
+    {
+      "work_item_id": "12772e52-a69f-5b6f-83d0-ac0feb87e9b8",
+      "ea_id": "QM5_10706",
+      "symbol": "GBPUSD.DWX",
+      "phase_stored": "Q09_NEWS",
+      "status": "done",
+      "verdict": "REVIEW_REQUIRED",
+      "measured_window_wrong": {
+        "from": "2024.01.01",
+        "to": "2024.12.31"
+      },
+      "correct_window_per_campaign_plan": {
+        "from_date": "2026.01.01",
+        "to_date": "2026.04.06"
+      },
+      "action": "mint_append_only_successor_and_record_supersede",
+      "successor_work_item_id": "038fa259-6529-5d46-a46b-12206e1653ce",
+      "successor_deterministic": "uuid5(NAMESPACE_URL, quantmechanica:oos-2026-confirmation-v1:window-repair:<id>) -> a re-run mints nothing new",
+      "append_only_rerun_lineage_work_items": [
+        "12772e52-a69f-5b6f-83d0-ac0feb87e9b8"
+      ],
+      "rerun_reason": "OOS-2026 window mismatch: the completed run measured 2024.01.01..2024.12.31 (default run_smoke year 2024, substituted because the payload carried no from_date/to_date) instead of the campaign window 2026.01.01..2026.04.06 declared by oos-2026-confirmation-v1; append-only successor minted by oos_2026_confirmation repair-oos-window (Astra task e544e3b8)",
+      "before_payload_sha256": "9d273bde13d626c05f232cb05c6e8799b526e66b61b8f0046b1390548bcbfc0b",
+      "already_invalid_evidence_adjudicated": {
+        "disposition_work_item_id": "af92a62d-40a3-56a5-9d95-07ec763ea4cd",
+        "source_encoding": "orchestrator:q09-news-review-lane-closure/v1",
+        "reason": "RUN_SMOKE_MISLABEL -> INVALID_EVIDENCE (RUN_SMOKE_EVIDENCE_NOT_Q09_NEWS_EXPERIMENT); ORCH-Q09NEWS-REVIEW-LANE-CLOSURE-20260913; append-only adjudication receipt, historical row unchanged"
+      },
+      "append_only_rerun_command_scoped": "python -X utf8 -m tools.strategy_farm.oos_2026_confirmation repair-oos-window --apply --work-item-id 12772e52-a69f-5b6f-83d0-ac0feb87e9b8 --out docs/ops/evidence/2026-09-13_oos_2026_reenqueue/repair_receipt_12772e52-a69f-5b6f-83d0-ac0feb87e9b8.json"
+    }
+  ],
+  "unchanged_tainted_3": [
+    {
+      "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+      "ea_id": "QM5_12778",
+      "symbol": "AUDUSD.DWX",
+      "repair_classification": "already_repaired",
+      "active_holds": [
+        {
+          "hold_code": "NEWS_CALENDAR_TAINTED",
+          "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md"
+        }
+      ],
+      "note": "window already correct + NO OOS_WINDOW_MISMATCH hold; left untouched by repair-oos-window. Out of scope for the window re-enqueue."
+    },
+    {
+      "work_item_id": "92efae73-ade2-550b-a8d0-5268718db42c",
+      "ea_id": "QM5_13213",
+      "symbol": "USDJPY.DWX",
+      "repair_classification": "already_repaired",
+      "active_holds": [
+        {
+          "hold_code": "NEWS_CALENDAR_TAINTED",
+          "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md"
+        }
+      ],
+      "note": "window already correct + NO OOS_WINDOW_MISMATCH hold; left untouched by repair-oos-window. Out of scope for the window re-enqueue."
+    },
+    {
+      "work_item_id": "b685a457-d784-55a5-b037-5e76803e63fd",
+      "ea_id": "QM5_21501",
+      "symbol": "USDJPY.DWX",
+      "repair_classification": "already_repaired",
+      "active_holds": [
+        {
+          "hold_code": "NEWS_CALENDAR_TAINTED",
+          "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md"
+        }
+      ],
+      "note": "window already correct + NO OOS_WINDOW_MISMATCH hold; left untouched by repair-oos-window. Out of scope for the window re-enqueue."
+    }
+  ]
+}

@@ -1,0 +1,615 @@
+{
+  "active_news_phase": "Q10_NEWS",
+  "campaign_id": "oos-2026-confirmation-v1",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "misphased_pending_count": 40,
+  "news_storage_lanes": [
+    "Q10_NEWS",
+    "Q09_NEWS"
+  ],
+  "pending_on_active_lane_count": 0,
+  "read_only": true,
+  "rows": [
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_12567",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "004eda49-6ba3-5a9d-8979-cfc7517948e2"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_20048",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XTIUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "03279258-a3d1-5137-ae8e-8e937e6c909f"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_13128",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "NDX.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "033e7bc3-715e-5c71-b368-c00ea2594598"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_11422",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "USDCAD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "055cdabb-da68-5328-80b8-9012f291d466"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10911",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "GDAXI.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "0d112806-ee2a-5d0a-9382-33a353cf8efe"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_11881",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "GBPUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "15d41b29-d3ac-5774-804f-f3f3981696e9"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_13301",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "GDAXI.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "1ab6156f-dfc1-5e03-aae7-db461d025b5c"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10939",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "GBPUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "1ffcb576-bf27-5063-a384-685355910c3a"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_9641",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "WS30.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "20127f25-36d0-54ac-ad55-567dbbee9b49"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_12778",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "NEWS_CALENDAR_TAINTED",
+          "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md"
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "AUDUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_11421",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "EURUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "33b3bb40-f4e9-5bc4-a873-5e6a04069ca3"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_13036",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "GDAXI.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "421b36a2-c904-59c5-b747-cabe8da1909b"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_41161",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "GBPUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "44a48aa1-6dfb-53cc-a97f-dcdb8fd3cd86"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_11294",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "GDAXI.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "5e308792-a65e-5b7a-a608-78381c18201e"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_13013",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "NDX.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "6607ae07-b581-586f-9374-ec2673ad42b8"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_20266",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XTIUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "7459c6d4-d6be-5606-8ed4-aeb72f0be504"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_12623",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "78d6e7f9-4355-59a8-8d37-9bb317ca86d8"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10183",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "7db96266-f85e-55a7-b299-31b94028ae7b"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10513",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "890a117c-e5be-5e03-bcae-027ede31f478"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_11288",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "USDJPY.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "896259f9-eb2a-52ba-ad93-5d152eaf990b"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_13054",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XTIUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "9202acef-e841-5fea-a695-a95437ceb807"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_13213",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "NEWS_CALENDAR_TAINTED",
+          "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md"
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "USDJPY.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "92efae73-ade2-550b-a8d0-5268718db42c"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_21505",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAGUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "95d49279-e099-5589-a112-750fe5d534b8"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_11881",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "SP500.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "9de7b79c-ed84-5ebe-a4dc-4670e86b4976"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_1556",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "a61f1a02-f630-5f1f-a9d7-ef1af84627f8"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_11132",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "SP500.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "a800efb5-e0db-5f99-b982-9b2bf49108b5"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_1537",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAGUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "af09850e-2c55-59dc-9744-19716b3c4e2d"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_21501",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "NEWS_CALENDAR_TAINTED",
+          "reason": "PINNED_CALENDAR_TAINTED:86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1; diagnostic=docs/ops/evidence/2026-09-05_news_calendar_diagnose.md"
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "USDJPY.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "b685a457-d784-55a5-b037-5e76803e63fd"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10128",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "b8bedf49-a8c7-5373-b2e5-950d5367cb74"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10146",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "AUDUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "bfd0e872-b4dc-5e2b-8948-8ebe18d14251"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_20188",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "USDJPY.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "ca876575-d5ae-56b9-ba3b-5b5e9f6f7320"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_12849",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XTIUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "d1729472-6047-5906-a8e6-1b51d8845d30"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10123",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "d6532bee-4c7b-560c-b4b8-add78fe6f364"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_12989",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "d6601d01-e9fa-5996-b73e-d52da5e9f78a"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_12855",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XTIUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "d9541e3a-9afc-594d-881e-dc2b13a5f95d"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10142",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "SP500.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_12708",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "f67de388-706f-5c01-9d51-b2274bbb4dd8"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10440",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "NDX.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "f8f75276-2256-5e06-a58b-2756e5c1ebe0"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_13128",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "NDX.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360"
+    },
+    {
+      "created_at": "2026-09-02T10:10:35.641002+00:00",
+      "ea_id": "QM5_10145",
+      "held": true,
+      "holds": [
+        {
+          "hold_code": "OOS_WINDOW_MISMATCH",
+          "reason": "2026-09-04 21:4xZ CEO (GRUEN): oos_2026_confirmation_v1 campaign rows carry expected_from/to_date 2024.01.01-2024.12.31 although the campaign plan declares 2026-01-01..2026-04-06 (Astra FTMO analysis e544e3b8, contracts.json: all 15 done rows measured 2024). Held until the dispatcher is repaired and the cohort re-enqueued append-only."
+        }
+      ],
+      "phase": "Q09_NEWS",
+      "symbol": "XAUUSD.DWX",
+      "window_source": "oos_2026",
+      "work_item_id": "ffd9ef4d-0946-5671-93c0-d9047ebd3270"
+    }
+  ],
+  "schema_version": "qm.oos-2026-misphased-pending-rows/v1"
+}
