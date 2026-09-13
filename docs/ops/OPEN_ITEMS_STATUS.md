@@ -4420,3 +4420,15 @@ EA_SYMBOL_REFERENCE_DECLARED_FOR_TRADED_SLOT guard; 54 tests). Successor compile
 new identity and neither the Q02 append-only rerun (source changed) nor intake-first-q02 (existing Q02 rows) opens Q02
 under the old ea_id; the DL-089 wave-1 precedent is a serial requal pair with a NEW 412xx identity + recovery card ->
 intake-first-q02 -> priority track. That workflow is running for all five (orchestrator lane).
+
+## 2026-09-13T17:55Z Five symbol-fix EAs through the factory door as requal identities (commit eb71e91cc3)
+Serial requal pairs per the DL-089 wave-1 precedent: 12969 -> QM5_41470 (USDJPY M30), 12778 -> QM5_41471 (AUDUSD+EURJPY
+basket D1), 13117 -> QM5_41472 (EURGBP+AUDJPY D1), 13054 -> QM5_41473 (XTIUSD D1), 21505 -> QM5_41474 (XAGUSD D1).
+Recovery cards in the runtime cards_review store, magics 414700000..414740001 allocated (resolver 18340 -> 18347, no
+collision), patched sources byte-identical except the numeric id, set files parameter-identical to the predecessors,
+all five COMPILE_OK (624dde76, 8250ae30, f478f59e, 1bd628b0, fa0d5533), intake-first-q02 applied -> Q02 rows 7ee74893,
+26aaec94, 1f8a23d2, 152523e4, b02b0a87 (41470 on T6 and 41473 on T4 already active). Priority marked append-only via
+farmctl mark-priority-track (set_priority_track cannot mark basket rows: registry accepts .DWX targets only).
+Defect repaired: framework/registry/owner_priority_tracks.json failed to load entirely (two entries with commit_sha null)
+so every OWNER priority entry was inert; now 29 entries load. The old ids and their live binaries stay untouched; the
+rebuilt identities re-enter the chain from Q02 and can join the book after Q14 (next cutover window).
