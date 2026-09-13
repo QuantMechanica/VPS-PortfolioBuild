@@ -4372,3 +4372,14 @@ Mislabel root cause (Q09_NEWS rows run as run_smoke) fixed: commit bb3bed68c3 (o
 report-misphased-rows CLI; farmctl news_lane_mismatch spawn refusal); the terminal_worker diagnostic-summary schema check
 was captured into commit 96946e85ed by a concurrent index add (attribution note; content tested: 150 passed, the 5
 failures are the pre-existing fixture SH-3 taxonomy drift). Worker parts take effect with reload chunk 75 (running).
+
+## 2026-09-13T17:25Z Five symbol-literal EAs patched and in the governed compile queue; staging at 11.0 % done
+Source patches (commit 9359ecaf2b): symbol inputs with canonical base-name comparison (QM_MagicSymbolCanonical) in
+12969, 13054, 21505 and one input per leg in the baskets 12778, 13117; 50 set files carry the .DWX defaults; new lint
+framework/scripts/lint_ea_symbol_literals.py with a ratchet ledger (1670 pre-existing literal comparisons in 838 EA
+dirs; 1537 works only through its calendar-symbol preset - keep XAGUSD.DWX there). COMPILE_EA rows: 12778 6239205b,
+12969 fc7bb94c, 13117 3ea6d920 (DL-089 force-rebuild allow-list) and 13054 d085b09e, 21505 18ddeaf3 (source-repair
+authority router_ops_issue:5c4b7c23, commit f4b17fcdb0); rollout holds released. Next: on COMPILE_OK enqueue Q02 for
+the five new identities and apply set_priority_track (registry entries e7a97eb835). Staging rebuilt at 11.0 %/1.5 %:
+manifest_v2_28_r11.json (sum 11.000000), burn-in 9.801 %, copy plan dry-run PASS 8/8, Q16 Rev 3. Notes: 13128/NDX
+rises to 1.10 pts (cap-driven, ~10 % of book risk); worst day at 11.0 is -0.856 vs the bar -0.857 (no reserve).

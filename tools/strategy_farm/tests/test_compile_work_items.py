@@ -3068,6 +3068,9 @@ def test_review_rework_source_repair_authority_is_exact_label_bound() -> None:
         "QM5_9579_bandy-atr-channel-breakout-trend": (
             "router_review_ea:ad98fd21-0459-4b0b-a673-69d41d2b1a0d"
         ),
+        # OWNER 2026-09-13 symbol-literal source repair (router ticket 5c4b7c23)
+        "QM5_13054_brent-tom-mom": "router_ops_issue:5c4b7c23-2d1f-4069-8e1d-d13374855d67",
+        "QM5_21505_xag-weekly-lowvol-momentum": "router_ops_issue:5c4b7c23-2d1f-4069-8e1d-d13374855d67",
     }
     for label, authority in authorities.items():
         assert compile_work_items._source_repair_authorized(label, authority)
