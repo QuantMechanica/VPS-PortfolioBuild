@@ -1,0 +1,1640 @@
+{
+  "alarms": [
+    {
+      "class": "live_sleeve_drift",
+      "detail": "fills=0 (placements=0, no_entries) expected=5.0402 P(X<=obs)=0.006472 days_live=45",
+      "metric": "ALARM_DARK",
+      "severity": "ALARM",
+      "value": "12778|AUDUSD"
+    },
+    {
+      "class": "live_sleeve_drift",
+      "detail": "BASKET_WARMUP loaded=0 x34",
+      "metric": "ALARM_WARMUP_EMPTY",
+      "severity": "ALARM",
+      "value": "12778|AUDUSD"
+    },
+    {
+      "class": "live_sleeve_drift",
+      "detail": "fills=10 (placements=10, journal_fill_join) expected=17.4666 P(X<=obs)=0.039372 days_live=55",
+      "metric": "WARN_LOW_ACTIVITY",
+      "severity": "WARN",
+      "value": "10440|NDX"
+    },
+    {
+      "class": "live_sleeve_drift",
+      "detail": "fills=0 (placements=0, no_entries) expected=6.9408 P(X<=obs)=0.000967 days_live=45",
+      "metric": "ALARM_DARK",
+      "severity": "ALARM",
+      "value": "12969|USDJPY"
+    },
+    {
+      "class": "live_sleeve_drift",
+      "detail": "fills=6 (placements=6, journal_fill_join) expected=1.3384 P(X>=obs)=0.002572",
+      "metric": "WARN_HIGH_ACTIVITY",
+      "severity": "WARN",
+      "value": "1556|XAUUSD"
+    },
+    {
+      "class": "live_sleeve_drift",
+      "detail": "fills=0 (placements=0, no_entries) expected=4.5852 P(X<=obs)=0.010202 days_live=44",
+      "metric": "WARN_LOW_ACTIVITY",
+      "severity": "WARN",
+      "value": "13117|EURGBP"
+    },
+    {
+      "class": "live_sleeve_drift",
+      "detail": "BASKET_WARMUP loaded=0 x33",
+      "metric": "ALARM_WARMUP_EMPTY",
+      "severity": "ALARM",
+      "value": "13117|EURGBP"
+    }
+  ],
+  "constants": {
+    "deal_exit_match_tolerance_min": 240,
+    "heartbeat_silent_trading_days": 2,
+    "perf_alpha": 0.05,
+    "perf_min_n": 10,
+    "poisson_alarm_dark_p": 0.01,
+    "poisson_warn_high_p": 0.01,
+    "poisson_warn_low_p": 0.05,
+    "risk_fixed_usd": 1000.0,
+    "trading_day_basis": "mon_fri_holidays_not_modelled"
+  },
+  "generated_at_utc": "2026-09-13T20:43:38Z",
+  "inputs": {
+    "ea_log_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM",
+    "journal_deals_parsed": 248,
+    "journal_dir": "C:\\QM\\mt5\\T_Live\\MT5_Base\\logs",
+    "manifest_path": "D:\\QM\\reports\\portfolio\\portfolio_manifest_live_24sleeve_20260724.json",
+    "pulse": "D:\\QM\\reports\\state\\live_book_pulse.json",
+    "stream_roots": [
+      "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades",
+      "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades"
+    ]
+  },
+  "pulse_generated_at_utc": "2026-09-13T20:30:02Z",
+  "schema": "qm.live-sleeve-drift/v1",
+  "sleeve_count": 24,
+  "sleeves": [
+    {
+      "activity": {
+        "expected": 18.539,
+        "observed_entries": 15,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.825116,
+        "p_low": 0.246237,
+        "placements": 30,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.441404,
+        "n_trades": 742,
+        "r_n": 742,
+        "span_end": "2025-12-30",
+        "span_start": "2019-07-23",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\13301_GDAXI_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 42,
+      "deploy_date": "2026-07-16",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 13301,
+      "ea_label": "QM5_13301_balke-minute-range-breakout",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-19T13:30:49.015Z",
+        "last_equity_snapshot": "2026-09-11T00:30:01.328Z",
+        "last_init_ok": "2026-09-11T19:51:36.109Z",
+        "last_log_line": "2026-09-11T19:51:36.109Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "13301|GDAXI",
+      "magic": 133010010,
+      "performance": {
+        "entries_seen": 30,
+        "live_r_mean": 0.2426,
+        "mean_percentile": 0.5681,
+        "mw_p": 0.781447,
+        "mw_u": 4637.0,
+        "n_backtest": 742,
+        "n_live": 11,
+        "round_trips_paired": 11,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "GDAXI",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "GDAXI"
+        ],
+        "manifest_symbol": "GDAXI",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 32.708,
+        "observed_entries": 30,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.705653,
+        "p_low": 0.35907,
+        "placements": 60,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.743363,
+        "n_trades": 1596,
+        "r_n": 1596,
+        "span_end": "2025-12-30",
+        "span_start": "2017-10-09",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+        "stream_set": "streams_v2b"
+      },
+      "days_live_trading": 44,
+      "deploy_date": "2026-07-14",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 13213,
+      "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-19T13:31:29.515Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.140Z",
+        "last_init_ok": "2026-09-11T19:51:14.750Z",
+        "last_log_line": "2026-09-11T19:51:14.750Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "13213|USDJPY",
+      "magic": 132130000,
+      "performance": {
+        "entries_seen": 60,
+        "live_r_mean": 0.9759,
+        "mean_percentile": 0.6395,
+        "mw_p": 0.952252,
+        "mw_u": 12247.0,
+        "n_backtest": 1596,
+        "n_live": 12,
+        "round_trips_paired": 12,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "USDJPY",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "USDJPY"
+        ],
+        "manifest_symbol": "USDJPY",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 1.923,
+        "observed_entries": 1,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.853838,
+        "p_low": 0.427238,
+        "placements": 1,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.044722,
+        "n_trades": 86,
+        "r_n": 86,
+        "span_end": "2025-12-22",
+        "span_start": "2018-08-09",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\1567_EURUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 43,
+      "deploy_date": "2026-07-15",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 1567,
+      "ea_label": "QM5_1567_demark-td-reverse-sequential-h4",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-19T13:31:50.812Z",
+        "last_equity_snapshot": null,
+        "last_init_ok": "2026-09-11T19:51:14.078Z",
+        "last_log_line": "2026-09-11T19:51:14.093Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "1567|EURUSD",
+      "magic": 15670007,
+      "performance": {
+        "entries_seen": 1,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 86,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "EURUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "EURUSD"
+        ],
+        "manifest_symbol": "EURUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 0.7752,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.460615,
+        "placements": 0,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.015504,
+        "n_trades": 30,
+        "r_n": 30,
+        "span_end": "2025-10-20",
+        "span_start": "2018-05-22",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10919_XTIUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 50,
+      "deploy_date": "2026-07-04",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 10919,
+      "ea_label": "QM5_10919_grimes-overshoot",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-05T14:17:47.218Z",
+        "last_equity_snapshot": "2026-09-10T22:00:12.859Z",
+        "last_init_ok": "2026-09-11T19:50:40.593Z",
+        "last_log_line": "2026-09-11T19:50:44.687Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "10919|XTIUSD",
+      "magic": 109190001,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 30,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "XTIUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "XTIUSD"
+        ],
+        "manifest_symbol": "XTIUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 3.9976,
+        "observed_entries": 6,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.214502,
+        "p_low": 0.889571,
+        "placements": 6,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.097504,
+        "n_trades": 207,
+        "r_n": 207,
+        "span_end": "2025-12-05",
+        "span_start": "2017-10-18",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11165_AUDCAD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 41,
+      "deploy_date": "2026-07-17",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 11165,
+      "ea_label": "QM5_11165_weiss-rsi-ma",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:03.093Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.234Z",
+        "last_init_ok": "2026-09-11T19:51:15.250Z",
+        "last_log_line": "2026-09-11T19:51:15.265Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "11165|AUDCAD",
+      "magic": 111650002,
+      "performance": {
+        "entries_seen": 6,
+        "live_r_mean": 0.016,
+        "mean_percentile": 0.4734,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 207,
+        "n_live": 6,
+        "note": "insufficient_live_round_trips (n=6 < 10)",
+        "round_trips_paired": 6,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "AUDCAD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "AUDCAD",
+          "EURUSD"
+        ],
+        "manifest_symbol": "AUDCAD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 5.0402,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.006472,
+        "placements": 0,
+        "verdict": "ALARM"
+      },
+      "alarm_codes": [
+        "ALARM_DARK",
+        "ALARM_WARMUP_EMPTY"
+      ],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.112005,
+        "n_trades": 195,
+        "r_n": 195,
+        "span_end": "2024-12-30",
+        "span_start": "2018-04-30",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12778_AUDUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 45,
+      "deploy_date": "2026-07-13",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 12778,
+      "ea_label": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-13T06:26:12.656Z",
+        "last_equity_snapshot": null,
+        "last_init_ok": "2026-09-11T19:46:35.000Z",
+        "last_log_line": "2026-09-11T19:46:35.000Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "12778|AUDUSD",
+      "magic": 127780000,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 195,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "AUDUSD",
+      "symbol_check": {
+        "basket_symbols": [
+          "AUDUSD.DWX",
+          "EURJPY.DWX",
+          "EURUSD.DWX",
+          "EURAUD.DWX"
+        ],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "AUDUSD"
+        ],
+        "manifest_symbol": "AUDUSD",
+        "verdict": "ALARM",
+        "warmup_empty_events": 34
+      },
+      "verdict": "ALARM"
+    },
+    {
+      "activity": {
+        "expected": 2.6144,
+        "observed_entries": 3,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.485189,
+        "p_low": 0.732857,
+        "placements": 18,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.047535,
+        "n_trades": 81,
+        "r_n": 81,
+        "span_end": "2024-12-12",
+        "span_start": "2018-06-04",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11421_AUDUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 11421,
+      "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:02.671Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.281Z",
+        "last_init_ok": "2026-09-11T19:51:37.171Z",
+        "last_log_line": "2026-09-11T19:51:37.171Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "11421|AUDUSD",
+      "magic": 114210003,
+      "performance": {
+        "entries_seen": 18,
+        "live_r_mean": 0.0488,
+        "mean_percentile": 0.4321,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 81,
+        "n_live": 1,
+        "note": "insufficient_live_round_trips (n=1 < 10)",
+        "round_trips_paired": 1,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "AUDUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "AUDUSD",
+          "EURUSD"
+        ],
+        "manifest_symbol": "AUDUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 4.9953,
+        "observed_entries": 3,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.874953,
+        "p_low": 0.265684,
+        "placements": 3,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.121837,
+        "n_trades": 260,
+        "r_n": 260,
+        "span_end": "2025-12-17",
+        "span_start": "2017-10-13",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11165_EURUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 41,
+      "deploy_date": "2026-07-17",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 11165,
+      "ea_label": "QM5_11165_weiss-rsi-ma",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:03.093Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.234Z",
+        "last_init_ok": "2026-09-11T19:51:15.250Z",
+        "last_log_line": "2026-09-11T19:51:15.265Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "11165|EURUSD",
+      "magic": 111650000,
+      "performance": {
+        "entries_seen": 3,
+        "live_r_mean": 0.0364,
+        "mean_percentile": 0.4628,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 260,
+        "n_live": 3,
+        "note": "insufficient_live_round_trips (n=3 < 10)",
+        "round_trips_paired": 3,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "EURUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "AUDCAD",
+          "EURUSD"
+        ],
+        "manifest_symbol": "EURUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 2.5278,
+        "observed_entries": 5,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.112564,
+        "p_low": 0.956098,
+        "placements": 24,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.04596,
+        "n_trades": 91,
+        "r_n": 91,
+        "span_end": "2025-12-10",
+        "span_start": "2018-05-10",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\11421_EURUSD_DWX.jsonl",
+        "stream_set": "streams_v2b"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 11421,
+      "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:02.671Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.281Z",
+        "last_init_ok": "2026-09-11T19:51:37.171Z",
+        "last_log_line": "2026-09-11T19:51:37.171Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "11421|EURUSD",
+      "magic": 114210000,
+      "performance": {
+        "entries_seen": 23,
+        "live_r_mean": -0.2483,
+        "mean_percentile": 0.3187,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 91,
+        "n_live": 3,
+        "note": "insufficient_live_round_trips (n=3 < 10)",
+        "round_trips_paired": 3,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "EURUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "AUDUSD",
+          "EURUSD"
+        ],
+        "manifest_symbol": "EURUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 3.9801,
+        "observed_entries": 3,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.758961,
+        "p_low": 0.437375,
+        "placements": 8,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.088446,
+        "n_trades": 173,
+        "r_n": 173,
+        "span_end": "2025-12-05",
+        "span_start": "2018-06-08",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl",
+        "stream_set": "streams_v2b"
+      },
+      "days_live_trading": 45,
+      "deploy_date": "2026-07-13",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 11708,
+      "ea_label": "QM5_11708_anon-market-squeeze-d1",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-13T06:28:45.078Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.437Z",
+        "last_init_ok": "2026-09-11T19:50:44.906Z",
+        "last_log_line": "2026-09-11T19:50:44.906Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "11708|EURUSD",
+      "magic": 117080000,
+      "performance": {
+        "entries_seen": 8,
+        "live_r_mean": -0.0987,
+        "mean_percentile": 0.2514,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 173,
+        "n_live": 2,
+        "note": "insufficient_live_round_trips (n=2 < 10)",
+        "round_trips_paired": 2,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "EURUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "EURUSD"
+        ],
+        "manifest_symbol": "EURUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 7.5489,
+        "observed_entries": 8,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.482517,
+        "p_low": 0.655237,
+        "placements": 8,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.167754,
+        "n_trades": 360,
+        "r_n": 360,
+        "span_end": "2025-12-30",
+        "span_start": "2017-10-10",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "stream_set": "streams_v2b"
+      },
+      "days_live_trading": 45,
+      "deploy_date": "2026-07-13",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 10706,
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-13T06:29:35.968Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.250Z",
+        "last_init_ok": "2026-09-11T19:51:15.781Z",
+        "last_log_line": "2026-09-11T19:51:15.781Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "10706|GBPUSD",
+      "magic": 107060001,
+      "performance": {
+        "entries_seen": 8,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 360,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "GBPUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "GBPUSD"
+        ],
+        "manifest_symbol": "GBPUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 2.4292,
+        "observed_entries": 2,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.69786,
+        "p_low": 0.562102,
+        "placements": 2,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.044167,
+        "n_trades": 92,
+        "r_n": 92,
+        "span_end": "2025-12-23",
+        "span_start": "2017-12-29",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10939_GBPUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 10939,
+      "ea_label": "QM5_10939_grimes-context-pb",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:02.859Z",
+        "last_equity_snapshot": "2026-09-10T21:04:01.250Z",
+        "last_init_ok": "2026-09-11T19:51:15.828Z",
+        "last_log_line": "2026-09-11T19:51:15.828Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "10939|GBPUSD",
+      "magic": 109390001,
+      "performance": {
+        "entries_seen": 2,
+        "live_r_mean": -0.3268,
+        "mean_percentile": 0.3587,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 92,
+        "n_live": 1,
+        "note": "insufficient_live_round_trips (n=1 < 10)",
+        "round_trips_paired": 1,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "GBPUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "GBPUSD"
+        ],
+        "manifest_symbol": "GBPUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 9.3551,
+        "observed_entries": 17,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.015556,
+        "p_low": 0.992276,
+        "placements": 17,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.170092,
+        "n_trades": 331,
+        "r_n": 331,
+        "span_end": "2025-12-29",
+        "span_start": "2018-07-16",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10911_GDAXI_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 10911,
+      "ea_label": "QM5_10911_grimes-complex-pb",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:27.375Z",
+        "last_equity_snapshot": "2026-09-11T00:30:01.328Z",
+        "last_init_ok": "2026-09-11T19:50:46.015Z",
+        "last_log_line": "2026-09-11T19:50:46.015Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "10911|GDAXI",
+      "magic": 109110003,
+      "performance": {
+        "entries_seen": 17,
+        "live_r_mean": -0.2945,
+        "mean_percentile": 0.4585,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 331,
+        "n_live": 9,
+        "note": "insufficient_live_round_trips (n=9 < 10)",
+        "round_trips_paired": 9,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "GDAXI",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "GDAXI"
+        ],
+        "manifest_symbol": "GDAXI",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 1.3397,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.261921,
+        "placements": 0,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.029771,
+        "n_trades": 56,
+        "r_n": 56,
+        "span_end": "2025-12-09",
+        "span_start": "2018-09-25",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\13128_NDX_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 45,
+      "deploy_date": "2026-07-13",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 13128,
+      "ea_label": "QM5_13128_pre-fomc-drift-ndx",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-13T06:29:55.421Z",
+        "last_equity_snapshot": "2026-09-10T22:00:02.828Z",
+        "last_init_ok": "2026-09-11T19:46:35.000Z",
+        "last_log_line": "2026-09-11T19:46:35.000Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "13128|NDX",
+      "magic": 131280000,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 56,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "NDX",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "NDX"
+        ],
+        "manifest_symbol": "NDX",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 17.4666,
+        "observed_entries": 10,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.979537,
+        "p_low": 0.039372,
+        "placements": 10,
+        "verdict": "WARN"
+      },
+      "alarm_codes": [
+        "WARN_LOW_ACTIVITY"
+      ],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.317575,
+        "n_trades": 618,
+        "r_n": 618,
+        "span_end": "2025-12-29",
+        "span_start": "2018-07-16",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\10440_NDX_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 10440,
+      "ea_label": "QM5_10440_mql5-ohlc-mtf",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:08.296Z",
+        "last_equity_snapshot": "2026-09-10T22:00:02.421Z",
+        "last_init_ok": "2026-09-11T19:51:37.375Z",
+        "last_log_line": "2026-09-11T19:51:37.375Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "10440|NDX",
+      "magic": 104400003,
+      "performance": {
+        "entries_seen": 10,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 618,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "NDX",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "NDX"
+        ],
+        "manifest_symbol": "NDX",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "WARN"
+    },
+    {
+      "activity": {
+        "expected": 2.3275,
+        "observed_entries": 5,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.087002,
+        "p_low": 0.96852,
+        "placements": 5,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.042319,
+        "n_trades": 73,
+        "r_n": 73,
+        "span_end": "2025-12-17",
+        "span_start": "2019-05-09",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\11132_SP500_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 11132,
+      "ea_label": "QM5_11132_tm-cum-rsi2",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:14:57.109Z",
+        "last_equity_snapshot": "2026-09-10T22:00:02.500Z",
+        "last_init_ok": "2026-09-11T19:51:14.593Z",
+        "last_log_line": "2026-09-11T19:51:14.593Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "11132|SP500",
+      "magic": 111320000,
+      "performance": {
+        "entries_seen": 5,
+        "live_r_mean": 0.2091,
+        "mean_percentile": 0.524,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 73,
+        "n_live": 4,
+        "note": "insufficient_live_round_trips (n=4 < 10)",
+        "round_trips_paired": 4,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "SP500",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "SP500"
+        ],
+        "manifest_symbol": "SP500",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 6.9408,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.000967,
+        "placements": 0,
+        "verdict": "ALARM"
+      },
+      "alarm_codes": [
+        "ALARM_DARK"
+      ],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.15424,
+        "n_trades": 331,
+        "r_n": 331,
+        "span_end": "2025-12-29",
+        "span_start": "2017-10-09",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12969_USDJPY_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 45,
+      "deploy_date": "2026-07-13",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 12969,
+      "ea_label": "QM5_12969_usdjpy-gotobi-nakane-fix",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-13T06:34:01.015Z",
+        "last_equity_snapshot": null,
+        "last_init_ok": "2026-09-11T19:50:48.078Z",
+        "last_log_line": "2026-09-11T19:50:48.078Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "12969|USDJPY",
+      "magic": 129690000,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 331,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "USDJPY",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "USDJPY"
+        ],
+        "manifest_symbol": "USDJPY",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "ALARM"
+    },
+    {
+      "activity": {
+        "expected": 4.5707,
+        "observed_entries": 4,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.669485,
+        "p_low": 0.518747,
+        "placements": 56,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.10157,
+        "n_trades": 207,
+        "r_n": 207,
+        "span_end": "2025-12-22",
+        "span_start": "2018-03-01",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+        "stream_set": "streams_v2b"
+      },
+      "days_live_trading": 45,
+      "deploy_date": "2026-07-13",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 10403,
+      "ea_label": "QM5_10403_et-turtle20x",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-13T06:34:59.375Z",
+        "last_equity_snapshot": "2026-09-10T22:01:00.234Z",
+        "last_init_ok": "2026-09-11T19:50:42.968Z",
+        "last_log_line": "2026-09-11T19:50:44.656Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "10403|XAUUSD",
+      "magic": 104030002,
+      "performance": {
+        "entries_seen": 56,
+        "live_r_mean": 0.2957,
+        "mean_percentile": 0.6063,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 207,
+        "n_live": 4,
+        "note": "insufficient_live_round_trips (n=4 < 10)",
+        "round_trips_paired": 4,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "XAUUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "XAUUSD"
+        ],
+        "manifest_symbol": "XAUUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 1.8442,
+        "observed_entries": 2,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.550179,
+        "p_low": 0.718763,
+        "placements": 2,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.033531,
+        "n_trades": 68,
+        "r_n": 68,
+        "span_end": "2025-12-02",
+        "span_start": "2018-02-23",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\10513_XAUUSD_DWX.jsonl",
+        "stream_set": "streams_v2b"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 10513,
+      "ea_label": "QM5_10513_mql5-ichimoku",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:14:57.140Z",
+        "last_equity_snapshot": "2026-09-10T22:01:00.234Z",
+        "last_init_ok": "2026-09-11T19:50:42.890Z",
+        "last_log_line": "2026-09-11T19:50:44.656Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "10513|XAUUSD",
+      "magic": 105130003,
+      "performance": {
+        "entries_seen": 2,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 68,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "XAUUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "XAUUSD"
+        ],
+        "manifest_symbol": "XAUUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 2.2544,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.104942,
+        "placements": 0,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.040988,
+        "n_trades": 73,
+        "r_n": 73,
+        "span_end": "2025-11-18",
+        "span_start": "2019-01-22",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12567_XAUUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 12567,
+      "ea_label": "QM5_12567_cum-rsi2-commodity",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:08.390Z",
+        "last_equity_snapshot": "2026-09-10T22:01:00.234Z",
+        "last_init_ok": "2026-09-11T19:51:37.312Z",
+        "last_log_line": "2026-09-11T19:51:37.328Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "12567|XAUUSD",
+      "magic": 125670003,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 73,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "XAUUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "XAUUSD",
+          "XNGUSD"
+        ],
+        "manifest_symbol": "XAUUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 1.2898,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.275317,
+        "placements": 0,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.025797,
+        "n_trades": 51,
+        "r_n": 51,
+        "span_end": "2025-12-12",
+        "span_start": "2018-05-17",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12989_XAUUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 50,
+      "deploy_date": "2026-07-04",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 12989,
+      "ea_label": "QM5_12989_grimes-nested-pb-v2",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-05T14:19:01.109Z",
+        "last_equity_snapshot": "2026-09-10T22:01:00.250Z",
+        "last_init_ok": "2026-09-11T19:51:36.609Z",
+        "last_log_line": "2026-09-11T19:51:36.609Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "12989|XAUUSD",
+      "magic": 129890003,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 51,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "XAUUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "XAUUSD"
+        ],
+        "manifest_symbol": "XAUUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 1.3384,
+        "observed_entries": 6,
+        "observed_source": "journal_fill_join",
+        "p_high": 0.002572,
+        "p_low": 0.999521,
+        "placements": 6,
+        "verdict": "WARN"
+      },
+      "alarm_codes": [
+        "WARN_HIGH_ACTIVITY"
+      ],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.029742,
+        "n_trades": 53,
+        "r_n": 53,
+        "span_end": "2025-12-01",
+        "span_start": "2019-02-01",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\1556_XAUUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 45,
+      "deploy_date": "2026-07-13",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 1556,
+      "ea_label": "QM5_1556_aa-zak-mom12",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-13T06:37:20.484Z",
+        "last_equity_snapshot": "2026-09-10T22:01:00.218Z",
+        "last_init_ok": "2026-09-11T19:51:14.093Z",
+        "last_log_line": "2026-09-11T19:51:14.093Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "1556|XAUUSD",
+      "magic": 15560004,
+      "performance": {
+        "entries_seen": 6,
+        "live_r_mean": 0.0267,
+        "mean_percentile": 0.4528,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 53,
+        "n_live": 6,
+        "note": "insufficient_live_round_trips (n=6 < 10)",
+        "round_trips_paired": 6,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "XAUUSD",
+      "symbol_check": {
+        "basket_symbols": [
+          "XAUUSD"
+        ],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "XAUUSD"
+        ],
+        "manifest_symbol": "XAUUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "WARN"
+    },
+    {
+      "activity": {
+        "expected": 1.6745,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.187394,
+        "placements": 0,
+        "verdict": "OK"
+      },
+      "alarm_codes": [],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.030446,
+        "n_trades": 58,
+        "r_n": 58,
+        "span_end": "2025-12-15",
+        "span_start": "2018-08-28",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\12567_XNGUSD_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 55,
+      "deploy_date": "2026-06-28",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 12567,
+      "ea_label": "QM5_12567_cum-rsi2-commodity",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-06-28T09:15:08.390Z",
+        "last_equity_snapshot": "2026-09-10T22:01:00.234Z",
+        "last_init_ok": "2026-09-11T19:51:37.312Z",
+        "last_log_line": "2026-09-11T19:51:37.328Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "12567|XNGUSD",
+      "magic": 125670002,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 58,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "XNGUSD",
+      "symbol_check": {
+        "basket_symbols": [],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "XAUUSD",
+          "XNGUSD"
+        ],
+        "manifest_symbol": "XNGUSD",
+        "verdict": "OK",
+        "warmup_empty_events": 0
+      },
+      "verdict": "OK"
+    },
+    {
+      "activity": {
+        "expected": 4.5852,
+        "observed_entries": 0,
+        "observed_source": "no_entries",
+        "p_high": 1.0,
+        "p_low": 0.010202,
+        "placements": 0,
+        "verdict": "WARN"
+      },
+      "alarm_codes": [
+        "WARN_LOW_ACTIVITY",
+        "ALARM_WARMUP_EMPTY"
+      ],
+      "backtest": {
+        "found": true,
+        "lambda_per_trading_day": 0.104208,
+        "n_trades": 208,
+        "r_n": 208,
+        "span_end": "2025-11-17",
+        "span_start": "2018-03-26",
+        "stream_path": "D:\\QM\\reports\\portfolio\\dxz_final_20260719\\QM\\q08_trades\\13117_EURGBP_DWX.jsonl",
+        "stream_set": "dxz_final_20260719"
+      },
+      "days_live_trading": 44,
+      "deploy_date": "2026-07-14",
+      "deploy_source": "manifest_ex5_deployed_mtime",
+      "ea_id": 13117,
+      "ea_label": "QM5_13117_eurgbp-audjpy",
+      "heartbeat": {
+        "age_trading_days": 0,
+        "first_init_ok": "2026-07-19T13:29:50.796Z",
+        "last_equity_snapshot": null,
+        "last_init_ok": "2026-09-11T19:46:35.000Z",
+        "last_log_line": "2026-09-11T19:46:35.000Z",
+        "terminal_state": "RUNNING",
+        "verdict": "OK"
+      },
+      "key": "13117|EURGBP",
+      "magic": 131170000,
+      "performance": {
+        "entries_seen": 0,
+        "live_r_mean": null,
+        "mean_percentile": null,
+        "mw_p": null,
+        "mw_u": null,
+        "n_backtest": 208,
+        "n_live": 0,
+        "note": "insufficient_live_round_trips (n=0 < 10)",
+        "round_trips_paired": 0,
+        "source": "journal_paired_price_R_multiples",
+        "verdict": "OK"
+      },
+      "symbol": "EURGBP",
+      "symbol_check": {
+        "basket_symbols": [
+          "EURGBP.DWX",
+          "AUDJPY.DWX",
+          "GBPUSD.DWX",
+          "USDJPY.DWX"
+        ],
+        "dwx_literal_seen": false,
+        "log_symbols": [
+          "EURGBP"
+        ],
+        "manifest_symbol": "EURGBP",
+        "verdict": "ALARM",
+        "warmup_empty_events": 33
+      },
+      "verdict": "ALARM"
+    }
+  ],
+  "summary": {
+    "dark": [
+      "12778|AUDUSD",
+      "12969|USDJPY"
+    ],
+    "n_alarm": 3,
+    "n_ok": 19,
+    "n_warn": 2,
+    "over_trading": [
+      "1556|XAUUSD"
+    ],
+    "silent": [],
+    "warmup_empty": [
+      "12778|AUDUSD",
+      "13117|EURGBP"
+    ]
+  },
+  "terminal_state": "RUNNING",
+  "verdict": "ALARM"
+}
