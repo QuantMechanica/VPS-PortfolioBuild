@@ -45,7 +45,16 @@ except ModuleNotFoundError:  # package import (``tools.strategy_farm``)
 
 PRIMARY_NAME = "news_calendar_2015_2025.csv"
 SECONDARY_NAME = "forex_factory_calendar_clean.csv"
+#: Contract V2 section 3 separates *publication* from *consumption*: the
+#: publisher may still ship both files (that is a storage concern and the
+#: bundle manifest binds both), while a **consuming** run must declare exactly
+#: one authoritative source for impact classification.  ``CALENDAR_NAMES`` is
+#: therefore the publication pair and stays unchanged; the consumption-side
+#: declaration is attached by the Default-OFF cutover below.
 CALENDAR_NAMES = (PRIMARY_NAME, SECONDARY_NAME)
+#: Mirror of ``news_impact_mapping.FLAG_ENV``; a test asserts the two agree.
+#: Held locally so the flag-off path imports nothing new and stays identical.
+NEWS_IMPACT_MAPPING_V2_FLAG = "QM_NEWS_IMPACT_MAPPING_V2"
 ACTIVE_MANIFEST_NAME = "news_calendar_bundle_manifest.json"
 BUNDLE_DIRECTORY_NAME = ".news_calendar_bundles"
 MAX_AGE_HOURS = 24 * 14
@@ -186,6 +195,10 @@ class CalendarPreflightResult:
     manifest_sha256: str | None = None
     legacy_flat_files: bool = False
     cache_hit: bool = False
+    #: Contract V2 section 7 declaration, present only under the Default-OFF
+    #: cutover flag.  ``None`` is erased from ``as_dict`` so every pre-cutover
+    #: JSON consumer sees byte-identical output.
+    news_contract_selfreport: dict[str, Any] | None = None
 
     @property
     def ok(self) -> bool:
@@ -198,6 +211,8 @@ class CalendarPreflightResult:
         payload["missing_source_paths"] = list(self.missing_source_paths)
         payload["missing_common_paths"] = list(self.missing_common_paths)
         payload["mismatches"] = list(self.mismatches)
+        if payload.get("news_contract_selfreport") is None:
+            payload.pop("news_contract_selfreport", None)
         return payload
 
 
@@ -895,6 +910,59 @@ def _full_preflight(
     )
 
 
+def news_contract_v2_enabled(env: Mapping[str, str] | None = None) -> bool:
+    """True only for the exact opt-in value ``"1"``.  Default-OFF."""
+
+    source = os.environ if env is None else env
+    return str(source.get(NEWS_IMPACT_MAPPING_V2_FLAG, "") or "").strip() == "1"
+
+
+def _news_impact_mapping_module() -> Any:
+    try:
+        import news_impact_mapping  # noqa: PLC0415
+    except ModuleNotFoundError:  # package import (``tools.strategy_farm``)
+        from tools.strategy_farm import news_impact_mapping  # noqa: PLC0415
+    return news_impact_mapping
+
+
+def build_news_contract_declaration(source_dir: Path | str) -> dict[str, Any]:
+    """Contract V2 sections 3/4/7: which source and which mapping this run consumes.
+
+    Consumption-only.  The published pair is unchanged; this states which of
+    the two files a run that classifies impact is allowed to read, and under
+    which versioned mapping.  Never used by an ``ENV=live`` EA (DL-080).
+    """
+
+    module = _news_impact_mapping_module()
+    rules = module.load_rules()
+    return module.contract_declaration(
+        Path(source_dir) / str(rules["authoritative_source"]),
+        consumer="news_calendar_gate",
+        opt_in=True,
+        rules=rules,
+    )
+
+
+def _with_news_contract_declaration(
+    result: CalendarPreflightResult, source_dir: Path
+) -> CalendarPreflightResult:
+    """Attach the section 7 declaration, fail-closed, only under the flag."""
+
+    if not news_contract_v2_enabled():
+        return result
+    try:
+        declaration = build_news_contract_declaration(source_dir)
+    except Exception as exc:  # noqa: BLE001 - any failure is a refusal, not a pass
+        return replace(
+            result,
+            status=STATUS_PARSE_INVALID,
+            parse_invalid_path=str(Path(source_dir)),
+            detail=f"news contract v2 declaration failed: {exc}",
+            news_contract_selfreport=None,
+        )
+    return replace(result, news_contract_selfreport=declaration)
+
+
 def preflight_news_calendar(
     source_dir: Path | str | None = None,
     common_dir: Path | str | None = None,
@@ -946,7 +1014,7 @@ def preflight_news_calendar(
                     )
             else:
                 result = replace(result, checked_at=_iso_utc(checked_at), cache_hit=True)
-            return result
+            return _with_news_contract_declaration(result, source)
 
     result = _full_preflight(
         source,
@@ -958,7 +1026,7 @@ def preflight_news_calendar(
     if cache_allowed:
         with _CACHE_LOCK:
             _PREFLIGHT_CACHE[cache_key] = (signature, result)
-    return result
+    return _with_news_contract_declaration(result, source)
 
 
 def build_publication_plan(

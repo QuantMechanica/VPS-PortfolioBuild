@@ -40,6 +40,7 @@ import calendar
 import csv
 import hashlib
 import json
+import os
 import sys
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta, timezone
@@ -56,6 +57,9 @@ DEFAULT_CALENDAR_DIR = Path(r"D:\QM\data\news_calendar")
 
 #: Consumers are opt-in.  Importing this module must not change any behaviour.
 DEFAULT_ENABLED = False
+
+#: The single cutover flag.  One flag, one spelling, Default-OFF.
+FLAG_ENV = "QM_NEWS_IMPACT_MAPPING_V2"
 
 
 class MappingError(ValueError):
@@ -284,6 +288,62 @@ def mapping_fingerprint(rules: Mapping[str, Any] | None = None) -> dict[str, str
 # --------------------------------------------------------------------------
 # Opt-in gate (Default-OFF)
 # --------------------------------------------------------------------------
+
+
+def v2_enabled(env: Mapping[str, str] | None = None) -> bool:
+    """True only for the exact opt-in value ``"1"`` of :data:`FLAG_ENV`.
+
+    Anything else - unset, empty, ``"0"``, ``"true"``, ``"yes"`` - leaves every
+    consumer on its pre-V2 code path, whose output must stay byte-identical.
+    A typo therefore fails *off*, never half-on.
+    """
+
+    source = os.environ if env is None else env
+    return str(source.get(FLAG_ENV, "") or "").strip() == "1"
+
+
+def contract_declaration(
+    source_path: Path | str | None = None,
+    *,
+    consumer: str | None = None,
+    opt_in: bool = False,
+    rules: Mapping[str, Any] | None = None,
+    allow_non_authoritative: bool = False,
+    require_source: bool = True,
+) -> dict[str, Any]:
+    """The contract section 3 + 4 + 7 declaration a consuming run must cite.
+
+    This is the cheap half of :func:`run_self_report`: it names *which* source
+    is authoritative and *which* mapping was used, without mapping every row.
+    A consumer that gates on impact must be able to state both even when it
+    never builds a full mapped view.
+    """
+
+    who = _require_opt_in(consumer, opt_in)
+    resolved = dict(rules) if rules is not None else load_rules()
+    fingerprint = mapping_fingerprint(resolved)
+    declaration: dict[str, Any] = {
+        "selfreport_schema_version": SELFREPORT_SCHEMA_VERSION,
+        "schema_version": resolved.get("contract_schema_version", SCHEMA_VERSION),
+        "mapping_version": fingerprint["mapping_version"],
+        "mapping_content_sha256": fingerprint["content_sha256"],
+        "mapping_rules_sha256": fingerprint["rules_sha256"],
+        "mapping_code_sha256": fingerprint["code_sha256"],
+        "dst_rule_version": DST_RULE_VERSION,
+        "authoritative_source": resolved["authoritative_source"],
+        "authoritative_source_decision": resolved.get("owner_decision"),
+        "duplicate_policy": resolved["duplicate_policy"],
+        "consumer": who,
+        "live_path_forbidden": True,
+    }
+    if require_source:
+        path = resolve_source(
+            source_path, rules=resolved, allow_non_authoritative=allow_non_authoritative
+        )
+        declaration["authoritative_source"] = path.name
+        declaration["source_path"] = str(path)
+        declaration["content_sha256"] = sha256_file(path)
+    return declaration
 
 
 def _require_opt_in(consumer: str | None, opt_in: bool) -> str:

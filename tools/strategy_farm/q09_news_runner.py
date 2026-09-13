@@ -361,6 +361,31 @@ def _load_json(path: Path, role: str) -> dict[str, Any]:
     return value
 
 
+def _news_contract_v2_declaration() -> dict[str, Any] | None:
+    """Contract V2 section 7 fields, or ``None`` while the cutover flag is off.
+
+    ROT-2 is resolved (``OWNER-DEC-NEWS-MAPPING``, 2026-08-22), so the PRE_V2
+    marker is no longer forced - but it stays the default until the single
+    ``QM_NEWS_IMPACT_MAPPING_V2=1`` flag is set, so a run's evidence never
+    changes shape underneath an in-flight wave.  Any failure here is fatal to
+    the run, not silently downgraded to PRE_V2: a half-declared mapping is
+    exactly the unfalsifiable evidence the contract forbids.
+    """
+
+    try:
+        import news_impact_mapping as mapping_module  # noqa: PLC0415
+    except ModuleNotFoundError:  # package import (``tools.strategy_farm``)
+        from tools.strategy_farm import news_impact_mapping as mapping_module  # noqa: PLC0415
+    if not mapping_module.v2_enabled():
+        return None
+    try:
+        return mapping_module.contract_declaration(
+            consumer="q09_news_runner", opt_in=True
+        )
+    except Exception as exc:  # noqa: BLE001
+        raise RunnerError(f"news contract v2 declaration failed: {exc}") from exc
+
+
 def build_news_selfreport(
     calendar_manifest_path: Path,
     *,
@@ -368,11 +393,20 @@ def build_news_selfreport(
 ) -> dict[str, Any]:
     """Return one authenticated, consolidated calendar provenance object.
 
-    This is intentionally additive to the existing Q09 v2 receipt. Until
-    ROT-2 resolves the impact mapping, the explicit PRE_V2 marker prevents the
-    receipt from being mistaken for post-V2 comparable evidence.
+    This is intentionally additive to the existing Q09 v2 receipt. With the
+    cutover flag off the explicit PRE_V2 marker prevents the receipt from being
+    mistaken for post-V2 comparable evidence; with ``QM_NEWS_IMPACT_MAPPING_V2=1``
+    the report carries the contract section 7 triple - ``mapping_version``,
+    ``authoritative_source`` and ``dst_rule_version`` - and is comparable.
     """
 
+    declaration = (
+        _news_contract_v2_declaration()
+        if str(mapping_version or "").strip() == PRE_V2_MAPPING_VERSION
+        else None
+    )
+    if declaration is not None:
+        mapping_version = str(declaration["mapping_version"])
     mapping = str(mapping_version or "").strip()
     if not mapping:
         raise RunnerError("news self-report mapping_version must be non-empty")
@@ -410,6 +444,19 @@ def build_news_selfreport(
             else "MAPPING_VERSION_DECLARED"
         ),
     }
+    if declaration is not None:
+        report.update({
+            "evidence_authority": "NEWS_CONTRACT_V2",
+            "mapping_content_sha256": declaration["mapping_content_sha256"],
+            "mapping_rules_sha256": declaration["mapping_rules_sha256"],
+            "mapping_code_sha256": declaration["mapping_code_sha256"],
+            "authoritative_source": declaration["authoritative_source"],
+            "authoritative_source_decision": declaration["authoritative_source_decision"],
+            "authoritative_source_path": declaration["source_path"],
+            "authoritative_source_content_sha256": declaration["content_sha256"],
+            "dst_rule_version": declaration["dst_rule_version"],
+            "duplicate_policy": declaration["duplicate_policy"],
+        })
     required = (
         "source_path",
         "content_sha256",
@@ -418,6 +465,10 @@ def build_news_selfreport(
         "schema_version",
         "mapping_version",
     )
+    if report["evidence_authority"] == "NEWS_CONTRACT_V2":
+        # Contract section 7: a V2 run self-report that cannot name all three
+        # is not V2 evidence.  Fail closed rather than emit a half-declaration.
+        required = required + ("authoritative_source", "dst_rule_version")
     if any(report.get(field) in (None, "", 0) for field in required):
         raise RunnerError("news self-report has an empty required provenance field")
     if str(events.get("sha256") or "") != report["content_sha256"]:
@@ -1792,14 +1843,19 @@ def _receipt_to_cell(spec: Mapping[str, Any]) -> dict[str, Any]:
             raise RunnerError(
                 f"cell news self-report contradicts hashed evidence: {receipt_path}"
             )
-        for field in (
+        required_selfreport_fields = [
             "source_path",
             "content_sha256",
             "row_count",
             "max_event_date_utc",
             "schema_version",
             "mapping_version",
-        ):
+        ]
+        if news_selfreport.get("evidence_authority") == "NEWS_CONTRACT_V2":
+            # Contract section 7/9: post-V2 evidence must name the mapping, the
+            # authoritative source and the DST rule, or it is not comparable.
+            required_selfreport_fields += ["authoritative_source", "dst_rule_version"]
+        for field in required_selfreport_fields:
             if news_selfreport.get(field) in (None, "", 0):
                 raise RunnerError(
                     f"cell news self-report {field} is empty: {receipt_path}"

@@ -4,6 +4,25 @@
 P8 is a post-report analysis gate. It does not synthesize news-mode metrics.
 It parses real MT5 tester deal rows, maps entry/exit trade pairs to the actual
 UTC news calendar, and recomputes metrics for each supported runtime news mode.
+
+Impact classification has two modes, selected by one Default-OFF flag,
+``QM_NEWS_IMPACT_MAPPING_V2=1`` (see ``tools/strategy_farm/news_impact_mapping``):
+
+* **flag off (default)** - the pre-contract V1 behaviour: the inline
+  ``{"low": 1, "medium": 2, "high": 3}`` rank, exactly those three spellings
+  accepted, every other impact string a hard error. Byte-identical to the
+  behaviour before the cutover; the result JSON gains no field.
+* **flag on** - impact is resolved through ``qm.news_impact_mapping.v1``: one
+  versioned rules artifact plus code, hashed together, one authoritative
+  source (``OWNER-DEC-NEWS-MAPPING``, 2026-08-22). Aliases the V1 dict could
+  not read (``red``/``3``/``hoch``/``moderate``) classify; declared
+  non-gating labels (``holiday``) are dropped from the gating view and counted
+  instead of aborting the run; a label the rules do not describe still fails
+  closed. The result then carries the contract section 7 self-report
+  (``mapping_version`` + ``authoritative_source`` + ``dst_rule_version``).
+
+Nothing here touches the live path: an ``ENV=live`` EA uses the native MT5
+calendar, fail-closed (DL-080, OWNER 2026-09-06).
 """
 
 from __future__ import annotations
@@ -12,6 +31,7 @@ import argparse
 import csv
 import html
 import json
+import os
 import re
 import sqlite3
 import subprocess
@@ -52,6 +72,11 @@ CALENDAR_ALIASES = {
     "forecast": ("forecast", "Forecast"),
     "previous": ("previous", "Previous"),
 }
+
+#: The frozen pre-contract impact rank. Never edit: the V1 code path exists so
+#: evidence generated before the cutover stays reproducible bit-for-bit.
+V1_IMPACT_RANK = {"low": 1, "medium": 2, "high": 3}
+V1_MAPPING_VERSION = "v1_inline_unversioned"
 
 MODE_ALIASES = {
     "OFF": "OFF",
@@ -104,6 +129,99 @@ class Trade:
     profit: float
     volume: float
     source_report: str
+
+
+class ImpactResolver:
+    """How one run turns a raw calendar impact string into a gating rank."""
+
+    mapping_version: str = V1_MAPPING_VERSION
+    declaration: dict[str, Any] | None = None
+
+    def normalize(self, impact_raw: str) -> str | None:
+        """Return the gating label, ``""`` for known-but-non-gating, ``None`` for invalid."""
+        raise NotImplementedError
+
+    def rank(self, label: str) -> int:
+        raise NotImplementedError
+
+    def required_rank(self, min_impact: str) -> int:
+        raise NotImplementedError
+
+
+class V1ImpactResolver(ImpactResolver):
+    """The pre-contract behaviour, preserved exactly (unversioned inline dict)."""
+
+    def normalize(self, impact_raw: str) -> str | None:
+        impact = (impact_raw or "").strip().lower()
+        return impact if impact in V1_IMPACT_RANK else None
+
+    def rank(self, label: str) -> int:
+        return V1_IMPACT_RANK.get(label, 0)
+
+    def required_rank(self, min_impact: str) -> int:
+        return V1_IMPACT_RANK.get((min_impact or "").strip().lower(), 3)
+
+
+class V2ImpactResolver(ImpactResolver):
+    """``qm.news_impact_mapping.v1``: one versioned rules artifact plus code."""
+
+    def __init__(self, mapping_module: Any, rules: dict[str, Any], declaration: dict[str, Any]):
+        self._nim = mapping_module
+        self._rules = rules
+        self.declaration = declaration
+        self.mapping_version = str(declaration["mapping_version"])
+        self._ranks = {
+            str(label): int(spec["rank"])
+            for label, spec in rules["labels"].items()
+            if bool(spec.get("gating"))
+        }
+
+    def normalize(self, impact_raw: str) -> str | None:
+        # Fail-closed by design: an impact string the rules do not describe
+        # raises UnmappedImpactLabel rather than being silently dropped.
+        klass = self._nim.classify(impact_raw, self._rules)
+        return klass.label if klass.gating else ""
+
+    def rank(self, label: str) -> int:
+        return self._ranks.get(label, 0)
+
+    def required_rank(self, min_impact: str) -> int:
+        try:
+            return self._nim.classify(min_impact, self._rules).rank
+        except self._nim.MappingError:
+            return 3
+
+
+def _news_impact_mapping_module() -> Any:
+    repo_root = Path(__file__).resolve().parents[2]
+    farm = str(repo_root / "tools" / "strategy_farm")
+    if farm not in sys.path:
+        sys.path.insert(0, farm)
+    import news_impact_mapping  # noqa: PLC0415
+
+    return news_impact_mapping
+
+
+def build_impact_resolver(
+    env: dict[str, str] | None = None,
+    *,
+    source_path: Path | str | None = None,
+    require_source: bool = True,
+) -> ImpactResolver:
+    """Return the V2 resolver only when the single cutover flag is exactly ``1``."""
+
+    module = _news_impact_mapping_module()
+    if not module.v2_enabled(env if env is not None else os.environ):
+        return V1ImpactResolver()
+    rules = module.load_rules()
+    declaration = module.contract_declaration(
+        source_path,
+        consumer="p8_news_driver",
+        opt_in=True,
+        rules=rules,
+        require_source=require_source,
+    )
+    return V2ImpactResolver(module, rules, declaration)
 
 
 def normalize_mode(raw_mode: str) -> str:
@@ -166,7 +284,10 @@ def parse_utc_timestamp(raw: str) -> datetime:
     return dt.astimezone(timezone.utc)
 
 
-def validate_calendar(path: Path) -> tuple[list[NewsEvent], dict[str, object]]:
+def validate_calendar(
+    path: Path, resolver: ImpactResolver | None = None
+) -> tuple[list[NewsEvent], dict[str, object]]:
+    resolver = resolver or V1ImpactResolver()
     rows = load_csv_rows(path)
     if not rows:
         raise ValueError(f"Calendar CSV has no rows: {path}")
@@ -179,14 +300,22 @@ def validate_calendar(path: Path) -> tuple[list[NewsEvent], dict[str, object]]:
     seen: set[tuple[str, str, str]] = set()
     duplicates = 0
     impact_bad = 0
+    non_gating = 0
     for row in rows:
         ts_raw = _first(row, "timestamp_utc")
         dt = parse_utc_timestamp(ts_raw)
         currency = _first(row, "currency").upper()
-        impact = _first(row, "impact").lower()
+        impact_raw = _first(row, "impact")
         event_name = _first(row, "event")
-        if impact not in {"low", "medium", "high"}:
+        impact = resolver.normalize(impact_raw)
+        if impact is None:
             impact_bad += 1
+            continue
+        if impact == "":
+            # V2 only: a label the rules describe as non-gating (holiday).
+            # Counted and excluded from the gating view, never silently merged
+            # into a blocking rank.
+            non_gating += 1
             continue
         key = (dt.isoformat(), currency, event_name)
         if key in seen:
@@ -196,7 +325,15 @@ def validate_calendar(path: Path) -> tuple[list[NewsEvent], dict[str, object]]:
         events.append(NewsEvent(dt, currency, impact, event_name))
     if impact_bad:
         raise ValueError(f"Calendar CSV has {impact_bad} rows with invalid impact level")
-    return events, {"rows": len(rows), "usable_events": len(events), "duplicate_event_rows": duplicates}
+    stats: dict[str, object] = {
+        "rows": len(rows),
+        "usable_events": len(events),
+        "duplicate_event_rows": duplicates,
+    }
+    if resolver.declaration is not None:
+        stats["non_gating_event_rows"] = non_gating
+        stats["news_contract_selfreport"] = resolver.declaration
+    return events, stats
 
 
 def normalize_symbol(symbol: str) -> str:
@@ -250,12 +387,13 @@ def matching_events(
     before_minutes: int,
     after_minutes: int,
     min_impact: str,
+    resolver: ImpactResolver | None = None,
 ) -> list[NewsEvent]:
-    impact_rank = {"low": 1, "medium": 2, "high": 3}
-    required = impact_rank.get(min_impact.lower(), 3)
+    resolver = resolver or V1ImpactResolver()
+    required = resolver.required_rank(min_impact)
     matched = []
     for event in events:
-        if impact_rank.get(event.impact, 0) < required:
+        if resolver.rank(event.impact) < required:
             continue
         if not event_affects_symbol(event, symbol):
             continue
@@ -267,14 +405,20 @@ def matching_events(
     return matched
 
 
-def day_has_event(events: list[NewsEvent], symbol: str, ts_utc: datetime, min_impact: str) -> bool:
-    impact_rank = {"low": 1, "medium": 2, "high": 3}
-    required = impact_rank.get(min_impact.lower(), 3)
+def day_has_event(
+    events: list[NewsEvent],
+    symbol: str,
+    ts_utc: datetime,
+    min_impact: str,
+    resolver: ImpactResolver | None = None,
+) -> bool:
+    resolver = resolver or V1ImpactResolver()
+    required = resolver.required_rank(min_impact)
     day = ts_utc.date()
     for event in events:
         if event.timestamp_utc.date() != day:
             continue
-        if impact_rank.get(event.impact, 0) < required:
+        if resolver.rank(event.impact) < required:
             continue
         if event_affects_symbol(event, symbol):
             return True
@@ -288,14 +432,19 @@ def trade_allowed(
     before_minutes: int,
     after_minutes: int,
     min_impact: str,
+    resolver: ImpactResolver | None = None,
 ) -> tuple[bool, list[NewsEvent]]:
+    resolver = resolver or V1ImpactResolver()
     if mode == "OFF":
         return True, []
-    matches = matching_events(events, trade.symbol, trade.entry_time_utc, mode, before_minutes, after_minutes, min_impact)
+    matches = matching_events(
+        events, trade.symbol, trade.entry_time_utc, mode, before_minutes, after_minutes,
+        min_impact, resolver,
+    )
     if mode in {"PAUSE", "FTMO_PAUSE", "5ers_PAUSE"}:
         return not matches, matches
     if mode == "SKIP_DAY":
-        has = day_has_event(events, trade.symbol, trade.entry_time_utc, min_impact)
+        has = day_has_event(events, trade.symbol, trade.entry_time_utc, min_impact, resolver)
         return not has, matches
     if mode == "no_news":
         return not matches, matches
@@ -691,7 +840,8 @@ def main() -> int:
     args = parser.parse_args()
 
     out_dir = ensure_dir(Path(args.out_prefix) / args.ea / "P8")
-    events, calendar_stats = validate_calendar(Path(args.calendar_csv))
+    impact_resolver = build_impact_resolver()
+    events, calendar_stats = validate_calendar(Path(args.calendar_csv), impact_resolver)
     selected_profiles = parse_mode_profiles(args.mode, args.custom_modes)
     inferred_work_item = {}
     if not args.no_auto_mt5 and not args.run_mt5 and not args.base_setfile and not args.trade_report:
@@ -774,7 +924,10 @@ def main() -> int:
             kept: list[Trade] = []
             blocked = 0
             for trade in symbol_trades:
-                allowed, matched = trade_allowed(trade, events, mode, args.before_minutes, args.after_minutes, args.min_impact)
+                allowed, matched = trade_allowed(
+                    trade, events, mode, args.before_minutes, args.after_minutes,
+                    args.min_impact, impact_resolver,
+                )
                 if allowed:
                     kept.append(trade)
                 else:
