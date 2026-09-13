@@ -158,3 +158,27 @@ def test_class_key_reserves_p95_by_default_and_max_on_rollback(tmp_path, monkeyp
     monkeypatch.setenv("QM_TESTER_MEMORY_CLASS_STAT", "max")
     _reset_expectations_cache()
     assert terminal_worker._measured_ram_expectation_gb("fx_major", "H1", "backtest") == 29.3
+
+
+def test_well_sampled_per_ea_record_is_authoritative_both_ways(tmp_path, monkeypatch):
+    """Orchestrator 2026-09-13: per-EA data with n >= TESTER_MEMORY_MIN_SAMPLES reserves the EA's own p95
+    even when it is far below the class p95 (light EA on a heavy class); an under-sampled EA record
+    still only raises; QM_TESTER_MEMORY_EA_AUTHORITATIVE=0 restores the raise-only precedence."""
+    _reset_expectations_cache()
+    monkeypatch.delenv("QM_TESTER_MEMORY_ADMISSION", raising=False)
+    monkeypatch.delenv("QM_TESTER_MEMORY_CLASS_STAT", raising=False)
+    monkeypatch.delenv("QM_TESTER_MEMORY_EA_AUTHORITATIVE", raising=False)
+    path = tmp_path / "exp.json"
+    _write_expectations(path, {
+        "metal|D1|backtest": {"n": 49, "max_gb": 32.0, "p95_gb": 23.604},
+        "ea:QM5_10145|D1|backtest": {"n": 7, "max_gb": 9.1, "p95_gb": 8.4},   # well sampled, light
+        "ea:QM5_21507|D1|backtest": {"n": 1, "max_gb": 6.0, "p95_gb": 6.0},   # under-sampled, light
+        "ea:QM5_10037|D1|backtest": {"n": 4, "max_gb": 32.0, "p95_gb": 31.0},  # well sampled, heavy
+    })
+    monkeypatch.setenv("QM_TESTER_MEMORY_EXPECTATIONS", str(path))
+    assert terminal_worker._measured_ram_expectation_gb("metal", "D1", "backtest", ea_id="QM5_10145") == 8.4
+    assert terminal_worker._measured_ram_expectation_gb("metal", "D1", "backtest", ea_id="QM5_21507") == 23.604
+    assert terminal_worker._measured_ram_expectation_gb("metal", "D1", "backtest", ea_id="QM5_10037") == 31.0
+    monkeypatch.setenv("QM_TESTER_MEMORY_EA_AUTHORITATIVE", "0")
+    _reset_expectations_cache()
+    assert terminal_worker._measured_ram_expectation_gb("metal", "D1", "backtest", ea_id="QM5_10145") == 23.604

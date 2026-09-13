@@ -81,6 +81,10 @@ _EARLY_RUN_SMOKE_PHASES = frozenset(
 )
 _Q04_PHASE = farmctl.SUPPORTED_BACKTEST_PHASES[-1]
 _Q09_NEWS_PHASE = farmctl.ACTIVE_GATE_MANIFEST.storage_phase_for_role("NEWS", "NEWS")
+# Mirror of ``q09_news_runner.DIAGNOSTIC_SUMMARY_SCHEMA``.  Kept as a literal so
+# the completion hot path does not import the runner module; equality with the
+# runner constant is asserted in tests/test_q09_live_news_diagnostic.py.
+DIAGNOSTIC_NEWS_SUMMARY_SCHEMA = "q09-live-news-diagnostic-summary/v1"
 _Q07_PHASE = "Q07"
 _Q08_PHASE = "Q08"
 NEWS_RUNNER_SPAWN_ABORT_HOLD_CODE = "NEWS_RUNNER_SPAWN_SILENT_ABORT"
@@ -1468,12 +1472,25 @@ def _measured_ram_expectation_gb(
             _tester_memory_class_stat(),
         )
         ea_gb = None
-        if ea_id:
-            ea_gb = _tester_memory_key_max_gb(
-                data,
-                _tester_memory_ea_lookup_key(str(ea_id), timeframe, run_kind),
-                1,
-            )
+        ea_key = _tester_memory_ea_lookup_key(str(ea_id), timeframe, run_kind) if ea_id else None
+        if ea_key:
+            ea_gb = _tester_memory_key_max_gb(data, ea_key, 1)
+            # Orchestrator 2026-09-13 16:3xZ: a well-sampled per-EA record (n >= TESTER_MEMORY_MIN_SAMPLES)
+            # is authoritative in BOTH directions. Before, per-EA data could only raise the reservation
+            # above the class value, so a light EA on a heavy class (metal|D1|backtest p95 23.6 GB)
+            # kept reserving the class figure and the fleet idled at 3/10 with 27 GB free
+            # (T8 claim scan 16:21Z: ram_class_skipped 755). The EA key reserves its own p95 capped
+            # at its own max; the emergency reaper still judges the overrun. Rollback:
+            # QM_TESTER_MEMORY_EA_AUTHORITATIVE=0 restores the raise-only precedence.
+            if (
+                ea_gb is not None
+                and os.environ.get("QM_TESTER_MEMORY_EA_AUTHORITATIVE", "1").strip() != "0"
+            ):
+                ea_stat = _tester_memory_key_stat_gb(
+                    data, ea_key, TESTER_MEMORY_MIN_SAMPLES, _tester_memory_class_stat()
+                )
+                if ea_stat is not None:
+                    return ea_stat
         if ea_gb is not None and (class_gb is None or ea_gb > class_gb):
             return ea_gb
         return class_gb
@@ -7495,6 +7512,39 @@ def _find_work_item_summary_data(item: sqlite3.Row, payload: dict[str, Any]) -> 
     return _find_bound_persisted_pass_summary_data(item, payload)
 
 
+def _diagnostic_news_summary(path: Path) -> tuple[dict[str, Any] | None, str]:
+    """Load the sealed diagnostic NEWS summary next to a runner aggregate.
+
+    EVIDENCE CONTRACT (2026-09-13).  The ``REVIEW_REQUIRED /
+    diagnostic_non_admission`` stamp may only be derived from the
+    ``q09-live-news-diagnostic-summary/v1`` document that
+    ``q09_news_runner._persist_q09_result`` writes.  A mis-routed NEWS row
+    produces an ORDINARY ``run_smoke/v2`` ``summary.json`` at exactly the same
+    path, and that document used to be accepted unchecked -- turning a plain
+    backtest PASS/FAIL into a NEWS-lane review verdict (15 rows, 2026-09-04).
+
+    Returns ``(summary, observed_schema_version)``; ``summary`` is ``None``
+    whenever the document is missing, unreadable, or not that sealed schema.
+    """
+
+    try:
+        document = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError):
+        return None, ""
+    if not isinstance(document, dict):
+        return None, ""
+    # ``evidence_schema`` is the run_smoke fallback: reporting it names the
+    # document that was actually found (e.g. ``run_smoke/v2``) in the refusal.
+    observed = str(
+        document.get("schema_version") or document.get("evidence_schema") or ""
+    )
+    if str(document.get("schema_version") or "") != DIAGNOSTIC_NEWS_SUMMARY_SCHEMA:
+        return None, observed
+    if document.get("diagnostic_non_admission") is not True:
+        return None, observed
+    return document, observed
+
+
 def _q09_sidecar_matches(
     root: Path,
     item: sqlite3.Row,
@@ -8438,17 +8488,37 @@ def _finish_work_item(
                             root, item["parent_task_id"]
                         ),
                     }
+                diagnostic_schema_refusal = False
                 if payload.get("diagnostic_non_admission") is True:
                     diagnostic_summary_path = summary_path.resolve().parent / "summary.json"
-                    diagnostic_summary = json.loads(
-                        diagnostic_summary_path.read_text(encoding="utf-8-sig")
+                    diagnostic_summary, observed_schema = _diagnostic_news_summary(
+                        diagnostic_summary_path
                     )
-                    payload["diagnostic_underlying_q09_verdict"] = summary.get("verdict")
-                    summary_path = diagnostic_summary_path
-                    summary = diagnostic_summary
-                    verdict, reason = "REVIEW_REQUIRED", "diagnostic_non_admission"
-                    payload["evidence_provenance"] = "phase_runner_diagnostic_non_admission"
-                    payload["verdict_taxonomy"] = "review"
+                    if diagnostic_summary is None:
+                        # EVIDENCE-CONTRACT REFUSAL, not a strategy verdict: the
+                        # sealed diagnostic summary is absent, so there is nothing
+                        # to review.  Keep the real evidence path and refuse.
+                        payload["diagnostic_summary_path"] = str(diagnostic_summary_path)
+                        payload["diagnostic_summary_schema_observed"] = observed_schema
+                        payload["diagnostic_summary_schema_expected"] = (
+                            DIAGNOSTIC_NEWS_SUMMARY_SCHEMA
+                        )
+                        payload["evidence_provenance"] = (
+                            "diagnostic_summary_schema_refusal"
+                        )
+                        payload["verdict_taxonomy"] = "infra"
+                        verdict, reason = (
+                            "INFRA_FAIL",
+                            "diagnostic_summary_schema_mismatch",
+                        )
+                        diagnostic_schema_refusal = True
+                    else:
+                        payload["diagnostic_underlying_q09_verdict"] = summary.get("verdict")
+                        summary_path = diagnostic_summary_path
+                        summary = diagnostic_summary
+                        verdict, reason = "REVIEW_REQUIRED", "diagnostic_non_admission"
+                        payload["evidence_provenance"] = "phase_runner_diagnostic_non_admission"
+                        payload["verdict_taxonomy"] = "review"
                 else:
                     effective_min_trades = int(
                         payload.get("effective_min_trades")
@@ -8529,7 +8599,13 @@ def _finish_work_item(
                     conn, identity, taxonomy
                 )
                 identity_sql = (", " + identity_sql) if identity_sql else ""
-                final_status = "failed" if missing_identity else "done"
+                # An evidence-contract refusal is an infra failure, not a
+                # completed measurement: it must not land as status='done'.
+                final_status = (
+                    "failed"
+                    if (missing_identity or diagnostic_schema_refusal)
+                    else "done"
+                )
                 conn.execute(
                     f"""
                     UPDATE work_items
