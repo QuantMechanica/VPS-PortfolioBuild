@@ -29,6 +29,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// default is the factory custom-symbol name; live/FTMO presets override it with
+// the bare broker name. The target test compares base names, so both match.
+input string strategy_host_symbol               = "USDJPY.DWX";
 input int    strategy_entry_jst_hhmm             = 200;
 input int    strategy_exit_jst_hhmm              = 955;
 input bool   strategy_holiday_volume_proxy_enabled = true;
@@ -39,7 +43,8 @@ int g_last_entry_jst_day_key = 0;
 
 bool Strategy_IsTarget()
   {
-   return (_Symbol == "USDJPY.DWX" && _Period == PERIOD_M30 && qm_magic_slot_offset == 0);
+   return (QM_MagicSymbolCanonical(_Symbol) == QM_MagicSymbolCanonical(strategy_host_symbol)
+           && _Period == PERIOD_M30 && qm_magic_slot_offset == 0);
   }
 
 bool Strategy_HasOpenPosition()

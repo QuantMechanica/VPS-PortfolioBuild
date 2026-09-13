@@ -40,6 +40,11 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// default is the factory custom-symbol name; live/FTMO presets override it with
+// the bare broker name. The host test compares base names, so both match
+// (QM_MagicSymbolCanonical also maps the FTMO oil alias USOIL -> XTIUSD).
+input string strategy_host_symbol            = "XTIUSD.DWX";
 input int    strategy_tom_pre_days           = 2;
 input int    strategy_tom_post_days          = 3;
 input int    strategy_momentum_lookback_days = 63;
@@ -54,7 +59,8 @@ int g_last_entry_cycle_key = 0;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XTIUSD.DWX" && _Period == PERIOD_D1);
+   return (QM_MagicSymbolCanonical(_Symbol) == QM_MagicSymbolCanonical(strategy_host_symbol)
+           && _Period == PERIOD_D1);
   }
 
 int Strategy_YearFromDayKey(const int day_key)

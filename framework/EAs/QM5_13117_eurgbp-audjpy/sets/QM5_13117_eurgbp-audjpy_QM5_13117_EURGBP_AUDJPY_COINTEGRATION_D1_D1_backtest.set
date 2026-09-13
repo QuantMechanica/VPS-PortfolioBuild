@@ -45,3 +45,8 @@ strategy_exit_z=0.5
 strategy_atr_period_d1=20
 strategy_atr_sl_mult=2.0
 strategy_deviation_points=20
+; symbol inputs (Hard Rule OWNER 2026-09-06): factory .DWX defaults; live presets carry bare broker names
+strategy_leg_a_symbol=EURGBP.DWX
+strategy_leg_b_symbol=AUDJPY.DWX
+strategy_conv_symbol_1=GBPUSD.DWX
+strategy_conv_symbol_2=USDJPY.DWX

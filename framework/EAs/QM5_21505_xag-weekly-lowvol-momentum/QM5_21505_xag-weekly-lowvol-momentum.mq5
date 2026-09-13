@@ -43,6 +43,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// default is the factory custom-symbol name; live/FTMO presets override it with
+// the bare broker name. Host and position tests compare base names, so both match.
+input string strategy_host_symbol         = "XAGUSD.DWX";
 input int    strategy_vol_lookback        = 40;
 input double strategy_vol_percentile      = 33.0;
 input int    strategy_atr_period          = 14;
@@ -78,7 +82,8 @@ void Strategy_ResetCachedSignal()
 
 bool Strategy_IsExpectedHost()
   {
-   return (_Symbol == "XAGUSD.DWX" && _Period == PERIOD_D1);
+   return (QM_MagicSymbolCanonical(_Symbol) == QM_MagicSymbolCanonical(strategy_host_symbol)
+           && _Period == PERIOD_D1);
   }
 
 bool Strategy_HasOwnedPosition()
@@ -416,7 +421,7 @@ void Strategy_ManageOpenPosition()
          (opened > 0) ? iBarShift(_Symbol, PERIOD_D1, opened, false) : -1;
 
       bool should_close = false;
-      if(position_symbol != "XAGUSD.DWX")
+      if(QM_MagicSymbolCanonical(position_symbol) != QM_MagicSymbolCanonical(strategy_host_symbol))
          should_close = true;
       if(position_type != POSITION_TYPE_BUY &&
          position_type != POSITION_TYPE_SELL)

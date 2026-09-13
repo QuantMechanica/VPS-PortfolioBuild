@@ -11,7 +11,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   269a76b22415f9ba69c8bd68dad0c3d7c690f79ac0839c9651e3a03f40d69eca
+; build_hash:   81803885a3e4be828e95a795ff702282c68b7c75f851fb001dc3b0cb935e3929
 ; author:       Development
 ; date:         2026-06-29
 ;==========================================================
@@ -47,3 +47,8 @@ strategy_atr_period_d1=20
 strategy_atr_sl_mult=2.0
 strategy_deviation_points=20
 qm_stress_reject_probability=0.0000
+; symbol inputs (Hard Rule OWNER 2026-09-06): factory .DWX defaults; live presets carry bare broker names
+strategy_leg_a_symbol=AUDUSD.DWX
+strategy_leg_b_symbol=EURJPY.DWX
+strategy_conv_symbol_1=EURUSD.DWX
+strategy_conv_symbol_2=EURAUD.DWX

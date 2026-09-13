@@ -28,3 +28,5 @@ strategy_atr_period=14
 strategy_atr_sl_mult=2.5
 strategy_max_hold_bars=10
 strategy_max_spread_points=250
+; symbol inputs (Hard Rule OWNER 2026-09-06): factory .DWX defaults; live presets carry bare broker names
+strategy_host_symbol=XAGUSD.DWX

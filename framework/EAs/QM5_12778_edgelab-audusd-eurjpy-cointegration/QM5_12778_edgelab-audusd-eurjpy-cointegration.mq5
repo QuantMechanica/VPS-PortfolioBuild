@@ -82,8 +82,15 @@ input int    strategy_atr_period_d1     = 20;
 input double strategy_atr_sl_mult       = 2.0;
 input int    strategy_deviation_points  = 20;
 
-string   g_leg_audusd = "AUDUSD.DWX";
-string   g_leg_eurjpy = "EURJPY.DWX";
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. One
+// input per symbol slot; the defaults are the factory custom-symbol names, and
+// live/FTMO presets override them with bare broker names. Traded and conversion
+// symbols are used verbatim (SymbolSelect / CopyClose / warmup); only the chart
+// host test compares base names, so a .DWX default still matches a bare chart.
+input string strategy_leg_a_symbol  = "AUDUSD.DWX";
+input string strategy_leg_b_symbol  = "EURJPY.DWX";
+input string strategy_conv_symbol_1 = "EURUSD.DWX";
+input string strategy_conv_symbol_2 = "EURAUD.DWX";
 bool     g_basket_scope_ready = false;
 double   g_spread_z = 0.0;
 double   g_spread_mean = 0.0;
@@ -94,16 +101,17 @@ datetime g_last_state_bar = 0;
 
 int Strategy_SlotForSymbol(const string symbol)
   {
-   if(symbol == g_leg_audusd)
+   const string canonical = QM_MagicSymbolCanonical(symbol);
+   if(canonical == QM_MagicSymbolCanonical(strategy_leg_a_symbol))
       return 0;
-   if(symbol == g_leg_eurjpy)
+   if(canonical == QM_MagicSymbolCanonical(strategy_leg_b_symbol))
       return 1;
    return -1;
   }
 
 bool Strategy_IsHostSymbol()
   {
-   return (_Symbol == g_leg_audusd || _Symbol == g_leg_eurjpy);
+   return (Strategy_SlotForSymbol(_Symbol) >= 0);
   }
 
 bool Strategy_IsPairPosition()
@@ -122,7 +130,11 @@ bool Strategy_EnsureBasketScope()
 
    // EUR tester accounting keeps the JPY leg inside EURJPY history; AUDUSD
    // valuation also asks MT5 for EURUSD and EURAUD conversion history.
-   string allowed[4] = {"AUDUSD.DWX", "EURJPY.DWX", "EURUSD.DWX", "EURAUD.DWX"};
+   string allowed[4] = {"", "", "", ""};
+   allowed[0] = strategy_leg_a_symbol;
+   allowed[1] = strategy_leg_b_symbol;
+   allowed[2] = strategy_conv_symbol_1;
+   allowed[3] = strategy_conv_symbol_2;
    for(int i = 0; i < 4; ++i)
       SymbolSelect(allowed[i], true);
 
@@ -165,16 +177,16 @@ bool Strategy_RefreshSpreadState()
 
    if(!Strategy_EnsureBasketScope())
       return false;
-   if(!QM_SymbolAssertOrLog(g_leg_audusd) || !QM_SymbolAssertOrLog(g_leg_eurjpy))
+   if(!QM_SymbolAssertOrLog(strategy_leg_a_symbol) || !QM_SymbolAssertOrLog(strategy_leg_b_symbol))
       return false;
 
    double audusd[];
    double eurjpy[];
    ArraySetAsSeries(audusd, true);
    ArraySetAsSeries(eurjpy, true);
-   if(CopyClose(g_leg_audusd, PERIOD_D1, 1, lookback, audusd) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   if(CopyClose(strategy_leg_a_symbol, PERIOD_D1, 1, lookback, audusd) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
       return false;
-   if(CopyClose(g_leg_eurjpy, PERIOD_D1, 1, lookback, eurjpy) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
+   if(CopyClose(strategy_leg_b_symbol, PERIOD_D1, 1, lookback, eurjpy) != lookback) // perf-allowed: Strategy_EntrySignal is called only after the framework QM_IsNewBar gate.
       return false;
 
    double sum = 0.0;
@@ -286,8 +298,8 @@ bool Strategy_OpenPair(const int spread_direction)
    const string reason = long_spread ? "QM5_12778_LONG_SPREAD_Z_LT_NEG_ENTRY"
                                      : "QM5_12778_SHORT_SPREAD_Z_GT_POS_ENTRY";
 
-   bool audusd_ok = Strategy_OpenLeg(g_leg_audusd, audusd_type, audusd_weight, weight_sum, reason);
-   bool eurjpy_ok = Strategy_OpenLeg(g_leg_eurjpy, eurjpy_type, eurjpy_weight, weight_sum, reason);
+   bool audusd_ok = Strategy_OpenLeg(strategy_leg_a_symbol, audusd_type, audusd_weight, weight_sum, reason);
+   bool eurjpy_ok = Strategy_OpenLeg(strategy_leg_b_symbol, eurjpy_type, eurjpy_weight, weight_sum, reason);
    if(audusd_ok && eurjpy_ok)
      {
       g_pair_entry_time = TimeCurrent();
@@ -379,16 +391,16 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
    if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF || qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
      {
-      if(!QM_NewsAllowsTrade2(g_leg_audusd, broker_time, qm_news_temporal, qm_news_compliance))
+      if(!QM_NewsAllowsTrade2(strategy_leg_a_symbol, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
-      if(!QM_NewsAllowsTrade2(g_leg_eurjpy, broker_time, qm_news_temporal, qm_news_compliance))
+      if(!QM_NewsAllowsTrade2(strategy_leg_b_symbol, broker_time, qm_news_temporal, qm_news_compliance))
          return true;
      }
    else
      {
-      if(!QM_NewsAllowsTrade(g_leg_audusd, broker_time, qm_news_mode_legacy))
+      if(!QM_NewsAllowsTrade(strategy_leg_a_symbol, broker_time, qm_news_mode_legacy))
          return true;
-      if(!QM_NewsAllowsTrade(g_leg_eurjpy, broker_time, qm_news_mode_legacy))
+      if(!QM_NewsAllowsTrade(strategy_leg_b_symbol, broker_time, qm_news_mode_legacy))
          return true;
      }
    return false;
@@ -400,10 +412,10 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
-   SymbolSelect(g_leg_audusd, true);
-   SymbolSelect(g_leg_eurjpy, true);
-   SymbolSelect("EURUSD.DWX", true);
-   SymbolSelect("EURAUD.DWX", true);
+   SymbolSelect(strategy_leg_a_symbol, true);
+   SymbolSelect(strategy_leg_b_symbol, true);
+   SymbolSelect(strategy_conv_symbol_1, true);
+   SymbolSelect(strategy_conv_symbol_2, true);
 
    if(!QM_FrameworkInit(qm_ea_id,
                         qm_magic_slot_offset,
