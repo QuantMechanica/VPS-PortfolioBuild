@@ -145,3 +145,85 @@ With today's plan this is a no-op (0 eligible) and will report the blockers abov
 The value is on **re-run after upstream fixes**: the moment a target has a
 source-repaired terminal failure plus an open build task, the same command appends the
 governed append-only repair-successor (mutation lock, verified backup, receipt).
+
+---
+
+# Post-pin-repair determination: 1538 / 41179 / 41189 (2026-09-13, commit 14d548c87a)
+
+The framework-input-pin repair landed (11 uncompiled winsweep EAs freed of
+`EA_FRAMEWORK_INPUT_PINNED`), changing the sources of 41179/41189 again. Fresh
+determination of the exact governed compile path for each:
+
+## QM5_1538 — READY NOW (wave only)
+
+Its first-plan rollout successor `a4a1884a` is pinned at the CURRENT source
+(`f4d84bdfac61` = on-disk), held, **not stale**. `release_compile_wave.py` dry-run:
+`release_count=1`, releasing `a4a1884a`. No re-issue needed.
+
+```
+python -X utf8 tools/strategy_farm/release_compile_wave.py --max-items 1 --apply
+```
+
+## QM5_41189 — (a) why reissue skips it, and the correct path
+
+Its active-stale rollout-hold set is **{e5505264 (the original, already superseded by
+the first-plan successor 81687a5b), 81687a5b (that successor, now stale after the pin
+repair)}**. The rollout-reconciliation authority is **ONE-SHOT**: it supersedes the whole
+set and refuses at apply if any member is already superseded
+(`SOURCE_REPAIR_PREDECESSOR_ALREADY_SUPERSEDED_AT_APPLY`, compile_work_items.py:5203-5211).
+`e5505264` is superseded → refuse. `reissue_stale_compile_rows_0913.py` anticipates this
+and skips with `SKIP_PREDECESSOR_ALREADY_SUPERSEDED`. This is the successor-of-successor
+limitation.
+
+**A hold-cleanup does NOT unblock it** (investigated end-to-end on a DB copy, then
+rejected): `classify_candidate.source_repair_stale_open_work_item_ids` is computed from
+`inventory["open_compile"]` (hold-agnostic, still lists `e5505264`) while the apply guard
+uses `_active_stale_rollout_hold_ids` (hold-filtered). Deactivating `e5505264`'s hold makes
+the two sets diverge → `SOURCE_REPAIR_AUTHORITY_INVALID_AT_APPLY`. There is no hold/state
+lever that makes the one-shot authority fire a second time.
+
+**Correct append-only re-issue:** `enqueue_repair_successor` from the failed row
+`0c9615ab` (source is now repaired: `e401421c` → `b6c0052a`), which requires an OPEN,
+identity-matching `build_ea` task. **41189 has no approved card** (checked
+`artifacts/cards_approved` and `state/artifacts/cards_approved`, C: and D:), so the path is:
+mint an approved card → `build_ea` task → then `repair_successor_stale_compile_rows_0913.py`
+plans the governed repair-successor automatically (or the factory's normal build→compile).
+
+## QM5_41179 — (b) which governed path
+
+**Not** rollout-reconciliation "from the failed predecessor": that authority only supersedes
+HELD PENDING rows, and 41179's only held row `9ced0252` is already superseded by the failed
+`3f0de0a8` — the chain ended in a failed row, leaving no held successor to re-issue.
+(Contrast 1538, whose first-plan re-issue superseded its still-un-superseded HELD PENDING
+rows.) **Cards:** 41179 has **no approved card** (none in either cards_approved location;
+1538 has one). So 41179's path is identical to 41189: `repair_successor` from `3f0de0a8`
+(source now repaired `6110e196` → `ed6f5488`) needs an open `build_ea` task → needs a card.
+
+## Summary table + repair-successor plan
+
+`plan_repair_successors.json` (refreshed) — `plan_sha256 5430ca9ace016bc5…`; `repair_successor 0`:
+
+| EA | disposition | correct governed path |
+|---|---|---|
+| QM5_1538 | wave-ready (`a4a1884a` fresh) | `release_compile_wave.py --max-items 1 --apply` |
+| QM5_41179 | `NEEDS_OPEN_BUILD_TASK`, no card | card → build_ea → repair-successor |
+| QM5_41189 | `NEEDS_OPEN_BUILD_TASK`, no card | card → build_ea → repair-successor |
+| QM5_41142 | `NEEDS_OPEN_BUILD_TASK`, **has card** | build_ea (card exists) → repair-successor |
+| QM5_13128 / QM5_9730 | `SOURCE_NOT_REPAIRED` | newest COMPILE_FAIL is at current source → needs a code fix |
+| QM5_41356 | already compiled at current | none |
+| QM5_41113 / QM5_41123 | `NEEDS_FRESH_BUILD_EA`, no card | card → build_ea |
+
+## Exact commands
+
+1. **Now** — compile 1538: `python -X utf8 tools/strategy_farm/release_compile_wave.py --max-items 1 --apply`
+2. **41179 / 41189 (and 41113/41123)** — commission an approved Strategy Card + a `build_ea`
+   task (Orchestrator/OWNER decision; EA build → Codex). This is a card/router action, NOT a
+   `compile_work_items` mutation; do not fabricate a card. 41142 already has a card and needs
+   only the `build_ea` task.
+3. **After the build_ea task exists** — the repair-successor tool auto-plans the governed
+   append-only repair-successor:
+   ```
+   python -X utf8 tools/strategy_farm/session_tools/repair_successor_stale_compile_rows_0913.py            # dry-run, get sha
+   python -X utf8 tools/strategy_farm/session_tools/repair_successor_stale_compile_rows_0913.py --apply --plan-sha256 <sha>
+   python -X utf8 tools/strategy_farm/release_compile_wave.py --max-items 1 --apply                        # per staggered wave
+   ```

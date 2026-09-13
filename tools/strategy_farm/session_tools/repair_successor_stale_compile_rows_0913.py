@@ -65,11 +65,13 @@ CARD_DIRS = (
 SCHEMA = "qm.compile-ea-repair-successor-batch/v1"
 FAILURE_VERDICTS = ("COMPILE_FAIL", "BUILD_CHECK_FAIL")
 
-# Rows the rollout re-issue skipped (orphans + double-superseded) + the fresh
-# COMPILE_FAIL from the first wave (41179 EA_FRAMEWORK_INPUT_PINNED).
+# Rows the rollout re-issue skipped (orphans + double-superseded), the fresh
+# COMPILE_FAIL from the first wave (41179 EA_FRAMEWORK_INPUT_PINNED), and 41189
+# (its rollout successor went stale after the pin repair; the one-shot rollout
+# authority can no longer re-issue it, so it falls to the repair/build path too).
 TARGET_EAS = [
     "QM5_41113", "QM5_41123", "QM5_13128", "QM5_9730",
-    "QM5_41142", "QM5_41356", "QM5_41179",
+    "QM5_41142", "QM5_41356", "QM5_41179", "QM5_41189",
 ]
 
 # --- disposition reason codes -------------------------------------------------
