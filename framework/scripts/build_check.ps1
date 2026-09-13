@@ -1064,6 +1064,40 @@ function Invoke-ForbiddenScan {
         }
     }
 
+    # ---- EA_SYMBOL_LITERAL_REBUILD_GATE (OWNER 2026-09-13) ----
+    # The symbol-literal debt ("symbols are inputs, never code literals" -- OWNER
+    # 2026-09-06) is repaired only at the natural rebuild: whenever an EA is
+    # (re)compiled through this gate, its source must be free of the fail-closed
+    # symbol-literal lint (classes symbol_literal_comparison / symbol_literal_global
+    # -- the shapes that actually break live behaviour). Mass rebuilds are forbidden
+    # (a rebuilt EX5 is a new identity), so this gate is the only place the ~838-EA
+    # legacy debt shrinks; the REVIEW_REWORK source-repair path takes over on refusal.
+    # Rollback: QM_SYMBOL_LITERAL_REBUILD_GATE=0 downgrades the refusal to a warning.
+    if ($EALabel) {
+        $symbolLintTool = Join-Path $ResolvedRepoRoot "framework\scripts\lint_ea_symbol_literals.py"
+        $symbolLintEaDir = Join-Path (Join-Path $ResolvedRepoRoot "framework\EAs") $EALabel
+        $symbolLintDisabled = ($env:QM_SYMBOL_LITERAL_REBUILD_GATE -eq "0")
+        if (-not (Test-Path -LiteralPath $symbolLintTool)) {
+            Add-Failure "EA_SYMBOL_LITERAL_REBUILD_SCANNER_FAILED: $symbolLintTool not found."
+        } else {
+            $symbolLintRaw = @(& python -X utf8 $symbolLintTool --ea-root $symbolLintEaDir 2>&1)
+            $symbolLintExit = $LASTEXITCODE
+            if ($symbolLintExit -eq 0) {
+                # source is clean at rebuild -- the debt for this EA is gone.
+            } elseif ($symbolLintExit -eq 1) {
+                $symbolLintCount = @($symbolLintRaw | Where-Object { $_ -match ': symbol_literal_(comparison|global):' }).Count
+                $symbolLintMessage = "EA_SYMBOL_LITERAL_REBUILD_REQUIRES_FIX: $symbolLintCount violation(s) in $EALabel; symbols are inputs (OWNER 2026-09-06); repaired at the natural rebuild (OWNER 2026-09-13); run framework/scripts/lint_ea_symbol_literals.py --ea-root $symbolLintEaDir"
+                if ($symbolLintDisabled) {
+                    Add-Warning "$symbolLintMessage; gate disabled by env"
+                } else {
+                    Add-Failure $symbolLintMessage
+                }
+            } else {
+                Add-Failure "EA_SYMBOL_LITERAL_REBUILD_SCANNER_FAILED: exit=$symbolLintExit output=$($symbolLintRaw -join ' ')."
+            }
+        }
+    }
+
     $externalHits = Select-String -Path $mqlFiles.ToArray() -Pattern $externalPattern
     foreach ($hit in $externalHits) {
         Add-Failure "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN: $($hit.Path):$($hit.LineNumber) contains '$($hit.Matches[0].Value)'. Darwinex MT5 native data only."

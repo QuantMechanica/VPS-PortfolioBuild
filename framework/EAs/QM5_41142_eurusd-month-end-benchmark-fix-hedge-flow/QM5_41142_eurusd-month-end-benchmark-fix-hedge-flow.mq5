@@ -35,6 +35,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// factory default is the .DWX custom-symbol name; live/FTMO presets override it
+// with the bare broker name. The host test compares base names, so both match.
+input string strategy_host_symbol         = "EURUSD.DWX";
 input int    strategy_entry_lead_minutes  = 120;
 input int    strategy_atr_period_h1       = 14;
 input double strategy_hard_stop_atr       = 2.0;
@@ -463,7 +467,7 @@ bool Strategy_NewsWindowReady(const datetime entry_utc,
 
 bool Strategy_NoTradeFilter()
   {
-   return (_Symbol != "EURUSD.DWX" || _Period != PERIOD_M15);
+   return (QM_MagicSymbolCanonical(_Symbol) != QM_MagicSymbolCanonical(strategy_host_symbol) || _Period != PERIOD_M15);
   }
 
 bool Strategy_EntrySignal(QM_EntryRequest &req)
@@ -601,7 +605,7 @@ int OnInit()
   {
    if(strategy_entry_lead_minutes != 120 || strategy_atr_period_h1 != 14 ||
       MathAbs(strategy_hard_stop_atr - 2.0) > 1e-9 ||
-      _Symbol != "EURUSD.DWX" || _Period != PERIOD_M15)
+      QM_MagicSymbolCanonical(_Symbol) != QM_MagicSymbolCanonical(strategy_host_symbol) || _Period != PERIOD_M15)
       return INIT_PARAMETERS_INCORRECT;
    if(!QM_FrameworkInit(qm_ea_id, qm_magic_slot_offset, RISK_PERCENT,
                         RISK_FIXED, PORTFOLIO_WEIGHT, qm_news_mode_legacy,
