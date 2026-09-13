@@ -29,6 +29,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// factory default is the .DWX custom-symbol name; live/FTMO presets override it
+// with the bare broker name. The host-chart test compares base names.
+input string strategy_host_symbol          = "XCUUSD.DWX";
 input int    strategy_entry_dow            = 5;
 input int    strategy_entry_hour_broker    = 21;
 input int    strategy_entry_grace_minutes  = 5;
@@ -54,7 +58,8 @@ int Strategy_DayKey(const MqlDateTime &parts)
 
 bool Strategy_IsTarget()
   {
-   return (_Symbol == "XCUUSD.DWX" && _Period == PERIOD_H1 &&
+   return (QM_MagicSymbolCanonical(_Symbol) ==
+           QM_MagicSymbolCanonical(strategy_host_symbol) && _Period == PERIOD_H1 &&
            qm_magic_slot_offset == 0);
   }
 

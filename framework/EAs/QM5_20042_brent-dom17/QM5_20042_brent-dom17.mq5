@@ -40,6 +40,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// factory default is the .DWX custom-symbol name; live/FTMO presets override it
+// with the bare broker name. The host-chart test compares base names.
+input string strategy_host_symbol         = "XBRUSD.DWX";
 input int    strategy_entry_day           = 17;
 input int    strategy_atr_period           = 20;
 input double strategy_atr_sl_mult          = 2.75;
@@ -56,7 +60,9 @@ bool     g_entry_decision_ready = false;
 
 bool Strategy_IsBrentD1()
   {
-   return (_Symbol == "XBRUSD.DWX" && _Period == PERIOD_D1);
+   return (QM_MagicSymbolCanonical(_Symbol) ==
+           QM_MagicSymbolCanonical(strategy_host_symbol) &&
+           _Period == PERIOD_D1);
   }
 
 bool Strategy_IsManagedPosition()
