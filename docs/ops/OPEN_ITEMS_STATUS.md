@@ -4339,3 +4339,15 @@ write churn and fleet-wide lock_busy claim declines). Two tests cover the skip a
 next scheduled sweep (the task runs the repo script). Remaining per-label anchors (compile_wave, governed_hold,
 first_q02_intake: keep 3 x 1.27 GB) stay; f5d30fc9 (priority 60) keeps only the evidence correction and the optional
 live-DB backup reuse.
+
+## 2026-09-13T17:35Z Q16 package finding: five EAs carry hardcoded .DWX symbol literals -> cutover book = 28 sleeves
+The three dark live sleeves (12969: Strategy_IsTarget requires USDJPY.DWX; 12778/13117: basket leg literals, BASKET_WARMUP
+loaded=0) never trade live because the T_Live chart carries the bare broker symbol; the same defect sits in two of the six
+new sleeves (13054/XTIUSD, 21505/XAGUSD). A preset cannot fix it (no symbol input exposed): source patch (symbols as
+inputs, Hard Rule 2026-09-06) + governed compile + DL-089 re-entry from Q02 -> Codex ticket (Sol, prio 84). Book for the
+cutover therefore = live 24 + 1537/XAGUSD, 9641/WS30, 10700/XAUUSD, 13013/NDX = 28 sleeves; builder APPLY_RECOMMENDED
+(ann 9.58 %, ret/DD 5.26 vs 3.78, worst -0.76 vs -0.86 %, Sharpe 2.53, all checks PASS). The three dark live sleeves stay
+deployed as no-ops until their rebuilt identities requalify. Staging package being rebuilt for 28 (C:/QM/deploy/
+DXZ_V2_20260913). Other Q16 findings: XAGUSD + WS30 must be added to the T_Live Market Watch (OWNER; both exist on the
+account), Tester/Groups commission artefact is empty on T_Live (Codex, check 6), 9641 magic resolver proof via the
+post-attach INIT log, July precedent = factory binaries copied with SHA (no recompile on T_Live), news calendar GREEN.
