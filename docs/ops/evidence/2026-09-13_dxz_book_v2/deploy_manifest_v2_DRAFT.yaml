@@ -1,0 +1,207 @@
+# DXZ live book v2 — deploy manifest DRAFT (Q16), 2026-09-13
+# Schema: vault "03 Pipeline/Q16 Operational Readiness.md" > Deploy Manifest Schema.
+# DRAFT: unsigned. Without OWNER signature AND Claude verification: no AutoTrading (Hard Rule).
+# Nothing in this file has been deployed. AutoTrading on T_Live is untouched and OWNER-only.
+
+book: DXZ_4000090541
+as_of: 2026-09-13
+deploy_date: TBD
+owner_order_evidence: decisions/2026-09-13_owner_book_order_dxz.md
+selection_manifest: D:/QM/reports/portfolio/dxz_v2_20260913/selective/analytic_preview_manifest_SELECTED.json
+selection_manifest_roster_sha256: e61a342e7ceb17079e6b247c9bdd41fa524792c2765d2ce0456539025e6dfdcd
+burn_in_variant: D:/QM/reports/portfolio/dxz_v2_20260913/selective/burnin_variant.json
+staging_dir: C:/QM/deploy/DXZ_V2_20260913
+copy_plan: C:/QM/deploy/DXZ_V2_20260913/copy_plan_v2.json
+q16_checklist: docs/ops/evidence/2026-09-13_dxz_book_v2/Q16_CHECKLIST_V2.md
+git_commit: 43d2378f57                      # HEAD of agents/board-advisor at staging time
+news_calendar_path: D:/QM/data/news_calendar/news_calendar_2015_2025.csv
+news_calendar_max_age_hours: 336
+news_calendar_observed_modified_utc: "2026.09.10 05:30:31"
+news_calendar_note: >
+  Live EAs use the NATIVE MT5 calendar, fail-closed (DL-080). The CSV above is tester
+  diagnostics only and must never be read by an ENV=live build.
+owner_signature: PENDING
+claude_verification_signature: PENDING
+
+portfolio:
+  n_sleeves: 30
+  total_risk_percent_target: 9.75
+  total_risk_percent_burn_in: 8.2162
+  existing_sleeves: 24
+  new_sleeves: 6
+  incumbent_comparison:              # analytic_preview_manifest_SELECTED.json > comparison
+    window: {start: 2019-08-02, end: 2024-12-06, days: 1374}
+    incumbent: {sharpe: 2.3192, max_drawdown_pct: 2.4255, return_to_maxdd: 3.7115, worst_day_pct: -0.8577}
+    proposal:  {sharpe: 2.5940, max_drawdown_pct: 1.6839, return_to_maxdd: 5.5712, worst_day_pct: -0.6766}
+    not_worse_gate: PASSED
+
+sleeves_new:
+  - ea: QM5_1537_aa-vol-sma10
+    sha256_ex5: 142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106
+    symbol: XAGUSD.DWX
+    live_symbol: XAGUSD
+    period: D1
+    magic_number: 15370001            # 1537*10000 + 1
+    magic_slot: 1
+    news_mode: 0                      # qm_news_mode_legacy=QM_NEWS_OFF; temporal axis via Q10 lock
+    risk_mode: RISK_PERCENT
+    risk_percent: 0.38602
+    burn_in_risk_percent: 0.0769
+    burn_in_lot: 0.01
+    max_drawdown_alert_pct: 2.8765     # Q10 worst DD @1.0 %/trade
+    kill_switch_threshold_pct: 2.2207  # 2 x Q10 DD scaled to target risk
+    q14_setfile: framework/EAs/QM5_1537_aa-vol-sma10/sets/QM5_1537_aa-vol-sma10_XAGUSD.DWX_D1_backtest.set
+    q14_setfile_sha256: 4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211
+    preset: 25_XAGUSD_D1_QM5_1537_aa-vol-sma10.set
+    q16_blockers: [routing_unconfirmed_XAGUSD, fresh_compile_on_tlive, commission_group_missing]
+
+  - ea: QM5_9641_bandy-cci-extreme-fade-mr-index
+    sha256_ex5: 21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21
+    symbol: WS30.DWX
+    live_symbol: WS30
+    period: D1
+    magic_number: 96410002            # 9641*10000 + 2
+    magic_slot: 2
+    news_mode: 0
+    risk_mode: RISK_PERCENT
+    risk_percent: 0.307762
+    burn_in_risk_percent: 0.0104
+    burn_in_lot: 0.01
+    max_drawdown_alert_pct: 2.7550
+    kill_switch_threshold_pct: 1.6956
+    q14_setfile: framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/sets/QM5_9641_bandy-cci-extreme-fade-mr-index_WS30.DWX_D1_backtest.set
+    q14_setfile_sha256: e991aae91a2c0e08afdc56e089854571711faab532125508ca3ec21d36fb50b0
+    preset: 26_WS30_D1_QM5_9641_bandy-cci-extreme-fade-mr-index.set
+    q16_blockers: [routing_unconfirmed_WS30, magic_embedding_unproven, fresh_compile_on_tlive, commission_group_missing]
+
+  - ea: QM5_10700_tv-liq-break
+    sha256_ex5: 5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be
+    symbol: XAUUSD.DWX
+    live_symbol: XAUUSD
+    period: H1
+    magic_number: 107000003           # 10700*10000 + 3
+    magic_slot: 3
+    news_mode: 0
+    risk_mode: RISK_PERCENT
+    risk_percent: 0.073278
+    burn_in_risk_percent: 0.013
+    burn_in_lot: 0.01
+    max_drawdown_alert_pct: 10.0844
+    kill_switch_threshold_pct: 1.4779
+    q14_setfile: framework/EAs/QM5_10700_tv-liq-break/sets/QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set
+    q14_setfile_sha256: a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997
+    preset: 27_XAUUSD_H1_QM5_10700_tv-liq-break.set
+    q16_blockers: [fresh_compile_on_tlive, commission_group_missing]
+
+  - ea: QM5_13013_grimes-trendday-v2
+    sha256_ex5: bf2cc2ecaff8ae556c06986aac8b6fb5e55d828d5ef5f6c81d8a4fc48bd44c41
+    symbol: NDX.DWX
+    live_symbol: NDX
+    period: M15
+    magic_number: 130130000           # 13013*10000 + 0
+    magic_slot: 0
+    news_mode: 0
+    risk_mode: RISK_PERCENT
+    risk_percent: 0.312014
+    burn_in_risk_percent: 0.0105
+    burn_in_lot: 0.01
+    max_drawdown_alert_pct: 2.1314
+    kill_switch_threshold_pct: 1.3300
+    q14_setfile: framework/EAs/QM5_13013_grimes-trendday-v2/sets/QM5_13013_grimes-trendday-v2_NDX.DWX_M15_backtest.set
+    q14_setfile_sha256: e13ca72196dd4f2e0a18cffe71f45262f5b36ded8f1251cf58ecbea0d9ec227b
+    preset: 28_NDX_M15_QM5_13013_grimes-trendday-v2.set
+    q16_blockers: [fresh_compile_on_tlive, commission_group_missing]
+
+  - ea: QM5_13054_brent-tom-mom
+    sha256_ex5: 2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d
+    symbol: XTIUSD.DWX
+    live_symbol: XTIUSD
+    period: D1
+    magic_number: 130540000
+    magic_slot: 0
+    news_mode: 0
+    risk_mode: RISK_PERCENT
+    risk_percent: 0.405275
+    burn_in_risk_percent: 0.0488
+    burn_in_lot: 0.01
+    max_drawdown_alert_pct: 2.0457
+    kill_switch_threshold_pct: 1.6582
+    q14_setfile: framework/EAs/QM5_13054_brent-tom-mom/sets/QM5_13054_brent-tom-mom_XTIUSD.DWX_D1_backtest.set
+    q14_setfile_sha256: d834b193a77b1d102f2108ed0d2d92af4d040e283ac272039f9e16292c87b80c
+    preset: 29_XTIUSD_D1_QM5_13054_brent-tom-mom.set
+    deployment_recommendation: HOLD
+    q16_blockers:
+      - symbol_literal_defect        # .mq5:57 _Symbol == "XTIUSD.DWX" -> dark on a bare-symbol chart
+      - needs_source_patch_recompile_dl089_requalification
+
+  - ea: QM5_21505_xag-weekly-lowvol-momentum
+    sha256_ex5: 395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1
+    symbol: XAGUSD.DWX
+    live_symbol: XAGUSD
+    period: D1
+    magic_number: 215050000
+    magic_slot: 0
+    news_mode: 0
+    risk_mode: RISK_PERCENT
+    risk_percent: 0.280423
+    burn_in_risk_percent: 0.0714
+    burn_in_lot: 0.01
+    max_drawdown_alert_pct: 3.4115
+    kill_switch_threshold_pct: 1.9133
+    q14_setfile: framework/EAs/QM5_21505_xag-weekly-lowvol-momentum/sets/QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set
+    q14_setfile_sha256: a345970c4c597963597ad768222b8746997cf2ea0119567a9498ea90301a2397
+    preset: 30_XAGUSD_D1_QM5_21505_xag-weekly-lowvol-momentum.set
+    deployment_recommendation: HOLD
+    q16_blockers:
+      - symbol_literal_defect        # .mq5:81 _Symbol == "XAGUSD.DWX" -> dark on a bare-symbol chart
+      - routing_unconfirmed_XAGUSD
+      - needs_source_patch_recompile_dl089_requalification
+
+sleeves_repair:
+  - ea: QM5_12778_edgelab-audusd-eurjpy-cointegration
+    live_symbol: AUDUSD
+    period: D1
+    magic_number: 127780000
+    risk_percent: 0.361985
+    preset_draft: C:/QM/deploy/DXZ_V2_20260913/repair/06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set
+    status: BLOCKED_PENDING_SOURCE_PATCH
+    cause: .mq5:85-86 leg symbols are ".DWX" literals; :106 gate rejects the bare chart symbol
+  - ea: QM5_12969_usdjpy-gotobi-nakane-fix
+    live_symbol: USDJPY
+    period: M30
+    magic_number: 129690000
+    risk_percent: 0.486519
+    preset_draft: C:/QM/deploy/DXZ_V2_20260913/repair/17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set
+    status: BLOCKED_PENDING_SOURCE_PATCH
+    cause: .mq5:42 Strategy_IsTarget() requires _Symbol == "USDJPY.DWX"; :197 forces no-trade
+  - ea: QM5_13117_eurgbp-audjpy
+    live_symbol: EURGBP
+    period: D1
+    magic_number: 131170000
+    risk_percent: 0.337841
+    preset_draft: C:/QM/deploy/DXZ_V2_20260913/repair/24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set
+    status: BLOCKED_PENDING_SOURCE_PATCH
+    cause: .mq5:45-46 leg symbols are ".DWX" literals; :64 gate rejects the bare chart symbol
+
+sleeves_existing_reweighted:
+  count: 24
+  proof: C:/QM/deploy/DXZ_V2_20260913/stage_dryrun_existing24.json
+  sum_risk_percent_old: 9.7499
+  sum_risk_percent_new: 7.98523
+  n_changed_gt_0_05pp: 15
+  status: BLOCKED_BY_LIVE_RISK_FREEZE
+  blocker: >
+    risk_freeze status=ACTIVE, held=true. Unmet lift conditions: SP-A1/A2-DEPLOY-POINTER
+    [BLOCKED], NEWS-CONTRACT-V2 [PARTIAL], GOVERNOR-HARDENING [PARTIAL]. An explicit written
+    OWNER lift is required (runbook s1.3). No AI seat lifts this freeze.
+
+preconditions_before_cutover:
+  - OWNER: written risk-freeze lift
+  - OWNER: sign this manifest
+  - OWNER: add XAGUSD and WS30 to Market Watch on T_Live
+  - OWNER: flip AutoTrading (last step, OWNER alone, after Claude verification)
+  - Codex: commission group file MQL5/Profiles/Tester/Groups/<server>_<account>.txt
+  - Codex: DST screenshot
+  - Codex: symbol-literal patch + recompile + DL-089 requalification for 13054, 21505, 12778, 12969, 13117
+  - Claude: post-attach verification (INIT_OK, magic set, sum RISK_PERCENT) and the
+    decision record under decisions/2026-09-13_t_live_<ea>_<symbol>.md
