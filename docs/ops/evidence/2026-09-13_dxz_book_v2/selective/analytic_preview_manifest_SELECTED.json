@@ -1,0 +1,764 @@
+{
+  "comparison": {
+    "incumbent": {
+      "annual_return_pct": 9.002417,
+      "max_drawdown_pct": 2.425532,
+      "n_days": 1374,
+      "n_sleeves": 24,
+      "return_to_maxdd": 3.711522,
+      "sharpe": 2.3192029924,
+      "total_net_of_cost_profit": 49084.608621915,
+      "worst_day_pct": -0.857747
+    },
+    "not_worse_gate": {
+      "checks": {
+        "maxdd_not_worse": true,
+        "return_to_maxdd_not_worse": true,
+        "worst_day_not_worse": true
+      },
+      "passed": true,
+      "rule": "ALL: return/maxDD >= incumbent; worst-day >= incumbent; maxDD <= incumbent"
+    },
+    "proposal": {
+      "annual_return_pct": 9.381573,
+      "max_drawdown_pct": 1.683938,
+      "n_days": 1374,
+      "n_sleeves": 30,
+      "return_to_maxdd": 5.571209,
+      "sharpe": 2.5940010675,
+      "total_net_of_cost_profit": 51151.9087969664,
+      "worst_day_pct": -0.67664
+    },
+    "window": {
+      "days": 1374,
+      "end": "2024-12-06",
+      "start": "2019-08-02"
+    }
+  },
+  "roster_sha256": "e61a342e7ceb17079e6b247c9bdd41fa524792c2765d2ce0456539025e6dfdcd",
+  "schema": "qm.dxz-book-v2-analytic-preview/v1",
+  "sleeves": [
+    {
+      "already_live": false,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 1537,
+      "ea_label": "QM5_1537_aa-vol-sma10",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": null,
+      "magic": 15370001,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0196,
+        "median_trade_hits_0.01_lots_at_pct": 0.0769,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.1667
+      },
+      "standalone": {
+        "n_trades": 96,
+        "volume_max": 0.51,
+        "volume_median": 0.13,
+        "volume_min": 0.06
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "XAGUSD.DWX",
+      "weight_risk_percent": 0.38602
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 1556,
+      "ea_label": "QM5_1556_aa-zak-mom12",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.6017,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0303,
+        "median_trade_hits_0.01_lots_at_pct": 0.0769,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.5
+      },
+      "standalone": {
+        "n_trades": 53,
+        "volume_max": 0.33,
+        "volume_median": 0.13,
+        "volume_min": 0.02
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "XAUUSD.DWX",
+      "weight_risk_percent": 0.44558
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 1567,
+      "ea_label": "QM5_1567_demark-td-reverse-sequential-h4",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.1791,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0009,
+        "median_trade_hits_0.01_lots_at_pct": 0.0026,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0127
+      },
+      "standalone": {
+        "n_trades": 86,
+        "volume_max": 11.11,
+        "volume_median": 3.795,
+        "volume_min": 0.79
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "EURUSD.DWX",
+      "weight_risk_percent": 0.152263
+    },
+    {
+      "already_live": false,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 9641,
+      "ea_label": "QM5_9641",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": null,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0054,
+        "median_trade_hits_0.01_lots_at_pct": 0.0104,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0172
+      },
+      "standalone": {
+        "n_trades": 64,
+        "volume_max": 1.86,
+        "volume_median": 0.965,
+        "volume_min": 0.58
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "WS30.DWX",
+      "weight_risk_percent": 0.307762
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10403,
+      "ea_label": "QM5_10403",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": 0.2204,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0182,
+        "median_trade_hits_0.01_lots_at_pct": 0.05,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.2
+      },
+      "standalone": {
+        "n_trades": 207,
+        "volume_max": 0.55,
+        "volume_median": 0.2,
+        "volume_min": 0.05
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "XAUUSD.DWX",
+      "weight_risk_percent": 0.17957
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10440,
+      "ea_label": "QM5_10440_mql5-ohlc-mtf",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.0577,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0006,
+        "median_trade_hits_0.01_lots_at_pct": 0.0036,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0278
+      },
+      "standalone": {
+        "n_trades": 618,
+        "volume_max": 15.62,
+        "volume_median": 2.81,
+        "volume_min": 0.36
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "NDX.DWX",
+      "weight_risk_percent": 0.048151
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10513,
+      "ea_label": "QM5_10513",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": 0.305,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0112,
+        "median_trade_hits_0.01_lots_at_pct": 0.0294,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.1
+      },
+      "standalone": {
+        "n_trades": 68,
+        "volume_max": 0.89,
+        "volume_median": 0.34,
+        "volume_min": 0.1
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "XAUUSD.DWX",
+      "weight_risk_percent": 0.246165
+    },
+    {
+      "already_live": false,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10700,
+      "ea_label": "QM5_10700_tv-liq-break",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": null,
+      "magic": 107000003,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0038,
+        "median_trade_hits_0.01_lots_at_pct": 0.013,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0769
+      },
+      "standalone": {
+        "n_trades": 373,
+        "volume_max": 2.61,
+        "volume_median": 0.77,
+        "volume_min": 0.13
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "XAUUSD.DWX",
+      "weight_risk_percent": 0.073278
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10706,
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": 0.053,
+      "magic": 107060001,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0006,
+        "median_trade_hits_0.01_lots_at_pct": 0.0025,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0081
+      },
+      "standalone": {
+        "n_trades": 360,
+        "volume_max": 17.58,
+        "volume_median": 3.95,
+        "volume_min": 1.23
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "GBPUSD.DWX",
+      "weight_risk_percent": 0.043406
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10911,
+      "ea_label": "QM5_10911_grimes-complex-pb",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.1276,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0028,
+        "median_trade_hits_0.01_lots_at_pct": 0.0123,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.1111
+      },
+      "standalone": {
+        "n_trades": 331,
+        "volume_max": 3.53,
+        "volume_median": 0.81,
+        "volume_min": 0.09
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "GDAXI.DWX",
+      "weight_risk_percent": 0.103818
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10919,
+      "ea_label": "QM5_10919_grimes-overshoot",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.9181,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0072,
+        "median_trade_hits_0.01_lots_at_pct": 0.0164,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0625
+      },
+      "standalone": {
+        "n_trades": 30,
+        "volume_max": 1.38,
+        "volume_median": 0.61,
+        "volume_min": 0.16
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "XTIUSD.DWX",
+      "weight_risk_percent": 0.706813
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 10939,
+      "ea_label": "QM5_10939_grimes-context-pb",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.1887,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0029,
+        "median_trade_hits_0.01_lots_at_pct": 0.0067,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0179
+      },
+      "standalone": {
+        "n_trades": 92,
+        "volume_max": 3.46,
+        "volume_median": 1.485,
+        "volume_min": 0.56
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "GBPUSD.DWX",
+      "weight_risk_percent": 0.161337
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 11132,
+      "ea_label": "QM5_11132_tm-cum-rsi2",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.4562,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0058,
+        "median_trade_hits_0.01_lots_at_pct": 0.013,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.027
+      },
+      "standalone": {
+        "n_trades": 73,
+        "volume_max": 1.73,
+        "volume_median": 0.77,
+        "volume_min": 0.37
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "SP500.DWX",
+      "weight_risk_percent": 0.352016
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 11165,
+      "ea_label": "QM5_11165_weiss-rsi-ma",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.523,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.006,
+        "median_trade_hits_0.01_lots_at_pct": 0.0069,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.008
+      },
+      "standalone": {
+        "n_trades": 207,
+        "volume_max": 1.67,
+        "volume_median": 1.45,
+        "volume_min": 1.25
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "AUDCAD.DWX",
+      "weight_risk_percent": 0.418813
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 11165,
+      "ea_label": "QM5_11165_weiss-rsi-ma",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.4127,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0097,
+        "median_trade_hits_0.01_lots_at_pct": 0.0112,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0125
+      },
+      "standalone": {
+        "n_trades": 260,
+        "volume_max": 1.03,
+        "volume_median": 0.89,
+        "volume_min": 0.8
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "EURUSD.DWX",
+      "weight_risk_percent": 0.337587
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 11421,
+      "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.3614,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0079,
+        "median_trade_hits_0.01_lots_at_pct": 0.008,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.008
+      },
+      "standalone": {
+        "n_trades": 81,
+        "volume_max": 1.26,
+        "volume_median": 1.25,
+        "volume_min": 1.25
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "AUDUSD.DWX",
+      "weight_risk_percent": 0.264799
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 11421,
+      "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": 0.3364,
+      "magic": 114210000,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.008,
+        "median_trade_hits_0.01_lots_at_pct": 0.008,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.008
+      },
+      "standalone": {
+        "n_trades": 91,
+        "volume_max": 1.25,
+        "volume_median": 1.25,
+        "volume_min": 1.25
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "EURUSD.DWX",
+      "weight_risk_percent": 0.26756
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 11708,
+      "ea_label": "QM5_11708_anon-market-squeeze-d1",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": 0.508,
+      "magic": 117080000,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0039,
+        "median_trade_hits_0.01_lots_at_pct": 0.0154,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0625
+      },
+      "standalone": {
+        "n_trades": 173,
+        "volume_max": 2.56,
+        "volume_median": 0.65,
+        "volume_min": 0.16
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "EURUSD.DWX",
+      "weight_risk_percent": 0.449011
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 12567,
+      "ea_label": "QM5_12567_cum-rsi2-commodity",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.7465,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0256,
+        "median_trade_hits_0.01_lots_at_pct": 0.0714,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.5
+      },
+      "standalone": {
+        "n_trades": 73,
+        "volume_max": 0.39,
+        "volume_median": 0.14,
+        "volume_min": 0.02
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "XAUUSD.DWX",
+      "weight_risk_percent": 0.646732
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 12567,
+      "ea_label": "QM5_12567_cum-rsi2-commodity",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.9797,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0143,
+        "median_trade_hits_0.01_lots_at_pct": 0.05,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.1
+      },
+      "standalone": {
+        "n_trades": 58,
+        "volume_max": 0.7,
+        "volume_median": 0.2,
+        "volume_min": 0.1
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "XNGUSD.DWX",
+      "weight_risk_percent": 0.789177
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 12778,
+      "ea_label": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.4905,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0084,
+        "median_trade_hits_0.01_lots_at_pct": 0.04,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.1429
+      },
+      "standalone": {
+        "n_trades": 195,
+        "volume_max": 1.19,
+        "volume_median": 0.25,
+        "volume_min": 0.07
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "AUDUSD.DWX",
+      "weight_risk_percent": 0.361985
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 12969,
+      "ea_label": "QM5_12969_usdjpy-gotobi-nakane-fix",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.51,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0075,
+        "median_trade_hits_0.01_lots_at_pct": 0.0106,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0118
+      },
+      "standalone": {
+        "n_trades": 331,
+        "volume_max": 1.34,
+        "volume_median": 0.94,
+        "volume_min": 0.85
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "USDJPY.DWX",
+      "weight_risk_percent": 0.486519
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 12989,
+      "ea_label": "QM5_12989_grimes-nested-pb-v2",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.242,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0064,
+        "median_trade_hits_0.01_lots_at_pct": 0.0156,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0714
+      },
+      "standalone": {
+        "n_trades": 51,
+        "volume_max": 1.56,
+        "volume_median": 0.64,
+        "volume_min": 0.14
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "XAUUSD.DWX",
+      "weight_risk_percent": 0.187444
+    },
+    {
+      "already_live": false,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 13013,
+      "ea_label": "QM5_13013_grimes-trendday-v2",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": null,
+      "magic": 130130000,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0024,
+        "median_trade_hits_0.01_lots_at_pct": 0.0105,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0556
+      },
+      "standalone": {
+        "n_trades": 70,
+        "volume_max": 4.23,
+        "volume_median": 0.955,
+        "volume_min": 0.18
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "NDX.DWX",
+      "weight_risk_percent": 0.312014
+    },
+    {
+      "already_live": false,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 13054,
+      "ea_label": "QM5_13054_brent-tom-mom",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": null,
+      "magic": 130540000,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0294,
+        "median_trade_hits_0.01_lots_at_pct": 0.0488,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.25
+      },
+      "standalone": {
+        "n_trades": 82,
+        "volume_max": 0.34,
+        "volume_median": 0.205,
+        "volume_min": 0.04
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "XTIUSD.DWX",
+      "weight_risk_percent": 0.405275
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 13117,
+      "ea_label": "QM5_13117_eurgbp-audjpy",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.4199,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.007,
+        "median_trade_hits_0.01_lots_at_pct": 0.037,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.25
+      },
+      "standalone": {
+        "n_trades": 208,
+        "volume_max": 1.42,
+        "volume_median": 0.27,
+        "volume_min": 0.04
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "EURGBP.DWX",
+      "weight_risk_percent": 0.337841
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 13128,
+      "ea_label": "QM5_13128_pre-fomc-drift-ndx",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 1.0,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0152,
+        "median_trade_hits_0.01_lots_at_pct": 0.0571,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.1429
+      },
+      "standalone": {
+        "n_trades": 56,
+        "volume_max": 0.66,
+        "volume_median": 0.175,
+        "volume_min": 0.07
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "NDX.DWX",
+      "weight_risk_percent": 0.908737
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 13213,
+      "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": 0.0431,
+      "magic": 132130000,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0005,
+        "median_trade_hits_0.01_lots_at_pct": 0.0021,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0143
+      },
+      "standalone": {
+        "n_trades": 1596,
+        "volume_max": 18.64,
+        "volume_median": 4.77,
+        "volume_min": 0.7
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "USDJPY.DWX",
+      "weight_risk_percent": 0.03651
+    },
+    {
+      "already_live": true,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 13301,
+      "ea_label": "QM5_13301_balke-minute-range-breakout",
+      "in_v2b_candidate_roster": false,
+      "live_risk_percent": 0.0692,
+      "magic": null,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.0032,
+        "median_trade_hits_0.01_lots_at_pct": 0.0092,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.0769
+      },
+      "standalone": {
+        "n_trades": 742,
+        "volume_max": 3.13,
+        "volume_median": 1.09,
+        "volume_min": 0.13
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+      "symbol": "GDAXI.DWX",
+      "weight_risk_percent": 0.053396
+    },
+    {
+      "already_live": false,
+      "capped_at_sleeve_cap": false,
+      "ea_id": 21505,
+      "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+      "in_v2b_candidate_roster": true,
+      "live_risk_percent": null,
+      "magic": 215050000,
+      "min_lot_risk_percent": {
+        "largest_trade_hits_0.01_lots_at_pct": 0.027,
+        "median_trade_hits_0.01_lots_at_pct": 0.0714,
+        "note": "streams are RISK_FIXED $1000 on 100k = 1.0 %/trade; lots scale linearly",
+        "smallest_trade_hits_0.01_lots_at_pct": 0.1429
+      },
+      "standalone": {
+        "n_trades": 116,
+        "volume_max": 0.37,
+        "volume_median": 0.14,
+        "volume_min": 0.07
+      },
+      "stream_source": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b",
+      "symbol": "XAGUSD.DWX",
+      "weight_risk_percent": 0.280423
+    }
+  ],
+  "status": "GATE_PASS_ANALYTIC",
+  "variant": "SELECTED"
+}

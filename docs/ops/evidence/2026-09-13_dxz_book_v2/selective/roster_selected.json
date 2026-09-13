@@ -1,0 +1,345 @@
+{
+  "as_of": "2026-09-13",
+  "book": "DXZ_4000090541",
+  "builder_exclude_pairs": [],
+  "generated_utc": "2026-09-13T15:54:55.290764+00:00",
+  "incumbent_stream_root": "D:\\QM\\reports\\portfolio\\dxz_final_20260719",
+  "lane": "Q11_DXZ",
+  "n_sleeves_evaluated_book_under_union": 30,
+  "n_sleeves_proposal_side": 6,
+  "note": "Analysis roster only. Deployment and AutoTrading remain OWNER-only; this file mints nothing.",
+  "reproduce_with": "python -X utf8 tools/strategy_farm/portfolio/build_book_dxz.py --roster D:/QM/reports/portfolio/dxz_v2_20260913/selective/roster_selected.json --stream-root D:/QM/reports/portfolio/dxz_v2_20260913/streams_v2b --incumbent-stream-root D:/QM/reports/portfolio/dxz_final_20260719 --union  --analysis-only --as-of 2026-09-13",
+  "schema": "qm.dual-book-roster-input/v1-manifest-compatible",
+  "selected_book": [
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.38602,
+      "ea_id": 1537,
+      "ea_label": "QM5_1537_aa-vol-sma10",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAGUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.44558,
+      "ea_id": 1556,
+      "ea_label": "QM5_1556_aa-zak-mom12",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.152263,
+      "ea_id": 1567,
+      "ea_label": "QM5_1567_demark-td-reverse-sequential-h4",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.307762,
+      "ea_id": 9641,
+      "ea_label": "QM5_9641",
+      "source": "V2B_CANDIDATE",
+      "symbol": "WS30.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.17957,
+      "ea_id": 10403,
+      "ea_label": "QM5_10403",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.048151,
+      "ea_id": 10440,
+      "ea_label": "QM5_10440_mql5-ohlc-mtf",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.246165,
+      "ea_id": 10513,
+      "ea_label": "QM5_10513",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.073278,
+      "ea_id": 10700,
+      "ea_label": "QM5_10700_tv-liq-break",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.043406,
+      "ea_id": 10706,
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "source": "V2B_CANDIDATE",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.103818,
+      "ea_id": 10911,
+      "ea_label": "QM5_10911_grimes-complex-pb",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.706813,
+      "ea_id": 10919,
+      "ea_label": "QM5_10919_grimes-overshoot",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "XTIUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.161337,
+      "ea_id": 10939,
+      "ea_label": "QM5_10939_grimes-context-pb",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.352016,
+      "ea_id": 11132,
+      "ea_label": "QM5_11132_tm-cum-rsi2",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "SP500.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.418813,
+      "ea_id": 11165,
+      "ea_label": "QM5_11165_weiss-rsi-ma",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "AUDCAD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.337587,
+      "ea_id": 11165,
+      "ea_label": "QM5_11165_weiss-rsi-ma",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.264799,
+      "ea_id": 11421,
+      "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.26756,
+      "ea_id": 11421,
+      "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "source": "V2B_CANDIDATE",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.449011,
+      "ea_id": 11708,
+      "ea_label": "QM5_11708_anon-market-squeeze-d1",
+      "source": "V2B_CANDIDATE",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.646732,
+      "ea_id": 12567,
+      "ea_label": "QM5_12567_cum-rsi2-commodity",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.789177,
+      "ea_id": 12567,
+      "ea_label": "QM5_12567_cum-rsi2-commodity",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "XNGUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.361985,
+      "ea_id": 12778,
+      "ea_label": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.486519,
+      "ea_id": 12969,
+      "ea_label": "QM5_12969_usdjpy-gotobi-nakane-fix",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.187444,
+      "ea_id": 12989,
+      "ea_label": "QM5_12989_grimes-nested-pb-v2",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.312014,
+      "ea_id": 13013,
+      "ea_label": "QM5_13013_grimes-trendday-v2",
+      "source": "V2B_CANDIDATE",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.405275,
+      "ea_id": 13054,
+      "ea_label": "QM5_13054_brent-tom-mom",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XTIUSD.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.337841,
+      "ea_id": 13117,
+      "ea_label": "QM5_13117_eurgbp-audjpy",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "EURGBP.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.908737,
+      "ea_id": 13128,
+      "ea_label": "QM5_13128_pre-fomc-drift-ndx",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.03651,
+      "ea_id": 13213,
+      "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+      "source": "V2B_CANDIDATE",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "already_live": true,
+      "analysis_weight_risk_percent": 0.053396,
+      "ea_id": 13301,
+      "ea_label": "QM5_13301_balke-minute-range-breakout",
+      "source": "INCUMBENT_LIVE_BOOK",
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.280423,
+      "ea_id": 21505,
+      "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAGUSD.DWX"
+    }
+  ],
+  "selected_book_roster_sha256": "e61a342e7ceb17079e6b247c9bdd41fa524792c2765d2ce0456539025e6dfdcd",
+  "selection_route": "greedy_forward_from_variant_i",
+  "sleeves": [
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.38602,
+      "backtest_risk_fixed": 1000.0,
+      "backtest_risk_percent": 0.0,
+      "ea_id": 1537,
+      "ea_label": "QM5_1537_aa-vol-sma10",
+      "live_risk_percent": null,
+      "magic_number": 15370001,
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\18859f02-5371-5094-a7a5-b63619482545\\receipt.json",
+      "q14_terminal_verdict": "KEEP_INCUMBENT",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAGUSD.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.307762,
+      "backtest_risk_fixed": 1000.0,
+      "backtest_risk_percent": 0.0,
+      "ea_id": 9641,
+      "ea_label": "QM5_9641",
+      "live_risk_percent": null,
+      "magic_number": null,
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\2cc8920e-ddec-5fa4-bab0-c60c56b49c5e\\receipt.json",
+      "q14_terminal_verdict": "KEEP_INCUMBENT",
+      "source": "V2B_CANDIDATE",
+      "symbol": "WS30.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.073278,
+      "backtest_risk_fixed": 1000.0,
+      "backtest_risk_percent": 0.0,
+      "ea_id": 10700,
+      "ea_label": "QM5_10700_tv-liq-break",
+      "live_risk_percent": null,
+      "magic_number": 107000003,
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\055f166e-7c08-5c72-ae60-01a54e15d9f1\\receipt.json",
+      "q14_terminal_verdict": "KEEP_INCUMBENT",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.312014,
+      "backtest_risk_fixed": 1000.0,
+      "backtest_risk_percent": 0.0,
+      "ea_id": 13013,
+      "ea_label": "QM5_13013_grimes-trendday-v2",
+      "live_risk_percent": null,
+      "magic_number": 130130000,
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\28dc651f-046b-542f-b766-cc28ac3d79b6\\receipt.json",
+      "q14_terminal_verdict": "KEEP_INCUMBENT",
+      "source": "V2B_CANDIDATE",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.405275,
+      "backtest_risk_fixed": 1000.0,
+      "backtest_risk_percent": 0.0,
+      "ea_id": 13054,
+      "ea_label": "QM5_13054_brent-tom-mom",
+      "live_risk_percent": null,
+      "magic_number": 130540000,
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\4aaa524d-c11a-5725-8de7-f1d00d51eca9\\receipt.json",
+      "q14_terminal_verdict": "KEEP_INCUMBENT",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XTIUSD.DWX"
+    },
+    {
+      "already_live": false,
+      "analysis_weight_risk_percent": 0.280423,
+      "backtest_risk_fixed": 1000.0,
+      "backtest_risk_percent": 0.0,
+      "ea_id": 21505,
+      "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+      "live_risk_percent": null,
+      "magic_number": 215050000,
+      "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\aecfbf06-63ef-520b-8943-48b5b1d3769e\\receipt.json",
+      "q14_terminal_verdict": "KEEP_INCUMBENT",
+      "source": "V2B_CANDIDATE",
+      "symbol": "XAGUSD.DWX"
+    }
+  ],
+  "status": "PROPOSAL_DRY_RUN",
+  "stream_root": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b"
+}
