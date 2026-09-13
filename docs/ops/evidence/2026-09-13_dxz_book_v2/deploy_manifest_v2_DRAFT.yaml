@@ -1,4 +1,5 @@
-# DXZ live book v2 — deploy manifest DRAFT (Q16), 2026-09-13 — REV 2: 28-SLEEVE BOOK
+# DXZ live book v2 — deploy manifest DRAFT (Q16), 2026-09-13 — REV 3: 28 SLEEVES @ 11.0 % / CAP 1.5 %
+# OWNER-DEC-BOOK-RISK-11-20260913: not-worse gate vs the deployed 24 holds at 11.0/1.5, breaks at 12.0.
 # Schema: vault "03 Pipeline/Q16 Operational Readiness.md" > Deploy Manifest Schema.
 # DRAFT: unsigned. Without OWNER signature AND Claude verification: no AutoTrading (Hard Rule).
 # Nothing in this file has been deployed. AutoTrading on T_Live is untouched and OWNER-only.
@@ -7,14 +8,16 @@ book: DXZ_4000090541
 as_of: 2026-09-12
 deploy_date: TBD
 owner_order_evidence: decisions/2026-09-13_owner_book_order_dxz.md
-selection_manifest: D:/QM/reports/portfolio/dxz_v2_20260913/build_28/analytic_preview_manifest_28.json
-selection_manifest_builder_output: D:/QM/reports/portfolio/dxz_v2_20260913/build_28/manifest_28_full.json
-selection_manifest_superseded: D:/QM/reports/portfolio/dxz_v2_20260913/selective/analytic_preview_manifest_SELECTED.json  # 30-sleeve preview
+selection_manifest: D:/QM/reports/portfolio/dxz_v2_20260913/build_28_r11/analytic_preview_manifest_28_r11.json
+selection_manifest_builder_output: D:/QM/reports/portfolio/dxz_v2_20260913/build_28_r11/manifest_28_r11_full.json
+selection_manifest_superseded:
+  - D:/QM/reports/portfolio/dxz_v2_20260913/selective/analytic_preview_manifest_SELECTED.json   # 30 sleeves @ 9.75
+  - D:/QM/reports/portfolio/dxz_v2_20260913/build_28/analytic_preview_manifest_28.json          # 28 sleeves @ 9.75
 selection_manifest_roster_sha256: 604da4752913af5f272e2f112700f3c3b5611092dcc4f5d422c3f5f752f5dacb       # 28-book
-selection_sleeve_list_sha256: 68f888768987f1eee0831db7434c900b3ed88941fe99d0b27eb082c4edd9d491
+selection_sleeve_list_sha256: af2d1ad2b3e34d1c83352b07663094afdbfca0041c6f4bec13fcf39331e51f48
 burn_in_variant: D:/QM/reports/portfolio/dxz_v2_20260913/selective/burnin_variant.json  # min-lot basis per sleeve; weights superseded by the 28-book solve
 staging_dir: C:/QM/deploy/DXZ_V2_20260913
-copy_plan: C:/QM/deploy/DXZ_V2_20260913/copy_plan_v2.json
+copy_plan: C:/QM/deploy/DXZ_V2_20260913/copy_plan_v2.json   # re-validated at 11.0: validated_items 8, written_items 0
 q16_checklist: docs/ops/evidence/2026-09-13_dxz_book_v2/Q16_CHECKLIST_V2.md
 git_commit: 43d2378f57                      # HEAD of agents/board-advisor at staging time
 news_calendar_path: D:/QM/data/news_calendar/news_calendar_2015_2025.csv
@@ -28,15 +31,18 @@ claude_verification_signature: PENDING
 
 portfolio:
   n_sleeves: 28
-  total_risk_percent_target: 9.75
-  total_risk_percent_burn_in: 8.700104   # 24 existing at target (8.589304) + 4 new at min-lot (0.1108)
+  total_risk_percent_target: 11.0
+  sleeve_cap_pct: 1.5
+  max_sleeve_weight_pct: 1.102818          # 13128/NDX; 0 sleeves at the cap
+  owner_decision: OWNER-DEC-BOOK-RISK-11-20260913
+  total_risk_percent_burn_in: 9.801297   # 24 existing at target (9.690497) + 4 new at min-lot (0.1108)
   existing_sleeves: 24
   new_sleeves: 4
   deferred_sleeves: 2                  # 13054/XTIUSD, 21505/XAGUSD -> DEFERRED_SYMBOL_LITERAL_FIX
   incumbent_comparison:              # analytic_preview_manifest_SELECTED.json > comparison
     window: {start: 2019-08-02, end: 2024-12-06, days: 1349}
     incumbent: {sharpe: 2.3411, max_drawdown_pct: 2.4255, return_to_maxdd: 3.7803, worst_day_pct: -0.8577}
-    proposal:  {sharpe: 2.5251, max_drawdown_pct: 1.8205, return_to_maxdd: 5.2640, worst_day_pct: -0.7584, annual_return_pct: 9.5833}
+    proposal:  {sharpe: 2.5251, max_drawdown_pct: 2.0519, return_to_maxdd: 5.2693, worst_day_pct: -0.8556, annual_return_pct: 10.8119}
     not_worse_gate: PASSED
     builder_status: APPLY_RECOMMENDED
 
@@ -50,11 +56,11 @@ sleeves_new:
     magic_slot: 1
     news_mode: 0                      # qm_news_mode_legacy=QM_NEWS_OFF; temporal axis via Q10 lock
     risk_mode: RISK_PERCENT
-    risk_percent: 0.415218
+    risk_percent: 0.468451
     burn_in_risk_percent: 0.0769
     burn_in_lot: 0.01
     max_drawdown_alert_pct: 2.8765     # Q10 worst DD @1.0 %/trade
-    kill_switch_threshold_pct: 2.3888  # 2 x Q10 DD scaled to target risk
+    kill_switch_threshold_pct: 2.6950  # 2 x Q10 DD scaled to target risk
     q14_setfile: framework/EAs/QM5_1537_aa-vol-sma10/sets/QM5_1537_aa-vol-sma10_XAGUSD.DWX_D1_backtest.set
     q14_setfile_sha256: 4e7e56399910999c4ec6b842496efc900dcee16b0547db7625d0808fd25de211
     preset: 25_XAGUSD_D1_QM5_1537_aa-vol-sma10.set
@@ -69,11 +75,11 @@ sleeves_new:
     magic_slot: 2
     news_mode: 0
     risk_mode: RISK_PERCENT
-    risk_percent: 0.331040
+    risk_percent: 0.373481
     burn_in_risk_percent: 0.0104
     burn_in_lot: 0.01
     max_drawdown_alert_pct: 2.7550
-    kill_switch_threshold_pct: 1.8240
+    kill_switch_threshold_pct: 2.0579
     q14_setfile: framework/EAs/QM5_9641_bandy-cci-extreme-fade-mr-index/sets/QM5_9641_bandy-cci-extreme-fade-mr-index_WS30.DWX_D1_backtest.set
     q14_setfile_sha256: e991aae91a2c0e08afdc56e089854571711faab532125508ca3ec21d36fb50b0
     preset: 26_WS30_D1_QM5_9641_bandy-cci-extreme-fade-mr-index.set
@@ -88,11 +94,11 @@ sleeves_new:
     magic_slot: 3
     news_mode: 0
     risk_mode: RISK_PERCENT
-    risk_percent: 0.078822
+    risk_percent: 0.088928
     burn_in_risk_percent: 0.013
     burn_in_lot: 0.01
     max_drawdown_alert_pct: 10.0844
-    kill_switch_threshold_pct: 1.5898
+    kill_switch_threshold_pct: 1.7936
     q14_setfile: framework/EAs/QM5_10700_tv-liq-break/sets/QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set
     q14_setfile_sha256: a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997
     preset: 27_XAUUSD_H1_QM5_10700_tv-liq-break.set
@@ -107,11 +113,11 @@ sleeves_new:
     magic_slot: 0
     news_mode: 0
     risk_mode: RISK_PERCENT
-    risk_percent: 0.335616
+    risk_percent: 0.378644
     burn_in_risk_percent: 0.0105
     burn_in_lot: 0.01
     max_drawdown_alert_pct: 2.1314
-    kill_switch_threshold_pct: 1.4307
+    kill_switch_threshold_pct: 1.6141
     q14_setfile: framework/EAs/QM5_13013_grimes-trendday-v2/sets/QM5_13013_grimes-trendday-v2_NDX.DWX_M15_backtest.set
     q14_setfile_sha256: e13ca72196dd4f2e0a18cffe71f45262f5b36ded8f1251cf58ecbea0d9ec227b
     preset: 28_NDX_M15_QM5_13013_grimes-trendday-v2.set
@@ -144,7 +150,7 @@ sleeves_repair:
     live_symbol: AUDUSD
     period: D1
     magic_number: 127780000
-    risk_percent: 0.389363
+    risk_percent: 0.439281
     preset_draft: C:/QM/deploy/DXZ_V2_20260913/repair/06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set
     status: BLOCKED_PENDING_SOURCE_PATCH
     deployment_action: NO_OP            # stays on its existing chart, unchanged, until the fix
@@ -153,7 +159,7 @@ sleeves_repair:
     live_symbol: USDJPY
     period: M30
     magic_number: 129690000
-    risk_percent: 0.523342
+    risk_percent: 0.590437
     preset_draft: C:/QM/deploy/DXZ_V2_20260913/repair/17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set
     status: BLOCKED_PENDING_SOURCE_PATCH
     deployment_action: NO_OP            # stays on its existing chart, unchanged, until the fix
@@ -162,7 +168,7 @@ sleeves_repair:
     live_symbol: EURGBP
     period: D1
     magic_number: 131170000
-    risk_percent: 0.363398
+    risk_percent: 0.409988
     preset_draft: C:/QM/deploy/DXZ_V2_20260913/repair/24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set
     status: BLOCKED_PENDING_SOURCE_PATCH
     deployment_action: NO_OP            # stays on its existing chart, unchanged, until the fix
@@ -170,11 +176,14 @@ sleeves_repair:
 
 sleeves_existing_reweighted:
   count: 24
-  proof: C:/QM/deploy/DXZ_V2_20260913/stage_dryrun_28_existing24.json
+  proof: C:/QM/deploy/DXZ_V2_20260913/stage_dryrun_28_r11_existing24.json
   sum_risk_percent_old: 9.7499
-  sum_risk_percent_new: 8.589305
-  n_changed_gt_0_05pp: 9
-  n_increasing: 1                      # 12969/USDJPY 0.5100 -> 0.523342 (a dark sleeve; no-op)
+  sum_risk_percent_new: 9.690497
+  n_changed_gt_0_05pp: 5
+  n_increasing: 8
+  largest_risers:
+    - "13128/NDX 1.0000 -> 1.102818 (+0.1028) -- cap-driven: was pinned at the old 1.0 cap; now ~10 % of book risk"
+    - "12969/USDJPY 0.5100 -> 0.590437 (+0.0804) -- a sleeve that cannot trade today (RED-9); no-op"
   status: BLOCKED_BY_LIVE_RISK_FREEZE
   blocker: >
     risk_freeze status=ACTIVE, held=true. Unmet lift conditions: SP-A1/A2-DEPLOY-POINTER

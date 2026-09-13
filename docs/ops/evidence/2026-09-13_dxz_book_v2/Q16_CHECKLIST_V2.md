@@ -1,18 +1,19 @@
-# Q16 Operational Readiness — DXZ book v2 (**28 sleeves**), 2026-09-13
+# Q16 Operational Readiness — DXZ book v2 (**28 sleeves @ 11.0 % / cap 1.5 %**), 2026-09-13
 
-> **Rev 2 (28-sleeve book).** 13054/XTIUSD and 21505/XAGUSD are **DEFERRED_SYMBOL_LITERAL_FIX**
-> and cut from this book (`--exclude-pair`); the three dark live sleeves 12778, 13117, 12969
-> stay deployed as-is and are a **no-op until their source fix**. Weights re-solved by
-> `build_book_dxz.py` (capped inverse-vol, cap 1.0, total 9.75, as-of 2026-09-12):
-> `APPLY_RECOMMENDED`, 28 sleeves, ann 9.583 %, ret/DD 5.264, worst day −0.758 %, Sharpe 2.525,
-> all three not-worse checks PASS. Per-sleeve weights:
-> `D:/QM/reports/portfolio/dxz_v2_20260913/build_28/analytic_preview_manifest_28.json`
-> (`manifest_28_full.json` = the builder's own manifest, sum 9.750000).
-> The 30-sleeve artefacts are preserved under `C:/QM/deploy/DXZ_V2_20260913/_superseded_30/`.
-
-Staging only. Nothing deployed, nothing on T_Live written, AutoTrading untouched.
-Checklist source: vault `03 Pipeline/Q16 Operational Readiness.md` (11 checks) and
-`docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md` §4.
+> **Rev 3 (28 sleeves @ total risk 11.0 %, sleeve cap 1.5 %).**
+> `OWNER-DEC-BOOK-RISK-11-20260913`: the builder sweep shows the not-worse gate vs the deployed
+> 24 holds at 11.0/1.5 and breaks at 12.0. Concentration-policy budget committed at 11.0.
+> Re-solved: `APPLY_RECOMMENDED`, 28 sleeves, sum **11.000000**, ann **10.812 %**,
+> maxDD **2.052 %**, ret/DD **5.269**, worst day **−0.856 %**, Sharpe **2.525**, all three
+> not-worse checks PASS, `concentration_reject: []`.
+> 13054/XTIUSD and 21505/XAGUSD stay **DEFERRED_SYMBOL_LITERAL_FIX**; the three dark live
+> sleeves 12778, 13117, 12969 stay deployed as-is and are a **no-op until their source fix**.
+> Weights: `D:/QM/reports/portfolio/dxz_v2_20260913/build_28_r11/analytic_preview_manifest_28_r11.json`
+> (builder manifest `manifest_28_r11_full.json`, roster_sha256 `604da475…`,
+> sleeve_list_sha256 `af2d1ad2…`).
+> **No sleeve reaches the 1.5 cap** — the largest is 13128/NDX at 1.102818, which is exactly
+> the sleeve the old 1.0 cap was binding on. Superseded packages:
+> `_superseded_30/` (30 sleeves @ 9.75) and `_superseded_975/` (28 sleeves @ 9.75).
 
 ## 0 · Precedent for check 1 (fresh compile on T_Live)
 
@@ -33,14 +34,14 @@ the gate ruled on.
 
 | # | EA / symbol | TF | slot | magic | `.ex5` SHA256 (first 16) | burn-in RISK% | target RISK% | status |
 |---|---|---|---|---|---|---|---|---|
-| 25 | QM5_1537 aa-vol-sma10 / XAGUSD | D1 | 1 | 15370001 | `142a019e773a493d` | 0.0769 | 0.415218 | AMBER — routing unconfirmed |
-| 26 | QM5_9641 bandy-cci-extreme-fade-mr-index / WS30 | D1 | 2 | 96410002 | `21eda8527f66dd25` | 0.0104 | 0.331040 | AMBER — routing + magic-embedding unproven |
-| 27 | QM5_10700 tv-liq-break / XAUUSD | H1 | 3 | 107000003 | `5fbf2ba004825004` | 0.0130 | 0.078822 | GREEN-ready |
-| 28 | QM5_13013 grimes-trendday-v2 / NDX | M15 | 0 | 130130000 | `bf2cc2ecaff8ae55` | 0.0105 | 0.335616 | GREEN-ready |
+| 25 | QM5_1537 aa-vol-sma10 / XAGUSD | D1 | 1 | 15370001 | `142a019e773a493d` | 0.0769 | 0.468451 | AMBER — routing unconfirmed |
+| 26 | QM5_9641 bandy-cci-extreme-fade-mr-index / WS30 | D1 | 2 | 96410002 | `21eda8527f66dd25` | 0.0104 | 0.373481 | AMBER — routing + magic-embedding unproven |
+| 27 | QM5_10700 tv-liq-break / XAUUSD | H1 | 3 | 107000003 | `5fbf2ba004825004` | 0.0130 | 0.088928 | GREEN-ready |
+| 28 | QM5_13013 grimes-trendday-v2 / NDX | M15 | 0 | 130130000 | `bf2cc2ecaff8ae55` | 0.0105 | 0.378644 | GREEN-ready |
 
 **Deferred, not staged:** 13054/XTIUSD (magic 130540000) and 21505/XAGUSD (magic 215050000) — `DEFERRED_SYMBOL_LITERAL_FIX`. Their `.ex5`, Q14 sets and 30-book presets remain in `_superseded_30/` for the rebuild.
 
-**Burn-in risk total (28) = 8.700104 %** = 24 existing at v2 target (8.589304) + 4 new at min-lot median (0.1108). Target total = 9.750000 %.
+**Burn-in risk total (28) = 9.801297 %** = 24 existing at 11-book target (9.690497) + 4 new at min-lot median (0.1108). Target total = **11.000000 %**, sleeve cap 1.5 %, max sleeve 1.102818 (13128/NDX), 0 sleeves at cap.
 
 ## 2 · The 11 checks
 
@@ -131,10 +132,10 @@ staged binary (verified per sleeve). `worst_drawdown_pct` is measured at the tes
 
 | sleeve | Q10 worst DD @1.0 % | KS @ burn-in risk | KS @ target risk | Q10 evidence |
 |---|---|---|---|---|
-| 1537/XAGUSD | 2.8765 % | 0.4424 % | 2.3888 % | `D:/QM/reports/work_items/fac4d930-13b6-469e-8fe2-51ce06907f02/QM5_1537/Q10_NEWS/XAGUSD_DWX/aggregate.json` |
-| 9641/WS30 | 2.7550 % | 0.0573 % | 1.8240 % | `…/c2bec0ec-d822-4c1f-8e0e-47177424c6be/QM5_9641/Q10_NEWS/WS30_DWX/aggregate.json` |
-| 10700/XAUUSD | 10.0844 % | 0.2622 % | 1.5898 % | `…/152e8d29-7177-4436-a0ca-e6a0a5e66edb/QM5_10700/Q10_NEWS/XAUUSD_DWX/aggregate.json` |
-| 13013/NDX | 2.1314 % | 0.0448 % | 1.4307 % | `…/5ea4c77d-6758-4b1c-8693-300aa5789198/QM5_13013/Q10_NEWS/NDX_DWX/aggregate.json` |
+| 1537/XAGUSD | 2.8765 % | 0.4424 % | 2.6950 % | `D:/QM/reports/work_items/fac4d930-13b6-469e-8fe2-51ce06907f02/QM5_1537/Q10_NEWS/XAGUSD_DWX/aggregate.json` |
+| 9641/WS30 | 2.7550 % | 0.0573 % | 2.0579 % | `…/c2bec0ec-d822-4c1f-8e0e-47177424c6be/QM5_9641/Q10_NEWS/WS30_DWX/aggregate.json` |
+| 10700/XAUUSD | 10.0844 % | 0.2622 % | 1.7936 % | `…/152e8d29-7177-4436-a0ca-e6a0a5e66edb/QM5_10700/Q10_NEWS/XAUUSD_DWX/aggregate.json` |
+| 13013/NDX | 2.1314 % | 0.0448 % | 1.6141 % | `…/5ea4c77d-6758-4b1c-8693-300aa5789198/QM5_13013/Q10_NEWS/NDX_DWX/aggregate.json` |
 
 13054/XTIUSD (2.0457 %) and 21505/XAGUSD (3.4115 %) are recorded for the rebuild but are not
 staged. Note 10700/XAUUSD: 10.08 % standalone DD is by far the worst of the four; its target weight
@@ -155,25 +156,38 @@ report the same hash; 12778/13117 report none (they never complete init) and 131
 not read the CSV. `KILL_SWITCH_INIT` is present for all with the post-fix relative
 `QM\halt\` path.
 
-## 6 · Existing 24 sleeves (check 4, re-weighted to the 28-book solve)
+## 6 · Existing 24 sleeves (check 4, re-weighted to the 11.0 % / cap 1.5 % solve)
 
 All 24 deployed presets change. Verified dry-run: 24 presets parsed, each diff exactly one
-line (`RISK_PERCENT=`), 0 problems, sum old 9.7499 → sum new **8.589305** (the 24-sleeve
-share of 9.75; the 4 new sleeves take 1.160696). **9 of 24 move by more than 0.05 pp:**
+line (`RISK_PERCENT=`), 0 problems, sum old 9.7499 → sum new **9.690497** (the 4 new sleeves
+take 1.309503 of the 11.0). **Only 5 of 24 move by more than 0.05 pp** — raising the total
+from 9.75 to 11.0 almost exactly offsets what the four new sleeves take out:
 
-10919/XTIUSD −0.1578 · 12567/XNGUSD −0.1308 · 1556/XAUUSD −0.1224 · 12778/AUDUSD −0.1011 ·
-11132/SP500 −0.0776 · 11421/AUDUSD −0.0766 · 11165/AUDCAD −0.0725 · 13117/EURGBP −0.0565 ·
-12567/XAUUSD −0.0509.
+| sleeve | old | new | Δ pp |
+|---|---|---|---|
+| 13128/NDX | 1.0000 | 1.102818 | **+0.1028** |
+| 12969/USDJPY | 0.5100 | 0.590437 | **+0.0804** |
+| 1556/XAUUSD | 0.6017 | 0.540735 | −0.0610 |
+| 10919/XTIUSD | 0.9181 | 0.857769 | −0.0603 |
+| 12778/AUDUSD | 0.4905 | 0.439281 | −0.0512 |
 
-That is six fewer movers than the 30-book solve, because two sleeves less compete for the
-same 9.75. **23 of 24 fall; exactly one rises — 12969/USDJPY 0.5100 → 0.523342 (+0.0133).**
-Harmless while that sleeve cannot trade at all, but it is the one line in the re-weight that
-increases live risk, so it should not pass unnoticed.
+**Eight sleeves rise, and the two largest risers deserve a sentence each:**
 
-Proof: `C:/QM/deploy/DXZ_V2_20260913/stage_dryrun_28_existing24.json` (per file:
-`sha256_deployed`, `sha256_staged`, `changed_lines`); the 28-manifest run
-`stage_dryrun_28_all.json` additionally documents the 4 "no deployed preset" gaps, which are
-exactly the 4 new sleeves.
+* **13128/NDX +0.1028 to 1.102818** — this sleeve was sitting exactly on the old 1.0 sleeve
+  cap. The move from 9.75/1.0 to 11.0/1.5 releases it: the increase is *cap-driven
+  concentration*, not a change in its measured vol. It is now the single largest sleeve in the
+  book at ~10 % of total risk. That is inside the ratified 1.5 cap, but it is the one line
+  where "raise the total" quietly became "raise one sleeve".
+* **12969/USDJPY +0.0804 to 0.590437** — a sleeve that demonstrably cannot trade
+  (RED-9, §3) is being allocated more risk. Harmless in effect today, meaningless until the
+  source fix, and it should not be mistaken for a deliberate conviction increase.
+
+Remaining risers, all small: 12567/XAUUSD +0.0383 · 11708/EURUSD +0.0369 · 10939/GBPUSD
++0.0071 · 1567/EURUSD +0.0057 · 13213/USDJPY +0.0012 · 10440/NDX +0.0007.
+
+Proof: `C:/QM/deploy/DXZ_V2_20260913/stage_dryrun_28_r11_existing24.json` (per file:
+`sha256_deployed`, `sha256_staged`, `changed_lines`); `stage_dryrun_28_r11_all.json`
+additionally documents the 4 "no deployed preset" gaps — exactly the 4 new sleeves.
 
 ## 7 · Copy plan dry-run (exact output)
 
@@ -194,7 +208,8 @@ exit 0
 legal and unique. `items` = 4 `.ex5` + 4 burn-in presets. Full output:
 `C:/QM/deploy/DXZ_V2_20260913/copy_plan_dryrun_output.json`.
 
-`pending_items` (29) = 24 re-weighted existing presets (blocked by the ACTIVE risk freeze),
+`pending_items` (29) = 24 re-weighted existing presets at the 11-book weights (blocked by the
+ACTIVE risk freeze),
 3 dark-sleeve repair drafts (no-op until the source fix), and the 2 deferred sleeves
 13054/21505 — deliberately outside `items`, because a plan naming a source that does not
 exist is a plan that lies.
