@@ -4317,3 +4317,17 @@ Adapter enforce needs signed policy + activation JSON + decisions/<date>_owner_g
 GOVERNOR-ENFORCE: ACTIVATE DXZ <date> + --executor halt-file; default stays DRY_RUN_PLAN. Remaining for "enforcing":
 monitor v2 chart on T_Live (OWNER), watcher task install (Claude, after the monitor), policy signature (OWNER), activation
 artifact (OWNER). Known limits: halt = flatten; shared login covers manifest sleeves only; clearing needs a chart reload.
+
+## 2026-09-13T16:55Z Q09_NEWS historical lane closed, news duplicate rule, freeze condition texts (commit 737207452a)
+Governed tool tools/strategy_farm/apply_q09_news_review_dispositions.py (retire2 pattern: hashed plan, backup, mutation
+lock, INSERT disposition + supersedes edge) applied 64/64 at 16:01Z: 6 CONFIG_LOCKED (receipts, not seals: no
+q09_news_tests row written), 4 INVALID_EVIDENCE (matrix cells missing), 15 INVALID_EVIDENCE RUN_SMOKE_EVIDENCE_NOT_
+Q09_NEWS_EXPERIMENT, 39 INVALID_EVIDENCE EVIDENCE_AGED_OUT_DL090. Receipts D:/QM/reports/state/q09_news_review_closure_
+20260913/. q09_news_cells for ba24e7a3: no defect (17 canonical cells, 40 occurrences via q09_news_cell_occurrences).
+Mislabel root cause (three links: oos_2026_confirmation.py:422 literal Q09_NEWS; farmctl.py:10569 routes NEWS only on the
+active lane so the row ran as run_smoke; terminal_worker.py:8441 stamps REVIEW_REQUIRED without a schema check) -> fix in
+progress (orchestrator lane). The 40 pending oos-2026 Q09_NEWS rows are held (37 OOS_WINDOW_MISMATCH, 3 NEWS_CALENDAR_
+TAINTED) and must be dispositioned after the fix, never released into run_smoke. News mapping: duplicate-conflict rule
+max_rank.v1 -> the canonical file loads (48,727 rows, 1 conflict resolved to high). risk_freeze.py LIFT_CONDITIONS texts
+now state the delivered 2026-09-13 facts for all three conditions (documentation only; the freeze stays ACTIVE until the
+OWNER lifts it in writing). Still open for "Q09 rerun complete": the active Q10_NEWS lane (95 REVIEW_REQUIRED, 52 pending).
