@@ -1,4 +1,4 @@
-"""Staggered idle-worker reload chunk 76 (Orchestrator 2026-09-13 17:3xZ): ENV reload so the workers reloaded by chunk 75 before QM_NEWS_IMPACT_MAPPING_V2=1 entered the machine scope carry the news contract v2 flag (commit b9daf49ec8). Started by a detached waiter after chunk 75 exits.
+"""Staggered idle-worker reload chunk 76 (+ 20:5xZ amendment: same-program allow-list extended to WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025 so the PRESCREEN cells run L=2 in parallel) (Orchestrator 2026-09-13 17:3xZ): ENV reload so the workers reloaded by chunk 75 before QM_NEWS_IMPACT_MAPPING_V2=1 entered the machine scope carry the news contract v2 flag (commit b9daf49ec8). Started by a detached waiter after chunk 75 exits.
 
 Chunk-75 header follows.
 
@@ -57,7 +57,7 @@ os.environ["QM_COMPILE_GATE_HOLD_ENABLED"] = "1"  # chunk 71: compile-gate exact
 os.environ["QM_CENSUS_FIRST_LANE_AWARE"] = "1"  # chunk 73: lane-aware CENSUS-FIRST (APPROVED c07b8653)
 os.environ["QM_NEWS_IMPACT_MAPPING_V2"] = "1"  # chunk 76: news contract v2 consumers
 os.environ["DL089_LANES_PER_PROGRAM"] = "2"  # OWNER 2026-09-10 "Winsweep ja": L=2 for allow-listed programs
-os.environ["DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST"] = "DL089_QM5_21507_XAUUSD_DWX_2019_2025,DL089_QM5_12710_XTIUSD_DWX_2019_2025,DL089_QM5_11910_NZDUSD_DWX_2019_2025,WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025,WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025,DL089_QM5_10403_XAUUSD_DWX_2019_2025,DL089_QM5_11660_NDX_DWX_2019_2025,DL089_QM5_13213_USDJPY_DWX_2019_2025"  # chunk 72: + 10403/11660/13213 census programs (machine scope mirrors, set 2026-09-13 01:0xZ)
+os.environ["DL089_SAME_PROGRAM_PARALLEL_ALLOWLIST"] = "DL089_QM5_21507_XAUUSD_DWX_2019_2025,DL089_QM5_12710_XTIUSD_DWX_2019_2025,DL089_QM5_11910_NZDUSD_DWX_2019_2025,WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025,WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025,DL089_QM5_10403_XAUUSD_DWX_2019_2025,DL089_QM5_11660_NDX_DWX_2019_2025,DL089_QM5_13213_USDJPY_DWX_2019_2025,WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025"  # 2026-09-13 20:5xZ: PRESCREEN program added (317 Model-1 cells were serialised by opt_census_slot_deferred; machine scope updated too)  # chunk 72: + 10403/11660/13213 census programs (machine scope mirrors, set 2026-09-13 01:0xZ)
 def _pid_alive(pid: int) -> bool:
     h = ctypes.windll.kernel32.OpenProcess(0x1000, False, pid)
     if not h:
