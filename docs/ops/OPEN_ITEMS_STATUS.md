@@ -4048,7 +4048,7 @@ Ticket (Luna): diagnose the class and add a Default-OFF per-run tester-cache bud
 hits. Note: today's backup churn (a 1.2 GB DB backed up per mutation and per hour) is itself a D: consumer ->
 retention ticket f5d30fc9.
 
-## 2026-09-13T01:05Z Hourly watch 00:21Z: D: 64 GB (purge teardown at 60) + fleet 5/10 idle -> two GRUEN fixes
+## 2026-09-13T00:40Z Hourly watch 00:21Z: D: 64 GB (purge teardown at 60) + fleet 5/10 idle -> two GRUEN fixes
 D: burn 95 -> 64 GB in 4 h had two sources: (1) state backups: farmctl hourly snapshot keeps 24 h x 1.18 GB (28 GB
 equilibrium) and the news_calendar_taint job rewrites a full 1.18 GB before-* anchor every 10 min (keep 3, 7 GB/h
 write churn, FACTORY_MUTATION.lock held 1-2 min per cycle -> fleet claim_declined lock_busy); (2) T8 Tester tick
