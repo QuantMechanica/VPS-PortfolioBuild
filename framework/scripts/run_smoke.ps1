@@ -481,6 +481,114 @@ function Get-TesterLogCurrentRunText {
     return $TesterLogTail.Substring($matches[$matches.Count - 1].Index)
 }
 
+# Ticket 24df7ddd / 2026-09-13 — current-run scoping for the real-ticks marker.
+# MetaTester reuses ONE daily journal per terminal agent, so the copied journal
+# a run classifies can contain "generating based on real ticks" lines from
+# EARLIER Model=4 runs of OTHER cells on the same terminal that day. The former
+# full-file Select-String scan attributed those older markers to the current
+# item, flipping a Model-1 PRESCREEN cell's evidence to a real-tick hit — work
+# item 2a897e8e (QM5_41405 PRESCREEN, T2): current-run start marker at journal
+# line ~20040, but 10 real-tick markers from earlier Model=4 cells at lines
+# 25..17695 (all ABOVE it) made the unscoped scan return $true, and
+# farmctl._derive_prescreen_verdict_from_summary then returned INFRA_FAIL
+# PRESCREEN_EVIDENCE_CLASS_MISMATCH.
+#
+# The marker sits near the START of a large real-tick run (right after
+# synchronization), far outside the 800-line tail — that is why the scan must
+# read the FULL copied log, not the tail (a 21MB/95k-line NDX log had the marker
+# 148x, first at line 38, 0x in the tail). We keep the full-log read but scope
+# it to the CURRENT run (text from the last matching "started with inputs"
+# marker) via Get-TesterLogCurrentRunText, using the SAME
+# Expert/Symbol/FromDate/ToDate the tail call uses, and only accept a marker
+# found inside that scoped section.
+#
+# For REAL_TICKS the scoped scan is strictly stronger than the old full-file
+# scan: it can only remove cross-run false positives, never a genuine
+# current-run marker. To guarantee a valid Model=4 run is never flipped to
+# NO_REAL_TICKS by a log-format surprise (start marker unparseable -> empty
+# scoped section), REAL_TICKS falls back to the legacy full-file scan. The
+# Model-1 PRESCREEN class, where the marker is impossible by construction, NEVER
+# accepts an unscoped full-file hit — an unauthenticated section cannot prove
+# anything for a class whose marker cannot legitimately appear.
+function Get-TesterLogRealTicksMarker {
+    param(
+        [Parameter(Mandatory = $true)]
+        [AllowEmptyString()]
+        [string]$TesterLogPath,
+        [Parameter(Mandatory = $true)]
+        [bool]$RequiresRealTicksMarker,
+        [string]$ExpectedExpert = "",
+        [string]$ExpectedSymbol = "",
+        [string]$ExpectedFromDate = "",
+        [string]$ExpectedToDate = ""
+    )
+
+    if ([string]::IsNullOrWhiteSpace($TesterLogPath) -or
+        -not (Test-Path -LiteralPath $TesterLogPath -PathType Leaf)) {
+        return $false
+    }
+
+    # Full copied-log read, BOM/UTF-16 aware (same stream/BOM detection as
+    # Get-TesterLogTailText) so the current-run start marker is visible even when
+    # it lies far above the tail window. A 256MB safety cap keeps the byte-array
+    # allocation bounded; a current-run section larger than the cap yields an
+    # empty scoped section and takes the class-aware fallback below.
+    $maxBytes = 268435456
+    $fullText = ""
+    $stream = [System.IO.File]::Open($TesterLogPath, [System.IO.FileMode]::Open,
+        [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete)
+    try {
+        $prefix = New-Object byte[] 4
+        $prefixLength = $stream.Read($prefix, 0, 4)
+        $unicode = ($prefixLength -ge 2) -and (($prefix[0] -eq 0xFF -and $prefix[1] -eq 0xFE) -or $prefix[1] -eq 0)
+        $length = $stream.Length
+        $offset = [Math]::Max([long]0, $length - $maxBytes)
+        if ($unicode) { $offset -= $offset % 2 }
+        [void]$stream.Seek($offset, [System.IO.SeekOrigin]::Begin)
+        $buffer = New-Object byte[] ([int]($length - $offset))
+        $read = 0
+        while ($read -lt $buffer.Length) {
+            $count = $stream.Read($buffer, $read, $buffer.Length - $read)
+            if ($count -eq 0) { break }
+            $read += $count
+        }
+        $encoding = if ($unicode) { [System.Text.Encoding]::Unicode } else { [System.Text.Encoding]::UTF8 }
+        $fullText = $encoding.GetString($buffer, 0, $read).TrimStart([char]0xFEFF)
+        if ($offset -gt 0) {
+            # A partial first record must not become a fake decisive marker.
+            $newline = $fullText.IndexOf("`n")
+            $fullText = if ($newline -ge 0) { $fullText.Substring($newline + 1) } else { "" }
+        }
+    } finally {
+        $stream.Dispose()
+    }
+
+    $scoped = Get-TesterLogCurrentRunText `
+        -TesterLogTail $fullText `
+        -ExpectedExpert $ExpectedExpert `
+        -ExpectedSymbol $ExpectedSymbol `
+        -ExpectedFromDate $ExpectedFromDate `
+        -ExpectedToDate $ExpectedToDate
+
+    if (-not [string]::IsNullOrWhiteSpace($scoped)) {
+        # Start marker for the current run was found: this scoped section is the
+        # only evidence that belongs to the item being classified.
+        return [bool][regex]::IsMatch($scoped, "(?im)generating based on real ticks")
+    }
+
+    # Empty scoped section: the current-run start marker could not be located in
+    # the full text (log-format surprise, or a current-run section larger than
+    # the read cap).
+    if ($RequiresRealTicksMarker) {
+        # REAL_TICKS (Model=4): keep the legacy full-file scan so a genuine
+        # Model=4 run is never flipped to NO_REAL_TICKS.
+        return [bool](Select-String -LiteralPath $TesterLogPath -Pattern "generating based on real ticks" -SimpleMatch -Quiet -ErrorAction SilentlyContinue)
+    }
+    # PRESCREEN (Model=1): the marker is impossible by construction; an
+    # unauthenticated section can never prove it. Fail closed.
+    return $false
+}
+
 function Resolve-InvalidReportVerdict {
     param(
         [Parameter(Mandatory = $false)]
@@ -3594,15 +3702,29 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         $onInitFailure = Test-TesterLogShowsOnInitFailure -TesterLogTail $testerLogTail
     }
 
-    # Scan the FULL tester log, not just the tail. In large real-tick runs the
-    # "generating based on real ticks" marker appears near the START (right after
-    # synchronization), far outside an 800-line tail window — tail-only scanning
-    # falsely flagged valid high-activity runs (millions of ticks / hundreds of
-    # trades) as NO_REAL_TICKS_MARKER -> INVALID -> INFRA_FAIL. Verified on a 21MB
-    # / 95k-line NDX.DWX log: marker present 148x (first at line 38), 0x in the tail.
+    # Scan the FULL tester log, not just the tail, but SCOPED to the current run.
+    # In large real-tick runs the "generating based on real ticks" marker appears
+    # near the START (right after synchronization), far outside an 800-line tail
+    # window — tail-only scanning falsely flagged valid high-activity runs
+    # (millions of ticks / hundreds of trades) as NO_REAL_TICKS_MARKER -> INVALID
+    # -> INFRA_FAIL. Verified on a 21MB / 95k-line NDX.DWX log: marker present
+    # 148x (first at line 38), 0x in the tail. That reason still holds, so the
+    # scan reads the full log. But MetaTester reuses one daily journal per agent,
+    # so the full log also carries markers from EARLIER Model=4 runs of other
+    # cells — an unscoped scan attributed those to a Model-1 PRESCREEN cell
+    # (ticket 24df7ddd / 2026-09-13, work item 2a897e8e). Get-TesterLogRealTicksMarker
+    # scopes the full-log scan to the current run with the SAME Expert/Symbol/
+    # FromDate/ToDate as the tail call above; see its header for the class-aware
+    # fallback (REAL_TICKS keeps the legacy full scan, PRESCREEN fails closed).
     $hasRealTicksMarker = $false
     if ($testerLogPath -and (Test-Path -LiteralPath $testerLogPath)) {
-        $hasRealTicksMarker = [bool](Select-String -LiteralPath $testerLogPath -Pattern "generating based on real ticks" -SimpleMatch -Quiet -ErrorAction SilentlyContinue)
+        $hasRealTicksMarker = Get-TesterLogRealTicksMarker `
+            -TesterLogPath $testerLogPath `
+            -RequiresRealTicksMarker $requiresRealTicksMarker `
+            -ExpectedExpert $Expert `
+            -ExpectedSymbol $Symbol `
+            -ExpectedFromDate $fromDate `
+            -ExpectedToDate $toDate
     }
     if (-not $hasRealTicksMarker -and $testerLogTail) {
         $hasRealTicksMarker = [regex]::IsMatch($testerLogTail, "(?im)generating based on real ticks")
