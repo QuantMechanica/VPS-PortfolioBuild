@@ -1,5 +1,18 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 13.09. 07:42Z — QM5_41469 neuer XNG-Shoulder-Downside-Sleeve gebaut und Q02 eingereiht:**
+> Offizielles EIA-/peer-reviewed Quellenpaket und Card genehmigt: April–Mai
+> und September–Oktober, genau eine abgeschlossene Woche, Short nur bei
+> `CLV < 1/3`, nächstwöchentlicher Exit, keine Return-/Range-/Body-/Mean-
+> Filter. PACER `hit_count=0`, 10 Referenztests PASS, Q01 `2261e652` =
+> `COMPILE_OK` (0 Fehler/Warnungen, strict PASS). CPU-Aufnahme max. 85,3 %
+> < 97 %; genau ein fixed-risk Q02 `4b409bec` eingereiht. Der Lauf endete
+> deterministisch `FAIL:MIN_TRADES_NOT_MET` (20 Trades statt 25; PF 0,40;
+> Netto -2.614,36), daher keine Rettungsvariante und keine Buchaufnahme.
+> Keine Portfolio-/Live-/T_Live-/AutoTrading-Änderung. Evidence:
+> `docs/ops/evidence/2026-09-13_qm5_41469_xng_shoulder_lower_clv_continuation_q02_enqueue.md`.
+
+
 > **RESULT 13.09. 07:05Z — FX-Cointegration-Fallback nicht dupliziert, RAM-Aufnahme stoppt Dispatch:**
 > Der bindende 66-Paar-Screen ist vollständig mechanisiert; QM5_12532/12533
 > sind über Q02 hinaus und tragen echte Q05-/Q04-FAILs. Der konkrete
@@ -4109,3 +4122,21 @@ stop lets QM_StrategyFarm_ClaudeOrchestration_15min resume headless cycles. Fix:
 interactive_heartbeat_detached.py calls run_interactive_heartbeat_loop(parent_pid=<claude.exe of this session>) and is
 started hidden via Start-Process, so its lifetime equals the interactive session (pid 12176), not the tool shell.
 Running since 07:09Z (loop pid 22240); INTERACTIVE_ORCHESTRATOR.flag refreshed 07:09:42Z.
+
+## 2026-09-13T08:05Z OWNER-DEC-CODEX-PACING-20260913: Codex spend paced to the weekly limit (like Claude)
+OWNER (chat ~07:3xZ): Codex shows 36 % left with the weekly reset only on 2026-09-19 08:29Z; adapt consumption to
+the weekly limit as for Claude. Measured: weekly reset was 2026-09-12 ~09:00Z; used 4 % (11:53Z) -> 8 % (15:53Z)
+-> 42 % (19:53Z) -> 64 % (07:23Z), i.e. ~2 %/h, projected end-of-week 469 %. Two spawners ignored the pace: (1) the
+Codex fleet pacer measured its spend rate over ONE 15-min tick of an integer-granular used% (0.0 or ~4.0 %/h),
+reported under_pace_rampup and spawned a gpt-5.6-sol EA-building mission every 15-30 min (sessions 5-20 min, so
+running=0 at every tick); it never looked at the quota governor throttle flag (CODEX_LOW_TOKENS.flag, set since
+2026-09-12 16:38Z). (2) Router tickets with priority >= owner_priority_min (70) bypass every pace threshold of the
+spawn gate (ops_review class allows up to 95 % anyway). Fix (commit follows): new tools/strategy_farm/
+codex_budget_line.py = one pace authority: remaining budget spread evenly from the activation anchor (07:40Z, 64 %)
+to 92 % at the reset (0.193 %/h, ~4.6 %/day); a Codex spawn is allowed only while used <= line + 1 pt. Wired into
+the fleet pacer (plus: spend rate now measured over >= 1 h of governor samples; unknown rate never spawns; governor
+throttle flag holds the pacer) and into quota_spawn_gate before the owner-priority bypass (payload field
+codex_budget_line_exempt=true is the only per-task escape). From the next weekly reset the anchor is ~0 %, which
+equals the linear weekly pace the governor applies to Claude. Rollback: QM_CODEX_BUDGET_LINE=0 or revert. State:
+D:/QM/reports/state/codex_budget_line.json. Verified: pacer dry run -> over_pace_hold (rate 1.71 %/h measured),
+gate probe prio-90 ticket allowed at the anchor, denied above the line (test).

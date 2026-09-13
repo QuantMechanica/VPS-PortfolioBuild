@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "643aadb6ecca77be187f9d358df3278afa1f79517b62ba04ba3e8cb407e64047",
+      "ea_id": "QM5_41469",
+      "ea_label": "QM5_41469_xng-shoulder-lclv-cont",
+      "expected_mq5_sha256": "643aadb6ecca77be187f9d358df3278afa1f79517b62ba04ba3e8cb407e64047",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41469_xng-shoulder-lclv-cont\\QM5_41469_xng-shoulder-lclv-cont.mq5",
+      "work_item_id": "2261e652-834d-4fbb-a02f-2c55bd7551dc"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "2261e652-834d-4fbb-a02f-2c55bd7551dc",
+  "work_item_id_selectors": [
+    "2261e652-834d-4fbb-a02f-2c55bd7551dc"
+  ]
+}

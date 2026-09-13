@@ -60,9 +60,14 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: 2261e652-834d-4fbb-a02f-2c55bd7551dc
+q01_build_report: D:/QM/reports/work_items/2261e652-834d-4fbb-a02f-2c55bd7551dc/QM5_41469/COMPILE_EA/compile_evidence.json
+q02_status: FAIL
+q02_work_item: 4b409bec-a72d-4c35-b160-8bad6d9b4830
+q02_reason: MIN_TRADES_NOT_MET
+q02_report: D:/QM/reports/work_items/4b409bec-a72d-4c35-b160-8bad6d9b4830/QM5_41469/20260913_074145/summary.json
 force_build: true
 review_focus: "Falsify an XNG April-May/September-October lower-tercile weekly-close downside continuation distinct from certified QM5_12567, the symmetric one-week sign fade, the two-week shoulder continuation, the upper-tercile shoulder fade, and the SMA/stretch/wick failed-rally system. Verify exact completed week, strict CLV inequality, no return/range/body/wick/mean predicates, short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -256,5 +261,5 @@ live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-13 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-13 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-13 | PENDING | not yet compiled |
-| Q02 Baseline Screening | 2026-09-13 | NOT_ENQUEUED | paced handoff only after Q01 and CPU admission |
+| Q01 Build Validation | 2026-09-13 | PASS | compile `2261e652`; `COMPILE_OK`; 0 compiler errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-13 | FAIL | `MIN_TRADES_NOT_MET`: 20 trades vs 25 required; PF 0.40; net -2614.36; no requeue or tuning |
