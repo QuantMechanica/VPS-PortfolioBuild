@@ -294,6 +294,23 @@ def test_successor_lock_busy_is_reported_not_raised(tmp_path: Path) -> None:
 # release-hold
 # --------------------------------------------------------------------------
 
+
+def test_governed_backup_timeout_override_is_bounded(monkeypatch) -> None:
+    monkeypatch.delenv("QM_TOOL_BACKUP_TIMEOUT_SECONDS", raising=False)
+    assert farmctl._governed_state_backup_timeout_seconds() == 60.0
+
+    monkeypatch.setenv("QM_TOOL_BACKUP_TIMEOUT_SECONDS", "180")
+    assert farmctl._governed_state_backup_timeout_seconds() == 180.0
+
+    monkeypatch.setenv("QM_TOOL_BACKUP_TIMEOUT_SECONDS", "600")
+    assert farmctl._governed_state_backup_timeout_seconds() == 300.0
+
+
+def test_governed_backup_timeout_invalid_override_uses_default(monkeypatch) -> None:
+    for value in ("not-a-number", "nan", "inf", "0", "-1"):
+        monkeypatch.setenv("QM_TOOL_BACKUP_TIMEOUT_SECONDS", value)
+        assert farmctl._governed_state_backup_timeout_seconds() == 60.0
+
 HOLD_WID = "30584122-b7b3-41eb-8e1a-b03517554d4d"
 HOLD_CODE = "Q09_AWAITING_SEALED_PLAN"
 RELEASE_NOTE = "OWNER-DEC-Q09HOLD-REQUAL-8-20260829 pair-7 sealed plan release"

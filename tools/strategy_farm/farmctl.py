@@ -13,6 +13,7 @@ import datetime as dt
 import glob
 import hashlib
 import json
+import math
 import os
 import random
 import re
@@ -25208,6 +25209,25 @@ def _normpath_key(value: Any) -> str:
     return os.path.normcase(os.path.normpath(str(value or "")))
 
 
+GOVERNED_STATE_BACKUP_TIMEOUT_DEFAULT_SECONDS = 60.0
+GOVERNED_STATE_BACKUP_TIMEOUT_MAX_SECONDS = 300.0
+
+
+def _governed_state_backup_timeout_seconds() -> float:
+    """Return the bounded online-backup timeout for governed mutations."""
+    raw_timeout = os.environ.get(
+        "QM_TOOL_BACKUP_TIMEOUT_SECONDS",
+        str(GOVERNED_STATE_BACKUP_TIMEOUT_DEFAULT_SECONDS),
+    )
+    try:
+        timeout_seconds = float(raw_timeout)
+    except ValueError:
+        return GOVERNED_STATE_BACKUP_TIMEOUT_DEFAULT_SECONDS
+    if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        return GOVERNED_STATE_BACKUP_TIMEOUT_DEFAULT_SECONDS
+    return min(timeout_seconds, GOVERNED_STATE_BACKUP_TIMEOUT_MAX_SECONDS)
+
+
 def _governed_state_backup_resolution(root: Path, label: str) -> dict[str, Any]:
     """Resolve one rolling-window rollback anchor with receipt metadata."""
     try:
@@ -25226,7 +25246,7 @@ def _governed_state_backup_resolution(root: Path, label: str) -> dict[str, Any]:
             conn,
             src,
             backup_dir,
-            timeout_seconds=60.0,
+            timeout_seconds=_governed_state_backup_timeout_seconds(),
             reuse_max_age_minutes=max_age,
             backup_label=label,
         )
