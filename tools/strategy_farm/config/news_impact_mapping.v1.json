@@ -59,7 +59,33 @@
     }
   },
   "unmapped_label_policy": "fail_closed",
-  "duplicate_policy": "collapse_identical_impact_else_reject",
+  "duplicate_policy": "collapse_identical_impact_else_highest_rank_wins",
+  "duplicate_conflict_rule": {
+    "rule_id": "qm.news_impact_mapping.duplicate_conflict.max_rank.v1",
+    "decided_by": "ORCHESTRATOR",
+    "decided_on": "2026-09-13",
+    "applies_to": "two or more rows of the authoritative source sharing one identity_fields triple but carrying different impact labels",
+    "rule": "the highest impact_rank wins; the losing labels are recorded on the collapsed row and counted in the run self-report",
+    "rationale": "A news filter is a safety device. On an identity conflict the fail-safe direction is the more restrictive classification, never the milder one: blocking a window that did not need blocking costs one skipped trade, trading through a window that should have been blocked costs an unbounded tail. Contract section 8 explicitly permits visible deduplication under a recorded rule, so the escalation is logged rather than silent.",
+    "unresolvable": "two different labels of equal rank remain a hard DuplicateEventConflict - there is no fail-safe direction to pick",
+    "known_conflicts_at_decision_time": [
+      {
+        "timestamp_utc": "2021-06-30T19:30:00Z",
+        "currency": "GBP",
+        "event": "BOE Gov Bailey Speaks",
+        "source_labels": ["medium", "high"],
+        "resolved_to": "high",
+        "source": "forex_factory_calendar_clean.csv",
+        "note": "the only conflicting identity in the 48727-row canonical file as of 2026-09-13; it previously made run_self_report refuse the canonical source outright"
+      }
+    ],
+    "supported_policies": [
+      "collapse_identical_impact_else_reject",
+      "collapse_identical_impact_else_highest_rank_wins"
+    ],
+    "contract_reference": "docs/ops/NEWS_CALENDAR_CONTRACT_V2_2026-08-22.md#8",
+    "gate_semantics_unchanged": true
+  },
   "default_enabled": false,
   "consumer_optin_required": true,
   "live_path_forbidden": true,

@@ -49,19 +49,19 @@ LIFT_CONDITIONS = [
         "id": "SP-A1/A2-DEPLOY-POINTER",
         "requirement": "live_deployment_pointer.json is signed and its consumers read authenticated instead of UNKNOWN",
         "status": "BLOCKED",
-        "blocked_by": "The 10-preset repair provenance is now archive/receipt verified (task 58b96908), but the live deployment pointer and authenticated consumer rollout remain separately unsigned/uncompleted.",
+        "blocked_by": "2026-09-13: minting the signed pointer (generate_live_deployment_pointer.py --signed) is itself refused by this freeze guard (LIVE_RISK_FREEZE_BLOCKED operation=mint a signed T_Live deployment pointer), so condition 1 cannot be met while the freeze is ACTIVE; the dry-run pointer for the deployed 24-sleeve manifest is ready (24/24 binaries OK). Resolution = the OWNER's explicit written lift (transcribed as lift_authority), then the pointer is minted first.",
     },
     {
         "id": "NEWS-CONTRACT-V2",
         "requirement": "news impact taxonomy implemented under qm.news_impact_mapping.v1",
         "status": "PARTIAL",
-        "blocked_by": "router task 84c988e6 -- OWNER half decided 2026-08-22 (clean canonical); still gated on Q09 rerun completion",
+        "blocked_by": "Implemented 2026-09-13 (commit ac67e36f1f + duplicate rule): tools/strategy_farm/news_impact_mapping.py + config/news_impact_mapping.v1.json deliver contract sections 3/4/7 (single authoritative source per OWNER-DEC-NEWS-MAPPING, versioned rules+code hash, run self-report, qm.dst_rule.us.v1 python port), Default-OFF, no consumer wired, live path untouched (DL-080). The historical Q09_NEWS review lane is closed (64 append-only dispositions 2026-09-13). Still open: consumer cutover of p8_news_driver/news_calendar_gate off the two-file pair, and the active Q10_NEWS lane (95 REVIEW_REQUIRED, 52 pending mostly held) which the SP-B2 preflight names as 'Q09 rerun complete'.",
     },
     {
         "id": "GOVERNOR-HARDENING",
         "requirement": "account/portfolio governor hardened AND actually enforcing",
         "status": "PARTIAL",
-        "blocked_by": "SP-C1 is approved and dry-run-proven at commit 593c9ddca, but its v2 monitor deploy and action adapter remain OWNER/ROT-gated and are not live",
+        "blocked_by": "2026-09-13 package (commits d6c85a5e46, 22353b1f4e): monitor v2 ex5 built artifact-only (sha f98523ee...), threshold policy PROPOSED with derivation, watcher installer dry-run proven, halt-file executor over the EA-native QM\halt\<ea_id>.halt channel (L3 exact). Remaining OWNER/cutover steps: attach the monitor v2 chart on T_Live, sign the policy, write the activation artifact + decisions/<date>_owner_governor_enforce_dxz.md (GOVERNOR-ENFORCE: ACTIVATE DXZ <date>); Claude installs the watcher task after the monitor is live.",
     },
 ]
 

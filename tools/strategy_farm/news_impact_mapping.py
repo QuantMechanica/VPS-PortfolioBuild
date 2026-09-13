@@ -75,7 +75,21 @@ class UnmappedImpactLabel(MappingError):
 
 
 class DuplicateEventConflict(MappingError):
-    """Section 8: the same event identity carries conflicting impact."""
+    """Section 8: the same event identity carries conflicting impact.
+
+    Raised only when the active ``duplicate_policy`` cannot resolve the clash:
+    under ``collapse_identical_impact_else_reject`` for *any* disagreement, and
+    under ``collapse_identical_impact_else_highest_rank_wins`` only when the
+    disagreeing labels share one rank (no fail-safe direction exists).
+    """
+
+
+#: ``duplicate_policy`` values this module implements (contract section 8).
+DUPLICATE_POLICY_REJECT = "collapse_identical_impact_else_reject"
+DUPLICATE_POLICY_MAX_RANK = "collapse_identical_impact_else_highest_rank_wins"
+SUPPORTED_DUPLICATE_POLICIES = frozenset(
+    {DUPLICATE_POLICY_REJECT, DUPLICATE_POLICY_MAX_RANK}
+)
 
 
 # --------------------------------------------------------------------------
@@ -209,6 +223,11 @@ def load_rules(rules_path: Path | str | None = None) -> dict[str, Any]:
     labels = rules["labels"]
     if not isinstance(labels, Mapping) or not labels:
         raise MappingError("rules.labels must be a non-empty object")
+    if rules["duplicate_policy"] not in SUPPORTED_DUPLICATE_POLICIES:
+        raise MappingError(
+            f"rules duplicate_policy {rules['duplicate_policy']!r} is not one of "
+            f"{sorted(SUPPORTED_DUPLICATE_POLICIES)}"
+        )
     seen_alias: dict[str, str] = {}
     for label, spec in labels.items():
         if not isinstance(spec, Mapping) or "rank" not in spec or "gating" not in spec:
@@ -303,6 +322,10 @@ class MappedEvent:
     broker_time: str
     broker_offset_hours: int
     occurrences: int = 1
+    #: True when this row survived an identity conflict under the max-rank rule.
+    impact_conflict_resolved: bool = False
+    #: The labels this row out-ranked, sorted, so the escalation stays visible.
+    superseded_impact_labels: tuple[str, ...] = ()
 
     def as_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -373,12 +396,27 @@ def map_rows(
     the same bytes produce byte-identical evidence.  Duplicate identities are
     handled per ``rules.duplicate_policy``: identities whose mapped label agrees
     collapse into one row with ``occurrences > 1`` (visible, recorded); a
-    disagreement raises :class:`DuplicateEventConflict` rather than
-    double-blocking or silently picking a winner (contract section 8).
+    disagreement is settled by the recorded ``duplicate_conflict_rule``
+    (contract section 8, which explicitly permits visible deduplication under a
+    recorded rule):
+
+    * ``collapse_identical_impact_else_reject`` - any disagreement raises
+      :class:`DuplicateEventConflict`.  This was the only behaviour before
+      2026-09-13 and stays selectable through an explicit rules artifact.
+    * ``collapse_identical_impact_else_highest_rank_wins`` - the shipped rule
+      since 2026-09-13: the **higher impact rank wins**.  A news filter is a
+      safety device, so the fail-safe direction on an identity conflict is the
+      more restrictive classification.  The out-ranked label is kept on the row
+      in ``superseded_impact_labels`` and counted in the self-report, so the
+      escalation is visible, never silent.  Two *different* labels of equal rank
+      still raise - there is no fail-safe direction to pick.
     """
 
     _require_opt_in(consumer, opt_in)
     resolved = dict(rules) if rules is not None else load_rules()
+    policy = resolved["duplicate_policy"]
+    if policy not in SUPPORTED_DUPLICATE_POLICIES:
+        raise MappingError(f"unsupported duplicate_policy {policy!r}")
     formats = resolved.get("timestamp_formats") or ["%Y-%m-%dT%H:%M:%S"]
     ts_field = resolved["timestamp_field"]
     ccy_field = resolved["currency_field"]
@@ -411,13 +449,39 @@ def map_rows(
         if previous is None:
             collapsed[key] = mapped
             continue
-        if previous.impact_label != mapped.impact_label:
+        if previous.impact_label == mapped.impact_label:
+            collapsed[key] = MappedEvent(
+                **{**previous.as_dict(), "occurrences": previous.occurrences + 1}
+            )
+            continue
+        if (
+            policy != DUPLICATE_POLICY_MAX_RANK
+            or previous.impact_rank == mapped.impact_rank
+        ):
             raise DuplicateEventConflict(
                 f"duplicate identity {key} carries conflicting impact "
                 f"{previous.impact_label!r} vs {mapped.impact_label!r}"
             )
+        winner, loser = (
+            (mapped, previous)
+            if mapped.impact_rank > previous.impact_rank
+            else (previous, mapped)
+        )
         collapsed[key] = MappedEvent(
-            **{**previous.as_dict(), "occurrences": previous.occurrences + 1}
+            **{
+                **winner.as_dict(),
+                "occurrences": previous.occurrences + 1,
+                "impact_conflict_resolved": True,
+                "superseded_impact_labels": tuple(
+                    sorted(
+                        {
+                            *previous.superseded_impact_labels,
+                            *mapped.superseded_impact_labels,
+                            loser.impact_label,
+                        }
+                    )
+                ),
+            }
         )
     return [collapsed[key] for key in sorted(collapsed)]
 
@@ -473,6 +537,8 @@ def run_self_report(
     gating_rows = 0
     duplicate_groups = 0
     collapsed_rows = 0
+    conflicts_resolved = 0
+    resolved_conflicts: list[dict[str, Any]] = []
     for event in events:
         counts[event.impact_label] = counts.get(event.impact_label, 0) + event.occurrences
         if event.gating:
@@ -480,6 +546,15 @@ def run_self_report(
         if event.occurrences > 1:
             duplicate_groups += 1
             collapsed_rows += event.occurrences - 1
+        if event.impact_conflict_resolved:
+            conflicts_resolved += 1
+            resolved_conflicts.append({
+                "timestamp_utc": event.timestamp_utc,
+                "currency": event.currency,
+                "event": event.event,
+                "resolved_to": event.impact_label,
+                "superseded_impact_labels": list(event.superseded_impact_labels),
+            })
 
     fingerprint = mapping_fingerprint(resolved)
     report = {
@@ -499,6 +574,11 @@ def run_self_report(
         "duplicate_groups": duplicate_groups,
         "duplicate_collapsed_rows": collapsed_rows,
         "duplicate_policy": resolved["duplicate_policy"],
+        "duplicate_conflict_rule_id": (
+            (resolved.get("duplicate_conflict_rule") or {}).get("rule_id")
+        ),
+        "duplicate_conflicts_resolved": conflicts_resolved,
+        "duplicate_conflicts": resolved_conflicts,
         "impact_counts": counts,
         "gating_row_count": gating_rows,
         "max_event_date_utc": events[-1].timestamp_utc if events else None,

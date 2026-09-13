@@ -174,13 +174,148 @@ class DuplicateTests(unittest.TestCase):
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0].occurrences, 2)
 
-    def test_conflicting_impact_duplicates_raise(self):
+    @staticmethod
+    def _reject_rules():
+        rules = nim.load_rules()
+        rules["duplicate_policy"] = nim.DUPLICATE_POLICY_REJECT
+        return rules
+
+    def test_conflicting_impact_duplicates_raise_under_the_reject_policy(self):
         rows = [
             {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD", "Impact": "Low", "Event": "X"},
             {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD", "Impact": "High", "Event": "X"},
         ]
         with self.assertRaises(nim.DuplicateEventConflict):
-            nim.map_rows(rows, consumer="test", opt_in=True)
+            nim.map_rows(rows, consumer="test", opt_in=True, rules=self._reject_rules())
+
+    def test_shipped_policy_is_highest_rank_wins(self):
+        rules = nim.load_rules()
+        self.assertEqual(rules["duplicate_policy"], nim.DUPLICATE_POLICY_MAX_RANK)
+        rule = rules["duplicate_conflict_rule"]
+        self.assertEqual(
+            rule["rule_id"], "qm.news_impact_mapping.duplicate_conflict.max_rank.v1"
+        )
+        self.assertTrue(rule["gate_semantics_unchanged"])
+        self.assertEqual(
+            set(rule["supported_policies"]), set(nim.SUPPORTED_DUPLICATE_POLICIES)
+        )
+
+    def test_unsupported_duplicate_policy_is_refused(self):
+        rules = nim.load_rules()
+        rules["duplicate_policy"] = "last_row_wins"
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.json"
+            path.write_text(json.dumps(rules), encoding="utf-8")
+            with self.assertRaises(nim.MappingError):
+                nim.load_rules(path)
+
+    def test_conflicting_impact_escalates_to_the_higher_rank(self):
+        for order in (("Low", "High"), ("High", "Low")):
+            with self.subTest(order=order):
+                rows = [
+                    {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD",
+                     "Impact": order[0], "Event": "X"},
+                    {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD",
+                     "Impact": order[1], "Event": "X"},
+                ]
+                events = nim.map_rows(rows, consumer="test", opt_in=True)
+                self.assertEqual(len(events), 1)
+                self.assertEqual(events[0].impact_label, "high")
+                self.assertEqual(events[0].impact_rank, 3)
+                self.assertTrue(events[0].gating)
+                self.assertEqual(events[0].occurrences, 2)
+                self.assertTrue(events[0].impact_conflict_resolved)
+                self.assertEqual(events[0].superseded_impact_labels, ("low",))
+
+    def test_escalation_never_downgrades_a_gating_row_to_holiday(self):
+        rows = [
+            {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD",
+             "Impact": "Holiday", "Event": "X"},
+            {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD",
+             "Impact": "Medium", "Event": "X"},
+        ]
+        events = nim.map_rows(rows, consumer="test", opt_in=True)
+        self.assertEqual(events[0].impact_label, "medium")
+        self.assertTrue(events[0].gating)
+
+    def test_three_way_conflict_keeps_every_superseded_label(self):
+        rows = [
+            {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD",
+             "Impact": impact, "Event": "X"}
+            for impact in ("Low", "Medium", "High")
+        ]
+        events = nim.map_rows(rows, consumer="test", opt_in=True)
+        self.assertEqual(events[0].impact_label, "high")
+        self.assertEqual(events[0].occurrences, 3)
+        self.assertEqual(events[0].superseded_impact_labels, ("low", "medium"))
+
+    def test_equal_rank_conflict_still_raises(self):
+        rules = nim.load_rules()
+        rules["labels"]["medium"]["rank"] = rules["labels"]["high"]["rank"]
+        rows = [
+            {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD",
+             "Impact": "Medium", "Event": "X"},
+            {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD",
+             "Impact": "High", "Event": "X"},
+        ]
+        with self.assertRaises(nim.DuplicateEventConflict):
+            nim.map_rows(rows, consumer="test", opt_in=True, rules=rules)
+
+    def test_boe_bailey_2021_06_30_resolves_to_high(self):
+        """The one conflicting identity in the canonical file (2026-09-13)."""
+        rows = [
+            {"DateTime_UTC": "2021.06.30 19:30", "Currency": "GBP",
+             "Impact": "Medium", "Event": "BOE Gov Bailey Speaks"},
+            {"DateTime_UTC": "2021.06.30 19:30", "Currency": "GBP",
+             "Impact": "High", "Event": "BOE Gov Bailey Speaks"},
+        ]
+        events = nim.map_rows(rows, consumer="test", opt_in=True)
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0].impact_label, "high")
+        self.assertEqual(events[0].superseded_impact_labels, ("medium",))
+        known = nim.load_rules()["duplicate_conflict_rule"][
+            "known_conflicts_at_decision_time"
+        ]
+        self.assertEqual(
+            [
+                (k["timestamp_utc"], k["currency"], k["event"], k["resolved_to"])
+                for k in known
+            ],
+            [("2021-06-30T19:30:00Z", "GBP", "BOE Gov Bailey Speaks", "high")],
+        )
+
+    def test_self_report_records_the_resolved_conflict(self):
+        rows = [
+            _row("2021.06.30 19:30", "GBP", "Medium", "BOE Gov Bailey Speaks"),
+            _row("2021.06.30 19:30", "GBP", "High", "BOE Gov Bailey Speaks"),
+        ]
+        with TemporaryDirectory() as tmp:
+            path = _write_calendar(Path(tmp), rows)
+            report = nim.run_self_report(path, consumer="test", opt_in=True)
+        self.assertEqual(report["duplicate_conflicts_resolved"], 1)
+        self.assertEqual(
+            report["duplicate_conflict_rule_id"],
+            "qm.news_impact_mapping.duplicate_conflict.max_rank.v1",
+        )
+        self.assertEqual(report["duplicate_conflicts"][0]["resolved_to"], "high")
+        self.assertEqual(
+            report["duplicate_conflicts"][0]["superseded_impact_labels"], ["medium"]
+        )
+        self.assertEqual(report["impact_counts"]["high"], 2)
+        self.assertEqual(report["impact_counts"]["medium"], 0)
+
+    @unittest.skipUnless(
+        (nim.DEFAULT_CALENDAR_DIR / "forex_factory_calendar_clean.csv").is_file(),
+        "canonical calendar not present on this host",
+    )
+    def test_canonical_source_is_no_longer_refused(self):
+        report = nim.run_self_report(consumer="unit_test", opt_in=True)
+        self.assertEqual(
+            report["authoritative_source"], "forex_factory_calendar_clean.csv"
+        )
+        self.assertGreater(report["row_count"], 0)
+        for entry in report["duplicate_conflicts"]:
+            self.assertTrue(entry["superseded_impact_labels"])
 
     def test_same_event_different_currency_is_not_a_duplicate(self):
         rows = [
