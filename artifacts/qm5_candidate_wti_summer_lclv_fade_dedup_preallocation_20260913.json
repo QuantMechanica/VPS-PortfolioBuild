@@ -1,0 +1,71 @@
+{
+  "candidate": {
+    "author": "Burakov Crabel Yang",
+    "mechanic": "WTI June October one completed week lower-tercile close-location long-only reversion one-week hold",
+    "slug": "wti-summer-lclv-fade",
+    "strategy_id": "BURAKOV-CRABEL-YANG-WTI-SUMMER-LCLV-FADE-20260913_S01"
+  },
+  "error": "MISSING_ROOT:strategy_wiki:G:\\My Drive\\09 Strategy Wiki\\strategies",
+  "exit_code": 3,
+  "generated_at_utc": "2026-09-13T03:02:22+00:00",
+  "matches": [
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41457_wti-summer-nr2-upweek-fade.md",
+      "score": 0.8333333333333334,
+      "slug": "wti-summer-nr2-upweek-fade",
+      "source": "card",
+      "strategy_id": "BURAKOV-CRABEL-YANG-WTI-SUMMER-NR2-UPWEEK-FADE-20260912_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41458_wti-summer-wr2-upweek-fade.md",
+      "score": 0.8333333333333334,
+      "slug": "wti-summer-wr2-upweek-fade",
+      "source": "card",
+      "strategy_id": "BURAKOV-CRABEL-YANG-WTI-SUMMER-WR2-UPWEEK-FADE-20260912_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41462_wti-summer-hclv-fade.md",
+      "score": 0.8333333333333334,
+      "slug": "wti-summer-hclv-fade",
+      "source": "card",
+      "strategy_id": "BURAKOV-CRABEL-YANG-WTI-SUMMER-HCLV-FADE-20260912_S01"
+    },
+    {
+      "match_type": "fuzzy",
+      "path": "C:\\QM\\repo\\strategy-seeds\\cards\\approved\\QM5_41464_wti-winter-lclv-fade.md",
+      "score": 0.8333333333333334,
+      "slug": "wti-winter-lclv-fade",
+      "source": "card",
+      "strategy_id": "BURAKOV-CRABEL-YANG-WTI-WINTER-LCLV-FADE-20260913_S01"
+    }
+  ],
+  "schema": "qm.research-dedup-check.evidence.v2",
+  "sources": [
+    {
+      "checked_root": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+      "count": 4947,
+      "detail": null,
+      "label": "ea_id_registry",
+      "status": "OK"
+    },
+    {
+      "checked_root": "C:\\QM\\repo\\strategy-seeds\\cards",
+      "count": 1556,
+      "detail": null,
+      "label": "strategy_cards",
+      "status": "OK"
+    },
+    {
+      "checked_root": "G:\\My Drive\\09 Strategy Wiki\\strategies",
+      "count": null,
+      "detail": null,
+      "label": "strategy_wiki",
+      "status": "MISSING_ROOT"
+    }
+  ],
+  "tool_version": "2.0.0",
+  "verdict": "FUZZY_MATCH"
+}
