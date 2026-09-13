@@ -1,0 +1,21 @@
+{
+  "schema": "qm.governed_magic_precondition_evidence/v1",
+  "task_id": "b9d39876-fcfb-4e9d-a526-48bd48017e32",
+  "ea_id": "PENDING_68333E26",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_68333E26_index-cash-open-gap-fade.md",
+  "classification": "invalid_ea_id",
+  "required_action": "REFUSE",
+  "precheck": {
+    "ready": false,
+    "classification": "invalid_ea_id",
+    "action": "REFUSE",
+    "ea_id": "PENDING_68333E26",
+    "slug": "index-cash-open-gap-fade",
+    "target_symbols": ["GDAXI.DWX", "WS30.DWX", "UK100.DWX"]
+  },
+  "finding": "The card's ea_id frontmatter value is a placeholder token ('PENDING_68333E26'), not a QM5 numeric identity, so it does not match the (?:QM5_)?(\\d+) pattern the governed magic allocator and precheck require. This card also carries status: DRAFT alongside g0_status: APPROVED and all r1-r4 fields UNKNOWN pending independent G0 review (per its own frontmatter and g0_approval_reasoning note 'Pending independent G0 review'). No numeric ea_id has been reserved for this strategy yet, so there is no identity or magic-number precondition to check or allocate. The governed allocator sequence (identity -> magic rows -> resolver) cannot begin without a real numeric ea_id.",
+  "action_taken": "REFUSE per action=REFUSE. No registry or resolver mutation attempted. No card edit attempted -- assigning a numeric ea_id is a G0/identity-reservation decision outside this task's scope, not a magic-allocation precondition fix.",
+  "required_next_step": "Card needs a real numeric ea_id assigned through the standard identity-reservation path (G0 completion + EA directory/card-of-record creation) before governed_magic_precondition or governed_magic_allocator can run against it. Left in cards_review with ea_id unchanged; original build stays blocked.",
+  "verdict": "REFUSE -- invalid_ea_id (placeholder PENDING_68333E26), not eligible for governed magic allocation until a numeric identity is reserved",
+  "observed_at": "2026-09-13T21:42:00Z"
+}

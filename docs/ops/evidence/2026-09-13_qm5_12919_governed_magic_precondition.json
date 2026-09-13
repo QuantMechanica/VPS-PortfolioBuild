@@ -1,0 +1,48 @@
+{
+  "schema": "qm.governed_magic_precondition_evidence/v1",
+  "task_id": "27cdbc58-6086-4eac-ba43-51431d565476",
+  "ea_id": "QM5_12919",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12919_amp-value-momentum-xasset.md",
+  "initial_classification": "card_target_symbols_missing_or_invalid",
+  "initial_required_action": "CARD_AMENDMENT_REQUIRED",
+  "finding": "Card frontmatter was missing the target_symbols contract key. Active registry already carried one exact active magic row per symbol (8 rows, ea_id_registry active, resolver in sync) matching the card body's 'Implementation Notes for Codex (P1)' DWX symbol list exactly, in the same order. The amendment was observed already applied concurrently (by another actor working the same registry) before this task ran its own edit -- no invented symbols, order taken verbatim from the pre-existing active magic_numbers.csv rows for ea_id 12919.",
+  "amended_target_symbols": [
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "UK100.DWX",
+    "WS30.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX",
+    "AUDUSD.DWX"
+  ],
+  "active_magic_rows_source": "framework/registry/magic_numbers.csv:14338-14345",
+  "post_amendment_precheck": {
+    "ea_id": "QM5_12919",
+    "ea_id_numeric": 12919,
+    "slug": "amp-value-momentum-xasset",
+    "target_symbols": [
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "UK100.DWX",
+      "WS30.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "AUDUSD.DWX"
+    ],
+    "target_symbols_valid": true,
+    "invalid_target_symbols": [],
+    "identity_registry_rows": 1,
+    "active_magic_rows": 8,
+    "retired_magic_rows": 0,
+    "other_status_magic_rows": 0,
+    "total_magic_rows": 8,
+    "ea_directory_exists": true,
+    "ready": true,
+    "classification": "ready",
+    "action": "NONE"
+  },
+  "verdict": "READY -- card_target_symbols_missing_or_invalid resolved, magic_allocation_precheck now returns ready=true",
+  "observed_at": "2026-09-13T21:40:00Z"
+}

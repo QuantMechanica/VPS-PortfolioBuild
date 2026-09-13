@@ -1,0 +1,63 @@
+{
+  "schema": "qm.governed_magic_precondition_evidence/v1",
+  "task_id": "f7741b0c-bc4d-4e9e-8c35-78c461bd85d2",
+  "ea_id": "QM5_11924",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11924_rb-mean-reversion.md",
+  "initial_classification": "never_allocated",
+  "initial_required_action": "GOVERNED_ALLOCATE",
+  "action_taken": "python tools/strategy_farm/governed_magic_allocator.py --card \"D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11924_rb-mean-reversion.md\" --max-eas 1 --output \"C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-13_qm5_11924_governed_magic_precondition.json\"",
+  "allocator_result": {
+    "allocated_eas": 1,
+    "allocated_ids": ["QM5_11924"],
+    "allocated_rows": 1,
+    "identity_rows_added": 0,
+    "resolver_rows_after": 18349
+  },
+  "allocator_verification_block": {
+    "checks": {
+      "identity_exact_active": true,
+      "magic_rows_exact_card_order": true,
+      "resolver_contains_every_registry_tuple": true
+    },
+    "decision_action": "allocate",
+    "decision_reason": "eligible",
+    "identity_registry_row": {
+      "ea_id": "QM5_11924",
+      "slug": "rb-mean-reversion",
+      "status": "active"
+    },
+    "registry_rows": [
+      {
+        "ea_id": "QM5_11924",
+        "magic": 119240000,
+        "slot": 0,
+        "slug": "rb-mean-reversion",
+        "status": "active",
+        "symbol": "EURUSD.DWX"
+      }
+    ],
+    "resolver_tuples": [
+      {"ea_id": 11924, "magic": 119240000, "slot": 0, "symbol": "EURUSD.DWX"}
+    ],
+    "status": "PASS"
+  },
+  "post_allocation_precheck": {
+    "ea_id": "QM5_11924",
+    "ea_id_numeric": 11924,
+    "slug": "rb-mean-reversion",
+    "target_symbols": ["EURUSD.DWX"],
+    "target_symbols_valid": true,
+    "invalid_target_symbols": [],
+    "identity_registry_rows": 1,
+    "active_magic_rows": 1,
+    "retired_magic_rows": 0,
+    "other_status_magic_rows": 0,
+    "total_magic_rows": 1,
+    "ea_directory_exists": true,
+    "ready": true,
+    "classification": "ready",
+    "action": "NONE"
+  },
+  "verdict": "READY -- governed magic allocation applied via governed_magic_allocator.py, magic=119240000 (ea_id*10000+slot formula), verification block PASS, magic_allocation_precheck now returns ready=true",
+  "observed_at": "2026-09-13T21:41:00Z"
+}
