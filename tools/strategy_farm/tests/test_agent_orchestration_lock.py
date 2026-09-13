@@ -361,3 +361,29 @@ def test_headless_model_contract_applies_selected_matrix_tier(monkeypatch, tmp_p
     assert codex[codex.index("-m") + 1] == "gpt-5.6-sol"
     assert claude[claude.index("--model") + 1] == "sonnet"
     assert orchestration.headless_model_contract("codex", selected)["reasoning_effort"] == "max"
+
+
+def test_codex_lane_ignores_fresh_interactive_flag(tmp_path, monkeypatch) -> None:
+    """2026-09-13: the interactive marker guards only the Claude lane. Between 2026-09-12 15:30Z and
+    2026-09-13 11:15Z the Codex ticket lane skipped 80 cycles with interactive_orchestrator_active."""
+    flag = tmp_path / "INTERACTIVE_ORCHESTRATOR.flag"
+    now = dt.datetime.now(dt.UTC)
+    flag.write_text(
+        json.dumps({"pid": 4321, "host": "desk", "heartbeat_at": now.isoformat()}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(orchestration, "INTERACTIVE_ORCHESTRATOR_FLAG", flag)
+    monkeypatch.setattr(orchestration, "LOG_DIR", tmp_path / "logs")
+    monkeypatch.setattr(orchestration, "_write_lane_heartbeat", lambda *_a, **_k: None)
+    monkeypatch.setattr(
+        orchestration,
+        "acquire_headless_session_lease",
+        lambda agent: (False, {"reason": "stub_lease_busy", "agent": agent}),
+    )
+    result = orchestration.run_agent(
+        "codex", dry_run=False, stale_minutes=250, timeout_minutes=225, max_sessions=1
+    )
+    assert result["skipped"] is True
+    assert result["reason"] == "stub_lease_busy"
+    journal = tmp_path / "logs" / "headless_orchestration_skip_journal.jsonl"
+    assert "interactive_orchestrator_active" not in journal.read_text(encoding="utf-8")

@@ -4140,3 +4140,13 @@ codex_budget_line_exempt=true is the only per-task escape). From the next weekly
 equals the linear weekly pace the governor applies to Claude. Rollback: QM_CODEX_BUDGET_LINE=0 or revert. State:
 D:/QM/reports/state/codex_budget_line.json. Verified: pacer dry run -> over_pace_hold (rate 1.71 %/h measured),
 gate probe prio-90 ticket allowed at the anchor, denied above the line (test).
+
+## 2026-09-13T11:40Z Codex ticket lane was head-blocked by the interactive orchestrator marker (fixed)
+headless_orchestration_skip_journal.jsonl: 80 Codex cycles since 2026-09-12 15:30Z skipped with
+interactive_orchestrator_active (the marker my interactive session refreshes so headless CLAUDE cycles do not race
+it). run_agent() applied the guard to every lane, so no Codex ticket session was spawned for ~20 h; the five
+priority tickets (519c11fe PRESCREEN schema fix, 60174747 Dukascopy P3, f5d30fc9 retention, 3941072e thesis bank,
+c07b8653 lane-aware CENSUS-FIRST) cycled through the 6-hour stale-release (released 14:27Z, 03:22Z, 09:27Z) and were
+re-claimed without a session. Codex spend in that window was pacer missions only. Fix: the interactive guard now
+applies to agent == "claude" only (test test_codex_lane_ignores_fresh_interactive_flag); the next
+QM_StrategyFarm_CodexOrchestration_15min tick dispatches under the budget line (used 65 % <= line 64.8 + 1).

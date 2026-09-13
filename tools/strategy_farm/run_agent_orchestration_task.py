@@ -1857,7 +1857,12 @@ def run_agent(
         )
 
     _write_lane_heartbeat(agent)
-    interactive = interactive_orchestrator_status()
+    # The interactive marker exists to stop a headless CLAUDE cycle from racing the interactive
+    # Claude session (duplicate-session race 2026-08-23/24). It must never pause the Codex or
+    # gemini lanes: 2026-09-12 15:30Z -> 2026-09-13 11:15Z the Codex ticket lane skipped 80 cycles
+    # with interactive_orchestrator_active while five priority tickets cycled through stale-release
+    # every six hours (Orchestrator 2026-09-13 11:3xZ).
+    interactive = interactive_orchestrator_status() if agent == "claude" else {"active": False, "reason": "not_claude_lane"}
     if interactive.get("active"):
         _journal_headless_skip(agent, "interactive_orchestrator_active", interactive)
         return {
