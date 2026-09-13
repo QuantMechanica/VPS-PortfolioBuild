@@ -4186,3 +4186,20 @@ it for `Model=4/REAL_TICKS`; 107 focused tests and PowerShell AST pass. Zero
 PRESCREEN rows are `MEASURED`; 347 pending cells remain with the scheduled
 fleet, and no manual enqueue/reload/terminal action occurred. Evidence:
 `docs/ops/evidence/2026-09-13_prescreen_model_marker_gate_repair.md`.
+
+## 2026-09-13T12:35Z REVIEW drain (11 rows) after the Codex lane was freed; PRESCREEN first-claim proof started
+Sonnet fan-out, one verifier per row, every claim checked against files, git and the live DB (read-only):
+- 519c11fe PRESCREEN marker-gate fix -> APPROVED (commit 7636241a08; 107/107 tests; SH-3 CHECK admits
+  prescreen_measurement). Follow-up f4641698 (Luna): typed VerdictTaxonomyContractError handler in terminal_worker.
+- c07b8653 lane-aware CENSUS-FIRST -> APPROVED (commit 2632eb53bb, Default-OFF QM_CENSUS_FIRST_LANE_AWARE, 20/20).
+  Follow-up 6fb9823f (Luna): model the per-round preflight-refusal suppression. Activation via reload chunk 73.
+- 3941072e calendar/seasonal thesis bank -> APPROVED (15 theses, 8,736 trials, CSV matches, 3 cards_review drafts).
+  Follow-up bc07fa0a (Luna): per-thesis citations, refuted-vs-underpowered rule, CAL-06 frequency ceiling.
+- 60174747 Dukascopy P3 -> RECYCLE/TODO: export DONE (work item 030e8488 PASS 37/37, 414 MB), P3 comparison and
+  the UK100/XTIUSD splice card NOT started; rework note scopes the continuation, export must not be re-run.
+- f5d30fc9 retention -> RECYCLE/TODO: attribution + Default-OFF policy real (19 tests, artifact says 18), but the
+  required news_calendar_taint 10-min full-copy churn is untouched and undisclosed; continuation scoped.
+- six QM5_119xx governed magic preconditions -> APPROVED (allocations real in magic_numbers.csv, builds correctly
+  still gated on cards_review). Follow-on 30b97a32 (Claude review_strategy, prio 60): card review batch.
+First-claim proof: session_tools/release_prescreen_holds_0913.py --first releases exactly one of the 347
+PRESCREEN_SCHEMA_FIX_PENDING cells (d4c790e7, 2019 c01); --all follows only after it reaches a PRESCREEN verdict.
