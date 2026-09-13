@@ -1,0 +1,64 @@
+# QM5_41467 WTI Winter Upper-CLV Reversion — G0 Decision
+
+Date: 2026-09-13
+
+Decision: `APPROVED` for one non-live V5 build, strict Q01 validation, and one
+paced Q02 handoff only.
+
+Authority: the current OWNER mission requests one new structural,
+low-frequency commodity/energy sleeve, reputable-source criteria,
+`RISK_FIXED` backtests, branch-only commits, and Q02 enqueue. It explicitly
+names structural WTI as an eligible edge. Live and portfolio-gate work is
+excluded.
+
+## Candidate
+
+- EA: `QM5_41467_wti-winter-hclv-fade`
+- Strategy ID:
+  `BURAKOV-CRABEL-YANG-WTI-WINTER-HCLV-FADE-20260913_S01`
+- Host/slot/magic: `XTIUSD.DWX`, D1, slot 0, `414670000`
+- Driver: strict upper-tercile close location of exactly one completed week
+  during November through May
+- Side/lifecycle: short only; one consumed attempt per week; exit next week;
+  ten-day stale repair; frozen `3.5*ATR(20,D1)` hard stop
+
+## G0 gates
+
+- R1: PASS with disclosed cross-source/horizon, counter-seasonal-direction,
+  and CFD translation risk.
+- R2: PASS; every signal, calendar, attempt, risk, and exit rule is mechanical.
+- R3: PASS; registered `XTIUSD.DWX` D1 supplies all runtime market inputs.
+- R4: PASS; deterministic native arithmetic only; no ML, banned signal
+  indicator, external runtime feed, grid, or martingale.
+
+The canonical scan found no exact collision and five fuzzy family matches.
+Manual review separates the range-ranked and body-gated two-week siblings,
+the same upper-tercile short in the disjoint summer interval, and the
+opposite-direction winter continuation sibling. The unavailable external Wiki
+mount remains an explicit limitation rather than an inferred pass; the
+OWNER-authorized repository review is the durable approval basis.
+
+## Locked contract
+
+At the first tradable D1 bar of each normalized Monday-anchored November-May
+week, consume the attempt, aggregate exactly the prior completed three-to-five-
+session week, compute `CLV=(close-low)/(high-low)`, and sell only for
+`CLV > 2/3`. Equality is flat. Never require return sign, range rank, candle
+body, wick, stretch, or a moving average. Use one fixed-risk WTI position, no
+target, a frozen ATR stop, next-week exit, and no same-week retry.
+
+Only `strategy_*`, `qm_ea_id`, `qm_magic_slot_offset`, and the backtest risk
+mode may be equality pinned. RNG, news, and Friday inputs remain configurable;
+stress rejection receives only finiteness and inclusive `0..1` validation.
+
+## Allocation and safety
+
+The deterministic identity registry allocated `QM5_41467`; slot zero is the
+only authorized magic row after the governed magic-allocation step. Q02 uses
+exactly `RISK_FIXED=1000`, `RISK_PERCENT=0`, and `PORTFOLIO_WEIGHT=1`.
+
+Authorized: source/card records, deterministic allocation, branch-only
+non-live build, Q01 compile, and one paced Q02 enqueue below the CPU ceiling.
+Forbidden: manual backtests, parameter sweeps, portfolio-gate changes or
+admission, correlation waivers, live/deploy manifests, `T_Live`, AutoTrading,
+terminal control, and live use.
