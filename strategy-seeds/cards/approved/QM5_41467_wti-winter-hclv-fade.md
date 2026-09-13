@@ -60,9 +60,12 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING_BUILD
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: b07f0f25-7314-442b-8cf0-62fec8204889
+q01_build_report: D:/QM/reports/work_items/b07f0f25-7314-442b-8cf0-62fec8204889/QM5_41467/COMPILE_EA/compile_evidence.json
+q02_status: ENQUEUED_PENDING
+q02_work_item: 7d7009b9-861e-4bde-887d-6e3e317bda8a
 force_build: true
 review_focus: "Falsify a counter-seasonal WTI November-May upper-close weekly reversion stream distinct from the certified XNG oscillator, winter upper-close continuation, summer upper-close fade, and range-ranked weekly siblings. Verify exact completed week, strict upper-tercile inequality, short-only side, durable attempt, fixed risk, frozen stop, and next-week lifecycle. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -221,5 +224,5 @@ control, or live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-13 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-13 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-13 | PENDING | build not yet generated |
-| Q02 Baseline Screening | 2026-09-13 | NOT_ENQUEUED | Q01 and CPU admission required |
+| Q01 Build Validation | 2026-09-13 | PASS | compile `b07f0f25-7314-442b-8cf0-62fec8204889`; `COMPILE_OK`; zero compiler errors/warnings; build check PASS; 10 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-13 | ENQUEUED_PENDING | work item `7d7009b9-861e-4bde-887d-6e3e317bda8a`; fresh CPU maximum 76.4% below 97% ceiling |

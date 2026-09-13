@@ -4064,3 +4064,13 @@ D:/QM/strategy_farm/logs/reload_chunk72.log) = OWNER-DEC-SAMEPROG-FLEET-20260831
 live work; rollback = pop the three ids and reload. Fix B (root cause, Codex Sol c07b8653, prio 85): lane-aware
 _opt_census_cells_claimable_in_txn behind Default-OFF QM_CENSUS_FIRST_LANE_AWARE. Expected: census lanes 3 -> 6,
 census/h ~45 -> ~90, and heavy Q02/Q04 rows admitted once the lanes consume the protected band honestly.
+
+## 2026-09-13T04:30Z — RESULT: QM5_41467 new WTI winter upper-CLV fade built and Q02 enqueued
+
+Source/card/EA identity `QM5_41467_wti-winter-hclv-fade` committed on `agents/board-advisor`: November-May,
+one completed week, strict upper-tercile close-location, short-only one-week WTI reversion. Canonical scan found
+no exact collision across 4,948 registry rows and 1,557 cards; five fuzzy family matches were manually separated,
+with the unavailable external Wiki mount preserved as a limitation. PACER input-pin audit: zero findings; 10/10
+reference tests; governed compile `b07f0f25` = COMPILE_OK, 0 errors/warnings, strict build check PASS. Fresh CPU
+admission max 76.4% < 97%; one fixed-risk Q02 (`7d7009b9`, XTIUSD.DWX D1) is pending. No portfolio/live surface
+touched. Evidence: `docs/ops/evidence/2026-09-13_qm5_41467_wti_winter_upper_clv_reversion_q02_enqueue.md`.
