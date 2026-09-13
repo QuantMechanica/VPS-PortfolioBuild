@@ -1,0 +1,85 @@
+{
+  "blockers": [
+    "git provenance: controller/registry source scope is not committed and clean: M framework/registry/owner_priority_tracks.json",
+    "26aaec94-02ee-4a71-9eed-68b624b45adc: symbol is outside OWNER registry targets"
+  ],
+  "claim_order_displacement": null,
+  "exact_ids": [
+    "b02b0a87-6f7f-4400-ad54-8e1503a84e43",
+    "152523e4-d30b-46d6-b96a-60b669f82a36",
+    "26aaec94-02ee-4a71-9eed-68b624b45adc"
+  ],
+  "expectations": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-13_symbol_fix_requal\\2026-09-13_symbol_fix_priority_track_expectations.json",
+    "sha256": "144123ae58d82fa4c007d92e9e7786224a9c2ec837c0ad61b1dcfd970b6459dd"
+  },
+  "generated_at_utc": "2026-09-13T17:38:47Z",
+  "git_provenance": {
+    "error": "controller/registry source scope is not committed and clean: M framework/registry/owner_priority_tracks.json",
+    "status": "BLOCKED"
+  },
+  "mode": "DRY_RUN",
+  "mutation_performed": false,
+  "owner_registry": {
+    "entries": 29,
+    "kind": "owner_priority_tracks",
+    "load_status": "loaded",
+    "path": "C:\\QM\\repo\\framework\\registry\\owner_priority_tracks.json",
+    "sha256": "0dce3a3426f0a62b16d1cbc5f11d34af79992039ed5fbc437d71ef357bc33c07"
+  },
+  "pipeline_verdict_changed": false,
+  "rows": [
+    {
+      "blockers": [],
+      "ea_id": "QM5_41474",
+      "payload_sha256": "433a686bde2093d5f7458c34950fac02f592291690d7a6aa30b614484480bd69",
+      "state": {
+        "claimed_by": null,
+        "payload_json": "{\"compile_candidate_recheck\": {\"eligible\": true, \"reason\": \"ELIGIBLE\", \"symbols\": [\"XAGUSD.DWX\"]}, \"compile_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\fa0d5533-61ad-468f-9c52-7598d42e1ae5\\\\QM5_41474\\\\COMPILE_EA\\\\compile_evidence.json\", \"compile_work_item_id\": \"fa0d5533-61ad-468f-9c52-7598d42e1ae5\", \"custom_history_archive_admission\": {\"activation_sha256\": \"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\", \"manifest_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_custom_history_variant_a_20260809\\\\archive_manifest_owner_approved.json\", \"manifest_sha256\": \"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\", \"selected_archive_rows\": 108, \"selected_symbols\": [\"XAGUSD.DWX\"], \"status\": \"ACTIVE\"}, \"enqueued_at_utc\": \"2026-09-13T17:36:33+00:00\", \"enqueued_by\": \"farmctl.intake-first-q02\", \"expected_ex5_sha256\": \"b3857e1c3b302c2f5a488acab2f1589be4463ff3f196f4a53cee1b896cd44bd2\", \"expected_setfile_sha256\": \"1a9cc19d42f301bce27f47039cd106c3a3401ea978a3bfd76545a15e1b45f179\", \"first_q02_intake\": true, \"first_q02_intake_schema\": \"qm.first-q02-intake/v1\", \"host_symbol\": \"XAGUSD.DWX\", \"host_timeframe\": \"D1\", \"q02_cohort_size\": 1, \"q02_fanout_canary\": false, \"q02_fanout_canary_index\": null, \"q02_fanout_policy\": \"qm-q02-canary-fanout/v1\", \"risk_fixed\": 1000.0, \"risk_percent\": 0.0}",
+        "phase": "Q02",
+        "status": "pending",
+        "updated_at": "2026-09-13T17:36:33+00:00",
+        "verdict": null
+      },
+      "status": "PASS",
+      "symbol": "XAGUSD.DWX",
+      "work_item_id": "b02b0a87-6f7f-4400-ad54-8e1503a84e43"
+    },
+    {
+      "blockers": [],
+      "ea_id": "QM5_41473",
+      "payload_sha256": "190436b8b5f48dbefc873cb663c080c4529e2a4f02b323f3d806ee164d6a7198",
+      "state": {
+        "claimed_by": null,
+        "payload_json": "{\"compile_candidate_recheck\": {\"eligible\": true, \"reason\": \"ELIGIBLE\", \"symbols\": [\"XTIUSD.DWX\"]}, \"compile_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\1bd628b0-8253-48ff-9f38-e6608f3b5cd2\\\\QM5_41473\\\\COMPILE_EA\\\\compile_evidence.json\", \"compile_work_item_id\": \"1bd628b0-8253-48ff-9f38-e6608f3b5cd2\", \"custom_history_archive_admission\": {\"activation_sha256\": \"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\", \"manifest_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_custom_history_variant_a_20260809\\\\archive_manifest_owner_approved.json\", \"manifest_sha256\": \"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\", \"selected_archive_rows\": 108, \"selected_symbols\": [\"XTIUSD.DWX\"], \"status\": \"ACTIVE\"}, \"enqueued_at_utc\": \"2026-09-13T17:37:51+00:00\", \"enqueued_by\": \"farmctl.intake-first-q02\", \"expected_ex5_sha256\": \"14a87f6e553b05cdad56d378a50546fb995449033ebf7c648dd2038f7550c650\", \"expected_setfile_sha256\": \"6315143ed6087b777f7e934ece1d42e9b34481a23ecdf1738e5ef6bd8dedfde7\", \"first_q02_intake\": true, \"first_q02_intake_schema\": \"qm.first-q02-intake/v1\", \"host_symbol\": \"XTIUSD.DWX\", \"host_timeframe\": \"D1\", \"q02_cohort_size\": 1, \"q02_fanout_canary\": false, \"q02_fanout_canary_index\": null, \"q02_fanout_policy\": \"qm-q02-canary-fanout/v1\", \"risk_fixed\": 1000.0, \"risk_percent\": 0.0}",
+        "phase": "Q02",
+        "status": "pending",
+        "updated_at": "2026-09-13T17:37:51+00:00",
+        "verdict": null
+      },
+      "status": "PASS",
+      "symbol": "XTIUSD.DWX",
+      "work_item_id": "152523e4-d30b-46d6-b96a-60b669f82a36"
+    },
+    {
+      "blockers": [
+        "symbol is outside OWNER registry targets"
+      ],
+      "ea_id": "QM5_41471",
+      "payload_sha256": "99bee37ccbe9a8f64679a16adc9f0658a8a51125c64f454a1c17128410b3024a",
+      "state": {
+        "claimed_by": null,
+        "payload_json": "{\"basket_manifest\": \"C:\\\\QM\\\\repo\\\\framework\\\\EAs\\\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix\\\\basket_manifest.json\", \"basket_symbol_count\": 4, \"basket_symbols\": [\"AUDUSD.DWX\", \"EURJPY.DWX\", \"EURUSD.DWX\", \"EURAUD.DWX\"], \"compile_candidate_recheck\": {\"eligible\": true, \"reason\": \"ELIGIBLE\", \"symbols\": [\"AUDUSD.DWX\", \"EURJPY.DWX\"]}, \"compile_evidence_path\": \"D:\\\\QM\\\\reports\\\\work_items\\\\8250ae30-c5c6-43be-baa1-9c342c939ea4\\\\QM5_41471\\\\COMPILE_EA\\\\compile_evidence.json\", \"compile_work_item_id\": \"8250ae30-c5c6-43be-baa1-9c342c939ea4\", \"custom_history_archive_admission\": {\"activation_sha256\": \"61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e\", \"manifest_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\ops\\\\custom_history_custom_history_variant_a_20260809\\\\archive_manifest_owner_approved.json\", \"manifest_sha256\": \"fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06\", \"selected_archive_rows\": 432, \"selected_symbols\": [\"AUDUSD.DWX\", \"EURJPY.DWX\", \"EURUSD.DWX\", \"EURAUD.DWX\"], \"status\": \"ACTIVE\"}, \"enqueued_at_utc\": \"2026-09-13T17:38:17+00:00\", \"enqueued_by\": \"farmctl.intake-first-q02\", \"expected_ex5_sha256\": \"cdfb4f0212bf6e50d7e8a402877d185e184664c168167afd28970fbd2456de43\", \"expected_setfile_sha256\": \"d78f0820bfcc6ddb0c83d0ed78b5f4a99032f60db1fbc6312ef790927bacfef6\", \"first_q02_intake\": true, \"first_q02_intake_schema\": \"qm.first-q02-intake/v1\", \"host_symbol\": \"AUDUSD.DWX\", \"host_timeframe\": \"D1\", \"logical_symbol\": \"QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1\", \"portfolio_scope\": \"basket\", \"q02_cohort_size\": 1, \"q02_fanout_canary\": false, \"q02_fanout_canary_index\": null, \"q02_fanout_policy\": \"qm-q02-canary-fanout/v1\", \"risk_fixed\": 1000.0, \"risk_percent\": 0.0, \"tester_currency\": \"EUR\", \"tester_deposit\": 100000, \"timeout_min\": 450}",
+        "phase": "Q02",
+        "status": "pending",
+        "updated_at": "2026-09-13T17:38:17+00:00",
+        "verdict": null
+      },
+      "status": "BLOCKED",
+      "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+      "work_item_id": "26aaec94-02ee-4a71-9eed-68b624b45adc"
+    }
+  ],
+  "schema_version": "qm.priority-track-plan/v1",
+  "status": "BLOCKED"
+}

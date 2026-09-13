@@ -420,7 +420,7 @@
    "decision_source": {
     "path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
     "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34",
-    "commit_sha": null
+    "commit_sha": "e7a97eb835df85465a9a7f14c877fd9b8903d253"
    }
   },
   {
@@ -438,7 +438,104 @@
    "decision_source": {
     "path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
     "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34",
-    "commit_sha": null
+    "commit_sha": "e7a97eb835df85465a9a7f14c877fd9b8903d253"
+   }
+  },
+  {
+   "ea_id": "QM5_41470",
+   "priority_track": true,
+   "asset_class": "fx_major",
+   "timeframe": "M30",
+   "target_symbols": [
+    "USDJPY.DWX"
+   ],
+   "excluded_symbols": [],
+   "owner_reference": "OWNER_DECISION_2026-09-13_SYMBOL_FIX_PRIORITY_TRACK",
+   "decision_date": "2026-09-13",
+   "reason": "symbol-literal source fix (Hard Rule 2026-09-06) rebuilt as a new identity; serial pair QM5_12969 -> QM5_41470 re-enters the DL-089 chain from Q02 on the priority track (OWNER: diese EAs durch die Fabrik priorisieren)",
+   "predecessor_ea_id": "QM5_12969",
+   "decision_source": {
+    "path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
+    "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34",
+    "commit_sha": "e7a97eb835df85465a9a7f14c877fd9b8903d253"
+   }
+  },
+  {
+   "ea_id": "QM5_41471",
+   "priority_track": true,
+   "asset_class": "fx_pair_basket",
+   "timeframe": "D1",
+   "target_symbols": [
+    "AUDUSD.DWX",
+    "EURJPY.DWX"
+   ],
+   "excluded_symbols": [],
+   "owner_reference": "OWNER_DECISION_2026-09-13_SYMBOL_FIX_PRIORITY_TRACK",
+   "decision_date": "2026-09-13",
+   "reason": "symbol-literal source fix (Hard Rule 2026-09-06) rebuilt as a new identity; serial pair QM5_12778 -> QM5_41471 re-enters the DL-089 chain from Q02 on the priority track (OWNER: diese EAs durch die Fabrik priorisieren)",
+   "predecessor_ea_id": "QM5_12778",
+   "decision_source": {
+    "path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
+    "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34",
+    "commit_sha": "e7a97eb835df85465a9a7f14c877fd9b8903d253"
+   }
+  },
+  {
+   "ea_id": "QM5_41472",
+   "priority_track": true,
+   "asset_class": "fx_pair_basket",
+   "timeframe": "D1",
+   "target_symbols": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+   ],
+   "excluded_symbols": [],
+   "owner_reference": "OWNER_DECISION_2026-09-13_SYMBOL_FIX_PRIORITY_TRACK",
+   "decision_date": "2026-09-13",
+   "reason": "symbol-literal source fix (Hard Rule 2026-09-06) rebuilt as a new identity; serial pair QM5_13117 -> QM5_41472 re-enters the DL-089 chain from Q02 on the priority track (OWNER: diese EAs durch die Fabrik priorisieren)",
+   "predecessor_ea_id": "QM5_13117",
+   "decision_source": {
+    "path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
+    "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34",
+    "commit_sha": "e7a97eb835df85465a9a7f14c877fd9b8903d253"
+   }
+  },
+  {
+   "ea_id": "QM5_41473",
+   "priority_track": true,
+   "asset_class": "energy",
+   "timeframe": "D1",
+   "target_symbols": [
+    "XTIUSD.DWX"
+   ],
+   "excluded_symbols": [],
+   "owner_reference": "OWNER_DECISION_2026-09-13_SYMBOL_FIX_PRIORITY_TRACK",
+   "decision_date": "2026-09-13",
+   "reason": "symbol-literal source fix (Hard Rule 2026-09-06) rebuilt as a new identity; serial pair QM5_13054 -> QM5_41473 re-enters the DL-089 chain from Q02 on the priority track (OWNER: diese EAs durch die Fabrik priorisieren)",
+   "predecessor_ea_id": "QM5_13054",
+   "decision_source": {
+    "path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
+    "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34",
+    "commit_sha": "e7a97eb835df85465a9a7f14c877fd9b8903d253"
+   }
+  },
+  {
+   "ea_id": "QM5_41474",
+   "priority_track": true,
+   "asset_class": "metal",
+   "timeframe": "D1",
+   "target_symbols": [
+    "XAGUSD.DWX"
+   ],
+   "excluded_symbols": [],
+   "owner_reference": "OWNER_DECISION_2026-09-13_SYMBOL_FIX_PRIORITY_TRACK",
+   "decision_date": "2026-09-13",
+   "reason": "symbol-literal source fix (Hard Rule 2026-09-06) rebuilt as a new identity; serial pair QM5_21505 -> QM5_41474 re-enters the DL-089 chain from Q02 on the priority track (OWNER: diese EAs durch die Fabrik priorisieren)",
+   "predecessor_ea_id": "QM5_21505",
+   "decision_source": {
+    "path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
+    "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34",
+    "commit_sha": "e7a97eb835df85465a9a7f14c877fd9b8903d253"
    }
   }
  ]

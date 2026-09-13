@@ -1,0 +1,364 @@
+{
+ "control_bindings": {
+  "decision": {
+   "path": "C:\\QM\\repo\\decisions\\2026-09-13_owner_symbol_fix_priority_track.md",
+   "sha256": "0103d9e9764996eb5e66cef635399ebcb68e8562fc53491dbec1af5f00044e34"
+  },
+  "dwx_symbol_matrix": {
+   "path": "C:\\QM\\repo\\framework\\registry\\dwx_symbol_matrix.csv",
+   "sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+  },
+  "ea_id_registry": {
+   "path": "C:\\QM\\repo\\framework\\registry\\ea_id_registry.csv",
+   "sha256": "33cb537db1c830ea28e495cc384826768463d2be97b579d3ecce520e8a7e558d"
+  },
+  "magic_registry": {
+   "path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+   "sha256": "fcd3cbaa0bb08cefd923ac562b44a41b5d7fe473073960d691bdbc81bc5397d4"
+  },
+  "magic_resolver": {
+   "path": "C:\\QM\\repo\\framework\\include\\QM\\QM_MagicResolver.mqh",
+   "sha256": "e2bf4584c108e5a44e8a7c27f267e97520df9a1e028616f9462bd687ac26dbd6"
+  },
+  "owner_priority_tracks": {
+   "path": "C:\\QM\\repo\\framework\\registry\\owner_priority_tracks.json",
+   "sha256": "7dfbf1e380621c0af627f6cc07ec6caf113cf7fe39e74c788e93444f0a7aafa4"
+  }
+ },
+ "decision_path": "decisions/2026-09-13_owner_symbol_fix_priority_track.md",
+ "derived_at_utc": "2026-09-13T17:26:19.233019+00:00",
+ "governed_sequence": [
+  "1. Write recovery card into D:/QM/strategy_farm/artifacts/cards_review/<new label>.md (frontmatter ea_id/slug/source_id/g0_status APPROVED/target_symbols), bound to the original approved card of record.",
+  "2. governed_magic_allocator.py --card <recovery card> (dry-run first): reserves ea_id_registry row, creates framework/EAs/<new label>/, copies card to docs/strategy_card.md, writes magic rows (ea_id*10000+slot), regenerates QM_MagicResolver.mqh, verifies. Order: dirs -> CSV -> regen -> verify -> compile.",
+  "3. Copy the patched .mq5 to the new label, rewriting only #property description and the qm_ea_id input default; copy SPEC.md with the new identity header; for baskets copy basket_manifest.json and add execution_symbols/signal_only_symbols so the Q02 intake role contract is satisfied.",
+  "4. Pre-seed sets/ via framework/scripts/gen_setfile.ps1 (canonical generator, build_hash stays 'pending' so no bound-setfile binding exists) so infer_timeframe resolves from existing_setfiles; baskets additionally carry the hand-authored logical host setfile copied from the predecessor with only identity comments rewritten.",
+  "5. farmctl.py enqueue-compile <new label> -> governed COMPILE_EA row under the NEW id.",
+  "6. After COMPILE_OK: farmctl.py intake-first-q02 (read-only plan first, then --apply) -> exactly one Q02 canary per new identity.",
+  "7. tools/strategy_farm/set_priority_track.py (plan first, then --apply) binding the new Q02 rows to decisions/2026-09-13_owner_symbol_fix_priority_track.md via framework/registry/owner_priority_tracks.json."
+ ],
+ "identity_rule": "23.08 identity rule: a rebuilt EX5 is a new identity from Q02. The old ea_id cannot reopen Q02 (q02_append_only_rerun_requires_same_exact_source_and_rerun_row / existing_q02_row), so each patched source re-enters the chain under a new 414xx identity.",
+ "no_touch": [
+  "C:/QM/mt5/T_Live and every live binary",
+  "every existing work_item, verdict and evidence row of the old ea_ids",
+  "the old EA directories except as read-only sources"
+ ],
+ "owner_decision": "OWNER_DECISION_2026-09-13_SYMBOL_FIX_PRIORITY_TRACK",
+ "pairs": [
+  {
+   "approved_card_of_record": {
+    "exists": true,
+    "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12969_usdjpy-gotobi-nakane-fix.md",
+    "sha256": "f8989e1e7e6592d601a2142a8b0daf8449d0e33d8f638d4521077bfa1c321e4c"
+   },
+   "basket": false,
+   "new_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix",
+   "new_ea_id": "QM5_41470",
+   "new_slug": "usdjpy-gotobi-nakane-fix-symfix",
+   "old_backtest_setfiles": [
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\sets\\QM5_12969_usdjpy-gotobi-nakane-fix_USDJPY.DWX_M30_backtest.set",
+     "sha256": "4d2f63f29bb60e97e1e15e35891b941a5ed0b2cc534848a74ae5eae68c126209"
+    }
+   ],
+   "old_basket_manifest": {
+    "exists": false,
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\basket_manifest.json",
+    "sha256": null
+   },
+   "old_compile_work_item_id": "f32ddc4a-7320-4046-a7e6-a64ec547fb34",
+   "old_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix",
+   "old_ea_id": "QM5_12969",
+   "old_id_compile_row": {
+    "ea_id": "QM5_12969",
+    "evidence_path": null,
+    "id": "f32ddc4a-7320-4046-a7e6-a64ec547fb34",
+    "status": "pending",
+    "updated_at": "2026-09-13T17:14:40+00:00",
+    "verdict": null
+   },
+   "old_slug": "usdjpy-gotobi-nakane-fix",
+   "owner_symbol": "USDJPY.DWX",
+   "patched_mq5": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+    "sha256": "4c9ee3006fd4b0792a39d9fbf495ab95119c0f47562da269a55314320dd03b97"
+   },
+   "planned_magic_rows": [
+    {
+     "ea_id": "41470",
+     "ea_slug": "usdjpy-gotobi-nakane-fix-symfix",
+     "magic": "414700000",
+     "status": "active",
+     "symbol": "USDJPY.DWX",
+     "symbol_slot": "0"
+    }
+   ],
+   "recovery_card_target": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix.md",
+   "target_symbols": [
+    "USDJPY.DWX"
+   ],
+   "timeframe": "M30"
+  },
+  {
+   "approved_card_of_record": {
+    "exists": true,
+    "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12778_edgelab-audusd-eurjpy-cointegration.md",
+    "sha256": "00f4978d979265d1db410f8b604a8567b5b7a3f942488121c867476c9aacf6bd"
+   },
+   "basket": true,
+   "new_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix",
+   "new_ea_id": "QM5_41471",
+   "new_slug": "edgelab-audusd-eurjpy-cointegration-symfix",
+   "old_backtest_setfiles": [
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\sets\\QM5_12778_edgelab-audusd-eurjpy-cointegration_AUDUSD.DWX_D1_backtest.set",
+     "sha256": "8896569d0f2975000eb0423470491ec4de7769ae697e5a50f0178666bb1c157a"
+    },
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\sets\\QM5_12778_edgelab-audusd-eurjpy-cointegration_EURJPY.DWX_D1_backtest.set",
+     "sha256": "e5c7c623f95b63347d1c9bf92d8370c2282a0bfe6333caae1246cd46cb9d61c9"
+    },
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\sets\\QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+     "sha256": "d6976c9671dae650d213ffce984f93ab60dc839f8a1488bc153fa4f5745de1c1"
+    }
+   ],
+   "old_basket_manifest": {
+    "exists": true,
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\basket_manifest.json",
+    "sha256": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57"
+   },
+   "old_compile_work_item_id": "7022358c-5fa4-40b0-a242-5aef845d0ee1",
+   "old_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration",
+   "old_ea_id": "QM5_12778",
+   "old_id_compile_row": {
+    "ea_id": "QM5_12778",
+    "evidence_path": null,
+    "id": "7022358c-5fa4-40b0-a242-5aef845d0ee1",
+    "status": "pending",
+    "updated_at": "2026-09-13T17:14:40+00:00",
+    "verdict": null
+   },
+   "old_slug": "edgelab-audusd-eurjpy-cointegration",
+   "owner_symbol": "AUDUSD.DWX",
+   "patched_mq5": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+    "sha256": "d1866ee051b2f01cbfe99099145bced9dcb9d984cce685b8daa864dc6c1bac76"
+   },
+   "planned_magic_rows": [
+    {
+     "ea_id": "41471",
+     "ea_slug": "edgelab-audusd-eurjpy-cointegration-symfix",
+     "magic": "414710000",
+     "status": "active",
+     "symbol": "AUDUSD.DWX",
+     "symbol_slot": "0"
+    },
+    {
+     "ea_id": "41471",
+     "ea_slug": "edgelab-audusd-eurjpy-cointegration-symfix",
+     "magic": "414710001",
+     "status": "active",
+     "symbol": "EURJPY.DWX",
+     "symbol_slot": "1"
+    }
+   ],
+   "recovery_card_target": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix.md",
+   "target_symbols": [
+    "AUDUSD.DWX",
+    "EURJPY.DWX"
+   ],
+   "timeframe": "D1"
+  },
+  {
+   "approved_card_of_record": {
+    "exists": true,
+    "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13117_eurgbp-audjpy.md",
+    "sha256": "3b25ba4d99a8bbafb4458719d6757a4140a298dd46aa0a810adf39a7d8479405"
+   },
+   "basket": true,
+   "new_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41472_eurgbp-audjpy-symfix",
+   "new_ea_id": "QM5_41472",
+   "new_slug": "eurgbp-audjpy-symfix",
+   "old_backtest_setfiles": [
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_AUDJPY.DWX_D1_backtest.set",
+     "sha256": "823e6fd6f43621df7d2b8d801fa0f7e9e73b6c1680c4d32ba0c92d8c013ec259"
+    },
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_EURGBP.DWX_D1_backtest.set",
+     "sha256": "f0a83bfe1c5e4937d18419eae7efcbebd2833374c85e535ef8db0edd29decbc1"
+    },
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+     "sha256": "74e7f1b13ca001841b0ce43b1a3d9fdc51d17dc2f6ab787c0bd440675df0f8c0"
+    }
+   ],
+   "old_basket_manifest": {
+    "exists": true,
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\basket_manifest.json",
+    "sha256": "c091b42e9598a43a1985f1a926178ac0a652cea79a4c7de750929e741041e9f4"
+   },
+   "old_compile_work_item_id": "62c3f0de-b255-4657-a553-fa50f6572779",
+   "old_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy",
+   "old_ea_id": "QM5_13117",
+   "old_id_compile_row": {
+    "ea_id": "QM5_13117",
+    "evidence_path": null,
+    "id": "62c3f0de-b255-4657-a553-fa50f6572779",
+    "status": "pending",
+    "updated_at": "2026-09-13T17:14:40+00:00",
+    "verdict": null
+   },
+   "old_slug": "eurgbp-audjpy",
+   "owner_symbol": "EURGBP.DWX",
+   "patched_mq5": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.mq5",
+    "sha256": "6eb0b75f3622607e368ca6b10a1d7b924d222885cb30b1a61084c9615709bf2f"
+   },
+   "planned_magic_rows": [
+    {
+     "ea_id": "41472",
+     "ea_slug": "eurgbp-audjpy-symfix",
+     "magic": "414720000",
+     "status": "active",
+     "symbol": "EURGBP.DWX",
+     "symbol_slot": "0"
+    },
+    {
+     "ea_id": "41472",
+     "ea_slug": "eurgbp-audjpy-symfix",
+     "magic": "414720001",
+     "status": "active",
+     "symbol": "AUDJPY.DWX",
+     "symbol_slot": "1"
+    }
+   ],
+   "recovery_card_target": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41472_eurgbp-audjpy-symfix.md",
+   "target_symbols": [
+    "EURGBP.DWX",
+    "AUDJPY.DWX"
+   ],
+   "timeframe": "D1"
+  },
+  {
+   "approved_card_of_record": {
+    "exists": false,
+    "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13054_brent-tom-mom.md",
+    "sha256": null
+   },
+   "basket": false,
+   "new_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41473_brent-tom-mom-symfix",
+   "new_ea_id": "QM5_41473",
+   "new_slug": "brent-tom-mom-symfix",
+   "old_backtest_setfiles": [
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\sets\\QM5_13054_brent-tom-mom_XTIUSD.DWX_D1_backtest.set",
+     "sha256": "40bc2d9a97dc8130c5362552814d875871532292e68e4504cca9969e36b4c39f"
+    }
+   ],
+   "old_basket_manifest": {
+    "exists": false,
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\basket_manifest.json",
+    "sha256": null
+   },
+   "old_compile_work_item_id": "fde9660b-e07e-47ab-8c5a-354f23a1d486",
+   "old_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom",
+   "old_ea_id": "QM5_13054",
+   "old_id_compile_row": {
+    "ea_id": "QM5_13054",
+    "evidence_path": null,
+    "id": "fde9660b-e07e-47ab-8c5a-354f23a1d486",
+    "status": "pending",
+    "updated_at": "2026-09-13T17:14:50+00:00",
+    "verdict": null
+   },
+   "old_slug": "brent-tom-mom",
+   "owner_symbol": "XTIUSD.DWX",
+   "patched_mq5": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.mq5",
+    "sha256": "3f5d0ba1c1b779127eebc929657159ca835004d00a758a6737bdd8d2cd5133bc"
+   },
+   "planned_magic_rows": [
+    {
+     "ea_id": "41473",
+     "ea_slug": "brent-tom-mom-symfix",
+     "magic": "414730000",
+     "status": "active",
+     "symbol": "XTIUSD.DWX",
+     "symbol_slot": "0"
+    }
+   ],
+   "recovery_card_target": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41473_brent-tom-mom-symfix.md",
+   "target_symbols": [
+    "XTIUSD.DWX"
+   ],
+   "timeframe": "D1"
+  },
+  {
+   "approved_card_of_record": {
+    "exists": true,
+    "path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_21505_xag-weekly-lowvol-momentum.md",
+    "sha256": "c72d2cffaf7eec490c69b6a924d108446c2494e5424d0f566ac422310be8e635"
+   },
+   "basket": false,
+   "new_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41474_xag-weekly-lowvol-momentum-symfix",
+   "new_ea_id": "QM5_41474",
+   "new_slug": "xag-weekly-lowvol-momentum-symfix",
+   "old_backtest_setfiles": [
+    {
+     "path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\sets\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set",
+     "sha256": "205184423a2d215983f6510050d69a4ae6c2b324dd220b90461b63aae213160b"
+    }
+   ],
+   "old_basket_manifest": {
+    "exists": false,
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\basket_manifest.json",
+    "sha256": null
+   },
+   "old_compile_work_item_id": "18ddeaf3-1daf-416a-832d-52d82f008fd4",
+   "old_ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum",
+   "old_ea_id": "QM5_21505",
+   "old_id_compile_row": {
+    "ea_id": "QM5_21505",
+    "evidence_path": "D:\\QM\\reports\\work_items\\18ddeaf3-1daf-416a-832d-52d82f008fd4\\QM5_21505\\COMPILE_EA\\compile_evidence.json",
+    "id": "18ddeaf3-1daf-416a-832d-52d82f008fd4",
+    "status": "done",
+    "updated_at": "2026-09-13T16:38:45+00:00",
+    "verdict": "COMPILE_OK"
+   },
+   "old_slug": "xag-weekly-lowvol-momentum",
+   "owner_symbol": "XAGUSD.DWX",
+   "patched_mq5": {
+    "path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.mq5",
+    "sha256": "86bfc8cd71a8c68b51c1588f90c6789407df97e72acbea7fec209315b1a3fd5e"
+   },
+   "planned_magic_rows": [
+    {
+     "ea_id": "41474",
+     "ea_slug": "xag-weekly-lowvol-momentum-symfix",
+     "magic": "414740000",
+     "status": "active",
+     "symbol": "XAGUSD.DWX",
+     "symbol_slot": "0"
+    }
+   ],
+   "recovery_card_target": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41474_xag-weekly-lowvol-momentum-symfix.md",
+   "target_symbols": [
+    "XAGUSD.DWX"
+   ],
+   "timeframe": "D1"
+  }
+ ],
+ "precedent": {
+  "allocator_receipt": "docs/ops/evidence/2026-08-30_8709bc0f_requal8_allocator_receipt.json",
+  "handoff": "docs/ops/evidence/2026-08-30_1b57e398_q09_requal8_pair2_build_review_handoff.md",
+  "manifest": "docs/ops/evidence/2026-08-30_8709bc0f_q09_requal8_manifest.json",
+  "serial_pair_example": "QM5_12989 -> QM5_41216"
+ },
+ "repo_head": "8fef1980c367f2dcf47122a69433e70e297fe828",
+ "schema": "qm.symbol-fix-requalification-manifest/v1",
+ "source_patch_commits": [
+  "9359ecaf2b4a69eeefe7cb6c8d7d26cd0b9348f6",
+  "e6ad6ee47a436cccc641027041fdeec8cb1f77fa"
+ ]
+}

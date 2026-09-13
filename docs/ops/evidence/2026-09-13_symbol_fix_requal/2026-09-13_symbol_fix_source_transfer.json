@@ -1,0 +1,166 @@
+[
+ {
+  "old_label": "QM5_12969_usdjpy-gotobi-nakane-fix",
+  "new_label": "QM5_41470_usdjpy-gotobi-nakane-fix-symfix",
+  "files": [
+   {
+    "kind": "mq5",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\QM5_12969_usdjpy-gotobi-nakane-fix.mq5",
+    "source_sha256": "4c9ee3006fd4b0792a39d9fbf495ab95119c0f47562da269a55314320dd03b97",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix.mq5",
+    "target_sha256": "7c9e74667481f2785e2f2af0ceedb533e0791c11ddd07f43c521c9bcbea38723",
+    "rewrites": [
+     "12969->41470 (all occurrences: qm_ea_id default, #property description, identity guards, log/reason tags)"
+    ],
+    "occurrences": 3
+   },
+   {
+    "kind": "spec",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12969_usdjpy-gotobi-nakane-fix\\SPEC.md",
+    "source_sha256": "3b1b8a29e651d75e0dbfaaeae1cbc9ad399427133f1f5571c082f3c8f9588c01",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix\\SPEC.md",
+    "target_sha256": "a648ed5386d1088b1b5d8c7d25ade646e38b25764e48c544d6721078b9f8c1fb"
+   }
+  ]
+ },
+ {
+  "old_label": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+  "new_label": "QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix",
+  "files": [
+   {
+    "kind": "mq5",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\QM5_12778_edgelab-audusd-eurjpy-cointegration.mq5",
+    "source_sha256": "d1866ee051b2f01cbfe99099145bced9dcb9d984cce685b8daa864dc6c1bac76",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix.mq5",
+    "target_sha256": "16ea2f16fc5675a077e207aec0d0626150ffb6f481670b37c87a3f8b4271f783",
+    "rewrites": [
+     "12778->41471 (all occurrences: qm_ea_id default, #property description, identity guards, log/reason tags)"
+    ],
+    "occurrences": 5
+   },
+   {
+    "kind": "spec",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\SPEC.md",
+    "source_sha256": "0833b664c29a9fecc0b88689463f5b2f0ed2b8f1b9903a3964e69f585956f6d7",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix\\SPEC.md",
+    "target_sha256": "2ad8bd7fce2c1944a91a428c59adb61162cbdc04f15c8856370fcef20ddec661"
+   },
+   {
+    "kind": "basket_manifest",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\basket_manifest.json",
+    "source_sha256": "0ce25d17ebe7c3664e4acdb6c1d302b28b1f40710301189cc633e44f25854d57",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix\\basket_manifest.json",
+    "target_sha256": "5f625eda561429d434f53e25201f380a66b42c19d56f74296bda86815910e887",
+    "execution_symbols": [
+     "AUDUSD.DWX",
+     "EURJPY.DWX"
+    ],
+    "signal_only_symbols": [
+     "EURUSD.DWX",
+     "EURAUD.DWX"
+    ]
+   },
+   {
+    "kind": "logical_basket_setfile",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_12778_edgelab-audusd-eurjpy-cointegration\\sets\\QM5_12778_edgelab-audusd-eurjpy-cointegration_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+    "source_sha256": "d6976c9671dae650d213ffce984f93ab60dc839f8a1488bc153fa4f5745de1c1",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix\\sets\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix_QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set",
+    "target_sha256": "6310772416a645f8b8a217903a3178f59e5fa55055b7e6e1ee56649793bdd95f"
+   }
+  ]
+ },
+ {
+  "old_label": "QM5_13117_eurgbp-audjpy",
+  "new_label": "QM5_41472_eurgbp-audjpy-symfix",
+  "files": [
+   {
+    "kind": "mq5",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\QM5_13117_eurgbp-audjpy.mq5",
+    "source_sha256": "6eb0b75f3622607e368ca6b10a1d7b924d222885cb30b1a61084c9615709bf2f",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41472_eurgbp-audjpy-symfix\\QM5_41472_eurgbp-audjpy-symfix.mq5",
+    "target_sha256": "b73dea51b22d0f21c197bbe91b39eac070f618042103f5c34d4c6fa316615468",
+    "rewrites": [
+     "13117->41472 (all occurrences: qm_ea_id default, #property description, identity guards, log/reason tags)"
+    ],
+    "occurrences": 5
+   },
+   {
+    "kind": "spec",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\SPEC.md",
+    "source_sha256": "835144224f2f7cc079ab62a1bc5c942d853af3a98bf6b349dfe5d8b98cdd7705",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41472_eurgbp-audjpy-symfix\\SPEC.md",
+    "target_sha256": "1babdd286f1f2acbd0aaba5d324299cee1f3155e300d732e52c53d1fdd0a3a25"
+   },
+   {
+    "kind": "basket_manifest",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\basket_manifest.json",
+    "source_sha256": "c091b42e9598a43a1985f1a926178ac0a652cea79a4c7de750929e741041e9f4",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41472_eurgbp-audjpy-symfix\\basket_manifest.json",
+    "target_sha256": "cdfba5b6d6df4304b9ebefe44078e44c1c5087255a3f887dac61f5a5955beb37",
+    "execution_symbols": [
+     "EURGBP.DWX",
+     "AUDJPY.DWX"
+    ],
+    "signal_only_symbols": [
+     "GBPUSD.DWX",
+     "USDJPY.DWX"
+    ]
+   },
+   {
+    "kind": "logical_basket_setfile",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13117_eurgbp-audjpy\\sets\\QM5_13117_eurgbp-audjpy_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "source_sha256": "74e7f1b13ca001841b0ce43b1a3d9fdc51d17dc2f6ab787c0bd440675df0f8c0",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41472_eurgbp-audjpy-symfix\\sets\\QM5_41472_eurgbp-audjpy-symfix_QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1_D1_backtest.set",
+    "target_sha256": "8092dff90f680c2380565c91fa1c51a4384534bc535ec729501cfc4a1df97de6"
+   }
+  ]
+ },
+ {
+  "old_label": "QM5_13054_brent-tom-mom",
+  "new_label": "QM5_41473_brent-tom-mom-symfix",
+  "files": [
+   {
+    "kind": "mq5",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.mq5",
+    "source_sha256": "3f5d0ba1c1b779127eebc929657159ca835004d00a758a6737bdd8d2cd5133bc",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41473_brent-tom-mom-symfix\\QM5_41473_brent-tom-mom-symfix.mq5",
+    "target_sha256": "46e1778e1dcc3dd6a40213b96da5bacb102532ebd825544354bfad87d3df3c22",
+    "rewrites": [
+     "13054->41473 (all occurrences: qm_ea_id default, #property description, identity guards, log/reason tags)"
+    ],
+    "occurrences": 5
+   },
+   {
+    "kind": "spec",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\SPEC.md",
+    "source_sha256": "f9b272d5923bb189f19cbdefb259b4a16084c6b8158bb5f7653526629cf4028b",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41473_brent-tom-mom-symfix\\SPEC.md",
+    "target_sha256": "5dfaba391b606b314f64caa550f6c89f48a3df7fabb4a6dc05bf15bd10f128a1"
+   }
+  ]
+ },
+ {
+  "old_label": "QM5_21505_xag-weekly-lowvol-momentum",
+  "new_label": "QM5_41474_xag-weekly-lowvol-momentum-symfix",
+  "files": [
+   {
+    "kind": "mq5",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.mq5",
+    "source_sha256": "86bfc8cd71a8c68b51c1588f90c6789407df97e72acbea7fec209315b1a3fd5e",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41474_xag-weekly-lowvol-momentum-symfix\\QM5_41474_xag-weekly-lowvol-momentum-symfix.mq5",
+    "target_sha256": "3054e771ae935efff9d449c8ac85b6e4170be11157fb7d8a0f80b32fe8a055cd",
+    "rewrites": [
+     "21505->41474 (all occurrences: qm_ea_id default, #property description, identity guards, log/reason tags)"
+    ],
+    "occurrences": 7
+   },
+   {
+    "kind": "spec",
+    "source": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\SPEC.md",
+    "source_sha256": "ae604968cbee11f60ce622c98f9383aa9666eaab93669d3ffd01077c4aad32b5",
+    "target": "C:\\QM\\repo\\framework\\EAs\\QM5_41474_xag-weekly-lowvol-momentum-symfix\\SPEC.md",
+    "target_sha256": "d8c79f64216af152386f7576a5236e4aa9428c435b60e5c12a05ee7508946798"
+   }
+  ]
+ }
+]

@@ -18486,3 +18486,10 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11939,ff-j16-pin-rejection,0,EURUSD.DWX,119390000,2026-09-13,Codex governed allocator,active
 11935,ff-sonic-r,0,EURUSD.DWX,119350000,2026-09-13,Codex governed allocator,active
 11933,ff-holo-tooslow,0,EURUSD.DWX,119330000,2026-09-13,Codex governed allocator,active
+41470,usdjpy-gotobi-nakane-fix-symfix,0,USDJPY.DWX,414700000,2026-09-13,Codex governed allocator,active
+41471,edgelab-audusd-eurjpy-cointegration-symfix,0,AUDUSD.DWX,414710000,2026-09-13,Codex governed allocator,active
+41471,edgelab-audusd-eurjpy-cointegration-symfix,1,EURJPY.DWX,414710001,2026-09-13,Codex governed allocator,active
+41472,eurgbp-audjpy-symfix,0,EURGBP.DWX,414720000,2026-09-13,Codex governed allocator,active
+41472,eurgbp-audjpy-symfix,1,AUDJPY.DWX,414720001,2026-09-13,Codex governed allocator,active
+41473,brent-tom-mom-symfix,0,XTIUSD.DWX,414730000,2026-09-13,Codex governed allocator,active
+41474,xag-weekly-lowvol-momentum-symfix,0,XAGUSD.DWX,414740000,2026-09-13,Codex governed allocator,active

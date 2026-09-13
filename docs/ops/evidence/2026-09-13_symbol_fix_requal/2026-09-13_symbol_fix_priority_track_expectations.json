@@ -1,0 +1,32 @@
+{
+ "schema_version": "qm.priority-track-expectations/v1",
+ "owner_reference": "OWNER_DECISION_2026-07-31_QM5_20007_PRIORITY_TRACK",
+ "mode": "EXACT_ID_NO_WAVE_NO_BULK",
+ "note": "OWNER_DECISION_2026-09-13_SYMBOL_FIX_PRIORITY_TRACK; the controller pins the 2026-07-31 owner_reference constant, the per-row authority is the 2026-09-13 decision entry in framework/registry/owner_priority_tracks.json.",
+ "rows": [
+  {
+   "work_item_id": "b02b0a87-6f7f-4400-ad54-8e1503a84e43",
+   "ea_id": "QM5_41474",
+   "symbol": "XAGUSD.DWX",
+   "expected_status": "pending",
+   "expected_phase": "Q02",
+   "expected_payload_sha256": "433a686bde2093d5f7458c34950fac02f592291690d7a6aa30b614484480bd69"
+  },
+  {
+   "work_item_id": "152523e4-d30b-46d6-b96a-60b669f82a36",
+   "ea_id": "QM5_41473",
+   "symbol": "XTIUSD.DWX",
+   "expected_status": "pending",
+   "expected_phase": "Q02",
+   "expected_payload_sha256": "190436b8b5f48dbefc873cb663c080c4529e2a4f02b323f3d806ee164d6a7198"
+  },
+  {
+   "work_item_id": "26aaec94-02ee-4a71-9eed-68b624b45adc",
+   "ea_id": "QM5_41471",
+   "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+   "expected_status": "pending",
+   "expected_phase": "Q02",
+   "expected_payload_sha256": "99bee37ccbe9a8f64679a16adc9f0658a8a51125c64f454a1c17128410b3024a"
+  }
+ ]
+}
