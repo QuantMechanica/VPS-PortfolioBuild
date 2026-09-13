@@ -48,8 +48,8 @@ LIFT_CONDITIONS = [
     {
         "id": "SP-A1/A2-DEPLOY-POINTER",
         "requirement": "live_deployment_pointer.json is signed and its consumers read authenticated instead of UNKNOWN",
-        "status": "BLOCKED",
-        "blocked_by": "2026-09-13: minting the signed pointer (generate_live_deployment_pointer.py --signed) is itself refused by this freeze guard (LIVE_RISK_FREEZE_BLOCKED operation=mint a signed T_Live deployment pointer), so condition 1 cannot be met while the freeze is ACTIVE; the dry-run pointer for the deployed 24-sleeve manifest is ready (24/24 binaries OK). Resolution = the OWNER's explicit written lift (transcribed as lift_authority), then the pointer is minted first.",
+        "status": "AWAITING_OWNER_ATTESTATION",
+        "blocked_by": "2026-09-13: the signing route is circular (generate_live_deployment_pointer.py calls this guard without the identity exception; refusal captured). Lift-free route = identity exception: a fresh read-only observation (24 sleeves, 9.7499 %, problems=[]) and an inert proposal are minted under docs/ops/evidence/2026-09-13_m06_attest_current/; live_deployment_pointer_auth.authenticate_deploy_stamp(identity_exception_enabled=True) and verify_live_deployment_contract --allow-attested-current-identity then read OWNER_ATTESTED_CURRENT_IDENTITY. Consumers refuse today with exactly one reason: RECEIPT_NOT_OWNER_ATTESTATION_OF_THIS_PROPOSAL. Remaining = one OWNER YES receipt with decision_id OWNER-DEC-LIVE-IDENTITY-CURRENT-<proposal_sha256> and selected_effect ATTEST_CURRENT_PROPOSAL_SHA256=<sha>;FREEZE=ACTIVE;NO_ACTIVATION (no pointer signature, no lift, no risk change). Any edit of risk_freeze.py voids the proposal -> re-mint after edits.",
     },
     {
         "id": "NEWS-CONTRACT-V2",
@@ -60,8 +60,8 @@ LIFT_CONDITIONS = [
     {
         "id": "GOVERNOR-HARDENING",
         "requirement": "account/portfolio governor hardened AND actually enforcing",
-        "status": "PARTIAL",
-        "blocked_by": "2026-09-13 package (commits d6c85a5e46, 22353b1f4e): monitor v2 ex5 built artifact-only (sha f98523ee...), threshold policy PROPOSED with derivation, watcher installer dry-run proven, halt-file executor over the EA-native QM\halt\<ea_id>.halt channel (L3 exact). Remaining OWNER/cutover steps: attach the monitor v2 chart on T_Live, sign the policy, write the activation artifact + decisions/<date>_owner_governor_enforce_dxz.md (GOVERNOR-ENFORCE: ACTIVATE DXZ <date>); Claude installs the watcher task after the monitor is live.",
+        "status": "AWAITING_OWNER_SIGNATURE",
+        "blocked_by": "2026-09-13: dry-run watcher QM_StrategyFarm_GovernorDryRunWatch installed and running (SYSTEM, PT5M, first run rc=0, level 1 ENTRY_FREEZE_UNCERTAINTY on the still-v1 snapshot). Monitor v2 ex5 built (sha f98523ee...), halt-file executor delivered (commit 22353b1f4e). Full enforce chain proven against draft artifacts (docs/ops/evidence/2026-09-13_governor_v2_cutover_package/: OWNER_SIGNED policy candidate f2baf21a..., enforce-activation draft 5ab3b819..., decisions order draft with GOVERNOR-ENFORCE: ACTIVATE DXZ 2026-09-13) - the adapter reaches the executor and refuses only with l1_entry_freeze_not_expressible_via_halt_channel. Remaining = OWNER accepts both sha-bound JSONs and commits decisions/2026-09-13_owner_governor_enforce_dxz.md, plus the OWNER-only monitor v2 chart attach on T_Live; no code change required.",
     },
 ]
 
