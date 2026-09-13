@@ -4217,7 +4217,7 @@ proof is repeated with an append-only rerun of d4c790e7 after the five workers a
 stay until that proof carries a PRESCREEN verdict. Rule: a reload-env flag that is not mirrored in the machine scope
 does not survive the next purge teardown.
 
-## 2026-09-13T14:55Z PRESCREEN first-claim proof #2 failed (marker detector), RAM admission p95 fix, chunk 74
+## 2026-09-13T14:29Z PRESCREEN first-claim proof #2 failed (marker detector), RAM admission p95 fix, chunk 74
 Proof #2 (cell 2a897e8e, T2 with the restored flags, 14:23-14:25Z): the Model-1 run itself PASSED (result PASS,
 model 1, evidence_class PRESCREEN) but summary.json says model4_log_marker_detected=True, so farmctl
 _derive_prescreen_verdict_from_summary returned INFRA_FAIL PRESCREEN_EVIDENCE_CLASS_MISMATCH. Successor ticket 24df7ddd
@@ -4230,7 +4230,7 @@ post-reservation free RAM fell below the 14 GB floor for the whole queue. Fix (c
 reserves the ledger p95 (capped at max), the per-EA key keeps max, rollback QM_TESTER_MEMORY_CLASS_STAT=max. Code reload
 via detached chunk 74 (all ten workers, staggered; log D:/QM/strategy_farm/logs/reload_chunk74.log).
 
-## 2026-09-13T16:40Z OWNER book order dxz: v2 computed - NO cutover today (evidence), repairs commissioned
+## 2026-09-13T15:09Z OWNER book order dxz: v2 computed - NO cutover today (evidence), repairs commissioned
 OWNER (chat ~15:0xZ): "Berechne gleich alles! Es ist der Markt geschlossen, also lass uns das Buch updaten!" -> order artifact
 decisions/2026-09-13_owner_book_order_dxz.md (commit 0d2318f77a), guard allowed:true (26 pairs / 26 EAs / 21 families).
 Computation (docs/ops/evidence/2026-09-13_dxz_book_v2/FIT_REPORT.md, D:/QM/reports/portfolio/dxz_v2_20260913/): all 26
@@ -4250,7 +4250,7 @@ shared-grid + --union mode); Mission Control decisions OWNER-DEC-BOOK-V2-PATH-20
 re-evaluation, Wiedervorlage 2026-09-19), OWNER-DEC-DUPLICATE-41221-11421-20260913, OWNER-DEC-CONCENTRATION-SCALE-20260913.
 Three dead live sleeves (12778, 13117 symbol mismatch, 12969 dark) remain an OWNER cleanup item under the risk freeze.
 
-## 2026-09-13T15:35Z OWNER decisions on the book (chat ~15:0xZ) applied: duplicate, concentration scale, path
+## 2026-09-13T15:29Z OWNER decisions on the book (chat ~15:0xZ) applied: duplicate, concentration scale, path
 OWNER (verbatim): "Ob ohne oder Cutover ist mir doch komplett egal. Den Klon kannst Du fuer mir streichen. Die
 Konzentrationscaps kannst Du fuenfzehn Prozent erhoehen beziehungsweise wie fuer Darwinex Zero am besten geeignet. Alle
 weiteren offenen Punkte musst Du ebenfalls vor dem Buch noch loesen."
@@ -4271,7 +4271,7 @@ weiteren offenen Punkte musst Du ebenfalls vor dem Buch noch loesen."
   governor hardening) are separate programs. The freeze can therefore only be lifted by the OWNER's explicit written
   sentence (transcribed as lift_authority) - requested at cutover time. Pointer dry-run is ready (24/24 binaries OK).
 
-## 2026-09-13T16:45Z Builder fixed (orchestrator lane, ticket 3598783e closed): union book first numbers
+## 2026-09-13T15:33Z Builder fixed (orchestrator lane, ticket 3598783e closed): union book first numbers
 build_book_dxz.py now aligns proposal and incumbent on ONE shared day grid, has --union (incumbent + proposal, de-dup by
 pair, --incumbent-stream-root), --exclude-pair and --analysis-only (metrics printed before the freeze guard; no manifest
 without a lifted freeze). Commit f5f2001b59, 12 new tests, builder suites 91 passed. Concentration now PASS on the
@@ -4282,7 +4282,7 @@ diluted across more sleeves), worst day -0.76 vs -0.86 % -> not-worse gate FAIL 
 diversified (Sharpe +12 %) but not more DD-efficient than the sealed incumbent; final judgment after the 10 missing
 proposal streams (Q08 reruns) arrive. The ratified not-worse gate stays; changing the book criterion is OWNER.
 
-## 2026-09-13T17:05Z Seal fix + vault recovery (ticket 9c76957c closed), news mapping delivered, union with 24 streams
+## 2026-09-13T15:48Z Seal fix + vault recovery (ticket 9c76957c closed), news mapping delivered, union with 24 streams
 Seal root cause: the only "durable" Q08 stream copy was a mutable pointer overwritten by every later re-grade, and the
 portfolio tree is unowned by retention (classified candidate_for_cleanup_review). Fix commit 5c5e9fb84a: write-once
 content-addressed sidecar next to the aggregate, retention/purge exclusions by name, 38 tests. Recovery: 7 of 9 lost
@@ -4295,7 +4295,7 @@ Union with 24 new streams (41 sleeves, 41221 excluded, shared grid): 9.75 % -> a
 Sharpe 2.56 vs deployed 24 ann 9.00 %, ret/DD 3.71, Sharpe 2.41 -> not-worse gate FAIL (ret/DD, maxDD), PASS worst day.
 Next: selective union by greedy forward selection under the ratified gate (running).
 
-## 2026-09-13T16:15Z Book v2 composition found: live 24 + 6 new = 30 sleeves, APPLY_RECOMMENDED
+## 2026-09-13T16:00Z Book v2 composition found: live 24 + 6 new = 30 sleeves, APPLY_RECOMMENDED
 Greedy forward selection under the ratified not-worse gate (docs/ops/evidence/2026-09-13_dxz_book_v2/
 SELECTIVE_UNION_REPORT.md): starting from the deployed 24 (capped inverse vol at 9.75 %), adding 9641/WS30, 10700/XAUUSD,
 13054/XTIUSD, 21505/XAGUSD, 13013/NDX, 1537/XAGUSD improves the book to ann 9.38 %, maxDD 1.68 %, ret/DD 5.57 (deployed
@@ -4308,7 +4308,7 @@ Decision recorded on the OWNER board as OWNER-DEC-BOOK-V2-ROSTER-20260913 (Orche
 "komplett egal ... alle weiteren offenen Punkte loesen"); manifest signature + AutoTrading stay OWNER. Q16 staging
 package (presets, binaries, copy plan, repairs, ANLEITUNG, deploy manifest draft) in progress.
 
-## 2026-09-13T16:35Z Governor enforcement executor delivered (commit 22353b1f4e)
+## 2026-09-13T16:04Z Governor enforcement executor delivered (commit 22353b1f4e)
 Live EAs poll only QM\halt\<ea_id>.halt and QM\halt\portfolio_dd.signal, both trip QM_KillSwitchTrip (close all owned
 positions, delete pendings, latch, persist in ks_state_*.state) - there is no entry-freeze channel. New
 account_governor_halt_executor.py: L3 flatten = exact match via per-sleeve .halt files (21 distinct ea_ids for the 24
@@ -4318,7 +4318,7 @@ GOVERNOR-ENFORCE: ACTIVATE DXZ <date> + --executor halt-file; default stays DRY_
 monitor v2 chart on T_Live (OWNER), watcher task install (Claude, after the monitor), policy signature (OWNER), activation
 artifact (OWNER). Known limits: halt = flatten; shared login covers manifest sleeves only; clearing needs a chart reload.
 
-## 2026-09-13T16:55Z Q09_NEWS historical lane closed, news duplicate rule, freeze condition texts (commit 737207452a)
+## 2026-09-13T16:08Z Q09_NEWS historical lane closed, news duplicate rule, freeze condition texts (commit 737207452a)
 Governed tool tools/strategy_farm/apply_q09_news_review_dispositions.py (retire2 pattern: hashed plan, backup, mutation
 lock, INSERT disposition + supersedes edge) applied 64/64 at 16:01Z: 6 CONFIG_LOCKED (receipts, not seals: no
 q09_news_tests row written), 4 INVALID_EVIDENCE (matrix cells missing), 15 INVALID_EVIDENCE RUN_SMOKE_EVIDENCE_NOT_
@@ -4332,7 +4332,7 @@ max_rank.v1 -> the canonical file loads (48,727 rows, 1 conflict resolved to hig
 now state the delivered 2026-09-13 facts for all three conditions (documentation only; the freeze stays ACTIVE until the
 OWNER lifts it in writing). Still open for "Q09 rerun complete": the active Q10_NEWS lane (95 REVIEW_REQUIRED, 52 pending).
 
-## 2026-09-13T17:15Z Taint backup churn fixed (commit 7d1e16253d); retention ticket f5d30fc9 rescoped to evidence + optional reuse
+## 2026-09-13T16:11Z Taint backup churn fixed (commit 7d1e16253d); retention ticket f5d30fc9 rescoped to evidence + optional reuse
 news_calendar_taint.sweep(apply=True) now runs a read-only preflight synchronize and takes the governed 1.27 GB backup +
 FACTORY_MUTATION.lock only when at least one row needs HOLD/RELEASE (previously every 10 minutes unconditionally: ~7 GB/h
 write churn and fleet-wide lock_busy claim declines). Two tests cover the skip and the pass-through. Effective with the
@@ -4340,7 +4340,7 @@ next scheduled sweep (the task runs the repo script). Remaining per-label anchor
 first_q02_intake: keep 3 x 1.27 GB) stay; f5d30fc9 (priority 60) keeps only the evidence correction and the optional
 live-DB backup reuse.
 
-## 2026-09-13T17:35Z Q16 package finding: five EAs carry hardcoded .DWX symbol literals -> cutover book = 28 sleeves
+## 2026-09-13T16:16Z Q16 package finding: five EAs carry hardcoded .DWX symbol literals -> cutover book = 28 sleeves
 The three dark live sleeves (12969: Strategy_IsTarget requires USDJPY.DWX; 12778/13117: basket leg literals, BASKET_WARMUP
 loaded=0) never trade live because the T_Live chart carries the bare broker symbol; the same defect sits in two of the six
 new sleeves (13054/XTIUSD, 21505/XAGUSD). A preset cannot fix it (no symbol input exposed): source patch (symbols as
