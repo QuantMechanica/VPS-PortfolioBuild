@@ -4362,3 +4362,13 @@ manifest signature, XAGUSD + WS30 into Market Watch; Codex = commission group fi
 Fleet: with all census cells done/held the queue is Q02/Q04 heavy; T8 claim scan 16:21Z ram_class_skipped 755 at
 27 GB free because light EAs on the metal class reserved the class p95 (23.6 GB): commit 96946e85ed makes a well-sampled
 per-EA record authoritative both ways (rollback QM_TESTER_MEMORY_EA_AUTHORITATIVE=0); reload chunk 75 detached.
+
+## 2026-09-13T16:58Z Total risk optimised to 11.0 % (OWNER: "Gesamtrisiko optimieren"), mislabel fix committed
+Builder sweep on the 28-sleeve book (analysis-only, gate vs the deployed 24): 9.75/1.0 PASS (ann 9.58, maxDD 1.82,
+worst -0.758); 11.0/1.0 FAIL worst day (-0.864); 11.0/1.5 PASS (ann 10.81, maxDD 2.05, worst -0.856, Sharpe 2.53);
+12.0 and above FAIL (worst day, later maxDD). Decision OWNER-DEC-BOOK-RISK-11-20260913 (mandate): total risk 11.0 %,
+sleeve cap 1.5 %, concentration budget 11.0 (commit 16efcc7192); staging package being rebuilt at 11.0/1.5.
+Mislabel root cause (Q09_NEWS rows run as run_smoke) fixed: commit bb3bed68c3 (oos_2026_confirmation lane derivation +
+report-misphased-rows CLI; farmctl news_lane_mismatch spawn refusal); the terminal_worker diagnostic-summary schema check
+was captured into commit 96946e85ed by a concurrent index add (attribution note; content tested: 150 passed, the 5
+failures are the pre-existing fixture SH-3 taxonomy drift). Worker parts take effect with reload chunk 75 (running).
