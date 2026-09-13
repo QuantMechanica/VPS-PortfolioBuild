@@ -45,7 +45,9 @@ Record every durable OWNER change in the appropriate Vault page and evidence tra
 
 For live company audits, also read `docs/ops/COMPANY_AUDIT_LIVE_SOURCES_2026-05-30.md`.
 It records the current deterministic runtime source order and the Qxx gate naming
-(standard path Q00–Q13 plus optimization branch Q14–Q16),
+(v4 linear path Q00–Q17 since 2026-08-23: Q11 portfolio, Q12 pattern optimisation DL-089,
+Q13 numeric sweep, Q14 optimisation-fork evaluation = counter, Q15 challenger, Q16 operational
+readiness, Q17 live burn-in; the older "Q00–Q13 + Q14–Q16 branch" wording in that audit is stale),
 `D:\QM\mt5\T1..T10` factory layout, and `C:\QM\mt5\T_Live` isolation. Generated
 `public-data` snapshots and `D:\QM\reports\state\pipeline_state.json` may still expose
 read-only compatibility keys and must not override live Qxx work-item evidence.
@@ -58,10 +60,13 @@ role hierarchy as a routing, state, verdict, evidence, or approval dependency.
 - Controller: `C:/QM/repo/tools/strategy_farm/`
 - Runtime / artifacts: `D:/QM/strategy_farm/`
 - State DB: `D:/QM/strategy_farm/state/farm_state.sqlite` (`work_items`, `agent_tasks`, …)
-- Pipeline: 14 gates **Q00–Q13** (storage keeps legacy `P*` keys for compatibility;
-  operator surfaces display only **Qxx**). Q02–Q10 are automated evidence gates —
-  Q10 full-history confirmation is the closing per-(EA, symbol) verdict; Q11–Q13
-  (portfolio, operational readiness, live burn-in) are OWNER/manual gates.
+- Pipeline: 18 gates **Q00–Q17**, v4 linear since the 2026-08-23 rebaseline (storage keeps
+  legacy `P*` keys for compatibility; operator surfaces display only **Qxx**). Q02–Q10 are
+  automated evidence gates — Q10 full-history confirmation is the closing per-(EA, symbol)
+  verdict; Q11 portfolio, Q12 pattern optimisation (DL-089 census), Q13 numeric sweep, Q14
+  optimisation-fork evaluation (the OWNER counter counts terminal Q14 pairs), Q15 challenger
+  spawn, Q16 operational readiness and Q17 live burn-in are the governed/OWNER stages
+  (`docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md`).
 - The T1–T10 factory works the backtest queue; MT5 saturation is the primary throughput
   metric.
 
