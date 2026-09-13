@@ -4229,3 +4229,23 @@ fx_major|H1|backtest (n=297, p95 7.3 GB) and metal|D1|backtest (p95 23.6 GB); ev
 post-reservation free RAM fell below the 14 GB floor for the whole queue. Fix (commit 97c887753e, 20 tests): the class key
 reserves the ledger p95 (capped at max), the per-EA key keeps max, rollback QM_TESTER_MEMORY_CLASS_STAT=max. Code reload
 via detached chunk 74 (all ten workers, staggered; log D:/QM/strategy_farm/logs/reload_chunk74.log).
+
+## 2026-09-13T16:40Z OWNER book order dxz: v2 computed - NO cutover today (evidence), repairs commissioned
+OWNER (chat ~15:0xZ): "Berechne gleich alles! Es ist der Markt geschlossen, also lass uns das Buch updaten!" -> order artifact
+decisions/2026-09-13_owner_book_order_dxz.md (commit 0d2318f77a), guard allowed:true (26 pairs / 26 EAs / 21 families).
+Computation (docs/ops/evidence/2026-09-13_dxz_book_v2/FIT_REPORT.md, D:/QM/reports/portfolio/dxz_v2_20260913/): all 26
+terminal Q14 verdicts are KEEP_INCUMBENT (winning settings = incumbent set-files; no magic allocation needed). Streams: only
+16 of 26 sealed Q08 streams resolvable - 9 lost their sealed bytes (aggregate pins a content_sha256 no file carries;
+sleeve_streams copy gone, Common Files copy overwritten; report.htm still matches its seal) and 20266/XTIUSD has no stream
+bound to its identity. build_book_dxz.py refuses any roster different from the incumbent (INPUT_INVALID grid alignment) and
+the risk freeze is ACTIVE, so no manifest was minted; metrics were recomputed with the builder functions on one shared grid
+(marked NOT_A_MINTED_MANIFEST). Result on the common window 2019-07-23..2024-12-06 at 9.75 % / 1.0 % cap: replacement
+book A16 Sharpe 1.26 / MaxDD 6.86 %, B18 (plus 10403/10513 on July streams) 1.43 / 4.88 %, incumbent live-24 2.41 / 2.41 %
+-> not-worse gate FAIL on all three checks; concentration caps breached (also by the LIVE book: the ratified caps are
+fractions of a 2.5 % stop-risk budget while book risk is 9.75 %); 41221/EURUSD is a clone of live 11421/EURUSD (r = 1.000).
+Burn-in variant (new sleeves at min-lot) sums to 2.71 %. Conclusion given to the OWNER: no cutover today; evaluate the
+UNION (live 24 + newly qualified, duplicate removed) after the stream repair. Commissioned: 9 append-only Q08 reruns
+(from their Q07 PASS rows) + 20266 Q08 rerun; Codex 9c76957c (sleeve_streams seal loses bytes), 3598783e (builder
+shared-grid + --union mode); Mission Control decisions OWNER-DEC-BOOK-V2-PATH-20260913 (recommend no cutover, union
+re-evaluation, Wiedervorlage 2026-09-19), OWNER-DEC-DUPLICATE-41221-11421-20260913, OWNER-DEC-CONCENTRATION-SCALE-20260913.
+Three dead live sleeves (12778, 13117 symbol mismatch, 12969 dark) remain an OWNER cleanup item under the risk freeze.
