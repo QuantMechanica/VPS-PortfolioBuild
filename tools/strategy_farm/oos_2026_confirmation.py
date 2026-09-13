@@ -89,6 +89,42 @@ class OOS2026Error(RuntimeError):
     pass
 
 
+# LANE CONTRACT (2026-09-13).  This module used to INSERT its diagnostic rows
+# with the hard-coded storage phase literal ``'Q09_NEWS'``.  Under the v4 gate
+# manifest the active NEWS storage lane is ``Q10_NEWS``
+# (``q09_news_runner.NEWS_PHASE`` == ``farmctl._NEWS_PHASE``), so those rows
+# matched no NEWS runner binding and were dispatched as ORDINARY run_smoke
+# backtests whose ``run_smoke/v2`` summaries were then stamped REVIEW_REQUIRED
+# (15 rows, ran 2026-09-04; see
+# docs/ops/evidence/2026-09-13_q09_news_review_lane_dispositions.md section 2).
+# The phase is now derived, and enqueue refuses if it is not the active lane.
+MISPHASED_REPORT_SCHEMA = "qm.oos-2026-misphased-pending-rows/v1"
+
+
+def active_news_phase() -> str:
+    """Resolve the active NEWS storage lane, fail closed on manifest drift."""
+
+    resolved = str(getattr(q09, "NEWS_PHASE", "") or "").strip()
+    active = str(getattr(farmctl, "_NEWS_PHASE", "") or "").strip()
+    if not resolved or not active:
+        raise OOS2026Error(
+            "NEWS storage lane is not resolvable from the active gate manifest "
+            f"(q09_news_runner.NEWS_PHASE={resolved!r}, farmctl._NEWS_PHASE={active!r})"
+        )
+    if resolved != active:
+        raise OOS2026Error(
+            f"resolved NEWS phase {resolved!r} is not the active NEWS lane {active!r}; "
+            "refusing to enqueue OOS-2026 diagnostic rows onto a non-active lane"
+        )
+    return resolved
+
+
+def news_storage_lanes() -> tuple[str, ...]:
+    """Every NEWS storage lane, active first, historical lanes after it."""
+
+    return tuple(farmctl._news_read_phases(include_historical=True))
+
+
 def sha(path: Path) -> str:
     return contract.sha256_file(path)
 
@@ -382,6 +418,9 @@ def prepare(task_id: str) -> dict[str, Any]:
 
 
 def enqueue(campaign: dict[str, Any]) -> dict[str, Any]:
+    # Fail closed BEFORE the transaction: a row minted onto a non-active NEWS
+    # lane cannot reach the NEWS runner at all (see LANE CONTRACT above).
+    news_phase = active_news_phase()
     now = datetime.now(timezone.utc).isoformat(); inserted=[]; existing=[]
     # EXPLICIT WINDOW CONTRACT (2026-09-04): every diagnostic row carries the
     # campaign window in its payload. Without it farmctl's spawn builder found
@@ -419,15 +458,82 @@ def enqueue(campaign: dict[str, Any]) -> dict[str, Any]:
                             "q09_cell_timeout_sec":q09.DEFAULT_CELL_TIMEOUT_SEC,"timeout_min":q09.required_factory_timeout_min(1,window_count=1)})
             payload.update(_basket_payload(row["ea_id"], row["symbol"], row["period"]))
             payload["q09_dispatch_binding_sha256"]=q09._dispatch_binding_sha256(payload)
-            conn.execute("INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,payload_json,created_at,updated_at) VALUES(?,'backtest','Q09_NEWS',?,?,?,'pending',0,?,?,?)",
-                         (row["work_item_id"],row["ea_id"],row["symbol"],row["baseline_setfile_path"],json.dumps(payload,sort_keys=True),now,now))
+            conn.execute("INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,payload_json,created_at,updated_at) VALUES(?,'backtest',?,?,?,?,'pending',0,?,?,?)",
+                         (row["work_item_id"],news_phase,row["ea_id"],row["symbol"],row["baseline_setfile_path"],json.dumps(payload,sort_keys=True),now,now))
             inserted.append(row["work_item_id"])
         conn.commit()
     receipt={"schema_version":"qm.oos-2026-enqueue/v1","diagnostic_non_admission":True,"inserted":inserted,
              "existing":existing,"count":55,"queue_policy":"behind census","enqueued_at_utc":now,
-             "tester_window":window,**plan_binding}
+             "news_phase":news_phase,"tester_window":window,**plan_binding}
     path=ARTIFACT_ROOT/"enqueue_receipt.json"; write_json(path,receipt)
     return {**receipt,"receipt_path":str(path),"receipt_sha256":sha(path)}
+
+
+def report_misphased_pending_rows(
+    db: Path = FARM_DB,
+    *,
+    campaign_id: str = CAMPAIGN_ID,
+) -> dict[str, Any]:
+    """READ-ONLY: pending rows this module created that are off the active lane.
+
+    Opens the farm DB with ``mode=ro`` and mutates nothing.  Every pending
+    ``diagnostic_campaign_id == campaign_id`` row whose ``phase`` is not the
+    active NEWS lane is listed with its active holds so the orchestrator can
+    disposition it.  Rows already on the active lane are counted, not listed.
+    """
+
+    active = str(getattr(farmctl, "_NEWS_PHASE", "") or "").strip()
+    connection = sqlite3.connect(f"file:{Path(db).as_posix()}?mode=ro", uri=True)
+    connection.row_factory = sqlite3.Row
+    rows: list[dict[str, Any]] = []
+    on_active = 0
+    try:
+        for row in connection.execute(
+            "SELECT id,phase,ea_id,symbol,status,created_at,payload_json "
+            "FROM work_items WHERE status='pending' ORDER BY created_at,id"
+        ):
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(payload, dict):
+                continue
+            if payload.get("diagnostic_campaign_id") != campaign_id:
+                continue
+            if str(row["phase"] or "").strip() == active:
+                on_active += 1
+                continue
+            try:
+                holds = [
+                    {"hold_code": hold["hold_code"], "reason": hold["reason"]}
+                    for hold in connection.execute(
+                        "SELECT hold_code,reason FROM work_item_holds "
+                        "WHERE work_item_id=? AND active=1 ORDER BY hold_code",
+                        (row["id"],),
+                    )
+                ]
+            except sqlite3.Error:
+                holds = []
+            rows.append({
+                "work_item_id": row["id"], "phase": row["phase"], "ea_id": row["ea_id"],
+                "symbol": row["symbol"], "created_at": row["created_at"],
+                "window_source": payload.get("window_source"),
+                "holds": holds,
+                "held": bool(holds),
+            })
+    finally:
+        connection.close()
+    return {
+        "schema_version": MISPHASED_REPORT_SCHEMA,
+        "read_only": True,
+        "database": str(Path(db).resolve()),
+        "campaign_id": campaign_id,
+        "active_news_phase": active,
+        "news_storage_lanes": list(news_storage_lanes()),
+        "misphased_pending_count": len(rows),
+        "pending_on_active_lane_count": on_active,
+        "rows": rows,
+    }
 
 
 def _payload_sha256(payload_json: str | None) -> str:
@@ -448,8 +554,15 @@ def _basket_repair_plan(
     ).fetchone()
     if row is None:
         raise OOS2026Error(f"{work_item_id}: work item not found")
-    if row["kind"] != "backtest" or row["phase"] != "Q09_NEWS":
-        raise OOS2026Error(f"{work_item_id}: only a Q09_NEWS backtest may be repaired")
+    # Accept every NEWS storage lane: the 40 held campaign rows still sit on the
+    # historical ``Q09_NEWS`` lane, while newly minted rows land on the active
+    # one.  Widening the repair guard changes no repair semantics.
+    lanes = news_storage_lanes()
+    if row["kind"] != "backtest" or row["phase"] not in lanes:
+        raise OOS2026Error(
+            f"{work_item_id}: only a NEWS backtest may be repaired "
+            f"(phase={row['phase']!r}, accepted={list(lanes)})"
+        )
     if row["status"] != "pending" or row["claimed_by"] is not None:
         raise OOS2026Error(
             f"{work_item_id}: repair requires an unclaimed pending row "
@@ -1373,8 +1486,17 @@ def main() -> int:
         help="repair only this exact campaign work item (repeatable; fail-closed)",
     )
     window_repair.add_argument("--apply",action="store_true")
+    misphased=sub.add_parser(
+        "report-misphased-rows",
+        help="READ-ONLY: list pending campaign rows whose storage phase is not "
+             "the active NEWS lane (nothing is written)",
+    )
+    misphased.add_argument("--db",type=Path,default=FARM_DB)
+    misphased.add_argument("--campaign-id",default=CAMPAIGN_ID)
     args=parser.parse_args()
-    if args.command == "repair-oos-window":
+    if args.command == "report-misphased-rows":
+        result=report_misphased_pending_rows(args.db,campaign_id=args.campaign_id)
+    elif args.command == "repair-oos-window":
         if args.apply:
             if not args.out:
                 raise OOS2026Error("--apply requires --out")

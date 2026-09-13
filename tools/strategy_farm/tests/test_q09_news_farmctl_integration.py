@@ -672,6 +672,74 @@ def test_terminal_worker_requires_matching_q09_sidecar(tmp_path: Path) -> None:
     )
 
 
+def test_historical_news_lane_row_is_refused_never_run_as_run_smoke(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """LINK 2 of the 2026-09-04 mis-phase defect (dispatcher fallthrough)."""
+
+    lanes = farmctl._news_read_phases(include_historical=True)
+    assert lanes[0] == NEWS_PHASE
+    historical = next((lane for lane in lanes if lane != NEWS_PHASE), None)
+    if historical is None:  # pragma: no cover - only one NEWS lane exists
+        pytest.skip("no historical NEWS storage lane under the active manifest")
+
+    farmctl.init_db(tmp_path)
+    setfile = tmp_path / "QM5_9999_demo_EURUSD.DWX_H1_backtest.set"
+    setfile.write_text("RISK_FIXED=1000\nRISK_PERCENT=0\n", encoding="utf-8")
+    connection = farmctl.connect(tmp_path)
+    try:
+        now = farmctl.utc_now()
+        for item_id, phase in (("news-active", NEWS_PHASE), ("news-historical", historical)):
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,attempt_count,
+                    payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', ?, 'QM5_9999', 'EURUSD.DWX', ?, 'active', 0,
+                         '{"diagnostic_non_admission": true}', ?, ?)
+                """,
+                (item_id, phase, str(setfile), now, now),
+            )
+        connection.commit()
+        rows = {
+            row["id"]: row
+            for row in connection.execute("SELECT * FROM work_items").fetchall()
+        }
+    finally:
+        connection.close()
+
+    calls: list[str] = []
+    monkeypatch.setattr(
+        farmctl, "_news_calendar_preflight", lambda **_kwargs: {"ok": True}
+    )
+    monkeypatch.setattr(
+        farmctl, "_spawn_run_smoke_for_work_item",
+        lambda *a, **k: calls.append("run_smoke") or {"spawned": True},
+    )
+    monkeypatch.setattr(
+        farmctl, "_spawn_phase_runner_for_work_item",
+        lambda *a, **k: calls.append("phase_runner") or {"spawned": True},
+    )
+
+    refusal = farmctl._spawn_work_item_runner(tmp_path, rows["news-historical"], "T1")
+    assert calls == []  # above all: NEVER the ordinary run_smoke builder
+    assert refusal["spawned"] is False
+    assert refusal["news_lane_mismatch"] is True
+    assert refusal["pending_runner"] is True
+    assert refusal["required_phase"] == NEWS_PHASE
+    assert f"news_storage_lane_not_active:{historical}" in refusal["reason"]
+
+    # The ACTIVE lane is untouched.
+    assert farmctl._spawn_work_item_runner(
+        tmp_path, rows["news-active"], "T1"
+    )["spawned"] is True
+    assert calls == ["phase_runner"]
+
+    assert farmctl._news_lane_spawn_refusal(NEWS_PHASE) is None
+    assert farmctl._news_lane_spawn_refusal("Q02") is None
+    assert farmctl._news_lane_spawn_refusal(None) is None
+
+
 def test_q09_phase_builder_executes_bound_plan_in_reserved_slot(tmp_path: Path) -> None:
     farmctl.init_db(tmp_path)
     setfile = tmp_path / "QM5_9999_demo_EURUSD.DWX_H1_backtest.set"

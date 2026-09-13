@@ -9,6 +9,7 @@ from unittest import mock
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
 
+import artifact_identity  # noqa: E402
 import farmctl  # noqa: E402
 import q09_live_news_backfill as backfill  # noqa: E402
 import q09_news_calendar as calendar  # noqa: E402
@@ -401,6 +402,126 @@ class Q09LiveNewsDiagnosticTests(unittest.TestCase):
             finished_payload["diagnostic_underlying_q09_verdict"],
             "CONFIG_LOCKED",
         )
+
+    def test_worker_diagnostic_schema_constant_mirrors_the_runner(self) -> None:
+        self.assertEqual(
+            terminal_worker.DIAGNOSTIC_NEWS_SUMMARY_SCHEMA,
+            runner.DIAGNOSTIC_SUMMARY_SCHEMA,
+        )
+        self.assertIsNone(
+            terminal_worker._diagnostic_news_summary(self.root / "does-not-exist.json")[0]
+        )
+
+    def test_run_smoke_summary_is_refused_as_diagnostic_news_evidence(self) -> None:
+        """LINK 3 of the 2026-09-04 mis-phase defect (worker evidence contract).
+
+        A mis-phased NEWS row is dispatched as an ORDINARY run_smoke backtest.
+        Its ``summary.json`` sits at exactly the path the diagnostic branch reads,
+        and used to be stamped ``REVIEW_REQUIRED / diagnostic_non_admission``
+        without any schema check -- 15 rows on 2026-09-04.
+        """
+
+        self.bind_and_activate()
+        historical = next(
+            (lane for lane in farmctl._news_read_phases(include_historical=True)
+             if lane != runner.NEWS_PHASE),
+            None,
+        )
+        if historical is None:  # pragma: no cover - single NEWS lane manifest
+            self.skipTest("no historical NEWS storage lane under the active manifest")
+        output = self.root / "reports" / "QM5_9999" / historical / "EURUSD_DWX"
+        output.mkdir(parents=True)
+        aggregate = output / "aggregate.json"
+        aggregate.write_text('{"verdict":"CONFIG_LOCKED"}\n', encoding="utf-8")
+        # Exactly what the ordinary run_smoke builder writes (measured shape of
+        # the 15 defective rows: run_smoke/v2 + the unscoped archive calendar).
+        (output / "summary.json").write_text(
+            json.dumps({
+                "evidence_schema": "run_smoke/v2",
+                "result": "PASS",
+                "verdict": "PASS",
+                "trades": 231,
+                "news_calendar": {"primary_path": "news_calendar_2015_2025.csv"},
+            }),
+            encoding="utf-8",
+        )
+        # The phase column is append-only, so the mis-phased row is minted as its
+        # own row -- exactly how oos_2026_confirmation.enqueue produced them.
+        misphased_id = "diagnostic-q09-misphased"
+        with farmctl.connect(self.farm) as connection:
+            payload = json.loads(
+                connection.execute(
+                    "SELECT payload_json FROM work_items WHERE id=?",
+                    (self.work_item_id,),
+                ).fetchone()["payload_json"]
+            )
+            payload.update({
+                "phase_evidence_path": str(aggregate.resolve()),
+                "report_root": str((self.root / "reports").resolve()),
+            })
+            connection.execute(
+                """
+                INSERT INTO work_items(
+                    id,kind,phase,ea_id,symbol,setfile_path,status,verdict,
+                    attempt_count,parent_task_id,evidence_path,claimed_by,
+                    payload_json,created_at,updated_at
+                ) VALUES(?, 'backtest', ?, 'QM5_9999', 'EURUSD.DWX', ?, 'active',
+                         NULL, 0, NULL, NULL, 'T1', ?, ?, ?)
+                """,
+                (
+                    misphased_id, historical, str(self.setfile),
+                    json.dumps(payload, sort_keys=True),
+                    "2026-09-02T00:00:00+00:00", "2026-09-02T00:00:00+00:00",
+                ),
+            )
+            connection.commit()
+            row = connection.execute(
+                "SELECT * FROM work_items WHERE id=?", (misphased_id,)
+            ).fetchone()
+
+        # The sealed-sidecar guard still short-circuits on a non-active lane --
+        # which is precisely why the completion path must check the schema.
+        self.assertTrue(
+            terminal_worker._q09_sidecar_matches(
+                self.farm, row, aggregate,
+                json.loads(aggregate.read_text(encoding="utf-8")),
+            )
+        )
+
+        # PRE-EXISTING fixture gap (unrelated to this contract): a fresh
+        # farmctl.init_db() table has a status CHECK but no SH-3 taxonomy CHECK,
+        # and validate_verdict_taxonomy_write substring-matches the DDL, so it
+        # refuses EVERY canonical taxonomy on a fixture DB.  The live schema
+        # does carry the taxonomy CHECK.  Neutralise only that guard here.
+        with mock.patch.object(
+            artifact_identity,
+            "validate_verdict_taxonomy_write",
+            lambda conn, taxonomy: str(taxonomy).strip().lower(),
+        ):
+            result = terminal_worker._finish_work_item(self.farm, misphased_id, 0)
+        self.assertEqual(result["verdict"], "INFRA_FAIL")
+        self.assertEqual(result["status"], "failed")
+        self.assertEqual(result["reason"], "diagnostic_summary_schema_mismatch")
+        with farmctl.connect(self.farm) as connection:
+            finished = connection.execute(
+                "SELECT status,verdict,payload_json FROM work_items WHERE id=?",
+                (misphased_id,),
+            ).fetchone()
+        self.assertEqual(finished["status"], "failed")
+        self.assertEqual(finished["verdict"], "INFRA_FAIL")
+        finished_payload = json.loads(finished["payload_json"])
+        self.assertEqual(finished_payload["verdict_taxonomy"], "infra")
+        self.assertEqual(
+            finished_payload["verdict_reason"], "diagnostic_summary_schema_mismatch"
+        )
+        self.assertEqual(
+            finished_payload["diagnostic_summary_schema_observed"], "run_smoke/v2"
+        )
+        self.assertEqual(
+            finished_payload["diagnostic_summary_schema_expected"],
+            runner.DIAGNOSTIC_SUMMARY_SCHEMA,
+        )
+        self.assertNotIn("diagnostic_underlying_q09_verdict", finished_payload)
 
     def test_live_baseline_derivation_neutralizes_control_and_preserves_source(self) -> None:
         source = self.root / "live.set"

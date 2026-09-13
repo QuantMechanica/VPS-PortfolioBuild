@@ -11329,6 +11329,36 @@ def _spawn_dwx_m1_overlap_export(
     }
 
 
+def _news_lane_spawn_refusal(phase: Any) -> dict[str, Any] | None:
+    """Refuse a NEWS row that sits on a non-active NEWS storage lane.
+
+    ``_news_read_phases(include_historical=True)`` enumerates every storage lane
+    that has ever carried NEWS rows.  Only the active one (``_NEWS_PHASE``) has a
+    phase-runner binding.  Any other NEWS lane is returned as an explicit,
+    terminal ``pending_runner`` refusal so the dispatcher can never hand it to
+    the ordinary run_smoke builder.  Non-NEWS phases return ``None`` (no change).
+    """
+
+    phase_key = str(phase or "").strip().upper()
+    if not phase_key or phase_key == str(_NEWS_PHASE).strip().upper():
+        return None
+    lanes = {str(lane).strip().upper() for lane in _news_read_phases(include_historical=True)}
+    if phase_key not in lanes:
+        return None
+    return {
+        "spawned": False,
+        "pending_runner": True,
+        "news_lane_mismatch": True,
+        "required_phase": _NEWS_PHASE,
+        "log_path": None,
+        "report_root": None,
+        "reason": (
+            f"news_storage_lane_not_active:{phase}; the NEWS runner binds "
+            f"{_NEWS_PHASE}. Refusing rather than running it as run_smoke."
+        ),
+    }
+
+
 def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
                             terminal: str) -> dict[str, Any]:
     if (
@@ -11340,6 +11370,17 @@ def _spawn_work_item_runner(root: Path, item_row: sqlite3.Row,
             "reason": "COMPILE_EA is owned synchronously by terminal_worker",
             "compile_terminal_worker_only": True,
         }
+    # NEWS lane routing (2026-09-13 evidence-contract fix).  The NEWS runner is
+    # bound to the ACTIVE storage lane only (``_NEWS_PHASE``); a row still on a
+    # historical NEWS lane (``_news_read_phases(include_historical=True)``)
+    # matches neither ``REAL_PHASE_RUNNER_PHASES`` nor ``PHASE_RUNNER_SCRIPTS``
+    # and used to fall through to the ORDINARY run_smoke backtest builder.  That
+    # produced a ``run_smoke/v2`` summary which downstream code then read as NEWS
+    # evidence.  Refuse explicitly instead: never silently run a NEWS row as a
+    # plain backtest.  Active-lane behaviour is unchanged.
+    news_refusal = _news_lane_spawn_refusal(item_row["phase"])
+    if news_refusal is not None:
+        return news_refusal
     if (
         item_row["phase"] in REAL_PHASE_RUNNER_PHASES
         and not is_phase_runner_terminal_name(terminal)

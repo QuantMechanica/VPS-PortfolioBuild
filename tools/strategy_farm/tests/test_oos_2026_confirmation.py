@@ -4,8 +4,98 @@ from pathlib import Path
 
 import pytest
 
+from tools.strategy_farm import farmctl
 from tools.strategy_farm import oos_2026_confirmation as subject
 from tools.strategy_farm import q09_news_runner as q09
+
+
+def test_enqueue_phase_is_manifest_derived_not_a_hard_coded_literal() -> None:
+    """LINK 1 of the 2026-09-04 mis-phase defect: the INSERT must not carry a literal."""
+
+    assert subject.active_news_phase() == q09.NEWS_PHASE == farmctl._NEWS_PHASE
+    assert subject.news_storage_lanes()[0] == farmctl._NEWS_PHASE
+    source = Path(subject.__file__).read_text(encoding="utf-8")
+    insert = next(
+        line for line in source.splitlines()
+        if "INSERT INTO work_items(id,kind,phase" in line
+    )
+    assert "'Q09_NEWS'" not in insert
+    assert "VALUES(?,'backtest',?," in insert
+
+
+def test_enqueue_refuses_when_resolved_phase_is_not_the_active_news_lane(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(farmctl, "_NEWS_PHASE", "Q11_NEWS_SOMETHING_ELSE")
+    with pytest.raises(subject.OOS2026Error, match="not the active NEWS lane"):
+        subject.active_news_phase()
+    # enqueue resolves the lane BEFORE it opens the write transaction.
+    with pytest.raises(subject.OOS2026Error, match="not the active NEWS lane"):
+        subject.enqueue({"runs": [], "router_task_id": "x"})
+
+
+def _misphase_db(tmp_path: Path) -> Path:
+    db = tmp_path / "farm_state.sqlite"
+    campaign = {"diagnostic_campaign_id": subject.CAMPAIGN_ID, "window_source": "oos_2026"}
+    other = {"diagnostic_campaign_id": "some-other-campaign"}
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "CREATE TABLE work_items("
+            "id TEXT PRIMARY KEY,kind TEXT,phase TEXT,ea_id TEXT,symbol TEXT,"
+            "status TEXT,created_at TEXT,payload_json TEXT)"
+        )
+        conn.execute(
+            "CREATE TABLE work_item_holds(work_item_id TEXT,hold_code TEXT,"
+            "reason TEXT,active INTEGER)"
+        )
+        rows = [
+            ("held", "Q09_NEWS", "pending", campaign),
+            ("unheld", "Q09_NEWS", "pending", campaign),
+            ("active_lane", farmctl._NEWS_PHASE, "pending", campaign),
+            ("done_historical", "Q09_NEWS", "done", campaign),
+            ("foreign", "Q09_NEWS", "pending", other),
+        ]
+        for item_id, phase, status, payload in rows:
+            conn.execute(
+                "INSERT INTO work_items VALUES(?,?,?,?,?,?,?,?)",
+                (item_id, "backtest", phase, "QM5_1", "EURUSD.DWX", status,
+                 "2026-09-02T00:00:00+00:00", json.dumps(payload, sort_keys=True)),
+            )
+        conn.execute(
+            "INSERT INTO work_item_holds VALUES(?,?,?,?)",
+            ("held", "OOS_WINDOW_MISMATCH", "campaign window mismatch", 1),
+        )
+        conn.execute(
+            "INSERT INTO work_item_holds VALUES(?,?,?,?)",
+            ("held", "RELEASED_HOLD", "already released", 0),
+        )
+    return db
+
+
+def test_report_misphased_pending_rows_is_read_only_and_lists_holds(
+    tmp_path: Path,
+) -> None:
+    db = _misphase_db(tmp_path)
+    before = db.read_bytes()
+
+    report = subject.report_misphased_pending_rows(db)
+
+    assert report["schema_version"] == subject.MISPHASED_REPORT_SCHEMA
+    assert report["read_only"] is True
+    assert report["active_news_phase"] == farmctl._NEWS_PHASE
+    assert report["misphased_pending_count"] == 2
+    assert report["pending_on_active_lane_count"] == 1
+    by_id = {row["work_item_id"]: row for row in report["rows"]}
+    # Only pending campaign rows off the active lane; done/foreign are excluded.
+    assert set(by_id) == {"held", "unheld"}
+    assert by_id["held"]["phase"] == "Q09_NEWS"
+    assert by_id["held"]["held"] is True
+    assert [hold["hold_code"] for hold in by_id["held"]["holds"]] == [
+        "OOS_WINDOW_MISMATCH"
+    ]
+    assert by_id["unheld"]["holds"] == []
+    assert by_id["unheld"]["held"] is False
+    assert db.read_bytes() == before
 
 
 def test_campaign_scope_is_fixed_single_window_non_admission() -> None:
