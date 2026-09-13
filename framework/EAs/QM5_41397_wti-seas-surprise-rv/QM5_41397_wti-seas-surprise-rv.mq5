@@ -43,6 +43,10 @@ input group "Stress"
 input double qm_stress_reject_probability  = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// factory default is the .DWX custom-symbol name; live/FTMO presets override it
+// with the bare broker name. Comparisons use QM_MagicSymbolCanonical base names.
+input string strategy_symbol               = "XTIUSD.DWX";
 input int    strategy_history_years        = 10;
 input int    strategy_min_observations     = 5;
 input double strategy_entry_z              = 0.50;
@@ -53,7 +57,7 @@ input double strategy_atr_sl_mult          = 3.5;
 input int    strategy_max_hold_days        = 40;
 input int    strategy_max_spread_points    = 1500;
 
-const string g_symbol = "XTIUSD.DWX";
+string g_symbol = ""; // populated from strategy_symbol input in OnInit
 
 int      g_last_attempt_month_key = 0;
 string   g_attempt_state_key      = "";
@@ -77,7 +81,8 @@ string   g_signal_state           = "idle";
 
 bool Strategy_IsHostChart()
   {
-   return (_Symbol == g_symbol && _Period == PERIOD_D1);
+   return (QM_MagicSymbolCanonical(_Symbol) == QM_MagicSymbolCanonical(strategy_symbol) &&
+           _Period == PERIOD_D1);
   }
 
 int Strategy_DateKeyForTime(const datetime value)
@@ -819,6 +824,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   g_symbol = strategy_symbol;
    if(!SymbolSelect(g_symbol, true) ||
       !Strategy_IsHostChart() || qm_ea_id != 41397 ||
       qm_magic_slot_offset != 0)

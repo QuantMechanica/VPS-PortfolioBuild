@@ -41,6 +41,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// factory default is the .DWX custom-symbol name; live/FTMO presets override it
+// with the bare broker name. Comparisons use QM_MagicSymbolCanonical base names.
+input string strategy_xti_symbol             = "XTIUSD.DWX";
 input string strategy_xng_symbol             = "XNGUSD.DWX";
 input int    strategy_history_bars_d1         = 30;
 input int    strategy_min_week_sessions       = 3;
@@ -57,8 +61,8 @@ input int    strategy_xti_max_spread_points   = 1500;
 input int    strategy_xng_max_spread_points   = 3000;
 input int    strategy_deviation_points        = 20;
 
-string g_leg_xti = "XTIUSD.DWX";
-string g_leg_xng = "XNGUSD.DWX";
+string g_leg_xti = ""; // populated from strategy_xti_symbol input in OnInit
+string g_leg_xng = ""; // populated from strategy_xng_symbol input in OnInit
 bool     g_is_new_bar = false;
 bool     g_entry_ready = false;
 bool     g_late_decision = false;
@@ -169,7 +173,9 @@ bool Strategy_IsHostChart()
 bool Strategy_InputsValid()
   {
    return (qm_ea_id == 41374 && qm_magic_slot_offset == 0 &&
-            strategy_xng_symbol == "XNGUSD.DWX" &&
+            strategy_xti_symbol != "" && strategy_xng_symbol != "" &&
+            QM_MagicSymbolCanonical(strategy_xti_symbol) != QM_MagicSymbolCanonical(strategy_xng_symbol) &&
+            QM_MagicSymbolCanonical(strategy_xti_symbol) == QM_MagicSymbolCanonical(_Symbol) &&
             strategy_history_bars_d1 == 30 &&
             strategy_min_week_sessions == 3 &&
             strategy_max_week_sessions == 5 &&
@@ -955,6 +961,7 @@ bool Strategy_NewsFilterHook(const datetime broker_time)
 
 int OnInit()
   {
+   g_leg_xti = strategy_xti_symbol;
    g_leg_xng = strategy_xng_symbol;
    if(!Strategy_IsHostChart() || !Strategy_InputsValid())
       return INIT_PARAMETERS_INCORRECT;
