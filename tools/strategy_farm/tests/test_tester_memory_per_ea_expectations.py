@@ -88,6 +88,7 @@ def test_compile_backward_compatible_with_class_only_rows():
 def test_per_ea_wins_when_it_exceeds_class(tmp_path, monkeypatch):
     _reset_expectations_cache()
     monkeypatch.delenv("QM_TESTER_MEMORY_ADMISSION", raising=False)
+    monkeypatch.setenv("QM_TESTER_MEMORY_CLASS_STAT", "max")  # legacy class statistic (rollback switch)
     path = tmp_path / "exp.json"
     _write_expectations(path, {
         "fx_cross|H1|backtest": {"n": 33, "max_gb": 4.4, "p95_gb": 4.3},
@@ -111,6 +112,7 @@ def test_per_ea_wins_when_it_exceeds_class(tmp_path, monkeypatch):
 def test_per_ea_ignored_when_not_exceeding_class(tmp_path, monkeypatch):
     _reset_expectations_cache()
     monkeypatch.delenv("QM_TESTER_MEMORY_ADMISSION", raising=False)
+    monkeypatch.setenv("QM_TESTER_MEMORY_CLASS_STAT", "max")  # legacy class statistic (rollback switch)
     path = tmp_path / "exp.json"
     _write_expectations(path, {
         "fx_cross|H1|backtest": {"n": 5, "max_gb": 18.0, "p95_gb": 17.0},

@@ -85,6 +85,7 @@ def test_lookup_none_without_file(tmp_path, monkeypatch):
 def test_lookup_returns_max_gb_for_matching_key(tmp_path, monkeypatch):
     _reset_expectations_cache()
     monkeypatch.delenv("QM_TESTER_MEMORY_ADMISSION", raising=False)
+    monkeypatch.setenv("QM_TESTER_MEMORY_CLASS_STAT", "max")  # legacy class statistic (rollback switch)
     path = tmp_path / "exp.json"
     _write_expectations(path, {"fx_cross|H4|backtest": {"n": 3, "max_gb": 23.0, "p95_gb": 22.0}})
     monkeypatch.setenv("QM_TESTER_MEMORY_EXPECTATIONS", str(path))
@@ -134,3 +135,26 @@ def test_compile_expectations_pure_aggregation():
     # p95 of sorted [10,20,23] via linear interpolation = 22.7
     assert cross["p95_gb"] == 22.7
     assert out["fx_major|D1|smoke"] == {"n": 1, "max_gb": 4.0, "p95_gb": 4.0}
+
+
+def test_class_key_reserves_p95_by_default_and_max_on_rollback(tmp_path, monkeypatch):
+    """Orchestrator 2026-09-13: one tick-cache balloon lifted the class MAX to ~30 GB and starved
+    the fleet (post-reservation free RAM below the floor for every ordinary row); the class key
+    now reserves the ledger p95, capped at max; QM_TESTER_MEMORY_CLASS_STAT=max restores max."""
+    _reset_expectations_cache()
+    monkeypatch.delenv("QM_TESTER_MEMORY_ADMISSION", raising=False)
+    monkeypatch.delenv("QM_TESTER_MEMORY_CLASS_STAT", raising=False)
+    path = tmp_path / "exp.json"
+    _write_expectations(path, {
+        "fx_major|H1|backtest": {"n": 297, "max_gb": 29.3, "p95_gb": 7.339},
+        "metal|D1|backtest": {"n": 49, "max_gb": 32.0, "p95_gb": 40.0},  # p95 never exceeds max
+        "ea:QM5_10395|H1|backtest": {"n": 1, "max_gb": 27.0, "p95_gb": 27.0},
+    })
+    monkeypatch.setenv("QM_TESTER_MEMORY_EXPECTATIONS", str(path))
+    assert terminal_worker._measured_ram_expectation_gb("fx_major", "H1", "backtest") == 7.339
+    assert terminal_worker._measured_ram_expectation_gb("metal", "D1", "backtest") == 32.0
+    # the per-EA key keeps its MAX and still wins over the class p95
+    assert terminal_worker._measured_ram_expectation_gb("fx_major", "H1", "backtest", ea_id="QM5_10395") == 27.0
+    monkeypatch.setenv("QM_TESTER_MEMORY_CLASS_STAT", "max")
+    _reset_expectations_cache()
+    assert terminal_worker._measured_ram_expectation_gb("fx_major", "H1", "backtest") == 29.3

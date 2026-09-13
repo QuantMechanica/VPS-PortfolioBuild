@@ -1366,6 +1366,49 @@ def _tester_memory_admission_active() -> bool:
         return False
 
 
+TESTER_MEMORY_CLASS_STAT_ENV = "QM_TESTER_MEMORY_CLASS_STAT"
+
+
+def _tester_memory_class_stat() -> str:
+    """Statistic the asset-CLASS expectation key reserves: p95 (default) or max.
+
+    Orchestrator 2026-09-13 14:3xZ (fleet 4/10 active with 38 GB free, T8 claim scan
+    ram_class_skipped 879): the class key kept the all-time MAX of its samples, so one
+    tick-cache balloon (QM5_9107 XAUUSD D1 smoke 39 GB, the 37-pair basket runs) lifted
+    fx_major|H1|backtest to 29.3 GB (n=297, p95 7.3 GB) and metal|D1|backtest to 32 GB
+    (p95 23.6 GB); every ordinary row then reserved ~30 GB and post-reservation free RAM
+    fell below the 14 GB floor for the whole queue.  The class key now reserves the
+    ledger p95 (already produced by _tester_memory_aggregate); the per-EA key keeps MAX so
+    a known balloon EA still reserves its true peak.  Rollback: QM_TESTER_MEMORY_CLASS_STAT=max.
+    """
+    value = os.environ.get(TESTER_MEMORY_CLASS_STAT_ENV, "p95").strip().lower()
+    return "max" if value == "max" else "p95"
+
+
+def _tester_memory_key_stat_gb(
+    data: dict[str, Any], key: str, min_samples: int, stat: str
+) -> float | None:
+    """p95_gb (falls back to max_gb when absent) or max_gb for one key with >= min_samples."""
+    entry = data.get(key)
+    if not isinstance(entry, dict):
+        return None
+    try:
+        samples = int(entry.get("n") or 0)
+        max_gb = float(entry.get("max_gb"))
+    except (TypeError, ValueError):
+        return None
+    if samples < min_samples:
+        return None
+    if stat == "p95":
+        try:
+            p95 = float(entry.get("p95_gb"))
+            if math.isfinite(p95) and p95 > 0:
+                return min(p95, max_gb)
+        except (TypeError, ValueError):
+            pass
+    return max_gb
+
+
 def _tester_memory_key_max_gb(
     data: dict[str, Any], key: str, min_samples: int
 ) -> float | None:
@@ -1418,10 +1461,11 @@ def _measured_ram_expectation_gb(
             cache["mtime"] = mtime
             cache["at"] = now
         data = cache["data"]
-        class_gb = _tester_memory_key_max_gb(
+        class_gb = _tester_memory_key_stat_gb(
             data,
             _tester_memory_lookup_key(symbol_class, timeframe, run_kind),
             TESTER_MEMORY_MIN_SAMPLES,
+            _tester_memory_class_stat(),
         )
         ea_gb = None
         if ea_id:
