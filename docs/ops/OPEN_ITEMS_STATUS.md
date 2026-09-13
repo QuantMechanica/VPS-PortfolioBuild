@@ -4307,3 +4307,13 @@ symbol-name mismatch, 12969 dark cause to be diagnosed). Informational: a 26-sle
 Decision recorded on the OWNER board as OWNER-DEC-BOOK-V2-ROSTER-20260913 (Orchestrator under the OWNER mandate:
 "komplett egal ... alle weiteren offenen Punkte loesen"); manifest signature + AutoTrading stay OWNER. Q16 staging
 package (presets, binaries, copy plan, repairs, ANLEITUNG, deploy manifest draft) in progress.
+
+## 2026-09-13T16:35Z Governor enforcement executor delivered (commit 22353b1f4e)
+Live EAs poll only QM\halt\<ea_id>.halt and QM\halt\portfolio_dd.signal, both trip QM_KillSwitchTrip (close all owned
+positions, delete pendings, latch, persist in ks_state_*.state) - there is no entry-freeze channel. New
+account_governor_halt_executor.py: L3 flatten = exact match via per-sleeve .halt files (21 distinct ea_ids for the 24
+sleeves), L2 only as explicit over-action, L1 refused; atomic, latching, receipted, OWNER-only clear (written clearance).
+Adapter enforce needs signed policy + activation JSON + decisions/<date>_owner_governor_enforce_dxz.md with the line
+GOVERNOR-ENFORCE: ACTIVATE DXZ <date> + --executor halt-file; default stays DRY_RUN_PLAN. Remaining for "enforcing":
+monitor v2 chart on T_Live (OWNER), watcher task install (Claude, after the monitor), policy signature (OWNER), activation
+artifact (OWNER). Known limits: halt = flatten; shared login covers manifest sleeves only; clearing needs a chart reload.
