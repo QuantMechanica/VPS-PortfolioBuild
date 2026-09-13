@@ -18722,7 +18722,7 @@ def _hourly_db_backup(root: Path) -> str | None:
             tgt_conn.close()
     finally:
         src_conn.close()
-    cutoff = now.timestamp() - 24 * 3600
+    cutoff = now.timestamp() - 6 * 3600  # 2026-09-13 Orchestrator (GRUEN, backups): 24h x 1.18 GB = 28 GB filled D: to the purge teardown line twice; 6 h of hourly restore points + the governed before-* anchors remain (ticket f5d30fc9 owns the final retention design)
     # This producer owns only scheduled snapshots, not governed before-* anchors.
     # Those anchors have their own retention/evidence lifecycle.
     for old in _hourly_db_backup_paths(backup_dir):

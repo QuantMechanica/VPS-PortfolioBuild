@@ -4084,3 +4084,10 @@ with the unavailable external Wiki mount preserved as a limitation. PACER input-
 reference tests; governed compile `b07f0f25` = COMPILE_OK, 0 errors/warnings, strict build check PASS. Fresh CPU
 admission max 76.4% < 97%; one fixed-risk Q02 (`7d7009b9`, XTIUSD.DWX D1) is pending. No portfolio/live surface
 touched. Evidence: `docs/ops/evidence/2026-09-13_qm5_41467_wti_winter_upper_clv_reversion_q02_enqueue.md`.
+
+## 2026-09-13T06:35Z Hourly watch 06:21Z: D: 64 GB again -> hourly snapshot retention 24 h -> 6 h (GRUEN)
+Files > 200 MB written in the last 5 h: 15 files, 16.8 GB, all farm_state backups; Tester tick bases total ~49 GB
+across T2-T10 (XAUUSD Q02/Q04 runs on T3/T5/T9). Hourly copies pruned to the newest 3 again (6 files, 7 GB) -> D:
+67.6 GB. Durable measure: farmctl hourly snapshot retention constant 24 h -> 6 h (one constant, comment in place,
+rollback = revert this commit); takes effect with the next pump process. Governed before-* anchors (keep 3 per label)
+untouched; their churn (news_calendar_taint full copy every 10 min) stays with Codex ticket f5d30fc9 (prio 90).
