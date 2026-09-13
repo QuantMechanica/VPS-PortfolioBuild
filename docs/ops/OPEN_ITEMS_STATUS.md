@@ -4163,3 +4163,15 @@ Focused tests: 20 passed. Evidence:
 `docs/ops/evidence/2026-09-13_census_first_lane_aware.md`.
 
 RESULT task=c07b8653 default_off=true tests=20 verdict=IMPLEMENTATION_PASS
+## 2026-09-13 — Q state DB growth/retention RESULT (f5d30fc9)
+
+RESULT: REVIEW — exact before/live probes attribute 422,817,792 of the
+449,314,816-byte DB increase to free-list pages; live growth is led by 92,926
+events, including 91,864 repeated routing-wait events. The existing retention
+runner now has reasoned newest-8-hourly / 48h-mutation / open-receipt protection
+with a 10 GiB fail-closed cap, plus a separately gated append-only events
+archive and quiet-window VACUUM. Production plan-only receipt
+`D:/QM/reports/state/continuous_retention/20260913T120120Z/run_summary.json`
+keeps 8 and proposes 12 unreferenced deletes; no apply occurred. Focused tests:
+18 passed. Evidence:
+`docs/ops/evidence/2026-09-13_state_db_growth_and_retention.md`.

@@ -23,7 +23,7 @@ def age(path: Path, hours: float) -> None:
     os.utime(path, (stamp, stamp))
 
 
-def test_backup_plan_keeps_union_of_newest_five_and_24_hours(tmp_path: Path) -> None:
+def test_backup_plan_keeps_mutations_for_48_hours_only(tmp_path: Path) -> None:
     now = dt.datetime.now(dt.UTC)
     for index in range(15):
         path = tmp_path / f"farm_state_before_test_{index:02d}.sqlite"
@@ -32,17 +32,57 @@ def test_backup_plan_keeps_union_of_newest_five_and_24_hours(tmp_path: Path) -> 
     (tmp_path / "farm_state.sqlite").write_bytes(b"live")
     (tmp_path / "unrelated.sqlite").write_bytes(b"keep")
     keep, delete = runner.backup_plan(tmp_path, now)
-    assert len(keep) == 5
-    assert [path.name for path in delete] == ["farm_state_before_test_05.sqlite",
-                                              "farm_state_before_test_06.sqlite",
-                                              "farm_state_before_test_07.sqlite",
-                                              "farm_state_before_test_08.sqlite",
-                                              "farm_state_before_test_09.sqlite",
-                                              "farm_state_before_test_10.sqlite",
-                                              "farm_state_before_test_11.sqlite",
-                                              "farm_state_before_test_12.sqlite",
-                                              "farm_state_before_test_13.sqlite",
-                                              "farm_state_before_test_14.sqlite"]
+    assert {path.name for path in keep} == {
+        "farm_state_before_test_00.sqlite", "farm_state_before_test_01.sqlite"
+    }
+    assert {path.name for path in delete} == {
+        f"farm_state_before_test_{index:02d}.sqlite" for index in range(2, 15)
+    }
+
+
+def test_open_receipt_reference_is_never_pruned(tmp_path: Path) -> None:
+    db = tmp_path / "farm.sqlite"
+    make_db(db)
+    backups = tmp_path / "backups"
+    backups.mkdir()
+    protected = backups / "farm_state_before_open_receipt.sqlite"
+    protected.write_bytes(b"old")
+    age(protected, 72)
+    receipt = tmp_path / "open_receipt.json"
+    receipt.write_text(json.dumps({"backup_path": str(protected)}), encoding="utf-8")
+    con = sqlite3.connect(db)
+    con.execute("INSERT INTO work_items VALUES (?,?,?,?)", ("open", "active", str(receipt), "{}"))
+    con.commit()
+    con.close()
+
+    references = runner.open_backup_references(db, backups)
+    plan = runner.backup_retention_plan(backups, dt.datetime.now(dt.UTC), references)
+
+    assert references == {protected.resolve()}
+    assert plan["delete"] == []
+    assert plan["decisions"][0]["reason"] == "OPEN_RECEIPT_REFERENCE"
+
+
+def test_hard_cap_prunes_only_unprotected_recent_mutations(tmp_path: Path) -> None:
+    now = dt.datetime.now(dt.UTC)
+    for index in range(8):
+        path = tmp_path / f"farm_state_20260913_{index:02d}00.sqlite"
+        path.write_bytes(b"x")
+        age(path, index)
+    for index in range(2):
+        path = tmp_path / f"farm_state_before_recent_{index}.sqlite"
+        path.write_bytes(b"xxxx")
+        age(path, 10 + index)
+    plan = runner.backup_retention_plan(tmp_path, now, cap_bytes=10)
+    assert plan["cap_satisfied"]
+    assert len(plan["keep"]) == 8
+    assert {row["reason"] for row in plan["decisions"] if row["decision"] == "DELETE"} == {"HARD_CAP_10_GIB"}
+
+
+def test_governed_retention_and_journal_archive_are_default_off() -> None:
+    args = runner.parser().parse_args([])
+    assert not args.governed_state_retention
+    assert not args.archive_state_journals
 
 
 def test_backup_delete_receipt_hashes_before_delete(tmp_path: Path) -> None:
@@ -203,7 +243,11 @@ def test_retention_compression_does_not_block_factory_claim_lock(
     )
     monkeypatch.setattr(runner, "quick_check", lambda _path: "ok")
     monkeypatch.setattr(runner, "open_bindings", lambda _path: (set(), set()))
-    monkeypatch.setattr(runner, "backup_plan", lambda _root, _now: ([], []))
+    monkeypatch.setattr(runner, "open_backup_references", lambda *_args: set())
+    monkeypatch.setattr(runner, "backup_retention_plan", lambda *_args, **_kwargs: {
+        "keep": [], "delete": [], "decisions": [], "cap_bytes": 1,
+        "retained_bytes": 0, "cap_satisfied": True,
+    })
     monkeypatch.setattr(
         runner,
         "iter_evidence_candidates",
@@ -251,3 +295,31 @@ def test_retention_compression_does_not_block_factory_claim_lock(
     thread.join(timeout=5)
     assert not thread.is_alive()
     assert result[0]["status"] == "PASS"
+
+
+def test_state_journal_archive_exports_before_delete_and_vacuums(tmp_path: Path) -> None:
+    db = tmp_path / "farm.sqlite"
+    make_db(db)
+    con = sqlite3.connect(db)
+    con.execute("CREATE TABLE events(id INTEGER PRIMARY KEY, ts TEXT, entity_type TEXT, entity_id TEXT, event TEXT, detail_json TEXT)")
+    con.executemany(
+        "INSERT INTO events VALUES (?,?,?,?,?,?)",
+        [
+            (1, "2026-01-01T00:00:00+00:00", "task", "a", "claim", "{}"),
+            (2, "2026-01-02T00:00:00+00:00", "task", "a", "claim_result", "{}"),
+            (3, "2026-09-13T00:00:00+00:00", "task", "b", "current", "{}"),
+        ],
+    )
+    con.commit()
+    con.close()
+    result = runner.archive_state_journals(
+        db, tmp_path / "archive", tmp_path / "FACTORY_MUTATION.lock",
+        dt.datetime(2026, 2, 1, tzinfo=dt.UTC),
+    )
+    assert result["status"] == "PASS"
+    assert result["exported_rows"] == result["deleted_rows"] == 2
+    archive = Path(result["archive_path"])
+    assert runner.sha256_file(archive) == result["archive_sha256"]
+    con = sqlite3.connect(db)
+    assert con.execute("SELECT id FROM events ORDER BY id").fetchall() == [(3,)]
+    con.close()

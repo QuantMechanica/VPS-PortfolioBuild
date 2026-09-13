@@ -70,20 +70,25 @@ def test_health_rejects_before_only_snapshot_family(tmp_path: Path, monkeypatch)
     assert "no scheduled" in result["detail"]
 
 
-def test_scheduled_retention_preserves_old_governed_anchor(tmp_path: Path) -> None:
+def test_scheduled_retention_preserves_old_governed_anchor(tmp_path: Path, monkeypatch) -> None:
     backups = tmp_path / "state" / "backups"
     backups.mkdir(parents=True)
     make_db(tmp_path / "state" / "farm_state.sqlite")
     anchor = backups / "farm_state_before_repair_20260901T000000Z.sqlite"
     anchor.write_bytes(b"governed rollback evidence")
     age(anchor, 3 * 24 * 60)
-    old_hourly = backups / "farm_state_20260901_0000.sqlite"
-    old_hourly.write_bytes(b"expired scheduled snapshot")
-    age(old_hourly, 3 * 24 * 60)
+    monkeypatch.setenv("QM_HOURLY_DB_BACKUP_KEEP8", "1")
+    old_hourlies = []
+    for index in range(8):
+        old_hourly = backups / f"farm_state_20260901_{index:02d}00.sqlite"
+        old_hourly.write_bytes(b"expired scheduled snapshot")
+        age(old_hourly, (3 * 24 + index) * 60)
+        old_hourlies.append(old_hourly)
     created = farmctl._hourly_db_backup(tmp_path)
     assert created and Path(created).is_file()
     assert anchor.read_bytes() == b"governed rollback evidence"
-    assert not old_hourly.exists()
+    assert not old_hourlies[-1].exists()
+    assert len(farmctl._hourly_db_backup_paths(backups)) == 8
 
 
 def test_backup_precedes_fallible_metrics_refresh(tmp_path: Path, monkeypatch) -> None:

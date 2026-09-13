@@ -18698,7 +18698,7 @@ def _hourly_db_backup_paths(backup_dir: Path) -> list[Path]:
 
 
 def _hourly_db_backup(root: Path) -> str | None:
-    """Snapshot farm_state.sqlite to state/backups once per hour; keep 24h."""
+    """Snapshot farm_state.sqlite once per hour; retain the newest eight."""
     src = root / DB_REL
     if not src.exists():
         return None
@@ -18722,13 +18722,17 @@ def _hourly_db_backup(root: Path) -> str | None:
             tgt_conn.close()
     finally:
         src_conn.close()
-    cutoff = now.timestamp() - 6 * 3600  # 2026-09-13 Orchestrator (GRUEN, backups): 24h x 1.18 GB = 28 GB filled D: to the purge teardown line twice; 6 h of hourly restore points + the governed before-* anchors remain (ticket f5d30fc9 owns the final retention design)
     # This producer owns only scheduled snapshots, not governed before-* anchors.
     # Those anchors have their own retention/evidence lifecycle.
-    for old in _hourly_db_backup_paths(backup_dir):
+    ordered = sorted(_hourly_db_backup_paths(backup_dir),
+                     key=lambda path: (path.stat().st_mtime_ns, path.name), reverse=True)
+    keep8_enabled = os.environ.get("QM_HOURLY_DB_BACKUP_KEEP8", "").strip() == "1"
+    candidates = ordered[8:] if keep8_enabled else [
+        path for path in ordered if path.stat().st_mtime < now.timestamp() - 6 * 3600
+    ]
+    for old in candidates:
         try:
-            if old.stat().st_mtime < cutoff:
-                old.unlink()
+            old.unlink()
         except OSError:
             pass
     return str(target)
