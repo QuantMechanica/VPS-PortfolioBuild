@@ -1,0 +1,56 @@
+{
+  "schema": "qm.pacer-build-refusal-evidence/v1",
+  "created_at_utc": "2026-09-13T02:29:00+00:00",
+  "branch": "agents/board-advisor",
+  "ea_id": "QM5_41207",
+  "ea_label": "QM5_41207_xauxag-corrbreak-rv",
+  "mission_priority": 2,
+  "selection": {
+    "instrument_scope": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ],
+    "style": "weekly structural correlation-break relative-value basket",
+    "expected_trades_per_year": 7,
+    "reason": "highest-diversity low-frequency approved EA with no Q02 attempt and a missing compiled artifact"
+  },
+  "coordination": {
+    "farm_task_id": "1a6186c1-f349-4471-bf4d-46fc3564772b",
+    "claim_key": "paced_fleet:diversity_infra_repair:QM5_41207:20260913T022634Z",
+    "claimed_by": "codex:agents/board-advisor",
+    "predecessor_compile_work_item_id": "7628b4c2-f7de-4532-912f-aed19c367100"
+  },
+  "diagnosis": {
+    "current_ex5_present": false,
+    "q02_work_item_count": 0,
+    "source_guard_noncompliance": [
+      "qm_rng_seed equality pin",
+      "framework news-input pins",
+      "Friday-close input pins",
+      "PORTFOLIO_WEIGHT default pin",
+      "qm_stress_reject_probability default equality pin",
+      "RISK_FIXED default equality instead of positive fixed-risk mode"
+    ]
+  },
+  "mandatory_guard": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source \"C:/QM/repo/framework/EAs/QM5_41207_xauxag-corrbreak-rv/QM5_41207_xauxag-corrbreak-rv.mq5\"",
+    "exit_code": 1,
+    "ok": false,
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 1,
+    "exact_finding": "EA_FRAMEWORK_INPUT_PINNED: C:\\QM\\repo\\framework\\EAs\\QM5_41207_xauxag-corrbreak-rv\\QM5_41207_xauxag-corrbreak-rv.mq5:182 framework-owned input guard comparison 'qm_rng_seed =='."
+  },
+  "disposition": {
+    "build_refused": true,
+    "compile_enqueued": false,
+    "q02_enqueued": false,
+    "source_attempt_reverted": true,
+    "next_action": "A future authorized pass must remove every forbidden framework-input comparison, rerun the mandatory audit, and proceed only on zero findings."
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_untouched": true,
+    "live_manifest_untouched": true
+  }
+}
