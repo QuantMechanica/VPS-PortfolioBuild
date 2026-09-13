@@ -4513,3 +4513,49 @@ zero P&L impact, modify still lands the instant price clears the lock). NO recom
 (OWNER-gated). Framework backoff (ebffd42074) confirmed sufficient and target-independent;
 test_tm_modify_backoff.py 5 passed. Fleet scan: 0 other live sleeves show a TM_MODIFY
 ok:false series. Evidence + full addendum: docs/ops/evidence/2026-09-13_10706_be_lock_modify_storm.md.
+
+## 2026-09-13 21:51Z — OWNER order "Leg los, alle offenen Punkte lösen / Veraltetes neu / alle Hebel / Sleeves verbessern / Evidenz" — RESULT (wave 2)
+Method: farmctl health (14 FAIL) + control-plane census were taken as the authoritative open-points list; every item
+got a diagnosis package, a fix or a governed dry-run plan, and evidence. Levers the OWNER had not named were added.
+- NEW LEVER live drift monitor (022cbe36be, watch integration c8df260b27): tools/strategy_farm/live_sleeve_drift_monitor.py,
+  fill-based activity vs sealed streams (Poisson), Mann-Whitney perf, heartbeat, symbol/warmup sanity. Real run 24 sleeves:
+  19 OK / 2 WARN (1556/XAUUSD over-trades 6 vs 1.3 expected; 10440/NDX under-active 10 vs 17.5) / 3 ALARM = the known dark
+  sleeves. Would have flagged 12778/13117 on day 1 (warmup empty) and 12969 by 08-21. Hourly watch now ALERTs on new ALARMs.
+- NEW LEVER MFE capture (7c3e0ea6d0): QM_FrameworkTrackOpenPositionMae() also tracks MFE, TRADE_CLOSED carries mfe_acct;
+  readers tolerant; giveback summary in the exit scan. First factory compile of a repaired EA: MetaEditor 0 errors (MFE
+  include verified). Existing binaries/streams unchanged (natural rebuild only).
+- PRESCREEN (Model-1) unblocked end to end: all 345 holds released (release loop, journal), 45+ PRESCREEN_MEASURED, and
+  the same-program allow-list extended to WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025 (machine scope + chunk 76
+  da5ee03f2e) -> cells run 2-wide (T3+T8), census 47/h. Promotion path = config_sweep.py prescreen-report / promote
+  (keep 0.70, control 0.10) once the program completes.
+- Decision feed repaired (dd719400a8): owner_decisions.json was UNLOADABLE since the live-identity cards (lowercase sha id,
+  SUPERSEDED status) -> Mission Control showed 0 open decisions and OWNER receipts were blocked feed-wide. Now 5 open
+  cards incl. the new OWNER-DEC-IDENTITY-EQUIVALENCE-20260913 (mint tool session_tools/mint_owner_decision_card.py).
+- Stale state renewed: 12 NEWS_CALENDAR_TIMESTAMP_DEFECT holds released (decided 09-07; taint sweep is the hold authority;
+  363b288c7a); CLAUDE.md gates corrected to the v4 manifest (fbe27b8eca); Vault boards Claude/Codex/Antigravity re-rendered
+  from agent_tasks, Heartbeat regenerated, COMPANY_AUDIT + 20 Pipeline pages got the v4 addendum (stale v3 banners).
+- Health FAIL diagnoses (all evidence under docs/ops/evidence/2026-09-13_*): pending_artifact_binding_drift = 608 false
+  MISSING (WINSWEEP set files outside framework/EAs) -> check fixed 56edee9120 (683 -> 75 genuine CONTENT_CHANGED), 11 free
+  rows parked ARTIFACT_BINDING_CONTENT_CHANGED (requalify-q02 refuses pending rows -> ticket 2fd7e9b4); Q08 60.5 % INVALID =
+  legitimate fail-closed on missing cards/declarations (burn defect fixed 09-12) -> input-repair ticket 269d5101;
+  p2_pass_no_p3 = census siblings (benign, check to be taught); stranded pairs = ONINIT_FAILED/NO_HISTORY (ticket 2fd7e9b4);
+  sealed-plan holds = Q07 lineage (10148 aggregate purged, 11476 retire candidate); EvidenceCohortWatch: .gz-blind watcher
+  fixed 485584198e (1029 -> 172 genuine losses, 95 PASS-family = P0 ticket f8432ebf); ftmo_trial_pulse = recovered
+  calendar_stale events resurfaced by the 09-11 reboot guard, self-clears Monday.
+- Compile queue: all 30 COMPILE_EA rows were source-stale (SOURCE_CHANGED_AFTER_ENQUEUE refusal). Governed re-issue tool
+  (d3f4d54268) applied: 4 successors; wave 1 compiled QM5_41179 with 0 MetaEditor errors but the build gate refused
+  EA_FRAMEWORK_INPUT_PINNED (winsweep template pins qm_rng_seed/qm_news_*/qm_friday_close_* in Strategy_InputsValid).
+  Template defect repaired in 11 uncompiled EAs (14d548c87a, 76 pins -> 0); symbol-literal batch 2 in 9 uncompiled EAs
+  (de88a19e7b); 4 more post-cutover EAs made input-driven (8172b14ba3). 163 compiled EAs keep the pin pattern until their
+  natural rebuild (OWNER-gated). Repair-successor tool abe754ea1f. Next waves after the successor plan for 41179/41189.
+- Reviews drained (4 APPROVED): OOS-2026 window repair applied by the Claude lane (1cfddecd5c; lane migration remains ->
+  ticket d25ad358), 10706 BE-lock root cause corrected + source guard (2a7647ae9d; live binary predates the 08-22 backoff
+  -> rebuild at cutover), 11941 magic allocation (95d418475e).
+- Tickets (Codex, budget-paced, all pinned): 6c1064c4 EDGE-4, 22d74470 EDGE-5, 0ad6b080 EDGE-2, 44e0209e 13013 Tier-A,
+  b093f809 DL-089 phantom declarations (73 Q12 + 2 Q14 rows are duplicate re-declarations of adjudicated programs),
+  d25ad358 OOS lane migration, f8432ebf evidence loss P0, 269d5101 Q08 inputs, 2fd7e9b4 health hygiene.
+OWNER actions: (1) JA on OWNER-DEC-IDENTITY-EQUIVALENCE-20260913 (Mission Control now renders it); (2) the book-v2 cutover
+receipts (attestation, governor, freeze-lift sentence); (3) DWX matrix decision for XBRUSD/XCUUSD (20042/20053 compile-
+blocked); (4) optional: raise the Codex budget line if the nine tickets should move faster than ~5 pts/day.
+Not done / parked with reason: 40 BLOCKED build_ea tasks (deprioritised 08-22, backtest queue is the bottleneck, not builds);
+163 compiled EAs with pinned framework inputs (rebuild = new identity, OWNER-gated); RAM upgrade (point 4, OWNER cost).
