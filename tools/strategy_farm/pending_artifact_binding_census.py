@@ -9,7 +9,9 @@ not rebind or supersede work items; those actions remain on their governed paths
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
+import io
 import json
 import re
 import sqlite3
@@ -31,20 +33,135 @@ def _newline_hashes(data: bytes) -> set[str]:
     return {_sha256(value) for value in (data, lf, crlf)}
 
 
-def _artifact_paths(row: sqlite3.Row, payload: dict[str, Any], eas: Path) -> dict[str, Path]:
+# --- EA-directory resolution (mirrors the dispatch runner) --------------------
+# terminal_worker._dispatch_ex5_requirement resolves the immutable EX5 by ea_id,
+# NOT by the set file's location: farmctl._ea_dir_from_setfile_path (set file
+# anchored under <ea_dir>/sets) then farmctl._preferred_ea_dir (ea_id glob +
+# registry disambiguation). OPT_CENSUS PRESCREEN/WINSWEEP cells keep their set
+# files under D:\...\opt_census\<program>\setfiles\, so the old
+# setfile.parent.parent derivation invented a nonexistent framework/EAs/<program>
+# executable and reported byte-exact bindings as MISSING. These helpers mirror
+# the runner so the census resolves the same file the runner runs, rooted at
+# ``eas`` for testability.
+
+
+def _ea_dir_version(dir_name: str) -> int:
+    match = re.search(r"_v(\d+)(?:$|_)", dir_name)
+    return int(match.group(1)) if match else 1
+
+
+def _ea_dir_slug(ea_id: str, dir_name: str) -> str:
+    prefix = f"{ea_id}_"
+    return dir_name[len(prefix):] if dir_name.startswith(prefix) else dir_name
+
+
+def _active_registered_slugs(ea_id: str, eas: Path) -> set[str]:
+    """Registered, non-retired ea_slugs for ea_id (mirrors farmctl)."""
+    m = re.search(r"QM5_(\d+)", str(ea_id))
+    if not m:
+        return set()
+    num = m.group(1)
+    out: set[str] = set()
+    try:
+        text = (eas.parent / "registry" / "magic_numbers.csv").read_text(encoding="utf-8-sig")
+    except OSError:
+        return out
+    for record in csv.DictReader(io.StringIO(text)):
+        if str(record.get("ea_id") or "").strip() != num:
+            continue
+        if str(record.get("status") or "active").strip().lower() == "retired":
+            continue
+        slug = str(record.get("ea_slug") or "").strip()
+        if slug:
+            out.add(slug)
+    return out
+
+
+def _preferred_ea_dir(ea_id: str, eas: Path) -> Path | None:
+    """Mirror farmctl._preferred_ea_dir, rooted at ``eas``."""
+    if not ea_id:
+        return None
+    candidates = sorted(p for p in eas.glob(f"{ea_id}_*") if p.is_dir())
+    if not candidates:
+        return None
+    if len(candidates) == 1:
+        return candidates[0]
+    active = _active_registered_slugs(ea_id, eas)
+    registered = [p for p in candidates if _ea_dir_slug(ea_id, p.name) in active]
+    pool = registered or candidates
+    best = max(_ea_dir_version(p.name) for p in pool)
+    top = [p for p in pool if _ea_dir_version(p.name) == best]
+    return top[0] if len(top) == 1 else None
+
+
+def _ea_dir_from_setfile_path(setfile: Path, ea_id: str) -> Path | None:
+    """Mirror farmctl._ea_dir_from_setfile_path (set file under <ea_dir>/sets)."""
+    if not ea_id or setfile.parent.name.lower() != "sets":
+        return None
+    ea_dir = setfile.parent.parent
+    if not ea_dir.is_dir() or not ea_dir.name.startswith(f"{ea_id}_"):
+        return None
+    return ea_dir
+
+
+def _is_under(path: Path, root: Path) -> bool:
+    try:
+        path.resolve().relative_to(root.resolve())
+        return True
+    except (ValueError, OSError):
+        return False
+
+
+def _resolve_ea_dir(
+    setfile: Path, ea_id: str, payload: dict[str, Any], eas: Path
+) -> tuple[Path, str]:
+    """Resolve the EA directory for ex5/mq5 the way the dispatch runner does.
+
+    Order: explicit payload ``ea_dir_name`` -> set-file-anchored (runner) ->
+    ea_id registry glob (runner) -> set-file-relative grandparent, and the last
+    only when the set file lives under framework/EAs. Returns the directory and
+    the derivation label recorded on each mismatch for auditability.
+    """
+    name = str(payload.get("ea_dir_name") or "").strip()
+    if name:
+        return eas / name, "ea_id_resolution"
+    anchored = _ea_dir_from_setfile_path(setfile, ea_id)
+    if anchored is not None:
+        return anchored, "ea_id_resolution"
+    preferred = _preferred_ea_dir(ea_id, eas)
+    if preferred is not None:
+        return preferred, "ea_id_resolution"
+    if _is_under(setfile, eas):
+        return eas / setfile.parent.parent.name, "setfile_relative"
+    # Unresolvable by ea_id and the set file is outside framework/EAs: anchor a
+    # non-existent ea_id path so the row reports MISSING (the runner would raise
+    # staged_ex5_ea_dir_unresolved) without inventing a set-file-relative EA dir.
+    return eas / (ea_id or "UNRESOLVED_EA"), "ea_id_resolution"
+
+
+def resolve_artifact_paths(
+    row: sqlite3.Row, payload: dict[str, Any], eas: Path
+) -> dict[str, tuple[Path, str]]:
+    """Resolve (path, derivation) for ex5/mq5/setfile as the dispatch runner would.
+
+    ex5/mq5 honour an explicit ``expected_<role>_path`` first, then resolve by
+    ea_id (payload hint or registry/glob), then a set-file-relative fallback that
+    applies only inside framework/EAs. The set file itself is the work-item path.
+    """
     setfile = Path(str(row["setfile_path"])).resolve()
-    ea_dir_name = str(payload.get("ea_dir_name") or setfile.parent.parent.name).strip()
-    ea_dir = eas / ea_dir_name
-    # Matrix setfiles live outside framework/EAs. Their grandparent is the
-    # PROGRAM, not the executable's directory; honor the explicit dispatch
-    # binding instead of falsely reporting a missing DL089_*.ex5 executable.
-    explicit_ex5 = str(payload.get("expected_ex5_path") or "").strip()
-    ex5 = Path(explicit_ex5).resolve() if explicit_ex5 else ea_dir / f"{ea_dir_name}.ex5"
-    explicit_mq5 = str(payload.get("expected_mq5_path") or "").strip()
+    ea_id = str(row["ea_id"] or "").strip()
+    ea_dir, ea_dir_derivation = _resolve_ea_dir(setfile, ea_id, payload, eas)
+
+    def _binary(role: str) -> tuple[Path, str]:
+        explicit = str(payload.get(f"expected_{role}_path") or "").strip()
+        if explicit:
+            return Path(explicit).resolve(), "expected_path"
+        return ea_dir / f"{ea_dir.name}.{role}", ea_dir_derivation
+
     return {
-        "ex5": ex5,
-        "mq5": Path(explicit_mq5).resolve() if explicit_mq5 else ex5.with_suffix(".mq5"),
-        "setfile": setfile,
+        "ex5": _binary("ex5"),
+        "mq5": _binary("mq5"),
+        "setfile": (setfile, "work_item_setfile"),
     }
 
 
@@ -103,9 +220,9 @@ def build_census(db: Path = DEFAULT_DB, eas: Path = DEFAULT_EAS) -> dict[str, An
     drifted: list[dict[str, Any]] = []
     for row in rows:
         payload = json.loads(row["payload_json"] or "{}")
-        paths = _artifact_paths(row, payload, eas)
+        paths = resolve_artifact_paths(row, payload, eas)
         findings: list[dict[str, Any]] = []
-        for role, path in paths.items():
+        for role, (path, derivation) in paths.items():
             key = f"expected_{role}_sha256"
             expected = str(payload.get(key) or "").strip().lower()
             if not re.fullmatch(r"[0-9a-f]{64}", expected):
@@ -118,6 +235,7 @@ def build_census(db: Path = DEFAULT_DB, eas: Path = DEFAULT_EAS) -> dict[str, An
                     "role": role,
                     "classification": classification,
                     "path": str(path),
+                    "derivation": derivation,
                     "expected_sha256": expected,
                     "actual_sha256": actual,
                 }

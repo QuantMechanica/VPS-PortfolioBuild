@@ -76,6 +76,10 @@ try:
 except ModuleNotFoundError:
     from tools.strategy_farm import q10_long_cell_breaker
 try:
+    import pending_artifact_binding_census
+except ModuleNotFoundError:
+    from tools.strategy_farm import pending_artifact_binding_census
+try:
     from gate_manifest import load_gate_manifest
 except ModuleNotFoundError:
     try:
@@ -4229,15 +4233,22 @@ def _line_ending_hashes(data: bytes) -> set[str]:
     return {hashlib.sha256(value).hexdigest() for value in (data, lf, crlf)}
 
 
-def _pending_binding_artifact_paths(row: sqlite3.Row, payload: dict) -> dict[str, Path]:
-    setfile = Path(str(row["setfile_path"])).resolve()
-    ea_dir_name = str(payload.get("ea_dir_name") or setfile.parent.parent.name).strip()
-    ea_dir = FRAMEWORK_EAS_DIR / ea_dir_name
-    return {
-        "expected_ex5_sha256": ea_dir / f"{ea_dir_name}.ex5",
-        "expected_mq5_sha256": ea_dir / f"{ea_dir_name}.mq5",
-        "expected_setfile_sha256": setfile,
-    }
+def _pending_binding_artifact_paths(
+    row: sqlite3.Row, payload: dict
+) -> dict[str, tuple[Path, str]]:
+    """Resolve (path, derivation) per role exactly as the dispatch runner does.
+
+    Delegates to the census helper so health and the census stay in lockstep and
+    both mirror terminal_worker._dispatch_ex5_requirement: resolve ex5/mq5 by
+    ea_id (payload ea_dir_name hint or the registry/glob the runner uses), honour
+    an explicit expected_<role>_path, and fall back to the set-file-relative
+    derivation only when the set file lives under framework/EAs. This stops
+    OPT_CENSUS/WINSWEEP cells (set files under D:\\...\\opt_census) from being
+    reported MISSING when their payload SHAs match the real ea_id binary.
+    """
+    return pending_artifact_binding_census.resolve_artifact_paths(
+        row, payload, FRAMEWORK_EAS_DIR
+    )
 
 
 def chk_pending_artifact_binding_drift(con) -> dict:
@@ -4270,11 +4281,11 @@ def chk_pending_artifact_binding_drift(con) -> dict:
         except (json.JSONDecodeError, TypeError):
             continue
         paths = _pending_binding_artifact_paths(row, payload)
-        for binding, path in paths.items():
+        for role, (path, derivation) in paths.items():
+            binding = f"expected_{role}_sha256"
             expected = str(payload.get(binding) or "").strip().lower()
             if not re.fullmatch(r"[0-9a-f]{64}", expected):
                 continue
-            role = binding.removeprefix("expected_").removesuffix("_sha256")
             try:
                 data = path.read_bytes()
             except OSError:
@@ -4294,6 +4305,7 @@ def chk_pending_artifact_binding_drift(con) -> dict:
                 "symbol": str(row["symbol"]), "phase": str(row["phase"]),
                 "role": role, "classification": classification,
                 "held": "HELD" if bool(row["has_active_hold"]) else "UNHELD",
+                "derivation": derivation,
             })
     if not findings:
         return _check(
