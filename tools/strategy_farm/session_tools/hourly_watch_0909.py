@@ -42,5 +42,23 @@ b=q("select status,count(*) from work_items where json_extract(payload_json,'$.p
 print('balke41398 PATTERN census (DL089_13213 program)', b)
 ws=q("select status,count(*) from work_items where json_extract(payload_json,'$.cell_key') like 'WINSWEEP%' group by status"); print('winsweep', ws)
 m=q("select status,count(*) from work_items where json_extract(payload_json,'$.program_id')='WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025' and phase='OPT_CENSUS' group by status"); print('balke2_41405 matrix', m)
+# 2026-09-13: live sleeve drift monitor (read-only, ~1 s). ALARM outside the known dark set (12778/12969/13117,
+# repair staged under DXZ_V2 repair_v2, cutover pending) is a watch ALERT; the known set is reported as a note.
+try:
+    import subprocess as _sp
+    _known_dark = {12778, 12969, 13117}
+    _drift_out = 'D:/QM/reports/state/live_sleeve_drift.json'
+    _sp.run(['python', '-X', 'utf8', 'C:/QM/repo/tools/strategy_farm/live_sleeve_drift_monitor.py', '--out', _drift_out],
+            capture_output=True, text=True, timeout=120)
+    _dr = json.load(open(_drift_out, encoding='utf-8'))
+    _rows = _dr.get('sleeves') or []
+    _counts = {}
+    for _r in _rows: _counts[_r.get('verdict')] = _counts.get(_r.get('verdict'), 0) + 1
+    _alarm = [(int(_r.get('ea_id') or 0), _r.get('symbol'), _r.get('alarm_codes')) for _r in _rows if _r.get('verdict') == 'ALARM']
+    _new = [x for x in _alarm if x[0] not in _known_dark]
+    _warn = [(_r.get('ea_id'), _r.get('symbol')) for _r in _rows if _r.get('verdict') == 'WARN']
+    print('live drift', _counts, 'known-dark', sorted(x[0] for x in _alarm if x[0] in _known_dark), 'warn', _warn)
+    for x in _new: al.append(f'live_sleeve_drift ALARM {x[0]}/{x[1]} {x[2]}')
+except Exception as e: print('live drift err', e)
 for a in al: print('ALERT', a)
 if not al: print('OK no alerts')
