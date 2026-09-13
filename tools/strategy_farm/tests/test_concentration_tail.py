@@ -178,7 +178,7 @@ def test_ratified_policy_is_book_risk_scale_with_15pct_uplift() -> None:
     CONCENTRATION_CAP_BREACH) and were raised 15 % relative. Tail limits are unchanged."""
     value = json.loads(ct.DEFAULT_POLICY_PATH.read_text(encoding="utf-8"))
     assert value["status"] == "OWNER_RATIFIED"
-    assert value["stop_risk_budget_pct"] == pytest.approx(9.75)
+    assert value["stop_risk_budget_pct"] == pytest.approx(11.0)  # OWNER-DEC-BOOK-RISK-11-20260913
     caps = value["caps_percent_of_budget"]
     assert caps["symbol"] == pytest.approx(46.0)
     assert caps["asset_class"] == pytest.approx(69.0)
