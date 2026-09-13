@@ -1,0 +1,64 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "pacer_build_guard:5aed577c-05bd-47f5-a739-403973f931b3:QM5_41356",
+  "created_at_utc": "2026-09-13T06:25:01+00:00",
+  "ea_id": "QM5_41356",
+  "ea_label": "QM5_41356_xauxag-mwinsor2-rv",
+  "mission_priority": 1,
+  "scope": "One append-only governed COMPILE_EA source-repair successor for the approved monthly XAU/XAG market-neutral-style sleeve; no economic, live, portfolio-gate, or cross-EA authority.",
+  "governance": {
+    "user_authority": "PACER BUILD GUARD dated 2026-09-13",
+    "canonical_build_task_id": "a651171f-7c6c-4c0f-8a01-7fcc5d80f662",
+    "agent_task_id": "5aed577c-05bd-47f5-a739-403973f931b3",
+    "historical_compile_work_item_id": "d0de54f6-118f-47b7-877a-d0185ed5caa2",
+    "historical_compile_status": "done",
+    "historical_compile_verdict": "COMPILE_OK",
+    "historical_compile_mq5_sha256": "38654686a68a119770c0e6cb24329e15cba822ca6a836d5226fab0a2bbb015f2",
+    "stale_rollout_work_item_id": "4b3201a2-0087-42dd-801e-497058f40900",
+    "stale_rollout_status": "pending",
+    "stale_rollout_verdict": null,
+    "stale_rollout_mq5_sha256": "9787b672b27cdc137fcf60824e2f097c09d29c2cb0650785aafb555991002e1a",
+    "existing_supersedes_edge": "4b3201a2-0087-42dd-801e-497058f40900 -> d0de54f6-118f-47b7-877a-d0185ed5caa2"
+  },
+  "repair": {
+    "current_mq5_sha256": "a71adea41719f732241aa71aa0fd2afe3c404e968eac2f7803b35b217ce020c1",
+    "changes": [
+      "Remove equality comparisons against qm_rng_seed and all qm_news_* and qm_friday_close_* inputs.",
+      "Validate backtest risk mode only as RISK_FIXED greater than zero and RISK_PERCENT equal to zero.",
+      "Stop pinning PORTFOLIO_WEIGHT to its default.",
+      "Constrain qm_stress_reject_probability only by finiteness and the inclusive zero-to-one range."
+    ],
+    "strategy_mechanics_changed": false,
+    "entry_frequency": "monthly",
+    "instrument_scope": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ]
+  },
+  "validation": {
+    "framework_input_pin_audit": {
+      "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41356_xauxag-mwinsor2-rv/QM5_41356_xauxag-mwinsor2-rv.mq5",
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "ok": true,
+      "hit_count": 0
+    },
+    "reference_tests": "9 passed",
+    "spec_validation": "PASS",
+    "build_guardrails": "PASS",
+    "ad_hoc_build_check": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "first_enqueue_attempt": "SOURCE_REPAIR_PREDECESSOR_ALREADY_SUPERSEDED_AT_APPLY"
+  },
+  "coordination": {
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor",
+    "build_task_status_after_claim": "active"
+  },
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

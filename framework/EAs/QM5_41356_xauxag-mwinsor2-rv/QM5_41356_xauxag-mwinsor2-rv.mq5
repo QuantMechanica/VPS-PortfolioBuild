@@ -200,7 +200,6 @@ bool Strategy_InputsValid()
             g_leg_xag == "XAGUSD.DWX" &&
             g_leg_xau != g_leg_xag &&
             qm_ea_id == 41356 && qm_magic_slot_offset == 0 &&
-            qm_rng_seed == 42 &&
             strategy_xag_symbol == "XAGUSD.DWX" &&
             strategy_endpoint_count == 13 &&
             strategy_return_count == 12 &&
@@ -218,16 +217,9 @@ bool Strategy_InputsValid()
             strategy_xau_max_spread_points == 1500 &&
             strategy_xag_max_spread_points == 500 &&
             strategy_deviation_points == 20 &&
-            MathAbs(RISK_PERCENT) <= 1.0e-12 &&
-            MathAbs(RISK_FIXED - 1000.0) <= 1.0e-12 &&
-            MathAbs(PORTFOLIO_WEIGHT - 1.0) <= 1.0e-12 &&
-            qm_news_temporal == QM_NEWS_TEMPORAL_OFF &&
-            qm_news_compliance == QM_NEWS_COMPLIANCE_NONE &&
-            qm_news_mode_legacy == QM_NEWS_OFF &&
-            qm_news_stale_max_hours == 336 &&
-            qm_news_min_impact == "high" &&
-            !qm_friday_close_enabled && qm_friday_close_hour_broker == 21 &&
-            MathAbs(qm_stress_reject_probability) <= 1.0e-12);
+            RISK_PERCENT == 0.0 && RISK_FIXED > 0.0 &&
+            qm_stress_reject_probability >= 0.0 &&
+            qm_stress_reject_probability <= 1.0);
   }
 
 bool Strategy_SpreadAllowed(const string symbol)

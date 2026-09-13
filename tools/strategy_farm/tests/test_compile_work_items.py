@@ -3384,6 +3384,52 @@ def test_qm5_41140_review_rework_authority_is_exactly_bound() -> None:
     )
 
 
+def test_qm5_41356_framework_input_pin_authority_is_exactly_bound() -> None:
+    authority = compile_work_items.QM5_41356_FRAMEWORK_INPUT_PIN_REPAIR_AUTHORITY
+    binding = compile_work_items.BACKLOG_SOURCE_REPAIR_REGISTRATIONS[authority]
+    repo = Path(__file__).resolve().parents[3]
+    predecessors = []
+    for predecessor_id, expected in binding["predecessors"].items():
+        predecessors.append({
+            "id": predecessor_id,
+            "phase": compile_work_items.COMPILE_EA_PHASE,
+            "status": expected["status"],
+            "verdict": expected["verdict"],
+            "claimed_by": None,
+            "payload_json": json.dumps({
+                "ea_label": binding["ea_label"],
+                "mq5_sha256": expected["source_sha256"],
+            }),
+        })
+    inventory = {"work_rows": {"41356": predecessors}}
+
+    assert compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41356",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41356",
+        source_sha="0" * 64,
+        inventory=inventory,
+    )
+    predecessors[0]["status"] = "done"
+    assert not compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41356",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+
+
 def test_batch_from_file_is_dry_run_until_apply(tmp_path: Path) -> None:
     labels = [
         "QM5_1001_compile-fixture-h1",

@@ -55,6 +55,22 @@ class XauXagWinsor2Reference(unittest.TestCase):
         self.assertIn("strategy_winsor_divisor == 12", source)
         self.assertIn("MathIsValidNumber(RISK_FIXED)", source)
 
+    def test_framework_owned_inputs_are_not_pinned(self):
+        source = EA_SOURCE.read_text(encoding="utf-8")
+        self.assertNotIn("qm_rng_seed ==", source)
+        self.assertNotIn("qm_news_temporal ==", source)
+        self.assertNotIn("qm_news_compliance ==", source)
+        self.assertNotIn("qm_news_mode_legacy ==", source)
+        self.assertNotIn("qm_news_stale_max_hours ==", source)
+        self.assertNotIn("qm_news_min_impact ==", source)
+        self.assertNotIn("!qm_friday_close_enabled", source)
+        self.assertNotIn("qm_friday_close_hour_broker ==", source)
+        self.assertNotIn("RISK_FIXED - 1000.0", source)
+        self.assertNotIn("PORTFOLIO_WEIGHT - 1.0", source)
+        self.assertIn("RISK_PERCENT == 0.0 && RISK_FIXED > 0.0", source)
+        self.assertIn("qm_stress_reject_probability >= 0.0", source)
+        self.assertIn("qm_stress_reject_probability <= 1.0", source)
+
     def test_exact_two_per_tail_replacement(self):
         returns = [12.0, 1.0, 8.0, 2.0, 11.0, 3.0,
                    10.0, 4.0, 9.0, 5.0, 7.0, 6.0]

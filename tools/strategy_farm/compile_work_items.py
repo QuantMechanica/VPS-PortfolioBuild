@@ -2606,6 +2606,45 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# PACER build guard (2026-09-13): QM5_41356 compiled before the framework-input
+# pin audit became binding. Bind one append-only rebuild to the exact repaired
+# source, both historical compile rows, and immutable evidence. The older
+# rollout-held row is already superseded by the completed compile; retaining it
+# in the predecessor set makes that state explicit without rewriting history.
+# This grants no strategy, economic, live, portfolio-gate, or cross-EA authority.
+QM5_41356_FRAMEWORK_INPUT_PIN_REPAIR_AUTHORITY = (
+    "pacer_build_guard:5aed577c-05bd-47f5-a739-403973f931b3:QM5_41356"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_41356_FRAMEWORK_INPUT_PIN_REPAIR_AUTHORITY
+] = {
+    "ea_id": "41356",
+    "ea_label": "QM5_41356_xauxag-mwinsor2-rv",
+    "source_sha256": "a71adea41719f732241aa71aa0fd2afe3c404e968eac2f7803b35b217ce020c1",
+    "predecessors": {
+        "4b3201a2-0087-42dd-801e-497058f40900": {
+            "source_sha256": "9787b672b27cdc137fcf60824e2f097c09d29c2cb0650785aafb555991002e1a",
+            "status": "pending",
+            "verdict": None,
+        },
+        "d0de54f6-118f-47b7-877a-d0185ed5caa2": {
+            "source_sha256": "38654686a68a119770c0e6cb24329e15cba822ca6a836d5226fab0a2bbb015f2",
+            "status": "done",
+            "verdict": "COMPILE_OK",
+        },
+    },
+    "superseded_predecessors": [
+        "4b3201a2-0087-42dd-801e-497058f40900",
+    ],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-13_qm5_41356_framework_input_pin_repair_authority.json"
+    ),
+    "evidence_sha256": (
+        "1dd7524e2e6bb869c1f3d47cac0267c2ea24058dbb863f83c03df6f5d36cca7f"
+    ),
+}
+
 # PACER mission (2026-09-12): QM5_20291's three Q02 attempts all used the
 # original August binary and ended in tester infrastructure failures.  Bind one
 # governed compile to the exact low-frequency hot-path repair and its latest
