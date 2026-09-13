@@ -1,0 +1,142 @@
+{
+  "counts": {
+    "FLAG_NEEDS_FRESH_BUILD_EA": 2,
+    "FLAG_NEEDS_OPEN_BUILD_TASK": 1,
+    "SKIP_ALREADY_COMPILED_AT_CURRENT": 1,
+    "SKIP_SOURCE_NOT_REPAIRED": 3,
+    "repair_successor": 0,
+    "targets": 7
+  },
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "function": "compile_work_items.enqueue_repair_successor",
+  "generated_at": "2026-09-13T21:17:03.136195+00:00",
+  "mode": "dry_run",
+  "plan_sha256": "aac8c1d4ccf8aef8c48a0fa06d498309063b7d5213d1e564da8b620f2744390f",
+  "repo": "C:\\QM\\repo",
+  "schema": "qm.compile-ea-repair-successor-batch/v1",
+  "targets": [
+    {
+      "action": "skip",
+      "build_task_id": null,
+      "clean": true,
+      "commit": null,
+      "ea_id": "QM5_41113",
+      "ea_label": "QM5_41113_xauxag-mhalfagree-rv",
+      "governed_reasons": [],
+      "has_approved_card": false,
+      "needs_commission": true,
+      "new_sha": null,
+      "old_sha": null,
+      "ondisk_sha": "20faafb2f1f4a8d7f496e78367ba57bc788d20c0ed8ac435c95fc10ed93ac013",
+      "predecessor_work_item_id": null,
+      "reason": "FLAG_NEEDS_FRESH_BUILD_EA"
+    },
+    {
+      "action": "skip",
+      "build_task_id": null,
+      "clean": true,
+      "commit": null,
+      "ea_id": "QM5_41123",
+      "ea_label": "QM5_41123_xauxag-mpath-eff-rv",
+      "governed_reasons": [],
+      "has_approved_card": false,
+      "needs_commission": true,
+      "new_sha": null,
+      "old_sha": null,
+      "ondisk_sha": "69aa644a3837ca7c4b05557914da03469251c5272be6980f90a4803a5136c64b",
+      "predecessor_work_item_id": null,
+      "reason": "FLAG_NEEDS_FRESH_BUILD_EA"
+    },
+    {
+      "action": "skip",
+      "build_task_id": null,
+      "clean": true,
+      "commit": null,
+      "ea_id": "QM5_13128",
+      "ea_label": "QM5_13128_pre-fomc-drift-ndx",
+      "governed_reasons": [
+        "SOURCE_NOT_REPAIRED",
+        "BUILD_TASK_BINDING_NOT_REQUESTED"
+      ],
+      "has_approved_card": true,
+      "needs_commission": false,
+      "new_sha": null,
+      "old_sha": null,
+      "ondisk_sha": "e2bd93a2a66700763997af1e8a9713e40ae76e31916b86d941ae08f495e3fb19",
+      "predecessor_work_item_id": null,
+      "reason": "SKIP_SOURCE_NOT_REPAIRED"
+    },
+    {
+      "action": "skip",
+      "build_task_id": null,
+      "clean": true,
+      "commit": null,
+      "ea_id": "QM5_9730",
+      "ea_label": "QM5_9730_bandy-weekly-rsi-extreme-d1-trigger-mr-index",
+      "governed_reasons": [
+        "SOURCE_NOT_REPAIRED",
+        "BUILD_TASK_BINDING_NOT_REQUESTED"
+      ],
+      "has_approved_card": true,
+      "needs_commission": false,
+      "new_sha": null,
+      "old_sha": null,
+      "ondisk_sha": "406a8740c2469fac9e6fd384fee1380532f13a65bb15b65350f11ecd30bdde92",
+      "predecessor_work_item_id": null,
+      "reason": "SKIP_SOURCE_NOT_REPAIRED"
+    },
+    {
+      "action": "skip",
+      "build_task_id": null,
+      "clean": true,
+      "commit": null,
+      "ea_id": "QM5_41142",
+      "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+      "governed_reasons": [
+        "BUILD_TASK_BINDING_NOT_OPEN"
+      ],
+      "has_approved_card": true,
+      "needs_commission": true,
+      "new_sha": null,
+      "old_sha": null,
+      "ondisk_sha": "bd65d86feafb660aee79a9e4e483f62679788383595d6a80bbd5204db50d23f0",
+      "predecessor_work_item_id": null,
+      "reason": "FLAG_NEEDS_OPEN_BUILD_TASK"
+    },
+    {
+      "action": "skip",
+      "build_task_id": null,
+      "clean": true,
+      "commit": null,
+      "ea_id": "QM5_41356",
+      "ea_label": "QM5_41356_xauxag-mwinsor2-rv",
+      "governed_reasons": [],
+      "has_approved_card": true,
+      "needs_commission": false,
+      "new_sha": null,
+      "old_sha": null,
+      "ondisk_sha": "a71adea41719f732241aa71aa0fd2afe3c404e968eac2f7803b35b217ce020c1",
+      "predecessor_work_item_id": null,
+      "reason": "SKIP_ALREADY_COMPILED_AT_CURRENT"
+    },
+    {
+      "action": "skip",
+      "build_task_id": null,
+      "clean": true,
+      "commit": null,
+      "ea_id": "QM5_41179",
+      "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+      "governed_reasons": [
+        "SOURCE_NOT_REPAIRED",
+        "BUILD_TASK_BINDING_NOT_REQUESTED"
+      ],
+      "has_approved_card": false,
+      "needs_commission": false,
+      "new_sha": null,
+      "old_sha": null,
+      "ondisk_sha": "6110e1969bf009ad0e83779f02357df51b31da6c1e6fff887ed4a2fb92435e8a",
+      "predecessor_work_item_id": null,
+      "reason": "SKIP_SOURCE_NOT_REPAIRED"
+    }
+  ]
+}

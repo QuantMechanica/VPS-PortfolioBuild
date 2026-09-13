@@ -80,4 +80,68 @@ The framework include `QM_Common.mqh` gained an MFE hook today (commit
 `7c3e0ea6d0`). It does not change EA source hashes, but every new compile
 validates the include. **The first compiles from these re-issued rows therefore
 double as the live MQL5 verification of the MFE include** — watch the first
-wave's build_check/compile evidence before releasing the rest.
+wave's build_check/compile evidence before releasing the rest. (Confirmed: the
+first wave compiled QM5_41179 with MetaEditor errors=0 — MFE include OK — though
+build_check then refused it, `EA_FRAMEWORK_INPUT_PINNED`, row `3f0de0a8`.)
+
+---
+
+# Repair-successor path for the skipped rows (2026-09-13, re-runnable)
+
+The rollout re-issue above skipped non-held orphans, double-superseded rows, and
+41179's fresh `COMPILE_FAIL`. This second lever handles them via the OTHER governed
+function, `compile_work_items.enqueue_repair_successor` (append-only successor for a
+terminal `COMPILE_FAIL`/`BUILD_CHECK_FAIL`, bound to an OPEN `build_ea` task, once
+source is repaired). Sibling tool + test:
+
+- Tool: `tools/strategy_farm/session_tools/repair_successor_stale_compile_rows_0913.py`
+- Tests: `tools/strategy_farm/tests/test_repair_successor_stale_compile_rows_0913.py` (9 passed)
+- Plan: `plan_repair_successors.json` (this dir)
+- **plan_sha256: `aac8c1d4ccf8aef8c48a0fa06d498309063b7d5213d1e564da8b620f2744390f`**
+- **RE-RUNNABLE.** Every disposition is recomputed from the live DB + live source on
+  each run; no SHA is baked into the tool or its tests. Sources are being re-patched
+  now (framework-input-pin repair, `docs/ops/evidence/2026-09-13_framework_input_pin_repair.md`),
+  so re-run after each source change and re-review the new `plan_sha256`.
+
+## Current disposition (7 targets) — 0 eligible for repair-successor right now
+
+| EA | disposition | why | card? |
+|---|---|---|---|
+| QM5_41113 | `FLAG_NEEDS_FRESH_BUILD_EA` | no terminal COMPILE_FAIL row to repair from | **no** |
+| QM5_41123 | `FLAG_NEEDS_FRESH_BUILD_EA` | no terminal COMPILE_FAIL row | **no** |
+| QM5_13128 | `SKIP_SOURCE_NOT_REPAIRED` | newest COMPILE_FAIL is AT current source (still fails) | yes |
+| QM5_9730 | `SKIP_SOURCE_NOT_REPAIRED` | newest COMPILE_FAIL is AT current source (still fails) | yes |
+| QM5_41142 | `FLAG_NEEDS_OPEN_BUILD_TASK` | source repaired vs failed row, but bound build task closed | yes |
+| QM5_41356 | `SKIP_ALREADY_COMPILED_AT_CURRENT` | done `COMPILE_OK` at current source (row 414447dc) | yes |
+| QM5_41179 | `SKIP_SOURCE_NOT_REPAIRED` | 3f0de0a8 is AT current source; awaiting the pin repair | no |
+
+Key facts driving the zero-eligible result: `enqueue_repair_successor` **requires an
+open, identity-matching `build_ea` task**; none of the targets has one (41142's bound
+task is done, the rest have none). 41113/41123 have **no approved card**, so even the
+fresh-build path needs a card commissioned first — this tool never fabricates a build
+task or a card.
+
+## What unblocks each (re-run this tool after)
+
+- **41179** (and 41113/41123/41374/41389/41397/41399): after the framework-input-pin
+  repair changes the source, the newest COMPILE_FAIL is no longer at the current
+  source → `SOURCE_NOT_REPAIRED` clears. 41179 then needs an open `build_ea` task
+  (→ `NEEDS_OPEN_BUILD_TASK`).
+- **41142**: open a `build_ea` task for it (card exists) → becomes `repair_successor`
+  eligible; the tool will then plan a governed repair-successor from `b04fb953`.
+- **13128 / 9730**: current source genuinely fails to compile (COMPILE_FAIL at the
+  current SHA) — they need a source FIX (code), not a re-issue. Not in the pin-repair set.
+- **41113 / 41123**: commission a `build_ea` (needs a card) → normal build→compile.
+- **41356**: already compiled at current source; nothing to do.
+
+## Exact command
+
+```
+python -X utf8 tools/strategy_farm/session_tools/repair_successor_stale_compile_rows_0913.py \
+  --apply --plan-sha256 aac8c1d4ccf8aef8c48a0fa06d498309063b7d5213d1e564da8b620f2744390f
+```
+
+With today's plan this is a no-op (0 eligible) and will report the blockers above.
+The value is on **re-run after upstream fixes**: the moment a target has a
+source-repaired terminal failure plus an open build task, the same command appends the
+governed append-only repair-successor (mutation lock, verified backup, receipt).
