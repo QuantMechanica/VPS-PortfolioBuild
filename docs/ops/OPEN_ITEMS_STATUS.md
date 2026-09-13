@@ -4559,3 +4559,8 @@ receipts (attestation, governor, freeze-lift sentence); (3) DWX matrix decision 
 blocked); (4) optional: raise the Codex budget line if the nine tickets should move faster than ~5 pts/day.
 Not done / parked with reason: 40 BLOCKED build_ea tasks (deprioritised 08-22, backtest queue is the bottleneck, not builds);
 163 compiled EAs with pinned framework inputs (rebuild = new identity, OWNER-gated); RAM upgrade (point 4, OWNER cost).
+> **Nachtrag 22:0xZ (13.09.) — Compile-Welle 2:** QM5_1538 successor a4a1884a compiled COMPILE_OK / COMPILE_ARTIFACT_READY on T8
+> (21:59-22:00Z) through the full build gate (symbol-literal gate, pin gate, MAE hook, MFE include) — the compile chain works
+> again for fresh-source rows. 41179/41189/41113/41123 + the seven repaired two-leg winsweep arms have NO approved card and
+> their rollout/repair authorities are exhausted (agents/board-advisor a96d697891): they need the sweep-program enqueue path
+> or a card+build_ea commission -> ticket below. 13 rollout-held rows stay stale by design (superseded chains).
