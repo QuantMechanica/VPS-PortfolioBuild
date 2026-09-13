@@ -311,3 +311,61 @@ def test_activation_evidence_accepts_structured_ceo_receipt():
     assert not _activation_evidence_ok({'declared_by': '', 'evidence': ['x']})
     assert not _activation_evidence_ok({'declared_by': 'CEO', 'evidence': []})
     assert not _activation_evidence_ok('   ') and not _activation_evidence_ok(None) and not _activation_evidence_ok(7)
+
+
+def _file_db(tmp_path, monkeypatch):
+    """A real sqlite file at farmctl.db_path(root) with the fixture schema (sweep() needs a file)."""
+    root = tmp_path / "root"
+    db_path = Path(farmctl.db_path(root))
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(db_path))
+    conn.executescript('''
+        CREATE TABLE work_items(id TEXT PRIMARY KEY,phase TEXT,status TEXT,
+          ea_id TEXT,symbol TEXT,setfile_path TEXT,payload_json TEXT);
+        CREATE TABLE work_item_holds(work_item_id TEXT PRIMARY KEY,
+          hold_code TEXT,reason TEXT,active INTEGER,release_on_restart INTEGER,
+          created_at TEXT,updated_at TEXT,released_at TEXT,release_note TEXT);
+        CREATE TABLE events(id INTEGER PRIMARY KEY,ts TEXT,entity_type TEXT,
+          entity_id TEXT,event TEXT,detail_json TEXT);
+    ''')
+    conn.commit()
+    return root, conn
+
+
+def test_apply_sweep_skips_backup_when_no_row_needs_hold_or_release(tmp_path, inputs, monkeypatch):
+    """2026-09-13: the 10-minute apply sweep took a full 1.27 GB governed backup (and held the factory
+    mutation lock) before knowing whether any row changes; a read-only preflight now decides first."""
+    policy, _, pin = inputs
+    root, conn = _file_db(tmp_path, monkeypatch)
+    conn.close()  # no NEWS rows at all -> nothing to hold or release
+
+    def _no_backup(*_a, **_k):
+        raise AssertionError("governed backup must not run when the sweep changes nothing")
+
+    from tools.strategy_farm import farmctl as pkg_farmctl  # taint imports the package module object
+    for mod in (farmctl, pkg_farmctl):
+        monkeypatch.setattr(mod, "_governed_state_backup", _no_backup)
+        monkeypatch.setattr(mod, "FactoryMutationLock", _no_backup)
+    out = taint.sweep(root, pin, apply=True)
+    assert out["applied"] is False
+    assert out["skipped"] == "no_row_needs_hold_or_release"
+    assert out["backup"] is None and out["backup_sha256"] is None
+
+
+def test_apply_sweep_still_backs_up_when_a_hold_is_needed(tmp_path, inputs, monkeypatch):
+    policy, _, pin = inputs
+    root, conn = _file_db(tmp_path, monkeypatch)
+    insert(conn)  # pending Q10_NEWS row on the tainted pin -> action HOLD
+    conn.close()
+
+    class _Reached(Exception):
+        pass
+
+    def _backup(*_a, **_k):
+        raise _Reached()
+
+    from tools.strategy_farm import farmctl as pkg_farmctl
+    for mod in (farmctl, pkg_farmctl):
+        monkeypatch.setattr(mod, "_governed_state_backup", _backup)
+    with pytest.raises(_Reached):
+        taint.sweep(root, pin, apply=True)

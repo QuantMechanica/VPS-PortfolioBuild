@@ -272,6 +272,20 @@ def sweep(root, pin_manifest, *, apply=False, config_path=None, preview=False):
         return {'enabled':load_policy(config_path)['enabled'],'applied':False,'preview':preview,'rows':rows}
     if preview or policy.get('error'):
         raise ValueError('apply requires valid activated policy; preview cannot apply')
+    # 2026-09-13 (Orchestrator, ticket f5d30fc9 continuation): this sweep runs every 10 min and
+    # used to take a full governed state backup (1.27 GB, FACTORY_MUTATION.lock held 1-2 min)
+    # BEFORE knowing whether any row needs a HOLD/RELEASE. A read-only preflight decides first;
+    # the backup + lock + apply path runs only when at least one row would change.
+    preflight_conn = sqlite3.connect(farmctl.db_path(root).resolve().as_uri()+'?mode=ro',uri=True)
+    preflight_conn.row_factory = sqlite3.Row
+    try:
+        preflight_conn.execute('BEGIN')
+        preflight_rows = synchronize(preflight_conn,policy,pin_manifest)
+    finally:
+        preflight_conn.close()
+    if not any(row.get('action') in {'HOLD','RELEASE'} for row in preflight_rows):
+        return {'enabled':policy['enabled'],'applied':False,'preview':False,'rows':preflight_rows,
+                'skipped':'no_row_needs_hold_or_release','backup':None,'backup_sha256':None}
     backup, digest = farmctl._governed_state_backup(root,'news_calendar_taint')
     with farmctl.FactoryMutationLock(farmctl.path_for_factory_flag(farmctl.factory_off_flag_path(root)),owner='news_calendar_taint'):
         with farmctl.connect_short_under_mutation_lock(root) as conn:
