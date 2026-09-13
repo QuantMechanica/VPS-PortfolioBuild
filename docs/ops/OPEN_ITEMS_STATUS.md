@@ -4270,3 +4270,14 @@ weiteren offenen Punkte musst Du ebenfalls vor dem Buch noch loesen."
   guard (LIVE_RISK_FREEZE_BLOCKED operation=mint a signed T_Live deployment pointer). Conditions 2/3 (news contract v2,
   governor hardening) are separate programs. The freeze can therefore only be lifted by the OWNER's explicit written
   sentence (transcribed as lift_authority) - requested at cutover time. Pointer dry-run is ready (24/24 binaries OK).
+
+## 2026-09-13T16:45Z Builder fixed (orchestrator lane, ticket 3598783e closed): union book first numbers
+build_book_dxz.py now aligns proposal and incumbent on ONE shared day grid, has --union (incumbent + proposal, de-dup by
+pair, --incumbent-stream-root), --exclude-pair and --analysis-only (metrics printed before the freeze guard; no manifest
+without a lifted freeze). Commit f5f2001b59, 12 new tests, builder suites 91 passed. Concentration now PASS on the
+re-ratified 9.75 % scale. Union (live 24 + 16 available new streams, 41221 excluded; 35 sleeves; window 2019-07-23..
+2024-12-06, 1368 days): at 9.75 % total risk Sharpe 2.70 vs 2.41, MaxDD 2.47 vs 2.41 %, ann. 8.33 vs 9.48 % (return
+diluted across more sleeves), worst day -0.76 vs -0.86 % -> not-worse gate FAIL (ret/DD, DD), PASS (worst day). At
+11.0 %: ann. 9.45 %, Sharpe 2.70, ret/DD 3.40 vs 3.94, worst day -0.86 -> gate FAIL. Reading: the union is better
+diversified (Sharpe +12 %) but not more DD-efficient than the sealed incumbent; final judgment after the 10 missing
+proposal streams (Q08 reruns) arrive. The ratified not-worse gate stays; changing the book criterion is OWNER.
