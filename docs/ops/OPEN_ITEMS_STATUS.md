@@ -4101,3 +4101,11 @@ across T2-T10 (XAUUSD Q02/Q04 runs on T3/T5/T9). Hourly copies pruned to the new
 67.6 GB. Durable measure: farmctl hourly snapshot retention constant 24 h -> 6 h (one constant, comment in place,
 rollback = revert this commit); takes effect with the next pump process. Governed before-* anchors (keep 3 per label)
 untouched; their churn (news_calendar_taint full copy every 10 min) stays with Codex ticket f5d30fc9 (prio 90).
+
+## 2026-09-13T07:12Z Interactive heartbeat: Bash-tool background loop was stopped twice -> detached wrapper bound to the session process
+The tool-harness background job running `run_agent_orchestration_task.py --interactive-heartbeat-loop` was reported
+"killed" at 06:59Z and 07:07Z (no error text; the loop itself exits cleanly only on parent death or duration). Each
+stop lets QM_StrategyFarm_ClaudeOrchestration_15min resume headless cycles. Fix: session_tools/
+interactive_heartbeat_detached.py calls run_interactive_heartbeat_loop(parent_pid=<claude.exe of this session>) and is
+started hidden via Start-Process, so its lifetime equals the interactive session (pid 12176), not the tool shell.
+Running since 07:09Z (loop pid 22240); INTERACTIVE_ORCHESTRATOR.flag refreshed 07:09:42Z.
