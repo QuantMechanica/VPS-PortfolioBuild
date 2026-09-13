@@ -1,0 +1,10 @@
+{
+  "freeze_mutation": false,
+  "proposal_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-13_m06_attest_current\\proposal_r2\\proposal.json",
+  "proposal_sha256": "ad511c20139fb2e6c8231f9fb1d68c87143dc966b27e8496b814050fa9401f23",
+  "runtime_pointer_write": false,
+  "schema": "qm.live-identity-attest-proposal-receipt/v1",
+  "signed": false,
+  "status": "REFUSED",
+  "tool_sha256": "3791e0eb49f3d3f12211fb9de563fdc790307689fb0be0f925ed78e973c5e253"
+}
