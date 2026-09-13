@@ -4481,3 +4481,16 @@ decision) and demanded evidence for the exit step. Five packages ran in parallel
 OWNER actions: JA on OWNER-DEC-IDENTITY-EQUIVALENCE (decision above) if the inheritance rule is wanted; the
 book-v2 cutover receipts from 17:55Z remain open. Costs: ~1.3 M subagent tokens, 0 factory hours (all
 measurements offline), one PRESCREEN cell (2 min T6).
+
+## 2026-09-13T21:15Z — RESULT: QM5_10706/GBPUSD BE-lock modify storm (9f0923ef) — already fixed, verified closed
+
+RESULT: REVIEW — read-only log scan confirms 36,102 TM_MODIFY events on ticket 3169417771
+(2026-07-29, 36,098 ok:false retcode 10016), matching the ticket. Root cause was two
+defects: unnormalized break-even stop price + exact-match-only modify suppression letting
+a drifting retry target dodge backoff. Both already fixed in source before this ticket was
+opened: `3d853ab6b2` (2026-08-17, QM_TM_NormalizePrice at the QM5_10706 MON_SWEEP_BE_LOCK
+call site) and `ebffd42074` (2026-08-22, per-ticket exponential backoff 30s*2^n capped
+900s + TM_MODIFY_BACKOFF_CAP alert, tested in framework/tests/test_tm_modify_backoff.py).
+No live recompile performed (OWNER-gated, per hard rule). Fleet scan of all 24 configured
+live EA logs: 0 other sleeves show a TM_MODIFY ok:false series (QM5_10706 is fleet-isolated).
+Evidence: docs/ops/evidence/2026-09-13_10706_be_lock_modify_storm.md.
