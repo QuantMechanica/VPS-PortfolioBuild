@@ -234,9 +234,6 @@ bool Strategy_NoTradeFilter()
       return true;
    if(qm_ea_id != 20042 || qm_magic_slot_offset != 0)
       return true;
-   if(!qm_friday_close_enabled ||
-      qm_friday_close_hour_broker != 21)
-      return true;
    if(strategy_entry_day != 17)
       return true;
    if(strategy_atr_period != 20)

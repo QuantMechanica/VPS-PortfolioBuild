@@ -60,15 +60,14 @@ bool Strategy_IsTarget()
 
 bool Strategy_InputsValid()
   {
-   return (qm_ea_id == 20053 && strategy_entry_dow == 5 &&
+   return (qm_ea_id == 20053 &&
+           strategy_entry_dow == 5 &&
            strategy_entry_hour_broker == 21 &&
            strategy_entry_grace_minutes == 5 &&
            strategy_atr_period_d1 == 20 &&
            MathAbs(strategy_atr_sl_mult - 3.0) <= 1.0e-12 &&
            strategy_max_hold_days == 4 &&
-           strategy_max_spread_points == 1000 &&
-           !qm_friday_close_enabled &&
-           qm_friday_close_hour_broker == 21);
+           strategy_max_spread_points == 1000);
   }
 
 bool Strategy_HasPosition()
