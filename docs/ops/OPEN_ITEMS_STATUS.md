@@ -4351,3 +4351,14 @@ deployed as no-ops until their rebuilt identities requalify. Staging package bei
 DXZ_V2_20260913). Other Q16 findings: XAGUSD + WS30 must be added to the T_Live Market Watch (OWNER; both exist on the
 account), Tester/Groups commission artefact is empty on T_Live (Codex, check 6), 9641 magic resolver proof via the
 post-attach INIT log, July precedent = factory binaries copied with SHA (no recompile on T_Live), news calendar GREEN.
+
+## 2026-09-13T16:35Z 28-sleeve staging package rebuilt; per-EA RAM expectation authoritative (chunk 75)
+Staging C:/QM/deploy/DXZ_V2_20260913 (28 = live 24 + 1537/XAGUSD, 9641/WS30, 10700/XAUUSD, 13013/NDX): builder manifest
+manifest_28_full.json (capped inverse vol, sum 9.750000), burn-in variant 8.700 % (24 at target 8.589 + 4 at min-lot),
+4 ex5 SHA-bound to the Q14 receipts, 4+4 presets, existing-24 re-weight dry-run (9 movers > 0.05 pp; the only riser is
+the structurally dark 12969 +0.013), copy plan dry-run PASS (8 validated, 0 written), ANLEITUNG_DXZ_V2.md, Q16 table
+35 GREEN / 33 OPEN / 9 RED (RED = the three dark sleeves, no-op until the source fix). OPEN owners: OWNER = freeze lift,
+manifest signature, XAGUSD + WS30 into Market Watch; Codex = commission group file, DST screenshot, 9641 magic proof.
+Fleet: with all census cells done/held the queue is Q02/Q04 heavy; T8 claim scan 16:21Z ram_class_skipped 755 at
+27 GB free because light EAs on the metal class reserved the class p95 (23.6 GB): commit 96946e85ed makes a well-sampled
+per-EA record authoritative both ways (rollback QM_TESTER_MEMORY_EA_AUTHORITATIVE=0); reload chunk 75 detached.
