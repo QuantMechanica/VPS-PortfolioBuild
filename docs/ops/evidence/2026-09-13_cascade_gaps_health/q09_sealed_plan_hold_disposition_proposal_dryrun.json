@@ -1,0 +1,79 @@
+{
+  "schema": "qm.q09-sealed-plan-hold-disposition-proposal/v1",
+  "mode": "PROPOSAL_ONLY_NOT_AUTHORIZED_NOT_EXECUTED_DRY_RUN",
+  "generated_at_utc": "2026-09-13T20:50:00+00:00",
+  "author": "board-advisor pipeline diagnosis (read-only)",
+  "health_check": "q09_sealed_plan_hold_age",
+  "hold_code": "Q09_AWAITING_SEALED_PLAN",
+  "news_phase": "Q10_NEWS",
+  "root_cause_class": "Q09_AUTOSEAL_BIND_PLAN_FAILED at stage=bind_plan; q09_news_runner.bind_plan_to_work_item Q07 seed-stability lineage authentication (lines 1402-1425)",
+  "authorization_required": {
+    "note": "Retiring/superseding a held candidate row is ROT (candidate disposition). Requires an OWNER decision id before any apply, mirroring OWNER-DEC-Q09HOLD-RETIRE-2-20260829.",
+    "owner_decision_id": "<REQUIRED_OWNER_DECISION_ID>",
+    "owner_receipt_id": "<REQUIRED_OWNER_RECEIPT_ID>"
+  },
+  "apply_ceremony_pattern": {
+    "reference_tool": "tools/strategy_farm/apply_q09_retire2_dispositions.py",
+    "steps": [
+      "dry-run writes this content-addressed plan; apply requires the plan sha256",
+      "online SQLite backup to D:/QM/strategy_farm/state/backups",
+      "acquire FactoryMutationLock (D:/QM/strategy_farm/state/FACTORY_MUTATION.lock)",
+      "re-validate each exact target row still pending + hold active under the lock",
+      "append one terminal disposition work_item row per target (original rows never edited)",
+      "record a claim-proof supersedes edge, then close only the named hold"
+    ]
+  },
+  "targets": [
+    {
+      "held_q10_news_work_item_id": "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+      "ea_id": "QM5_11476",
+      "symbol": "USDJPY.DWX",
+      "hold_created_at_utc": "2026-08-23T16:25:13+00:00",
+      "age_hours_at_detection": 508,
+      "reason_code": "Q09_AUTOSEAL_BIND_PLAN_FAILED",
+      "bind_failure_detail": "Q08 dependency has no Q07 lineage and no identity-bound Q07 predecessor could be authenticated",
+      "q08_input": {
+        "work_item_id": "43c9d9d7-2b2c-43a3-bf4a-a1348d1f0ce5",
+        "verdict": "FAIL_SOFT",
+        "promoted_from_work_item": null,
+        "evidence_present": true
+      },
+      "q07_lineage": {
+        "q07_rows_for_pair": 0,
+        "resolver_path": "_resolve_identity_bound_q07 (no promoted_from_work_item) -> no Q07 PASS exists for ea/symbol/setfile"
+      },
+      "lineage_health": "Q05 FAIL, Q08 FAIL_SOFT, Q09 FAIL, Q06/Q07 never run",
+      "diagnosis": "Pre-Q07-contract orphan: this candidate never produced a Q07 seed-stability PASS and the upstream lineage is failing. Autoseal v3 correctly refuses to bind a plan. No evidence exists to restore.",
+      "proposed_disposition": "RETIRE",
+      "restore_possible": false
+    },
+    {
+      "held_q10_news_work_item_id": "8b233bbf-4ed6-4c27-a3d2-5e940c9248ab",
+      "ea_id": "QM5_10148",
+      "symbol": "EURNZD.DWX",
+      "hold_created_at_utc": "2026-09-05T09:39:59+00:00",
+      "age_hours_at_detection": 203,
+      "reason_code": "Q09_AUTOSEAL_BIND_PLAN_FAILED",
+      "bind_failure_detail": "bound Q07 seed-stability evidence is missing",
+      "q08_input": {
+        "work_item_id": "1da1645c-7c69-43d9-8617-f55040122bdc",
+        "verdict": "PASS",
+        "promoted_from_work_item": "bad1b2f7-5f19-40e7-90a5-880551e84d27",
+        "evidence_present": true
+      },
+      "q07_lineage": {
+        "q07_pass_work_item_id": "bad1b2f7-5f19-40e7-90a5-880551e84d27",
+        "q07_verdict": "PASS",
+        "q07_evidence_path": "D:/QM/reports/work_items/bad1b2f7-5f19-40e7-90a5-880551e84d27/QM5_10148/Q07/EURNZD_DWX/aggregate.json",
+        "q07_evidence_present_on_disk": false,
+        "q07_evidence_dir_present_but_empty": true
+      },
+      "diagnosis": "The Q08 hard-references Q07 bad1b2f7 via promoted_from_work_item (this takes precedence over _resolve_identity_bound_q07). The Q07 row is a PASS in the DB but its aggregate.json was purged from disk (dir exists, empty). A fresh Q07 rerun gets a NEW id the Q08 does not reference, so it will NOT satisfy the bind.",
+      "proposed_disposition_primary": "RESTORE_EVIDENCE_THEN_SEAL",
+      "restore_action": "Restore aggregate.json to the exact q07_evidence_path from a D:/QM/reports backup; autoseal then binds on the next Tick cycle. This is a GRUEN infra repair (does not touch verdict logic).",
+      "proposed_disposition_fallback": "RETIRE (only if the Q07 evidence is unrecoverable) OR a full OWNER-scoped append-only Q07->Q08->Q09->Q10_NEWS rebuild superseding this held row",
+      "restore_possible": "unknown_pending_backup_scan"
+    }
+  ],
+  "do_not": "Never release Q09_AWAITING_SEALED_PLAN without a validated bound plan (health hint + bind_plan_to_work_item contract)."
+}
