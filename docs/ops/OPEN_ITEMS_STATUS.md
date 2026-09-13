@@ -4047,3 +4047,20 @@ removed earlier (4 GB), workers restarted one call at a time -> 10/10, D: 95 GB 
 Ticket (Luna): diagnose the class and add a Default-OFF per-run tester-cache budget guard + exact hold after two
 hits. Note: today's backup churn (a 1.2 GB DB backed up per mutation and per hour) is itself a D: consumer ->
 retention ticket f5d30fc9.
+
+## 2026-09-13T01:05Z Hourly watch 00:21Z: D: 64 GB (purge teardown at 60) + fleet 5/10 idle -> two GRUEN fixes
+D: burn 95 -> 64 GB in 4 h had two sources: (1) state backups: farmctl hourly snapshot keeps 24 h x 1.18 GB (28 GB
+equilibrium) and the news_calendar_taint job rewrites a full 1.18 GB before-* anchor every 10 min (keep 3, 7 GB/h
+write churn, FACTORY_MUTATION.lock held 1-2 min per cycle -> fleet claim_declined lock_busy); (2) T8 Tester tick
+bases 23 GB for 37 symbols written 22:07-22:12Z by the QM5_12512 37-pair basket run. Actions: hourly copies pruned
+to newest 3 (4.7 GB), T8 stale tick caches dropped while T8 idle (37 symbols, 23 GB) -> D: 89 GB; retention ticket
+f5d30fc9 priority 66 -> 90 with the measured numbers. Fleet: T9 claim_result skips at 00:34Z = opt_census_slot_deferred
+916 + census_lane_protection_skipped 593 + ram_class_skipped 4 with 33 GB RAM free: CENSUS-FIRST defers heavy Q02/Q04
+rows because unheld census cells exist, but the three programs holding ALL unheld cells (DL089_QM5_10403_XAUUSD 69,
+DL089_QM5_11660_NDX 344, DL089_QM5_13213_USDJPY pattern census 570) run at L=1 off the allow-list, so 3 of 6 census
+lanes and 5 workers stay idle. Fix A (now): allow-list extended to the three programs (L=2) in the machine scope +
+staggered reload chunk 72 (tools/strategy_farm/session_tools/reload_chunk72.py, log
+D:/QM/strategy_farm/logs/reload_chunk72.log) = OWNER-DEC-SAMEPROG-FLEET-20260831 YES applied to the programs with
+live work; rollback = pop the three ids and reload. Fix B (root cause, Codex Sol c07b8653, prio 85): lane-aware
+_opt_census_cells_claimable_in_txn behind Default-OFF QM_CENSUS_FIRST_LANE_AWARE. Expected: census lanes 3 -> 6,
+census/h ~45 -> ~90, and heavy Q02/Q04 rows admitted once the lanes consume the protected band honestly.
