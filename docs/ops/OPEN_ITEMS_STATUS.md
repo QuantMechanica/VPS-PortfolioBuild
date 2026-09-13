@@ -4281,3 +4281,16 @@ diluted across more sleeves), worst day -0.76 vs -0.86 % -> not-worse gate FAIL 
 11.0 %: ann. 9.45 %, Sharpe 2.70, ret/DD 3.40 vs 3.94, worst day -0.86 -> gate FAIL. Reading: the union is better
 diversified (Sharpe +12 %) but not more DD-efficient than the sealed incumbent; final judgment after the 10 missing
 proposal streams (Q08 reruns) arrive. The ratified not-worse gate stays; changing the book criterion is OWNER.
+
+## 2026-09-13T17:05Z Seal fix + vault recovery (ticket 9c76957c closed), news mapping delivered, union with 24 streams
+Seal root cause: the only "durable" Q08 stream copy was a mutable pointer overwritten by every later re-grade, and the
+portfolio tree is unowned by retention (classified candidate_for_cleanup_review). Fix commit 5c5e9fb84a: write-once
+content-addressed sidecar next to the aggregate, retention/purge exclusions by name, 38 tests. Recovery: 7 of 9 lost
+streams restored byte-identical from artifacts/audit_evidence_vault_20260818.zip, 21501 re-emitted identical by its
+rerun (its verdict INVALID is a separate signal to review), 21507 + 20266 released to rerun (holds lifted), the 7
+now-unneeded reruns hold BOOK_V2_STREAM_RECOVERED_RERUN_NOT_NEEDED. Bundle 24/26 (streams_v2b). News contract v2:
+tools/strategy_farm/news_impact_mapping.py + config (commit ac67e36f1f, 30 tests, Default-OFF, no consumer wired);
+Q09_NEWS review backlog closure delegated (6 lock, 4 invalid, 15 mislabelled run_smoke rows, 39 aged out).
+Union with 24 new streams (41 sleeves, 41221 excluded, shared grid): 9.75 % -> ann 8.20 %, ret/DD 2.57, worst -0.70 %,
+Sharpe 2.56 vs deployed 24 ann 9.00 %, ret/DD 3.71, Sharpe 2.41 -> not-worse gate FAIL (ret/DD, maxDD), PASS worst day.
+Next: selective union by greedy forward selection under the ratified gate (running).
