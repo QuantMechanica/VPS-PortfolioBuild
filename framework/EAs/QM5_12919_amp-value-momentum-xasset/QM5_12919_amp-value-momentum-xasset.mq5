@@ -202,23 +202,6 @@ bool Strategy_RawSignals(const string symbol,
    return true;
   }
 
-int Strategy_HistoryReadyCount(string &missing_symbols)
-  {
-   missing_symbols = "";
-   int ready_count = 0;
-   for(int i = 0; i < STRATEGY_SYMBOL_COUNT; ++i)
-     {
-      double momentum = 0.0;
-      double value = 0.0;
-      int available_bars = 0;
-      if(Strategy_RawSignals(g_strategy_symbols[i], momentum, value, available_bars))
-         ready_count++;
-      else
-         Strategy_AppendMissingSymbol(missing_symbols, g_strategy_symbols[i]);
-     }
-   return ready_count;
-  }
-
 void Strategy_LogScoreReadiness(const int eligible_count,
                                 const string missing_symbols)
   {
@@ -238,7 +221,15 @@ void Strategy_LogScoreReadiness(const int eligible_count,
    if(eligible_count >= strategy_min_eligible_symbols)
       QM_LogEvent(QM_INFO, "STRATEGY_DIAG", payload);
    else
+     {
       QM_LogEvent(QM_WARN, "STRATEGY_DIAG", payload);
+      QM_LogEvent(QM_WARN,
+                  "SETUP_DATA_MISSING",
+                  StringFormat("{\"component\":\"basket_d1_history\",\"ready\":%d,\"required\":%d,\"missing\":[%s]}",
+                               eligible_count,
+                               strategy_min_eligible_symbols,
+                               missing_symbols));
+     }
   }
 
 double Strategy_Mean(const double &values[], const bool &eligible[])
@@ -503,25 +494,10 @@ int OnInit()
    QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_D1, warmup_bars);
    QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_M30, 96);
 
-   string missing_symbols = "";
-   const int ready_count = Strategy_HistoryReadyCount(missing_symbols);
-   QM_LogEvent(QM_INFO,
-               "STRATEGY_DIAG",
-               StringFormat("{\"ready\":%d,\"required\":%d,\"required_bars\":%d,\"missing\":[%s]}",
-                            ready_count,
-                            strategy_min_eligible_symbols,
-                            Strategy_RequiredD1Bars(),
-                            missing_symbols));
-   if(ready_count < strategy_min_eligible_symbols)
-     {
-      QM_LogEvent(QM_ERROR,
-                  "SETUP_DATA_MISSING",
-                  StringFormat("{\"component\":\"basket_d1_history\",\"ready\":%d,\"required\":%d,\"missing\":[%s]}",
-                               ready_count,
-                               strategy_min_eligible_symbols,
-                               missing_symbols));
-      return INIT_FAILED;
-     }
+   // Foreign-symbol tester history is loaded asynchronously.  Do not turn the
+   // fire-and-forget warmup into a synchronous OnInit gate: the first monthly
+   // decision retries the exact depth and remains fail-closed until at least
+   // strategy_min_eligible_symbols are genuinely readable.
 
    QM_LogEvent(QM_INFO, "INIT_OK", "{\"card\":\"QM5_12919\",\"ea\":\"amp-value-momentum-xasset\"}");
    return INIT_SUCCEEDED;

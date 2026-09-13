@@ -2687,6 +2687,32 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# PACER mission (2026-09-13): QM5_12919's repaired Q02 attempt proved that
+# foreign-symbol D1 history is not synchronously readable in OnInit even after
+# the framework's fire-and-forget basket warmup. Bind one governed rebuild to
+# the same-lineage deferred-readiness repair and immutable diagnosis receipt.
+# This grants no strategy, backtest verdict, live, portfolio, or cross-EA
+# authority.
+QM5_12919_Q02_ASYNC_HISTORY_REPAIR_AUTHORITY = (
+    "router_build_rework:a9e1950c-3348-4532-a415-3571c76e66c4:QM5_12919"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_12919_Q02_ASYNC_HISTORY_REPAIR_AUTHORITY
+] = {
+    "ea_id": "12919",
+    "ea_label": "QM5_12919_amp-value-momentum-xasset",
+    "source_sha256": "91b04d4e5791accda221029f1806627f816ca0e4fa9b114860237eb9c82a27b5",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-13_qm5_12919_async_history_compile_authority.json"
+    ),
+    "evidence_sha256": (
+        "c59648c013f15b877694df8f88f2f7af306e30ceabfa341b9ea11253bdbd087b"
+    ),
+}
+
 # The first QM5_1408 recovery compile proved the current source compiles, then
 # strict build checking rejected its EA-owned indicator handles, raw buffer
 # reads, and warning-43 datetime conversions. Bind one append-only successor to

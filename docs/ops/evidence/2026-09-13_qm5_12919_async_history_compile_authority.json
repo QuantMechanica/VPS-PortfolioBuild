@@ -1,0 +1,66 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_build_rework:a9e1950c-3348-4532-a415-3571c76e66c4:QM5_12919",
+  "created_at_local": "2026-09-13T07:15:00+02:00",
+  "ea_id": "QM5_12919",
+  "ea_label": "QM5_12919_amp-value-momentum-xasset",
+  "mission_priority": 2,
+  "scope": "one append-only governed COMPILE_EA rebuild after a deterministic USDJPY Q02 OnInit infrastructure failure; no strategy, threshold, economic-verdict, live, portfolio-gate, deploy-manifest, or cross-EA authority",
+  "diagnosis": {
+    "agent_task_id": "a9e1950c-3348-4532-a415-3571c76e66c4",
+    "agent_task_state": "IN_PROGRESS",
+    "q02_work_item_id": "4ae565d6-d87b-4c9e-8ac5-38f97ad95e56",
+    "q02_status": "done",
+    "q02_verdict": "INFRA_FAIL",
+    "q02_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+    "q02_test_window": "2022.07.01..2022.12.31",
+    "q02_symbol": "USDJPY.DWX",
+    "q02_timeframe": "M30",
+    "summary_sha256": "a18748d1f3bcbfd7445e6a7e4fd442143b620ccda5f7c01917a95a100d4320ef",
+    "logger_sample_sha256": "27d19c0f604e1eb0807a9d14fd8c8ac12fc5f441e52a077d87b6e537adddbfe3",
+    "observed_ready_symbols": 0,
+    "required_ready_symbols": 4,
+    "observed_missing_symbols": 8,
+    "root_cause": "OnInit synchronously required all fire-and-forget foreign-symbol D1 warmups to be readable immediately; the tester logged BASKET_WARMUP loaded=8 and then ready=0 in the same initialization instant, so the EA returned INIT_FAILED before any tick could complete asynchronous history loading.",
+    "prior_mq5_sha256": "c729116f626f7c6b2d930a160a070b3319f198f2a565ad5310c4d49dfa53526a",
+    "stale_ex5_sha256": "6e915491196f60baf3d4fa98d900495be6aed295dd37605d3b6c65a6024383f9",
+    "card_sha256": "d5a6c99017605525156742ef4f13a10c9448acaa0fb8bde45c9e1c944d64ab47"
+  },
+  "repair": {
+    "current_mq5_sha256": "91b04d4e5791accda221029f1806627f816ca0e4fa9b114860237eb9c82a27b5",
+    "strategy_mechanics_changed": false,
+    "action": "allow framework initialization to complete after bounded basket warmup; retain exact-depth once-per-symbol/day retries on the monthly decision path, fail closed below four readable symbols, and emit a bounded SETUP_DATA_MISSING diagnostic if readiness remains insufficient",
+    "preserved_contract": {
+      "universe_size": 8,
+      "minimum_eligible_symbols": 4,
+      "momentum_lookback_days": 252,
+      "value_lookback_days": 1260,
+      "skip_recent_days": 21,
+      "top_n": 3,
+      "rebalance": "monthly",
+      "risk_fixed": 1000,
+      "risk_percent": 0
+    }
+  },
+  "validation": {
+    "focused_static_test_command": "python -m pytest framework/EAs/QM5_12919_amp-value-momentum-xasset/docs/test_history_readiness_contract.py -q",
+    "focused_static_test_result": "3 passed",
+    "framework_input_pin_audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12919_amp-value-momentum-xasset/QM5_12919_amp-value-momentum-xasset.mq5",
+    "framework_input_pin_audit_predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "framework_input_pin_audit_observed_ok": true,
+    "framework_input_pin_audit_observed_hit_count": 0,
+    "fixed_risk_setfile_count": 8
+  },
+  "coordination": {
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor",
+    "claim_key": "paced_fleet:diversity_q02_oninit_repair:QM5_12919:20260913",
+    "compile_enqueue_applied": false
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

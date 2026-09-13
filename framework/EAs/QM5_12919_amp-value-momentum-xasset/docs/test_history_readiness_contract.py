@@ -24,16 +24,24 @@ def set_values(path: Path) -> dict[str, str]:
     return values
 
 
-def test_long_lookback_history_is_retried_and_fail_closed() -> None:
+def test_long_lookback_history_is_retried_after_async_init_and_fail_closed() -> None:
     text = source_text()
     assert "Strategy_RefreshHistoryDepth" in text
     assert "CopyClose(symbol, PERIOD_D1, 0, required_bars, warmup)" in text
     assert "g_history_retry_day_keys[symbol_slot] == retry_day_key" in text
-    assert "Strategy_HistoryReadyCount(missing_symbols)" in text
+    assert "Strategy_RawSignals(g_strategy_symbols[i]" in text
     assert '"SETUP_DATA_MISSING"' in text
-    assert text.index("QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_D1") < text.index(
-        "Strategy_HistoryReadyCount(missing_symbols)"
-    )
+
+    on_init = text[text.index("int OnInit()") : text.index("void OnDeinit")]
+    assert "QM_BasketWarmupHistory(g_strategy_symbols, PERIOD_D1" in on_init
+    assert "Strategy_HistoryReadyCount" not in on_init
+    assert "return INIT_SUCCEEDED;" in on_init
+
+    readiness_log = text[
+        text.index("void Strategy_LogScoreReadiness") : text.index("double Strategy_Mean")
+    ]
+    assert '"SETUP_DATA_MISSING"' in readiness_log
+    assert "eligible_count < strategy_min_eligible_symbols" not in on_init
 
 
 def test_approved_signal_and_risk_contract_are_unchanged() -> None:
