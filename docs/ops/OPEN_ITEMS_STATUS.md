@@ -4203,3 +4203,16 @@ Sonnet fan-out, one verifier per row, every claim checked against files, git and
   still gated on cards_review). Follow-on 30b97a32 (Claude review_strategy, prio 60): card review batch.
 First-claim proof: session_tools/release_prescreen_holds_0913.py --first releases exactly one of the 347
 PRESCREEN_SCHEMA_FIX_PENDING cells (d4c790e7, 2019 c01); --all follows only after it reaches a PRESCREEN verdict.
+
+## 2026-09-13T13:15Z PRESCREEN first-claim proof refused: purge relaunches lose the reload-env flags -> machine-scope mirror + chunk 73
+The released cell d4c790e7 was claimed by T3 within 25 s and refused at 12:32:08Z with
+spawn_refusal:opt_census_prescreen_default_off. tester_cache_purge.log 10:00:27Z: idle factory slots stopped, five workers
+(T2, T3, T5, T6, T9; worker_pids.json differs from the chunk-72 pids) relaunched through the task launcher, whose
+environment is the machine scope only -> the chunk-70/71 flags (QM_OPT_CENSUS_PRESCREEN_ENABLED, QM_COMPILE_GATE_HOLD_ENABLED,
+QM_Q08_DSR_CONTEXT_PREFLIGHT) were silently lost on half the fleet: PRESCREEN cells refused, compile-gate refusals back to
+terminal INFRA_FAIL rows, Q08 preflight off. Fix (GRUEN, decided flags): the four flags incl. QM_CENSUS_FIRST_LANE_AWARE=1
+(APPROVED c07b8653) mirrored into the machine scope 13:1xZ (start_terminal_workers merges machine QM_* vars when absent);
+reload chunk 73 restores them on the five workers first and activates the lane-aware predicate fleet-wide. The first-claim
+proof is repeated with an append-only rerun of d4c790e7 after the five workers are reloaded; the remaining 346 holds
+stay until that proof carries a PRESCREEN verdict. Rule: a reload-env flag that is not mirrored in the machine scope
+does not survive the next purge teardown.
