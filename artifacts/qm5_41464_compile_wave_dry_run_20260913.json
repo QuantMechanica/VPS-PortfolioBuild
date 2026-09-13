@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "f19e910c6044e1eb9cb4c9c9bd83ef63ef03c1e6aee847e55a7d3cab22041bf8",
+      "ea_id": "QM5_41464",
+      "ea_label": "QM5_41464_wti-winter-lclv-fade",
+      "expected_mq5_sha256": "f19e910c6044e1eb9cb4c9c9bd83ef63ef03c1e6aee847e55a7d3cab22041bf8",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41464_wti-winter-lclv-fade\\QM5_41464_wti-winter-lclv-fade.mq5",
+      "work_item_id": "dcf47ab2-34a3-4d51-b159-444c00f8c9ac"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "dcf47ab2-34a3-4d51-b159-444c00f8c9ac",
+  "work_item_id_selectors": [
+    "dcf47ab2-34a3-4d51-b159-444c00f8c9ac"
+  ]
+}

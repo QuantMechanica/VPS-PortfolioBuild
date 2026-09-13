@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "dcf47ab2-34a3-4d51-b159-444c00f8c9ac"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260913T002418_130602Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260913T002359Z_b29e3434.sqlite",
+    "reused": false,
+    "sha256": "da6c0eb05195bf82397e7ca0644e3068e69168ef31ed82ca1bb65a6eeda14605"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "f19e910c6044e1eb9cb4c9c9bd83ef63ef03c1e6aee847e55a7d3cab22041bf8",
+      "ea_id": "QM5_41464",
+      "ea_label": "QM5_41464_wti-winter-lclv-fade",
+      "expected_mq5_sha256": "f19e910c6044e1eb9cb4c9c9bd83ef63ef03c1e6aee847e55a7d3cab22041bf8",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41464_wti-winter-lclv-fade\\QM5_41464_wti-winter-lclv-fade.mq5",
+      "work_item_id": "dcf47ab2-34a3-4d51-b159-444c00f8c9ac"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-13T00:24:18+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "dcf47ab2-34a3-4d51-b159-444c00f8c9ac",
+  "work_item_id_selectors": [
+    "dcf47ab2-34a3-4d51-b159-444c00f8c9ac"
+  ]
+}
