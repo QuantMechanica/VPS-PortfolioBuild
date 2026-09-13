@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Account/portfolio governor action adapter (SP-C1 gap G6, MISSING 2).
+r"""Account/portfolio governor action adapter (SP-C1 gap G6, MISSING 2).
 
 This is the DISABLED decision->instruction boundary that gap G6 requires
 before the GOVERNOR-HARDENING freeze-lift condition can even be evaluated
@@ -18,15 +18,22 @@ one staged decision into one atomic account-wide instruction:
 Safety boundary (this file never relaxes it):
 
 - The adapter never connects to MT5 and never sends/cancels/closes an order.
-  The order-management executor is a separate ROT MQL-side / MT5-bridge
-  component (contract ``ACCOUNT_PORTFOLIO_GOVERNOR_CONTRACT_2026-08-22.md``:125
-  "a separate ROT implementation and review; none exists here"). The CLI never
-  wires one, so enforce mode from the command line always refuses.
-- ENFORCE MODE SHIPS DISABLED. It is unreachable unless BOTH a SHA-256-bound
+  The order-management executor is a separate ROT component (contract
+  ``ACCOUNT_PORTFOLIO_GOVERNOR_CONTRACT_2026-08-22.md``:125). Since 2026-09-13
+  one file-based, EA-native implementation exists
+  (``account_governor_halt_executor.HaltFileExecutor``: it writes the
+  ``QM\halt\<ea_id>.halt`` files the deployed kill switch already polls, and
+  still issues no order itself). The CLI wires it ONLY when it is explicitly
+  selected with ``--executor halt-file`` AND an OWNER ``decisions/`` order
+  artifact is named with ``--enforce-order``; the default stays ``none``, so a
+  default enforce invocation still refuses.
+- ENFORCE MODE SHIPS DISABLED. It is unreachable unless ALL of: a SHA-256-bound
   ``status: OWNER_SIGNED`` policy is bound (the same policy the evaluator
-  consumes) AND a separate OWNER enforce-activation artifact is present and
-  bound to that exact policy hash. No such activation artifact exists today, so
-  every code path fails closed to a dry-run plan.
+  consumes); a separate OWNER enforce-activation artifact is present and bound
+  to that exact policy hash; an OWNER ``decisions/`` order artifact carrying the
+  literal line ``GOVERNOR-ENFORCE: ACTIVATE DXZ <date>`` is named on the CLI;
+  and an executor is explicitly selected. None of those exist in production, so
+  every default code path fails closed to a dry-run plan.
 - Dry-run is the default. It produces receipts only; it never touches the
   executor or the live account, and it writes receipt files only to a
   caller-supplied ``--out`` directory (or, with the explicit
@@ -44,6 +51,7 @@ import datetime as dt
 import hashlib
 import json
 import os
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -66,9 +74,15 @@ ACTIVATION_ENV = "QM_ACCOUNT_GOVERNOR_ENFORCE_ACTIVATION"
 ACTIVATION_SHA_ENV = "QM_ACCOUNT_GOVERNOR_ENFORCE_ACTIVATION_SHA256"
 
 # Account-wide pre-trade entry-freeze signal target. Named constant only: the
-# adapter never writes it directly. In enforce mode the injected ROT executor
-# writes it; no production executor exists. Mirrors the terminal-local halt-dir
-# convention of ``live_book_dd_guard.py``:53-55.
+# adapter never writes it directly.
+#
+# G7 DEFECT, still open (cutover package 2026-09-13 §4): NO deployed binary
+# polls this name. ``QM_KillSwitch.mqh``:495-499 knows only
+# ``QM\halt\<ea_id>.halt`` and ``QM\halt\portfolio_dd.signal``. This path is
+# therefore INERT and is carried in the instruction as advisory metadata only;
+# ``account_governor_halt_executor`` deliberately ignores it and drives the
+# per-sleeve ``<ea_id>.halt`` channel instead. Do not treat it as a live
+# channel until an EA rebuild adds a reader for it.
 DEFAULT_ENTRY_FREEZE_SIGNAL = Path(
     r"C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/halt/account_entry_freeze.signal"
 )
@@ -90,6 +104,21 @@ DEFAULT_ACCOUNT_LOGIN = 4000090541
 
 MODE_DRY_RUN = "dry_run"
 MODE_ENFORCE = "enforce"
+
+# Third enforce gate (2026-09-13): besides the SHA-256-bound OWNER policy and the
+# schema-bound activation JSON, the CLI demands an explicit ``decisions/`` order
+# artifact carrying a literal OWNER line. Same parsing discipline as
+# ``book_build_guard.py``:36-39/:173-199 (name pattern + exact line + not
+# future-dated), so an activation cannot be produced by editing JSON alone.
+ENFORCE_ORDER_NAME = re.compile(
+    r"^(?P<date>\d{4}-\d{2}-\d{2})_owner_governor_enforce_(?P<venue>dxz|ftmo)\.md$"
+)
+ENFORCE_ORDER_LINE = "GOVERNOR-ENFORCE: ACTIVATE {venue} {date}"
+
+# Executor selection. "none" is the default and preserves the shipped-DISABLED
+# behaviour (``no_execution_adapter_present``).
+EXECUTOR_NONE = "none"
+EXECUTOR_HALT_FILE = "halt-file"
 
 
 @dataclass(frozen=True)
@@ -262,6 +291,44 @@ def resolve_activation(
     return grant, None
 
 
+def resolve_enforce_order(
+    path: Path | None, *, venue: str, today: dt.date
+) -> tuple[Path | None, str | None]:
+    """Validate the explicit OWNER ``decisions/`` enforce-activation order.
+
+    Returns ``(path, None)`` when the artifact exists, is named
+    ``<date>_owner_governor_enforce_<venue>.md``, is not future-dated and
+    contains the exact line ``GOVERNOR-ENFORCE: ACTIVATE <VENUE> <date>``;
+    otherwise ``(None, reason)``. No globbing: the operator names the file, so
+    an old order cannot be picked up by accident.
+    """
+    if path is None:
+        return None, "enforce_order_artifact_absent"
+    resolved = Path(path).resolve()
+    match = ENFORCE_ORDER_NAME.fullmatch(resolved.name)
+    if match is None:
+        return None, f"enforce_order_name_invalid:{resolved.name}"
+    if match.group("venue") != venue:
+        return None, (
+            f"enforce_order_wrong_venue:requested={venue}:artifact={match.group('venue')}"
+        )
+    raw_date = match.group("date")
+    try:
+        artifact_date = dt.date.fromisoformat(raw_date)
+    except ValueError:
+        return None, f"enforce_order_invalid_date:{resolved}"
+    if artifact_date > today:
+        return None, f"enforce_order_future_dated:{resolved}:{raw_date}"
+    expected = ENFORCE_ORDER_LINE.format(venue=venue.upper(), date=raw_date)
+    try:
+        lines = resolved.read_text(encoding="utf-8-sig").splitlines()
+    except (OSError, UnicodeError) as exc:
+        return None, f"enforce_order_unreadable:{resolved}:{exc!r}"
+    if expected not in (line.strip() for line in lines):
+        return None, f"enforce_order_line_missing:{resolved}:expected={expected!r}"
+    return resolved, None
+
+
 def run_adapter(
     decision: dict[str, Any],
     *,
@@ -270,6 +337,7 @@ def run_adapter(
     activation_grant: ActivationGrant | None = None,
     activation_reason: str | None = None,
     executor: AccountActionExecutor | None = None,
+    executor_absent_reason: str | None = None,
     max_decision_age_seconds: float = DEFAULT_MAX_DECISION_AGE_SECONDS,
     entry_freeze_signal_path: Path = DEFAULT_ENTRY_FREEZE_SIGNAL,
 ) -> dict[str, Any]:
@@ -303,19 +371,28 @@ def run_adapter(
             refusal_reason = activation_reason or "enforce_activation_artifact_absent"
         elif executor is None:
             outcome = "ENFORCE_REFUSED"
-            refusal_reason = "no_execution_adapter_present"
+            refusal_reason = executor_absent_reason or "no_execution_adapter_present"
         elif freshness["stale"]:
             outcome = "ENFORCE_REFUSED"
             refusal_reason = "input_stale:" + ",".join(freshness["reasons"])
         else:
             applied = executor.apply(dict(instruction))
             actions_executed = [applied]
-            executed = True
-            outcome = (
-                "ENFORCE_APPLIED_IDEMPOTENT_NOOP"
-                if applied.get("idempotent_skip")
-                else "ENFORCE_APPLIED"
-            )
+            if applied.get("refused"):
+                # The executor may know the channel cannot express this level
+                # (e.g. the halt channel cannot do an entry freeze without a
+                # flatten). That is a refusal, not an execution.
+                outcome = "ENFORCE_REFUSED_BY_EXECUTOR"
+                refusal_reason = str(
+                    applied.get("refusal_reason") or "executor_refused_without_reason"
+                )
+            else:
+                executed = True
+                outcome = (
+                    "ENFORCE_APPLIED_IDEMPOTENT_NOOP"
+                    if applied.get("idempotent_skip")
+                    else "ENFORCE_APPLIED"
+                )
 
     return {
         "schema": ADAPTER_SCHEMA,
@@ -482,6 +559,35 @@ def _parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Request enforce mode; refused unless OWNER activation is bound (ships disabled).",
     )
+    parser.add_argument(
+        "--executor",
+        choices=[EXECUTOR_NONE, EXECUTOR_HALT_FILE],
+        default=EXECUTOR_NONE,
+        help="Enforcement executor. Default 'none' keeps the adapter DISABLED.",
+    )
+    parser.add_argument(
+        "--enforce-order",
+        type=Path,
+        help=(
+            "OWNER decisions/ artifact <date>_owner_governor_enforce_<venue>.md "
+            "containing the exact line 'GOVERNOR-ENFORCE: ACTIVATE DXZ <date>'."
+        ),
+    )
+    parser.add_argument("--enforce-venue", default="dxz", choices=["dxz", "ftmo"])
+    parser.add_argument("--halt-manifest", type=Path, help="Live portfolio manifest JSON.")
+    parser.add_argument(
+        "--halt-dir", type=Path, action="append", help="Halt directory (repeatable)."
+    )
+    parser.add_argument("--halt-receipt-dir", type=Path)
+    parser.add_argument("--halt-book", default=None)
+    parser.add_argument(
+        "--allow-l2-flatten-overaction",
+        action="store_true",
+        help=(
+            "Authorize level-2 enforcement even though the halt channel also "
+            "flattens open positions (the channel has no entry-freeze-only mode)."
+        ),
+    )
     parser.add_argument("--now-utc")
     parser.add_argument(
         "--dry-run",
@@ -527,11 +633,49 @@ def main(argv: list[str] | None = None) -> int:
             policy=policy,
         )
 
-    # PRODUCTION SAFETY: the CLI never wires a live order executor. Enforce mode
-    # therefore always refuses at latest at "no_execution_adapter_present" even
-    # if an activation artifact were present. A live executor is a separate ROT
-    # component (contract:125) injected only through run_adapter().
+    # PRODUCTION SAFETY: the CLI wires an executor only when ALL of the
+    # following hold, and defaults to none otherwise:
+    #   (a) a SHA-256-bound OWNER_SIGNED policy (checked in resolve_activation),
+    #   (b) the schema-bound enforce-activation JSON (idem),
+    #   (c) an explicit OWNER decisions/ order artifact (--enforce-order), and
+    #   (d) an explicitly selected executor (--executor halt-file).
+    # Anything missing -> executor stays None -> ENFORCE_REFUSED with the exact
+    # reason. Default invocation therefore still ships DISABLED.
     executor: AccountActionExecutor | None = None
+    executor_absent_reason: str | None = None
+    if mode == MODE_ENFORCE:
+        if args.executor == EXECUTOR_NONE:
+            executor_absent_reason = "no_execution_adapter_present:executor_not_selected"
+        else:
+            order_path, order_reason = resolve_enforce_order(
+                args.enforce_order, venue=args.enforce_venue, today=now_utc.date()
+            )
+            if order_path is None:
+                executor_absent_reason = str(order_reason)
+            else:
+                try:
+                    try:  # package import preferred; bare fallback for CLI use
+                        from tools.strategy_farm import (  # noqa: PLC0415
+                            account_governor_halt_executor as halt_executor,
+                        )
+                    except ImportError:  # pragma: no cover - standalone script path
+                        import account_governor_halt_executor as halt_executor  # type: ignore[no-redef]  # noqa: PLC0415
+
+                    kwargs: dict[str, Any] = {
+                        "l2_over_action_authorized": bool(args.allow_l2_flatten_overaction),
+                    }
+                    if args.halt_manifest is not None:
+                        kwargs["manifest_path"] = args.halt_manifest
+                    if args.halt_dir:
+                        kwargs["halt_dirs"] = tuple(args.halt_dir)
+                    if args.halt_receipt_dir is not None:
+                        kwargs["receipt_dir"] = args.halt_receipt_dir
+                    if args.halt_book is not None:
+                        kwargs["book"] = args.halt_book
+                    executor = halt_executor.build_executor(**kwargs)
+                except Exception as exc:  # noqa: BLE001 - structured refusal, no traceback
+                    executor = None
+                    executor_absent_reason = f"executor_unavailable:{type(exc).__name__}:{exc}"
 
     receipt = run_adapter(
         decision,
@@ -540,6 +684,7 @@ def main(argv: list[str] | None = None) -> int:
         activation_grant=activation_grant,
         activation_reason=activation_reason,
         executor=executor,
+        executor_absent_reason=executor_absent_reason,
         max_decision_age_seconds=args.max_decision_age_seconds,
         entry_freeze_signal_path=Path(args.entry_freeze_signal),
     )
@@ -548,7 +693,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     receipt = dict(receipt, receipt_path=str(written) if written else None)
     print(json.dumps(receipt, indent=2, sort_keys=True))
-    if mode == MODE_ENFORCE and receipt["outcome"] == "ENFORCE_REFUSED":
+    if mode == MODE_ENFORCE and receipt["outcome"] in (
+        "ENFORCE_REFUSED",
+        "ENFORCE_REFUSED_BY_EXECUTOR",
+    ):
         return 3
     return 0
 
