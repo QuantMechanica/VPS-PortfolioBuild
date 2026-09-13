@@ -61,8 +61,10 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: NOT_BUILT
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q01_compile_work_item: b6ccc50f-af38-4f28-b0b9-76ec087b87eb
+q01_build_report: D:/QM/reports/work_items/b6ccc50f-af38-4f28-b0b9-76ec087b87eb/QM5_41466/COMPILE_EA/compile_evidence.json
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify a WTI June-October lower-tercile weekly-close reversion distinct from the certified XNG oscillator, summer lower-tercile continuation, upper-tercile summer fade, winter lower-tercile fade, and two-week range/body variants. Verify exact completed week, strict CLV inequality, no range/body predicate, long-only side, durable attempt, fixed risk, frozen stop, and next-week exit. The new WTI seasonal-reversal driver is the intended diversification axis; Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -240,8 +242,8 @@ side, lifecycle, or risk to rescue a failure.
 | Phase | Status | Evidence |
 |---|---|---|
 | Q00/G0 | APPROVED | This card and G0 decision. |
-| Q01 | NOT_BUILT | Pending branch-only build. |
-| Q02 | NOT_ENQUEUED | Only after Q01 PASS and CPU admission. |
+| Q01 | PASS | Compile `b6ccc50f-af38-4f28-b0b9-76ec087b87eb`; `COMPILE_OK`; 0 errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits. |
+| Q02 | NOT_ENQUEUED_CPU_CEILING | Read-only intake eligible; apply failed closed on governed-backup timeout; subsequent CPU maximum 98.6% against 97.0% ceiling; no Q02 row. |
 
 ## Safety Boundary
 

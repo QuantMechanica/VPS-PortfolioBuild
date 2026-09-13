@@ -95,3 +95,5 @@ authorized.
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-13 | Initial governed build from approved card |
+| v1-q01 | 2026-09-13 | PACER audit and 10 reference tests PASS; governed compile and strict build check PASS |
+| v1-q02-stop | 2026-09-13 | Q02 intake eligible, but no row enqueued after backup timeout and binding 98.6% CPU-ceiling hit |

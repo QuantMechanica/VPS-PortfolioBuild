@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "b6ccc50f-af38-4f28-b0b9-76ec087b87eb"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260913T031113_171552Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260913T031037Z_0f9d4b19.sqlite",
+    "reused": false,
+    "sha256": "1de8a21d95fcd337c2db54ac86a22fcd354afe461f05b6dbdc600c96d66c9af7"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "d6fcf407682de3a130e5f189cbbd025bf447c57cb5e9b71ccd019a10f00d55f7",
+      "ea_id": "QM5_41466",
+      "ea_label": "QM5_41466_wti-summer-lclv-fade",
+      "expected_mq5_sha256": "d6fcf407682de3a130e5f189cbbd025bf447c57cb5e9b71ccd019a10f00d55f7",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41466_wti-summer-lclv-fade\\QM5_41466_wti-summer-lclv-fade.mq5",
+      "work_item_id": "b6ccc50f-af38-4f28-b0b9-76ec087b87eb"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-13T03:11:13+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "b6ccc50f-af38-4f28-b0b9-76ec087b87eb",
+  "work_item_id_selectors": [
+    "b6ccc50f-af38-4f28-b0b9-76ec087b87eb"
+  ]
+}
