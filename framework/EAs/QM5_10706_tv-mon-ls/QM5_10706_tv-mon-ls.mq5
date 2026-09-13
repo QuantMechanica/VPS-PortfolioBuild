@@ -323,16 +323,37 @@ void Strategy_ManageOpenPosition()
    const double lock   = BeLockFrac * g_be_risk;
    const double new_sl = QM_TM_NormalizePrice(_Symbol, is_buy ? (g_be_entry + lock) : (g_be_entry - lock));
    const double point  = SymbolInfoDouble(_Symbol, SYMBOL_POINT);
-   const bool   improves = is_buy ? (new_sl > sl + point * 0.5)
-                                  : (sl <= 0.0 || new_sl < sl - point * 0.5);
+
+   // INVARIANT (2026-09-13 fix — live incident ticket 3169417771, 2026-07-29):
+   // a break-even-lock stop is only a VALID request if it sits on the correct
+   // side of the live market by at least the broker stop distance. This lock
+   // arms on the TIME branch (bars_open >= BeBars) as well as the profit
+   // branch, and the time branch can fire while price has NOT advanced past
+   // entry+lock. In that state new_sl (= entry + 0.1R, only just above entry
+   // for a long) is at/below the bid, so the server rejects it as [Invalid
+   // stops] (retcode 10016). The old test compared new_sl only against the
+   // current SL (still the initial protective stop far below), which was
+   // trivially "improving" and TRUE — so the doomed modify was sent every tick
+   // (36,098 rejections over ~6h until the bid finally rose above the lock and
+   // the modify succeeded). The profit branch (r_now >= 1.5R) never hits this
+   // because 1.5R >> 0.1R keeps new_sl safely below market; only the time
+   // branch needs the market-side guard.
+   const long   stops_lvl = SymbolInfoInteger(_Symbol, SYMBOL_TRADE_STOPS_LEVEL);
+   const double min_dist  = (stops_lvl > 0) ? (double)stops_lvl * point : 0.0;
+   const bool   side_ok   = is_buy ? (new_sl < market - min_dist)
+                                   : (new_sl > market + min_dist);
+   const bool   improves  = side_ok && (is_buy ? (new_sl > sl + point * 0.5)
+                                               : (sl <= 0.0 || new_sl < sl - point * 0.5));
 
    if(improves)
      {
       if(QM_TM_MoveSL(ticket, new_sl, "MON_SWEEP_BE_LOCK"))
          g_be_done = true;
      }
-   else
-      g_be_done = true; // stop already at/beyond the BE lock
+   else if(side_ok)
+      g_be_done = true; // stop already at/beyond the BE lock, on a valid side
+   // else: time-armed but price has not yet cleared the lock — wait for a later
+   // tick rather than hammering the broker with an invalid stop.
   }
 
 // Exits are handled by SL/TP, the breakeven lock, and the framework Friday

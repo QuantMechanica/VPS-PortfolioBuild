@@ -4494,3 +4494,22 @@ call site) and `ebffd42074` (2026-08-22, per-ticket exponential backoff 30s*2^n 
 No live recompile performed (OWNER-gated, per hard rule). Fleet scan of all 24 configured
 live EA logs: 0 other sleeves show a TM_MODIFY ok:false series (QM5_10706 is fleet-isolated).
 Evidence: docs/ops/evidence/2026-09-13_10706_be_lock_modify_storm.md.
+
+## 2026-09-13T21:25Z — CORRECTION/RESULT: QM5_10706 BE-lock storm (9f0923ef) — true root cause + EA source fix
+
+RESULT: REVIEW (correcting the 21:15Z line above). Log grep proves the storm was 36,099
+BYTE-IDENTICAL new_sl:1.33010000 lines (not a drifting target) and 1.33010 is already a
+valid normalized 5-digit price (not a rounding defect) — so the earlier "unnormalized
+price"/"drifting-target-dodges-suppression" attributions are refuted by evidence. TRUE
+root cause: the BE lock armed on its TIME branch (bars_open >= BeBars=24, first storm line
+= exactly 24 H1 bars after the 2026-07-28 BUY entry @1.32985) while price had not reached
+1.5R, so new_sl=entry+0.1R=1.33010 sat at/above the live Bid for a long = wrong side of
+market = INVALID_STOPS(10016); the improves gate only compared new_sl to the stale initial
+SL, never to the market, so it re-sent every tick for ~6h until Bid rose above the lock and
+the modify succeeded (2026-07-29T19:00:58Z, ok:true). Fix: EA source patch to
+framework/EAs/QM5_10706_tv-mon-ls/QM5_10706_tv-mon-ls.mq5 adds a side_ok invariant (stop
+must sit on the correct side of market by >= SYMBOL_TRADE_STOPS_LEVEL before it can arm/send;
+zero P&L impact, modify still lands the instant price clears the lock). NO recompile
+(OWNER-gated). Framework backoff (ebffd42074) confirmed sufficient and target-independent;
+test_tm_modify_backoff.py 5 passed. Fleet scan: 0 other live sleeves show a TM_MODIFY
+ok:false series. Evidence + full addendum: docs/ops/evidence/2026-09-13_10706_be_lock_modify_storm.md.
