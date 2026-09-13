@@ -128,6 +128,14 @@ Verified one minted successor (`8eea2250-4958-5f1c-9a6b-0670091dcc17`) carries
 `from_date=2026.01.01 to_date=2026.04.06 window_from_utc=2026-01-01T00:00:00Z
 window_to_utc=2026-04-06T23:59:59Z`.
 
+**Cross-reference:** task `49a8c88b` (DEC E4: "apply the OOS-2026 window repair once
+the calendar backfill covers 2026-01..04") is the same apply as task `1721f3a1` above --
+its own payload states "Task 1721f3a1 stays the execution record." This one apply
+(commit `1cfddecd5c`, receipt `repair_receipt.json`) satisfies both tickets' shared
+acceptance item ("apply receipt; first successor tester.ini shows 2026.01.01-2026.04.06").
+`49a8c88b`'s remaining acceptance item ("Codex verification note") is outside claude's
+capability -- routed to Codex as a follow-on, not fabricated here.
+
 **Acceptance gap (documented, not a defect of this apply):** "first successor
 run's tester.ini shows the 2026 window" cannot be observed yet — every patched/
 minted row still carries `phase=Q09_NEWS`, and the active NEWS runner binds only
