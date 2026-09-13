@@ -104,3 +104,19 @@ yet, and 15 of the 17 excluded holds remain correctly held (14 `NON_USD_EXPOSURE
 outside the OWNER-approved B-prime USD-only boundary; the 6 `SEALED_Q10_WINDOW_UNAVAILABLE`
 plus the 7 `NEWS_RUNNER_SPAWN_SILENT_ABORT`-blocked rows need their own separate fixes,
 not a calendar action). No `update-task` call made.
+
+## Reverification addendum (blocker facts unchanged)
+
+Re-checked programmatically against `blast_radius.csv`
+(sha256 `85ce60dc0ef6fd3b3a3cd4668af709b3d7e7f46c27971ee475f8314edf6c65cd`, unchanged):
+of the 34 `Q10`/`Q14` `PASS` rows, **0/34** now have a matching `Q09_NEWS` `PASS`
+work_item for the same `(ea_id, symbol)` — the predecessor gap from the first
+`77fba37891` measurement is identical, no drift. The secondary blocker (E1 full-scope
+calendar seal) is also unchanged: the last repin attempt (E1-D3/D4, 2026-09-07) remains
+`ingress REFUSED`; no successor E1 attempt has landed since. Both blockers are upstream
+of this ticket's own `allowed_actions` and require separate work (Q09_NEWS pipeline
+throughput / lane migration, and the calendar data-completeness gates) before this
+ticket can mint any reruns. No holds released this pass (the two release-eligible ones
+were already cleared 2026-09-12); no reruns minted; `update-task` not called — task
+stays `IN_PROGRESS` per the router's own re-check cadence, consistent with the prior
+cycle's disposition.
