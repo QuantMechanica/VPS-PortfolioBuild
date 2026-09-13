@@ -4175,3 +4175,14 @@ archive and quiet-window VACUUM. Production plan-only receipt
 keeps 8 and proposes 12 unreferenced deletes; no apply occurred. Focused tests:
 18 passed. Evidence:
 `docs/ops/evidence/2026-09-13_state_db_growth_and_retention.md`.
+## 2026-09-13 — Q-PRESCREEN live-path repair RESULT (519c11fe)
+
+RESULT: REVIEW — the activated QM5_41405 program contains 350 original
+Model-1/PRESCREEN cells plus 2 append-only reruns; 5 ordinary claims reached
+T2/T4/T5/T7, but 3 post-schema attempts were falsely rejected because the
+common smoke runner required a Model-4 marker from Model 1. The gate now
+bypasses that marker only for the exact `Model=1/PRESCREEN` pair while retaining
+it for `Model=4/REAL_TICKS`; 107 focused tests and PowerShell AST pass. Zero
+PRESCREEN rows are `MEASURED`; 347 pending cells remain with the scheduled
+fleet, and no manual enqueue/reload/terminal action occurred. Evidence:
+`docs/ops/evidence/2026-09-13_prescreen_model_marker_gate_repair.md`.

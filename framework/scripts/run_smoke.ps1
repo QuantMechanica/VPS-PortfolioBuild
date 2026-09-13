@@ -77,9 +77,11 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-if (($Model -eq 1) -ne ($EvidenceClass -ceq "PRESCREEN")) {
+if (-not (($Model -eq 1 -and $EvidenceClass -ceq "PRESCREEN") -or
+          ($Model -eq 4 -and $EvidenceClass -ceq "REAL_TICKS"))) {
     throw "Model/EvidenceClass mismatch: PRESCREEN requires Model=1 and REAL_TICKS requires Model=4"
 }
+$requiresRealTicksMarker = $EvidenceClass -ceq "REAL_TICKS"
 
 $patternWarmupEvidencePath = Join-Path $PSScriptRoot 'pattern_warmup_evidence.ps1'
 if (-not (Test-Path -LiteralPath $patternWarmupEvidencePath -PathType Leaf)) {
@@ -3609,7 +3611,12 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         $hasRealTicksMarker = Test-ReportShowsRealTicks -Html $reportHtml
     }
 
-    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $hasRealTicksMarker -ReportTotalTrades $totalTrades
+    # A real-tick generation marker is evidence for Model 4 and is impossible
+    # by construction for the governed Model-1 PRESCREEN class.  Preserve the
+    # strict marker gate for REAL_TICKS while allowing a valid Model-1 report
+    # to reach the dedicated PRESCREEN_MEASURED taxonomy.
+    $requiredModelMarkerPassed = (-not $requiresRealTicksMarker) -or $hasRealTicksMarker
+    $invalidReasons = Get-ReportInvalidReasons -Html $reportHtml -TesterLogTail $testerLogTail -ExpectedSymbol $Symbol -ExpectedFromDate $fromDate -ExpectedToDate $toDate -HasRealTicksMarker $requiredModelMarkerPassed -ReportTotalTrades $totalTrades
     $invalidVerdict = Resolve-InvalidReportVerdict -InvalidReasons $invalidReasons
     if ($invalidVerdict) {
         $reasonClasses.Add($invalidVerdict)
@@ -3652,7 +3659,9 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
     }
     if (-not $hasRealTicksMarker) {
         $globalRealTicksMarker = $false
-        $reasonClasses.Add("NO_REAL_TICKS_MARKER")
+        if ($requiresRealTicksMarker) {
+            $reasonClasses.Add("NO_REAL_TICKS_MARKER")
+        }
     }
 
     $runResults += [pscustomobject]@{
@@ -3665,6 +3674,8 @@ for ($i = 1; $i -le $maxRunAttempts; $i++) {
         tester_log_path = $testerLogPath
         oninit_failure = $onInitFailure
         real_ticks_marker = $hasRealTicksMarker
+        model_marker_required = $requiresRealTicksMarker
+        model_marker_passed = $requiredModelMarkerPassed
         total_trades = $totalTrades
         total_trades_raw = $totalTradesRaw
         profit_factor = $profitFactor
@@ -3790,8 +3801,8 @@ if (-not $artifactIdentityStable) {
     $reasonClasses.Add("EXECUTION_IDENTITY_DRIFT")
 }
 
-$realTicksGatePassed = $globalRealTicksMarker -or $AllowMissingRealTicksLogMarker.IsPresent
-if (-not $realTicksGatePassed -and -not $AllowMissingRealTicksLogMarker.IsPresent) {
+$realTicksGatePassed = (-not $requiresRealTicksMarker) -or $globalRealTicksMarker -or $AllowMissingRealTicksLogMarker.IsPresent
+if ($requiresRealTicksMarker -and -not $realTicksGatePassed -and -not $AllowMissingRealTicksLogMarker.IsPresent) {
     $reasonClasses.Add("MODEL4_MARKER_REQUIRED")
 }
 

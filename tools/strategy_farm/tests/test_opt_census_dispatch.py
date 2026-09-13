@@ -615,6 +615,9 @@ def test_run_smoke_binds_prescreen_class_to_model_one() -> None:
     assert '[ValidateSet("REAL_TICKS", "PRESCREEN")]' in text
     assert 'evidence_class = $EvidenceClass' in text
     assert 'PRESCREEN requires Model=1' in text
+    assert '$requiresRealTicksMarker = $EvidenceClass -ceq "REAL_TICKS"' in text
+    assert '$requiredModelMarkerPassed = (-not $requiresRealTicksMarker) -or $hasRealTicksMarker' in text
+    assert '$realTicksGatePassed = (-not $requiresRealTicksMarker)' in text
 
 
 def test_measured_is_a_canonical_terminal_verdict() -> None:
