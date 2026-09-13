@@ -4432,3 +4432,52 @@ farmctl mark-priority-track (set_priority_track cannot mark basket rows: registr
 Defect repaired: framework/registry/owner_priority_tracks.json failed to load entirely (two entries with commit_sha null)
 so every OWNER priority entry was inert; now 29 entries load. The old ids and their live binaries stay untouched; the
 rebuilt identities re-enter the chain from Q02 and can join the book after Q14 (next cutover window).
+
+## 2026-09-13 19:49Z — OWNER order "Alle Punkte bis auf 4 umsetzen; den Exit-Schritt mit Evidenz beweisen" — RESULT
+Context: OWNER asked whether trade management (trailing stops) adds value and for other improvement ideas; the
+assessment listed seven points and one exit step. OWNER ordered all points except 4 (RAM upgrade, OWNER cost
+decision) and demanded evidence for the exit step. Five packages ran in parallel; all delivered and committed.
+- EXIT STEP (proved): Exit-Surgery Scan v2 over the 30-sleeve book-v2 roster (cd341a4706;
+  docs/research/exit_surgery_v2/EXIT_SURGERY_SCAN_V2_2026-09-13.md + sleeve_summary.csv, hold_buckets.csv,
+  mae_winners.csv, manifest.json). Verdicts HIGH 10 / WEAK 1 / NO_CASE 8 / NO_DATA 11. Only ONE Tier-A
+  (time-amputation) signature: QM5_13013/NDX (<1h bucket 26/70 trades, WR 0 %, net -7136, 92 % TIME_MGMT exits;
+  4-12h bucket WR 95 %, net +10531). The other report-backed HIGH sleeves are SL-dominated early losers = the
+  Tier-B pattern rejected on 2026-07-06. MFE is not captured in any stream, so trailing/giveback stays an
+  evidence gap (needs an MFE hook at natural rebuilds). Ticket 44e0209e (Codex sol, prio 66): 13013 Q14 lever
+  card + variant as NEW identity, no live recompile.
+- POINT 1 (dark sleeves): staging C:/QM/deploy/DXZ_V2_20260913/repair_v2/ for 12969 -> 41470 (ex5 sha
+  ef34638d…, preset sha 2060856175…, param_diff no_strategy_parameter_reset=true, manifest_delta with proof
+  citation, copy_plan_repair_v2 dry-run exit 0 validated_items=2 written_items=0, ANLEITUNG_REPAIR_V2.md);
+  evidence docs/ops/evidence/2026-09-13_dxz_book_v2/REPAIR_V2_41470_STAGING.md. Blocked until OWNER receipt on
+  the identity-equivalence decision + cutover order + freeze lift. 41471/41472 wait for Q02 rows + proofs.
+- POINT 2 (orthogonal sources): Edge-Lab tickets pinned to Codex (budget line applies): 6c1064c4 EDGE-4 WTI->USDCAD
+  (prio 62), 22d74470 EDGE-5 weekend gap (60), 0ad6b080 EDGE-2 index event range (55); unpinned duplicates
+  169586d4/3e5f17b1/18a4b282 BLOCKED. Generic research stays frozen (WS-1); these are directed hypotheses of the
+  sealed program.
+- POINT 3 (live execution quality): e009499524 tools/strategy_farm/portfolio/tlive_journal_execution_quality.py,
+  evidence docs/ops/evidence/2026-09-13_tlive_execution_quality/ (fills/orders/rejections/by_symbol/by_sleeve).
+  248 deals since 04-24, 70 slippage-measurable (pending stops). Only USDJPY powered: n=30, mean 7.6 pts, median
+  1, p95 77, 178 ms; 13213 mean move 271 pts -> ~3 % entry drag, not material. XAUUSD n=4 mean 298 pts p95 920
+  (UNDERPOWERED, watch). Money drag needs an OWNER-sourced tick-value table (--tick-value-json).
+  LIVE DEFECT found: QM5_10706/GBPUSD 36,098 failed TM_MODIFY MON_SWEEP_BE_LOCK retcode 10016 on one position
+  (2026-07-29, per tick, no backoff), 4 successes ever -> ticket 9f0923ef (Codex sol, prio 80, source repair only).
+- POINT 5 (PRESCREEN ticket 24df7ddd): root cause = run_smoke scanned the FULL shared daily tester journal for
+  "generating based on real ticks" and inherited markers of earlier Model=4 cells. Fix c2e7bfe8f2 scopes the scan
+  to the current run (REAL_TICKS keeps the legacy fallback, PRESCREEN fails closed); tests 2 new + 50 census.
+  First-claim proof: cell 88328353 released, T6 19:31-19:33Z -> PRESCREEN_MEASURED (taxonomy
+  prescreen_measurement). Ticket closed APPROVED; remaining 344 holds released detached (~3/min, journal
+  docs/ops/evidence/2026-09-13_prescreen_hold_release_journal.jsonl).
+- POINT 6 (identity equivalence): 967ed4fae4 tools/strategy_farm/identity_equivalence_proof.py (prove/verify,
+  lot-normalised tolerances), evidence docs/ops/evidence/2026-09-13_identity_equivalence/README.md, decision
+  decisions/2026-09-13_identity_equivalence_proof_rebuilds.md (PROPOSED). Results: 12969->41470
+  EQUIVALENT_LOT_NORMALISED (all deals field-exact, volume ratio 0.988-0.992 = JPY tick value read at run date),
+  13054->41473 EQUIVALENT_EXACT, 21505->41474 NOT_EQUIVALENT (identical until 2019-12-23, then divergent: framework
+  drift Aug->Sep, not the symbol patch) -> 41474 inherits nothing and runs its full chain.
+- POINT 7 (symbol-literal debt at natural rebuild): d0433c1c1d build_check.ps1 gate
+  EA_SYMBOL_LITERAL_REBUILD_REQUIRES_FIX (lint per EA on every factory compile; rollback
+  QM_SYMBOL_LITERAL_REBUILD_GATE=0); five pending-first-compile EAs 41113/41123/41142/41179/41189 made
+  input-driven (lint 14 -> 0). 838 legacy EAs untouched. Watch: their pending COMPILE_EA rows carry the old
+  mq5_sha256 pin; verify at the next compile wave that they compile fresh rather than refuse.
+OWNER actions: JA on OWNER-DEC-IDENTITY-EQUIVALENCE (decision above) if the inheritance rule is wanted; the
+book-v2 cutover receipts from 17:55Z remain open. Costs: ~1.3 M subagent tokens, 0 factory hours (all
+measurements offline), one PRESCREEN cell (2 min T6).
