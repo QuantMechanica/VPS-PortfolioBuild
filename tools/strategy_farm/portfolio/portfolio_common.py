@@ -55,6 +55,7 @@ class Trade:
     entry_time: int | None = None
     mae_acct: float | None = None
     side: str | None = None
+    mfe_acct: float | None = None
 
 
 class FrozenStreamValidationError(ValueError):
@@ -576,6 +577,8 @@ def _load_one_stream(
             entry_time_value = None if entry_time is None else int(entry_time)
             mae_acct = row.get("mae_acct")
             mae_acct_value = None if mae_acct is None else float(mae_acct)
+            mfe_acct = row.get("mfe_acct")
+            mfe_acct_value = None if mfe_acct is None else float(mfe_acct)
             side = row.get("side")
             side_value = str(side) if side is not None else None
             cost = model.cost_round_trip(trade_symbol, volume, notional_value)
@@ -586,6 +589,7 @@ def _load_one_stream(
                     time=int(row["time"]),
                     entry_time=entry_time_value,
                     mae_acct=mae_acct_value,
+                    mfe_acct=mfe_acct_value,
                     side=side_value,
                     net=net,
                     volume=volume,

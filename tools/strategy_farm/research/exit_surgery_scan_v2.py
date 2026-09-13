@@ -117,6 +117,7 @@ class Trade:
     net: float
     mae_acct: float
     hold_h: float
+    mfe_acct: float = 0.0   # best floating profit; absent in pre-2026-09-13 streams -> 0.0
 
 
 def stream_filename(ea_id: int, symbol: str) -> str:
@@ -152,6 +153,7 @@ def load_trades(path: Path) -> list[Trade]:
                     net=float(rec.get("net", 0.0)),
                     mae_acct=float(rec.get("mae_acct", 0.0)),
                     hold_h=hold_h,
+                    mfe_acct=float(rec.get("mfe_acct", 0.0)),
                 )
             )
     # deterministic chronological order (exit time, then entry time)
@@ -305,6 +307,14 @@ class SleeveResult:
     stop_binding: bool
     verdict: str
     reason: str
+    # Symmetric MFE / giveback summary (2026-09-13). Defaulted so the NO_STREAM row and any
+    # other construction site remain valid; score_sleeve fills them from mfe_giveback().
+    n_winners_mfe: int = 0
+    mfe_winner_med: float = float("nan")
+    giveback_med: float = float("nan")
+    giveback_p75: float = float("nan")
+    giveback_p90: float = float("nan")
+    giveback_mean: float = float("nan")
 
 
 def bucketize(trades: list[Trade], bucket_set: str) -> list[BucketStat]:
@@ -342,6 +352,39 @@ def mae_tier_b(trades: list[Trade]) -> tuple[float, int, float, float, float, fl
     return (anchor, nw, med, p75, p90, s5, s7, s9, s5 >= STOP_BINDING_SHARE)
 
 
+def mfe_giveback(trades: list[Trade]) -> tuple[int, float, float, float, float, float]:
+    """Symmetric MFE summary to :func:`mae_tier_b`: how much of the peak favourable
+    excursion winners give back before the exit fills.
+
+    For every winner (net > 0) carrying a positive tracked MFE, the giveback ratio is
+    ``(mfe_acct - max(net, 0)) / mfe_acct`` in ``[0, 1)``: 0 means the trade exited at its
+    peak, 0.5 means half the peak open profit was surrendered before the close. A high
+    median giveback is the quantitative case that a trailing stop or earlier exit would
+    recover open profit -- the measurement that was impossible while MFE was captured
+    nowhere (Exit-Surgery Scan v2, 2026-09-13).
+
+    Returns ``(n_winners_mfe, mfe_winner_med, giveback_med, giveback_p75, giveback_p90,
+    giveback_mean)``. ``n_winners_mfe`` is 0 with all-NaN stats when no winner carries a
+    positive MFE -- e.g. a legacy stream with no ``mfe_acct`` field, where every value
+    defaults to 0.0, so the whole tool degrades cleanly on pre-capture history.
+    """
+    pairs = [(t.mfe_acct, t.net) for t in trades if t.net > 0 and t.mfe_acct > 0]
+    nan = float("nan")
+    if not pairs:
+        return (0, nan, nan, nan, nan, nan)
+    mfes = sorted(mfe for mfe, _ in pairs)
+    givebacks = sorted((mfe - max(net, 0.0)) / mfe for mfe, net in pairs)
+    nw = len(givebacks)
+    return (
+        nw,
+        percentile(mfes, 0.5),
+        percentile(givebacks, 0.5),
+        percentile(givebacks, 0.75),
+        percentile(givebacks, 0.90),
+        sum(givebacks) / nw,
+    )
+
+
 def score_sleeve(trades: list[Trade], exit_classes: list[str] | None) -> SleeveResult | dict:
     """Compute the sleeve verdict. `exit_classes` (report out-deals) may be None."""
     n = len(trades)
@@ -360,6 +403,10 @@ def score_sleeve(trades: list[Trade], exit_classes: list[str] | None) -> SleeveR
 
     # MAE tier-B (always computed where possible)
     (anchor, nw, med, p75, p90, s5, s7, s9, stop_binding) = mae_tier_b(trades)
+
+    # Symmetric MFE / giveback summary (always computed where possible; degrades to n=0/NaN
+    # on legacy streams that carry no mfe_acct field).
+    (n_win_mfe, mfe_med, gb_med, gb_p75, gb_p90, gb_mean) = mfe_giveback(trades)
 
     if n < MIN_TRADES or len(qualifying) < MIN_QUALIFYING_BUCKETS:
         verdict = "NO_DATA"
@@ -408,6 +455,8 @@ def score_sleeve(trades: list[Trade], exit_classes: list[str] | None) -> SleeveR
         mae_winner_p90=p90, mae_anchor=anchor, n_winners=nw, share_ge_0_5=s5,
         share_ge_0_7=s7, share_ge_0_9=s9, stop_binding=stop_binding,
         verdict=verdict, reason=reason,
+        n_winners_mfe=n_win_mfe, mfe_winner_med=mfe_med, giveback_med=gb_med,
+        giveback_p75=gb_p75, giveback_p90=gb_p90, giveback_mean=gb_mean,
     )
 
 
@@ -489,6 +538,7 @@ def run_scan(roster_path: Path, stream_roots: list[Path], db_path: str, out_dir:
     _write_sleeve_summary(out_dir / "sleeve_summary.csv", results)
     _write_hold_buckets(out_dir / "hold_buckets.csv", results)
     _write_mae_winners(out_dir / "mae_winners.csv", results)
+    _write_mfe_winners(out_dir / "mfe_winners.csv", results)
 
     manifest = {
         "schema": "qm.exit-surgery-scan-v2/manifest/v1",
@@ -563,6 +613,18 @@ def _write_mae_winners(path: Path, results: list[SleeveResult]) -> None:
                         _fmt(r.mae_winner_p90, 4), _fmt(r.share_ge_0_5, 4),
                         _fmt(r.share_ge_0_7, 4), _fmt(r.share_ge_0_9, 4),
                         str(r.stop_binding).lower()])
+
+
+def _write_mfe_winners(path: Path, results: list[SleeveResult]) -> None:
+    """Symmetric to _write_mae_winners: winners' MFE + giveback-ratio distribution."""
+    with open(path, "w", newline="", encoding="utf-8") as fh:
+        w = csv.writer(fh)
+        w.writerow(["ea_id", "symbol", "n_winners_mfe", "mfe_winner_med", "giveback_med",
+                    "giveback_p75", "giveback_p90", "giveback_mean"])
+        for r in results:
+            w.writerow([r.ea_id, r.symbol, r.n_winners_mfe, _fmt(r.mfe_winner_med, 4),
+                        _fmt(r.giveback_med, 4), _fmt(r.giveback_p75, 4),
+                        _fmt(r.giveback_p90, 4), _fmt(r.giveback_mean, 4)])
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

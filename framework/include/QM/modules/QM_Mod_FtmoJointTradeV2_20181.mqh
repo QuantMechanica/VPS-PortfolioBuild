@@ -419,8 +419,10 @@ bool QM_FJ_TradeV2Prepare()
         }
 
       datetime mae_entry_time = 0;
+      double mfe = 0.0;
       double mae = QM_FrameworkQ08LookupMae(rows[i].position_id,
-                                            mae_entry_time);
+                                            mae_entry_time,
+                                            mfe);
       if(mae_entry_time > 0 && mae_entry_time != rows[i].entry_time)
         {
          QM_FJ_TradeV2Block("POSITION_ENTRY_TIME_MAE_HISTORY_MISMATCH");
@@ -430,6 +432,7 @@ bool QM_FJ_TradeV2Prepare()
       const double net = QM_FJ_TradeV2Cents(rows[i].profit + rows[i].swap +
                                             rows[i].commission);
       mae = MathMin(MathMin(0.0, mae), net);
+      mfe = MathMax(MathMax(0.0, mfe), net);   // symmetric to the MAE clamp above
       const double entry_price =
          rows[i].entry_price_volume_sum / rows[i].entry_volume;
       if(!MathIsValidNumber(entry_price) || entry_price <= 0.0)
@@ -466,7 +469,7 @@ bool QM_FJ_TradeV2Prepare()
          "\"profit\":%.2f,\"swap\":%.2f,\"commission\":%.2f,"
          "\"entry_commission\":%.2f,\"exit_commission\":%.2f,\"fee\":0.00,"
          "\"net\":%.2f,\"balance_events\":[%s],"
-         "\"mae_acct\":%.2f,\"volume\":%.2f,\"notional\":%.2f}\r\n",
+         "\"mae_acct\":%.2f,\"mfe_acct\":%.2f,\"volume\":%.2f,\"notional\":%.2f}\r\n",
          QM_LoggerEscapeJson(g_qm_fj_trade_v2_run_id),
          QM_FJ_FTMO_PRODUCER_VERSION,
          rows[i].position_id,
@@ -487,6 +490,7 @@ bool QM_FJ_TradeV2Prepare()
          net,
          rows[i].balance_events,
          mae,
+         mfe,
          rows[i].exit_volume,
          notional);
       g_qm_fj_trade_v2_payload += row;

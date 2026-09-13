@@ -156,7 +156,8 @@ struct QM_PositionMaeState
   {
    ulong    position_id;
    datetime entry_time;
-   double   min_floating_pnl;
+   double   min_floating_pnl;   // MAE: worst (most negative) floating PnL over the life of the position, account ccy
+   double   max_floating_pnl;   // MFE: best (most positive) floating PnL, account ccy; never < 0 (see QM_FrameworkMaeUpsert)
   };
 
 QM_PositionMaeState g_qm_q08_mae_states[];       // MAE of currently-open positions (swept on close)
@@ -784,6 +785,7 @@ void QM_FrameworkMaeUpsert(const ulong position_id,
       return;
 
    const double mae = MathMin(0.0, floating_pnl);
+   const double mfe = MathMax(0.0, floating_pnl);
    int index = QM_FrameworkMaeFind(position_id);
    if(index < 0)
      {
@@ -793,6 +795,7 @@ void QM_FrameworkMaeUpsert(const ulong position_id,
       g_qm_q08_mae_states[index].position_id = position_id;
       g_qm_q08_mae_states[index].entry_time = entry_time;
       g_qm_q08_mae_states[index].min_floating_pnl = mae;
+      g_qm_q08_mae_states[index].max_floating_pnl = mfe;
       return;
      }
 
@@ -800,6 +803,8 @@ void QM_FrameworkMaeUpsert(const ulong position_id,
       g_qm_q08_mae_states[index].entry_time = entry_time;
    if(mae < g_qm_q08_mae_states[index].min_floating_pnl)
       g_qm_q08_mae_states[index].min_floating_pnl = mae;
+   if(mfe > g_qm_q08_mae_states[index].max_floating_pnl)
+      g_qm_q08_mae_states[index].max_floating_pnl = mfe;
   }
 
 bool QM_FrameworkMaePositionStillOpen(const ulong position_id)
@@ -821,6 +826,11 @@ bool QM_FrameworkMaePositionStillOpen(const ulong position_id)
    return false;
   }
 
+// Per-tick excursion sweep, called from OnTick via QM_KillSwitch. Despite the historical
+// name, this now tracks BOTH the maximum adverse excursion (MAE -> mae_acct, worst floating
+// loss) and the maximum favourable excursion (MFE -> mfe_acct, best floating profit) of every
+// owned open position, sampled at the same tick. The name is retained deliberately: the
+// build_gate_hardening check_mae_hook contract keys on this exact symbol -- do NOT rename.
 void QM_FrameworkTrackOpenPositionMae()
   {
    if(!g_qm_fw_initialized)
@@ -1177,23 +1187,29 @@ void QM_FrameworkOnTradeTransaction(const MqlTradeTransaction &trans,
      }
   }
 
-// Worst floating loss (MAE) for a position, from the active or archived MAE state. Not present
-// in deal history, so it must come from the live-tracked arrays. Returns 0 if never tracked.
-double QM_FrameworkQ08LookupMae(const ulong position_id, datetime &entry_time_out)
+// Worst floating loss (MAE, returned) and best floating profit (MFE, via mfe_acct_out) for a
+// position, from the active or archived excursion state. Neither is present in deal history, so
+// both must come from the live-tracked arrays. Returns 0 and sets mfe_acct_out=0 if never
+// tracked. MFE is clamped to >= 0 (a position that only ever floated at a loss has MFE 0).
+double QM_FrameworkQ08LookupMae(const ulong position_id, datetime &entry_time_out,
+                                double &mfe_acct_out)
   {
    for(int i = ArraySize(g_qm_q08_mae_states) - 1; i >= 0; --i)
       if(g_qm_q08_mae_states[i].position_id == position_id)
         {
          entry_time_out = g_qm_q08_mae_states[i].entry_time;
+         mfe_acct_out = MathMax(0.0, g_qm_q08_mae_states[i].max_floating_pnl);
          return MathMin(0.0, g_qm_q08_mae_states[i].min_floating_pnl);
         }
    for(int i = ArraySize(g_qm_q08_mae_closed) - 1; i >= 0; --i)
       if(g_qm_q08_mae_closed[i].position_id == position_id)
         {
          entry_time_out = g_qm_q08_mae_closed[i].entry_time;
+         mfe_acct_out = MathMax(0.0, g_qm_q08_mae_closed[i].max_floating_pnl);
          return MathMin(0.0, g_qm_q08_mae_closed[i].min_floating_pnl);
         }
    entry_time_out = 0;
+   mfe_acct_out = 0.0;
    return 0.0;
   }
 
@@ -1798,11 +1814,17 @@ void QM_FrameworkQ08EmitFromHistory()
          QM_FrameworkQ08StablePriceJson(exit_price);
       const long deal_time = deal_time_by_history[i];
       datetime mae_entry_time = 0;
+      double mfe_acct = 0.0;
       double mae_acct = QM_FrameworkQ08LookupMae(position_id,
-                                                 mae_entry_time);
+                                                 mae_entry_time,
+                                                 mfe_acct);
       mae_acct = MathMin(mae_acct, net);
+      mfe_acct = MathMax(mfe_acct, net);   // symmetric to the MAE cap: the realized net is a
+                                           // floating value the trade actually reached, so MFE
+                                           // is at least net (>=0 for winners); ticks can miss
+                                           // the true peak. Keeps giveback = (mfe-net)/mfe >= 0.
       g_qm_q08_trade_log += StringFormat(
-         "{\"event\":\"TRADE_CLOSED\",\"money_basis\":\"FULL_POSITION_LIFECYCLE_ACTUAL_V1\",\"magic\":%I64d,\"side\":\"%s\",\"entry_price\":%s,\"exit_price\":%s,\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"fee\":0.00,\"commission\":%.2f,\"entry_commission\":%.2f,\"exit_commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
+         "{\"event\":\"TRADE_CLOSED\",\"money_basis\":\"FULL_POSITION_LIFECYCLE_ACTUAL_V1\",\"magic\":%I64d,\"side\":\"%s\",\"entry_price\":%s,\"exit_price\":%s,\"time\":%I64d,\"entry_time\":%I64d,\"mae_acct\":%.2f,\"mfe_acct\":%.2f,\"net\":%.2f,\"profit\":%.2f,\"swap\":%.2f,\"fee\":0.00,\"commission\":%.2f,\"entry_commission\":%.2f,\"exit_commission\":%.2f,\"volume\":%.2f,\"notional\":%.2f,\"symbol\":\"%s\"}\r\n",
          lifecycles[row_index].magic,
          lifecycles[row_index].side,
          entry_price_json,
@@ -1810,6 +1832,7 @@ void QM_FrameworkQ08EmitFromHistory()
          deal_time,
          (long)lifecycles[row_index].entry_time,
          mae_acct,
+         mfe_acct,
          net,
          profit,
          swap,
