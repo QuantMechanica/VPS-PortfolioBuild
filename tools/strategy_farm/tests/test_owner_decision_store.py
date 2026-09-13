@@ -381,3 +381,38 @@ def test_changed_displayed_card_is_refused(tmp_path: Path) -> None:
             execution_plan_sha256=PLAN_HASH,
         )
     assert not receipts.exists()
+
+
+def test_decision_id_accepts_lowercase_sha_suffix_but_not_lowercase_prefix():
+    """2026-09-13: live-identity cards carry a lowercase SHA-256 in the id; the old uppercase-only
+    rule rejected the whole feed (Mission Control showed 0 open decisions, receipts blocked)."""
+    import owner_decision_store as store
+
+    base = {
+        "status": "OPEN", "category": "pipeline rule", "question": "q", "recommendation": "r",
+        "yes_effect": "y", "no_effect": "n", "cost_of_wait": "c", "severity": "high",
+    }
+    store._validate_item(dict(base, id="OWNER-DEC-LIVE-IDENTITY-CURRENT-" + "8b06c6c8" * 8))
+    store._validate_item(dict(base, id="OWNER-DEC-GOVERNOR-V2-ENFORCE-20260913"))
+    try:
+        store._validate_item(dict(base, id="owner-dec-lowercase-prefix-20260913"))
+    except store.DecisionStoreError:
+        pass
+    else:
+        raise AssertionError("lowercase first character must still be rejected")
+
+
+def test_superseded_status_is_valid_and_terminal():
+    """2026-09-13: the r4 live-identity card was marked SUPERSEDED by the r5 proposal; the store
+    must accept it as a terminal (non-open) status instead of rejecting the whole feed."""
+    import owner_decision_store as store
+
+    item = {
+        "id": "OWNER-DEC-LIVE-IDENTITY-CURRENT-" + "80af939c" * 8, "status": "SUPERSEDED",
+        "category": "pipeline rule", "question": "q", "recommendation": "r", "yes_effect": "y",
+        "no_effect": "n", "cost_of_wait": "c", "severity": "high",
+    }
+    store._validate_item(item)
+    feed = {"items": [item]}
+    assert store.open_items(feed) == []
+    assert [row["id"] for row in store._terminal_items(feed)] == [item["id"]]

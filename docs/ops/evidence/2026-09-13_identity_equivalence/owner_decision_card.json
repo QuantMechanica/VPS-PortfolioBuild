@@ -1,0 +1,20 @@
+{
+  "id": "OWNER-DEC-IDENTITY-EQUIVALENCE-20260913",
+  "status": "OPEN",
+  "category": "pipeline rule",
+  "severity": "high",
+  "created_at_utc": "2026-09-13T00:00:00Z",
+  "due": "2026-09-19",
+  "depends_on": [],
+  "question": "Identitäts-Äquivalenz für Rebuilds: Darf ein neu gebautes EX5, dessen Q02-Vollfenster-Replay gegen das Original nachweislich verhaltensgleich ist (Beweis-Verdikt EQUIVALENT_EXACT oder EQUIVALENT_LOT_NORMALISED, Toleranzen: Deals feldgleich, Volumen ±2 % / 1 Lot-Schritt, PnL je Volumen ±0,5 %), die DEPLOY-Fähigkeit des Originals erben (Manifest zitiert Beweis + SHA; Streams des Originals gelten als seine Streams für Q11-Analysen), während seine eigene Q02–Q10-Kette normal weiterläuft und NIE ein Gate-Verdikt aus dem Beweis entsteht? Konkret betroffen: 41470 (ersetzt den dunklen Sleeve 12969/USDJPY, Beweis LOT_NORMALISED), 41473 (ersetzt 13054, EXACT); 41474 (21505) ist NICHT äquivalent und erbt nichts.",
+  "recommendation": "JA — der Beweis ist strenger als die bisherige Regel (Rebuild = neue Identität ohne Nachweis); ohne JA wartet 41470 auf seine eigene Q14 (Wochen), der dunkle Sleeve bleibt bis dahin dunkel.",
+  "yes_effect": "IDENTITY_EQUIVALENCE_RULE=ACTIVE; deploy manifests may list an EQUIVALENT_* rebuilt identity in place of its original with proof path+sha; staging C:/QM/deploy/DXZ_V2_20260913/repair_v2/ becomes deployable at the next cutover order; NO_GATE_VERDICT_FROM_PROOF; NO_AUTOTRADING; NO_DEPLOY_WITHOUT_CUTOVER_ORDER",
+  "no_effect": "rule stays inactive; 41470/41473 continue their own chains; repair_v2 staging stays parked",
+  "cost_of_wait": "each week without decision = one more week of the dark USDJPY sleeve (0 trades since deploy) and of the book-v2 repair path",
+  "evidence": [
+    "decisions/2026-09-13_identity_equivalence_proof_rebuilds.md",
+    "docs/ops/evidence/2026-09-13_identity_equivalence/README.md",
+    "D:/QM/reports/identity_equivalence/QM5_12969__QM5_41470/USDJPY.DWX/proof.json",
+    "docs/ops/evidence/2026-09-13_dxz_book_v2/REPAIR_V2_41470_STAGING.md"
+  ]
+}

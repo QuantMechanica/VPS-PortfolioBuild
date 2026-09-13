@@ -28,7 +28,9 @@ FEED_SCHEMA = "qm.owner-decisions/v2"
 LEGACY_RECEIPT_SCHEMA = "qm.owner-decision-receipt/v1"
 RECEIPT_SCHEMA = "qm.owner-decision-receipt/v2"
 SUPPORTED_RECEIPT_SCHEMAS = frozenset({LEGACY_RECEIPT_SCHEMA, RECEIPT_SCHEMA})
-ALLOWED_STATUSES = frozenset({"OPEN", "DEFERRED", "DECIDED"})
+# SUPERSEDED (2026-09-13): a card replaced by a newer proposal of the same decision (e.g. the
+# live-identity attestation r4 -> r5); terminal like DECIDED, never open, never answerable.
+ALLOWED_STATUSES = frozenset({"OPEN", "DEFERRED", "DECIDED", "SUPERSEDED"})
 ALLOWED_DECISIONS = frozenset({"YES", "NO", "DEFERRED"})
 DEFAULT_FEED = Path(r"D:\QM\reports\state\owner_decisions.json")
 DEFAULT_RECEIPTS = Path(r"D:\QM\reports\state\owner_decision_receipts.jsonl")
@@ -113,7 +115,12 @@ def _validate_item(item: Mapping[str, Any]) -> None:
             f"decision item {item.get('id') or '?'} missing fields: {', '.join(missing)}"
         )
     item_id = str(item["id"])
-    if not re.fullmatch(r"[A-Z0-9][A-Z0-9_.:-]{4,127}", item_id):
+    # 2026-09-13 (Orchestrator, GRUEN infra repair): the live-identity cards bind a lowercase
+    # SHA-256 in their id (OWNER-DEC-LIVE-IDENTITY-CURRENT-<sha256>); the uppercase-only rule
+    # made load_feed() reject the whole feed, so Mission Control showed zero open decisions
+    # and record_decision() was blocked feed-wide. The first character stays uppercase/digit;
+    # the remainder may carry lowercase hex. Rollback: restore the [A-Z0-9_.:-] class.
+    if not re.fullmatch(r"[A-Z0-9][A-Za-z0-9_.:-]{4,127}", item_id):
         raise DecisionStoreError(f"invalid decision id: {item_id}")
     status = str(item["status"]).upper()
     if status not in ALLOWED_STATUSES:
