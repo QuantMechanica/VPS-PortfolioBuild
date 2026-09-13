@@ -1,0 +1,31 @@
+ea_id,symbol,n_trades,avg_hold_h,bucket_set,wr_early,wr_late,gradient_pp,early_net,time_mgmt_share_early,exit_class_source,mae_winner_med,mae_winner_p75,mae_winner_p90,share_ge_0_5,stop_binding,verdict,reason
+1537,XAGUSD.DWX,96,56.25,long,,,,,,report,0.4785,0.7406,0.9431,0.4872,true,NO_DATA,n_trades=96 (<30) or qualifying_buckets=2 (<3)
+1556,XAUUSD.DWX,53,92.88,long,,,,,,none,0.2913,0.4739,0.6012,0.2333,false,NO_DATA,n_trades=53 (<30) or qualifying_buckets=2 (<3)
+1567,EURUSD.DWX,86,12.85,medium,22.2,75.0,52.8,-3126.84,,none,0.2883,0.6117,0.8912,0.2826,true,HIGH,early '<2h' net=-3127 wr=22% -> late '1-3d' net=9153 wr=75%; gradient=53pp
+9641,WS30.DWX,64,67.64,long,,,,,,report,0.4332,0.6505,0.9078,0.3824,true,NO_DATA,n_trades=64 (<30) or qualifying_buckets=2 (<3)
+10403,XAUUSD.DWX,207,75.53,long,48.0,60.0,12.0,491.1,0.96,report,0.2286,0.3986,0.7208,0.1748,false,WEAK,"positive but ambiguous slope: gradient=12pp (early_net=491, late_net=1557)"
+10440,NDX.DWX,618,4.66,short,23.8,49.2,25.3,-48830.24,,none,0.3965,0.6339,0.8553,0.4304,true,HIGH,early '<1h' net=-48830 wr=24% -> late '12-48h' net=28520 wr=49%; gradient=25pp
+10513,XAUUSD.DWX,68,56.68,long,,,,,,report,0.3599,0.6038,0.7547,0.2903,true,NO_DATA,n_trades=68 (<30) or qualifying_buckets=2 (<3)
+10700,XAUUSD.DWX,373,26.42,medium,10.7,69.2,58.5,-17732.3,0.0714,report,0.2965,0.5959,0.8022,0.3333,true,HIGH,early '<2h' net=-17732 wr=11% -> late '>3d' net=19488 wr=69%; gradient=59pp
+10706,GBPUSD.DWX,360,13.95,medium,11.7,100.0,88.3,-69895.7,0.0519,report,0.4037,0.6844,0.829,0.4079,true,HIGH,early '<2h' net=-69896 wr=12% -> late '>3d' net=14055 wr=100%; gradient=88pp
+10911,GDAXI.DWX,331,11.61,medium,29.2,73.8,44.6,-9160.08,,none,0.3316,0.5535,0.7701,0.2815,true,HIGH,early '<2h' net=-9160 wr=29% -> late '1-3d' net=24375 wr=74%; gradient=45pp
+10919,XTIUSD.DWX,30,14.48,medium,75.0,40.0,-35.0,1482.38,,none,0.4969,0.7535,1.195,0.5,true,NO_CASE,flat/negative gradient=-35pp (later holds not better; exits not the culprit)
+10939,GBPUSD.DWX,92,25.83,medium,41.2,71.4,30.3,-2935.03,,none,0.3104,0.516,0.647,0.2955,true,HIGH,early '2-8h' net=-2935 wr=41% -> late '>3d' net=2181 wr=71%; gradient=30pp
+11132,SP500.DWX,73,50.49,long,,,,,,none,0.2,0.3473,0.5181,0.1333,false,NO_DATA,n_trades=73 (<30) or qualifying_buckets=2 (<3)
+11165,AUDCAD.DWX,207,11.72,medium,71.6,8.3,-63.3,7718.94,,none,0.2989,0.4879,0.6782,0.2441,false,NO_CASE,flat/negative gradient=-63pp (later holds not better; exits not the culprit)
+11165,EURUSD.DWX,260,12.66,medium,83.3,13.3,-70.0,1059.08,,none,0.1923,0.3972,0.6392,0.184,false,NO_CASE,flat/negative gradient=-70pp (later holds not better; exits not the culprit)
+11421,AUDUSD.DWX,81,33.26,medium,100.0,20.0,-80.0,1892.56,,none,0.1903,0.5081,0.7308,0.2653,true,NO_CASE,flat/negative gradient=-80pp (later holds not better; exits not the culprit)
+11421,EURUSD.DWX,91,30.81,medium,57.1,33.3,-23.8,248.16,0.5714,report,0.2701,0.4516,0.6636,0.2407,false,NO_CASE,flat/negative gradient=-24pp (later holds not better; exits not the culprit)
+11708,EURUSD.DWX,173,25.26,medium,100.0,12.5,-87.5,866.11,0.1667,report,0.2961,0.5036,0.8692,0.2661,true,NO_CASE,flat/negative gradient=-88pp (later holds not better; exits not the culprit)
+12567,XAUUSD.DWX,73,63.26,long,71.0,60.0,-11.0,2080.58,,none,0.2873,0.5462,0.7167,0.3,true,NO_CASE,flat/negative gradient=-11pp (later holds not better; exits not the culprit)
+12567,XNGUSD.DWX,58,67.3,long,,,,,,none,0.3397,0.6058,0.8974,0.3548,true,NO_DATA,n_trades=58 (<30) or qualifying_buckets=2 (<3)
+12778,AUDUSD.DWX,195,93.87,long,,,,,,none,0.3646,0.6979,1.2616,0.4348,true,NO_DATA,n_trades=195 (<30) or qualifying_buckets=2 (<3)
+12969,USDJPY.DWX,331,7.9,short,,,,,,none,0.3271,0.5586,0.837,0.3,true,NO_DATA,n_trades=331 (<30) or qualifying_buckets=1 (<3)
+12989,XAUUSD.DWX,51,23.18,medium,14.3,47.6,33.3,-4495.05,,none,0.357,0.6121,0.8179,0.3043,true,HIGH,early '<2h' net=-4495 wr=14% -> late '1-3d' net=10447 wr=48%; gradient=33pp
+13013,NDX.DWX,70,6.99,short,0.0,50.0,50.0,-7135.53,0.9231,report,0.3642,0.5345,0.9822,0.3103,true,HIGH,early '<1h' net=-7136 wr=0% -> late '12-48h' net=1246 wr=50%; gradient=50pp
+13054,XTIUSD.DWX,82,67.79,long,,,,,,report,0.285,0.4048,0.7443,0.2045,false,NO_DATA,n_trades=82 (<30) or qualifying_buckets=2 (<3)
+13117,EURGBP.DWX,208,79.54,long,50.0,54.6,4.6,-817.92,,none,0.6476,2.2811,3.8684,0.5556,true,NO_CASE,flat/negative gradient=5pp (later holds not better; exits not the culprit)
+13128,NDX.DWX,56,23.0,medium,,,,,,none,0.493,0.644,0.9049,0.5,true,NO_DATA,n_trades=56 (<30) or qualifying_buckets=1 (<3)
+13213,USDJPY.DWX,1596,7.04,short,9.4,55.6,46.2,-26453.57,0.125,report,0.2967,0.5199,0.7337,0.2723,true,HIGH,early '<1h' net=-26454 wr=9% -> late '12-48h' net=30334 wr=56%; gradient=46pp
+13301,GDAXI.DWX,742,6.09,short,3.7,61.0,57.3,-26409.94,,none,0.293,0.5221,0.6888,0.2672,true,HIGH,early '<1h' net=-26410 wr=4% -> late '4-12h' net=202287 wr=61%; gradient=57pp
+21505,XAGUSD.DWX,116,117.34,long,,,,,,report,0.3563,0.4879,0.6974,0.25,true,NO_DATA,n_trades=116 (<30) or qualifying_buckets=1 (<3)
