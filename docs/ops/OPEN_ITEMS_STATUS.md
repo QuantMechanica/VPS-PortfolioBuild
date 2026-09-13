@@ -4294,3 +4294,16 @@ Q09_NEWS review backlog closure delegated (6 lock, 4 invalid, 15 mislabelled run
 Union with 24 new streams (41 sleeves, 41221 excluded, shared grid): 9.75 % -> ann 8.20 %, ret/DD 2.57, worst -0.70 %,
 Sharpe 2.56 vs deployed 24 ann 9.00 %, ret/DD 3.71, Sharpe 2.41 -> not-worse gate FAIL (ret/DD, maxDD), PASS worst day.
 Next: selective union by greedy forward selection under the ratified gate (running).
+
+## 2026-09-13T16:15Z Book v2 composition found: live 24 + 6 new = 30 sleeves, APPLY_RECOMMENDED
+Greedy forward selection under the ratified not-worse gate (docs/ops/evidence/2026-09-13_dxz_book_v2/
+SELECTIVE_UNION_REPORT.md): starting from the deployed 24 (capped inverse vol at 9.75 %), adding 9641/WS30, 10700/XAUUSD,
+13054/XTIUSD, 21505/XAGUSD, 13013/NDX, 1537/XAGUSD improves the book to ann 9.38 %, maxDD 1.68 %, ret/DD 5.57 (deployed
+3.71), worst day -0.68 %, Sharpe 2.59, ENB 21.9, max |r| 0.29, concentration PASS; the shipped builder reproduces it as
+APPLY_RECOMMENDED (all three checks PASS). The full union (41) fails only through dilution. Removing the three dark
+sleeves makes the sealed book worse (their weight redistributes) -> they are repaired, not removed (12778/13117 basket
+symbol-name mismatch, 12969 dark cause to be diagnosed). Informational: a 26-sleeve polish retiring 10911/10513/13213/
+12778 would reach ret/DD 7.0 but retiring live sleeves on one in-sample pass is a Q16 challenger question, not taken.
+Decision recorded on the OWNER board as OWNER-DEC-BOOK-V2-ROSTER-20260913 (Orchestrator under the OWNER mandate:
+"komplett egal ... alle weiteren offenen Punkte loesen"); manifest signature + AutoTrading stay OWNER. Q16 staging
+package (presets, binaries, copy plan, repairs, ANLEITUNG, deploy manifest draft) in progress.
