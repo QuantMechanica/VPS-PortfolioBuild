@@ -44,6 +44,7 @@ import argparse
 import datetime as dt
 import gzip
 import json
+import os
 import shutil
 import sys
 from collections import Counter, defaultdict
@@ -58,6 +59,7 @@ from work_item_clean_view import (  # noqa: E402
     OPEN_STATUSES,
     open_clean_view_connection,
 )
+from q08_durable_stream_export import is_sealed_stream_sidecar  # noqa: E402
 
 DB_PATH_DEFAULT = Path("D:/QM/strategy_farm/state/farm_state.sqlite")
 REPORTS_ROOT = Path("D:/QM/reports/work_items")
@@ -228,6 +230,18 @@ def summarize(result: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _holds_sealed_stream_sidecar(run_dir: Path) -> bool:
+    """True when ``run_dir`` contains a write-once Q08 sealed-stream sidecar."""
+    try:
+        for _root, _dirs, files in os.walk(run_dir):
+            if any(is_sealed_stream_sidecar(f) for f in files):
+                return True
+    except OSError:
+        # Fail-closed: an unreadable tree is treated as protected, never aged out.
+        return True
+    return False
+
+
 def quarantine(result: dict[str, Any], min_age_days: float, execute: bool) -> dict[str, Any]:
     """Move eligible age_out dirs (age >= min_age_days) into QUARANTINE_ROOT."""
 
@@ -241,11 +255,21 @@ def quarantine(result: dict[str, Any], min_age_days: float, execute: bool) -> di
     moved = 0
     moved_bytes = 0
     skipped_missing = 0
+    skipped_sealed_stream = 0
     today = dt.datetime.now(dt.UTC).strftime("%Y%m%d")
     for rec in eligible:
         src = rec["run_dir"]
         if not src.is_dir():
             skipped_missing += 1
+            continue
+        # Router ticket 9c76957c: a run directory holding a write-once Q08 sealed-stream
+        # sidecar is never aged out. Those bytes are the graded per-trade stream a Q08
+        # aggregate pins by content_sha256; they cannot be rebuilt from report.htm and a
+        # portfolio bundle that loses them REFUSES the pair. This purge moves whole run
+        # dirs, so the exclusion has to be directory-level.
+        if _holds_sealed_stream_sidecar(src):
+            skipped_sealed_stream += 1
+            _log(f"SKIP_SEALED_STREAM id={rec['id']} run_dir={src}")
             continue
         size = _dir_bytes(src)
         dest = QUARANTINE_ROOT / today / rec["id"]
@@ -262,9 +286,16 @@ def quarantine(result: dict[str, Any], min_age_days: float, execute: bool) -> di
     verb = "QUARANTINED" if execute else "DRYRUN would quarantine"
     _log(
         f"{verb} {moved} run dir(s) (~{round(moved_bytes / 1e9, 3)}GB), "
-        f"{skipped_missing} already missing, min_age_days={min_age_days}"
+        f"{skipped_missing} already missing, "
+        f"{skipped_sealed_stream} holding a sealed-stream sidecar, "
+        f"min_age_days={min_age_days}"
     )
-    return {"moved": moved, "moved_bytes": moved_bytes, "skipped_missing": skipped_missing}
+    return {
+        "moved": moved,
+        "moved_bytes": moved_bytes,
+        "skipped_missing": skipped_missing,
+        "skipped_sealed_stream": skipped_sealed_stream,
+    }
 
 
 def reap_quarantine(reap_days: float, execute: bool) -> dict[str, Any]:

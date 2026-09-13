@@ -269,6 +269,49 @@ def test_quarantine_respects_min_age_and_dry_run(env):
     assert (env.reports / "infra_new").is_dir()  # too young, untouched
 
 
+
+def test_quarantine_never_moves_a_run_holding_a_sealed_stream_sidecar(env):
+    """Router ticket 9c76957c: the write-once Q08 sealed-stream sidecar is the only
+    durable copy of the graded per-trade bytes an aggregate pins by content_sha256.
+    A run directory holding one is never aged out, whatever its taxonomy says."""
+    import q08_durable_stream_export as dse
+
+    rows = [
+        {"id": "infra_sealed", "verdict": "INFRA_FAIL", "updated_at": OLD,
+         "evidence_path": _make_run(env.reports, "infra_sealed")},
+        {"id": "infra_plain", "verdict": "INFRA_FAIL", "updated_at": OLD,
+         "evidence_path": _make_run(env.reports, "infra_plain")},
+    ]
+    sidecar = (env.reports / "infra_sealed"
+               / dse.sealed_sidecar_name("a" * 64))
+    sidecar.write_bytes(b'{"event":"TRADE_CLOSED"}\n')
+
+    _make_db(env.db, rows)
+    result = mod.classify(env.db)
+
+    live = mod.quarantine(result, min_age_days=30, execute=True)
+
+    assert live["skipped_sealed_stream"] == 1
+    assert live["moved"] == 1
+    assert sidecar.is_file()
+    assert (env.reports / "infra_sealed").is_dir()
+    today = dt.datetime.now(dt.UTC).strftime("%Y%m%d")
+    assert (env.quarantine / today / "infra_plain").is_dir()
+
+
+def test_sealed_stream_sidecar_detected_in_a_nested_run_subdirectory(env):
+    import q08_durable_stream_export as dse
+
+    run = env.reports / "nested"
+    _make_run(env.reports, "nested")
+    deep = run / "QM5_9101" / "Q08" / "EURUSD_DWX"
+    deep.mkdir(parents=True)
+    (deep / dse.sealed_sidecar_name("b" * 64)).write_bytes(b"x\n")
+
+    assert mod._holds_sealed_stream_sidecar(run) is True
+    assert mod._holds_sealed_stream_sidecar(env.reports / "absent") is False
+
+
 # --------------------------------------------------------------------------- #
 # reap_quarantine()
 # --------------------------------------------------------------------------- #

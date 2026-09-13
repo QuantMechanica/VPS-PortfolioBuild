@@ -745,6 +745,18 @@ def _serialize_trades_to_stream(dst: Path, raw_trades: list[dict], symbol: str) 
     return len(lines)
 
 
+def _resolve_q08_out_dir(ea_id: int, symbol: str, out_dir: "Path | None") -> Path:
+    """The directory this Q08 run writes its aggregate.json into.
+
+    One spelling, used both by the seal-time durable-sidecar export and by the
+    aggregate write itself, so the sidecar can never land beside a different file.
+    """
+    if out_dir is not None:
+        return Path(out_dir)
+    sym_clean = symbol.replace(".", "_")
+    return Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/{sym_clean}")
+
+
 def _persist_durable_sleeve_stream(ea_id: int, symbol: str,
                                    raw_trades: list[dict],
                                    common_log_override: "Path | None" = None) -> dict:
@@ -1860,9 +1872,19 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     # on the block, and never overwrites a differently-hashed durable file (append-only
     # sibling instead). It never alters the verdict and never raises: an import or export
     # fault is captured as durable_export_status and the seal proceeds unchanged.
+    #
+    # 2026-09-13 (router ticket 9c76957c): the recorded sleeve-stream path is a MUTABLE
+    # per-(ea, symbol) pointer in a tree no retention tool owns, so it can be overwritten
+    # by a later re-grade or swept by an ad-hoc D: cleanup while the aggregate still says
+    # persisted:true (nine Q14-qualified pairs lost their bytes exactly that way). Pass
+    # the aggregate's own directory so a write-once, content-addressed, hash-verified
+    # sidecar is placed NEXT TO the aggregate that pins it. Computed here, before the
+    # Q08.5/Q08.7 support runners can clobber the volatile Common\Files source.
     try:
         from tools.strategy_farm import q08_durable_stream_export as _durable_export
-        _durable_export.export_sealed_stream(portfolio_stream)
+        _durable_export.export_sealed_stream(
+            portfolio_stream, aggregate_dir=_resolve_q08_out_dir(ea_id, symbol, out_dir)
+        )
     except Exception as _durable_exc:  # noqa: BLE001 - export must never break the seal
         if isinstance(portfolio_stream, dict):
             portfolio_stream["durable_export_status"] = "EXPORT_WIRING_ERROR"
@@ -1997,9 +2019,7 @@ def run_all(ea_id: int, symbol: str, log_path: Path,
     if commission_info["degraded_symbols"]:
         aggregate["degraded_symbols"] = commission_info["degraded_symbols"]
 
-    if out_dir is None:
-        sym_clean = symbol.replace(".", "_")
-        out_dir = Path(f"D:/QM/reports/pipeline/QM5_{ea_id}/Q08/{sym_clean}")
+    out_dir = _resolve_q08_out_dir(ea_id, symbol, out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
     # Persisted before Q08.5/Q08.7 support runners can overwrite the volatile

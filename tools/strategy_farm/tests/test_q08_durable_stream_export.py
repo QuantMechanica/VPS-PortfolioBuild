@@ -280,3 +280,118 @@ def test_backfill_cli_exit_codes(backfill_layout, capsys):
         "--db-path", str(backfill_layout["db_path"]), "--json",
     ])
     assert rc == 3
+
+
+# --------------------------------------------------------------------------- #
+# Write-once sealed-stream sidecar (router ticket 9c76957c)
+# --------------------------------------------------------------------------- #
+
+def _sealed_block(tmp_path, *, sealed=SEALED):
+    """A bound seal whose bytes live only in the volatile source artifact."""
+    stream = tmp_path / "sleeve" / "QM" / "q08_trades" / "9101_EURUSD_DWX.jsonl"
+    src = tmp_path / "common" / "9101_EURUSD_DWX.jsonl"
+    sha = _write(src, sealed)
+    return stream, src, sha, {
+        "persisted": True,
+        "path": str(stream),
+        "content_sha256": sha,
+        "source_artifact_path": str(src),
+        "n": 1,
+    }
+
+
+def test_sidecar_is_written_next_to_the_aggregate_and_hash_verified(tmp_path):
+    stream, _src, sha, block = _sealed_block(tmp_path)
+    agg_dir = tmp_path / "reports" / "work_items" / "wi1" / "QM5_9101" / "Q08" / "EURUSD_DWX"
+
+    dse.export_sealed_stream(block, aggregate_dir=agg_dir)
+
+    sidecar = agg_dir / dse.sealed_sidecar_name(sha)
+    assert sidecar.is_file()
+    assert dse.sha256_file(sidecar) == sha            # hash verified after write
+    assert block["durable_sidecar_path"] == str(sidecar)
+    assert block["durable_sidecar_sha256"] == sha
+    assert block["durable_sidecar_status"] == "EXPORTED"
+    # the mutable pointer is still produced as before
+    assert dse.sha256_file(stream) == sha
+
+
+def test_sidecar_survives_an_overwrite_of_the_mutable_pointer(tmp_path):
+    """The whole point: a later re-grade clobbering <ea>_<sym>.jsonl must not
+    take the sealed bytes with it."""
+    stream, _src, sha, block = _sealed_block(tmp_path)
+    agg_dir = tmp_path / "agg"
+    dse.export_sealed_stream(block, aggregate_dir=agg_dir)
+    sidecar = Path(block["durable_sidecar_path"])
+
+    stream.write_bytes(OTHER)                          # later re-grade overwrites
+    assert dse.sha256_file(stream) != sha
+    assert dse.sha256_file(sidecar) == sha             # sealed bytes still recoverable
+
+
+def test_sidecar_is_write_once_and_idempotent(tmp_path):
+    _stream, _src, sha, block = _sealed_block(tmp_path)
+    agg_dir = tmp_path / "agg"
+    dse.export_sealed_stream(block, aggregate_dir=agg_dir)
+    sidecar = Path(block["durable_sidecar_path"])
+    stamp = sidecar.stat().st_mtime_ns
+
+    block2 = dict(block)
+    dse.export_sealed_stream(block2, aggregate_dir=agg_dir)
+    assert block2["durable_sidecar_status"] == "EXPORTED"
+    assert sidecar.stat().st_mtime_ns == stamp         # not rewritten
+    assert len(list(agg_dir.glob("q08_sealed_stream.*.jsonl"))) == 1
+
+
+def test_sidecar_never_clobbers_foreign_bytes_under_its_name(tmp_path):
+    _stream, _src, sha, block = _sealed_block(tmp_path)
+    agg_dir = tmp_path / "agg"
+    agg_dir.mkdir(parents=True)
+    squatter = agg_dir / dse.sealed_sidecar_name(sha)
+    squatter.write_bytes(OTHER)
+
+    dse.export_sealed_stream(block, aggregate_dir=agg_dir)
+
+    assert squatter.read_bytes() == OTHER              # refused, never overwritten
+    assert block["durable_sidecar_status"] == "WARN_SIDECAR_VERIFY_FAILED"
+    assert "durable_sidecar_path" not in block
+
+
+def test_sidecar_skipped_without_aggregate_dir_and_seal_still_exports(tmp_path):
+    _stream, _src, sha, block = _sealed_block(tmp_path)
+    dse.export_sealed_stream(block)
+    assert block["durable_sidecar_status"] == "SKIPPED_NO_AGGREGATE_DIR"
+    assert block["durable_export_status"] == "EXPORTED"
+
+
+def test_sidecar_written_even_when_the_mutable_pointer_cannot_be_placed(tmp_path):
+    """A blocked durable pointer must not cost us the sidecar."""
+    stream, _src, sha, block = _sealed_block(tmp_path)
+    stream.parent.mkdir(parents=True, exist_ok=True)
+    stream.write_bytes(OTHER)                          # pointer holds foreign bytes
+    sibling = dse._sibling_path(stream, sha)
+    sibling.write_bytes(b"blocking-bytes\n")           # and the sibling slot is taken
+    agg_dir = tmp_path / "agg"
+
+    dse.export_sealed_stream(block, aggregate_dir=agg_dir)
+
+    assert block["durable_export_status"] == "WARN_DURABLE_VERIFY_FAILED"
+    assert block["durable_sidecar_status"] == "EXPORTED"
+    assert dse.sha256_file(Path(block["durable_sidecar_path"])) == sha
+
+
+def test_is_sealed_stream_sidecar_predicate():
+    assert dse.is_sealed_stream_sidecar("q08_sealed_stream.0123456789abcdef.jsonl")
+    assert dse.is_sealed_stream_sidecar(Path("x") / dse.sealed_sidecar_name("A" * 64))
+    assert not dse.is_sealed_stream_sidecar("aggregate.json")
+    assert not dse.is_sealed_stream_sidecar("9101_EURUSD_DWX.jsonl")
+    assert not dse.is_sealed_stream_sidecar("q08_sealed_stream.abc.json")
+
+
+def test_backfill_repairs_the_sidecar_too(backfill_layout, tmp_path):
+    result = dse.backfill_work_item("q08_ok", db_path=backfill_layout["db_path"])
+    assert result["outcome"] == "exported"
+    sidecar = Path(result["durable_sidecar_path"])
+    assert sidecar.is_file()
+    assert dse.sha256_file(sidecar) == result["content_sha256"]
+    assert sidecar.parent == Path(result["evidence_path"]).parent

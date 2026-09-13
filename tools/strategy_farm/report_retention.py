@@ -48,6 +48,7 @@ if str(REPO_ROOT / "tools" / "strategy_farm") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "tools" / "strategy_farm"))
 
 from work_item_clean_view import open_clean_view_connection  # noqa: E402
+from q08_durable_stream_export import is_sealed_stream_sidecar  # noqa: E402
 
 FARM_ROOT = Path(r"D:\QM\strategy_farm")
 DB = FARM_ROOT / "state" / "farm_state.sqlite"
@@ -156,6 +157,14 @@ def scan(cutoff: dt.datetime) -> dict:
             if _forbidden(rootp):
                 continue
             for f in files:
+                # Write-once Q08 sealed-stream sidecar (router ticket 9c76957c): the
+                # ONLY durable copy of the graded per-trade bytes a Q08 aggregate pins
+                # by content_sha256. It is unreconstructible from report.htm (no
+                # mae_acct, no notional, no entry_time) and unreproducible except by a
+                # full backtest re-run, so it is excluded here by NAME rather than
+                # relying on ARTIFACT_SUFFIXES happening not to list its extension.
+                if is_sealed_stream_sidecar(f):
+                    continue
                 if not f.lower().endswith(ARTIFACT_SUFFIXES):
                     continue
                 p = rootp / f

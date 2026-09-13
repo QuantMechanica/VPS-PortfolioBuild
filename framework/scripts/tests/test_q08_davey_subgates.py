@@ -1,5 +1,6 @@
 import datetime as dt
 import csv
+import hashlib
 import json
 import tempfile
 import unittest
@@ -1816,6 +1817,72 @@ class Q08DurableSleeveStreamTests(unittest.TestCase):
             persisted["mc_maxdd_p95_over_as_realized_maxdd"],
             1.833333,
         )
+
+
+class Q08SealedStreamSidecarWiringTests(unittest.TestCase):
+    """run_all must place the write-once sealed-stream copy NEXT TO its aggregate.json.
+
+    Router ticket 9c76957c: the recorded sleeve-stream path is a mutable per-(ea, symbol)
+    pointer in a tree no retention job owns, so nine Q14-qualified pairs lost their graded
+    bytes while the aggregate still recorded persisted:true. The sidecar is the copy that
+    shares the aggregate.json fate instead. This test pins the WIRING (aggregate.py hands
+    the resolved out_dir to the exporter); the exporter itself is covered by
+    tools/strategy_farm/tests/test_q08_durable_stream_export.py.
+    """
+
+    def test_resolve_out_dir_prefers_the_caller_and_defaults_per_pair(self) -> None:
+        given = Path("D:/QM/reports/work_items/wi/QM5_1/Q08/EURUSD_DWX")
+        self.assertEqual(aggregate._resolve_q08_out_dir(1, "EURUSD.DWX", given), given)
+        self.assertEqual(
+            aggregate._resolve_q08_out_dir(1234, "EURUSD.DWX", None),
+            Path("D:/QM/reports/pipeline/QM5_1234/Q08/EURUSD_DWX"),
+        )
+
+    def test_run_all_writes_a_hash_verified_sidecar_beside_aggregate_json(self) -> None:
+        trades = [{"time": 1, "net": 1.0, "volume": 1.0}]
+        commission_info = {
+            "commission_basis": "test",
+            "commission_model": {"degraded": False},
+            "commission_total": 0.0,
+            "gross_total": 1.0,
+            "cost_cushion": None,
+            "cost_cushion_tier": "PASS",
+            "degraded_symbols": [],
+        }
+        sealed = b'{"event":"TRADE_CLOSED","time":1,"net":1.0,"volume":1.0}\n'
+        digest = hashlib.sha256(sealed).hexdigest()
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            out_dir = root / "work_items" / "wi" / "QM5_4242" / "Q08" / "EURUSD_DWX"
+            stream = root / "sleeve" / "4242_EURUSD_DWX.jsonl"
+            stream.parent.mkdir(parents=True, exist_ok=True)
+            stream.write_bytes(sealed)
+
+            def persist(*_a, **_k):
+                return {"persisted": True, "source": "common_copy",
+                        "path": str(stream), "n": 1}
+
+            with patch.object(aggregate.common, "load_trades_from_log", return_value=trades),                  patch.object(aggregate.common, "load_equity_stream", return_value=[]),                  patch.object(aggregate, "_latest_structured_qm_log", return_value=None),                  patch.object(aggregate, "_persist_durable_sleeve_stream", side_effect=persist),                  patch.object(aggregate, "_ensure_sub_gate_inputs", return_value={}),                  patch.object(aggregate, "_apply_worst_case_commission",
+                              return_value=([dict(t) for t in trades], commission_info)),                  patch.object(aggregate, "_aggregate_verdict", return_value=("PASS", {})),                  patch.object(aggregate, "SUB_GATES", []):
+                aggregate.run_all(4242, "EURUSD.DWX", root / "unused.log", out_dir=out_dir)
+
+            persisted = json.loads((out_dir / "aggregate.json").read_text(encoding="utf-8"))
+            block = persisted["portfolio_stream"]
+            self.assertEqual(block["content_sha256"], digest)
+            self.assertEqual(block["durable_sidecar_status"], "EXPORTED")
+
+            sidecar = Path(block["durable_sidecar_path"])
+            self.assertEqual(sidecar.parent, out_dir)
+            self.assertEqual(
+                hashlib.sha256(sidecar.read_bytes()).hexdigest(), digest
+            )
+
+            # the sidecar outlives an overwrite of the mutable pointer
+            stream.write_bytes(b"clobbered\n")
+            self.assertEqual(
+                hashlib.sha256(sidecar.read_bytes()).hexdigest(), digest
+            )
 
 
 class HostSymbolFromSetfileTests(unittest.TestCase):

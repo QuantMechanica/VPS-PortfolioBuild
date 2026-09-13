@@ -65,9 +65,41 @@ ADDITIVE_FIELDS = (
     "exported_at",
     "durable_export_status",
     "durable_export_warning",
+    "durable_sidecar_path",
+    "durable_sidecar_sha256",
+    "durable_sidecar_status",
 )
 
+# Write-once sealed-stream sidecar (2026-09-13, router ticket 9c76957c).
+#
+# The recorded ``path`` under D:/QM/reports/portfolio/sleeve_streams is a MUTABLE
+# per-(ea, symbol) pointer: every later Q08 re-grade of the same pair overwrites it, and
+# the tree belongs to no retention owner (``tools/ops/filesystem_inventory.py`` classifies
+# it ``candidate_for_cleanup_review``), so an ad-hoc D: cleanup takes it with no trace.
+# Nine Q14-qualified pairs lost their bytes exactly that way while the aggregate still
+# recorded ``persisted:true``.  The cure is a second copy that is (a) content-addressed,
+# so it is never the target of an overwrite, (b) written next to the Q08 aggregate that
+# pins it, so it shares the aggregate's fate instead of an unowned tree's, and (c) named
+# by a prefix the retention tools explicitly refuse to touch.
+SIDECAR_PREFIX = "q08_sealed_stream"
+SIDECAR_SUFFIX = ".jsonl"
+
 LogSink = Callable[[dict], None]
+
+
+def sealed_sidecar_name(content_sha: str) -> str:
+    """Write-once sidecar filename for a sealed stream with ``content_sha``."""
+    return f"{SIDECAR_PREFIX}.{str(content_sha).strip().lower()[:16]}{SIDECAR_SUFFIX}"
+
+
+def is_sealed_stream_sidecar(path: "Path | str") -> bool:
+    """True for a write-once Q08 sealed-stream sidecar.
+
+    Retention/purge tools import THIS predicate rather than re-spelling the naming
+    convention, so the writer and the exclusions can never drift apart.
+    """
+    name = Path(str(path)).name
+    return name.startswith(SIDECAR_PREFIX + ".") and name.endswith(SIDECAR_SUFFIX)
 
 
 def _default_logger(record: dict) -> None:
@@ -178,6 +210,37 @@ def _ensure_durable(
     return None
 
 
+def _ensure_sidecar(
+    aggregate_dir: Path, sealed_src: Path, content_sha: str
+) -> tuple[Path, str] | None:
+    """Write-once, hash-verified sealed-stream copy next to the Q08 aggregate.
+
+    The filename encodes the content hash, so the write is idempotent and can never
+    overwrite different bytes: a present sidecar with the right hash is accepted as-is,
+    a present sidecar with the wrong hash is refused rather than clobbered.  Returns
+    ``(path, sha256)`` on success, else ``None``.
+    """
+    aggregate_dir.mkdir(parents=True, exist_ok=True)
+    sidecar = aggregate_dir / sealed_sidecar_name(content_sha)
+
+    existing = _sha_if_file(sidecar)
+    if existing == content_sha:
+        return (sidecar, content_sha)
+    if existing is not None or sidecar.exists():
+        # Name encodes the sha, so this should be unreachable; never clobber.
+        return None
+
+    _atomic_copyfile(sealed_src, sidecar)
+    got = _sha_if_file(sidecar)
+    if got == content_sha:
+        return (sidecar, content_sha)
+    try:
+        sidecar.unlink()
+    except OSError:
+        pass
+    return None
+
+
 def _locate_sealed_bytes(
     content_sha: str, target: Path, source_artifact: str | None
 ) -> Path | None:
@@ -205,9 +268,39 @@ def _record(
         _emit(logger, event="q08_durable_export", status=status, warning=warning, **log_fields)
 
 
+def _export_sidecar(
+    block: dict,
+    aggregate_dir: "Path | str | None",
+    sealed_src: Path,
+    content_sha: str,
+    *,
+    logger: LogSink | None,
+) -> None:
+    """Place + record the write-once sidecar; additive and fail-open."""
+    if aggregate_dir is None:
+        block["durable_sidecar_status"] = "SKIPPED_NO_AGGREGATE_DIR"
+        return
+    sidecar = _ensure_sidecar(Path(str(aggregate_dir)), sealed_src, content_sha)
+    if sidecar is None:
+        block["durable_sidecar_status"] = "WARN_SIDECAR_VERIFY_FAILED"
+        _emit(
+            logger,
+            event="q08_durable_export",
+            status="WARN_SIDECAR_VERIFY_FAILED",
+            warning="sidecar copy did not reproduce content_sha256",
+            aggregate_dir=str(aggregate_dir),
+            content_sha256=content_sha,
+        )
+        return
+    block["durable_sidecar_path"] = str(sidecar[0])
+    block["durable_sidecar_sha256"] = sidecar[1]
+    block["durable_sidecar_status"] = "EXPORTED"
+
+
 def export_sealed_stream(
     portfolio_stream: Any,
     *,
+    aggregate_dir: "Path | str | None" = None,
     now: dt.datetime | None = None,
     logger: LogSink | None = None,
 ) -> Any:
@@ -217,9 +310,16 @@ def export_sealed_stream(
     ``persisted`` / ``path`` / ``content_sha256`` / ``source_artifact_path``).  The
     block is mutated in place with additive fields and returned.  Never raises; never
     changes the verdict.
+
+    ``aggregate_dir`` is the directory the Q08 ``aggregate.json`` is written to.  When
+    given, a write-once, content-addressed, hash-verified copy of the sealed bytes is
+    placed there (see :data:`SIDECAR_PREFIX`) and recorded as ``durable_sidecar_path`` —
+    the copy that survives an overwrite of the mutable sleeve-stream pointer.
     """
     try:
-        return _export_sealed_stream_impl(portfolio_stream, now=now, logger=logger)
+        return _export_sealed_stream_impl(
+            portfolio_stream, aggregate_dir=aggregate_dir, now=now, logger=logger
+        )
     except Exception as exc:  # noqa: BLE001 - export must never break the seal
         if isinstance(portfolio_stream, dict):
             _record(
@@ -234,6 +334,7 @@ def export_sealed_stream(
 def _export_sealed_stream_impl(
     portfolio_stream: Any,
     *,
+    aggregate_dir: "Path | str | None" = None,
     now: dt.datetime | None,
     logger: LogSink | None,
 ) -> Any:
@@ -270,6 +371,12 @@ def _export_sealed_stream_impl(
             source_artifact_path=str(source_artifact) if source_artifact else None,
         )
         return portfolio_stream
+
+    # Write-once sidecar FIRST: it is the copy that has to survive, so it must not be
+    # skipped when the mutable-pointer branch below fails.
+    _export_sidecar(
+        portfolio_stream, aggregate_dir, sealed_src, content_sha, logger=logger
+    )
 
     durable = _ensure_durable(target, sealed_src, content_sha)
     if durable is None:
@@ -405,6 +512,18 @@ def backfill_work_item(
         sibling=is_sibling,
         exported_at=_iso(now),
     )
+
+    # Repair the write-once sidecar too: the aggregate.json this seal lives in is the
+    # anchor the sidecar belongs next to.
+    evidence = row["evidence_path"]
+    if evidence:
+        sidecar = _ensure_sidecar(Path(str(evidence)).parent, src, content_sha)
+        if sidecar is None:
+            result["durable_sidecar_status"] = "WARN_SIDECAR_VERIFY_FAILED"
+        else:
+            result["durable_sidecar_path"] = str(sidecar[0])
+            result["durable_sidecar_sha256"] = sidecar[1]
+            result["durable_sidecar_status"] = "EXPORTED"
     return result
 
 
