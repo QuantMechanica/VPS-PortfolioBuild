@@ -1,0 +1,71 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_build_rework:8b09ed22-3d26-41a0-8eb3-d7df0bd66331:QM5_39007",
+  "created_at_local": "2026-09-13T02:54:55+02:00",
+  "ea_id": "QM5_39007",
+  "ea_label": "QM5_39007_forexfactory-100-pips-early-bird-breakout",
+  "mission_priority": 2,
+  "scope": "one append-only governed COMPILE_EA rebuild of the exact unchanged reviewed source after an infrastructure-only Q02 compile-gate refusal; no strategy, economic verdict, pipeline-gate, live, portfolio-gate, or cross-EA authority",
+  "diagnosis": {
+    "build_task_id": "8b09ed22-3d26-41a0-8eb3-d7df0bd66331",
+    "build_task_state": "TODO",
+    "build_task_decision_bound_agent": "codex",
+    "q02_work_item_id": "4921484d-bcc6-4290-a3bd-5894ec2fb39f",
+    "q02_status": "failed",
+    "q02_verdict": "INFRA_FAIL",
+    "q02_attempt_count": 0,
+    "q02_reason": "compile_gate:COMPILE_FAILED",
+    "q02_test_started": false,
+    "compile_failure_class": "INCLUDE_MIRROR_REFUSED",
+    "compile_errors": -1,
+    "failed_at_utc": "2026-09-12T06:56:53+00:00",
+    "class_evidence_path": "docs/ops/evidence/2026-09-12_compile_gate_broken_source_holds.md",
+    "class_evidence_sha256": "f03dee594c2d0b9dcceb00e4e44576b02d1b3716ee225c4058f8503e765cdb64",
+    "source_rework_commit": "24da8f25610022d31c7f878a0f3ccc66ec3a6dae",
+    "source_last_write_utc": "2026-08-24T10:35:54Z",
+    "ex5_last_write_utc": "2026-08-18T17:20:28Z",
+    "stale_ex5_sha256": "67ca627d8976fcdc3a6c7514f9ff288f988d43d1150b354536806930a1c76bba",
+    "q02_expected_ex5_sha256": "67ca627d8976fcdc3a6c7514f9ff288f988d43d1150b354536806930a1c76bba",
+    "governed_compile_status_before_repair": "NOT_ENQUEUED",
+    "plain_enqueue_refusal_reasons": [
+      "EX5_ALREADY_PRESENT",
+      "WORK_ITEMS_EXIST",
+      "BUILD_TASK_EXISTS",
+      "BOUND_SETFILE_HASH_EXISTS"
+    ]
+  },
+  "repair": {
+    "current_mq5_sha256": "4279a0fd50827b6f54510a8a2a0168153656c60f15b969fbfee407519bc5389d",
+    "strategy_mechanics_changed": false,
+    "action": "route the reviewed current source through the governed COMPILE_EA worker so terminal and include-mirror claims are explicit",
+    "host_timeframe": "M15",
+    "instrument_scope": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX"
+    ]
+  },
+  "validation": {
+    "focused_static_test_command": "python -m pytest -q tools/strategy_farm/tests/test_qm5_39007_review_rework.py",
+    "framework_input_pin_audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_39007_forexfactory-100-pips-early-bird-breakout/QM5_39007_forexfactory-100-pips-early-bird-breakout.mq5",
+    "framework_input_pin_audit_predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "framework_input_pin_audit_observed_ok": true,
+    "framework_input_pin_audit_observed_hit_count": 0,
+    "fixed_risk_setfile_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "active_symbol_slot_count": 2
+    }
+  },
+  "coordination": {
+    "claimed_by": "codex:agents/board-advisor",
+    "branch": "agents/board-advisor",
+    "claim_key": "paced_fleet:diversity_infra_repair:QM5_39007:20260913",
+    "compile_enqueue_applied": false
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

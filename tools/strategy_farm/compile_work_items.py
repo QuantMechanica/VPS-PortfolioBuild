@@ -2662,6 +2662,31 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# PACER mission (2026-09-13): QM5_39007's only Q02 row was refused before
+# MT5 launch because the legacy inline compile path had no governed terminal /
+# include-mirror claim. Bind one governed rebuild to the exact unchanged,
+# reviewed source and immutable diagnosis receipt. This grants no strategy,
+# backtest verdict, pipeline-gate, live, portfolio-gate, or cross-EA authority.
+QM5_39007_Q02_COMPILE_INFRA_REBUILD_AUTHORITY = (
+    "router_build_rework:8b09ed22-3d26-41a0-8eb3-d7df0bd66331:QM5_39007"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_39007_Q02_COMPILE_INFRA_REBUILD_AUTHORITY
+] = {
+    "ea_id": "39007",
+    "ea_label": "QM5_39007_forexfactory-100-pips-early-bird-breakout",
+    "source_sha256": "4279a0fd50827b6f54510a8a2a0168153656c60f15b969fbfee407519bc5389d",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-13_qm5_39007_compile_infra_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "b5884a7cbf4954008fe1f46b3a4086a56021a4024a93c4541e74144eb7769bea"
+    ),
+}
+
 # The first QM5_1408 recovery compile proved the current source compiles, then
 # strict build checking rejected its EA-owned indicator handles, raw buffer
 # reads, and warning-43 datetime conversions. Bind one append-only successor to
