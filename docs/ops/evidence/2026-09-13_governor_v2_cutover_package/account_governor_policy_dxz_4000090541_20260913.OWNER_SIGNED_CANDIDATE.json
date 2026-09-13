@@ -1,0 +1,56 @@
+{
+ "account_currency": "USD",
+ "account_login": 4000090541,
+ "authorized_by": "OWNER (Fabian) 2026-09-13 -- decisions/2026-09-13_owner_governor_enforce_dxz.md",
+ "book": "DXZ_4000090541",
+ "derivation": {
+  "equity_anchors": {
+   "dd_guard_halt_equity": 91684.3,
+   "dd_guard_halt_pct": 10.0,
+   "dd_guard_source": "decisions/2026-07-24_live_book_dd_guard.md (OWNER-confirmed 10.0 % 2026-07-24)",
+   "equity_observed_2026-09-13": 99374.06,
+   "hwm_equity": 101871.44,
+   "hwm_source": "D:/QM/reports/state/live_book_dd_guard_state.json"
+  },
+  "max_abs_currency_net_leverage": "family cap 57.5 % of the concentration policy (tools/strategy_farm/config/concentration_tail_limits.v1.json, OWNER_RATIFIED 2026-09-13) applied to the gross ceiling: 0.575 x 7.5 = 4.3125 -> 4.3. A currency bucket aggregates several symbols (EUR = EURUSD + EURGBP + GDAXI), so the family cap, not the symbol cap, is the matching ratio. Headroom over the measured peak (2.80x): 1.54x.",
+  "max_gross_leverage": "25 % margin utilisation at the Darwinex swing profile 1:30 (FX) = 0.25 x 30 = 7.5x notional/equity. Cross-checks: 2.37x the measured live peak (3.16x) and 48 % of the modelled all-24-sleeves-in capacity (15.48x), so it can only be reached by a state at least twice as concentrated as anything the live book has produced. CAVEAT: the 1:30 / 1:15 swing margins are recorded UNVERIFIED (docs/ops/OPEN_ITEMS_STATUS.md 2026-09-05, Darwinex trading-symbols URL 404 on 2026-09-04); OWNER must confirm the account leverage before signing.",
+  "max_planned_stop_loss_account": "tail rule of the same ratified policy: maximum_fraction_of_daily_limit 0.8 x venue_daily_loss_limit_pct 5.0 = 4.0 % of equity; on the conservative dd_guard_halt_equity basis 0.04 x 91684.30 = 3667.37 -> 3650 USD. Cross-check against the ratified joint-tail model (stop_risk_budget_pct 9.75 / joint_sleeve_divisor 3 = 3.25 % = 2979.74 USD): 1.23x headroom. Breaching it means simultaneously open stops would consume 80 % of the DXZ daily loss limit; the staged response is entry freeze + pending cancel, never a flatten.",
+  "measured_book_facts": {
+   "max_concurrent_positions": 7,
+   "modelled_all_in_gross_leverage": 15.477,
+   "observed_peak_abs_currency_net_leverage": 2.7953,
+   "observed_peak_currency_bucket": "EUR",
+   "observed_peak_gross_leverage": 3.1603,
+   "observed_peak_net_directional_leverage": 2.598,
+   "sleeves_in_book": 24,
+   "source": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/journal/live_deals_normalized.csv (248 trade deals)",
+   "window_utc": [
+    "2026-06-28T22:00:02Z",
+    "2026-09-11T18:00:00Z"
+   ]
+  },
+  "min_free_margin_account": "0.75 x dd_guard_halt_equity = 0.75 x 91684.30 = 68763.22 -> 68750 USD. Even at the worst equity the ratified 10 % book-DD guard tolerates, at most 25 % of equity may be tied up as margin; below that the margin state, not the DD guard, would be the binding control."
+ },
+ "review": {
+  "first_review_due_utc": "2026-10-14T00:00:00+00:00",
+  "known_tension": "max_planned_stop_loss_account (3650 USD = 4.0 % of the DD-guard floor equity) is BELOW the book's own full deployment budget (9.75 % of equity). A hypothetical all-24-sleeves-in state would breach it. That state has never occurred (max 7 of 24 concurrent in 2.5 months) and freezing entries there is the intended behaviour, but OWNER should confirm the intent before signing.",
+  "review_input": "30 days of governor_dry_run_watch history (level distribution, near-breach margins) after the v2 monitor is attached."
+ },
+ "schema": "qm.account-governor.policy/v1",
+ "scope_notes": [
+  "Account-wide only. Magic numbers are attribution metadata and never an inclusion filter (contract:10-14); T1-T10 share login 4000090541 with T_Live (CLAUDE.md OQ-17), so every position on the account is in scope.",
+  "This file authorizes stages 0-2 only. A stage-3 controlled flatten additionally needs a separate qm.account-governor.emergency-policy/v1 file bound to this file's SHA-256 (contract:92-96).",
+  "Signing this policy does not enable enforcement. Enforcement additionally needs the enforce-activation artifact under decisions/, a real order-management executor, and the written GOVERNOR-HARDENING freeze lift."
+ ],
+ "stage2_cancel_pending_authorized": true,
+ "status": "OWNER_SIGNED",
+ "status_note": "OWNER_SIGNED CANDIDATE prepared by the Claude seat from the PROPOSED draft (sha256 ad7070429ff26d948f9d6e40181ed6c1a7c7103c3df7235944b552122b15e401); thresholds and derivation are byte-identical, only status/authorized_by/valid_from_utc changed. It carries NO authority until the OWNER (a) accepts these exact bytes, (b) names this file's sha256 to --trusted-policy-sha256, and (c) commits decisions/2026-09-13_owner_governor_enforce_dxz.md. Any byte edit changes the sha and voids the activation binding below.",
+ "thresholds": {
+  "max_abs_currency_net_leverage": 4.3,
+  "max_gross_leverage": 7.5,
+  "max_planned_stop_loss_account": 3650.0,
+  "min_free_margin_account": 68750.0
+ },
+ "valid_from_utc": "2026-09-13T00:00:00+00:00",
+ "valid_until_utc": "2026-12-14T00:00:00+00:00"
+}

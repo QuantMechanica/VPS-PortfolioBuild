@@ -1,0 +1,18 @@
+{
+ "account_login": 4000090541,
+ "activation_decision_ref": "decisions/2026-09-13_owner_governor_enforce_dxz.md",
+ "authorized_by": "OWNER (Fabian) 2026-09-13",
+ "book": "DXZ_4000090541",
+ "enforce_authorized": true,
+ "executor": "halt-file",
+ "executor_channel": "QM/halt/<ea_id>.halt in the T_Live sandbox (EA-native, L3 exact)",
+ "schema": "qm.account-governor.enforce-activation/v1",
+ "scope_note": "Authorizes the account_governor_action_adapter to run --enforce against the policy whose sha256 is trigger_policy_sha256, and nothing else. Does not authorize AutoTrading, deployment, a risk change, or a freeze lift. Level-2 enforcement additionally requires --allow-l2-flatten-overaction because the halt channel has no entry-freeze-only mode; level 1 is not expressible on this channel at all and is refused by design.",
+ "status": "OWNER_SIGNED",
+ "status_note": "DRAFT prepared by the Claude seat. No authority until the OWNER accepts these exact bytes and names this file's sha256 to --trusted-activation-sha256.",
+ "trigger_policy_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-13_governor_v2_cutover_package\\account_governor_policy_dxz_4000090541_20260913.OWNER_SIGNED_CANDIDATE.json",
+ "trigger_policy_sha256": "f2baf21a6282942cc99b82ce77caaf46a561247b188340d4e2f06851f01feb70",
+ "valid_from_utc": "2026-09-13T00:00:00+00:00",
+ "valid_until_utc": "2026-12-14T00:00:00+00:00",
+ "venue": "dxz"
+}

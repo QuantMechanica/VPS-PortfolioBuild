@@ -1,0 +1,74 @@
+{
+ "schema": "qm.governor-adapter-refusal-probe/v1",
+ "recorded_at_utc": "2026-09-13T16:37:00+00:00",
+ "recorded_by": "Claude seat, read-only cutover preflight; no T_Live write, no chart attach, no halt file",
+ "tool": "tools/strategy_farm/account_governor_action_adapter.py",
+ "snapshot": "C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/journal/account_snapshot.json (LEGACY_UNVERSIONED, monitor v1)",
+ "governor_level_observed": {
+  "level": 1,
+  "name": "ENTRY_FREEZE_UNCERTAINTY",
+  "cause": "snapshot_schema_not_v2:LEGACY_UNVERSIONED plus missing order/position inventories; expected until monitor v2 is attached"
+ },
+ "halt_dir_used_for_probes": "scratchpad (NOT the T_Live sandbox halt dir); verified empty after every probe",
+ "probes": [
+  {
+   "id": "A",
+   "wiring": "--enforce only (shipped default)",
+   "outcome": "ENFORCE_REFUSED",
+   "refusal_reason": "enforce_requires_bound_owner_policy",
+   "exit_code": 3
+  },
+  {
+   "id": "B",
+   "wiring": "--policy <PROPOSED> --trusted-policy-sha256 ad7070429ff26d948f9d6e40181ed6c1a7c7103c3df7235944b552122b15e401",
+   "outcome": "ERROR",
+   "refusal_reason": "policy_not_owner_signed:PROPOSED_OWNER_RATIFICATION_REQUIRED",
+   "exit_code": 2
+  },
+  {
+   "id": "C",
+   "wiring": "--policy <OWNER_SIGNED_CANDIDATE f2baf21a...>; no activation",
+   "outcome": "ENFORCE_REFUSED",
+   "refusal_reason": "enforce_activation_artifact_absent",
+   "exit_code": 3
+  },
+  {
+   "id": "D",
+   "wiring": "+ --activation <DRAFT 5ab3b819...>; executor default none",
+   "outcome": "ENFORCE_REFUSED",
+   "refusal_reason": "no_execution_adapter_present:executor_not_selected",
+   "enforcement_activated": true,
+   "note": "activation bound cleanly: policy sha, OWNER attribution, login, validity window and trigger_policy_sha256 all accepted",
+   "exit_code": 3
+  },
+  {
+   "id": "E",
+   "wiring": "+ --executor halt-file --enforce-order <the .DRAFT.md in this package>",
+   "outcome": "ENFORCE_REFUSED",
+   "refusal_reason": "enforce_order_name_invalid:2026-09-13_owner_governor_enforce_dxz.DRAFT.md",
+   "enforcement_activated": true,
+   "note": "the draft filename is deliberately invalid; it becomes valid only when the OWNER commits it as decisions/2026-09-13_owner_governor_enforce_dxz.md",
+   "exit_code": 3
+  },
+  {
+   "id": "F",
+   "wiring": "+ --enforce-order <correctly named copy carrying the literal GOVERNOR-ENFORCE: ACTIVATE DXZ 2026-09-13 line>",
+   "outcome": "ENFORCE_REFUSED_BY_EXECUTOR",
+   "refusal_reason": "l1_entry_freeze_not_expressible_via_halt_channel",
+   "enforcement_activated": true,
+   "decision_level": 1,
+   "decision_id": "7795104f3f3bf22962aacd5bf2d45c66089a0fbdd716540209da780e8a49904c",
+   "note": "the full authorization chain binds; the last refusal is the level-1 design refusal of the halt channel, not a missing signature. No halt file written.",
+   "exit_code": 3
+  }
+ ],
+ "conclusion": {
+  "remaining_owner_signatures": [
+   "accept the OWNER_SIGNED_CANDIDATE policy bytes and name sha f2baf21a6282942cc99b82ce77caaf46a561247b188340d4e2f06851f01feb70",
+   "accept the enforce-activation DRAFT bytes and name sha 5ab3b819562a0504308434342744b1cd3d52c1e558267be8d520b34a9194fb41",
+   "commit decisions/2026-09-13_owner_governor_enforce_dxz.md with the literal order line"
+  ],
+  "remaining_owner_operational_act": "attach monitor v2 (QM_AccountMonitor.ex5 sha f98523ee...) on T_Live so the snapshot reports schema v2 and the governor can leave level 1",
+  "no_code_change_required": true
+ }
+}
