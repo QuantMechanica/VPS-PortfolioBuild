@@ -98,3 +98,4 @@ backtest, optimization, portfolio-gate edit, admission, deploy/live manifest,
 | Version | Date | Change |
 |---|---|---|
 | v1 | 2026-09-13 | Initial governed build from approved card |
+| v1-q01 | 2026-09-13 | PACER audit and 10 reference tests PASS; strict compile/build PASS; Q02 not enqueued after fail-closed backup timeouts and a later 99.4% CPU sample breached the 97.0% ceiling |

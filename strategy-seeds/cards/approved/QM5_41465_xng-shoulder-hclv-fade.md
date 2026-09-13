@@ -61,8 +61,10 @@ news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
 pipeline_phase: Q02
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+q01_status: PASS
+q01_compile_work_item: 48887c1a-6006-4692-860e-618eee2f3dcb
+q01_build_report: D:/QM/reports/work_items/48887c1a-6006-4692-860e-618eee2f3dcb/QM5_41465/COMPILE_EA/compile_evidence.json
+q02_status: NOT_ENQUEUED_CPU_CEILING
 force_build: true
 review_focus: "Falsify an XNG April-May/September-October upper-tercile weekly-close reversion distinct from certified QM5_12567, the symmetric one-week sign fade, the two-week shoulder fade, and the SMA/stretch/wick failed-rally system. Verify exact completed week, strict CLV inequality, no return/range/body/wick/mean predicates, short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -254,5 +256,5 @@ live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-13 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-13 | APPROVED | G0 decision above |
-| Q01 Build Validation | — | PENDING | build not yet submitted |
-| Q02 Baseline Screening | — | NOT_ENQUEUED | requires Q01 PASS and CPU admission |
+| Q01 Build Validation | 2026-09-13 | PASS | compile `48887c1a-6006-4692-860e-618eee2f3dcb`; `COMPILE_OK`; 0 compiler errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-13 | NOT_ENQUEUED_CPU_CEILING | eligible read-only intake; two apply attempts failed closed before mutation on governed-backup timeout; subsequent CPU maximum 99.4% against 97.0% ceiling; no Q02 row |

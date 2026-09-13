@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "48887c1a-6006-4692-860e-618eee2f3dcb"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260913T015809_395362Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260913T015740Z_3fb00474.sqlite",
+    "reused": false,
+    "sha256": "90eab058e5ffcbb3fb4da23189752122de919d8c5d447a9fe4680681140ff4b0"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "cebef52fb042244b69685e982e6ebcf8fdd28039e2da967a997eccf36d5736a2",
+      "ea_id": "QM5_41465",
+      "ea_label": "QM5_41465_xng-shoulder-hclv-fade",
+      "expected_mq5_sha256": "cebef52fb042244b69685e982e6ebcf8fdd28039e2da967a997eccf36d5736a2",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41465_xng-shoulder-hclv-fade\\QM5_41465_xng-shoulder-hclv-fade.mq5",
+      "work_item_id": "48887c1a-6006-4692-860e-618eee2f3dcb"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-13T01:58:09+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "48887c1a-6006-4692-860e-618eee2f3dcb",
+  "work_item_id_selectors": [
+    "48887c1a-6006-4692-860e-618eee2f3dcb"
+  ]
+}

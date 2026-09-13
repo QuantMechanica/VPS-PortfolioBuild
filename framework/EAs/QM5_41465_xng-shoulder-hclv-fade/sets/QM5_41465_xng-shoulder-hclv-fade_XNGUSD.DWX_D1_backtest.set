@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   PENDING_COMPILE
+; build_hash:   b165c66419fc1783914946d1196570214f0d74aec16a6e85ed5facc999304c8b
 ; author:       Development
 ; date:         2026-09-13
 ;==========================================================
@@ -21,18 +21,18 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=C:\QM\repo\strategy-seeds\cards\approved\QM5_41465_xng-shoulder-hclv-fade.md
-strategy_symbol=XNGUSD.DWX
+strategy_shoulder_month_1=4
 strategy_history_bars=20
 strategy_atr_sl_mult=3.5
+strategy_symbol=XNGUSD.DWX
 strategy_max_week_bars=5
 strategy_label_offset_seconds=0
 strategy_max_hold_days=10
 strategy_max_spread_points=1500
 strategy_atr_period_d1=20
-strategy_shoulder_month_3=9
-strategy_entry_grace_minutes=180
 strategy_shoulder_month_2=5
+strategy_entry_grace_minutes=180
 strategy_min_week_bars=3
-strategy_shoulder_month_1=4
 strategy_shoulder_month_4=10
 strategy_clv_cutoff=0.666666666667
+strategy_shoulder_month_3=9
