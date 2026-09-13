@@ -18493,3 +18493,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41472,eurgbp-audjpy-symfix,1,AUDJPY.DWX,414720001,2026-09-13,Codex governed allocator,active
 41473,brent-tom-mom-symfix,0,XTIUSD.DWX,414730000,2026-09-13,Codex governed allocator,active
 41474,xag-weekly-lowvol-momentum-symfix,0,XAGUSD.DWX,414740000,2026-09-13,Codex governed allocator,active
+11941,ff-inst-code-levels,0,GBPUSD.DWX,119410000,2026-09-13,Codex governed allocator,active
