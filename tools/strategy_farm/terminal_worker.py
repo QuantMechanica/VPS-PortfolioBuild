@@ -1662,6 +1662,12 @@ def _census_first_ram_priority_enabled() -> bool:
     return os.environ.get("QM_CENSUS_FIRST_RAM_PRIORITY") != "0"
 
 
+def _census_first_lane_aware_enabled() -> bool:
+    """Use capacity-aware census existence only on explicit operator opt-in."""
+
+    return os.environ.get("QM_CENSUS_FIRST_LANE_AWARE") == "1"
+
+
 def _census_first_protected_band_gb() -> float:
     """Free RAM that must stay claimable for the protected census lanes.
 
@@ -2424,7 +2430,30 @@ def _drain_scan_candidate(
     try:
         with farmctl.connect(root) as conn:
             conn.row_factory = sqlite3.Row
-            census_pending = _opt_census_cells_claimable_in_txn(conn)
+            lane_aware = _census_first_lane_aware_enabled()
+            active_census = None
+            limits = None
+            allowlist = None
+            if lane_aware:
+                active_rows = [
+                    dict(row)
+                    for row in conn.execute(
+                        "SELECT id,phase,ea_id,symbol,payload_json FROM work_items "
+                        "WHERE status='active' AND upper(phase)='OPT_CENSUS'"
+                    )
+                ]
+                active_census = dl089_scheduling.active_census_snapshot(active_rows)
+                limits = dl089_scheduling.effective_limits(
+                    len(farmctl.worker_policy_terminals())
+                )
+                allowlist = dl089_scheduling.same_program_parallel_allowlist()
+            census_pending = _opt_census_cells_claimable_in_txn(
+                conn,
+                active_census=active_census,
+                limits=limits,
+                allowlist=allowlist,
+                lane_aware=lane_aware,
+            )
             for item in conn.execute(_priority_pending_query()).fetchall():
                 payload = _json_loads(item["payload_json"])
                 if payload.get("priority_track") is not True:
@@ -4489,7 +4518,14 @@ def _ram_latch_opt_census_bypass_available(root: Path, free_ram_gb: float) -> bo
         return False
 
 
-def _opt_census_cells_claimable_in_txn(conn: sqlite3.Connection) -> bool:
+def _opt_census_cells_claimable_in_txn(
+    conn: sqlite3.Connection,
+    *,
+    active_census: dict[str, Any] | None = None,
+    limits: tuple[int, int, int] | None = None,
+    allowlist: frozenset[str] | None = None,
+    lane_aware: bool | None = None,
+) -> bool:
     """Cheap in-transaction EXISTS: is any OPT_CENSUS cell claimable now?
 
     Runs on the already-open claim connection -- no second connection while
@@ -4499,11 +4535,25 @@ def _opt_census_cells_claimable_in_txn(conn: sqlite3.Connection) -> bool:
     answers only "does protected census work exist", which the CENSUS-FIRST
     rule then weighs against the heavy candidate's reservation.  Fails toward
     False (do not defer the heavy) on any DB ambiguity -- the rule only defers.
+
+    The legacy EXISTS answer remains the Default-OFF behaviour.  With
+    ``QM_CENSUS_FIRST_LANE_AWARE=1``, callers pass the transaction-local active
+    census snapshot and already-computed effective K/L/G limits, so blocked
+    programs cannot make an unrelated heavy row defer forever.  No second
+    connection is opened while ``BEGIN IMMEDIATE`` is held.
     """
     try:
-        row = conn.execute(
-            """
-            SELECT 1 FROM work_items w
+        enabled = (
+            _census_first_lane_aware_enabled()
+            if lane_aware is None
+            else bool(lane_aware)
+        )
+        select_columns = (
+            "w.id,w.ea_id,w.symbol,w.payload_json" if enabled else "1"
+        )
+        rows = conn.execute(
+            f"""
+            SELECT {select_columns} FROM work_items w
             WHERE w.status='pending' AND upper(w.phase)='OPT_CENSUS'
               AND NOT EXISTS (
                 SELECT 1 FROM work_item_holds h
@@ -4513,11 +4563,47 @@ def _opt_census_cells_claimable_in_txn(conn: sqlite3.Connection) -> bool:
                 SELECT 1 FROM work_item_supersedes s
                 WHERE s.work_item_id=w.id
               )
-            LIMIT 1
+            {"" if enabled else "LIMIT 1"}
             """
-        ).fetchone()
-        return row is not None
-    except sqlite3.Error:
+        ).fetchall()
+        if not rows:
+            return False
+        if not enabled:
+            return True
+        if active_census is None or limits is None:
+            return False
+        k_eff, l_eff, g_eff = limits
+        if g_eff <= 0 or active_census["total"] >= g_eff:
+            return False
+        allowed = (
+            dl089_scheduling.same_program_parallel_allowlist()
+            if allowlist is None
+            else allowlist
+        )
+        for row in rows:
+            payload = _json_loads(row["payload_json"])
+            program, arm = dl089_scheduling.lane_id(
+                payload, ea_id=row["ea_id"], symbol=row["symbol"]
+            )
+            if (
+                program not in active_census["programs"]
+                and len(active_census["programs"]) >= k_eff
+            ):
+                continue
+            lane_limit = l_eff if program in allowed else min(1, l_eff)
+            if active_census["program_lane_counts"].get(program, 0) >= lane_limit:
+                continue
+            if (program, arm) in active_census["lanes"]:
+                continue
+            return True
+        return False
+    except (
+        sqlite3.Error,
+        KeyError,
+        TypeError,
+        ValueError,
+        dl089_scheduling.SchedulingError,
+    ):
         return False
 
 
@@ -5158,6 +5244,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                 # the census-cell EXISTS runs at most once per claim round and
                 # only when a heavy non-exempt candidate is actually reached.
                 census_first_enabled = _census_first_ram_priority_enabled()
+                census_first_lane_aware = _census_first_lane_aware_enabled()
                 census_cells_claimable: bool | None = None
                 # claim-order memo (2026-09-03): byte-identical rows, reused while
                 # PRAGMA data_version proves the DB unchanged (see farmctl).
@@ -5472,7 +5559,13 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         if not item_is_compile and not is_lineage_rerun:
                             if census_cells_claimable is None:
                                 census_cells_claimable = (
-                                    _opt_census_cells_claimable_in_txn(conn)
+                                    _opt_census_cells_claimable_in_txn(
+                                        conn,
+                                        active_census=active_opt_census,
+                                        limits=(opt_k_eff, opt_l_eff, opt_g_eff),
+                                        allowlist=opt_allowlist,
+                                        lane_aware=census_first_lane_aware,
+                                    )
                                 )
                             if _census_first_defers_heavy_candidate(
                                 reservation_gb=ram_reservation_gb,

@@ -155,6 +155,17 @@ def test_kill_switch_env(monkeypatch):
     assert tw._census_first_ram_priority_enabled() is False
 
 
+def test_lane_aware_flag_is_strict_default_off(monkeypatch):
+    monkeypatch.delenv("QM_CENSUS_FIRST_LANE_AWARE", raising=False)
+    assert tw._census_first_lane_aware_enabled() is False
+    monkeypatch.setenv("QM_CENSUS_FIRST_LANE_AWARE", "0")
+    assert tw._census_first_lane_aware_enabled() is False
+    monkeypatch.setenv("QM_CENSUS_FIRST_LANE_AWARE", "true")
+    assert tw._census_first_lane_aware_enabled() is False
+    monkeypatch.setenv("QM_CENSUS_FIRST_LANE_AWARE", "1")
+    assert tw._census_first_lane_aware_enabled() is True
+
+
 # --------------------------------------------------------------------------
 # In-transaction census-cell EXISTS helper (real DB).
 # --------------------------------------------------------------------------
@@ -212,6 +223,91 @@ def test_census_cells_claimable_excludes_held_and_superseded(tmp_path):
         conn.commit()
 
 
+def test_lane_aware_exists_ignores_500_cells_when_all_program_lanes_full(
+    monkeypatch, tmp_path
+):
+    monkeypatch.setenv("DL089_LANES_PER_PROGRAM", "1")
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = "2026-09-13T00:00:00+00:00"
+    with farmctl.connect(root) as conn:
+        for program in range(3):
+            payload = json.dumps({"program_id": f"p{program}", "arm": "baseline"})
+            conn.execute(
+                "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,"
+                "status,payload_json,created_at,updated_at) VALUES(?,?,?,?,?,"
+                "'x.set','active',?,?,?)",
+                (f"active-{program}", "backtest", "OPT_CENSUS", f"QM5_{program}",
+                 "EURUSD.DWX", payload, now, now),
+            )
+        for index in range(500):
+            program = index % 3
+            payload = json.dumps({"program_id": f"p{program}", "arm": f"arm-{index}"})
+            conn.execute(
+                "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,"
+                "status,payload_json,created_at,updated_at) VALUES(?,?,?,?,?,"
+                "'x.set','pending',?,?,?)",
+                (f"pending-{index}", "backtest", "OPT_CENSUS", f"QM5_{program}",
+                 "EURUSD.DWX", payload, now, now),
+            )
+        active_rows = [
+            dict(row)
+            for row in conn.execute(
+                "SELECT id,phase,ea_id,symbol,payload_json FROM work_items "
+                "WHERE status='active'"
+            )
+        ]
+        snapshot = tw.dl089_scheduling.active_census_snapshot(active_rows)
+        limits = tw.dl089_scheduling.effective_limits(3)
+        assert limits == (3, 1, 3)
+        # Default-OFF is the legacy answer: pending census rows exist.
+        monkeypatch.delenv("QM_CENSUS_FIRST_LANE_AWARE", raising=False)
+        legacy_exists = tw._opt_census_cells_claimable_in_txn(conn)
+        assert legacy_exists is True
+        assert tw._census_first_defers_heavy_candidate(
+            reservation_gb=12.0,
+            free_ram_gb=27.0,
+            census_cells_claimable=legacy_exists,
+            is_priority_tracked_lineage_rerun=False,
+            is_compile=False,
+            enabled=True,
+        ) is True
+        # Opted in: G and every L=1 program lane are full, so none is claimable.
+        monkeypatch.setenv("QM_CENSUS_FIRST_LANE_AWARE", "1")
+        lane_aware_exists = tw._opt_census_cells_claimable_in_txn(
+            conn,
+            active_census=snapshot,
+            limits=limits,
+            allowlist=frozenset(),
+        )
+        assert lane_aware_exists is False
+        assert tw._census_first_defers_heavy_candidate(
+            reservation_gb=12.0,
+            free_ram_gb=27.0,
+            census_cells_claimable=lane_aware_exists,
+            is_priority_tracked_lineage_rerun=False,
+            is_compile=False,
+            enabled=True,
+        ) is False
+        # Free one program/global slot; that program's pending cells become claimable.
+        conn.execute("DELETE FROM work_items WHERE id='active-2'")
+        active_rows = [
+            dict(row)
+            for row in conn.execute(
+                "SELECT id,phase,ea_id,symbol,payload_json FROM work_items "
+                "WHERE status='active'"
+            )
+        ]
+        snapshot = tw.dl089_scheduling.active_census_snapshot(active_rows)
+        assert tw._opt_census_cells_claimable_in_txn(
+            conn,
+            active_census=snapshot,
+            limits=limits,
+            allowlist=frozenset(),
+        ) is True
+        conn.commit()
+
+
 # --------------------------------------------------------------------------
 # claim_atomic wiring: a heavy candidate is deferred / admitted / exempt at the
 # real claim path.  The candidate is made heavy by overriding only its
@@ -266,7 +362,7 @@ def heavy_claim(monkeypatch):
 def _run_claim(monkeypatch, root, *, free_ram, census, terminal="T1"):
     monkeypatch.setattr(tw, "_free_ram_gb", lambda: free_ram)
     monkeypatch.setattr(
-        tw, "_opt_census_cells_claimable_in_txn", lambda conn: census
+        tw, "_opt_census_cells_claimable_in_txn", lambda conn, **kwargs: census
     )
     return tw.claim_atomic(root, terminal)
 

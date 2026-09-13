@@ -4150,3 +4150,16 @@ c07b8653 lane-aware CENSUS-FIRST) cycled through the 6-hour stale-release (relea
 re-claimed without a session. Codex spend in that window was pacer missions only. Fix: the interactive guard now
 applies to agent == "claude" only (test test_codex_lane_ignores_fresh_interactive_flag); the next
 QM_StrategyFarm_CodexOrchestration_15min tick dispatches under the budget line (used 65 % <= line 64.8 + 1).
+
+## 2026-09-13 — RESULT: CENSUS-FIRST lane-aware claimability shipped Default-OFF
+
+Ticket `c07b8653`: `QM_CENSUS_FIRST_LANE_AWARE=1` makes the protected-census
+EXISTS predicate reuse the claim transaction's active-program, active-lane and
+effective K/L/G snapshot. With three L=1 programs occupying all three effective
+global slots, 500 pending cells in those same programs no longer defer an
+unrelated heavy row; the unset/default path retains the prior EXISTS behaviour.
+No cap, protected band, queue order, verdict, or pipeline evidence changed.
+Focused tests: 20 passed. Evidence:
+`docs/ops/evidence/2026-09-13_census_first_lane_aware.md`.
+
+RESULT task=c07b8653 default_off=true tests=20 verdict=IMPLEMENTATION_PASS
