@@ -21,6 +21,10 @@ from typing import Any
 # unit-testable. Dual import keeps both package and bare-script execution
 # working, exactly like the other strategy_farm modules.
 try:  # pragma: no cover - import shape depends on the caller
+    from tools.strategy_farm import codex_budget_line
+except ModuleNotFoundError:  # pragma: no cover - direct script execution
+    import codex_budget_line
+try:  # pragma: no cover - import shape depends on the caller
     from tools.strategy_farm import codex_model_tiers
 except ModuleNotFoundError:  # pragma: no cover - direct script execution
     import codex_model_tiers  # type: ignore
@@ -816,6 +820,31 @@ def evaluate_spawn(
             record_gate_decision(result, state_path=state_path, summary_path=summary_path)
         return result
 
+    # OWNER 2026-09-13: the shared Codex budget line binds every Codex spawn, owner priority
+    # included (priority >= owner_priority_min bypassed all pace thresholds and burned 4 % -> 64 %
+    # of the week in 22 h).  Explicit payload field codex_budget_line_exempt=true is the only
+    # per-task escape hatch (orchestrator use, e.g. a live-book incident).
+    if normalized_agent == "codex" and not bool((payload or {}).get("codex_budget_line_exempt")):
+        budget = codex_budget_line.evaluate(
+            used=metrics["weekly_used_pct"], now=now, governor_path=state_path or GOVERNOR_STATE_PATH,
+        )
+        if budget.get("enabled") and not budget.get("allowed"):
+            result = _decision(
+                allowed=False,
+                agent=normalized_agent,
+                task_type=task_type,
+                priority=priority,
+                reason=str(budget.get("reason") or "codex_budget_line_exceeded"),
+                task_class=task_class,
+                state_status="budget_line",
+                metrics=metrics,
+                violations=["codex_budget_line"],
+                policy_schema=schema,
+            )
+            result["budget_line"] = budget
+            if write_summary:
+                record_gate_decision(result, state_path=state_path, summary_path=summary_path)
+            return result
     if owner_priority:
         result = _decision(
             allowed=True,

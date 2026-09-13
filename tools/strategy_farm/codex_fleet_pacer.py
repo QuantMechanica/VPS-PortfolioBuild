@@ -41,6 +41,14 @@ except ModuleNotFoundError:
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FARM_ROOT = Path(os.environ.get("QM_STRATEGY_FARM_ROOT", r"D:\QM\strategy_farm"))
 GOV_STATE = Path(r"D:/QM/reports/state/quota_governor_state.json")
+GOV_LOG = Path(r"D:/QM/reports/state/quota_governor.log")
+GOV_THROTTLE_FLAG = Path(r"D:/QM/strategy_farm/CODEX_LOW_TOKENS.flag")  # quota_governor FLAGS["codex"]
+RATE_WINDOW_HOURS = 2.0  # OWNER 2026-09-13 pacing: measure spend over >= 1 h of governor samples, not one 15-min tick
+try:
+    import codex_budget_line
+except ModuleNotFoundError:  # pragma: no cover - package-style import
+    from tools.strategy_farm import codex_budget_line
+
 PACER_DIR = Path(r"D:/QM/strategy_farm/codex_pacer")
 PROMPT_DIR = PACER_DIR / "prompts"
 LOG_DIR = PACER_DIR / "logs"
@@ -174,6 +182,40 @@ def should_hold_for_tester_drain_cap(
     if not tester_drain_saturated(active_count, threshold=threshold):
         return False
     return total_codex_hosts >= max_hosts
+
+
+def rate_from_governor_log(now: dt.datetime, *, window_hours: float = RATE_WINDOW_HOURS,
+                           log_path: Path = GOV_LOG, min_span_hours: float = 1.0) -> float | None:
+    """Spend rate (%/h) over the quota governor 15-min codex samples inside the window.
+
+    OWNER 2026-09-13 pacing fix: used% is integer-granular, so a single 15-min delta reads 0.0 or
+    ~4.0 %/h and the pacer alternated between under-pace ramp-ups and holds while spawning a Sol
+    mission every 15-30 min.  Returns None when fewer than two samples span >= min_span_hours
+    (the caller must then NOT spawn).
+    """
+    try:
+        lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()[-400:]
+    except OSError:
+        return None
+    samples: list[tuple[dt.datetime, float]] = []
+    cutoff = now - dt.timedelta(hours=window_hours)
+    for line in lines:
+        if " codex: used=" not in line:
+            continue
+        try:
+            ts = dt.datetime.fromisoformat(line[:20].replace("Z", "+00:00"))
+            used_sample = float(line.split("used=", 1)[1].split("%", 1)[0])
+        except (ValueError, IndexError):
+            continue
+        if cutoff <= ts <= now:
+            samples.append((ts, used_sample))
+    if len(samples) < 2:
+        return None
+    (t0, u0), (t1, u1) = samples[0], samples[-1]
+    span_h = (t1 - t0).total_seconds() / 3600.0
+    if span_h < min_span_hours:
+        return None
+    return (u1 - u0) / span_h
 
 
 def _now() -> dt.datetime:
@@ -434,8 +476,8 @@ def main(argv: list[str] | None = None) -> int:
     running = len(pids)
 
     # recent spend rate (%/hr) from our last observation
-    rate = None
-    if prev.get("ts") and "used" in prev:
+    rate = rate_from_governor_log(_now())
+    if rate is None and prev.get("ts") and "used" in prev:
         dt_h = (_now() - dt.datetime.fromisoformat(prev["ts"])).total_seconds() / 3600.0
         if dt_h > 0.05:
             rate = (used - float(prev["used"])) / dt_h
@@ -460,8 +502,8 @@ def main(argv: list[str] | None = None) -> int:
         target = running
         action = "soft_ceil_no_spawn"
     elif rate is None:
-        target = min(1, args.max_agents)  # conservative until we have a measured spend rate
-        action = "bootstrap"
+        target = running  # OWNER 2026-09-13: an unmeasured spend rate never buys a spawn
+        action = "rate_unknown_hold"
     elif rate < target_rate * 0.85:
         target = min(args.max_agents, running + 1)
         action = "under_pace_rampup"
@@ -472,6 +514,16 @@ def main(argv: list[str] | None = None) -> int:
         target = running
         action = "on_pace_hold"
 
+    # OWNER 2026-09-13 (Codex-Verbrauch an Wochenlimit anpassen, wie bei Claude): the pacer is the
+    # build lane the quota governor throttles, and every Codex spawn honours the shared budget line.
+    budget = codex_budget_line.evaluate(used=used, reset=reset, now=_now())
+    if action != "HARD_CEIL_kill" and target > running:
+        if GOV_THROTTLE_FLAG.exists():
+            target = running
+            action = "governor_throttle_hold"
+        elif budget.get("enabled") and not budget.get("allowed"):
+            target = running
+            action = "budget_line_hold"
     tester_drain_active = read_tester_drain_active_count()
     total_codex_hosts = len(list_live_managed_codex_processes(FARM_ROOT))
     tester_drain_cap_applied = False
@@ -514,6 +566,9 @@ def main(argv: list[str] | None = None) -> int:
         "tester_drain_cap_applied": tester_drain_cap_applied,
         "tester_drain_cap_enabled": tester_drain_cap_enabled(),
         "blocked_build_stops": blocked_build_stops,
+        "governor_throttle_flag": GOV_THROTTLE_FLAG.exists(),
+        "budget_line": {k: budget.get(k) for k in ("enabled", "allowed", "reason", "line_pct", "next_allowed_in_hours")},
+        "rate_window_hours": RATE_WINDOW_HOURS,
     }
     _write_state(state, dry_run=args.dry_run)
     _log(f"used={used:.1f}% rate={state['rate_pct_per_hr']} target_rate={target_rate:.3f}/hr "

@@ -413,3 +413,14 @@ def test_router_persists_recycle_escalation_in_task_payload(tmp_path: Path) -> N
     assert escalation["prior_run_tier"] == "medium"
     assert escalation["selected_tier"] == "high"
     assert assigned["payload"]["quota_gate"]["tier_escalation"] == escalation
+
+
+import pytest as _pytest  # noqa: E402
+
+
+@_pytest.fixture(autouse=True)
+def _codex_budget_line_off(monkeypatch):
+    """The OWNER 2026-09-13 Codex budget line is an additional gate covered by
+    test_codex_budget_line.py; the class-threshold semantics under test here must
+    not depend on the production line state (D:/QM/reports/state/codex_budget_line.json)."""
+    monkeypatch.setenv("QM_CODEX_BUDGET_LINE", "0")
