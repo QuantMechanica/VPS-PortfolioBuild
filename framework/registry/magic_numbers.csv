@@ -18483,3 +18483,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11926,rb-rsi-ma-filter,0,EURUSD.DWX,119260000,2026-09-13,Codex governed allocator,active
 11927,rb-atr-candle-break,0,XAUUSD.DWX,119270000,2026-09-13,Codex governed allocator,active
 11932,ff-tms-big-e,0,EURUSD.DWX,119320000,2026-09-13,Codex governed allocator,active
+11939,ff-j16-pin-rejection,0,EURUSD.DWX,119390000,2026-09-13,Codex governed allocator,active
