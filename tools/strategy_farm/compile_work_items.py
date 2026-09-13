@@ -449,6 +449,11 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
     "QM5_9579_bandy-atr-channel-breakout-trend": (
         "router_review_ea:ad98fd21-0459-4b0b-a673-69d41d2b1a0d"
     ),
+    # OWNER 2026-09-13 (decisions/2026-09-13_owner_symbol_fix_priority_track.md): symbol-literal
+    # source repair (Hard Rule 2026-09-06, symbols as inputs) - append-only, source-hash-bound
+    # COMPILE_EA successors; the rebuilt EX5 is a new identity from Q02 (router ticket 5c4b7c23).
+    "QM5_13054_brent-tom-mom": "router_ops_issue:5c4b7c23-2d1f-4069-8e1d-d13374855d67",
+    "QM5_21505_xag-weekly-lowvol-momentum": "router_ops_issue:5c4b7c23-2d1f-4069-8e1d-d13374855d67",
 }
 REVIEW_REWORK_SOURCE_REPAIR_EA_LABELS = frozenset(
     REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES
