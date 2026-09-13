@@ -1,0 +1,11 @@
+{
+  "applied_at": "2026-09-13T15:28:13+00:00",
+  "backup": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_book_v2_duplicate_41221_20260913T152755Z.sqlite",
+  "backup_sha256": "fdf8f0cb7fe4f485588fa6a09f5e7fee27fd63bb1748056f379cd9e6dd53ff9e",
+  "disposition_work_item_id": "880d21ce-b297-51c4-a35f-6dc009680a54",
+  "owner_decision_id": "OWNER-DEC-DUPLICATE-41221-11421-20260913",
+  "owner_verbatim": "Den Klon kannst Du fuer mir streichen.",
+  "plan_sha256": "dd90494b5b9b704424bb26c23b30c64cf12efbac947fbf7fe4e3c307606c5190",
+  "schema": "qm.book-v2-duplicate-disposition-receipt/v1",
+  "source_work_item_id": "dd6facac-ede0-5afe-9883-934cda38ff01"
+}

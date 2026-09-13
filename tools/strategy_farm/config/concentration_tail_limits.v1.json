@@ -1,50 +1,68 @@
 {
-  "schema": "qm.concentration-tail-policy/v1",
-  "status": "OWNER_RATIFIED",
-  "design_ref": "docs/ops/SP-C3_CONCENTRATION_TAIL_LIMITS_DESIGN_2026-08-22.md",
-  "stop_risk_budget_pct": 2.5,
-  "caps_percent_of_budget": {
+ "schema": "qm.concentration-tail-policy/v1",
+ "status": "OWNER_RATIFIED",
+ "design_ref": "docs/ops/SP-C3_CONCENTRATION_TAIL_LIMITS_DESIGN_2026-08-22.md",
+ "stop_risk_budget_pct": 9.75,
+ "caps_percent_of_budget": {
+  "symbol": 46.0,
+  "asset_class": 69.0,
+  "family": 57.5,
+  "session_warn": 69.0,
+  "session": 80.5
+ },
+ "tail": {
+  "per_sleeve_worst_fraction": 0.05,
+  "joint_sleeve_divisor": 3,
+  "venue_daily_loss_limit_pct": 5.0,
+  "maximum_fraction_of_daily_limit": 0.8
+ },
+ "sessions_broker_wall": {
+  "ASIA": [
+   0,
+   7
+  ],
+  "EU": [
+   7,
+   13
+  ],
+  "US": [
+   13,
+   24
+  ]
+ },
+ "family_fallback": "ea_directory_slug_first_hyphen_token",
+ "application_authority": "OWNER_ONLY",
+ "deployment_action": "NONE",
+ "autotrading_action": "NONE",
+ "notes": [
+  "Thresholds reproduce the Claude SP-C3 design and remain unratified.",
+  "The implementation may show/reject breaches, but no clean proposal is eligible until status is OWNER_RATIFIED.",
+  "Any application to live weights is a separate OWNER ceremony."
+ ],
+ "ratification": {
+  "decided_by": "OWNER",
+  "decided_at_utc": "2026-09-13T15:26:00Z",
+  "channel": "Claude chat (OWNER-DEC-CONCENTRATION-SCALE-20260913)",
+  "receipt": "docs/ops/OPEN_ITEMS_STATUS.md 2026-09-13 + D:/QM/reports/state/owner_decisions.json",
+  "verbatim": "OWNER chat 2026-09-13 ~17:0xZ (verbatim): Ob ohne oder Cutover ist mir doch komplett egal. Den Klon kannst Du fuer mir streichen. Die Konzentrationscaps kannst Du fuenfzehn Prozent erhoehen beziehungsweise wie fuer Darwinex Zero am besten geeignet. Alle weiteren offenen Punkte musst Du ebenfalls vor dem Buch noch loesen.",
+  "orchestrator_interpretation": "scale = ratified DXZ book risk 9.75 % (the 2.5 % stop-risk budget made every book incl. the live one CONCENTRATION_CAP_BREACH); caps raised 15 % relative (symbol 40->46, asset_class 60->69, family 50->57.5, session_warn 60->69, session 70->80.5); tail limits unchanged (DXZ venue daily loss 5 %, 0.8 fraction).",
+  "previous": {
+   "stop_risk_budget_pct": 2.5,
+   "caps_percent_of_budget": {
     "symbol": 40.0,
     "asset_class": 60.0,
     "family": 50.0,
     "session_warn": 60.0,
     "session": 70.0
-  },
-  "tail": {
-    "per_sleeve_worst_fraction": 0.05,
-    "joint_sleeve_divisor": 3,
-    "venue_daily_loss_limit_pct": 5.0,
-    "maximum_fraction_of_daily_limit": 0.8
-  },
-  "sessions_broker_wall": {
-    "ASIA": [
-      0,
-      7
-    ],
-    "EU": [
-      7,
-      13
-    ],
-    "US": [
-      13,
-      24
-    ]
-  },
-  "family_fallback": "ea_directory_slug_first_hyphen_token",
-  "application_authority": "OWNER_ONLY",
-  "deployment_action": "NONE",
-  "autotrading_action": "NONE",
-  "notes": [
-    "Thresholds reproduce the Claude SP-C3 design and remain unratified.",
-    "The implementation may show/reject breaches, but no clean proposal is eligible until status is OWNER_RATIFIED.",
-    "Any application to live weights is a separate OWNER ceremony."
-  ],
-  "ratification": {
+   },
+   "ratification": {
     "decided_by": "OWNER",
     "decided_at_utc": "2026-09-02T09:50:00Z",
     "channel": "Claude chat (CEO-ASK-20260902-4: \"ja\")",
     "receipt": "decisions/2026-09-02_owner_receipts_ceo_asks.md",
     "thresholds_unchanged": true,
     "note": "Ratifies the SP-C3 design thresholds as proposed (symbol 40 %, asset class 60 %, family 50 %, session WARN/breach, stop-risk budget 2.5 %). Application, deployment and AutoTrading remain OWNER_ONLY/NONE."
+   }
   }
+ }
 }

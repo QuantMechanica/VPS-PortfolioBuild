@@ -4249,3 +4249,24 @@ UNION (live 24 + newly qualified, duplicate removed) after the stream repair. Co
 shared-grid + --union mode); Mission Control decisions OWNER-DEC-BOOK-V2-PATH-20260913 (recommend no cutover, union
 re-evaluation, Wiedervorlage 2026-09-19), OWNER-DEC-DUPLICATE-41221-11421-20260913, OWNER-DEC-CONCENTRATION-SCALE-20260913.
 Three dead live sleeves (12778, 13117 symbol mismatch, 12969 dark) remain an OWNER cleanup item under the risk freeze.
+
+## 2026-09-13T15:35Z OWNER decisions on the book (chat ~15:0xZ) applied: duplicate, concentration scale, path
+OWNER (verbatim): "Ob ohne oder Cutover ist mir doch komplett egal. Den Klon kannst Du fuer mir streichen. Die
+Konzentrationscaps kannst Du fuenfzehn Prozent erhoehen beziehungsweise wie fuer Darwinex Zero am besten geeignet. Alle
+weiteren offenen Punkte musst Du ebenfalls vor dem Buch noch loesen."
+- OWNER-DEC-DUPLICATE-41221-11421-20260913 = YES: append-only disposition row 880d21ce (kind disposition, Q14,
+  SUPERSEDED_DUPLICATE, supersedes edge from the Q14 row dd6facac; backup + FactoryMutationLock; receipt
+  docs/ops/evidence/2026-09-13_dxz_book_v2/duplicate_41221_disposition_receipt.json). Note: rebaseline_census counts a
+  gate valid when ANY done PASS-class row exists and does not read work_item_supersedes, so the guard still reports 26
+  qualified pairs; the exclusion is enforced at book construction (builder --exclude-pair 41221:EURUSD.DWX, pool note).
+- OWNER-DEC-CONCENTRATION-SCALE-20260913 = YES: tools/strategy_farm/config/concentration_tail_limits.v1.json now
+  stop_risk_budget_pct 9.75 (the ratified DXZ book risk; the 2.5 % budget made every book incl. the live one
+  CONCENTRATION_CAP_BREACH) and caps x1.15 (symbol 46, asset_class 69, family 57.5, session_warn 69, session 80.5);
+  tail limits unchanged; ratification block carries the verbatim. Tests: mechanics pinned to the legacy fixture scale +
+  new ratified-values test (8 passed).
+- OWNER-DEC-BOOK-V2-PATH-20260913: OWNER indifferent on cutover timing -> Orchestrator decision: union book, no cutover
+  today; cutover when streams, builder, Q16 and the freeze are green.
+- Freeze deadlock found: minting the signed live_deployment_pointer (lift condition 1) is itself refused by the freeze
+  guard (LIVE_RISK_FREEZE_BLOCKED operation=mint a signed T_Live deployment pointer). Conditions 2/3 (news contract v2,
+  governor hardening) are separate programs. The freeze can therefore only be lifted by the OWNER's explicit written
+  sentence (transcribed as lift_authority) - requested at cutover time. Pointer dry-run is ready (24/24 binaries OK).

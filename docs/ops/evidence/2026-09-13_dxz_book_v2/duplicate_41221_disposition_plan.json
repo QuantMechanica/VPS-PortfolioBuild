@@ -1,0 +1,27 @@
+{
+  "disposition_verdict": "SUPERSEDED_DUPLICATE",
+  "disposition_work_item_id": "880d21ce-b297-51c4-a35f-6dc009680a54",
+  "evidence": "docs/ops/evidence/2026-09-13_dxz_book_v2/FIT_REPORT.md (r = 1.0000, identical 91 trades, PF 1.1415, MaxDD 5.9696 %)",
+  "generated_at": "2026-09-13T15:27:55+00:00",
+  "keep_pair": {
+    "ea_id": "QM5_11421",
+    "q14_row": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6",
+    "q14_verdict": "KEEP_INCUMBENT",
+    "symbol": "EURUSD.DWX"
+  },
+  "owner_decision_id": "OWNER-DEC-DUPLICATE-41221-11421-20260913",
+  "owner_verbatim": "Den Klon kannst Du fuer mir streichen.",
+  "schema": "qm.book-v2-duplicate-disposition-plan/v1",
+  "source_identity": {
+    "created_at": "2026-09-09T05:39:00.875561+00:00",
+    "ea_id": "QM5_41221",
+    "id": "dd6facac-ede0-5afe-9883-934cda38ff01",
+    "phase": "Q14",
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8\\sets\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8_EURUSD.DWX_D1_backtest.set",
+    "status": "done",
+    "symbol": "EURUSD.DWX",
+    "verdict": "KEEP_INCUMBENT"
+  },
+  "source_identity_sha256": "8c40d44e4e9a52f8df709362db6f9a75f3448cba6d8fcdeae86bbc6f34d9368e",
+  "source_work_item_id": "dd6facac-ede0-5afe-9883-934cda38ff01"
+}

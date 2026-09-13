@@ -9,9 +9,23 @@ import pytest
 from tools.strategy_farm.portfolio import concentration_tail as ct
 
 
-def _policy(tmp_path: Path, *, ratified: bool = True) -> Path:
+# The mechanics tests below pin the ORIGINAL SP-C3 fixture scale (2.5 % stop-risk budget, caps
+# 40/60/50/60/70) so they keep proving the arithmetic; the ratified file itself moved to the
+# 9.75 % book-risk scale with caps x1.15 on 2026-09-13 (OWNER-DEC-CONCENTRATION-SCALE-20260913)
+# and is asserted separately in test_ratified_policy_is_book_risk_scale_with_15pct_uplift.
+LEGACY_FIXTURE_SCALE = {
+    "stop_risk_budget_pct": 2.5,
+    "caps_percent_of_budget": {"symbol": 40.0, "asset_class": 60.0, "family": 50.0,
+                               "session_warn": 60.0, "session": 70.0},
+}
+
+
+def _policy(tmp_path: Path, *, ratified: bool = True, legacy_scale: bool = True) -> Path:
     value = json.loads(ct.DEFAULT_POLICY_PATH.read_text(encoding="utf-8"))
     value["status"] = "OWNER_RATIFIED" if ratified else "PROPOSED_OWNER_RATIFICATION_REQUIRED"
+    if legacy_scale:
+        value["stop_risk_budget_pct"] = LEGACY_FIXTURE_SCALE["stop_risk_budget_pct"]
+        value["caps_percent_of_budget"] = dict(LEGACY_FIXTURE_SCALE["caps_percent_of_budget"])
     path = tmp_path / "policy.json"
     path.write_text(json.dumps(value), encoding="utf-8")
     return path
@@ -156,3 +170,21 @@ def test_proposed_policy_never_mints_builder_eligibility(tmp_path: Path) -> None
     assert report["passed"] is True
     assert report["status"] == "POLICY_UNRATIFIED"
     assert report["builder_eligible"] is False
+
+
+def test_ratified_policy_is_book_risk_scale_with_15pct_uplift() -> None:
+    """OWNER 2026-09-13 (OWNER-DEC-CONCENTRATION-SCALE-20260913): the ratified caps live on the
+    9.75 % DXZ book-risk scale (the 2.5 % stop-risk budget made every book, the live one included,
+    CONCENTRATION_CAP_BREACH) and were raised 15 % relative. Tail limits are unchanged."""
+    value = json.loads(ct.DEFAULT_POLICY_PATH.read_text(encoding="utf-8"))
+    assert value["status"] == "OWNER_RATIFIED"
+    assert value["stop_risk_budget_pct"] == pytest.approx(9.75)
+    caps = value["caps_percent_of_budget"]
+    assert caps["symbol"] == pytest.approx(46.0)
+    assert caps["asset_class"] == pytest.approx(69.0)
+    assert caps["family"] == pytest.approx(57.5)
+    assert caps["session_warn"] == pytest.approx(69.0)
+    assert caps["session"] == pytest.approx(80.5)
+    assert value["tail"]["venue_daily_loss_limit_pct"] == pytest.approx(5.0)
+    assert value["ratification"]["decided_by"] == "OWNER"
+    assert "OWNER-DEC-CONCENTRATION-SCALE-20260913" in value["ratification"]["channel"]
