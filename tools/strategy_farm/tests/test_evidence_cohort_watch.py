@@ -54,6 +54,27 @@ def test_no_loss_when_evidence_survives(tmp_path):
     assert "losses" not in data
 
 
+def test_gzip_compressed_evidence_is_not_a_loss(tmp_path):
+    """NEGATIVE control: DL-090 retention compresses the kept set in place
+    (summary.json -> summary.json.gz, original unlinked). A gzipped-in-place
+    artifact is the evidence surviving, not a deletion, so the watcher must NOT
+    report a loss when only the .gz sibling remains. Regression for the
+    2026-09-13 false LOSS_OBSERVED (~83% of flagged rows were merely .gz)."""
+    root = tmp_path / "work_items" / "a1b2c3d4"
+    root.mkdir(parents=True)
+    ev = root / "summary.json"                       # original removed on compression
+    (root / "summary.json.gz").write_bytes(b"\x1f\x8b\x08\x00gzipped")
+    bl = tmp_path / "baseline.json"
+    bl.write_text(json.dumps(_baseline({"a1b2c3d4-0000-0000-0000-000000000000":
+                                        _entry(ev, root)})), encoding="utf-8")
+    mod = _load(bl)
+    assert mod.cmd_check(False) == 0, "a .gz sibling means the evidence survived compression"
+    data = json.loads(bl.read_text(encoding="utf-8"))
+    assert data["observations"][-1]["intact"] == 1
+    assert data["observations"][-1]["evidence_file_missing"] == 0
+    assert "losses" not in data
+
+
 def test_fires_when_the_whole_report_root_vanishes(tmp_path):
     """POSITIVE control: the exact observed failure mode -- the whole tree gone."""
     root = tmp_path / "work_items" / "a1b2c3d4"

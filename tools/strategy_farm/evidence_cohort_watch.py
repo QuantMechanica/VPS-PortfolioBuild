@@ -61,6 +61,20 @@ PRODUCTIVE = (
 SAMPLE_PER_DAY = 40
 
 
+def _evidence_present(path: str | None) -> bool:
+    """Evidence survives if the file exists OR its DL-090 compressed sibling does.
+
+    DL-090 retention (report_retention.py) compresses the KEPT set in place —
+    ``summary.json`` -> ``summary.json.gz`` and then unlinks the original. A
+    gzipped-in-place artifact is the evidence surviving, not a deletion, so a
+    literal ``os.path.exists`` on the ``.json`` path raises a false
+    LOSS_OBSERVED for every compressed kept row (the dominant false positive:
+    ~83% of flagged rows on 2026-09-13 were merely ``.gz``). Treat a ``.gz``
+    sibling as present; a genuinely deleted artifact still has neither.
+    """
+    return bool(path) and (os.path.exists(path) or os.path.exists(path + ".gz"))
+
+
 def utc_now() -> str:
     return dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -119,7 +133,7 @@ def collect_candidates() -> list[dict]:
         if per_day.get(day, 0) >= SAMPLE_PER_DAY:
             continue
         p = r["evidence_path"]
-        if not os.path.exists(p):
+        if not _evidence_present(p):
             continue
         # The report ROOT is what vanishes, so watch the root as well as the file.
         root = None
@@ -164,7 +178,7 @@ def cmd_check(as_json: bool) -> int:
 
     lost_file, lost_root, intact = [], [], 0
     for wid, e in entries.items():
-        f_ok = os.path.exists(e["evidence_path"])
+        f_ok = _evidence_present(e["evidence_path"])
         r_ok = os.path.exists(e["report_root"]) if e.get("report_root") else None
         if not f_ok:
             rec = dict(e)
