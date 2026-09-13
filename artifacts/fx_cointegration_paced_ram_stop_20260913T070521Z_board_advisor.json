@@ -1,0 +1,102 @@
+{
+  "schema_version": "fx_cointegration_paced_capacity_stop.v1",
+  "recorded_at_utc": "2026-09-13T07:05:21Z",
+  "branch": "agents/board-advisor",
+  "observation_head": "713adf6823a375eb64e1098400f6c34deb8800eb",
+  "scan": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "strict_survivor_count": 7,
+    "all_strict_survivors_built": true,
+    "unbuilt_eligible_pair_found": false,
+    "anchor_states": [
+      {
+        "ea_id": "QM5_12532",
+        "pair": [
+          "AUDUSD.DWX",
+          "NZDUSD.DWX"
+        ],
+        "state": [
+          "Q02_PASS",
+          "Q04_PASS",
+          "Q05_FAIL"
+        ]
+      },
+      {
+        "ea_id": "QM5_12533",
+        "pair": [
+          "EURJPY.DWX",
+          "GBPJPY.DWX"
+        ],
+        "state": [
+          "Q02_PASS",
+          "Q04_FAIL"
+        ]
+      }
+    ]
+  },
+  "fallback": {
+    "ea_id": "QM5_12712",
+    "logical_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "work_item_id": "b68d05cd-e52c-43a5-96aa-5e0306efa60f",
+    "phase": "Q08",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "priority_track": true,
+    "active_hold_count": 0,
+    "duplicate_successor_created": false
+  },
+  "cpu_ceiling": {
+    "threshold_percent": 97.0,
+    "samples_percent": [
+      79.022292,
+      77.612884,
+      87.846125,
+      93.068869,
+      93.115968
+    ],
+    "average_percent": 86.133228,
+    "maximum_percent": 93.115968,
+    "triggered": false
+  },
+  "memory_admission": {
+    "free_physical_memory_gib": 13.479,
+    "total_physical_memory_gib": 63.12,
+    "basket_commit_reservation_gib": 32.0,
+    "safety_floor_gib": 14.0,
+    "required_free_gib": 46.0,
+    "admitted": false
+  },
+  "fleet": {
+    "active_work_items": 6,
+    "active_by_phase": {
+      "Q07": 2,
+      "OPT_CENSUS": 4
+    },
+    "active_work_item_ids": [
+      "8bfc728a-9e59-4618-b240-88f809be42e5",
+      "0dc8813d-3f6a-4de4-a0ed-16e7d9b40d2c",
+      "44cabf23-6383-51fa-9877-5b928f3701c5",
+      "9f0839c8-470b-5c79-b0fa-256129729b01",
+      "38a1648f-4f4b-5719-82c3-230f75a87c82",
+      "0e6b8d9f-ffcf-5af2-9fa8-ce08582be2a6"
+    ]
+  },
+  "mutations": {
+    "card": false,
+    "ea_source": false,
+    "compile_enqueue": false,
+    "backtest_enqueue": false,
+    "priority": false,
+    "dispatch": false,
+    "portfolio_gate": false,
+    "t_live": false,
+    "autotrading": false
+  },
+  "pacer_build_guard": {
+    "mq5_written": false,
+    "compile_enqueue_attempted": false,
+    "audit_required": false
+  }
+}

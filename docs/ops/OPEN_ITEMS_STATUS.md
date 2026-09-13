@@ -1,5 +1,15 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 13.09. 07:05Z — FX-Cointegration-Fallback nicht dupliziert, RAM-Aufnahme stoppt Dispatch:**
+> Der bindende 66-Paar-Screen ist vollständig mechanisiert; QM5_12532/12533
+> sind über Q02 hinaus und tragen echte Q05-/Q04-FAILs. Der konkrete
+> EURGBP/EURAUD-Fallback QM5_12712 besitzt bereits genau einen priorisierten,
+> hold-freien Q08-Successor (`b68d05cd`), daher wurde keine Duplikat-Row
+> erzeugt. CPU max. 93,116 % < 97 %, aber nur 13,479 GiB RAM frei gegenüber
+> 46 GiB Basket-Aufnahmebedarf; kein Dispatch/Tester/Compile. Keine Portfolio-
+> oder Live-Fläche geändert. Evidence:
+> `docs/research/FX_COINTEGRATION_PACED_RAM_STOP_20260913T070521Z.md`.
+
 > **RESULT 13.09. 06:04Z — QM5_41468 neuer WTI-Downside-Sleeve gebaut und Q02 eingereiht:**
 > Quellenpaket/Card für die strukturelle November–Mai-Regel genehmigt: genau
 > eine abgeschlossene Woche, Short nur bei `CLV < 1/3`, nächstwöchentlicher
