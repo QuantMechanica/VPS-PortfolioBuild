@@ -4331,3 +4331,11 @@ TAINTED) and must be dispositioned after the fix, never released into run_smoke.
 max_rank.v1 -> the canonical file loads (48,727 rows, 1 conflict resolved to high). risk_freeze.py LIFT_CONDITIONS texts
 now state the delivered 2026-09-13 facts for all three conditions (documentation only; the freeze stays ACTIVE until the
 OWNER lifts it in writing). Still open for "Q09 rerun complete": the active Q10_NEWS lane (95 REVIEW_REQUIRED, 52 pending).
+
+## 2026-09-13T17:15Z Taint backup churn fixed (commit 7d1e16253d); retention ticket f5d30fc9 rescoped to evidence + optional reuse
+news_calendar_taint.sweep(apply=True) now runs a read-only preflight synchronize and takes the governed 1.27 GB backup +
+FACTORY_MUTATION.lock only when at least one row needs HOLD/RELEASE (previously every 10 minutes unconditionally: ~7 GB/h
+write churn and fleet-wide lock_busy claim declines). Two tests cover the skip and the pass-through. Effective with the
+next scheduled sweep (the task runs the repo script). Remaining per-label anchors (compile_wave, governed_hold,
+first_q02_intake: keep 3 x 1.27 GB) stay; f5d30fc9 (priority 60) keeps only the evidence correction and the optional
+live-DB backup reuse.
