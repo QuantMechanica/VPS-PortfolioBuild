@@ -12,14 +12,13 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from tools.strategy_farm.portfolio.book_builder_common import (
     BookBuildError,
-    aligned_matrix,
     book_metrics,
     capped_inverse_vol,
     canonical_json,
@@ -29,9 +28,11 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     load_cluster_overlay,
     load_daily,
     load_json,
+    matrix_on_grid,
     portfolio_daily,
     resolve_roster,
     roster_sha256,
+    shared_day_grid,
     sha256_bytes,
     sleeve_bindings,
     validate_dual_book_manifest,
@@ -78,6 +79,114 @@ def _incumbent(path: Path) -> tuple[list[tuple[int, str]], dict[tuple[int, str],
     return sorted(keys), weights, {"input": file_binding(path), "book": payload.get("book")}
 
 
+Key = tuple[int, str]
+
+
+def parse_pair(text: str) -> Key:
+    """Parse an ``EA:SYMBOL`` CLI pair into the canonical roster key."""
+    raw = str(text).strip()
+    if ":" not in raw:
+        raise BookBuildError(f"pair must be EA:SYMBOL, got {text!r}")
+    ea_id, _, symbol = raw.partition(":")
+    return key_from_row({"ea_id": ea_id.strip(), "symbol": symbol.strip()}, f"pair {text!r}")
+
+
+def _compose_roster(
+    roster: Sequence[Key],
+    incumbent_keys: Sequence[Key],
+    *,
+    union: bool,
+    exclude_pairs: Sequence[Key],
+) -> tuple[list[Key], dict[str, Any]]:
+    """Resolve the proposal sleeve set and record every admission/drop reason.
+
+    ``union`` evaluates the incumbent roster PLUS the proposal roster,
+    de-duplicated by ``(ea_id, symbol)``; the proposal row wins an overlap, so
+    an overlapping sleeve is sourced from the proposal stream root.  Exclusions
+    apply to the PROPOSAL side only -- the incumbent comparison baseline is the
+    live book as it stands and is never edited by this tool.
+    """
+    proposal_set = set(roster)
+    incumbent_set = set(incumbent_keys)
+    overlap = sorted(proposal_set & incumbent_set)
+    candidates = sorted(proposal_set | incumbent_set) if union else sorted(proposal_set)
+    excluded = sorted(set(exclude_pairs))
+    dropped: list[dict[str, Any]] = []
+    for key in excluded:
+        if key in candidates:
+            dropped.append({
+                "ea_id": key[0],
+                "symbol": key[1],
+                "reason": "EXCLUDED_BY_OPERATOR_EXCLUDE_PAIR",
+                "was_in_proposal": key in proposal_set,
+                "was_in_incumbent": key in incumbent_set,
+            })
+        else:
+            dropped.append({
+                "ea_id": key[0],
+                "symbol": key[1],
+                "reason": "EXCLUDE_PAIR_NOT_IN_EVALUATED_ROSTER",
+                "was_in_proposal": key in proposal_set,
+                "was_in_incumbent": key in incumbent_set,
+            })
+    effective = [key for key in candidates if key not in set(excluded)]
+    if not effective:
+        raise BookBuildError("every proposed sleeve was excluded; nothing left to evaluate")
+    composition = {
+        "mode": "UNION_WITH_INCUMBENT" if union else "REPLACEMENT",
+        "proposal_roster_sleeves": len(proposal_set),
+        "incumbent_roster_sleeves": len(incumbent_set),
+        "evaluated_sleeves": len(effective),
+        "deduplicated_overlap": [{"ea_id": ea, "symbol": symbol} for ea, symbol in overlap],
+        "deduplication_rule": "PROPOSAL_ROW_WINS_ON_EA_SYMBOL",
+        "incumbent_only_sleeves": [
+            {"ea_id": ea, "symbol": symbol}
+            for ea, symbol in sorted(set(effective) - proposal_set)
+        ],
+        "dropped": dropped,
+    }
+    return effective, composition
+
+
+def _load_daily_sources(
+    sources: Sequence[tuple[Path, Sequence[Key]]],
+) -> tuple[dict[Key, dict], dict[Key, Any], list[dict[str, Any]]]:
+    """Resolve every key against an ORDERED list of sealed stream roots.
+
+    The first root that seals a key owns it, so a union build takes overlapping
+    sleeves from the proposal bundle and incumbent-only sleeves from the
+    incumbent bundle.  Each root contributes its own ``load_daily`` provenance
+    block (hashes included); a key no root seals is still a fail-closed error
+    with the wording ``load_daily`` uses.
+    """
+    daily: dict[Key, dict] = {}
+    streams: dict[Key, Any] = {}
+    provenance: list[dict[str, Any]] = []
+    outstanding: set[Key] = set()
+    for _root, keys in sources:
+        outstanding |= set(keys)
+    for root, keys in sources:
+        wanted = sorted(set(keys) - set(daily))
+        if not wanted:
+            continue
+        loaded = load_streams(root, candidates=wanted)
+        found = sorted(set(loaded) & set(wanted))
+        if not found:
+            continue
+        part, part_provenance = load_daily(root, found)
+        daily.update(part)
+        streams.update({key: loaded[key] for key in found})
+        provenance.append({
+            **part_provenance,
+            "keys": [f"{ea}:{symbol}" for ea, symbol in found],
+        })
+    missing = sorted(outstanding - set(daily))
+    if missing:
+        labels = ", ".join(f"{ea}:{symbol}" for ea, symbol in missing)
+        raise BookBuildError(f"sealed stream basis is missing roster sleeves: {labels}")
+    return daily, streams, provenance
+
+
 def _gate(proposal: Mapping[str, Any], incumbent: Mapping[str, Any]) -> dict[str, Any]:
     checks = {
         "return_to_maxdd_not_worse": (
@@ -108,6 +217,9 @@ def build_dxz_manifest(
     roster_path: Path,
     incumbent_path: Path,
     stream_root: Path,
+    incumbent_stream_root: Path | None = None,
+    union: bool = False,
+    exclude_pairs: Sequence[Key] = (),
     cluster_overlay_path: Path | None = None,
     total_risk_pct: float = 9.75,
     sleeve_cap_pct: float = 1.0,
@@ -118,24 +230,43 @@ def build_dxz_manifest(
 ) -> dict[str, Any]:
     if total_risk_pct <= 0 or sleeve_cap_pct <= 0 or starting_capital <= 0:
         raise BookBuildError("risk, cap, and capital inputs must be positive")
-    roster, roster_provenance = resolve_roster(roster_path)
+    declared_roster, roster_provenance = resolve_roster(roster_path)
     incumbent_keys, incumbent_weights, incumbent_provenance = _incumbent(incumbent_path)
+    roster, composition = _compose_roster(
+        declared_roster, incumbent_keys, union=union, exclude_pairs=exclude_pairs
+    )
+    incumbent_root = Path(incumbent_stream_root or DEFAULT_STREAM_ROOT)
     all_keys = sorted(set(roster) | set(incumbent_keys))
-    daily, stream_provenance = load_daily(stream_root, all_keys)
+    # Sleeves declared by the PROPOSAL roster are sourced from the proposal
+    # bundle (that is what "the proposal row wins an overlap" means); everything
+    # else is taken from the proposal bundle when it seals it -- a merged bundle
+    # stays a single-root build -- and otherwise from the incumbent bundle.
+    declared = set(declared_roster)
+    proposal_side = [key for key in all_keys if key in declared]
+    other_side = [key for key in all_keys if key not in declared]
+    daily, streams, stream_provenance = _load_daily_sources([
+        (Path(stream_root), proposal_side),
+        (Path(stream_root), other_side),
+        (incumbent_root, other_side),
+    ])
     start, end = common_window(daily, all_keys)
     overlay, overlay_provenance = load_cluster_overlay(cluster_overlay_path)
-    proposal_keys, proposal_dates, proposal_matrix = aligned_matrix(daily, roster, start, end)
+    # ONE common-day grid for both sides: the union of the trading days of every
+    # stream in BOTH rosters inside the common window, zero-filled per sleeve --
+    # the same union-with-zero-fill rule `align` already applies, applied to the
+    # whole comparison instead of to each roster separately.
+    dates = shared_day_grid(daily, all_keys, start, end)
+    proposal_keys, proposal_matrix = matrix_on_grid(daily, roster, dates)
+    proposal_dates = dates
     proposal_weights = capped_inverse_vol(
         proposal_keys,
         proposal_matrix,
         total=total_risk_pct,
         cap=sleeve_cap_pct,
-        overlay={key: overlay[key] for key in overlay if key in roster},
+        overlay={key: overlay[key] for key in overlay if key in set(roster)},
     )
-    incumbent_aligned, incumbent_dates, incumbent_matrix = aligned_matrix(
-        daily, incumbent_keys, start, end
-    )
-    if proposal_dates != incumbent_dates:
+    incumbent_aligned, incumbent_matrix = matrix_on_grid(daily, incumbent_keys, dates)
+    if len(proposal_matrix) != len(dates) or len(incumbent_matrix) != len(dates):
         raise BookBuildError("proposal and incumbent did not resolve to the identical common-day grid")
     proposal_metrics = book_metrics(
         portfolio_daily(proposal_keys, proposal_matrix, proposal_weights),
@@ -148,7 +279,7 @@ def build_dxz_manifest(
         starting_capital,
     )
     gate = _gate(proposal_metrics, incumbent_metrics)
-    proposal_streams = load_streams(stream_root, candidates=proposal_keys)
+    proposal_streams = {key: streams[key] for key in proposal_keys}
     try:
         concentration = concentration_tail.evaluate(
             keys=proposal_keys,
@@ -186,7 +317,7 @@ def build_dxz_manifest(
         "application_authority": "OWNER_ONLY",
         "deployment_action": "NONE",
         "autotrading_action": "NONE",
-        "roster": roster_provenance,
+        "roster": {**roster_provenance, "composition": composition},
         "roster_sha256": roster_sha256(sleeves),
         "sleeve_list_sha256": sleeve_hash,
         "sleeves": sleeves,
@@ -198,6 +329,7 @@ def build_dxz_manifest(
         },
         "comparison": {
             "basis": "IDENTICAL_SEALED_COMMON_HISTORY",
+            "grid": "SHARED_COMMON_DAY_GRID_UNION_OF_ALL_COMPARED_KEYS",
             "window": {"start": start.isoformat(), "end": end.isoformat(), "days": len(proposal_dates)},
             "starting_capital": starting_capital,
             "proposal": proposal_metrics,
@@ -205,9 +337,47 @@ def build_dxz_manifest(
             "incumbent_provenance": incumbent_provenance,
             "not_worse_gate": gate,
         },
-        "stream_basis": stream_provenance,
+        "stream_basis": {
+            "mode": "ORDERED_SEALED_ROOTS",
+            "root": str(Path(stream_root).resolve()),
+            "incumbent_root": str(incumbent_root.resolve()),
+            "stream_count": sum(int(part.get("stream_count", 0)) for part in stream_provenance),
+            "stream_sha256": {
+                label: digest
+                for part in stream_provenance
+                for label, digest in dict(part.get("stream_sha256", {})).items()
+            },
+            "sources": stream_provenance,
+        },
         "concentration_tail": concentration,
         "schema_binding": file_binding(SCHEMA_PATH),
+    }
+
+
+def analysis_summary(manifest: Mapping[str, Any], *, analysis_only: bool = True) -> dict[str, Any]:
+    """The analytic verdict, independent of whether a manifest may be minted."""
+    comparison = manifest.get("comparison") or {}
+    concentration = manifest.get("concentration_tail") or {}
+    stream_basis = manifest.get("stream_basis") or {}
+    return {
+        "status": manifest.get("status"),
+        "analysis_only": analysis_only,
+        "manifest_written": False,
+        "as_of": manifest.get("as_of"),
+        "sleeves": len(manifest.get("sleeves") or []),
+        "roster_composition": (manifest.get("roster") or {}).get("composition"),
+        "window": comparison.get("window"),
+        "grid": comparison.get("grid"),
+        "proposal": comparison.get("proposal"),
+        "incumbent": comparison.get("incumbent"),
+        "not_worse_gate": comparison.get("not_worse_gate"),
+        "concentration": {
+            "builder_eligible": concentration.get("builder_eligible"),
+            "concentration_reject": concentration.get("concentration_reject"),
+        },
+        "stream_roots": [part.get("root") for part in stream_basis.get("sources", [])],
+        "deployment_action": manifest.get("deployment_action"),
+        "autotrading_action": manifest.get("autotrading_action"),
     }
 
 
@@ -244,6 +414,29 @@ def parser() -> argparse.ArgumentParser:
     ap.add_argument("--roster", type=Path, default=DEFAULT_ROSTER)
     ap.add_argument("--incumbent", type=Path, default=DEFAULT_INCUMBENT)
     ap.add_argument("--stream-root", type=Path, default=DEFAULT_STREAM_ROOT)
+    ap.add_argument(
+        "--incumbent-stream-root",
+        type=Path,
+        default=DEFAULT_STREAM_ROOT,
+        help="sealed bundle used for incumbent-only sleeves (default: the shipped DXZ bundle)",
+    )
+    ap.add_argument(
+        "--union",
+        action="store_true",
+        help="evaluate incumbent PLUS proposal, de-duplicated by (ea_id, symbol); proposal row wins",
+    )
+    ap.add_argument(
+        "--exclude-pair",
+        action="append",
+        default=[],
+        metavar="EA:SYMBOL",
+        help="drop one pair from the evaluated proposal roster (repeatable)",
+    )
+    ap.add_argument(
+        "--analysis-only",
+        action="store_true",
+        help="compute and print status/metrics only; writes no manifest and never calls the live risk freeze",
+    )
     ap.add_argument("--cluster-overlay", type=Path)
     ap.add_argument("--total-risk-pct", type=float, default=9.75)
     ap.add_argument("--sleeve-cap-pct", type=float, default=1.0)
@@ -270,6 +463,9 @@ def main(argv: list[str] | None = None) -> int:
             roster_path=args.roster,
             incumbent_path=args.incumbent,
             stream_root=args.stream_root,
+            incumbent_stream_root=args.incumbent_stream_root,
+            union=args.union,
+            exclude_pairs=[parse_pair(item) for item in (args.exclude_pair or [])],
             cluster_overlay_path=args.cluster_overlay,
             total_risk_pct=args.total_risk_pct,
             sleeve_cap_pct=args.sleeve_cap_pct,
@@ -279,6 +475,15 @@ def main(argv: list[str] | None = None) -> int:
             as_of=args.as_of,
         )
         validate_dual_book_manifest(manifest)
+        # The analytic verdict is emitted BEFORE the live risk freeze is consulted:
+        # the freeze governs whether a manifest may be MINTED, never whether the
+        # comparison may be computed. --analysis-only never reaches the guard and
+        # never writes; without it the guard still gates every write below.
+        analysis = analysis_summary(manifest, analysis_only=bool(args.analysis_only))
+        if args.analysis_only:
+            print(json.dumps(analysis, indent=2, sort_keys=True))
+            return 0
+        print(json.dumps(analysis, indent=2, sort_keys=True), file=sys.stderr)
         risk_freeze.assert_live_book_mutation_allowed(
             "mint a proposed DXZ book manifest",
         )

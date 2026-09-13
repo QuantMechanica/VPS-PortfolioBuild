@@ -299,6 +299,41 @@ def aligned_matrix(
     return list(aligned_keys), list(dates), rows
 
 
+def shared_day_grid(
+    daily: Mapping[Key, Mapping[Any, float]], keys: Iterable[Key], start: Any, end: Any
+) -> list[Any]:
+    """One date grid for every roster that takes part in a book comparison.
+
+    ``aligned_matrix`` (via ``portfolio_common.align``) builds its grid from the
+    union of the days present in the SUBSET it is handed and zero-fills the
+    rest.  Two different sleeve sets therefore land on two different grids and
+    cannot be compared -- an incumbent self-comparison was the only thing that
+    could ever line up.  This applies the identical union-with-zero-fill rule to
+    the union of ALL keys taking part, which is what "identical sealed common
+    history" was always meant to mean.  Semantics are unchanged for a single
+    roster: for ``keys`` equal to the aligned subset this returns exactly the
+    dates ``aligned_matrix`` would have produced.
+    """
+    days = sorted({day for key in keys for day in daily[key] if start <= day <= end})
+    if not days:
+        raise BookBuildError("common history produced no aligned days")
+    return days
+
+
+def matrix_on_grid(
+    daily: Mapping[Key, Mapping[Any, float]], keys: Iterable[Key], dates: Iterable[Any]
+) -> tuple[list[Key], list[list[float]]]:
+    """Zero-filled daily-PnL matrix for ``keys`` on an externally fixed grid.
+
+    Column order is ``sorted(keys)`` and row order follows ``dates``, matching
+    ``aligned_matrix``; non-trading days are 0.0, exactly as ``align`` fills them.
+    """
+    ordered = sorted(keys)
+    days = list(dates)
+    matrix = [[float(daily[key].get(day, 0.0)) for key in ordered] for day in days]
+    return ordered, matrix
+
+
 def _column_std(matrix: list[list[float]], column: int) -> float:
     values = [row[column] for row in matrix]
     mean = sum(values) / len(values)
