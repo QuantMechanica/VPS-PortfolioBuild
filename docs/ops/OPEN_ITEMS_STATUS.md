@@ -4216,3 +4216,16 @@ reload chunk 73 restores them on the five workers first and activates the lane-a
 proof is repeated with an append-only rerun of d4c790e7 after the five workers are reloaded; the remaining 346 holds
 stay until that proof carries a PRESCREEN verdict. Rule: a reload-env flag that is not mirrored in the machine scope
 does not survive the next purge teardown.
+
+## 2026-09-13T14:55Z PRESCREEN first-claim proof #2 failed (marker detector), RAM admission p95 fix, chunk 74
+Proof #2 (cell 2a897e8e, T2 with the restored flags, 14:23-14:25Z): the Model-1 run itself PASSED (result PASS,
+model 1, evidence_class PRESCREEN) but summary.json says model4_log_marker_detected=True, so farmctl
+_derive_prescreen_verdict_from_summary returned INFRA_FAIL PRESCREEN_EVIDENCE_CLASS_MISMATCH. Successor ticket 24df7ddd
+(Codex Sol, prio 92): why the Model-4 marker is detected in a Model-1 run; the remaining 345 holds stay until one cell
+reaches a PRESCREEN verdict. The refused cell d4c790e7 (flag-less T3) and 2a897e8e remain as evidence rows.
+Fleet starvation found while diagnosing 4/10 active with 38 GB free (T8 claim scan ram_class_skipped 879): the asset-class
+RAM expectation reserved the all-time MAX of the tester memory ledger, lifted by today's tick-cache balloons to 29-32 GB for
+fx_major|H1|backtest (n=297, p95 7.3 GB) and metal|D1|backtest (p95 23.6 GB); every ordinary row reserved ~30 GB and
+post-reservation free RAM fell below the 14 GB floor for the whole queue. Fix (commit 97c887753e, 20 tests): the class key
+reserves the ledger p95 (capped at max), the per-EA key keeps max, rollback QM_TESTER_MEMORY_CLASS_STAT=max. Code reload
+via detached chunk 74 (all ten workers, staggered; log D:/QM/strategy_farm/logs/reload_chunk74.log).
