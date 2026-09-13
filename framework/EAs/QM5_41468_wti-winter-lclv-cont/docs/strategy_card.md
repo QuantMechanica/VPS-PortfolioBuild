@@ -60,9 +60,13 @@ portfolio_weight_backtest: 1
 news_temporal_mode: QM_NEWS_TEMPORAL_OFF
 news_compliance_profile: QM_NEWS_COMPLIANCE_NONE
 friday_close_enabled: false
-pipeline_phase: Q01
-q01_status: PENDING
-q02_status: NOT_ENQUEUED
+pipeline_phase: Q02
+q01_status: PASS
+q01_compile_work_item: c149230f-10c0-40e5-ac34-c1ab6addaad6
+q01_build_report: D:/QM/reports/work_items/c149230f-10c0-40e5-ac34-c1ab6addaad6/QM5_41468/COMPILE_EA/compile_evidence.json
+q02_status: ENQUEUED
+q02_work_item: 621253f5-6ca8-4d5e-ae4c-610d0b55c28c
+q02_receipt: D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/c149230f-10c0-40e5-ac34-c1ab6addaad6_621253f5-6ca8-4d5e-ae4c-610d0b55c28c.json
 force_build: true
 review_focus: "Falsify a WTI November-May lower-tercile weekly-close downside continuation distinct from the certified XNG oscillator, monthly WTI winter sign rules, summer lower-tercile continuation, winter upper-tercile continuation, and winter lower-tercile reversion. Verify exact completed week, strict CLV inequality, no range/body predicates, short-only side, durable attempt, fixed risk, frozen stop, and next-week exit. Q09 alone may establish decorrelation."
 modules_used: [no_trade, trade_entry, trade_management, trade_close]
@@ -258,6 +262,5 @@ live use.
 |---|---|---|---|
 | G0 Source Approval | 2026-09-13 | APPROVED_SOURCE | source decision above |
 | G0 Research Intake | 2026-09-13 | APPROVED | G0 decision above |
-| Q01 Build Validation | 2026-09-13 | PENDING | not yet compiled |
-| Q02 Baseline Screening | 2026-09-13 | NOT_ENQUEUED | paced handoff only after Q01 and CPU admission |
-
+| Q01 Build Validation | 2026-09-13 | PASS | compile `c149230f-10c0-40e5-ac34-c1ab6addaad6`; `COMPILE_OK`; 0 compiler errors/warnings; strict build check PASS; 10 reference tests; PACER audit zero hits |
+| Q02 Baseline Screening | 2026-09-13 | ENQUEUED | exactly one fixed-risk `XTIUSD.DWX` D1 canary `621253f5-6ca8-4d5e-ae4c-610d0b55c28c`; final CPU maximum 77.7%; result not awaited |

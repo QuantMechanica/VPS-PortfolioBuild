@@ -1,0 +1,22 @@
+{
+  "deferred": [],
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "dry_run",
+  "release": [
+    {
+      "actual_mq5_sha256": "088c277162cc8e5cc43d14aae307c57d6897184cdbb44ebd2cc4664a7561888c",
+      "ea_id": "QM5_41468",
+      "ea_label": "QM5_41468_wti-winter-lclv-cont",
+      "expected_mq5_sha256": "088c277162cc8e5cc43d14aae307c57d6897184cdbb44ebd2cc4664a7561888c",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41468_wti-winter-lclv-cont\\QM5_41468_wti-winter-lclv-cont.mq5",
+      "work_item_id": "c149230f-10c0-40e5-ac34-c1ab6addaad6"
+    }
+  ],
+  "release_count": 1,
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "c149230f-10c0-40e5-ac34-c1ab6addaad6",
+  "work_item_id_selectors": [
+    "c149230f-10c0-40e5-ac34-c1ab6addaad6"
+  ]
+}

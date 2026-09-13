@@ -1,5 +1,15 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 13.09. 06:04Z — QM5_41468 neuer WTI-Downside-Sleeve gebaut und Q02 eingereiht:**
+> Quellenpaket/Card für die strukturelle November–Mai-Regel genehmigt: genau
+> eine abgeschlossene Woche, Short nur bei `CLV < 1/3`, nächstwöchentlicher
+> Exit, keine Return-/Range-/Body-Filter. PACER `hit_count=0`, 10 Referenztests
+> PASS, Q01 `c149230f` = `COMPILE_OK` (0 Fehler/Warnungen, strict PASS).
+> Finale CPU-Aufnahme max. 77,7 % < 97 %; genau ein fixed-risk Q02
+> `621253f5` eingereiht und danach von T6 geclaimt. Keine Portfolio-/Live-/
+> T_Live-/AutoTrading-Änderung. Evidence:
+> `docs/ops/evidence/2026-09-13_qm5_41468_wti_winter_lower_clv_continuation_q02_enqueue.md`.
+
 > **RESULT 12.09. 05:38Z — Pending artifact binding drift vollständig klassifiziert:**
 > Read-only Census: 518 gebundene pending Rows geprüft, 63 `CONTENT_CHANGED`
 > Bindings auf 33 historischen Rows / 23 EAs. Exakt ein finaler Build bestand

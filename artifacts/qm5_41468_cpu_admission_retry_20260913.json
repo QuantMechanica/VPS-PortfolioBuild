@@ -1,0 +1,17 @@
+{
+  "recorded_utc": "2026-09-13T05:59:24.465957+00:00",
+  "source": "psutil.cpu_percent whole host",
+  "samples_percent": [
+    68.4,
+    64.7,
+    66.9,
+    85.6,
+    78.2
+  ],
+  "average_percent": 72.76,
+  "maximum_percent": 85.6,
+  "threshold_percent": 97,
+  "below_ceiling": true,
+  "context": "retry after first apply process ended without row"
+}
+
