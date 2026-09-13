@@ -611,6 +611,133 @@ def test_d17_legacy_dax_card_authorizes_only_canonical_gdaxi_build(tmp_path: Pat
     ]
 
 
+def _write_reference_symbol_fixture(
+    tmp_path: Path,
+    card: str,
+    *,
+    matrix_symbols: tuple[str, ...] = ("EURUSD.DWX", "USDJPY.DWX", "GBPUSD.DWX"),
+    magic_rows: tuple[tuple[int, str], ...] = ((0, "EURUSD.DWX"),),
+    conversion_line: str = "strategy_conv_symbol_1=USDJPY.DWX\n",
+) -> None:
+    """Basket-shaped fixture: one traded leg plus a read-only conversion history."""
+    write_fixture(tmp_path, PASSING_SOURCE, card)
+    registry_dir = tmp_path / "framework" / "registry"
+    (registry_dir / "dwx_symbol_matrix.csv").write_text(
+        "symbol,canonical_name_verified\n"
+        + "".join(f"{symbol},true\n" for symbol in matrix_symbols),
+        encoding="utf-8",
+    )
+    (registry_dir / "magic_numbers.csv").write_text(
+        "ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status\n"
+        + "".join(
+            f"99001,gate-fixture,{slot},{symbol},99001000{slot},2026-09-13,pytest,active\n"
+            for slot, symbol in magic_rows
+        ),
+        encoding="utf-8",
+    )
+    setfile = (
+        tmp_path
+        / "framework"
+        / "EAs"
+        / LABEL
+        / "sets"
+        / f"{LABEL}_EURUSD.DWX_H1_backtest.set"
+    )
+    setfile.write_text(
+        "; symbol: EURUSD.DWX\nRISK_FIXED=1000\nRISK_PERCENT=0\n"
+        "strategy_leg_a_symbol=EURUSD.DWX\n" + conversion_line,
+        encoding="utf-8",
+    )
+
+
+def test_d17_absent_reference_declaration_changes_nothing(tmp_path: Path) -> None:
+    # Default-safe: a card without a reference_symbols contract behaves exactly
+    # as before - the conversion history in the set file is still unauthorized.
+    _write_reference_symbol_fixture(tmp_path, CARD + "\n- Target symbols: EURUSD.DWX.\n")
+    result = gate.analyze(tmp_path, LABEL)
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" in failure_codes(result)
+    assert "USDJPY.DWX" in failure_codes(result)
+    assert result["build_symbol_checks"][0]["card_reference_symbols"] == []
+
+
+def test_d17_card_reference_symbol_admits_read_only_conversion_history(
+    tmp_path: Path,
+) -> None:
+    _write_reference_symbol_fixture(
+        tmp_path,
+        CARD
+        + "\n- Target symbols: EURUSD.DWX.\n"
+        + "- Reference symbols: USDJPY.DWX (conversion reference, never traded).\n",
+    )
+    result = gate.analyze(tmp_path, LABEL)
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" not in failure_codes(result)
+    assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" not in failure_codes(result)
+    check = result["build_symbol_checks"][0]
+    assert check["card_target_symbols"] == ["EURUSD.DWX"]
+    assert check["card_reference_symbols"] == ["USDJPY.DWX"]
+    assert check["card_allowed_symbols"] == ["EURUSD.DWX", "USDJPY.DWX"]
+
+
+def test_d17_front_matter_reference_symbols_declaration_is_honoured(
+    tmp_path: Path,
+) -> None:
+    front_matter_card = (
+        "---\n"
+        "ea_id: QM5_99001\n"
+        "target_symbols: [EURUSD.DWX]\n"
+        "reference_symbols: [USDJPY.DWX]\n"
+        "---\n" + CARD
+    )
+    _write_reference_symbol_fixture(tmp_path, front_matter_card)
+    result = gate.analyze(tmp_path, LABEL)
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" not in failure_codes(result)
+    assert result["build_symbol_checks"][0]["card_reference_symbols"] == ["USDJPY.DWX"]
+
+
+def test_d17_reference_symbol_outside_dwx_matrix_still_fails(tmp_path: Path) -> None:
+    _write_reference_symbol_fixture(
+        tmp_path,
+        CARD
+        + "\n- Target symbols: EURUSD.DWX.\n"
+        + "- Reference symbols: USDJPY.DWX.\n",
+        matrix_symbols=("EURUSD.DWX",),
+    )
+    result = gate.analyze(tmp_path, LABEL)
+    assert "EA_SYMBOL_NOT_IN_DWX_MATRIX" in failure_codes(result)
+    assert "USDJPY.DWX" in failure_codes(result)
+
+
+def test_d17_traded_symbol_still_requires_target_symbols(tmp_path: Path) -> None:
+    # A reference declaration authorizes only the symbols it names; anything
+    # else observed in the build still has to sit in target_symbols.
+    _write_reference_symbol_fixture(
+        tmp_path,
+        CARD
+        + "\n- Target symbols: EURUSD.DWX.\n"
+        + "- Reference symbols: USDJPY.DWX.\n",
+        conversion_line="strategy_conv_symbol_1=USDJPY.DWX\nstrategy_leg_b_symbol=GBPUSD.DWX\n",
+    )
+    result = gate.analyze(tmp_path, LABEL)
+    failures = failure_codes(result)
+    assert "EA_SYMBOL_NOT_IN_CARD_UNIVERSE" in failures
+    assert "GBPUSD.DWX" in failures
+    assert "uses USDJPY.DWX" not in failures
+
+
+def test_d17_reference_label_cannot_launder_magic_slotted_traded_leg(
+    tmp_path: Path,
+) -> None:
+    _write_reference_symbol_fixture(
+        tmp_path,
+        CARD
+        + "\n- Target symbols: EURUSD.DWX.\n"
+        + "- Reference symbols: USDJPY.DWX.\n",
+        magic_rows=((0, "EURUSD.DWX"), (1, "USDJPY.DWX")),
+    )
+    result = gate.analyze(tmp_path, LABEL)
+    assert "EA_SYMBOL_REFERENCE_DECLARED_FOR_TRADED_SLOT" in failure_codes(result)
+
+
 def test_d18_descending_append_ordering_pass_and_impossible_guard_fail(
     tmp_path: Path,
 ) -> None:

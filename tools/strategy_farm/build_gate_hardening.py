@@ -1741,31 +1741,32 @@ def check_deterministic_zero_trade_ordering(source: SourceFile) -> tuple[list[st
     }
 
 
-def parse_card_target_symbols(card_text: str) -> set[str]:
-    """Extract only explicit front-matter or labeled target-symbol contracts."""
-    def extract_card_symbols(text: str) -> set[str]:
-        # A prose list commonly ends ``EURUSD.DWX.``; the terminal sentence
-        # period is punctuation, not part of the broker symbol.
-        return {
-            match.group(1)
-            for match in re.finditer(
-                r"(?i)(?<![A-Z0-9])([A-Z0-9]+\.DWX)\b", text
-            )
-        }
+def _extract_card_symbols(text: str) -> set[str]:
+    # A prose list commonly ends ``EURUSD.DWX.``; the terminal sentence
+    # period is punctuation, not part of the broker symbol.
+    return {
+        match.group(1)
+        for match in re.finditer(r"(?i)(?<![A-Z0-9])([A-Z0-9]+\.DWX)\b", text)
+    }
 
+
+def _parse_card_symbol_contract(
+    card_text: str, front_matter_key: str, label_pattern: str
+) -> set[str]:
+    """Extract one explicit front-matter or labeled symbol contract from a card."""
     symbols: set[str] = set()
     front_matter = re.match(r"\A---\s*\r?\n(?P<body>.*?)\r?\n---", card_text, re.DOTALL)
     if front_matter:
-        target = re.search(
-            r"(?im)^target_symbols\s*:\s*\[(?P<symbols>[^\]]*)\]",
+        declaration = re.search(
+            rf"(?im)^{re.escape(front_matter_key)}\s*:\s*\[(?P<symbols>[^\]]*)\]",
             front_matter.group("body"),
         )
-        if target:
-            symbols.update(extract_card_symbols(target.group("symbols")))
+        if declaration:
+            symbols.update(_extract_card_symbols(declaration.group("symbols")))
 
     lines = card_text.splitlines()
     for index, line in enumerate(lines):
-        if not re.search(r"(?i)^\s*-?\s*(?:\*\*)?target symbols(?:\*\*)?\s*:", line):
+        if not re.search(label_pattern, line):
             continue
         paragraph = [line]
         for continuation in lines[index + 1 :]:
@@ -1775,8 +1776,33 @@ def parse_card_target_symbols(card_text: str) -> set[str]:
                 paragraph.append(continuation)
                 continue
             break
-        symbols.update(extract_card_symbols("\n".join(paragraph)))
+        symbols.update(_extract_card_symbols("\n".join(paragraph)))
     return symbols
+
+
+def parse_card_target_symbols(card_text: str) -> set[str]:
+    """Extract only explicit front-matter or labeled target-symbol contracts."""
+    return _parse_card_symbol_contract(
+        card_text,
+        "target_symbols",
+        r"(?i)^\s*-?\s*(?:\*\*)?target symbols(?:\*\*)?\s*:",
+    )
+
+
+def parse_card_reference_symbols(card_text: str) -> set[str]:
+    """Extract the explicit read-only reference/conversion symbol contract.
+
+    A reference symbol is a history the EA *reads* (conversion rate for tester
+    accounting, correlation reference) and never trades: no order is ever sent
+    on it and no magic slot is reserved for it.  The declaration is additive -
+    a card without it behaves exactly as before, and a declared reference
+    symbol still has to be an exact row of the DWX symbol matrix.
+    """
+    return _parse_card_symbol_contract(
+        card_text,
+        "reference_symbols",
+        r"(?i)^\s*-?\s*(?:\*\*)?reference symbols(?:\*\*)?\s*:",
+    )
 
 
 def load_dwx_symbol_matrix(path: Path) -> tuple[set[str], list[str], dict]:
@@ -1987,27 +2013,55 @@ def check_build_symbols(
             )
 
     card_symbols: set[str] = set()
+    card_reference_symbols: set[str] = set()
     card_error: str | None = None
     card_text, card_error = _card_text(card_path)
     if card_text is not None:
         card_symbols = parse_card_target_symbols(card_text)
+        card_reference_symbols = parse_card_reference_symbols(card_text)
     authorized_card_symbols = set(card_symbols)
     authorized_card_symbols.update(
         CARD_SYMBOL_PORTS[symbol]
         for symbol in card_symbols
         if symbol in CARD_SYMBOL_PORTS
     )
+    # A reference symbol is read-only: the EA copies its rates for conversion
+    # or correlation and never sends an order on it.  It widens ONLY the card
+    # universe proof - the DWX matrix proof above already ran over every
+    # observed symbol and is untouched by this declaration.  A build whose
+    # magic registry reserves a slot for the symbol is trading it, so the
+    # reference label may not be used to launder a traded leg past the
+    # target_symbols contract.
+    magic_build_symbols = {
+        row["symbol"] for row in magic_by_build.get((ea_id or "", slug or ""), [])
+    }
     for symbol in sorted(
-        set(observations) - authorized_card_symbols
+        (card_reference_symbols - authorized_card_symbols) & magic_build_symbols
+    ):
+        failures.append(
+            "EA_SYMBOL_REFERENCE_DECLARED_FOR_TRADED_SLOT: "
+            f"{ea_dir.name} declares {symbol} as a card reference_symbols entry, but "
+            "framework/registry/magic_numbers.csv reserves a magic slot for it in this "
+            "build. A traded leg must be declared in target_symbols."
+        )
+    allowed_card_symbols = authorized_card_symbols | card_reference_symbols
+    for symbol in sorted(
+        set(observations) - allowed_card_symbols
         if authorized_card_symbols
         else set()
     ):
         origins = sorted(observations[symbol])
+        reference_note = (
+            " Declared read-only reference symbols: "
+            f"{', '.join(sorted(card_reference_symbols))}."
+            if card_reference_symbols
+            else ""
+        )
         failures.append(
             "EA_SYMBOL_NOT_IN_CARD_UNIVERSE: "
             f"{ea_dir.name} uses {symbol} from {', '.join(origins)}, but the explicit "
             "card target_symbols contract (including documented canonical ports) "
-            f"contains only {', '.join(sorted(authorized_card_symbols))}."
+            f"contains only {', '.join(sorted(authorized_card_symbols))}.{reference_note}"
         )
 
     return {
@@ -2020,6 +2074,8 @@ def check_build_symbols(
         "card_path": str(card_path) if card_path else None,
         "card_target_symbols": sorted(card_symbols),
         "card_authorized_symbols": sorted(authorized_card_symbols),
+        "card_reference_symbols": sorted(card_reference_symbols),
+        "card_allowed_symbols": sorted(allowed_card_symbols),
         "card_error": card_error,
         "failures": failures,
     }

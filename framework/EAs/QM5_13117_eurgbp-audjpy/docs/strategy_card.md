@@ -23,6 +23,8 @@ indicators:
   - rolling-zscore
   - atr-stop
 target_symbols: [EURGBP.DWX, AUDJPY.DWX]
+# Read-only USD conversion histories for tester accounting (CopyRates/SymbolSelect only); never traded, no magic slot.
+reference_symbols: [GBPUSD.DWX, USDJPY.DWX]
 logical_symbol: QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 5 logical spread packages/year from 20 OOS state changes over 2023-2024."

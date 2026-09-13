@@ -415,6 +415,8 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
+
    if(!QM_KillSwitchCheck())
      {
       Strategy_ClosePair(QM_EXIT_KILLSWITCH);

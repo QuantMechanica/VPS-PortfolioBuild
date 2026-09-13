@@ -16,6 +16,8 @@ indicators:
   - rolling-zscore
   - atr-stop
 target_symbols: [AUDUSD.DWX, EURJPY.DWX]
+# Read-only conversion histories for tester accounting (CopyRates/SymbolSelect only); never traded, no magic slot.
+reference_symbols: [EURUSD.DWX, EURAUD.DWX]
 logical_symbol: QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1
 period: D1
 expected_trade_frequency: "D1 two-leg basket, approximately 4-8 logical spread packages/year."
