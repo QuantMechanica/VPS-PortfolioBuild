@@ -1,0 +1,94 @@
+{
+  "schema_version": "qm.fx-cointegration-pacer-stop/v1",
+  "recorded_at_utc": "2026-09-13T01:19:02.7310341Z",
+  "recorded_at_europe_berlin": "2026-09-13T03:19:02.7310341+02:00",
+  "branch": "agents/board-advisor",
+  "observation_head": "b1af0fd51a4e61c3cd273e4c7aa45622707ee1de",
+  "scan": {
+    "source": "docs/research/CROSS_ASSET_FX_DISCOVERY_2026-06-09.md",
+    "relationship_count": 66,
+    "unbuilt_relationship_count": 0,
+    "strict_survivors": [
+      {
+        "ea_id": "QM5_12532",
+        "logical_symbol": "QM5_12532_AUDNZD_COINTEGRATION_D1",
+        "chain": ["Q02:PASS", "Q04:PASS", "Q05:FAIL"]
+      },
+      {
+        "ea_id": "QM5_12533",
+        "logical_symbol": "QM5_12533_EURJPY_GBPJPY_COINTEGRATION_D1",
+        "chain": ["Q02:PASS", "Q04:FAIL"]
+      }
+    ]
+  },
+  "selected_fallback": {
+    "ea_id": "QM5_12712",
+    "logical_symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "authenticated_chain": ["Q02:PASS", "Q03:PASS", "Q04:PASS", "Q05:PASS", "Q06:PASS", "Q07:PASS", "Q09:PASS"],
+    "required_predecessor_phase": "Q08",
+    "work_item_id": "b68d05cd-e52c-43a5-96aa-5e0306efa60f",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "priority_track": true,
+    "canonical_claim_rank": 5,
+    "duplicate_work_item_created": false
+  },
+  "existing_q02_fallback": {
+    "ea_id": "QM5_12507",
+    "logical_symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+    "work_item_id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+    "status": "pending",
+    "claimed_by": null,
+    "attempt_count": 0,
+    "verdict": null,
+    "duplicate_work_item_created": false
+  },
+  "pacer_input_audit": {
+    "command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_12712_edgelab-eurgbp-euraud-cointegration/QM5_12712_edgelab-eurgbp-euraud-cointegration.mq5",
+    "exit_code": 0,
+    "ok": true,
+    "finding": "EA_FRAMEWORK_INPUT_PINNED",
+    "hit_count": 0
+  },
+  "artifacts": {
+    "mq5_sha256": "afdfd1a80dbfcd2c398ddc92dffe2181e5727f3837c37df2a772f25b68e171d1",
+    "ex5_sha256": "0003ed98f590e95a28a08e7d8198639b48213e882e8c5d2428cad4422355c982",
+    "basket_manifest_sha256": "a15214089f0efd8564a1ee6f2d6bb09164cde12d742ad8627fa1f7870d6e773a",
+    "logical_setfile_sha256": "105a23da1d33d559cff4ff19a5e8c5c51e8a72eb6cec5b7f6a92ecedaea6208c",
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1
+    }
+  },
+  "cpu_gate": {
+    "sample_interval_seconds": 2,
+    "samples_percent": [96.778473, 98.730946, 94.58203, 98.540062, 98.442818],
+    "average_percent": 97.414866,
+    "maximum_percent": 98.730946,
+    "ceiling_percent": 97.0,
+    "ceiling_hit": true,
+    "binding_basis": "average_and_maximum"
+  },
+  "capacity": {
+    "active_work_items": 7,
+    "pending_work_items": 5423,
+    "free_physical_memory_gib": 41.492,
+    "total_physical_memory_gib": 63.12
+  },
+  "safety": {
+    "portfolio_gate_touched": false,
+    "portfolio_admission_touched": false,
+    "portfolio_kpi_touched": false,
+    "q08_contribution_touched": false,
+    "t_live_touched": false,
+    "autotrading_touched": false,
+    "mq5_written": false,
+    "compile_enqueued": false,
+    "backtest_work_item_created": false,
+    "work_item_status_or_verdict_changed": false,
+    "dispatch_started": false
+  }
+}
