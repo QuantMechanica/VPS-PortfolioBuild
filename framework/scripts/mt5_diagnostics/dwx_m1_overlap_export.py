@@ -34,7 +34,7 @@ ROOT = Path("D:/QM/mt5/T1")
 SOURCE = Path(__file__).with_name("QM_DWX_M1_Overlap_Export.mq5")
 RAW_HEADER = ["time", "open", "high", "low", "close", "tickvol"]
 FINAL_HEADER = list(RAW_HEADER)
-RECEIPT_SCHEMA = "qm.dwx-m1-overlap-export-receipt/v1"
+RECEIPT_SCHEMA = "qm.dwx-m1-overlap-export-receipt/v2"
 EXPORT_MANIFEST_SCHEMA = dwx_m1_overlap_export_work_item.EXPORT_MANIFEST_SCHEMA
 FORBIDDEN_CUSTOM_API_TOKENS = (r"\bCustom[A-Za-z0-9_]*\s*\(",)
 
@@ -81,10 +81,9 @@ def validate_mql_source(path: Path = SOURCE) -> dict[str, Any]:
     ):
         raise ValueError("MQL export universe is not the exact canonical 37")
     for required in (
-        "CopyRates(",
-        "Bars(",
-        "SERIES_SYNCHRONIZED",
-        "PERIOD_M1",
+        "CopyTicksRange(",
+        "COPY_TICKS_ALL",
+        "DWX_M1_TICK_AGG_PROJECTION",
         "1759287600",
         "1775012400",
         '"time","open","high","low","close","tickvol"',
@@ -145,7 +144,7 @@ def canonicalize_raw_symbol(
                     prices = (open_price, high, low, close)
                     if (
                         instant < start
-                        or instant > end
+                        or instant >= end
                         or (last_utc is not None and instant <= last_utc)
                         or any(not math.isfinite(value) or value <= 0 for value in prices)
                         or high < max(open_price, close)
@@ -255,7 +254,7 @@ def canonicalize_export_set(
         "period": "M1",
         "overlap_start_utc": dwx_m1_overlap_export_work_item.OVERLAP_START_TEXT,
         "overlap_end_utc": dwx_m1_overlap_export_work_item.OVERLAP_END_TEXT,
-        "window_end_inclusive": True,
+        "window_end_inclusive": False,
         "schema": FINAL_HEADER,
         "symbols": symbols,
         "symbol_count": len(symbols),
@@ -408,7 +407,7 @@ def run(
         "requested_window": {
             "start_utc": dwx_m1_overlap_export_work_item.OVERLAP_START_TEXT,
             "end_utc": dwx_m1_overlap_export_work_item.OVERLAP_END_TEXT,
-            "end_inclusive": True,
+            "end_inclusive": False,
         },
     }
     process: subprocess.Popen[bytes] | None = None

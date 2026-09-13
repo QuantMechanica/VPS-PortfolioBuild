@@ -49,7 +49,7 @@ OVERLAP_END_BROKER_EPOCH = dukascopy_common.broker_epoch_seconds_for_utc(
 )
 M1_HEADER = ["time", "open", "high", "low", "close", "tickvol"]
 SUMMARY_SCHEMA = "qm.dwx-m1-overlap-export-summary/v1"
-EXPORT_MANIFEST_SCHEMA = "qm.dwx-m1-overlap-export-manifest/v1"
+EXPORT_MANIFEST_SCHEMA = "qm.dwx-m1-overlap-export-manifest/v2"
 STAMP_RE = re.compile(r"^20\d{6}_\d{6}$")
 SHA_RE = re.compile(r"^[0-9a-f]{64}$")
 DISPATCH_BINDING_KEYS = (
@@ -382,7 +382,7 @@ def _validate_export_manifest(
         or value.get("period") != "M1"
         or value.get("overlap_start_utc") != OVERLAP_START_TEXT
         or value.get("overlap_end_utc") != OVERLAP_END_TEXT
-        or value.get("window_end_inclusive") is not True
+        or value.get("window_end_inclusive") is not False
         or value.get("schema") != M1_HEADER
         or value.get("symbols") != symbols
         or value.get("symbol_count") != 37

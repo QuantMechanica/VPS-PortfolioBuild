@@ -100,7 +100,7 @@ def _diagnostic_row(payload: dict[str, object]) -> dict[str, object]:
     }
 
 
-def test_mql_export_is_exact_t1_read_only_copyrates_and_37_symbols(
+def test_mql_export_is_exact_t1_read_only_copyticks_and_37_symbols(
     tmp_path: Path,
 ) -> None:
     binding = export.validate_mql_source()
@@ -110,9 +110,10 @@ def test_mql_export_is_exact_t1_read_only_copyrates_and_37_symbols(
     assert binding["overlap_end_utc"] == "2026-04-01T00:00:00Z"
 
     source = export.SOURCE.read_text(encoding="utf-8-sig")
-    assert "CopyRates(" in source
-    assert "PERIOD_M1" in source
-    assert "CopyTicks" not in source
+    assert "CopyTicksRange(" in source
+    assert "COPY_TICKS_ALL" in source
+    assert "CopyRates(" not in source
+    assert "DWX_M1_TICK_AGG_PROJECTION" in source
     assert "Enabled=1" not in source
 
     custom_write = tmp_path / "custom_write.mq5"
@@ -293,6 +294,21 @@ def test_reconcile_reader_retains_numeric_epoch_compatibility(tmp_path: Path) ->
     assert list(reconcile_overlap.read_m1_csv(raw)) == [
         dukascopy_common.broker_epoch_seconds_for_utc(instant)
     ]
+
+
+def test_canonicalizer_enforces_half_open_utc_end(tmp_path: Path) -> None:
+    raw = tmp_path / "end.csv"
+    _write_csv(
+        raw,
+        export.RAW_HEADER,
+        [_raw_bar(work_item.OVERLAP_END_UTC)],
+    )
+    with pytest.raises(ValueError, match="invalid raw M1 values"):
+        export.canonicalize_raw_symbol(
+            raw,
+            tmp_path / "out.csv",
+            symbol="EURUSD.DWX",
+        )
 
 
 def test_payload_validator_seals_terminal_window_and_safety_flags() -> None:

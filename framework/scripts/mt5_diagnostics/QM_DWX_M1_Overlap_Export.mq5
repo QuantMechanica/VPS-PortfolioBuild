@@ -8,26 +8,38 @@ input long InpEndBrokerEpoch=1775012400;
 input int InpChunkDays=7;
 input int InpSyncAttempts=30;
 
-int CopyChunk(const string symbol,const datetime start_time,const datetime end_time,MqlRates &rates[])
+int CopyChunk(const string symbol,const ulong start_msc,const ulong end_msc,MqlTick &ticks[])
   {
-   ArrayResize(rates,0);
-   ArraySetAsSeries(rates,false);
+   ArrayResize(ticks,0);
+   ArraySetAsSeries(ticks,false);
    int copied=-1;
    for(int attempt=0;attempt<InpSyncAttempts;attempt++)
      {
       ResetLastError();
-      copied=CopyRates(symbol,PERIOD_M1,start_time,end_time,rates);
+      copied=CopyTicksRange(symbol,ticks,COPY_TICKS_ALL,start_msc,end_msc);
       const int copy_error=GetLastError();
-      ResetLastError();
-      const int available=Bars(symbol,PERIOD_M1,start_time,end_time);
-      const int bars_error=GetLastError();
-      const bool synchronized=(bool)SeriesInfoInteger(symbol,PERIOD_M1,SERIES_SYNCHRONIZED);
-      if(copied>=0 && copy_error!=ERR_HISTORY_TIMEOUT &&
-         available==copied && bars_error!=ERR_HISTORY_TIMEOUT && synchronized)
+      if(copied>=0 && copy_error!=ERR_HISTORY_TIMEOUT)
          return copied;
       Sleep(1000);
      }
    return copied;
+  }
+
+bool FlushBar(const int handle,const int digits,const long minute,
+              const double bar_open,const double bar_high,const double bar_low,
+              const double bar_close,const long tick_volume,long &written_rows)
+  {
+   if(minute<=0 || tick_volume<=0) return true;
+   if(FileWrite(handle,minute,
+                DoubleToString(bar_open,digits),DoubleToString(bar_high,digits),
+                DoubleToString(bar_low,digits),DoubleToString(bar_close,digits),
+                tick_volume)<=0)
+     {
+      PrintFormat("ROW_WRITE_FAIL time=%I64d err=%d",minute,GetLastError());
+      return false;
+     }
+   written_rows++;
+   return true;
   }
 
 bool ExportOne(const string symbol,long &written_rows)
@@ -66,54 +78,65 @@ bool ExportOne(const string symbol,long &written_rows)
 
    const long chunk_seconds=(long)InpChunkDays*86400;
    long cursor=InpStartBrokerEpoch;
-   long previous_time=0;
+   long previous_tick_msc=0;
+   long minute=0;
+   double bar_open=0.0,bar_high=0.0,bar_low=0.0,bar_close=0.0;
+   long tick_volume=0;
    bool ok=true;
-   while(cursor<=InpEndBrokerEpoch && ok)
+   while(cursor<InpEndBrokerEpoch && ok)
      {
-      long chunk_end=cursor+chunk_seconds-60;
+      long chunk_end=cursor+chunk_seconds;
       if(chunk_end>InpEndBrokerEpoch) chunk_end=InpEndBrokerEpoch;
-      MqlRates rates[];
-      const int copied=CopyChunk(symbol,(datetime)cursor,(datetime)chunk_end,rates);
+      MqlTick ticks[];
+      const ulong from_msc=(ulong)cursor*1000;
+      const ulong to_msc=(ulong)chunk_end*1000-1;
+      const int copied=CopyChunk(symbol,from_msc,to_msc,ticks);
       if(copied<0)
         {
-         PrintFormat("COPY_RATES_FAIL symbol=%s from=%I64d to=%I64d err=%d",
+         PrintFormat("COPY_TICKS_RANGE_FAIL symbol=%s from=%I64d to=%I64d err=%d",
                      symbol,cursor,chunk_end,GetLastError());
          ok=false;
          break;
         }
       for(int i=0;i<copied;i++)
         {
-         const long bar_time=(long)rates[i].time;
-         if(bar_time<InpStartBrokerEpoch || bar_time>InpEndBrokerEpoch ||
-            bar_time<cursor || bar_time>chunk_end || bar_time%60!=0 ||
-            (previous_time>0 && bar_time<=previous_time) ||
-            rates[i].open<=0.0 || rates[i].high<=0.0 ||
-            rates[i].low<=0.0 || rates[i].close<=0.0 ||
-            rates[i].high<MathMax(rates[i].open,rates[i].close) ||
-            rates[i].low>MathMin(rates[i].open,rates[i].close) ||
-            rates[i].high<rates[i].low || rates[i].tick_volume<0)
+         const long tick_msc=(long)ticks[i].time_msc;
+         const long tick_time=tick_msc/1000;
+         const double price=ticks[i].bid;
+         if(tick_msc<=0 || tick_time<cursor || tick_time>=chunk_end ||
+            tick_time<InpStartBrokerEpoch || tick_time>=InpEndBrokerEpoch ||
+            (previous_tick_msc>0 && tick_msc<previous_tick_msc))
            {
-            PrintFormat("BAR_REFUSED symbol=%s index=%d time=%I64d",symbol,i,bar_time);
+            PrintFormat("TICK_REFUSED symbol=%s index=%d time_msc=%I64d",symbol,i,tick_msc);
             ok=false;
             break;
            }
-         if(FileWrite(handle,bar_time,
-                      DoubleToString(rates[i].open,digits),
-                      DoubleToString(rates[i].high,digits),
-                      DoubleToString(rates[i].low,digits),
-                      DoubleToString(rates[i].close,digits),
-                      (long)rates[i].tick_volume)<=0)
+         previous_tick_msc=tick_msc;
+         if(price<=0.0 || !MathIsValidNumber(price)) continue;
+         const long tick_minute=(tick_time/60)*60;
+         if(minute!=tick_minute)
            {
-            PrintFormat("ROW_WRITE_FAIL symbol=%s time=%I64d err=%d",
-                        symbol,bar_time,GetLastError());
-            ok=false;
-            break;
+            if(!FlushBar(handle,digits,minute,bar_open,bar_high,bar_low,bar_close,
+                         tick_volume,written_rows)) { ok=false; break; }
+            minute=tick_minute;
+            bar_open=price;
+            bar_high=price;
+            bar_low=price;
+            bar_close=price;
+            tick_volume=1;
            }
-         previous_time=bar_time;
-         written_rows++;
+         else
+           {
+            if(price>bar_high) bar_high=price;
+            if(price<bar_low) bar_low=price;
+            bar_close=price;
+            tick_volume++;
+           }
         }
-      cursor=chunk_end+60;
+      cursor=chunk_end;
      }
+   if(ok && !FlushBar(handle,digits,minute,bar_open,bar_high,bar_low,bar_close,
+                      tick_volume,written_rows)) ok=false;
    FileFlush(handle);
    FileClose(handle);
    if(!ok || written_rows<=0)
@@ -152,19 +175,30 @@ void OnStart()
 
    int successes=0,failures=0;
    long total_rows=0;
+   const ulong fleet_started=GetTickCount64();
    for(int i=0;i<ArraySize(symbols);i++)
      {
+      const ulong symbol_started=GetTickCount64();
       long rows=0;
       if(ExportOne(symbols[i],rows)) successes++; else failures++;
       total_rows+=rows;
+      const ulong symbol_elapsed=GetTickCount64()-symbol_started;
+      PrintFormat("DWX_M1_TICK_AGG_RUNTIME symbol=%s elapsed_ms=%I64u",symbols[i],symbol_elapsed);
+      if(i==1)
+        {
+         const ulong first_two_elapsed=GetTickCount64()-fleet_started;
+         PrintFormat("DWX_M1_TICK_AGG_PROJECTION sample_symbols=2 sample_elapsed_ms=%I64u projected_37_ms=%I64u",
+                     first_two_elapsed,(first_two_elapsed*37)/2);
+        }
      }
 
    const int marker=FileOpen(InpCompletion,FILE_WRITE|FILE_TXT|FILE_ANSI,0,CP_UTF8);
    if(marker==INVALID_HANDLE)
      { PrintFormat("COMPLETION_OPEN_FAIL err=%d",GetLastError()); return; }
    FileWrite(marker,StringFormat(
-      "successes=%d failures=%d terminal=T1 build=%d total_rows=%I64d",
-      successes,failures,(int)TerminalInfoInteger(TERMINAL_BUILD),total_rows));
+      "successes=%d failures=%d terminal=T1 build=%d total_rows=%I64d elapsed_ms=%I64u",
+      successes,failures,(int)TerminalInfoInteger(TERMINAL_BUILD),total_rows,
+      GetTickCount64()-fleet_started));
    FileFlush(marker);
    FileClose(marker);
    PrintFormat("DWX_M1_OVERLAP_COMPLETE successes=%d failures=%d total_rows=%I64d",
