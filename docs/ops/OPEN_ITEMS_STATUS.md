@@ -4572,3 +4572,10 @@ Not done / parked with reason: 40 BLOCKED build_ea tasks (deprioritised 08-22, b
 > gemessen; config_sweep-Kettenfix 777aa5d0b6 + Reload Chunk 77). Ticket Codex Sol Prio 82 (Klassen-Kalibrierung + drain-aware
 > Watchdog-Praedikat). Fuer den OWNER: das ist die Evidenz hinter Punkt 4 (RAM-Upgrade) - 92 % des claimbaren Backlogs haengen an
 > einer geratenen Konstante.
+> **Nachtrag 03:5xZ (14.09.) — PRESCREEN-Promotion 41405 angewendet + Watchdog-Pausenfenster:** config_sweep promote (keep 0.70 /
+> control 0.10, OWNER-DEC-PRESCREEN-OHLC-20260911) nach dem Ketten-Fix auf beiden Seiten (777aa5d0b6 Preflight, 3851f385c8 Promotion):
+> 35 Keep-Arme, 2 Kontroll-Arme, 15 Drops, **259 Real-Tick-Zellen** append-only eingestellt (Programm WINSWEEP_QM5_41405_..., L=2).
+> Leerlauf-Ursache: Claim-Snapshot zu 92 % pauschale 44-GB-Klassen (779 Rows governed geparkt, b13682f6ed) + Watchdog-Livelock;
+> Offline-Reproduktion von claim_atomic auf DB-Kopie claimt sofort (21507 Q08 914dfeda) -> die Worker verlieren ihre kurzen
+> Fenster an Lock-Konvoi/Backoff. Massnahme: Watchdog-Task 40 min pausiert (session_tools/watchdog_pause_window_0914.py,
+> Re-Enable automatisch, T_Live-Watchdog unberuehrt), Ticket 6cdc6811 fuer die dauerhafte Loesung (Klassen + drain-aware Praedikat).
