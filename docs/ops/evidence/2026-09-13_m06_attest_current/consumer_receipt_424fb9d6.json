@@ -1,0 +1,12 @@
+{
+  "accepted": true,
+  "activation_authorized": false,
+  "condition_1_satisfied": true,
+  "freeze_status": "ACTIVE",
+  "mutation_allowed": false,
+  "observation_age_seconds": 0.031584,
+  "proposal_sha256": "8b06c6c8fd0a97273bc39d14cc0150a57d2e75e3c248353b475b13a3e432a400",
+  "reason": "OWNER_ATTESTED_CURRENT_IDENTITY",
+  "receipt_id": "424fb9d6-38f9-4c8e-914c-70dbdd7fbf02",
+  "runtime_pointer_write": false
+}

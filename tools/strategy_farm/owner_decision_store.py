@@ -501,6 +501,88 @@ def _archive_receipt(vault_owner_path: Path, receipt: Mapping[str, Any]) -> None
     _atomic_write(archive, (text.rstrip() + "\n\n" + "\n".join(block)).encode("utf-8"))
 
 
+def _declared_effect(item: Mapping[str, Any], decision: str) -> str:
+    """The machine-readable effect a terminal receipt carries.
+
+    2026-09-14: a card may declare the exact consumer-bound effect string under
+    ``selected_effect_on_yes`` / ``selected_effect_on_no`` while ``yes_effect``
+    / ``no_effect`` stay OWNER-facing prose (the live-identity attestation cards
+    are consumed byte-exactly by live_identity_consumer).  The declared string
+    wins; otherwise the prose effect is the receipt effect, as before.
+    """
+    key = "selected_effect_on_yes" if decision == "YES" else "selected_effect_on_no"
+    declared = str(item.get(key) or "").strip()
+    if declared:
+        return declared
+    return str(item["yes_effect"] if decision == "YES" else item["no_effect"])
+
+
+def reissue_terminal_receipt(
+    *,
+    receipt_id: str,
+    request_id: str,
+    feed_path: Path = DEFAULT_FEED,
+    receipts_path: Path = DEFAULT_RECEIPTS,
+    vault_owner_path: Path = DEFAULT_VAULT_OWNER,
+    decided_at_utc: str | None = None,
+) -> dict[str, Any]:
+    """Append a superseding receipt that carries the card's DECLARED effect.
+
+    Bounded correction for a terminal receipt written before _declared_effect
+    existed: same decision, same card, same OWNER authority; only
+    ``selected_effect`` changes to the card's ``selected_effect_on_*`` string.
+    Refuses when the card declares no machine effect, when the prior receipt
+    already carries it, or when the receipt is not the card's latest.
+    """
+    request_id = str(request_id or "").strip()
+    if not REQUEST_ID_RE.fullmatch(request_id):
+        raise DecisionStoreError("request_id must be 8-128 safe characters")
+    with exclusive_store_lock(feed_path):
+        receipts = load_receipts(receipts_path)
+        dup = next((row for row in receipts if row.get("request_id") == request_id), None)
+        if dup is not None:
+            return dict(dup)
+        prior = next((row for row in receipts if row.get("receipt_id") == receipt_id), None)
+        if prior is None:
+            raise DecisionStoreError(f"unknown receipt: {receipt_id}")
+        feed = load_feed(feed_path)
+        item = next((row for row in feed["items"] if row["id"] == prior["decision_id"]), None)
+        if item is None:
+            raise DecisionStoreError(f"receipt target missing from feed: {prior['decision_id']}")
+        if item.get("last_receipt_id") != receipt_id:
+            raise DecisionConflict("only the card's latest receipt can be re-issued")
+        decision = str(prior.get("decision") or "")
+        if decision not in {"YES", "NO"}:
+            raise DecisionStoreError("only terminal receipts can be re-issued")
+        declared = _declared_effect(item, decision)
+        key = "selected_effect_on_yes" if decision == "YES" else "selected_effect_on_no"
+        if not str(item.get(key) or "").strip():
+            raise DecisionStoreError("card declares no machine effect; nothing to re-issue")
+        if prior.get("selected_effect") == declared:
+            raise DecisionConflict("receipt already carries the declared effect")
+        at = decided_at_utc or utc_now()
+        receipt = {k: v for k, v in prior.items() if k != "receipt_sha256"}
+        new_receipt_id = str(uuid.uuid4())
+        receipt.update({
+            "receipt_id": new_receipt_id,
+            "execution_task_id": execution_task_id(new_receipt_id),
+            "request_id": request_id,
+            "decided_at_utc": at,
+            "feed_revision_before": int(feed["revision"]),
+            "selected_effect": declared,
+            "supersedes_receipt_id": receipt_id,
+            "notes": (str(prior.get("notes") or "") + " | re-issued " + at
+                      + " with the card's declared machine effect; OWNER decision unchanged")[:4000],
+        })
+        receipt["receipt_sha256"] = sha256_bytes(canonical_bytes(receipt))
+        _append_receipt(receipts_path, receipt)
+        _apply_receipt(feed, receipt)
+        _write_json(feed_path, feed)
+        sync_vault_queue(feed, vault_owner_path)
+        _archive_receipt(vault_owner_path, receipt)
+        return receipt
+
+
 def record_decision(
     *,
     decision_id: str,
@@ -569,7 +651,7 @@ def record_decision(
         terminal = decision in {"YES", "NO"}
         receipt_id = str(uuid.uuid4())
         selected_effect = (
-            str(item["yes_effect"] if decision == "YES" else item["no_effect"])
+            _declared_effect(item, decision)
             if terminal else None
         )
         receipt: dict[str, Any] = {
