@@ -34,7 +34,14 @@ def _feed(tmp_path: Path) -> tuple[Path, Path, Path]:
     receipts = tmp_path / "receipts.jsonl"
     vault = tmp_path / "vault" / "OWNER.md"
     vault.parent.mkdir(parents=True)
-    vault.write_text("# OWNER\n", encoding="utf-8")
+    vault.write_text(
+        "# OWNER
+
+" + store.VAULT_QUEUE_START + "
+" + store.VAULT_QUEUE_END + "
+",
+        encoding="utf-8",
+    )
     return feed_path, receipts, vault
 
 
