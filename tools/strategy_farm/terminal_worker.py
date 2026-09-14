@@ -289,6 +289,57 @@ MULTISYMBOL_HEAVY_SYMBOL_COUNT = 10
 # ordinary jobs keep flowing beside one.
 COMMIT_CLASS_SINGLE_INDEX_TICK = "single_index_tick"
 SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB = 44.0
+# 2026-09-14 (Orchestrator, GRUEN infra repair; OWNER 2026-09-14 "Los gehts, alles
+# freigegeben und gemaess Vorschlag entschieden" on the control review): the flat
+# 44 GB above was derived from ONE SP500 observation (2026-08-15) and applied to
+# every index base.  On this 63 GB host a 44 GB row needs 44 + 14 = 58 GB free,
+# the maximum free RAM seen in the last 24 h was 54.1 GB, so every full-window
+# index row was structurally unwinnable: 779 rows (484 EAs; NDX 243, GDAXI 123,
+# SP500 63, WS30 49, UK100 16 among them) were parked on 2026-09-14 and the index
+# lane -- 5,323 completed index Q04 rows in the 120 days before 2026-09-02 -- has
+# been dead since.  The tester memory ledger holds NO full-window index run
+# (only NDX/WS30 annual census cells: max 7.32 GB / p95 2.6 GB, n=1,670), so the
+# other bases get a PROVISIONAL per-symbol reservation instead of the SP500
+# number.  Semantics are unchanged: max(flat, measured, floor) -- the measured
+# path (per-EA key n>=1, class key n>=3) and the phase floor can only RAISE a
+# reservation, the RAM emergency reaper stays the backstop, and the first NDX
+# row after this change runs as a supervised measurement (evidence under
+# docs/ops/evidence/2026-09-14_index_ram_table/).  SP500 keeps its measured
+# 44 GB (metatester64 45.7 GB private / 46.8 GB WS).  Rollback: env
+# QM_INDEX_TICK_RESERVATION_TABLE=0 (every index base back to the flat 44 GB),
+# then idle-reload the workers.  Unknown index bases fall back to the flat 44.
+INDEX_TICK_RESERVATION_TABLE_ENV = "QM_INDEX_TICK_RESERVATION_TABLE"
+INDEX_TICK_RESERVATION_GB_BY_BASE: dict[str, float] = {
+    "SP500": 44.0,  # measured 2026-08-15: 45.7 GB private / 46.8 GB WS (Q02)
+    "NDX": 24.0,    # provisional; annual census cells max 7.32 GB (n=1,657)
+    "GDAXI": 24.0,  # provisional; no ledger row
+    "WS30": 24.0,   # provisional; annual census cells max 2.2 GB (n=13)
+    "UK100": 24.0,  # provisional; no ledger row
+}
+RAM_RESERVATION_SOURCE_INDEX_TABLE = "index_symbol_table"
+
+
+def _index_tick_reservation_table_active() -> bool:
+    return os.environ.get(INDEX_TICK_RESERVATION_TABLE_ENV) != "0"
+
+
+def _index_tick_reservation_gb(host_symbol: object) -> float:
+    """Per-symbol launch reservation for a single-symbol index-tick row.
+
+    Reads INDEX_TICK_RESERVATION_GB_BY_BASE by the host symbol's base name
+    (``NDX.DWX`` -> ``NDX``); unknown bases and the rollback switch return the
+    historical flat SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB.
+    """
+    if not _index_tick_reservation_table_active():
+        return SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+    base = str(host_symbol or "").strip().upper().split(".")[0]
+    try:
+        value = float(INDEX_TICK_RESERVATION_GB_BY_BASE.get(base, SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB))
+    except (TypeError, ValueError):
+        return SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+    if not math.isfinite(value) or value <= 0.0:
+        return SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+    return value
 # 2026-09-11 17:4xZ (Orchestrator, infra repair under the Stehende Vollmacht
 # GRUEN zone; OWNER "Fabrik auf Anschlag"): a single ANNUAL OPT_CENSUS cell on
 # an index symbol inherited the 44 GB single_index_tick commit class although
@@ -1110,6 +1161,33 @@ def _commit_reservation_gb(commit_class: str) -> float:
     return MULTISYMBOL_COMMIT_RESERVATION_GB
 
 
+def _commit_reservation_gb_for_item(
+    commit_class: str,
+    item: sqlite3.Row | dict[str, Any] | None,
+    payload: dict[str, Any] | None,
+) -> float:
+    """Flat class reservation, refined per index base for single_index_tick.
+
+    Every other class returns exactly _commit_reservation_gb(commit_class);
+    a single-symbol index row reads INDEX_TICK_RESERVATION_GB_BY_BASE via the
+    row's host symbol (2026-09-14).  Missing item/payload -> flat class value.
+    """
+    if commit_class != COMMIT_CLASS_SINGLE_INDEX_TICK:
+        return _commit_reservation_gb(commit_class)
+    payload = payload if isinstance(payload, dict) else {}
+    host = ""
+    if item is not None:
+        try:
+            host = str(_work_item_value(item, "symbol", "") or "")
+        except Exception:
+            host = ""
+    if not host.strip():
+        host = str(payload.get("host_symbol") or "")
+    if not host.strip():
+        return _commit_reservation_gb(commit_class)
+    return _index_tick_reservation_gb(host)
+
+
 def _tester_memory_ledger_path() -> Path:
     """JSONL ledger location (env override for tests)."""
     return Path(
@@ -1623,7 +1701,7 @@ def _ram_reservation_detail_for_candidate(
             RAM_RESERVATION_SOURCE_FLAT,
         )
     ram_class = _multisymbol_commit_class(item, payload, multisymbol)
-    flat_gb = float(_commit_reservation_gb(ram_class))
+    flat_gb = float(_commit_reservation_gb_for_item(ram_class, item, payload))
     measured_gb = None
     phase_floor_gb = None
     if not multisymbol:
@@ -1651,6 +1729,13 @@ def _ram_reservation_detail_for_candidate(
     reservation_gb, source = _resolve_ram_reservation(
         ram_class, flat_gb, measured_gb, phase_floor_gb, multisymbol=multisymbol
     )
+    if (
+        ram_class == COMMIT_CLASS_SINGLE_INDEX_TICK
+        and source == RAM_RESERVATION_SOURCE_FLAT
+        and _index_tick_reservation_table_active()
+        and float(reservation_gb) != SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
+    ):
+        source = RAM_RESERVATION_SOURCE_INDEX_TABLE  # facts-only label
     return ram_class, reservation_gb, source
 
 
@@ -3204,7 +3289,7 @@ def _write_tester_memory_ledger(
         if ram_class == RAM_CLASS_OPT_CENSUS_CELL:
             flat_gb = OPT_CENSUS_RAM_RESERVATION_GB
         else:
-            flat_gb = float(_commit_reservation_gb(ram_class))
+            flat_gb = float(_commit_reservation_gb_for_item(ram_class, item, payload))
         gib = float(1024 ** 3)
         record = {
             "schema": "qm.tester_memory_ledger/v1",
@@ -3292,7 +3377,7 @@ def _commit_admission_snapshot(
         if until is None or until <= now_dt:
             continue
         commit_class = _multisymbol_commit_class(row, payload, item_is_multisym)
-        default_reservation = _commit_reservation_gb(commit_class)
+        default_reservation = _commit_reservation_gb_for_item(commit_class, row, payload)
         try:
             expected_peak_gb = max(
                 0.0,
@@ -3342,6 +3427,7 @@ def _set_commit_reservation(
     claimed_at_iso: str,
     multisymbol: bool,
     commit_class: str | None = None,
+    item: sqlite3.Row | dict[str, Any] | None = None,
 ) -> None:
     claimed_at = _parse_utc_iso(claimed_at_iso) or datetime.now(timezone.utc)
     if commit_class is None:
@@ -3351,7 +3437,7 @@ def _set_commit_reservation(
             else MULTISYMBOL_COMMIT_CLASS_ORDINARY
         )
     payload["commit_reservation_class"] = commit_class
-    payload["commit_reservation_gb"] = _commit_reservation_gb(commit_class)
+    payload["commit_reservation_gb"] = _commit_reservation_gb_for_item(commit_class, item, payload)
     payload["commit_reservation_until_utc"] = (
         claimed_at
         + timedelta(
@@ -5808,6 +5894,7 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         claimed_at_iso=now,
                         multisymbol=item_is_multisym,
                         commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
+                        item=item,
                     )
                     current, claim_lock_started = _begin_optimistic_write(
                         str(item["id"]),
@@ -6558,6 +6645,7 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     claimed_at_iso=now,
                     multisymbol=item_is_multisym,
                     commit_class=_multisymbol_commit_class(item, payload, item_is_multisym),
+                    item=item,
                 )
                 cur = conn.execute(
                     """
