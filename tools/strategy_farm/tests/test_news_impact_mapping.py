@@ -157,7 +157,13 @@ class DeterminismTests(unittest.TestCase):
             "Event": "NFP", "Actual": "1", "Forecast": "2", "Previous": "3",
         }]
         view = nim.schedule_view(nim.map_rows(rows, consumer="test", opt_in=True))
-        self.assertEqual(set(view[0]), {"timestamp_utc", "currency", "impact", "impact_rank", "event_id"})
+        self.assertEqual(
+            set(view[0]),
+            {"timestamp_utc", "currency", "impact", "impact_rank", "known_at_utc", "event_id"},
+        )
+        self.assertNotIn("actual", view[0])
+        self.assertNotIn("forecast", view[0])
+        self.assertNotIn("previous", view[0])
 
 
 class DuplicateTests(unittest.TestCase):
@@ -394,13 +400,88 @@ class DstRuleTests(unittest.TestCase):
         )
 
 
+class KnownAtUtcTests(unittest.TestCase):
+    """Contract section 6 - point-in-time known_at_utc."""
+
+    def test_rules_carry_a_positive_lead_hours_policy_for_every_shipped_label(self):
+        rules = nim.load_rules()
+        policy = rules[nim.KNOWN_AT_UTC_POLICY_KEY]
+        self.assertGreater(policy["default_lead_hours"], 0)
+        for label in rules["labels"]:
+            self.assertGreater(nim.known_at_utc_lead_hours(label, rules), 0)
+
+    def test_missing_known_at_utc_policy_is_refused(self):
+        rules = nim.load_rules()
+        del rules["known_at_utc_policy"]
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.json"
+            path.write_text(json.dumps(rules), encoding="utf-8")
+            with self.assertRaises(nim.MappingError):
+                nim.load_rules(path)
+
+    def test_zero_default_lead_hours_is_refused(self):
+        rules = nim.load_rules()
+        rules["known_at_utc_policy"]["default_lead_hours"] = 0
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "rules.json"
+            path.write_text(json.dumps(rules), encoding="utf-8")
+            with self.assertRaises(nim.MappingError):
+                nim.load_rules(path)
+
+    def test_known_at_utc_is_never_equal_to_timestamp_utc(self):
+        rows = [
+            {"DateTime_UTC": "2020.06.01 12:00", "Currency": "USD", "Impact": impact, "Event": f"X-{impact}"}
+            for impact in ("High", "Medium", "Low", "Holiday")
+        ]
+        events = nim.map_rows(rows, consumer="test", opt_in=True)
+        self.assertEqual(len(events), 4)
+        for event in events:
+            self.assertNotEqual(event.known_at_utc, event.timestamp_utc)
+            self.assertLess(
+                datetime.fromisoformat(event.known_at_utc.replace("Z", "+00:00")),
+                datetime.fromisoformat(event.timestamp_utc.replace("Z", "+00:00")),
+            )
+
+    def test_known_at_utc_matches_the_documented_formula(self):
+        rules = nim.load_rules()
+        rows = [{"DateTime_UTC": "2020.06.01 12:00", "Currency": "USD", "Impact": "High", "Event": "NFP"}]
+        event = nim.map_rows(rows, consumer="test", opt_in=True)[0]
+        lead = nim.known_at_utc_lead_hours("high", rules)
+        expected = datetime(2020, 6, 1, 12, 0, tzinfo=timezone.utc) - timedelta(hours=lead)
+        self.assertEqual(event.known_at_utc, expected.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        self.assertEqual(event.known_at_utc_lead_hours, lead)
+
+    def test_known_at_utc_present_on_every_schedule_view_row(self):
+        rows = [
+            {"DateTime_UTC": "2020.06.01 12:00", "Currency": "USD", "Impact": "High", "Event": "NFP"},
+            {"DateTime_UTC": "2020.06.02 08:30", "Currency": "EUR", "Impact": "Low", "Event": "CPI"},
+        ]
+        view = nim.schedule_view(nim.map_rows(rows, consumer="test", opt_in=True))
+        self.assertEqual(len(view), 2)
+        for row in view:
+            self.assertIn("known_at_utc", row)
+            self.assertNotEqual(row["known_at_utc"], row["timestamp_utc"])
+
+    def test_conflict_winner_carries_its_own_known_at_utc(self):
+        """The escalation winner's known_at_utc reflects the winning label's lead time."""
+        rules = nim.load_rules()
+        rules["known_at_utc_policy"]["lead_hours"]["high"] = 48
+        rows = [
+            {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD", "Impact": "Low", "Event": "X"},
+            {"DateTime_UTC": "2019.02.28 20:30", "Currency": "USD", "Impact": "High", "Event": "X"},
+        ]
+        events = nim.map_rows(rows, consumer="test", opt_in=True, rules=rules)
+        self.assertEqual(events[0].impact_label, "high")
+        self.assertEqual(events[0].known_at_utc_lead_hours, 48)
+
+
 class SelfReportTests(unittest.TestCase):
     """Contract section 7 - one consolidated object, not scattered fields."""
 
     REQUIRED = (
         "schema_version", "mapping_version", "dst_rule_version", "authoritative_source",
         "source_path", "content_sha256", "row_count", "max_event_date_utc",
-        "generated_at_utc",
+        "generated_at_utc", "known_at_utc_policy_id", "known_at_utc_coverage_pct",
     )
 
     def _report(self, tmp: str):
@@ -425,6 +506,16 @@ class SelfReportTests(unittest.TestCase):
         self.assertEqual(report["authoritative_source"], "forex_factory_calendar_clean.csv")
         self.assertEqual(report["authoritative_source_decision"], "OWNER-DEC-NEWS-MAPPING")
         self.assertTrue(report["live_path_forbidden"])
+
+    def test_known_at_utc_coverage_is_full_for_a_clean_run(self):
+        with TemporaryDirectory() as tmp:
+            report = self._report(tmp)
+        self.assertEqual(
+            report["known_at_utc_policy_id"],
+            "qm.news_impact_mapping.known_at_utc.conservative_backfill.v1",
+        )
+        self.assertEqual(report["known_at_utc_present_count"], report["distinct_event_count"])
+        self.assertEqual(report["known_at_utc_coverage_pct"], 100.0)
 
     def test_counts_duplicates_and_gating_rows(self):
         with TemporaryDirectory() as tmp:

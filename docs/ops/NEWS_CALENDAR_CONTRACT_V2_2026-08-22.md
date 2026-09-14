@@ -125,6 +125,27 @@ conservatively (e.g. `timestamp_utc` minus a fixed, documented lead time per eve
 advance at backtest time). This closes the "Actual/Forecast/Previous present without
 known_at_utc (look-ahead risk)" gap the audit named.
 
+> **Implementation status (2026-09-14, Claude, ticket `01870d4c`):** implemented in
+> `tools/strategy_farm/news_impact_mapping.py` (the `qm.news_impact_mapping.v1` path) —
+> `known_at_utc_for()` / `known_at_utc_lead_hours()`, versioned policy
+> `qm.news_impact_mapping.known_at_utc.conservative_backfill.v1` in
+> `tools/strategy_farm/config/news_impact_mapping.v1.json` (`known_at_utc_policy`).
+> `known_at_utc = timestamp_utc - lead_hours[impact_label]`, `lead_hours` currently a
+> uniform, documented 24h across all labels (no differentiated upstream-publication
+> evidence exists to justify a per-label split without inventing one). Present on every
+> `MappedEvent` and every `schedule_view()` row (section 5's gate-facing view); the run
+> self-report (section 7) carries `known_at_utc_policy_id`,
+> `known_at_utc_present_count`, `known_at_utc_coverage_pct`. `load_rules()` fails closed
+> if the policy is missing or any `lead_hours`/`default_lead_hours` value is not a
+> positive number, so a 0 can never silently collapse `known_at_utc` to `timestamp_utc`.
+> Flag-gated exactly like the rest of this contract — nothing calls into this module
+> unless the caller has already checked `QM_NEWS_IMPACT_MAPPING_V2=1` (e.g.
+> `q09_news_runner._news_contract_v2_declaration()`), so flag-off behaviour is
+> byte-identical by construction, not by a separate check inside this module. Tests:
+> `tools/strategy_farm/tests/test_news_impact_mapping.py::KnownAtUtcTests` (+ updated
+> `SelfReportTests`, `DeterminismTests`). Evidence:
+> `docs/ops/evidence/2026-09-14_known_at_utc_section6/README.md`.
+
 ## 7. Run self-report
 
 Every run that consumes the calendar (Q09 gate, P8 replay, live EA preflight) emits one

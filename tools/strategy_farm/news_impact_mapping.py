@@ -172,6 +172,43 @@ def _as_utc(moment: datetime) -> datetime:
 
 
 # --------------------------------------------------------------------------
+# known_at_utc - contract section 6 (point-in-time provenance)
+# --------------------------------------------------------------------------
+
+KNOWN_AT_UTC_POLICY_KEY = "known_at_utc_policy"
+
+
+def known_at_utc_lead_hours(impact_label: str, rules: Mapping[str, Any]) -> int:
+    """The documented, conservative lead time (hours) for ``impact_label``.
+
+    Falls back to ``default_lead_hours`` for a label the policy does not name
+    explicitly, never to 0 - a silent 0 would collapse to ``known_at_utc ==
+    timestamp_utc``, exactly the same-instant-surprise misrepresentation
+    section 6 forbids.
+    """
+
+    policy = rules.get(KNOWN_AT_UTC_POLICY_KEY)
+    if not isinstance(policy, Mapping):
+        raise MappingError(
+            f"rules artifact is missing required key {KNOWN_AT_UTC_POLICY_KEY!r}"
+        )
+    lead = policy.get("lead_hours", {}).get(impact_label, policy.get("default_lead_hours"))
+    if not isinstance(lead, (int, float)) or lead <= 0:
+        raise MappingError(
+            f"known_at_utc lead_hours for {impact_label!r} must be a positive number, got {lead!r}"
+        )
+    return int(lead)
+
+
+def known_at_utc_for(moment: datetime, impact_label: str, rules: Mapping[str, Any]) -> datetime:
+    """Contract section 6: conservative backfill, never equal to ``moment``."""
+
+    moment = _as_utc(moment)
+    lead_hours = known_at_utc_lead_hours(impact_label, rules)
+    return moment - timedelta(hours=lead_hours)
+
+
+# --------------------------------------------------------------------------
 # Rules, code and version hash (contract section 4)
 # --------------------------------------------------------------------------
 
@@ -205,6 +242,7 @@ _REQUIRED_RULE_KEYS = (
     "unmapped_label_policy",
     "duplicate_policy",
     "dst_rule_version",
+    "known_at_utc_policy",
 )
 
 
@@ -232,6 +270,20 @@ def load_rules(rules_path: Path | str | None = None) -> dict[str, Any]:
             f"rules duplicate_policy {rules['duplicate_policy']!r} is not one of "
             f"{sorted(SUPPORTED_DUPLICATE_POLICIES)}"
         )
+    known_at_policy = rules[KNOWN_AT_UTC_POLICY_KEY]
+    if not isinstance(known_at_policy, Mapping):
+        raise MappingError("rules.known_at_utc_policy must be an object")
+    default_lead = known_at_policy.get("default_lead_hours")
+    if not isinstance(default_lead, (int, float)) or default_lead <= 0:
+        raise MappingError(
+            "rules.known_at_utc_policy.default_lead_hours must be a positive number "
+            "(0 would silently collapse known_at_utc to timestamp_utc)"
+        )
+    for label, lead in (known_at_policy.get("lead_hours") or {}).items():
+        if not isinstance(lead, (int, float)) or lead <= 0:
+            raise MappingError(
+                f"rules.known_at_utc_policy.lead_hours.{label} must be a positive number"
+            )
     seen_alias: dict[str, str] = {}
     for label, spec in labels.items():
         if not isinstance(spec, Mapping) or "rank" not in spec or "gating" not in spec:
@@ -381,6 +433,10 @@ class MappedEvent:
     source_impact_raw: str
     broker_time: str
     broker_offset_hours: int
+    #: Contract section 6 - conservative backfill, documented in
+    #: known_at_utc_policy; never equal to timestamp_utc.
+    known_at_utc: str
+    known_at_utc_lead_hours: int
     occurrences: int = 1
     #: True when this row survived an identity conflict under the max-rank rule.
     impact_conflict_resolved: bool = False
@@ -494,6 +550,7 @@ def map_rows(
         event = str(row.get(ev_field) or "").strip()
         key = (_iso(moment), currency, event)
         broker = utc_to_broker(moment)
+        lead_hours = known_at_utc_lead_hours(klass.label, resolved)
         mapped = MappedEvent(
             timestamp_utc=key[0],
             currency=currency,
@@ -504,6 +561,8 @@ def map_rows(
             source_impact_raw=impact_raw,
             broker_time=broker.strftime("%Y-%m-%dT%H:%M:%S"),
             broker_offset_hours=broker_offset_hours(moment),
+            known_at_utc=_iso(moment - timedelta(hours=lead_hours)),
+            known_at_utc_lead_hours=lead_hours,
         )
         previous = collapsed.get(key)
         if previous is None:
@@ -554,7 +613,13 @@ def read_calendar(path: Path | str) -> Iterator[dict[str, str]]:
 
 
 def schedule_view(events: Sequence[MappedEvent]) -> list[dict[str, Any]]:
-    """Section 5 projection: no ``actual``/``forecast``/``previous``, ever."""
+    """Section 5 projection: no ``actual``/``forecast``/``previous``, ever.
+
+    Carries ``known_at_utc`` (section 6) on every row - the gating-facing view
+    is exactly where a point-in-time consumer needs it, and omitting it here
+    while it exists on the full :class:`MappedEvent` would silently reintroduce
+    the look-ahead gap section 6 closes.
+    """
 
     return [
         {
@@ -562,6 +627,7 @@ def schedule_view(events: Sequence[MappedEvent]) -> list[dict[str, Any]]:
             "currency": event.currency,
             "impact": event.impact_label,
             "impact_rank": event.impact_rank,
+            "known_at_utc": event.known_at_utc,
             "event_id": sha256_bytes(
                 canonical_json_bytes([event.timestamp_utc, event.currency, event.event])
             )[:16],
@@ -616,6 +682,17 @@ def run_self_report(
                 "superseded_impact_labels": list(event.superseded_impact_labels),
             })
 
+    # Section 6: known_at_utc coverage.  map_rows() sets it unconditionally
+    # (known_at_utc_lead_hours fails closed on a non-positive lead), so
+    # coverage is measured, not assumed - a future code path that skips the
+    # field is caught here rather than silently reported as compliant.
+    known_at_utc_present = sum(
+        1 for event in events if event.known_at_utc and event.known_at_utc != event.timestamp_utc
+    )
+    known_at_utc_coverage_pct = (
+        round(100.0 * known_at_utc_present / len(events), 4) if events else None
+    )
+
     fingerprint = mapping_fingerprint(resolved)
     report = {
         "selfreport_schema_version": SELFREPORT_SCHEMA_VERSION,
@@ -641,6 +718,11 @@ def run_self_report(
         "duplicate_conflicts": resolved_conflicts,
         "impact_counts": counts,
         "gating_row_count": gating_rows,
+        "known_at_utc_policy_id": (
+            (resolved.get(KNOWN_AT_UTC_POLICY_KEY) or {}).get("policy_id")
+        ),
+        "known_at_utc_present_count": known_at_utc_present,
+        "known_at_utc_coverage_pct": known_at_utc_coverage_pct,
         "max_event_date_utc": events[-1].timestamp_utc if events else None,
         "min_event_date_utc": events[0].timestamp_utc if events else None,
         "consumer": who,

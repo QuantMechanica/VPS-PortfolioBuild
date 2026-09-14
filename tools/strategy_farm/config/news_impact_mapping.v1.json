@@ -86,6 +86,20 @@
     "contract_reference": "docs/ops/NEWS_CALENDAR_CONTRACT_V2_2026-08-22.md#8",
     "gate_semantics_unchanged": true
   },
+  "known_at_utc_policy": {
+    "policy_id": "qm.news_impact_mapping.known_at_utc.conservative_backfill.v1",
+    "contract_reference": "docs/ops/NEWS_CALENDAR_CONTRACT_V2_2026-08-22.md#6",
+    "method": "conservative_fixed_lead_time_backfill",
+    "formula": "known_at_utc = timestamp_utc - lead_hours[impact_label]",
+    "provenance": "Neither calendar seed (news_calendar_2015_2025.csv, forex_factory_calendar_clean.csv) carries a 'when this row was first published' column, so known_at_utc cannot be measured for the historical backfill. This is therefore a documented estimate, never a measurement, and never silently equal to timestamp_utc (which would misrepresent every historical event as an unscheduled same-instant surprise). lead_hours is deliberately the same small, conservative 24h across all labels: no differentiated upstream evidence exists to justify a longer or per-label-distinct lead time, and inventing one would violate the no-invented-values rule this contract itself sets (section 6). A future ingestion pass with real publication timestamps supersedes this policy_id, not this file in place.",
+    "default_lead_hours": 24,
+    "lead_hours": {
+      "high": 24,
+      "medium": 24,
+      "low": 24,
+      "holiday": 24
+    }
+  },
   "default_enabled": false,
   "consumer_optin_required": true,
   "live_path_forbidden": true,
