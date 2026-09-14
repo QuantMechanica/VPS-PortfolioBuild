@@ -125,3 +125,15 @@ def test_existing_payload_context_is_removed_on_refusal(tmp_path, monkeypatch):
     )
     assert "dsr_context" not in payload
     assert payload["dsr_context_status"]["status"] == "UNAVAILABLE"
+
+
+def test_window_pair_accepts_bare_year_edges():
+    """2026-09-14: Q08 reruns declare expected_from_date='2017'/expected_to_date='2022'; a bare year is a
+    whole-year edge (first day for from, last day for to); partial or malformed dates stay refused."""
+    import dsr_cohort as dc
+
+    assert dc._window_pair("2017", "2022") == {"from": "2017-01-01", "to": "2022-12-31"}
+    assert dc._window_pair("2018.07.02", "2022") == {"from": "2018-07-02", "to": "2022-12-31"}
+    assert dc._window_pair("2022", "2017") is None
+    assert dc._window_pair("2017-13", "2022") is None
+    assert dc._window_pair("", "2022") is None

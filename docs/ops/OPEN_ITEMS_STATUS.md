@@ -4579,3 +4579,11 @@ Not done / parked with reason: 40 BLOCKED build_ea tasks (deprioritised 08-22, b
 > Offline-Reproduktion von claim_atomic auf DB-Kopie claimt sofort (21507 Q08 914dfeda) -> die Worker verlieren ihre kurzen
 > Fenster an Lock-Konvoi/Backoff. Massnahme: Watchdog-Task 40 min pausiert (session_tools/watchdog_pause_window_0914.py,
 > Re-Enable automatisch, T_Live-Watchdog unberuehrt), Ticket 6cdc6811 fuer die dauerhafte Loesung (Klassen + drain-aware Praedikat).
+> **Nachtrag 04:2xZ (14.09.) — Leerlauf-Ursache endgueltig (Worker-Diagnostik 194fffa917):** Q08-Rows mit Jahresfenster
+> (`expected_from_date="2017"`, `expected_to_date="2022"`, so mintet enqueue-backtest --append-only-rerun-of) fielen im DSR-
+> Kontext-Preflight als CANDIDATE_WINDOW_UNAVAILABLE durch, verbrauchten aber vorher das History-Preflight-Budget (8 je Scan)
+> vor allen laufbaren Rows -> nichts claimbar. Fix dsr_cohort._window_pair akzeptiert Jahreskanten (Test); 914dfeda/665312e1
+> (21507/20266 Q08-Nachlaeufe) und ffbc4cab loesen wieder auf; b68d05cd (12712) und 63d4ce1d (1230) haben nirgends ein Fenster
+> -> geparkt Q08_DSR_CANDIDATE_WINDOW_UNAVAILABLE (Ticket 269d5101). Die 259 promoteten Real-Tick-Zellen wurden von der
+> Chunk-77-Vorpruefung (Ketten-Fix v1) als PROGRAM_PREFLIGHT_SUPPRESSED verworfen; mit dem Promotion-Code 3851f385c8
+> authentifizieren sie offline sauber -> Reload Chunk 79 (alle zehn) traegt dsr_cohort + config_sweep in die Worker.

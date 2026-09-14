@@ -106,12 +106,33 @@ def _date_text(value: Any) -> str:
     raise CohortUnavailable("CANDIDATE_WINDOW_UNAVAILABLE")
 
 
+def _year_edge_text(value: Any, *, edge: str) -> str | None:
+    """A bare four-digit year is a whole-year window edge (2026-09-14).
+
+    Q08 full-history rows and their append-only reruns declare their window as
+    ``expected_from_date="2017"`` / ``expected_to_date="2022"`` (year strings,
+    see farmctl enqueue-backtest --append-only-rerun-of).  The strict day parser
+    refused them as CANDIDATE_WINDOW_UNAVAILABLE, the Q08 DSR preflight then
+    skipped those rows on every claim scan while they still consumed the
+    history-preflight budget ahead of runnable rows (claim-idle fleet
+    2026-09-14 02:55-04:00Z).  A year resolves to its first day for ``from``
+    and its last day for ``to``; anything else stays with the strict parser.
+    """
+    raw = str(value or "").strip()
+    if len(raw) == 4 and raw.isdigit():
+        return f"{raw}-01-01" if edge == "from" else f"{raw}-12-31"
+    return None
+
+
 def _window_pair(start: Any, end: Any) -> dict[str, str] | None:
     """Parse one complete candidate window without accepting partial dates."""
     if start in (None, "") or end in (None, ""):
         return None
     try:
-        resolved = {"from": _date_text(start), "to": _date_text(end)}
+        resolved = {
+            "from": _year_edge_text(start, edge="from") or _date_text(start),
+            "to": _year_edge_text(end, edge="to") or _date_text(end),
+        }
     except CohortUnavailable:
         return None
     if resolved["from"] > resolved["to"]:
