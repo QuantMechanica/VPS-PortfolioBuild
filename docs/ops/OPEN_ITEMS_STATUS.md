@@ -4648,6 +4648,31 @@ from 12778/13117 staying on the original patch/recompile/DL-089 path. Deferred: 
 canonical git-tracked decision record is authoritative regardless (filesystem > vault). Full
 record: `docs/ops/evidence/2026-09-14_identity-equivalence-20260913_099bebe6_execution.md`.
 Task moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
+
+## 2026-09-14 ~14:5xZ — Task 9e5db1e9 (OWNER-DEC-GOVERNOR-V2-ENFORCE-20260913, receipt 1a184219) — RESULT: points 1-3 ratified, point 4 (enforce switch) correctly deferred, no T_Live touch
+
+Policy candidate (sha `f2baf21a…`) and enforce-activation draft (sha `5ab3b819…`) were
+already committed byte-identical 2026-09-13 (commit `88a4874117`) with `status:
+OWNER_SIGNED` self-declared; today's receipt is the OWNER naming those exact hashes, which
+*is* the signature per the tool's own design — no file edit was made or needed (re-verified
+both shas match). Committed the real order file
+`decisions/2026-09-13_owner_governor_enforce_dxz.md` (date preserved, bound hashes computed
+against it) with the literal line `GOVERNOR-ENFORCE: ACTIVATE DXZ 2026-09-13`. Point 4
+(switch adapter to enforce) is explicitly gated in the receipt's own `selected_effect` on
+"nach dem Chart-Attach" — read-only check of `account_snapshot.json` shows it is still
+`LEGACY_UNVERSIONED` (no `schema` key), so the OWNER has not yet attached the monitor v2
+chart; that is a T_Live-only act this task is forbidden from doing. The recurring watcher
+`QM_StrategyFarm_GovernorDryRunWatch` was left untouched (`--dry-run` only, verified). One
+proof run only: `account_governor_action_adapter.py --enforce --executor halt-file` against
+the real committed artifacts, scratch `--halt-dir`/`--halt-receipt-dir` (not T_Live) ->
+`ENFORCE_REFUSED_BY_EXECUTOR` / `l1_entry_freeze_not_expressible_via_halt_channel`, rc=3,
+`files_written: []`, scratch halt dir verified empty — proves the full chain now binds
+against the real files and still correctly fails closed at level 1, not a mode switch. No
+"first three enforce intervals" reported because enforcement was never switched on for the
+watcher — fabricating them would violate evidence-over-claims. Vault annex mirror deferred
+(same `G:` drive gap as the identity-equivalence task above). Full record:
+`docs/ops/evidence/2026-09-14_governor-v2-enforce-20260913_1a184219_execution.md`. Task
+moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - Side finding: 186 Q04 FAILs (14 d) carry "no attributed stream"; not yet checked whether zero-trade folds or a capture defect.
 
 > **Nachtrag 14:4xZ (14.09.) — OWNER: "Es wird keinen RAM Zukauf geben, bei SP500 und Multisymbol koennen halt keine anderen
