@@ -1,0 +1,109 @@
+{
+  "schema": "qm.q08-context-repair-dispositions/v1",
+  "decision_id": "OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914",
+  "owner_receipt_prefix": "3415f6c0",
+  "router_task_prefix": "3ec11996",
+  "applied_at_utc": "2026-09-14T15:44:04.377993+00:00",
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_q08_repair_dispositions_20260914T154347Z_461f4cdc.sqlite",
+    "sha256": "e49e0795f6a9ae473d70101fde0299fb99c917d0b571614b6f3b0a9a0f4e248e"
+  },
+  "rows": [
+    {
+      "class": "D",
+      "source": "19c9df13-f81e-473e-9ebc-dc045b03dd1b",
+      "disposition": "c676b2c8-ad0a-4493-b030-70d02992dbdb",
+      "superseded_by": "89ea5894-2ce5-4c11-80db-a841baef9e7b",
+      "verdict": "SUPERSEDED_IDENTITY",
+      "hold_released": 0
+    },
+    {
+      "class": "D",
+      "source": "737a2134-5360-463f-9f4c-49b53a750961",
+      "disposition": "788c81ee-f4cd-47e2-86a7-452daace1a06",
+      "superseded_by": "788c81ee-f4cd-47e2-86a7-452daace1a06",
+      "verdict": "SUPERSEDED_IDENTITY",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "b68d05cd-e52c-43a5-96aa-5e0306efa60f",
+      "disposition": "1679215f-df05-4924-afe8-2ec39f617147",
+      "superseded_by": "1679215f-df05-4924-afe8-2ec39f617147",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "ffbc4cab-18af-4793-b5b9-8338df851a39",
+      "disposition": "b31a3b5d-f0c8-4e97-aaad-7ca3e21f1ead",
+      "superseded_by": "b31a3b5d-f0c8-4e97-aaad-7ca3e21f1ead",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "15f2ecb0-97dd-4a7b-91d7-ff540857adb6",
+      "disposition": "6a069ce0-07bb-4ee9-96b1-fbbe52955e00",
+      "superseded_by": "6a069ce0-07bb-4ee9-96b1-fbbe52955e00",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "2b5e5be0-5d7f-44ac-b153-50a2757d429a",
+      "disposition": "9cf4122b-886d-4af4-ad62-3324df625025",
+      "superseded_by": "9cf4122b-886d-4af4-ad62-3324df625025",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "334ca1c5-c4f7-4c55-93f7-47676333e0e4",
+      "disposition": "a316ffa4-6f33-4c80-9869-1eaf8ab7e547",
+      "superseded_by": "a316ffa4-6f33-4c80-9869-1eaf8ab7e547",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "e8e0372e-0c52-42f2-bc10-928fe41677f6",
+      "disposition": "e20972b5-9962-478a-a2ac-b7490f1c570d",
+      "superseded_by": "e20972b5-9962-478a-a2ac-b7490f1c570d",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "2e2be584-8383-46bd-8737-7eeba6b99ea5",
+      "disposition": "89199f3f-e80b-4a06-bf41-608975d1c59f",
+      "superseded_by": "89199f3f-e80b-4a06-bf41-608975d1c59f",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "080a08f6-d35f-4d6a-8f2a-07378149f944",
+      "disposition": "1ee765d7-a44e-4e1f-9ad0-34689b4dc480",
+      "superseded_by": "1ee765d7-a44e-4e1f-9ad0-34689b4dc480",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "6caa65b7-e240-4d71-a894-37abc406db71",
+      "disposition": "934f1827-a369-44cd-b80c-9a5a55f62c44",
+      "superseded_by": "934f1827-a369-44cd-b80c-9a5a55f62c44",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    },
+    {
+      "class": "A",
+      "source": "010fd451-0631-45f0-b4f3-270f70957829",
+      "disposition": "1be90193-3d42-4c0a-ba03-a3554b44fb15",
+      "superseded_by": "1be90193-3d42-4c0a-ba03-a3554b44fb15",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 1
+    }
+  ]
+}
