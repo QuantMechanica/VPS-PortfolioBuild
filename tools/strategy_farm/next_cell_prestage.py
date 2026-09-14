@@ -1002,6 +1002,26 @@ class PrestageController:
                     for key, value in claim.items()
                     if (key.endswith("_skipped") or key.endswith("_deferred")) and value
                 },
+                # 2026-09-14 (Orchestrator): the counts alone could not explain a
+                # 60-minute claim-idle fleet (offline claim_atomic on a DB copy
+                # claimed at once). Emit the first two entries of every non-empty
+                # skip list plus the preflight outcomes so the real per-row
+                # refusal reason is visible in the worker log.
+                "skip_samples": {
+                    key: [
+                        {k: v for k, v in dict(entry).items() if k != "detail"}
+                        if isinstance(entry, Mapping) else entry
+                        for entry in list(value)[:2]
+                    ]
+                    for key, value in claim.items()
+                    if (key.endswith("_skipped") or key.endswith("_deferred"))
+                    and isinstance(value, (list, tuple)) and value
+                },
+                "history_claim_preflights": [
+                    {k: v for k, v in dict(entry).items() if k != "detail"}
+                    for entry in list(claim.get("history_claim_preflights") or [])[:3]
+                ],
+                "recovery_capped": claim.get("recovery_capped"),
             },
         )
         if not claim.get("claimed") or not self.config.active:
