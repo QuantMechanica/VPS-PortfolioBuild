@@ -117,9 +117,12 @@ def main() -> int:
                     help="release every held row whose CURRENT reservation (terminal_worker classification under the "
                          "per-symbol table) is below this value, regardless of base/phase; SP500 and true heavy rows stay")
     ap.add_argument("--note", default="")
+    ap.add_argument("--include-exclusive", action="store_true", help="also select SP500 rows (exclusive drain lane, commit e246cc0dab)")
     ap.add_argument("--apply", action="store_true")
     args = ap.parse_args()
     bases = {b.upper() for b in args.base}
+    if args.include_exclusive:
+        NEVER.clear()
     phases = {p.upper() for p in args.phase}
     ids = set(args.id)
     if args.max_reservation_gb is not None:
