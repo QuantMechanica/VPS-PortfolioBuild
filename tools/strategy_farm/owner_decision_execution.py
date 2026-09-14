@@ -235,14 +235,20 @@ def _validate_card_binding(receipt: Mapping[str, Any], item: Mapping[str, Any]) 
     if receipt.get("decision_card_sha256") != observed_card_hash:
         raise ExecutionContractError("OWNER decision card changed after receipt")
     choice = str(receipt["decision"])
-    observed_effect = str(item["yes_effect"] if choice == "YES" else item["no_effect"])
-    if receipt.get("selected_effect") != observed_effect:
+    # 2026-09-14: a card may declare the consumer-bound machine effect under
+    # selected_effect_on_yes/no (store._declared_effect); a receipt written
+    # before that rule still carries the prose effect and stays valid.
+    observed_effects = {
+        str(item["yes_effect"] if choice == "YES" else item["no_effect"]),
+        str(store._declared_effect(item, choice)),
+    }
+    if receipt.get("selected_effect") not in observed_effects:
         raise ExecutionContractError("OWNER-selected effect changed after receipt")
     if receipt.get("question") != item.get("question"):
         raise ExecutionContractError("OWNER decision question changed after receipt")
     if receipt.get("recommendation") != item.get("recommendation"):
         raise ExecutionContractError("OWNER decision recommendation changed after receipt")
-    return observed_effect
+    return str(receipt.get("selected_effect"))
 
 
 def _artifact_path(receipt: Mapping[str, Any]) -> str:

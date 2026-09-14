@@ -97,3 +97,20 @@ def test_reissue_supersedes_with_the_declared_effect_and_own_task_id(tmp_path):
     with pytest.raises(store.DecisionConflict):
         store.reissue_terminal_receipt(receipt_id=prior["receipt_id"], request_id="CHAT-20260914-TEST-REISSUE-03",
                                        feed_path=feed_path, receipts_path=receipts, vault_owner_path=vault)
+
+
+def test_execution_validator_accepts_prose_and_declared_effects(tmp_path):
+    import owner_decision_execution as ex
+    feed_path, receipts, vault = _seed(tmp_path, declared=False)
+    prior = _decide(feed_path, receipts, vault)
+    feed = store.load_feed(feed_path)
+    feed["items"][0]["selected_effect_on_yes"] = EFFECT
+    feed_path.write_text(json.dumps(feed), encoding="utf-8")
+    new = store.reissue_terminal_receipt(receipt_id=prior["receipt_id"], request_id="CHAT-20260914-TEST-REISSUE-04",
+                                         feed_path=feed_path, receipts_path=receipts, vault_owner_path=vault)
+    item = store.load_feed(feed_path)["items"][0]
+    assert ex._validate_card_binding(prior, item) == prior["selected_effect"]  # prose receipt stays valid
+    assert ex._validate_card_binding(new, item) == EFFECT  # declared effect accepted
+    bad = dict(new); bad["selected_effect"] = "something else"
+    with pytest.raises(ex.ExecutionContractError):
+        ex._validate_card_binding(bad, item)
