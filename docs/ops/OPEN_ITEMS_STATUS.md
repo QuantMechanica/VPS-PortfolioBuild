@@ -4587,3 +4587,10 @@ Not done / parked with reason: 40 BLOCKED build_ea tasks (deprioritised 08-22, b
 > -> geparkt Q08_DSR_CANDIDATE_WINDOW_UNAVAILABLE (Ticket 269d5101). Die 259 promoteten Real-Tick-Zellen wurden von der
 > Chunk-77-Vorpruefung (Ketten-Fix v1) als PROGRAM_PREFLIGHT_SUPPRESSED verworfen; mit dem Promotion-Code 3851f385c8
 > authentifizieren sie offline sauber -> Reload Chunk 79 (alle zehn) traegt dsr_cohort + config_sweep in die Worker.
+> **Nachtrag 04:3xZ (14.09.) — Flotte claimt wieder (04:27Z):** alle 18 wartenden Q08-Rows waren im DSR-Kontext-Preflight
+> UNAVAILABLE (fehlende Single-Config-Deklarationen, fehlende Karten fuer 41472/41473/41474/41394, LOCKED_PARAMETER_DRIFT,
+> INCOMPLETE_TRIAL DL089 fuer 21507 (2555 retro-skip-Zellen zaehlen in dsr_cohort nicht als terminal), Q03-Quelle fuer 20266) und
+> verbrauchten als Kopf der Claim-Reihenfolge das History-Preflight-Budget -> 17 Rows governed geparkt (Q08_DSR_CONTEXT_UNAVAILABLE,
+> Journal docs/ops/evidence/2026-09-14_q08_dsr_context_park_journal.jsonl), sofort 4 aktive Zellen (Q02 x2, Q04, Q07). Die 259
+> promoteten Real-Tick-Zellen scheitern an dl089_scheduling ("declared arm c00 is missing, duplicate, or out of year order":
+> Real- und PRESCREEN-Zellen teilen Arm/Jahr) -> Ticket Codex Sol P84. Reservierungen T5-T10 aufgehoben; Watchdog re-enable ~04:35Z.
