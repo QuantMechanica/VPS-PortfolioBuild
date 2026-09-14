@@ -30,12 +30,12 @@ repair_v2 for 12969 (41470) DEPLOYABLE_AT_CUTOVER, identity rule ACTIVE, attesta
 
 | # | Item | Owner | Due | Status |
 |---|---|---|---|---|
-| D1 | Freeze condition 2 §6/§8 (tickets 01870d4c, 53bf70a3) + 11 REVIEW_REQUIRED rows | Sonnet lane / Claude | Wed 09-17 | open |
-| D2 | Q16 checks 6 (commission/swap evidence) and 7 (DST artifact), no invented values (ticket 8d8a23e1) | Sonnet lane / Claude | Wed 09-17 | open |
+| D1 | Freeze condition 2 §6/§8 (tickets 01870d4c, 53bf70a3) + 11 REVIEW_REQUIRED rows | Sonnet lane / Claude | Wed 09-17 | §6 + §8 **done** (5b3481a462, 29a47ac35f, approved 21:3xZ); residue: 11 REVIEW_REQUIRED rows + flag activation (carried by the OWNER lift) |
+| D2 | Q16 checks 6 (commission/swap evidence) and 7 (DST artifact), no invented values (ticket 8d8a23e1) | Sonnet lane / Claude | Wed 09-17 | **done** (81cd1527b1): check 7 GREEN, check 6 GREEN for 4 + class-proxy 2, 1537/XAGUSD stays OPEN (no deal history) |
 | D3 | Q16 check 10 magic embedding 9641/WS30 (INIT log after attach) and check 9 routing XAGUSD/WS30 (OWNER Market Watch) | Claude / **OWNER** | ceremony | open |
-| D4 | Governed lift transcription tool + signed pointer command, ceremony ANLEITUNG final (one page, OWNER acts only) | Claude | Fri 09-18 | open |
-| D5 | OWNER written lift sentence + flag go (V2) + Market Watch XAGUSD/WS30 | **OWNER** | Sat 09-19 | open |
-| D6 | Ceremony: stage presets → deploy copy-plan → Claude verification → chart attach → governor enforce → **AutoTrading (OWNER)** | Claude + **OWNER** | Sun 09-20 09:00–11:00 local | open |
+| D4 | Lift + signed pointer **done 09-14** (risk_freeze_lift_0914.py, pointer signed); NEW: profile V3 (28 charts + monitor) builder + reseal + controlled restart plan, ANLEITUNG final | Claude | Wed 09-17 | open |
+| D5 | OWNER written lift **done 09-14** (Freifahrtsschein); flag go (V2) carried by the lift; Market Watch XAGUSD/WS30 handled by the V3 profile charts | — | — | **done** |
+| D6 | Ceremony (autonomous per OWNER 09-14): stage presets → deploy copy-plan → V3 profile + reseal → controlled T_Live restart → Claude verification → governor enforce; AutoTrading stays as the OWNER set it (Hard Rule: never toggled by an AI) | Claude | Sun 09-20 09:00–11:00 local | open |
 | D7 | 12778/13117 (NOT_EQUIVALENT rebuilds) stay dark no-ops in v2; own chains continue | — | after | accepted |
 
 ## 2 · FTMO book v2 (demo account 1514536732, FTMO-Demo, governor QM5_13206 M13)
@@ -51,8 +51,8 @@ that is a separate decision the sprint does not make.
 | # | Item | Owner | Due | Status |
 |---|---|---|---|---|
 | F1 | OWNER order file `decisions/2026-09-14_owner_book_order_ftmo.md` (chat order transcribed) | done 20:2xZ | — | **done** |
-| F2 | FTMO inputs: versioned cost/swap snapshot from the 2026-09-06 native specs, FUND_SCORE coverage of the 26 pairs, builder command file (ticket ac25ebea) | Sonnet lane / Claude | Wed 09-17 | open |
-| F3 | Builder dry-run once the freeze is lifted (or with an OWNER-scoped exception for analysis) → bar status; if BAR_NOT_MET: exact missing evidence per pair and the OWNER choice (demo book from the bar-passing subset, or none) | Claude | Thu 09-18 | open |
+| F2 | FTMO inputs (ticket ac25ebea) | Sonnet lane / Claude | Wed 09-17 | **done** (b70adc6525): cost snapshot v2 (5/10 symbols covered, 5 uncovered listed), FUND_SCORE all 26 pairs far below floor 1.0 → strict Q11_FTMO book not reachable this week |
+| F3 | Builder dry-run **done 09-14 20:3xZ**: BAR_NOT_MET (fund scores 0.05–0.22 vs 1.0, bootstrap/correlation missing) → Sunday deliverable = FTMO demo book v2 on the M13 path (OWNER Freifahrtsschein) | Claude | — | **done** |
 | F4 | FTMO demo deployment package v2 (presets FTMO env, symbol mapping .DWX→FTMO names, governor policy unchanged, copy plan) + ANLEITUNG | Claude | Fri 09-18 | open |
 | F5 | OWNER: attach + AutoTrading on the FTMO demo terminal in the Sunday window (after DXZ) | **OWNER** | Sun 09-20 | open |
 
