@@ -4564,3 +4564,11 @@ Not done / parked with reason: 40 BLOCKED build_ea tasks (deprioritised 08-22, b
 > again for fresh-source rows. 41179/41189/41113/41123 + the seven repaired two-leg winsweep arms have NO approved card and
 > their rollout/repair authorities are exhausted (agents/board-advisor a96d697891): they need the sweep-program enqueue path
 > or a card+build_ea commission -> ticket below. 13 rollout-held rows stay stale by design (superseded chains).
+> **Nachtrag 03:4xZ (14.09.) — Fleet-Starvation-Klasse gefunden:** 782 der 851 Zeilen im kanonischen Claim-Snapshot tragen eine
+> pauschale 44-GB-Reservierung (single_index_tick 388, heavy_or_unknown_multisymbol 394), die der 63-GB-Host nur im Drain-Fenster
+> (eine Zeile je ~2 h) bedienen kann; 61 weitere sind history-deferred, 8 DSR-deferred. Folge: Worker scannen, claimen nichts, der
+> Watchdog setzt alle 10 min "dispatch_stall" -> WATCHDOG_RESET_PENDING -> Factory_ON-Task result 1 -> naechster Zyklus raeumt den
+> verwaisten Marker (Livelock 03:15-03:35Z, selbstheilend, aber Durchsatz-Bremse). PRESCREEN 41405 ist komplett (5 Kettennachlaeufe
+> gemessen; config_sweep-Kettenfix 777aa5d0b6 + Reload Chunk 77). Ticket Codex Sol Prio 82 (Klassen-Kalibrierung + drain-aware
+> Watchdog-Praedikat). Fuer den OWNER: das ist die Evidenz hinter Punkt 4 (RAM-Upgrade) - 92 % des claimbaren Backlogs haengen an
+> einer geratenen Konstante.
