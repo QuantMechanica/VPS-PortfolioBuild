@@ -1,7 +1,13 @@
 # Decision: Identity-Equivalence Proof for Symbol-Literal EA Rebuilds
 
 - **Date:** 2026-09-13
-- **Status:** PROPOSED (to be ratified by an OWNER JA/NEIN receipt)
+- **Status:** RATIFIED / IDENTITY_EQUIVALENCE_RULE=ACTIVE (OWNER receipt 2026-09-14)
+- **OWNER receipt:** decision_id `OWNER-DEC-IDENTITY-EQUIVALENCE-20260913`, receipt_id
+  `099bebe6-1db6-4174-82be-4287639f49ff`, receipt sha256
+  `0dcb95b9393dfd6ad6bcd953f7dc2b9318185cce75ddc9e0574f033b5cd26a0f`, decided_at_utc
+  2026-09-14T13:45:21Z ("Los gehts, alles freigegeben und gemaess Vorschlag entschieden!
+  Ausser RAM Zukauf" — Mission Control receipt, choice YES). Execution record:
+  `docs/ops/evidence/2026-09-14_identity-equivalence-20260913_099bebe6_execution.md`.
 - **Author:** Claude (Orchestrator)
 - **Zone:** ROT-adjacent (touches what may stand in a deploy manifest / book-level
   evidence) — therefore proposed, not self-executed.
@@ -26,7 +32,7 @@ A byte-exact proof is impossible for some symbols: `RISK_FIXED` lot sizing uses
 the symbol tick value, which for JPY pairs moves with the USDJPY quote between
 runs. The proof is therefore **lot-normalised** (see evidence README).
 
-## Rule (proposed)
+## Rule (ratified, active)
 
 A rebuilt identity R that carries an **`EQUIVALENT_EXACT` or
 `EQUIVALENT_LOT_NORMALISED`** proof (schema `qm.identity-equivalence-proof/v1`)
@@ -52,7 +58,12 @@ While simultaneously:
 On **`NOT_EQUIVALENT`**, nothing is inherited: R is an ordinary new identity and
 must earn its own full Q02..Q10 evidence. (Example this cohort: QM5_21505 →
 QM5_41474 on XAGUSD diverged — 159 vs 151 deals, 132 differing deals — and
-inherits nothing.)
+inherits nothing. Once their own Q02 rows existed, the two basket/cointegration
+rebuilds proved the same way: QM5_12778 → QM5_41471 diverged 389 vs 261 deals,
+and QM5_13117 → QM5_41472 diverged on 112/225 compared deals — see
+`docs/ops/evidence/2026-09-13_identity_equivalence/README.md`, both
+`NOT_EQUIVALENT`, 2026-09-14. Only QM5_12969 → QM5_41470 and QM5_13054 →
+QM5_41473 qualify for inheritance from this cohort.)
 
 ## Ratified constants
 
@@ -77,9 +88,7 @@ proof cannot upgrade an unqualified original.
 
 ## Rollback
 
-- The rule is **inactive without an OWNER receipt**; until ratified, the proofs
-  are evidence only and no manifest may cite them for inheritance.
-- To roll back after ratification: remove every proof citation from deploy
+- To roll back: remove every proof citation from deploy
   manifests (substitution reverts to the original identity or R runs on its own
   gates only) and mark this decision superseded. No pipeline state was ever
   created from a proof, so nothing else needs unwinding.

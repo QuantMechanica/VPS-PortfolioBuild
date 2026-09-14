@@ -74,6 +74,17 @@ drafted presets under `C:/QM/deploy/DXZ_V2_20260913/repair/` become deployable.
 re-solved 28 sleeves and still returns `APPLY_RECOMMENDED` with all three not-worse checks PASS,
 so nothing of value was lost by dropping them.*
 
+*2026-09-14 update (OWNER-DEC-IDENTITY-EQUIVALENCE-20260913, receipt 099bebe6): **17/12969**
+gets an alternate closure that does not wait for the generic patch/recompile/DL-089 path —
+its rebuild QM5_41470 carries an `EQUIVALENT_LOT_NORMALISED` proof
+(`docs/ops/evidence/2026-09-13_identity_equivalence/README.md`) and the staging package
+`C:/QM/deploy/DXZ_V2_20260913/repair_v2/` (see `REPAIR_V2_41470_STAGING.md`) is now
+**DEPLOYABLE_AT_CUTOVER** — still blocked only by the book-v2 cutover order and the
+LIVE_RISK_FREEZE lift, not by a source patch. **06/12778 and 24/13117 are unaffected**: their
+same-day proofs for QM5_41471 and QM5_41472 both came back `NOT_EQUIVALENT` (structural deal
+divergence, basket/cointegration legs), so no inheritance shortcut exists for them — they stay
+on the original RED-9 action (patch, recompile, DL-089 requalify).*
+
 **OPEN-9 · routing unconfirmed — XAGUSD (1537, 21505) and WS30 (9641).** Owner **OWNER**.
 `framework/registry/dwx_symbol_matrix.csv`: only `SP500.DWX` carries
 `live_order_status=ORDER_ROUTABLE_CONFIRMED`; XAGUSD/WS30 cells are empty. Symbol

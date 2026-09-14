@@ -4628,4 +4628,24 @@ INVALID; Codex 73 % vs budget line 69.6 % (frozen ~12 h).
   semantically false for census/DL-089-derived rows -> their DSR context must be the sealed census cohort, not a single-config
   declaration. Needs a design decision before any card is edited; the 9 winsweep arms without cards touch the card universe.
   Stays open with this finding; the 17 Q08_DSR_CONTEXT_UNAVAILABLE holds remain.
+
+## 2026-09-14 ~14:4xZ — Task 9bbfcad8 (OWNER-DEC-IDENTITY-EQUIVALENCE-20260913, receipt 099bebe6) — RESULT: RATIFIED, two new proofs filed, repair_v2 marked DEPLOYABLE_AT_CUTOVER
+
+Picked up an earlier partial pass (lease had expired at 14:17Z; decision-file edit was staged
+uncommitted, 41471/41472 proofs already re-run at 14:05Z) and finished it. Rule recorded
+`IDENTITY_EQUIVALENCE_RULE=ACTIVE` in `decisions/2026-09-13_identity_equivalence_proof_rebuilds.md`
+with the exact OWNER receipt fields. `identity_equivalence_proof.py` verdicts for the two
+outstanding basket rebuilds: **12778->41471 NOT_EQUIVALENT** (389 vs 261 deals) and
+**13117->41472 NOT_EQUIVALENT** (112/225 compared deals differ) — filed in the evidence README;
+per rule clause (d) no verdict row/census/pool change followed from either proof. `12969->41470`
+(EQUIVALENT_LOT_NORMALISED) and `13054->41473` (EQUIVALENT_EXACT) are the only two that qualify;
+`REPAIR_V2_41470_STAGING.md` and `deploy_manifest_v2_DRAFT.yaml` (`sleeves_repair` entry for
+12969) now read **DEPLOYABLE_AT_CUTOVER**, still gated on the book-v2 cutover order and the
+LIVE_RISK_FREEZE lift (both untouched — no deploy tool ran, `deployment_action: NO_OP`
+unchanged). `Q16_CHECKLIST_V2.md` RED-9 note updated to distinguish 12969's alternate closure
+from 12778/13117 staying on the original patch/recompile/DL-089 path. Deferred: the Vault
+`01 Identity/Hard Rules` annex mirror — `G:` drive not mapped in this headless session; the
+canonical git-tracked decision record is authoritative regardless (filesystem > vault). Full
+record: `docs/ops/evidence/2026-09-14_identity-equivalence-20260913_099bebe6_execution.md`.
+Task moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - Side finding: 186 Q04 FAILs (14 d) carry "no attributed stream"; not yet checked whether zero-trade folds or a capture defect.

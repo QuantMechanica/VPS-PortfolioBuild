@@ -52,12 +52,19 @@ strategy-param wipe.
 book-build guard passed (>=25 qualified pairs + valid `decisions/2026-09-13_owner_book_order_dxz.md`
 token) and both source hashes matched. Saved to `copy_plan_repair_v2_dryrun.json`.
 
-## Deployment is BLOCKED until
+## Status: DEPLOYABLE_AT_CUTOVER (2026-09-14)
 
-1. **OWNER receipt** on `decisions/2026-09-13_identity_equivalence_proof_rebuilds.md`
-   (state: PROPOSED, receipt pending).
-2. **Book-v2 cutover order** (separate OWNER act).
-3. **LIVE_RISK_FREEZE lift** (runbook §1.3) — the freeze is ACTIVE.
+1. ~~**OWNER receipt** on `decisions/2026-09-13_identity_equivalence_proof_rebuilds.md`~~ —
+   **SATISFIED.** `OWNER-DEC-IDENTITY-EQUIVALENCE-20260913`, receipt `099bebe6-1db6-4174-82be-4287639f49ff`,
+   decided_at_utc 2026-09-14T13:45:21Z, choice YES. Decision now `RATIFIED /
+   IDENTITY_EQUIVALENCE_RULE=ACTIVE`. Execution record:
+   `docs/ops/evidence/2026-09-14_identity-equivalence-20260913_099bebe6_execution.md`.
+2. **Book-v2 cutover order** (separate OWNER act) — still open.
+3. **LIVE_RISK_FREEZE lift** (runbook §1.3) — the freeze is still ACTIVE.
+
+This package (41470 replacing the dark sleeve 12969/USDJPY) is deployable the moment 2 and 3
+land; nothing here is applied yet — every deploy-tool invocation to date remains dry-run, and
+AutoTrading stays OWNER-only.
 
 AutoTrading remains OWNER-only and is never toggled by an AI seat. The removal of the old
 12969 preset and the chart detach/re-attach are manual cutover steps (see
@@ -65,9 +72,11 @@ AutoTrading remains OWNER-only and is never toggled by an AI seat. The removal o
 
 ## Sibling dark sleeves — not staged here
 
-- **QM5_41471** (replaces 12778 / AUDUSD, basket) and **QM5_41472** (replaces 13117 / EURGBP,
-  basket): magic identities are reserved (414710000/…001, 414720000/…001, active), but there
-  is **no identity-equivalence proof directory** for them yet under
-  `D:\QM\reports\identity_equivalence\`. They **wait for their Q02 rows + equivalence proofs**
-  before any equivalent staging. (Proof dirs currently present: 12969->41470, 13054->41473,
-  21505->41474.)
+- **QM5_41471** (replaces 12778 / AUDUSD+EURJPY basket) and **QM5_41472** (replaces 13117 /
+  EURGBP+AUDJPY basket): magic identities are reserved (414710000/…001, 414720000/…001,
+  active). Their Q02 rows landed and equivalence proofs ran 2026-09-14 — both came back
+  **`NOT_EQUIVALENT`** (12778→41471: 389 vs 261 deals; 13117→41472: 112/225 compared deals
+  differ; see `docs/ops/evidence/2026-09-13_identity_equivalence/README.md`). No repair_v2-style
+  staging follows from this proof — both stay on the original RED-9 path in
+  `Q16_CHECKLIST_V2.md` (patch already applied as the symbol-input rebuild; still needs its own
+  full Q02..Q10 requalification before it can replace its dark original).

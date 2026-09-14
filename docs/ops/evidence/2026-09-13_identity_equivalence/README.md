@@ -54,13 +54,15 @@ These live in `PROOF_TOLERANCES` in the tool and are printed into every proof.
 * `EQUIVALENT_LOT_NORMALISED` — only volume/PnL scale differ, within tolerance.
 * `NOT_EQUIVALENT` — listed structural reasons; nothing is inherited.
 
-## Results (three real pairs)
+## Results (five pairs; all five rebuilds now proved)
 
 | pair | symbol | deals (n) | field-exact deals | vol ratio min/max | net ratio | verdict |
 |---|---|---|---|---|---|---|
 | QM5_12969 → QM5_41470 | USDJPY.DWX | 335 | 335 (all) | 0.9882 / 0.9919 | 0.989 | **EQUIVALENT_LOT_NORMALISED** |
 | QM5_13054 → QM5_41473 | XTIUSD.DWX | 99 | 99 (all) | 1.0000 / 1.0000 | 1.000 | **EQUIVALENT_EXACT** |
 | QM5_21505 → QM5_41474 | XAGUSD.DWX | 159 vs 151 | — | 0.3704 / 3.0000 | 1.306 | **NOT_EQUIVALENT** |
+| QM5_12778 → QM5_41471 | AUDUSD+EURJPY cointegration D1 | 389 vs 261 | 131/261 compared | — | — | **NOT_EQUIVALENT** (2026-09-14) |
+| QM5_13117 → QM5_41472 | EURGBP+AUDJPY cointegration D1 | 225 vs 225 | 113/225 compared | — | — | **NOT_EQUIVALENT** (2026-09-14) |
 
 "field-exact" = deals matching on (time, symbol, type, direction, price,
 comment); deal count includes the initial balance/deposit deal.
@@ -74,6 +76,16 @@ Notes:
   differ on core fields, and the set file even differs on
   `strategy_vol_percentile` (`33` vs `33.0`). This is **not** a pure symbol-
   literal rebuild; it must earn its own Q02..Q10 evidence and inherits nothing.
+* **AUDUSD+EURJPY (12778→41471)** — deal count diverges 389 vs 261 (128 fewer
+  in the rebuild) and 130/261 compared deals differ, mostly on the `comment`
+  field (`QM5_12778_...` vs `QM5_41471_...` prefix, expected, plus real
+  structural drift beyond the rename). Basket/cointegration EAs are more
+  sensitive to leg-symbol resolution order than single-symbol EAs. Not a pure
+  symbol-literal rebuild by this proof; earns its own Q02..Q10 chain, inherits
+  nothing from 12778.
+* **EURGBP+AUDJPY (13117→41472)** — deal counts match (225 vs 225) but
+  112/225 compared deals differ on core fields. Same conclusion: not
+  equivalent, no inheritance from 13117.
 
 ### Proof artifacts
 
@@ -82,6 +94,8 @@ Notes:
 | USDJPY | `D:/QM/reports/identity_equivalence/QM5_12969__QM5_41470/USDJPY.DWX/proof.json` | `3648983baea047f4f0a0f48d922ea442646bcb00022e7cdaca498fe31635828a` |
 | XTIUSD | `D:/QM/reports/identity_equivalence/QM5_13054__QM5_41473/XTIUSD.DWX/proof.json` | `fddbd6a7039762698bb1d619531906d9f2bfc21a943a44680a6fa92808eca3a2` |
 | XAGUSD | `D:/QM/reports/identity_equivalence/QM5_21505__QM5_41474/XAGUSD.DWX/proof.json` | `69028612d61864ca2ab3163d4d12ca0ad3b04a8482379f2d4241ad22ef945f73` |
+| AUDUSD+EURJPY | `D:/QM/reports/identity_equivalence/QM5_12778__QM5_41471/QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1/proof.json` | `70f86e0ad1ad92ddb0aea23973a1fb19182880f2e71095f3208eea296ec6f588` |
+| EURGBP+AUDJPY | `D:/QM/reports/identity_equivalence/QM5_13117__QM5_41472/QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1/proof.json` | `d91ca2d35ade113f5562a485a0955edc0af822cd59d577fe15257233da5e1086` |
 
 Each proof records the input SHAs (report_sha256, tester.ini sha, set-file sha,
 compile-evidence ex5 sha and work-item ex5 sha, summary sha), the full check
@@ -113,6 +127,13 @@ python -X utf8 tools/strategy_farm/identity_equivalence_proof.py prove `
 python -X utf8 tools/strategy_farm/identity_equivalence_proof.py prove `
   --original 253f23f0-5bb7-4840-b60f-fba2f5ebde9e `
   --rebuilt  b02b0a87-6f7f-4400-ad54-8e1503a84e43
+# 2026-09-14, once their own Q02 rows existed: 12778->41471 and 13117->41472 (both NOT_EQUIVALENT)
+python -X utf8 tools/strategy_farm/identity_equivalence_proof.py prove `
+  --original 462e2f78-8589-48eb-8bca-25c804b67bf8 `
+  --rebuilt  26aaec94-02ee-4a71-9eed-68b624b45adc
+python -X utf8 tools/strategy_farm/identity_equivalence_proof.py prove `
+  --original f56d3034-abfe-4337-a103-1a85a50ad208 `
+  --rebuilt  1f8a23d2-6824-4d56-916b-6c76a2b1ed21
 # re-check a proof still binds its inputs
 python -X utf8 tools/strategy_farm/identity_equivalence_proof.py verify `
   --proof D:/QM/reports/identity_equivalence/QM5_12969__QM5_41470/USDJPY.DWX/proof.json

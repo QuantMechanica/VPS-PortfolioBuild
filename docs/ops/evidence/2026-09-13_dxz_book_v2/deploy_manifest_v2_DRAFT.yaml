@@ -161,9 +161,18 @@ sleeves_repair:
     magic_number: 129690000
     risk_percent: 0.590437
     preset_draft: C:/QM/deploy/DXZ_V2_20260913/repair/17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set
-    status: BLOCKED_PENDING_SOURCE_PATCH
-    deployment_action: NO_OP            # stays on its existing chart, unchanged, until the fix
+    status: DEPLOYABLE_AT_CUTOVER        # 2026-09-14, OWNER-DEC-IDENTITY-EQUIVALENCE-20260913 (receipt 099bebe6)
+    deployment_action: NO_OP            # stays on its existing chart until the book-v2 cutover order + freeze lift
     cause: .mq5:42 Strategy_IsTarget() requires _Symbol == "USDJPY.DWX"; :197 forces no-trade
+    repair_v2:
+      substitute_ea: QM5_41470_usdjpy-gotobi-nakane-fix-symfix
+      substitute_magic: 414700000
+      proof: D:/QM/reports/identity_equivalence/QM5_12969__QM5_41470/USDJPY.DWX/proof.json
+      proof_sha256: 3648983baea047f4f0a0f48d922ea442646bcb00022e7cdaca498fe31635828a
+      proof_verdict: EQUIVALENT_LOT_NORMALISED
+      staging: C:/QM/deploy/DXZ_V2_20260913/repair_v2/
+      staging_doc: docs/ops/evidence/2026-09-13_dxz_book_v2/REPAIR_V2_41470_STAGING.md
+      blocked_by: [book_v2_cutover_order, live_risk_freeze_lift]  # OWNER receipt condition already satisfied
   - ea: QM5_13117_eurgbp-audjpy
     live_symbol: EURGBP
     period: D1
