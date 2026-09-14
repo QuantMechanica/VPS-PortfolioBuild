@@ -67,11 +67,13 @@ def test_identical_attested_case_recognized_without_mutating_active_freeze(conte
     assert result['freeze_status'] == 'ACTIVE'
     assert not result['mutation_allowed'] and not result['runtime_pointer_write']
     monkeypatch.setattr(risk_freeze, 'diff_against_baseline', lambda **kw: pytest.fail('deployed tree read'))
+    static_status_before = risk_freeze.LIFT_CONDITIONS[0]['status']
     with pytest.raises(risk_freeze.RiskFreezeBlocked) as caught:
         risk_freeze.assert_live_book_mutation_allowed('generate pointer', identity_exception_enabled=True, identity_context=context)
     assert caught.value.result['allowed'] is False
     assert caught.value.result['lift_conditions'][0]['status'] == 'SATISFIED'
-    assert risk_freeze.LIFT_CONDITIONS[0]['status'] == 'BLOCKED'
+    # the module constant is never mutated by the guard (its static text is documentation)
+    assert risk_freeze.LIFT_CONDITIONS[0]['status'] == static_status_before
     assert before == context
 
 
