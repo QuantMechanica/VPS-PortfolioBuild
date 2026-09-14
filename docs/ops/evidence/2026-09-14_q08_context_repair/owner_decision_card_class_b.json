@@ -1,0 +1,22 @@
+{
+  "id": "OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914",
+  "status": "OPEN",
+  "category": "Pipeline / Q08",
+  "severity": "action",
+  "created_at_utc": "2026-09-14T16:05:00+00:00",
+  "due": "2026-09-18T12:00:00+00:00",
+  "depends_on": ["OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914"],
+  "question": "Folgekarte Klasse B (Q08-Kontext fuer Winsweep-Arme, aus OWNER-DEC-Q08-CONTEXT-REPAIR-V2, JA 'ABC & D'): 7 Winsweep-Arm-Zeilen (QM5_41115/41158/41176/41131/41381/41423 XTIUSD, dazu 41380 bereits ueber die Karte deklariert) und 2x QM5_12115/XAUUSD haben Q02-Q07 bestanden, aber keine Karte und keine DSR-Kohorte: sie SIND das Ergebnis einer Optimierungssuche (Window-Sweep/Winsweep-Programm), eine Single-Configuration-Deklaration waere falsch. Zwei ehrliche Wege: (1) DSR-Kohorte aus dem versiegelten Winsweep-Ledger (Contract-Erweiterung: dsr_cohort akzeptiert qm.window-sweep.v1-Ledger als Suchhistorie, Trials = Arme inkl. Verlierer, Deflation nach der tatsaechlichen Suchbreite) - Codex-Ticket, ca. 1-2 Tage; (2) Standalone-Q08 dieser Arme als NOT_APPLICABLE retiren und die Arme ausschliesslich ueber den Programmpfad Q13/Q14 (Best-Settings Head-to-Head) bewerten. Klasse C Nebenbefund: Zensuszellen, die der Prescreen uebersprungen hat (PRESCREEN_SKIPPED, z.B. 21507 sell_032/2025, 20266 buy_010), zaehlen fuer die DSR-Kohorte als INCOMPLETE_TRIAL; auch hier braucht der Contract eine Regel (uebersprungenes Jahr = gemessen 0 oder Arm ausschliessen). Welchen Weg?",
+  "recommendation": "Weg (1) fuer die Winsweep-Arme (die Suchbreite ist bekannt und versiegelt; DSR-Deflation nach echter Suche ist der Sinn von Q08) plus die Prescreen-Skip-Regel 'uebersprungenes Jahr = 0 gemessene Trades, Arm bleibt Trial' im selben Ticket; Weg (2) nur wenn das Ticket nicht vor dem naechsten Buch-Zyklus liegt.",
+  "yes_effect": "Q08_SWEEP_ARM_CONTEXT=WAY_1: one Codex ticket (contract extension in dsr_cohort: window-sweep ledgers as search history with all arms as trials, prescreen-skipped years counted as zero-trade measurements) with tests and a replay on 41115/41158; the 9 rows rerun append-only after the ticket lands; 12115 gets a derived card or is retired if no source card exists. No gate threshold or DSR formula change beyond the declared search-history source; NO_AUTOTRADING.",
+  "no_effect": "Way (2): the 9 standalone Q08 rows are disposed NOT_APPLICABLE; the arms are judged only through Q13/Q14 of their sweep programme; prescreen-skipped years stay INCOMPLETE_TRIAL (21507/20266 Q08 wait for the cells).",
+  "cost_of_wait": "9 Kandidaten mit bestandenem Q02-Q07 stehen still; 21507 und 20266 (Klasse C) bleiben ohne Q08-Kontext bis zur Regel. Auffangregel 12 h: Empfehlung = Ticket kommissionieren (reversibel).",
+  "detail": "Evidence: dsr_cohort._find_ledger accepts only DL-089 ledgers (schema check); config_sweep.SCHEMA=qm.window-sweep.v1; dsr_single_configuration requires no_optimization_search=true/research_trial_count=0; offline assembly 2026-09-14: 21507 INCOMPLETE_TRIAL:DL089:PATTERN:sell_032 (cell 2c1a2b99 held PRESCREEN_SKIPPED), 20266 INCOMPLETE_TRIAL:DL089:PATTERN:buy_010. Class A/D executed 2026-09-14 15:3x-16:0xZ (card_amend_journal.jsonl, dispositions receipts).",
+  "evidence": [
+    "docs/ops/evidence/2026-09-14_q08_context_repair/owner_decision_card.json",
+    "docs/ops/evidence/2026-09-14_q08_context_repair/card_amend_journal.jsonl",
+    "docs/ops/evidence/2026-09-14_q08_context_repair/dispositions_receipt.json",
+    "tools/strategy_farm/dsr_cohort.py",
+    "tools/strategy_farm/config_sweep.py"
+  ]
+}

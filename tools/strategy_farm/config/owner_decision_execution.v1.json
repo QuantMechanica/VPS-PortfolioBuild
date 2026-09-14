@@ -1233,6 +1233,41 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914",
+      "todo_id": "QM-TODO-20260914-Q08-SWEEP-ARM-CONTEXT",
+      "priority": 80,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Way 1: commission one Codex ticket extending dsr_cohort with window-sweep ledgers as search history (all arms as trials, prescreen-skipped years as zero-trade measurements), tests + replay on 41115/41158; rerun the 9 rows append-only after it lands; 12115 derived card or retire.",
+          "allowed_actions": [
+            "Enqueue one Codex ops ticket with exact acceptance criteria",
+            "Integrate the Codex branch (tests, co-author trailer)",
+            "farmctl enqueue-backtest --append-only-rerun-of for the 9 rows after the ticket lands",
+            "Update OPEN_ITEMS, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "dsr_cohort assembles a sealed window-sweep cohort for 41115/41158 with the full arm count",
+            "prescreen-skipped years counted as declared",
+            "no gate threshold change",
+            "reruns claimed with a sealed context"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Way 2: dispose the 9 standalone Q08 rows NOT_APPLICABLE; arms judged only via Q13/Q14 of their sweep programme.",
+          "allowed_actions": [
+            "Append-only NOT_APPLICABLE dispositions for the 9 rows",
+            "Update OPEN_ITEMS, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "9 rows disposed with receipts",
+            "no gate change"
+          ]
+        }
+      }
     }
   ]
 }
