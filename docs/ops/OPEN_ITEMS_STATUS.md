@@ -4649,3 +4649,25 @@ canonical git-tracked decision record is authoritative regardless (filesystem > 
 record: `docs/ops/evidence/2026-09-14_identity-equivalence-20260913_099bebe6_execution.md`.
 Task moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - Side finding: 186 Q04 FAILs (14 d) carry "no attributed stream"; not yet checked whether zero-trade folds or a capture defect.
+
+> **Nachtrag 14:4xZ (14.09.) — OWNER: "Es wird keinen RAM Zukauf geben, bei SP500 und Multisymbol koennen halt keine anderen
+> Backtests nebenbei laufen. Hebel 4 musst du eben neu evaluieren und eine Entscheidung vorschlagen!"**
+> - EXCLUSIVE LANE (commit e246cc0dab, kill switch QM_DRAIN_EXCLUSIVE=0, 10 new tests + 76 legacy drain tests green): a row at
+>   >= 40 GB (SP500 single_index_tick 44, heavy multisymbol 44) may be the drain candidate without priority_track; need =
+>   reservation + 4 GB armed floor, no margin, against the EMPTY-fleet baseline 9 GB (evidence 54.1 GB free idle fleet 04:xxZ);
+>   while long runs are active a PRE-DRAIN refuses NEW long-run claims (short rows keep flowing, max 240 min), then the bounded
+>   drain parks the fleet and the row runs alone (the normal RAM gate keeps every other tester out); duty cycle: exclusive
+>   cooldown 180 min + max 4 exclusive claims per UTC day. Under the old arithmetic a 44 GB row needed 51 GB against a 49.1 GB
+>   ceiling and never armed (that was the "not winnable" evidence in drain_window.json). Reload chunk 83 (all ten) after chunk 82.
+>   First five SP500 Q04 rows released for the lane (supervised; measured peaks decide whether SP500 stays at 44 GB).
+> - Re-classification of the parked 642 rows under the new tables: 497 rows were below 40 GB (NDX/WS30 12, GDAXI/UK100 24,
+>   200 ordinary FX/gold rows, per-EA measured) and are being released in claim order (wave 3, background); 76 XAU+XAG two-leg
+>   baskets get a new two_leg_metal_pair class at a provisional 24 GB (commit ab37b2f8c2; single-leg metal ledger max 12 GB)
+>   instead of the 44 GB heavy fail-safe; only SP500 (62) and true heavy baskets (~7: 4/10/28 legs) remain exclusive.
+> - HEBEL 4 neu bewertet -> Karte OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914 (Mission Control, Plan im Contract, coverage ok):
+>   40 Zeilen = 24 (A) EA mit APPROVED-Karte, nie im Zensus, ohne Deklaration -> Single-Config-Deklaration ist hier WAHR
+>   (eine Konfiguration = Kartendefaults) -> governed Karten-Amendment + 4 Baseline-Sets regenerieren + append-only Reruns
+>   mit DSR-Preflight; 3 (C) mit DL-089-Ledger -> sofort rerun; 2 (D) alte 11167-Identitaet -> SUPERSEDED; 11 (B) ohne Karte:
+>   3 Rebuild-Identitaeten ueber die Aequivalenzregel an die Originalkarte, 7 Winsweep-Arme + 12115 NICHT deklarieren (sie SIND
+>   eine Optimierungssuche) -> Folgekarte (DSR-Kohorte aus dem Winsweep-Ledger oder Retire zugunsten Q13/Q14). Empfehlung JA
+>   fuer A/C/D; Ticket 269d5101 BLOCKED hinter der Karte. Auffangregel 12 h fuer C und D.
