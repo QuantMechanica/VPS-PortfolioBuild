@@ -4751,3 +4751,16 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 > Sonntag-Mechanik (kein UI): neues versiegeltes Profil DarwinexZero_V3 (28 Charts + Monitor) aus dem V2_LiveOps-Profil,
 > prepare_dxz_v2_liveops_profile.ps1/liveops_profile_contract.ps1-Grammatik, Reseal, kontrollierter T_Live-Neustart per
 > Launcher; AutoTrading bleibt wie vom OWNER gesetzt.
+
+> **Nachtrag 15.09. — RESULT Task 11eff123 (Winsweep-Arm-Compile-Pfad, 11 Arme):**
+> Governierte Bestimmung fuer QM5_41113/41123/41135/41138/41157/41160/41179/41181/41187/41188/41189.
+> **Weg (a) Sweep-Programm-Enqueue ist konstruktionsbedingt nicht verfuegbar:** window_sweep.py ist auf
+> QM5_41398 (Balke USDJPY) versiegelt; config_sweep.py.validate_declaration VERLANGT approved_card + bereits
+> kompilierte ex5-Identitaet und enqueued OPT_CENSUS-Backtestzellen, KEINE COMPILE_EA-Zeilen. Die Praemisse
+> "Sweep-Deklarationen minten die Compile-Zeilen" ist durch den Code widerlegt. **Weg (b) Karte+build_ea ist
+> der einzige Pfad und fuer alle 11 Arme ROT (Kartenuniversum, nie autonom):** 0 von 11 haben eine approved
+> Karte (nach Nummer, Slug und Tool-eigenem has_approved_card geprueft), keine build_ea-Tasks. Alle drei
+> governierten Hebel verweigern (reissue: 30 Zeilen alle skip; repair_successor: 0 eligible; release_compile_wave:
+> release_count=0). **Nichts angewendet — alle 11 Arme OWNER-blockiert auf Karten-Entscheidung.** Diagnose-only.
+> QM5_20042/20053 out-of-scope (DWX-Matrix XBRUSD/XCUUSD), nicht beruehrt.
+> Evidenz: docs/ops/evidence/2026-09-15_winsweep_arm_compile_path/README.md (plan_sha256 ecaa44d2e652684a…).

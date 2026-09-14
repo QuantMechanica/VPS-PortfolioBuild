@@ -1,0 +1,158 @@
+{
+  "applied": [],
+  "arms": [
+    {
+      "approved_card": "NONE",
+      "compile_rows": "pending(void)+COMPILE_OK@old-src",
+      "ea_id": "QM5_41113",
+      "ondisk_mq5_sha16": "20faafb2f1f4a8d7",
+      "only_available_path": "b",
+      "reissue_disposition": "SKIP_NON_ROLLOUT_ORPHAN",
+      "repair_successor_disposition": "FLAG_NEEDS_FRESH_BUILD_EA",
+      "slug": "xauxag-mhalfagree-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "pending(void)+COMPILE_OK@old-src",
+      "ea_id": "QM5_41123",
+      "ondisk_mq5_sha16": "69aa644a3837ca7c",
+      "only_available_path": "b",
+      "reissue_disposition": "SKIP_NON_ROLLOUT_ORPHAN",
+      "repair_successor_disposition": "FLAG_NEEDS_FRESH_BUILD_EA",
+      "slug": "xauxag-mpath-eff-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "no work_items",
+      "ea_id": "QM5_41135",
+      "ondisk_mq5_sha16": "0c0b17b527ed2eba",
+      "only_available_path": "b",
+      "reissue_disposition": "not-scanned",
+      "repair_successor_disposition": "no-compile-lineage",
+      "slug": "xauxag-mdaily-iqrmean-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "no work_items",
+      "ea_id": "QM5_41138",
+      "ondisk_mq5_sha16": "4be1f5189355ec97",
+      "only_available_path": "b",
+      "reissue_disposition": "not-scanned",
+      "repair_successor_disposition": "no-compile-lineage",
+      "slug": "xauxag-mdaily-hl-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "no work_items",
+      "ea_id": "QM5_41157",
+      "ondisk_mq5_sha16": "9be2f4840d88b6bf",
+      "only_available_path": "b",
+      "reissue_disposition": "not-scanned",
+      "repair_successor_disposition": "no-compile-lineage",
+      "slug": "xauxag-mtheilsen-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "no work_items",
+      "ea_id": "QM5_41160",
+      "ondisk_mq5_sha16": "aa2b54ba4cf944b5",
+      "only_available_path": "b",
+      "reissue_disposition": "not-scanned",
+      "repair_successor_disposition": "no-compile-lineage",
+      "slug": "xauxag-mlad-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "pending+2x COMPILE_FAIL",
+      "ea_id": "QM5_41179",
+      "ondisk_mq5_sha16": "ed6f54885c9455bc",
+      "only_available_path": "b",
+      "reissue_disposition": "SKIP_PREDECESSOR_ALREADY_SUPERSEDED",
+      "repair_successor_disposition": "FLAG_NEEDS_OPEN_BUILD_TASK",
+      "slug": "xtixng-mcoxstuart-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "no work_items",
+      "ea_id": "QM5_41181",
+      "ondisk_mq5_sha16": "cd757bac0be27338",
+      "only_available_path": "b",
+      "reissue_disposition": "not-scanned",
+      "repair_successor_disposition": "no-compile-lineage",
+      "slug": "xauxag-mkendall-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "1x COMPILE_FAIL",
+      "ea_id": "QM5_41187",
+      "ondisk_mq5_sha16": "7c21ac9ad730808b",
+      "only_available_path": "b",
+      "reissue_disposition": "not-in-repair-scan",
+      "repair_successor_disposition": "terminal-fail-no-card",
+      "slug": "xauxag-mks-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "1x COMPILE_FAIL",
+      "ea_id": "QM5_41188",
+      "ondisk_mq5_sha16": "7fc514b19ad6a620",
+      "only_available_path": "b",
+      "reissue_disposition": "not-in-repair-scan",
+      "repair_successor_disposition": "terminal-fail-no-card",
+      "slug": "xtixng-mrepmedian-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "approved_card": "NONE",
+      "compile_rows": "2x pending(stale)+2x COMPILE_FAIL",
+      "ea_id": "QM5_41189",
+      "ondisk_mq5_sha16": "b6c0052a0fae01e8",
+      "only_available_path": "b",
+      "reissue_disposition": "SKIP_PREDECESSOR_ALREADY_SUPERSEDED",
+      "repair_successor_disposition": "FLAG_NEEDS_OPEN_BUILD_TASK",
+      "slug": "xtixng-mlad-rv",
+      "verdict": "OWNER_BLOCKED_CARD"
+    }
+  ],
+  "branch": "agents/board-advisor",
+  "date": "2026-09-15",
+  "excluded_not_in_scope": [
+    "QM5_20042",
+    "QM5_20053"
+  ],
+  "owner_blocked_arms": [
+    "QM5_41113",
+    "QM5_41123",
+    "QM5_41135",
+    "QM5_41138",
+    "QM5_41157",
+    "QM5_41160",
+    "QM5_41179",
+    "QM5_41181",
+    "QM5_41187",
+    "QM5_41188",
+    "QM5_41189"
+  ],
+  "path_a_available": false,
+  "path_a_refutation": "window_sweep.py is sealed to QM5_41398 (Balke USDJPY) only; config_sweep.py.validate_declaration REQUIRES approved_card_path+approved_card_commit AND a pre-existing compiled artifact_identity.ex5_sha256, and it enqueues OPT_CENSUS backtest cells, not COMPILE_EA rows. Neither program mints compile rows for uncompiled, card-less arms.",
+  "plan_sha256": "ecaa44d2e652684a8b8c9089874549ec0d8dc1b4c4a921249361cc6b3b3677fa",
+  "reissue_plan_sha256": "9d4edf5a90186600627cc1397baf0cb39e7e842b45dc012b0969544ffdb1d59b",
+  "release_compile_wave_release_count": 0,
+  "repair_successor_plan_sha256": "5430ca9ace016bc56a76ab5e176fcac1eea5d0f1d2fe7b415bdabcb71ad2bc58",
+  "schema": "qm.winsweep-arm-compile-path/v1",
+  "source_repair_commits": [
+    "14d548c87a",
+    "de88a19e7b",
+    "d0433c1c1d"
+  ],
+  "task_id": "11eff123-53b9-4153-ad40-c1e44b76ac4e"
+}
