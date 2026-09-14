@@ -4594,3 +4594,38 @@ Not done / parked with reason: 40 BLOCKED build_ea tasks (deprioritised 08-22, b
 > Journal docs/ops/evidence/2026-09-14_q08_dsr_context_park_journal.jsonl), sofort 4 aktive Zellen (Q02 x2, Q04, Q07). Die 259
 > promoteten Real-Tick-Zellen scheitern an dl089_scheduling ("declared arm c00 is missing, duplicate, or out of year order":
 > Real- und PRESCREEN-Zellen teilen Arm/Jahr) -> Ticket Codex Sol P84. Reservierungen T5-T10 aufgehoben; Watchdog re-enable ~04:35Z.
+
+## 2026-09-14 13:2xZ — OWNER order "Los gehts, alles freigegeben und gemäß Vorschlag entschieden! Außer RAM Zukauf" — RESULT (levers 1–3 live, 2 receipts, 4 diagnosed)
+Control review 12:2x–13:0xZ (read-only): claimable universe 272 rows (259 blocked real cells + 8 rows at 44 GB + 5 ordinary);
+779 rows (484 EAs) parked on a flat 44 GB index reservation that needs 58 GB free on a 63 GB host whose 24 h max free was
+54.1 GB; index lane dead since 2026-09-03 (5,323 index Q04 rows in the 120 d before); Q14 33/33 KEEP_INCUMBENT; Q08 35 %
+INVALID; Codex 73 % vs budget line 69.6 % (frozen ~12 h).
+- LEVER 1 (index RAM table, commits 08b494d9b7 + 4607ac1d63, evidence docs/ops/evidence/2026-09-14_index_ram_table/):
+  per-symbol reservation (SP500 44 measured; NDX/WS30 12 after n=3/5 measured peaks 2.10/1.15 GB; GDAXI/UK100 provisional 24
+  until n>=3); max(flat, measured, floor) unchanged; rollback QM_INDEX_TICK_RESERVATION_TABLE=0. Supervised measurement row
+  48474f94 (NDX D1 Q04: peak 2.07 GB, 355 s), then waves 1+2 via release_44gb_holds_0914.py (NDX 79, WS30 26, GDAXI 12,
+  UK100 11 Q04 rows released, journal release_journal.jsonl). 14:1xZ: fleet 9–10/10 active for the first time today (7 index
+  Q04 + 2 promoted real cells), 11 index Q04 verdicts in the first 40 min, all measured peaks <= 2.1 GB. Reload chunks 80 (all
+  ten, done 14:06Z) and 82 (running: step-2 table + lever-3 code for T3/T5). SP500 (63 rows) and multisymbol 44 GB rows stay
+  parked (measured/fail-safe; RAM purchase excluded by OWNER).
+- LEVER 3 (259 promoted real cells, ticket 4d915807, commit 3283767561): authenticate_ledger appends the promoted REAL_TICKS
+  cells under the same program/arm/year as the PRESCREEN cells -> arm_frontier saw every year twice. Lane view now
+  evidence-class aware (real candidates see only the promoted lane, prescreen admission keys dropped); offline replication
+  259-cell lane / 37 arms / head == candidate; first real cells claimed 13:35Z (T6), two running since. Tickets 4d915807 and
+  6cdc6811 -> REVIEW (orchestrator lane; Codex frozen).
+- LEVER 2 (book v2): OWNER chat decision transcribed as three YES receipts (099bebe6 identity-equivalence, 1a184219
+  governor v2, ebf88b44 -> re-issued 424fb9d6 live-identity attestation). Execution plans added to
+  config/owner_decision_execution.v1.json (coverage 5/5). Store: declared machine effects (selected_effect_on_yes) win over
+  prose; governed receipt re-issue; case-insensitive card ids (commits c3d1c1638c, 2f4a2ead70, e490aa44f7). Consumer:
+  OWNER_ATTESTED_CURRENT_IDENTITY, condition_1_satisfied, freeze ACTIVE, no activation (task edaa2438 APPROVED; freeze text
+  f1bd2267fd). Tasks 9bbfcad8 (identity rule) and 9e5db1e9 (governor v2) are IN_PROGRESS in the Claude scheduled lane.
+  Still OWNER: the written freeze-lift sentence (runbook §1.3), XAGUSD/WS30 in T_Live Market Watch, the ~40 min ceremony
+  window with chart attach, and AutoTrading. Q16 checks 1/6/7/9/10 stay as documented (no compile on T_Live claimed, no
+  commission value invented).
+- LEVER 4 (Q08 governed inputs, ticket 269d5101): diagnosed, NOT executed. All 23 rows fail 8.2 with
+  DSR_V2_MUTABLE_OR_RELATIVE_CONTEXT; the "single-configuration declaration" the ticket proposes lives in the APPROVED card
+  (```qm-dsr-single-configuration``` block, requires no_optimization_search=true and research_trial_count=0), which is
+  semantically false for census/DL-089-derived rows -> their DSR context must be the sealed census cohort, not a single-config
+  declaration. Needs a design decision before any card is edited; the 9 winsweep arms without cards touch the card universe.
+  Stays open with this finding; the 17 Q08_DSR_CONTEXT_UNAVAILABLE holds remain.
+- Side finding: 186 Q04 FAILs (14 d) carry "no attributed stream"; not yet checked whether zero-trade folds or a capture defect.
