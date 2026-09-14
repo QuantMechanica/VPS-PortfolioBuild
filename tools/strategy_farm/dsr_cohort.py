@@ -526,6 +526,21 @@ def _peer_metric(
     provenance: list[dict[str, Any]] = []
     for row in sorted(rows, key=lambda value: int(_payload(value).get("year") or 0)):
         payload = _payload(row)
+        skip = row.get("_dsr_prescreen_skip")
+        if skip is not None:
+            # A held PRESCREEN_SKIPPED cell whose skip authority re-authenticated
+            # (dl089_prescreen_retro.disposition, called in _matrix_trial_groups) is
+            # a validly measured year with zero trades, not a missing trial: the arm
+            # stays in the cohort as a trial, contributing a zero-filled return series
+            # for its calendar-day span.  Any other non-terminal cell is unaffected
+            # and still raises INCOMPLETE_TRIAL below.
+            start = dt.datetime.strptime(str(payload.get("from_date")), "%Y.%m.%d").date()
+            end = dt.datetime.strptime(str(payload.get("to_date")), "%Y.%m.%d").date()
+            returns.extend([0.0] * ((end - start).days + 1))
+            provenance.append(_binding(
+                Path(str(skip["receipt_path"])), role="prescreen_skip_receipt", row_id=str(row.get("id"))
+            ))
+            continue
         _require(str(row.get("status") or "").lower() == "done", f"INCOMPLETE_TRIAL:{trial_id}")
         _require(str(row.get("verdict") or "").upper() in MEASURED_VERDICTS,
                  f"UNMEASURED_OR_PRUNED_TRIAL:{trial_id}")
@@ -575,8 +590,27 @@ def _peer_metric(
     }
 
 
+def _prescreen_skip_disposition(conn: sqlite3.Connection, row: Mapping[str, Any]) -> dict[str, Any] | None:
+    """A held cell whose skip authority re-authenticates: contract section-6-style
+    fail-closed re-derivation (dl089_prescreen_retro.disposition), never trusted from
+    a stored status string alone.  Returns None when the cell is simply not a
+    prescreen-skip case (the ordinary INCOMPLETE_TRIAL path applies unchanged);
+    raises when a hold exists but its receipt/proof does not re-authenticate, so an
+    authentication gap fails closed with a distinct, named reason rather than being
+    silently downgraded to INCOMPLETE_TRIAL."""
+
+    try:
+        from . import dl089_prescreen_retro as retro
+    except ImportError:
+        import dl089_prescreen_retro as retro
+    try:
+        return retro.disposition(conn, row)
+    except ValueError as exc:
+        raise CohortUnavailable(f"PRESCREEN_SKIP_AUTHORITY_INVALID:{row.get('id')}:{exc}") from exc
+
+
 def _matrix_trial_groups(
-    ledger: Mapping[str, Any], current: Mapping[str, dict[str, Any]]
+    ledger: Mapping[str, Any], current: Mapping[str, dict[str, Any]], conn: sqlite3.Connection
 ) -> list[tuple[str, str, list[dict[str, Any]]]]:
     years = [int(value) for value in ledger.get("years") or []]
     _require(bool(years), "LEDGER_YEARS_UNAVAILABLE")
@@ -587,6 +621,9 @@ def _matrix_trial_groups(
             continue
         row = current.get(str(cell.get("cell_key") or ""))
         _require(row is not None, f"MATRIX_CELL_MISSING:{cell.get('cell_key')}")
+        skip = _prescreen_skip_disposition(conn, row)
+        if skip is not None:
+            row = {**row, "_dsr_prescreen_skip": skip}
         by_arm.setdefault(arm, []).append(row)
     declared = int(ledger.get("declared_trial_count") or 0)
     _require(declared == DL089_DECLARED_TRIALS, "DL089_DECLARED_TRIAL_COUNT_MISMATCH")
@@ -672,7 +709,7 @@ def assemble(
         row_id=q12_id,
     )
     current = _current_matrix_rows(conn, str(ledger.get("program_id") or ""))
-    groups = _matrix_trial_groups(ledger, current)
+    groups = _matrix_trial_groups(ledger, current, conn)
     selection_peers = [
         _peer_metric(trial_id, index, rows, role=role)
         for index, (trial_id, role, rows) in enumerate(groups)
