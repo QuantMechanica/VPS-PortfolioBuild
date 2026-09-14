@@ -281,3 +281,172 @@ def test_prescreen_rerun_is_append_only_and_idempotent(tmp_path, monkeypatch):
         if cell["cell_key"] == rerun_payload["cell_key"]
     )
     assert declared["work_item_id"] == first["rerun_work_item_id"]
+
+
+def _rerun_chain_scenario(tmp_path, monkeypatch):
+    """Build a real two-hop PRESCREEN rerun through the production code path.
+
+    Enqueues a PRESCREEN matrix, fails the ledger cell and reruns it (hop1,
+    source IS a ledger cell), then fails hop1 and reruns THAT (hop2, whose
+    source is a prior rerun id absent from the sealed ledger).  Returns the two
+    candidate payloads plus the reruns/ directory so a test can resolve them or
+    corrupt the intermediate amendment and assert fail-closed.
+    """
+    declaration = _prescreen_declaration(tmp_path, monkeypatch)
+    declaration_path = tmp_path / "prescreen_declaration.json"
+    sweep._write(declaration_path, declaration)
+    artifact = tmp_path / "artifact"
+    plan = sweep.plan(declaration_path, artifact)
+    db = tmp_path / "farm.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.execute("""CREATE TABLE work_items(
+            id TEXT PRIMARY KEY,kind TEXT,phase TEXT,ea_id TEXT,symbol TEXT,
+            setfile_path TEXT,status TEXT,verdict TEXT,attempt_count INT,
+            parent_task_id TEXT,evidence_path TEXT,claimed_by TEXT,
+            payload_json TEXT,created_at TEXT,updated_at TEXT)""")
+        conn.execute(
+            "INSERT INTO work_items VALUES "
+            "('owner','control','WINDOW_SWEEP_OWNER','QM5_41405','USDJPY.DWX',"
+            "'owner','done','DECLARED',0,NULL,'EVIDENCE_UNAVAILABLE',NULL,?,'x','x')",
+            (json.dumps({
+                "queue_owner": True, "program_id": declaration["program_id"],
+                "queue_order_at": "2026-12-31T00:00:00+00:00",
+            }),),
+        )
+        conn.execute(
+            "INSERT INTO work_items VALUES "
+            "('reference','backtest','OPT_CENSUS','QM5_41405','USDJPY.DWX',"
+            "'reference','pending',NULL,0,NULL,NULL,NULL,?,'x','x')",
+            (json.dumps({"opt_census_frontier_priority": True}),),
+        )
+    monkeypatch.setenv(sweep.PRESCREEN_ENABLE_ENV, "1")
+    sweep.enqueue(plan, db=db, apply=True)
+
+    def _fail(work_item_id):
+        with sqlite3.connect(db) as conn:
+            conn.execute(
+                "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',"
+                "evidence_path='EVIDENCE_UNAVAILABLE:chain' WHERE id=?",
+                (work_item_id,),
+            )
+            conn.commit()
+
+    ledger_cell_id = plan["cells"][0]["work_item_id"]
+    _fail(ledger_cell_id)
+    hop1 = sweep.append_only_prescreen_rerun(
+        ledger_cell_id, reason="HOP1", db=db, apply=True
+    )["rerun_work_item_id"]
+    _fail(hop1)
+    hop2 = sweep.append_only_prescreen_rerun(
+        hop1, reason="HOP2", db=db, apply=True
+    )["rerun_work_item_id"]
+
+    def _payload(work_item_id):
+        with sqlite3.connect(db) as conn:
+            return json.loads(conn.execute(
+                "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+            ).fetchone()[0])
+
+    return {
+        "hop1_payload": _payload(hop1), "hop2_payload": _payload(hop2),
+        "reruns_dir": artifact / "reruns",
+        "hop1": hop1, "hop2": hop2, "ledger_cell_id": ledger_cell_id,
+        "cell_key": plan["cells"][0]["cell_key"],
+    }
+
+
+def _resolved_work_item_id(payload):
+    _ledger_path, authenticated = sweep.authenticate_ledger(payload)
+    declared = next(
+        cell for cell in authenticated["cells"]
+        if cell["cell_key"] == payload["cell_key"]
+    )
+    return declared["work_item_id"]
+
+
+def _rewrite_amendment(path, mutate, *, reseal):
+    value = json.loads(path.read_text(encoding="utf-8"))
+    mutate(value)
+    if reseal:
+        unsigned = {k: v for k, v in value.items() if k != "amendment_sha256"}
+        value["amendment_sha256"] = sweep._seal(unsigned)
+    path.write_text(json.dumps(value), encoding="utf-8")
+
+
+def test_prescreen_rerun_direct_single_hop_resolves(tmp_path, monkeypatch):
+    scenario = _rerun_chain_scenario(tmp_path, monkeypatch)
+    # hop1's source IS a sealed ledger cell: the walk never runs (byte-identical).
+    assert _resolved_work_item_id(scenario["hop1_payload"]) == scenario["hop1"]
+
+
+def test_prescreen_rerun_two_hop_chain_resolves(tmp_path, monkeypatch):
+    scenario = _rerun_chain_scenario(tmp_path, monkeypatch)
+    # hop2's source (hop1) is absent from the ledger; the chain walk reaches the
+    # sealed ledger cell and stamps the ledger with hop2's id.
+    assert _resolved_work_item_id(scenario["hop2_payload"]) == scenario["hop2"]
+
+
+def test_prescreen_rerun_chain_missing_intermediate_fails_closed(tmp_path, monkeypatch):
+    scenario = _rerun_chain_scenario(tmp_path, monkeypatch)
+    (scenario["reruns_dir"] / f"{scenario['hop1']}.json").unlink()
+    try:
+        sweep.authenticate_ledger(scenario["hop2_payload"])
+    except sweep.ConfigSweepError as exc:
+        assert "absent from ledger" in str(exc)
+    else:
+        assert False
+
+
+def test_prescreen_rerun_chain_tampered_seal_fails_closed(tmp_path, monkeypatch):
+    scenario = _rerun_chain_scenario(tmp_path, monkeypatch)
+    # Change a field without recomputing the seal: the intermediate no longer
+    # authenticates.
+    _rewrite_amendment(
+        scenario["reruns_dir"] / f"{scenario['hop1']}.json",
+        lambda value: value.update({"reason": "TAMPERED"}),
+        reseal=False,
+    )
+    try:
+        sweep.authenticate_ledger(scenario["hop2_payload"])
+    except sweep.ConfigSweepError as exc:
+        assert "chain amendment binding mismatch" in str(exc)
+    else:
+        assert False
+
+
+def test_prescreen_rerun_chain_wrong_cell_key_fails_closed(tmp_path, monkeypatch):
+    scenario = _rerun_chain_scenario(tmp_path, monkeypatch)
+    # Re-seal so only the cell_key binding is wrong: a valid amendment for the
+    # wrong cell must not authenticate this cell's chain.
+    _rewrite_amendment(
+        scenario["reruns_dir"] / f"{scenario['hop1']}.json",
+        lambda value: value.update(
+            {"cell_key": "WINSWEEP_TEST:1999:cZZ:PRESCREEN"}
+        ),
+        reseal=True,
+    )
+    try:
+        sweep.authenticate_ledger(scenario["hop2_payload"])
+    except sweep.ConfigSweepError as exc:
+        assert "chain amendment binding mismatch" in str(exc)
+    else:
+        assert False
+
+
+def test_prescreen_rerun_chain_depth_bound_fails_closed(tmp_path, monkeypatch):
+    scenario = _rerun_chain_scenario(tmp_path, monkeypatch)
+    # Point the intermediate's source at itself (re-sealed): a chain that never
+    # reaches the ledger must hit the depth bound, not loop forever.
+    _rewrite_amendment(
+        scenario["reruns_dir"] / f"{scenario['hop1']}.json",
+        lambda value: value.update(
+            {"source_work_item_id": value["rerun_work_item_id"]}
+        ),
+        reseal=True,
+    )
+    try:
+        sweep.authenticate_ledger(scenario["hop2_payload"])
+    except sweep.ConfigSweepError as exc:
+        assert "exceeds max depth" in str(exc)
+    else:
+        assert False

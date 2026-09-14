@@ -34,6 +34,11 @@ PRESCREEN_VERDICT = "PRESCREEN_MEASURED"
 REAL_EVIDENCE_CLASS = "REAL_TICKS"
 PRESCREEN_ENABLE_ENV = "QM_OPT_CENSUS_PRESCREEN_ENABLED"
 PRESCREEN_RECOVERY_QUEUE_ORDER = "2026-08-18T23:00:00+00:00"
+# A rerun whose own INFRA_FAIL row is itself cloned produces a rerun-of-a-rerun.
+# Its amendment source is a prior rerun id (never a sealed ledger cell), so the
+# ledger lookup must walk the authenticated amendment chain back to a real cell.
+# Bound the walk so a broken or cyclic chain fails closed instead of looping.
+PRESCREEN_RERUN_MAX_CHAIN_DEPTH = 8
 
 _RERUN_RUNTIME_KEYS = frozenset({
     "artifact_identity", "claimed_at_iso", "claimed_by_worker_pid",
@@ -452,17 +457,56 @@ def authenticate_ledger(payload: Mapping[str, Any]) -> tuple[Path, dict[str, Any
             or rerun.get("reason") != payload.get("append_only_rerun_reason")
         ):
             raise ConfigSweepError("PRESCREEN rerun amendment binding mismatch")
+        # The candidate amendment is authenticated above.  Its source is
+        # normally an ORIGINAL ledger cell (single hop).  When a rerun's own
+        # INFRA_FAIL row was cloned again, the source is a PRIOR rerun id that
+        # never existed in the sealed ledger; we then walk the authenticated
+        # amendment chain in this program's reruns/ directory until we reach a
+        # source that IS a ledger cell.  Every hop is sealed and bound to this
+        # program / declaration / ledger / cell exactly like the direct case,
+        # and its rerun_work_item_id must equal the id we followed; any break
+        # fails closed.  A source already in the ledger skips the walk entirely,
+        # keeping single-hop behaviour byte-identical.
+        cell_key = rerun.get("cell_key")
+        reruns_dir = rerun_path.parent
+
+        def _ledger_cell_index(work_item_id: str) -> int | None:
+            return next(
+                (
+                    index for index, item in enumerate(cells_value)
+                    if item.get("cell_key") == cell_key
+                    and str(item.get("work_item_id") or "") == work_item_id
+                ),
+                None,
+            )
+
         source_id = str(rerun.get("source_work_item_id") or "")
-        target_index = next(
-            (
-                index for index, item in enumerate(cells_value)
-                if item.get("cell_key") == rerun.get("cell_key")
-                and str(item.get("work_item_id") or "") == source_id
-            ),
-            None,
-        )
-        if target_index is None:
-            raise ConfigSweepError("PRESCREEN rerun source absent from ledger")
+        target_index = _ledger_cell_index(source_id)
+        hops = 0
+        while target_index is None:
+            if hops >= PRESCREEN_RERUN_MAX_CHAIN_DEPTH:
+                raise ConfigSweepError("PRESCREEN rerun chain exceeds max depth")
+            hops += 1
+            hop_path = reruns_dir / f"{source_id}.json"
+            if not hop_path.is_file():
+                raise ConfigSweepError("PRESCREEN rerun source absent from ledger")
+            hop = _read(hop_path)
+            unsigned_hop = dict(hop)
+            hop_seal = unsigned_hop.pop("amendment_sha256", None)
+            if (
+                hop.get("schema") != "qm.config-sweep-prescreen-rerun/v1"
+                or hop_seal != _seal(unsigned_hop)
+                or hop.get("program_id") != ledger.get("program_id")
+                or hop.get("declaration_sha256") != declaration["declaration_sha256"]
+                or hop.get("ledger_sha256") != ledger.get("ledger_sha256")
+                or hop.get("cell_key") != cell_key
+                or str(hop.get("rerun_work_item_id") or "") != source_id
+            ):
+                raise ConfigSweepError(
+                    "PRESCREEN rerun chain amendment binding mismatch"
+                )
+            source_id = str(hop.get("source_work_item_id") or "")
+            target_index = _ledger_cell_index(source_id)
         replacement = dict(cells_value[target_index])
         replacement["work_item_id"] = str(rerun["rerun_work_item_id"])
         cells_value[target_index] = replacement
