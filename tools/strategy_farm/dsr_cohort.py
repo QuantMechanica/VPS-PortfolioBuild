@@ -53,6 +53,18 @@ def _canonical(value: Any) -> bytes:
     ).encode("utf-8")
 
 
+def _content_sha256(path: Path) -> str:
+    """sha256 of the evidence CONTENT: the decompressed bytes of a DL-090 aged
+    ``.gz`` sibling, the raw bytes otherwise.  Recorded report/summary hashes
+    bind the original content, so an aged file is compared on its content while
+    the binding keeps the on-disk file hash (what a consumer re-reads)."""
+    path = _evidence_file(path)
+    if path.suffix.lower() == ".gz":
+        with gzip.open(path, "rb") as handle:
+            return hashlib.sha256(handle.read()).hexdigest()
+    return sha256_file(path)
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -61,7 +73,24 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _evidence_file(path: Path) -> Path:
+    """The evidence file as stored, or its DL-090 aged ``.gz`` sibling.
+
+    2026-09-14: DL-090 report retention compresses aged evidence in place
+    (``summary.json`` -> ``summary.json.gz``, same bytes).  The Q03/Q02 source
+    rows of QM5_21501/USDJPY and QM5_20266/XTIUSD were refused as
+    Q03_GOVERNED_SOURCE_UNAVAILABLE only because the plain path no longer
+    existed; the cohort reads and hash-binds the sibling instead.  Nothing else
+    changes: a missing file (no sibling) still fails closed.
+    """
+    if path.is_file() or path.suffix.lower() == ".gz":
+        return path
+    sibling = path.with_name(path.name + ".gz")
+    return sibling if sibling.is_file() else path
+
+
 def _load_json(path: Path) -> dict[str, Any]:
+    path = _evidence_file(path)  # DL-090 aged .gz sibling (2026-09-14)
     try:
         raw = gzip.open(path, "rb").read() if path.suffix.lower() == ".gz" else path.read_bytes()
         value = json.loads(raw.decode("utf-8-sig"))
@@ -294,6 +323,7 @@ def _factory_search_before_q08_claim(
 
 
 def _binding(path: Path, *, role: str, row_id: str | None = None) -> dict[str, Any]:
+    path = _evidence_file(path)
     _require(path.is_file(), f"{role.upper()}_MISSING:{path}")
     result = {"role": role, "path": str(path.resolve()), "sha256": sha256_file(path)}
     if row_id:
@@ -325,7 +355,7 @@ def _source_rows(
             or payload.get("timeframe")
             or ""
         ).upper()
-        path = Path(str(row.get("evidence_path") or ""))
+        path = _evidence_file(Path(str(row.get("evidence_path") or "")))
         if observed == timeframe and path.is_file():
             # Parse as well as hash: a corrupt but present file is not provenance.
             _load_json(path)
@@ -392,7 +422,7 @@ def _pipeline_peer_metric(row: Mapping[str, Any], trial_id: str, trial_index: in
     report_path = Path(str(run.get("report_canonical_path") or ""))
     report_binding = _binding(report_path, role="native_report")
     expected = str(run.get("report_sha256") or "").lower()
-    _require(not expected or expected == report_binding["sha256"],
+    _require(not expected or expected in {report_binding["sha256"], _content_sha256(report_path)},
              f"REPORT_SHA256_MISMATCH:{trial_id}")
     start = dt.datetime.strptime(str(run.get("from_date") or summary.get("from_date")), "%Y.%m.%d").date()
     end = dt.datetime.strptime(str(run.get("to_date") or summary.get("to_date")), "%Y.%m.%d").date()
@@ -466,6 +496,22 @@ def _closed_trades(report: Path) -> tuple[list[Any], dict[str, Any]]:
     except ModuleNotFoundError:
         sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
         from framework.scripts.q10_recency import extract_closed_trades
+    resolved = _evidence_file(Path(str(report)))
+    if resolved.suffix.lower() == ".gz":
+        # DL-090 aged native report: the parser reads a plain file, so the
+        # decompressed bytes are materialised once, content-addressed, under the
+        # farm's own scratch tree (never next to the evidence, never rewritten).
+        digest = _content_sha256(resolved)
+        scratch = Path("D:/QM/strategy_farm/_tmp/dsr_aged_reports")
+        scratch.mkdir(parents=True, exist_ok=True)
+        plain = scratch / (digest + "_" + resolved.name[:-3])
+        if not plain.is_file():
+            with gzip.open(resolved, "rb") as handle:
+                data = handle.read()
+            tmp = plain.with_name(plain.name + ".tmp")
+            tmp.write_bytes(data)
+            os.replace(tmp, plain)
+        return extract_closed_trades(plain)
     return extract_closed_trades(report)
 
 
@@ -491,7 +537,7 @@ def _peer_metric(
         report_path = Path(str(run.get("report_canonical_path") or ""))
         report_binding = _binding(report_path, role="native_report")
         expected_report_sha = str(run.get("report_sha256") or "").lower()
-        _require(not expected_report_sha or expected_report_sha == report_binding["sha256"],
+        _require(not expected_report_sha or expected_report_sha in {report_binding["sha256"], _content_sha256(report_path)},
                  f"REPORT_SHA256_MISMATCH:{trial_id}")
         start = dt.datetime.strptime(str(payload.get("from_date")), "%Y.%m.%d").date()
         end = dt.datetime.strptime(str(payload.get("to_date")), "%Y.%m.%d").date()
