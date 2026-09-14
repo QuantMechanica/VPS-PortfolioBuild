@@ -311,10 +311,14 @@ SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB = 44.0
 INDEX_TICK_RESERVATION_TABLE_ENV = "QM_INDEX_TICK_RESERVATION_TABLE"
 INDEX_TICK_RESERVATION_GB_BY_BASE: dict[str, float] = {
     "SP500": 44.0,  # measured 2026-08-15: 45.7 GB private / 46.8 GB WS (Q02)
-    "NDX": 24.0,    # provisional; annual census cells max 7.32 GB (n=1,657)
-    "GDAXI": 24.0,  # provisional; no ledger row
-    "WS30": 24.0,   # provisional; annual census cells max 2.2 GB (n=13)
-    "UK100": 24.0,  # provisional; no ledger row
+    # 2026-09-14 14:0xZ step 2 (ledger, full-window Q04 runs under the table):
+    # NDX n=3 max 2.10 GB (D1 x2, 1 other TF), WS30 n=5 max 1.15 GB (D1) ->
+    # 12 GB = >5x the largest measured peak; GDAXI (n=2: H1 1.41 / H4 1.49)
+    # and UK100 (n=1: D1 0.70) stay at the provisional 24 GB until n>=3.
+    "NDX": 12.0,    # measured n=3 max 2.10 GB (2026-09-14); was provisional 24
+    "GDAXI": 24.0,  # provisional; measured n=2 max 1.49 GB (2026-09-14)
+    "WS30": 12.0,   # measured n=5 max 1.15 GB (2026-09-14); was provisional 24
+    "UK100": 24.0,  # provisional; measured n=1 max 0.70 GB (2026-09-14)
 }
 RAM_RESERVATION_SOURCE_INDEX_TABLE = "index_symbol_table"
 
