@@ -1228,11 +1228,28 @@ def chk_p2_pass_no_p3(con) -> dict:
     trade gate. Rows with non-positive net profit are intentionally not
     promoted by the pump profit filter, so the detector must not count them
     as stranded promotion work.
+
+    DL-089 measurement siblings (OPT_CENSUS matrix instruments whose approved
+    card authorizes no pipeline verdict) are Q02-PASSed for measurement but are
+    deliberately never promoted to Q03 by the pump — its promoter subtracts them
+    in SQL via ``_measurement_sibling_exclusion_clause``. Counting them here
+    would flag a permanent, by-design non-promotion as a stranded pump backlog,
+    so this check reuses the pump's own exclusion clause rather than inventing a
+    second filter. If the sibling recognizers are degraded (fail-closed = the set
+    may be short), the check stays LOUD and counts every row rather than silently
+    hiding a possible real orphan; the degradation is surfaced in the detail.
     """
+    siblings = farmctl._measurement_sibling_ea_ids(con)
+    guard_result: dict = {}
+    sibling_exclusion = farmctl._measurement_sibling_guard(
+        siblings, guard_result, site="health.p2_pass_no_p3"
+    )
+    exclusion_sql = sibling_exclusion or ""
     rows = con.execute(
-        """
+        f"""
         SELECT w.* FROM work_items w
         WHERE w.status='done' AND w.verdict='PASS' AND w.phase IN ('P2', 'Q02')
+          {exclusion_sql}
           AND NOT EXISTS (
             SELECT 1 FROM work_items w2
             WHERE w2.ea_id=w.ea_id
@@ -1243,16 +1260,21 @@ def chk_p2_pass_no_p3(con) -> dict:
         """
     ).fetchall()
     promotable = [r for r in rows if (_work_item_p2_net_profit(r) or 0.0) > 0.0]
+    degraded_note = (
+        " [measurement-sibling recognizer DEGRADED: counting all rows]"
+        if sibling_exclusion is None
+        else ""
+    )
     n = len(promotable)
     if n >= 10:
         return _check("p2_pass_no_p3", "FAIL", n, 10,
-                      f"{n} profitable Q02-PASS work_items without Q03 promotion",
+                      f"{n} profitable Q02-PASS work_items without Q03 promotion{degraded_note}",
                       "Pump §10c is failing or backlogged; run farmctl pump manually")
     if n >= 3:
         return _check("p2_pass_no_p3", "WARN", n, 3,
-                      f"{n} profitable Q02-PASS without Q03 promotion (pump catches up gradually)",
+                      f"{n} profitable Q02-PASS without Q03 promotion (pump catches up gradually){degraded_note}",
                       "Next pump cycle (≤5 min) should promote them")
-    return _check("p2_pass_no_p3", "OK", n, 10, f"{n} pending promotion", "")
+    return _check("p2_pass_no_p3", "OK", n, 10, f"{n} pending promotion{degraded_note}", "")
 
 
 def chk_ea_metrics_fresh(con) -> dict:
