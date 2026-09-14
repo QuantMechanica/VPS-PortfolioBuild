@@ -423,6 +423,98 @@ def _ledger(plan_value: Mapping[str, Any], rendered: Mapping[str, str]) -> dict[
     return value
 
 
+def _authenticated_rerun_hop(
+    amendment: Mapping[str, Any],
+    path: Path,
+    *,
+    cell_key: Any,
+    program_id: Any,
+    declaration_sha256: Any,
+    ledger_sha256: Any,
+) -> tuple[str, str]:
+    """Authenticate ONE sealed rerun-amendment hop; return (source_id, rerun_id).
+
+    This is the single shared chain-walk primitive.  The preflight's backward walk
+    (candidate source -> ledger root, `authenticate_ledger`) and the promotion's
+    forward walk (ledger root -> live head, `_resolve_rerun_chain_head`) both call
+    it, so a hop that one direction accepts the other accepts too: identical seal +
+    program/declaration/ledger/cell binding, plus the file naming invariant
+    ``reruns/<rerun_work_item_id>.json`` (``path.stem == rerun_work_item_id``).
+    Any mismatch fails closed.  Callers own directory location and follow-direction;
+    only the per-hop authentication is shared, which keeps the preflight's existing
+    hop-by-hop, filename-addressed behaviour byte-identical.
+    """
+    unsigned = dict(amendment)
+    seal = unsigned.pop("amendment_sha256", None)
+    rerun_id = str(amendment.get("rerun_work_item_id") or "")
+    if (
+        amendment.get("schema") != "qm.config-sweep-prescreen-rerun/v1"
+        or seal != _seal(unsigned)
+        or amendment.get("program_id") != program_id
+        or amendment.get("declaration_sha256") != declaration_sha256
+        or amendment.get("ledger_sha256") != ledger_sha256
+        or amendment.get("cell_key") != cell_key
+        or rerun_id != path.stem
+    ):
+        raise ConfigSweepError("PRESCREEN rerun chain amendment binding mismatch")
+    return str(amendment.get("source_work_item_id") or ""), rerun_id
+
+
+def _resolve_rerun_chain_head(
+    reruns_dir: Path,
+    ledger_work_item_id: str,
+    *,
+    cell_key: Any,
+    program_id: Any,
+    declaration_sha256: Any,
+    ledger_sha256: Any,
+) -> list[str]:
+    """Forward-walk the sealed rerun chain from a ledger cell to its live head.
+
+    Starting at the sealed ledger cell's ``work_item_id``, repeatedly find the
+    amendment whose ``source_work_item_id`` equals the current id (authenticated
+    hop-by-hop with the shared ``_authenticated_rerun_hop``), follow its
+    ``rerun_work_item_id``, and repeat until no amendment sources the current id --
+    that id is the chain head.  A cell that was never rerun (or a program with no
+    ``reruns/`` directory at all) returns ``[ledger_work_item_id]`` unchanged, so
+    promotion of a program without reruns reads exactly the ids it read before.
+    Bounded at ``PRESCREEN_RERUN_MAX_CHAIN_DEPTH``; a branching (a source cloned
+    under two reasons) or cyclic chain fails closed rather than guessing a head.
+    Amendments for OTHER cells are skipped by ``cell_key`` before authentication,
+    so one cell's chain never depends on another cell's amendments.
+    """
+    chain = [str(ledger_work_item_id)]
+    current = str(ledger_work_item_id)
+    depth = 0
+    while True:
+        successors: list[str] = []
+        if reruns_dir.is_dir():
+            for path in sorted(reruns_dir.glob("*.json")):
+                amendment = _read(path)
+                if (
+                    amendment.get("cell_key") != cell_key
+                    or str(amendment.get("source_work_item_id") or "") != current
+                ):
+                    continue
+                _source_id, rerun_id = _authenticated_rerun_hop(
+                    amendment, path, cell_key=cell_key, program_id=program_id,
+                    declaration_sha256=declaration_sha256, ledger_sha256=ledger_sha256,
+                )
+                successors.append(rerun_id)
+        if not successors:
+            return chain
+        if len(successors) > 1:
+            raise ConfigSweepError(f"PRESCREEN rerun chain branches at {current}")
+        if depth >= PRESCREEN_RERUN_MAX_CHAIN_DEPTH:
+            raise ConfigSweepError("PRESCREEN rerun chain exceeds max depth")
+        head = successors[0]
+        if head in chain:
+            raise ConfigSweepError(f"PRESCREEN rerun chain is cyclic at {head}")
+        chain.append(head)
+        current = head
+        depth += 1
+
+
 def authenticate_ledger(payload: Mapping[str, Any]) -> tuple[Path, dict[str, Any]]:
     if payload.get("schema") != SCHEMA or payload.get("sweep_engine") != ENGINE:
         raise ConfigSweepError("unregistered config sweep")
@@ -491,21 +583,12 @@ def authenticate_ledger(payload: Mapping[str, Any]) -> tuple[Path, dict[str, Any
             if not hop_path.is_file():
                 raise ConfigSweepError("PRESCREEN rerun source absent from ledger")
             hop = _read(hop_path)
-            unsigned_hop = dict(hop)
-            hop_seal = unsigned_hop.pop("amendment_sha256", None)
-            if (
-                hop.get("schema") != "qm.config-sweep-prescreen-rerun/v1"
-                or hop_seal != _seal(unsigned_hop)
-                or hop.get("program_id") != ledger.get("program_id")
-                or hop.get("declaration_sha256") != declaration["declaration_sha256"]
-                or hop.get("ledger_sha256") != ledger.get("ledger_sha256")
-                or hop.get("cell_key") != cell_key
-                or str(hop.get("rerun_work_item_id") or "") != source_id
-            ):
-                raise ConfigSweepError(
-                    "PRESCREEN rerun chain amendment binding mismatch"
-                )
-            source_id = str(hop.get("source_work_item_id") or "")
+            source_id, _rerun_id = _authenticated_rerun_hop(
+                hop, hop_path, cell_key=cell_key,
+                program_id=ledger.get("program_id"),
+                declaration_sha256=declaration["declaration_sha256"],
+                ledger_sha256=ledger.get("ledger_sha256"),
+            )
             target_index = _ledger_cell_index(source_id)
         replacement = dict(cells_value[target_index])
         replacement["work_item_id"] = str(rerun["rerun_work_item_id"])
@@ -645,15 +728,36 @@ def _promotion_documents(
         raise ConfigSweepError("promotion requires a PRESCREEN declaration")
     if abs(float(declaration["prescreen_keep_fraction"]) - keep) > 1e-12 or abs(float(declaration["prescreen_control_fraction"]) - control) > 1e-12:
         raise ConfigSweepError("promote fractions differ from the sealed declaration")
+    artifact = Path(str(plan_value["artifact"]))
+    ledger_path = artifact / ("controls_ledger.json" if plan_value["controls_only"] else "ledger.json")
+    ledger = _read(ledger_path)
+    reruns_dir = ledger_path.parent / "reruns"
+    ledger_program_id = ledger.get("program_id")
+    ledger_sha256 = ledger.get("ledger_sha256")
+    declaration_sha256 = declaration["declaration_sha256"]
     conn = sqlite3.connect(f"file:{db.as_posix()}?mode=ro", uri=True); conn.row_factory = sqlite3.Row
     try:
         observations = []
         source_payloads: dict[str, dict[str, Any]] = {}
         arm_scores: dict[str, list[float]] = {}
+        chains: dict[str, list[str]] = {}
         for cell in plan_value["cells"]:
-            row = conn.execute("SELECT * FROM work_items WHERE id=?", (cell["work_item_id"],)).fetchone()
+            # A PRESCREEN cell whose sealed-ledger row went INFRA_FAIL is
+            # re-measured through the append-only rerun chain (possibly a
+            # rerun-of-a-rerun).  Resolve to the live head with the SAME per-hop
+            # authentication the lane preflight uses, then read THAT row's verdict/
+            # evidence.  A cell with no reruns resolves to its own ledger id, so
+            # the matrix stays complete only when every chain head is measured.
+            chain = _resolve_rerun_chain_head(
+                reruns_dir, cell["work_item_id"], cell_key=cell["cell_key"],
+                program_id=ledger_program_id, declaration_sha256=declaration_sha256,
+                ledger_sha256=ledger_sha256,
+            )
+            head_id = chain[-1]
+            chains[cell["work_item_id"]] = chain
+            row = conn.execute("SELECT * FROM work_items WHERE id=?", (head_id,)).fetchone()
             if row is None or row["status"] != "done" or row["verdict"] != PRESCREEN_VERDICT or not row["evidence_path"]:
-                raise ConfigSweepError(f"PRESCREEN matrix incomplete: {cell['work_item_id']}")
+                raise ConfigSweepError(f"PRESCREEN matrix incomplete: {head_id}")
             payload = json.loads(row["payload_json"] or "{}")
             if payload.get("evidence_class") != PRESCREEN_EVIDENCE_CLASS or payload.get("prescreen_model") != PRESCREEN_MODEL:
                 raise ConfigSweepError("PRESCREEN row identity mismatch")
@@ -661,10 +765,11 @@ def _promotion_documents(
             score, _summary = _measurement_score(evidence, evidence_class=PRESCREEN_EVIDENCE_CLASS)
             observations.append({
                 "arm": cell["arm"], "year": cell["year"], "cell_key": cell["cell_key"],
-                "work_item_id": cell["work_item_id"], "evidence_path": str(evidence),
+                "ledger_work_item_id": cell["work_item_id"], "work_item_id": head_id,
+                "rerun_chain": chain, "evidence_path": str(evidence),
                 "evidence_sha256": _hash(evidence), "return_to_maxdd": score,
             })
-            source_payloads[cell["work_item_id"]] = payload
+            source_payloads[head_id] = payload
             arm_scores.setdefault(str(cell["arm"]), []).append(score)
     finally:
         conn.close()
@@ -693,24 +798,23 @@ def _promotion_documents(
     }
     snapshot = {**snapshot_unsigned, "ranking_snapshot_content_sha256": _seal(snapshot_unsigned)}
     snapshot_file_sha = _document_sha(snapshot)
-    artifact = Path(str(plan_value["artifact"]))
     snapshot_path = artifact / "prescreen_promotions" / snapshot["ranking_snapshot_content_sha256"] / "ranking_snapshot.json"
     real_cells = []
     selected = keep_arms | control_arms
     for cell in plan_value["cells"]:
         if cell["arm"] not in selected:
             continue
+        chain = chains[cell["work_item_id"]]
         real = dict(cell)
         real.update({
             "cell_key": cell["real_cell_key"], "work_item_id": cell["real_work_item_id"],
             "evidence_class": REAL_EVIDENCE_CLASS,
             "setfile_sha256": _hash(Path(str(cell["setfile_path"]))),
             "promotion_role": "KEEP" if cell["arm"] in keep_arms else "CONTROL",
-            "source_prescreen_work_item_id": cell["work_item_id"],
+            "source_prescreen_work_item_id": chain[-1],
+            "source_prescreen_rerun_chain": chain,
         })
         real_cells.append(real)
-    ledger_path = artifact / ("controls_ledger.json" if plan_value["controls_only"] else "ledger.json")
-    ledger = _read(ledger_path)
     amendment_unsigned = {
         "schema": "qm.config-sweep-prescreen-promotion/v1", "program_id": declaration["program_id"],
         "declaration_sha256": declaration["declaration_sha256"], "ledger_path": str(ledger_path),

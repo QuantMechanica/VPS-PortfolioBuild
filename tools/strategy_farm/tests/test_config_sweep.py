@@ -450,3 +450,155 @@ def test_prescreen_rerun_chain_depth_bound_fails_closed(tmp_path, monkeypatch):
         assert "exceeds max depth" in str(exc)
     else:
         assert False
+
+
+def _promotion_chain_scenario(tmp_path, monkeypatch, *, measure_head=True):
+    """Full PRESCREEN matrix where cell[0] is measured via a two-hop rerun chain.
+
+    Every cell is PRESCREEN_MEASURED directly except cell[0] (2019:c00): its
+    sealed-ledger row and its first rerun both go INFRA_FAIL, and only the second
+    rerun (the chain head) carries the measurement.  Promotion must therefore
+    forward-walk the sealed rerun chain to find the live head, exactly as the lane
+    preflight authenticates each hop backward.
+    """
+    declaration = _prescreen_declaration(tmp_path, monkeypatch)
+    declaration_path = tmp_path / "prescreen_declaration.json"
+    sweep._write(declaration_path, declaration)
+    artifact = tmp_path / "artifact"
+    plan = sweep.plan(declaration_path, artifact)
+    db = tmp_path / "farm.sqlite"
+    with sqlite3.connect(db) as conn:
+        conn.execute("""CREATE TABLE work_items(
+            id TEXT PRIMARY KEY,kind TEXT,phase TEXT,ea_id TEXT,symbol TEXT,
+            setfile_path TEXT,status TEXT,verdict TEXT,attempt_count INT,
+            parent_task_id TEXT,evidence_path TEXT,claimed_by TEXT,
+            payload_json TEXT,created_at TEXT,updated_at TEXT)""")
+        conn.execute(
+            "INSERT INTO work_items VALUES "
+            "('owner','control','WINDOW_SWEEP_OWNER','QM5_41405','USDJPY.DWX',"
+            "'owner','done','DECLARED',0,NULL,'EVIDENCE_UNAVAILABLE',NULL,?,'x','x')",
+            (json.dumps({
+                "queue_owner": True, "program_id": declaration["program_id"],
+                "queue_order_at": "2026-12-31T00:00:00+00:00",
+            }),),
+        )
+        conn.execute(
+            "INSERT INTO work_items VALUES "
+            "('reference','backtest','OPT_CENSUS','QM5_41405','USDJPY.DWX',"
+            "'reference','pending',NULL,0,NULL,NULL,NULL,?,'x','x')",
+            (json.dumps({"opt_census_frontier_priority": True}),),
+        )
+    monkeypatch.setenv(sweep.PRESCREEN_ENABLE_ENV, "1")
+    sweep.enqueue(plan, db=db, apply=True)
+
+    with sqlite3.connect(db) as conn:
+        for cell in plan["cells"]:
+            # c00 ranks highest (score = 10 - config); c00 is the mandatory control.
+            score = 10.0 - float(cell["config"])
+            evidence = _summary(
+                tmp_path / "prescreen" / f"{cell['work_item_id']}.json",
+                evidence_class="PRESCREEN", model=1, score=score,
+            )
+            conn.execute(
+                "UPDATE work_items SET status='done',"
+                "verdict='PRESCREEN_MEASURED',evidence_path=? WHERE id=?",
+                (str(evidence), cell["work_item_id"]),
+            )
+        conn.commit()
+
+    def _fail(work_item_id):
+        with sqlite3.connect(db) as conn:
+            conn.execute(
+                "UPDATE work_items SET status='failed',verdict='INFRA_FAIL',"
+                "evidence_path='EVIDENCE_UNAVAILABLE:chain' WHERE id=?",
+                (work_item_id,),
+            )
+            conn.commit()
+
+    ledger_cell_id = plan["cells"][0]["work_item_id"]
+    _fail(ledger_cell_id)
+    hop1 = sweep.append_only_prescreen_rerun(
+        ledger_cell_id, reason="HOP1", db=db, apply=True
+    )["rerun_work_item_id"]
+    _fail(hop1)
+    hop2 = sweep.append_only_prescreen_rerun(
+        hop1, reason="HOP2", db=db, apply=True
+    )["rerun_work_item_id"]
+    if measure_head:
+        evidence = _summary(
+            tmp_path / "prescreen" / f"{hop2}.json",
+            evidence_class="PRESCREEN", model=1, score=10.0,
+        )
+        with sqlite3.connect(db) as conn:
+            conn.execute(
+                "UPDATE work_items SET status='done',"
+                "verdict='PRESCREEN_MEASURED',evidence_path=? WHERE id=?",
+                (str(evidence), hop2),
+            )
+            conn.commit()
+    return {
+        "plan": plan, "db": db, "artifact": artifact,
+        "reruns_dir": artifact / "reruns",
+        "ledger_cell_id": ledger_cell_id, "hop1": hop1, "hop2": hop2,
+    }
+
+
+def test_prescreen_promotion_two_hop_chain_resolves(tmp_path, monkeypatch):
+    scenario = _promotion_chain_scenario(tmp_path, monkeypatch)
+    plan, db = scenario["plan"], scenario["db"]
+    dry = sweep.promote(plan, db=db, keep=0.5, control=0.5)
+    assert dry["keep_arms"] == 2 and dry["control_arms"] == 1
+    assert dry["dropped_arms"] == 2 and dry["real_cells"] == 21
+    snapshot, amendment, source_payloads = sweep._promotion_documents(
+        plan, db=db, keep=0.5, control=0.5
+    )
+    # cell[0]'s observation resolved through the two-hop chain to the measured head.
+    obs0 = next(
+        o for o in snapshot["observations"]
+        if o["ledger_work_item_id"] == scenario["ledger_cell_id"]
+    )
+    assert obs0["work_item_id"] == scenario["hop2"]
+    assert obs0["rerun_chain"] == [
+        scenario["ledger_cell_id"], scenario["hop1"], scenario["hop2"]
+    ]
+    # the promoted c00/2019 real cell records the live head as its prescreen source.
+    real0 = next(
+        c for c in amendment["real_cells"]
+        if c["arm"] == "c00" and c["year"] == 2019
+    )
+    assert real0["source_prescreen_work_item_id"] == scenario["hop2"]
+    assert real0["source_prescreen_rerun_chain"] == [
+        scenario["ledger_cell_id"], scenario["hop1"], scenario["hop2"]
+    ]
+    assert scenario["hop2"] in source_payloads
+
+
+def test_prescreen_promotion_incomplete_chain_head_names_head(tmp_path, monkeypatch):
+    # Chain head (second rerun) is still pending: matrix is incomplete and the
+    # error must name the HEAD id, not the sealed-ledger id.
+    scenario = _promotion_chain_scenario(tmp_path, monkeypatch, measure_head=False)
+    try:
+        sweep.promote(scenario["plan"], db=scenario["db"], keep=0.5, control=0.5)
+    except sweep.ConfigSweepError as exc:
+        assert "PRESCREEN matrix incomplete" in str(exc)
+        assert scenario["hop2"] in str(exc)
+        assert scenario["ledger_cell_id"] not in str(exc)
+    else:
+        assert False
+
+
+def test_prescreen_promotion_tampered_intermediate_fails_closed(tmp_path, monkeypatch):
+    scenario = _promotion_chain_scenario(tmp_path, monkeypatch)
+    # Break the intermediate hop's seal (change a field without resealing): the
+    # forward walk must refuse the chain rather than skip to the head.
+    _rewrite_amendment(
+        scenario["reruns_dir"] / f"{scenario['hop1']}.json",
+        lambda value: value.update({"reason": "TAMPERED"}),
+        reseal=False,
+    )
+    try:
+        sweep.promote(scenario["plan"], db=scenario["db"], keep=0.5, control=0.5)
+    except sweep.ConfigSweepError as exc:
+        assert "chain amendment binding mismatch" in str(exc)
+    else:
+        assert False

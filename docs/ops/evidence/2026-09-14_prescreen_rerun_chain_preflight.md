@@ -128,3 +128,114 @@ constant and the `authenticate_ledger` chain-walk block) plus the new tests, the
 idle-reload the workers. Reverting restores the single-hop-only resolver; the five
 rows' amendments and DB rows are untouched by this change and remain valid for a
 re-fix.
+
+---
+
+# Second half: PRESCREEN promotion must forward-walk the same chain
+
+Date: 2026-09-14 · Author: Claude · Scope: authentication plumbing only. No gate
+criteria, verdict logic, thresholds, enqueue, or DB writes changed.
+
+## Symptom (promotion side)
+
+With the preflight fixed (above) and all five recovery rows now
+`PRESCREEN_MEASURED`, the promotion dry-run still failed:
+
+```
+config_sweep.py promote --declaration .../2026-09-12_..._prescreen_dryrun_declaration.json \
+  --artifact D:/QM/.../WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025 --keep 0.70 --control 0.10
+ConfigSweepError: PRESCREEN matrix incomplete: 62538f30-df4e-5d61-b807-b6099af9d7cf
+```
+
+## Root cause
+
+`_promotion_documents` (config_sweep.py) mapped each **sealed-ledger** cell id
+straight to a DB row (`SELECT * FROM work_items WHERE id = cell["work_item_id"]`)
+and required that row to be `PRESCREEN_MEASURED`. For a cell that went `INFRA_FAIL`
+and was re-measured through the append-only rerun chain, the sealed-ledger id
+(`62538f30`, 2019:c00) is still `INFRA_FAIL`; the measurement lives at the chain
+head (`62538f30 -> c734c260 -> 97f8157d`). The preflight learned to walk that chain
+**backward** (candidate -> ledger root); the promotion never learned to walk it
+**forward** (ledger root -> live head), so it read the dead root and declared the
+matrix incomplete. Same for 2021:c00 (`35a985c0 -> 8810cd45 -> 945e218d`) and the
+three single-hop cells 2020:c00, 2019:c01, 2019:c02.
+
+## Change
+
+`tools/strategy_farm/config_sweep.py`:
+
+- **`_authenticated_rerun_hop(amendment, path, *, cell_key, program_id,
+  declaration_sha256, ledger_sha256)`** — the single shared chain-walk primitive.
+  It authenticates ONE sealed rerun amendment (schema, seal, program/declaration/
+  ledger/cell binding, and the `reruns/<rerun_work_item_id>.json` filename
+  invariant) and returns `(source_id, rerun_id)`, fail-closed. `authenticate_ledger`
+  (backward) now calls it for each hop instead of its inline block — behaviour is
+  byte-identical (the file is still opened by `reruns/<source_id>.json` and the
+  message is unchanged), and all six preflight tests stay green.
+- **`_resolve_rerun_chain_head(reruns_dir, ledger_work_item_id, ...)`** — the
+  forward walk. From the sealed-ledger id it repeatedly finds the amendment whose
+  `source_work_item_id == current` (authenticated with the shared hop), follows
+  `rerun_work_item_id`, and repeats until no amendment sources the current id — that
+  id is the head. Bounded at `PRESCREEN_RERUN_MAX_CHAIN_DEPTH = 8`; a branching (one
+  source cloned under two reasons) or cyclic chain fails closed; a cell with no
+  reruns (or a program with no `reruns/` dir) returns `[ledger_id]`, so
+  reruns-free promotion is byte-identical. Amendments for other cells are skipped by
+  `cell_key` before authentication, so one cell's chain never depends on another's.
+- **`_promotion_documents`** now resolves every cell to its chain head, reads THAT
+  row's verdict/evidence (a cell is complete iff the head is `PRESCREEN_MEASURED`),
+  and records the resolved chain for audit: each ranking-snapshot observation gains
+  `rerun_chain: [ids]`, `ledger_work_item_id`, and `work_item_id` = head; each
+  promoted real cell gains `source_prescreen_rerun_chain` and points
+  `source_prescreen_work_item_id` at the head (the row actually measured).
+
+Readers deliberately left unchanged, verified in place: `prescreen_report`
+(FN/control) reads the amendment's **REAL_TICKS** cells, which cannot be
+config-sweep-rerun (`append_only_prescreen_rerun` refuses any row whose
+`evidence_class != PRESCREEN`), so they have no PRESCREEN chain to resolve; the
+generic `report` is a diagnostic that intentionally shows sealed-ledger-id status
+and is not on the verdict/promotion path.
+
+## Tests
+
+`python -X utf8 -m pytest tools/strategy_farm/tests/test_config_sweep.py -q` ->
+`16 passed` (13 prior + 3 new; the 3 new build a real full-matrix promotion with
+cell[0] measured through a two-hop chain via the production `enqueue -> fail ->
+rerun -> fail -> rerun` path):
+
+- `test_prescreen_promotion_two_hop_chain_resolves` — promotion resolves the head;
+  snapshot observation carries `work_item_id = hop2` and
+  `rerun_chain = [ledger, hop1, hop2]`; the promoted real cell records the head.
+- `test_prescreen_promotion_incomplete_chain_head_names_head` — head still pending
+  -> `PRESCREEN matrix incomplete: <hop2>` (names the HEAD, not the ledger id).
+- `test_prescreen_promotion_tampered_intermediate_fails_closed` — broken seal on
+  the intermediate -> `chain amendment binding mismatch` (never skips to the head).
+
+## Real dry-run (no `--apply`)
+
+```
+keep_arms=35  control_arms=2  dropped_arms=15  real_cells=259  prescreen_cells=350
+```
+
+(50 arms: keep ceil(50*0.70)=35 incl. mandatory control c00; 15 dropped;
+control ceil(15*0.10)=2; real_cells (35+2)*7=259.) The five chained cells resolve:
+
+| cell | chain | head | verdict |
+|---|---|---|---|
+| 2019:c00 | `62538f30 -> c734c260 -> 97f8157d` | `97f8157d` | PRESCREEN_MEASURED |
+| 2021:c00 | `35a985c0 -> 8810cd45 -> 945e218d` | `945e218d` | PRESCREEN_MEASURED |
+| 2020:c00 | `9fdbcfa4 -> a7be7aa2` | `a7be7aa2` | PRESCREEN_MEASURED |
+| 2019:c01 | `d4c790e7 -> b901af93` | `b901af93` | PRESCREEN_MEASURED |
+| 2019:c02 | `2a897e8e -> 3a308d3d` | `3a308d3d` | PRESCREEN_MEASURED |
+
+Would-write paths (NOT written — dry-run):
+`.../prescreen_promotions/70af71eb7e2670f53cbb665619b2aea4cead4178f0e03478f2623cccff450b98/ranking_snapshot.json`
+and `.../promotion_amendment.json`. Confirmed no `prescreen_promotions/` dir was
+created and `reruns/` still holds its 7 files.
+
+## Rollback (promotion side)
+
+`git revert` the commit carrying `_authenticated_rerun_hop`,
+`_resolve_rerun_chain_head`, the `_promotion_documents` rewrite, and the 3 new
+tests. Reverting restores the ledger-id-only promotion reader; no artifact or DB
+row is mutated by this change (the dry-run writes nothing), so the amendments and
+rows remain valid for a re-fix.
