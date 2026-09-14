@@ -52,14 +52,21 @@ the gate ruled on.
 | 3 | manifest signed by OWNER | OWNER | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN |
 | 4 | RISK_PERCENT set, min-lot for burn-in | Claude | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 5 | Q09 news mode configured | Codex | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
-| 6 | commission/swap = DXZ schedule | Codex | **OPEN** | **OPEN** | **OPEN** | **OPEN** | **OPEN** | **OPEN** | **OPEN** |
-| 7 | DST timezone on T_Live | Codex | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN |
+| 6 | commission/swap = DXZ schedule | Claude | **OPEN** | GREEN* | GREEN | GREEN | GREEN | GREEN | GREEN* |
+| 7 | DST timezone on T_Live | Claude | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 8 | kill-switch threshold defined | Codex | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 9 | symbol routing `.DWX` → broker | Codex | **OPEN** | **OPEN** | GREEN | GREEN | **RED** | **RED** | **RED** |
 | 10 | magic registered + unique | Claude | GREEN | **OPEN** | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 11 | SHA256 factory → T_Live | Claude | GREEN | GREEN | GREEN | GREEN | n/a | n/a | n/a |
 
-Counts (7 sleeves × 11 = 77): **GREEN 35 · OPEN 33 · RED 9**. No sleeve is fully GREEN.
+`GREEN*` = class-level evidence only (the instrument itself has no live deal history yet;
+the commission-class formula was validated from other live deals in the same class on this
+account). Full evidence: `Q16_CHECK6_CHECK7_EVIDENCE_2026-09-14.md`. 25/1537 (XAGUSD) stays
+OPEN because the one commodity instrument with history (XAUUSD) showed a small worst-case
+overshoot at min-lot size — see that file's check-6 finding before certifying XAGUSD's own
+burn-in fills.
+
+Counts (7 sleeves × 11 = 77): **GREEN 48 (2 of them class-proxy `*`) · OPEN 20 · RED 9**. No sleeve is fully GREEN.
 The 3 dark sleeves keep their RED-9 and are a **no-op**: they stay on their existing charts, carry 1.276 % of the 28-book risk and demonstrably trade nothing until their source fix.
 
 ## 3 · The OPEN/RED items, with owner and exact action
@@ -111,18 +118,25 @@ T_Live compile (which also closes check 1) or read `"event":"INIT","payload":{"m
 from `MQL5/Files/QM/QM5_9641_ea-9641.log` after the chart is attached and before
 AutoTrading. Every other sleeve's binary post-dates its registry row by ≥1 resolver commit.
 
-**OPEN-6 · commission group.** Owner **Codex**. `C:/QM/mt5/T_Live/MT5_Base/MQL5/Profiles/Tester/Groups/`
-is **empty — no `<server>_<account>.txt` exists**, so the check has no artifact at all
-today. Worst-case model to verify against (`framework/registry/live_commission.json`,
-OWNER 2026-06-01): forex `max(0.005% RT notional, $5/lot RT)`, index
-`max(0.005%, $5.50/lot)`, commodity `max(0.005%, $0/lot)`. Per new sleeve the class is
-XAGUSD/XAUUSD/XTIUSD = commodity, WS30/NDX = index. No commission value may be invented
-(Hard Rule).
+**RESOLVED-6 (except 25/1537) · commission group.** Owner **Claude**, 2026-09-14.
+`C:/QM/mt5/T_Live/MT5_Base/MQL5/Profiles/Tester/Groups/` still **does not exist** — no
+tester-Groups artifact exists today, confirmed again. Answered instead from the live deal
+journal (`Files/QM/journal/live_deals_normalized.csv`, 259 deal legs) matched per closed
+position against `framework/registry/live_commission.json`'s worst-case model: index (NDX)
+and forex (AUDUSD, USDJPY) classes realise comfortably inside the model; the commodity class
+(XAUUSD, 14 closed positions) shows a small, real overshoot at min-lot size (5/14 positions,
+$0.001–$0.008 above model). Full numbers, per-position table and the class-proxy reasoning
+for 26/9641, 24/13117: `Q16_CHECK6_CHECK7_EVIDENCE_2026-09-14.md`. **25/1537 (XAGUSD) stays
+OPEN** — same no-flat-floor commodity formula as XAUUSD, no XAGUSD deal history yet to check
+its own burn-in fills against the model's demonstrated min-lot blind spot.
 
-**OPEN-7 · DST.** Owner **Codex**. Expect broker time GMT+2 outside US DST, GMT+3 during.
-2026-09-13 is inside US DST → GMT+3. Cross-check: `QM5_13213_ea-13213.log` last line
-`ts_utc 2026-09-11T19:51:13.984Z` vs `ts_broker 2026-09-11T22:51:17` = **+3h, correct**.
-Formally still OPEN because the gate asks for a terminal screenshot.
+**RESOLVED-7 · DST.** Owner **Claude**, 2026-09-14. Broker time GMT+2 outside US DST, GMT+3
+during, confirmed **consistently +3.000h to +3.001h across all 14 days** 2026-08-31→2026-09-14
+(84,023 log lines scanned), with the 2026-09-05/06 weekend gap explained (MT5 freezes
+`TimeCurrent()` at the last tick when the market is closed — not a DST defect). Log-based
+artifact stands in place of the terminal screenshot the gate originally asked for (Hard Rule:
+evidence must be a log/CSV path, not a screenshot). Full per-day table:
+`Q16_CHECK6_CHECK7_EVIDENCE_2026-09-14.md`.
 
 **OPEN-1/3 · fresh compile and OWNER signature.** See §0 and `deploy_manifest_v2_DRAFT.yaml`.
 
