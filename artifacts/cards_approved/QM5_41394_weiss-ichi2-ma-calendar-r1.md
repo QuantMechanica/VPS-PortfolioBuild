@@ -105,3 +105,42 @@ All five use D1. `SP500.DWX` remains research/backtest-only unless a future live
 - G0: APPROVED only under the identity-rebuild authority above.
 - Q02 and later: no inherited state; must begin with exactly one fresh Q02 canary admitted from this identity's own source-matched `COMPILE_OK` evidence.
 - T6/live: not authorized.
+
+## Approved Amendment (2026-09-14) — DSR Single Configuration
+
+- Authority: `OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914`, OWNER receipt `3415f6c0…` (YES: "ABC & D freigegeben zur Umsetzung").
+- This EA was never part of a sealed factory search (no DL-089 ledger); it carries exactly one configuration: the card defaults overlaid by the set file below. No optimisation search took place, research_trial_count is 0.
+- This declaration locks the exact XAUUSD.DWX/D1 configuration used by Q08 (set file `QM5_41394_weiss-ichi2-ma-calendar-r1_XAUUSD.DWX_D1_backtest.set`). It changes no strategy mechanics, threshold, or stored verdict.
+
+```qm-dsr-single-configuration
+{
+  "complete": true,
+  "ea_id": "QM5_41394",
+  "locked_parameters": {
+    "PORTFOLIO_WEIGHT": "1",
+    "RISK_FIXED": "1000",
+    "RISK_PERCENT": "0",
+    "qm_ea_id": "41394",
+    "qm_friday_close_enabled": "true",
+    "qm_friday_close_hour_broker": "21",
+    "qm_magic_slot_offset": "2",
+    "qm_news_compliance": "QM_NEWS_COMPLIANCE_DXZ",
+    "qm_news_min_impact": "high",
+    "qm_news_mode_legacy": "QM_NEWS_OFF",
+    "qm_news_stale_max_hours": "336",
+    "qm_news_temporal": "QM_NEWS_TEMPORAL_PRE30_POST30",
+    "qm_rng_seed": "42",
+    "qm_stress_reject_probability": "0.0",
+    "strategy_atr_period": "20",
+    "strategy_atr_sl_mult": "3.0",
+    "strategy_fast_sma_period": "9",
+    "strategy_slow_sma_period": "26"
+  },
+  "no_optimization_search": true,
+  "research_trial_count": 0,
+  "schema": "qm.dsr-single-configuration-declaration/v1",
+  "spec_sha256": "916259a3dea433dfeb9393ae646c43c1e707833138f5700ab92e0746dfa395a3",
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "D1"
+}
+```
