@@ -10361,6 +10361,36 @@ def _dl089_declared_lane(
             if rerun_ids:
                 cell["work_item_id"] = rerun_ids[-1]
             cells.append(cell)
+        # 2026-09-14 (Orchestrator, GRUEN infra repair; ticket 4d915807): a
+        # PRESCREEN promotion appends its REAL_TICKS cells to the authenticated
+        # ledger view (config_sweep.authenticate_ledger) under the SAME
+        # program/arm/year as the 350 PRESCREEN cells, so the annual arm/year
+        # validator saw every year twice ("declared arm c00 is missing,
+        # duplicate, or out of year order") and the 259 promoted real cells of
+        # WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025 were
+        # PROGRAM_PREFLIGHT_SUPPRESSED on every scan.  The lane view is now
+        # evidence-class aware: a promoted REAL candidate sees only the promoted
+        # real cells (and drops the PRESCREEN staged-admission keys, which
+        # enumerate prescreen cell keys); a PRESCREEN candidate never sees
+        # promoted cells.  Programs without a promotion carry no
+        # promotion_role, so their lane view is byte-identical.  DL-089
+        # selection rules, keep/control fractions and verdicts are untouched.
+        promoted_lane = bool(payload.get("promotion_amendment_path")) or bool(
+            payload.get("promotion_role")
+        )
+        if any(cell.get("promotion_role") for cell in cells):
+            if promoted_lane:
+                cells = [cell for cell in cells if cell.get("promotion_role")]
+                lane_ledger = {**dict(ledger), "cells": cells}
+                for annual_key in (
+                    "prescreen_contract",
+                    "prescreen_admitted_cell_keys",
+                    "prescreen_last_admission",
+                ):
+                    lane_ledger.pop(annual_key, None)
+                return cells, lane_ledger
+            cells = [cell for cell in cells if not cell.get("promotion_role")]
+            return cells, {**dict(ledger), "cells": cells}
         # 2026-09-11 (Orchestrator, GRUEN infra repair): a sealed window-sweep
         # program appends its stage-B cells as an authenticated ledger amendment
         # (kind 'stage_b_cells', sha-bound to the stage-A report by
