@@ -1,0 +1,36 @@
+{
+  "title": "Q08 DSR context for window-sweep arms (OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914 = way 1): dsr_cohort accepts the sealed window-sweep ledger (qm.window-sweep.v1, config_sweep/window_sweep) as the search history for a candidate whose EA is a sweep arm; every arm of the programme (winners AND losers, controls included) is a trial; prescreen-skipped census years (hold PRESCREEN_SKIPPED with skip authority) count as zero-trade measurements instead of INCOMPLETE_TRIAL; tests + offline replay on QM5_41115/XTIUSD and QM5_41158/XTIUSD; no DSR formula, gate threshold or candidate-universe change.",
+  "why_now": "OWNER 2026-09-14 17:3xZ: 'Weg 1, das Winsweep-Ledger als DSR-Suchhistorie plus die Prescreen-Skip-Regel in einem Codex-Ticket'. 9 Q08 rows that passed Q02-Q07 (7 winsweep arms QM5_41115/41158/41176/41131/41381/41423 XTIUSD, 2x QM5_12115/XAUUSD) have no DSR context: dsr_cohort._find_ledger only knows DL-089 ledgers, and a single-configuration declaration would be false because the arms ARE an optimisation search. Two class-C rows (QM5_21507 sell_032/2025 cell 2c1a2b99, QM5_20266 buy_010) fail INCOMPLETE_TRIAL only because the prescreen skipped a year. Also 10163 (ablation_04 set) and 10932 (ablation_02 set) lock ablation series and need the same 'search history' treatment (ablation runs as trials) or an explicit retire.",
+  "acceptance": [
+    "dsr_cohort.assemble(conn, row, payload) returns a sealed cohort for the Q08 rows of QM5_41115/XTIUSD and QM5_41158/XTIUSD with selection_mode identifying the window-sweep source, effective_trial_count == number of arms in the sealed ledger (losers and controls included), losers_included true, and the cohort daily-return matrix built from the arms' native reports exactly like the DL-089 path (same peer-metric code, no new formula)",
+    "the sealed ledger is authenticated the way config_sweep.authenticate_ledger / window_sweep.authenticate_ledger do it (declaration sha, ledger sha, rerun and promotion amendments, stage-B cells); a ledger that fails authentication fails closed with a named reason",
+    "prescreen-skipped years: a census cell held PRESCREEN_SKIPPED whose skip authority is present in the sealed prescreen manifest (dl089_prescreen.staged_keys / project_row semantics used by the scheduler) is treated as a measured year with zero trades for the DSR peer metric; the arm remains a trial; any other non-terminal cell still raises INCOMPLETE_TRIAL; unit test for both cases",
+    "offline replay evidence: assemble() for 21507/XAUUSD and 20266/XTIUSD no longer raises INCOMPLETE_TRIAL (or the remaining reason is named); replay for 41115/41158 recorded under docs/ops/evidence/2026-09-14_q08_context_repair/sweep_arm_replay.md with trial counts",
+    "ablation sets: document whether 10163 (…_ablation_04.set) and 10932 (…_ablation_02.set) have a sealed ablation ledger; if yes, treat it as search history the same way; if no, leave both rows INVALID and say so - do not declare a single configuration for them",
+    "no change to gate thresholds, the DSR/FDR formula, keep/control fractions, candidate universes or any stored verdict; append-only; workers need an idle-aware staggered reload afterwards (session_tools/reload_chunk84.py pattern) - do not restart workers yourself",
+    "tests: existing tools/strategy_farm/tests/test_dsr_*.py stay green; new tests for the window-sweep source and the prescreen-skip rule; commit with explicit pathspecs and the co-author trailer; REVIEW with the artifact path"
+  ],
+  "evidence": [
+    "docs/ops/evidence/2026-09-14_q08_context_repair/owner_decision_card_class_b.json",
+    "docs/ops/evidence/2026-09-14_q08-context-repair-v2-20260914_3415f6c0_execution.md",
+    "tools/strategy_farm/dsr_cohort.py (_find_ledger DL089_LEDGER_SCHEMA check; _peer_metric INCOMPLETE_TRIAL at status!='done'; assemble_single_configuration n=1 path)",
+    "tools/strategy_farm/config_sweep.py (SCHEMA qm.window-sweep.v1; authenticate_ledger; promotion amendments real_cells)",
+    "tools/strategy_farm/dl089_prescreen.py (staged_keys) and dl089_prescreen_retro.py (project_row)",
+    "offline assembly 2026-09-14 15:0xZ: 21507 -> INCOMPLETE_TRIAL:DL089:PATTERN:sell_032 (cell 2c1a2b99 pending, hold PRESCREEN_SKIPPED); 20266 -> INCOMPLETE_TRIAL:DL089:PATTERN:buy_010; 41115 -> SEALED_SEARCH_LEDGER_UNAVAILABLE -> single-config path -> APPROVED_CARD_REQUIRED",
+    "D:/QM/strategy_farm/artifacts/opt_census/WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025/ledger.json (example of the sealed window-sweep ledger shape)"
+  ],
+  "hard_limits": [
+    "no change to DSR/FDR formula, gate thresholds, keep/control fractions, candidate universes or stored verdicts",
+    "append-only; fail closed on any authentication gap",
+    "no unstaggered worker restarts; no T_Live",
+    "commit with explicit pathspecs; co-author trailer",
+    "Codex budget line applies"
+  ],
+  "required_capabilities": ["code", "ops"],
+  "model_tier": "terra",
+  "codex_model_tier": "terra",
+  "codex_reasoning_effort": "high",
+  "requested_by": "Orchestrator Claude 2026-09-14 17:3xZ (decision-bound task 67dfadf6, receipt 9e6ddd6b)",
+  "decision_id": "OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914",
+  "decision_receipt_prefix": "9e6ddd6b"
+}
