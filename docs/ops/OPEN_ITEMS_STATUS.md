@@ -4696,3 +4696,25 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 >   3 Rebuild-Identitaeten ueber die Aequivalenzregel an die Originalkarte, 7 Winsweep-Arme + 12115 NICHT deklarieren (sie SIND
 >   eine Optimierungssuche) -> Folgekarte (DSR-Kohorte aus dem Winsweep-Ledger oder Retire zugunsten Q13/Q14). Empfehlung JA
 >   fuer A/C/D; Ticket 269d5101 BLOCKED hinter der Karte. Auffangregel 12 h fuer C und D.
+
+> **Nachtrag 16:1xZ (14.09.) — OWNER "ABC & D freigegeben zur Umsetzung" (Receipt 3415f6c0, Task 3ec11996 APPROVED):**
+> - Klasse A: 20 von 22 Karten mit qm-dsr-single-configuration-Block (Amendment-Tool, offline gegen den Contract validiert,
+>   Journal card_amend_journal.jsonl; 10163/10932 ausgenommen, weil ihre Q08-Zeilen Ablation-Sets binden = Suche). 5 Baseline-
+>   Sets mit Karten-Strategiedefaults regeneriert (9724/12548/10412 versioniert s20260914-001, 10290/11121 kanonisch). 21 Q08-
+>   Zeilen mit aktueller Build-Identitaet (10 Append-only-Reruns, 10 frische, 1328 requeued); erster Ende-zu-Ende-Beweis:
+>   44c01339 (11563) 15:40Z auf T9 mit SEALED DSR-Kontext geclaimt. 24 Dispositionen (12 Plan + 12 extra: stale Juli-Ketten,
+>   erste frische Zeilen mit geerbten alten Hashes), Receipts + SQLite-Backups.
+> - Zwischenfall: farmctl-Frischpfad hat 8 Dispositionszeilen um 15:49Z auf pending requeued (existing-row-Pfad ohne kind-
+>   Filter); unter Lock mit Backup revertiert, Ursache gefixt (kind='backtest', superseded ausgeschlossen, frische/requeued
+>   Zeilen pinnen die AKTUELLE Build-Identitaet, wenn der Operator das ex5 bindet).
+> - Klasse C: Ursache 1 = DL-090 hat Q03-/Report-Evidenz zu .gz gealtert, dsr_cohort suchte Klartext und hashte gz-Bytes ->
+>   _evidence_file/_content_sha256/Report-Materialisierung (Tests gruen); 21501 assembliert (DL089_V3, 156 Trials), Rerun
+>   510bac30. Ursache 2 = Prescreen-uebersprungene Zensuszellen zaehlen als INCOMPLETE_TRIAL (21507, 20266) -> Folgekarte.
+> - Klasse D: 19c9df13 superseded by 89ea5894, 737a2134 superseded (Identitaet neu gebaut), Hold geloest.
+> - Klasse B: nicht deklariert (waere falsch); Folgekarte OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914 (Weg 1 empfohlen:
+>   Winsweep-Ledger als DSR-Suchhistorie + Prescreen-Skip-Regel; Weg 2: Standalone-Q08 retiren). 41472/41473/41474 bleiben
+>   gehalten bis zur Aequivalenz-Bindung.
+> - Reload-Chunk 84 (dsr_cohort-Fixes) haengt an Chunk 83. Ticket 269d5101 RECYCLE (durch die Karte ersetzt).
+> - REVIEW-Drain: 9bbfcad8 (Identitaetsregel AKTIV, 41471/41472 NOT_EQUIVALENT, repair_v2 DEPLOYABLE_AT_CUTOVER; 7c56efc291)
+>   und 9e5db1e9 (Governor v2 Punkte 1-3 ratifiziert, Order-Datei, Punkt 4 korrekt aufs Chart-Attach vertagt; 42bd80f84f)
+>   nach Pruefung APPROVED.
