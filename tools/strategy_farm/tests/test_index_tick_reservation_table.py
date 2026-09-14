@@ -119,3 +119,16 @@ def test_claim_stamp_writes_the_per_symbol_reservation(monkeypatch):
         commit_class=tw.COMMIT_CLASS_SINGLE_INDEX_TICK,
     )
     assert payload2["commit_reservation_gb"] == 44.0  # no item -> flat, byte-for-byte the old stamp
+
+
+def test_two_leg_metal_basket_gets_the_provisional_24gb_class():
+    """2026-09-14: XAUUSD+XAGUSD two-leg baskets were 44 GB heavy only because the two-leg class is FX-only."""
+    item = {"symbol": "QM5_41060_XAU_XAG_WEEKNR7_D1", "ea_id": "QM5_41060", "phase": "Q02"}
+    payload = {"basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"], "basket_symbol_count": 2}
+    cls = tw._multisymbol_commit_class(item, payload, True)
+    assert cls == tw.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_METAL
+    assert tw._commit_reservation_gb(cls) == 24.0
+    # mixed metal/FX or a count mismatch keep the fail-safe class
+    assert tw._multisymbol_commit_class(item, {"basket_symbols": ["XAUUSD.DWX", "EURUSD.DWX"], "basket_symbol_count": 2}, True) == tw.MULTISYMBOL_COMMIT_CLASS_HEAVY
+    assert tw._multisymbol_commit_class(item, {"basket_symbols": ["XAUUSD.DWX", "XAGUSD.DWX"], "basket_symbol_count": 3}, True) == tw.MULTISYMBOL_COMMIT_CLASS_HEAVY
+    assert tw._multisymbol_commit_class(item, {"basket_symbols": ["EURUSD.DWX", "GBPUSD.DWX"], "basket_symbol_count": 2}, True) == tw.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX

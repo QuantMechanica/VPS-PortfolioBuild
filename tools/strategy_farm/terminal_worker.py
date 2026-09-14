@@ -281,6 +281,21 @@ MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX = "two_leg_fx_pair"
 MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX = "multi_leg_fx_basket"
 MULTISYMBOL_COMMIT_CLASS_HEAVY = "heavy_or_unknown_multisymbol"
 MULTISYMBOL_HEAVY_SYMBOL_COUNT = 10
+# 2026-09-14 (Orchestrator, GRUEN; OWNER "kein RAM-Zukauf, Multisymbol laeuft
+# exklusiv"): 76 parked two-leg METAL baskets (XAUUSD+XAGUSD, QM5_410xx
+# XAU_XAG_* D1) fell into the 44 GB heavy fail-safe only because the two-leg
+# class is FX-only.  Ledger evidence for the legs: single-symbol metal
+# Q05-Q09 runs max 12.0 GB (n=5..12), so two metal legs get a PROVISIONAL
+# 24 GB class (2x the measured single-leg max; the measured per-EA path raises
+# it, the reaper stays the backstop).  Everything else (mixed/unknown/10+
+# legs) keeps the 44 GB fail-safe.
+MULTISYMBOL_COMMIT_CLASS_TWO_LEG_METAL = "two_leg_metal_pair"
+MULTISYMBOL_TWO_LEG_METAL_COMMIT_RESERVATION_GB = 24.0
+_METAL_BASES = frozenset({"XAUUSD", "XAGUSD", "XPTUSD", "XPDUSD"})
+
+
+def _is_metal_symbol(symbol: Any) -> bool:
+    return str(symbol or "").strip().upper().split(".", 1)[0] in _METAL_BASES
 # Single-symbol INDEX real-tick jobs are not "ordinary": dense index tick
 # years privately commit far beyond the 8GB ordinary class (metatester64
 # observed at 45.7GB private / 46.8GB WS on SP500 Q02, 2026-08-15). The 44GB
@@ -1135,6 +1150,8 @@ def _multisymbol_commit_class(
                 return MULTISYMBOL_COMMIT_CLASS_HEAVY
             if len(symbols) == 2 and all(_is_fx_symbol(symbol) for symbol in symbols):
                 return MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX
+            if len(symbols) == 2 and all(_is_metal_symbol(symbol) for symbol in symbols):
+                return MULTISYMBOL_COMMIT_CLASS_TWO_LEG_METAL
             if (
                 3 <= len(symbols) < MULTISYMBOL_HEAVY_SYMBOL_COUNT
                 and all(_is_fx_symbol(symbol) for symbol in symbols)
@@ -1160,6 +1177,8 @@ def _commit_reservation_gb(commit_class: str) -> float:
         return OPT_CENSUS_INDEX_CELL_COMMIT_RESERVATION_GB
     if commit_class == MULTISYMBOL_COMMIT_CLASS_TWO_LEG_FX:
         return MULTISYMBOL_TWO_LEG_FX_COMMIT_RESERVATION_GB
+    if commit_class == MULTISYMBOL_COMMIT_CLASS_TWO_LEG_METAL:
+        return MULTISYMBOL_TWO_LEG_METAL_COMMIT_RESERVATION_GB
     if commit_class == MULTISYMBOL_COMMIT_CLASS_MULTI_LEG_FX:
         return MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB
     return MULTISYMBOL_COMMIT_RESERVATION_GB
