@@ -4785,3 +4785,19 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 > Evidenz: `docs/ops/evidence/2026-09-15_q02_q09_hold_followup/README.md`.
 > **Entscheidungsschlange:** (a) QM5_12582 Compile — Triage d9c3f4a8 zuteilen oder frische Authority minten;
 > (b) QM5_10148 + QM5_11476 Q09-Hold-Disposition (RETIRE vs. Rebuild) braucht eine OWNER-Entscheidungs-ID.
+
+> **Nachtrag 15.09. — RESULT Task 67dfadf6 (Q08 sweep-arm context, OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914 "Weg 1"):**
+> **PARTIAL, closeout.** Ticket 8def3323 (re-routed Sonnet-Lane 7d9dd3b5, APPROVED 22:22Z 14.09., commit `cc333007`
+> auf `agents/board-advisor`, noch nicht in `main`) lieferte die Prescreen-Skip-Regel voll datenverifiziert (21507/
+> sell_032, 20266/buy_010 loesen jetzt vor `INCOMPLETE_TRIAL` auf; 4 neue + 79 dsr-Tests gruen). **Die Kernpraemisse
+> von Weg 1 haelt der Datenlage nicht stand:** fuer keine der 9 Zeilen (7 Winsweep-Arme XTIUSD + 41380 bereits per
+> Karte geloest + 2x 12115/XAUUSD) existiert ein versiegeltes `qm.window-sweep.v1`-Ledger, eine `OPT_CENSUS`-Zeile
+> oder eine approved Karte — echte Provenienz ist ein informeller Single-Hypothese-"Diversity-Funnel", keine
+> Sweep-Suche mit rekonstruierbarer Verliererliste. Unabhaengig bestaetigt durch Task 11eff123 (Compile-Pfad fuer
+> 11 verwandte Winsweep-Arme ebenfalls 0/11 kartenblockiert). Ablation-Zeilen 10163/10932: kein Ledger, bleiben
+> `INVALID`, dokumentiert nicht kodiert. Reruns fuer 21507/20266 diesen Zyklus **nicht** ausgeloest — der Fix lebt
+> nur auf `agents/board-advisor`, nicht in `main`, ein Rerun heute wuerde das alte `INCOMPLETE_TRIAL` reproduzieren.
+> Evidenz: `docs/ops/evidence/2026-09-14_q08-sweep-arm-context-20260914_9e6ddd6b_execution.md` (aktualisiert).
+> **Entscheidungsschlange:** (c) Weg 1 fuer die 8 Nicht-41380-Zeilen ist strukturell nicht ausfuehrbar (kein Ledger
+> vorhanden) — Empfehlung: OWNER waehlt jetzt **Weg 2** aus der urspruenglichen Karte (Standalone-Q08 dieser Zeilen
+> `NOT_APPLICABLE` retiren, Bewertung ausschliesslich ueber den Q13/Q14-Programmpfad), da Weg 1 keine Datenbasis hat.
