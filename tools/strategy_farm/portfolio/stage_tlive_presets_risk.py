@@ -65,6 +65,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--out-dir", type=Path, required=True)
     ap.add_argument("--apply", action="store_true", help="write staged files (default: dry-run)")
     ap.add_argument("--json", type=Path, help="write the verification report here")
+    ap.add_argument("--risk-policy", choices=("risk_percent", "cutover-burnin"), default="risk_percent",
+                    help="manifest field carrying the per-sleeve RISK_PERCENT: risk_percent, or cutover-burnin = existing sleeves at weight_risk_percent, is_new_sleeve rows at burn_in_risk_percent (Q16_CHECKLIST_V2 rev 3)")
     args = ap.parse_args(argv)
 
     if args.apply:
@@ -76,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
     # Full-precision risk per (ea_id, bare symbol) — the preset filename carries the bare
     # broker-style symbol (no .DWX), the manifest carries the .DWX form.
     risk: dict[tuple[int, str], float] = {
-        (int(s["ea_id"]), s["symbol"].replace(".DWX", "")): float(s["risk_percent"])
+        (int(s["ea_id"]), s["symbol"].replace(".DWX", "")): float(s["burn_in_risk_percent" if (args.risk_policy == "cutover-burnin" and s.get("is_new_sleeve")) else ("weight_risk_percent" if args.risk_policy == "cutover-burnin" else "risk_percent")])
         for s in manifest["sleeves"]
     }
 
