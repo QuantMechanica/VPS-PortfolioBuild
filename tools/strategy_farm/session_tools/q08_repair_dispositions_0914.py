@@ -73,7 +73,14 @@ def backup() -> tuple[Path, str]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--apply", action="store_true")
+    ap.add_argument("--extra", default="", help="comma-separated extra class-A row prefixes (stale rows found after the frozen plan)")
+    ap.add_argument("--only-extra", action="store_true")
     args = ap.parse_args()
+    global PLAN
+    extra = [{"prefix": x.strip(), "cls": "A", "verdict": "SUPERSEDED_REPAIR", "successor_prefix": None, "release_hold": True,
+              "reason": "stale build identity (predecessor artifact hashes copied before the 2026-09-13 source repairs) on a Q08 row; a fresh Q08 pinned to the current build follows"}
+             for x in args.extra.split(",") if x.strip()]
+    PLAN = extra if args.only_extra else PLAN + extra
     ro = sqlite3.connect(f"file:{DB.as_posix()}?mode=ro", uri=True, timeout=60)
     ro.row_factory = sqlite3.Row
     resolved = []
@@ -99,6 +106,9 @@ def main() -> int:
         return 0
     backup_path, backup_sha = backup()
     applied_at = dt.datetime.now(dt.timezone.utc).isoformat()
+    global RECEIPT
+    if RECEIPT.exists():  # append-only receipts: never overwrite an earlier run
+        RECEIPT = EVID / f"dispositions_receipt_{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
     receipt = {"schema": "qm.q08-context-repair-dispositions/v1", "decision_id": DECISION_ID, "owner_receipt_prefix": OWNER_RECEIPT,
                "router_task_prefix": TASK_ID, "applied_at_utc": applied_at, "backup": {"path": str(backup_path), "sha256": backup_sha}, "rows": []}
     with FactoryMutationLock(LOCK, owner=f"q08-repair-dispositions:{TASK_ID}"):
@@ -108,12 +118,15 @@ def main() -> int:
             conn.execute("BEGIN IMMEDIATE")
             for t, row, succ, hold in resolved:
                 current = conn.execute("SELECT status, verdict, claimed_by FROM work_items WHERE id=?", (row["id"],)).fetchone()
-                if current["status"] != row["status"] or current["verdict"] != row["verdict"] or current["claimed_by"]:
+                if current["status"] != row["status"] or current["verdict"] != row["verdict"] or (current["claimed_by"] or None) != (row["claimed_by"] or None):
                     raise RuntimeError(f"row changed under lock: {row['id']}")
+                if current["claimed_by"] and row["status"] == "active":
+                    raise RuntimeError(f"row is active on {current['claimed_by']}: {row['id']}")
                 disp_id = str(uuid.uuid4())
                 payload = {"schema": "qm.q08-context-repair-disposition/v1", "class": t["cls"], "decision_id": DECISION_ID,
                            "owner_receipt_prefix": OWNER_RECEIPT, "router_task_prefix": TASK_ID, "source_work_item_id": row["id"],
-                           "successor_work_item_id": succ, "verdict_reason": t["reason"], "append_only_disposition": True}
+                           "successor_work_item_id": succ, "verdict_reason": t["reason"], "append_only_disposition": True,
+                           "source_stale_claimed_by": row.get("claimed_by")}
                 conn.execute(
                     """INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,attempt_count,parent_task_id,
                        evidence_path,claimed_by,payload_json,created_at,updated_at,verdict_taxonomy_stored,clean_status_stored,

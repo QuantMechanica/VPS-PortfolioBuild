@@ -32164,10 +32164,21 @@ def enqueue_cascade_backtest_for_ea(
                         "history_detail": p5_history_detail,
                     })
                     continue
+            # 2026-09-14: a row that carries a work_item_supersedes edge is dead
+            # for dispatch (claim order, Q02/Q03/rerun dedupes all exclude it);
+            # the fresh-enqueue dedupe must not resurrect or block on it either
+            # (OWNER-DEC-Q08-CONTEXT-REPAIR-V2: superseded pending Q08 rows kept
+            # their status by the append-only disposition pattern and blocked
+            # every fresh Q08 for the same pair with already_pending_or_active).
             existing = conn.execute(
                 """
                 SELECT * FROM work_items
                 WHERE ea_id=? AND phase=? AND symbol=? AND setfile_path=?
+                  AND lower(COALESCE(kind,''))='backtest'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_supersedes s
+                    WHERE s.work_item_id=work_items.id
+                  )
                 ORDER BY created_at ASC LIMIT 1
                 """,
                 (ea_id, phase, prev["symbol"], prev["setfile_path"]),
@@ -32520,6 +32531,38 @@ def enqueue_cascade_backtest_for_ea(
                     ),
                 })
                 continue
+            # 2026-09-14 (OWNER-DEC-Q08-CONTEXT-REPAIR-V2): a FRESH row inherits the
+            # predecessor's recorded artifact hashes, which go stale when the EA
+            # source is repaired after the predecessor ran (pin/symbol-literal
+            # batches 2026-09-13).  When the operator binds the current EX5 the
+            # fresh row is authenticated and pinned to the CURRENT build exactly
+            # like an append-only rerun (same helper, same payload keys).
+            fresh_bindings: dict[str, Any] | None = None
+            if expected_current_ex5_sha256:
+                bindings_ok, binding_detail = _expected_current_execution_bindings(
+                    prev, expected_current_ex5_sha256
+                )
+                if not bindings_ok:
+                    skipped.append({
+                        "id": str(prev["id"]),
+                        "symbol": prev["symbol"],
+                        **binding_detail,
+                    })
+                    continue
+                fresh_bindings = binding_detail
+                payload.update({
+                    "expected_current_ex5_sha256": fresh_bindings["artifact_sha256"]["expected_ex5_sha256"],
+                    **fresh_bindings["artifact_sha256"],
+                    "expected_symbol": fresh_bindings["expected_symbol"],
+                    "expected_period": fresh_bindings["expected_period"],
+                    "expected_expert": fresh_bindings["expected_expert"],
+                })
+                artifact_identity = dict(payload.get("artifact_identity") or {})
+                artifact_identity.update({
+                    key.removeprefix("expected_"): value
+                    for key, value in fresh_bindings["artifact_sha256"].items()
+                })
+                payload["artifact_identity"] = artifact_identity
             if existing:
                 if phase == _INCUMBENT_PHASE:
                     try:
@@ -32563,7 +32606,13 @@ def enqueue_cascade_backtest_for_ea(
                 requeued.append({"id": existing["id"], "symbol": existing["symbol"]})
                 continue
             if phase == "Q08":
-                _attach_q08_dsr_context(conn, prev, payload)
+                dsr_candidate = dict(prev)
+                if fresh_bindings:
+                    dsr_candidate.update({
+                        key.removeprefix("expected_"): value
+                        for key, value in fresh_bindings["artifact_sha256"].items()
+                    })
+                _attach_q08_dsr_context(conn, dsr_candidate, payload)
             wid = str(uuid.uuid4())
             contract_phase = phase in {
                 _NEWS_PHASE, _NEWS_PORTFOLIO_PHASE, _INCUMBENT_PHASE

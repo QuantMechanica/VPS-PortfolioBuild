@@ -1,0 +1,21 @@
+{
+  "schema": "qm.q08-context-repair-dispositions/v1",
+  "decision_id": "OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914",
+  "owner_receipt_prefix": "3415f6c0",
+  "router_task_prefix": "3ec11996",
+  "applied_at_utc": "2026-09-14T15:57:08.541034+00:00",
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_q08_repair_dispositions_20260914T155649Z_c3d92f1b.sqlite",
+    "sha256": "ad9b5c418a719423ca50158ab2bbde6658e75f517fd24a48a3cda8a8db7a8f9b"
+  },
+  "rows": [
+    {
+      "class": "A",
+      "source": "7c13c506-ea5b-47f9-a124-219f61bbe0d2",
+      "disposition": "291a25dc-fb5e-4199-920d-4a5219efdb76",
+      "superseded_by": "291a25dc-fb5e-4199-920d-4a5219efdb76",
+      "verdict": "SUPERSEDED_REPAIR",
+      "hold_released": 0
+    }
+  ]
+}
