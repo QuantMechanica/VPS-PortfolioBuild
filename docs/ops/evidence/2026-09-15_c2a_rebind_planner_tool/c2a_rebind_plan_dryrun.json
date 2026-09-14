@@ -1,0 +1,1568 @@
+{
+  "schema": "qm.pending-binding-rebind-plan.v1",
+  "mode": "DRY_RUN_ONLY_NOT_APPLIED",
+  "source_plan": "docs\\ops\\evidence\\2026-09-15_artifact_binding_drift_census2\\plan.json",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "cluster": "C2A_COMMITTED_REGENERATION_STALE_BINDING",
+  "c2a_rows_total": 35,
+  "rebind_eligible_count": 35,
+  "entries": [
+    {
+      "work_item_id": "8abafefb-53b8-45a5-992f-32dba3685495",
+      "ea": "QM5_10203",
+      "phase": "Q02",
+      "symbol": "XAUUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10203_tv-actionzone-atr-rev",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10203_tv-actionzone-atr-rev\\QM5_10203_tv-actionzone-atr-rev.ex5",
+          "bound_sha256": "6376e38c668e3eda4c2fbe3f862f2f33496c9d7255cbe4b5462d1753def5f5c5",
+          "current_sha256": "6376e38c668e3eda4c2fbe3f862f2f33496c9d7255cbe4b5462d1753def5f5c5",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10203_tv-actionzone-atr-rev\\QM5_10203_tv-actionzone-atr-rev.mq5",
+          "bound_sha256": "03c56bce49ce6b126888277fc444efcf4a6a0176bf427cea77b030cabd824631",
+          "current_sha256": "f69024c5470c44f4f2e847ce3fba37a67d2704241b4257da7e1a2188b19dd85b",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "3d853ab6b2",
+            "committed_at": "2026-08-17T00:56:19+02:00",
+            "subject": "fix: normalize stop comparisons before modify"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10203_tv-actionzone-atr-rev\\sets\\QM5_10203_tv-actionzone-atr-rev_XAUUSD.DWX_H1_backtest.set",
+          "bound_sha256": "cfe8ec0e7a8b8b0cef1e8e0ac2764d5b5bae9ae76a07a025fa3678dcf3246a5d",
+          "current_sha256": "cfe8ec0e7a8b8b0cef1e8e0ac2764d5b5bae9ae76a07a025fa3678dcf3246a5d",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8abafefb-53b8-45a5-992f-32dba3685495) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "824ca951-5d8d-58c7-adc3-c5b810c5587c",
+      "ea": "QM5_20181",
+      "phase": "Q02",
+      "symbol": "USDJPY.DWX",
+      "hold_code": "FTMO_BOOK3_Q02_ISOLATED_ONLY",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_20181_ftmo-joint-multisym-timer",
+      "bindings": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\QM5_20181_ftmo-joint-multisym-timer.mq5",
+          "bound_sha256": "8c15434a0c1f5f0e76a1777f19977baae8e99439859ae6f5ffd604436c09e0f5",
+          "current_sha256": "952a9484c91634ae0ccf4ef28b5904784df71c41e6ca664792970a497a1d37a0",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "85db6178cd",
+            "committed_at": "2026-07-30T01:18:15+02:00",
+            "subject": "ftmo: bind Book3 full-lifecycle fidelity v2"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\sets\\QM5_20181_ftmo-joint-multisym-timer_USDJPY.DWX_H1_book2_9936_10145.set",
+          "bound_sha256": "3b7a1cdfd7b1836608ee47bfd9bffce939bec97f07badd9813583f9726684ff0",
+          "current_sha256": "891c63fffd4b05a59c68cb760238925ba053bb99b59223e0268dbcf19f39f660",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "85db6178cd",
+            "committed_at": "2026-07-30T01:18:15+02:00",
+            "subject": "ftmo: bind Book3 full-lifecycle fidelity v2"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 824ca951-5d8d-58c7-adc3-c5b810c5587c) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 824ca951-5d8d-58c7-adc3-c5b810c5587c) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "a0d6400a-4f31-5855-a876-e6192e961ecd",
+      "ea": "QM5_20181",
+      "phase": "Q02",
+      "symbol": "USDJPY.DWX",
+      "hold_code": "FTMO_BOOK3_Q02_ISOLATED_ONLY",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_20181_ftmo-joint-multisym-timer",
+      "bindings": {
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\QM5_20181_ftmo-joint-multisym-timer.mq5",
+          "bound_sha256": "8c15434a0c1f5f0e76a1777f19977baae8e99439859ae6f5ffd604436c09e0f5",
+          "current_sha256": "952a9484c91634ae0ccf4ef28b5904784df71c41e6ca664792970a497a1d37a0",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "85db6178cd",
+            "committed_at": "2026-07-30T01:18:15+02:00",
+            "subject": "ftmo: bind Book3 full-lifecycle fidelity v2"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20181_ftmo-joint-multisym-timer\\sets\\QM5_20181_ftmo-joint-multisym-timer_USDJPY.DWX_H1_book3_9936_10145_13108.set",
+          "bound_sha256": "c043caddc02335264ab0e83f99633d23963f538fac32645ee56e26d9a4afa5a7",
+          "current_sha256": "dae20356a85db2d56240021d7091659941ecd5fe1eb4f42e4fca798e0b93ff0f",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "85db6178cd",
+            "committed_at": "2026-07-30T01:18:15+02:00",
+            "subject": "ftmo: bind Book3 full-lifecycle fidelity v2"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id a0d6400a-4f31-5855-a876-e6192e961ecd) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id a0d6400a-4f31-5855-a876-e6192e961ecd) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "8084f025-361f-42cc-9595-55c5d8087f2a",
+      "ea": "QM5_10593",
+      "phase": "Q04",
+      "symbol": "XAUUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10593_mql5-adxhull",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10593_mql5-adxhull\\QM5_10593_mql5-adxhull.ex5",
+          "bound_sha256": "257654bdd298e392e9c41b94bf69f36b2ca09e7c7bb59f8567dc4f809e4f613d",
+          "current_sha256": "257654bdd298e392e9c41b94bf69f36b2ca09e7c7bb59f8567dc4f809e4f613d",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10593_mql5-adxhull\\QM5_10593_mql5-adxhull.mq5",
+          "bound_sha256": "5cc4aadee69a9cbb0127bf3a0ded875ebb57f5cf93cf9368f21645ffb8670ee8",
+          "current_sha256": "959e2e2c86aef788f96c50f5b8afa5310be7816da8264c6342acf0538a92d40b",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "8922c5a1a2",
+            "committed_at": "2026-08-26T04:30:46+02:00",
+            "subject": "fix: repair HMA requalification build guards"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10593_mql5-adxhull\\sets\\QM5_10593_mql5-adxhull_XAUUSD.DWX_H4_backtest.set",
+          "bound_sha256": "ba26730f4afb18a61024866d7ef2886ef01402a5ffdf170f7ec599fc3825cdf6",
+          "current_sha256": "100c352c74ef86b852a155c4242c5c91cbffafef18db8dcfd761d08ecf9d9b15",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1ccbdd4ab0",
+            "committed_at": "2026-08-27T07:13:15+02:00",
+            "subject": "ops: pre-rollout sweep 2026-08-27 (overnight setfile regen wave, registry mintings, public snapshots)"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8084f025-361f-42cc-9595-55c5d8087f2a) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8084f025-361f-42cc-9595-55c5d8087f2a) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "c2ce418a-1597-436e-8420-07d1618cac5e",
+      "ea": "QM5_10649",
+      "phase": "Q04",
+      "symbol": "XAUUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10649_tv-stoch-sltp",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10649_tv-stoch-sltp\\QM5_10649_tv-stoch-sltp.ex5",
+          "bound_sha256": "9761025cec620d64929bb5bdcf4fb5625b88d3c01db08ae722013629230613ac",
+          "current_sha256": "3bb85b8d7726ae975826cf5f578fbbaaa0ea3a8c6f62fdc69f3d1dae822844b0",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "c99b67c8b9",
+            "committed_at": "2026-08-17T01:26:20+02:00",
+            "subject": "fix(ea): complete 8-EA repair battery with cooldown fix, timeframe scaling, and cryptographic evidence"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10649_tv-stoch-sltp\\QM5_10649_tv-stoch-sltp.mq5",
+          "bound_sha256": "6763f343a9173166ce201398bf566d4fac38fe76730dfe9702213f20b4a3627a",
+          "current_sha256": "c9a66aeaa938889188c80040491bd859c8bc926c1e90346ad7f841e56c9f038d",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "92e590b3b8",
+            "committed_at": "2026-08-16T23:52:20+02:00",
+            "subject": "fix(ea-battery): repair and verify 8 blocked EAs from 2026-08-16 battery"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10649_tv-stoch-sltp\\sets\\QM5_10649_tv-stoch-sltp_XAUUSD.DWX_M15_backtest.set",
+          "bound_sha256": "6a4a6f92837f459d4af32879e475409cdfb5977e8aafd8a4723e07f1a53f05a6",
+          "current_sha256": "867c292fc64fbd256c053fbcfa8d17377eb0f46e569bc9a5f10cdecca01367c8",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "c99b67c8b9",
+            "committed_at": "2026-08-17T01:26:20+02:00",
+            "subject": "fix(ea): complete 8-EA repair battery with cooldown fix, timeframe scaling, and cryptographic evidence"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id c2ce418a-1597-436e-8420-07d1618cac5e --expected-current-ex5-sha256 3bb85b8d7726ae975826cf5f578fbbaaa0ea3a8c6f62fdc69f3d1dae822844b0 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id c2ce418a-1597-436e-8420-07d1618cac5e) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id c2ce418a-1597-436e-8420-07d1618cac5e) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "48f156eb-87b1-4d39-b18d-f8c9914cb2c5",
+      "ea": "QM5_1443",
+      "phase": "Q04",
+      "symbol": "EURUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_1443_demark-td-lines-h4",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1443_demark-td-lines-h4\\QM5_1443_demark-td-lines-h4.ex5",
+          "bound_sha256": "0aab4cb3b783463ba7eead4251d9a8710bf5c07ed15e50230c82213ecec13d8f",
+          "current_sha256": "0aab4cb3b783463ba7eead4251d9a8710bf5c07ed15e50230c82213ecec13d8f",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1443_demark-td-lines-h4\\QM5_1443_demark-td-lines-h4.mq5",
+          "bound_sha256": "a3069dc4f27bbf79adb499a608d51e564ef8e09dce3398a7c5ab3e92ed8d7708",
+          "current_sha256": "b4d7a68e984b3a40de3ef28037649a5933abfdcb474ba39854899489f05ee442",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "3d853ab6b2",
+            "committed_at": "2026-08-17T00:56:19+02:00",
+            "subject": "fix: normalize stop comparisons before modify"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_1443_demark-td-lines-h4\\sets\\QM5_1443_demark-td-lines-h4_EURUSD.DWX_H4_backtest.set",
+          "bound_sha256": "e932bf68a7051ac06000aeec6ed5bc548a6707bd62106b154d4d352c88f82e49",
+          "current_sha256": "e932bf68a7051ac06000aeec6ed5bc548a6707bd62106b154d4d352c88f82e49",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 48f156eb-87b1-4d39-b18d-f8c9914cb2c5) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "8322d8c7-5c40-49d7-b8c9-84cbf100d102",
+      "ea": "QM5_33007",
+      "phase": "Q02",
+      "symbol": "SP500.DWX",
+      "hold_code": "REVIEW_FAIL_PIPELINE_ENTRY_BLOCKED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_33007_george-pruitt-king-keltner-trend-buster",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_33007_george-pruitt-king-keltner-trend-buster\\QM5_33007_george-pruitt-king-keltner-trend-buster.ex5",
+          "bound_sha256": "5bca9db2ae469ea0112da9483ac7bcb3358d8834b910a346b0de657eafd314a0",
+          "current_sha256": "5ea0a2defa9a339ab5f6f1e1e1d46657b582ed7167ce719fb8316e37e845e4d3",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "d8edc18a2e",
+            "committed_at": "2026-08-24T14:46:51+02:00",
+            "subject": "rework(33007): restore card risk and entry gating"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_33007_george-pruitt-king-keltner-trend-buster\\QM5_33007_george-pruitt-king-keltner-trend-buster.mq5",
+          "bound_sha256": "e304aa0a0bdf3380911349cdb2e0b1c546e9f43a7649aa46080b9cf5c3af6b74",
+          "current_sha256": "58a549b3c0a3a004bf1017b10a0bdede635af9b27243536b53666a2b6f772e99",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "d8edc18a2e",
+            "committed_at": "2026-08-24T14:46:51+02:00",
+            "subject": "rework(33007): restore card risk and entry gating"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_33007_george-pruitt-king-keltner-trend-buster\\sets\\QM5_33007_george-pruitt-king-keltner-trend-buster_SP500.DWX_H4_backtest.set",
+          "bound_sha256": "fbcde36d51ce42a6121661d6718123e47d530a2dc17c7e229811b20f691c5d71",
+          "current_sha256": "38f532600d6ec5c0577742aaa25a2cd9ad4ba4e0223d84c3f822de48ac666e77",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "d8edc18a2e",
+            "committed_at": "2026-08-24T14:46:51+02:00",
+            "subject": "rework(33007): restore card risk and entry gating"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id 8322d8c7-5c40-49d7-b8c9-84cbf100d102 --expected-current-ex5-sha256 5ea0a2defa9a339ab5f6f1e1e1d46657b582ed7167ce719fb8316e37e845e4d3 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8322d8c7-5c40-49d7-b8c9-84cbf100d102) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8322d8c7-5c40-49d7-b8c9-84cbf100d102) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "61f887b7-2b73-4471-ab36-0944b65dedfb",
+      "ea": "QM5_35005",
+      "phase": "Q02",
+      "symbol": "EURJPY.DWX",
+      "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_35005_sma-crossover-pullback-system",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.ex5",
+          "bound_sha256": "28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59",
+          "current_sha256": "28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.mq5",
+          "bound_sha256": "deb2750e74c65a7cfe518844a6ca423df52e1fd0eed87d1862d2d106e1050d00",
+          "current_sha256": "8c5457fc7cc7b10af168f89089b7320a5118d43078f87ed73232de18bbe0d4fc",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "82755f48a6",
+            "committed_at": "2026-08-24T13:54:45+02:00",
+            "subject": "rework(35005): repair card fidelity and compile handoff"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_EURJPY.DWX_H1_backtest.set",
+          "bound_sha256": "f32d8afb74de6c7549cad0a16a57f9d416ea0d2ffa6a0ac0ed04eef0b7ad95c9",
+          "current_sha256": "5eb4dbf5c24040bf983933394eff5a09ae0b1ea38796c077fa918847fbb7d39c",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1ccbdd4ab0",
+            "committed_at": "2026-08-27T07:13:15+02:00",
+            "subject": "ops: pre-rollout sweep 2026-08-27 (overnight setfile regen wave, registry mintings, public snapshots)"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 61f887b7-2b73-4471-ab36-0944b65dedfb) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 61f887b7-2b73-4471-ab36-0944b65dedfb) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "62156a75-50ce-4679-bce2-6127615cd89d",
+      "ea": "QM5_35005",
+      "phase": "Q02",
+      "symbol": "EURUSD.DWX",
+      "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_35005_sma-crossover-pullback-system",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.ex5",
+          "bound_sha256": "28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59",
+          "current_sha256": "28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.mq5",
+          "bound_sha256": "deb2750e74c65a7cfe518844a6ca423df52e1fd0eed87d1862d2d106e1050d00",
+          "current_sha256": "8c5457fc7cc7b10af168f89089b7320a5118d43078f87ed73232de18bbe0d4fc",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "82755f48a6",
+            "committed_at": "2026-08-24T13:54:45+02:00",
+            "subject": "rework(35005): repair card fidelity and compile handoff"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_EURUSD.DWX_H1_backtest.set",
+          "bound_sha256": "68ca01123b85ff77cacfc69bc641c4378deee8a66bffbb3239f451bb589c397a",
+          "current_sha256": "bbc838facbd272824da0134aadc81cee5704989d63c8bbf42c2465ca0e16f4b4",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1ccbdd4ab0",
+            "committed_at": "2026-08-27T07:13:15+02:00",
+            "subject": "ops: pre-rollout sweep 2026-08-27 (overnight setfile regen wave, registry mintings, public snapshots)"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 62156a75-50ce-4679-bce2-6127615cd89d) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 62156a75-50ce-4679-bce2-6127615cd89d) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "869ea74a-dec7-4542-a583-bea9c719a6d4",
+      "ea": "QM5_35004",
+      "phase": "Q02",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_35004_babypips-asian-box-london-breakout",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.ex5",
+          "bound_sha256": "d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70",
+          "current_sha256": "d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.mq5",
+          "bound_sha256": "7a8c80c5878c32528c1cce2396d988394f5add9ef806f724e694df21cde535a8",
+          "current_sha256": "e64d26cb59200572fb64a4b1bf4203c80e2bc640c2284afbfc429e368392622c",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "40d335473d",
+            "committed_at": "2026-08-24T13:41:08+02:00",
+            "subject": "rework(35004): restore realized loss and sticky close"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_GBPUSD.DWX_M15_backtest.set",
+          "bound_sha256": "982852da998995b9309354591168b0cc574776ecb5e3ff039c2a3fc76b2f86c9",
+          "current_sha256": "fc18d6cd751c2fd4ca2c0df05c455697b5cda035e71cfdbed3ed271f1eafcca7",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "dadd8203be",
+            "committed_at": "2026-08-23T13:27:26+02:00",
+            "subject": "build(ea): stamp build_hash in setfiles and record build identity packets"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 869ea74a-dec7-4542-a583-bea9c719a6d4) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 869ea74a-dec7-4542-a583-bea9c719a6d4) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "87cbb87c-b6d1-4259-ac70-69dc29459cf7",
+      "ea": "QM5_35004",
+      "phase": "Q02",
+      "symbol": "USDCHF.DWX",
+      "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_35004_babypips-asian-box-london-breakout",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.ex5",
+          "bound_sha256": "d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70",
+          "current_sha256": "d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.mq5",
+          "bound_sha256": "7a8c80c5878c32528c1cce2396d988394f5add9ef806f724e694df21cde535a8",
+          "current_sha256": "e64d26cb59200572fb64a4b1bf4203c80e2bc640c2284afbfc429e368392622c",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "40d335473d",
+            "committed_at": "2026-08-24T13:41:08+02:00",
+            "subject": "rework(35004): restore realized loss and sticky close"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_USDCHF.DWX_M15_backtest.set",
+          "bound_sha256": "e4ccfbd8211e68e9fc0355d3849bc9d843bb905ce5aa4000a34d5d266a2e443f",
+          "current_sha256": "ab095abf1e7e9c6d1a7a32ec110bfc085a6cbd252f143980000922b7649e105a",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "dadd8203be",
+            "committed_at": "2026-08-23T13:27:26+02:00",
+            "subject": "build(ea): stamp build_hash in setfiles and record build identity packets"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 87cbb87c-b6d1-4259-ac70-69dc29459cf7) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 87cbb87c-b6d1-4259-ac70-69dc29459cf7) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "8d9f6d2a-cbf1-438e-9b70-ab6089eb4bec",
+      "ea": "QM5_35004",
+      "phase": "Q02",
+      "symbol": "EURUSD.DWX",
+      "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_35004_babypips-asian-box-london-breakout",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.ex5",
+          "bound_sha256": "d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70",
+          "current_sha256": "d90ab915cd2642632fc122a381cf3aabc85d77a4118a7ce70f7880a3e62b6e70",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\QM5_35004_babypips-asian-box-london-breakout.mq5",
+          "bound_sha256": "7a8c80c5878c32528c1cce2396d988394f5add9ef806f724e694df21cde535a8",
+          "current_sha256": "e64d26cb59200572fb64a4b1bf4203c80e2bc640c2284afbfc429e368392622c",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "40d335473d",
+            "committed_at": "2026-08-24T13:41:08+02:00",
+            "subject": "rework(35004): restore realized loss and sticky close"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35004_babypips-asian-box-london-breakout\\sets\\QM5_35004_babypips-asian-box-london-breakout_EURUSD.DWX_M15_backtest.set",
+          "bound_sha256": "418ea9a8b4297175ebf887ee4a540228e718b0f76ed34ac736e9775410a4ce24",
+          "current_sha256": "fbaa1e7d1b41fa257000607cc41c49b7cac96f3b51e12ad0f8a55c879a77b450",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "dadd8203be",
+            "committed_at": "2026-08-23T13:27:26+02:00",
+            "subject": "build(ea): stamp build_hash in setfiles and record build identity packets"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8d9f6d2a-cbf1-438e-9b70-ab6089eb4bec) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8d9f6d2a-cbf1-438e-9b70-ab6089eb4bec) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "ee0914f4-cede-4007-9b5b-8fb64bddaa53",
+      "ea": "QM5_35005",
+      "phase": "Q02",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": "REVIEW_NOT_COMPLETED_PIPELINE_ENTRY_BLOCKED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_35005_sma-crossover-pullback-system",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.ex5",
+          "bound_sha256": "28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59",
+          "current_sha256": "28ef9a97341ab09666f4b8ac6a817bbdabe806c968fbc96279a0e1be0b2fbd59",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\QM5_35005_sma-crossover-pullback-system.mq5",
+          "bound_sha256": "deb2750e74c65a7cfe518844a6ca423df52e1fd0eed87d1862d2d106e1050d00",
+          "current_sha256": "8c5457fc7cc7b10af168f89089b7320a5118d43078f87ed73232de18bbe0d4fc",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "82755f48a6",
+            "committed_at": "2026-08-24T13:54:45+02:00",
+            "subject": "rework(35005): repair card fidelity and compile handoff"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_35005_sma-crossover-pullback-system\\sets\\QM5_35005_sma-crossover-pullback-system_GBPUSD.DWX_H1_backtest.set",
+          "bound_sha256": "52e84426f3b6299498bb668d6f9a148b72f0f13932fe961d37773ee138489cab",
+          "current_sha256": "47c462253ba849d42739aa64a9ca3f4aafff4515b5c271f811d2ff708bed82ba",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1ccbdd4ab0",
+            "committed_at": "2026-08-27T07:13:15+02:00",
+            "subject": "ops: pre-rollout sweep 2026-08-27 (overnight setfile regen wave, registry mintings, public snapshots)"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id ee0914f4-cede-4007-9b5b-8fb64bddaa53) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id ee0914f4-cede-4007-9b5b-8fb64bddaa53) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "256846e2-edce-4354-a346-0a428dafcc1b",
+      "ea": "QM5_20096",
+      "phase": "Q02",
+      "symbol": "USDCHF.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_20096_ha-stoch-h4-swing",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20096_ha-stoch-h4-swing\\QM5_20096_ha-stoch-h4-swing.ex5",
+          "bound_sha256": "531e8e75094cc5756de7326d0efdb6d51ad0578f10b7f3fb22832ce8cd8dc3a9",
+          "current_sha256": "4a60bfcdbae583c3413902a7eb7ad901e1cc03a18d55860ff9b0d3ecee334d2f",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "4211595868",
+            "committed_at": "2026-08-21T16:44:38+02:00",
+            "subject": "fix(QM5_20096): preserve rebuilt binary identity"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20096_ha-stoch-h4-swing\\QM5_20096_ha-stoch-h4-swing.mq5",
+          "bound_sha256": "052f50a55e71f258e43861571c6a8fd7d7324cbe83ee5d3498e3889536e348f7",
+          "current_sha256": "052f50a55e71f258e43861571c6a8fd7d7324cbe83ee5d3498e3889536e348f7",
+          "classification": "OK"
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20096_ha-stoch-h4-swing\\sets\\QM5_20096_ha-stoch-h4-swing_USDCHF.DWX_H4_backtest.set",
+          "bound_sha256": "c915f899627ac7160506dce95d1b5d84af2570b29476ef0bec16e714aec9d7cb",
+          "current_sha256": "3a305baf207c9dd31c0fa06f468e40ee244139d1fe3d98b67961b99ff3c9b3c3",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "4211595868",
+            "committed_at": "2026-08-21T16:44:38+02:00",
+            "subject": "fix(QM5_20096): preserve rebuilt binary identity"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id 256846e2-edce-4354-a346-0a428dafcc1b --expected-current-ex5-sha256 4a60bfcdbae583c3413902a7eb7ad901e1cc03a18d55860ff9b0d3ecee334d2f --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 256846e2-edce-4354-a346-0a428dafcc1b) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "7dd70134-a2a0-4ecf-a706-5f4609a094be",
+      "ea": "QM5_10717",
+      "phase": "Q02",
+      "symbol": "FX8_BASKET_D1",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10717_edgelab-xsec-fx-momentum",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\QM5_10717_edgelab-xsec-fx-momentum.ex5",
+          "bound_sha256": "72c118b0a30fc32d0b6bcf921a632bfd8175048431b0547b87f249b841053f0a",
+          "current_sha256": "3d5680d0022df60ca523630822515e5f1cf86a2e7bc4d512eda45065cb8ce463",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "bcc7d5a62a",
+            "committed_at": "2026-09-02T07:57:35+02:00",
+            "subject": "build(QM5_10717): bind governed basket binary"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\QM5_10717_edgelab-xsec-fx-momentum.mq5",
+          "bound_sha256": "1fa4d2fdceaba1fb727ca5d8962964be400490a9546fcb77a8b8579d345e9f7e",
+          "current_sha256": "0278b5ddef713e76617c4ae4bc9c97b21217e88578e36a1a09d5ebe10faef970",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "ad052b8b1b",
+            "committed_at": "2026-09-02T07:27:57+02:00",
+            "subject": "fix(QM5_10717): bind basket helper compile repair"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10717_edgelab-xsec-fx-momentum\\sets\\QM5_10717_edgelab-xsec-fx-momentum_FX8_BASKET_D1_D1_backtest.set",
+          "bound_sha256": "4d34f1a3ab50cee7154f979977428e8462b5a9d3ab0f84c41be3b453dc81087c",
+          "current_sha256": "e6cf041bce7de65c935edbeab71bd5c5e6f6524dcbc5732f280ad3ad3684548b",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "bcc7d5a62a",
+            "committed_at": "2026-09-02T07:57:35+02:00",
+            "subject": "build(QM5_10717): bind governed basket binary"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id 7dd70134-a2a0-4ecf-a706-5f4609a094be --expected-current-ex5-sha256 3d5680d0022df60ca523630822515e5f1cf86a2e7bc4d512eda45065cb8ce463 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 7dd70134-a2a0-4ecf-a706-5f4609a094be) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 7dd70134-a2a0-4ecf-a706-5f4609a094be) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "c65a8b39-224e-431a-a9ea-e54161686b94",
+      "ea": "QM5_10718",
+      "phase": "Q03",
+      "symbol": "USDCHF.DWX",
+      "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10718_edgelab-regime-filtered-carry",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10718_edgelab-regime-filtered-carry\\QM5_10718_edgelab-regime-filtered-carry.ex5",
+          "bound_sha256": "0f1ec072c7c91376755cdaca64949097f9bb64f58aabcca317efbde41d185b4e",
+          "current_sha256": "10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "ba5a522e20",
+            "committed_at": "2026-09-02T03:49:16+02:00",
+            "subject": "fx: rebuild QM5_10718 basket for Q02"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10718_edgelab-regime-filtered-carry\\QM5_10718_edgelab-regime-filtered-carry.mq5",
+          "bound_sha256": "a1c670d39169670420e4b75a832e94003a74a8551bb04986d51779d13e0d9e1b",
+          "current_sha256": "92fa06a272aa4805e31c6caac4f1ad9feeaf91fec18c349a616bf2cae00f8f00",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "ba5a522e20",
+            "committed_at": "2026-09-02T03:49:16+02:00",
+            "subject": "fx: rebuild QM5_10718 basket for Q02"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10718_edgelab-regime-filtered-carry\\sets\\QM5_10718_edgelab-regime-filtered-carry_USDCHF.DWX_D1_backtest.set",
+          "bound_sha256": "8015e69d86292dcee413b89e0b54262bd61a741659824c136cdbe18aacb3b020",
+          "current_sha256": "0fada056ff5be3ccc2629bf078cf785aaac6096911595c4d35db5315d3037ab1",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "ba5a522e20",
+            "committed_at": "2026-09-02T03:49:16+02:00",
+            "subject": "fx: rebuild QM5_10718 basket for Q02"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id c65a8b39-224e-431a-a9ea-e54161686b94 --expected-current-ex5-sha256 10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id c65a8b39-224e-431a-a9ea-e54161686b94) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id c65a8b39-224e-431a-a9ea-e54161686b94) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "0be0a1d1-6aa2-4d1b-ae24-50a6c21b93a9",
+      "ea": "QM5_10269",
+      "phase": "Q02",
+      "symbol": "NDX.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10269_gawd-wma30-trend",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\QM5_10269_gawd-wma30-trend.ex5",
+          "bound_sha256": "13e0f1e170447b6a951a19f617b8f8534337bc428219467d48f0d7a57cb8680c",
+          "current_sha256": "284d46702d34032f95322197fed9295d6e4296ffd387da49c5aa76b7961aecf6",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "7c3914b9ca",
+            "committed_at": "2026-09-10T15:30:41+02:00",
+            "subject": "build(fx): compile QM5_10269 recovery"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\QM5_10269_gawd-wma30-trend.mq5",
+          "bound_sha256": "2799f17f978586bc37ada65ed33e18d31629122e193c4ff9136f3f53e1ca665a",
+          "current_sha256": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "f3a32bf9ab",
+            "committed_at": "2026-09-08T20:14:41+02:00",
+            "subject": "farm: repair QM5_10269 stale resolver build"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\sets\\QM5_10269_gawd-wma30-trend_NDX.DWX_D1_backtest.set",
+          "bound_sha256": "ff235ce456cea3bd6b4d5a9b84c3c7b6cd15d6e26dff8fd666fb984330c75d80",
+          "current_sha256": "980070777d3e6259e9d5737492da72c6e1ea9c9c31105d4590745d886dc26529",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "7c3914b9ca",
+            "committed_at": "2026-09-10T15:30:41+02:00",
+            "subject": "build(fx): compile QM5_10269 recovery"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id 0be0a1d1-6aa2-4d1b-ae24-50a6c21b93a9 --expected-current-ex5-sha256 284d46702d34032f95322197fed9295d6e4296ffd387da49c5aa76b7961aecf6 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 0be0a1d1-6aa2-4d1b-ae24-50a6c21b93a9) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 0be0a1d1-6aa2-4d1b-ae24-50a6c21b93a9) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "64604d7a-9bbe-561c-a70c-44667cdb2e12",
+      "ea": "QM5_10706",
+      "phase": "Q14",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": null,
+      "held": false,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10706_tv-mon-ls",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "bound_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "current_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "bound_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+          "current_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "2a7647ae9d",
+            "committed_at": "2026-09-13T23:13:32+02:00",
+            "subject": "fix(10706): BE-lock wrong-side-of-market guard + correct storm root cause (9f0923ef)"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "bound_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d",
+          "current_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 64604d7a-9bbe-561c-a70c-44667cdb2e12) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "f81a14df-14ef-5f15-b808-d19b8c13348c",
+      "ea": "QM5_11421",
+      "phase": "Q14",
+      "symbol": "EURUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+          "bound_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "current_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "bound_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "current_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "a6efbc5887",
+            "committed_at": "2026-09-08T12:07:43+02:00",
+            "subject": "feat(console): preserve tested Design 2 renderer and release evidence"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "bound_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "current_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id f81a14df-14ef-5f15-b808-d19b8c13348c) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "2dad5730-30ed-5ab1-ace1-d5db4ede60db",
+      "ea": "QM5_10706",
+      "phase": "Q12",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": "Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10706_tv-mon-ls",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "bound_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "current_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "bound_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+          "current_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "2a7647ae9d",
+            "committed_at": "2026-09-13T23:13:32+02:00",
+            "subject": "fix(10706): BE-lock wrong-side-of-market guard + correct storm root cause (9f0923ef)"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+          "bound_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+          "current_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 2dad5730-30ed-5ab1-ace1-d5db4ede60db) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "cbfb5a62-9a53-43a4-a98e-cb13a730a001",
+      "ea": "QM5_20202",
+      "phase": "Q03",
+      "symbol": "QM5_20202_XAU_XAG_REV18_D1",
+      "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_20202_xauxag-rev18",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20202_xauxag-rev18\\QM5_20202_xauxag-rev18.ex5",
+          "bound_sha256": "fe08254102474401c7be42c596d65e6f5483476a7262952ee3e9f20c6ad59861",
+          "current_sha256": "b650ad829dac2abb18eb52fce7f6443596753d5cd795073148390f6bda9b8d9a",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "e07f93a923",
+            "committed_at": "2026-09-08T12:07:58+02:00",
+            "subject": "build: integrate receipt-bound EAs and quarantine 13 unbound binaries"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20202_xauxag-rev18\\QM5_20202_xauxag-rev18.mq5",
+          "bound_sha256": "30c90265641d4e4c2585e0977826b26b9ba28f59f9c9e3e8cc835c21d6e20b9d",
+          "current_sha256": "62e321cd35d115dcdfe6ce3ec2dbe09e7f73cf6e23399586aa774d8c70a39346",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "df8310c0a7",
+            "committed_at": "2026-09-06T16:47:53+02:00",
+            "subject": "fix: repair framework input pins wave 2"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20202_xauxag-rev18\\sets\\QM5_20202_xauxag-rev18_QM5_20202_XAU_XAG_REV18_D1_D1_backtest.set",
+          "bound_sha256": "0f024338c8024a48a6cf6cfaa2a92f95b4e82d76722b9291e10b214528b6e973",
+          "current_sha256": "09c5c020519e6985bceb7090003940fac0d56535b2f816959e96c812767c2e5d",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1de542e477",
+            "committed_at": "2026-09-08T12:07:49+02:00",
+            "subject": "chore(research): preserve pending EA implementations and test recipes"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id cbfb5a62-9a53-43a4-a98e-cb13a730a001 --expected-current-ex5-sha256 b650ad829dac2abb18eb52fce7f6443596753d5cd795073148390f6bda9b8d9a --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id cbfb5a62-9a53-43a4-a98e-cb13a730a001) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id cbfb5a62-9a53-43a4-a98e-cb13a730a001) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "c5ff6aa2-b0e1-4e96-9d4e-71123d832591",
+      "ea": "QM5_20275",
+      "phase": "Q03",
+      "symbol": "QM5_20275_XAU_XAG_RUNFADE_D1",
+      "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_20275_gsr-runfade",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20275_gsr-runfade\\QM5_20275_gsr-runfade.ex5",
+          "bound_sha256": "0b91aa559f19500f602eb584ee5135ba27ba735d0a13dd702aafe09a05d253cb",
+          "current_sha256": "5583f594d0d0bf2358c965194a84ff58e2f71f630643a08324c43372c900c2a0",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "e07f93a923",
+            "committed_at": "2026-09-08T12:07:58+02:00",
+            "subject": "build: integrate receipt-bound EAs and quarantine 13 unbound binaries"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20275_gsr-runfade\\QM5_20275_gsr-runfade.mq5",
+          "bound_sha256": "c895b2f70a9610f24f8fa9b0a07f085965fb81b71412a701a860856f967b9bc7",
+          "current_sha256": "d079a78ce03718a34779711286a88ca82a9bb7a7a58efa1eedad8d82266b28b7",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "df8310c0a7",
+            "committed_at": "2026-09-06T16:47:53+02:00",
+            "subject": "fix: repair framework input pins wave 2"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20275_gsr-runfade\\sets\\QM5_20275_gsr-runfade_QM5_20275_XAU_XAG_RUNFADE_D1_D1_backtest.set",
+          "bound_sha256": "6a5762945fe0a2f1418cc23e784085672d2a672d0d8d1ff0cc7b52d526c34e88",
+          "current_sha256": "3068ea01066f39a54ec81011183c6d16f206dfb3ecdc3d2bd0ed3c327c5526d1",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1de542e477",
+            "committed_at": "2026-09-08T12:07:49+02:00",
+            "subject": "chore(research): preserve pending EA implementations and test recipes"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id c5ff6aa2-b0e1-4e96-9d4e-71123d832591 --expected-current-ex5-sha256 5583f594d0d0bf2358c965194a84ff58e2f71f630643a08324c43372c900c2a0 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id c5ff6aa2-b0e1-4e96-9d4e-71123d832591) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id c5ff6aa2-b0e1-4e96-9d4e-71123d832591) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "3815515b-db22-439c-8603-a988b0bf0867",
+      "ea": "QM5_10700",
+      "phase": "Q07",
+      "symbol": "XAUUSD.DWX",
+      "hold_code": "AWAITING_OWNER_RECOMPILE_DECISION",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10700_tv-liq-break",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.ex5",
+          "bound_sha256": "0126116d7ffa2b4a952a4962c8035973e11c57bdd423076ee6080458d6c438d8",
+          "current_sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "e07f93a923",
+            "committed_at": "2026-09-08T12:07:58+02:00",
+            "subject": "build: integrate receipt-bound EAs and quarantine 13 unbound binaries"
+          }
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.mq5",
+          "bound_sha256": "26bfd4db75876aed3ccadc5d1d3dad0477b794e057721d230181b1ac730378b5",
+          "current_sha256": "064d670b736e5125a1def88c10ba00f68fc43253ee904b3d82168d8e2380b850",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "5afa209e41",
+            "committed_at": "2026-09-03T05:05:48+02:00",
+            "subject": "fix(ea): framework-corset repairs for the pre-0803 recompile batch 1 (11910, 10700, 12710)"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+          "bound_sha256": "c66b07bd369b6847b88859aacd1ae2f8484c9b8ee9445480494c897fbeb56bb6",
+          "current_sha256": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1de542e477",
+            "committed_at": "2026-09-08T12:07:49+02:00",
+            "subject": "chore(research): preserve pending EA implementations and test recipes"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id 3815515b-db22-439c-8603-a988b0bf0867 --expected-current-ex5-sha256 5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 3815515b-db22-439c-8603-a988b0bf0867) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 3815515b-db22-439c-8603-a988b0bf0867) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "19761d0c-3877-587d-a5cd-a8e48291cdf7",
+      "ea": "QM5_11421",
+      "phase": "Q12",
+      "symbol": "EURUSD.DWX",
+      "hold_code": "Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+          "bound_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "current_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "bound_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "current_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "a6efbc5887",
+            "committed_at": "2026-09-08T12:07:43+02:00",
+            "subject": "feat(console): preserve tested Design 2 renderer and release evidence"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "bound_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "current_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 19761d0c-3877-587d-a5cd-a8e48291cdf7) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "00cf2ac1-4083-4c6b-9de5-d14e841b411e",
+      "ea": "QM5_41359",
+      "phase": "Q02",
+      "symbol": "QM5_41359_XTI_XNG_WACCEL_RV_D1",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_41359_xtixng-waccel-rv",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\QM5_41359_xtixng-waccel-rv.ex5",
+          "bound_sha256": "d6b2720bdfdd6c5bcb02c98105bc1658b8b1ee3f163de666dd6aa34509962c10",
+          "current_sha256": "37f412e01997347f8a252209088cd68b51877c5cc4b9b87391735b50ded91b3e",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "e07f93a923",
+            "committed_at": "2026-09-08T12:07:58+02:00",
+            "subject": "build: integrate receipt-bound EAs and quarantine 13 unbound binaries"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41359_xtixng-waccel-rv\\sets\\QM5_41359_xtixng-waccel-rv_QM5_41359_XTI_XNG_WACCEL_RV_D1_D1_backtest.set",
+          "bound_sha256": "389359663ae529f3e884122e9d2c583f6ae968ef68b5e1a988eb61830693bedc",
+          "current_sha256": "e7848c86c8682a4208455f6de975a99e89cc85d8964f271ad5fd1d5b53dc7488",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1de542e477",
+            "committed_at": "2026-09-08T12:07:49+02:00",
+            "subject": "chore(research): preserve pending EA implementations and test recipes"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id 00cf2ac1-4083-4c6b-9de5-d14e841b411e --expected-current-ex5-sha256 37f412e01997347f8a252209088cd68b51877c5cc4b9b87391735b50ded91b3e --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 00cf2ac1-4083-4c6b-9de5-d14e841b411e) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "8f4c4610-bbe8-4de3-aa83-c433e9b6145e",
+      "ea": "QM5_41360",
+      "phase": "Q02",
+      "symbol": "QM5_41360_XTI_XNG_WRETR_RV_D1",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_41360_xtixng-wretr-rv",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\QM5_41360_xtixng-wretr-rv.ex5",
+          "bound_sha256": "a866080dbbfca28287ee0e16571844a096542adda9709e173fce911bef1c6c94",
+          "current_sha256": "31969bc7352cf8d3c329525d38b0b549e5ba889feba66e488f1f20a80a8a51c5",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "e07f93a923",
+            "committed_at": "2026-09-08T12:07:58+02:00",
+            "subject": "build: integrate receipt-bound EAs and quarantine 13 unbound binaries"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41360_xtixng-wretr-rv\\sets\\QM5_41360_xtixng-wretr-rv_QM5_41360_XTI_XNG_WRETR_RV_D1_D1_backtest.set",
+          "bound_sha256": "a5a16ae6db32d33c258ae7042653240c2c4334cba983306aa962ac30ea8af987",
+          "current_sha256": "22b6e0eaa504c0279531f60c678ef34c068a575843c019e8b4f15fae07a935ff",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1de542e477",
+            "committed_at": "2026-09-08T12:07:49+02:00",
+            "subject": "chore(research): preserve pending EA implementations and test recipes"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id 8f4c4610-bbe8-4de3-aa83-c433e9b6145e --expected-current-ex5-sha256 31969bc7352cf8d3c329525d38b0b549e5ba889feba66e488f1f20a80a8a51c5 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 8f4c4610-bbe8-4de3-aa83-c433e9b6145e) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "ecc8e269-5a19-4cda-8c4e-0906d4f93791",
+      "ea": "QM5_41361",
+      "phase": "Q02",
+      "symbol": "QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_41361_xtixng-commonshock-rv",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\QM5_41361_xtixng-commonshock-rv.ex5",
+          "bound_sha256": "8f770e63c532e13991818b1b6f2f0924f5c8725b98b2ff53da0a9b0d22e3d3ea",
+          "current_sha256": "c864cf1e284c770f32442102fafec91c114a9cf70c1a7da5f34f2109b9491704",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "e07f93a923",
+            "committed_at": "2026-09-08T12:07:58+02:00",
+            "subject": "build: integrate receipt-bound EAs and quarantine 13 unbound binaries"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41361_xtixng-commonshock-rv\\sets\\QM5_41361_xtixng-commonshock-rv_QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1_D1_backtest.set",
+          "bound_sha256": "21ccfa90d993c32b28421795438713f0047c2ee7f3efa0bc5119e700dec9e36a",
+          "current_sha256": "d06919ec5d8be3d8eb207a6ed588bd72274b1935e241c0426731070f83cdb326",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1de542e477",
+            "committed_at": "2026-09-08T12:07:49+02:00",
+            "subject": "chore(research): preserve pending EA implementations and test recipes"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id ecc8e269-5a19-4cda-8c4e-0906d4f93791 --expected-current-ex5-sha256 c864cf1e284c770f32442102fafec91c114a9cf70c1a7da5f34f2109b9491704 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id ecc8e269-5a19-4cda-8c4e-0906d4f93791) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "a126c45e-3153-4c9f-a35b-67f153d8d709",
+      "ea": "QM5_41362",
+      "phase": "Q02",
+      "symbol": "QM5_41362_XTI_XNG_WDECEL_CONT_D1",
+      "hold_code": "ARTIFACT_BINDING_SOURCE_SET_UNRECOVERABLE",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_41362_xtixng-wdecel-cont",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\QM5_41362_xtixng-wdecel-cont.ex5",
+          "bound_sha256": "0cb69e960bbc337863f404ae4ec8f46f810164cb212a0e2c017a7bcecc553b91",
+          "current_sha256": "1cff1132dc7363ee04dcde6843128ce62640367db812868bfc65e5b0bfb2e463",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "e07f93a923",
+            "committed_at": "2026-09-08T12:07:58+02:00",
+            "subject": "build: integrate receipt-bound EAs and quarantine 13 unbound binaries"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_41362_xtixng-wdecel-cont\\sets\\QM5_41362_xtixng-wdecel-cont_QM5_41362_XTI_XNG_WDECEL_CONT_D1_D1_backtest.set",
+          "bound_sha256": "608a6822c137c8cabef9a5f08720c5270452ca362083d7af187a91d87721c759",
+          "current_sha256": "76bf2ee1cd347d554cd7e7853aa215a371bfc452711d687a1b41ece346e8cdce",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "1de542e477",
+            "committed_at": "2026-09-08T12:07:49+02:00",
+            "subject": "chore(research): preserve pending EA implementations and test recipes"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "python -X utf8 tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id a126c45e-3153-4c9f-a35b-67f153d8d709 --expected-current-ex5-sha256 1cff1132dc7363ee04dcde6843128ce62640367db812868bfc65e5b0bfb2e463 --reason \"C2A committed-regen stale binding rebind\" --dry-run  # then blessed --apply",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id a126c45e-3153-4c9f-a35b-67f153d8d709) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "00f26e21-a0ad-5fcf-945f-9c7cd1711c7e",
+      "ea": "QM5_10706",
+      "phase": "Q12",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": null,
+      "held": false,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10706_tv-mon-ls",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "bound_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "current_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "bound_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+          "current_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "2a7647ae9d",
+            "committed_at": "2026-09-13T23:13:32+02:00",
+            "subject": "fix(10706): BE-lock wrong-side-of-market guard + correct storm root cause (9f0923ef)"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+          "bound_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+          "current_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 00f26e21-a0ad-5fcf-945f-9c7cd1711c7e) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "03392b1f-05a0-5fe1-807a-ea9bafa0a4bd",
+      "ea": "QM5_11421",
+      "phase": "Q12",
+      "symbol": "EURUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_REBUILD_IN_PROGRESS",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+          "bound_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "current_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "bound_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "current_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "a6efbc5887",
+            "committed_at": "2026-09-08T12:07:43+02:00",
+            "subject": "feat(console): preserve tested Design 2 renderer and release evidence"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "bound_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "current_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 03392b1f-05a0-5fe1-807a-ea9bafa0a4bd) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "6d307198-f1ef-561c-82a7-3c15c3a82a8d",
+      "ea": "QM5_10706",
+      "phase": "Q12",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_SETFILE_SUCCESSOR_REQUIRED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10706_tv-mon-ls",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "bound_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "current_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "bound_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+          "current_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "2a7647ae9d",
+            "committed_at": "2026-09-13T23:13:32+02:00",
+            "subject": "fix(10706): BE-lock wrong-side-of-market guard + correct storm root cause (9f0923ef)"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "bound_sha256": "275e66e9e6151277ba180b4d7c3a786804a9a7346687dd034ee6d9c8d3e444ac",
+          "current_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "755a4b6889",
+            "committed_at": "2026-08-24T01:57:30+02:00",
+            "subject": "build: pump auto-commit 17 factory artifact path(s)"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 6d307198-f1ef-561c-82a7-3c15c3a82a8d) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 6d307198-f1ef-561c-82a7-3c15c3a82a8d) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "9ca7760d-7a93-53cf-8aa5-b84e1210b748",
+      "ea": "QM5_10706",
+      "phase": "Q12",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": null,
+      "held": false,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10706_tv-mon-ls",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "bound_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "current_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "bound_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+          "current_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "2a7647ae9d",
+            "committed_at": "2026-09-13T23:13:32+02:00",
+            "subject": "fix(10706): BE-lock wrong-side-of-market guard + correct storm root cause (9f0923ef)"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+          "bound_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+          "current_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 9ca7760d-7a93-53cf-8aa5-b84e1210b748) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "0840d7a5-299f-5720-a0f9-9ca6e4c7c5ab",
+      "ea": "QM5_11421",
+      "phase": "Q12",
+      "symbol": "EURUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_REBUILD_IN_PROGRESS",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.ex5",
+          "bound_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "current_sha256": "9dd7facd1da7e2c6564929b92a2e4a62e65bc40b99a03edd729030f72d18924b",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\QM5_11421_ohlc-daily-squeeze-reversal-d1.mq5",
+          "bound_sha256": "b5dfd159b46281cdb30dae3ae12a12fd67cdf810941b82a4a5f7e11a9dce6a15",
+          "current_sha256": "3307ae62ce1e7b10625ccaa9b7e2cfd7ea2581eb3e2d66d0f4170e499d4b6155",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "a6efbc5887",
+            "committed_at": "2026-09-08T12:07:43+02:00",
+            "subject": "feat(console): preserve tested Design 2 renderer and release evidence"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "bound_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "current_sha256": "7b87dbf2a4a6b6e6d8cea39e9123ebf9e06f61e53e2215eed24afde7923d74cf",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 0840d7a5-299f-5720-a0f9-9ca6e4c7c5ab) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "cb81c67c-801d-5e69-a8da-6cd881de3404",
+      "ea": "QM5_10706",
+      "phase": "Q12",
+      "symbol": "GBPUSD.DWX",
+      "hold_code": "ARTIFACT_BINDING_SETFILE_SUCCESSOR_REQUIRED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_10706_tv-mon-ls",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "bound_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "current_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.mq5",
+          "bound_sha256": "909327914d7fd65301751c38421c5dec3cddf8e96864d45c26f4db7a1f8fe27c",
+          "current_sha256": "c932fdd800548a7dae4c39d910c3726491e46b506c5ee60ba1abef523c78bf1e",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "2a7647ae9d",
+            "committed_at": "2026-09-13T23:13:32+02:00",
+            "subject": "fix(10706): BE-lock wrong-side-of-market guard + correct storm root cause (9f0923ef)"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "bound_sha256": "275e66e9e6151277ba180b4d7c3a786804a9a7346687dd034ee6d9c8d3e444ac",
+          "current_sha256": "b458a1b3367c8ff18414efee3ec9586dace370872082dbf0f7f7972e63a6469d",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "755a4b6889",
+            "committed_at": "2026-08-24T01:57:30+02:00",
+            "subject": "build: pump auto-commit 17 factory artifact path(s)"
+          }
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id cb81c67c-801d-5e69-a8da-6cd881de3404) or phase-specific governed successor; dry-run first",
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id cb81c67c-801d-5e69-a8da-6cd881de3404) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    },
+    {
+      "work_item_id": "6de52a30-72d0-4ec3-bb76-1b3d92c58889",
+      "ea": "QM5_12919",
+      "phase": "Q02",
+      "symbol": "USDJPY.DWX",
+      "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+      "held": true,
+      "db_status": "pending",
+      "ea_dir_name": "QM5_12919_amp-value-momentum-xasset",
+      "bindings": {
+        "ex5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12919_amp-value-momentum-xasset\\QM5_12919_amp-value-momentum-xasset.ex5",
+          "bound_sha256": "6e915491196f60baf3d4fa98d900495be6aed295dd37605d3b6c65a6024383f9",
+          "current_sha256": "6e915491196f60baf3d4fa98d900495be6aed295dd37605d3b6c65a6024383f9",
+          "classification": "OK"
+        },
+        "mq5": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12919_amp-value-momentum-xasset\\QM5_12919_amp-value-momentum-xasset.mq5",
+          "bound_sha256": "c729116f626f7c6b2d930a160a070b3319f198f2a565ad5310c4d49dfa53526a",
+          "current_sha256": "91b04d4e5791accda221029f1806627f816ca0e4fa9b114860237eb9c82a27b5",
+          "classification": "DRIFT",
+          "current_provenance": {
+            "commit": "77d5dfaa54",
+            "committed_at": "2026-09-13T07:09:49+02:00",
+            "subject": "fix(qm5-12919): defer basket history readiness past init"
+          }
+        },
+        "setfile": {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12919_amp-value-momentum-xasset\\sets\\QM5_12919_amp-value-momentum-xasset_USDJPY.DWX_M30_backtest.set",
+          "bound_sha256": "02f18620b8b7044e462194632e6bbe9eb7c42860cbbf44aa2a80c0dca3445e0d",
+          "current_sha256": "02f18620b8b7044e462194632e6bbe9eb7c42860cbbf44aa2a80c0dca3445e0d",
+          "classification": "OK"
+        }
+      },
+      "rebind_eligible": true,
+      "proposed_successor_commands": [
+        "# setfile/mq5 rebind: farmctl requeue-false-invalid-setfile (--old-work-item-id 6de52a30-72d0-4ec3-bb76-1b3d92c58889) or phase-specific governed successor; dry-run first"
+      ],
+      "note": "Rebind is a mutation of a pinned SHA on a live pending row: requires orchestrator REVIEW + an established backed-up/receipted apply path. This planner does NOT apply. If the on-disk binary is a recompile (not a faithful rebuild), rebinding is ROT -> OWNER."
+    }
+  ],
+  "plan_sha256": "4e2eb7b2cf2202f3e93135314ea021da8f03404e9fa97df45d6e03f48c1c3198"
+}
