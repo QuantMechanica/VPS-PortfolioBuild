@@ -4764,3 +4764,24 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 > release_count=0). **Nichts angewendet — alle 11 Arme OWNER-blockiert auf Karten-Entscheidung.** Diagnose-only.
 > QM5_20042/20053 out-of-scope (DWX-Matrix XBRUSD/XCUUSD), nicht beruehrt.
 > Evidenz: docs/ops/evidence/2026-09-15_winsweep_arm_compile_path/README.md (plan_sha256 ecaa44d2e652684a…).
+
+> **Nachtrag 15.09. 00:2xZ — RESULT Task 42ff3c7a (Health-Hygiene-Batch, 4 Punkte):**
+> (1) Artefakt-Binding-Drift: refreshed census + governed dry-run rebind plan committed
+> (`docs/ops/evidence/2026-09-15_artifact_binding_drift_census2/`, C1-Falsch-Positiv jetzt 0 Zeilen dank der
+> 09-13-Fix; 42 Zeilen/81 Bindings echter Drift, davon 35 C2A + 7 C2B + 3 FREE bei INFRA_FAIL-Risiko).
+> Kein Apply — Rebind bleibt Orchestrator-REVIEW/GELB je Zeile.
+> (2) `chk_p2_pass_no_p3` zieht jetzt `_measurement_sibling_exclusion_clause` ab (5 Tests, live FAIL(10)->OK(0)
+> verifiziert; commit f26343889e).
+> (3) QM5_12582/XNGUSD ONINIT_FAILED: Rohlog gepurged, einzige Evidenz die decisive-line "OnInit returns
+> non-zero code 1"; SHA/Kalender sauber. Ursache war laengst gefunden UND gefixt (Commit 65e1641235, 11.09.,
+> Authority docs/ops/evidence/2026-09-11_qm5_12582_stale_framework_rebuild_authority.json), aber nie kompiliert
+> — Triage-Task d9c3f4a8 haengt seit 12.09. in TODO, .ex5 ist noch die alte Juni-Binary. `enqueue-compile
+> --source-repair-authority` verweigert jetzt (SOURCE_REPAIR_AUTHORITY_INVALID + 3 weitere Gruende) — nichts
+> enqueued. **Kein Canary-Requeue ausgefuehrt** (waere Blind-Requeue gegen die alte Binary, INPUTSVALID-PIN).
+> QM5_10505/QM5_20143 unveraendert (repair-/preflight-first, nicht canary-reif).
+> (4) QM5_10148/EURNZD Q07 `bad1b2f7` aggregate.json: Backup-Scan (`D:/QM/backups`, alle `*backup*`-Verzeichnisse,
+> `bad1b2f7`-Pfadsuche unter D:/QM/reports) — **keine Sicherung existiert**, Restore ist damit ausgeschlossen.
+> Betrifft jetzt auch QM5_10148 dieselbe Disposition wie QM5_11476 (RETIRE oder OWNER-Rebuild), beide ROT.
+> Evidenz: `docs/ops/evidence/2026-09-15_q02_q09_hold_followup/README.md`.
+> **Entscheidungsschlange:** (a) QM5_12582 Compile — Triage d9c3f4a8 zuteilen oder frische Authority minten;
+> (b) QM5_10148 + QM5_11476 Q09-Hold-Disposition (RETIRE vs. Rebuild) braucht eine OWNER-Entscheidungs-ID.
