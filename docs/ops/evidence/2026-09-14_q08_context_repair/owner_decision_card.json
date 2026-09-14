@@ -1,0 +1,22 @@
+{
+  "id": "OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914",
+  "status": "OPEN",
+  "category": "Pipeline / Q08",
+  "severity": "action",
+  "created_at_utc": "2026-09-14T15:00:00+00:00",
+  "due": "2026-09-16T12:00:00+00:00",
+  "depends_on": [],
+  "question": "Q08-Kontext-Reparatur v2 (Hebel 4, Ticket 269d5101 neu bewertet): 40 Q08-Zeilen (23 INVALID 8.2 DSR_V2_MUTABLE_OR_RELATIVE_CONTEXT + 17 geparkt Q08_DSR_CONTEXT_UNAVAILABLE) haben Q02-Q07 bestanden und scheitern nur an fehlenden governed DSR-Inputs. Klassen (dsr_cohort._find_ledger + Kartenpruefung, 14.09. 14:3xZ): (A) 24 Zeilen EA mit APPROVED-Karte, nie im Zensus, keine Deklaration; (B) 11 Zeilen ohne Karte: 7 Winsweep-Arme QM5_411xx/413xx/414xx XTIUSD, 2x QM5_12115 XAUUSD, 3 Rebuild-Identitaeten 41472/41473/41474; (C) 3 Zeilen mit versiegeltem DL-089-Ledger (21501, 20266, 21507); (D) 2 Zeilen QM5_11167 alte Identitaet (Identity-Mismatch, durch OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT superseded). Darfst du (A) per governed Karten-Amendment die qm-dsr-single-configuration-Deklaration (Aussage: EINE Konfiguration = Kartendefaults, keine Optimierungssuche in der Fabrik, research_trial_count 0 - fuer diese 24 EAs faktisch wahr) in beide Kartenorte (D: und C:) anhaengen lassen und die 4 Baseline-Setfiles mit leeren strategy_*-Parametern regenerieren, danach append-only Q08-Reruns mit aktivem DSR-Preflight; (C) sofort append-only rerun; (D) als SUPERSEDED disponieren; (B) NICHT per Deklaration behandeln (eine Single-Config-Deklaration waere fuer Sweep-Arme falsch, sie SIND eine Optimierungssuche) sondern: Rebuild-Identitaeten ueber die aktive Identitaets-Aequivalenzregel an die Originalkarte binden, und fuer die 7 Sweep-Arme + 12115 ein separater Folge-Entscheid (DSR-Kohorte aus dem versiegelten Winsweep-Ledger = Contract-Erweiterung, oder Retire der Standalone-Q08-Zeilen zugunsten des Programm-Pfads Q13/Q14)?",
+  "recommendation": "JA fuer (A), (C), (D) jetzt; (B) Rebuilds ueber Aequivalenzregel, Sweep-Arme als Folgekarte.",
+  "yes_effect": "Q08_CONTEXT_REPAIR_V2=ACTIVE: governed card amendment (append-only qm-dsr-single-configuration block, both card locations, card sha re-bound, journal) for the 24 class-A EAs; regenerate the 4 baseline set files; append-only Q08 reruns with QM_Q08_DSR_CONTEXT_PREFLIGHT=1 for classes A and C; class D rows disposed SUPERSEDED; class B: 41472/41473/41474 bound to the original cards via the identity-equivalence proofs, the 7 winsweep arms + 12115 parked WINSWEEP_ARM_Q08_CONTEXT_PENDING with a follow-up card. No gate threshold, no DSR formula, no candidate-universe change; NO_AUTOTRADING; NO_DEPLOY.",
+  "no_effect": "Rows stay INVALID/parked; Q08 keeps its 35 % INVALID share; the 40 candidates that passed Q02-Q07 never reach Q09.",
+  "cost_of_wait": "40 Kandidaten (Q02-Q07 bestanden) stehen still; jeder Tag = ~1 weiterer Q08-INVALID-Lauf (23 in 7 d). Auffangregel 12 h fuer (C) und (D) (reversibel); (A) wartet auf JA, weil Karten OWNER-Artefakte sind.",
+  "detail": "Evidence: OPEN_ITEMS_STATUS.md 2026-09-14 block 'lever 4'; classification run 14:3xZ (dsr_cohort._find_ledger, cards_approved D:/C:, declaration block grep); dsr_single_configuration.py contract (APPROVED card front matter + qm-dsr-single-configuration block: complete=true, no_optimization_search=true, research_trial_count=0, spec_sha256, locked_parameters); framework/scripts/q08_davey/dsr_v2.py bound(): MUTABLE_OR_RELATIVE_CONTEXT = context binding missing/relative. Q08 DSR preflight (_seal_q08_dsr_at_claim) attaches the context at claim when inputs exist.",
+  "evidence": [
+    "docs/ops/OPEN_ITEMS_STATUS.md",
+    "docs/ops/evidence/2026-09-14_q08_dsr_context_park_journal.jsonl",
+    "tools/strategy_farm/dsr_single_configuration.py",
+    "tools/strategy_farm/dsr_cohort.py",
+    "framework/scripts/q08_davey/dsr_v2.py"
+  ]
+}

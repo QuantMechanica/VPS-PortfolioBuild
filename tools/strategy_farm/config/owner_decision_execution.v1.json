@@ -1198,6 +1198,41 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914",
+      "todo_id": "QM-TODO-20260914-Q08-CONTEXT-REPAIR-V2",
+      "priority": 84,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Q08 context repair v2: (A) governed append-only qm-dsr-single-configuration amendment on the 24 approved cards (both card locations, sha re-bound, journal) + regenerate the 4 baseline set files; append-only Q08 reruns with the DSR preflight for classes A and C; (D) dispose the 2 old-identity rows SUPERSEDED; (B) bind 41472/41473/41474 to their original cards via the identity-equivalence proofs; park the 7 winsweep arms + 12115 WINSWEEP_ARM_Q08_CONTEXT_PENDING with a follow-up card. No gate threshold, DSR formula or candidate-universe change.",
+          "allowed_actions": [
+            "Build and run the governed card-amendment tool (append-only block, dry-run first, journal under docs/ops/evidence/2026-09-14_q08_context_repair/)",
+            "Regenerate the 4 baseline set files through the existing set-file generator; commit",
+            "farmctl enqueue-backtest --append-only-rerun-of <id> for classes A and C with QM_Q08_DSR_CONTEXT_PREFLIGHT=1 active",
+            "Append-only SUPERSEDED disposition rows for class D",
+            "governed_work_item_hold for class B sweep arms; mint the follow-up card",
+            "Update OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "24 cards carry a valid declaration block (dsr_single_configuration.declaration parses; APPROVED front matter unchanged)",
+            "Reruns claimed with a sealed DSR context (Q08 8.2 no longer MUTABLE_OR_RELATIVE_CONTEXT)",
+            "No verdict overwritten; old rows stay as evidence",
+            "No gate threshold, DSR formula or candidate-universe change"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Rows stay INVALID/parked; documented as accepted loss.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Loss documented"
+          ]
+        }
+      }
     }
   ]
 }
