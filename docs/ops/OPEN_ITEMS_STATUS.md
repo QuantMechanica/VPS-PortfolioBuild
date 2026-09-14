@@ -4718,3 +4718,11 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 > - REVIEW-Drain: 9bbfcad8 (Identitaetsregel AKTIV, 41471/41472 NOT_EQUIVALENT, repair_v2 DEPLOYABLE_AT_CUTOVER; 7c56efc291)
 >   und 9e5db1e9 (Governor v2 Punkte 1-3 ratifiziert, Order-Datei, Punkt 4 korrekt aufs Chart-Attach vertagt; 42bd80f84f)
 >   nach Pruefung APPROVED.
+
+> **Nachtrag 17:4xZ (14.09.) — OWNER "Weg 1" (OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914, Receipt 9e6ddd6b, Task 67dfadf6):**
+> Codex-Ticket 8def3323 (P84, gepinnt, terra/high, Budgetlinie) kommissioniert: dsr_cohort akzeptiert das versiegelte
+> Window-Sweep-Ledger als DSR-Suchhistorie (alle Arme inkl. Verlierer/Controls = Trials, gleicher Peer-Metric-Code),
+> Prescreen-uebersprungene Jahre = Nullmessung statt INCOMPLETE_TRIAL, Replay 41115/41158 + 21507/20266, Ablation-EAs
+> 10163/10932 dokumentieren; keine Formel-/Schwellen-/Universums-Aenderung. Danach: Review, Worker-Reload, append-only
+> Reruns der 9 Sweep-Arm-Zeilen und der Klasse-C-Zeilen. Ausfuehrungsprotokoll
+> docs/ops/evidence/2026-09-14_q08-sweep-arm-context-20260914_9e6ddd6b_execution.md.
