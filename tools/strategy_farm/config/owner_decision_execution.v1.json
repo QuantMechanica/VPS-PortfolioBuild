@@ -1099,6 +1099,105 @@
           ]
         }
       }
+    },
+    {
+      "id": "OWNER-DEC-IDENTITY-EQUIVALENCE-20260913",
+      "todo_id": "QM-TODO-20260913-IDENTITY-EQUIVALENCE",
+      "priority": 86,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Activate the identity-equivalence rule for rebuilds: a rebuilt EX5 whose Q02 full-window replay proves EQUIVALENT_EXACT or EQUIVALENT_LOT_NORMALISED (identity_equivalence_proof.py tolerances) may stand in for its original in deploy manifests with proof path + sha; the repair_v2 staging (41470 for 12969/USDJPY) becomes deployable at the next cutover order. No gate verdict is derived from the proof; no AutoTrading; no deployment without a cutover order.",
+          "allowed_actions": [
+            "Record IDENTITY_EQUIVALENCE_RULE=ACTIVE in decisions/2026-09-13_identity_equivalence_proof_rebuilds.md and the Vault Hard-Rules annex",
+            "Re-run identity_equivalence_proof.py for 41471/41472 (12778/13117) once their Q02 replays exist and file the verdicts",
+            "Mark C:/QM/deploy/DXZ_V2_20260913/repair_v2/ DEPLOYABLE_AT_CUTOVER in the Q16 checklist and deploy manifest draft",
+            "Update OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Rule recorded with the exact tolerances and verdict names",
+            "repair_v2 staging marked deployable only at a cutover order; no file reaches T_Live from this task",
+            "No gate verdict, threshold or candidate-universe change",
+            "NO_AUTOTRADING; NO_DEPLOY_WITHOUT_CUTOVER_ORDER"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Rule stays inactive; 41470/41473 continue their own Q02-Q14 chains; repair_v2 staging stays parked.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Rule documented inactive",
+            "No staging promoted"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-LIVE-IDENTITY-CURRENT-8b06c6c8fd0a97273bc39d14cc0150a57d2e75e3c248353b475b13a3e432a400",
+      "todo_id": "QM-TODO-20260913-LIVE-IDENTITY-ATTEST-CURRENT",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Attest the unchanged current live identity (24 sleeves, sum RISK_PERCENT 9.7499, all fingerprints = freeze baseline) through the inert proposal r5 (sha 8b06c6c8fd0a97273bc39d14cc0150a57d2e75e3c248353b475b13a3e432a400): consumers read OWNER_ATTESTED_CURRENT_IDENTITY; freeze stays ACTIVE; no activation, no deployment.",
+          "allowed_actions": [
+            "Write the attestation receipt with selected_effect ATTEST_CURRENT_PROPOSAL_SHA256=8b06c6c8fd0a97273bc39d14cc0150a57d2e75e3c248353b475b13a3e432a400;FREEZE=ACTIVE;NO_ACTIVATION",
+            "Run the read-only attestation consumer check (m06_attest_current) and file the result",
+            "Update risk_freeze LIFT_CONDITIONS text for condition 1 = satisfied by attestation",
+            "Update OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Consumers report OWNER_ATTESTED_CURRENT_IDENTITY for proposal sha 8b06c6c8",
+            "Freeze state unchanged (ACTIVE); no T_Live file, chart, preset or process touched",
+            "No activation, no deployment, no AutoTrading"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Condition 1 stays open; the freeze pointer route remains circular until a new proposal.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Condition 1 documented open"
+          ]
+        }
+      }
+    },
+    {
+      "id": "OWNER-DEC-GOVERNOR-V2-ENFORCE-20260913",
+      "todo_id": "QM-TODO-20260913-GOVERNOR-V2-ENFORCE",
+      "priority": 88,
+      "choices": {
+        "YES": {
+          "mode": "APPLY_AND_VERIFY",
+          "objective": "Governor v2 (freeze condition 3): (1) accept policy candidate sha f2baf21a6282942cc99b82ce77caaf46a561247b188340d4e2f06851f01feb70 as OWNER_SIGNED, (2) record the activation artifact, (3) commit the order file with the OWNER line GOVERNOR-ENFORCE: ACTIVATE DXZ <date>; (4) the adapter switches from DRY_RUN_PLAN to enforce (halt-file executor) only inside the book-v2 cutover window after the chart attach, and the first three intervals are reported. Halt = flatten via per-sleeve .halt files; L1 refused by design; clearing stays OWNER-only.",
+          "allowed_actions": [
+            "Sign/record the policy candidate as OWNER_SIGNED with the OWNER receipt as authority",
+            "Write the activation JSON and decisions/<date>_owner_governor_enforce_dxz.md carrying the OWNER line",
+            "Keep the watcher task QM_StrategyFarm_GovernorDryRunWatch in dry-run until the cutover window; switch --executor halt-file only inside that window after the chart attach",
+            "Report the first three enforce intervals; update OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Policy sha f2baf21a recorded OWNER_SIGNED; activation artifact and order file committed",
+            "Adapter stays DRY_RUN_PLAN outside the cutover window; enforce only after chart attach inside the window",
+            "No AutoTrading change, no order placement, no T_Live chart/preset mutation by this task",
+            "First three enforce intervals reported with rc and level"
+          ]
+        },
+        "NO": {
+          "mode": "DOCUMENT_AND_VERIFY",
+          "objective": "Governor stays dry-run (level computation without action); freeze condition 3 stays open.",
+          "allowed_actions": [
+            "Document in OPEN_ITEMS_STATUS.md, this execution record and the Vault"
+          ],
+          "acceptance": [
+            "Condition 3 documented open"
+          ]
+        }
+      }
     }
   ]
 }

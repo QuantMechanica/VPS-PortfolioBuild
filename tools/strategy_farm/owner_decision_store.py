@@ -548,6 +548,16 @@ def record_decision(
 
         item = next((row for row in feed["items"] if row["id"] == decision_id), None)
         if item is None:
+            # 2026-09-14: card ids may carry a lowercase sha suffix (dd719400a8
+            # widened the id regex); match case-insensitively and keep the
+            # feed's exact id on the receipt so _apply_receipt finds the card.
+            item = next(
+                (row for row in feed["items"] if str(row["id"]).upper() == decision_id),
+                None,
+            )
+            if item is not None:
+                decision_id = str(item["id"])
+        if item is None:
             raise DecisionStoreError(f"unknown decision id: {decision_id}")
         if not hmac.compare_digest(card_hash, decision_card_sha256(item)):
             raise DecisionConflict(
