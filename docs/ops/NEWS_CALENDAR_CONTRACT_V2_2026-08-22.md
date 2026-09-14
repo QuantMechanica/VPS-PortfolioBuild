@@ -183,6 +183,23 @@ generated_at_utc}`.
   its successor) and assert the previously-observed 7.30% off-by-one-hour rate drops to
   0% once §2 is applied uniformly.
 
+> **Implementation status (2026-09-14, Claude, ticket `53bf70a3`):** independent golden
+> table (`tools/strategy_farm/dst_rule_golden_table.py`, from-scratch nth-Sunday
+> computation, not copied from `news_impact_mapping.py`), 3,610 dense per-minute rows
+> across 2023–2027 (leap 2024 + 4 non-leap years). Python side (`news_impact_mapping.py`)
+> validated bit-for-bit against all 3,610 rows, boundary ±1min, and November-fallback for
+> every year: `tools/strategy_farm/tests/test_dst_rule_cross_language_parity.py`, all
+> green. MQL5 side (`framework/tests/unit/dst_aware_transition_tests.mq5`) extended to the
+> same 5-year/dense-sweep/fallback coverage, boundaries still computed dynamically via
+> `QM_DSTAware_USDSTStartUTC/EndUTC` (never hardcoded) and cross-checked against the same
+> golden instants — **not compiled/executed this cycle** (MQL5 compilation is the factory
+> build pipeline's job, Codex-owned; honestly flagged, not silently skipped). F-03
+> regression reproduced directly against the real
+> `forex_factory_calendar_clean.csv` (48,727 rows): legacy EET-as-broker-time mismatch
+> count **3,502** (exact match to the documented finding), corrected uniform
+> `utc_to_broker` path **0** mismatches. No formula/threshold change. Evidence:
+> `docs/ops/evidence/2026-09-14_dst_cross_language_parity/README.md`.
+
 **Duplicate tests:**
 - Assert the ingestion step rejects (or explicitly, visibly deduplicates with a recorded
   rule) any `(timestamp_utc, currency, event)` triple appearing more than once within a

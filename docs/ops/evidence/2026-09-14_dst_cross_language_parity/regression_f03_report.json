@@ -1,0 +1,81 @@
+{
+  "schema": "qm.f03_dst_regression_report.v1",
+  "source": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+  "total_rows_with_both_columns": 48727,
+  "legacy_eet_as_broker_time": {
+    "mismatches": 3502,
+    "mismatch_rate_pct": 7.19,
+    "previously_documented": {
+      "mismatches": 3502,
+      "of_rows": 48000,
+      "rate_pct": 7.3
+    },
+    "sample_mismatches": [
+      {
+        "DateTime_UTC": "2015.03.08 07:00",
+        "DateTime_EET": "2015.03.08 09:00",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.08 20:30",
+        "DateTime_EET": "2015.03.08 22:30",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.08 20:30",
+        "DateTime_EET": "2015.03.08 22:30",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.08 20:30",
+        "DateTime_EET": "2015.03.08 22:30",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.08 21:45",
+        "DateTime_EET": "2015.03.08 23:45",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.08 23:50",
+        "DateTime_EET": "2015.03.09 01:50",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.09 00:30",
+        "DateTime_EET": "2015.03.09 02:30",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.09 05:00",
+        "DateTime_EET": "2015.03.09 07:00",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.09 07:00",
+        "DateTime_EET": "2015.03.09 09:00",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      },
+      {
+        "DateTime_UTC": "2015.03.09 09:30",
+        "DateTime_EET": "2015.03.09 11:30",
+        "legacy_eet_offset_hours": 2,
+        "correct_us_dst_offset_hours": 3
+      }
+    ]
+  },
+  "corrected_uniform_utc_to_broker": {
+    "mismatches": 0,
+    "mismatch_rate_pct": 0.0
+  },
+  "conclusion": "Reproduced legacy (EET-as-broker-time) mismatch rate: 3502/48727 (7.19%), consistent with the previously documented 3,502/48,000 (7.30%) F-03 finding on the same file. Corrected path (utc_to_broker applied uniformly, EET column never consulted): 0/48727 (0.0000%) -- the rate drops to 0%."
+}
