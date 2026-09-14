@@ -24,10 +24,11 @@ def _feed(tmp_path: Path) -> tuple[Path, Path, Path]:
         "recommendation": "JA",
         "yes_effect": f"ATTEST_CURRENT_PROPOSAL_SHA256={SHA};FREEZE=ACTIVE;NO_ACTIVATION",
         "no_effect": "Condition 1 stays open.",
-        "category": "book", "severity": "P1", "created_at_utc": "2026-09-13T17:00:00+00:00",
-        "cost_of_wait": "none", "due": "2026-09-20", "depends_on": [], "evidence": [],
+        "category": "Book", "severity": "action", "created_at_utc": "2026-09-13T17:00:00+00:00",
+        "cost_of_wait": "none", "detail": "Kontext", "due": None, "evidence": [],
     }
-    feed = {"schema_version": 1, "maintainer": "test", "revision": 1, "updated_at_utc": "2026-09-13T17:00:00+00:00", "items": [item]}
+    feed = {"schema_version": store.FEED_SCHEMA, "maintainer": "test", "revision": 1,
+            "updated_at_utc": "2026-09-13T17:00:00+00:00", "items": [item]}
     feed_path = tmp_path / "owner_decisions.json"
     feed_path.write_text(json.dumps(feed), encoding="utf-8")
     receipts = tmp_path / "receipts.jsonl"
