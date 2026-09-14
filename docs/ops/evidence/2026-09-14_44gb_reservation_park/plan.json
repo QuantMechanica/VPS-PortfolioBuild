@@ -1,0 +1,6262 @@
+{
+ "generated_utc": "2026-09-14T03:39:17.258299+00:00",
+ "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+ "rows": [
+  {
+   "id": "f15ac955-9dbb-4f39-9a9e-8eb142f11138",
+   "ea_id": "QM5_10145",
+   "symbol": "SP500.DWX",
+   "phase": "Q10_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "31f12573-d903-4386-a857-cad2b445d63a",
+   "ea_id": "QM5_10718",
+   "symbol": "QM5_10718_FX8_BASKET_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "65319749-3c0b-4636-9131-305c34100a08",
+   "ea_id": "QM5_10717",
+   "symbol": "FX8_BASKET_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d5c689bc-62c5-46f5-9fb5-d7299697e2f9",
+   "ea_id": "QM5_20176",
+   "symbol": "NDX.DWX",
+   "phase": "Q07",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bd2a50fb-e0c7-4b67-83e9-a16ebdd19a08",
+   "ea_id": "QM5_41060",
+   "symbol": "QM5_41060_XAU_XAG_WEEKNR7_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d807e15b-9db0-409d-9d96-d0a3ae98d07f",
+   "ea_id": "QM5_41077",
+   "symbol": "QM5_41077_XAU_XAG_WRETR_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5ee036e7-aab4-4026-a151-8afe3840eaf4",
+   "ea_id": "QM5_41031",
+   "symbol": "QM5_41031_XAU_XAG_GOLDLEAD_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "90862cbf-5209-49bd-9d26-4a0b3ac7b9f5",
+   "ea_id": "QM5_41040",
+   "symbol": "QM5_41040_XAU_XAG_WFLOWFADE_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7a73239f-a261-422a-b7da-ba3a46cfc7d5",
+   "ea_id": "QM5_41057",
+   "symbol": "QM5_41057_XAU_XAG_WFLOWAGREEFADE_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e87daf86-b679-42a5-926a-2be6e01302b3",
+   "ea_id": "QM5_41062",
+   "symbol": "QM5_41062_XAU_XAG_WGAPFADE_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4c4b1548-f0a8-47a3-8929-10117cdaf6c2",
+   "ea_id": "QM5_41066",
+   "symbol": "QM5_41066_XAU_XAG_WDECAY_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "748960a5-0f6f-42b5-bde0-0c9ade541ca4",
+   "ea_id": "QM5_41075",
+   "symbol": "QM5_41075_XAU_XAG_WOVERSHOOT_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e41cf082-9441-463c-aef9-54a51c74fe33",
+   "ea_id": "QM5_41076",
+   "symbol": "QM5_41076_XAU_XAG_WACCEL_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f12b965f-5ca4-4b7d-ab18-b028eb7b9e88",
+   "ea_id": "QM5_41078",
+   "symbol": "QM5_41078_XAU_XAG_WSTREAK3_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ea4809d6-e22f-4994-ba54-6072f858637d",
+   "ea_id": "QM5_41079",
+   "symbol": "QM5_41079_XAU_XAG_WCLOSE_EXTREME_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "240da0d9-c9e6-40f4-a598-a3dc99b6afd1",
+   "ea_id": "QM5_41083",
+   "symbol": "QM5_41083_XAU_XAG_WLEGDIV_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d446608d-a9f7-489f-a4d3-0c9d60e8f362",
+   "ea_id": "QM5_41085",
+   "symbol": "QM5_41085_XAU_XAG_WDAYBREADTH_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f67c926d-316f-44ba-92bf-5c8ead7e9fbf",
+   "ea_id": "QM5_41086",
+   "symbol": "QM5_41086_XAU_XAG_COMMONSHOCK_RV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "547c4fd3-f3fd-4c59-b9dc-654e96521251",
+   "ea_id": "QM5_12507",
+   "symbol": "QM5_12507_EURUSD_GBPUSD_COINTEGRATION_H1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "06e46647-e8b6-4148-8d51-586cb8114acd",
+   "ea_id": "QM5_41192",
+   "symbol": "QM5_41192_XTI_XNG_MDAILY_HL_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b9747d17-e3ff-405a-96e6-3a7e2b8aba5f",
+   "ea_id": "QM5_41203",
+   "symbol": "QM5_41203_XAU_XAG_SAMECAL_SR_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fc00fd9e-98ea-44aa-8502-2f7cf40919ae",
+   "ea_id": "QM5_41206",
+   "symbol": "QM5_41206_XAU_XAG_SAMECAL_HUBER10_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ae2b6391-f985-4906-9f6a-0a79eb31c463",
+   "ea_id": "QM5_41210",
+   "symbol": "QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d7bd7a15-0503-4840-b739-e15d40a63189",
+   "ea_id": "QM5_41213",
+   "symbol": "QM5_41213_XAU_XAG_SAMECAL_SIGNSCORE_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "456f5bc8-86ed-4706-b4e4-c9fcf86373c3",
+   "ea_id": "QM5_41248",
+   "symbol": "QM5_41248_XAU_XAG_MPETTITT_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "33f120c3-592c-443e-a0d4-f43a397c3290",
+   "ea_id": "QM5_41263",
+   "symbol": "QM5_41263_XAU_XAG_MKUIPER_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "08b0062e-dd6a-4bd1-88ed-d1eb018423c6",
+   "ea_id": "QM5_41265",
+   "symbol": "QM5_41265_XAU_XAG_MBF_SCALE_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "28d500a0-df20-4e05-8e31-50ecf18a88c8",
+   "ea_id": "QM5_41279",
+   "symbol": "QM5_41279_XAU_XAG_SAVAGE_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7cb39fc1-991d-4085-8efe-692a285c7017",
+   "ea_id": "QM5_41281",
+   "symbol": "QM5_41281_XAU_XAG_CONOVER_SCALE_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5d878c73-e206-415a-a67e-0dc7fc0231fb",
+   "ea_id": "QM5_41282",
+   "symbol": "QM5_41282_XAU_XAG_VDW_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2b0c6470-12f4-4d6c-8195-341449417f8a",
+   "ea_id": "QM5_41142",
+   "symbol": "QM5_41142_EURUSD_MONTHEND_FIX_M15",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "328cdef5-6458-4079-b898-b4220efbd6bb",
+   "ea_id": "QM5_41357",
+   "symbol": "QM5_41357_XTI_XNG_MWINSOR2_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f92931eb-e595-428e-a1f6-73cff428a0b6",
+   "ea_id": "QM5_41358",
+   "symbol": "QM5_41358_XTI_XNG_WOVERSHOOT_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2ed1bb9e-cec7-4929-b23f-8fe1ab7dbf75",
+   "ea_id": "QM5_41143",
+   "symbol": "QM5_41143_GBPUSD_MONTHEND_FIX_M15",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b624b672-ce62-4ddb-beff-9d5e019019ab",
+   "ea_id": "QM5_41144",
+   "symbol": "QM5_41144_EURUSD_QUARTEREND_FIX_M15",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d84d3f85-6994-4216-8f6b-0a23d5b49d9a",
+   "ea_id": "QM5_37003",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c2da4c1b-f6bd-47fd-9203-fdf60db58964",
+   "ea_id": "QM5_38002",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "34fed22d-58d7-4b20-8795-c486e5f0e997",
+   "ea_id": "QM5_38002",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3e90e0bc-ca05-4403-abca-162fe66caf07",
+   "ea_id": "QM5_41003",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fb09a7aa-c71c-416b-b564-7f10577211e1",
+   "ea_id": "QM5_41009",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "83f4fd91-b25e-4e5a-bbbf-f7f7e747c661",
+   "ea_id": "QM5_37006",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d16ec281-927d-4dba-a83d-700cd9caa9fa",
+   "ea_id": "QM5_10025",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3af8c03c-7772-49fc-bfcd-daca0adcce26",
+   "ea_id": "QM5_10025",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b62dbcec-2e63-44d0-8c4c-6a3d495b5131",
+   "ea_id": "QM5_11294",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q11",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "493b7cec-f8ad-43b8-b3ef-c15cd98ac54f",
+   "ea_id": "QM5_11147",
+   "symbol": "SP500.DWX",
+   "phase": "Q09",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b196a1ba-7420-4f61-9be6-6991fa0a36f1",
+   "ea_id": "QM5_12864",
+   "symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+   "phase": "Q09",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "90ca0947-f264-4c58-8591-e80a4870828a",
+   "ea_id": "QM5_12831",
+   "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+   "phase": "Q09",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c5771815-1d62-4f7f-a5be-053c120b26d1",
+   "ea_id": "QM5_13076",
+   "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+   "phase": "Q09",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8ccdd9ca-6a96-47cb-be8a-19b89f8dc25e",
+   "ea_id": "QM5_13059",
+   "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+   "phase": "Q09",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "138c2cd7-ffb3-4ea3-b1cc-0b7f87c45a2a",
+   "ea_id": "QM5_1355",
+   "symbol": "NDX.DWX",
+   "phase": "Q09",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "da55bd6d-36d2-43a1-8e30-4e51765e5184",
+   "ea_id": "QM5_11294",
+   "symbol": "NDX.DWX",
+   "phase": "Q09",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "20d566b1-d708-4978-8814-1b434089ff7c",
+   "ea_id": "QM5_10114",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "be07ad56-cf51-401e-ba15-efaeca59fc0a",
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fda2f049-a7cf-485d-ab07-0439d2487696",
+   "ea_id": "QM5_1206",
+   "symbol": "SP500.DWX",
+   "phase": "Q08",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c8d8c2c7-7287-41d8-98ab-57606bec09f5",
+   "ea_id": "QM5_10848",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "169d5dda-f119-4f87-8c06-c9623733265c",
+   "ea_id": "QM5_11132",
+   "symbol": "NDX.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7aaf7760-476c-4599-be92-4dae0a50c6df",
+   "ea_id": "QM5_9573",
+   "symbol": "NDX.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c62565c1-6bcf-4f04-ae5d-78e1003aa4fe",
+   "ea_id": "QM5_10022",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q07",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7d0e2ae9-a658-4fd9-ab8e-16c366933e7c",
+   "ea_id": "QM5_1069",
+   "symbol": "NDX.DWX",
+   "phase": "Q07",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "230e29a2-c504-4f62-a38f-7150bf5c7d9d",
+   "ea_id": "QM5_1226",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q07",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f9b561b3-5322-4815-8b89-b75dfb28b000",
+   "ea_id": "QM5_12831",
+   "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+   "phase": "Q07",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e04760a3-d7db-4a93-999c-d6e17ae291ee",
+   "ea_id": "QM5_20004",
+   "symbol": "NDX.DWX",
+   "phase": "Q07",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d374a221-ef9d-463c-bc1f-991407bbbc41",
+   "ea_id": "QM5_12354",
+   "symbol": "NDX.DWX",
+   "phase": "Q07",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "59e905a7-81b9-4422-90be-37af8dea67a0",
+   "ea_id": "QM5_12834",
+   "symbol": "QM5_12834_XTI_USDJPY_SPREAD_D1",
+   "phase": "Q07",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a57cb302-7639-4d8f-ba93-2b50943a3b54",
+   "ea_id": "QM5_10145",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q06",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a075334f-574b-4d27-9d87-b0608070c6d3",
+   "ea_id": "QM5_10123",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q06",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "af220f2f-a335-44e6-8cc4-d7235080c49a",
+   "ea_id": "QM5_10692",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q06",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "56823dd3-b629-439f-be61-c5d7b19b0493",
+   "ea_id": "QM5_10127",
+   "symbol": "NDX.DWX",
+   "phase": "Q06",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "601257a8-2706-432e-96aa-f384c4fb25e4",
+   "ea_id": "QM5_20039",
+   "symbol": "NDX.DWX",
+   "phase": "Q06",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "00caf2d1-4b1b-4bea-92fe-48e4325eeed9",
+   "ea_id": "QM5_1208",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q05",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "70760b03-e7b6-4800-abc7-77a92b15b9aa",
+   "ea_id": "QM5_1232",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q05",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "02e3e849-677a-4dcf-8108-c959b5b8054d",
+   "ea_id": "QM5_10166",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "858810ac-c98f-474a-8cd5-6cdb7220fa63",
+   "ea_id": "QM5_10171",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cbbef44c-ebfa-4a14-a591-8c49d1ff9721",
+   "ea_id": "QM5_10163",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9c289aa7-c6f4-4d15-9d93-1f8c4858b486",
+   "ea_id": "QM5_10676",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "94c89e2b-9da2-4468-9772-3d94feb5c2d0",
+   "ea_id": "QM5_10702",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c72de40d-eebc-4c39-bb98-24214e429162",
+   "ea_id": "QM5_10431",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ed119460-45f7-48c6-921c-8d4459387715",
+   "ea_id": "QM5_10778",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a12ffc31-6334-4185-8067-fc001aa2b460",
+   "ea_id": "QM5_10778",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "06b03afa-3c66-4297-9189-7c2fc188f009",
+   "ea_id": "QM5_10848",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d2cb9bf7-0c4e-47d3-ad4c-fc1e86082874",
+   "ea_id": "QM5_10375",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "496402f1-88ac-4c69-8c81-998704916c61",
+   "ea_id": "QM5_11265",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "10708a5a-30c3-45ae-b3a0-b2b3c9f2f219",
+   "ea_id": "QM5_10375",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2e74a058-336d-439a-a04b-72715b8ecfa4",
+   "ea_id": "QM5_10427",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7109cd43-fb6c-424a-b1a0-d68fd461703f",
+   "ea_id": "QM5_12535",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "39ba2a0f-2e3b-497d-8635-19e18b7841bb",
+   "ea_id": "QM5_10230",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "42f45220-8bfa-4b68-af33-78924373d7b2",
+   "ea_id": "QM5_10691",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1eeab388-0610-427f-b893-e7a0e3efe8a0",
+   "ea_id": "QM5_10947",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0c820a5d-3eff-40d5-8f85-6253a11873f9",
+   "ea_id": "QM5_1159",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cb906ad4-e0e2-4599-ae10-1d8d89786f67",
+   "ea_id": "QM5_10826",
+   "symbol": "NDX.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "57aad04d-ec40-4593-82f5-1eec007a7c95",
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q05",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "34c5dfbf-2b15-423b-b3c3-64556ec6aae3",
+   "ea_id": "QM5_12531",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d7e0fb4a-fe05-45b6-8889-32654dfc7289",
+   "ea_id": "QM5_20012",
+   "symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "884f8ba1-4799-4913-84d7-cffe1335d577",
+   "ea_id": "QM5_12382",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4d662309-3f46-4527-96cf-ac1686b634f6",
+   "ea_id": "QM5_10718",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "661e49ad-edb5-4914-b6ea-c578283e331f",
+   "ea_id": "QM5_20057",
+   "symbol": "QM5_20057_XAU_XAG_XMOM1_D1",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "711a2158-025e-44c3-9a17-eb6567c1a758",
+   "ea_id": "QM5_20243",
+   "symbol": "QM5_20243_XAU_XAG_TOM_XMOM3_D1",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bcbc33e5-50eb-43f2-8384-60c8891a7961",
+   "ea_id": "QM5_12577",
+   "symbol": "QM5_12577_XAU_XAG_RATIO_D1",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6c424ed0-603c-4d24-b0d6-be2fbea0217b",
+   "ea_id": "QM5_20263",
+   "symbol": "QM5_20263_XAU_XAG_MADRV_D1",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ff75c8b3-e692-4b87-b7f6-d29e87f8a28e",
+   "ea_id": "QM5_20265",
+   "symbol": "QM5_20265_XAU_XAG_FAILRV_D1",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "879bf081-d920-450e-a8e4-576d1693a98e",
+   "ea_id": "QM5_20268",
+   "symbol": "QM5_20268_XAU_XAG_QTAILRV_D1",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e274588a-6030-4f6a-a7c8-e8ba05a1bd11",
+   "ea_id": "QM5_11240",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "208667d1-1206-4193-9782-df933dbbd9fd",
+   "ea_id": "QM5_1101",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c6f42f4d-44dd-44e4-ab28-18c79b046f5e",
+   "ea_id": "QM5_1246",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fe52c1cb-1d84-413c-9068-c14d24cc27e3",
+   "ea_id": "QM5_10309",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c624cdb2-44c7-4dff-b2b3-0341b0a667b2",
+   "ea_id": "QM5_10363",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "48474f94-0daa-4857-9a9b-132dbf0002d4",
+   "ea_id": "QM5_10363",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "aff823fd-1a32-4a93-be5a-c80420054bf2",
+   "ea_id": "QM5_10391",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "87aec1e4-cab0-41e2-b615-89f7e2742366",
+   "ea_id": "QM5_10377",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ecd0dae6-3c8b-4971-8243-f69df9b5d71a",
+   "ea_id": "QM5_1359",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8cefee9b-ddae-448e-a782-4628f666ba3d",
+   "ea_id": "QM5_1601",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0fd91112-5847-43da-9601-019ac9ad175b",
+   "ea_id": "QM5_1047",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2c54dd3f-ee71-44bc-969e-4f9b91d33d3d",
+   "ea_id": "QM5_10378",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b1f23cf5-b391-4270-aa02-8df75afd8a39",
+   "ea_id": "QM5_10477",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f7d0eaa3-026f-4bee-b7bd-a17647b3ed99",
+   "ea_id": "QM5_1104",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "80bbb590-b4e7-4a4e-a7fa-a3255f55fa41",
+   "ea_id": "QM5_10888",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bc565d8b-8a22-4cae-97af-c12d1f404372",
+   "ea_id": "QM5_1141",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ca526eec-7149-4e2e-9e5d-9678f6abf76f",
+   "ea_id": "QM5_1191",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7694fe87-c1c6-429f-80e5-2dd5c4d53c6a",
+   "ea_id": "QM5_1130",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "da999340-17a7-4cae-bf36-c65252aa8ebf",
+   "ea_id": "QM5_10743",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "38d65326-7665-4e17-b272-0abc21aa8c3c",
+   "ea_id": "QM5_10206",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "85968d22-8e80-4085-8f1b-2f5e949e0edd",
+   "ea_id": "QM5_10199",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "470a3b24-0ca3-4b84-bb39-8806194ad18a",
+   "ea_id": "QM5_10415",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8cc6401e-176a-4c8c-ad07-0cdcda3cf221",
+   "ea_id": "QM5_10216",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a0f92a3c-0eaa-4315-a231-0cbe1acfcd55",
+   "ea_id": "QM5_10310",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "063ac033-b84f-4a8f-ba35-5fd1e888b9f2",
+   "ea_id": "QM5_1145",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "db5433fa-540c-4962-8cdb-24cd5261b6e8",
+   "ea_id": "QM5_10705",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "169a3481-8374-4283-ab1a-14fcd26e8ccb",
+   "ea_id": "QM5_10358",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7a2a34bf-5bdb-447b-b94e-bad44ac69c65",
+   "ea_id": "QM5_10368",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a85bb86d-cfe0-477e-a053-57fe2b0d621e",
+   "ea_id": "QM5_10362",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e9ac95c0-ecba-4900-99a2-1ddb3a5281d2",
+   "ea_id": "QM5_10384",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0cc0cfa3-5d3b-485d-afc2-c33197ed12ed",
+   "ea_id": "QM5_12113",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ed31c267-7d67-4630-a2bf-f4c88c5eda6e",
+   "ea_id": "QM5_1119",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "813f42e3-5bb2-40a5-94f6-6bfd0b065ebb",
+   "ea_id": "QM5_12114",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6e3bc85e-690e-4b6a-b938-21a0b1dc2bb2",
+   "ea_id": "QM5_10109",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ff98ebab-aa07-4be5-b2b3-689145aaabc3",
+   "ea_id": "QM5_10826",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ab707d95-d7c9-47e6-92af-1d0efa92f5ec",
+   "ea_id": "QM5_12374",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "baf786be-166d-4e82-aea6-c1139d488df7",
+   "ea_id": "QM5_10410",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "467a45be-aba1-4247-9e38-90f9edaf8548",
+   "ea_id": "QM5_1098",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d056daf5-837d-4c6e-b40f-70793584727a",
+   "ea_id": "QM5_12528",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6172423f-7401-4669-9a01-d4014b9d5386",
+   "ea_id": "QM5_10707",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e83be141-5899-465d-acc6-2e14462e6adf",
+   "ea_id": "QM5_10750",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f7fdb752-40f9-47a0-943a-e2da4fe4cf6a",
+   "ea_id": "QM5_1086",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0e9863c0-abbd-45f1-b0e2-322a8cec700f",
+   "ea_id": "QM5_10391",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d19fb7ec-facd-49cc-b472-741af47b348b",
+   "ea_id": "QM5_10720",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "98b1bd5a-0170-44bd-9d03-9d478c8ac228",
+   "ea_id": "QM5_12488",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a551e04b-05ae-4294-97b6-113bcc647500",
+   "ea_id": "QM5_10726",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "71ddaaaf-f481-422f-88a8-74767e956fb2",
+   "ea_id": "QM5_10735",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ff8f4146-2270-4362-8717-922837520804",
+   "ea_id": "QM5_10709",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "aeea7281-ceb4-4392-8bca-9d3580594ffe",
+   "ea_id": "QM5_10749",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "242ab010-9b95-4225-a20e-9aca4d3d3f1f",
+   "ea_id": "QM5_10248",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a150e42c-49d9-4737-90bd-b222081ef0e9",
+   "ea_id": "QM5_10363",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "18271ab1-0826-4c26-8e77-e313b5acab36",
+   "ea_id": "QM5_10791",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dea086c9-e725-4555-9b86-8ef31150cdd1",
+   "ea_id": "QM5_1115",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a04a0ba3-399f-42c1-bafc-e54603f47aed",
+   "ea_id": "QM5_10855",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1890918d-19c0-44a2-89f8-3ebf3c7d83b9",
+   "ea_id": "QM5_1255",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5b2d9620-2bf1-4686-b0e8-0abb89f43c1f",
+   "ea_id": "QM5_10330",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "347b36c0-1582-4272-9edc-a80ca961fe21",
+   "ea_id": "QM5_9192",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "17aa2365-d322-4fb8-8e26-d6bae8a50529",
+   "ea_id": "QM5_10336",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "16bde9c8-0ec3-4c29-8249-9b467128a8d2",
+   "ea_id": "QM5_9301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "94139dda-70cd-4c71-aa62-c3e94fb42b34",
+   "ea_id": "QM5_12366",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d2988119-5d50-490a-9fb2-df0f6b6bf97c",
+   "ea_id": "QM5_1147",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "faef6d89-d167-4802-9c19-864c37bd62e0",
+   "ea_id": "QM5_10355",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "42b57be4-28da-4a8a-8394-64b3273a9478",
+   "ea_id": "QM5_10351",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "047eeff0-5b9d-46f0-a947-8a38f3987422",
+   "ea_id": "QM5_10730",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "70fc2414-cfe4-4c6a-aca8-d67a03ee0956",
+   "ea_id": "QM5_10388",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ccf40424-6d2e-487b-a9a8-d1328a06407b",
+   "ea_id": "QM5_10647",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8104e7a6-e0ab-499a-a01b-b01ac56fc003",
+   "ea_id": "QM5_9206",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d936733f-96e0-4c6f-b905-09b6c1fe50fe",
+   "ea_id": "QM5_1059",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "127f1299-b2eb-437a-9063-e57132ed9a7b",
+   "ea_id": "QM5_1100",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "653d4cc3-dac9-4d9f-a0cb-f94d9adcf7fa",
+   "ea_id": "QM5_1100",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "916e10ab-8274-460d-8c50-8ef800b9cfce",
+   "ea_id": "QM5_11839",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "77e51468-6536-4644-857c-d591054c7d60",
+   "ea_id": "QM5_10325",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1d09dbe8-118c-4106-b0d7-568c3829bea6",
+   "ea_id": "QM5_1153",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fd76ccc9-8f6c-4814-8dcd-e6913b1c0f4a",
+   "ea_id": "QM5_1153",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9236ace7-ad2c-40fc-a9d1-d82c0752c4f9",
+   "ea_id": "QM5_10397",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b0598151-d049-451b-9088-89ce3fe367f2",
+   "ea_id": "QM5_12374",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d312a04f-4ae3-43da-b444-b6936f603709",
+   "ea_id": "QM5_10150",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "da456d06-be70-4a87-aebf-6c9908227b32",
+   "ea_id": "QM5_10194",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "eba0aae0-f093-425c-8c42-5df6818160b1",
+   "ea_id": "QM5_1089",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f1b70e9e-01cf-493f-9ead-30d7d8929db7",
+   "ea_id": "QM5_10192",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f8f93cf4-8d53-4cdc-9d55-fde20908fa0a",
+   "ea_id": "QM5_10196",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3d474d39-d81c-4225-ab7c-528cf0da4421",
+   "ea_id": "QM5_10384",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bd16e28a-de6c-426e-8ac0-ec7d895989e9",
+   "ea_id": "QM5_10413",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fb5bdd8f-0a5d-48be-a520-c936ee6026b7",
+   "ea_id": "QM5_10628",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e5c11de1-4f99-4fb0-a0a9-6b984c846a16",
+   "ea_id": "QM5_10630",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fd5b37f3-3dd6-47e3-b83a-610e1616c9a5",
+   "ea_id": "QM5_1046",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e8a86a06-69fb-4d37-b955-62adc2a4db07",
+   "ea_id": "QM5_10336",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "17022618-0399-4352-8332-a0b8e9ab690e",
+   "ea_id": "QM5_10355",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d31a6d8f-69d3-40f3-a69f-7907c2f3852c",
+   "ea_id": "QM5_9989",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f040c3c9-8656-48bf-9b00-0ed847ae3907",
+   "ea_id": "QM5_10358",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5d7330b6-5268-4dc8-808d-381a4ea4664c",
+   "ea_id": "QM5_10647",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4201d985-39e8-47d1-8099-6467daa46920",
+   "ea_id": "QM5_10206",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c76b9cf6-da6b-4eb3-a476-f47b1a178ec1",
+   "ea_id": "QM5_10368",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6f222786-5a3b-4b02-aeb5-ce581d01defc",
+   "ea_id": "QM5_10855",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3ab6f517-0445-43bb-abca-c126b059edc9",
+   "ea_id": "QM5_1098",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6132c545-5ee9-4766-b933-8e8466455da4",
+   "ea_id": "QM5_10720",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d551ec84-6493-4e14-9bbf-596e4869c568",
+   "ea_id": "QM5_10310",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fcad0632-51b5-45e3-a36d-43a4781c4696",
+   "ea_id": "QM5_10716",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fbf92e95-3357-417d-905f-3eba50fa05fd",
+   "ea_id": "QM5_10309",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c9a00e43-0fa3-4f13-b9d4-23bca3ca7331",
+   "ea_id": "QM5_10433",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "89f58bef-7d44-4066-a2cf-5781d401042b",
+   "ea_id": "QM5_10381",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "76c1d86b-3955-4189-81d8-4d4b8b2277cc",
+   "ea_id": "QM5_10738",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "29d5ad0a-9ead-44b8-b33e-5931666e2561",
+   "ea_id": "QM5_10944",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4b72668c-67ef-4273-8a4d-aaaaa007dfa0",
+   "ea_id": "QM5_10839",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "02516dc2-a069-42ca-8662-f6d0ee78546e",
+   "ea_id": "QM5_11811",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5d4d1271-dc47-4d18-b8ca-d85b43697677",
+   "ea_id": "QM5_12510",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5e7e7692-73dc-4a2f-b8be-815f66f6e30f",
+   "ea_id": "QM5_1069",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c1697d90-c94f-4776-b8b0-4bc838a5e82b",
+   "ea_id": "QM5_1059",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0821b05d-3462-41e9-b095-0e31404bcd65",
+   "ea_id": "QM5_1118",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f30620ce-63c5-4f8f-aaa1-9f9afea14d05",
+   "ea_id": "QM5_1118",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "00025959-b8a7-4f53-9156-b5ef7e37d46e",
+   "ea_id": "QM5_9515",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ff75e1e3-ba18-4994-9393-df474209b421",
+   "ea_id": "QM5_1118",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ce07a566-2c14-437a-ab61-ff64d0b1de2d",
+   "ea_id": "QM5_10681",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "164359bc-4eb8-4dce-86af-2cd86b79d321",
+   "ea_id": "QM5_10209",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "89a4a11e-8919-4e96-ba26-1497ff0f2f30",
+   "ea_id": "QM5_1107",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3523238c-523a-445b-b1bc-b4794b125ccc",
+   "ea_id": "QM5_10807",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "33355b0d-9ad4-4323-b09e-ff3dca6c40c1",
+   "ea_id": "QM5_10836",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "726c5b11-5f5b-4cdd-bee6-86e32c54c019",
+   "ea_id": "QM5_10756",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3f30c151-334d-4aa3-839f-11cc0e013d55",
+   "ea_id": "QM5_10842",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "83caf9a6-5b3c-4b5f-84a2-998ae2d3b675",
+   "ea_id": "QM5_12497",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "77d9093d-0058-4f88-9161-3a519cb7b4b2",
+   "ea_id": "QM5_10756",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9c27e392-15e0-4523-8151-3eca9d502db7",
+   "ea_id": "QM5_10330",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8e92ec4a-b59a-4d81-971c-f5c2df323f68",
+   "ea_id": "QM5_12815",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "eaf0c9cd-a1ce-4f7a-91fb-da90aac6a40f",
+   "ea_id": "QM5_10122",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f35c593b-bf71-498e-b9ab-728f6ff68968",
+   "ea_id": "QM5_11170",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f1335f0a-a5a3-4302-b624-e338501ff00d",
+   "ea_id": "QM5_1601",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8e4e9cb9-6158-4949-a4c5-cb1e81e5ab7d",
+   "ea_id": "QM5_1133",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "39206d86-a00e-4500-ba24-bb8fa1f8b750",
+   "ea_id": "QM5_10804",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f7a602f1-02d6-44c1-a5f5-0c498febe992",
+   "ea_id": "QM5_10811",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dbb1847b-9c66-49a6-b135-ef72e9718320",
+   "ea_id": "QM5_1129",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cf101b84-5377-47d7-9857-53fb2d3805e2",
+   "ea_id": "QM5_1077",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "efab197a-3abc-4777-b5fb-5ba5bcc12c5b",
+   "ea_id": "QM5_10143",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "933940f2-8bfd-4f5b-a9d7-fb20f37a279d",
+   "ea_id": "QM5_10128",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b53605cc-ef53-4684-b1d0-a0c73788cce4",
+   "ea_id": "QM5_10183",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "34ae7dca-719f-430d-adfb-6dfa8319cad5",
+   "ea_id": "QM5_10296",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7b3ae382-c864-4551-8212-18e7a53bd342",
+   "ea_id": "QM5_10302",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4997a12b-1a48-43e8-b09f-3ba93623bca6",
+   "ea_id": "QM5_10350",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8e6492f1-b842-4c0f-96ee-4eca90d93510",
+   "ea_id": "QM5_10386",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4027c6d1-b949-44b5-ae58-5aa3e659d439",
+   "ea_id": "QM5_10457",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "69fe72eb-e708-409e-a59d-43a10e17ac0a",
+   "ea_id": "QM5_10463",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6294552a-2d6d-4253-b33f-c67365bc8017",
+   "ea_id": "QM5_10661",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "38d36163-5b4e-430d-8e23-e23b9f67fed8",
+   "ea_id": "QM5_1068",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7e351a61-4462-42cd-9f86-7ce68fe775fa",
+   "ea_id": "QM5_1107",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ac508088-5a2c-493e-877e-cb4cc0b0d612",
+   "ea_id": "QM5_10869",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cf9e1a21-980d-4b13-a335-46774efafd34",
+   "ea_id": "QM5_11196",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9335f845-21e2-4c12-bb5e-9b5be5e6b35f",
+   "ea_id": "QM5_11268",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bfd149a3-7dee-44f3-a07a-62e038e33b15",
+   "ea_id": "QM5_12365",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2f3ec6c1-c540-40f0-8a6f-9866e321d392",
+   "ea_id": "QM5_1238",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b1a1dc00-cf83-400d-88ad-55a788210c2c",
+   "ea_id": "QM5_12958",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bfd7a0f9-a51b-45a2-98a9-cdfb8494e547",
+   "ea_id": "QM5_1551",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "edc4541c-0511-44e1-9608-3c3f8fe99719",
+   "ea_id": "QM5_1567",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a1914207-d7a2-4a26-a1c2-a934a425cfea",
+   "ea_id": "QM5_9255",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "507cd54a-0423-4282-96a1-5913a68ed369",
+   "ea_id": "QM5_10297",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "590befbe-315a-4c15-a1fd-078af80477d5",
+   "ea_id": "QM5_9402",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "463c6ea7-4254-462c-91c1-4031617ed980",
+   "ea_id": "QM5_1371",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "989dc410-19d1-4139-9d0a-3531ae8ff793",
+   "ea_id": "QM5_1371",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "371a13d7-d4d5-4130-890f-8cc94c861c00",
+   "ea_id": "QM5_1195",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f84fd0f8-ca76-4ef2-91a9-8176a3004834",
+   "ea_id": "QM5_9125",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "866fb380-a86c-4f97-8ec9-f203ccbcb3b1",
+   "ea_id": "QM5_1093",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d899514d-20f4-4b2d-8b41-8e3054afea2d",
+   "ea_id": "QM5_10929",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dd79d290-f282-410a-9b44-3f53a7a78cd3",
+   "ea_id": "QM5_10929",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dc8436f0-4219-4da4-9d48-1adcc90575ef",
+   "ea_id": "QM5_1061",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "927c547e-4159-4798-80ba-895959ce6315",
+   "ea_id": "QM5_10211",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "85e4f068-c8d1-4449-97aa-c00dccca3708",
+   "ea_id": "QM5_10771",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5317ecc8-33eb-4404-b40a-da3282574220",
+   "ea_id": "QM5_12796",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b766e1f7-940d-437d-b989-8e03a1980ee1",
+   "ea_id": "QM5_1386",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "53447cbf-9fe5-448d-b80c-5a62015646ad",
+   "ea_id": "QM5_1443",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e151b09e-e9a6-49bf-a50f-2bf4a15fbe55",
+   "ea_id": "QM5_1443",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7cb077f1-af96-416f-bb00-57cb926efbca",
+   "ea_id": "QM5_9571",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "72e6c127-c255-4e21-91f1-21a89f4013bc",
+   "ea_id": "QM5_12787",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a7599a56-7002-451b-a0f7-336c28cba653",
+   "ea_id": "QM5_12935",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b8f1b420-e01d-47b6-ad9b-4aac8f150201",
+   "ea_id": "QM5_9986",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "be9efae2-df19-4c43-859f-cb03a3a3e2af",
+   "ea_id": "QM5_1910",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7349c55d-de7b-42d4-8235-6152f15768ca",
+   "ea_id": "QM5_2078",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f9d63245-ebc1-4d81-bae9-39c6d676a6cb",
+   "ea_id": "QM5_12528",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6c8af3ce-a956-4043-ab03-b52adfabe424",
+   "ea_id": "QM5_1371",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "84c98b8c-1dd9-4b70-91bb-985f3e0b2b7c",
+   "ea_id": "QM5_10747",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8ad2a87e-a8a5-47ed-a0b7-2cf565a1f928",
+   "ea_id": "QM5_1386",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "579f9ef2-cb4c-49b6-b8f0-6d0c37c1522e",
+   "ea_id": "QM5_12404",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "28208c2e-8b89-4167-957b-46e6147bd812",
+   "ea_id": "QM5_12372",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "04d1d02b-310f-42a3-aa6b-0f4eeb84ea1d",
+   "ea_id": "QM5_1219",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "77223fb0-9a78-437a-a2fb-16bbf3c6f0da",
+   "ea_id": "QM5_9503",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a4fdec8b-5824-421b-90fc-20ee416234f2",
+   "ea_id": "QM5_1386",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "944f50f3-1cb5-4b9a-bfbe-612d09556906",
+   "ea_id": "QM5_12507",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0e539f8c-9b5f-459e-9218-69cc8bb45530",
+   "ea_id": "QM5_10221",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ff27700d-0e21-4d2d-a99a-a082f9fd868a",
+   "ea_id": "QM5_12396",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bbda4256-d254-4bbd-ad1e-f2ec6fe0cb54",
+   "ea_id": "QM5_10172",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3a746689-97c7-4338-a10e-221cf8e041cd",
+   "ea_id": "QM5_10411",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c54c4603-ff83-4f81-b871-704156bfacb7",
+   "ea_id": "QM5_11237",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a765a7f5-0c95-4e8b-b4e7-1988a490ae2a",
+   "ea_id": "QM5_11178",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e1c3cbdc-2f6d-4468-a45b-19541b49c19d",
+   "ea_id": "QM5_12372",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "11060418-0a61-470a-8eeb-350ff4bdfa88",
+   "ea_id": "QM5_10224",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c0bf231e-2e2d-4e42-a51a-96b34b87e835",
+   "ea_id": "QM5_10721",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c9059dd4-627e-4393-8f52-02fdd341e920",
+   "ea_id": "QM5_10022",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "035f1bf6-a29a-4cc8-9a4d-e0080a501b24",
+   "ea_id": "QM5_2002",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "63b32cae-2572-4604-92ee-e146323bec30",
+   "ea_id": "QM5_12395",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "de326c7b-0b4d-4f03-a921-e41dbd69f09c",
+   "ea_id": "QM5_10679",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "25c5c9cc-bfc5-4473-8c2f-c0232b42b70c",
+   "ea_id": "QM5_12396",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6e068af6-f420-46ab-bf97-81125d35c415",
+   "ea_id": "QM5_10232",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a1697d83-5c07-4fda-9ad4-febdc577b64b",
+   "ea_id": "QM5_10202",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0a20b8e7-7ef4-468a-96fe-9fa435ef52dd",
+   "ea_id": "QM5_1614",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "23ac90c0-bd52-476a-ab6c-65012d0bf2a1",
+   "ea_id": "QM5_1235",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "705ee3a6-308a-42d4-ab31-5e2d109e11ed",
+   "ea_id": "QM5_9221",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "803c91b8-3626-4ad5-9d94-eeb558ff40ae",
+   "ea_id": "QM5_12404",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "80d8f13e-8ae8-44b5-8e2b-58b1c321fa27",
+   "ea_id": "QM5_12116",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "26cdf90d-caa0-4292-b428-95a5908aff39",
+   "ea_id": "QM5_10714",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fa447992-70c8-43e7-b35f-4da7e1bc89c1",
+   "ea_id": "QM5_1642",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1c7fc709-26a0-4978-bc7b-c660c4bc91b4",
+   "ea_id": "QM5_11178",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "594edfc0-54ac-4140-adc7-3d258a08439e",
+   "ea_id": "QM5_12785",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0bbc1f5d-bc0d-4bf9-b397-416e1469d4c0",
+   "ea_id": "QM5_12495",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "142a3fbf-2e2c-4e94-b7fb-47f75265b9ce",
+   "ea_id": "QM5_9123",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "264ac9ab-7671-4bca-b099-758d3a211891",
+   "ea_id": "QM5_10854",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0397cbe2-d476-478e-a380-b96288cfca8f",
+   "ea_id": "QM5_1505",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f870181c-7a04-4c6b-b876-c46826d5ebd4",
+   "ea_id": "QM5_10412",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b7047d87-f12d-43b8-9185-0b3403d03074",
+   "ea_id": "QM5_10316",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e7acc0d7-6040-4a0a-9a9c-1557597c5fe1",
+   "ea_id": "QM5_10913",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "53fe8442-1bc5-4fcb-8aa9-96c36a61fd5d",
+   "ea_id": "QM5_11016",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fb0e14db-0dba-468a-aaca-b0ecdc35614f",
+   "ea_id": "QM5_1133",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3a3d6cea-7719-4a96-914a-efcaef78b31a",
+   "ea_id": "QM5_11297",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bfa92f7f-8f2c-4ac0-9489-4a59604e9890",
+   "ea_id": "QM5_20026",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9e9f686f-4962-4dcb-87b2-95c95e7c8a4d",
+   "ea_id": "QM5_20033",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "414084f7-9b71-49cd-9a87-301d198c1e91",
+   "ea_id": "QM5_10405",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "047cf509-db75-4b07-8203-e7443281ec6d",
+   "ea_id": "QM5_11230",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "604b0eea-4a62-43fb-9a9c-e9b8ec461da4",
+   "ea_id": "QM5_9954",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4f681d9b-96d6-4a34-8634-0bc2bdb2a70c",
+   "ea_id": "QM5_10847",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2f6e875b-376d-4bb5-9c0e-d0a8cea0b295",
+   "ea_id": "QM5_12350",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "da4a947d-8369-4b69-a795-6ff5cf1551ff",
+   "ea_id": "QM5_10273",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "89453160-1ec8-4a00-b4dd-f58d52a23809",
+   "ea_id": "QM5_10272",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "97f8f2d5-9b87-4811-aca4-fad802abf83f",
+   "ea_id": "QM5_10273",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d4efb802-f99c-4efc-9d40-67b37b642fd2",
+   "ea_id": "QM5_10277",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "57c46d7a-fb44-4b12-8389-abfc9391e17c",
+   "ea_id": "QM5_10280",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "05743968-b007-4b34-b30b-a21ccfd8d951",
+   "ea_id": "QM5_12484",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a5263e59-7b3c-4a63-95b8-5704eeea5ae1",
+   "ea_id": "QM5_10037",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4ba0a8ad-29c6-42ff-873b-139c09164832",
+   "ea_id": "QM5_10037",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0dfca504-cbd1-4252-9d8e-246168a3ef34",
+   "ea_id": "QM5_10114",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6fcbd8b1-99a9-4139-927c-4bb03d4095fb",
+   "ea_id": "QM5_10123",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d7d03cd1-b3f6-47ae-b70c-ee2473fa82f1",
+   "ea_id": "QM5_10128",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "62cf8eea-1b75-4aa2-8f7d-dde6af854bd7",
+   "ea_id": "QM5_10145",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8e54a928-d1f1-4005-a3f6-deb79cb2b177",
+   "ea_id": "QM5_10148",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "38275ef9-a43f-42f1-8ec9-fd9fc352ec5f",
+   "ea_id": "QM5_10177",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "40c6a7a6-ff9e-4b8b-9c08-e6ad730fb82a",
+   "ea_id": "QM5_10183",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "659da1d2-6b3a-483b-afb9-8bbd09c32a6e",
+   "ea_id": "QM5_10212",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e3ef199b-9973-4af6-a7be-b5f1ae077ea8",
+   "ea_id": "QM5_10226",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7877d381-ca43-4987-99a9-1462f14f22a2",
+   "ea_id": "QM5_10267",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "df932215-cdc9-49b7-a926-2a8c5dd61f6e",
+   "ea_id": "QM5_10271",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d619995d-02aa-43a2-b110-1fc2b132c655",
+   "ea_id": "QM5_10272",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "87469329-8ff6-4f44-9312-514c159d35bc",
+   "ea_id": "QM5_10273",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c51532e5-e9c2-458e-883a-d4d62072b139",
+   "ea_id": "QM5_10276",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bfa7bc66-0900-45c5-b8a6-e1c6bdab7fe5",
+   "ea_id": "QM5_10277",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "29f43aed-211a-4fdf-b858-6885bc14cefa",
+   "ea_id": "QM5_10280",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d002cca4-e2e0-40c1-86d1-cc4b6737f551",
+   "ea_id": "QM5_10287",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bc036d2d-a268-4251-889b-0c5bbecb8bb6",
+   "ea_id": "QM5_10290",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "42d6b57b-f9fb-4543-90c3-4daba41f4b10",
+   "ea_id": "QM5_10291",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9caff862-12c1-4d7b-a8a0-8589edf1d93a",
+   "ea_id": "QM5_10296",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "22a0b5e4-149d-463f-af8c-cbf3758a51d1",
+   "ea_id": "QM5_10350",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "18d6c3e3-f7f2-4ebf-a61d-9a7968db83ed",
+   "ea_id": "QM5_10386",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2d0a6583-943b-4275-ae11-49142e7f98ab",
+   "ea_id": "QM5_10396",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a485293c-b1bb-4b12-9c13-57a4ca50fed0",
+   "ea_id": "QM5_10404",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f338d6c6-17fb-45a1-9374-e210af80522a",
+   "ea_id": "QM5_10457",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "69420d44-2231-48c7-a904-60cb94f6670e",
+   "ea_id": "QM5_10463",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "eeedc5b2-fe9e-4ac2-96a4-5a6b9f3113a0",
+   "ea_id": "QM5_10541",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "942d89d9-6825-48a9-acf9-9b665f145958",
+   "ea_id": "QM5_10634",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "11710c51-9c82-4210-9de0-364f0bed4cc2",
+   "ea_id": "QM5_10658",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9946813b-3626-40ec-99d0-597b5b347df2",
+   "ea_id": "QM5_10661",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "63fc0c04-2e09-4494-b47f-a8cfc2ef60ed",
+   "ea_id": "QM5_10672",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "17eaf674-a442-40e8-905b-a2c47c547d7f",
+   "ea_id": "QM5_1068",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d4fcf41a-84c9-42e2-bea0-1be5bfe03056",
+   "ea_id": "QM5_10694",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4344267b-7e2b-4a31-8c51-5c6f387df1a0",
+   "ea_id": "QM5_10701",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1fb5f904-3c2c-476e-ac98-f81f18f8c8d7",
+   "ea_id": "QM5_10704",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "54e8d142-e3b4-4d8f-803c-e25972bf21e4",
+   "ea_id": "QM5_1077",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "29b1ddbf-df91-4032-b2f6-f5548806cf7e",
+   "ea_id": "QM5_10792",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ab3c7313-6b72-45e2-a7cb-bcacb5954a77",
+   "ea_id": "QM5_10809",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "86224a74-585b-4ffb-935e-9ca67c4da65a",
+   "ea_id": "QM5_10814",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ee38f4c0-c07a-45e9-8e04-db1ee2d16653",
+   "ea_id": "QM5_10869",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4a92a958-e135-4542-94bd-ffccb750a432",
+   "ea_id": "QM5_10912",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ece14be9-0b75-4444-8578-33421782a24e",
+   "ea_id": "QM5_1106",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cfc8ac8a-b804-4b0a-a6d4-f99f132923ac",
+   "ea_id": "QM5_1135",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "08414f62-80d8-4cb2-bc6d-0f1316b0417f",
+   "ea_id": "QM5_1222",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9a453643-2049-400f-ac13-bc8aee1666ef",
+   "ea_id": "QM5_1230",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3d69b40c-f0ae-4bfd-b3e1-38eb7ac038d7",
+   "ea_id": "QM5_12350",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9e2afaf5-04c2-4e0c-be37-ba0057077a3a",
+   "ea_id": "QM5_12361",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "11e55879-4bcf-4634-9024-2d76e8ce3758",
+   "ea_id": "QM5_12365",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0ae68215-cea8-41ab-b826-c16c662dbef0",
+   "ea_id": "QM5_13012",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "290f513d-cef9-4b38-9997-cc4e3bd0b9d9",
+   "ea_id": "QM5_1371",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "51a6632a-cdaa-458a-9152-aad603889f7b",
+   "ea_id": "QM5_1551",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "38e67ff0-2950-4f6d-a00d-1bfd8fa4403c",
+   "ea_id": "QM5_1556",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "63ccc5f7-128c-4507-a458-cfcac34a0534",
+   "ea_id": "QM5_1567",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9374da7a-6f17-4d70-904f-3af2b5bda996",
+   "ea_id": "QM5_20041",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7f60d022-e7c2-4f4f-a324-6daa3ec03dcc",
+   "ea_id": "QM5_20068",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "65e689e4-e8fd-41f5-b0c8-6e8423033362",
+   "ea_id": "QM5_12933",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "53871665-c152-4704-a98b-5dca7ab4f6b6",
+   "ea_id": "QM5_12935",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b4be9ffc-5ada-4411-8eca-6f06be11b069",
+   "ea_id": "QM5_12742",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "461761e6-2185-4f22-a59f-714ac6eda972",
+   "ea_id": "QM5_11174",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "aa548c2c-105f-4167-a15a-9e14ab75d201",
+   "ea_id": "QM5_11174",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "76d34b29-ce27-4b60-98d9-a0f274bf0f06",
+   "ea_id": "QM5_20188",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fed64d4e-7664-4691-bc67-9741ed07bb2f",
+   "ea_id": "QM5_10228",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e3170597-8b04-4aaf-949e-e4824dbdad0c",
+   "ea_id": "QM5_9576",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d74447a0-861c-4393-9fb6-1f5415cd2255",
+   "ea_id": "QM5_10343",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "db69847a-f488-4ba4-ae7e-8c730c52d248",
+   "ea_id": "QM5_1232",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9e07eebd-2ed7-4e3a-9f09-1ffe80b0739c",
+   "ea_id": "QM5_1208",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c8ee5d83-eed7-4209-af0e-d144c3f64a12",
+   "ea_id": "QM5_11233",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0e06e86c-058c-42dc-8127-107cdc7e5e3d",
+   "ea_id": "QM5_10203",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f6ca41f5-98c1-4dab-9133-4e66d8dec845",
+   "ea_id": "QM5_1588",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0d13f3e1-2873-4666-ab29-fea66f6f6bc6",
+   "ea_id": "QM5_1130",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4a87da86-de9d-44fd-903f-3bc28395e3d7",
+   "ea_id": "QM5_1119",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4dc9dab5-8f92-4121-a4a0-ac8b33d10ca0",
+   "ea_id": "QM5_12109",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f18da196-4690-4710-8633-25b399fc4be2",
+   "ea_id": "QM5_1119",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d8a8e877-1485-4fb2-9bda-7ccd64b20d9a",
+   "ea_id": "QM5_10380",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b93d0c6a-db4e-4414-97bd-9f4fbfd1a058",
+   "ea_id": "QM5_9973",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c69ed378-2cba-466a-8bc3-925a3a52f875",
+   "ea_id": "QM5_1057",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7ef48ce8-7476-4613-9d58-1b8744c3c050",
+   "ea_id": "QM5_1127",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2d25e082-b515-4a5a-8cf5-33413c100bfc",
+   "ea_id": "QM5_1111",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "60a8895b-2ce5-457f-b173-13900c54be68",
+   "ea_id": "QM5_1057",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f52ffb33-0900-4db1-a31f-8e4226beeceb",
+   "ea_id": "QM5_1069",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b69e5218-29f3-4cd8-a9d2-001221cb1079",
+   "ea_id": "QM5_2012",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ab7a12af-0ec0-4cd7-b6e5-df8c223c7ca1",
+   "ea_id": "QM5_10892",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "98ad83cd-1b77-4013-a2b7-0cbedd136dd3",
+   "ea_id": "QM5_10718",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8ba26768-d565-443c-9ed8-5ca8737ee80b",
+   "ea_id": "QM5_2012",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d3d084d2-93aa-45eb-a952-64ad41e83c80",
+   "ea_id": "QM5_2012",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "60c593ad-03f1-48d4-bc2a-a03ffdd42995",
+   "ea_id": "QM5_12376",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d22765ed-1934-4a22-9e77-17baf2b03881",
+   "ea_id": "QM5_11243",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dd502900-d1a6-488d-83b9-5c10981ad56e",
+   "ea_id": "QM5_1248",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "071a4a19-64f6-46c8-84bf-ca00d794d01c",
+   "ea_id": "QM5_12376",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4a54a526-a23e-42b0-8a1b-0b350da710cc",
+   "ea_id": "QM5_1127",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "36a3f949-bb4b-4825-b04c-c557148c2c58",
+   "ea_id": "QM5_10310",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a9e40ac7-1c29-431d-877d-a9071a90b04e",
+   "ea_id": "QM5_10310",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e48a8110-36cc-4dec-a359-fbcc32cadc7d",
+   "ea_id": "QM5_10309",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "813051f3-eb7d-4f3a-9786-c859f976f1a4",
+   "ea_id": "QM5_10309",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cae1e289-adcd-470b-8b43-2551512d063c",
+   "ea_id": "QM5_12382",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3f9214c6-587d-404c-8b88-6c358704b0c4",
+   "ea_id": "QM5_12382",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "efbdb694-3fa8-4833-a4e7-3d35131b3669",
+   "ea_id": "QM5_12382",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "929086d5-bceb-4ea2-bcb7-ba6b2377fa50",
+   "ea_id": "QM5_12382",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bffb8eaf-beff-4dee-93e6-2920bdbdd106",
+   "ea_id": "QM5_12382",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ee30b9d7-03ef-4475-a577-87c427450599",
+   "ea_id": "QM5_12528",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "931578bc-ecba-4132-9155-003cedbe0abe",
+   "ea_id": "QM5_10718",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9bcc54af-e108-4d8b-a9b5-3f3e4278dace",
+   "ea_id": "QM5_1127",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4beeefc3-1803-46c8-adb9-a9055143c8b2",
+   "ea_id": "QM5_10009",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "efa18620-f1cc-4824-930c-3aa9629617d4",
+   "ea_id": "QM5_11028",
+   "symbol": "EURJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cc6def5c-1e3d-4df9-93d3-5ed2a003f30c",
+   "ea_id": "QM5_1196",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e77e9043-b5fc-4314-bc17-2d070b683cee",
+   "ea_id": "QM5_1208",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "53579771-8b54-4927-b858-623a5f576f66",
+   "ea_id": "QM5_1196",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d1c36158-efc8-40cf-9e72-b421f7e404c7",
+   "ea_id": "QM5_1208",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8ddd2705-9023-41b7-b376-14696bfa8e34",
+   "ea_id": "QM5_1156",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1e042daa-fd52-4502-ae15-32694ba3b6f6",
+   "ea_id": "QM5_1058",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b72bec52-4e5b-499f-b2e1-cbbaa23d345d",
+   "ea_id": "QM5_1227",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9ab4e846-bfbb-4a26-aec4-604bcdd51898",
+   "ea_id": "QM5_10110",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a0a0128f-a245-4fab-959f-c4941585dd62",
+   "ea_id": "QM5_10260",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7a857d71-4356-446c-aa46-5b9482b8b8e7",
+   "ea_id": "QM5_10452",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c2764390-1e0a-4918-ad8a-df475776f48b",
+   "ea_id": "QM5_10743",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "55896165-3df4-4ecb-8cb9-87d0c626377c",
+   "ea_id": "QM5_10468",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "24a62719-15a3-46fb-993d-7a58d2c53343",
+   "ea_id": "QM5_10469",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "298ef4b0-3913-4bc2-9fec-eb4baaa26cab",
+   "ea_id": "QM5_10932",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6579c644-201f-4bd3-97d5-5a834a7596a6",
+   "ea_id": "QM5_11129",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fa301c94-d6f9-4d24-814d-90f743efe018",
+   "ea_id": "QM5_10127",
+   "symbol": "UK100.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c690206d-0246-45c5-8aa4-4ece5a01eb9b",
+   "ea_id": "QM5_10131",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4ef88fd8-0303-432a-9fe5-c253b17c4517",
+   "ea_id": "QM5_10291",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "287faf28-eff4-4a72-896c-ed18cea4696a",
+   "ea_id": "QM5_10916",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6809b09f-d907-4128-8637-a738165c85b0",
+   "ea_id": "QM5_1061",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7b5b2aec-27e3-44b5-bd91-6bdd0ceca678",
+   "ea_id": "QM5_10851",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "15b09099-897a-4fd8-97b2-fa80bbd7d5bf",
+   "ea_id": "QM5_10950",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0e7ab5af-cc8a-46b0-ad92-ba674d08a551",
+   "ea_id": "QM5_9997",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1ba94bfa-b7ac-4b48-96f3-a2a521600d53",
+   "ea_id": "QM5_10679",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5ee90609-be69-4a08-affc-f780d1caaa9b",
+   "ea_id": "QM5_11630",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ec4a172f-fc3d-4c46-81b0-4f1702fb6f42",
+   "ea_id": "QM5_11882",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d4f8e6aa-3fa5-4a3c-a81c-475ba7d45174",
+   "ea_id": "QM5_12796",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "eeae4565-fa9a-4124-9539-0fade02a7c11",
+   "ea_id": "QM5_12552",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ff2bd214-36ea-4443-9e3d-5cc980ae4e51",
+   "ea_id": "QM5_10973",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "34b6bbfb-f8ab-4ea4-985b-d22b0df9ebf1",
+   "ea_id": "QM5_10627",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "43df2d52-813b-493d-9699-6f6da7bf4e86",
+   "ea_id": "QM5_10773",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "460d8e5d-2f7b-4a9c-a9b5-119a3d353416",
+   "ea_id": "QM5_10465",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "51b2d422-4fd3-4d5b-a1c4-7c15b1b9faec",
+   "ea_id": "QM5_10785",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b17aed8f-271c-4788-b669-e130e3031ef2",
+   "ea_id": "QM5_10926",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d71e8a1b-89e9-4a33-8784-ed3c0c61f8ad",
+   "ea_id": "QM5_10702",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b5283747-8872-44cb-a8d6-00f39fbd96a7",
+   "ea_id": "QM5_10468",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5a24b8b5-5f98-4050-a915-d88dc410326c",
+   "ea_id": "QM5_10839",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "14c269b8-78aa-497c-95f5-029616a894aa",
+   "ea_id": "QM5_12544",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3a8f6a6a-8978-4ab2-8c8e-ab21c4cc54ac",
+   "ea_id": "QM5_12410",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cd0a5a4d-408e-4a4f-9029-e9f1bd2fa84a",
+   "ea_id": "QM5_10295",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1673d723-3e2f-4bc1-89f8-2bc35a145986",
+   "ea_id": "QM5_12376",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7697b0e6-fc0f-4868-adf4-39ac8975ab4d",
+   "ea_id": "QM5_10805",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "31eb5fbb-5ca7-47df-aaf0-38142c5d8d4d",
+   "ea_id": "QM5_11811",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ea56e554-1d50-4b2d-9103-09692a34df95",
+   "ea_id": "QM5_11175",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cd6995b5-b49e-481f-8f24-4f787e452249",
+   "ea_id": "QM5_10715",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1a923e8e-eba8-4db4-9c0d-fc37b5d211db",
+   "ea_id": "QM5_12571",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "33c2263b-2505-4825-a7a4-9254fcb90051",
+   "ea_id": "QM5_11659",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f7a95a0a-6dff-4133-b453-518faa3950a6",
+   "ea_id": "QM5_10932",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b97e54ec-ccdf-423a-910f-ee56a05dc845",
+   "ea_id": "QM5_10771",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6a9f78bd-ac17-4a64-823f-c5cc5a84ea30",
+   "ea_id": "QM5_10599",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b27548cf-5ad3-4b62-93a5-f814ba359d48",
+   "ea_id": "QM5_12109",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3bed30df-4bea-4f89-baa2-86228deea1e3",
+   "ea_id": "QM5_9573",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "410e3b41-4308-4f24-9eff-173eb79f4f34",
+   "ea_id": "QM5_13137",
+   "symbol": "SP500.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "23966d08-fa5a-4ab6-8ea0-bda5aa54d3eb",
+   "ea_id": "QM5_13137",
+   "symbol": "WS30.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "59f6c4da-a2bb-48e0-8aea-75e0e703f6e2",
+   "ea_id": "QM5_10748",
+   "symbol": "NDX.DWX",
+   "phase": "Q04",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2735c545-53d7-47a0-b221-3f886964e099",
+   "ea_id": "QM5_1208",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c15e6f39-ed70-413e-ab1d-e32ac8d1593e",
+   "ea_id": "QM5_1232",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "445c399f-2325-4056-a1a9-5ae4922476e3",
+   "ea_id": "QM5_1232",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3c91ee1b-5fcb-4594-8aad-bfc6c21b2d39",
+   "ea_id": "QM5_1232",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4cd99d6e-4f15-4fd8-9922-0e2b2f15e13e",
+   "ea_id": "QM5_12531",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "16fcea33-e746-467e-84c8-905d0b37e3a7",
+   "ea_id": "QM5_11100",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "23311e78-f91e-4d7c-bf0e-ba0916ee89cf",
+   "ea_id": "QM5_11100",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "adfa7182-7db2-45de-badd-f469bc08a928",
+   "ea_id": "QM5_12724",
+   "symbol": "QM5_12724_XAU_XAG_BRK_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "06d828d5-56ee-446e-8770-f71bbc33b54d",
+   "ea_id": "QM5_20012",
+   "symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b09aee43-d49c-4e10-a6be-fbee5545196b",
+   "ea_id": "QM5_12382",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "928781de-132b-415a-86a4-3167327f95a6",
+   "ea_id": "QM5_1232",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "242767ab-a76d-4654-9338-6e193f0b0814",
+   "ea_id": "QM5_10718",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "381e3ed3-9ec6-422a-a552-b6c1e7d597e6",
+   "ea_id": "QM5_20243",
+   "symbol": "QM5_20243_XAU_XAG_TOM_XMOM3_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2343e92a-25da-4285-a4d2-b2df3adb7ff2",
+   "ea_id": "QM5_20265",
+   "symbol": "QM5_20265_XAU_XAG_FAILRV_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7af1c267-0624-4a59-8b15-e86acd4a92ed",
+   "ea_id": "QM5_10405",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q03",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4d15f509-e195-4968-8b2c-fabec3e82634",
+   "ea_id": "QM5_11174",
+   "symbol": "SP500.DWX",
+   "phase": "Q03",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d471523c-8ad1-4524-adba-1706511233ce",
+   "ea_id": "QM5_1208",
+   "symbol": "WS30.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "05a9e849-1203-4b54-bfbc-1718b293ffd6",
+   "ea_id": "QM5_1199",
+   "symbol": "SP500.DWX",
+   "phase": "Q03",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "553826c7-4d29-40f3-bc2e-45853c24135b",
+   "ea_id": "QM5_1206",
+   "symbol": "SP500.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "01313455-7c11-4342-b99b-c6d403497103",
+   "ea_id": "QM5_1196",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ea9ea87c-6f24-40ae-abb0-35b3b8343e22",
+   "ea_id": "QM5_1233",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2a0e8880-0f27-48b8-8de7-391c73c84d5d",
+   "ea_id": "QM5_1233",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8e214373-22ad-4ac3-800d-bcc150db45c2",
+   "ea_id": "QM5_13060",
+   "symbol": "QM5_13060_XTI_EURCAD_RSPREAD_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "40eeb8b6-c840-4784-afe8-d16ef722e917",
+   "ea_id": "QM5_13113",
+   "symbol": "QM5_13113_ENERGY_MOM_IVOL_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a05104b7-ce9a-422f-964f-e982f5f340fa",
+   "ea_id": "QM5_13118",
+   "symbol": "QM5_13118_ENERGY_SKEW_RANK_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "358687ef-7ebc-4b9a-9210-229245cc5f29",
+   "ea_id": "QM5_13129",
+   "symbol": "QM5_13129_ENERGY_RSJ_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2975b3d4-d71a-4614-8702-96ff7eaaa0f0",
+   "ea_id": "QM5_13130",
+   "symbol": "QM5_13130_XTI_XNG_LOWMAX_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "07cc0adb-20ef-4a53-b835-61e7a12a151b",
+   "ea_id": "QM5_13145",
+   "symbol": "QM5_13145_ENERGY_IDMOM_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "45a7b28d-ae81-4c86-94ec-ae108b939a74",
+   "ea_id": "QM5_13147",
+   "symbol": "QM5_13147_XTI_XNG_JBETA_D1",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f43e7f82-c0bd-45e5-8681-5425f0b3e247",
+   "ea_id": "QM5_1233",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6463b2c7-7c54-4b9c-ab73-43edf2705244",
+   "ea_id": "QM5_1232",
+   "symbol": "WS30.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d640a70b-ef73-479e-a9e2-5137eeda6790",
+   "ea_id": "QM5_20007",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q03",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1b85ae6f-122d-43a7-83a1-686dd579581d",
+   "ea_id": "QM5_20007",
+   "symbol": "SP500.DWX",
+   "phase": "Q03",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "026f5829-8a9c-4785-8ff6-a557ac07fa51",
+   "ea_id": "QM5_1232",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q03",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4d537a11-a6d4-4014-bdbf-1a73c1923e7a",
+   "ea_id": "QM5_20095",
+   "symbol": "QM5_20095_XAU_XAG_MON_DIFF_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6817e2af-060d-4a60-86aa-08f1cb691d12",
+   "ea_id": "QM5_20184",
+   "symbol": "QM5_20184_XAU_XAG_XMOM3_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2bc327f8-f2a7-4672-b858-f8be4fee18bf",
+   "ea_id": "QM5_1056",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c02cef21-c648-4e06-af6e-b25ec5ecd61f",
+   "ea_id": "QM5_12382",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "09deaa17-cce4-42e3-b794-86be0e769b48",
+   "ea_id": "QM5_10050",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cface5b3-8ee6-4bb8-aa22-e72536fb0fef",
+   "ea_id": "QM5_1132",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4e1f01ba-1949-43e3-8107-5b98e9832246",
+   "ea_id": "QM5_10050",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f2639e8d-543c-4bb0-be74-ed0ee53d703b",
+   "ea_id": "QM5_1132",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f062273e-9998-4645-b241-977eee5301d3",
+   "ea_id": "QM5_10050",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "27cf2cff-e0df-4af7-b6de-2940e6ed916b",
+   "ea_id": "QM5_11051",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2661239f-0d9d-4867-8587-6ddfe208d9c8",
+   "ea_id": "QM5_1132",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7359ac6b-88ef-40c7-a379-579a96be7f62",
+   "ea_id": "QM5_1209",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3ce3ca76-22d6-495e-967a-515561178350",
+   "ea_id": "QM5_1210",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "457f051c-d75e-4e09-9803-711a0cdaf8af",
+   "ea_id": "QM5_1211",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "caacdf67-bcab-46d5-b576-9151cdd6eb4e",
+   "ea_id": "QM5_1212",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3ffec78f-fab7-4683-8c52-bbdb16ae8bae",
+   "ea_id": "QM5_1214",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "10658d1d-439c-4828-856f-3c7871f3c097",
+   "ea_id": "QM5_1217",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4d7e38ce-9964-4305-9650-dd9f67385625",
+   "ea_id": "QM5_1218",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ce05fa1a-aede-4ea4-8458-1d2ccad84f92",
+   "ea_id": "QM5_1132",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "79320431-c8b1-47ba-b975-086a034ac5d1",
+   "ea_id": "QM5_10025",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d54e1104-5c2a-4a83-8b6f-0986e15d93f9",
+   "ea_id": "QM5_10025",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e4fc33fd-4983-480b-ac19-0b5f9ec2d0cb",
+   "ea_id": "QM5_10025",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9a70b373-bc30-459a-af13-a0ad7637baeb",
+   "ea_id": "QM5_1193",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e2622f78-39a3-4748-b199-6a6ec431a92a",
+   "ea_id": "QM5_20260",
+   "symbol": "QM5_20260_XAU_XAG_MOMVOTE_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4db00c93-1456-4b82-ad3c-a04cf046e3dc",
+   "ea_id": "QM5_20236",
+   "symbol": "QM5_20236_XAU_XAG_VOV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "24a5a5d1-15af-4b4a-b6bf-195036aba1fa",
+   "ea_id": "QM5_1196",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ca1eadb1-e1aa-4cc7-9627-9075256550d5",
+   "ea_id": "QM5_1231",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "adb646f4-9404-44ce-ba05-4234d9882c87",
+   "ea_id": "QM5_11657",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c3056cf9-4f5b-4aa4-be85-3fe49f7c59ff",
+   "ea_id": "QM5_11657",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9b157560-6f63-4e91-8e9c-5a922c77b429",
+   "ea_id": "QM5_11235",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b55b1434-477c-47ea-b68c-2ad50c1395c4",
+   "ea_id": "QM5_1642",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0c8b1841-4dc8-4835-8b47-84b5cf61cb72",
+   "ea_id": "QM5_1800",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b80db39f-040d-4c9b-979d-0b7f44831b30",
+   "ea_id": "QM5_10189",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "838e5951-d2a4-4dab-98cd-6542ff29ffed",
+   "ea_id": "QM5_10327",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "94a4ff96-f568-4e06-ad6e-e9a14c81f75a",
+   "ea_id": "QM5_10327",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "89875e78-1233-4476-b6b2-46bafcdf6e7d",
+   "ea_id": "QM5_10369",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "446e60ca-e0fb-4084-975f-974fc76f5bee",
+   "ea_id": "QM5_10369",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "913ac412-5b99-4155-875e-646e8babc5ca",
+   "ea_id": "QM5_12356",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "490d0f36-cb84-5b51-9c89-4c61f7b64bb7",
+   "ea_id": "QM5_1383",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "82b7a859-3340-41b5-9874-6d4b8d2f1e32",
+   "ea_id": "QM5_1092",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2520b1f2-30f5-41e6-ae1c-00aabaaeea27",
+   "ea_id": "QM5_41164",
+   "symbol": "QM5_41164_XAU_XAG_MREPMEDIAN_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "def1e84b-2ba9-4744-8aec-8055f5209a34",
+   "ea_id": "QM5_41166",
+   "symbol": "QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f7c942b2-e0cb-4476-88f6-0e02d40ce01f",
+   "ea_id": "QM5_41285",
+   "symbol": "QM5_41285_XAU_XAG_JT_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "551274fc-dab0-4e92-a092-2cd13bd98790",
+   "ea_id": "QM5_41363",
+   "symbol": "QM5_41363_XTI_XNG_FLOWDIV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4106f3f8-1bdd-4a02-b2e9-0ef260d8cf0a",
+   "ea_id": "QM5_41365",
+   "symbol": "QM5_41365_XTI_XNG_DECOUPLE_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b2b80d5d-d221-4b07-9cea-ab1e9aa37713",
+   "ea_id": "QM5_41193",
+   "symbol": "QM5_41193_XTI_XNG_FRACD_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "556bab76-3de2-4124-a577-73ba76fddcd3",
+   "ea_id": "QM5_41226",
+   "symbol": "QM5_41226_XAU_XAG_MEDCAL_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "12184077-45c5-4621-964c-4028fe668e88",
+   "ea_id": "QM5_41359",
+   "symbol": "QM5_41359_XTI_XNG_WACCEL_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bf0b4f12-00f9-4f4d-af0a-ae8e6c5e5dfd",
+   "ea_id": "QM5_41360",
+   "symbol": "QM5_41360_XTI_XNG_WRETR_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d56450a8-517e-469f-a384-2eaea325535b",
+   "ea_id": "QM5_41361",
+   "symbol": "QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a13e3f3b-c319-4e99-8761-6db0ec957877",
+   "ea_id": "QM5_41186",
+   "symbol": "QM5_41186_XTI_XNG_MEDRUN_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c7bd17a3-6262-45d6-bd4f-99a982b01a30",
+   "ea_id": "QM5_41413",
+   "symbol": "QM5_41413_XAU_XAG_WALT3_CONT_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f5d1acbe-4e86-4fd5-9120-8ebf7b816f71",
+   "ea_id": "QM5_41414",
+   "symbol": "QM5_41414_XAU_XAG_WRELVOTE_FLIP_CONT_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f5f4b2e0-7172-42cc-bbd0-8a01de1c776d",
+   "ea_id": "QM5_41416",
+   "symbol": "QM5_41416_XAU_XAG_WRELVOTE_FLIP_FADE_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1cecabd6-7778-44aa-9c48-f738c6353655",
+   "ea_id": "QM5_41417",
+   "symbol": "QM5_41417_XAU_XAG_WSTREAK2_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e02b077e-85e1-433c-a15b-15d2154b5fb5",
+   "ea_id": "QM5_41418",
+   "symbol": "QM5_41418_XAU_XAG_WSTREAK2_CONT_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7debb301-a598-4864-a14b-adac7001b5c2",
+   "ea_id": "QM5_20291",
+   "symbol": "QM5_20291_XAU_XAG_HKURT_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e518cba9-bfd7-43bb-8e9b-5a6459d86726",
+   "ea_id": "QM5_41450",
+   "symbol": "QM5_41450_XAU_XAG_NR2_BODY_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f2d55a4f-5e4f-4387-b407-3b18f5a19849",
+   "ea_id": "QM5_41180",
+   "symbol": "QM5_41180_XTI_XNG_MSPEARMAN_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "28433272-cc99-48ba-bb04-cc8dcda8a817",
+   "ea_id": "QM5_41452",
+   "symbol": "QM5_41452_XAU_XAG_WR2_CLV_MOM_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d22217c3-bc38-4d9f-accd-20a589d988fc",
+   "ea_id": "QM5_41455",
+   "symbol": "QM5_41455_XAU_XAG_WR2_BODY_RV_D1",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "17e576cf-0d42-4a91-8428-2c0f201900fa",
+   "ea_id": "QM5_41394",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3b6df684-a80b-4ea8-a08d-557b3abc2997",
+   "ea_id": "QM5_9579",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f5a84101-5df7-4adb-8827-01b256da09b3",
+   "ea_id": "QM5_9579",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9f4b79f4-3dbc-4abc-8bb5-8ce0e63e63e2",
+   "ea_id": "QM5_9579",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "49eca2ba-7cb9-403e-a273-d756da1b7348",
+   "ea_id": "QM5_9579",
+   "symbol": "UK100.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "464affa5-67a1-4f80-8f71-f9452b9ca95a",
+   "ea_id": "QM5_9579",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "127aab04-5d60-4200-a573-3d3fb7287be6",
+   "ea_id": "QM5_10269",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "97c5fffa-691b-407a-8a5f-363197037048",
+   "ea_id": "QM5_11051",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "68906f50-50b7-4ca6-80d0-2020ca763a09",
+   "ea_id": "QM5_10030",
+   "symbol": "GBPJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "12f0104e-857d-4620-837f-de3f8f158adf",
+   "ea_id": "QM5_10886",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4195cc33-9d6c-41eb-aceb-49fd27b07980",
+   "ea_id": "QM5_11240",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f5b5d846-f126-420a-87c4-74ab04084e52",
+   "ea_id": "QM5_1246",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d00e688d-c089-44ce-bcdd-72861af458fe",
+   "ea_id": "QM5_12390",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "db45d207-cf1d-46fe-aff1-25f90af87d22",
+   "ea_id": "QM5_11243",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c0910b80-c5f8-4535-a0d6-40daccaceb94",
+   "ea_id": "QM5_1219",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "cdfe1c32-1cad-4959-b5cf-02f9794067a3",
+   "ea_id": "QM5_1191",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "649909f5-1306-4cff-a746-df50788b186f",
+   "ea_id": "QM5_1227",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c49531a8-617f-45f9-8233-84181b6267eb",
+   "ea_id": "QM5_1101",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b89889cd-5c5f-4d5a-bae7-7496f0df67e1",
+   "ea_id": "QM5_1127",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dc7b5297-0bdf-4240-935b-bc40eaa9b596",
+   "ea_id": "QM5_12529",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1d8a7a56-ce4d-43ac-a25b-884a9f473d4c",
+   "ea_id": "QM5_12529",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "70b5014b-a91d-48a5-add6-9d9fc85e82e1",
+   "ea_id": "QM5_1057",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "984e11cc-ab2c-42e5-a80b-59feb05e06db",
+   "ea_id": "QM5_1111",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "447d99ba-ddaf-47c6-bb6e-05be7dbd3f82",
+   "ea_id": "QM5_11243",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a9897f5b-5a91-45bc-bc31-2a3e6e7faffa",
+   "ea_id": "QM5_11178",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ee7fa98f-3435-46fb-9b97-ce6b4e4cd7c3",
+   "ea_id": "QM5_11243",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "78fa7ab2-8e33-460e-b874-8264dcbed913",
+   "ea_id": "QM5_1219",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "75bb3303-e8dd-433f-bbea-27ef2c32c1d0",
+   "ea_id": "QM5_1219",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "094c6d32-479d-453e-b373-ba7a447eb1c2",
+   "ea_id": "QM5_1081",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d7364501-52c2-4255-9443-b27c03ac95ab",
+   "ea_id": "QM5_10034",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "92199108-9c39-4a88-ad50-a21f9dac6872",
+   "ea_id": "QM5_11246",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "48adcf3d-7c8e-4899-90bc-5e0eafc3a2f5",
+   "ea_id": "QM5_11246",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "811f76a0-f109-41e4-906c-0acc2ca55dff",
+   "ea_id": "QM5_11247",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e1a22263-7582-41ed-aa8d-abffc6f4343e",
+   "ea_id": "QM5_11248",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3a172a21-2075-462e-a668-fa2265192d15",
+   "ea_id": "QM5_1175",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "15d56b98-c965-493c-af2b-28c1a564adf0",
+   "ea_id": "QM5_1186",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6f112cf3-37d9-4282-b2d6-6b1ba2c30dbe",
+   "ea_id": "QM5_11241",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1ca39c5f-a35a-4c8a-aad5-9f74a39c028f",
+   "ea_id": "QM5_12386",
+   "symbol": "XAGUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b2791f3f-03b4-4b8b-8ba6-7a89fddc567a",
+   "ea_id": "QM5_1060",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c973b4d3-ead4-470f-a539-2f9c0502be0f",
+   "ea_id": "QM5_11052",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e825f193-df3a-4600-aad8-e7211c1244dc",
+   "ea_id": "QM5_11249",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bdb784a4-f794-41ba-b740-6618953ed0f0",
+   "ea_id": "QM5_11250",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "35469777-d085-4955-834c-55a7b3c068f1",
+   "ea_id": "QM5_11253",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "28c20977-eb4d-4416-ac25-90d7593734e5",
+   "ea_id": "QM5_11255",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bb29f18e-2b08-461c-8fad-59f7cabec2a9",
+   "ea_id": "QM5_11058",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "848d9247-5c78-4724-839f-38f3d7350343",
+   "ea_id": "QM5_12386",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f9dcd653-ac6f-475c-a8f8-389f753d76ee",
+   "ea_id": "QM5_12409",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "44efc146-4da3-4769-bf2e-e1e4aa1d0a64",
+   "ea_id": "QM5_11055",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "859bac1f-94fe-4998-bd89-dda056ace894",
+   "ea_id": "QM5_1081",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "17d1c78d-d093-44dd-93be-ed6529498186",
+   "ea_id": "QM5_1081",
+   "symbol": "UK100.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ceceb191-a64e-4618-8cef-2b333c59af64",
+   "ea_id": "QM5_1113",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b5d01b02-416e-4de0-866f-c113b38cfbc5",
+   "ea_id": "QM5_1113",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "96da0e92-16ed-49d3-8e97-2103b1b31903",
+   "ea_id": "QM5_1105",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "afa0648d-9850-40ac-b267-80732d63493e",
+   "ea_id": "QM5_1113",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9205050a-7aae-477b-9711-8ed0f632b58a",
+   "ea_id": "QM5_1076",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "13353a86-b913-445e-a4c6-2b031b37637f",
+   "ea_id": "QM5_1175",
+   "symbol": "UK100.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e43b061b-1f49-48a2-9b25-2237731087e2",
+   "ea_id": "QM5_11242",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ead3514a-a825-48f9-9abf-135c69314e2e",
+   "ea_id": "QM5_1190",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ab79deeb-2b5c-4f20-89e9-8bf3cc33cf81",
+   "ea_id": "QM5_1175",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8c316dbd-0462-486c-8a5a-d1c2612138a0",
+   "ea_id": "QM5_1060",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1a3d8767-fc8a-4881-a3a9-5a0117bd4c04",
+   "ea_id": "QM5_1060",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "282f5c7a-30b6-47a4-b294-ab5c88f61dee",
+   "ea_id": "QM5_11052",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8aa9e078-4669-4129-871b-f356ae58351a",
+   "ea_id": "QM5_11256",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0c976922-d19d-4e8b-8dfb-5924046cae46",
+   "ea_id": "QM5_1048",
+   "symbol": "UK100.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5697e180-5d03-4788-ae9c-c27afc5dd6cb",
+   "ea_id": "QM5_12394",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "35d8bbde-c72c-4fd9-9103-cd910f7babf1",
+   "ea_id": "QM5_12394",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "278f3f73-16dd-4f21-9b88-c6edd6bd37b5",
+   "ea_id": "QM5_12409",
+   "symbol": "UK100.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "57b0a39e-7880-4284-a41d-6de95466b2c1",
+   "ea_id": "QM5_10338",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ec77cc57-a139-4ecd-b70c-a60b00a4e4b3",
+   "ea_id": "QM5_1175",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8da95b37-a815-49ef-9058-128f201302f7",
+   "ea_id": "QM5_1186",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "59b4fb58-9f86-4d5f-9f81-6f3d8181cdea",
+   "ea_id": "QM5_1081",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8ed4d54c-bbb5-4807-864a-f7189a3bccda",
+   "ea_id": "QM5_1081",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9b1fa63a-9933-448f-9668-25470c16b748",
+   "ea_id": "QM5_1081",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6c45e162-fb97-47d7-b9e7-9c91731d3c6b",
+   "ea_id": "QM5_1081",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "aaef4d09-bcd6-4479-961d-9dbef22be789",
+   "ea_id": "QM5_1132",
+   "symbol": "AUDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "19965d7b-3750-49e7-8819-07a697b4efb6",
+   "ea_id": "QM5_1132",
+   "symbol": "AUDCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c7c98cbb-d126-4aa2-b91d-ced85a753f94",
+   "ea_id": "QM5_1132",
+   "symbol": "AUDCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "af0f09d9-84b0-485f-8b34-4634a69f0c58",
+   "ea_id": "QM5_1132",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "54457d24-4791-4a5e-bcbc-b5e06eb93840",
+   "ea_id": "QM5_1132",
+   "symbol": "CADCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "79a8fea3-42b2-4d61-8543-27cf0cf80feb",
+   "ea_id": "QM5_1132",
+   "symbol": "CADJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b8a4623b-00ae-42ff-bfa5-090f8385ea9d",
+   "ea_id": "QM5_1132",
+   "symbol": "CHFJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "be7b677b-9ea3-4f6a-a75a-b309f8db46bf",
+   "ea_id": "QM5_1132",
+   "symbol": "EURCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "414c112d-c85f-4e0e-9c37-c7ca1c0a3827",
+   "ea_id": "QM5_1132",
+   "symbol": "EURCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8cdfe089-cc3c-4442-a29e-3fc91434f55c",
+   "ea_id": "QM5_1132",
+   "symbol": "EURAUD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "86a8ab69-ea32-4cb8-b96b-52fb5b57cbd2",
+   "ea_id": "QM5_1132",
+   "symbol": "EURGBP.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bea14df9-5c4a-4532-9f66-d0d3eb83bd6d",
+   "ea_id": "QM5_1132",
+   "symbol": "EURJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "48ce07a2-e1b7-4b6a-8c6b-08b37296badc",
+   "ea_id": "QM5_1132",
+   "symbol": "EURNZD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "044898a9-a349-4186-8f67-a1f63ddeba42",
+   "ea_id": "QM5_1132",
+   "symbol": "GBPAUD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "591469eb-fe7a-4aaf-98d1-e950210b86ab",
+   "ea_id": "QM5_1132",
+   "symbol": "GBPJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0aa0e276-7189-45f9-8443-7833b8f54bb9",
+   "ea_id": "QM5_1132",
+   "symbol": "GBPNZD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "ce282008-3c7b-456d-844f-c8d3b0559183",
+   "ea_id": "QM5_1132",
+   "symbol": "GBPCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "66f605e8-1e09-44ab-a41a-71d89b5d2507",
+   "ea_id": "QM5_1132",
+   "symbol": "NZDCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2604452e-9234-4102-a27e-b14b2fc93ce1",
+   "ea_id": "QM5_1132",
+   "symbol": "NZDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fdcc39ee-6bb4-41b6-9ef3-65fd1ea08e6c",
+   "ea_id": "QM5_1132",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "675abf3b-577c-4901-8453-2085b0fccdd9",
+   "ea_id": "QM5_1132",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e5ab9d0f-eca9-4817-a43a-3bd67dc151ae",
+   "ea_id": "QM5_10025",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1028d20f-dd40-4d41-ab5d-5df81e342c67",
+   "ea_id": "QM5_1132",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "eb0f9c58-b5e2-4452-9531-06fd46fe6bd1",
+   "ea_id": "QM5_10050",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "08c75930-7bf4-4350-a1a2-636a917d66c6",
+   "ea_id": "QM5_1132",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "77a0540d-abc0-43f1-84b2-d2ca21b52417",
+   "ea_id": "QM5_1132",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a7031fa3-969c-44fe-a675-6c1901fc180b",
+   "ea_id": "QM5_11242",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e78b7035-4a36-403e-abc6-e62beb7be12b",
+   "ea_id": "QM5_11242",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8766d577-41ea-4730-9df4-bb1bc5aedaef",
+   "ea_id": "QM5_11246",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "177a4e5b-78b6-48ee-b4e8-73b54c6ccd94",
+   "ea_id": "QM5_11246",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0c33668c-7264-42b9-a7ab-4d324cdf1b5d",
+   "ea_id": "QM5_11247",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "098b9525-fabe-497d-8bfe-5e8ca654f18d",
+   "ea_id": "QM5_11247",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "44fd8dca-cc3e-4b94-b667-6ddcdac6153f",
+   "ea_id": "QM5_11248",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9bc7709e-0bfb-4a1e-87f2-d3c1c6f6bc6c",
+   "ea_id": "QM5_11248",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5d5ee960-6e5b-4a1b-af74-53e4858bac20",
+   "ea_id": "QM5_11012",
+   "symbol": "GBPJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "312d4c3e-c4af-4b2e-9f98-2199dc6cd327",
+   "ea_id": "QM5_11012",
+   "symbol": "USDCHF.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f1857897-24e7-4602-a7f5-153060748b4e",
+   "ea_id": "QM5_11012",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8564c5e3-1e6c-4d73-b43b-1ac8b09e9155",
+   "ea_id": "QM5_11242",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d9e796ba-c27e-4f3d-acdc-8e8b9603b111",
+   "ea_id": "QM5_11246",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d939adbc-3ca9-478a-88b3-4b65e0ae588a",
+   "ea_id": "QM5_11247",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "24e2bce1-c187-474d-b6f1-14f7882c3d34",
+   "ea_id": "QM5_11248",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e9e3940d-2e3f-4862-a7dd-f65ad9a2af25",
+   "ea_id": "QM5_11052",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bada7e0e-daed-4da3-9e38-cce6bea73a15",
+   "ea_id": "QM5_11052",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9b4e991c-985e-4168-9921-0d07c3604c5f",
+   "ea_id": "QM5_11249",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "723af9fc-55e3-4804-b4da-6a07ff5fc5ae",
+   "ea_id": "QM5_11249",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "c6f33f3c-9b96-4203-a204-d1dbdb663936",
+   "ea_id": "QM5_11250",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "edacb023-0321-44d4-a219-ad6754a7f60c",
+   "ea_id": "QM5_11250",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d436e760-c24b-4522-9460-f3a6b3491013",
+   "ea_id": "QM5_11254",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0c9d9335-8cbe-4466-a2ed-a6491b2a65b8",
+   "ea_id": "QM5_11254",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "856d2409-5f21-4fcf-bb46-e27b18502987",
+   "ea_id": "QM5_11255",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "55eea53d-7de4-4f58-ac80-f7f9980f73ac",
+   "ea_id": "QM5_11256",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d17de913-497a-41a4-a181-172956c6a3d2",
+   "ea_id": "QM5_11253",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f0f449df-24ca-4a1e-b002-0fc869e1c147",
+   "ea_id": "QM5_11253",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a077d294-ed44-4fcd-a681-a656457da0f2",
+   "ea_id": "QM5_11255",
+   "symbol": "NZDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "776dea3f-dbe9-40ec-a6f4-777e2bd58e24",
+   "ea_id": "QM5_11256",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a2269bf7-ffc1-4815-b4ca-d2c9d920eadb",
+   "ea_id": "QM5_11012",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1d11d96c-1277-49d1-936d-fc3032096ddc",
+   "ea_id": "QM5_12378",
+   "symbol": "USDCAD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9f854f6b-ed10-4d13-80cd-8b3eb03484b0",
+   "ea_id": "QM5_11052",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a5aaaf8d-6e65-46ff-9cec-25f247e1da00",
+   "ea_id": "QM5_1243",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "816fc367-c86f-4124-ab83-54d74f1c5c96",
+   "ea_id": "QM5_11249",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e152574f-0357-4f8b-8f35-c333e646c566",
+   "ea_id": "QM5_11250",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1fd4165d-6a42-491a-8aa6-b7793689a78f",
+   "ea_id": "QM5_11253",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7a5106dd-ddd6-4e85-9287-9d235f1c6079",
+   "ea_id": "QM5_11254",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1b313432-2ad1-45da-a5cc-a720e096b83f",
+   "ea_id": "QM5_11255",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bac9bea7-f347-4f21-9255-d192ebe6b3bc",
+   "ea_id": "QM5_11256",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "97bdf327-b6ba-41f8-99dd-7c80479894e4",
+   "ea_id": "QM5_11058",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d50b5a92-85dd-41cf-a815-e56631dc9000",
+   "ea_id": "QM5_12378",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d8ab109b-8ae8-4d4d-b69b-51f05725a04a",
+   "ea_id": "QM5_11058",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "da368853-2559-45dd-985e-7bda42d86191",
+   "ea_id": "QM5_12378",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d4f00bff-ef31-4a90-b08f-5967b7dd0e2e",
+   "ea_id": "QM5_11055",
+   "symbol": "AUDUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "085917d9-e986-4476-8723-5f56b4be28f8",
+   "ea_id": "QM5_11055",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2c39310a-1371-48f0-9c9d-da54a063c1fb",
+   "ea_id": "QM5_11055",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2585add1-c99b-4d38-b32c-329a92aa50f1",
+   "ea_id": "QM5_1056",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fc06fa1a-9eb3-4ea9-adb4-d13f422baadd",
+   "ea_id": "QM5_1101",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dcc44e4a-c407-4808-995f-54ab8a1ccd4d",
+   "ea_id": "QM5_1056",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9e5aae3e-9275-4cdf-a25f-20ad12a21928",
+   "ea_id": "QM5_1056",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "516cc3b3-bb86-48f0-bff1-def139d5117c",
+   "ea_id": "QM5_11051",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e07cb163-6163-45e0-ab6e-b904aa896e0a",
+   "ea_id": "QM5_11051",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b6454586-13c4-422d-ba6a-dd6200f3707b",
+   "ea_id": "QM5_1234",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8acd5e58-5656-41bb-932f-ccc739f73947",
+   "ea_id": "QM5_10332",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "11937fe1-dea6-46b3-88bc-cd4859a431d1",
+   "ea_id": "QM5_1231",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "20385884-b65c-41fd-a52c-9e3ab0007089",
+   "ea_id": "QM5_1081",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f7265271-e36f-42ab-910f-db631e7aad4b",
+   "ea_id": "QM5_1105",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "40008f65-9277-4f5d-9ff4-4799cbfad486",
+   "ea_id": "QM5_1113",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7431bb57-4641-4452-9a48-1d6b567c136f",
+   "ea_id": "QM5_1178",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6d409d44-cea6-484b-b7be-c1abd067e172",
+   "ea_id": "QM5_10034",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "627fd1bb-34c9-41f5-a7f9-65fb4bcd6505",
+   "ea_id": "QM5_10322",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "541f43ca-91fd-45da-b663-04c3b606ff64",
+   "ea_id": "QM5_1076",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d880c861-6084-40d5-a986-b7bcd148af9c",
+   "ea_id": "QM5_10872",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "39740786-5c0a-4b78-985a-f2bce596b66d",
+   "ea_id": "QM5_11242",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6475fcbb-591c-4b24-9df4-b3a7a20dc152",
+   "ea_id": "QM5_11245",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8c0c340e-5eb3-42f5-9ea0-b4b23efb3d31",
+   "ea_id": "QM5_1175",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "389672b0-22ad-4912-b1dc-062e5edcef83",
+   "ea_id": "QM5_1190",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e58db3fb-d398-4a14-bb00-f2cb25f1bee0",
+   "ea_id": "QM5_1176",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e5cd0c31-88f3-431b-a93f-eb25c19e3b50",
+   "ea_id": "QM5_1641",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "60b433d2-c1e2-48bd-b528-e711970525ac",
+   "ea_id": "QM5_1060",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d7067d48-a42c-43a7-b81c-7d9dc7198deb",
+   "ea_id": "QM5_11052",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4b87cb65-610a-4f15-973a-1956326c7b0c",
+   "ea_id": "QM5_11254",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bc4177f8-22e7-4edd-870d-cba1f8d9bc18",
+   "ea_id": "QM5_11256",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "779fc254-1827-40bb-8d01-7bd974889553",
+   "ea_id": "QM5_1126",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "aa650e66-bf55-47eb-9251-0c3b147740da",
+   "ea_id": "QM5_1128",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7cab7a4e-9165-458c-a08b-e688edd6bbc8",
+   "ea_id": "QM5_11058",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3cfe52bd-53c3-49a4-8a7f-86b898d0a3d8",
+   "ea_id": "QM5_1112",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b275ea93-77b0-4cd1-b394-094aa5d346f5",
+   "ea_id": "QM5_12394",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d793fb91-21a9-4f06-aca3-ff2fec7043d8",
+   "ea_id": "QM5_10338",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1c722057-f984-429f-8002-9df9fe8ee537",
+   "ea_id": "QM5_1048",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a0067722-e7b9-4704-9452-6858a04aa93b",
+   "ea_id": "QM5_12389",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "8410aa38-9557-4050-9580-d7c88f6058f0",
+   "ea_id": "QM5_11055",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a0273d30-bcf1-4ccd-a667-3aeb1c50c1a2",
+   "ea_id": "QM5_1220",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4e4cf24c-3992-4e09-bdb2-f99db9ada3dc",
+   "ea_id": "QM5_1221",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "7e568e34-0e9d-4681-ba19-5ed0b55f68cb",
+   "ea_id": "QM5_11051",
+   "symbol": "WS30.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "d822ccdd-8e32-4a3c-b51d-38464b8b326c",
+   "ea_id": "QM5_11051",
+   "symbol": "XTIUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "81848d78-bd73-430f-8549-3c7b6b3acf6a",
+   "ea_id": "QM5_11051",
+   "symbol": "USDJPY.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "4a1207f6-6a5f-4010-84e5-48ee151c5333",
+   "ea_id": "QM5_12404",
+   "symbol": "NDX.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1544652b-c1e4-4fa8-888b-38f6ba821523",
+   "ea_id": "QM5_1057",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "903582db-0671-4bd2-8908-2af776da5c7e",
+   "ea_id": "QM5_11178",
+   "symbol": "GBPUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6317bdac-4beb-4a2e-9633-791a4311769a",
+   "ea_id": "QM5_1101",
+   "symbol": "EURUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "07dcce1f-5b15-4ccc-9154-aa760d933d67",
+   "ea_id": "QM5_1081",
+   "symbol": "XAUUSD.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3567089c-702b-4918-9fc8-76140ef23e23",
+   "ea_id": "QM5_1081",
+   "symbol": "SP500.DWX",
+   "phase": "Q02",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  }
+ ]
+}
