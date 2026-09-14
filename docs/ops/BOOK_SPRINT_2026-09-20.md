@@ -78,3 +78,11 @@ book with the exact remaining OWNER acts.
   Nacharbeit), signed pointer for the current identity, DXZ v2 builder APPLY_RECOMMENDED with manifest written, staging
   dry-run clean (24 re-weights + 4 burn-in presets), FTMO builder BAR_NOT_MET (fund scores 0.05–0.09 vs floor 1.0) →
   demo-book path. D4 moves to "profile V3 + reseal + controlled restart" tooling (Tue/Wed). AutoTrading stays OWNER-only.
+- **2026-09-14 (Mon, 23:4xZ)** — DEFECT in the exclusive lane (e246cc0dab): the pre-drain for the 44 GB SP500 row f15ac955
+  re-opened on every claim pass (`drain_predrain_open` churn, tracker waited 77,608 s, opened_epoch reset each time, so the
+  240-min bound never expired) and refused NEW long-run claims for ~4 h during the class-A Q08 reruns. Mitigation now:
+  all >= 40 GB pending rows parked under EXCLUSIVE_LANE_DEFERRED_BOOK_SPRINT_20260914 (6 SP500 Q04 + f15ac955 Q10_NEWS +
+  2 heavy FX8 baskets); churn stopped 23:27Z. Fix for Tue: pre-drain bound to its row (abandon only when the row is no
+  longer pending), original opened_epoch kept, pre_drain preserved through `_drain_abandon`, scan prefers the pre-drain
+  row; tests + reload. Sonnet lane: 5 more deliveries reviewed and approved (prescreen-skip rule cc33300782 unblocks
+  class C; evidence-loss forensics; 13013 refusal; OOS-2026 findings; winsweep compile diagnosis; hygiene batch).
