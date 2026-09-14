@@ -36,6 +36,14 @@ def _isolate_env(monkeypatch):
     monkeypatch.setenv("QM_TEST_TOTAL_RAM_GB", "80.0")
 
 
+@pytest.fixture(autouse=True)
+def _flat_index_class(monkeypatch):
+    """These tests model the historical flat 44 GB index class on GDAXI rows; the
+    2026-09-14 per-symbol table (GDAXI provisional 24 GB) is switched off here so the
+    drain arithmetic under test keeps its 44 GB premise (rollback switch, no other effect)."""
+    monkeypatch.setenv(tw.INDEX_TICK_RESERVATION_TABLE_ENV, "0")
+
+
 def _index_item(item_id="IDX1", ea_id="QM5_10815", phase="Q02"):
     return {"id": item_id, "ea_id": ea_id, "phase": phase, "symbol": "GDAXI.DWX"}
 
@@ -56,7 +64,7 @@ def test_scan_never_parks_census_for_census_protected_heavy_row(tmp_path, monkey
         _insert_wi(conn, "heavy", "Q02", symbol="GDAXI.DWX", status="pending",
                    payload={"priority_track": True})
         conn.commit()
-    monkeypatch.setattr(tw, "_opt_census_cells_claimable_in_txn", lambda conn: True)
+    monkeypatch.setattr(tw, "_opt_census_cells_claimable_in_txn", lambda conn, **kw: True)
     monkeypatch.setenv("QM_CENSUS_FIRST_RAM_PRIORITY", "1")
     # 50 GB would meet the drained floor (44 + 4) but not the census band (44 + 16).
     result = tw._drain_scan_candidate(root, free_ram_gb=40.0, host_total_gb=80.0,
@@ -161,7 +169,10 @@ def test_candidate_index_priority_row_qualifies():
     assert cand["floor_gb"] == 14.0
 
 
-def test_candidate_non_priority_heavy_row_never_qualifies():
+def test_candidate_non_priority_heavy_row_never_qualifies(monkeypatch):
+    # legacy 44 GB arithmetic under test; the 2026-09-14 exclusive lane changes these
+    # semantics by design (see test_terminal_worker_drain_exclusive_lane.py)
+    monkeypatch.setenv(tw.QM_DRAIN_EXCLUSIVE_ENV, "0")
     # Behavior: a non-priority heavy row never opens a drain -> yields no candidate.
     assert tw._drain_candidate_from_row(
         _index_item(), {}, 18.0, 80.0, _FZ
@@ -550,7 +561,10 @@ def test_scan_skips_unwinnable_heavy_head_for_lighter_priority_row(tmp_path):
     assert (winnable, reason) == (True, "")
 
 
-def test_scan_keeps_first_qualifying_row_when_none_is_winnable(tmp_path):
+def test_scan_keeps_first_qualifying_row_when_none_is_winnable(tmp_path, monkeypatch):
+    # legacy 44 GB arithmetic under test; the 2026-09-14 exclusive lane changes these
+    # semantics by design (see test_terminal_worker_drain_exclusive_lane.py)
+    monkeypatch.setenv(tw.QM_DRAIN_EXCLUSIVE_ENV, "0")
     root = tmp_path / "farm"
     farmctl.init_db(root)
     with farmctl.connect(root) as conn:
@@ -715,7 +729,7 @@ def armed_claim(monkeypatch):
     monkeypatch.setattr(tw, "_ram_reservation_for_candidate", fake_reservation)
     monkeypatch.setattr(tw, "_commit_headroom_gb", lambda: 10_000.0)
     monkeypatch.setattr(
-        tw, "_opt_census_cells_claimable_in_txn", lambda conn: False
+        tw, "_opt_census_cells_claimable_in_txn", lambda conn, **kw: False
     )
     monkeypatch.setattr(
         tw.farmctl,
@@ -1160,6 +1174,9 @@ def _q_rows_snapshot(count, gb_each=8.0):
 
 
 def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys, monkeypatch):
+    # legacy 44 GB arithmetic under test; the 2026-09-14 exclusive lane changes these
+    # semantics by design (see test_terminal_worker_drain_exclusive_lane.py)
+    monkeypatch.setenv(tw.QM_DRAIN_EXCLUSIVE_ENV, "0")
     # Two long-run rows are active (the fleet almost always has some), but the
     # heavy row is arithmetically winnable beside them: long runs add no
     # releasable headroom, yet free 12 + five short FX (5 * 8 = 40) = 52 >= need
@@ -1203,7 +1220,10 @@ def test_postprocess_arms_beside_long_runs_when_arithmetic_ok(tmp_path, capsys, 
 
 def test_postprocess_not_armed_beside_long_runs_when_arithmetic_short(
     tmp_path, capsys
-):
+, monkeypatch):
+    # legacy 44 GB arithmetic under test; the 2026-09-14 exclusive lane changes these
+    # semantics by design (see test_terminal_worker_drain_exclusive_lane.py)
+    monkeypatch.setenv(tw.QM_DRAIN_EXCLUSIVE_ENV, "0")
     # Two long-run rows active and only three short FX (3 * 8 = 24) releasable:
     # free 12 + 24 = 36 < need 48, so the heavy row is not winnable even beside
     # the long runs -> not armed, structured refusal insufficient_releasable_ram.

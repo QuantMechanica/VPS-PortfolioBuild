@@ -1982,6 +1982,83 @@ DRAIN_REEVAL_GRACE_SECONDS = 120.0
 # may arm again until free RAM alone already covers it, or the memory ages out.
 DRAIN_PLATEAU_MEMORY_MIN = 360.0
 DRAIN_STATE_FILENAME = "drain_window.json"
+# --- EXCLUSIVE lane (2026-09-14, Orchestrator; OWNER: "Es wird keinen RAM Zukauf
+# geben, bei SP500 und Multisymbol koennen halt keine anderen Backtests nebenbei
+# laufen") ---------------------------------------------------------------------
+# A row whose reservation is >= DRAIN_EXCLUSIVE_MIN_RESERVATION_GB (the measured
+# 44 GB SP500 single_index_tick class and the 44 GB heavy multisymbol fail-safe)
+# can never be claimed beside other testers on the 63 GB host and, under the
+# ordinary drain arithmetic, never even arms: need 44 + 4 + 3 = 51 GB against a
+# ceiling of 63.1 - 14 = 49.1 GB, so 779 rows were parked on 2026-09-14 as
+# "not winnable".  The exclusive lane makes such a row winnable in the ONE
+# configuration the OWNER accepted -- alone on the fleet:
+#   * any pending exclusive row (priority-tracked or not) may become the drain
+#     candidate;
+#   * its need is reservation + DRAIN_ARMED_ROW_FLOOR_GB with no margin (nothing
+#     is left to protect) against the EMPTY-fleet baseline
+#     DRAIN_HOST_BASELINE_EMPTY_FLEET_GB (evidence: 54.1 GB free on the idle ten-
+#     worker fleet 2026-09-14 04:xxZ and 52.7 GB beside one Q07 at 13:29Z);
+#   * while long runs (Q07+, news) are active the candidate cannot win; instead a
+#     PRE-DRAIN opens: NEW long-run claims are refused (short rows keep flowing)
+#     until the active long runs finish, bounded by DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN;
+#     then the ordinary bounded drain parks the short rows and the armed row is
+#     admitted at the reduced floor -- the normal RAM gate keeps every other
+#     tester out for the run's duration (that IS the exclusivity);
+#   * duty cycle: DRAIN_EXCLUSIVE_COOLDOWN_MIN after an exclusive claim and at
+#     most DRAIN_EXCLUSIVE_DAILY_MAX exclusive claims per UTC day, so the long-run
+#     lanes lose bounded time.
+# Claim-selection only: no reservation, verdict, gate, latch or reaper change.
+# Kill switch QM_DRAIN_EXCLUSIVE=0 restores the exact prior drain behaviour.
+QM_DRAIN_EXCLUSIVE_ENV = "QM_DRAIN_EXCLUSIVE"
+DRAIN_EXCLUSIVE_MIN_RESERVATION_GB = 40.0
+DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN = 240.0
+DRAIN_EXCLUSIVE_COOLDOWN_MIN = 180.0
+DRAIN_EXCLUSIVE_DAILY_MAX = 4
+DRAIN_HOST_BASELINE_EMPTY_FLEET_GB = 9.0
+DRAIN_EXCLUSIVE_SCAN_LIMIT = 400
+
+
+def _drain_exclusive_enabled() -> bool:
+    return os.environ.get(QM_DRAIN_EXCLUSIVE_ENV) != "0"
+
+
+def _drain_is_exclusive_reservation(reservation_gb: object) -> bool:
+    try:
+        value = float(reservation_gb)
+    except (TypeError, ValueError):
+        return False
+    return math.isfinite(value) and value >= DRAIN_EXCLUSIVE_MIN_RESERVATION_GB
+
+
+def _drain_utc_day(now_epoch: float) -> str:
+    return datetime.fromtimestamp(float(now_epoch), tz=timezone.utc).strftime("%Y-%m-%d")
+
+
+def _drain_exclusive_claims_today(state: dict[str, Any], now_epoch: float) -> int:
+    rec = state.get("exclusive_claims") if isinstance(state, dict) else None
+    if not isinstance(rec, dict) or rec.get("day") != _drain_utc_day(now_epoch):
+        return 0
+    try:
+        return int(rec.get("count") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _drain_predrain_now(state: dict[str, Any], now_epoch: float) -> tuple[bool, str | None]:
+    """Blocking-side read: is an exclusive PRE-DRAIN in force now (max window honoured)?"""
+    pre = state.get("pre_drain") if isinstance(state, dict) else None
+    if not isinstance(pre, dict):
+        return False, None
+    try:
+        opened = float(pre.get("opened_epoch") or 0.0)
+    except (TypeError, ValueError):
+        return False, None
+    if now_epoch - opened >= DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0:
+        return False, None
+    item_id = pre.get("item_id")
+    if not item_id:
+        return False, None
+    return True, str(item_id)
 # Short-row phases the drain refuses while open (the armed heavy row and any
 # COMPILE_EA row are always exempt); OPT_CENSUS is handled by name separately.
 _DRAIN_SHORT_ROW_PHASES = frozenset({"Q02", "Q03", "Q04", "Q05", "Q06"})
@@ -2216,7 +2293,10 @@ def _drain_candidate_is_winnable(
         and math.isfinite(releasable)
     ):
         return False, "unreadable_inputs"
-    need = reservation + DRAIN_ARMED_ROW_FLOOR_GB + DRAIN_WINNABLE_MARGIN_GB
+    exclusive = bool(candidate.get("exclusive")) and _drain_exclusive_enabled()
+    need = reservation + DRAIN_ARMED_ROW_FLOOR_GB + (
+        0.0 if exclusive else DRAIN_WINNABLE_MARGIN_GB
+    )
     try:
         long_run = float(long_run_ram_gb)
         host_total = float(host_total_gb)
@@ -2224,7 +2304,15 @@ def _drain_candidate_is_winnable(
         return False, "unreadable_inputs"
     if not math.isfinite(long_run):
         return False, "unreadable_inputs"
-    if math.isfinite(host_total):
+    if exclusive:
+        # An exclusive row only ever runs alone: any active long run means
+        # "not now" (the evaluator opens a PRE-DRAIN instead of refusing), and
+        # the ceiling is the empty-fleet baseline, not the busy-fleet one.
+        if long_run > 0.0:
+            return False, "exclusive_waits_for_long_runs"
+        if math.isfinite(host_total) and need > host_total - DRAIN_HOST_BASELINE_EMPTY_FLEET_GB:
+            return False, "exclusive_exceeds_empty_fleet_ceiling"
+    elif math.isfinite(host_total):
         ceiling = host_total - DRAIN_HOST_BASELINE_GB - max(0.0, long_run)
         if need > ceiling:
             return False, "long_run_ceiling"
@@ -2265,12 +2353,15 @@ def _drain_candidate_from_row(
     priority-tracked, drain-qualifying row yields a descriptor.
     """
     try:
-        if payload.get("priority_track") is not True:
-            return None
         multisymbol = _work_item_is_multisymbol(item, payload, multisym_ids)
         ram_class, reservation_gb = _ram_reservation_for_candidate(
             item, payload, multisymbol
         )
+        exclusive = _drain_exclusive_enabled() and _drain_is_exclusive_reservation(
+            reservation_gb
+        )
+        if payload.get("priority_track") is not True and not exclusive:
+            return None
         floor_gb = _ram_floor_for_class(ram_class)
         if not _drain_row_is_qualifying(
             reservation_gb=reservation_gb,
@@ -2289,6 +2380,7 @@ def _drain_candidate_from_row(
                 item, payload, multisymbol
             ),
             "floor_gb": round(float(floor_gb), 1),
+            "exclusive": bool(exclusive),
         }
     except Exception:
         return None
@@ -2382,6 +2474,39 @@ def _drain_evaluate(
     except (TypeError, ValueError):
         cooldown_until = 0.0
     tracker = dict(state.get("tracker") or {})
+    # Exclusive lane bookkeeping (2026-09-14): pre-drain record, exclusive
+    # cooldown and the per-UTC-day claim counter travel through unchanged.
+    pre_drain = state.get("pre_drain") if isinstance(state.get("pre_drain"), dict) else None
+    try:
+        exclusive_cooldown_until = float(state.get("exclusive_cooldown_until_epoch") or 0.0)
+    except (TypeError, ValueError):
+        exclusive_cooldown_until = 0.0
+    exclusive_claims = dict(state.get("exclusive_claims") or {}) if isinstance(state.get("exclusive_claims"), dict) else {}
+    if pre_drain is not None:
+        try:
+            pre_opened = float(pre_drain.get("opened_epoch") or now_epoch)
+        except (TypeError, ValueError):
+            pre_opened = now_epoch
+        candidate_id = str(qualifying_candidate.get("item_id")) if qualifying_candidate else None
+        if now_epoch - pre_opened >= DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0:
+            events.append({
+                "event": "drain_predrain_expired",
+                "item_id": pre_drain.get("item_id"),
+                "ea_id": pre_drain.get("ea_id"),
+                "reason": "max_predrain_window",
+                "open_seconds": round(now_epoch - pre_opened, 1),
+            })
+            exclusive_cooldown_until = now_epoch + DRAIN_EXCLUSIVE_COOLDOWN_MIN * 60.0
+            pre_drain = None
+        elif candidate_id != str(pre_drain.get("item_id")):
+            events.append({
+                "event": "drain_predrain_abandoned",
+                "item_id": pre_drain.get("item_id"),
+                "ea_id": pre_drain.get("ea_id"),
+                "reason": "candidate_changed_or_gone",
+                "open_seconds": round(now_epoch - pre_opened, 1),
+            })
+            pre_drain = None
     plateau_memory = (
         dict(state.get("plateau_memory"))
         if isinstance(state.get("plateau_memory"), dict) and state.get("plateau_memory")
@@ -2421,10 +2546,44 @@ def _drain_evaluate(
         except (TypeError, ValueError):
             first_skipped = now_epoch
         waited = now_epoch - first_skipped
+        is_exclusive = bool(qualifying_candidate.get("exclusive"))
+        predrain_opened = False
+        exclusive_blocked = is_exclusive and (
+            now_epoch < exclusive_cooldown_until
+            or _drain_exclusive_claims_today(
+                {"exclusive_claims": exclusive_claims}, now_epoch
+            ) >= DRAIN_EXCLUSIVE_DAILY_MAX
+        )
         if (
             now_epoch >= cooldown_until
             and waited >= DRAIN_WINDOW_TRIGGER_MIN * 60.0
+            and not exclusive_blocked
         ):
+            if (
+                not winnable
+                and is_exclusive
+                and str(winnable_reason or "") == "exclusive_waits_for_long_runs"
+                and pre_drain is None
+            ):
+                predrain_opened = True
+                pre_drain = {
+                    "item_id": cid,
+                    "ea_id": qualifying_candidate.get("ea_id"),
+                    "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                    "opened_epoch": now_epoch,
+                    "opened_iso": _drain_iso(now_epoch),
+                    "long_run_ids_at_open": sorted(
+                        str(x) for x in (long_run_ids_active or [])
+                    ),
+                }
+                events.append({
+                    "event": "drain_predrain_open",
+                    "item_id": cid,
+                    "ea_id": qualifying_candidate.get("ea_id"),
+                    "reservation_gb": qualifying_candidate.get("reservation_gb"),
+                    "waited_seconds": round(waited, 1),
+                    "long_run_ids_active": sorted(str(x) for x in (long_run_ids_active or [])),
+                })
             if winnable:
                 active = {
                     "item_id": cid,
@@ -2436,7 +2595,9 @@ def _drain_evaluate(
                     "long_run_ids_at_open": sorted(
                         str(x) for x in (long_run_ids_active or [])
                     ),
+                    "exclusive": is_exclusive,
                 }
+                pre_drain = None  # the pre-drain (if any) is consumed by the open
                 events.append({
                     "event": "drain_window_open",
                     "item_id": cid,
@@ -2464,7 +2625,7 @@ def _drain_evaluate(
                     )
                 except (TypeError, ValueError):
                     last_epoch = None
-                if (
+                if not predrain_opened and (
                     last_epoch is None
                     or now_epoch - last_epoch >= DRAIN_COOLDOWN_MIN * 60.0
                 ):
@@ -2491,6 +2652,12 @@ def _drain_evaluate(
     }
     if plateau_memory:
         new_state["plateau_memory"] = plateau_memory
+    if pre_drain is not None:
+        new_state["pre_drain"] = pre_drain
+    if exclusive_cooldown_until > 0.0:
+        new_state["exclusive_cooldown_until_epoch"] = exclusive_cooldown_until
+    if exclusive_claims:
+        new_state["exclusive_claims"] = exclusive_claims
     return new_state, events
 
 
@@ -2517,6 +2684,18 @@ def _drain_note_claim(
         "cooldown_until_epoch": now_epoch + DRAIN_COOLDOWN_MIN * 60.0,
         "tracker": {},
     }
+    if active.get("exclusive"):
+        day = _drain_utc_day(now_epoch)
+        prior = state.get("exclusive_claims") if isinstance(state.get("exclusive_claims"), dict) else {}
+        count = _drain_exclusive_claims_today({"exclusive_claims": prior}, now_epoch) + 1
+        new_state["exclusive_claims"] = {"day": day, "count": count}
+        new_state["exclusive_cooldown_until_epoch"] = now_epoch + DRAIN_EXCLUSIVE_COOLDOWN_MIN * 60.0
+        events[0]["exclusive"] = True
+        events[0]["exclusive_claims_today"] = count
+    elif isinstance(state.get("exclusive_claims"), dict):
+        new_state["exclusive_claims"] = dict(state["exclusive_claims"])
+    if state.get("exclusive_cooldown_until_epoch") and "exclusive_cooldown_until_epoch" not in new_state:
+        new_state["exclusive_cooldown_until_epoch"] = state["exclusive_cooldown_until_epoch"]
     return new_state, events
 
 
@@ -2566,6 +2745,9 @@ def _drain_abandon(
     )
     if memory:
         new_state["plateau_memory"] = memory
+    for key in ("exclusive_claims", "exclusive_cooldown_until_epoch"):
+        if state.get(key):
+            new_state[key] = state[key]
     return new_state, events
 
 
@@ -2623,10 +2805,16 @@ def _drain_scan_candidate(
                 allowlist=allowlist,
                 lane_aware=lane_aware,
             )
+            exclusive_scan = _drain_exclusive_enabled()
+            scanned = 0
             for item in conn.execute(_priority_pending_query()).fetchall():
                 payload = _json_loads(item["payload_json"])
                 if payload.get("priority_track") is not True:
-                    break
+                    if not exclusive_scan:
+                        break
+                    scanned += 1
+                    if scanned > DRAIN_EXCLUSIVE_SCAN_LIMIT:
+                        break
                 candidate = _drain_candidate_from_row(
                     item, payload, free_ram_gb, host_total_gb, multisym_ids
                 )
@@ -2930,6 +3118,7 @@ def _drain_run_postprocess(
                         "ea_id": active.get("ea_id"),
                         "reservation_gb": active.get("reservation_gb"),
                         "floor_gb": active.get("floor_gb"),
+                        "exclusive": bool(active.get("exclusive")),
                     }
                     still, still_reason = _drain_candidate_is_winnable(
                         reeval,
@@ -4959,10 +5148,17 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
     drain_host_total_gb = _total_ram_gb() if drain_enabled else float("inf")
     drain_active = False
     drain_item_id: str | None = None
+    predrain_active = False
+    predrain_item_id: str | None = None
     if drain_enabled:
+        _drain_state_snapshot = _load_drain_state(root)
         drain_active, drain_item_id = _drain_active_now(
-            _load_drain_state(root), drain_now_epoch
+            _drain_state_snapshot, drain_now_epoch
         )
+        if _drain_exclusive_enabled():
+            predrain_active, predrain_item_id = _drain_predrain_now(
+                _drain_state_snapshot, drain_now_epoch
+            )
     reservation = farmctl.terminal_reservation(root, terminal)
     watchdog_reset_blocked = _watchdog_reset_admission_blocked(root)
     longrun_policy_enabled = longrun_scheduling_policy.policy_enabled()
@@ -5516,6 +5712,23 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "phase": str(item["phase"] or "").upper(),
                             "drain_item_id": drain_item_id,
                             "long_run": _drain_blocks_new_long_run(item, drain_item_id),
+                        })
+                        continue
+                    # Exclusive PRE-DRAIN (2026-09-14): while an exclusive row waits
+                    # for the active long runs to finish, NEW long-run rows are
+                    # refused; short rows keep flowing.
+                    if (
+                        not drain_active
+                        and predrain_active
+                        and _drain_blocks_new_long_run(item, predrain_item_id)
+                    ):
+                        skipped_drain_window.append({
+                            "item_id": item["id"],
+                            "ea_id": item["ea_id"],
+                            "phase": str(item["phase"] or "").upper(),
+                            "drain_item_id": predrain_item_id,
+                            "long_run": True,
+                            "pre_drain": True,
                         })
                         continue
                     avoid_terminals = _payload_avoid_terminals(payload)
