@@ -4726,3 +4726,12 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 > 10163/10932 dokumentieren; keine Formel-/Schwellen-/Universums-Aenderung. Danach: Review, Worker-Reload, append-only
 > Reruns der 9 Sweep-Arm-Zeilen und der Klasse-C-Zeilen. Ausfuehrungsprotokoll
 > docs/ops/evidence/2026-09-14_q08-sweep-arm-context-20260914_9e6ddd6b_execution.md.
+
+> **Nachtrag 20:4xZ (14.09.) — OWNER: "Unterstuetz die Codex Lane mit Sonnet! Ziel ist bis Sonntag Mittag ein neues Darwinexzero und
+> ein neues FTMO Buch."** Sprintplan docs/ops/BOOK_SPRINT_2026-09-20.md. Gemeinsames Tor beider Buecher = LIVE_RISK_FREEZE (blockt
+> selbst das Manifest-Minting; build_book_ftmo verifiziert 20:2xZ). Bedingung 1 erfuellt (Attestierung), 3 ratifiziert bis auf den
+> Enforce-Schalter im Cutover, 2 hat vier offene Punkte -> Sonnet-Tickets 01870d4c (Sektion 6 known_at_utc) und 53bf70a3 (Sektion 8
+> DST-Sweep/Regression). Q16 6/7 -> 8d8a23e1; FTMO-Inputs -> ac25ebea. FTMO-Orderdatei decisions/2026-09-14_owner_book_order_ftmo.md
+> (Chat-Order transkribiert). Strenges FTMO-Gate 0/16 zugelassen -> Lesart "FTMO-Demo-Buch v2", kein Challenge-Kauf. Sechs
+> Codex-Tickets nach Sonnet umgeleitet (79d1c0fa, 53d15c01, 42ff3c7a, 70a31d19, 11eff123, 7d9dd3b5), drei bereits gelieferte
+> Codex-Tickets geschlossen (9c76957c, 3598783e, 5c4b7c23). Taeglicher Check 07:21Z im Sprintplan.
