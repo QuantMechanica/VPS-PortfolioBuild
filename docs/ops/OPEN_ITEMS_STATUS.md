@@ -4735,3 +4735,19 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 > (Chat-Order transkribiert). Strenges FTMO-Gate 0/16 zugelassen -> Lesart "FTMO-Demo-Buch v2", kein Challenge-Kauf. Sechs
 > Codex-Tickets nach Sonnet umgeleitet (79d1c0fa, 53d15c01, 42ff3c7a, 70a31d19, 11eff123, 7d9dd3b5), drei bereits gelieferte
 > Codex-Tickets geschlossen (9c76957c, 3598783e, 5c4b7c23). Taeglicher Check 07:21Z im Sprintplan.
+
+> **Nachtrag 20:5xZ (14.09.) — OWNER: "Dann setz den Lift Satz um! Alles andere auch freigegeben ... volle Authoritaet und
+> Entscheidungsgewalt ... bis Sonntag autonom ... Freifahrtsschein!"** Umgesetzt: (1) Lift transkribiert
+> (decisions/2026-09-14_owner_risk_freeze_lift.md, verbatim; Bedingung 2 ausdruecklich als Nacharbeit; AutoTrading-Schalter
+> bleibt unberuehrt = Hard Rule) via session_tools/risk_freeze_lift_0914.py -> live_risk_freeze.json Status LIFTED (Backup
+> live_risk_freeze_before_lift_...json); risk_freeze guard: ok. (2) Signierter Deploy-Pointer fuer die aktuelle 24er-Identitaet
+> (generate_live_deployment_pointer --signed --approved-by OWNER --approval-evidence <Lift-Datei>; Consumer RESOLVED sha 8c719b08...).
+> (3) DXZ-Builder mit dem Aufruf vom 13.09. (+ --total-risk-pct 11 --sleeve-cap-pct 1.5, exclude 13054/21505/41221):
+> APPLY_RECOMMENDED, 28 Sleeves, Manifest D:/QM/reports/portfolio/book_dxz_2026-09-13/manifest.json geschrieben.
+> (4) FTMO-Builder laeuft jetzt durchs Tor, Bar nicht erreicht (fund_score 0.05-0.09 << 1.0, Bootstrap fehlt, Korrelation
+> fehlt, Density/Concentration false) -> FTMO-Demo-Buch v2 auf dem M13-Pfad, strenges Q11_FTMO-Buch bleibt Programm.
+> (5) Preset-Staging Dry-Run (stage_tlive_presets_risk.py --risk-policy cutover-burnin, neu): 24 Bestandspresets je genau eine
+> RISK_PERCENT-Zeile auf das 11er-Ziel, 4 neue Sleeves aus dem 09-13-Paket (new_burnin: 0.0769/0.0104/0.013/0.0105).
+> Sonntag-Mechanik (kein UI): neues versiegeltes Profil DarwinexZero_V3 (28 Charts + Monitor) aus dem V2_LiveOps-Profil,
+> prepare_dxz_v2_liveops_profile.ps1/liveops_profile_contract.ps1-Grammatik, Reseal, kontrollierter T_Live-Neustart per
+> Launcher; AutoTrading bleibt wie vom OWNER gesetzt.

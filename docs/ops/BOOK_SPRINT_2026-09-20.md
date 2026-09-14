@@ -74,3 +74,7 @@ book with the exact remaining OWNER acts.
 - **2026-09-14 (Mon, 20:4xZ)** — sprint opened. Shared gate identified (risk freeze). DXZ: conditions 1 and 3 in
   reach, condition 2 has four open items → two Sonnet tickets. FTMO: order file minted; builder freeze-blocked; strict
   gate 0/16 → demo-book reading of the order, inputs ticket. Codex tickets re-routed to Sonnet (6) + 4 new sprint tickets.
+- **2026-09-14 (Mon, 20:5xZ)** — OWNER lift ("Freifahrtsschein"): freeze LIFTED (transcribed, condition 2 carried as
+  Nacharbeit), signed pointer for the current identity, DXZ v2 builder APPLY_RECOMMENDED with manifest written, staging
+  dry-run clean (24 re-weights + 4 burn-in presets), FTMO builder BAR_NOT_MET (fund scores 0.05–0.09 vs floor 1.0) →
+  demo-book path. D4 moves to "profile V3 + reseal + controlled restart" tooling (Tue/Wed). AutoTrading stays OWNER-only.
