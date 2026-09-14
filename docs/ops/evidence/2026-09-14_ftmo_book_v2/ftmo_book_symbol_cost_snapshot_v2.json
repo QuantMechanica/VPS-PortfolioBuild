@@ -1,0 +1,143 @@
+{
+  "schema": "qm.ftmo-book3-symbol-cost-snapshot/v2",
+  "supersedes": "docs/ops/evidence/2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+  "supersedes_sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280",
+  "retrieved_at_utc": "2026-09-14T21:15:00Z",
+  "generated_by": "Claude, ticket ac25ebea-9ad3-45e9-b213-c324987eb0ee, part (1)",
+  "premise_correction": "The ticket asked to refresh this snapshot 'from the native FTMO-Demo specifications captured 2026-09-06 (Track B) as a NEW versioned snapshot'. Research finding (recorded here, not smoothed over): no single complete native capture exists under that description. 'Track B' is a workstream (docs/ops/evidence/2026-09-09_ftmo_shortlist/, task 54729be7) created 2026-09-09/11, three days after the actual 2026-09-06 capture (docs/ops/evidence/2026-09-06_ftmo_demo_install/terminal_snapshot.json), and Track B's own evidence states the 2026-09-06 capture is INCOMPLETE for book-building (no commission field at all -- 'NOT_EXPOSED_BY_SYMBOL_INFO'; no lot/tick/margin fields). This v2 snapshot is therefore a best-effort, field-by-field, provenance-tagged refresh: real native data where it exists, the prior v1 website-projection value carried forward unchanged where no native data exists, and symbols left out entirely (not invented) where neither exists. Full audit: docs/ops/evidence/2026-09-14_ftmo_book_v2/cost_snapshot_provenance.md.",
+  "sources": {
+    "native_swap_contract_2026_09_06": {
+      "path": "docs/ops/evidence/2026-09-06_ftmo_demo_install/terminal_snapshot.json",
+      "method": "read_only_mt5_python_ipc_against_preexisting_process",
+      "checked_at_utc": "2026-09-06T17:28:43Z",
+      "account": {"login": 1514536732, "server": "FTMO-Demo", "leverage": 100, "currency": "USD"},
+      "fields_provided": ["digits", "contract_size", "currency_profit", "swap_long", "swap_short", "swap_triple_day"],
+      "fields_NOT_provided": ["commission (NOT_EXPOSED_BY_SYMBOL_INFO)", "lot min/step/max", "point/tick size/value", "margin calculation"],
+      "symbols_covered_native": ["XAUUSD", "GER40.cash", "GBPUSD", "EURUSD", "USDCAD", "NZDUSD", "USOIL.cash", "XAGUSD"]
+    },
+    "native_commission_2026_09_12": {
+      "path_glob": "docs/ops/evidence/2026-09-12_ftmo_native_cost_receipts/{GBPUSD,EURUSD}_native_cost_receipt.json",
+      "method": "realised DEAL_COMMISSION from actual account fills, read-only",
+      "window_utc": "2026-09-06T19:38:00Z to 2026-09-12T08:50:00Z",
+      "caveat": "Single lifecycle per symbol (2 deals: one entry, one exit). A real observation, not a modeled worst case, but not a robust statistical average either -- flagged REALIZED_NATIVE_SINGLE_OBSERVATION. cost_eligible=false in the source receipts refers to slippage completeness (a separate, still-open concern, docs/ops/evidence/2026-09-12_ftmo_slippage_stream/README.md) and does NOT invalidate the commission figure itself.",
+      "commission_usd_per_lot_rt": {"GBPUSD": 5.00854701, "EURUSD": 5.02564103}
+    },
+    "prior_v1_website_projection_2026_07_30": {
+      "path": "docs/ops/evidence/2026-07-30_ftmo_book3_symbol_cost_snapshot.json",
+      "sha256": "7eab3bf8c97373fcb44e36aca39dd679fbd3e093783cd6eacd9cb171190b3280",
+      "authority": "OFFICIAL_PROVIDER (ftmo.com public API, not a native terminal capture, not a realised fee)",
+      "carried_forward_for": "commission model on USDJPY (flat 5 USD/lot RT) and XAUUSD (0.0014% per side); swap/contract data on XTIUSD (commission_free assumption, unverified by any fill)"
+    }
+  },
+  "book3_normalization": [
+    {
+      "dwx_symbol": "USDJPY.DWX",
+      "provider_symbol": "USD/JPY",
+      "source_contract_size": 100000,
+      "target_contract_size": 100000,
+      "commission_model": "flat_round_trip_per_target_lot_usd",
+      "flat_round_trip_commission_per_lot": 5,
+      "commission_percent_per_side": 0,
+      "commission_provenance": "prior_v1_website_projection_2026_07_30 (unchanged: USDJPY is not in the 2026-09-06 native 8-symbol capture)",
+      "swap_long_points": 0.92,
+      "swap_short_points": -19.78,
+      "swap_provenance": "prior_v1_website_projection_2026_07_30 (unchanged: not natively captured)",
+      "digits": 3,
+      "profit_currency_to_account_rate": 0.0066666667,
+      "derive_profit_currency_rate_from_pnl": true,
+      "triple_weekday": 2
+    },
+    {
+      "dwx_symbol": "XAUUSD.DWX",
+      "provider_symbol": "XAU/USD",
+      "source_contract_size": 100,
+      "target_contract_size": 100,
+      "commission_model": "percent_of_notional_per_side",
+      "flat_round_trip_commission_per_lot": 0,
+      "commission_percent_per_side": 0.0014,
+      "commission_provenance": "prior_v1_website_projection_2026_07_30 (unchanged: no native commission field exists for any symbol)",
+      "swap_long_points": -93.0,
+      "swap_short_points": -10.4,
+      "swap_provenance": "REFRESHED from native_swap_contract_2026_09_06 (was -66.21 / -23.55 in v1)",
+      "digits": 2,
+      "profit_currency_to_account_rate": 1,
+      "derive_profit_currency_rate_from_pnl": false,
+      "triple_weekday": 3,
+      "triple_weekday_provenance": "REFRESHED from native swap_triple_day=3 (Wednesday, MT5 SUNDAY=0 convention); was 2 (Tuesday) in v1"
+    },
+    {
+      "dwx_symbol": "XTIUSD.DWX",
+      "provider_symbol": "USOIL.cash",
+      "source_contract_size": 1000,
+      "target_contract_size": 100,
+      "commission_model": "commission_free",
+      "flat_round_trip_commission_per_lot": 0,
+      "commission_percent_per_side": 0,
+      "commission_provenance": "prior_v1_website_projection_2026_07_30 (unchanged and STILL UNVERIFIED: the 2026-09-12 native receipt for USOIL.cash has zero fills -- MISSING_NO_FILL -- so commission_free has never been confirmed against a real deal)",
+      "swap_long_points": 5.83,
+      "swap_short_points": -35.11,
+      "swap_provenance": "REFRESHED from native_swap_contract_2026_09_06 USOIL.cash (was 4.22 / -26.8 in v1)",
+      "digits": 3,
+      "profit_currency_to_account_rate": 1,
+      "derive_profit_currency_rate_from_pnl": false,
+      "triple_weekday": 5,
+      "triple_weekday_provenance": "REFRESHED from native swap_triple_day=5 (Friday); was 2 (Tuesday) in v1 -- REVIEW.md 2026-09-09 already flagged this exact day-convention correction",
+      "equivalent_target_volume_formula": "source_volume * 1000 / 100"
+    },
+    {
+      "dwx_symbol": "GBPUSD.DWX",
+      "provider_symbol": "GBPUSD",
+      "source_contract_size": 100000,
+      "target_contract_size": 100000,
+      "commission_model": "flat_round_trip_per_target_lot_usd",
+      "flat_round_trip_commission_per_lot": 5.00854701,
+      "commission_percent_per_side": 0,
+      "commission_provenance": "NEW, native_commission_2026_09_12, REALIZED_NATIVE_SINGLE_OBSERVATION (1 lifecycle, 1.17 lots) -- not in v1 at all",
+      "swap_long_points": -6.7,
+      "swap_short_points": -5.2,
+      "swap_provenance": "NEW, native_swap_contract_2026_09_06 -- not in v1 at all",
+      "digits": 5,
+      "profit_currency_to_account_rate": 1,
+      "derive_profit_currency_rate_from_pnl": false,
+      "triple_weekday": 3,
+      "triple_weekday_provenance": "native swap_triple_day=3 (Wednesday)"
+    },
+    {
+      "dwx_symbol": "EURUSD.DWX",
+      "provider_symbol": "EURUSD",
+      "source_contract_size": 100000,
+      "target_contract_size": 100000,
+      "commission_model": "flat_round_trip_per_target_lot_usd",
+      "flat_round_trip_commission_per_lot": 5.02564103,
+      "commission_percent_per_side": 0,
+      "commission_provenance": "NEW, native_commission_2026_09_12, REALIZED_NATIVE_SINGLE_OBSERVATION -- not in v1 at all",
+      "swap_long_points": -13.29,
+      "swap_short_points": 0.17,
+      "swap_provenance": "NEW, native_swap_contract_2026_09_06 -- not in v1 at all",
+      "digits": 5,
+      "profit_currency_to_account_rate": 1,
+      "derive_profit_currency_rate_from_pnl": false,
+      "triple_weekday": 3,
+      "triple_weekday_provenance": "native swap_triple_day=3 (Wednesday)"
+    }
+  ],
+  "excluded_symbols_no_row": {
+    "USDCAD.DWX": "Native swap/contract exists (native_swap_contract_2026_09_06) but NO commission data anywhere: the 2026-09-12 native receipt shows only one cancelled pending order, no fill. profit_currency=CAD also needs a CADUSD conversion rate this snapshot does not have a live source for. Excluded rather than invented.",
+    "NZDUSD.DWX": "Native swap/contract exists but no commission receipt was ever captured for NZDUSD (2026-09-12 receipts cover only GBPUSD/EURUSD/USDCAD/USOIL.cash). Excluded rather than invented.",
+    "XAGUSD.DWX": "Native swap/contract exists (native_swap_contract_2026_09_06 XAGUSD row) but no commission receipt exists for silver either. Excluded rather than invented.",
+    "WS30.DWX": "No cost data anywhere: not in the 2026-09-06 native 8-symbol capture (only GER40.cash was captured for indices) and never in the v1 website snapshot. Requires a net-new native capture or provider-website re-scrape before the FTMO builder can admit any WS30 sleeve.",
+    "NDX.DWX": "Same as WS30.DWX -- no cost data anywhere, net-new collection required."
+  },
+  "interpretation": {
+    "commission_percent_is_per_side": "unchanged from v1 -- for XAU/USD the provider commission value 0.0014 percent applied twice to the displayed notional reproduces the provider usdCommission round-trip field.",
+    "flat_usd_is_round_trip": "unchanged from v1 -- USD 5 (or the native-observed figure) per equivalent target lot per completed round trip.",
+    "swap_scope": "The 2026-09-06 native values are a dated snapshot from that IPC read and must be refreshed again before a purchase/deployment decision, exactly like v1's website scrape was.",
+    "triple_weekday_scope": "The 2026-09-06 native swap_triple_day field is MT5's own SYMBOL_SWAP_ROLLOVER3DAYS property (SUNDAY=0 convention) -- a real, direct value, not inherited/assumed like v1's triple_weekday was for the symbols this refresh covers."
+  },
+  "authorization": {
+    "deployment_allowed": false,
+    "money_gate_authorized": false,
+    "factory_action_authorized": false,
+    "purpose": "Research-only FTMO book v2 cost input, ticket ac25ebea part (1)"
+  }
+}
