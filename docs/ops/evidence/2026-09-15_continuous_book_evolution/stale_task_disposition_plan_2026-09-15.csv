@@ -1,0 +1,400 @@
+id,state,task_type,priority,created_age_days,disposition,target_lane,target_state,reason
+d68dcd1b-0f7e-4fd8-b033-4815f0811c97,BLOCKED,build_ea,50,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+fddbb404-f6fe-46ee-9d1e-1589d07be3d9,BLOCKED,build_ea,50,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+0a9b9637-30c5-4de4-8833-809ea92d5cbd,BLOCKED,build_ea,50,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+932dde11-f11f-41c1-83df-c7afd521bd3e,BLOCKED,build_ea,50,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+1477e9b6-1288-4a1f-bf79-d61c3a185c23,BLOCKED,build_ea,50,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+123a5ce6-5595-4f74-8ee9-3d591a168ad9,BLOCKED,build_ea,50,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+5e7ee21a-5fe8-48e9-870f-18bec88fc5ce,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+c6387b4b-f0b0-4021-8606-6f68a35a79f2,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+6cf3af36-e15e-4af0-857b-d0f99eefe6f6,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+bd4171e3-56e3-4d5b-96a6-684a49f2b8f4,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+bff7eda1-2b00-4170-8a02-1afbffcd5c70,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+04125547-feee-4d50-9423-eac60e1eec8a,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+d90e7498-f47f-4dba-8d2a-674bb0569909,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+ae818e35-7732-4ec4-89ba-5d353cdbcf3e,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+c15f2390-4c8e-432d-bcfa-600807db676b,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+8511bd8a-6f24-4e78-a416-40699fcf9d0d,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+b1bcaee2-efb6-4226-9578-bff538852f87,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+30bbd5e2-ea7b-46d3-96a1-5cd0050117d8,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+69bced3f-e859-43bb-bf24-60f17e23e9d0,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+3129e748-59f4-445a-9d11-12f6fca5fd97,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+13d9b822-c4ed-489e-9f32-27accae6ff5f,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+70805206-74fb-455f-876f-11776e8c5621,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+fcd84ecd-cb3d-4f2c-be69-6d34bc940761,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+b5905d19-0976-41e0-9b5d-9b170993c8db,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+99efdb31-1df6-4aa5-9102-bf7e250c149f,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+5fca8ef3-c38a-4e48-bdf8-0325a297434d,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+ef0f2333-e00f-41ce-9ecd-5d9f540cf3be,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+8d108839-29ec-4569-8039-109f7bbfcb15,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+2201ca64-2342-41f6-97ea-f34a31b48d92,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+3fdd2c8d-4e16-4a92-bb8a-7258a674a68b,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+8262515b-4563-4db8-9c4e-7b4b4927e178,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+1fd88db4-fbd1-49a2-83c6-293bdf9cb11b,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+5297d50e-314d-4557-8f14-9463bcf7fc3e,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+fcaeb2ee-6c92-4d57-8a8b-fe71deb585e9,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+afe18aff-644c-43da-84b3-7e725212ba61,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+d76d758e-d4d6-4898-a958-15e9bdf4e853,BLOCKED,build_ea,10,67,CLOSE,,FAILED,owner_retired_ea_id (executes a prior OWNER retirement; candidate-guard applies)
+181b8a00-f226-4240-8649-a4b246f8c9ad,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+f1d3f7a3-1999-48e5-ada5-caac982e382d,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+6a79738c-7643-4d5b-95e3-d8906b029178,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+084be1d0-8d08-4c36-b672-5ff5befdd89e,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+3cd229bb-8900-4dac-9367-3dbfaf84f67c,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+35c9e6ad-0be4-4539-8572-554fb390b4a6,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+f99873db-5daa-4579-8c4d-cdc8bb0d159c,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+cc5c1221-1289-4d5a-8a18-2d5d15bd63cd,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+8c3ddf84-4b96-467f-8893-b59e85840d95,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+ffdb2772-97b1-4615-8871-196a23805834,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+6a0ae4d5-66d4-4a37-9323-38e1224236db,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+aaf5545d-ea51-4dab-9332-8f0784d9c663,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+3ff472a0-8f53-4558-ae66-459a29c77da2,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+add54a46-19bc-415c-810d-0f117f5cf2ae,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+524cca67-50b7-409a-a13c-7860dc61148d,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+63c1032c-1534-482a-a399-efe2600f8356,BLOCKED,build_ea,10,67,KEEP,,,recent or prioritised build -> keep in queue
+b770de57-f359-4d11-9b5e-1f7f141e26b6,BLOCKED,build_ea,10,67,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+04dd4c02-2889-4a31-bf5c-630843571d34,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+230cacde-3610-417a-898a-39de1926bfe4,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+4f53ec6b-9e40-4266-9a59-dbd707316c2e,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+fa98372d-3350-4ddd-b904-2a00a72bbd05,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+31609b87-fa05-441e-b957-09058a694b1c,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+f3093ecd-e820-4224-9c22-e248300d50e8,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+3497999a-779c-4450-984f-f655503c814f,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+49e87f75-7bf9-4d6a-a107-62ef0426804b,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+9624a863-1b3c-4e4a-81b9-697701c1328e,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+41e19827-7abe-4297-8ba5-db83aeccb3c5,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+6c35c3ec-b576-4919-a321-796b7c813350,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+7e8c9eaa-1af5-40ca-9f49-4c785b5ae07d,BLOCKED,build_ea,10,36,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+73c2b022-304d-463e-9a77-dd6c1c4d8175,BLOCKED,build_ea,50,17,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+0ac5d57d-ccf1-46b1-b673-f223a032dbf7,BLOCKED,build_ea,50,17,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+8d30d4ab-3c2f-4ccd-a9d3-22ee5a67b2c1,BLOCKED,build_ea,50,17,PARK,,BLOCKED,awaiting_magic_registry_allocation (ordered ops precondition; not a CBE supersession)
+90431302-dfa8-4f27-ad0a-c826dbda77cf,BLOCKED,ops_issue,85,10,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+c993c011-1ba1-4be7-a636-57ad72d7185a,BLOCKED,research_strategy,72,24,PARK,owner,BLOCKED,awaiting_human_lane:owner (video_analysis; agy has no video tool)
+169586d4-7ee9-4ead-8bdc-c834be02ebd8,BLOCKED,research_strategy,62,1,COMMISSION,gemini,,active research -> commission to gemini (agy research lane)
+18a4b282-3c9d-4e75-8457-60e411171622,BLOCKED,research_strategy,55,1,COMMISSION,gemini,,active research -> commission to gemini (agy research lane)
+3e5f17b1-3573-4a55-a570-b0a6913a4509,BLOCKED,research_strategy,60,1,COMMISSION,gemini,,active research -> commission to gemini (agy research lane)
+1f400c88-a2b7-4c48-acd4-37a139b772fe,TODO,build_ea,30,112,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b62792ff-26e0-4f1a-9a75-56c250ee9688,TODO,build_ea,30,104,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7b431d7a-a902-4947-a932-ffa8ef3a54d7,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f3254781-8a6f-4d7b-bf99-8183ca5c892a,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+12829c50-756a-47c5-87d7-27007115b939,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+4fc08ad9-c107-4176-8a47-94290a7bf979,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ababc064-ebcd-4fb2-8d93-106cd2d412c0,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+bd923098-ff94-4451-b3c5-a1f2724613fa,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7dccf57e-a995-465f-a9b7-98e7b945a651,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+0d490609-922c-47df-a3eb-2a27412e3796,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c1850502-ac54-4fc4-b397-5e54e87d1eb6,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ad4b4d2e-3fb7-48ea-a424-09d85a616e34,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+14432f77-9abf-4032-aefc-278a6bdbad34,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+77bb60df-1c46-46db-b0d5-3560e2949375,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+61ccc27f-951c-47fc-a8c6-985dcf7da3b4,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+a2d787e7-fe54-4d73-b58c-20bb04b6c880,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ad739240-04c6-4d26-a618-f6d329bb0ea6,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+335ec1bf-dcac-4a58-977a-096af1426976,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+90ae9c0d-857d-432a-aca4-53237883390b,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+cab1d5d3-fc96-454e-af4d-70bab7da8ac7,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b5f5f132-c07b-4df4-a7a1-5bf27e6fb471,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+05d72df0-f109-4bb8-8c3d-34930aeb91ec,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+10837ff7-e232-4b7f-991d-93f8c86b07c0,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+6738a92f-f74a-4614-bbd1-05d8a118091f,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+8dcde79a-7b64-46f4-a0c7-828ac3bc5257,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+fcddd7f2-4322-4365-b710-2f8f8192dc41,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+37bb113b-eb3b-4a32-b2c7-454dd9b0f853,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+515d6668-ec57-4b46-934a-ed04f404a7a3,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b436a5ae-5394-495f-b9b0-067e9222c948,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7ac78155-3ba3-4948-8bf9-ab5b451a0a3a,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7830f003-6b91-4b15-b29d-4620e6a2172f,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e1abae8e-98f3-4db2-91e5-d2b82f9a7a68,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f54dd835-ec9c-4887-9c10-c04ceb733d98,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f54bf4d4-befa-47c0-b33b-a099a1fcffc1,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+22b0307b-da28-45f8-be0e-d445ac5ed217,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e534be5a-0fe5-4935-9e6f-bd8b44d8f499,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+6c86e8b0-9336-463a-820c-8bb2cc0fa524,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+eb71678d-c6d3-4550-998a-29eb5cbba9c1,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e15e2aac-ba1f-45b7-a91b-a47552d0d3d7,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+cbdefd98-df64-4bdd-a734-4fc86d04caf6,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d53ecca7-608b-4572-9fe3-f1922dd95134,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+62ac4ac4-f961-4d47-b0b8-092551ac2aa5,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+44027948-6e02-47a0-8446-9e9d14e4b2b5,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+41a34361-087e-4d86-acd0-142f0eb803b3,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+37f0eab1-79ec-47fd-a2e9-8a3a0aabe60d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b15b055e-d2fe-4f71-8f15-4bdf2f073258,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+240c7757-7333-482c-938c-21a1b51c9b49,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+531a62de-4ce9-4563-9352-edbffe0d6ed1,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+df4391d5-cab6-45f3-91f0-aa7fdbb3c423,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+3d286159-a8b0-4942-9321-5b5f0a3d074c,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b9563ce6-c36e-4a7c-b324-491d6b77a254,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e83eafb9-19bd-4ef6-bce7-8e3a8ae4522e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7c31ab3a-de96-4948-8138-b2c6aef8630d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5d74c748-5879-4574-b6fb-cfc64f4482e6,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+3b5bc110-929d-4322-bdd8-994211b6a017,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c5306234-6376-4245-b266-f87319c1fa17,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e743e2c4-1e35-479b-94d3-20e955efc53e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+dbee1531-c435-46d6-a577-f6b377c2b24d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+098a6f11-3d7a-4508-966c-bd54e0274048,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+545ddaea-94fe-494c-a675-79db08806fa4,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+46327e2e-5246-4f05-89b1-bdcdc72bb41b,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+72e5f0a9-b4fc-4319-ba9c-83de09df0d23,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c81246b6-e72c-4810-aa4b-58dfc8f37ddd,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b84df62f-47b8-48cd-a35c-a505a7b731f6,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ad115992-ffcc-4f30-be48-ff53b1304b3e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5abe871c-8cef-4f0d-b8bf-b995c181ed4a,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+00946895-b594-4740-8e9f-884d3e3ea58a,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+315fdaf0-eec9-4bf2-bac7-69f0acc143ff,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5766506d-8630-44b8-b85c-229d93051449,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+02da6437-8c76-42c5-82df-ed307ce12628,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+810145d0-5aeb-4a8f-9830-b0bdaadac57f,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+125751de-4019-4138-8f08-9cdb6733e9d3,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+3df5d260-bc78-4503-a517-0aaf63de797e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f990754c-57b2-4be5-b6c3-c0e34c2b7dc2,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c24879e3-75d8-4ef5-8d1a-57b64cd0f2c8,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f6029c79-fbcd-4134-a9b8-5c286a6642a9,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5a6e93c2-8200-4982-83e5-1d59b8a3a149,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9a7db6ac-3117-4e68-a53f-ea0aa36dea1d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+4a5c9ed6-20b8-47e3-91d3-1aa4e51d4385,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+a2c5e7eb-62d3-41f1-8754-b3ffcab3a7c3,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f8763caf-f44f-4236-b452-10d1598ae802,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+4283ca39-d208-4e4a-9d81-aa220041afad,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c060d896-0a00-4427-999f-6dd0df8f921c,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+897e7e91-f25a-4dc7-9e35-fd2b47a9869e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+effa9bc8-c211-4488-8bd7-a22bcaf645cd,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+2f463fcc-2053-4cc5-8961-00b54db83ebd,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b46d62d8-cb34-42fb-8ad8-89bfbb39c4fd,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+0f0a86ae-ae36-4f5b-9dfa-9757ad2cb30d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9a44b91f-4ae7-4a8a-9720-cb719df60f58,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+2c0f932b-668c-4c3c-96ec-53a5fb8cdcbc,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d7c64749-a03c-47f8-a555-65269977ca33,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+47cbab28-c904-4fac-a2e7-f96fef54f17f,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5adea48e-d98a-461d-ba2b-6613fecc13f2,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+1c2c6857-fa10-492e-a4c4-af4bbcdc71a8,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+8eaf03bd-5b44-4fae-9435-c0e6077154bd,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+749f4524-e8c9-4afd-8455-eeca6f6839f8,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d09334f9-d869-41eb-aa26-1f99ca45d346,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ab03acbe-5428-45e0-ad87-876f07591e73,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+6550a1f8-cb6b-4b6b-b04b-f06be41603d1,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+15d9681a-5f85-40ad-8a0d-00f3c5fbba76,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+3c27df92-4d2c-4b51-9e5b-a2d63c4db340,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ba175427-ff12-42bf-8790-c6e997a0673f,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+997906f8-9eec-4693-9193-74c6597715ca,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+6e233c53-cfdf-47fe-8ddb-670346af46e4,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b58bf851-b287-4772-b732-9f5d82352ac2,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+2cdbbe4e-095e-4f53-89a2-243ecc4ae615,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+aca126f7-1caf-4769-828a-129b2e315d4a,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+4382291e-4a39-4eda-a38d-745805885817,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+0568432f-2e9e-4ebc-9a91-808eac072508,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c214fe96-6101-46e0-98cc-30daa4ea8d03,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+4063b233-b1a9-46e4-a220-2d18c5cb0343,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9c481197-288f-4c07-9714-637ecc8bd624,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+14d9adac-7680-4a0f-8a19-80dbd1019d48,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+a7124029-0e45-4137-be9e-49e31f685b6a,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+72766d7b-3942-40df-b864-b5d341ec15c1,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+eb06fcee-67c4-4b6a-a499-5be44cabc93c,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e4ad0c0c-01b8-4fd2-99b2-98922c9df54b,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+31cb89f3-2190-4653-b2b4-8a4dbd86bac7,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+4b0bd563-9542-4ac7-b942-3e3845e66f3d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+912be76d-68dc-4852-88fc-e7c80b04c03b,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+afeb2af8-f725-4dbe-b15a-47c3e19d2ffd,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ef5aad39-d138-46d1-9227-d9765d5baaa8,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f08a89c4-e47d-492a-8645-247593c2c046,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7b3784ed-633a-45c9-9762-707630923a80,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+52ee2c30-429a-4eed-b0e5-b00379fcd0f0,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+2189218c-3a65-4ca3-baba-5d63d0401d25,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7c217c65-79f8-47cf-85d1-9dc464460a0b,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7b77b2b6-50e4-4c3e-a846-51fc0db5bcf1,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+973e3dce-3504-408a-8c8e-89de1eab6366,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+3f4980fb-90b5-49c2-9b22-fc2938b43efb,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+8ff4de4c-7e6e-4a65-ad2f-7a8bf5788c68,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+1f7c24c5-553a-4469-b6b7-7a507200841d,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f0dd1187-ac39-4a61-8e38-77b26f600d71,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9e8fd51d-5c94-41a4-baa3-a36c62cbb62b,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d00d7571-74f4-45ea-b652-57fa439f7bd9,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+04f349cc-020f-4180-933b-c665a782439f,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9285cf7d-9331-4af7-8033-171b4660b36e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+29c5ec88-5f35-4fc0-9fab-78dc5f00ee80,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b454e005-2d3f-4a6d-8239-5fbd58c47bec,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+71af1255-bcb1-4ccd-a4bb-aa8578257e0d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+1017e601-92b0-4c72-a1f5-b5e0531416cf,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b994c320-b03a-423d-ab94-fb69b90a38f0,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+bb6235da-2157-418f-ab00-7e0c3be0d6e2,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+0330fade-59e5-4c59-ab04-03500b2fb85a,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+afed7b7c-0259-4256-acad-f22224babdab,TODO,build_ea,10,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c0bb9235-3d6e-4d0f-a688-e8276b939e47,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5371ab7c-d88f-4452-a3c3-a338edcb5d28,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d82200c3-e4bc-429b-8be1-d20c0f6b5a21,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+0bf5bbf0-59b6-4f88-b50d-de609d881642,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7bc95960-7134-4d02-88c2-87ce2cb8761c,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+67488097-51f8-4a90-a7d5-0ca254d89b15,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+8a0f2cf4-afe3-4e13-80c8-9f39929de4f0,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+cc4549cc-1955-47fb-9801-78d2aad3f77b,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+1b490cf7-9172-410b-8e5b-07b24c0cb517,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ffdbf22e-3ec4-4027-88d5-5a6e4ba6c1c7,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5de38382-e3f2-4179-b63b-6f60222bccc3,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e7fdd25e-d16c-44d3-bcbe-c22756021747,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c3f03e05-3064-4a1e-93ff-097150115ffe,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d573fb90-49fa-4f73-87a5-4f01d0254002,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9fd339d0-9e37-40a2-8da6-2b18e20c899d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+cadbb75f-8566-4326-92c6-912cae4b0da6,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+568405c9-6c59-464d-ba22-b3e9512a638e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+2dc0025a-7b2d-472c-ac65-58c806c5a768,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9ca8f81d-782e-495f-97f0-8f205dbd45fc,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d820be5a-675c-411f-b761-6c09aad2b811,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+b3706cb0-1e2f-403c-a3a9-ffc9e87e6835,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+ce7ef250-d7c0-418a-aa51-fff4f7a8136e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+a944cf09-4a86-43b5-90b5-1d6fc5108ae6,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+499eaa2a-1f7a-47d2-b6df-a52d4d2999dc,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+970379cc-27ef-4f71-a07e-5421e45171ef,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+de7917ef-268a-4b01-90a4-c77cf4e04b9e,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+3386130d-8fec-49ff-bf2c-c238d8807121,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+39477905-5cfe-43eb-bebf-3ad5ba8d10b3,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d2b4cd24-ae0d-4cbb-92fb-a8ffcf328003,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+6bfd24a6-b1ac-47a0-a767-1053d07e81b8,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c71f308a-76be-456f-8ae7-a5d7c3abc4e0,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c10c1e2c-6932-4db8-afdd-40907ea34246,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+36e5bbfa-6698-4644-8fe3-60aa9f7052cc,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f24b54a3-ca2e-4cfd-8ae8-3b23712ff20d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7f5be227-52c7-4a57-a68a-a1ca31ffbd01,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+528d9db8-5f15-4c26-81bf-887a4b6deb17,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+cf579137-6e4e-4044-a2c1-fb0a4dfa84bb,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+037f7a25-4931-4fe9-a5f5-1eef6bacd073,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+2321b9ed-3a30-4690-a15a-babe2188ae6f,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9afcf2a0-2f75-46d5-9707-8a42834eda67,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+f3b6bf03-fa59-4d17-8336-bb440cf90a0d,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+a0768e09-7427-4ebe-87c1-19b4b17c9de1,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+86377647-2659-4308-a435-727c070515c4,TODO,build_ea,30,67,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9e872ce2-5e53-4c78-97ed-a4248fef4f0c,TODO,build_ea,30,60,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+7432e7ca-5caf-4f8f-94f3-0c728b72cc2d,TODO,build_ea,30,51,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e388ce49-0a11-4308-b982-b5073ba2750d,TODO,build_ea,30,51,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+534917fa-c0e2-4ad7-ac0e-0b52238b43fe,TODO,build_ea,30,51,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+87284092-4d40-4519-8b1f-3361a4f0c1d7,TODO,build_ea,30,51,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+957ab7d7-3772-4c3a-bf77-213beedf7dab,TODO,build_ea,30,51,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+51c83e3f-0601-4f27-83ab-af98eecc1280,TODO,build_ea,30,41,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5f1f643e-e343-41bd-a17c-6bc21ddeba47,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+3371d2a0-7569-46f6-8f08-a9c951ee1d3d,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+93481b8d-1a1d-4506-9064-12b0dc740c4e,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+aa43aa9c-27b9-4ee3-b71c-58c1a4abd0f5,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+56e67144-da6b-48b8-89ae-ba7048da97a9,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+abfb4871-b012-4a57-b800-47e73a63e647,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+985081a7-3fe8-4012-a6d6-a0dea7d47db2,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+5ea0928f-8919-4fa1-adbd-c954d40b6495,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e26b6273-3c6a-478b-8f2a-b5004e32d85f,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+6def383b-c119-4ec7-a54d-1d790eb362e3,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+e6622cd5-4136-46d8-a294-e89cef17e8cd,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+79e5c330-2f98-4147-aabf-c1850e3d7f06,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+80333de1-acfc-472d-9291-dc0a78fe4a25,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+be80243b-1365-4e65-b5b5-68bdbc3b805a,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+581a9957-4c0b-47f8-9b4c-f9b373d9fcb2,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+57c680ca-a82c-4e84-950a-71ac938b4bb6,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+32e32389-8319-488b-b7b2-29407a7325a5,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+886ebc65-07f3-4bee-9d95-c8abc29cc4a9,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9c696bd1-2c57-4965-8b83-a6cdd78eebce,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+351636a9-f05e-4f81-9976-67f77fc34993,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+33a13dd3-49f4-474d-a85b-c013a0b72c5e,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+037da632-6b8f-435f-b142-3829e442a2a9,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+d00ea063-eb22-41c0-85f3-f793f11a3978,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+a7ce1651-e695-4528-9d52-e989defed3ee,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+751d8eb5-d9de-4cfe-85c6-27468c409078,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+a6092797-1416-4719-8c13-cc60829247bb,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+89195162-745e-4f46-aa8c-12924b6981a3,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+fdf510ce-db61-46f3-a1da-dad1559c0a73,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+18ba3691-6172-48a8-9c4f-6664034658a1,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+46f70fb4-77d1-401f-85ed-c31a6f281bc7,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+2d61b824-c3c2-4d46-a087-f89ab39ce6f7,TODO,build_ea,30,36,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+9ad6d9c0-d67b-4092-80e6-4df2f826eb73,TODO,build_ea,30,34,PARK,,BLOCKED,"legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50); CBE trigger is a qualified pool, not build volume -> OWNER cohort decision"
+c162c123-6264-4028-9f19-84cbd81cff48,TODO,build_ea,30,29,KEEP,,,recent or prioritised build -> keep in queue
+b8c2e67c-773b-4698-913b-9de744f6317e,TODO,build_ea,30,29,KEEP,,,recent or prioritised build -> keep in queue
+78f0cdff-f4af-4f31-af04-4d3b00e17584,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+6be9b5cf-1bfc-431e-b572-f5950c95eb77,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+f7849572-7aad-4e79-ad7f-8c6d1fccf935,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+cf9b27fd-11f6-465b-9731-8e551bb9c671,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+6b9b31bd-8511-4f7b-8400-9e42162b0bd1,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+6d2369c0-a412-427e-afab-8c5feed10cc3,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+1da33eb5-f18a-4d65-9346-e7e9ef07fbf9,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+5b130e06-566f-4ceb-897c-386e9e1f824d,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+f9a8b8f7-3307-44d7-a1c4-2ad8c2a4cac9,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+d5a96505-0d9a-4dfa-8b59-119e6b114d61,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+a0f709cd-2c0b-40db-a01b-372c715beef9,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+fa7ca587-77f8-4cea-b71b-7bb1b746b33d,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+c2e1b160-70bb-49bf-afd2-6dc52e784ad5,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+60e3146d-c363-4b7c-af29-18380260e8f1,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+3c1da904-b03a-40d5-a1b3-c23e9ffad4b8,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+019d50ff-a716-46a4-b097-c5c650dea63b,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+22225e01-3ed6-4a1f-8fca-b55655117d01,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+bab6e8bf-435d-4da2-a25f-1e651cb33960,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+92c3eb98-4998-40dc-b31a-8b2da987365e,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+c0b1b0f0-9945-4aa2-8dc0-43d67c1b1070,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+98fb1997-3c5d-4bfa-af26-6f46dd7c8a1b,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+fc2c4254-fae3-4ad7-bd0c-c44be30334fb,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+8b09ed22-3d26-41a0-8eb3-d7df0bd66331,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+fdaac67c-12cf-4c0f-a203-c19618076972,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+dbf26171-4fbc-4ac0-bdf8-c76c761e4974,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+92af0f37-cfdf-41b4-b187-0fd19f00b722,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+f361cc66-38ca-4125-ab5f-153ce82fc340,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+d6e07850-a05d-4aa7-ad8b-5f7895fd2b36,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+8de78517-0995-43b1-9c4e-30e0a0f1b1df,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+b42bac52-ccda-4a73-b49b-faab46b48c88,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+f0823eb2-3859-45a3-9fa4-a83cc44207ef,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+952a07fb-63c7-4fc3-9582-83096a13c9e0,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+2f3177d2-2769-4e0d-a212-4769b908178c,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+1f82ac59-1c1e-4e72-a1f8-4eaea2120347,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+60d701a7-09cf-4b18-aaff-788ea1e799a5,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+57041b21-12da-464d-b275-c91cb3fa8673,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+68f93e30-9d19-4c6c-885e-0591cc38e19f,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+3e8438fe-884f-4337-974d-7c8c2a1dd459,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+9fbca489-f822-4412-8066-a819bc100eb7,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+0fd1b0a8-c415-4309-9778-4ebefa05a1cf,TODO,build_ea,30,28,KEEP,,,recent or prioritised build -> keep in queue
+5fa16349-5252-448a-8f5d-8a7d77306f9b,TODO,build_ea,50,28,KEEP,,,recent or prioritised build -> keep in queue
+29863320-8536-4252-b02c-6dae6db885d9,TODO,build_ea,30,19,KEEP,,,recent or prioritised build -> keep in queue
+66329779-aa43-4905-97da-7fabc11823d3,TODO,build_ea,50,17,KEEP,,,recent or prioritised build -> keep in queue
+ce28db7e-0cda-40a0-b4de-3cb3aeed6bc9,TODO,build_ea,30,13,KEEP,,,recent or prioritised build -> keep in queue
+4b622f5c-2c7a-4822-a2f4-ec98ae73d86b,TODO,build_ea,30,9,KEEP,,,recent or prioritised build -> keep in queue
+5f860f79-dfb8-4188-aa80-1890aa606ef1,TODO,ops_issue,30,71,PARK,,BLOCKED,aged_ops_backlog (age>30d) -> park for explicit re-triage
+00b6f79c-b2e6-4653-a18f-420b3f51f49c,TODO,ops_issue,30,50,PARK,,BLOCKED,aged_ops_backlog (age>30d) -> park for explicit re-triage
+80b9d54d-7414-439a-abca-5d6b6675cde0,TODO,ops_issue,30,48,PARK,,BLOCKED,aged_ops_backlog (age>30d) -> park for explicit re-triage
+e685432a-42b6-4396-9151-4ba59f03457a,TODO,ops_issue,30,29,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+635ad39b-6f6b-44fd-8550-437c420769c3,TODO,ops_issue,30,29,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+088e7fd0-87ef-4e00-bba7-00cbef213234,TODO,ops_issue,30,24,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+2b95f500-e965-42d5-81af-6fdc135b9443,TODO,ops_issue,30,23,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+50467e7e-3148-4792-9223-083bd8ee2516,TODO,ops_issue,30,23,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+b4fe23af-4f60-42d1-bf00-a9ff3185fad6,TODO,ops_issue,30,22,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+b98560ce-ebd0-45e6-93bc-78d498211d93,TODO,ops_issue,30,19,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+a7c69b44-3858-5ab2-8929-057c6cf6005d,TODO,ops_issue,30,15,PARK,owner,BLOCKED,awaiting OWNER decision execution (decision-bound)
+7db9abd6-3aa1-4a8c-ad29-7b395818d805,TODO,ops_issue,30,14,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+269ac1c4-1986-4e1a-a7cc-2965c52984c8,TODO,ops_issue,30,8,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+4a3a4a02-87bb-4c04-b45c-61c2b86c8d1a,TODO,ops_issue,90,5,PARK,owner,BLOCKED,awaiting_human_lane:owner (video_analysis; agy has no video tool)
+f27ee29b-a8c2-4421-af90-821fe7583808,TODO,ops_issue,68,3,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+f5d30fc9-cd21-4697-b81a-3e72850c0c8a,TODO,ops_issue,60,2,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+bc07fa0a-307f-49dc-8294-b67bbd3e0f39,TODO,ops_issue,55,2,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+6fb9823f-c242-4ba0-9c7d-7b5ae2028a6d,TODO,ops_issue,40,2,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+f4641698-2741-48c8-958c-9e7af23debf7,TODO,ops_issue,45,2,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+b093f809-b5bb-404a-8a3d-58a210c78ff8,TODO,ops_issue,45,1,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+c6e5ed49-ef62-4e67-88f1-e79648f168af,TODO,research_strategy,30,49,PARK,,BLOCKED,research_throttled: aged research row; research created only when reservoir<5
+22d74470-a8b6-4acd-8b9b-3c187db81524,TODO,research_strategy,60,1,COMMISSION,gemini,,active research -> commission to gemini (agy research lane)
+6c1064c4-fa73-49d5-b89b-af69ee0ccc78,TODO,research_strategy,62,1,COMMISSION,gemini,,active research -> commission to gemini (agy research lane)
+0ad6b080-cc66-4918-8344-2e827a4c5001,TODO,research_strategy,55,1,COMMISSION,gemini,,active research -> commission to gemini (agy research lane)
+703ad829-d436-4815-ae26-da1bde4f04de,TODO,review_ea,30,35,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+c734242f-6787-4bda-a735-05758753a9f0,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+da921b20-b31f-4530-aa87-15a05d4c818a,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+33203a5c-13c9-4db5-b553-2cc23519125f,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+cf62861c-2bb3-40ec-8239-c12627e0a0a0,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+bc910727-5ee3-47a3-ae81-420aa819f589,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+b8886e40-547b-4d41-989a-aad8324f5a69,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+7a9aa79c-3538-419c-a02a-7670d5ed603a,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+ce1b2ad8-e99a-49b3-96d1-581726dc3bdf,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+96b77b6a-9abe-4acc-8c4d-9f59d2b9bf3a,TODO,review_ea,30,28,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+fb52c402-7c79-4bf8-bcf2-aed1536117da,TODO,review_ea,30,25,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+a2effd9b-b0bb-4def-b95e-cee799c24f88,TODO,review_ea,30,25,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+2c43671f-aabb-4ca5-8cf8-857505375ce2,TODO,review_ea,30,24,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+6f392d1e-f1d8-402c-8d33-37d6661ab14e,TODO,review_ea,30,24,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+5e67fc01-4a0d-43c5-ad23-68a6b6e0ce69,TODO,review_ea,30,24,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+4e370f87-6e6d-4b8b-ac0f-31413f6b8092,TODO,review_ea,30,24,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+72cb14ec-664d-41c9-a9c0-a0047d593eb3,TODO,review_ea,30,23,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+04867bea-8c6b-4a17-84e3-457a513f9d6d,TODO,review_ea,30,23,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+0de901bc-58f8-4ccd-bc84-227ab710f2b7,TODO,review_ea,30,23,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+e2d205ca-3b70-4b7d-8d31-ff030c987b1e,TODO,review_ea,30,23,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+9de2c519-2ca6-480b-a568-ac5f90611962,TODO,review_ea,30,22,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+c70f99bf-2ad7-46a6-a399-3fa8b0213fa9,TODO,review_ea,30,22,COMMISSION,claude,,review_ea head-blocks the agent lane; commission to Claude (review closure duty)
+598dd8fe-cf28-414a-866a-e7839070c5a5,TODO,triage_failure,30,49,PARK,,BLOCKED,aged_ops_backlog (age>30d) -> park for explicit re-triage
+258526d6-acfd-4eba-9c3a-7d612109e959,TODO,triage_failure,30,6,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+52183b38-98c0-402b-aabd-a78712ddaafd,TODO,triage_failure,30,4,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+d9c3f4a8-dbae-4955-ac36-ef0d166f14e0,TODO,triage_failure,30,4,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+b76e30fd-5b82-4f3c-99ef-031973cb647f,TODO,triage_failure,30,3,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)
+374ba9a6-478d-4df3-9881-4c99d143f967,TODO,triage_failure,30,3,COMMISSION,codex,,active ops/triage -> commission to codex (ops+code)

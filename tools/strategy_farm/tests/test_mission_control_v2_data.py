@@ -534,7 +534,7 @@ def test_contract_carries_book_evolution_keys_and_validates(
     # book-evolution read-models absent -> EVIDENCE_MISSING, contract still valid
     for attr in ("BOOK_EVOLUTION_DXZ_FILE", "BOOK_EVOLUTION_FTMO_FILE",
                  "FTMO_CHALLENGE_READINESS_FILE", "RESEARCH_STATE_FILE",
-                 "FACTORY_BOTTLENECK_FILE"):
+                 "FACTORY_BOTTLENECK_FILE", "ORCHESTRATION_HEALTH_FILE"):
         monkeypatch.setattr(mc, attr, tmp_path / "absent" / f"{attr}.json")
     # operator_surface path_to_25 has a sealed-decision dependency; stub it so this
     # test isolates the book-evolution wiring from that unrelated seal.
@@ -566,6 +566,26 @@ def test_contract_carries_book_evolution_keys_and_validates(
     for key in ("book_evolution_readmodels", "ftmo_readiness_recommendation",
                 "research_state_freshness", "factory_bottleneck_top"):
         assert key in health
+    # §18 orchestration health absent -> EVIDENCE_MISSING, contract still valid
+    assert contract["orchestration_health"]["present"] is False
+    assert contract["orchestration_health"]["degraded_reason"] == "EVIDENCE_MISSING"
+
+
+def test_orchestration_health_bound_verbatim_when_present(monkeypatch, tmp_path):
+    """A present orchestration_health.json is bound verbatim into the contract."""
+    doc = {
+        "schema": "qm.orchestration-health/v1",
+        "generated_at_utc": NOW.isoformat(),
+        "health": {"status": "AMBER", "flags": ["critic_same_vendor:4/5"]},
+        "critic_chain": {"cross_vendor_false": 4, "completed": 5},
+    }
+    path = tmp_path / "orchestration_health.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    monkeypatch.setattr(mc, "ORCHESTRATION_HEALTH_FILE", path)
+    section = mc.load_orchestration_health(now=NOW)
+    assert section["present"] is True
+    assert section["payload"]["health"]["status"] == "AMBER"
+    assert section["payload"]["critic_chain"]["cross_vendor_false"] == 4
 
 
 def test_terminals_installed_not_governed_cards_are_appended(fixture_db):

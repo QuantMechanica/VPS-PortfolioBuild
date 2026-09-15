@@ -107,6 +107,11 @@ BOOK_EVOLUTION_FTMO_FILE = REPORTS_STATE / "book_evolution_ftmo.json"
 FTMO_CHALLENGE_READINESS_FILE = REPORTS_STATE / "ftmo_challenge_readiness.json"
 RESEARCH_STATE_FILE = REPORTS_STATE / "research_state.json"
 FACTORY_BOTTLENECK_FILE = REPORTS_STATE / "factory_bottleneck.json"
+# AI orchestration health read-model (qm.orchestration-health/v1), produced by
+# orchestration_health_readmodel.py on the 15-min read-model task. Bound verbatim
+# into the MC contract; EVIDENCE_MISSING-tolerant when the file is absent.
+ORCHESTRATION_HEALTH_FILE = REPORTS_STATE / "orchestration_health.json"
+ORCHESTRATION_HEALTH_SLA_SEC = 30 * 60  # 15-min cadence + margin
 
 # Terminal fleet is fixed at T1..T10 (T_Live is C:\ and never a factory slot).
 FLEET = tuple(f"T{i}" for i in range(1, 11))
@@ -1328,6 +1333,20 @@ def load_book_evolution_sections(*, now: dt.datetime | None = None
     return loaded
 
 
+def load_orchestration_health(*, now: dt.datetime | None = None) -> dict[str, Any]:
+    """Bind the AI orchestration-health read-model into the MC contract.
+
+    Fail-soft: an absent/unreadable ``orchestration_health.json`` yields
+    ``present=False`` + ``degraded_reason='EVIDENCE_MISSING'`` (never crashes,
+    never fabricates). This surfaces §18 orchestration health — including the
+    critic-chain independence signal (cross_vendor=false / critic_fallback_used)
+    — into Mission Control, so a review-independence reduction is no longer only
+    visible inside individual agent_chain receipts."""
+    now = now or _now_utc()
+    return factory_bottleneck.load_readmodel(
+        ORCHESTRATION_HEALTH_FILE, now=now, sla_sec=ORCHESTRATION_HEALTH_SLA_SEC)
+
+
 def build_contract(
     db: Path | None = None,
     *,
@@ -1370,6 +1389,7 @@ def build_contract(
     path_to_25 = operator_surface["path_to_25"]
 
     book_evolution_sections = load_book_evolution_sections(now=now)
+    orchestration_health = load_orchestration_health(now=now)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -1392,6 +1412,10 @@ def build_contract(
         "research_state": book_evolution_sections["research_state"],
         "factory_bottleneck": book_evolution_sections["factory_bottleneck"],
         "book_evolution_health": book_evolution_sections["book_evolution_health"],
+        # §18 AI orchestration health (bound verbatim; EVIDENCE_MISSING when the
+        # read-model is absent). Carries the critic-chain independence signal so
+        # a same-vendor / fallback review is visible in Mission Control.
+        "orchestration_health": orchestration_health,
         # Diagnostic only (§3): candidate counts, not a goal.
         "path_to_25": path_to_25,
     }
@@ -1782,6 +1806,9 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "factory_bottleneck_top": {"type": "string"},
             },
         },
+        # §18 AI orchestration health, bound verbatim from the read-model.
+        # Permissive + optional (EVIDENCE_MISSING tolerant, not in `required`).
+        "orchestration_health": {"type": "object"},
     },
     "$defs": {
         "kpi": {

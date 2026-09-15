@@ -234,6 +234,8 @@ def _default_state_builds() -> list[dict[str, Any]]:
         {"name": "research_state", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "research" / "research_state_readmodel.py")]},
         # factory_bottleneck build also writes book_evolution_health.json (unless --no-health).
         {"name": "factory_bottleneck", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "factory_bottleneck_readmodel.py"), "build"]},
+        # §18 AI orchestration health read-model (qm.orchestration-health/v1) for Mission Control.
+        {"name": "orchestration_health", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "orchestration_health_readmodel.py"), "build"]},
     ]
 
 
