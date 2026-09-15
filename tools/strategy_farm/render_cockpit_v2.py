@@ -877,6 +877,398 @@ def _render_progress(contract: dict) -> str:
   </section>'''
 
 
+# ---------------------------------------------------------------------------
+# Continuous Book Evolution primary view (§60) + FTMO Challenge Readiness (§62)
+# OWNER-DEC-CBE-20260915: replaces the abolished "Way to 25" objective block.
+# Every field is bound verbatim from a read-model; an absent read-model renders
+# an explicit EVIDENCE_MISSING notice and never crashes.
+# ---------------------------------------------------------------------------
+_HEALTH_COLOUR = {
+    "GREEN": "var(--pass)", "AMBER": "var(--warn)", "RED": "var(--fail)",
+}
+
+
+def _rm_present(rm: Any) -> bool:
+    return isinstance(rm, dict) and bool(rm.get("present"))
+
+
+def _rm_payload(rm: Any) -> dict:
+    if isinstance(rm, dict):
+        p = rm.get("payload")
+        if isinstance(p, dict):
+            return p
+    return {}
+
+
+def _rm_freshness_badge(rm: Any) -> str:
+    """A small freshness chip for a present read-model (STALE only when STALE)."""
+    if not isinstance(rm, dict) or not rm.get("present"):
+        return ""
+    staleness = str(rm.get("staleness") or "UNKNOWN").upper()
+    if staleness == "STALE":
+        age = rm.get("age_seconds")
+        return (f'<span class="mc-badge mc-badge-warn">STALE'
+                + (f' · {_reltime_from_seconds(age)}' if age is not None else "")
+                + "</span>")
+    if staleness == "FRESH":
+        return '<span class="mc-badge mc-badge-ok">FRISCH</span>'
+    return '<span class="mc-badge">?</span>'
+
+
+def _evidence_missing(label: str, rm: Any) -> str:
+    src = ""
+    if isinstance(rm, dict):
+        reason = rm.get("degraded_reason")
+        path = rm.get("source_path")
+        detail = reason or "read-model nicht vorhanden"
+        src = f' <span class="mc-dim">({e(detail)}{" · " + e(path) if path else ""})</span>'
+    return (f'<div class="mc-be-missing"><b>{e(label)}:</b> '
+            f'<span class="mc-badge mc-badge-warn">EVIDENCE_MISSING</span>{src}</div>')
+
+
+def _be_val(value: Any) -> str:
+    """Render a read-model value: pass through explicit sentinels untouched."""
+    if value is None:
+        return "—"
+    if isinstance(value, str) and value in (
+        "EVIDENCE_MISSING", "NOT_EVALUATED", "UNKNOWN", "NOT_APPLICABLE", "NONE"
+    ):
+        return value
+    return e(value)
+
+
+def _render_be_venue(label: str, rm: Any) -> str:
+    """One venue sub-block (DXZ or FTMO) of the Book Evolution view."""
+    if not _rm_present(rm):
+        return (f'<div class="mc-be-venue"><div class="mc-h3">{e(label)}</div>'
+                + _evidence_missing(label, rm) + "</div>")
+    p = _rm_payload(rm)
+    incumbent = p.get("incumbent") or {}
+    sleeves = incumbent.get("sleeves") or []
+    sleeve_rows = "".join(
+        '<tr>'
+        f'<td class="mc-mono">{_be_val(s.get("ea_id"))}</td>'
+        f'<td class="mc-mono">{_be_val(s.get("symbol"))}</td>'
+        f'<td class="mc-num">{_be_val(s.get("magic"))}</td>'
+        f'<td class="mc-num">{_de(s.get("risk_pct"), 3) if isinstance(s.get("risk_pct"), (int, float)) else _be_val(s.get("risk_pct"))}</td>'
+        f'<td class="mc-mono">{e(str(s.get("since") or "")[:10])}</td>'
+        f'<td>{_be_val(s.get("status"))}</td>'
+        '</tr>'
+        for s in sleeves
+    ) or '<tr><td colspan="6" class="mc-dim">keine Sleeves im Read-Model</td></tr>'
+
+    evidence = p.get("evidence") or {}
+    pool = p.get("qualified_pool") or {}
+    challengers = p.get("challengers") or []
+    ch_rows = "".join(
+        '<tr>'
+        f'<td class="mc-mono">{_be_val(c.get("ea_id"))}</td>'
+        f'<td class="mc-mono">{_be_val(c.get("symbol"))}</td>'
+        f'<td>{_be_val(c.get("highest_gate"))}</td>'
+        f'<td>{_be_val(c.get("marginal_value")) if not isinstance(c.get("marginal_value"), dict) else e(json.dumps(c.get("marginal_value"), ensure_ascii=False)[:80])}</td>'
+        '</tr>'
+        for c in challengers[:12]
+    ) or '<tr><td colspan="4" class="mc-dim">keine bewerteten Herausforderer</td></tr>'
+
+    proposal = p.get("proposal") or {}
+    outcome = str(proposal.get("outcome") or "UNKNOWN")
+    changes = proposal.get("changes") or []
+    changes_html = "".join(f"<li>{_be_val(c)}</li>" for c in changes) or "<li>keine</li>"
+    materiality = proposal.get("materiality")
+    materiality_txt = (json.dumps(materiality, ensure_ascii=False)
+                       if isinstance(materiality, dict) else _be_val(materiality))
+    owner_action = p.get("owner_action")
+    owner_html = ""
+    if owner_action and owner_action != "NONE":
+        owner_html = (f'<div class="mc-be-owner"><b>OWNER-Aktion:</b> '
+                      f'{_be_val(owner_action)}</div>')
+
+    return f'''
+      <div class="mc-be-venue">
+        <div class="mc-h3">{e(label)}
+          <span>Vorschlag <span class="mc-chip">{e(outcome)}</span> · Konfidenz {_be_val(proposal.get("confidence"))} {_rm_freshness_badge(rm)}</span></div>
+        <div class="mc-be-grid">
+          <div>
+            <div class="mc-sublabel">Inkumbent · {_int(incumbent.get("sleeve_count"))} Sleeves · Risk {_be_val(incumbent.get("total_risk_pct"))} %</div>
+            <table class="mc-table"><thead><tr><th>EA</th><th>Symbol</th>
+              <th class="mc-num">Magic</th><th class="mc-num">Risk %</th><th>seit</th><th>Status</th></tr></thead>
+              <tbody>{sleeve_rows}</tbody></table>
+          </div>
+          <div>
+            <div class="mc-sublabel">Live-Evidenz</div>
+            <table class="mc-table"><tbody>
+              <tr><td class="mc-rowlabel">Live-Equity</td><td class="mc-num">{_be_val(evidence.get("live_equity"))}</td></tr>
+              <tr><td class="mc-rowlabel">Live-DD %</td><td class="mc-num">{_be_val(evidence.get("live_dd_pct"))}</td></tr>
+              <tr><td class="mc-rowlabel">Live seit</td><td>{e(str(evidence.get("live_since") or "")[:10]) or "—"}</td></tr>
+              <tr><td class="mc-rowlabel">Frische</td><td>{e(str(evidence.get("freshness_utc") or "")[:19]) or "—"}</td></tr>
+            </tbody></table>
+            <div class="mc-foot mc-dim">Qualified Pool: {_be_val(pool.get("count"))} (Diagnostik, kein Ziel)</div>
+          </div>
+        </div>
+        <div class="mc-sublabel">Herausforderer</div>
+        <table class="mc-table"><thead><tr><th>EA</th><th>Symbol</th><th>höchstes Gate</th><th>marginaler Wert</th></tr></thead>
+          <tbody>{ch_rows}</tbody></table>
+        <div class="mc-be-proposal">
+          <div><b>Vorschlag:</b> <span class="mc-chip">{e(outcome)}</span></div>
+          <div><b>Änderungen:</b><ul>{changes_html}</ul></div>
+          <div><b>Materialität:</b> {materiality_txt} · <b>Betriebsrisiko:</b> {_be_val(proposal.get("operational_risk"))}</div>
+          <div><b>Empfehlung:</b> {_be_val(p.get("recommendation_text"))}</div>
+          <div class="mc-dim">Nächste Rekomposition: {e(str(p.get("next_recomposition_utc") or "")[:19]) or "—"}</div>
+          {owner_html}
+        </div>
+      </div>'''
+
+
+def _render_be_research(contract: dict) -> str:
+    rm = contract.get("research_state")
+    if not _rm_present(rm):
+        return ('<div class="mc-be-venue"><div class="mc-h3">Research</div>'
+                + _evidence_missing("Research", rm) + "</div>")
+    p = _rm_payload(rm)
+    programmes = p.get("programmes") or []
+    prog_rows = "".join(
+        '<tr>'
+        f'<td>{_be_val(pr.get("name"))}</td>'
+        f'<td>{_be_val(pr.get("status"))}</td>'
+        f'<td>{_be_val(pr.get("owner_provider"))}</td>'
+        '</tr>'
+        for pr in programmes[:12]
+    ) or '<tr><td colspan="3" class="mc-dim">keine Programme</td></tr>'
+    campaigns = p.get("kimi_campaigns") or []
+    camp_rows = "".join(
+        '<tr>'
+        f'<td class="mc-mono">{_be_val(c.get("campaign_id"))}</td>'
+        f'<td>{_be_val(c.get("status"))}</td>'
+        f'<td>{"versiegelt" if c.get("sealed") else "offen"}</td>'
+        f'<td>{_be_val(c.get("critic_provider"))} · {_be_val(c.get("critic_verdict"))}</td>'
+        '</tr>'
+        for c in campaigns[:12]
+    ) or '<tr><td colspan="4" class="mc-dim">keine Kimi-Kampagnen</td></tr>'
+    hyp = p.get("hypotheses") or {}
+    hyp_chips = "".join(
+        f'<span class="mc-p25-gate"><b>{e(k)}</b>{_int(len(hyp.get(k) or []))}</span>'
+        for k in ("new", "under_criticism", "preregistered", "mechanized", "falsified")
+    )
+    quota = ((p.get("quota") or {}).get("kimi") or {})
+    return f'''
+      <div class="mc-be-venue">
+        <div class="mc-h3">Research
+          <span>Kimi-Quota {_be_val(quota.get("state"))} · Quelle {_be_val(quota.get("usage_source"))} {_rm_freshness_badge(rm)}</span></div>
+        <div class="mc-p25-frontier"><span>Hypothesen</span>{hyp_chips}</div>
+        <div class="mc-be-grid">
+          <div>
+            <div class="mc-sublabel">Programme</div>
+            <table class="mc-table"><thead><tr><th>Name</th><th>Status</th><th>Provider</th></tr></thead>
+              <tbody>{prog_rows}</tbody></table>
+          </div>
+          <div>
+            <div class="mc-sublabel">Kimi-Kampagnen</div>
+            <table class="mc-table"><thead><tr><th>ID</th><th>Status</th><th>Siegel</th><th>Kritiker</th></tr></thead>
+              <tbody>{camp_rows}</tbody></table>
+          </div>
+        </div>
+        <div class="mc-foot"><b>Wichtigste gescheiterte Lehre:</b> {_be_val(p.get("most_important_failed_lesson"))}</div>
+      </div>'''
+
+
+def _render_be_factory(contract: dict) -> str:
+    rm = contract.get("factory_bottleneck")
+    if not _rm_present(rm):
+        return ('<div class="mc-be-venue"><div class="mc-h3">Factory</div>'
+                + _evidence_missing("Factory", rm) + "</div>")
+    p = _rm_payload(rm)
+    terminals = p.get("terminals") or {}
+    resources = p.get("resources") or {}
+    bottlenecks = p.get("bottlenecks") or []
+    bl_rows = "".join(
+        '<tr>'
+        f'<td class="mc-num">{_int(b.get("rank"))}</td>'
+        f'<td class="mc-mono">{_be_val(b.get("name"))}</td>'
+        f'<td>{_be_val(b.get("evidence"))}</td>'
+        f'<td>{_be_val(b.get("cost"))}</td>'
+        '</tr>'
+        for b in bottlenecks
+    ) or '<tr><td colspan="4" class="mc-dim">keine Engpässe gemeldet</td></tr>'
+    frontier = p.get("frontier") or {}
+    diag = frontier.get("candidate_counts_diagnostic") or {}
+    infra = p.get("infra_problems") or []
+    infra_html = "".join(
+        f'<li>{_be_val(i.get("hold_code"))}: {_be_val(i.get("count"))}'
+        + (f' · {e(i.get("detail"))}' if i.get("detail") else "") + "</li>"
+        for i in infra
+    ) or "<li>keine</li>"
+    return f'''
+      <div class="mc-be-venue">
+        <div class="mc-h3">Factory
+          <span>{_int(terminals.get("active"))} aktiv · {_int(terminals.get("idle_in_drain"))} idle in drain · {_int(terminals.get("claimable_pending"))} claimable pending {_rm_freshness_badge(rm)}</span></div>
+        <div class="mc-p25-frontier">
+          <span>Ressourcen</span>
+          <b>{_be_val(resources.get("cpu_pct"))}</b><span>CPU %</span>
+          <b>{_be_val(resources.get("ram_free_gb"))}</b><span>RAM frei GB</span>
+          <b>{_be_val(resources.get("d_free_gb"))}</b><span>D: frei GB</span>
+        </div>
+        <div class="mc-sublabel">Top-Engpässe (nach Geschäftswert)</div>
+        <table class="mc-table"><thead><tr><th class="mc-num">#</th><th>Name</th><th>Evidenz</th><th>Kosten</th></tr></thead>
+          <tbody>{bl_rows}</tbody></table>
+        <div class="mc-foot">
+          <div class="mc-foot-line mc-dim">Qualified Pool: {_be_val(diag.get("qualified_pairs"))} · {_be_val(diag.get("distinct_eas"))} EAs · {_be_val(diag.get("strategy_families"))} Familien (Diagnostik, KEIN Ziel)</div>
+          <div class="mc-foot-line"><b>Infra-Probleme:</b><ul>{infra_html}</ul></div>
+        </div>
+      </div>'''
+
+
+def _render_book_evolution(contract: dict) -> str:
+    """The §60 primary view: DXZ + FTMO + RESEARCH + FACTORY sub-sections."""
+    be = contract.get("book_evolution") or {}
+    dxz = be.get("dxz")
+    ftmo = be.get("ftmo")
+    health = contract.get("book_evolution_health") or {}
+
+    def health_chip(label: str, value: Any, colour_map: dict | None = None) -> str:
+        val = str(value) if value is not None else "EVIDENCE_MISSING"
+        colour = (colour_map or {}).get(val.upper())
+        style = f' style="color:{colour};border-color:{colour}"' if colour else ""
+        return (f'<span class="mc-chip"{style}>{e(label)}: {e(val)}</span>')
+
+    health_row = ""
+    if health:
+        health_row = f'''
+    <div class="mc-be-health">
+      {health_chip("Read-Models", health.get("book_evolution_readmodels"), _HEALTH_COLOUR)}
+      {health_chip("FTMO", health.get("ftmo_readiness_recommendation"))}
+      {health_chip("Research", health.get("research_state_freshness"))}
+      {health_chip("Engpass", health.get("factory_bottleneck_top"))}
+    </div>'''
+
+    return f'''
+  <section class="mc-section mc-be" id="book-evolution">
+    <div class="mc-h2"><span>Book Evolution</span>
+      <span class="mc-h2-aux">DXZ · FTMO · Research · Factory · zwei dauerhaft lebende Bücher (OWNER-DEC-CBE-20260915)</span></div>
+    {health_row}
+    <div class="mc-be-venues">
+      {_render_be_venue("DXZ Book", dxz)}
+      {_render_be_venue("FTMO Book", ftmo)}
+    </div>
+    {_render_be_research(contract)}
+    {_render_be_factory(contract)}
+  </section>'''
+
+
+def _render_ftmo_challenge_readiness(contract: dict) -> str:
+    """The §62 block: multi-dimensional readiness (never one number) + the
+    recommendation enum + would-Fable-buy-today."""
+    rm = contract.get("ftmo_challenge_readiness")
+    if not _rm_present(rm):
+        return f'''
+  <section class="mc-section mc-be" id="ftmo-challenge-readiness">
+    <div class="mc-h2"><span>FTMO Challenge Readiness</span>
+      <span class="mc-h2-aux">§62 · Komponenten + Empfehlung, nie eine einzelne Zahl</span></div>
+    {_evidence_missing("FTMO Challenge Readiness", rm)}
+  </section>'''
+    p = _rm_payload(rm)
+    account = p.get("account") or {}
+    demo = p.get("demo_cycle") or {}
+    metrics = p.get("metrics") or {}
+    sims = p.get("simulations") or {}
+    first = sims.get("first_passage")
+    rules = p.get("rules_snapshot") or {}
+    blockers = p.get("blockers") or []
+    would = p.get("would_fable_buy_today") or {}
+    recommendation = str(p.get("recommendation") or "UNKNOWN")
+
+    metric_order = [
+        ("target_progress_pct", "Ziel-Fortschritt %"),
+        ("worst_daily_loss_pct", "schlimmster Tagesverlust %"),
+        ("max_dd_pct", "max DD %"),
+        ("trade_density_per_day", "Trades / Tag"),
+        ("losing_streak_max", "längste Verluststrähne"),
+        ("recovery_days", "Erholungstage"),
+        ("spread_cost", "Spread-Kosten"),
+        ("swap_cost", "Swap-Kosten"),
+        ("session_exposure", "Session-Exposure"),
+    ]
+    metric_rows = "".join(
+        f'<tr><td class="mc-rowlabel">{e(label)}</td>'
+        f'<td class="mc-num">{_be_val(metrics.get(key))}</td></tr>'
+        for key, label in metric_order
+        if key in metrics
+    ) or '<tr><td colspan="2" class="mc-dim">keine Metriken im Read-Model</td></tr>'
+
+    if isinstance(first, dict):
+        fp_rows = "".join(
+            f'<tr><td class="mc-rowlabel">{e(label)}</td>'
+            f'<td class="mc-num">{_be_val(first.get(key))}</td></tr>'
+            for key, label in (
+                ("p_pass_30d", "p(Pass ≤30T)"),
+                ("p_pass_60d", "p(Pass ≤60T)"),
+                ("median_days", "Median-Tage"),
+                ("p_daily_loss_breach", "p(Tagesverlust-Bruch)"),
+                ("p_max_loss_breach", "p(Max-Verlust-Bruch)"),
+            )
+        )
+        fp_html = (f'<table class="mc-table"><tbody>{fp_rows}</tbody></table>')
+    else:
+        fp_html = _evidence_missing("First-Passage-Simulation", {"present": False,
+                    "degraded_reason": _be_val(first)})
+
+    blockers_html = "".join(f"<li>{_be_val(b)}</li>" for b in blockers) or "<li>keine</li>"
+    rec_colour = {
+        "READY_FOR_OWNER_REVIEW": "var(--pass)",
+        "BUY_100K_2STEP_RECOMMENDED": "var(--pass)",
+        "CONTINUE_DEMO": "var(--warn)",
+        "RECOMPOSE": "var(--warn)",
+        "NOT_READY": "var(--fail)",
+    }.get(recommendation, "var(--text-3)")
+    buy_answer = would.get("answer")
+    buy_txt = ("JA" if buy_answer is True else "NEIN" if buy_answer is False
+               else _be_val(buy_answer))
+
+    return f'''
+  <section class="mc-section mc-be" id="ftmo-challenge-readiness">
+    <div class="mc-h2"><span>FTMO Challenge Readiness</span>
+      <span class="mc-h2-aux">§62 · Komponenten + Empfehlung, nie eine einzelne Zahl {_rm_freshness_badge(rm)}</span></div>
+    <div class="mc-be-reco">
+      <span class="mc-chip" style="color:{rec_colour};border-color:{rec_colour}">{e(recommendation)}</span>
+      <span class="mc-dim">Konto {_be_val(account.get("type"))} · {_be_val(account.get("size"))} · {_be_val(account.get("product"))} · {_be_val(account.get("terminal"))}</span>
+    </div>
+    <div class="mc-foot"><b>Begründung:</b> {_be_val(p.get("rationale"))}</div>
+    <div class="mc-foot"><b>Würde Fable heute kaufen?</b> {e(buy_txt)} — {_be_val(would.get("why"))}</div>
+    <div class="mc-be-grid">
+      <div>
+        <div class="mc-sublabel">Komponenten (Metriken)</div>
+        <table class="mc-table"><tbody>{metric_rows}</tbody></table>
+      </div>
+      <div>
+        <div class="mc-sublabel">First-Passage-Simulation</div>
+        {fp_html}
+      </div>
+    </div>
+    <div class="mc-be-grid">
+      <div>
+        <div class="mc-sublabel">Demo-Zyklus</div>
+        <table class="mc-table"><tbody>
+          <tr><td class="mc-rowlabel">Roster-Hash</td><td class="mc-mono">{e(str(demo.get("roster_hash") or "")[:16]) or "—"}</td></tr>
+          <tr><td class="mc-rowlabel">Start</td><td>{e(str(demo.get("start_utc") or "")[:19]) or "—"}</td></tr>
+          <tr><td class="mc-rowlabel">Validierungstage</td><td class="mc-num">{_be_val(demo.get("validation_days"))}</td></tr>
+          <tr><td class="mc-rowlabel">repräsentativ</td><td>{_be_val(demo.get("representative"))}</td></tr>
+        </tbody></table>
+      </div>
+      <div>
+        <div class="mc-sublabel">Regel-Snapshot</div>
+        <table class="mc-table"><tbody>
+          <tr><td class="mc-rowlabel">Quelle</td><td class="mc-mono mc-clip" title="{e(rules.get("source_url"))}">{e(str(rules.get("source_url") or "")[:40]) or "—"}</td></tr>
+          <tr><td class="mc-rowlabel">geholt</td><td>{e(str(rules.get("fetched_utc") or "")[:19]) or "—"}</td></tr>
+          <tr><td class="mc-rowlabel">Frische (Tage)</td><td class="mc-num">{_be_val(rules.get("freshness_days"))}</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+    <div class="mc-foot">
+      <div class="mc-foot-line"><b>Stärkster Fehlermodus:</b> {_be_val(p.get("strongest_failure_mode"))}</div>
+      <div class="mc-foot-line"><b>Blocker:</b><ul>{blockers_html}</ul></div>
+    </div>
+  </section>'''
+
+
 def _render_path_to_25(contract: dict) -> str:
     metrics = contract.get("path_to_25", {}) or {}
     if not metrics:
@@ -1519,6 +1911,28 @@ _PAGE_CSS = """
     font-size:var(--fs-xs);font-weight:700;color:var(--text-3);
     letter-spacing:0.08em;text-transform:uppercase}
   .mc-dec-deferred[open]>summary{margin-bottom:var(--space-3)}
+
+  /* Continuous Book Evolution primary view (OWNER-DEC-CBE-20260915) */
+  .mc-be{border-left:4px solid var(--signal)}
+  .mc-be .mc-h2>span:first-child{color:var(--signal)}
+  .mc-be-health{display:flex;gap:var(--space-2);flex-wrap:wrap;margin-bottom:var(--space-4)}
+  .mc-be-venues{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6)}
+  @media (max-width:1000px){.mc-be-venues{grid-template-columns:1fr}}
+  .mc-be-venue{border:1px solid var(--border);background:var(--surface-2);
+    padding:var(--space-4);margin-bottom:var(--space-4)}
+  .mc-be-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-5)}
+  @media (max-width:800px){.mc-be-grid{grid-template-columns:1fr}}
+  .mc-be-proposal{margin-top:var(--space-3);font-size:var(--fs-xs);color:var(--text-2);
+    line-height:var(--lh-normal)}
+  .mc-be-proposal>div{margin-bottom:var(--space-1)}
+  .mc-be-proposal b{color:var(--text-1)}
+  .mc-be-proposal ul{margin:var(--space-1) 0 var(--space-1) var(--space-4)}
+  .mc-be-owner{margin-top:var(--space-2);padding:var(--space-2);
+    border:1px solid var(--warn);color:var(--warn);font-family:var(--font-mono);
+    font-size:var(--fs-xs)}
+  .mc-be-missing{padding:var(--space-2) 0;font-size:var(--fs-xs);color:var(--text-3)}
+  .mc-be-reco{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap;
+    margin-bottom:var(--space-3)}
 """
 
 
@@ -1765,11 +2179,18 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
         header_badges.append('<span class="mc-badge mc-badge-warn">STALE READMODEL</span>')
     badges_html = "".join(header_badges)
 
+    # OWNER-DEC-CBE-20260915 (§3, §60): the "Way to 25" objective block is
+    # abolished. The Book Evolution primary view (DXZ/FTMO/Research/Factory) and
+    # the FTMO Challenge Readiness block take its place, directly after the
+    # control strip. _render_path_to_25 is retained in the module (history, §3)
+    # but is no longer part of the primary flow; its candidate counts survive as
+    # a labelled diagnostic inside the Factory sub-block.
     body = "".join([
         _render_control_strip(contract),
+        _render_book_evolution(contract),
+        _render_ftmo_challenge_readiness(contract),
         _render_owner_todos(contract),
         _render_risk_freeze(contract),
-        _render_path_to_25(contract),
         _render_q09_ftmo_recommendation(contract),
         _render_owner_decisions(contract),
         _render_progress(contract),

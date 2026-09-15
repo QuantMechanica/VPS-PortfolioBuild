@@ -63,6 +63,7 @@ try:  # package import (tests, module consumers)
     from tools.strategy_farm import operator_surfaces
     from tools.strategy_farm import owner_decision_store
     from tools.strategy_farm import owner_decision_execution
+    from tools.strategy_farm import factory_bottleneck_readmodel as factory_bottleneck
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_control_v2_data.py``
     from work_item_clean_view import install_clean_view
     from phase_ids import phase_label, normalize_phase_id, PHASE_NAME
@@ -73,6 +74,7 @@ except ModuleNotFoundError:  # direct ``python tools/strategy_farm/mission_contr
     import operator_surfaces
     import owner_decision_store
     import owner_decision_execution
+    import factory_bottleneck_readmodel as factory_bottleneck
 
 
 SCHEMA_VERSION = "qm.mission_control.v2"
@@ -95,6 +97,16 @@ OWNER_DECISION_TOKEN_FILE = ROOT / "state" / "owner_decision_intake_token.txt"
 OWNER_DECISION_INTAKE_ENDPOINT = "http://127.0.0.1:8765/v1/decisions"
 AGENT_ROUTER_LOG_DIR = ROOT / "logs"
 EA_REGISTRY = REPO / "framework" / "registry" / "ea_id_registry.csv"
+
+# --- Continuous Book Evolution read-models (OWNER-DEC-CBE-20260915). ---
+# Produced by parallel slices E1/F1/G1 + factory_bottleneck_readmodel.py; bound
+# verbatim here and rendered EVIDENCE_MISSING when a file is absent. Module-level
+# so tests can monkeypatch them at hermetic fixture paths.
+BOOK_EVOLUTION_DXZ_FILE = REPORTS_STATE / "book_evolution_dxz.json"
+BOOK_EVOLUTION_FTMO_FILE = REPORTS_STATE / "book_evolution_ftmo.json"
+FTMO_CHALLENGE_READINESS_FILE = REPORTS_STATE / "ftmo_challenge_readiness.json"
+RESEARCH_STATE_FILE = REPORTS_STATE / "research_state.json"
+FACTORY_BOTTLENECK_FILE = REPORTS_STATE / "factory_bottleneck.json"
 
 # Terminal fleet is fixed at T1..T10 (T_Live is C:\ and never a factory slot).
 FLEET = tuple(f"T{i}" for i in range(1, 11))
@@ -1288,6 +1300,34 @@ def build_risk_freeze(*, now: dt.datetime | None = None) -> dict[str, Any]:
     }
 
 
+def load_book_evolution_sections(*, now: dt.datetime | None = None
+                                 ) -> dict[str, Any]:
+    """Load the Continuous Book Evolution read-models (fail-soft) plus the four
+    health keys the cockpit and vault Heartbeat consume.
+
+    Every block is bound verbatim from its read-model file; an absent file yields
+    ``present=False`` + ``degraded_reason='EVIDENCE_MISSING'`` so the renderer can
+    show EVIDENCE_MISSING and never crash. These files are produced by parallel
+    slices (E1/F1/G1 + factory_bottleneck_readmodel.py); this module never waits
+    on them and never computes their contents.
+    """
+    now = now or _now_utc()
+    loaded = factory_bottleneck.load_book_evolution_readmodels(
+        now=now,
+        paths={
+            "dxz": BOOK_EVOLUTION_DXZ_FILE,
+            "ftmo": BOOK_EVOLUTION_FTMO_FILE,
+            "ftmo_readiness": FTMO_CHALLENGE_READINESS_FILE,
+            "research": RESEARCH_STATE_FILE,
+            "bottleneck": FACTORY_BOTTLENECK_FILE,
+        },
+    )
+    health = factory_bottleneck.compute_book_evolution_health(loaded)
+    health["generated_at_utc"] = _iso(now)
+    loaded["book_evolution_health"] = health
+    return loaded
+
+
 def build_contract(
     db: Path | None = None,
     *,
@@ -1323,7 +1363,13 @@ def build_contract(
     operator_surface = operator_surfaces.build_operator_snapshot(
         db, pair_detail_limit=operator_pair_detail_limit
     )
+    # path_to_25 is retained for backward compatibility but is NO LONGER a
+    # business objective (OWNER-DEC-CBE-20260915, §3): the "Way to 25" primary
+    # view is superseded by the Book Evolution view. Its candidate counts survive
+    # only as a Factory diagnostic — never a /25 goal headline.
     path_to_25 = operator_surface["path_to_25"]
+
+    book_evolution_sections = load_book_evolution_sections(now=now)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -1339,6 +1385,14 @@ def build_contract(
         "terminals": terminals,
         "owner_decisions": owner,
         "operator_surface": operator_surface,
+        # Continuous Book Evolution primary view (bound verbatim; EVIDENCE_MISSING
+        # when a read-model is absent — produced by parallel slices E1/F1/G1).
+        "book_evolution": book_evolution_sections["book_evolution"],
+        "ftmo_challenge_readiness": book_evolution_sections["ftmo_challenge_readiness"],
+        "research_state": book_evolution_sections["research_state"],
+        "factory_bottleneck": book_evolution_sections["factory_bottleneck"],
+        "book_evolution_health": book_evolution_sections["book_evolution_health"],
+        # Diagnostic only (§3): candidate counts, not a goal.
         "path_to_25": path_to_25,
     }
 
@@ -1704,6 +1758,28 @@ CONTRACT_SCHEMA: dict[str, Any] = {
                 "counting_definition": {"type": "object"},
                 "eta_to_25": {"type": "object"},
                 "eta_days": {"type": ["number", "null"]},
+            },
+        },
+        # --- Continuous Book Evolution (OWNER-DEC-CBE-20260915). Optional and
+        # permissive: bound verbatim from external read-models, EVIDENCE_MISSING
+        # when absent. Not in `required` so validation stays green pre-E1/F1/G1. ---
+        "book_evolution": {
+            "type": "object",
+            "properties": {
+                "dxz": {"type": "object"},
+                "ftmo": {"type": "object"},
+            },
+        },
+        "ftmo_challenge_readiness": {"type": "object"},
+        "research_state": {"type": "object"},
+        "factory_bottleneck": {"type": "object"},
+        "book_evolution_health": {
+            "type": "object",
+            "properties": {
+                "book_evolution_readmodels": {"enum": ["GREEN", "AMBER", "RED"]},
+                "ftmo_readiness_recommendation": {"type": "string"},
+                "research_state_freshness": {"type": "string"},
+                "factory_bottleneck_top": {"type": "string"},
             },
         },
     },

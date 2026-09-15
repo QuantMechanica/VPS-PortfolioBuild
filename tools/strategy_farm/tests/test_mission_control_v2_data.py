@@ -440,6 +440,134 @@ def test_live_preview_validates_if_present():
     assert doc["schema_version"] == "qm.mission_control.v2"
 
 
+# ---------------------------------------------------------------------------
+# Continuous Book Evolution read-model wiring (OWNER-DEC-CBE-20260915)
+# ---------------------------------------------------------------------------
+def _write_readmodel(path: Path, payload: dict) -> None:
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+
+def test_load_book_evolution_sections_present_yields_green_health(monkeypatch, tmp_path):
+    dxz = tmp_path / "book_evolution_dxz.json"
+    ftmo = tmp_path / "book_evolution_ftmo.json"
+    readiness = tmp_path / "ftmo_challenge_readiness.json"
+    research = tmp_path / "research_state.json"
+    bottleneck = tmp_path / "factory_bottleneck.json"
+    fresh = NOW.isoformat()
+    _write_readmodel(dxz, {"venue": "dxz", "generated_at_utc": fresh})
+    _write_readmodel(ftmo, {"venue": "ftmo", "generated_at_utc": fresh})
+    _write_readmodel(readiness, {"generated_at_utc": fresh,
+                                 "recommendation": "CONTINUE_DEMO"})
+    _write_readmodel(research, {"generated_at_utc": fresh})
+    _write_readmodel(bottleneck, {"generated_at_utc": fresh,
+                                  "bottlenecks": [{"name": "band_Q02"}]})
+    monkeypatch.setattr(mc, "BOOK_EVOLUTION_DXZ_FILE", dxz)
+    monkeypatch.setattr(mc, "BOOK_EVOLUTION_FTMO_FILE", ftmo)
+    monkeypatch.setattr(mc, "FTMO_CHALLENGE_READINESS_FILE", readiness)
+    monkeypatch.setattr(mc, "RESEARCH_STATE_FILE", research)
+    monkeypatch.setattr(mc, "FACTORY_BOTTLENECK_FILE", bottleneck)
+
+    sections = mc.load_book_evolution_sections(now=NOW)
+    assert sections["book_evolution"]["dxz"]["present"] is True
+    assert sections["ftmo_challenge_readiness"]["present"] is True
+    health = sections["book_evolution_health"]
+    assert health["book_evolution_readmodels"] == "GREEN"
+    assert health["ftmo_readiness_recommendation"] == "CONTINUE_DEMO"
+    assert health["research_state_freshness"] == "FRESH"
+    assert health["factory_bottleneck_top"] == "band_Q02"
+
+
+def test_load_book_evolution_sections_absent_yields_red_and_evidence_missing(
+    monkeypatch, tmp_path
+):
+    missing = tmp_path / "nope"
+    for attr in ("BOOK_EVOLUTION_DXZ_FILE", "BOOK_EVOLUTION_FTMO_FILE",
+                 "FTMO_CHALLENGE_READINESS_FILE", "RESEARCH_STATE_FILE",
+                 "FACTORY_BOTTLENECK_FILE"):
+        monkeypatch.setattr(mc, attr, missing / f"{attr}.json")
+    sections = mc.load_book_evolution_sections(now=NOW)
+    assert sections["book_evolution"]["dxz"]["present"] is False
+    assert sections["book_evolution"]["dxz"]["degraded_reason"] == "EVIDENCE_MISSING"
+    health = sections["book_evolution_health"]
+    assert health["book_evolution_readmodels"] == "RED"
+    assert health["ftmo_readiness_recommendation"] == "EVIDENCE_MISSING"
+    assert health["research_state_freshness"] == "EVIDENCE_MISSING"
+    assert health["factory_bottleneck_top"] == "EVIDENCE_MISSING"
+
+
+def test_stale_readmodel_grades_amber(monkeypatch, tmp_path):
+    dxz = tmp_path / "book_evolution_dxz.json"
+    ftmo = tmp_path / "book_evolution_ftmo.json"
+    research = tmp_path / "research_state.json"
+    bottleneck = tmp_path / "factory_bottleneck.json"
+    readiness = tmp_path / "ftmo_challenge_readiness.json"
+    fresh = NOW.isoformat()
+    old = (NOW - dt.timedelta(days=5)).isoformat()
+    _write_readmodel(dxz, {"generated_at_utc": old})       # STALE (>24h SLA)
+    _write_readmodel(ftmo, {"generated_at_utc": fresh})
+    _write_readmodel(research, {"generated_at_utc": fresh})
+    _write_readmodel(bottleneck, {"generated_at_utc": fresh, "bottlenecks": []})
+    _write_readmodel(readiness, {"generated_at_utc": fresh, "recommendation": "NOT_READY"})
+    monkeypatch.setattr(mc, "BOOK_EVOLUTION_DXZ_FILE", dxz)
+    monkeypatch.setattr(mc, "BOOK_EVOLUTION_FTMO_FILE", ftmo)
+    monkeypatch.setattr(mc, "FTMO_CHALLENGE_READINESS_FILE", readiness)
+    monkeypatch.setattr(mc, "RESEARCH_STATE_FILE", research)
+    monkeypatch.setattr(mc, "FACTORY_BOTTLENECK_FILE", bottleneck)
+    sections = mc.load_book_evolution_sections(now=NOW)
+    assert sections["book_evolution"]["dxz"]["staleness"] == "STALE"
+    assert sections["book_evolution_health"]["book_evolution_readmodels"] == "AMBER"
+    # a present bottleneck read-model with no ranked entries reports NONE, not missing
+    assert sections["book_evolution_health"]["factory_bottleneck_top"] == "NONE"
+
+
+def test_contract_carries_book_evolution_keys_and_validates(
+    fixture_db, monkeypatch, tmp_path
+):
+    feed = tmp_path / "owner_decisions.json"
+    feed.write_text(json.dumps({"updated_at_utc": NOW.isoformat(), "items": []}),
+                    encoding="utf-8")
+    monkeypatch.setattr(mc, "OWNER_DECISIONS_FILE", feed)
+    monkeypatch.setattr(mc, "HEALTH_FILE", tmp_path / "missing_health.json")
+    monkeypatch.setattr(mc, "RISK_FREEZE_STATE", tmp_path / "missing_freeze.json")
+    monkeypatch.setattr(mc, "RISK_FREEZE_PRESETS", tmp_path / "missing_presets")
+    monkeypatch.setattr(mc, "MT5_FACTORY_ROOT", tmp_path / "mt5")
+    # book-evolution read-models absent -> EVIDENCE_MISSING, contract still valid
+    for attr in ("BOOK_EVOLUTION_DXZ_FILE", "BOOK_EVOLUTION_FTMO_FILE",
+                 "FTMO_CHALLENGE_READINESS_FILE", "RESEARCH_STATE_FILE",
+                 "FACTORY_BOTTLENECK_FILE"):
+        monkeypatch.setattr(mc, attr, tmp_path / "absent" / f"{attr}.json")
+    # operator_surface path_to_25 has a sealed-decision dependency; stub it so this
+    # test isolates the book-evolution wiring from that unrelated seal.
+    monkeypatch.setattr(
+        mc.operator_surfaces, "build_operator_snapshot",
+        lambda db, pair_detail_limit=None: {
+            "gate_contract_version": "v4",
+            "progress_metric": "highest_contiguous_valid_gate",
+            "phase_bands": [[], [], []], "pair_count": 0, "pairs": [],
+            "pair_preview_count": 0, "pair_detail_truncated": False,
+            "book_guard": {}, "path_to_25": {
+                "qualified_pairs": 0, "distinct_eas": 0, "families": 0,
+                "frontier_histogram": {}, "news_gate": {}, "opt_fork": {},
+                "backfill": {}, "committed_work": {}, "reservoir": {},
+                "raw_stage_counts": {}, "pair_progress": [],
+                "completion_rates": {}, "counting_definition": {},
+                "eta_to_25": {}, "eta_days": None,
+            },
+        },
+    )
+    contract = mc.build_contract(fixture_db, now=NOW)
+    mc.validate_contract(contract)
+    assert "book_evolution" in contract
+    assert set(contract["book_evolution"]) == {"dxz", "ftmo"}
+    assert contract["ftmo_challenge_readiness"]["present"] is False
+    assert contract["research_state"]["degraded_reason"] == "EVIDENCE_MISSING"
+    health = contract["book_evolution_health"]
+    assert health["book_evolution_readmodels"] == "RED"
+    for key in ("book_evolution_readmodels", "ftmo_readiness_recommendation",
+                "research_state_freshness", "factory_bottleneck_top"):
+        assert key in health
+
+
 def test_terminals_installed_not_governed_cards_are_appended(fixture_db):
     con = mc._connect_ro(fixture_db)
     try:

@@ -606,3 +606,212 @@ def test_render_stamp_sha_tracks_body_changes():
     # identical content renders to the same body sha (time-independent)
     a2 = r.stamp_from_doc(r.render(base))["sha256"]
     assert a == a2
+
+
+# ---------------------------------------------------------------------------
+# Continuous Book Evolution primary view (OWNER-DEC-CBE-20260915, §60/§62/§70)
+# ---------------------------------------------------------------------------
+def _rm(payload, *, present=True, staleness="FRESH", age_seconds=120):
+    """A load_readmodel-shaped wrapper the renderer binds verbatim."""
+    return {
+        "present": present,
+        "source_path": "fixture.json",
+        "generated_at_utc": "2026-09-15T14:00:00+00:00",
+        "age_seconds": age_seconds,
+        "staleness": staleness,
+        "degraded_reason": None if present else "EVIDENCE_MISSING",
+        "payload": payload if present else {},
+    }
+
+
+def _venue_payload(venue):
+    return {
+        "venue": venue, "generated_at_utc": "2026-09-15T14:00:00+00:00",
+        "iso_week": "2026-W38",
+        "incumbent": {
+            "sleeve_count": 2, "total_risk_pct": 1.5, "source_path": "book.json",
+            "sleeves": [
+                {"ea_id": "QM5_13036", "symbol": "USDJPY", "magic": 130360001,
+                 "risk_pct": 0.75, "since": "2026-08-01", "status": "LIVE"},
+                {"ea_id": "QM5_10440", "symbol": "NDX", "magic": 104400002,
+                 "risk_pct": 0.75, "since": "2026-08-10", "status": "PROBATION"},
+            ],
+        },
+        "evidence": {"live_equity": 101234.5, "live_dd_pct": 2.1,
+                     "live_since": "2026-08-01", "freshness_utc": "2026-09-15T13:50:00+00:00",
+                     "sources": ["live_book_pulse.json"]},
+        "qualified_pool": {"count": 26, "definition": "sealed", "csv_path": "pool.csv"},
+        "challengers": [
+            {"ea_id": "QM5_12548", "symbol": "XAUUSD", "highest_gate": "Q14",
+             "marginal_value": {"sharpe_delta": 0.1}},
+            {"ea_id": "QM5_12552", "symbol": "EURUSD", "highest_gate": "Q12",
+             "marginal_value": "NOT_EVALUATED"},
+        ],
+        "proposal": {"outcome": "KEEP", "changes": [],
+                     "expected_metrics": {"sharpe": 1.2},
+                     "materiality": {"material": False}, "confidence": "medium",
+                     "operational_risk": "low"},
+        "next_recomposition_utc": "2026-09-20T12:00:00+00:00",
+        "recommendation_text": "Weekly default KEEP; no material challenger.",
+        "owner_action": "NONE", "snapshot_dir": "snap/",
+    }
+
+
+def _research_payload():
+    return {
+        "generated_at_utc": "2026-09-15T14:00:00+00:00",
+        "programmes": [{"name": "SSRN mine", "status": "ACTIVE",
+                        "owner_provider": "agy"}],
+        "kimi_campaigns": [{"campaign_id": "KC-001", "question": "MR edge?",
+                            "status": "SEALED", "artifact": "QM-RESEARCH://kc-001",
+                            "sealed": True, "critic_provider": "codex",
+                            "critic_verdict": "SOUND"}],
+        "hypotheses": {"new": ["h1"], "under_criticism": [], "preregistered": ["h2"],
+                       "mechanized": [], "falsified": ["h0"]},
+        "most_important_failed_lesson": "Overfit trailing stops die OOS.",
+        "quota": {"kimi": {"usage_source": "local_ledger_only", "state": "NORMAL",
+                           "real": None}},
+    }
+
+
+def _factory_payload():
+    return {
+        "schema": "qm.factory-bottleneck/v1",
+        "generated_at_utc": "2026-09-15T14:00:00+00:00",
+        "frontier": {"by_gate_v4": {"Q02": 2089, "Q11": 51, "Q12": 2},
+                     "candidate_counts_diagnostic": {
+                         "qualified_pairs": 26, "distinct_eas": 26,
+                         "strategy_families": 21, "note": "diagnostic, not a goal"}},
+        "bottlenecks": [
+            {"rank": 1, "name": "unwinnable_reservation_head_of_line_block",
+             "severity": "CRITICAL", "evidence": "6/10 terminals self-parked",
+             "cost": "~6/10 MT5 idle"},
+            {"rank": 2, "name": "frontier_band_Q02",
+             "severity": "HIGH", "evidence": "2089 pairs at Q02", "cost": "frontier"},
+        ],
+        "terminals": {"active": 4, "idle_in_drain": 6, "claimable_pending": 732,
+                      "idle_terminals": ["T3", "T5"], "logs_scanned": ["T3", "T5"]},
+        "resources": {"cpu_pct": 92.5, "ram_free_gb": 27.7, "d_free_gb": 61.0},
+        "infra_problems": [{"hold_code": "NEWS_CALENDAR_TAINTED", "count": 99}],
+    }
+
+
+def _ftmo_readiness_payload():
+    return {
+        "generated_at_utc": "2026-09-15T14:00:00+00:00",
+        "account": {"type": "100k", "size": 100000, "product": "2-Step",
+                    "terminal": "FTMO-Demo"},
+        "demo_cycle": {"roster_hash": "abc123def456", "roster": ["QM5_13036"],
+                       "start_utc": "2026-09-01T00:00:00+00:00", "validation_days": 14,
+                       "material_changes": [], "representative": True},
+        "metrics": {"target_progress_pct": 45.0, "worst_daily_loss_pct": 1.8,
+                    "max_dd_pct": 3.2, "trade_density_per_day": 2.1,
+                    "losing_streak_max": 4, "recovery_days": 3, "spread_cost": 12.0,
+                    "swap_cost": 3.0, "session_exposure": "London/NY"},
+        "simulations": {"first_passage": {"p_pass_30d": 0.42, "p_pass_60d": 0.71,
+                                          "median_days": 38, "p_daily_loss_breach": 0.05,
+                                          "p_max_loss_breach": 0.02},
+                        "fund_score_by_sleeve": {"QM5_13036": 0.8}},
+        "rules_snapshot": {"source_url": "https://ftmo.com/rules",
+                           "fetched_utc": "2026-09-15T06:00:00+00:00",
+                           "fields": {"max_daily_loss_pct": 5}, "freshness_days": 0},
+        "strongest_failure_mode": "daily loss breach in high-impact news windows",
+        "blockers": ["two-week demo not complete"],
+        "recommendation": "CONTINUE_DEMO",
+        "rationale": "Probability of success favours continued demo.",
+        "would_fable_buy_today": {"answer": False,
+                                  "why": "Demo window incomplete; p(pass) below bar."},
+    }
+
+
+def _with_book_evolution(contract):
+    contract["book_evolution"] = {"dxz": _rm(_venue_payload("dxz")),
+                                  "ftmo": _rm(_venue_payload("ftmo"))}
+    contract["research_state"] = _rm(_research_payload())
+    contract["factory_bottleneck"] = _rm(_factory_payload())
+    contract["ftmo_challenge_readiness"] = _rm(_ftmo_readiness_payload())
+    contract["book_evolution_health"] = {
+        "book_evolution_readmodels": "GREEN",
+        "ftmo_readiness_recommendation": "CONTINUE_DEMO",
+        "research_state_freshness": "FRESH",
+        "factory_bottleneck_top": "unwinnable_reservation_head_of_line_block",
+        "generated_at_utc": "2026-09-15T14:00:00+00:00",
+    }
+    return contract
+
+
+def test_book_evolution_all_four_sections_render_from_fixture_readmodels():
+    contract = _with_book_evolution(make_contract(n_decisions=1))
+    html = r.render(contract)
+    assert 'id="book-evolution"' in html
+    assert "Book Evolution" in html
+    # DXZ + FTMO venues
+    assert "DXZ Book" in html and "FTMO Book" in html
+    assert "QM5_13036" in html and "USDJPY" in html
+    # RESEARCH sub-section
+    assert "Research" in html
+    assert "Overfit trailing stops die OOS." in html
+    assert "KC-001" in html
+    # FACTORY sub-section
+    assert "Factory" in html
+    assert "unwinnable_reservation_head_of_line_block" in html
+    assert "idle in drain" in html
+    # FTMO Challenge Readiness block: components + recommendation enum
+    assert 'id="ftmo-challenge-readiness"' in html
+    assert "FTMO Challenge Readiness" in html
+    assert "CONTINUE_DEMO" in html
+    assert "Ziel-Fortschritt %" in html          # a component, not one number
+    assert "p(Pass ≤30T)" in html
+    assert "Würde Fable heute kaufen?" in html
+    # health chips present
+    assert "Read-Models: GREEN" in html
+    # Book Evolution is the primary view: before Risk Freeze and Owner Decisions
+    assert html.index("Book Evolution") < html.index("Live Risk Freeze")
+    assert html.index("Book Evolution") < html.index("Owner Decision Queue")
+
+
+def test_absent_book_evolution_readmodels_render_evidence_missing_without_crash():
+    # make_contract carries no book-evolution keys at all -> EVIDENCE_MISSING
+    html = r.render(make_contract(n_decisions=1))
+    assert html.count("EVIDENCE_MISSING") >= 4  # dxz, ftmo, research, factory
+    assert "FTMO Challenge Readiness" in html
+    assert 'id="book-evolution"' in html
+    # never a crash, page still complete
+    assert "</html>" in html
+
+
+def test_partial_book_evolution_missing_one_readmodel_is_isolated():
+    contract = _with_book_evolution(make_contract(n_decisions=1))
+    contract["research_state"] = _rm({}, present=False)  # only research absent
+    html = r.render(contract)
+    assert "DXZ Book" in html and "QM5_13036" in html      # present ones still render
+    assert "EVIDENCE_MISSING" in html                       # research shows it
+    assert "</html>" in html
+
+
+def test_twentyfive_is_no_longer_an_objective_string():
+    """§70: Mission Control no longer treats 25 as an objective."""
+    for contract in (make_contract(n_decisions=1),
+                     _with_book_evolution(make_contract(n_decisions=1))):
+        html = r.render(contract)
+        assert "Weg zu 25" not in html
+        assert "/25" not in html
+        assert "ETA zu 25" not in html
+
+
+def test_book_evolution_freshness_badge_stale_only_when_stale():
+    contract = _with_book_evolution(make_contract(n_decisions=1))
+    # all fresh -> no STALE anywhere from the book sections
+    html_fresh = r.render(contract)
+    assert "STALE" not in html_fresh
+    # mark the DXZ read-model STALE -> a STALE chip appears
+    contract["book_evolution"]["dxz"] = _rm(
+        _venue_payload("dxz"), staleness="STALE", age_seconds=200000)
+    html_stale = r.render(contract)
+    assert "STALE" in html_stale
+
+
+def test_candidate_pool_shown_as_diagnostic_not_a_goal():
+    contract = _with_book_evolution(make_contract(n_decisions=1))
+    html = r.render(contract)
+    assert "Diagnostik, KEIN Ziel" in html or "Diagnostik, kein Ziel" in html
