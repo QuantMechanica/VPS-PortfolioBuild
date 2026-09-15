@@ -252,12 +252,17 @@ def select_under_aggregate_control(
     Multiple EAs on the same symbol are permitted. Fund-score-eligible candidates are
     considered in deterministic order (fund_score desc, then ea_id asc) and admitted
     greedily subject to two aggregate controls:
-      (a) pairwise correlation/cluster: reject any candidate whose return-stream
-          correlation with an already-admitted sleeve exceeds ``max_pairwise_correlation``
-          (``CLUSTER_CORRELATION_EXCLUDED``); a candidate whose correlation to an admitted
-          sleeve is unknown is rejected fail-closed (``CLUSTER_CORRELATION_UNVERIFIED``);
+      (a) pairwise correlation/cluster (OWNER-DEC-CBE-20260915 sections 8/68B): the fixed
+          pairwise-correlation cutoff is ADVISORY, not an absolute exclusion. A candidate
+          whose measured return-stream correlation with an already-admitted sleeve exceeds
+          ``max_pairwise_correlation`` is ADMITTED-WITH-WARN (``ADMITTED_CORRELATION_WARN``):
+          it is admitted, consumes the account weight budget, and is recorded in the
+          dependence panel as a WARN. A candidate whose correlation to an admitted sleeve is
+          genuinely unmeasured is still rejected fail-closed
+          (``CLUSTER_CORRELATION_UNVERIFIED``, section 71 kept hard);
       (b) account-wide risk budget: reject once the sum of admitted unit weights would
-          exceed ``account_weight_budget`` (``RISK_BUDGET_EXHAUSTED``).
+          exceed ``account_weight_budget`` (``RISK_BUDGET_EXHAUSTED``). This portfolio-level
+          budget is the remaining HARD guard.
     Every candidate carries an explicit accept/reject reason — nothing is dropped silently.
     """
     assessments: list[dict[str, Any]] = []

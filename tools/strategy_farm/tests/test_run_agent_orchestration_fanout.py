@@ -115,7 +115,7 @@ def test_launcher_claims_distinct_tasks_before_spawn(tmp_path, monkeypatch):
     assert set(result["leased_task_ids"]) == {"T1", "T2"}
 
 
-def test_max_sessions_bounds_disjoint_task_sets(tmp_path, monkeypatch):
+def test_max_sessions_bounds_concurrent_sessions_and_drains_disjoint(tmp_path, monkeypatch):
     _prepare_farm(tmp_path, monkeypatch)
     _stub_claude_gates(monkeypatch, max_sessions=3)
     monkeypatch.setattr(
@@ -130,11 +130,18 @@ def test_max_sessions_bounds_disjoint_task_sets(tmp_path, monkeypatch):
         max_sessions=3, session_lease=None,
     )
 
-    # 5 tasks, cap 3 => at most 3 sessions with a disjoint task set.
-    assert len(calls) == 3
+    # 5 tasks, cap 3: at most 3 CONCURRENT sessions (max_sessions reports the
+    # seeded concurrency), and each session drains the remaining tasks so the
+    # whole assigned backlog is worked in one cycle (M2). Every task is worked
+    # exactly once - never two sessions on one task.
+    assert result["max_sessions"] == 3
     ids = [c["assigned_task_id"] for c in calls]
-    assert len(set(ids)) == 3  # disjoint
-    assert set(ids).issubset({"A", "B", "C", "D", "E"})
+    assert sorted(ids) == ["A", "B", "C", "D", "E"]  # drained, disjoint
+    assert len(set(ids)) == len(ids)  # no task worked twice
+    assert set(result["leased_task_ids"]) == {"A", "B", "C", "D", "E"}
+    assert result["tasks_worked"] == 5
+    for c in calls:
+        assert c["assigned_task_id"] == c["exec_lease_task"]
 
 
 def test_second_launcher_cannot_reclaim_pinned_task(tmp_path, monkeypatch):
@@ -178,7 +185,9 @@ def test_crashed_owner_lease_is_stolen_after_ttl(tmp_path, monkeypatch):
     )
     assert early is False
 
-    # After the TTL the expired lease is stolen by pid liveness fail-safe (expiry).
+    # After the TTL the expired lease is stolen (TTL expiry is the crash
+    # fail-safe; the design releases on clean exit and does not probe owner-pid
+    # liveness - see review c1 m1).
     stolen, info = orch.acquire_task_exec_lease(
         "claude", "T", now=t0 + dt.timedelta(minutes=31), owner_pid=os.getpid()
     )
@@ -239,3 +248,103 @@ def test_assigned_task_id_is_exported_to_child_env():
     assert env["QM_ASSIGNED_TASK_ID"] == "abc123"
     # Absent for the task-agnostic single-session lanes.
     assert "QM_ASSIGNED_TASK_ID" not in orch.agent_env("codex")
+
+
+def test_candidate_query_failure_fails_closed_no_unpinned_spawn(tmp_path, monkeypatch):
+    """Review c1 M1: a db_missing/db_error candidate query must spawn nothing.
+
+    The pre-fix code left session_count unclamped on this branch, so once
+    --max-sessions was raised above 1 a transient DB error re-opened the
+    unpinned N*M fan-out. It must now fail closed with a logged reason.
+    """
+    _prepare_farm(tmp_path, monkeypatch)
+    _stub_claude_gates(monkeypatch, max_sessions=3)
+    monkeypatch.setattr(
+        orch, "_quota_lane_candidates", lambda _a: ([], "db_error:boom")
+    )
+    calls = _record_slots(monkeypatch)
+
+    result = orch._run_agent_with_session_lease(
+        "claude", dry_run=False, stale_minutes=250, timeout_minutes=225,
+        max_sessions=3, session_lease=None,
+    )
+
+    assert result["skipped"] is True
+    assert result["reason"] == "claude_candidate_query_unavailable"
+    assert result["candidate_status"] == "db_error:boom"
+    assert calls == []  # nothing unpinned spawned
+
+
+def test_single_session_drains_multiple_tasks_sequentially(tmp_path, monkeypatch):
+    """Review c1 M2: --max-sessions 1 must not degrade to one task per cycle.
+
+    One session leases the next eligible task after finishing the current one and
+    drains the assigned backlog sequentially, each task leased exactly once.
+    """
+    _prepare_farm(tmp_path, monkeypatch)
+    _stub_claude_gates(monkeypatch, max_sessions=1)
+    monkeypatch.setattr(
+        orch, "_quota_lane_candidates", lambda _a: (_candidates("T1", "T2", "T3"), "ok")
+    )
+    calls = _record_slots(monkeypatch)
+
+    result = orch._run_agent_with_session_lease(
+        "claude", dry_run=False, stale_minutes=250, timeout_minutes=225,
+        max_sessions=1, session_lease=None,
+    )
+
+    assert result["ok"] is True
+    assert result["max_sessions"] == 1  # a single concurrent session
+    assert result["tasks_worked"] == 3
+    ids = [c["assigned_task_id"] for c in calls]
+    assert sorted(ids) == ["T1", "T2", "T3"]  # all drained
+    assert len(set(ids)) == 3  # never the same task twice
+    # Every slot is slot 1 (the single session) and its pin matches its lease.
+    for c in calls:
+        assert c["slot"] == 1
+        assert c["assigned_task_id"] == c["exec_lease_task"]
+
+
+def test_max_tasks_per_session_caps_the_drain(tmp_path, monkeypatch):
+    """Review c1 M2: the per-session drain honours max_tasks_per_session."""
+    _prepare_farm(tmp_path, monkeypatch)
+    _stub_claude_gates(monkeypatch, max_sessions=1)
+    monkeypatch.setattr(orch, "_claude_max_tasks_per_session", lambda: 2)
+    monkeypatch.setattr(
+        orch,
+        "_quota_lane_candidates",
+        lambda _a: (_candidates("T1", "T2", "T3", "T4", "T5"), "ok"),
+    )
+    calls = _record_slots(monkeypatch)
+
+    result = orch._run_agent_with_session_lease(
+        "claude", dry_run=False, stale_minutes=250, timeout_minutes=225,
+        max_sessions=1, session_lease=None,
+    )
+
+    # One session, cap 2 tasks: only two tasks are worked this cycle.
+    assert result["tasks_worked"] == 2
+    assert len(calls) == 2
+    assert len(set(c["assigned_task_id"] for c in calls)) == 2
+
+
+def test_chaining_never_double_works_a_task_under_concurrency(tmp_path, monkeypatch):
+    """Review c1 M2: with several concurrent sessions no task is worked twice."""
+    _prepare_farm(tmp_path, monkeypatch)
+    _stub_claude_gates(monkeypatch, max_sessions=3)
+    task_ids = [f"K{i}" for i in range(9)]
+    monkeypatch.setattr(
+        orch, "_quota_lane_candidates", lambda _a: (_candidates(*task_ids), "ok")
+    )
+    calls = _record_slots(monkeypatch)
+
+    result = orch._run_agent_with_session_lease(
+        "claude", dry_run=False, stale_minutes=250, timeout_minutes=225,
+        max_sessions=3, session_lease=None,
+    )
+
+    worked = [c["assigned_task_id"] for c in calls]
+    assert sorted(worked) == sorted(task_ids)  # all drained
+    assert len(set(worked)) == len(worked)  # each exactly once
+    assert sorted(result["leased_task_ids"]) == sorted(task_ids)
+    assert result["max_sessions"] == 3

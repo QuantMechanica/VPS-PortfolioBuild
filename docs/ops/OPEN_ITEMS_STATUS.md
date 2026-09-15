@@ -1,5 +1,45 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 2026-09-15 — CBE-Programm (OWNER-DEC-CBE-20260915) Phasen A–C GELANDET, D–I offen:**
+> Continuous-Book-Evolution-Programm nach dem OWNER-Master-Directive
+> (`docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_verbatim.md`).
+> Stand nach Commit `4ad7ab7016`.
+>
+> - **Phase A — Truth-Snapshot & Audits: DONE.** 15 Audits + Snapshot + Completeness-Kritik,
+>   Commits `6019af7a17`/`6ed8ec872e`/`55fb2bf5fc`. Evidence:
+>   `docs/ops/evidence/2026-09-15_continuous_book_evolution/PHASE_A_TRUTH_SNAPSHOT.md` und `audit/`.
+> - **Phase B — Policy-Landing: DONE.** Decision-Record + Buch-Trigger = jeder nicht-leere
+>   gültige qualifizierte Pool (25 ist nur noch Diagnostik), `gate_manifest.v4` Drift-Fix
+>   (`a5453d3b94`); Portfolio-Caps → advisory Diagnostics (risk_diagnostics, cap_warnings,
+>   dependence_panel), Portfolio-Level-Hard-Guards bleiben (`589858dc66`); FTMO-Contract-Caps
+>   ADVISORY §8. Decision: `decisions/2026-09-15_owner_continuous_book_evolution.md`.
+> - **Phase C — Infra/Enablement: DONE.** Gemessener Research-Disk-Guard + generalisierter
+>   Internal-Source-Author (`7139ccf959`); Kimi Real-Quota-Telemetrie via
+>   `kimi_quota_fetcher` in `kimi_governor` verdrahtet, lokale Caps = Runaway-Guards
+>   (`81718ab2be`, Config-Fix `4ad7ab7016`); Claude-Lane per-Task pid-owned Exec-Leases,
+>   ein Session pro Task, Interim `--max-sessions 1` (`ac2db161ef`, Ticket `3e0c8b83`);
+>   Kimi-Orchestration-Lane-Task installiert.
+>   B/C-Review-Follow-ups (dieses Slice `x1_bc_followups`): Fan-out M1 fail-closed bei
+>   Candidate-Query-Fehler + M2 Session-Chaining (drain N Tasks/Zyklus, `max_tasks_per_session`
+>   default 4); `build_book_ftmo.select_under_aggregate_control` Docstring auf admit-with-WARN;
+>   `book_reoptimizer` `--max-corr` advisory + Opt-in `--hard-max-corr`; Tests grün.
+> - **Interim-Mitigation Claude `--max-sessions 1`:** aktiv, bis die Fan-out-Suite eine
+>   saubere Woche steht und M1/M2 als gelandet gelten; **Exit-Kriterium:** dann
+>   Re-Registrierung mit `-ClaudeMaxSessions 3`
+>   (`install_agent_orchestration_scheduled_tasks.ps1`). M2-Chaining hält den Durchsatz
+>   auch bei 1 Session (drain statt ein Task/15-min-Zyklus).
+> - **RAM-44-Hold:** hält (Index-RAM-Tabelle SP500 44 GB usw.); keine Aufhebung pauschal
+>   nach RAM-Klasse. Receipts im `2026-09-15_continuous_book_evolution/`-Baum.
+> - **Kimi-Lane:** Task `QM_StrategyFarm_KimiOrchestration_15min` installiert (2026-09-15);
+>   Kimi-Telemetrie meldet `auth_error` bis zur ersten Kampagne (fail-closed Fallback auf
+>   lokale Caps), kein AI-Seat kauft/erneuert das Abo (OWNER-only).
+> - **OFFEN D–H (in Arbeit), I (queued):** Weekly-Recomposition-Loop (Fr Evidence-Cut → Sa
+>   Analyse → So Empfehlung → OWNER-Handoff, Default KEEP), zwei permanent lebende Bücher
+>   `DXZ_BOOK`/`FTMO_BOOK` mit `DXZ_FITNESS`/`FTMO_FITNESS`, Q17 evidence-based Probation,
+>   FTMO-Zwei-Wochen-Demo-vor-Kauf-Wiring, autonome Edge-Discovery-Kampagnen — noch nicht
+>   als gelandete Deliverables geschlossen; keine Live-/T_Live-/AutoTrading-/Kauf-Fläche
+>   berührt (bleibt ROT/OWNER-only).
+
 > **RESULT 13.09. 07:42Z — QM5_41469 neuer XNG-Shoulder-Downside-Sleeve gebaut und Q02 eingereiht:**
 > Offizielles EIA-/peer-reviewed Quellenpaket und Card genehmigt: April–Mai
 > und September–Oktober, genau eine abgeschlossene Woche, Short nur bei

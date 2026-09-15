@@ -218,6 +218,18 @@ Existing `research_strategy: ["research","strategy"]` stays routable to gemini/k
 
 Add a `kimi` branch to each per-agent function in `run_agent_orchestration_task.py`: `resolve_cli` (`:155`), `agent_env` (`:182` — set `USERPROFILE`/`HOME` like claude `:198` so the credential resolves under SYSTEM), `build_prompt` (`:206`), `command_for` (`:408` — prompt file + pointer argv, `--auto`, stream-json), `headless_model_contract` (`:501`), `run_agent_slot` (worktree via `worktree_path :547`), and the `--agent` `choices` tuple (`:1906`). Add `KIMI_BIN` and `KIMI_HEADLESS_MODEL` constants (mirror `CLAUDE_HEADLESS_MODEL :141`). Every spawn routes through `kimi_adapter.py` so the single-flight lock (§3.6) applies. The stdin/TTY choice is load-bearing (wrong choice hangs to timeout — router_providers risk 3); the probe (§13) settles ConPTY-vs-stdin. Install the scheduled task `QM_StrategyFarm_KimiOrchestration_15min` **only after** the probe battery and smoke receipt (D3, §8).
 
+> **STATUS 2026-09-15 ~13:5xZ (OWNER-DEC-CBE-20260915) — Kimi is a continuously available
+> lane.** The scheduled task `QM_StrategyFarm_KimiOrchestration_15min` is **installed** and
+> runs the orchestration lane on the standard 15-min cadence, so the `kimi` lane is now polled
+> continuously alongside the other AI seats — Fable can dispatch Kimi research and the lane is
+> picked up automatically each cycle (no manual per-run start). The single-flight lock (§3.6),
+> the `kimi` registry lane (§5.1, `cost_rank 12`, `max_parallel 1`), and the `KIMI_LOW_QUOTA.flag`
+> gate on both planes (§7) remain the pacing guarantees; `max_parallel 1` keeps the continuous
+> lane to one Kimi process at a time. Quota telemetry via `kimi_quota_fetcher.py` (§7) currently
+> returns `auth_error` (fail-closed fallback to the local caps) until the first campaign warms
+> the OAuth path — the lane being continuously available does **not** relax any quota or
+> read-only-critic invariant, and no AI seat buys/renews the subscription (OWNER-only).
+
 ---
 
 ## 6. agent_chain vendor (Plane B critic chain, D4)

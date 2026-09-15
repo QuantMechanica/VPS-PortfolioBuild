@@ -16,6 +16,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import threading
 import time
 import traceback
 import uuid
@@ -112,6 +113,12 @@ CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex")
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
 CLAUDE_DISABLED_FLAG = FARM_ROOT / "CLAUDE_DISABLED.flag"
 CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
+# Claude-lane drain fix (review c1 M2, OWNER-DEC-CBE-20260915 §35): after a
+# session finishes its pinned task it leases the NEXT eligible task and works it,
+# up to this many tasks per session, so --max-sessions 1 does not degrade the
+# lane to one task per 15-min cycle. Override via CLAUDE_BUDGET_POLICY.json
+# ("max_tasks_per_session") or the QM_CLAUDE_MAX_TASKS_PER_SESSION env var.
+CLAUDE_MAX_TASKS_PER_SESSION_DEFAULT = 4
 # Kimi Code CLI (OWNER-DEC-KIMI-INTEGRATION-20260915,
 # KIMI_INTEGRATION_ARCHITECTURE.md §1, §5.4). Pinned path: kimi.exe is NOT on
 # PATH and its auto-updater is on, so the pinned constant plus the adapter's
@@ -1941,6 +1948,31 @@ def _claude_budget_policy() -> dict[str, Any]:
     return policy
 
 
+def _claude_max_tasks_per_session() -> int:
+    """Per-session drain cap (review c1 M2).
+
+    Resolution order: QM_CLAUDE_MAX_TASKS_PER_SESSION env var >
+    CLAUDE_BUDGET_POLICY.json ``max_tasks_per_session`` > the documented default
+    of 4. Always at least 1 so a session works at least the task it is pinned to.
+    """
+    env_raw = os.environ.get("QM_CLAUDE_MAX_TASKS_PER_SESSION", "").strip()
+    if env_raw:
+        try:
+            return max(1, int(env_raw))
+        except ValueError:
+            pass
+    try:
+        policy_value = _claude_budget_policy().get("max_tasks_per_session")
+    except Exception:
+        policy_value = None
+    if policy_value is not None:
+        try:
+            return max(1, int(policy_value))
+        except (TypeError, ValueError):
+            pass
+    return CLAUDE_MAX_TASKS_PER_SESSION_DEFAULT
+
+
 def _claude_non_skipped_runs_today(now: dt.datetime, count_from: dt.datetime | None = None) -> list[dt.datetime]:
     local_now = now.astimezone()
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -2319,90 +2351,221 @@ def _run_agent_with_session_lease(
             return None
         return dict(slot_invocations[min(slot_index, len(slot_invocations) - 1)] or {})
 
-    # --- Claude fan-out fix (OWNER-DEC-CBE-20260915 §35) ---------------------
-    # Only the Claude lane can spawn >1 concurrent session. Bind each session to
+    # --- Claude fan-out + drain fix (OWNER-DEC-CBE-20260915 §35; review c1) ---
+    # Only the Claude lane can spawn >1 concurrent session. Each session binds to
     # exactly one distinct task via a pid-owned exec-lease BEFORE spawning, so
-    # --max-sessions is an upper bound on concurrently leased tasks, never an
-    # N*M multiplier over the shared task list. Codex/Gemini run one task-
-    # agnostic session (F6) and keep their historical path untouched.
-    exec_leases: list[dict[str, Any]] = []
+    # --max-sessions is an upper bound on CONCURRENT leased tasks, never an N*M
+    # multiplier over the shared task list (§35). M2 (review c1): after a session
+    # finishes its task it leases the NEXT eligible task and drains sequentially
+    # up to max_tasks_per_session / the run time budget, so --max-sessions 1 does
+    # not degrade the lane to one task per 15-min cycle. M1 (review c1): a
+    # candidate-query failure fails CLOSED (spawns nothing) rather than re-opening
+    # the unpinned fan-out. Codex/Gemini/Kimi keep their historical single
+    # task-agnostic session path untouched.
     if agent == "claude" and not dry_run:
-        candidates, candidate_status = _quota_lane_candidates("claude")
-        # Only tasks the router already assigned to this lane are worked by a
-        # session (the prompt cycle acts on IN_PROGRESS/assigned work); fail OPEN
-        # to a single task-agnostic session if the candidate query is unavailable.
-        if candidate_status == "ok":
-            assigned_task_ids = [
-                str(c["task_id"]) for c in candidates if c.get("assigned")
-            ]
-            exec_leases = claim_task_exec_leases(
-                "claude",
-                assigned_task_ids,
-                session_count,
-                owner_pid=os.getpid(),
-            )
-            if not exec_leases:
-                # Every eligible task is already pinned by a live sibling/foreign
-                # session (or none is assigned): spawn nothing rather than a
-                # duplicate. This is a safe throughput failure, never a collision.
-                return {
-                    "agent": agent,
-                    "ok": True,
-                    "skipped": True,
-                    "reason": "no_unpinned_claude_task",
-                    "candidate_status": candidate_status,
-                    "assigned_candidates": len(assigned_task_ids),
-                    "quota_gate_check": quota_check,
-                }
-            session_count = len(exec_leases)
+        return _run_claude_session_chains(
+            dry_run=dry_run,
+            stale_minutes=stale_minutes,
+            timeout_minutes=timeout_minutes,
+            session_count=session_count,
+            session_lease=session_lease,
+            slot_invocation=slot_invocation,
+            quota_check=quota_check,
+        )
 
-    try:
-        if session_count == 1:
-            results = [
-                run_agent_slot(
+    # Non-claude lanes (and the claude dry-run preview) run task-agnostic
+    # sessions with no exec-lease pin - their historical behaviour, unchanged.
+    if session_count == 1:
+        results = [
+            run_agent_slot(
+                agent,
+                1,
+                dry_run,
+                stale_minutes,
+                timeout_minutes,
+                slot_invocation(0),
+                session_lease,
+                None,
+                None,
+            )
+        ]
+    else:
+        with ThreadPoolExecutor(max_workers=session_count) as executor:
+            futures = [
+                executor.submit(
+                    run_agent_slot,
                     agent,
-                    1,
+                    slot,
                     dry_run,
                     stale_minutes,
                     timeout_minutes,
-                    slot_invocation(0),
+                    slot_invocation(slot - 1),
                     session_lease,
-                    exec_leases[0]["task_id"] if exec_leases else None,
-                    exec_leases[0] if exec_leases else None,
+                    None,
+                    None,
                 )
+                for slot in range(1, session_count + 1)
             ]
-        else:
-            with ThreadPoolExecutor(max_workers=session_count) as executor:
-                futures = [
-                    executor.submit(
-                        run_agent_slot,
-                        agent,
-                        slot,
-                        dry_run,
-                        stale_minutes,
-                        timeout_minutes,
-                        slot_invocation(slot - 1),
-                        session_lease,
-                        exec_leases[slot - 1]["task_id"] if exec_leases else None,
-                        exec_leases[slot - 1] if exec_leases else None,
-                    )
-                    for slot in range(1, session_count + 1)
-                ]
-                results = [future.result() for future in futures]
-    finally:
-        # Backstop: run_agent_slot releases its own exec-lease on exit, but if a
-        # slot never reached that release (e.g. executor.submit raised) the TTL
-        # would be the only fail-safe - release here too so a re-run is not
-        # blocked for 30 minutes. Release is owner-scoped and idempotent.
-        for lease in exec_leases:
-            release_task_exec_lease(lease)
+            results = [future.result() for future in futures]
     ok = all(bool(r.get("ok")) for r in results)
     return {
         "agent": agent,
         "ok": ok,
         "returncode": 0 if ok else 1,
         "max_sessions": session_count,
-        "leased_task_ids": [lease["task_id"] for lease in exec_leases],
+        "leased_task_ids": [],
+        "quota_gate_check": quota_check,
+        "results": results,
+    }
+
+
+def _run_claude_session_chains(
+    *,
+    dry_run: bool,
+    stale_minutes: int,
+    timeout_minutes: int,
+    session_count: int,
+    session_lease: dict[str, Any] | None,
+    slot_invocation: Any,
+    quota_check: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Drive the Claude lane's concurrent, self-chaining sessions (review c1).
+
+    M1 — if the candidate query is unavailable (``db_missing``/``db_error:*``),
+    fail CLOSED: spawn nothing rather than an unpinned task-agnostic session (the
+    pre-fix bug re-opened the N*M fan-out on this branch when --max-sessions > 1).
+
+    M2 — seed up to ``session_count`` concurrent sessions with distinct tasks,
+    then let each session lease the NEXT eligible task after finishing its current
+    one and drain sequentially until no unpinned task remains,
+    ``max_tasks_per_session`` is reached, or the run time budget is spent. Every
+    task is leased at most once per launcher run (never two sessions on one task):
+    claiming is serialized under a lock and worked task-ids are excluded from
+    further claims.
+    """
+    candidates, candidate_status = _quota_lane_candidates("claude")
+    if candidate_status != "ok":
+        # M1 fail-closed: a candidate visibility failure must never spawn an
+        # unpinned session. TTL-owned leases plus this guard keep the launcher
+        # from reintroducing the duplicate fan-out under a transient DB error.
+        return {
+            "agent": "claude",
+            "ok": True,
+            "skipped": True,
+            "reason": "claude_candidate_query_unavailable",
+            "candidate_status": candidate_status,
+            "quota_gate_check": quota_check,
+        }
+
+    owner_pid = os.getpid()
+    max_tasks_per_session = _claude_max_tasks_per_session()
+    deadline = time.monotonic() + max(1, timeout_minutes) * 60
+    claimed_lock = threading.Lock()
+    claimed_ids: set[str] = set()
+    leased_task_ids: list[str] = []
+
+    def _claim_next() -> dict[str, Any] | None:
+        # Serialize claiming so two concurrent sessions never take the same task
+        # and the claimed set stays consistent. Re-query candidates each call so
+        # tasks that became eligible mid-run are seen and worked ones drop out.
+        with claimed_lock:
+            fresh, status = _quota_lane_candidates("claude")
+            if status != "ok":
+                return None
+            for cand in fresh:
+                if not cand.get("assigned"):
+                    continue
+                tid = str(cand.get("task_id") or "")
+                if not tid or tid in claimed_ids:
+                    continue
+                acquired, lease = acquire_task_exec_lease(
+                    "claude", tid, owner_pid=owner_pid
+                )
+                if acquired:
+                    claimed_ids.add(tid)
+                    leased_task_ids.append(tid)
+                    return lease
+                # tid is pinned by a foreign live session: skip it this cycle
+                # (do NOT mark it claimed - another launcher owns it, and it may
+                # free up on a later run).
+            return None
+
+    def _run_chain(slot: int, initial_lease: dict[str, Any]) -> list[dict[str, Any]]:
+        chain_results: list[dict[str, Any]] = []
+        lease: dict[str, Any] | None = initial_lease
+        while lease is not None:
+            try:
+                res = run_agent_slot(
+                    "claude",
+                    slot,
+                    dry_run,
+                    stale_minutes,
+                    timeout_minutes,
+                    slot_invocation(slot - 1),
+                    session_lease,
+                    lease["task_id"],
+                    lease,
+                )
+            finally:
+                # run_agent_slot releases its own exec-lease on exit; this
+                # backstop covers a raise before that release. Owner-scoped and
+                # idempotent, so the double call is safe.
+                release_task_exec_lease(lease)
+            chain_results.append(res)
+            if len(chain_results) >= max_tasks_per_session:
+                break
+            if time.monotonic() >= deadline:
+                break
+            lease = _claim_next()
+        return chain_results
+
+    # Seed each concurrent session with one distinct task (disjoint initial set),
+    # bounded by session_count; this also fixes the reported max_sessions to the
+    # real concurrent-session count rather than the requested cap.
+    assigned_task_ids = [str(c["task_id"]) for c in candidates if c.get("assigned")]
+    initial_leases = claim_task_exec_leases(
+        "claude", assigned_task_ids, session_count, owner_pid=owner_pid
+    )
+    for lease in initial_leases:
+        claimed_ids.add(str(lease["task_id"]))
+        leased_task_ids.append(str(lease["task_id"]))
+
+    if not initial_leases:
+        # Every eligible task is already pinned by a live sibling/foreign session
+        # (or none is assigned): spawn nothing rather than a duplicate. This is a
+        # safe throughput failure, never a collision.
+        return {
+            "agent": "claude",
+            "ok": True,
+            "skipped": True,
+            "reason": "no_unpinned_claude_task",
+            "candidate_status": candidate_status,
+            "assigned_candidates": len(assigned_task_ids),
+            "quota_gate_check": quota_check,
+        }
+
+    concurrent = len(initial_leases)
+    results: list[dict[str, Any]] = []
+    if concurrent == 1:
+        results = _run_chain(1, initial_leases[0])
+    else:
+        with ThreadPoolExecutor(max_workers=concurrent) as executor:
+            futures = [
+                executor.submit(_run_chain, slot, initial_leases[slot - 1])
+                for slot in range(1, concurrent + 1)
+            ]
+            for future in futures:
+                results.extend(future.result())
+
+    ok = all(bool(r.get("ok")) for r in results)
+    return {
+        "agent": "claude",
+        "ok": ok,
+        "returncode": 0 if ok else 1,
+        "max_sessions": concurrent,
+        "tasks_worked": len(leased_task_ids),
+        "max_tasks_per_session": max_tasks_per_session,
+        "leased_task_ids": leased_task_ids,
         "quota_gate_check": quota_check,
         "results": results,
     }

@@ -3,15 +3,23 @@ komplette Neubewertung des Buches").
 
 On demand (and wired to run when a new EA passes Q08), re-evaluates the ENTIRE book:
 takes the current live sleeves + all Q08-survivor candidates, and greedily builds the
-Sharpe-optimal sleeve SELECTION under the pairwise-correlation constraint (<=0.50),
-starting from the current book. Reports the recommended ADD / SWAP moves as a diff vs
-the live book. Sizing (1% cap, tail<=20%, scale to ~10% DD) is a SEPARATE downstream
-step (book_resize) — Sharpe selection is scale-invariant, so the two are decoupled.
+Sharpe-optimal sleeve SELECTION, starting from the current book. Reports the recommended
+ADD / SWAP moves as a diff vs the live book. Sizing (1% cap, tail<=20%, scale to ~10% DD)
+is a SEPARATE downstream step (book_resize) — Sharpe selection is scale-invariant, so the
+two are decoupled.
+
+Pairwise correlation is ADVISORY (OWNER-DEC-CBE-20260915 sections 8/68B): the fixed 0.50
+cutoff is no longer a hard exclusion. High-correlation admissions are admitted and surfaced
+as ``correlation_warnings`` plus a ``dependence_panel`` in the emitted ``risk_diagnostics``
+block (the same structure the book builders emit), never silently dropped (section 70).
+``--max-corr`` is the advisory reference used to flag warnings; ``--hard-max-corr`` is an
+opt-in hard pairwise-correlation cut for explicit experiments only (default: no hard cut).
 
 NEVER auto-changes the live book — output is an OWNER decision package.
 
 CLI:
-  python -m tools.strategy_farm.portfolio.book_reoptimizer --out <path> [--max-corr 0.5]
+  python -m tools.strategy_farm.portfolio.book_reoptimizer --out <path> \
+      [--max-corr 0.5] [--hard-max-corr 0.7]
 """
 from __future__ import annotations
 import argparse, json, sys, sqlite3, math
@@ -21,10 +29,12 @@ if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
     from tools.strategy_farm.portfolio.portfolio_common import load_streams, to_daily_pnl, DEFAULT_COMMON_DIR
     from tools.strategy_farm.portfolio.commission import load_model
+    from tools.strategy_farm.portfolio import risk_diagnostics, portfolio_correlation
     from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
 else:
     from .portfolio_common import load_streams, to_daily_pnl, DEFAULT_COMMON_DIR
     from .commission import load_model
+    from . import risk_diagnostics, portfolio_correlation
     from ..sqlite_timestamp import normalized_timestamp_sql
 
 UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
@@ -85,10 +95,66 @@ def _pearson(a,b):
     if dx==0 or dy==0: return None
     return num/(dx*dy)
 
+
+def correlation_hard_block(cand, book, series, hard_max_corr):
+    """Opt-in hard pairwise-correlation exclusion for explicit experiments only.
+
+    Returns True iff ``hard_max_corr`` is set (not None) and the candidate's worst
+    absolute measured correlation against an incumbent exceeds it. When
+    ``hard_max_corr`` is None (the default) correlation is ADVISORY and this never
+    excludes a candidate (OWNER-DEC-CBE-20260915 sections 8/68B).
+    """
+    if hard_max_corr is None:
+        return False
+    for m in book:
+        r = _pearson(series[cand], series[m])
+        if r is not None and abs(r) > hard_max_corr:
+            return True
+    return False
+
+
+def build_correlation_diagnostics(book, series, reference):
+    """Advisory correlation warnings + dependence panel for a book (no exclusion).
+
+    Mirrors the ``correlation_warnings`` / ``dependence_panel`` structure emitted by
+    ``build_book_ftmo.select_under_aggregate_control`` so the reoptimizer's advisory
+    correlation view is rendered in the same shape (section 70: never a silent no-op).
+    A pair whose measured |r| reaches ``reference`` is admitted-with-WARN.
+    """
+    final = sorted(book)
+    correlation_warnings: list[dict] = []
+    dependence_panel: list[dict] = []
+    for i in range(len(final)):
+        for j in range(i + 1, len(final)):
+            r = _pearson(series[final[i]], series[final[j]])
+            a = f"{final[i][0]}:{final[i][1]}"
+            b = f"{final[j][0]}:{final[j][1]}"
+            dependence_panel.append(
+                portfolio_correlation.dependence_panel_entry(
+                    a, b, pairwise_correlation=r, reference=reference
+                )
+            )
+            if r is not None and abs(r) >= reference:
+                correlation_warnings.append({
+                    "a": a,
+                    "b": b,
+                    "correlation": round(abs(r), 8),
+                    "signed_correlation": round(r, 8),
+                    "threshold": reference,
+                    "severity": "WARN",
+                    "superseded_hard_cap": risk_diagnostics.SUPERSEDING_DECISION,
+                })
+    return correlation_warnings, dependence_panel
+
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--out", default=r"D:\QM\reports\book_reopt\reopt.json")
-    ap.add_argument("--max-corr", type=float, default=0.50)
+    ap.add_argument("--max-corr", type=float, default=0.50,
+                    help="Advisory pairwise-correlation reference (flags warnings; does NOT exclude).")
+    ap.add_argument("--hard-max-corr", type=float, default=None,
+                    help="Opt-in HARD pairwise-correlation cut for explicit experiments only "
+                         "(default: none - correlation is advisory).")
     ap.add_argument("--since", default="2026-07-01")
     args=ap.parse_args()
     pool = q08_survivor_pool(args.since)
@@ -105,22 +171,16 @@ def main():
     book=[k for k in LIVE_BOOK if k in keymap]
     pool_only=[k for k in universe if k not in book]
 
-    def corr_ok(cand, bk):
-        for m in bk:
-            r=_pearson(series[cand], series[m])
-            if r is not None and abs(r) > args.max_corr: return False, m, r
-        return True, None, None
-
     cur_sh, cur_dd = _sharpe_dd(_invvol_book_daily(book, series, all_days))
     base_sh, base_dd = cur_sh, cur_dd
     moves=[]
     for _ in range(30):
         best=None
-        # ADD moves
+        # ADD moves. Correlation is advisory: a candidate is excluded only when the
+        # opt-in --hard-max-corr experiment flag is set (OWNER-DEC-CBE-20260915 s8).
         for c in pool_only:
             if c in book: continue
-            ok,_,_=corr_ok(c, book)
-            if not ok: continue
+            if correlation_hard_block(c, book, series, args.hard_max_corr): continue
             sh,dd=_sharpe_dd(_invvol_book_daily(book+[c], series, all_days))
             if sh and sh>cur_sh+1e-4 and (best is None or sh>best[1]):
                 best=("ADD", sh, dd, c, None)
@@ -131,8 +191,7 @@ def main():
             for c in pool_only:
                 if c in book: continue
                 newbook=[k for k in book if k!=weakest]+[c]
-                ok,_,_=corr_ok(c, [k for k in book if k!=weakest])
-                if not ok: continue
+                if correlation_hard_block(c, [k for k in book if k!=weakest], series, args.hard_max_corr): continue
                 sh,dd=_sharpe_dd(_invvol_book_daily(newbook, series, all_days))
                 if sh and sh>cur_sh+1e-4 and (best is None or sh>best[1]):
                     best=("SWAP", sh, dd, c, weakest)
@@ -145,13 +204,27 @@ def main():
                       "book_sharpe":round(sh,3),"book_maxdd_%":round(dd,3)})
         cur_sh,cur_dd=sh,dd
 
+    # Advisory correlation view of the reoptimized book (never a silent no-op, s70).
+    correlation_warnings, dependence_panel = build_correlation_diagnostics(
+        book, series, args.max_corr)
+    diagnostics = risk_diagnostics.build(
+        {},  # the reoptimizer computes no concentration-cap evaluation here
+        dependence_panel=dependence_panel,
+        correlation_warnings=correlation_warnings,
+    )
     out={"as_of_pool_since":args.since,"universe":len(universe),"pool_q08_survivors":len(pool),
+         "correlation_policy":{"max_corr_advisory_reference":args.max_corr,
+                               "hard_max_corr":args.hard_max_corr,
+                               "note":("ADVISORY: pairwise correlation flags warnings and never "
+                                       "excludes unless --hard-max-corr is set "
+                                       f"({risk_diagnostics.SUPERSEDING_DECISION} s8).")},
          "current_book":{"n":len([k for k in LIVE_BOOK if k in keymap]),"sharpe":round(base_sh,3),"maxdd_%":round(base_dd,3)},
          "reoptimized_book":{"n":len(book),"sharpe":round(cur_sh,3),"maxdd_%":round(cur_dd,3),
                              "sleeves":[f"{k[0]}:{k[1]}" for k in sorted(book)]},
          "recommended_moves":moves,
          "adds":[m["add"] for m in moves if m["move"]=="ADD"],
-         "swaps":[{"in":m["add"],"out":m["drop"]} for m in moves if m["move"]=="SWAP"]}
+         "swaps":[{"in":m["add"],"out":m["drop"]} for m in moves if m["move"]=="SWAP"],
+         "risk_diagnostics":diagnostics}
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     json.dump(out, open(args.out,"w"), indent=1)
     print(f"current book: {len([k for k in LIVE_BOOK if k in keymap])} sleeves, Sharpe {base_sh:.3f}, DD {base_dd:.2f}%")
