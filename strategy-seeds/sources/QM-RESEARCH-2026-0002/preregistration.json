@@ -1,0 +1,107 @@
+{
+  "created_at": "2026-09-15T20:38:41+00:00",
+  "discovery_sample": {
+    "campaign": "CAMP-2026-0001 deterministic OBSERVE projection of QuantMechanica backtest evidence (directive sec47/sec68 PHASE G)",
+    "instruments": [
+      "NDX",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2015-2020 in-sample economic runs (strategy taxonomy)"
+  },
+  "expected_behaviour": "At most one entry per symbol per day: roughly 18-22 trades/month/symbol, about 55-65 trades/month across the three index symbols, with at least 12 active days/month. Zero overnight exposure (swap ~ 0, no gap-through-stop); daily circuit breaker -1.0% and weekly -2.0% stop trading; session-flat by flatten_hour_utc.",
+  "failure_criteria": "Killed if: OOS holdout net profit factor < 1.20 after costs or expectancy < +0.10R/trade; Monte-Carlo P(hit -5% daily limit within 60d) > 2% or simulated worst-day p95 > 2.5% of equity at 0.25% risk; realized swap/rollover cost > 10% of gross P&L; more than half of the +/-1-step parameter neighbourhood shows negative expectancy; any single month has < 8 active days; or session-flat index continuation does not reduce worst-day loss or breach probability relative to the swing baseline out of sample.",
+  "holdout_logic": "Discovery consumed only the deterministic OBSERVE projection and 2015-2020 in-sample runs. 2021-2024 is a frozen holdout: no metric, parameter selection, or kill decision may read it before the preregistered validation pass; any post-observation modification mints a new lineage version with a parent link (directive sec16 R-B).",
+  "hypothesis": "Session-flat cash-window index continuation (H-CW): equity-index CFDs (NDX/GDAXI/SP500) exhibit persistent intraday order flow during the cash-session overlap. Entering H1 breakouts of the first breakout_window_bars session bars, confirmed by position relative to a short EMA, strictly inside the 13-17 UTC cash window, with a 1.0xATR stop, a fixed R multiple target, a bounded time stop, shock/spread/news filters and a mandatory session-flat flatten, yields positive out-of-sample expectancy while reducing worst-day loss and breach probability relative to the farm's swing baseline.",
+  "known_risks": "Symbol/period concentration (9-of-10 Q10 population is index intraday; edge may rest on one symbol or one regime); .DWX modeled spreads near zero make the spread-median filter data-sensitive; news blackout depends on the MT5 native calendar being present and fresh; UTC/broker session mapping drifts across DST unless anchored via QM_DSTAware; density target (>=12 active days/month) may fail in holiday-thinned months; moderate density sits near the scalp class boundary.",
+  "mechanical_spec_sha256": "e23e2f61ccf62d86b337f20b080eafc53558ed4aa7e32b2f64c3896c8f33499b",
+  "parameter_count": 18,
+  "parameter_ranges": {
+    "atr_period": [
+      10,
+      20
+    ],
+    "atr_stop_mult": [
+      1.0,
+      1.0
+    ],
+    "breakout_buffer_atr": [
+      0.0,
+      0.05
+    ],
+    "breakout_window_bars": [
+      2,
+      4
+    ],
+    "daily_stop_pct": [
+      -1.0,
+      -1.0
+    ],
+    "ema_period": [
+      15,
+      30
+    ],
+    "flatten_hour_utc": [
+      20,
+      21
+    ],
+    "friday_cutoff_hour_utc": [
+      17,
+      18
+    ],
+    "max_positions_total": [
+      1,
+      3
+    ],
+    "news_blackout_minutes": [
+      0,
+      120
+    ],
+    "risk_per_trade_pct": [
+      0.2,
+      0.5
+    ],
+    "session_end_hour_utc": [
+      16,
+      17
+    ],
+    "session_start_hour_utc": [
+      13,
+      14
+    ],
+    "shock_atr_mult": [
+      1.5,
+      2.5
+    ],
+    "spread_median_mult": [
+      1.25,
+      1.75
+    ],
+    "target_r": [
+      1.5,
+      2.0
+    ],
+    "time_stop_bars": [
+      4,
+      8
+    ],
+    "weekly_stop_pct": [
+      -2.0,
+      -2.0
+    ]
+  },
+  "parent_version": null,
+  "record_sha256": "cd661891447f6bb2ef2465607f7df40138e6a9de0879d0242b5dc7c35554322e",
+  "research_id": "QM-RESEARCH-2026-0002",
+  "schema": "qm.research-preregistration/v1",
+  "success_criteria": "OOS holdout net profit factor >= 1.20 after costs AND expectancy >= +0.10R/trade; Monte-Carlo P(hit -5% daily limit within 60d) <= 2% and simulated worst-day p95 <= 2.5% of equity at 0.25% risk; realized swap/rollover cost <= 10% of gross P&L; more than half of the +/-1-step parameter neighbourhood shows non-negative expectancy; every month has >= 8 active days; edge must not depend on a single symbol or single period.",
+  "validation_sample": {
+    "instruments": [
+      "NDX",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2021-2024 held-out; never touched during discovery"
+  },
+  "version": 1
+}
