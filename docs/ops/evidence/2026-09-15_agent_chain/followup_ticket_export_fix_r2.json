@@ -1,0 +1,34 @@
+{
+  "title": "Dukascopy export fix round 2 (cross-model critic findings on dc7f0545 / c53a2760bb): (F1) FX completeness floor 0.20 is too loose - the known-defective 2026-09-13 AUDCAD (155,802 bars, 25-day hole) sits ABOVE the floor 147,936 and would classify COMPLETE; (F2) the 0.20/0.35 allowances were never run over the existing 20260913_114500 CSVs - bind a 37-row table (rows, floor, ratio, status) before any T1 receipt is trusted; (F3) export_receipt.json does not carry the per-chunk journal (only ZERO_TICK_CHUNK windows) although the README and lane verdict say it does; (F4) no per-chunk expected-minutes bar - partial-chunk shortfalls (AUDCAD class, 3-4 bad chunks of ~26) produce an EMPTY short_chunks list; (F5) status ladder evaluates SHORT_READ_GAP before SHORT_READ, so the 10 catastrophically sparse symbols get relabeled SHORT_READ_GAP - re-run reconcile_overlap over the unchanged 2026-09-13 inputs and bind the new 37-symbol label distribution, or evaluate SHORT_READ first; (F6) gap test uses a 4-day/10-minute-spacing pattern, not the real dense-25-day-hole-dense M1 pattern, and has no negative case (ordinary weekend / weekday holiday); (F7) run() receipt status and summary.json error text on SHORT_READ are untested",
+  "why_now": "The Creator->Critic->Formatter chain (agent_chain.py, OWNER 2026-09-15) audited the APPROVED delivery dc7f0545 and returned GAPS (5 major, 5 minor); F1/F4/F5 mean the new receipt would call a defective export COMPLETE and mislabel the sparse class. The governed T1 rerun b2c57e7f is already queued and may run (its data is still useful; the reconciler gap check is the second net), but its receipt must not be trusted until these are closed. Receipt: D:/QM/strategy_farm/artifacts/agent_chain/critique_dc7f0545_20260915T071621Z/final.md (section B) and stage2_critic.json.",
+  "acceptance": [
+    "F1: the FX floor is set from measured data (the AUDCAD 25-day hole must classify SHORT_READ or SHORT_READ_GAP, never COMPLETE) - either a tighter allowance justified by the 37-row table, or the per-chunk bar (F4) as the binding mechanism, documented as such",
+    "F2: load_expected_minutes + classify_completeness run read-only over D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260913_114500; a 37-row table (symbol, rows, expected, floor, ratio, status) bound in the evidence dir with sha256; constants changed only where the table shows a legitimate symbol under its floor",
+    "F3: export_receipt.json carries either the parsed per-chunk journal rows or a path+sha256 binding to the copied <symbol>_M1_chunks.csv per symbol; README and lane verdict corrected to what is actually carried",
+    "F4: the mq5 journal records written minutes per chunk and the chunk's expected span; short_chunks lists every chunk materially under its bar (threshold documented), not only zero chunks; test with a synthetic 3-of-26 bad-chunk journal",
+    "F5: reconcile_overlap re-run over the unchanged 2026-09-13 inputs (no T1), new 37-symbol label distribution bound; the sparse-10 keep a label that says SHORT_READ (either order SHORT_READ before SHORT_READ_GAP or carry both flags); tests updated accordingly",
+    "F6: gap test rebuilt with the real pattern (dense - 25-day hole - dense, M1 spacing) plus negative cases (ordinary weekend, weekday holiday where Dukascopy is also silent)",
+    "F7: tests for run() receipt status FAIL on any SHORT_READ and for the summary.json error text naming the symbols",
+    "MetaEditor compile on the framework path (DEV1), 0 errors, .ex5 sha bound; no terminal start, no T1 run; the orchestrator enqueues the next governed rerun after review",
+    "evidence: docs/ops/evidence/2026-09-15_dukascopy_export_fix_r2/README.md with commit sha, tables, test commands + results"
+  ],
+  "evidence": [
+    "D:/QM/strategy_farm/artifacts/agent_chain/critique_dc7f0545_20260915T071621Z/final.md",
+    "D:/QM/strategy_farm/artifacts/agent_chain/critique_dc7f0545_20260915T071621Z/stage2_critic.json",
+    "docs/ops/evidence/2026-09-15_dukascopy_export_fix/README.md",
+    "docs/ops/evidence/2026-09-15_dukascopy_p3_defects/README.md",
+    "framework/scripts/mt5_diagnostics/QM_DWX_M1_Overlap_Export.mq5",
+    "framework/scripts/mt5_diagnostics/dwx_m1_overlap_export.py",
+    "tools/dukascopy/reconcile_overlap.py"
+  ],
+  "hard_limits": [
+    "never start terminal64.exe, never signal T1-T10 or T_Live, no export run; no compile inside factory or live trees",
+    "fixed reconciliation thresholds (1.5x spread p95, 99% bilateral coverage, DST 0 s) unchanged; new checks additive and fail-closed",
+    "no archive/manifest/splice writes; append-only evidence; explicit git pathspecs; files only under framework/scripts/mt5_diagnostics/, tools/dukascopy/ (+tests) and the evidence dir"
+  ],
+  "required_capabilities": ["code", "ops"],
+  "model_tier": "terra",
+  "requested_by": "Orchestrator Claude 2026-09-15 07:3xZ (agent_chain critique of dc7f0545, Opus critic)",
+  "parent_task": "dc7f0545-2d0a-4220-a1a4-4a9141dbade8",
+  "lane_note": "Claude headless lane (Sonnet); priority below the book-sprint tickets"
+}

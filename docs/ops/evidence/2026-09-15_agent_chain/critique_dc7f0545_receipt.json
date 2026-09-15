@@ -1,0 +1,195 @@
+{
+  "apply": true,
+  "chain_id": "critique_dc7f0545_20260915T071621Z",
+  "critic_verdict": "GAPS",
+  "fake_mode": false,
+  "final_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\critique_dc7f0545_20260915T071621Z\\final.md",
+  "finding_counts": {
+    "major": 5,
+    "minor": 5
+  },
+  "generated_at_utc": "2026-09-15T07:16:21Z",
+  "input_bindings": [],
+  "kill_switch": false,
+  "kind": "critique",
+  "out_dir": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\critique_dc7f0545_20260915T071621Z",
+  "plan": {
+    "creator": {
+      "reused": true,
+      "vendor": "claude"
+    },
+    "critic": {
+      "cross_vendor": false,
+      "effort": null,
+      "model": "opus",
+      "note": "same-vendor fallback: different model, cross_vendor=false",
+      "vendor": "claude"
+    },
+    "formatter": {
+      "effort": null,
+      "model": "haiku",
+      "note": "",
+      "vendor": "claude"
+    },
+    "max_rounds": 1,
+    "timeout_seconds": 900
+  },
+  "receipt_path": "D:\\QM\\strategy_farm\\state\\agent_chain\\critique_dc7f0545_20260915T071621Z.json",
+  "schema": "qm.agent-chain.receipt.v1",
+  "scope_drift": "narrowed: the per-chunk journal is surfaced only as zero-tick chunk windows (not the journal, no attempt/copied/error), the ticket's 'expected-minute bar per chunk' is absent, and the required dense-25-day-hole-dense AUDCAD test fixture was replaced with a 4-day / 2-weekday gap - none of the three declared as a deviation.",
+  "seat_trace": {
+    "creator": [
+      {
+        "model": "sonnet",
+        "reused_artifact": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-15_dukascopy_export_fix\\README.md",
+        "vendor": "claude"
+      }
+    ],
+    "critic": [
+      {
+        "seat": "codex:terra/medium",
+        "skipped": "codex_low_tokens_flag"
+      },
+      {
+        "seat": "agy:default",
+        "skipped": "agy_low_quota_flag"
+      },
+      {
+        "cross_vendor": false,
+        "seat": "claude:opus",
+        "selected": true
+      }
+    ],
+    "formatter": [
+      {
+        "seat": "claude:haiku",
+        "selected": true
+      }
+    ]
+  },
+  "spec_sha256": "1627d3b28467262eefb50344757447169b3f61cc82421dde24a02d2def507790",
+  "stages": [
+    {
+      "cost_usd": null,
+      "cross_vendor": null,
+      "duration_s": null,
+      "output_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\critique_dc7f0545_20260915T071621Z\\stage1_creator.md",
+      "prompt_path": null,
+      "reason": "",
+      "returncode": null,
+      "role": "creator",
+      "seat": {
+        "model": "sonnet",
+        "reused_artifact": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-15_dukascopy_export_fix\\README.md",
+        "vendor": "claude"
+      },
+      "sha256": "87da0f47c2f257ba60fb788a03d55ce815f7c8cfce8c4e0c39c7181218e6fd5d",
+      "status": "reused",
+      "usage": null
+    },
+    {
+      "cost_usd": 2.5343964999999997,
+      "cross_vendor": false,
+      "duration_s": 357.047,
+      "output_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\critique_dc7f0545_20260915T071621Z\\stage2_critic.md",
+      "prompt_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\critique_dc7f0545_20260915T071621Z\\stage2_critic_prompt.md",
+      "reason": "",
+      "returncode": 0,
+      "role": "critic",
+      "seat": {
+        "effort": null,
+        "model": "opus",
+        "note": "same-vendor fallback: different model, cross_vendor=false",
+        "vendor": "claude"
+      },
+      "sha256": "aedbf7a9048f0d5f96a49b49a45eddd44b6c2c67111c1e4b9ef7acc19b5246fb",
+      "status": "ok",
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 131135,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 131135,
+        "cache_read_input_tokens": 1185037,
+        "inference_geo": "not_available",
+        "input_tokens": 26,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 2833,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 2833,
+            "cache_read_input_tokens": 131102,
+            "input_tokens": 2,
+            "output_tokens": 10743,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 24835,
+        "output_tokens_details": {
+          "thinking_tokens": 14805
+        },
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    },
+    {
+      "cost_usd": 0.1021771,
+      "cross_vendor": null,
+      "duration_s": 73.89,
+      "output_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\critique_dc7f0545_20260915T071621Z\\stage3_final.md",
+      "prompt_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\critique_dc7f0545_20260915T071621Z\\stage3_final_prompt.md",
+      "reason": "",
+      "returncode": 0,
+      "role": "formatter",
+      "seat": {
+        "effort": null,
+        "model": "haiku",
+        "note": "",
+        "vendor": "claude"
+      },
+      "sha256": "4b4af8f2011daaa5585676be8f8338a5248eb7791de0039b6e48438bbdc74d2b",
+      "status": "ok",
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 31984,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 31984,
+        "cache_read_input_tokens": 4481,
+        "inference_geo": "not_available",
+        "input_tokens": 9,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 31984,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 31984,
+            "cache_read_input_tokens": 4481,
+            "input_tokens": 9,
+            "output_tokens": 5146,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 5146,
+        "output_tokens_details": {
+          "thinking_tokens": 732
+        },
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "status": "ok",
+  "task_id": "dc7f0545-2d0a-4220-a1a4-4a9141dbade8"
+}

@@ -54,8 +54,13 @@ as the third lens, not the first).
 
 ### Safety envelope
 
-- Critic seats are **read-only**: Claude `-p --allowedTools Read Grep Glob` (no shell, no writes),
+- Critic seats are **read-only**: Claude `-p --tools Read Grep Glob --disallowedTools Bash Edit Write …
+  --permission-mode dontAsk --max-turns 40 --strict-mcp-config --mcp-config <empty>` (live finding
+  07:1xZ: `--allowedTools` alone is NOT a cage when the user settings carry `defaultMode: auto`, and
+  without `--strict-mcp-config` the headless run would load the Gmail/Notion/Dropbox connectors),
   Codex `exec --sandbox read-only`, agy confined to the chain directory and the repo via `--add-dir`.
+  Timeouts kill the whole process tree (`taskkill /T`), because `proc.kill()` under `shell=True`
+  only kills cmd.exe and leaves the CLI alive.
 - The chain never writes to `agent_tasks`, verdicts, work items or the repo. Outputs live under
   `D:/QM/strategy_farm/artifacts/agent_chain/<chain_id>/` (prompts, stage outputs, `final.md`,
   `chain_receipt.json`), receipts under `D:/QM/strategy_farm/state/agent_chain/` (+ `tasks/<task_id>.json`).
@@ -107,3 +112,14 @@ OWNER-set (2026-09-13).
   revision bound, critique sweep selection, `agent_tasks` untouched.
 - Live proof: see the "Live runs" addendum below (filled by the orchestrator after the first
   `critique --apply` and the first OWNER report chain).
+
+## 6 · Live runs (addendum 2026-09-15 07:3xZ)
+
+| Run | Seats | Result | Cost | Evidence |
+|---|---|---|---|---|
+| critique of dc7f0545 (Sonnet-lane export fix), attempt 1, 07:03Z | critic claude:opus (Codex/agy gated), formatter haiku | **aborted by the orchestrator**: the critic ran 27 tool calls incl. Bash (user settings `defaultMode: auto` overrode `--allowedTools`), then stalled 15 min without a tool call; the runner's 900 s cap never returned (`proc.kill()` under `shell=True` killed only cmd.exe) | ~2 USD | transcript session 393a0e6a; fix commit 2d1a98d485 |
+| critique of dc7f0545, attempt 2, 07:16Z (hardened runner) | creator = delivered artifact (claude sonnet lane), critic claude:opus (`cross_vendor=false`, Codex over budget line, agy token expired), formatter claude:haiku | **ok**, verdict GAPS: 5 major + 5 minor; critic used only Read 11 / Grep 5 / Glob 3 in 20 turns, one Read outside the add-dirs denied by `dontAsk` (envelope verified) | critic 2.53 USD / 357 s, formatter 0.10 USD / 74 s | `docs/ops/evidence/2026-09-15_agent_chain/critique_dc7f0545_{final.md,receipt.json}`; runtime dir `D:/QM/strategy_farm/artifacts/agent_chain/critique_dc7f0545_20260915T071621Z/` |
+
+Value of the second run: finding F1 (the FX completeness floor 0.20 lets the known-defective AUDCAD export classify COMPLETE: 155,802 bars vs floor 147,936) was missed by the orchestrator's own review two hours earlier; F3/F4/F5 (receipt does not carry the chunk journal, no per-chunk bar, sparse-10 relabeled SHORT_READ_GAP) are real contract gaps. All seven actionable findings went to Sonnet-lane ticket **9e0fb916** (round 2) before the T1 rerun receipt is trusted.
+
+Operational consequence: the sweep task `QM_StrategyFarm_AgentChain_Critique_15min` is installed (max 2 critiques per run); receipts land under `D:/QM/strategy_farm/state/agent_chain/tasks/<task_id>.json` and the orchestrator reads `final.md` §B before closing any REVIEW row.
