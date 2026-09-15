@@ -41,7 +41,8 @@
     "module": "tools/strategy_farm/portfolio/ftmo_book3_standalone_evaluator.py",
     "selection_mode": "EXPLICIT_M13_DEMO_BINDING",
     "rulepack_path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
-    "rulepack_file_sha256": "dbec549474680a2e04b7677f249d180d7dbd65af1a8a6a0e72c654682707faa3",
+    "rulepack_file_sha256": "77dd22c2db0350c2cbbbb84f020f24cb8c166370e78aff87772a3e571c7b7eff",
+    "rulepack_file_sha256_note": "Re-pinned 2026-09-15 after the OWNER-DEC-CBE-20260915 s63 official-rules refresh (commit 992c59d1af rebound FTMO_2S_100K_STANDARD_V2.json to the 2026-09-15 snapshot); previous pin dbec5494... (2026-09-06 snapshot)",
     "rulepack_canonical_sha256": "d24b19d7080bae2302846072cf7b6ed74bc0082ebede684979e292ea8269f276"
   },
   "governor": {
