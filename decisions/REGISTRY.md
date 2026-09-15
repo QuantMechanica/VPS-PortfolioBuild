@@ -18,6 +18,8 @@ approval gates.
 
 | Topic | Canonical document |
 |---|---|
+| Continuous book evolution / FTMO acceleration / autonomous edge discovery (OWNER-DEC-CBE-20260915) | [`2026-09-15_owner_continuous_book_evolution.md`](2026-09-15_owner_continuous_book_evolution.md) |
+| Kimi research provider, ML-in-research, internal R1 source (OWNER-DEC-KIMI-INTEGRATION-20260915) | [`2026-09-15_owner_kimi_integration_ml_research_r1_internal.md`](2026-09-15_owner_kimi_integration_ml_research_r1_internal.md) |
 | Backtest report retention | [`DL-090_backtest_report_retention_policy.md`](DL-090_backtest_report_retention_policy.md) |
 | Pipeline phase model | [`docs/ops/PIPELINE_PHASE_SPEC.md`](../docs/ops/PIPELINE_PHASE_SPEC.md) |
 | Framework boundary | [`2026-04-26_v5_framework_design.md`](2026-04-26_v5_framework_design.md) |

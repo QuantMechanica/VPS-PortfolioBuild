@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_governed_hold_20260915T130553_684329Z.json",
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789477246371246300,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 861112
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T130534Z_bd524ff9.sqlite",
+    "reused": false,
+    "reused_from_sidecar": null,
+    "sha256": "848ca49a35d305fb9a0d0213939da7b2e6c61a376dac0b47c674dcbea2b9db8c"
+  },
+  "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+  "inserted": 1,
+  "mode": "apply",
+  "reason": "2026-09-15 13:4xZ Orchestrator: remaining un-held heavy_or_unknown_multisymbol (44 GB) row skipped by every worker today (ram_class_skipped); would reopen the drain_predrain head-of-line block (see hold_qm5_10025_ram44_20260915.json). Parked, no verdict touched.",
+  "release_condition": "RAM class calibration (ticket 6cdc6811) or host RAM upgrade; release via farmctl release-hold",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:39:33+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 13:4xZ Orchestrator: remaining un-held heavy_or_unknown_multisymbol (44 GB) row skipped by every worker today (ram_class_skipped); would reopen the drain_predrain head-of-line block (see hold_qm5_10025_ram44_20260915.json). Parked, no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T13:05:53+00:00",
+        "work_item_id": "c62565c1-6bcf-4f04-ae5d-78e1003aa4fe"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T22:52:58+00:00",
+        "ea_id": "QM5_10022",
+        "id": "c62565c1-6bcf-4f04-ae5d-78e1003aa4fe",
+        "kind": "backtest",
+        "phase": "Q07",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-17T22:52:58+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": null,
+  "superseded": 0
+}
