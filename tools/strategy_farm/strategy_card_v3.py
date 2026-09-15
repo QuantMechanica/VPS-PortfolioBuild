@@ -72,6 +72,15 @@ _TOP_LEVEL_KEYS = {
     "card_sha256",
 }
 _DRAFT_KEYS = _TOP_LEVEL_KEYS - {"contract_bindings", "card_sha256"}
+# Additive, OPTIONAL top-level fields (Strategy Eligibility V2,
+# OWNER-DEC-D3-20260915, directive 3 sections 17/18/21). They are backward
+# compatible: an existing sealed card that omits them validates and hashes
+# exactly as before, because the card hash covers only the keys that are present.
+# They are validated by this module (the authoritative validator); the bound
+# JSON schema file is intentionally NOT edited, because its content hash is bound
+# into every existing card's contract_bindings and editing it would invalidate
+# all previously sealed cards.
+_OPTIONAL_TOP_LEVEL_KEYS = {"mechanism_flags", "risk_contract"}
 _CONTRACT_BINDING_KEYS = {
     "strategy_card_schema_sha256",
     "q08_policy_version",
@@ -279,6 +288,91 @@ def _exact_keys(value: Any, required: set[str], path: str) -> dict[str, Any]:
             f"missing={sorted(required - actual)}, extra={sorted(actual - required)}"
         )
     return value
+
+
+def _keys_with_optionals(
+    value: Any,
+    required: set[str],
+    optional: set[str],
+    path: str,
+) -> dict[str, Any]:
+    """Like ``_exact_keys`` but permits a fixed set of optional keys."""
+    if not isinstance(value, dict):
+        raise StrategyCardError(f"{path} must be an object")
+    actual = set(value)
+    missing = required - actual
+    extra = actual - required - optional
+    if missing or extra:
+        raise StrategyCardError(
+            f"{path} key set mismatch; missing={sorted(missing)}, extra={sorted(extra)}"
+        )
+    return value
+
+
+def _load_strategy_risk_contract():
+    """Load the sibling ``strategy_risk_contract`` module robustly (stdlib-only)."""
+    import importlib
+
+    try:
+        return importlib.import_module("strategy_risk_contract")
+    except Exception:  # pragma: no cover - import-style fallback
+        import importlib.util
+        import sys
+
+        module_path = Path(__file__).resolve().parent / "strategy_risk_contract.py"
+        spec = importlib.util.spec_from_file_location("strategy_risk_contract", module_path)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        sys.modules.setdefault("strategy_risk_contract", module)
+        spec.loader.exec_module(module)
+        return module
+
+
+def _validate_optional_eligibility_fields(candidate: Mapping[str, Any]) -> None:
+    """Validate the additive ``mechanism_flags`` / ``risk_contract`` fields.
+
+    Both are optional. When present:
+
+    * ``mechanism_flags`` is a non-empty, sorted-unique array of tokens from the
+      controlled vocabulary (``strategy_risk_contract.MECHANISM_FLAGS``);
+    * ``risk_contract`` is a structurally valid ``strategy_risk_contract.v1``;
+    * if any declared flag is tail-amplifying, ``risk_contract`` MUST be present
+      and bounded (finite levels + a real equity stop) — mirroring the intake
+      ``RISK_CONTRACT_MISSING`` / ``UNBOUNDED_RECOVERY`` fail-closed rules
+      (OWNER-DEC-D3-20260915, directive section 18).
+    """
+    risk = _load_strategy_risk_contract()
+    flags: list[str] = []
+    if "mechanism_flags" in candidate:
+        raw = candidate["mechanism_flags"]
+        if not isinstance(raw, list) or not raw:
+            raise StrategyCardError("$.mechanism_flags must be a non-empty array")
+        tokens = [_string(item, f"$.mechanism_flags[{i}]", max_length=64) for i, item in enumerate(raw)]
+        if len(tokens) != len(set(tokens)):
+            raise StrategyCardError("$.mechanism_flags must not contain duplicates")
+        if tokens != sorted(tokens):
+            raise StrategyCardError("$.mechanism_flags must use canonical lexical order")
+        invalid = sorted(set(tokens) - set(risk.MECHANISM_FLAGS))
+        if invalid:
+            raise StrategyCardError(f"$.mechanism_flags has unknown tokens: {invalid}")
+        flags = tokens
+
+    contract = candidate.get("risk_contract")
+    if contract is not None:
+        errors = risk.validate_contract(contract)
+        if errors:
+            raise StrategyCardError(f"$.risk_contract is invalid: {errors}")
+
+    tail = risk.tail_amplifying_flags(flags)
+    if tail:
+        if contract is None:
+            raise StrategyCardError(
+                f"$.risk_contract is required for tail-amplifying mechanism_flags {tail}"
+            )
+        if risk.is_unbounded(contract):
+            raise StrategyCardError(
+                "$.risk_contract declares unbounded recovery (infinite levels or no equity stop)"
+            )
 
 
 def _string(value: Any, path: str, *, max_length: int = 8192) -> str:
@@ -608,7 +702,8 @@ def validate_card(
         raise StrategyCardError("card root must be an object")
     candidate = copy.deepcopy(dict(card))
     _validate_json_value(candidate)
-    _exact_keys(candidate, _TOP_LEVEL_KEYS, "$")
+    _keys_with_optionals(candidate, _TOP_LEVEL_KEYS, _OPTIONAL_TOP_LEVEL_KEYS, "$")
+    _validate_optional_eligibility_fields(candidate)
     if candidate["schema_version"] != CARD_SCHEMA_VERSION:
         raise StrategyCardError("unsupported Strategy Card schema_version")
     _identifier(candidate["card_id"], "$.card_id")
@@ -719,10 +814,16 @@ def build_card(
         raise StrategyCardError("card draft root must be an object")
     card = copy.deepcopy(dict(draft))
     _validate_json_value(card)
-    _exact_keys(card, _DRAFT_KEYS, "$")
+    _keys_with_optionals(card, _DRAFT_KEYS, _OPTIONAL_TOP_LEVEL_KEYS, "$")
 
     for field in ("kill_criteria", "assumptions", "execution_assumptions"):
         card[field] = _sort_string_array(card[field], f"$.{field}")
+
+    # Additive eligibility fields: canonicalize mechanism_flags order before the
+    # card is hashed so authorship order is not load-bearing (validated fully by
+    # validate_card at the end).
+    if "mechanism_flags" in card:
+        card["mechanism_flags"] = _sort_string_array(card["mechanism_flags"], "$.mechanism_flags")
 
     degrees = _exact_keys(card["degrees_of_freedom"], _DOF_KEYS, "$.degrees_of_freedom")
     components = degrees["components"]

@@ -11,7 +11,22 @@ The checks are intentionally limited to facts available at intake time:
 * target-symbol membership in the governed DWX matrix;
 * named external-feed availability under ``D:/QM/data``;
 * the six Edge Lab thesis sections; and
-* the Edge Lab design box (DD, timeframe, and prohibited mechanics).
+* the Edge Lab design box (DD, timeframe, runtime-ML boundary, and the
+  bounded-risk contract for tail-amplifying mechanisms).
+
+Strategy Eligibility V2 (OWNER-DEC-D3-20260915, directive 3 sections 14-21;
+verbatim at ``docs/ops/evidence/2026-09-15_continuous_book_evolution/
+owner_directive_3_max_factory_utilization_verbatim.md``): a strategy STYLE is
+never a rejection reason on its own.  The old style-based rejections
+(``PROHIBITED_MECHANICS`` for HFT / GRID / MARTINGALE / AVERAGING_INTO_LOSERS)
+are SUPERSEDED and removed.  The surviving integrity check is the runtime-ML
+boundary (Hard Rule 14, ``PROHIBITED_MECHANICS:ML``), which is unchanged.  A
+mechanism declared (or affirmatively described) as tail-amplifying (martingale /
+grid / negative pyramiding / recovery / unbounded multi-position) must carry a
+valid, bounded ``strategy_risk_contract.v1`` or it fails closed with
+``RISK_CONTRACT_MISSING``; a contract that declares infinite levels or no equity
+stop fails closed with ``UNBOUNDED_RECOVERY``.  This only affects NEW intake;
+historical verdicts are untouched.
 
 Examples::
 
@@ -57,6 +72,28 @@ def _load_research_source():
         assert spec and spec.loader
         module = importlib.util.module_from_spec(spec)
         sys.modules.setdefault("research_source", module)
+        spec.loader.exec_module(module)
+        return module
+
+
+def _load_strategy_risk_contract():
+    """Load the sibling ``strategy_risk_contract`` module robustly.
+
+    Works whether this file is imported as a package member, run directly, or
+    loaded by file location in a test harness.
+    """
+    import importlib
+
+    try:
+        return importlib.import_module("strategy_risk_contract")
+    except Exception:  # pragma: no cover - import-style fallback
+        import importlib.util
+
+        module_path = Path(__file__).resolve().parent / "strategy_risk_contract.py"
+        spec = importlib.util.spec_from_file_location("strategy_risk_contract", module_path)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        sys.modules.setdefault("strategy_risk_contract", module)
         spec.loader.exec_module(module)
         return module
 
@@ -498,42 +535,88 @@ def _strip_provenance_section(text: str) -> str:
     )
 
 
-def _affirmative_prohibited_mechanics(document: CardDocument) -> tuple[str, ...]:
-    findings: set[str] = set()
+_ML_TERM_RE = re.compile(
+    r"\b(?:machine learning|random forest|neural network|xgboost|lstm|hidden markov|viterbi)\b",
+    re.I,
+)
+
+
+def _ml_runtime_reason(document: CardDocument) -> str | None:
+    """Return ``PROHIBITED_MECHANICS:ML`` when the EA runtime uses ML, else None.
+
+    This is the surviving integrity check of the former prohibited-mechanics scan
+    (Hard Rule 14; directive section 15).  Style-based rejections (HFT, GRID,
+    MARTINGALE, AVERAGING_INTO_LOSERS) were removed under Strategy Eligibility V2
+    (OWNER-DEC-D3-20260915); the runtime-ML boundary is unchanged.
+
+    The frontmatter ``r4_ml_forbidden``/``ml_required`` claim is honoured, and the
+    affirmative ML-term scan is scoped away from a ``## Research provenance``
+    section (contract Section 9.4): a card that truthfully describes its
+    ML-assisted *research* provenance is not runtime ML.
+    """
     r4 = document.frontmatter.get("r4_ml_forbidden", "").strip().lower()
     ml_required = document.frontmatter.get("ml_required", "").strip().lower()
     if r4 in {"false", "fail", "no"} or ml_required in {"true", "yes", "1"}:
-        findings.add("ML")
-    patterns = {
-        "ML": re.compile(
-            r"\b(?:machine learning|random forest|neural network|xgboost|lstm|hidden markov|viterbi)\b",
-            re.I,
-        ),
-        "HFT": re.compile(r"\b(?:hft|sub[- ]?second|\d+[- ]second tick|tick scalping|latency arbitrage)\b", re.I),
-        "GRID": re.compile(r"\bgrid(?:ding)?\b", re.I),
-        "MARTINGALE": re.compile(r"\bmartingale\b", re.I),
-        "AVERAGING_INTO_LOSERS": re.compile(r"\b(?:averag(?:e|ing) (?:down|into (?:a )?los)|add(?:ing)? to losers)\b", re.I),
-    }
+        return "PROHIBITED_MECHANICS:ML"
     # Markdown prose is commonly hard-wrapped after a comma. Join lowercase
-    # continuation lines so "No HFT, ML, grid,\nmartingale ..." remains one
-    # negative clause rather than turning the second physical line affirmative.
-    full_scan = re.sub(r"(?<!\n)\n(?=[a-z])", " ", document.text)
-    # Contract Section 9.4 (Fable design D5): the affirmative ML-term scan is
-    # scoped to the mechanics/rules sections and must NEVER fire inside a
-    # '## Research provenance' section. A card that truthfully describes its
-    # ML-assisted research provenance ("edge discovered via a random-forest
-    # study") is not runtime ML and must not be rejected for it. Strip that span
-    # for the ML pattern only; HFT/GRID/MARTINGALE/AVERAGING stay whole-card,
-    # unchanged, and the frontmatter r4_ml_forbidden/ml_required check above is
-    # unchanged (a card claiming the EA itself uses ML still trips ML).
+    # continuation lines so a wrapped negative clause is not split.
     ml_scan = re.sub(r"(?<!\n)\n(?=[a-z])", " ", _strip_provenance_section(document.text))
-    for name, pattern in patterns.items():
-        text_for_pattern = ml_scan if name == "ML" else full_scan
-        for line in text_for_pattern.splitlines():
-            match = pattern.search(line)
-            if match and not _line_is_negated(line, match):
-                findings.add(name)
-    return tuple(sorted(findings))
+    for line in ml_scan.splitlines():
+        match = _ML_TERM_RE.search(line)
+        if match and not _line_is_negated(line, match):
+            return "PROHIBITED_MECHANICS:ML"
+    return None
+
+
+def _declared_mechanism_flags(document: CardDocument, risk_contract) -> list[str]:
+    """Union of frontmatter ``mechanism_flags`` and affirmative prose detection.
+
+    Prose detection is a fail-closed safety net: a tail-amplifying mechanism
+    described affirmatively in the rules cannot evade the risk-contract
+    requirement by omitting the frontmatter flag.
+    """
+    declared: list[str] = []
+    raw = document.frontmatter.get("mechanism_flags", "")
+    if raw:
+        declared.extend(_split_scalar_list(raw))
+    valid, _unknown = risk_contract.normalize_flags(declared)
+    detected = risk_contract.detect_flags_in_text(document.text)
+    return sorted(set(valid) | set(detected))
+
+
+def _risk_contract_reasons(document: CardDocument) -> list[str]:
+    """Fail-closed bounded-risk check for tail-amplifying mechanisms.
+
+    * ``RISK_CONTRACT_MISSING`` — a tail-amplifying flag is present without a
+      valid ``strategy_risk_contract.v1`` (absent, unloadable, or structurally
+      invalid all fail closed identically).
+    * ``UNBOUNDED_RECOVERY`` — the contract loads and validates but declares
+      infinite levels or no equity stop (directive section 18).
+
+    The contract is referenced by the frontmatter ``risk_contract`` value, a path
+    resolved relative to the card when not absolute.
+    """
+    risk_contract = _load_strategy_risk_contract()
+    flags = _declared_mechanism_flags(document, risk_contract)
+    tail = risk_contract.tail_amplifying_flags(flags)
+    if not tail:
+        return []
+
+    reference = str(document.frontmatter.get("risk_contract") or "").strip()
+    if not reference:
+        return ["RISK_CONTRACT_MISSING"]
+    contract_path = Path(reference)
+    if not contract_path.is_absolute():
+        contract_path = (document.path.parent / contract_path).resolve()
+    try:
+        payload = json.loads(contract_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return ["RISK_CONTRACT_MISSING"]
+    if risk_contract.validate_contract(payload):
+        return ["RISK_CONTRACT_MISSING"]
+    if risk_contract.is_unbounded(payload):
+        return ["UNBOUNDED_RECOVERY"]
+    return []
 
 
 def _internal_source_reason(
@@ -626,9 +709,14 @@ def evaluate_card(
     if not _timeframe_allowed(timeframe):
         reasons.append(f"TIMEFRAME_OUTSIDE_BOX:{timeframe or 'MISSING'}")
 
-    prohibited = _affirmative_prohibited_mechanics(document)
-    if prohibited:
-        reasons.append("PROHIBITED_MECHANICS:" + ",".join(prohibited))
+    # Strategy Eligibility V2 (OWNER-DEC-D3-20260915): style is not a rejection
+    # reason. The surviving integrity check is the runtime-ML boundary (HR14);
+    # tail-amplifying mechanisms require a bounded risk contract instead of an
+    # outright style reject.
+    ml_reason = _ml_runtime_reason(document)
+    if ml_reason:
+        reasons.append(ml_reason)
+    reasons.extend(_risk_contract_reasons(document))
 
     # Contract Section 9.3 (R-A): internal-research cards (source_type
     # internal_research OR a source_id/source_artifact in the QM-RESEARCH

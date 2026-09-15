@@ -429,3 +429,87 @@ def test_schema_and_policy_hashes_are_semantic_not_formatting_hashes(tmp_path: P
         q08_policy_path=pretty_policy,
     )
     assert expected.as_dict() == reformatted.as_dict()
+
+
+# --- Strategy Eligibility V2 additive fields (OWNER-DEC-D3-20260915) --------------
+
+
+def _risk_contract(**overrides) -> dict:
+    contract = {
+        "schema": "qm.strategy-risk-contract/v1",
+        "tail_amplifying": True,
+        "max_levels": 5,
+        "sizing_progression": {"type": "geometric", "multiplier": "2"},
+        "max_open_positions": 5,
+        "max_basket_exposure": "0.5",
+        "max_gross_notional": "50000",
+        "max_margin_pct": 20,
+        "max_basket_loss_pct": 1,
+        "emergency_exit": {
+            "type": "equity_stop",
+            "equity_stop_pct": 8,
+            "rule": "Flatten all legs at 1% basket loss.",
+        },
+        "gap_sensitivity": "NOT_EVALUATED",
+        "spread_slippage_sensitivity": "NOT_EVALUATED",
+        "worst_historical_sequence": {
+            "max_adverse_levels": "EVIDENCE_MISSING",
+            "max_drawdown_pct": "EVIDENCE_MISSING",
+            "evidence": "EVIDENCE_MISSING",
+        },
+        "stress_sequence": {
+            "scenario": "adverse trend",
+            "result_pct": "EVIDENCE_MISSING",
+            "evidence": "EVIDENCE_MISSING",
+        },
+    }
+    contract.update(overrides)
+    return contract
+
+
+def test_card_without_optional_fields_still_validates() -> None:
+    # Backward compatibility: absent optional fields behave exactly as before.
+    card = _sealed()
+    assert "mechanism_flags" not in card
+    assert "risk_contract" not in card
+    cards.validate_card(card)
+
+
+def test_benign_mechanism_flags_need_no_risk_contract() -> None:
+    draft = _draft()
+    draft["mechanism_flags"] = ["trailing_stop", "scalping"]
+    card = cards.build_card(draft)
+    cards.validate_card(card)
+    assert card["mechanism_flags"] == ["scalping", "trailing_stop"]  # canonical order
+    assert card["card_sha256"] == cards.canonical_card_hash(card)
+
+
+def test_tail_amplifying_flag_with_bounded_contract_seals() -> None:
+    draft = _draft()
+    draft["mechanism_flags"] = ["martingale"]
+    draft["risk_contract"] = _risk_contract()
+    card = cards.build_card(draft)
+    cards.validate_card(card)
+    assert card["risk_contract"]["max_levels"] == 5
+
+
+def test_tail_amplifying_flag_without_contract_is_rejected() -> None:
+    draft = _draft()
+    draft["mechanism_flags"] = ["grid"]
+    with pytest.raises(cards.StrategyCardError):
+        cards.build_card(draft)
+
+
+def test_tail_amplifying_flag_with_unbounded_contract_is_rejected() -> None:
+    draft = _draft()
+    draft["mechanism_flags"] = ["martingale"]
+    draft["risk_contract"] = _risk_contract(max_levels=0)
+    with pytest.raises(cards.StrategyCardError):
+        cards.build_card(draft)
+
+
+def test_unknown_mechanism_flag_token_is_rejected() -> None:
+    draft = _draft()
+    draft["mechanism_flags"] = ["not_a_real_flag"]
+    with pytest.raises(cards.StrategyCardError):
+        cards.build_card(draft)
