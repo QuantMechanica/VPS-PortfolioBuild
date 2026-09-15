@@ -250,12 +250,15 @@ Reached only if Step 7 yielded zero candidates AND no other pending work:
 
 ## Hard boundaries (cannot violate)
 
-- **HR16 sequence (source-level only — saturated for EA-level since 2026-05-16)**
-  — exactly ONE active source at the research level. DB-enforced. If you see >1
-  active source, abort and write an escalation note. **BUT** at the EA-level
-  (backtest dispatch), Achse B saturate mode is active: dispatch-tick assigns
-  one EA per free terminal (up to 5 concurrent backtest_p2 tasks on T1-T5).
-  This is intentional throughput scaling, not an HR16 violation.
+- **HR16 — SUPERSEDED as an absolute rule 2026-09-15 (OWNER-DEC-CBE-20260915 §24):
+  Controlled Parallelism.** The old "exactly ONE active source / one EA at a time"
+  Hard Rule is NO LONGER absolute. Controlled parallel research and EA development are
+  authorized when evidence stays isolated, task identity is clear, and repo/compute/MT5/
+  quota headroom allows; the router's per-lane `max_parallel` and the
+  `min_ready_strategy_cards` reservoir throttle act as anti-spam pacers, not a hard 1-cap.
+  Determinism-first (never waste an LLM call on deterministic work) is retained. EA-level
+  backtest dispatch remains saturated (one EA per free terminal, T1-T10). Do NOT create
+  uncontrolled idea spam; pace against the quota governors.
 - **HR14 NO ML** — any card touching ML/NN/adaptive/retraining → REJECT in Step 2.
 - **HR4/5 risk + magic** — Codex enforces during build; you verify in Step 4 review.
 - **T6 AutoTrading toggle** — NEVER. P10 Live Burn-In requires OWNER + Board Advisor in a real session, not a cron wake. If a task ever reaches P10, write

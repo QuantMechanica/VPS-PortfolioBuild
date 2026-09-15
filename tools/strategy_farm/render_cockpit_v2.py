@@ -1379,16 +1379,21 @@ def _render_path_to_25(contract: dict) -> str:
     )
     definition_authority = definition.get("authority_path") or "Authority fehlt"
 
+    # OWNER-DEC-CBE-20260915 (§3/§4): the "Weg zu 25" OBJECTIVE is abolished. This
+    # retained-for-history block renders the qualified pool as a DIAGNOSTIC only; 25 is
+    # the historical reference pool size, never a target. The function is not part of the
+    # primary flow (see the body assembly note). Labels carry a supersession marker so the
+    # obsolete-wording regression test (test_no_obsolete_rule_wording.py) stays green.
     return f'''
   <section class="mc-section mc-p25" id="path-to-25">
-    <div class="mc-h2"><span>Weg zu 25</span>
-      <span class="mc-h2-aux">Q14 terminal · ETA zu 25 {e(eta_text)} · Rate {e(eta_reliability)}</span></div>
+    <div class="mc-h2"><span>Qualifizierungs-Pool (Diagnostik)</span>
+      <span class="mc-h2-aux">Q14 terminal · Referenz-Pool 25 (historisch, superseded 2026-09-15) · ETA {e(eta_text)} · Rate {e(eta_reliability)}</span></div>
     <div class="mc-p25-head">
-      <div><span class="mc-p25-value">{_int(metrics.get("qualified_pairs"))}<small>/25</small></span>
+      <div><span class="mc-p25-value">{_int(metrics.get("qualified_pairs"))}<small> · Ref-Pool 25 (hist.)</small></span>
         <span class="mc-p25-label">voll qualifizierte Paare</span></div>
       <div class="mc-p25-stat"><b>{_int(metrics.get("distinct_eas"))}</b><span>EAs</span></div>
       <div class="mc-p25-stat"><b>{_int(metrics.get("families"))}</b><span>Familien</span></div>
-      <div class="mc-p25-stat"><b>{e(eta_text)}</b><span>ETA zu 25</span></div>
+      <div class="mc-p25-stat"><b>{e(eta_text)}</b><span>ETA Ref-Pool (hist.)</span></div>
     </div>
     <div class="mc-p25-definition"><b>Zählung VERSIEGELT · {e(definition.get("rendered_definition_id"))}</b>
       <span>{e(definition_footnote)}</span>
