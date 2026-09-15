@@ -1,0 +1,74 @@
+{
+  "arms": [
+    {
+      "era": "IS",
+      "frac_expansion_ge_1_8": 0.4762,
+      "mean_expansion_ratio": 2.3973,
+      "mean_net_pnl_pts": 10.45,
+      "n_events": 399,
+      "n_trades": 329,
+      "sd_net_pnl_pts": 56.13,
+      "symbol": "NDX.DWX",
+      "t_stat": 3.38,
+      "verdict": "REFUTED"
+    },
+    {
+      "era": "OOS",
+      "frac_expansion_ge_1_8": 0.5723,
+      "mean_expansion_ratio": 2.7991,
+      "mean_net_pnl_pts": 15.42,
+      "n_events": 166,
+      "n_trades": 145,
+      "sd_net_pnl_pts": 74.14,
+      "symbol": "NDX.DWX",
+      "t_stat": 2.5,
+      "verdict": "SUPPORTED"
+    },
+    {
+      "era": "IS",
+      "frac_expansion_ge_1_8": 0.4549,
+      "mean_expansion_ratio": 2.2836,
+      "mean_net_pnl_pts": 2.07,
+      "n_events": 488,
+      "n_trades": 413,
+      "sd_net_pnl_pts": 15.35,
+      "symbol": "SP500.DWX",
+      "t_stat": 2.74,
+      "verdict": "REFUTED"
+    },
+    {
+      "era": "OOS",
+      "frac_expansion_ge_1_8": 0.5783,
+      "mean_expansion_ratio": 2.8391,
+      "mean_net_pnl_pts": 2.3,
+      "n_events": 166,
+      "n_trades": 152,
+      "sd_net_pnl_pts": 17.03,
+      "symbol": "SP500.DWX",
+      "t_stat": 1.67,
+      "verdict": "SUPPORTED"
+    }
+  ],
+  "generated_utc": "2026-09-15T00:00:00Z",
+  "hypothesis_id": "EDGE-2",
+  "open_gaps": [
+    "M5 resolution for NDX and SP500 is not present in T_Export; M15 bars (which align with the 15-minute release and window boundaries) were used.",
+    "Production Forex Factory calendar contains an unresolved 17-hour displacement defect on US 08:30-ET releases (docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md); ground truth native export T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv was used for release timing.",
+    "Post-release expansion >= 1.8x occurs in ~46-48% of events across NDX and SP500 (failing the sealed 70% threshold); while mean breakout expectancy is positive (+10.5 pts NDX, +2.1 pts SP500, t > 2), the hypothesis is strictly REFUTED by the expansion consistency failure."
+  ],
+  "primary_cell": {
+    "breakout_window_min": 15,
+    "cost_pts": 1.0,
+    "holding_time_min": 60,
+    "pre_range_min": 60,
+    "stop_midpoint_mult": 0.5,
+    "target_mult": 2.0
+  },
+  "refutation_criterion": "post-release 60-min range >= 1.8x pre-release range in >= 70 % of events (2018-2023, n >= 150) AND breakout expectancy after 1 pt round-trip cost > 0 with t >= 2; holdout 2024-2025 expansion ratio >= 1.5",
+  "schema_version": "qm.edge_lab.summary.v1",
+  "symbols": [
+    "NDX.DWX",
+    "SP500.DWX"
+  ],
+  "verdict": "REFUTED"
+}

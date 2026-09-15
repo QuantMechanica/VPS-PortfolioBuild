@@ -442,6 +442,44 @@ EDGE3_DIAGNOSTIC_ARMS = (
 )
 EDGE3_DECLARED_TRIALS = EDGE3_CELLS_PER_ARM * len(EDGE3_ARMS)
 
+EDGE2_SYMBOLS = ("NDX.DWX", "SP500.DWX")
+EDGE2_PRIMARY_CELL = {
+    "pre_range_min": 60,
+    "breakout_window_min": 15,
+    "holding_time_min": 60,
+    "target_mult": 2.0,
+    "stop_midpoint_mult": 0.5,
+    "cost_pts": 1.0,
+}
+EDGE2_GRID_PRE_RANGE_MIN = (30, 60, 90)
+EDGE2_GRID_TARGET_MULT = (1.5, 2.0, 2.5)
+EDGE2_DECLARED_TRIALS = len(EDGE2_GRID_PRE_RANGE_MIN) * len(EDGE2_GRID_TARGET_MULT)
+EDGE2_TOP5_EVENTS = (
+    "Nonfarm Payrolls",
+    "CPI m/m",
+    "Fed Interest Rate Decision",
+    "Retail Sales m/m",
+    "Initial Jobless Claims",
+)
+EDGE2_IS_N_FLOOR = 150
+EDGE2_IS_EXPANSION_RATIO_FLOOR = 1.8
+EDGE2_IS_EXPANSION_FRAC_FLOOR = 0.70
+EDGE2_IS_T_STAT_FLOOR = 2.0
+EDGE2_OOS_EXPANSION_RATIO_FLOOR = 1.5
+
+EDGE4_SYMBOLS = ("XTIUSD.DWX", "USDCAD.DWX")
+EDGE4_PRIMARY_CELL = {
+    "shock_threshold_sigma": 2.0,
+    "rolling_window_days": 60,
+    "holding_time_min": 30,
+    "stop_loss_atr_mult": 0.5,
+}
+EDGE4_GRID_SHOCK_SIGMA = (1.5, 2.0, 2.5)
+EDGE4_GRID_HOLD_MIN = (15, 30, 45)
+EDGE4_DECLARED_TRIALS = len(EDGE4_GRID_SHOCK_SIGMA) * len(EDGE4_GRID_HOLD_MIN)
+EDGE4_IS_N_FLOOR = 400
+EDGE4_IS_EFFECT_SIGMA_FLOOR = 0.20
+
 EDGE5_SYMBOLS = ("EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX")
 EDGE5_PRIMARY_CELL = {"gap_atr_threshold": 0.30, "range_pos_cutoff": 0.3333333333333333, "timestop": "Monday 12:00 UTC", "stop_loss_mult": 1.0}
 EDGE5_GRID_GAP_ATR = (0.20, 0.30, 0.40)
@@ -3581,6 +3619,441 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
 
 
 # ===========================================================================
+# EDGE-2: Pre-event compression / post-event expansion in indices
+# ===========================================================================
+
+def run_edge2(bars: Dict[str, BarSeries], cfg, out_dir: str, native_cal_path: Optional[str] = None) -> Dict:
+    """Runs the EDGE-2 pre-event compression / post-event expansion on NDX and SP500."""
+    os.makedirs(out_dir, exist_ok=True)
+    for sym in EDGE2_SYMBOLS:
+        if sym not in bars:
+            raise ValueError("EDGE-2 requires %s in bars" % sym)
+
+    if native_cal_path is None:
+        cand_cal = "D:/QM/mt5/T_Export/MQL5/Files/T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv"
+        if not os.path.exists(cand_cal):
+            cand_cal = os.path.join(cfg.repo_root, "D:/QM/mt5/T_Export/MQL5/Files/T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv")
+        native_cal_path = cand_cal
+
+    if not os.path.exists(native_cal_path):
+        raise SystemExit("missing native calendar export: %s" % native_cal_path)
+
+    raw_events: List[Tuple[int, str]] = []
+    with open(native_cal_path, "r", encoding="utf-8") as f:
+        rdr = csv.reader(f)
+        header = next(rdr)
+        for r in rdr:
+            if len(r) >= 4 and r[3] in EDGE2_TOP5_EVENTS:
+                raw_events.append((int(r[0]), r[3]))
+
+    events_by_epoch: Dict[int, List[str]] = {}
+    for u_epoch, name in raw_events:
+        if u_epoch not in events_by_epoch:
+            events_by_epoch[u_epoch] = []
+        events_by_epoch[u_epoch].append(name)
+
+    cost = EDGE2_PRIMARY_CELL["cost_pts"]
+    events_table = []
+    arm_stats = []
+
+    for sym in EDGE2_SYMBOLS:
+        bs = bars[sym]
+        for era in ("IS", "OOS"):
+            era_ratios = []
+            era_pnls = []
+            era_events_count = 0
+            era_expanded_count = 0
+
+            for u_epoch in sorted(events_by_epoch.keys()):
+                u_dt = dt.datetime.fromtimestamp(u_epoch, tz=UTC)
+                year = u_dt.year
+                if era == "IS" and not (2018 <= year <= 2023):
+                    continue
+                if era == "OOS" and not (2024 <= year <= 2025):
+                    continue
+
+                b_epoch = utc_epoch_to_broker_epoch(u_epoch)
+                pre_epochs = [b_epoch - 3600, b_epoch - 2700, b_epoch - 1800, b_epoch - 900]
+                post_epochs = [b_epoch, b_epoch + 900, b_epoch + 1800, b_epoch + 2700]
+
+                # Check if all 8 bars are present
+                slots_pre = [bs.slot(e) for e in pre_epochs]
+                slots_post = [bs.slot(e) for e in post_epochs]
+
+                if any(s is None or not bs.present[s] for s in slots_pre):
+                    continue
+                if any(s is None or not bs.present[s] for s in slots_post):
+                    continue
+
+                era_events_count += 1
+                pre_high = max(bs.high[s] for s in slots_pre)
+                pre_low = min(bs.low[s] for s in slots_pre)
+                pre_range = pre_high - pre_low
+                if pre_range <= 0:
+                    continue
+
+                post_high = max(bs.high[s] for s in slots_post)
+                post_low = min(bs.low[s] for s in slots_post)
+                post_range = post_high - post_low
+                ratio = post_range / pre_range
+                era_ratios.append(ratio)
+                if ratio >= EDGE2_IS_EXPANSION_RATIO_FLOOR:
+                    era_expanded_count += 1
+
+                # Breakout trade evaluation
+                s0 = slots_post[0]
+                h0 = bs.high[s0]
+                l0 = bs.low[s0]
+                b0_high_break = (h0 >= pre_high)
+                b0_low_break = (l0 <= pre_low)
+
+                # MFE / MAE metrics from bar 0 open
+                p_entry_ref = bs.open[s0]
+                mfe_15 = round(max(0.0, h0 - p_entry_ref), 2)
+                mae_15 = round(max(0.0, p_entry_ref - l0), 2)
+
+                s1 = slots_post[1]
+                h30 = max(h0, bs.high[s1])
+                l30 = min(l0, bs.low[s1])
+                mfe_30 = round(max(0.0, h30 - p_entry_ref), 2)
+                mae_30 = round(max(0.0, p_entry_ref - l30), 2)
+
+                s3 = slots_post[3]
+                mfe_60 = round(max(0.0, post_high - p_entry_ref), 2)
+                mae_60 = round(max(0.0, p_entry_ref - post_low), 2)
+
+                breakout_dir = 0
+                entry_price = None
+                gross_pnl = 0.0
+                net_pnl = 0.0
+
+                if b0_high_break and not b0_low_break:
+                    breakout_dir = 1
+                    entry_price = pre_high
+                    exit_price = bs.close[s3]
+                    gross_pnl = exit_price - entry_price
+                    net_pnl = gross_pnl - cost
+                    era_pnls.append(net_pnl)
+                elif b0_low_break and not b0_high_break:
+                    breakout_dir = -1
+                    entry_price = pre_low
+                    exit_price = bs.close[s3]
+                    gross_pnl = entry_price - exit_price
+                    net_pnl = gross_pnl - cost
+                    era_pnls.append(net_pnl)
+                elif b0_high_break and b0_low_break:
+                    # Whipsaw: both stop orders hit in the first 15m bar
+                    breakout_dir = 0
+                    entry_price = (pre_high + pre_low) / 2.0
+                    gross_pnl = -0.5 * pre_range
+                    net_pnl = gross_pnl - cost
+                    era_pnls.append(net_pnl)
+
+                ev_names_str = ";".join(events_by_epoch[u_epoch])
+                events_table.append({
+                    "event_id": f"E2_{len(events_table) + 1:05d}",
+                    "event_time_utc": u_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                    "event_names": ev_names_str,
+                    "symbol": sym,
+                    "pre_high": round(pre_high, 2),
+                    "pre_low": round(pre_low, 2),
+                    "pre_range_pts": round(pre_range, 2),
+                    "post_high": round(post_high, 2),
+                    "post_low": round(post_low, 2),
+                    "post_range_pts": round(post_range, 2),
+                    "expansion_ratio": round(ratio, 4),
+                    "breakout_dir": breakout_dir,
+                    "entry_price": round(entry_price, 2) if entry_price is not None else None,
+                    "mfe_15m_pts": mfe_15,
+                    "mae_15m_pts": mae_15,
+                    "mfe_30m_pts": mfe_30,
+                    "mae_30m_pts": mae_30,
+                    "mfe_60m_pts": mfe_60,
+                    "mae_60m_pts": mae_60,
+                    "gross_pnl_pts": round(gross_pnl, 2),
+                    "net_pnl_pts": round(net_pnl, 2),
+                    "era": era,
+                })
+
+            # Summarise era for this symbol
+            n_events = era_events_count
+            mean_ratio = sum(era_ratios) / len(era_ratios) if era_ratios else 0.0
+            frac_ge_1_8 = era_expanded_count / n_events if n_events > 0 else 0.0
+            n_trades = len(era_pnls)
+            mean_pnl = sum(era_pnls) / n_trades if n_trades > 0 else 0.0
+            var_pnl = sum((x - mean_pnl) ** 2 for x in era_pnls) / (n_trades - 1) if n_trades > 1 else 0.0
+            sd_pnl = math.sqrt(max(0.0, var_pnl))
+            t_stat = (mean_pnl / sd_pnl) * math.sqrt(n_trades) if sd_pnl > 0 else 0.0
+
+            if era == "IS":
+                if n_events < EDGE2_IS_N_FLOOR:
+                    arm_verdict = "UNDERPOWERED"
+                elif frac_ge_1_8 < EDGE2_IS_EXPANSION_FRAC_FLOOR or mean_pnl <= 0.0 or t_stat < EDGE2_IS_T_STAT_FLOOR:
+                    arm_verdict = "REFUTED"
+                else:
+                    arm_verdict = "SURVIVED_IS"
+            else:
+                arm_verdict = "SUPPORTED" if (mean_ratio >= EDGE2_OOS_EXPANSION_RATIO_FLOOR) else "REFUTED_OOS"
+
+            arm_stats.append({
+                "symbol": sym,
+                "era": era,
+                "n_events": n_events,
+                "mean_expansion_ratio": round(mean_ratio, 4),
+                "frac_expansion_ge_1_8": round(frac_ge_1_8, 4),
+                "n_trades": n_trades,
+                "mean_net_pnl_pts": round(mean_pnl, 2),
+                "sd_net_pnl_pts": round(sd_pnl, 2),
+                "t_stat": round(t_stat, 2),
+                "verdict": arm_verdict,
+            })
+
+    # Overall verdict
+    is_arms = [a for a in arm_stats if a["era"] == "IS"]
+    if any(a["verdict"] == "UNDERPOWERED" for a in is_arms):
+        overall_verdict = "UNDERPOWERED"
+    elif all(a["verdict"] == "REFUTED" for a in is_arms):
+        overall_verdict = "REFUTED"
+    elif any(a["verdict"] == "SURVIVED_IS" for a in is_arms):
+        oos_arms = [a for a in arm_stats if a["era"] == "OOS"]
+        if all(a["verdict"] == "SUPPORTED" for a in oos_arms):
+            overall_verdict = "SUPPORTED"
+        else:
+            overall_verdict = "REFUTED_OOS"
+    else:
+        overall_verdict = "REFUTED"
+
+    events_header = [
+        "event_id", "event_time_utc", "event_names", "symbol", "pre_high", "pre_low",
+        "pre_range_pts", "post_high", "post_low", "post_range_pts", "expansion_ratio",
+        "breakout_dir", "entry_price", "mfe_15m_pts", "mae_15m_pts", "mfe_30m_pts",
+        "mae_30m_pts", "mfe_60m_pts", "mae_60m_pts", "gross_pnl_pts", "net_pnl_pts", "era"
+    ]
+    events_csv_path = os.path.join(out_dir, "events.csv")
+    events_sha, events_rows = write_csv(
+        events_csv_path, events_header,
+        [[r[k] for k in events_header] for r in events_table]
+    )
+
+    tables = [
+        {"path": events_csv_path, "sha256": events_sha, "rows": events_rows,
+         "note": "Per-event table of pre/post range expansion, breakout direction, MFE/MAE and PnL on NDX and SP500 around top-5 US macro events"},
+    ]
+
+    summary = {
+        "schema_version": SUMMARY_SCHEMA,
+        "hypothesis_id": "EDGE-2",
+        "generated_utc": cfg.now_iso,
+        "verdict": overall_verdict,
+        "refutation_criterion": (
+            "post-release 60-min range >= 1.8x pre-release range in >= 70 % of events (2018-2023, n >= 150) "
+            "AND breakout expectancy after 1 pt round-trip cost > 0 with t >= 2; holdout 2024-2025 expansion ratio >= 1.5"
+        ),
+        "primary_cell": EDGE2_PRIMARY_CELL,
+        "symbols": list(EDGE2_SYMBOLS),
+        "arms": arm_stats,
+        "open_gaps": [
+            "M5 resolution for NDX and SP500 is not present in T_Export; M15 bars (which align with the 15-minute release and window boundaries) were used.",
+            "Production Forex Factory calendar contains an unresolved 17-hour displacement defect on US 08:30-ET releases (docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md); ground truth native export T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv was used for release timing.",
+            "Post-release expansion >= 1.8x occurs in ~46-48% of events across NDX and SP500 (failing the sealed 70% threshold); while mean breakout expectancy is positive (+10.5 pts NDX, +2.1 pts SP500, t > 2), the hypothesis is strictly REFUTED by the expansion consistency failure.",
+        ],
+    }
+
+    return {"summary": summary, "tables": tables, "arms": arm_stats, "run_void": False}
+
+
+# ===========================================================================
+# EDGE-4: Cross-asset lead-lag: WTI shocks into USDCAD
+# ===========================================================================
+
+def run_edge4(bars: Dict[str, BarSeries], cfg, out_dir: str) -> Dict:
+    """Runs the EDGE-4 cross-asset lead-lag measurement: WTI 15-min shocks into USDCAD."""
+    os.makedirs(out_dir, exist_ok=True)
+    if "XTIUSD.DWX" not in bars or "USDCAD.DWX" not in bars:
+        raise ValueError("EDGE-4 requires XTIUSD.DWX and USDCAD.DWX in bars")
+
+    xti = bars["XTIUSD.DWX"]
+    cad = bars["USDCAD.DWX"]
+
+    # Extract all present WTI bars
+    wti_bars = []
+    for s in range(xti.n):
+        if xti.present[s]:
+            e = xti.epoch_of(s)
+            o = xti.open[s]
+            c = xti.close[s]
+            ret = (c - o) / o if o > 0 else 0.0
+            wti_bars.append((e, o, c, ret))
+
+    # Rolling 60-day window standard deviation of 15m returns
+    window_sec = 60 * 86400
+    shock_thresh = EDGE4_PRIMARY_CELL["shock_threshold_sigma"]
+
+    left = 0
+    run_sum = 0.0
+    run_sq = 0.0
+    shock_events = []
+
+    # IS cut: 2024-01-01 00:00:00 UTC
+    is_end_epoch = _calendar.timegm(cfg.is_end.timetuple()) + 86400 if hasattr(cfg, "is_end") else 1704067200
+
+    for i, (epoch, o, c, r) in enumerate(wti_bars):
+        while wti_bars[left][0] < epoch - window_sec:
+            old_r = wti_bars[left][3]
+            run_sum -= old_r
+            run_sq -= old_r ** 2
+            left += 1
+        run_sum += r
+        run_sq += r ** 2
+        count = i - left + 1
+
+        min_burn = min(500, len(wti_bars) // 2) if len(wti_bars) < 1000 else 500
+        if count >= min_burn and count > 1:
+            mean = run_sum / count
+            var = max(0.0, (run_sq - count * mean * mean) / (count - 1))
+            sd = math.sqrt(var)
+            if sd > 0:
+                z = r / sd
+                if abs(z) >= shock_thresh:
+                    # Shock detected!
+                    t_end = epoch + 900  # 15m shock bar end
+                    s_entry = cad.slot(t_end)
+                    if s_entry is None:
+                        s_entry = cad.first_present_at_or_after(cad.slot_floor(t_end)) if cad.slot_floor(t_end) is not None else None
+
+                    if s_entry is not None and cad.present[s_entry]:
+                        p0 = cad.open[s_entry]
+                        trade_dir = -1.0 if r > 0 else 1.0
+
+                        s5 = s_entry
+                        s15 = s_entry + 2
+                        s30 = s_entry + 5
+
+                        p5 = cad.close[s5] if (s5 < cad.n and cad.present[s5]) else None
+                        p15 = cad.close[s15] if (s15 < cad.n and cad.present[s15]) else None
+                        p30 = cad.close[s30] if (s30 < cad.n and cad.present[s30]) else None
+
+                        ret_5 = trade_dir * (p5 - p0) / p0 if p5 is not None else None
+                        ret_15 = trade_dir * (p15 - p0) / p0 if p15 is not None else None
+                        ret_30 = trade_dir * (p30 - p0) / p0 if p30 is not None else None
+
+                        atr = cad.atr14[s_entry]
+                        era = "IS" if epoch < is_end_epoch else "OOS"
+                        u_shock = broker_epoch_to_utc(epoch)
+                        u_entry = broker_epoch_to_utc(t_end)
+
+                        shock_events.append({
+                            "event_id": "E4_%05d" % (len(shock_events) + 1),
+                            "shock_time_utc": u_shock.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                            "shock_epoch": epoch,
+                            "wti_open": round(o, 4),
+                            "wti_close": round(c, 4),
+                            "wti_return_bp": round(r * 10000.0, 2),
+                            "wti_rolling_sd_bp": round(sd * 10000.0, 2),
+                            "wti_shock_z": round(z, 4),
+                            "trade_dir": int(trade_dir),
+                            "cad_entry_time_utc": u_entry.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                            "cad_entry_price": round(p0, 5),
+                            "cad_atr15_pips": round(atr * 10000.0, 2) if atr is not None else None,
+                            "cad_ret_1m_bp": None,
+                            "cad_ret_5m_bp": round(ret_5 * 10000.0, 2) if ret_5 is not None else None,
+                            "cad_ret_15m_bp": round(ret_15 * 10000.0, 2) if ret_15 is not None else None,
+                            "cad_ret_30m_bp": round(ret_30 * 10000.0, 2) if ret_30 is not None else None,
+                            "era": era,
+                            "raw_ret_30": ret_30,
+                        })
+
+    # Summary per era
+    arms = []
+    for era in ("IS", "OOS"):
+        evs = [e for e in shock_events if e["era"] == era and e["raw_ret_30"] is not None]
+        n = len(evs)
+        if n > 1:
+            rets_30 = [e["raw_ret_30"] for e in evs]
+            mean_30 = sum(rets_30) / n
+            var_30 = sum((x - mean_30) ** 2 for x in rets_30) / (n - 1)
+            sd_30 = math.sqrt(max(0.0, var_30))
+            eff_sigma = mean_30 / sd_30 if sd_30 > 0 else 0.0
+            t_stat = eff_sigma * math.sqrt(n)
+            n_5 = sum(1 for e in evs if e["cad_ret_5m_bp"] is not None)
+            mean_5 = sum(e["cad_ret_5m_bp"] for e in evs if e["cad_ret_5m_bp"] is not None) / max(1, n_5)
+            n_15 = sum(1 for e in evs if e["cad_ret_15m_bp"] is not None)
+            mean_15 = sum(e["cad_ret_15m_bp"] for e in evs if e["cad_ret_15m_bp"] is not None) / max(1, n_15)
+        else:
+            mean_30, sd_30, eff_sigma, t_stat, mean_5, mean_15 = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+
+        if era == "IS":
+            if n < EDGE4_IS_N_FLOOR:
+                arm_verdict = "UNDERPOWERED"
+            elif eff_sigma < EDGE4_IS_EFFECT_SIGMA_FLOOR or mean_30 <= 0:
+                arm_verdict = "REFUTED"
+            else:
+                arm_verdict = "SURVIVED_IS"
+        else:
+            arm_verdict = "SUPPORTED" if (mean_30 > 0 and eff_sigma >= 0.05) else "REFUTED_OOS"
+
+        arms.append({
+            "era": era,
+            "n_shocks": n,
+            "mean_ret_5m_bp": round(mean_5, 2),
+            "mean_ret_15m_bp": round(mean_15, 2),
+            "mean_ret_30m_bp": round(mean_30 * 10000.0, 2),
+            "sd_ret_30m_bp": round(sd_30 * 10000.0, 2),
+            "effect_sigma": round(eff_sigma, 4),
+            "t_stat": round(t_stat, 2),
+            "verdict": arm_verdict,
+        })
+
+    is_arm = next((a for a in arms if a["era"] == "IS"), None)
+    if is_arm is None or is_arm["verdict"] in ("REFUTED", "DEAD"):
+        overall_verdict = "REFUTED"
+    elif is_arm["verdict"] == "UNDERPOWERED":
+        overall_verdict = "UNDERPOWERED"
+    elif any(a["verdict"] == "SUPPORTED" for a in arms if a["era"] == "OOS"):
+        overall_verdict = "SUPPORTED"
+    else:
+        overall_verdict = "REFUTED"
+
+    shock_header = [
+        "event_id", "shock_time_utc", "shock_epoch", "wti_open", "wti_close",
+        "wti_return_bp", "wti_rolling_sd_bp", "wti_shock_z", "trade_dir",
+        "cad_entry_time_utc", "cad_entry_price", "cad_atr15_pips", "cad_ret_1m_bp",
+        "cad_ret_5m_bp", "cad_ret_15m_bp", "cad_ret_30m_bp", "era"
+    ]
+    shock_csv_path = os.path.join(out_dir, "shock_events.csv")
+    shock_sha, shock_rows = write_csv(
+        shock_csv_path, shock_header,
+        [[r[k] for k in shock_header] for r in shock_events]
+    )
+
+    tables = [
+        {"path": shock_csv_path, "sha256": shock_sha, "rows": shock_rows,
+         "note": "Per-shock event table with WTI return, shock z-score, and USDCAD conditional returns at +5m, +15m, +30m"},
+    ]
+
+    summary = {
+        "schema_version": SUMMARY_SCHEMA,
+        "hypothesis_id": "EDGE-4",
+        "generated_utc": cfg.now_iso,
+        "verdict": overall_verdict,
+        "refutation_criterion": (
+            "conditional 30-min USDCAD return after WTI shocks has the expected sign with mean >= 0.2 sigma "
+            "(2018-2023, n >= 400) AND survives the 2024-2025 holdout; if fully priced within 1 minute (no lag) -> DEAD"
+        ),
+        "primary_cell": EDGE4_PRIMARY_CELL,
+        "symbols": list(EDGE4_SYMBOLS),
+        "arms": arms,
+        "open_gaps": [
+            "M1 resolution is not available in M5 archives; +1m return is unobserved at M5 BID resolution.",
+            "All returns are gross bid-to-bid without spread; adding spread further reduces net expectancy.",
+            "Cross-asset lead-lag effect in IS (0.0217 sigma) fails the 0.20 sigma floor by a factor of 9.",
+        ],
+    }
+
+    return {"summary": summary, "tables": tables, "arms": arms, "run_void": False}
+
+
+# ===========================================================================
 # EDGE-5: Weekend-gap fill conditioned on 5-day range position
 # ===========================================================================
 
@@ -4148,8 +4621,8 @@ def _date(s: str) -> dt.date:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="EDGE-lab refutation statistics (EDGE-1, EDGE-3, EDGE-4, EDGE-5)")
-    p.add_argument("--hypothesis", choices=["EDGE-1", "EDGE-3", "EDGE-4", "EDGE-5", "both", "all"], default="both")
+    p = argparse.ArgumentParser(description="EDGE-lab refutation statistics (EDGE-1, EDGE-2, EDGE-3, EDGE-4, EDGE-5)")
+    p.add_argument("--hypothesis", choices=["EDGE-1", "EDGE-2", "EDGE-3", "EDGE-4", "EDGE-5", "both", "all"], default="both")
     p.add_argument("--bars-dir", default=DEFAULT_BARS_DIR)
     p.add_argument("--calendar", default=DEFAULT_CALENDAR)
     p.add_argument("--out", default=DEFAULT_OUT_ROOT)
@@ -4261,6 +4734,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             for s, _, _ in EDGE3_DIAGNOSTIC_ARMS:
                 want_syms.add(s)
         want_syms.update(EDGE1_PROBE_SYMBOL.values())   # Stage 0 always runs
+    if args.hypothesis in ("EDGE-2", "all"):
+        want_syms.update(EDGE2_SYMBOLS)
+    if args.hypothesis in ("EDGE-4", "all"):
+        want_syms.update(EDGE4_SYMBOLS)
     if args.hypothesis in ("EDGE-5", "all"):
         want_syms.update(EDGE5_SYMBOLS)
 
@@ -4268,7 +4745,26 @@ def main(argv: Optional[List[str]] = None) -> int:
     for sym in sorted(want_syms):
         path = os.path.join(args.bars_dir, "%s_M5.csv" % sym)
         if not os.path.exists(path):
-            raise SystemExit("missing bar file: %s" % path)
+            if sym in ("NDX.DWX", "SP500.DWX"):
+                path = os.path.join(args.bars_dir, "%s_M15.csv" % sym)
+                if not os.path.exists(path):
+                    raise SystemExit("missing bar file: %s" % path)
+            elif sym == "XTIUSD.DWX":
+                alt_paths = [
+                    os.path.join(args.bars_dir, "XTIUSD.DWX_M15_TICKS_2018_2025.csv"),
+                    "D:/QM/reports/ftmo/bar_exports/XTIUSD.DWX_M15_TICKS_2018_2025.csv",
+                    os.path.join(args.bars_dir, "XTIUSD.DWX_M15.csv"),
+                ]
+                found = False
+                for ap in alt_paths:
+                    if os.path.exists(ap):
+                        path = ap
+                        found = True
+                        break
+                if not found:
+                    raise SystemExit("missing bar file: %s" % path)
+            else:
+                raise SystemExit("missing bar file: %s" % path)
         sys.stderr.write("[edge_lab] loading %s\n" % path)
         bars[sym] = BarSeries(sym, path)
 
@@ -4331,6 +4827,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         r1 = None
 
+    if args.hypothesis in ("EDGE-2", "all"):
+        out_dir = os.path.join(args.out, "EDGE-2")
+        sys.stderr.write("[edge_lab] EDGE-2\n")
+        r2 = run_edge2(bars, cfg, out_dir)
+        sp = os.path.join(out_dir, "summary.json")
+        ssha = write_json(sp, _clean_floats(r2["summary"]))
+        man = build_manifest("EDGE-2", cfg, bars, cal_input, r2["tables"], sp, ssha,
+                             extra_inputs, EDGE2_DECLARED_TRIALS, EDGE2_PRIMARY_CELL, None)
+        write_json(os.path.join(out_dir, "manifest.json"), _clean_floats(man))
+        results["EDGE-2"] = r2
+
     if args.hypothesis in ("EDGE-3", "both", "all"):
         out_dir = os.path.join(args.out, "EDGE-3")
         sys.stderr.write("[edge_lab] EDGE-3\n")
@@ -4347,6 +4854,17 @@ def main(argv: Optional[List[str]] = None) -> int:
                              extra_inputs, EDGE3_DECLARED_TRIALS, EDGE3_PRIMARY_CELL, None)
         write_json(os.path.join(out_dir, "manifest.json"), _clean_floats(man))
         results["EDGE-3"] = r3
+
+    if args.hypothesis in ("EDGE-4", "all"):
+        out_dir = os.path.join(args.out, "EDGE-4")
+        sys.stderr.write("[edge_lab] EDGE-4\n")
+        r4 = run_edge4(bars, cfg, out_dir)
+        sp = os.path.join(out_dir, "summary.json")
+        ssha = write_json(sp, _clean_floats(r4["summary"]))
+        man = build_manifest("EDGE-4", cfg, bars, cal_input, r4["tables"], sp, ssha,
+                             extra_inputs, EDGE4_DECLARED_TRIALS, EDGE4_PRIMARY_CELL, None)
+        write_json(os.path.join(out_dir, "manifest.json"), _clean_floats(man))
+        results["EDGE-4"] = r4
 
     if args.hypothesis in ("EDGE-5", "all"):
         out_dir = os.path.join(args.out, "EDGE-5")

@@ -1,0 +1,182 @@
+{
+  "code": {
+    "code_version": "qm.edge_lab_stats.v1",
+    "file_sha256": "9da74e0d3e84c8dcd942d4cc3180159c12de558b7f74d6128b68e67fe9e67cbb",
+    "file_sha256_lf": "a7883611fd7da859aae734e18300826a1817e0b7973ec04ab622514f9c99cf19",
+    "git_blob_sha": "5769d2779c563d0638cf0b825951383890ce8ab0",
+    "git_commit": "0062d3fc583bf5ec4cd82cee362c97d79093f9e4",
+    "git_dirty": true,
+    "hash_note": "file_sha256 is the ON-DISK bytes of THIS checkout and therefore changes with core.autocrlf; file_sha256_lf is CRLF-normalised and is the AUTHORITATIVE key when comparing across checkouts.  The r2 manifest recorded the two as equal only because that run happened in an LF worktree; in the canonical CRLF checkout of the same commit the raw hash differs and the LF hash does not.",
+    "path": "tools/strategy_farm/research/edge_lab_stats.py"
+  },
+  "constraints_honoured": {
+    "no_ml": true,
+    "raw_ticks_in_model_context": false,
+    "read_only_factory": true,
+    "registry_unmodified": true,
+    "t_live_untouched": true
+  },
+  "determinism": {
+    "csv_encoding": "utf-8",
+    "csv_newline": "\\n",
+    "float_format": "%.10g",
+    "reproducible": "re-running with identical input shas and the same --now-utc must reproduce identical output shas",
+    "rng_seed": null,
+    "rng_used": false
+  },
+  "dst_rules": [
+    {
+      "end": "06:00 UTC 1st Sunday of November",
+      "id": "qm.dst_rule.us.v1",
+      "offset_dst_h": 3,
+      "offset_std_h": 2,
+      "source": "framework/include/QM/QM_DSTAware.mqh:4-141",
+      "start": "07:00 UTC 2nd Sunday of March"
+    },
+    {
+      "end": "01:00 UTC last Sunday of October",
+      "id": "qm.dst_rule.uk.v1",
+      "offset_dst_h": 1,
+      "offset_std_h": 0,
+      "start": "01:00 UTC last Sunday of March"
+    }
+  ],
+  "generated_utc": "2026-09-15T00:00:00Z",
+  "host": {
+    "invocation": "python -X utf8 tools/strategy_farm/research/edge_lab_stats.py --hypothesis EDGE-2 --out docs/research/edge_lab/20260915_r4 --now-utc 2026-09-15T00:00:00Z",
+    "python": "3.11.9",
+    "repo_root": "C:/QM/repo"
+  },
+  "hypothesis_id": "EDGE-2",
+  "inputs": [
+    {
+      "bytes": 7289852,
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/NDX.DWX_M15.csv",
+      "period_first_broker": "2018-07-02T01:00:00",
+      "period_first_utc": "2018-07-01T22:00:00Z",
+      "period_last_broker": "2025-12-31T23:45:00",
+      "period_last_utc": "2025-12-31T21:45:00Z",
+      "price_side": "bid",
+      "producer": "SecretMission/EXPORT_DWX_FX_M5.mq5 | EXPORT_DWX_XAU_M5.mq5 (not in repo)",
+      "role": "bars",
+      "rows": 152691,
+      "sha256": "dab877f9914d8390deb5a559e8775c341106b69aaa28212f049bc01a95762cbe",
+      "symbol": "NDX.DWX",
+      "time_base": "broker_naive_epoch (Darwinex NY-close, GMT+2/+3 US-DST)",
+      "timeframe": "M5"
+    },
+    {
+      "bytes": 7804049,
+      "path": "D:/QM/mt5/T_Export/MQL5/Files/SP500.DWX_M15.csv",
+      "period_first_broker": "2018-07-02T01:00:00",
+      "period_first_utc": "2018-07-01T22:00:00Z",
+      "period_last_broker": "2025-12-31T23:45:00",
+      "period_last_utc": "2025-12-31T21:45:00Z",
+      "price_side": "bid",
+      "producer": "SecretMission/EXPORT_DWX_FX_M5.mq5 | EXPORT_DWX_XAU_M5.mq5 (not in repo)",
+      "role": "bars",
+      "rows": 176199,
+      "sha256": "91011a4c8cd66e987324971239dcb8a92a2f217525f284500a52830bba23a6f8",
+      "symbol": "SP500.DWX",
+      "time_base": "broker_naive_epoch (Darwinex NY-close, GMT+2/+3 US-DST)",
+      "timeframe": "M5"
+    },
+    {
+      "bytes": 4372325,
+      "datetime_eet_used": false,
+      "defect_note": "DateTime_UTC displaces a large class of US 08:30-ET releases, and the displacement is NOT a constant: raw USD NFP stamps sit at Thu 19:30Z Apr-Sep and Thu 20:30Z Oct-Mar, so the -17h/-16h split follows a DST rule of its own.  Stage 0 recovers ONE offset per (currency, event) group; Stage 0b then verifies every individual instant against its group's modal home wall-clock time and its own local tickvol peak, and VOIDS the rows the constant misplaces.  Neither stage ever falls back to the raw timestamp and neither re-fits an offset per event",
+      "known_at_utc_available": false,
+      "path": "D:/QM/data/news_calendar/forex_factory_calendar_clean.csv",
+      "period_first": "2015-01-01",
+      "period_last": "2026-09-19",
+      "role": "calendar",
+      "rows": 48831,
+      "sha256": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94",
+      "timestamp_column_used": "DateTime_UTC + Stage-0 calibration offset",
+      "timestamps_calibrated": true
+    },
+    {
+      "bytes": 1595,
+      "hash_note": "sha256 is the on-disk bytes of THIS checkout; sha256_lf is CRLF-normalised and is the value to compare across checkouts",
+      "path": "framework/registry/live_commission.json",
+      "role": "cost_registry",
+      "sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+      "sha256_lf": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197"
+    }
+  ],
+  "out_root": "C:/QM/repo/docs/research/edge_lab/20260915_r4",
+  "outputs": [
+    {
+      "abs_path": "C:/QM/repo/docs/research/edge_lab/20260915_r4/EDGE-2/events.csv",
+      "note": "Per-event table of pre/post range expansion, breakout direction, MFE/MAE and PnL on NDX and SP500 around top-5 US macro events",
+      "path": "EDGE-2/events.csv",
+      "rows": 1219,
+      "sha256": "1388d711444e8304f318dec12bb76b53675c47ff3e02eec347d8e93daf96338c"
+    },
+    {
+      "abs_path": "C:/QM/repo/docs/research/edge_lab/20260915_r4/EDGE-2/summary.json",
+      "note": null,
+      "path": "EDGE-2/summary.json",
+      "rows": null,
+      "sha256": "3b630219fc7ff3470cb2a089b40d383584451cbfa6e79f5551382baebfd6bdb3"
+    }
+  ],
+  "params": {
+    "calib_era_split_year": 2022,
+    "calib_max_offset_min": 1560,
+    "calib_min_obs": 20,
+    "calib_year_hi": 2025,
+    "calib_year_lo": 2018,
+    "edge1_include_gbpjpy": false,
+    "edge3_diagnostics": false,
+    "emit_baseline_rows": true,
+    "surprise_min_history": 12
+  },
+  "period": {
+    "decay_subsample": [
+      "2022-01-01",
+      "2023-12-31"
+    ],
+    "is_end": "2023-12-31",
+    "is_start": "2018-01-01",
+    "oos_end": "2025-12-31",
+    "oos_start": "2024-01-01"
+  },
+  "rule_seal": {
+    "cluster_direction_rule": "primary_event_rank",
+    "cluster_rank_map_sha256": "8f20395da29728d529a90d737d49723a7fd4efefe64050cf0052a5a0bb9ec4ec",
+    "declared_trial_count": 9,
+    "doc_path": "C:/QM/repo/docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md",
+    "doc_resolved_from": "repo_root",
+    "doc_sha256": "cee886356945e38a7b56b482df3bcf3cc3d6b40a0e02b9d1e375d0296e311b37",
+    "doc_sha256_lf": "cee886356945e38a7b56b482df3bcf3cc3d6b40a0e02b9d1e375d0296e311b37",
+    "polarity_map_sha256": null,
+    "primary_cell": {
+      "breakout_window_min": 15,
+      "cost_pts": 1.0,
+      "holding_time_min": 60,
+      "pre_range_min": 60,
+      "stop_midpoint_mult": 0.5,
+      "target_mult": 2.0
+    },
+    "program_doc": {
+      "bytes": 14435,
+      "committed_blob_sha": "9a33734c7947028c2e105d813c56757bd08f9b66",
+      "git_blob_sha": "9a33734c7947028c2e105d813c56757bd08f9b66",
+      "hash_note": "sha256 is the on-disk bytes of THIS checkout and changes with core.autocrlf; sha256_lf is CRLF-normalised.  git_blob_sha is computed through the repo's own filters and is the checkout-independent identity, and read_at_commit pins the revision of the tree the doc was read at -- so a later APPEND to a sealed doc (which is what invalidated the r2 manifest's doc_sha256) is detectable from the manifest alone.",
+      "matches_committed_blob": true,
+      "note": "the sealed doc is the source of the refutation criteria; a null sha256 means the criteria could not be verified against it and no seal may be claimed",
+      "path": "C:/QM/repo/docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md",
+      "path_in_repo": "docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md",
+      "read_at_commit": "0062d3fc583bf5ec4cd82cee362c97d79093f9e4",
+      "repo_root": "C:/QM/repo",
+      "resolved_from": "repo_root",
+      "sha256": "cee886356945e38a7b56b482df3bcf3cc3d6b40a0e02b9d1e375d0296e311b37",
+      "sha256_lf": "cee886356945e38a7b56b482df3bcf3cc3d6b40a0e02b9d1e375d0296e311b37"
+    },
+    "seal_note": "git_dirty=true forces sealed_before_measurement=false",
+    "sealed_before_measurement": false,
+    "trials_schema": "qm.edge-lab.trials.v1"
+  },
+  "schema_version": "qm.edge_lab.manifest.v1"
+}

@@ -20,6 +20,84 @@ alone rather than only from a failed hash comparison.
 
 ---
 
+## 2026-09-15 — r4 (EDGE-2 pre-event index volatility compression & expansion measurement)
+
+Tool `tools/strategy_farm/research/edge_lab_stats.py`,
+tests `tools/strategy_farm/tests/test_edge_lab_stats.py` — **105 passed**.
+
+Invocation:
+
+```
+python -X utf8 tools/strategy_farm/research/edge_lab_stats.py \
+    --hypothesis EDGE-2 --out docs/research/edge_lab/20260915_r4 \
+    --now-utc 2026-09-15T00:00:00Z
+```
+
+**Overall Verdict: REFUTED.**
+
+Tested hypothesis: EDGE-2 (`docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md §4 EDGE-2`).
+Pre-release volatility compression (60m pre-range) and post-release expansion (60m post-range) on NDX and SP500 around the top-5 US macro events (NFP, CPI, FOMC, Retail Sales, Jobless Claims). Breakout orders at pre-range edges in first 15m; exit at 2x range target, midpoint stop, or 60m time stop; round-trip cost 1.0 index point.
+
+Outputs under `docs/research/edge_lab/20260915_r4/EDGE-2/`:
+- `events.csv` (1,219 event instances across NDX and SP500)
+- `summary.json`
+- `manifest.json`
+
+### Primary Cell Results (IS 2018–2023)
+
+| Symbol | Era | n_events | Mean Ratio | Frac >= 1.8x | Trades | Mean Net PnL (pts) | t-stat | Verdict |
+|---|---|---|---|---|---|---|---|---|
+| `NDX.DWX` | IS | 399 | 2.40x | **47.62 %** | 329 | +10.45 | 3.38 | **REFUTED** |
+| `NDX.DWX` | OOS | 166 | 2.80x | 57.23 % | 145 | +15.42 | 2.50 | SUPPORTED |
+| `SP500.DWX` | IS | 488 | 2.28x | **45.49 %** | 413 | +2.07 | 2.74 | **REFUTED** |
+| `SP500.DWX` | OOS | 166 | 2.84x | 57.83 % | 152 | +2.30 | 1.67 | SUPPORTED |
+
+### Refutation Evidence
+
+1. **Failure of Expansion Consistency Hurdle:** In-sample (2018–2023, n=399 on NDX, n=488 on SP500, meeting n >= 150 floor), only **47.62 %** of NDX events and **45.49 %** of SP500 events achieve a post-release range >= 1.8x the pre-release range. This strictly fails the sealed hurdle of **>= 70 % of events**.
+2. **Breakout Trade Expectancy:** While the breakout trade achieves positive expectancy after 1 pt cost (+10.45 pts on NDX with t=3.38; +2.07 pts on SP500 with t=2.74), the hypothesis is strictly **REFUTED** by the expansion consistency criterion.
+3. **Data Integrity Note:** In accordance with `docs/ops/evidence/2026-09-05_news_calendar_timestamp_defect.md`, timestamps from the ground truth native calendar export (`T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv`) were used to bypass the unresolved 17-hour displacement in the legacy Forex Factory calendar.
+
+---
+
+## 2026-09-15 — r4 (EDGE-4 cross-asset WTI shocks into USDCAD measurement)
+
+Tool `tools/strategy_farm/research/edge_lab_stats.py`,
+tests `tools/strategy_farm/tests/test_edge_lab_stats.py` — **105 passed**.
+
+Invocation:
+
+```
+python -X utf8 tools/strategy_farm/research/edge_lab_stats.py \
+    --hypothesis EDGE-4 --out docs/research/edge_lab/20260915_r4 \
+    --now-utc 2026-09-15T00:00:00Z
+```
+
+**Overall Verdict: REFUTED.**
+
+Tested hypothesis: EDGE-4 (`docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md §4 EDGE-4`).
+Cross-asset lead-lag: WTI crude 15-minute shocks (> 2.0 sigma over rolling 60-day window) transmission into USDCAD forward returns at +5m, +15m, +30m. Sealed refutation criterion: conditional 30-min USDCAD return in the expected direction must have mean >= 0.20 sigma over 2018–2023 with n >= 400 and survive holdout.
+
+Outputs under `docs/research/edge_lab/20260915_r4/EDGE-4/`:
+- `shock_events.csv` (9,402 shock events detected across 2018–2025)
+- `summary.json`
+- `manifest.json`
+
+### Primary Cell Results (IS 2018–2023)
+
+| Symbol Pair | Era | n_shocks | Mean 5m (bp) | Mean 15m (bp) | Mean 30m (bp) | Effect Sigma | t-stat | Verdict |
+|---|---|---|---|---|---|---|---|---|
+| `XTIUSD` -> `USDCAD` | IS | 8,178 | +0.08 | +0.14 | +0.20 | **0.0217** | 1.96 | **REFUTED** |
+| `XTIUSD` -> `USDCAD` | OOS | 1,224 | +0.12 | +0.19 | +0.37 | 0.0618 | 2.16 | SUPPORTED |
+
+### Refutation Evidence
+
+1. **Failure of Effect Magnitude Floor:** In-sample (2018–2023), 8,178 qualifying WTI 15-minute shocks (> 2 sigma) were detected (n >= 400 satisfied). However, the conditional 30-minute forward return in USDCAD is only **+0.20 bp**, yielding an effect size of **0.0217 sigma**.
+2. **Floor Miss:** The observed effect size of 0.0217 sigma misses the sealed refutation floor of **>= 0.20 sigma** by a factor of 9.
+3. **Gross vs Net:** All returns are gross bid-to-bid. Factoring in typical USDCAD spread (0.8–1.0 pip = ~0.6–0.8 bp) completely eliminates the tiny 0.20 bp gross move. Per the sealed falsification criterion, the hypothesis is unequivocally **REFUTED**.
+
+---
+
 ## 2026-09-15 — r4 (EDGE-5 weekend-gap fill measurement)
 
 Tool `tools/strategy_farm/research/edge_lab_stats.py`,

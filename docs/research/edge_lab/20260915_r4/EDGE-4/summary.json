@@ -1,0 +1,46 @@
+{
+  "arms": [
+    {
+      "effect_sigma": 0.0217,
+      "era": "IS",
+      "mean_ret_15m_bp": 0.14,
+      "mean_ret_30m_bp": 0.2,
+      "mean_ret_5m_bp": 0.08,
+      "n_shocks": 8178,
+      "sd_ret_30m_bp": 9.38,
+      "t_stat": 1.96,
+      "verdict": "REFUTED"
+    },
+    {
+      "effect_sigma": 0.0618,
+      "era": "OOS",
+      "mean_ret_15m_bp": 0.19,
+      "mean_ret_30m_bp": 0.37,
+      "mean_ret_5m_bp": 0.12,
+      "n_shocks": 1224,
+      "sd_ret_30m_bp": 5.97,
+      "t_stat": 2.16,
+      "verdict": "SUPPORTED"
+    }
+  ],
+  "generated_utc": "2026-09-15T00:00:00Z",
+  "hypothesis_id": "EDGE-4",
+  "open_gaps": [
+    "M1 resolution is not available in M5 archives; +1m return is unobserved at M5 BID resolution.",
+    "All returns are gross bid-to-bid without spread; adding spread further reduces net expectancy.",
+    "Cross-asset lead-lag effect in IS (0.0217 sigma) fails the 0.20 sigma floor by a factor of 9."
+  ],
+  "primary_cell": {
+    "holding_time_min": 30,
+    "rolling_window_days": 60,
+    "shock_threshold_sigma": 2.0,
+    "stop_loss_atr_mult": 0.5
+  },
+  "refutation_criterion": "conditional 30-min USDCAD return after WTI shocks has the expected sign with mean >= 0.2 sigma (2018-2023, n >= 400) AND survives the 2024-2025 holdout; if fully priced within 1 minute (no lag) -> DEAD",
+  "schema_version": "qm.edge_lab.summary.v1",
+  "symbols": [
+    "XTIUSD.DWX",
+    "USDCAD.DWX"
+  ],
+  "verdict": "REFUTED"
+}

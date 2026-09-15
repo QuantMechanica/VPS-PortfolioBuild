@@ -1,5 +1,13 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 2026-09-15 — EDGE-2 Messung abgeschlossen (REFUTED):**
+> Pre-Release-Volatility-Compression und Post-Release-Expansion auf NDX und SP500 um die Top-5-US-Makroevents über `tools/strategy_farm/research/edge_lab_stats.py --hypothesis EDGE-2` abgeschlossen. Verdict: REFUTED.
+> Zwar ist die mittlere Range-Expansion hoch (NDX 2,40x, SP500 2,28x) und der Breakout-Trade hat positive Netto-Erwartung nach 1 Pt Kosten (NDX +10,45 Pts t=3,38; SP500 +2,07 Pts t=2,74), aber die versiegelte Konsistenz-Hürde (>= 1,8x Expansion in >= 70 % der Events) wird mit 47,62 % (NDX) bzw. 45,49 % (SP500) um über 22 Prozentpunkte verfehlt. Zeitstempel über Native Export `T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv` kalibriert (Umgehung des bekannten 17h-Forex-Factory-Defekts). Tests: 105 passed. Evidence: `docs/ops/evidence/2026-09-15_edge2_indices_range_expansion_measurement.md` und `docs/research/edge_lab/20260915_r4/EDGE-2/`.
+
+> **RESULT 2026-09-15 — EDGE-4 Messung abgeschlossen (REFUTED):**
+> Cross-Asset-Lead-Lag-Messung von WTI-15m-Schocks (>2 Sigma, 60d Rolling Window) in USDCAD über `tools/strategy_farm/research/edge_lab_stats.py --hypothesis EDGE-4` abgeschlossen. Verdict: REFUTED.
+> Bei 8.178 erkannten IS-Schocks (2018–2023) beträgt der bedingte 30-min-Forward-Return in USDCAD im Mittel nur +0,20 bp (Effektstärke 0,0217 Sigma vs. versiegelter Floor >= 0,20 Sigma; um Faktor 9 verfehlt). Typischer USDCAD-Spread (0,8–1,0 Pip) eliminiert den Bruttoeffekt vollständig. Tests: 105 passed. Evidence: `docs/ops/evidence/2026-09-15_edge4_wti_usdcad_shock_measurement.md` und `docs/research/edge_lab/20260915_r4/EDGE-4/`.
+
 > **RESULT 2026-09-15 — EDGE-5 Messung abgeschlossen (DEAD):**
 > Weekend-Gap-Fill-Messung für EURUSD, GBPUSD, USDJPY, AUDUSD über `tools/strategy_farm/research/edge_lab_stats.py --hypothesis EDGE-5`
 > abgeschlossen. Verdict: DEAD. Konditioniertes Subset (5-Tage-Range-Position) scheitert an allen IS-Kriterien (2018–2023):

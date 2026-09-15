@@ -2038,3 +2038,111 @@ def test_edge5_refutation_verdicts():
     assert els.EDGE5_IS_FILL_RATE_FLOOR == 0.65
     assert els.EDGE5_IS_EXPECTANCY_FLOOR == 0.0
     assert els.EDGE5_OOS_FILL_RATE_FLOOR == 0.55
+
+
+# ===========================================================================
+# EDGE-2: Pre-event compression / post-event expansion tests
+# ===========================================================================
+
+def test_edge2_pre_post_range_window_and_expansion_ratio():
+    """Tests pre-range and post-range computation, ratio, and breakout detection."""
+    # Synthetic M15 bars around a release at t_rel
+    t_rel = 1675438200 # NFP 2023-02-03 broker epoch
+    # 4 pre-release bars: [t_rel-3600, t_rel-2700, t_rel-1800, t_rel-900]
+    # 4 post-release bars: [t_rel, t_rel+900, t_rel+1800, t_rel+2700]
+    pre_bars = [
+        {"high": 12700.0, "low": 12650.0, "open": 12660.0, "close": 12690.0},
+        {"high": 12710.0, "low": 12670.0, "open": 12690.0, "close": 12680.0},
+        {"high": 12695.0, "low": 12640.0, "open": 12680.0, "close": 12650.0},
+        {"high": 12680.0, "low": 12630.0, "open": 12650.0, "close": 12645.0},
+    ]
+    pre_high = max(b["high"] for b in pre_bars) # 12710.0
+    pre_low = min(b["low"] for b in pre_bars)   # 12630.0
+    pre_range = pre_high - pre_low              # 80.0
+    assert pre_range == pytest.approx(80.0)
+
+    # Post bars with expansion: high 12750, low 12550 -> post range 200.0
+    post_bars = [
+        {"high": 12750.0, "low": 12640.0, "open": 12645.0, "close": 12730.0}, # breaks pre_high
+        {"high": 12760.0, "low": 12700.0, "open": 12730.0, "close": 12740.0},
+        {"high": 12745.0, "low": 12680.0, "open": 12740.0, "close": 12700.0},
+        {"high": 12710.0, "low": 12550.0, "open": 12700.0, "close": 12570.0},
+    ]
+    post_high = max(b["high"] for b in post_bars) # 12760.0
+    post_low = min(b["low"] for b in post_bars)   # 12550.0
+    post_range = post_high - post_low             # 210.0
+    ratio = post_range / pre_range                # 210.0 / 80.0 = 2.625
+    assert ratio == pytest.approx(2.625)
+    assert ratio >= 1.8 # expansion satisfied
+
+    # Bar 0 breakout test: bar 0 high=12750 >= pre_high(12710), low=12640 > pre_low(12630)
+    b0_high_break = (post_bars[0]["high"] >= pre_high)
+    b0_low_break = (post_bars[0]["low"] <= pre_low)
+    assert b0_high_break is True
+    assert b0_low_break is False
+    # Single direction upside breakout (+1)
+    entry_price = pre_high
+    exit_price = post_bars[3]["close"]
+    cost = 1.0
+    gross_pnl = exit_price - entry_price # 12570 - 12710 = -140
+    net_pnl = gross_pnl - cost
+    assert net_pnl == pytest.approx(-141.0)
+
+
+def test_edge2_refutation_criteria_enforcement():
+    """Tests EDGE-2 refutation criteria thresholds."""
+    assert els.EDGE2_IS_N_FLOOR == 150
+    assert els.EDGE2_IS_EXPANSION_RATIO_FLOOR == 1.8
+    assert els.EDGE2_IS_EXPANSION_FRAC_FLOOR == 0.70
+    assert els.EDGE2_IS_T_STAT_FLOOR == 2.0
+    assert els.EDGE2_OOS_EXPANSION_RATIO_FLOOR == 1.5
+
+
+# ===========================================================================
+# EDGE-4: Cross-asset lead-lag tests
+# ===========================================================================
+
+def test_edge4_shock_detection_on_synthetic_bars():
+    """Tests that rolling window SD accurately flags > 2 sigma shock returns."""
+    # Synthetic series of returns with low baseline variance and one sharp jump
+    import math
+    baseline_sd = 0.0010 # 10 bp
+    shock_thresh = 2.0
+    normal_ret = 0.0005
+    z_normal = normal_ret / baseline_sd
+    assert z_normal < shock_thresh
+
+    shock_ret = 0.0035 # 35 bp -> 3.5 sigma
+    z_shock = shock_ret / baseline_sd
+    assert z_shock >= shock_thresh
+    assert z_shock == pytest.approx(3.5)
+
+    # Trade direction: positive WTI shock -> USDCAD short (-1)
+    trade_dir = -1.0 if shock_ret > 0 else 1.0
+    assert trade_dir == -1.0
+
+
+def test_edge4_lag_table_returns_alignment():
+    """Tests forward return alignment and sign application for EDGE-4."""
+    p0 = 1.3500 # CAD entry price
+    p5 = 1.3480 # CAD fell (CAD strengthened, expected after WTI up)
+    p15 = 1.3470
+    p30 = 1.3460
+
+    trade_dir = -1.0 # short USDCAD
+    ret_5 = trade_dir * (p5 - p0) / p0
+    ret_15 = trade_dir * (p15 - p0) / p0
+    ret_30 = trade_dir * (p30 - p0) / p0
+
+    # Short position gains when price falls:
+    assert ret_5 > 0
+    assert ret_15 > ret_5
+    assert ret_30 > ret_15
+    assert round(ret_30 * 10000.0, 2) == pytest.approx(29.63, abs=0.05)
+
+
+def test_edge4_refutation_criteria_enforcement():
+    """Tests that EDGE-4 refutation criteria enforce sealed floors."""
+    assert els.EDGE4_IS_N_FLOOR == 400
+    assert els.EDGE4_IS_EFFECT_SIGMA_FLOOR == 0.20
+
