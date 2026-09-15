@@ -3,6 +3,7 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonwExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe",
     [int]$EveryMinutes = 60,
+    [string]$TaskUser = "qm-admin",
     [switch]$RunNow,
     [switch]$Uninstall
 )
@@ -35,7 +36,7 @@ $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 $actions = @(
     # Lineage map first (follow-up directive s9): the wiki build renders per-node relationships from it.
-    New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$RepoRoot	ools\strategy_farm\lineage_map.py`" --summary" -WorkingDirectory $RepoRoot
+    New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"${RepoRoot}\tools\strategy_farm\lineage_map.py`" --summary" -WorkingDirectory $RepoRoot
     New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$tool`" build" -WorkingDirectory $RepoRoot
     New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$tool`" index --init-root-index" -WorkingDirectory $RepoRoot
     New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$tool`" lint" -WorkingDirectory $RepoRoot
@@ -43,7 +44,10 @@ $actions = @(
 $settings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew `
     -ExecutionTimeLimit (New-TimeSpan -Minutes 30) -StartWhenAvailable `
     -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+# 2026-09-15 incident repair: SYSTEM has no G: drive mapping (Google Drive File Stream is
+# per-user), so this task died instantly on the vault write. Run as the interactive
+# vault-owning user instead (same pattern as QM_Live_MT5_SessionSupervisor).
+$principal = New-ScheduledTaskPrincipal -UserId $TaskUser -LogonType Interactive -RunLevel Highest
 Register-ScheduledTask -TaskName $taskName -Action $actions -Trigger $trigger `
     -Settings $settings -Principal $principal -Force | Out-Null
 Write-Output "REGISTERED $taskName every $EveryMinutes min, first at $startBoundary"
