@@ -1,6 +1,6 @@
 {
   "schema": "qm.agent-chain.v1",
-  "_doc": "Creator -> Critic -> Formatter prompt chain with a cross-vendor critic (OWNER 2026-09-15). The critic for a deliverable is resolved from a DIFFERENT vendor than the creator whenever a seat is available; same-vendor fallbacks are allowed only as the last candidate and are recorded as cross_vendor=false in the receipt. Seats: claude (Claude Code headless, models opus/sonnet/haiku), codex (Codex CLI, tiers from agent_quota_gate.v1.json), agy (Antigravity, research-only backup: hallucinates, never the sole critic unless allow_agy is set on the spec). Kill switch: env QM_AGENT_CHAIN=0.",
+  "_doc": "Creator -> Critic -> Formatter prompt chain with a cross-vendor critic (OWNER 2026-09-15). The critic for a deliverable is resolved from a DIFFERENT vendor than the creator whenever a seat is available; same-vendor fallbacks are allowed only as the last candidate and are recorded as cross_vendor=false in the receipt. Seats: claude (Claude Code headless, models opus/sonnet/haiku), codex (Codex CLI, tiers from agent_quota_gate.v1.json), agy (Antigravity, research-only backup: hallucinates, never the sole critic unless allow_agy is set on the spec), kimi (Kimi Code CLI via kimi_adapter.py, research-only: a valid CRITIC for non-kimi creators, NEVER the creator's critic when the creator is kimi and NEVER a formatter; gated by KIMI_LOW_QUOTA.flag state EXHAUSTED, and in CONSERVE narrowed to a critic for a non-kimi creator per kimi_governor.allowed_capabilities). Kill switch: env QM_AGENT_CHAIN=0.",
   "vendors": {
     "claude": {
       "models": {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku"},
@@ -15,6 +15,12 @@
     },
     "agy": {
       "models": {"default": ""}
+    },
+    "kimi": {
+      "models": {"default": "kimi-code/kimi-for-coding", "k3": "kimi-code/k3", "k3-256k": "kimi-code/k3-256k"},
+      "read_only_tools": ["Read", "Grep", "Glob"],
+      "disallowed_tools": ["Bash", "PowerShell", "Edit", "Write", "MultiEdit", "NotebookEdit", "WebFetch", "WebSearch", "Agent", "Workflow", "Artifact"],
+      "_posture_doc": "Kimi exposes no --tools/--disallowedTools/--permission-mode flag (audit kimi_cli.md); the read-only critic posture is enforced by kimi_adapter's --agent-file allowlist (omits Write/Edit/Bash) plus a scratch-only cwd and the before/after repo+D:/QM hash guard (KIMI_INTEGRATION_ARCHITECTURE.md §3.5), NOT by these fields. They are recorded for parity/documentation only. Models per role are looked up here; the adapter resolves by capability when a seat maps to no model. The kimi CLI/credential paths default to kimi_adapter's pins; override 'bin'/'credential_file' here only for tests."
     }
   },
   "roles": {
@@ -23,25 +29,33 @@
     },
     "critic": {
       "cross_vendor_required": true,
+      "_kimi_invariant_doc": "by_creator_vendor.kimi lists ONLY non-kimi seats: a Kimi-authored deliverable is never critiqued by Kimi (directive §7, KIMI_INTEGRATION_ARCHITECTURE.md §6). agent_chain.open_critic_seats asserts this in code (skips a kimi seat for a kimi creator with reason kimi_creator_never_kimi_critic) even if this table were edited, and the invariant is never relaxed by quota state.",
       "by_creator_vendor": {
         "claude": [
           {"vendor": "codex", "model": "terra", "effort": "medium"},
+          {"vendor": "kimi", "model": "k3"},
           {"vendor": "claude", "model": "opus", "note": "same-vendor fallback: different model, cross_vendor=false"},
           {"vendor": "agy", "model": "default", "note": "third lens: headless agy print-timed-out (15 min, no answer file) on a 27 KB audit 2026-09-15 07:52Z; stays last until it proves itself"}
         ],
         "codex": [
           {"vendor": "claude", "model": "sonnet"},
-          {"vendor": "claude", "model": "opus"},
-          {"vendor": "agy", "model": "default"}
+          {"vendor": "kimi", "model": "k3"},
+          {"vendor": "claude", "model": "opus"}
         ],
         "agy": [
           {"vendor": "claude", "model": "sonnet"},
+          {"vendor": "kimi", "model": "k3"},
           {"vendor": "codex", "model": "terra", "effort": "medium"}
+        ],
+        "kimi": [
+          {"vendor": "claude", "model": "sonnet"},
+          {"vendor": "codex", "model": "terra", "effort": "medium"},
+          {"vendor": "agy", "model": "default", "note": "third lens; same agy rationale as the claude table"}
         ],
         "unknown": [
           {"vendor": "codex", "model": "terra", "effort": "medium"},
-          {"vendor": "claude", "model": "opus"},
-          {"vendor": "agy", "model": "default"}
+          {"vendor": "kimi", "model": "k3"},
+          {"vendor": "claude", "model": "opus"}
         ]
       }
     },
@@ -61,7 +75,8 @@
     "codex_budget_line": true,
     "claude_disabled_flag": "D:/QM/strategy_farm/CLAUDE_DISABLED.flag",
     "codex_low_tokens_flag": "D:/QM/strategy_farm/CODEX_LOW_TOKENS.flag",
-    "agy_low_quota_flag": "D:/QM/strategy_farm/AGY_LOW_QUOTA.flag"
+    "agy_low_quota_flag": "D:/QM/strategy_farm/AGY_LOW_QUOTA.flag",
+    "kimi_low_quota_flag": "D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag"
   },
   "paths": {
     "artifact_root": "D:/QM/strategy_farm/artifacts/agent_chain",

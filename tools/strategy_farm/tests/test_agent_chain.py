@@ -55,7 +55,8 @@ def test_resolve_critic_prefers_cross_vendor_and_records_trace() -> None:
     assert seat.vendor == "codex" and cross is True
     selected = [t for t in trace if t.get("selected")]
     assert len(selected) == 1 and selected[0]["seat"].startswith("codex")
-    assert [t.get("fallback") for t in trace] == [False, True, True]  # opus, agy remain as runtime fallbacks
+    # C3: the claude critic table is now [codex, kimi, claude:opus, agy]; kimi/opus/agy are runtime fallbacks.
+    assert [t.get("fallback") for t in trace] == [False, True, True, True]
     seat, cross, _ = ac.resolve_critic("codex", cfg, _open_gate)
     assert seat.vendor == "claude" and cross is True
 
@@ -64,12 +65,14 @@ def test_resolve_critic_falls_back_same_vendor_only_last_and_flags_it() -> None:
     cfg = ac.load_config()
 
     def gate(vendor: str) -> str | None:
-        return "closed" if vendor in {"codex", "agy"} else None
+        # C3: kimi is now a cross-vendor candidate for a claude creator; close it too so the
+        # same-vendor claude:opus is exercised as the last resort.
+        return "closed" if vendor in {"codex", "kimi", "agy"} else None
 
     seat, cross, trace = ac.resolve_critic("claude", cfg, gate)
     assert seat.vendor == "claude" and seat.model == "opus"
     assert cross is False
-    assert [t.get("skipped") for t in trace if t.get("skipped")] == ["closed", "closed"]  # codex + agy gated
+    assert [t.get("skipped") for t in trace if t.get("skipped")] == ["closed", "closed", "closed"]  # codex + kimi + agy gated
     assert [t["seat"] for t in trace if t.get("selected")] == ["claude:opus"]
 
 
@@ -77,7 +80,9 @@ def test_resolve_critic_respects_no_agy() -> None:
     cfg = ac.load_config()
 
     def gate(vendor: str) -> str | None:
-        return "closed" if vendor == "codex" else None
+        # C3: close kimi too (now a cross-vendor candidate) so the same-vendor claude:opus is
+        # the last resort and agy is proven to be excluded by allow_agy=False, not merely gated.
+        return "closed" if vendor in {"codex", "kimi"} else None
 
     seat, cross, trace = ac.resolve_critic("claude", cfg, gate, allow_agy=False)
     assert seat.vendor == "claude" and cross is False
@@ -167,19 +172,21 @@ def test_revision_round_is_bounded(cfg: dict, fake_env: dict) -> None:
 
 
 def test_unparsed_critic_falls_back_to_next_open_seat_once(cfg: dict, fake_env: dict) -> None:
-    # creator = claude lane -> candidates codex, claude:opus, agy; codex returns prose only
+    # C3: creator = claude lane -> candidates [codex, kimi, claude:opus, agy]; codex (primary)
+    # returns prose only, so the one-shot fallback is the next candidate, kimi (cross-vendor).
     env = {**fake_env, "QM_AGENT_CHAIN_FAKE_UNPARSED_VENDORS": "codex"}
     spec = {"kind": "critique", "task": "t", "existing_artifact": {"vendor": "claude", "model": "sonnet", "text": "delivered"}}
     receipt = ac.run_chain(spec, apply=True, cfg=cfg, environ=env)
     roles = [(s["role"], s["status"], (s.get("seat") or {}).get("vendor")) for s in receipt["stages"]]
-    assert roles == [("creator", "reused", "claude"), ("critic", "unparsed", "codex"), ("critic", "ok", "claude"), ("formatter", "ok", "claude")]
+    assert roles == [("creator", "reused", "claude"), ("critic", "unparsed", "codex"), ("critic", "ok", "kimi"), ("formatter", "ok", "claude")]
     assert receipt["critic_fallback_used"] is True
-    assert receipt["critic_seat_final"]["vendor"] == "claude" and receipt["stages"][2]["cross_vendor"] is False
+    assert receipt["critic_seat_final"]["vendor"] == "kimi" and receipt["stages"][2]["cross_vendor"] is True
     assert receipt["status"] == "ok" and receipt["critic_verdict"] == "GAPS"
 
 
 def test_unparsed_critic_without_fallback_skips_formatter(cfg: dict, fake_env: dict) -> None:
-    env = {**fake_env, "QM_AGENT_CHAIN_FAKE_UNPARSED_VENDORS": "codex,claude,agy"}
+    # C3: both the primary (codex) and the one-shot fallback (kimi) must fail to leave no critic.
+    env = {**fake_env, "QM_AGENT_CHAIN_FAKE_UNPARSED_VENDORS": "codex,kimi,claude,agy"}
     spec = {"kind": "critique", "task": "t", "existing_artifact": {"vendor": "claude", "model": "sonnet", "text": "delivered"}}
     receipt = ac.run_chain(spec, apply=True, cfg=cfg, environ=env)
     statuses = [(s["role"], s["status"]) for s in receipt["stages"]]

@@ -65,7 +65,8 @@ AGENT_USER_HOME = Path(r"C:\Users\Administrator")
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex"))
 RECEIPT_SCHEMA = "qm.agent-chain.receipt.v1"
 CRITIC_SCHEMA = "qm.agent-chain.critic.v1"
-VENDOR_ALIASES = {"gemini": "agy", "antigravity": "agy", "anthropic": "claude", "openai": "codex"}
+VENDOR_ALIASES = {"gemini": "agy", "antigravity": "agy", "anthropic": "claude", "openai": "codex",
+                  "kimi": "kimi", "moonshot": "kimi", "k2": "kimi"}
 
 
 class ChainError(Exception):
@@ -103,6 +104,7 @@ class StageResult:
     duration_s: float | None = None
     cost_usd: float | None = None
     usage: dict[str, Any] | None = None
+    cli_version: str | None = None
     cross_vendor: bool | None = None
     reason: str = ""
     text: str = dataclasses.field(default="", repr=False)
@@ -155,7 +157,7 @@ def fake_mode(environ: dict[str, str] | None = None) -> bool:
 def normalize_vendor(value: str | None) -> str:
     v = str(value or "").strip().lower()
     v = VENDOR_ALIASES.get(v, v)
-    return v if v in {"claude", "codex", "agy"} else "unknown"
+    return v if v in {"claude", "codex", "agy", "kimi"} else "unknown"
 
 
 def _write_text(path: Path, text: str) -> None:
@@ -169,14 +171,84 @@ def _write_json(path: Path, data: Any) -> None:
 
 # --------------------------------------------------------------------------- gates
 
+def _read_kimi_flag_state(flag_path: Path) -> str | None:
+    """State carried by KIMI_LOW_QUOTA.flag: 'EXHAUSTED' | 'CONSERVE' | None (absent).
+
+    Tolerant of three flag bodies so it works with the current governor and a future one:
+    a JSON object with a ``state`` field; ``key=value`` lines (kimi_governor's format)
+    carrying a ``state=``; or the governor's ``MANAGED_BY``-only body, which the governor
+    today writes ONLY on EXHAUSTED. Any present-but-ambiguous flag fails closed to
+    EXHAUSTED (the flag is a hard lane-disable, so presence must never widen access)."""
+    try:
+        raw = flag_path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    if not raw:
+        return "EXHAUSTED"
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            st = str(obj.get("state") or "").upper()
+            return st if st in {"EXHAUSTED", "CONSERVE"} else "EXHAUSTED"
+    except ValueError:
+        pass
+    state = None
+    for line in raw.splitlines():
+        key, _, value = line.partition("=")
+        if key.strip().lower() == "state":
+            state = value.strip().upper()
+    return state if state in {"EXHAUSTED", "CONSERVE"} else "EXHAUSTED"
+
+
+def _kimi_cli_and_cred(cfg: dict[str, Any]) -> tuple[Path | None, Path | None]:
+    """The Kimi CLI binary and OAuth credential file the chain fails closed on. A cfg
+    override (``vendors.kimi.bin`` / ``vendors.kimi.credential_file``) wins for tests;
+    otherwise the kimi_adapter's pinned locations are used. The credential PATH only is
+    ever read here - never its contents."""
+    kv = (cfg.get("vendors") or {}).get("kimi") or {}
+    bin_path = kv.get("bin")
+    cred_path = kv.get("credential_file")
+    if bin_path is None or cred_path is None:
+        try:
+            sys.path.insert(0, str(Path(__file__).parent))
+            import kimi_adapter  # type: ignore
+
+            kcfg = kimi_adapter.load_config()
+            if bin_path is None:
+                bin_path = kcfg.get("bin") or str(kimi_adapter.KIMI_BIN)
+            if cred_path is None:
+                cred_path = kcfg.get("credential_file")
+        except Exception:  # noqa: BLE001 - a missing adapter must not crash the gate
+            pass
+    return (Path(bin_path) if bin_path else None, Path(cred_path) if cred_path else None)
+
+
+def _kimi_conserve_allowed_capabilities() -> list[str]:
+    """The governor's CONSERVE capability allow-list (the single source of truth)."""
+    try:
+        sys.path.insert(0, str(Path(__file__).parent))
+        import kimi_governor  # type: ignore
+
+        return list(kimi_governor.allowed_capabilities("CONSERVE", kimi_governor.governor_config()) or [])
+    except Exception:  # noqa: BLE001 - fall back to the documented default set
+        return ["edge_discovery", "hypothesis_authoring", "cross_experiment_analysis", "research_critic"]
+
+
 def vendor_gate(
     vendor: str,
     cfg: dict[str, Any],
     environ: dict[str, str] | None = None,
     *,
     budget_eval: Callable[[], dict[str, Any]] | None = None,
+    role: str | None = None,
+    creator_vendor: str | None = None,
 ) -> str | None:
-    """Return the reason a vendor is unavailable right now, or None when open."""
+    """Return the reason a vendor is unavailable right now, or None when open.
+
+    ``role`` and ``creator_vendor`` are consulted only for the ``kimi`` branch: in
+    CONSERVE the Kimi subscription is narrowed to a read-only critic for a non-Kimi
+    creator (the by_creator_vendor.kimi=non-kimi invariant means a Kimi creator is never
+    critiqued by Kimi), matching kimi_governor.allowed_capabilities."""
     env = os.environ if environ is None else environ
     if kill_switch_active(env):
         return "kill_switch_QM_AGENT_CHAIN=0"
@@ -210,6 +282,27 @@ def vendor_gate(
             return "agy_low_quota_flag"
         if not fake_mode(env) and not AGY_BIN.exists() and shutil.which("agy") is None:
             return "agy_missing"
+        return None
+    if vendor == "kimi":
+        flag = Path(str(gates.get("kimi_low_quota_flag") or ""))
+        state = _read_kimi_flag_state(flag) if str(flag) and flag.exists() else None
+        if state == "EXHAUSTED":
+            return "kimi_low_quota_flag:EXHAUSTED"
+        # CLI + credential fail closed (kimi_adapter's pins), never in fake mode.
+        if not fake_mode(env):
+            bin_path, cred_path = _kimi_cli_and_cred(cfg)
+            if bin_path is None or not bin_path.exists():
+                return "kimi_cli_missing"
+            if cred_path is not None and str(cred_path) and not cred_path.exists():
+                return "kimi_credential_missing"
+        if state == "CONSERVE":
+            # Only a read-only critic for a NON-kimi creator survives CONSERVE; generic
+            # creator/formatter Kimi work falls back to cheaper lanes so a fixed one-month
+            # subscription is not drained on low-value volume.
+            allowed = _kimi_conserve_allowed_capabilities()
+            if role == "critic" and normalize_vendor(creator_vendor) != "kimi" and "research_critic" in allowed:
+                return None
+            return f"kimi_conserve:role_{role or 'unknown'}_not_allowed"
         return None
     return f"unknown_vendor:{vendor}"
 
@@ -257,15 +350,27 @@ def open_critic_seats(
     open_seats: list[tuple[Seat, bool]] = []
     for entry in candidates:
         seat = _seat_from(entry)
+        # HARD INVARIANT (never relaxed by a config edit or quota state): a Kimi-authored
+        # deliverable is never critiqued by Kimi. Skip a kimi seat for a kimi creator even
+        # if the table were tampered to list it.
+        if creator_vendor == "kimi" and seat.vendor == "kimi":
+            trace.append({"seat": seat.label(), "skipped": "kimi_creator_never_kimi_critic",
+                          "routing_reason": "kimi_creator_never_kimi_critic"})
+            continue
         if seat.vendor == "agy" and not allow_agy:
-            trace.append({"seat": seat.label(), "skipped": "agy_not_allowed_for_this_spec"})
+            trace.append({"seat": seat.label(), "skipped": "agy_not_allowed_for_this_spec",
+                          "routing_reason": "agy_not_allowed_for_this_spec"})
             continue
         reason = gate(seat.vendor)
         if reason:
-            trace.append({"seat": seat.label(), "skipped": reason})
+            trace.append({"seat": seat.label(), "skipped": reason, "routing_reason": reason})
             continue
         cross = seat.vendor != creator_vendor
-        trace.append({"seat": seat.label(), "selected": not open_seats, "fallback": bool(open_seats), "cross_vendor": cross})
+        selected = not open_seats
+        trace.append({"seat": seat.label(), "selected": selected, "fallback": bool(open_seats),
+                      "cross_vendor": cross,
+                      "routing_reason": (f"selected cross_vendor={cross}" if selected
+                                         else f"runtime_fallback cross_vendor={cross}")})
         open_seats.append((seat, cross))
     return open_seats, trace
 
@@ -277,11 +382,17 @@ def resolve_formatter(cfg: dict[str, Any], gate: GateFn) -> tuple[Seat, list[dic
         if not entry:
             continue
         seat = _seat_from(entry)
+        # Kimi is NEVER a formatter (Haiku stays). Skip a kimi formatter entry even if the
+        # config were tampered to list it.
+        if seat.vendor == "kimi":
+            trace.append({"seat": seat.label(), "skipped": "formatter_never_kimi",
+                          "routing_reason": "formatter_never_kimi"})
+            continue
         reason = gate(seat.vendor)
         if reason:
-            trace.append({"seat": seat.label(), "skipped": reason})
+            trace.append({"seat": seat.label(), "skipped": reason, "routing_reason": reason})
             continue
-        trace.append({"seat": seat.label(), "selected": True})
+        trace.append({"seat": seat.label(), "selected": True, "routing_reason": "selected"})
         return seat, trace
     raise ChainGated(f"no formatter seat available: {trace}")
 
@@ -390,6 +501,10 @@ def _model_id(seat: Seat, cfg: dict[str, Any]) -> str:
     if seat.vendor == "claude":
         models = (vendors.get("claude") or {}).get("models") or {}
         return str(models.get(seat.model) or seat.model)
+    if seat.vendor == "kimi":
+        # Empty when the seat maps to no configured model -> kimi_adapter resolves by capability.
+        models = (vendors.get("kimi") or {}).get("models") or {}
+        return str(models.get(seat.model) or "")
     return ""
 
 
@@ -591,6 +706,13 @@ def _fake_adapter(seat: Seat, role: str, prompt: str, environ: dict[str, str] | 
     env = os.environ if environ is None else environ
     override = env.get(f"{FAKE_ENV}_{role.upper()}_FILE", "")
     unparsed_vendors = {v.strip() for v in env.get(f"{FAKE_ENV}_UNPARSED_VENDORS", "").split(",") if v.strip()}
+    # Simulate a critic that mutated the repo/D:/QM (kimi_adapter's critic_wrote status): the
+    # chain must treat it like an unparsed critic (failed attempt, no formatter).
+    critic_wrote_vendors = {v.strip() for v in env.get(f"{FAKE_ENV}_CRITIC_WROTE_VENDORS", "").split(",") if v.strip()}
+    if role == "critic" and seat.vendor in critic_wrote_vendors:
+        return {"rc": 0, "status": "critic_wrote", "text": "", "cmd": ["fake", seat.label(), role],
+                "duration_s": 0.0, "cost_usd": None, "usage": None, "cli_version": "fake",
+                "reason": "critic_mutated_repo"}
     if override and Path(override).exists():
         text = Path(override).read_text(encoding="utf-8")
     elif role == "critic" and seat.vendor in unparsed_vendors:
@@ -614,6 +736,64 @@ def _fake_adapter(seat: Seat, role: str, prompt: str, environ: dict[str, str] | 
             "cost_usd": 0.0}
 
 
+def _run_kimi(
+    seat: Seat,
+    prompt: str,
+    *,
+    cfg: dict[str, Any],
+    out_dir: Path,
+    stage_name: str,
+    role: str,
+    chain_id: str,
+    cwd: Path,
+    add_dirs: list[Path],
+    timeout: int,
+    environ: dict[str, str] | None,
+) -> dict[str, Any]:
+    """Route a chain stage to Kimi through the single choke point kimi_adapter.run_kimi.
+
+    The adapter owns the pinned CLI, the machine-wide single-flight lock, stream-json
+    parsing, the read-only critic ``--agent-file`` posture, the before/after repo-mutation
+    guard and the append-only usage ledger. Here we only translate the stage contract:
+    capability per role, model from config (else the adapter resolves by capability), a
+    scratch cwd with read access to the repo + out_dir, and the result mapping. Cost is
+    never invented (Kimi is a subscription); usage and cli_version pass through."""
+    sys.path.insert(0, str(Path(__file__).parent))
+    import kimi_adapter  # type: ignore  # lazy: agent_chain stays importable without it
+
+    capability = {"critic": "research_critic", "creator": "hypothesis_authoring",
+                  "formatter": "summary"}.get(role, "research")
+    model = _model_id(seat, cfg) or None  # config vendors.kimi.models lookup; None => adapter resolves
+    scratch = out_dir / f"{stage_name}_kimi_scratch"
+    scratch.mkdir(parents=True, exist_ok=True)
+    started = time.monotonic()
+    kr = kimi_adapter.run_kimi(
+        prompt, role=role, capability=capability, task_id=str(chain_id), model=model,
+        cwd=scratch, add_dirs=[REPO_ROOT, out_dir], timeout_s=int(timeout),
+        out_dir=out_dir, environ=environ,
+    )
+    # ok / timeout / critic_wrote map through; every other adapter class (auth_expired,
+    # rate_limited, malformed_output, cli_missing, error) collapses to a stage error.
+    status = {"ok": "ok", "timeout": "timeout", "critic_wrote": "critic_wrote"}.get(
+        str(kr.get("status")), "error")
+    reason = str(kr.get("error") or "")
+    if status == "error" and not reason:
+        reason = str(kr.get("status") or "error")
+    return {
+        "rc": kr.get("rc"),
+        "status": status,
+        "text": str(kr.get("text") or ""),
+        "cmd": kr.get("cmd") or ["kimi", seat.label(), role],
+        "duration_s": kr.get("latency_s", time.monotonic() - started),
+        "cost_usd": None,           # Kimi is a subscription; never invent a USD cost
+        "usage": kr.get("usage"),   # passthrough (the adapter never invents it either)
+        "cli_version": kr.get("cli_version"),
+        "reason": reason,
+        "log_path": kr.get("log_path"),
+        "raw_path": kr.get("raw_path"),
+    }
+
+
 def run_seat(
     seat: Seat,
     role: str,
@@ -626,6 +806,7 @@ def run_seat(
     add_dirs: list[Path],
     timeout: int,
     environ: dict[str, str] | None = None,
+    chain_id: str | None = None,
 ) -> dict[str, Any]:
     prompt_path = out_dir / f"{stage_name}_prompt.md"
     _write_text(prompt_path, prompt)
@@ -644,9 +825,13 @@ def run_seat(
         elif seat.vendor == "agy":
             result = _run_agy(seat, prompt, cfg=cfg, cwd=cwd, add_dirs=add_dirs, timeout=timeout,
                               log_path=log_path, prompt_path=prompt_path, out_path=out_path, environ=environ)
+        elif seat.vendor == "kimi":
+            result = _run_kimi(seat, prompt, cfg=cfg, out_dir=out_dir, stage_name=stage_name, role=role,
+                               chain_id=str(chain_id or out_dir.name), cwd=cwd, add_dirs=add_dirs,
+                               timeout=timeout, environ=environ)
         else:
             raise ChainError(f"unsupported vendor {seat.vendor}")
-        result["log_path"] = str(log_path)
+        result.setdefault("log_path", str(log_path))  # keep the adapter's own log path when it set one
     result["prompt_path"] = str(prompt_path)
     return result
 
@@ -698,6 +883,7 @@ def _stage_from(role: str, seat: Seat | None, result: dict[str, Any], out_dir: P
         duration_s=(round(float(result["duration_s"]), 3) if result.get("duration_s") is not None else None),
         cost_usd=result.get("cost_usd"),
         usage=result.get("usage"),
+        cli_version=result.get("cli_version"),
         cross_vendor=cross_vendor,
         reason=str(result.get("reason") or ""),
         text=text,
@@ -730,7 +916,13 @@ def run_chain(
 ) -> dict[str, Any]:
     cfg = cfg or load_config()
     env = os.environ if environ is None else environ
-    gate = gate or (lambda vendor: vendor_gate(vendor, cfg, env))
+    # Role-aware default gates: only the kimi branch of vendor_gate consults role/creator,
+    # and only under CONSERVE, so claude/codex/agy resolution is unchanged. An injected
+    # gate (tests) is honoured verbatim for every role.
+    def _role_gate(role_name: str, creator_ctx: str | None = None) -> GateFn:
+        if gate is not None:
+            return gate
+        return lambda vendor: vendor_gate(vendor, cfg, env, role=role_name, creator_vendor=creator_ctx)
     limits = cfg.get("limits") or {}
     paths = cfg.get("paths") or {}
     chain_id = str(spec.get("chain_id") or f"{utc_stamp()}_{sha256_text(json.dumps(spec, sort_keys=True))[:8]}")
@@ -770,16 +962,17 @@ def run_chain(
             receipt["seat_trace"]["creator"] = [{"reused_artifact": existing.get("path"), "vendor": creator_vendor,
                                                  "model": existing.get("model")}]
         else:
-            creator_seat, trace = resolve_creator(spec, cfg, gate)
+            creator_seat, trace = resolve_creator(spec, cfg, _role_gate("creator"))
             creator_vendor = creator_seat.vendor
             receipt["seat_trace"]["creator"] = trace
-        critic_candidates, trace = open_critic_seats(creator_vendor, cfg, gate,
+        critic_candidates, trace = open_critic_seats(creator_vendor, cfg,
+                                                      _role_gate("critic", creator_vendor),
                                                       allow_agy=bool(spec.get("allow_agy", True)))
         if not critic_candidates:
             raise ChainGated(f"no critic seat available for creator vendor {creator_vendor!r}: {trace}")
         critic_seat, cross_vendor = critic_candidates[0]
         receipt["seat_trace"]["critic"] = trace
-        formatter_seat, trace = resolve_formatter(cfg, gate)
+        formatter_seat, trace = resolve_formatter(cfg, _role_gate("formatter"))
         receipt["seat_trace"]["formatter"] = trace
     except ChainGated as exc:
         receipt["status"] = "gated"
@@ -818,7 +1011,7 @@ def run_chain(
     else:
         prompt = render("creator", {"task": task, "language": language, "inputs": inputs_text})
         result = run_seat(creator_seat, "creator", prompt, cfg=cfg, out_dir=out_dir, stage_name="stage1_creator",
-                          cwd=cwd, add_dirs=add_dirs, timeout=timeout, environ=environ)
+                          cwd=cwd, add_dirs=add_dirs, timeout=timeout, environ=environ, chain_id=chain_id)
         stage1 = _stage_from("creator", creator_seat, result, out_dir, "stage1_creator")
     receipt["stages"].append(stage1.as_dict())
     if stage1.status not in {"ok", "reused"}:
@@ -848,7 +1041,7 @@ def run_chain(
         for attempt, (seat_try, cross_try) in enumerate(attempt_seats):
             stage_name = ("stage2_critic" if round_no == 1 else f"stage2_critic_round{round_no}") + ("" if attempt == 0 else f"_fallback{attempt}")
             result = run_seat(seat_try, "critic", prompt, cfg=cfg, out_dir=out_dir, stage_name=stage_name,
-                              cwd=cwd, add_dirs=add_dirs, timeout=timeout, environ=environ)
+                              cwd=cwd, add_dirs=add_dirs, timeout=timeout, environ=environ, chain_id=chain_id)
             stage2 = _stage_from("critic", seat_try, result, out_dir, stage_name, cross_vendor=cross_try)
             critic_data = parse_critic_json(stage2.text) if stage2.status == "ok" else None
             if stage2.status == "ok" and critic_data is None:
@@ -873,7 +1066,7 @@ def run_chain(
         prompt = render("creator", {"task": revise_task, "language": language, "inputs": inputs_text})
         result = run_seat(creator_seat, "creator", prompt, cfg=cfg, out_dir=out_dir,
                           stage_name=f"stage1_creator_round{round_no + 1}", cwd=cwd, add_dirs=add_dirs,
-                          timeout=timeout, environ=environ)
+                          timeout=timeout, environ=environ, chain_id=chain_id)
         revised = _stage_from("creator", creator_seat, result, out_dir, f"stage1_creator_round{round_no + 1}")
         receipt["stages"].append(revised.as_dict())
         if revised.status != "ok":
@@ -898,7 +1091,7 @@ def run_chain(
             "creator_output": creator_text, "critic_output": stage2.text,
         })
         result = run_seat(formatter_seat, "formatter", prompt, cfg=cfg, out_dir=out_dir, stage_name="stage3_final",
-                          cwd=cwd, add_dirs=[], timeout=timeout, environ=environ)
+                          cwd=cwd, add_dirs=[], timeout=timeout, environ=environ, chain_id=chain_id)
         stage3 = _stage_from("formatter", formatter_seat, result, out_dir, "stage3_final")
         receipt["stages"].append(stage3.as_dict())
     else:
@@ -906,8 +1099,10 @@ def run_chain(
                              reason="critic_stage_failed")
         receipt["stages"].append(stage3.as_dict())
 
-    # An unparsed critic attempt that a fallback seat superseded does not degrade the chain.
-    statuses = [s["status"] for s in receipt["stages"] if not (s["role"] == "critic" and s["status"] == "unparsed" and critic_data is not None)]
+    # An unparsed / critic_wrote critic attempt that a fallback seat superseded does not degrade
+    # the chain (kimi_adapter's critic_wrote is treated exactly like an unparsed critic).
+    statuses = [s["status"] for s in receipt["stages"]
+                if not (s["role"] == "critic" and s["status"] in {"unparsed", "critic_wrote"} and critic_data is not None)]
     if all(s in {"ok", "reused"} for s in statuses) and critic_data is not None:
         receipt["status"] = "ok"
     elif stage2 is not None and stage2.status == "ok":
