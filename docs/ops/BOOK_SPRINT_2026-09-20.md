@@ -86,3 +86,13 @@ book with the exact remaining OWNER acts.
   longer pending), original opened_epoch kept, pre_drain preserved through `_drain_abandon`, scan prefers the pre-drain
   row; tests + reload. Sonnet lane: 5 more deliveries reviewed and approved (prescreen-skip rule cc33300782 unblocks
   class C; evidence-loss forensics; 13013 refusal; OOS-2026 findings; winsweep compile diagnosis; hygiene batch).
+- **2026-09-15 (Tue, 07:2xZ, daily check)** — overnight: 7 Sonnet-lane deliveries reviewed and APPROVED (purge relaunch
+  verification 350925f3b9 live; card intake prescreen default-OFF; 17 Edge Lab cards reworked, prescreen 18/18 KEEP re-run;
+  QM5_9107 disk-bomb guard 3601a2974d default-OFF, 4 hidden-universe EAs now 44 GB class; Dukascopy P3 fail-closed 0/37 →
+  reconciler boundary fix 867c215a96 → export-side fix c53a2760bb, governed T1 rerun b2c57e7f queued). No factory alert,
+  counter 26/25. NEW OWNER order 06:5xZ: Creator→Critic→Formatter chain with cross-vendor critic → agent_chain.py
+  (f426d249ef), used from today for every REVIEW delivery and for this daily check. Seat state: Codex over the budget line
+  (80.0 % vs 73.2 %, throttle flag) and agy credential EXPIRED (401, OWNER re-login needed) → cross-vendor critic for
+  Claude-lane deliveries falls to Opus (flagged) until Friday. Today's sprint work (unchanged): pre-drain churn fix + reload,
+  chunk 85 + Q08 reruns 21507/20266, Weg 2 dispositions, D4 profile V3 builder, F4 FTMO demo package. Blocker of the day:
+  D4 (profile V3 + controlled T_Live restart plan) — owner Claude; nothing waits on the OWNER except the agy re-login.

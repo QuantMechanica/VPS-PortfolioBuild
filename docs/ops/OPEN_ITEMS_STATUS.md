@@ -4801,3 +4801,16 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 > **Entscheidungsschlange:** (c) Weg 1 fuer die 8 Nicht-41380-Zeilen ist strukturell nicht ausfuehrbar (kein Ledger
 > vorhanden) — Empfehlung: OWNER waehlt jetzt **Weg 2** aus der urspruenglichen Karte (Standalone-Q08 dieser Zeilen
 > `NOT_APPLICABLE` retiren, Bewertung ausschliesslich ueber den Q13/Q14-Programmpfad), da Weg 1 keine Datenbasis hat.
+
+## Addendum 2026-09-15 07:2xZ — Creator→Critic→Formatter chain (OWNER order 06:5xZ)
+
+- DONE: `tools/strategy_farm/agent_chain.py` + config + 3 role prompts + 15 tests + installer + runbook
+  `docs/ops/AGENT_CHAIN_CREATOR_CRITIC_FORMATTER_2026-09-15.md` (commit f426d249ef). Vault annex appended to
+  `02 Org/AI Agent Routing and Role Contracts.md`. Cross-vendor critic, read-only seats, quota gates respected, receipts
+  sha256-bound, never touches agent_tasks/verdicts/repo. Kill switch QM_AGENT_CHAIN=0.
+- OPEN (OWNER): agy credential expired 2026-09-15 05:40Z (HTTP 401) → one interactive agy login on the VPS; until then
+  the Antigravity seat is unavailable for every lane, not only the chain.
+- OPEN (OWNER decision, optional): exempt the critic's Codex calls from the weekly budget line so Claude-lane deliveries get
+  a true cross-vendor critic in throttle weeks (today: Opus fallback, flagged cross_vendor=false).
+- OPEN (Claude): install the 15-min sweep task after the first live critique receipt is verified; first OWNER report via
+  the chain = the sprint daily check 2026-09-15.
