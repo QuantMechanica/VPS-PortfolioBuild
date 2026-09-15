@@ -40,6 +40,15 @@ def _valid_reviewed_source(tmp_path: Path, research_id: str = EXAMPLE_ID) -> tup
     return store, ledger, search
 
 
+def _set_author(store: Path, ledger: Path, author: str, research_id: str = EXAMPLE_ID) -> None:
+    """Rewrite research.json.author and re-seal so the artifact re-anchors."""
+    research_path = store / research_id / rs.RESEARCH_JSON
+    research = json.loads(research_path.read_text(encoding="utf-8"))
+    research["author"] = author
+    research_path.write_text(json.dumps(research, indent=2), encoding="utf-8")
+    rs.seal(research_id, status="reviewed", store_root=store, ledger_path=ledger)
+
+
 # --------------------------------------------------------------------------- #
 # mint / resolve
 # --------------------------------------------------------------------------- #
@@ -235,6 +244,78 @@ def test_edit_after_seal_fails_until_resealed_and_remint_is_append_only(tmp_path
     ledger_after = ledger.read_text(encoding="utf-8").splitlines()
     assert ledger_after[: len(ledger_before)] == ledger_before
     assert len(ledger_after) > len(ledger_before)
+
+
+# --------------------------------------------------------------------------- #
+# Authorized author (directive §37 / OWNER-DEC-CBE-20260915)
+# --------------------------------------------------------------------------- #
+def test_verify_fable_authored_source_passes(tmp_path: Path) -> None:
+    store, ledger, search = _valid_reviewed_source(tmp_path)
+    _set_author(store, ledger, "Fable")
+    result = rs.verify(research_id=EXAMPLE_ID, store_root=store, ledger_path=ledger,
+                       search_ledger_path=search)
+    assert result.ok, result.reasons
+
+
+def test_verify_multi_agent_authored_source_passes(tmp_path: Path) -> None:
+    store, ledger, search = _valid_reviewed_source(tmp_path)
+    _set_author(store, ledger, "multi-agent:Fable+Kimi")
+    result = rs.verify(research_id=EXAMPLE_ID, store_root=store, ledger_path=ledger,
+                       search_ledger_path=search)
+    assert result.ok, result.reasons
+
+
+def test_verify_unauthorized_author_fails_closed(tmp_path: Path) -> None:
+    store, ledger, search = _valid_reviewed_source(tmp_path)
+    _set_author(store, ledger, "Mallory")
+    result = rs.verify(research_id=EXAMPLE_ID, store_root=store, ledger_path=ledger,
+                       search_ledger_path=search)
+    assert not result.ok
+    assert any(r.startswith(rs.REASON_UNAUTHORIZED_AUTHOR) for r in result.reasons)
+
+
+def test_verify_author_without_artifact_still_fails(tmp_path: Path) -> None:
+    # A card naming an author but no resolvable artifact -> NOT_FOUND (fail closed).
+    store, ledger, search = _store_and_ledger(tmp_path)
+    fm = {
+        "source_type": "internal_research",
+        "source_id": "QM-RESEARCH-2026-0777",
+        "source_author": "Fable",
+    }
+    result = rs.verify(card_frontmatter=fm, store_root=store, ledger_path=ledger,
+                       search_ledger_path=search)
+    assert not result.ok
+    assert rs.REASON_NOT_FOUND in result.reasons
+
+
+def test_verify_author_config_override(tmp_path: Path) -> None:
+    # An injected config authorizing an otherwise-unknown author is honoured.
+    store, ledger, search = _valid_reviewed_source(tmp_path)
+    _set_author(store, ledger, "Zephyr")
+    config = tmp_path / "research_source.v1.json"
+    config.write_text(
+        json.dumps({"authorized_authors": ["Zephyr"], "multi_agent_prefix": "multi-agent:"}),
+        encoding="utf-8",
+    )
+    result = rs.verify(research_id=EXAMPLE_ID, store_root=store, ledger_path=ledger,
+                       search_ledger_path=search, source_config_path=config)
+    assert result.ok, result.reasons
+
+
+def test_load_authorized_authors_defaults() -> None:
+    authors, prefix = rs.load_authorized_authors()
+    assert {"kimi", "fable", "claude", "codex", "antigravity"} <= authors
+    assert prefix == "multi-agent:"
+
+
+def test_is_authorized_author_cases() -> None:
+    assert rs.is_authorized_author("Fable")
+    assert rs.is_authorized_author("kimi")  # case-insensitive
+    assert rs.is_authorized_author("multi-agent:Fable+Kimi")
+    assert not rs.is_authorized_author("multi-agent:")  # empty collaboration
+    assert not rs.is_authorized_author("Mallory")
+    assert not rs.is_authorized_author("")
+    assert not rs.is_authorized_author(None)
 
 
 def test_verify_cli_exit_codes(tmp_path: Path) -> None:

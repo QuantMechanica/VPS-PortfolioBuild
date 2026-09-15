@@ -1,0 +1,8 @@
+{
+  "schema": "qm.factory-disk-policy.v1",
+  "_doc": "Canonical factory disk-space policy, shared so the same low-water is never hardcoded in two places (OWNER master directive 2026-09-15 continuous-book-evolution §34; OWNER-DEC-CBE-20260915; audit docs/ops/evidence/2026-09-15_continuous_book_evolution/audit/research_disk_guard.md). tester_cache_purge_low_water_gb is the free-space floor the tester-cache purge parks D: at (the live scheduled task QM_StrategyFarm_TesterCachePurge runs -LowWaterGB 60). research/research_env.py reads tester_cache_purge_low_water_gb as its factory-protection floor when research scratch is on the factory drive, so the two can never contradict. Layering invariant (audit R5): worker_disk_min_free_gb <= tester_cache_purge_low_water_gb <= research floor on the factory drive. OWNER-tunable; env override QM_FACTORY_MIN_FREE_GB takes precedence in research_env when set.",
+  "factory_drive": "D:/",
+  "worker_disk_min_free_gb": 40.0,
+  "tester_cache_purge_low_water_gb": 60.0,
+  "research_scratch_min_free_gb": 20.0
+}

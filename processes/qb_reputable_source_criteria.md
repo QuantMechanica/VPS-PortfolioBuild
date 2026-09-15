@@ -206,16 +206,21 @@ and §11.3 (under R4). Append-only; historical evidence unchanged.
 
 ### R1 annex (append under R1)
 
-> **Internal-research sources (annex 2026-09-15).** A QuantMechanica-discovered edge does not
-> require an external human author, book, paper, video or website to satisfy R1. For an internally
-> discovered edge the canonical internal research artifact is the source. R1 PASSES for a card
-> whose single `source_id` is a reserved internal id of the form `QM-RESEARCH-YYYY-NNNN`, provided
-> the card also carries `source_type: internal_research`, `source_author`, `source_model`,
-> `source_artifact: QM-RESEARCH://<id>` (resolvable), `source_hash` (`sha256(source.md)`), and a
-> `research_trial_count` consistent with the research-search ledger — **and the internal-source
-> intake verify passes** (`INTERNAL_RESEARCH_SOURCE_CONTRACT.md` §9.3). `source = Kimi` (or any
-> author name) WITHOUT a resolvable, hash-verified artifact is INVALID and is rejected at intake
-> with reason `INTERNAL_SOURCE_UNRESOLVED`. The durable artifact lives at
+> **Internal-research sources (annex 2026-09-15; author scope generalized 2026-09-15 by
+> OWNER-DEC-CBE-20260915).** A QuantMechanica-discovered edge does not require an external human
+> author, book, paper, video or website to satisfy R1. For an internally discovered edge the
+> canonical internal research artifact is the source, **internally authored by an authorized
+> research agent** (Kimi, Fable, Claude, Codex, Antigravity) or a documented multi-agent
+> collaboration (`multi-agent:<list>`), per `tools/strategy_farm/config/research_source.v1.json`
+> (directive §37). R1 PASSES for a card whose single `source_id` is a reserved internal id of the
+> form `QM-RESEARCH-YYYY-NNNN`, provided the card also carries `source_type: internal_research`,
+> `source_author` (an authorized author), `source_model`, `source_artifact: QM-RESEARCH://<id>`
+> (resolvable), `source_hash` (`sha256(source.md)`), and a `research_trial_count` consistent with
+> the research-search ledger — **and the internal-source intake verify passes**
+> (`INTERNAL_RESEARCH_SOURCE_CONTRACT.md` §9.3, Annex 2026-09-15b). `source_author = <name>` WITHOUT
+> a resolvable, hash-verified artifact is INVALID and is rejected at intake with reason
+> `INTERNAL_SOURCE_UNRESOLVED`; a present-but-unauthorized author fails closed with sub-reason
+> `UNAUTHORIZED_AUTHOR`. The durable artifact lives at
 > `strategy-seeds/sources/QM-RESEARCH-YYYY-NNNN/` and is governed by
 > `docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md`. **External attribution is unchanged:** an
 > external card still requires its verifiable external source exactly as before, on the unchanged

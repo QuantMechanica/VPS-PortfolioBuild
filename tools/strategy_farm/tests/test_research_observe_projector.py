@@ -128,5 +128,7 @@ def test_guard_refuses_live_mutation_lock():
     assert any(r.startswith("MUTATION_LOCK_LIVE") for r in result.reasons)
 
 
-def test_guard_disk_floor_is_80gb():
-    assert research_env.RESEARCH_DISK_MIN_FREE_GB == 80.0
+def test_guard_scratch_floor_is_20gb():
+    # Recalibrated from the flat 80 GB D: floor to a measured 20 GB scratch-volume
+    # floor (OWNER directive 2026-09-15 §34; audit research_disk_guard.md R1).
+    assert research_env.RESEARCH_DISK_MIN_FREE_GB == 20.0

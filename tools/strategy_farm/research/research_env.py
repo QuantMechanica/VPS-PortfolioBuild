@@ -15,12 +15,43 @@ Two responsibilities (design doc sec 2.2, sec 2.3):
 
    * fleet CPU load > the worker ``cpu_high_pause`` threshold
      (``terminal_worker.CPU_MAX_LOAD_PERCENT``), OR
-   * the research output drive has < ``RESEARCH_DISK_MIN_FREE_GB`` (80 GB) free, OR
+   * the *research scratch volume* (the volume that actually hosts research
+     scratch/dataset/cache output) has < ``RESEARCH_DISK_MIN_FREE_GB`` (20 GB)
+     free, OR
+   * research scratch lives on the factory drive (D:) AND D: free has fallen
+     below the tester-cache purge low-water (``TESTER_PURGE_LOW_WATER_GB``,
+     60 GB, read from the shared config so it can never drift from the purge),
+     so research yields to a disk-pressured factory, OR
+   * the scratch volume's free space cannot be measured (unknown/unavailable
+     volume -> fail closed), OR
    * the farm mutation lock shows a *live* owner (a state mutation is in flight).
 
    It also pins research to below-normal OS priority and caps concurrency at
    ``MAX_WORKER_PROCESSES`` (2). Every refusal carries its machine-readable
    reason; this is the gate, not a judgement call.
+
+   **Why the guard was recalibrated (OWNER master directive 2026-09-15 §34,
+   OWNER-DEC-CBE-20260915; audit ``research_disk_guard.md``).** The original flat
+   ``D: < 80 GB`` floor permanently disabled research: the tester-cache purge
+   deliberately parks D: at its 60 GB low-water, so 80 > 60 meant the floor was
+   above the disk's own steady-state operating band and the live guard returned
+   ``DISK_LOW:61.2GB<80.0GB`` on every call. The 80 GB number was not
+   evidence-based -- research's measured D: footprint is ~0.3 GB (the venv,
+   already provisioned) and its dataset output writes to C:
+   (``observe_projector.DEFAULT_OUT_ROOT = C:\\QM\\repo\\artifacts\\research_datasets``,
+   small few-MB CSVs). So the guard now watches the volume research actually
+   uses with a measured floor (``max(measured need ~0.3 GB x 2, 20 GB safety
+   margin)`` = 20 GB), and only imposes the 60 GB factory-yield floor when
+   scratch is on D:. The layering invariant is preserved:
+   ``worker_disk_floor (40) <= purge_low_water (60) <= research floor on D:``.
+
+   Configuration (OWNER/ops-tunable without a code change):
+
+   * ``QM_RESEARCH_SCRATCH`` -- research scratch root (default the current
+     dataset output location on C:); the guard watches its volume.
+   * ``QM_RESEARCH_MIN_FREE_GB`` -- scratch-volume free floor (default 20).
+   * ``QM_FACTORY_MIN_FREE_GB`` -- factory-drive (D:) yield floor (default the
+     shared ``tester_cache_purge_low_water_gb`` = 60).
 """
 
 from __future__ import annotations
@@ -45,10 +76,62 @@ import factory_mutation_lock  # noqa: E402
 
 # --- Guard constants ---------------------------------------------------------
 
-# Research output/state drive free-space floor. The task fixes this at 80 GB
-# (design doc sec 2.3 D6 gate). It stays well above the DISK_MIN_FREE_GB=40 worker
-# floor that already protects backtests, so research yields first.
-RESEARCH_DISK_MIN_FREE_GB = 80.0
+# Shared factory disk-space policy: the tester-cache purge low-water lives in one
+# place (config/factory_disk_policy.v1.json) so research_env and the purge can
+# never disagree on the number.
+_CONFIG_DIR = _SF / "config"
+_FACTORY_DISK_POLICY_PATH = _CONFIG_DIR / "factory_disk_policy.v1.json"
+
+# Fallback if the shared config is missing/unreadable (matches the committed
+# config and the live scheduled task -LowWaterGB value).
+_FALLBACK_TESTER_PURGE_LOW_WATER_GB = 60.0
+
+
+def _load_factory_disk_policy() -> dict[str, Any]:
+    try:
+        return json.loads(_FACTORY_DISK_POLICY_PATH.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def _tester_purge_low_water_gb() -> float:
+    """The factory-drive free-space floor the tester-cache purge parks D: at.
+
+    Single source of truth (config/factory_disk_policy.v1.json); never hardcoded
+    a second time next to the purge. Env ``QM_FACTORY_MIN_FREE_GB`` overrides.
+    """
+    override = os.environ.get(ENV_FACTORY_MIN_FREE_GB)
+    if override is not None:
+        try:
+            return float(override)
+        except (TypeError, ValueError):
+            pass
+    policy = _load_factory_disk_policy()
+    value = policy.get("tester_cache_purge_low_water_gb")
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return _FALLBACK_TESTER_PURGE_LOW_WATER_GB
+
+
+# Research scratch-volume free-space floor (GB). Recalibrated from a measured
+# need (~0.3 GB venv, small CSV dataset output) to max(need x2, 20 GB margin) =
+# 20 GB. This is NOT a gate threshold or contract criterion; it is an
+# infrastructure yield latch (OWNER directive 2026-09-15 §34).
+RESEARCH_DISK_MIN_FREE_GB = 20.0
+
+# Canonical factory drive whose purge low-water research must yield to.
+FACTORY_DRIVE = Path("D:/")
+
+# Environment overrides (OWNER/ops-tunable without a code change).
+ENV_RESEARCH_SCRATCH = "QM_RESEARCH_SCRATCH"
+ENV_RESEARCH_MIN_FREE_GB = "QM_RESEARCH_MIN_FREE_GB"
+ENV_FACTORY_MIN_FREE_GB = "QM_FACTORY_MIN_FREE_GB"
+
+# Default research scratch root = where research output actually lands today
+# (observe_projector.DEFAULT_OUT_ROOT, on C:); the guard watches this volume.
+# Defined as a literal to avoid importing the heavier projector module here.
+DEFAULT_RESEARCH_SCRATCH = Path(r"C:\QM\repo\artifacts\research_datasets")
 
 # At most two research worker processes on <=1-2 cores (design doc sec 2.3).
 MAX_WORKER_PROCESSES = 2
@@ -62,8 +145,10 @@ CPU_HIGH_PAUSE_PERCENT = float(terminal_worker.CPU_MAX_LOAD_PERCENT)
 RAM_MIN_FREE_GB = float(terminal_worker.RAM_MIN_FREE_GB)
 RAM_RESUME_FREE_GB = float(terminal_worker.RAM_RESUME_FREE_GB)
 
+# The venv is NOT relocated here (OWNER/orchestrator decides relocation). It
+# stays a ~0.3 GB one-time footprint; the guard yields for it via the D:
+# factory-protection floor only when scratch is placed on D:.
 DEFAULT_VENV_PATH = Path(r"D:\QM\research\venv")
-DEFAULT_RESEARCH_DRIVE = Path("D:/")
 RESEARCH_PACKAGES = (
     "pandas",
     "duckdb",
@@ -101,8 +186,31 @@ def _default_free_ram_gb() -> float:
     return float(terminal_worker._free_ram_gb())
 
 
-def _default_disk_free_gb(root: Path) -> float:
-    return float(terminal_worker._disk_free_gb(Path(root)))
+def _measure_free_gb(root: Path) -> float | None:
+    """Free space (GB) on the volume hosting *root*, or None if unmeasurable.
+
+    Deliberately fail-CLOSED (None on any error), unlike
+    ``terminal_worker._disk_free_gb`` which fails open for the worker's
+    crash-prevention contract. Research is subordinate: an unknown/unavailable
+    volume must refuse, never proceed on a guessed 'infinite' free space.
+    """
+    try:
+        anchor = os.path.splitdrive(str(root))[0] or str(root)
+        usage = shutil.disk_usage(anchor)
+        return float(usage.free) / (1024 ** 3)
+    except Exception:
+        return None
+
+
+def _drive_key(path: Path | str) -> str:
+    """Upper-cased drive component (e.g. 'D:') or '' when there is none."""
+    return os.path.splitdrive(str(path))[0].upper()
+
+
+def _on_factory_drive(scratch: Path | str, factory_drive: Path | str) -> bool:
+    scratch_key = _drive_key(scratch)
+    factory_key = _drive_key(factory_drive)
+    return bool(scratch_key) and scratch_key == factory_key
 
 
 def _default_lock_status(lock_path: Path | None) -> str:
@@ -111,22 +219,63 @@ def _default_lock_status(lock_path: Path | None) -> str:
     return str(snapshot.get("status") or "unknown")
 
 
+def _resolve_scratch_root(research_scratch: Path | str | None) -> Path:
+    if research_scratch is not None:
+        return Path(research_scratch)
+    env_value = os.environ.get(ENV_RESEARCH_SCRATCH)
+    return Path(env_value) if env_value else DEFAULT_RESEARCH_SCRATCH
+
+
+def _resolve_scratch_min_free_gb(explicit: float | None) -> float:
+    if explicit is not None:
+        return float(explicit)
+    override = os.environ.get(ENV_RESEARCH_MIN_FREE_GB)
+    if override is not None:
+        try:
+            return float(override)
+        except (TypeError, ValueError):
+            pass
+    return RESEARCH_DISK_MIN_FREE_GB
+
+
 def research_guard(
     *,
-    research_drive: Path | str = DEFAULT_RESEARCH_DRIVE,
+    research_scratch: Path | str | None = None,
+    factory_drive: Path | str = FACTORY_DRIVE,
     mutation_lock_path: Path | str | None = None,
-    disk_min_free_gb: float = RESEARCH_DISK_MIN_FREE_GB,
+    scratch_min_free_gb: float | None = None,
+    factory_min_free_gb: float | None = None,
     cpu_high_pause_percent: float = CPU_HIGH_PAUSE_PERCENT,
     ram_min_free_gb: float = RAM_MIN_FREE_GB,
     # Injection seams for tests: pass explicit values / callables to simulate.
     cpu_percent: float | Callable[[], float] | None = None,
-    disk_free_gb: float | Callable[[Path], float] | None = None,
+    # Free GB on the scratch volume (float | callable(Path)->float|None | None).
+    disk_free_gb: float | Callable[[Path], float | None] | None = None,
+    # Free GB on the factory drive; defaults to the scratch measurement when the
+    # scratch volume IS the factory drive.
+    factory_free_gb: float | Callable[[Path], float | None] | None = None,
     free_ram_gb: float | Callable[[], float] | None = None,
     lock_status: str | None = None,
 ) -> GuardResult:
-    """Return a fail-closed decision on whether a research batch may start."""
+    """Return a fail-closed decision on whether a research batch may start.
 
-    drive = Path(research_drive)
+    The guard watches the volume that actually hosts research scratch (default
+    the C: dataset-output location) with a measured floor
+    (``scratch_min_free_gb``, default 20 GB). It additionally requires the
+    factory drive (D:) to stay above the tester-cache purge low-water
+    (``factory_min_free_gb``, default 60 GB read from the shared config) ONLY
+    when scratch is placed on the factory drive, so research yields to a
+    disk-pressured factory without being permanently disabled. See the module
+    docstring for the evidence behind the recalibration (directive §34).
+    """
+
+    scratch = _resolve_scratch_root(research_scratch)
+    scratch_floor = _resolve_scratch_min_free_gb(scratch_min_free_gb)
+    factory_floor = (
+        float(factory_min_free_gb)
+        if factory_min_free_gb is not None
+        else _tester_purge_low_water_gb()
+    )
 
     def _resolve(value, default_call):
         if value is None:
@@ -135,26 +284,56 @@ def research_guard(
             return value()
         return value
 
+    def _measure(seam, path: Path) -> float | None:
+        if seam is None:
+            return _measure_free_gb(path)
+        if callable(seam):
+            return seam(path)
+        return float(seam)
+
     cpu = float(_resolve(cpu_percent, _default_cpu_percent))
-    disk = float(
-        disk_free_gb(drive)
-        if callable(disk_free_gb)
-        else (_default_disk_free_gb(drive) if disk_free_gb is None else disk_free_gb)
-    )
+    scratch_free = _measure(disk_free_gb, scratch)
     ram = float(_resolve(free_ram_gb, _default_free_ram_gb))
     lock = lock_status if lock_status is not None else _default_lock_status(
         Path(mutation_lock_path) if mutation_lock_path is not None else None
     )
+
+    on_factory = _on_factory_drive(scratch, factory_drive)
 
     reasons: list[str] = []
     if cpu > cpu_high_pause_percent:
         reasons.append(
             f"CPU_HIGH:{cpu:.1f}%>{cpu_high_pause_percent:.1f}% (worker cpu_high_pause line)"
         )
-    if disk < disk_min_free_gb:
+
+    # Scratch-volume floor (fail closed on an unmeasurable/unknown volume).
+    if scratch_free is None:
         reasons.append(
-            f"DISK_LOW:{disk:.1f}GB<{disk_min_free_gb:.1f}GB free on {drive}"
+            f"DISK_UNMEASURED: cannot measure free space on scratch volume {scratch}"
         )
+    elif scratch_free < scratch_floor:
+        reasons.append(
+            f"DISK_LOW:{scratch_free:.1f}GB<{scratch_floor:.1f}GB free on scratch volume {scratch}"
+        )
+
+    # Factory-protection floor: only when scratch lives on the factory drive.
+    factory_free: float | None = None
+    if on_factory:
+        # Same volume: reuse the scratch measurement unless a seam overrides it.
+        if factory_free_gb is None and disk_free_gb is not None:
+            factory_free = scratch_free
+        else:
+            factory_free = _measure(factory_free_gb, Path(factory_drive))
+        if factory_free is None:
+            reasons.append(
+                f"FACTORY_DISK_UNMEASURED: cannot measure free space on factory drive {factory_drive}"
+            )
+        elif factory_free < factory_floor:
+            reasons.append(
+                f"FACTORY_DISK_LOW:{factory_free:.1f}GB<{factory_floor:.1f}GB free on "
+                f"factory drive {factory_drive} (tester-cache purge low-water)"
+            )
+
     if ram < ram_min_free_gb:
         reasons.append(
             f"RAM_LOW:{ram:.1f}GB<{ram_min_free_gb:.1f}GB free"
@@ -167,11 +346,15 @@ def research_guard(
         reasons=reasons,
         measurements={
             "cpu_percent": cpu,
-            "disk_free_gb": disk,
+            "scratch_root": str(scratch),
+            "scratch_free_gb": scratch_free,
+            "scratch_on_factory_drive": on_factory,
+            "factory_free_gb": factory_free,
             "free_ram_gb": ram,
             "mutation_lock_status": lock,
             "cpu_high_pause_percent": cpu_high_pause_percent,
-            "disk_min_free_gb": disk_min_free_gb,
+            "scratch_min_free_gb": scratch_floor,
+            "factory_min_free_gb": factory_floor,
             "ram_min_free_gb": ram_min_free_gb,
         },
     )
@@ -312,7 +495,17 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     guard = sub.add_parser("guard", help="print the current research guard decision")
-    guard.add_argument("--research-drive", type=Path, default=DEFAULT_RESEARCH_DRIVE)
+    guard.add_argument(
+        "--research-scratch",
+        type=Path,
+        default=None,
+        help="research scratch root whose volume is guarded (default env "
+        "QM_RESEARCH_SCRATCH or the C: dataset-output location)",
+    )
+    guard.add_argument(
+        "--factory-drive", type=Path, default=FACTORY_DRIVE,
+        help="factory drive whose purge low-water research yields to (default D:/)",
+    )
 
     prov = sub.add_parser("provision-venv", help="create the uv research venv")
     prov.add_argument("--venv-path", type=Path, default=DEFAULT_VENV_PATH)
@@ -320,7 +513,9 @@ def main(argv: list[str] | None = None) -> int:
 
     args = parser.parse_args(argv)
     if args.cmd == "guard":
-        result = research_guard(research_drive=args.research_drive)
+        result = research_guard(
+            research_scratch=args.research_scratch, factory_drive=args.factory_drive
+        )
         print(json.dumps(result.as_dict(), indent=2, sort_keys=True))
         return 0 if result.allowed else 3
     if args.cmd == "provision-venv":

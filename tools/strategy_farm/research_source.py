@@ -48,6 +48,8 @@ from typing import Any, Mapping
 # Repo root: tools/strategy_farm/research_source.py -> parents[2] == repo root.
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_STORE_ROOT = REPO_ROOT / "strategy-seeds" / "sources"
+# Authorized-author config (directive §37 / OWNER-DEC-CBE-20260915).
+DEFAULT_SOURCE_CONFIG_PATH = Path(__file__).resolve().parent / "config" / "research_source.v1.json"
 DEFAULT_LEDGER_PATH = Path(r"D:\QM\reports\state\research_source_ledger.jsonl")
 # The research-layer search-history ledger (data-snooping evidence, contract
 # Section 4.3).  Deliberately a *different* quantity from the Q08 DSR cohort.
@@ -56,6 +58,13 @@ DEFAULT_SEARCH_LEDGER_PATH = Path(r"D:\QM\reports\state\search_history_ledger.js
 ENV_STORE_ROOT = "QM_RESEARCH_STORE_ROOT"
 ENV_LEDGER = "QM_RESEARCH_SOURCE_LEDGER"
 ENV_SEARCH_LEDGER = "QM_RESEARCH_SEARCH_LEDGER"
+ENV_AUTHORIZED_AUTHORS = "QM_RESEARCH_AUTHORIZED_AUTHORS"
+
+# Fallback authorized-author set if the config is missing/unreadable. Matches
+# config/research_source.v1.json (directive §37: Kimi, Fable, another authorized
+# research agent, or documented multi-agent collaboration).
+_FALLBACK_AUTHORIZED_AUTHORS = ("Kimi", "Fable", "Claude", "Codex", "Antigravity")
+_FALLBACK_MULTI_AGENT_PREFIX = "multi-agent:"
 
 LEDGER_SCHEMA = "qm.research-source-ledger/v1"
 RESEARCH_SCHEMA = "qm.internal-research-source/v1"
@@ -115,6 +124,7 @@ REASON_CRITIC_KIMI_ON_KIMI = "CRITIC_KIMI_ON_KIMI"
 REASON_CRITIC_WROTE = "CRITIC_WROTE"
 REASON_LEDGER_STATUS_BAD = "LEDGER_STATUS_BAD"
 REASON_MISSING_FIELD = "MISSING_FIELD"
+REASON_UNAUTHORIZED_AUTHOR = "UNAUTHORIZED_AUTHOR"
 
 INTAKE_REASON = "INTERNAL_SOURCE_UNRESOLVED"
 
@@ -663,6 +673,67 @@ def _is_kimi(value: Any) -> bool:
     return "kimi" in str(value or "").strip().lower()
 
 
+def load_authorized_authors(
+    config_path: Path | str | None = None,
+) -> tuple[frozenset[str], str]:
+    """Return the authorized-author set (lower-cased) and the multi-agent prefix.
+
+    Directive §37 (OWNER-DEC-CBE-20260915): an internal research artifact may be
+    authored by Kimi, Fable, another authorized research agent, or a documented
+    multi-agent collaboration.  The set lives in
+    ``config/research_source.v1.json`` (OWNER-tunable) with an env override
+    ``QM_RESEARCH_AUTHORIZED_AUTHORS`` (comma-separated).  A missing/unreadable
+    config falls back to the committed default set — never to "anything goes".
+    """
+    override = os.environ.get(ENV_AUTHORIZED_AUTHORS)
+    if override is not None and override.strip():
+        authors = tuple(a.strip() for a in override.split(",") if a.strip())
+        prefix = _FALLBACK_MULTI_AGENT_PREFIX
+    else:
+        config: Mapping[str, Any] = {}
+        path = Path(config_path) if config_path else DEFAULT_SOURCE_CONFIG_PATH
+        try:
+            config = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            config = {}
+        raw_authors = config.get("authorized_authors")
+        authors = (
+            tuple(str(a) for a in raw_authors)
+            if isinstance(raw_authors, (list, tuple)) and raw_authors
+            else _FALLBACK_AUTHORIZED_AUTHORS
+        )
+        prefix = str(config.get("multi_agent_prefix") or _FALLBACK_MULTI_AGENT_PREFIX)
+    return frozenset(a.strip().lower() for a in authors if a.strip()), prefix.strip().lower()
+
+
+def is_authorized_author(
+    value: Any,
+    *,
+    config_path: Path | str | None = None,
+    authors: frozenset[str] | None = None,
+    multi_agent_prefix: str | None = None,
+) -> bool:
+    """True when *value* names an authorized internal research author.
+
+    Accepts an exact (case-insensitive) member of the authorized set, or a
+    documented multi-agent collaboration (``multi-agent:<list>``).  Empty/None
+    is never authorized (fail closed).
+    """
+    if authors is None or multi_agent_prefix is None:
+        loaded_authors, loaded_prefix = load_authorized_authors(config_path)
+        authors = authors if authors is not None else loaded_authors
+        multi_agent_prefix = (
+            multi_agent_prefix if multi_agent_prefix is not None else loaded_prefix
+        )
+    text = str(value or "").strip().lower()
+    if not text:
+        return False
+    if multi_agent_prefix and text.startswith(multi_agent_prefix):
+        # A documented multi-agent collaboration must name at least one agent.
+        return bool(text[len(multi_agent_prefix):].strip())
+    return text in authors
+
+
 def verify(
     *,
     research_id: str | None = None,
@@ -671,6 +742,7 @@ def verify(
     store_root: Path | str | None = None,
     ledger_path: Path | str | None = None,
     search_ledger_path: Path | str | None = None,
+    source_config_path: Path | str | None = None,
 ) -> VerifyResult:
     """Deterministic, fail-closed verify for an internal research source.
 
@@ -735,6 +807,19 @@ def verify(
             reasons.append(f"{REASON_MISSING_FIELD}:{field_name}")
         elif field_name not in _RESEARCH_EMPTY_OK and research.get(field_name) in ("", None):
             reasons.append(f"{REASON_MISSING_FIELD}:{field_name}")
+
+    # Authorized author (directive §37 / OWNER-DEC-CBE-20260915). The durable
+    # artifact's author must be an authorized internal research agent (Kimi,
+    # Fable, Claude, Codex, Antigravity) or a documented multi-agent
+    # collaboration. A present-but-unauthorized author fails closed; an empty
+    # author is already flagged above as MISSING_FIELD:author. This generalizes
+    # the previously Kimi-centric expectation while keeping every other
+    # provenance requirement identical.
+    author_value = research.get("author")
+    if author_value not in ("", None) and not is_authorized_author(
+        author_value, config_path=source_config_path
+    ):
+        reasons.append(f"{REASON_UNAUTHORIZED_AUTHOR}:{author_value}")
 
     # Numeric provenance (contract Section 4.4 / R-C): every quantitative claim
     # must cite a computed_outputs[].claim_ref whose file hash is in the
@@ -869,6 +954,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_verify = sub.add_parser("verify", help="verify an internal source (fail-closed)")
     p_verify.add_argument("--id", dest="research_id", default=None)
     p_verify.add_argument("--card", type=Path, default=None)
+    p_verify.add_argument("--source-config", type=Path, default=None)
     _add_path_args(p_verify)
 
     p_seal = sub.add_parser("seal", help="recompute manifest+sha, append ledger row")
@@ -928,6 +1014,7 @@ def main(argv: list[str] | None = None) -> int:
                 store_root=args.store_root,
                 ledger_path=args.ledger,
                 search_ledger_path=args.search_ledger,
+                source_config_path=args.source_config,
             )
             print(json.dumps(result.as_dict(), sort_keys=True))
             return 0 if result.ok else 1

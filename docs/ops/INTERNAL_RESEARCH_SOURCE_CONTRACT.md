@@ -1,8 +1,8 @@
 # Internal Research Source Contract (QM-RESEARCH)
 
 **Status:** FINAL v1 (2026-09-15). CANONICAL. Binding for every Strategy Card whose origin is
-QuantMechanica's own internal research (Kimi-authored or otherwise AI/tool-authored edge
-discovery).
+QuantMechanica's own internal research (internally authored by an authorized research agent —
+Kimi, Fable, or another authorized AI/tool-authored edge discovery; see Annex 2026-09-15b).
 **Authority:** `decisions/2026-09-15_owner_kimi_integration_ml_research_r1_internal.md`
 (decision id `OWNER-DEC-KIMI-INTEGRATION-20260915`, decision 2), directive verbatim
 `docs/ops/evidence/2026-09-15_kimi_integration/owner_directive_verbatim.md` §1.2, §12, §14.
@@ -140,7 +140,7 @@ Rules:
 | `source_id` | string | YES | `research_source.py mint` | matches `^QM-RESEARCH-20\d{2}-\d{4}$`; equals the directory name |
 | `title` | string | YES | Kimi (creator) | non-empty |
 | `source_type` | literal | YES | mint | exactly `internal_research` |
-| `source_author` | string | YES | mint | non-empty; `Kimi` for Kimi-authored (directive §1.2) |
+| `source_author` | string | YES | mint | non-empty; an authorized internal research agent (`Kimi`, `Fable`, `Claude`, `Codex`, `Antigravity`) or a documented multi-agent collaboration (`multi-agent:<list>`), per `config/research_source.v1.json`. (SUPERSEDED 2026-09-15 by OWNER-DEC-CBE-20260915: the earlier `Kimi`-only wording is generalized; see Annex 2026-09-15b.) |
 | `source_model` | string | YES | adapter (captured per run) | exact Kimi model alias from the run (e.g. `kimi-code/kimi-for-coding`); `UNKNOWN` if the adapter cannot attest it — never guessed (§ open items) |
 | `created` | date (UTC) | YES | mint | ISO date; equals ledger `created` |
 | `originating_task_id` | string | YES | adapter | the `agent_tasks.id` that produced the artifact |
@@ -840,3 +840,45 @@ Kept from the reviews (unchanged in this document): R1 is already source-agnosti
 cross-vendor critic-as-evidence-not-gate posture; the durable, content-addressed, in-repo-on-C:
 store with a dated `decisions/` receipt as the hallucination-precedent bar; append-only/rebuildable
 reversibility.
+
+---
+
+## Annex 2026-09-15b — Author generalization + resource-guard recalibration (OWNER-DEC-CBE-20260915)
+
+Authority: OWNER master directive 2026-09-15 (continuous book evolution / FTMO acceleration /
+autonomous edge discovery), verbatim at
+`docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_verbatim.md` §34, §36, §37.
+Append-only; the FINAL v1 body above stands except where a line is marked SUPERSEDED.
+
+### Author generalization (directive §36, §37)
+
+The internal-source class is **not restricted to Kimi**. An internal research artifact records an
+explicit `source_author` (in `source.md` frontmatter and `research.json.author`) which must be one
+of the **authorized research agents** or a **documented multi-agent collaboration**:
+
+- `Kimi`, `Fable`, `Claude`, `Codex`, `Antigravity`, or
+- `multi-agent:<list>` (e.g. `multi-agent:Fable+Kimi`) for a documented collaboration.
+
+The authorized set lives in `tools/strategy_farm/config/research_source.v1.json` (OWNER-tunable;
+env override `QM_RESEARCH_AUTHORIZED_AUTHORS`, comma-separated). `research_source.verify` matches
+case-insensitively and fails closed with sub-reason `UNAUTHORIZED_AUTHOR` when the durable
+artifact's author is present but not authorized. **Every other requirement is unchanged**: a
+durable resolvable artifact, `source_hash = sha256(source.md)`, the manifest block, numeric
+provenance, the cross-vendor non-Kimi critic invariant, ledger status, and the fail-closed
+`INTERNAL_SOURCE_UNRESOLVED` intake verdict all stand verbatim. `author = <name>` WITHOUT a
+resolvable, hash-verified artifact remains INVALID (directive §36). The non-Kimi-critic invariant
+(§4.5) is unaffected: a Kimi-authored hypothesis still requires a non-Kimi critic; a Fable-authored
+hypothesis likewise gets an independent cross-vendor critic.
+
+### Resource-guard recalibration (directive §34)
+
+The former flat `D: < 80 GB` research block is SUPERSEDED. It permanently disabled research because
+the tester-cache purge parks D: at its 60 GB low-water, so an 80 GB floor was above the disk's own
+operating band. `tools/strategy_farm/research/research_env.py` now watches the volume research
+actually uses (the C: dataset-output location, `observe_projector.DEFAULT_OUT_ROOT`) with a measured
+`20 GB` floor, and imposes the `60 GB` tester-purge low-water as a factory-yield floor **only when
+research scratch is placed on the factory drive (D:)**. The 60 GB low-water is read from the shared
+`tools/strategy_farm/config/factory_disk_policy.v1.json` so it can never drift from the purge.
+Layering invariant: `worker_disk_floor (40) <= purge_low_water (60) <= research floor on D:`. No
+canonical evidence, verdict, immutable report, or trade stream is deleted to create space. Config
+overrides: `QM_RESEARCH_SCRATCH`, `QM_RESEARCH_MIN_FREE_GB`, `QM_FACTORY_MIN_FREE_GB`.

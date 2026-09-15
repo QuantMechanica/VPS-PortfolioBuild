@@ -1,0 +1,12 @@
+{
+  "schema": "qm.research-source.v1",
+  "_doc": "Authorized authors for internal QM-RESEARCH sources (OWNER master directive 2026-09-15 continuous-book-evolution §37; OWNER-DEC-CBE-20260915). An internal research artifact (QM-RESEARCH-YYYY-NNNN) records an explicit author in research.json/source.md; research_source.verify accepts an author only if it is in authorized_authors (case-insensitive) OR begins with multi_agent_prefix (documented multi-agent collaboration, e.g. 'multi-agent:Fable+Kimi'). This generalizes the previously Kimi-only expectation while KEEPING every other provenance requirement (durable artifact, sha256(source.md), manifest, mint/resolve/verify/seal, fail-closed INTERNAL_SOURCE_UNRESOLVED). An author that is not authorized fails closed with sub-reason UNAUTHORIZED_AUTHOR. OWNER-tunable without a code change; env override QM_RESEARCH_AUTHORIZED_AUTHORS (comma-separated) takes precedence when set.",
+  "authorized_authors": [
+    "Kimi",
+    "Fable",
+    "Claude",
+    "Codex",
+    "Antigravity"
+  ],
+  "multi_agent_prefix": "multi-agent:"
+}

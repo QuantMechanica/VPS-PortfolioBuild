@@ -35,13 +35,24 @@ def _matrix(path: Path) -> Path:
     return path
 
 
-def _valid_store(tmp_path: Path) -> tuple[Path, Path, Path, str]:
-    """Copy the worked example into a temp store, seal it reviewed, return paths."""
+def _valid_store(tmp_path: Path, author: str | None = None) -> tuple[Path, Path, Path, str]:
+    """Copy the worked example into a temp store, seal it reviewed, return paths.
+
+    When *author* is given, research.json.author is rewritten before sealing so
+    the durable artifact carries that author (directive §37 author generalization).
+    """
+    import json
+
     store = tmp_path / "store"
     store.mkdir(exist_ok=True)
     ledger = tmp_path / "ledger.jsonl"
     search = tmp_path / "search.jsonl"
     shutil.copytree(EXAMPLE_DIR, store / EXAMPLE_ID)
+    if author is not None:
+        research_path = store / EXAMPLE_ID / rs.RESEARCH_JSON
+        research = json.loads(research_path.read_text(encoding="utf-8"))
+        research["author"] = author
+        research_path.write_text(json.dumps(research, indent=2), encoding="utf-8")
     rs.seal(EXAMPLE_ID, status="reviewed", store_root=store, ledger_path=ledger)
     digest = rs.source_hash(store / EXAMPLE_ID)
     return store, ledger, search, digest
@@ -180,6 +191,51 @@ def test_r1_internal_research_valid_passes(tmp_path: Path) -> None:
         fm, research_store_root=store, research_ledger=ledger,
         research_search_ledger=search,
     ) is None
+
+
+# --------------------------------------------------------------------------- #
+# T3b — Fable-authored internal research source PASSES (directive §37)
+# --------------------------------------------------------------------------- #
+def test_r1_internal_fable_authored_passes(tmp_path: Path) -> None:
+    store, ledger, search, digest = _valid_store(tmp_path, author="Fable")
+    card = _card(
+        tmp_path / "review" / "internal_fable.md",
+        extra_frontmatter=_internal_frontmatter(digest).replace(
+            "source_author: Kimi", "source_author: Fable"
+        ),
+        provenance="Fable-originated hypothesis, deterministically reduced to rules.",
+    )
+    result = _evaluate(tmp_path, card, research_store_root=store,
+                       research_ledger=ledger, research_search_ledger=search)
+    assert result["verdict"] == "KEEP", result["reasons"]
+    fm = farmctl.parse_card_frontmatter(card)
+    assert farmctl._internal_research_source_error(
+        fm, research_store_root=store, research_ledger=ledger,
+        research_search_ledger=search,
+    ) is None
+
+
+def test_r1_internal_unauthorized_author_fails(tmp_path: Path) -> None:
+    store, ledger, search, digest = _valid_store(tmp_path, author="Mallory")
+    card = _card(
+        tmp_path / "review" / "internal_unauth.md",
+        extra_frontmatter=_internal_frontmatter(digest).replace(
+            "source_author: Kimi", "source_author: Mallory"
+        ),
+        provenance="Author is not an authorized research agent.",
+    )
+    result = _evaluate(tmp_path, card, research_store_root=store,
+                       research_ledger=ledger, research_search_ledger=search)
+    assert result["verdict"] == "REJECT"
+    assert any(r.startswith("INTERNAL_SOURCE_UNRESOLVED") for r in result["reasons"])
+    assert any("UNAUTHORIZED_AUTHOR" in r for r in result["reasons"])
+    # farmctl build-ready guard refuses too.
+    fm = farmctl.parse_card_frontmatter(card)
+    guard = farmctl._internal_research_source_error(
+        fm, research_store_root=store, research_ledger=ledger,
+        research_search_ledger=search,
+    )
+    assert guard is not None and "UNAUTHORIZED_AUTHOR" in guard
 
 
 # --------------------------------------------------------------------------- #

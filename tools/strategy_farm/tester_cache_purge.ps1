@@ -8,7 +8,7 @@
 #    D:\QM\mt5\T<n>\Tester\Agent-*   (per-agent working dirs; MT5 recreates)
 #  NEVER touches source tick data (T<n>\Bases top-level) or reports (D:\QM\reports).
 #
-#  IdleCaches acts when D: free < LowWaterGB (default 150): stop only idle
+#  IdleCaches acts when D: free < LowWaterGB (default 60): stop only idle
 #  factory slots -> clear their caches -> start only missing workers via the
 #  interactive-session token launcher. Because MT5 agents read these caches
 #  mid-run, the factory MUST be stopped first.
@@ -25,9 +25,12 @@
 # =====================================================================
 [CmdletBinding()]
 param(
-    # 2026-07-21 raised 80->150: on a 1TB disk an 80GB floor let ~200GB of regenerable
-    # Tester cache accumulate (it purges only below the floor, and D: hovered just above 80).
-    [int]$LowWaterGB = 150,
+    # Canonical low-water = config/factory_disk_policy.v1.json tester_cache_purge_low_water_gb
+    # (60), which research_env.py also reads so the two guards never drift
+    # (OWNER-DEC-CBE-20260915; audit research_disk_guard.md R3). The live scheduled
+    # task passes -LowWaterGB 60 explicitly; this default now matches it. History:
+    # 2026-07-21 raised 80->150, superseded 2026-09-15 back to the runtime value 60.
+    [int]$LowWaterGB = 60,
     # A full factory teardown is expensive and must buy meaningful headroom.
     # BusyScratch remains available below this threshold without stopping slots.
     [ValidateRange(0.1, 1024)]
