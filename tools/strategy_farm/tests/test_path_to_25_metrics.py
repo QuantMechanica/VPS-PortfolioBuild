@@ -304,7 +304,9 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     assert scratch_cockpit.is_file() and scratch_cockpit.stat().st_size == len(
         cockpit.encode("utf-8")
     )
-    assert "RERUN_INFRA" in cockpit and "RERUN_INFRA" in owner_html
+    # The cockpit-v2 no longer renders the path_to_25 block (slice D1); the
+    # morning brief keeps the rerun-class breakdown.
+    assert "RERUN_INFRA" in owner_html
     assert "Committed" in cockpit and "1.124" in cockpit
     assert "ETA zu 25" in cockpit and "Queue-leer-ETA" in cockpit
     assert "Zählung VERSIEGELT" in cockpit
