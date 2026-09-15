@@ -281,15 +281,25 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     scratch_cockpit.write_text(cockpit, encoding="utf-8", newline="\n")
 
     for rendered in (cockpit, heartbeat, owner_html):
-        assert "Weg zu 25" in rendered
         assert "Q12" in rendered and "Q13" in rendered and "Q14" in rendered
         assert re.search(r"\bP[0-9]\b", rendered) is None
+    # render_cockpit_v2 is slice D1's surface: its "Weg zu 25" wording is relabeled
+    # there, not here.  This slice (D2) relabels heartbeat + morning_brief only.
+    assert "Weg zu 25" in cockpit
+    # OWNER-DEC-CBE-20260915: the D2 surfaces drop the "Way to 25" objective for a
+    # Continuous Book Evolution headline + a diagnostic qualified-pool readout.
+    for rendered in (heartbeat, owner_html):
+        assert "Weg zu 25" not in rendered
+        assert "/25" not in rendered
+        assert "Kontinuierliche Buchentwicklung" in rendered
+    assert "Kontinuierliche Buchentwicklung" in heartbeat
+    assert "Qualifizierungs-Diagnostik" in heartbeat
+    assert "Referenz-Poolgröße 25" in heartbeat
+    assert "Referenz-Poolgröße 25" in owner_html
     assert "#2954d4" in cockpit
     assert scratch_cockpit.is_file() and scratch_cockpit.stat().st_size == len(
         cockpit.encode("utf-8")
     )
-    assert "7 / 25" in heartbeat
-    assert "7<span" in owner_html and "/25" in owner_html
     assert "RERUN_INFRA" in cockpit and "RERUN_INFRA" in owner_html
     assert "Committed" in cockpit and "1.124" in cockpit
     assert "ETA zu 25" in cockpit and "Queue-leer-ETA" in cockpit
@@ -407,3 +417,41 @@ def test_committed_work_uses_payload_declarations_and_receipts(tmp_path: Path) -
     assert committed["unmaterialized"] == 8
     assert committed["classes"]["Q12_PATTERN"]["declared"] == 5
     assert committed["classes"]["Q10_NEWS"]["receipts"] == 3
+
+
+def test_sealed_count_decision_pin_is_over_lf_normalized_blob(tmp_path: Path) -> None:
+    """The sealed-decision pin must match regardless of checkout line endings.
+
+    Regression for the pre-existing failure where a CRLF working-tree checkout
+    hashed a different blob than the sealed (LF) content, tripping the sha256
+    guard in ``_counting_definition``.  The routine hashes the LF-normalized
+    canonical blob, so both LF and CRLF copies of identical content match the pin.
+    """
+    body = b"line one\nline two\nOWNER seals count definition A\n"
+    lf_file = tmp_path / "decision_lf.md"
+    crlf_file = tmp_path / "decision_crlf.md"
+    lf_file.write_bytes(body)
+    crlf_file.write_bytes(body.replace(b"\n", b"\r\n"))
+
+    lf_sha = path_to_25._lf_canonical_sha256(lf_file)
+    crlf_sha = path_to_25._lf_canonical_sha256(crlf_file)
+
+    # Identical content, different newlines -> identical canonical digest.
+    assert lf_sha == crlf_sha
+    assert lf_sha == hashlib.sha256(body).hexdigest()
+
+    # The real sealed decision file's canonical digest matches the historical pin
+    # even though the Windows worktree checkout may carry CRLF newlines.
+    assert (
+        path_to_25._lf_canonical_sha256(path_to_25._COUNT_DECISION_PATH)
+        == path_to_25._COUNT_DECISION_SHA256
+    )
+
+
+def test_path_to_25_source_has_no_goal_language() -> None:
+    """OWNER-DEC-CBE-20260915: 25 is a reference-pool diagnostic, not a target."""
+    import inspect
+
+    lowered = inspect.getsource(path_to_25).lower()
+    assert "goal reached" not in lowered
+    assert "remaining to 25" not in lowered

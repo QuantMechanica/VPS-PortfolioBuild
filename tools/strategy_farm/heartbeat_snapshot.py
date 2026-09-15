@@ -27,12 +27,14 @@ from pathlib import Path
 
 try:  # package import in tests and module consumers
     from tools.strategy_farm.operator_surfaces import build_operator_snapshot
+    from tools.strategy_farm import book_evolution_readmodels
     try:
         from tools.strategy_farm.sqlite_timestamp import normalized_timestamp_sql
     except ModuleNotFoundError:
         from sqlite_timestamp import normalized_timestamp_sql  # script-style import (sys.path = tools/strategy_farm)
 except ModuleNotFoundError:  # direct ``python tools/strategy_farm/heartbeat_snapshot.py``
     from operator_surfaces import build_operator_snapshot
+    import book_evolution_readmodels
     from sqlite_timestamp import normalized_timestamp_sql
 
 UPDATED_AT_SQL = normalized_timestamp_sql("updated_at")
@@ -454,10 +456,11 @@ def render_markdown(out) -> str:
     L.append(f"| Trichter | {funnel_text or 'nicht verfügbar'} |")
     guard = operator.get("book_guard") or {}
     if operator:
+        ref_pool = guard.get("reference_pool_size", guard.get("minimum_qualified_pairs", 25))
         L.append(
             f"| Lückenlose Frontier | {operator.get('pair_count', 0)} EA/Symbol-Paare · "
-            f"Buch-Guard {guard.get('qualified_pairs', 0)} / "
-            f"{guard.get('minimum_qualified_pairs', 25)} · "
+            f"qualifizierter Pool {guard.get('qualified_pairs', 0)} "
+            f"(Referenz-Poolgröße {ref_pool}, historisch, abgelöst 2026-09-15) · "
             f"{guard.get('distinct_eas', 0)} EAs · "
             f"{guard.get('strategy_families', 0)} Familien |"
         )
@@ -477,10 +480,30 @@ def render_markdown(out) -> str:
         )
         eta = path25.get("eta_days")
         eta_text = f"{eta} Tage" if eta is not None else "nicht belastbar"
-        L.append("## Weg zu 25")
+
+        # Continuous Book Evolution headline (OWNER-DEC-CBE-20260915): the former
+        # "Weg zu 25" objective is superseded.  Sourced from the shared read-models;
+        # a missing read-model degrades to EVIDENCE_MISSING, never a crash.
+        try:
+            cbe = book_evolution_readmodels.book_evolution_headline()
+        except Exception:  # noqa: BLE001 - never break the heartbeat page
+            cbe = None
+        L.append("## Kontinuierliche Buchentwicklung")
+        L.append("")
+        if cbe:
+            L.append(f"- **DXZ:** {cbe['dxz']['detail']}")
+            L.append(f"- **FTMO:** {cbe['ftmo']['detail']}")
+            L.append(f"- **Research:** {cbe['research']['detail']}")
+            L.append(f"- **Factory:** {cbe['factory']['detail']}")
+        else:
+            L.append(f"- Buchentwicklungs-Read-Models nicht lesbar ({book_evolution_readmodels.MISSING})")
+        L.append("")
+
+        L.append("## Qualifizierungs-Diagnostik")
         L.append("")
         L.append(
-            f"- **Qualifiziert:** {path25.get('qualified_pairs', 0)} / 25 Paare · "
+            f"- **Qualifizierter Pool:** {path25.get('qualified_pairs', 0)} Paare "
+            f"(Referenz-Poolgröße 25, historisch, abgelöst 2026-09-15) · "
             f"{path25.get('distinct_eas', 0)} EAs · {path25.get('families', 0)} Familien"
         )
         L.append(f"- **Frontier:** {frontier or 'noch keine lückenlose Qxx-Frontier'}")

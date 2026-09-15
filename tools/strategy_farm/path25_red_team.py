@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
-"""Read-only adversarial audit of the active v4 path to 25 qualified pairs.
+"""Read-only adversarial audit of the active v4 qualification path.
 
 This module is deliberately outside every dispatcher and runner.  It opens the
 farm database with SQLite ``mode=ro`` plus ``query_only=ON``, emits observations
 only, and never changes a verdict, queue row, hold, gate threshold, or book.
 
 The audit distinguishes a broken safety invariant (``FAIL``) from production
-evidence that simply does not exist yet (``WARN``).  In particular, fewer than
-25 terminally requalified pairs is an unproven/unfinished path, not proof that
-the implementation is defective.
+evidence that simply does not exist yet (``WARN``) and from a pure diagnostic
+observation (``INFO``).  Since OWNER-DEC-CBE-20260915 the qualified-pool SIZE is
+a diagnostic, not a gate: the fixed ``>= 25`` book-build trigger is superseded and
+book evaluation is licensed for any NON-EMPTY valid pool.  A small pool is an
+informational finding, never a failure; the real fail-closed invariant a Phase-3
+row must satisfy is the book-build guard (non-empty valid pool + OWNER order),
+not an arbitrary count.
 """
 from __future__ import annotations
 
@@ -247,7 +251,9 @@ def audit_manifest(
         "contract.book_trigger_authority",
         "PASS" if book_ok else "FAIL",
         (
-            "Q15 requires both >=25 qualified pairs and an OWNER order."
+            "Q15 is OWNER-authority + fail-closed and requires an OWNER order. "
+            "The legacy '>=25' token is DIAGNOSTIC only since OWNER-DEC-CBE-20260915; "
+            "book evaluation is licensed for any non-empty valid pool."
             if book_ok
             else "The Q15 book trigger or its authority is incomplete."
         ),
@@ -445,8 +451,14 @@ def audit_database(
     db_path: str | Path,
     manifest: gate_manifest.GateManifest,
     raw_manifest: dict[str, Any],
+    order_dir: str | Path = book_build_guard.DEFAULT_ORDER_DIR,
 ) -> tuple[dict[str, Any], list[Check]]:
-    """Audit live evidence through a physically read-only SQLite connection."""
+    """Audit live evidence through a physically read-only SQLite connection.
+
+    ``order_dir`` is the directory scanned for the OWNER book-order artifact when
+    evaluating whether a Phase-3 row has a complete book authority (defaults to
+    the repo ``decisions/`` directory; overridable for tests).
+    """
     checks: list[Check] = []
     path = Path(db_path).resolve()
     connection = _open_ro(path)
@@ -549,17 +561,23 @@ def audit_database(
 
         metrics = path_to_25.path_to_25_metrics(path)
         qualified = int(metrics.get("qualified_pairs") or 0)
+        # OWNER-DEC-CBE-20260915: pool SIZE is a diagnostic, never a pass/fail
+        # gate.  This is an INFO finding reporting the count and the active
+        # trigger policy; it must NOT contradict book_build_guard's
+        # any-non-empty-valid-pool policy.
         checks.append(_check(
             "evidence.qualified_pool",
-            "PASS" if qualified >= book_build_guard.MIN_QUALIFIED_PAIRS else "WARN",
+            "INFO",
             (
-                "The terminally qualified pool has reached the book trigger."
-                if qualified >= book_build_guard.MIN_QUALIFIED_PAIRS
-                else "The path is still accumulating terminally qualified pairs; "
-                "no book trigger is licensed."
+                f"Terminally qualified pool size {qualified} (diagnostic). "
+                f"Reference pool size {book_build_guard.MIN_QUALIFIED_PAIRS} is "
+                "historical (superseded 2026-09-15); book evaluation is licensed "
+                "for any non-empty valid pool per the trigger policy."
             ),
             qualified_pairs=qualified,
             target=book_build_guard.MIN_QUALIFIED_PAIRS,
+            reference_pool_size=book_build_guard.MIN_QUALIFIED_PAIRS,
+            trigger_policy=book_build_guard.TRIGGER_POLICY,
             distinct_eas=int(metrics.get("distinct_eas") or 0),
             strategy_families=int(metrics.get("families") or 0),
             eta_days=metrics.get("eta_days"),
@@ -576,12 +594,17 @@ def audit_database(
         phase3_evidence: dict[str, Any] = {
             "phase3_rows": phase3_rows,
             "qualified_pairs": qualified,
+            "reference_pool_size": book_build_guard.MIN_QUALIFIED_PAIRS,
+            "trigger_policy": book_build_guard.TRIGGER_POLICY,
         }
-        if phase3_rows and qualified < book_build_guard.MIN_QUALIFIED_PAIRS:
-            phase3_status = "FAIL"
-            phase3_summary = "A v4 Phase-3 row exists below the 25-pair minimum."
-        elif phase3_rows:
-            guard = book_build_guard.check_book_build_allowed("dxz", path)
+        # OWNER-DEC-CBE-20260915: a Phase-3 row below the historical 25 count is
+        # NOT a bypass by itself; the fail-closed invariant is the book-build
+        # guard (non-empty valid pool + OWNER order), which licenses any valid
+        # pool.  A count below 25 alone is an informational diagnostic.
+        if phase3_rows:
+            guard = book_build_guard.check_book_build_allowed(
+                "dxz", path, order_dir
+            )
             phase3_evidence["book_guard_allowed"] = guard.allowed
             phase3_evidence["book_guard_reasons"] = guard.reasons
             if not guard.allowed:
@@ -616,9 +639,10 @@ def audit_database(
 def build_audit(
     db_path: str | Path = DEFAULT_DB_PATH,
     manifest_path: str | Path = DEFAULT_MANIFEST_PATH,
+    order_dir: str | Path = book_build_guard.DEFAULT_ORDER_DIR,
 ) -> dict[str, Any]:
     manifest, raw, manifest_checks = audit_manifest(manifest_path)
-    database, database_checks = audit_database(db_path, manifest, raw)
+    database, database_checks = audit_database(db_path, manifest, raw, order_dir)
     checks = [*manifest_checks, *database_checks]
     counts = Counter(row.status for row in checks)
     return {
@@ -644,6 +668,7 @@ def build_audit(
             "FAIL": "A fail-closed invariant or evidence binding is broken.",
             "WARN": "The implementation is safe but not yet proven/reached in production, or documentation is stale.",
             "PASS": "The named property was observed by this read-only audit.",
+            "INFO": "A pure diagnostic observation (e.g. qualified-pool size); never a pass/fail gate.",
         },
     }
 

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from tools.strategy_farm import gate_manifest, path25_red_team
+from tools.strategy_farm import book_build_guard, gate_manifest, path25_red_team
 
 
 def _sha256(path: Path) -> str:
@@ -93,16 +93,22 @@ def test_active_manifest_has_closed_linear_runtime_path() -> None:
     ]
 
 
-def test_audit_is_physically_read_only_and_reports_unfinished_pool(tmp_path: Path) -> None:
+def test_audit_is_physically_read_only_and_reports_pool_as_diagnostic(tmp_path: Path) -> None:
     db = _fixture_db(tmp_path / "farm.sqlite")
     before = _sha256(db)
 
-    report = path25_red_team.build_audit(db)
+    report = path25_red_team.build_audit(db, order_dir=tmp_path / "no_orders")
 
     assert _sha256(db) == before
     assert _check(report, "observer.sqlite_read_only")["status"] == "PASS"
     assert _check(report, "evidence.optimization_binding_coverage")["status"] == "PASS"
-    assert _check(report, "evidence.qualified_pool")["status"] == "WARN"
+    # OWNER-DEC-CBE-20260915: pool size is a diagnostic (INFO), never WARN/FAIL,
+    # and its summary must not claim the pool is unqualified or that no book
+    # evaluation is licensed.
+    pool = _check(report, "evidence.qualified_pool")
+    assert pool["status"] == "INFO"
+    assert pool["evidence"]["trigger_policy"] == book_build_guard.TRIGGER_POLICY
+    assert "no book trigger is licensed" not in pool["summary"]
     assert report["database"]["path_to_25"]["qualified_pairs"] == 1
 
     connection = path25_red_team._open_ro(db)
@@ -113,15 +119,52 @@ def test_audit_is_physically_read_only_and_reports_unfinished_pool(tmp_path: Pat
     connection.close()
 
 
-def test_phase3_row_below_25_is_a_hard_failure(tmp_path: Path) -> None:
+def _write_dxz_order(order_dir: Path, date: str = "2026-01-01") -> Path:
+    order_dir.mkdir(parents=True, exist_ok=True)
+    path = order_dir / f"{date}_owner_book_order_dxz.md"
+    path.write_text(
+        f"# OWNER book order (test fixture)\n\nOWNER-ORDER: BOOK_BUILD dxz {date}\n",
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_phase3_row_without_book_authority_is_a_hard_failure(tmp_path: Path) -> None:
+    # A Phase-3 row with NO OWNER book order is a real fail-closed bypass,
+    # regardless of the pool size (OWNER-DEC-CBE-20260915).
     db = _fixture_db(tmp_path / "farm.sqlite", add_phase3_bypass=True)
 
-    report = path25_red_team.build_audit(db)
+    report = path25_red_team.build_audit(db, order_dir=tmp_path / "no_orders")
 
     bypass = _check(report, "evidence.no_phase3_bypass")
     assert bypass["status"] == "FAIL"
     assert bypass["evidence"]["phase3_rows"] == 1
+    assert bypass["evidence"]["book_guard_allowed"] is False
     assert report["status"] == "FAIL"
+
+
+def test_phase3_row_with_small_valid_pool_and_authority_is_not_a_count_failure(
+    tmp_path: Path, monkeypatch
+) -> None:
+    # A Phase-3 row backed by a non-empty valid pool (here: 1 pair) AND a valid
+    # OWNER order is NOT a bypass: the superseded fixed-25 count no longer fails
+    # the audit (OWNER-DEC-CBE-20260915: any non-empty valid pool is licensed).
+    # The fixture EA has no registry directory, so stub the family fingerprint
+    # (which needs one) to let the guard measure the pool; the pool SIZE, not the
+    # family count, is the point under test.
+    monkeypatch.setattr(book_build_guard, "_count_strategy_families", lambda rows: 1)
+    db = _fixture_db(tmp_path / "farm.sqlite", add_phase3_bypass=True)
+    order_dir = tmp_path / "decisions"
+    _write_dxz_order(order_dir)
+
+    report = path25_red_team.build_audit(db, order_dir=order_dir)
+
+    bypass = _check(report, "evidence.no_phase3_bypass")
+    assert bypass["evidence"]["qualified_pairs"] == 1
+    assert bypass["evidence"]["book_guard_allowed"] is True
+    assert bypass["status"] == "PASS"
+    # The pool-size check is a diagnostic INFO, never a failure.
+    assert _check(report, "evidence.qualified_pool")["status"] == "INFO"
 
 
 def test_column_only_v4_migration_does_not_masquerade_as_native_binding(

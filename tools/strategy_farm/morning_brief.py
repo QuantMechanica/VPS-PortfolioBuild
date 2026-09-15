@@ -15,8 +15,9 @@ Seven sections (German content — OWNER-chat is German), Qxx labels only:
                                   FTMO-Status (Trial beendet).
   2. FRONTIER · Kandidaten     — frische Q08/Q09/Q10-PASSes seit gestern 18:00 +
                                   Q07-PASS mit Q08 laufend (nächstes Buch ~26.07.).
-  3. WEG ZU 25                — Q14-qualifizierte Paare, Q10-News, Opt-Fork,
-                                  Backfill und medianbasierte 10-Terminal-ETA.
+  3. KONTINUIERLICHE          — DXZ/FTMO-Buchentwicklungs-Headline (Read-Models) +
+     BUCHENTWICKLUNG            Qualifizierungs-Diagnostik (Pool als Diagnose, keine
+                                  25-Zielmarke), Q10-News, Opt-Fork, Backfill, ETA.
   4. FACTORY-AMPEL             — Worker, D:-frei, INFRA-Anteil 24h, FACTORY_OFF.flag
                                   → eine Zeile GRÜN/GELB/ROT (ROT nur echtes Down).
   5. OWNER-ENTSCHEIDUNGEN      — severity=action, fällig ≤ 7 Tage, fällig-sortiert
@@ -66,6 +67,7 @@ import render_cockpit as rc          # noqa: E402
 import gmail_alarm as ga             # noqa: E402
 import live_observability_contract as live_obs  # noqa: E402
 import path_to_25 as path25_model    # noqa: E402
+import book_evolution_readmodels as book_evo  # noqa: E402
 
 # ── Brand tokens (PAPER / INK Direction C — paper-light bg, steel-blue
 #    accent, green/red = status + P&L only, sharp edges, no glow) ─────────
@@ -1275,8 +1277,31 @@ def render_live_section(live: dict) -> str:
     )
 
 
+def _book_evolution_headline_html() -> str:
+    """Continuous Book Evolution headline block (OWNER-DEC-CBE-20260915).
+
+    Reads the shared read-models; a missing read-model degrades to
+    EVIDENCE_MISSING and never breaks the 06:00 delivery.
+    """
+    try:
+        cbe = book_evo.book_evolution_headline()
+    except Exception:  # noqa: BLE001 - never break the briefing
+        return _list_line('<b>Buchentwicklung</b>', book_evo.MISSING)
+    return (
+        _list_line('<b>DXZ</b>', e(cbe["dxz"]["detail"]))
+        + _list_line('<b>FTMO</b>', e(cbe["ftmo"]["detail"]))
+        + _list_line('<b>Research</b>', e(cbe["research"]["detail"]))
+        + _list_line('<b>Factory</b>', e(cbe["factory"]["detail"]))
+    )
+
+
 def render_path_to_25_section(metrics: dict) -> str:
-    """German OWNER section backed only by ``path_to_25_metrics`` fields."""
+    """German OWNER Continuous Book Evolution + qualification-diagnostic section.
+
+    The former "Weg zu 25" objective headline is superseded (OWNER-DEC-CBE-
+    20260915): the section now leads with the Continuous Book Evolution headline
+    and presents the qualified-pair count as a DIAGNOSTIC, not a target.
+    """
     p25 = metrics or {}
     news = p25.get("news_gate") or {}
     opt = p25.get("opt_fork") or {}
@@ -1300,12 +1325,14 @@ def render_path_to_25_section(metrics: dict) -> str:
         f"{key} {value}" for key, value in (opt.get("terminal_verdicts") or {}).items()
     ) or "keine"
     body = (
-        f'<table width="100%" cellpadding="0" cellspacing="0" border="0" '
-        f'style="background:{P["surface_2"]};border:1px solid {P["border"]};"><tr>'
+        _book_evolution_headline_html()
+        + f'<table width="100%" cellpadding="0" cellspacing="0" border="0" '
+        f'style="background:{P["surface_2"]};border:1px solid {P["border"]};margin-top:8px;"><tr>'
         f'<td width="34%" style="padding:13px 14px;border-left:4px solid #2954d4;">'
         f'<div style="font-size:28px;font-weight:800;color:{P["text"]};font-family:{MONO};">'
-        f'{e(p25.get("qualified_pairs", 0))}<span style="font-size:14px;color:#2954d4;">/25</span></div>'
-        f'<div style="font-size:10px;color:{P["text_muted"]};">voll qualifizierte Paare</div></td>'
+        f'{e(p25.get("qualified_pairs", 0))}</div>'
+        f'<div style="font-size:10px;color:{P["text_muted"]};">qualifizierter Pool (Diagnose) · '
+        f'Referenz-Poolgröße 25, historisch, abgelöst 2026-09-15</div></td>'
         f'<td style="padding:13px 14px;font-size:11px;color:{P["text_dim"]};line-height:1.55;">'
         f'{e(p25.get("distinct_eas", 0))} EAs · {e(p25.get("families", 0))} Familien · '
         f'ETA {e(eta_text)}<br><span style="color:{P["text_muted"]};">{e(frontier)}</span></td>'
@@ -1324,7 +1351,10 @@ def render_path_to_25_section(metrics: dict) -> str:
     )
     if p25.get("degraded_reason"):
         body += _list_line('<b>Messung nicht verfügbar</b>', p25["degraded_reason"], FAIL)
-    return _section_open("Weg zu 25", "#2954d4", "Q14 terminal · 10 Terminals") + _row(body)
+    return _section_open(
+        "Kontinuierliche Buchentwicklung", "#2954d4",
+        "DXZ + FTMO · Qualifizierung als Diagnose"
+    ) + _row(body)
 
 
 def render_html(data: dict) -> str:
@@ -1611,9 +1641,17 @@ def render_text(data: dict) -> str:
     backfill25 = p25.get("backfill") or {}
     eta25 = p25.get("eta_days")
     eta25_text = f"{eta25:.2f} Tage" if isinstance(eta25, (int, float)) else "nicht belastbar"
-    L.append("WEG ZU 25 (Q14 terminal)")
+    L.append("KONTINUIERLICHE BUCHENTWICKLUNG")
+    try:
+        for line in book_evo.headline_lines():
+            L.append(f"   {line}")
+    except Exception:  # noqa: BLE001 - never break the briefing
+        L.append(f"   Buchentwicklungs-Read-Models nicht lesbar ({book_evo.MISSING})")
+    L.append("")
+    L.append("QUALIFIZIERUNGS-DIAGNOSTIK (Q14 terminal)")
     L.append(
-        f"   Qualifiziert {p25.get('qualified_pairs', 0)}/25 Paare | "
+        f"   Qualifizierter Pool {p25.get('qualified_pairs', 0)} Paare "
+        f"(Referenz-Poolgröße 25, historisch, abgelöst 2026-09-15) | "
         f"{p25.get('distinct_eas', 0)} EAs | {p25.get('families', 0)} Familien | "
         f"ETA {eta25_text}"
     )

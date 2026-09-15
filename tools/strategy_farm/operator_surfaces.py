@@ -295,7 +295,16 @@ def build_operator_snapshot(
         "counts": census["summary"],
         "pairs_by_macro_phase": by_macro,
         "book_guard": {
+            # ``minimum_qualified_pairs`` is a LEGACY key kept for backward
+            # compatibility (Mission Control, dashboards, session tools read it);
+            # since OWNER-DEC-CBE-20260915 it is a DIAGNOSTIC reference-pool size,
+            # NOT a book-build minimum.  ``reference_pool_size`` / ``trigger_policy``
+            # carry the current semantics; book evaluation is licensed for any
+            # non-empty valid qualified pool.
             "minimum_qualified_pairs": book_build_guard.MIN_QUALIFIED_PAIRS,
+            "reference_pool_size": book_build_guard.MIN_QUALIFIED_PAIRS,
+            "reference_pool_size_superseded_utc": "2026-09-15",
+            "trigger_policy": book_build_guard.TRIGGER_POLICY,
             "qualified_pairs": len(qualified),
             "distinct_eas": venue_status["dxz"]["distinct_eas"],
             "strategy_families": venue_status["dxz"]["strategy_families"],
@@ -390,12 +399,17 @@ def render_operator_surface_html(snapshot: dict[str, Any]) -> str:
         order_bits.append(
             f'{venue.upper()} order {"present" if status.get("owner_order_present") else "missing"}'
         )
+    reference_pool = int(
+        guard.get("reference_pool_size") or guard.get("minimum_qualified_pairs") or 25
+    )
+    trigger_policy = str(guard.get("trigger_policy") or "any_valid_pool")
     guard_html = (
         '<div class="op-guard">'
         '<div class="op-guard-title">Book guard</div>'
-        f'<strong>{int(guard.get("qualified_pairs") or 0)} / '
-        f'{int(guard.get("minimum_qualified_pairs") or 25)}</strong>'
-        f'<span>{int(guard.get("distinct_eas") or 0)} distinct EAs · '
+        f'<strong>{int(guard.get("qualified_pairs") or 0)}</strong> qualified pool '
+        f'<span>· reference pool size {reference_pool} '
+        f'(historical, superseded 2026-09-15) · trigger {esc(trigger_policy)} · '
+        f'{int(guard.get("distinct_eas") or 0)} distinct EAs · '
         f'{int(guard.get("strategy_families") or 0)} families · '
         f'{esc(" · ".join(order_bits))}</span>'
         '</div>'

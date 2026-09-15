@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
-"""Shared read-only progress model for the terminal-qualification goal.
+"""Shared read-only qualification-progress diagnostic model.
 
 The public :func:`path_to_25_metrics` function is the only data model consumed
 by Mission Control v2, the 15-minute heartbeat, and the 06:00 OWNER report.  It
 opens SQLite with ``mode=ro`` and ``query_only=ON`` and never mutates work
 items, verdicts, holds, queues, or planner artifacts.
+
+Since OWNER-DEC-CBE-20260915 (Continuous Book Evolution) the qualified-pair
+count is a DIAGNOSTIC, not a business objective: the fixed ``>= 25`` book-build
+trigger is superseded and the module name / JSON keys are retained only for
+backward compatibility with existing consumers.  ``25`` survives here as a
+historical reference-pool size, never as a goal.  The qualification predicate
+(contiguous v4 evidence to the terminal gate) is UNCHANGED.
 """
 from __future__ import annotations
 
@@ -26,6 +33,9 @@ from tools.strategy_farm import (
 )
 
 
+# Historical reference-pool size (OWNER-DEC-CBE-20260915: no longer a goal/target).
+# The name is kept for backward compatibility with consumers that still import it;
+# it is a DIAGNOSTIC reference number, never a book-build gate.
 TARGET_QUALIFIED_PAIRS = 25
 TERMINAL_CAPACITY = 10
 COMPLETION_RATE_WINDOW_DAYS = 7
@@ -61,9 +71,28 @@ _RENDERED_DEFINITION_ID = "STRICT_V4_CONTIGUOUS_Q14"
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _COUNT_DECISION_REL = "decisions/2026-08-27_owner_count_definition_option_a.md"
 _COUNT_DECISION_PATH = _REPO_ROOT / _COUNT_DECISION_REL
+# The pin is over the LF-normalized canonical blob (matching the byte content
+# git stores), NOT the raw working-tree bytes.  On a Windows checkout autocrlf
+# rewrites the file's newlines to CRLF, so ``read_bytes()`` would hash a
+# different (CRLF) blob than the one that was sealed.  Hashing the LF-normalized
+# blob makes the historical pin match regardless of the checkout's line-ending
+# policy while still detecting any real content change.  See the "Pin-SHA über
+# LF-Blob-Bytes" infra lesson.
 _COUNT_DECISION_SHA256 = (
     "d47501ca1f633d49ea2f7213bb107e1cc508a0e0b4b1901af321ec8fbd00fcd2"
 )
+
+
+def _lf_canonical_sha256(path: Path) -> str:
+    """SHA-256 of a text file's LF-normalized canonical bytes.
+
+    Normalizes CRLF and lone-CR newlines to LF before hashing so the digest is
+    stable across git's line-ending checkout policy (the sealed decision blob is
+    stored LF).  Content changes still change the digest.
+    """
+    raw = path.read_bytes()
+    canonical = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    return hashlib.sha256(canonical).hexdigest()
 
 
 def _open_ro(db: str | Path) -> sqlite3.Connection:
@@ -570,7 +599,7 @@ def _counting_definition(
 ) -> dict[str, Any]:
     if not _COUNT_DECISION_PATH.is_file():
         raise RuntimeError(f"sealed count decision missing: {_COUNT_DECISION_PATH}")
-    actual_decision_sha = hashlib.sha256(_COUNT_DECISION_PATH.read_bytes()).hexdigest()
+    actual_decision_sha = _lf_canonical_sha256(_COUNT_DECISION_PATH)
     if actual_decision_sha != _COUNT_DECISION_SHA256:
         raise RuntimeError(
             "sealed count decision sha256 mismatch: "
@@ -597,6 +626,10 @@ def _counting_definition(
         if str(row.get("phase") or "").upper() == "Q14" and verdict in historical_q14_outcomes:
             historical_label.add(key)
 
+    # ``is_trigger`` marks this as THE canonical qualified-pair definition (vs
+    # the secondary diagnostics below).  The counting PREDICATE and the dict
+    # shape are unchanged for backward compatibility; the diagnostic reframing of
+    # 25 (OWNER-DEC-CBE-20260915) lives in ``count_semantics`` / the footnote.
     trigger = {
         "id": _RENDERED_DEFINITION_ID,
         "count": len(strict_pairs),
@@ -612,12 +645,19 @@ def _counting_definition(
         "rendered_definition_id": trigger["id"],
         "rendered_count": trigger["count"],
         "decision_required": False,
+        # OWNER-DEC-CBE-20260915: the pool size is a diagnostic, not a book-build
+        # gate; ``25`` is retained only as a historical reference-pool size.
+        "count_semantics": "DIAGNOSTIC",
+        "reference_pool_size": TARGET_QUALIFIED_PAIRS,
+        "reference_pool_size_superseded_utc": "2026-09-15",
         "trigger": trigger,
         "footnote": (
-            f"Versiegelt durch {_COUNT_DECISION_REL}: Für den >=25-Trigger zählt "
-            "ausschließlich ein (EA, Symbol)-Paar mit kanonischer v4-Evidenz "
-            f"lückenlos bis {terminal_gate}. B/C/D sind reine Sekundärdiagnostik "
-            "und niemals Triggerzahlen."
+            f"Versiegelt durch {_COUNT_DECISION_REL}: Als qualifiziertes "
+            "(EA, Symbol)-Paar zählt ausschließlich eines mit kanonischer "
+            f"v4-Evidenz lückenlos bis {terminal_gate}; B/C/D sind reine "
+            "Sekundärdiagnostik. Die frühere >=25-Buchbau-Schwelle ist seit "
+            "OWNER-DEC-CBE-20260915 abgelöst — die Poolgröße ist eine Diagnose, "
+            "kein Ziel; 25 bleibt nur historische Referenz-Poolgröße."
         ),
         "diagnostics": [
             {
@@ -670,12 +710,14 @@ def _eta_days(
 def path_to_25_metrics(
     db: str | Path, *, _pair_rows: list[dict[str, Any]] | None = None
 ) -> dict[str, Any]:
-    """Return OWNER-facing progress to 25 terminally qualified pairs.
+    """Return the OWNER-facing terminal-qualification DIAGNOSTIC.
 
     ``qualified_pairs`` is the canonical ``(EA, symbol)`` count at the v4 Q14
-    terminal optimization gate.  ETA is a lower-bound capacity estimate from
-    observed phase medians and ten terminals; it is ``None`` when the database
-    has no duration evidence for any gate required by the nearest 25 paths.
+    terminal optimization gate.  Since OWNER-DEC-CBE-20260915 this count is a
+    diagnostic, not a business objective; ``25`` appears only as a historical
+    reference-pool size.  ETA is a lower-bound capacity estimate from observed
+    phase medians and ten terminals toward that reference pool; it is ``None``
+    when the database has no duration evidence for the gates still required.
     """
     db_path = Path(db)
     v4 = gate_manifest.load_gate_manifest(gate_manifest.V4_DRAFT_MANIFEST)
