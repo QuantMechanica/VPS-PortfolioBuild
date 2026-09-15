@@ -4814,3 +4814,13 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
   a true cross-vendor critic in throttle weeks (today: Opus fallback, flagged cross_vendor=false).
 - OPEN (Claude): install the 15-min sweep task after the first live critique receipt is verified; first OWNER report via
   the chain = the sprint daily check 2026-09-15.
+
+## Addendum 2026-09-15 07:5xZ — OWNER line "Freifahrtsschein deckt 1 bis 3"
+
+- CLOSED by OWNER: manifest v2 rev 3 approval (Q16 check 3), 11.0 % book-risk decision record, monitor attach inside the
+  ceremony. File `decisions/2026-09-15_owner_freifahrtsschein_scope_1_to_3.md`.
+- CLOSED: agy credential (OWNER re-login, quota 98.4 %, flag released) → Antigravity seat back for lanes + chain critic.
+- OPEN (OWNER, Sunday pre-ceremony): add XAGUSD and WS30 to the T_Live Market Watch.
+- OPEN (Claude, today, from the chain critic): staged preset 25/1537 carries `strategy_calendar_symbol=XAGUSD.DWX` (verify the
+  resolver reduces to the base name or fix the preset); Q16 checks 1 and 10 re-owned from Codex (throttled) to Claude; D4
+  profile V3 builder + controlled restart plan; F4 FTMO demo package.

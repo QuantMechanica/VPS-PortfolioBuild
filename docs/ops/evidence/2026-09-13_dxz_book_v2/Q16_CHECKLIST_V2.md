@@ -49,7 +49,7 @@ the gate ruled on.
 |---|---|---|---|---|---|---|---|---|---|
 | 1 | fresh compile on T_Live | Codex | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN |
 | 2 | deploy manifest created | Codex | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) |
-| 3 | manifest signed by OWNER | OWNER | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN |
+| 3 | manifest signed by OWNER | OWNER | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) |
 | 4 | RISK_PERCENT set, min-lot for burn-in | Claude | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 5 | Q09 news mode configured | Codex | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 6 | commission/swap = DXZ schedule | Claude | **OPEN** | GREEN* | GREEN | GREEN | GREEN | GREEN | GREEN* |
@@ -242,3 +242,8 @@ exist is a plan that lies.
 The risk-freeze refusal on `--apply` was not provoked against T_Live; it was already
 demonstrated by `stage_tlive_presets_risk.py --apply` (§3), which calls the same
 `risk_freeze.assert_live_book_mutation_allowed` guard.
+
+
+### Addendum 2026-09-15 07:5xZ — check 3
+
+OWNER approval of manifest v2 rev 3 by reference: `decisions/2026-09-15_owner_freifahrtsschein_scope_1_to_3.md` (sha256 1187af1d87fd09fcd448095d570e127c585f265769816945b1dffc43748d43dd, commit 6646c3b217); `owner_signature` field set in `deploy_manifest_v2_DRAFT.yaml` (2954c4bc5c). `claude_verification_signature` stays PENDING until the ceremony verification.
