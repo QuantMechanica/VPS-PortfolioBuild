@@ -151,13 +151,52 @@ computable form is Phase E; this skeleton is the binding contract for that build
   `D:/QM/reports/book_evolution/2026-W38/` for the week ending 2026-09-20. Each week's directory
   holds the frozen input manifest (with hashes), the deterministic engine output for both venues,
   the cross-review notes, and the final Fable recommendation package handed to OWNER.
-- **Scheduled task names (to be created in Phase H — weekly automation, §68H):**
-  `QM_BookEvolution_FridayEvidenceCut` (Fri after close → freeze inputs to the ISO-week dir),
-  `QM_BookEvolution_SaturdayAnalysis` (Sat → deterministic engine + cross-review),
-  `QM_BookEvolution_SundayRecommendation` (Sun → final Fable recommendation + OWNER handoff),
-  and a post-OWNER `QM_BookEvolution_RuntimeVerify` (verify runtime identity/state after OWNER
-  action). These names are reserved here; the tasks themselves are Phase H work and do not exist
-  yet.
+### Implemented weekly automation (Phase H, §68H) — IMPLEMENTED 2026-09-15
+
+The ceremony is driven end to end by **`tools/strategy_farm/book_evolution_runner.py`**
+(deterministic; every subcommand idempotent; logs to `D:/QM/strategy_farm/logs/book_evolution.log`;
+no farm-DB write, no `terminal64`, no deployment, no AutoTrading toggle, no purchase):
+
+| Phase | Command | Scheduled task | When (local) |
+| --- | --- | --- | --- |
+| Friday cut | `book_evolution_runner.py friday-cut` | `QM_BookEvolution_FridayEvidenceCut` | Fri 23:15 |
+| Saturday analysis | `book_evolution_runner.py saturday-analysis` | `QM_BookEvolution_SaturdayAnalysis` | Sat 06:00 |
+| Sunday recommendation | `book_evolution_runner.py sunday-recommendation` | `QM_BookEvolution_SundayRecommendation` | Sun 09:00 |
+| Runtime verify (post-OWNER) | `book_evolution_runner.py runtime-verify` | `QM_BookEvolution_RuntimeVerify` | Mon 06:30 |
+| Supporting read-models | `book_evolution_runner.py readmodels` | `QM_StrategyFarm_BookEvolutionReadModels_15min` | every 15 min |
+
+Installer: `tools/strategy_farm/install_book_evolution_scheduled_tasks.ps1` (SYSTEM principal;
+`-Uninstall` to remove; the orchestrator runs it — a subagent never registers tasks).
+
+- **`friday-cut`** freezes BOTH venues via `recompose freeze` into
+  `D:/QM/reports/book_evolution/<ISO-week>/cuts/<cut-id>/snapshot/<venue>`, refreshes + freezes the
+  supporting read-models (`ftmo_demo_cycle`, `ftmo_challenge_readiness`, `research_state`,
+  `factory_bottleneck`, `book_evolution_health`, `kimi_quota_state`) into `.../cuts/<cut-id>/inputs/`,
+  and writes an **immutable `cut_manifest.json`** carrying the frozen instant (the ISO week's Friday
+  21:15 UTC close) + git commit + the sha256 of every frozen input, then marks the cut **CLOSED** and
+  writes the `active_cut.json` pointer. It **refuses to run twice for the same week** without
+  `--force-new-cut` (which mints a NEW cut id and never overwrites a CLOSED cut).
+- **`saturday-analysis`** evaluates both venues **from the frozen snapshots only** (`recompose
+  evaluate`) → `evaluation.json` + `evidence.md`, then runs the `agent_chain` critique on each
+  venue's `evidence.md` with a cross-vendor (non-Claude) critic when a seat is open; the honest
+  fallback records `cross_vendor: true/false` (or `null` when gated) and **never blocks on quota**.
+  The critic verdict pointer is stored next to the evaluation in `<venue>_cross_review.json`.
+- **`sunday-recommendation`** builds `D:/QM/reports/book_evolution/<ISO-week>/OWNER_DECISION_PACKAGE.md`
+  answering the §9 questions for every proposed change plus the §72 DXZ/FTMO/RESEARCH/KIMI/FACTORY
+  executive block, read from the frozen read-models + evaluations. If the outcome is
+  KEEP/NO_VALID_CHANGE the package says so plainly with `owner_action NONE`; if it is a CHANGE it
+  prepares the technical-artifact list as **DRY-RUN commands** (`stage_tlive_presets_risk` /
+  `build_tlive_book_profile` / `tlive_book_cutover plan`, never executed here) and enqueues **exactly
+  one OWNER decision card per CHANGE venue** through `owner_decision_store.upsert_open_item`
+  (deterministic id `BOOK-EVOLUTION-<ISO-WEEK>-<VENUE>`; idempotent on re-run — a re-run leaves the
+  feed revision unchanged, and a terminal card is never re-opened). The package is mirrored to the
+  Vault at `08 Current State/Book Evolution/<ISO-week>.md` (generated, idempotent, with a stable
+  `_index.md`). `--no-owner-card` / `--no-vault` support dry runs.
+- **`runtime-verify`** is READ-ONLY: it checks the live T_Live profile against its build manifest
+  (`build_tlive_book_profile.verify_profile`) and compares the live FTMO demo `roster_hash` to the
+  frozen cut, writing only `<cut>/verify.json`. It never toggles or deploys anything.
+- **OWNER receives** only the decision package + at most one card per venue; live activation,
+  AutoTrading and any FTMO purchase remain OWNER-only (§9).
 
 ## 8. Q17 as evidence-based live introduction / probation (§10)
 

@@ -690,6 +690,82 @@ def record_decision(
         return receipt
 
 
+def upsert_open_item(
+    item: Mapping[str, Any],
+    *,
+    feed_path: Path = DEFAULT_FEED,
+    vault_owner_path: Path = DEFAULT_VAULT_OWNER,
+    sync_vault: bool = True,
+) -> dict[str, Any]:
+    """Idempotently surface an OPEN OWNER decision card into the feed.
+
+    For generators that raise a *recurring* decision (e.g. the weekly book
+    recomposition, OWNER-DEC-CBE-20260915 section 6/9). Contract:
+
+    * A brand-new id is appended as an OPEN card (revision + 1, Vault synced).
+    * An id already OPEN/DEFERRED with byte-identical OWNER-visible fields is a
+      no-op — the feed is not rewritten and the revision does not move, so a
+      re-run is idempotent.
+    * An id already OPEN/DEFERRED whose card fields changed is refreshed in place
+      (``created_at_utc`` and any decision trail preserved).
+    * An id that already reached a TERMINAL status (DECIDED / SUPERSEDED) is
+      returned unchanged — a generator never re-opens an answered decision.
+
+    Returns ``{"action": created|updated|unchanged|terminal_kept, "item": ...}``.
+    The card carries no execution authority beyond the printed yes/no effect; it
+    never grants T_Live, AutoTrading, deployment, or a purchase.
+    """
+    candidate = dict(item)
+    candidate.setdefault("status", "OPEN")
+    candidate.setdefault("evidence", [])
+    candidate.setdefault("depends_on", [])
+    candidate.setdefault("created_at_utc", utc_now())
+    if str(candidate["status"]).upper() not in {"OPEN", "DEFERRED"}:
+        raise DecisionStoreError("upsert_open_item only creates OPEN/DEFERRED cards")
+    _validate_item(candidate)
+    with exclusive_store_lock(feed_path):
+        feed = load_feed(feed_path)
+        existing = next(
+            (row for row in feed["items"] if str(row["id"]) == str(candidate["id"])), None
+        )
+        if existing is not None:
+            status = str(existing.get("status") or "").upper()
+            if status not in {"OPEN", "DEFERRED"}:
+                return {"action": "terminal_kept", "item": dict(existing)}
+            merged = dict(existing)
+            changed = False
+            for key, value in candidate.items():
+                if key == "created_at_utc":
+                    continue  # never rewrite the original creation instant
+                if merged.get(key) != value:
+                    merged[key] = value
+                    changed = True
+            if not changed:
+                return {"action": "unchanged", "item": dict(existing)}
+            feed["items"] = [
+                merged if str(row["id"]) == str(candidate["id"]) else row
+                for row in feed["items"]
+            ]
+            result_item = merged
+            action = "updated"
+        else:
+            feed["items"].append(candidate)
+            result_item = candidate
+            action = "created"
+        validate_feed(feed)
+        feed["revision"] = int(feed["revision"]) + 1
+        feed["updated_at_utc"] = utc_now()
+        _write_json(feed_path, feed)
+        if sync_vault:
+            try:
+                sync_vault_queue(feed, vault_owner_path)
+            except DecisionStoreError:
+                # Headless host without the Vault mounted: the durable feed write
+                # already happened; the human mirror refreshes on the next sync.
+                pass
+        return {"action": action, "item": dict(result_item)}
+
+
 def bootstrap_plan(
     *,
     feed_path: Path = DEFAULT_FEED,
