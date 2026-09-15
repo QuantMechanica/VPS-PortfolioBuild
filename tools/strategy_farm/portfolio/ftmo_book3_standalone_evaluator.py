@@ -1494,7 +1494,9 @@ def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
             if is_standard
             else "FTMO Challenge 2-Step / USD 100000 / Swing"
         ),
-        "as_of": "2026-09-04",
+        # The Standard rulepack was rebound to the 2026-09-15 official-rules snapshot
+        # (OWNER-DEC-CBE-20260915 s63, commit 992c59d1af); the Swing rulepack is unchanged.
+        "as_of": "2026-09-15" if is_standard else "2026-09-04",
         "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
         "canonicalization": {
             "algorithm": "QM_CANONICAL_JSON_V1",
