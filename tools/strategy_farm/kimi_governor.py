@@ -537,7 +537,14 @@ def _load_quota_fetcher_config(cfg: dict[str, Any]) -> dict[str, Any] | None:
     """Load the quota-fetcher config (guarded); None if absent/broken so the governor
     keeps running on the local ledger."""
     gov_cfg = cfg.get("governor") or {}
-    path = Path(gov_cfg.get("quota_fetcher_config") or _QUOTA_FETCHER_CONFIG)
+    raw = gov_cfg.get("quota_fetcher_config")
+    path = Path(raw) if raw else _QUOTA_FETCHER_CONFIG
+    if raw and not path.is_absolute():
+        # A bare / relative file name is resolved against the governor's config
+        # directory, not the process cwd (the 15-min task runs from the repo root,
+        # operators run from anywhere). Live defect 2026-09-15: the bare name in
+        # kimi_adapter.v1.json silently disabled the real-quota fetch.
+        path = _QUOTA_FETCHER_CONFIG.parent / path
     try:
         obj = json.loads(path.read_text(encoding="utf-8"))
         return obj if isinstance(obj, dict) else None

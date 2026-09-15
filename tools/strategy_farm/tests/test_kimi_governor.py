@@ -317,3 +317,14 @@ def test_runaway_guard_default_raised_to_120_600() -> None:
     gov = kg.governor_config({"schema": "qm.kimi-adapter.v1", "governor": {}})
     assert gov["runaway_guard"] == {"day": 120, "week": 600}
     assert gov["caps"] == {"day": 120, "week": 600}  # legacy alias preserved
+
+
+def test_fetcher_config_bare_name_resolves_against_config_dir():
+    """Regression (2026-09-15): a bare file name in governor.quota_fetcher_config must
+    resolve against the config directory, otherwise the real-quota fetch is silently
+    skipped and the governor stays on the local ledger forever."""
+    import kimi_governor as g
+    cfg = g.load_config()
+    assert g._load_quota_fetcher_config(cfg) is not None
+    cfg2 = {"governor": {"quota_fetcher_config": "kimi_quota_fetcher.v1.json"}}
+    assert g._load_quota_fetcher_config(cfg2) is not None
