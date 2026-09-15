@@ -55,22 +55,87 @@ def _order(
     return path
 
 
-def test_below_25_refuses_even_with_owner_order(
+def test_small_valid_pool_with_owner_order_is_allowed(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    _pool(monkeypatch, 24, eas=8)
+    # OWNER-DEC-CBE-20260915 (directive §3/§4): the fixed >=25 trigger is
+    # superseded. A pool of 3 valid pairs with a matching OWNER order is allowed;
+    # the former "qualified_pairs_below_minimum: N < 25" refusal must not appear.
+    _pool(monkeypatch, 3, eas=3)
+    _order(tmp_path, "dxz")
+
+    result = book_build_guard.check_book_build_allowed("dxz", tmp_path / "state.db", tmp_path)
+
+    assert result.allowed is True
+    assert result.qualified_pairs == 3
+    assert result.distinct_eas == 3
+    assert result.strategy_families == 3
+    assert result.reasons == []
+    assert not any("below_minimum" in reason or "< 25" in reason for reason in result.reasons)
+
+
+def test_empty_pool_refused_even_with_owner_order(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # A non-empty valid pool is still required: an empty pool fails closed even
+    # with a valid OWNER order (unqualified candidates never become eligible).
+    _pool(monkeypatch, 0)
     _order(tmp_path, "dxz")
 
     result = book_build_guard.check_book_build_allowed("dxz", tmp_path / "state.db", tmp_path)
 
     assert result.allowed is False
-    assert result.qualified_pairs == 24
-    assert result.distinct_eas == 8
-    assert result.strategy_families == 8
-    assert any(
-        "qualified_pairs_below_minimum: 24 < 25" in reason
-        for reason in result.reasons
+    assert result.qualified_pairs == 0
+    assert any(reason.startswith("qualified_pool_empty") for reason in result.reasons)
+
+
+def test_unqualified_pairs_are_never_counted(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The qualification predicate is UNCHANGED: only pairs whose
+    # highest_contiguous_valid_gate == the terminal gate are counted. A pair with
+    # a hole below the terminal gate (frontier Q13) must never inflate the pool.
+    class Connection:
+        def close(self) -> None:
+            pass
+
+    monkeypatch.setattr(
+        book_build_guard.rebaseline_census, "open_ro", lambda _path: Connection()
     )
+    monkeypatch.setattr(
+        book_build_guard.rebaseline_census,
+        "build_pairs",
+        lambda _connection, limit: {
+            ("QM5_1", "EURUSD.DWX"): {"frontier": "Q14"},  # qualified
+            ("QM5_2", "GBPUSD.DWX"): {"frontier": "Q13"},  # unqualified (hole below Q14)
+        },
+    )
+    monkeypatch.setattr(
+        book_build_guard.rebaseline_census,
+        "summarise_pair",
+        lambda record: {"highest_contiguous_valid_gate": record["frontier"]},
+    )
+
+    rows = book_build_guard._qualified_pair_rows(Path("unused.db"), "Q14")
+
+    assert rows == [{"ea_id": "QM5_1", "symbol": "EURUSD.DWX"}]
+
+
+def test_25_appears_only_as_diagnostic_never_blocks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The 25 number survives only as a diagnostic reference_pool_size; it is never
+    # a blocker and the trigger policy is reported as any_valid_pool.
+    _pool(monkeypatch, 5, eas=5)
+    _order(tmp_path, "dxz")
+
+    result = book_build_guard.check_book_build_allowed("dxz", tmp_path / "state.db", tmp_path)
+
+    assert result.allowed is True
+    assert result.reasons == []
+    assert result.reference_pool_size == 25
+    assert result.reference_pool_size == book_build_guard.MIN_QUALIFIED_PAIRS
+    assert result.trigger_policy == "any_valid_pool (OWNER-DEC-CBE-20260915)"
+    # The 25 number is never used as a refusal reason.
+    assert not any("< 25" in reason or "below_minimum" in reason for reason in result.reasons)
 
 
 @pytest.mark.parametrize(

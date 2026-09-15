@@ -2,7 +2,7 @@
   "schema_version": "qm.gate-manifest/v4",
   "pipeline_version": "V5-LINEAR-3PHASE-DRAFT-2026-08-23",
   "status": "ACTIVE",
-  "draft_note": "PROPOSAL ONLY. The loader accepts this file for explicit READ_INERT inspection, but the activation guard forbids using it as DEFAULT_MANIFEST. Activation requires OWNER ratification of IDs/windows (ROT) plus the remaining migration tickets in GATE_MANIFEST_V4_LINEAR_PROPOSAL_2026-08-23.md. Until then DEFAULT_MANIFEST stays gate_manifest.v3.json.",
+  "draft_note": "SUPERSEDED 2026-08-23: v4 is the ACTIVE DEFAULT_MANIFEST (see activation_guard.state='ACTIVE', activated_at 2026-08-23; runtime writes v4 rows and pipeline_state renders by_gate_v4). The original 2026-08-23 note read 'PROPOSAL ONLY ... the activation guard forbids using it as DEFAULT_MANIFEST ... Until then DEFAULT_MANIFEST stays gate_manifest.v3.json' - that proposal state ended at activation and no longer describes runtime. Retained non-empty to satisfy the schema; do NOT treat v4 as inert (drift D3, docs/ops/evidence/2026-09-15_continuous_book_evolution).",
   "canonical_id_pattern": "^Q(?:0[0-9]|1[0-7])$",
   "write_policy": "CANONICAL_ONLY",
   "legacy_policy": "READ_AND_MIGRATION_ONLY",
@@ -373,15 +373,15 @@
     "requires_all": [
       {
         "condition": "qualified_candidates_ge_25",
-        "detail": "COUNT(candidates whose highest_contiguous_valid_gate == Q14 with terminal requalification verdict) >= 25. Canonical unit = (EA, Symbol); ALSO report distinct EAs and distinct strategy families."
+        "detail": "LEGACY TOKEN NAME, DIAGNOSTIC SEMANTICS since OWNER-DEC-CBE-20260915 (directive CONTINUOUS BOOK EVOLUTION §3/§4): the fixed '>= 25' minimum is SUPERSEDED and is NO LONGER a book-build blocker. Book build/evaluation is ALLOWED for any NON-EMPTY valid qualified pool (>= 1). COUNT(candidates whose highest_contiguous_valid_gate == the active terminal_requalification_gate (today Q14) with terminal requalification verdict); canonical unit = (EA, Symbol); ALSO report distinct EAs and distinct strategy families. 25 is retained only as a diagnostic reference_pool_size / history value (book_build_guard.MIN_QUALIFIED_PAIRS). The qualification predicate (contiguous Q02..terminal PASS chain, no invalidating hold) is UNCHANGED; unqualified pairs still fail closed and are never counted. Enforcement lives in tools/strategy_farm/book_build_guard.py (trigger_policy = any_valid_pool)."
       },
       {
         "condition": "owner_order_artifact_present",
         "detail": "A verified OWNER book-build order at decisions/YYYY-MM-DD_owner_book_order_<venue>.md, venue in {dxz, ftmo}."
       }
     ],
-    "on_unmet": "REFUSE (raise), never skip; under 25 only measure/complete the pool, never construct a probe book.",
-    "supersedes": "The old Q11 auto-trigger at 5 Q10 pairs is void (already absent in code; now explicitly forbidden)."
+    "on_unmet": "REFUSE (raise), never skip; refuse only when the valid qualified pool is EMPTY (< 1) or the OWNER order artifact is missing. A non-empty valid pool of any size (e.g. 3 or 9 strong independent strategies) may be evaluated/built (OWNER-DEC-CBE-20260915). A pool of many poor/correlated strategies may still produce no useful book - that is a portfolio-quality judgement, not a book-trigger refusal.",
+    "supersedes": "The old Q11 auto-trigger at 5 Q10 pairs is void (already absent in code; now explicitly forbidden). The fixed 'qualified_candidates_ge_25' minimum is SUPERSEDED 2026-09-15 by OWNER-DEC-CBE-20260915 (directive §3/§4): candidate count is a diagnostic, not a book-build precondition; the condition token name is retained as a legacy machine identifier (pinned by the schema/validator/path25_red_team) and now enforces only a non-empty (>= 1) valid pool."
   },
   "backfill_planner_contract": {
     "ordering_global": "FRONTIER_FIRST (rank pairs by highest_contiguous_valid_gate descending so shortest-remaining candidates complete first)",

@@ -28,7 +28,22 @@ except ModuleNotFoundError:
 from tools.strategy_farm.portfolio.portfolio_common import _coerce_ea_int
 
 
+# ``MIN_QUALIFIED_PAIRS`` is DIAGNOSTIC ONLY since OWNER-DEC-CBE-20260915
+# (directive "CONTINUOUS BOOK EVOLUTION" §3/§4).  The former fixed
+# ``qualified_pairs >= 25`` book-build trigger is SUPERSEDED: candidate count is a
+# diagnostic, not a business goal, and there is no OWNER-mandated minimum number
+# of candidates before portfolio construction may be evaluated.  The value is
+# retained here only as a ``reference_pool_size`` / history value that read-model
+# surfaces (operator_surfaces, heartbeat, mission control, path25_red_team) still
+# import; it is NEVER a book-build blocker.  See
+# ``decisions/2026-09-15_owner_continuous_book_evolution.md``.
 MIN_QUALIFIED_PAIRS = 25
+# The real trigger: book build/evaluation is ALLOWED for any NON-EMPTY valid
+# qualified pool.  The qualification predicate (contiguous Q02..terminal-gate PASS
+# chain, no invalidating hold) is UNCHANGED and lives in ``rebaseline_census``;
+# unqualified pairs still fail closed and are never counted.
+MIN_VALID_POOL = 1
+TRIGGER_POLICY = "any_valid_pool (OWNER-DEC-CBE-20260915)"
 SUPPORTED_VENUES = frozenset({"dxz", "ftmo", "both"})
 DEFAULT_DB_PATH = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -47,6 +62,11 @@ class GuardResult:
     strategy_families: int
     order_artifact: str | None
     reasons: list[str]
+    # Diagnostic, backward-compatible additions (OWNER-DEC-CBE-20260915).  These
+    # never change whether a build may proceed; they document the superseded
+    # fixed-25 trigger and the active policy for read models.
+    reference_pool_size: int = MIN_QUALIFIED_PAIRS
+    trigger_policy: str = TRIGGER_POLICY
 
 
 class BookBuildRefused(RuntimeError):
@@ -236,9 +256,16 @@ def check_book_build_allowed(
         reasons.append(f"qualified_pool_unavailable: {type(exc).__name__}: {exc}")
 
     qualified_pairs = len(measured_rows)
-    if qualified_pairs < MIN_QUALIFIED_PAIRS:
+    # OWNER-DEC-CBE-20260915: the only pool-size condition is a NON-EMPTY valid
+    # pool.  An empty pool still fails closed; the former ``< 25`` refusal is gone.
+    # (If the pool could not be measured, ``qualified_pool_unavailable`` is already
+    # recorded above, so do not stack a second empty-pool reason on top of it.)
+    if qualified_pairs < MIN_VALID_POOL and not any(
+        reason.startswith("qualified_pool_unavailable") for reason in reasons
+    ):
         reasons.append(
-            f"qualified_pairs_below_minimum: {qualified_pairs} < {MIN_QUALIFIED_PAIRS}"
+            f"qualified_pool_empty: {qualified_pairs} < {MIN_VALID_POOL} "
+            "(no valid qualified pair)"
         )
 
     artifact, artifact_reasons = _find_owner_order(
@@ -254,6 +281,8 @@ def check_book_build_allowed(
         strategy_families=strategy_families,
         order_artifact=artifact,
         reasons=reasons,
+        reference_pool_size=MIN_QUALIFIED_PAIRS,
+        trigger_policy=TRIGGER_POLICY,
     )
 
 
