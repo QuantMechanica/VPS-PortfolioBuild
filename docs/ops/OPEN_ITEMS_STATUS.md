@@ -4839,3 +4839,9 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
   `docs/ops/evidence/2026-09-14_q08_context_repair/hold_q08ctx_*_20260915*.json`); claims resumed 09:31Z (4 claims in 1 min, 5 cells).
 - OPEN: worker defect + missing watch signal → ticket (evidence dir `2026-09-15_claim_head_of_line_preflight`); 381 pending rows carry a 44 GB
   multisymbol reservation and can never be admitted at ≤43 GB free (skipped each pass, cost = scan CPU) → re-park after the exclusive-lane fix.
+
+## Addendum 2026-09-15 12:0xZ — Kimi integration programme DONE (OWNER ULTRACODE directive)
+
+- DONE: Kimi = governed research provider (adapter, governor + 15-min task, router lane, chain critic, R1 internal source class, pre-Q00 research package, canonical annexes incl. Vault), 208 tests, smoke receipt, adversarial review (12 findings fixed). Final report `docs/ops/evidence/2026-09-15_kimi_integration/FINAL_REPORT.md` (rollback per slice inside).
+- NOT installed on purpose: `QM_StrategyFarm_KimiOrchestration_15min` (installer switch -IncludeKimi) until Fable starts the first research campaign; campaign blocked by D: < 80 GB research rule (68 GB today).
+- OPEN (OWNER, optional): codex_budget_line_exempt for critic calls; credential-file ACL tightening; the two v1 FTMO demo sleeves 13054/21505 keep running until the demo book v2 replaces them.
