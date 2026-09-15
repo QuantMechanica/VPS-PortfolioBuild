@@ -1,7 +1,7 @@
 # DXZ live book v2 — deploy manifest DRAFT (Q16), 2026-09-13 — REV 3: 28 SLEEVES @ 11.0 % / CAP 1.5 %
 # OWNER-DEC-BOOK-RISK-11-20260913: not-worse gate vs the deployed 24 holds at 11.0/1.5, breaks at 12.0.
 # Schema: vault "03 Pipeline/Q16 Operational Readiness.md" > Deploy Manifest Schema.
-# DRAFT: unsigned. Without OWNER signature AND Claude verification: no AutoTrading (Hard Rule).
+# DRAFT rev 3: OWNER-approved 2026-09-15 (see owner_signature); Claude verification PENDING until the ceremony. No AutoTrading before both (Hard Rule).
 # Nothing in this file has been deployed. AutoTrading on T_Live is untouched and OWNER-only.
 
 book: DXZ_4000090541
@@ -26,7 +26,7 @@ news_calendar_observed_modified_utc: "2026.09.10 05:30:31"
 news_calendar_note: >
   Live EAs use the NATIVE MT5 calendar, fail-closed (DL-080). The CSV above is tester
   diagnostics only and must never be read by an ENV=live build.
-owner_signature: PENDING
+owner_signature: "OWNER chat 2026-09-15 ~07:4xZ: Freifahrtsschein deckt 1 bis 3 | decisions/2026-09-15_owner_freifahrtsschein_scope_1_to_3.md sha256 1187af1d87fd09fcd448095d570e127c585f265769816945b1dffc43748d43dd commit 6646c3b217 | approves rev 3 (28 sleeves @ 11.0 % / cap 1.5 %); a material roster or risk change needs a fresh reference"
 claude_verification_signature: PENDING
 
 portfolio:
