@@ -1,0 +1,157 @@
+{
+  "schema": "qm.ftmo-official-rules-snapshot/v2",
+  "profile": "FTMO Challenge 2-Step / USD 100000 / Standard",
+  "product": "2-Step",
+  "account_size_usd": 100000,
+  "account_type": "Standard",
+  "retrieved_at_utc": "2026-09-15T13:59:31Z",
+  "fetched_utc": "2026-09-15T13:59:31Z",
+  "freshness_max_age_days": 7,
+  "readiness_blocker_age_days": 30,
+  "source_url": "https://ftmo.com/en/trading-objectives/",
+  "retrieval_method": "board-advisor WebFetch/WebSearch read-only fetch 2026-09-15; Standard-profile pages. No credentials used; GET-only.",
+  "supersedes": "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json",
+  "supersession_note": "Refreshes the 2026-09-04 Swing-labelled snapshot for the Standard profile actually running on demo account 1514536732. OWNER-DEC-CBE-20260915 / directive 2026-09-15 sections 62-63. History not deleted; prior snapshot retained.",
+  "sources": [
+    {
+      "source_id": "ftmo_trading_objectives_official",
+      "url": "https://ftmo.com/en/trading-objectives/",
+      "fetch_status": "OK",
+      "http_status": 200,
+      "fetched_utc": "2026-09-15T13:59:31Z"
+    },
+    {
+      "source_id": "ftmo_account_specifications_faq",
+      "url": "https://ftmo.com/en/faq/what-are-the-account-specifications/",
+      "fetch_status": "OK",
+      "http_status": 200,
+      "fetched_utc": "2026-09-15T13:59:31Z"
+    },
+    {
+      "source_id": "ftmo_instruments_strategies_faq",
+      "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+      "fetch_status": "OK",
+      "http_status": 200,
+      "fetched_utc": "2026-09-15T13:59:31Z"
+    },
+    {
+      "source_id": "ftmo_standard_leverage_websearch",
+      "url": "https://ftmo.com/en/faq/what-are-the-account-specifications/",
+      "fetch_status": "OK",
+      "http_status": 200,
+      "fetched_utc": "2026-09-15T13:59:31Z",
+      "note": "Asset-class leverage differentials confirmed via ftmo.com FAQ search snippet; page body carries only the '1:100 Standard' headline."
+    },
+    {
+      "source_id": "ftmo_trading_conditions",
+      "url": "https://ftmo.com/en/trading-conditions/",
+      "fetch_status": "HTTP_404",
+      "http_status": 404,
+      "fetched_utc": "2026-09-15T13:59:31Z",
+      "note": "News/overnight/weekend rule page not resolvable at this URL 2026-09-15; those fields CARRIED_OVER from STANDARD_V2 rulepack official_rules with provenance."
+    }
+  ],
+  "fields": {
+    "account_type": {"value": "Standard (Normal)", "provenance": "FETCHED", "source_id": "ftmo_account_specifications_faq"},
+    "account_size": {"value": "USD 100000", "provenance": "FETCHED", "source_id": "ftmo_trading_objectives_official"},
+    "product": {"value": "2-Step Challenge -> Verification -> FTMO Account", "provenance": "FETCHED", "source_id": "ftmo_trading_objectives_official"},
+    "targets": {
+      "phase1_profit_target_pct": "10",
+      "phase1_profit_target_usd": "10000",
+      "verification_profit_target_pct": "5",
+      "verification_profit_target_usd": "5000",
+      "provenance": "FETCHED",
+      "source_id": "ftmo_trading_objectives_official"
+    },
+    "daily_loss": {
+      "percent_of_initial": "5",
+      "amount_usd": "5000",
+      "timezone": "Europe/Prague",
+      "reset_local_time": "00:00:00",
+      "limit_basis": "MIDNIGHT_BALANCE_MINUS_FIXED_AMOUNT",
+      "tested_quantity": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+      "breach_operator": "STRICTLY_BELOW_LIMIT",
+      "provenance": "FETCHED",
+      "source_id": "ftmo_trading_objectives_official"
+    },
+    "max_loss": {
+      "model": "STATIC_INITIAL",
+      "percent_of_initial": "10",
+      "amount_usd": "10000",
+      "floor_usd": "90000",
+      "tested_quantity": "EQUITY_INCLUDING_OPEN_PNL_SWAPS_COMMISSIONS",
+      "breach_operator": "STRICTLY_BELOW_LIMIT",
+      "provenance": "FETCHED",
+      "source_id": "ftmo_trading_objectives_official"
+    },
+    "trading_day_requirement": {
+      "minimum_trading_days": "4",
+      "definition": "Any CE(S)T calendar day 00:00:00-23:59:59 with at least one newly opened position",
+      "applies_to": ["FTMO_2_STEP_PHASE1", "FTMO_2_STEP_VERIFICATION"],
+      "provenance": "FETCHED",
+      "source_id": "ftmo_trading_objectives_official"
+    },
+    "deadline": {
+      "value": "NONE",
+      "note": "No maximum time period to complete the 2-Step Challenge phases (unlimited period).",
+      "provenance": "FETCHED",
+      "source_id": "ftmo_trading_objectives_official"
+    },
+    "leverage": {
+      "headline": "up to 1:100, cannot be increased",
+      "fx": "1:100",
+      "indices": "1:50",
+      "indices_exceptions": {"HK50.cash": "1:30", "US2000.cash": "1:30", "SPN35.cash": "1:30"},
+      "metals": "1:30",
+      "provenance": "FETCHED",
+      "source_id": "ftmo_standard_leverage_websearch",
+      "note": "Standard (Normal) account leverage; repairs the 2026-09-04 gap where only Swing (fx 1:30 / metals+oil 1:15) values were carried over. Observed demo-account leverage 1:100 is consistent (account-bound evidence)."
+    },
+    "instrument_restrictions": {
+      "restriction_list_published": false,
+      "tradable_asset_classes": ["Forex", "Indices", "Commodities", "Stocks", "Crypto"],
+      "note": "FTMO states all instruments available in the trading platform may be traded; no public per-symbol restriction list. Per-instrument specification via MT5 Market Watch. Repairs the 2026-09-04 GAP (trading-symbols page 404).",
+      "provenance": "FETCHED",
+      "source_id": "ftmo_instruments_strategies_faq"
+    },
+    "execution_constraints": {
+      "max_simultaneous_orders": "200",
+      "max_positions_per_day_hyperactive_threshold": "2000",
+      "eas_allowed": true,
+      "scalping_allowed": true,
+      "third_party_ea_capital_allocation_rule": "Third-party EA use may deny the account if the maximum capital allocation rule is exceeded.",
+      "stop_loss_required": false,
+      "forbidden_practices_reference": "https://ftmo.com/en/ (Forbidden Trading Practices article)",
+      "provenance": "FETCHED",
+      "source_id": "ftmo_instruments_strategies_faq"
+    },
+    "news_rule": {
+      "challenge_phase_restriction": false,
+      "funded_account_restriction": "Standard funded account restricts trading +/-2 minutes around targeted high-impact releases; exempt during Evaluation (Challenge/Verification).",
+      "provenance": "CARRIED_OVER",
+      "carried_over_from": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json official_rules",
+      "note": "trading-conditions page 404 on 2026-09-15; Standard instruments/strategies FAQ shows no Challenge-phase news restriction, consistent with 'exempt during Evaluation'."
+    },
+    "overnight_rule": {
+      "challenge_phase_restriction": false,
+      "funded_account_restriction": "Standard funded account: positions expected to be managed intra-week; >2h continuous break / weekend hold restricted on funded. Exempt during Evaluation.",
+      "provenance": "CARRIED_OVER",
+      "carried_over_from": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json official_rules"
+    },
+    "weekend_rule": {
+      "challenge_phase_restriction": false,
+      "funded_account_restriction": "Standard funded account: close positions before the weekend. Exempt during Evaluation.",
+      "provenance": "CARRIED_OVER",
+      "carried_over_from": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json official_rules"
+    }
+  },
+  "gaps_repaired_vs_2026_09_04": [
+    "Standard-account provider leverage now bound (fx 1:100 / indices 1:50 / metals 1:30) instead of Swing carried-over values.",
+    "Instrument tradability bound from the official instruments FAQ (all platform asset classes; no public restriction list) instead of the 404 trading-symbols GAP.",
+    "Profile corrected from Swing to Standard to match demo account 1514536732."
+  ],
+  "remaining_gaps": [
+    "News/overnight/weekend Challenge-phase exemptions are CARRIED_OVER (trading-conditions URL 404 on 2026-09-15); they are not decision-blocking because all three are exempt during Evaluation for the Standard product, which is the phase the two-week demo validates.",
+    "Per-symbol spread/commission/swap specifications remain in MT5 platform (not scraped)."
+  ]
+}
