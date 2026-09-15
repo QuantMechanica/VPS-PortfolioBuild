@@ -1,0 +1,243 @@
+{
+  "apply": true,
+  "chain_id": "owner_sprint_daily_20260915",
+  "critic_verdict": "REJECT",
+  "fake_mode": false,
+  "final_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915\\final.md",
+  "finding_counts": {
+    "blocking": 3,
+    "major": 9,
+    "minor": 2
+  },
+  "generated_at_utc": "2026-09-15T07:24:13Z",
+  "input_bindings": [
+    {
+      "bytes": 9872,
+      "exists": true,
+      "path": "C:\\QM\\repo\\docs\\ops\\BOOK_SPRINT_2026-09-20.md",
+      "sha256": "014ed7ac830251b98827412134b9a895547911410f0aaa4be1aefd04690cc6e3"
+    },
+    {
+      "bytes": 3501,
+      "exists": true,
+      "path": "C:\\QM\\repo\\decisions\\2026-09-14_owner_risk_freeze_lift.md",
+      "sha256": "98f282be4781631b5bb2f92f7272013ab12c5b26474d7e7005236ed651b9e425"
+    }
+  ],
+  "kill_switch": false,
+  "kind": "run",
+  "out_dir": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915",
+  "plan": {
+    "creator": {
+      "effort": null,
+      "model": "sonnet",
+      "note": "",
+      "vendor": "claude"
+    },
+    "critic": {
+      "cross_vendor": false,
+      "effort": null,
+      "model": "opus",
+      "note": "same-vendor fallback: different model, cross_vendor=false",
+      "vendor": "claude"
+    },
+    "formatter": {
+      "effort": null,
+      "model": "haiku",
+      "note": "",
+      "vendor": "claude"
+    },
+    "max_rounds": 1,
+    "timeout_seconds": 900
+  },
+  "receipt_path": "D:\\QM\\strategy_farm\\state\\agent_chain\\owner_sprint_daily_20260915.json",
+  "schema": "qm.agent-chain.receipt.v1",
+  "scope_drift": "narrowed: reports ticket-level 'done' as item-level done (D2 with an OPEN Q16 cell, F3 as a re-reading rather than a result) and omits the Q16 readiness surface (48 GREEN/20 OPEN/9 RED, 'no sleeve fully GREEN') and two OWNER acts, so part (d) 'remaining OWNER acts' is incomplete.",
+  "seat_trace": {
+    "creator": [
+      {
+        "seat": "claude:sonnet",
+        "selected": true
+      }
+    ],
+    "critic": [
+      {
+        "seat": "codex:terra/medium",
+        "skipped": "codex_low_tokens_flag"
+      },
+      {
+        "seat": "agy:default",
+        "skipped": "agy_low_quota_flag"
+      },
+      {
+        "cross_vendor": false,
+        "seat": "claude:opus",
+        "selected": true
+      }
+    ],
+    "formatter": [
+      {
+        "seat": "claude:haiku",
+        "selected": true
+      }
+    ]
+  },
+  "spec_sha256": "debc7e1136deb07d3a1c06829cf86056c5b9913ba82f1c2ecd867f7d234eff7d",
+  "stages": [
+    {
+      "cost_usd": 0.25390820000000003,
+      "cross_vendor": null,
+      "duration_s": 89.094,
+      "output_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915\\stage1_creator.md",
+      "prompt_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915\\stage1_creator_prompt.md",
+      "reason": "",
+      "returncode": 0,
+      "role": "creator",
+      "seat": {
+        "effort": null,
+        "model": "sonnet",
+        "note": "",
+        "vendor": "claude"
+      },
+      "sha256": "70bd21f8ec17fe58accbeae05106a7a309498eb4ecf48eff2404f482775fda8d",
+      "status": "ok",
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 36196,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 36196,
+        "cache_read_input_tokens": 6271,
+        "inference_geo": "not_available",
+        "input_tokens": 2,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 36196,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 36196,
+            "cache_read_input_tokens": 6271,
+            "input_tokens": 2,
+            "output_tokens": 10052,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 10052,
+        "output_tokens_details": {
+          "thinking_tokens": 3828
+        },
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    },
+    {
+      "cost_usd": 2.4511789999999998,
+      "cross_vendor": false,
+      "duration_s": 446.515,
+      "output_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915\\stage2_critic.md",
+      "prompt_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915\\stage2_critic_prompt.md",
+      "reason": "",
+      "returncode": 0,
+      "role": "critic",
+      "seat": {
+        "effort": null,
+        "model": "opus",
+        "note": "same-vendor fallback: different model, cross_vendor=false",
+        "vendor": "claude"
+      },
+      "sha256": "6f999d0c31e77d89a238a7fcd4b2e673b3e19b381c65c04f076d4d0d36189277",
+      "status": "ok",
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 106983,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 106983,
+        "cache_read_input_tokens": 1212816,
+        "inference_geo": "not_available",
+        "input_tokens": 32,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 1454,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 1454,
+            "cache_read_input_tokens": 110953,
+            "input_tokens": 2,
+            "output_tokens": 15010,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 30494,
+        "output_tokens_details": {
+          "thinking_tokens": 16433
+        },
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    },
+    {
+      "cost_usd": 0.14839170000000002,
+      "cross_vendor": null,
+      "duration_s": 197.984,
+      "output_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915\\stage3_final.md",
+      "prompt_path": "D:\\QM\\strategy_farm\\artifacts\\agent_chain\\owner_sprint_daily_20260915\\stage3_final_prompt.md",
+      "reason": "",
+      "returncode": 0,
+      "role": "formatter",
+      "seat": {
+        "effort": null,
+        "model": "haiku",
+        "note": "",
+        "vendor": "claude"
+      },
+      "sha256": "0777b76120fa9a64a7e819ec45d5533b245df5b18de74b31ad0e0ad873dc6c87",
+      "status": "ok",
+      "usage": {
+        "cache_creation": {
+          "ephemeral_1h_input_tokens": 30462,
+          "ephemeral_5m_input_tokens": 0
+        },
+        "cache_creation_input_tokens": 30462,
+        "cache_read_input_tokens": 8277,
+        "inference_geo": "not_available",
+        "input_tokens": 9,
+        "iterations": [
+          {
+            "cache_creation": {
+              "ephemeral_1h_input_tokens": 30462,
+              "ephemeral_5m_input_tokens": 0
+            },
+            "cache_creation_input_tokens": 30462,
+            "cache_read_input_tokens": 8277,
+            "input_tokens": 9,
+            "output_tokens": 14477,
+            "type": "message"
+          }
+        ],
+        "output_tokens": 14477,
+        "output_tokens_details": {
+          "thinking_tokens": 9051
+        },
+        "server_tool_use": {
+          "web_fetch_requests": 0,
+          "web_search_requests": 0
+        },
+        "service_tier": "standard",
+        "speed": "standard"
+      }
+    }
+  ],
+  "status": "ok",
+  "task_id": null
+}

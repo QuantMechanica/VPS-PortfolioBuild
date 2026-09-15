@@ -1,0 +1,150 @@
+{
+  "findings": [
+    {
+      "action": "Before any ceremony step, obtain the OWNER decision card the sprint §0 already drafts ('Freeze-Bedingung 2 für den Cutover als erfüllt werten, Restpunkte als Nacharbeit') with the four residual items named verbatim; until then report condition 2 as OPEN, not 'getragen'.",
+      "check_performed": "Read risk_freeze.py LIFT_CONDITIONS + lift_rule string, the transcription tool's refusal conditions (it verifies only the sentence, the marker and ACTIVE status — never a condition), and the lift decision file end to end; compared against the deliverable's summary and its own Unknowns.",
+      "claim": "\"Alle drei Cutover-Bedingungen sind laut OWNER-Lift-Datei formal getragen … Bedingung 2 wird von der OWNER-Formel ausdrücklich als Nacharbeit getragen ('es steht nichts im Weg').\"",
+      "evidence": "tools/strategy_farm/risk_freeze.py:223-225 (lift rule) and :55-59 (condition 2 PARTIAL); decisions/2026-09-14_owner_risk_freeze_lift.md:12-14 (verbatim, no condition named), :24 (AI-authored carrying); tools/strategy_farm/session_tools/risk_freeze_lift_0914.py:59 (lift_scope_note hardcoded, no condition check); docs/ops/BOOK_SPRINT_2026-09-20.md:23-24 (fallback needs an OWNER card); stage-1 Unknowns bullet 8",
+      "id": "F1",
+      "problem": "The machine-readable lift rule requires ALL THREE conditions met AND an explicit written OWNER lift, and forbids any seat lifting by inference. Condition 2 is PARTIAL by every source. The OWNER's verbatim sentence names no condition; the 'carried as Nacharbeit' wording is AI-authored (lift file table + risk_freeze_lift_0914.py's hardcoded lift_scope_note), i.e. exactly the inference the rule forbids. The sprint file's own §0 says carrying condition 2 requires an OWNER decision card — and the deliverable's own Unknowns section says that card's status is open. Summary and Unknowns contradict each other.",
+      "severity": "blocking"
+    },
+    {
+      "action": "Add 'OWNER signs deploy_manifest_v2 (Q16 check 3)' to the remaining OWNER acts with a due date before Sunday 09:00 local, or record explicitly that the 09-14 lift is claimed to subsume it and get that confirmed in writing.",
+      "check_performed": "Read the draft manifest head and the Q16 check matrix; compared the OPEN OWNER-owned rows against the deliverable's enumerated OWNER acts.",
+      "claim": "\"Laut Log wartet heute nichts auf den OWNER außer dem agy-Relogin\" and the OWNER-act list = agy re-login, D3 check 9 Market Watch, F5 attach, AutoTrading.",
+      "evidence": "docs/ops/evidence/2026-09-13_dxz_book_v2/deploy_manifest_v2_DRAFT.yaml:4, :29-30 (owner_signature: PENDING, claude_verification_signature: PENDING); docs/ops/evidence/2026-09-13_dxz_book_v2/Q16_CHECKLIST_V2.md:52 (check 3 OPEN × 7)",
+      "id": "F2",
+      "problem": "The deploy manifest is unsigned and Q16 check 3 'manifest signed by OWNER' is OPEN for all 7 sleeves. CLAUDE.md's T_Live workflow makes the written OWNER manifest approval step 2, before verification and AutoTrading. The manifest header itself states: 'Without OWNER signature AND Claude verification: no AutoTrading (Hard Rule).' This OWNER act is absent from deliverable part (d).",
+      "severity": "blocking"
+    },
+    {
+      "action": "Split D6: list 'OWNER attaches monitor v2 chart on T_Live' (and the 28 book charts if the same rule applies) as an explicit OWNER act in the Sunday window, and downgrade condition 3 to PARTIAL until the enforce switch is observed.",
+      "check_performed": "Read the full governor enforce order and the condition-3 entry in risk_freeze.py; compared with the sprint's D6 step list and the deliverable's 'Bedingung 3 ratifiziert'.",
+      "claim": "\"Bedingung 3 (Governor-Hardening) ratifiziert\" / condition 3 satisfied; D6 ceremony 'autonom': V3 profile (28 charts + monitor) → reseal → controlled T_Live restart → governor enforce, owner Claude.",
+      "evidence": "decisions/2026-09-13_owner_governor_enforce_dxz.md:51-56 (no enforce today, chart not attached), :63-65 (attach OWNER-only); tools/strategy_farm/risk_freeze.py:61-64 (requirement 'hardened AND actually enforcing', status AWAITING_OWNER_SIGNATURE); docs/ops/BOOK_SPRINT_2026-09-20.md:21,38",
+      "id": "F3",
+      "problem": "The ratified governor order reserves the monitor-v2 chart attach on T_Live to the OWNER ('T_Live chart work is OWNER-only; no AI seat performs it') and states 'No switch to enforce mode today'. Condition 3's requirement is 'hardened AND actually enforcing' — not met. So (a) condition 3 is reported as satisfied when its own requirement is open, and (b) the ceremony plan has an AI seat performing an act a signed OWNER order reserves for the OWNER, with that act missing from the OWNER-act list.",
+      "severity": "blocking"
+    },
+    {
+      "action": "Report the Q16 cell counts and the Codex-owned OPEN items (check 1, check 10) in the daily check, and state how they close before Sunday given the throttle, or park them with a reason.",
+      "check_performed": "Read the 11×7 check matrix and the per-item owner column; cross-checked owners against the deliverable's seat-status paragraph (Codex throttled until Friday).",
+      "claim": "DXZ status reported as D1/D2/D5 done, D7 accepted, only D3/D4/D6 open — implying Q16 readiness is essentially in hand.",
+      "evidence": "docs/ops/evidence/2026-09-13_dxz_book_v2/Q16_CHECKLIST_V2.md:50 (check 1 OPEN ×7, owner Codex), :69 (48/20/9, 'No sleeve is fully GREEN'), :108-119 (OPEN-10 owner Codex)",
+      "id": "F4",
+      "problem": "The Q16 checklist rev 3 counts 48 GREEN (2 of them class-proxy) / 20 OPEN / 9 RED and states 'No sleeve is fully GREEN'. Check 1 (fresh compile on T_Live) is OPEN for all 7 sleeves and owned by Codex, who is budget-throttled until Fri 09-19 08:29Z. None of this appears in the daily check, which instead names a Claude-owned tooling task as the single blocker.",
+      "severity": "major"
+    },
+    {
+      "action": "Reconcile ownership of Q16 check 10 in the sprint table with the checklist, or record the re-assignment and why.",
+      "check_performed": "Compared owner attribution in the checklist against the sprint table and the deliverable.",
+      "claim": "\"D3 open: check 10 Magic-Embedding 9641/WS30 (Claude)\"",
+      "evidence": "docs/ops/evidence/2026-09-13_dxz_book_v2/Q16_CHECKLIST_V2.md:59 (check 10 row), :108 ('OPEN-10 … Owner **Codex**'); docs/ops/BOOK_SPRINT_2026-09-20.md:35",
+      "id": "F5",
+      "problem": "The Q16 checklist assigns OPEN-10 to Codex, not Claude, and gives two closure routes (fresh T_Live compile, or reading the INIT log after chart attach). Mis-assigning a throttled seat's item to Claude understates the schedule risk.",
+      "severity": "major"
+    },
+    {
+      "action": "Carry the commodity-class caveat (model + ~1 cent/lot, not a ceiling) and the 'swap directional only' limitation into the daily check and into the burn-in acceptance criteria for 1537 and 10700.",
+      "check_performed": "Read the full check-6/7 evidence file and compared its findings section against the deliverable's one-line D2 summary.",
+      "claim": "\"D2 done (81cd1527b1): check 7 GREEN, check 6 GREEN für 4 + Class-Proxy 2, 1537/XAGUSD bleibt OPEN (keine Deal-Historie)\"",
+      "evidence": "docs/ops/evidence/2026-09-13_dxz_book_v2/Q16_CHECK6_CHECK7_EVIDENCE_2026-09-14.md:42, :48-58, :60-66 (swap = directional confirmation only, no cent-exact reconciliation)",
+      "id": "F6",
+      "problem": "Faithful as far as it goes, but it drops the evidence file's central finding: 5 of 14 realised XAUUSD commissions land $0.001–0.008 ABOVE the modeled worst case at min-lot size, with the explicit recommendation 'do not certify the commodity worst-case model as a strict ceiling'. Both new commodity sleeves (25/1537 XAGUSD, 27/10700 XAUUSD) burn in at exactly that lot regime. For a cost-model claim in an OWNER pre-cutover report this is the material part.",
+      "severity": "major"
+    },
+    {
+      "action": "State plainly in part (b): 'kein D-/F-Item hat sich in 24 h bewegt; die 12–13 Approvals betrafen Nicht-Sprint-Arbeit', then re-rank the day's work accordingly.",
+      "check_performed": "Mapped each named delivery in the 23:4xZ and 07:2xZ log entries onto the D1–D7/F1–F5 item list; no intersection.",
+      "claim": "\"In den letzten 24 h nach REVIEW/APPROVED bewegt: insgesamt 12–13 Sonnet-Lane-Lieferungen … approved\" — presented as the sprint's progress report.",
+      "evidence": "docs/ops/BOOK_SPRINT_2026-09-20.md:33-39 and :53-57 (status cells unchanged), :89-98 (overnight list, all non-sprint work); stage-1 summary bullet 4",
+      "id": "F7",
+      "problem": "None of the 12–13 approvals maps to a D- or F-item: Dukascopy P3, card-intake prescreen, Edge Lab cards, disk-bomb guard, purge relaunch, prescreen-skip, evidence-loss forensics, 13013 refusal, OOS-2026, winsweep compile, hygiene. No D or F status cell changed since Mon 20:5xZ. The daily check reports throughput as sprint movement without stating that sprint-item progress in the last 24 h was zero.",
+      "severity": "major"
+    },
+    {
+      "action": "State in the daily check what the FTMO demo book v2 will contain and under which written admission rule (gate-passing sleeves only, or an explicit OWNER decision to admit below the floor on a demo account); until then report the FTMO half as 'Inhalt undefiniert', not as three of five items done.",
+      "check_performed": "Read the FTMO section of the sprint file and the acceleration doc; searched the deliverable and inputs for any FTMO v2 roster/manifest/checklist artifact — none named.",
+      "claim": "Sunday deliverable = 'FTMO-Demo-Buch v2'; F1/F2/F3 done, only F4 (package) and F5 (OWNER attach) open.",
+      "evidence": "docs/ops/BOOK_SPRINT_2026-09-20.md:43-49, :54-56; docs/ops/FTMO_ACCELERATION_2026-09-09.md:3 ('keine Kauf-/Handelsfreigabe'), :27-29 (16 pairs, 0 admitted); decisions/2026-09-14_owner_risk_freeze_lift.md:39 (gate thresholds untouched)",
+      "id": "F8",
+      "problem": "There is no content for the FTMO book anywhere in the inputs or the repo artifacts named: builder BAR_NOT_MET with 0 sleeves, 0 of 16 pairs admitted, FUND_SCORE of all pairs below floor 1.0. No roster, no manifest, no Q16-equivalent checklist for the demo book exists. F3 'done' is a re-reading of the order, i.e. a document, not a measured RESULT. If F4 admits sleeves that fail the FUND_SCORE floor, that is a gate/candidate-pool change by prose (ROT), which no lift authorises.",
+      "severity": "major"
+    },
+    {
+      "action": "Fix the sequence explicitly: OWNER adds both symbols to Market Watch as a pre-ceremony act, then the V3 profile opens the charts; drop the 'handled by the V3 profile charts' wording from D5.",
+      "check_performed": "Read OPEN-9 in full and compared with D3 and D5 cells and the deliverable's OWNER-act list.",
+      "claim": "\"D5 done … Market Watch XAGUSD/WS30 handled by the V3 profile charts\" together with \"(2) D3 check 9 Routing XAGUSD/WS30 im OWNER Market Watch (Termin: Zeremonie)\".",
+      "evidence": "docs/ops/evidence/2026-09-13_dxz_book_v2/Q16_CHECKLIST_V2.md:95-104 ('OWNER adds XAGUSD and WS30 to Market Watch on T_Live before the charts are opened'; dwx_symbol_matrix.csv cells empty); docs/ops/BOOK_SPRINT_2026-09-20.md:35,37",
+      "id": "F9",
+      "problem": "Mutually exclusive as written, and both contradict the checklist, which says neither symbol is in T_Live's Market Watch and the OWNER must add them BEFORE the charts are opened — a profile that references a symbol absent from Market Watch does not create it. The deliverable reproduces both positions without resolving the order of operations for the ceremony.",
+      "severity": "major"
+    },
+    {
+      "action": "Either commit a decisions/ file for OWNER-DEC-BOOK-RISK-11-20260913 with the OWNER's own words on the 11.0 % level, or present the 9.75→11.0 step to the OWNER in the daily check as an open decision, including the 13128/NDX concentration effect.",
+      "check_performed": "Grepped decisions/, docs/ and tools/ for the decision id; read the ratification record and the re-weighting section of the checklist.",
+      "claim": "The DXZ book is '28 Sleeves @ 11.0 %' — treated as settled.",
+      "evidence": "tools/strategy_farm/config/concentration_tail_limits.v1.json:42-48 (ratification block, verbatim, orchestrator_interpretation); grep for OWNER-DEC-BOOK-RISK-11 in decisions/ → no files; C:/QM/deploy/DXZ_V2_20260913/manifest_v2_28_r11.json:4,7,8; Q16_CHECKLIST_V2.md:184-208 (13128/NDX +0.1028 cap-driven, 12969 gets more risk while unable to trade)",
+      "id": "F10",
+      "problem": "Total live risk rises 9.7499 % → 11.0 % on decision id OWNER-DEC-BOOK-RISK-11-20260913, for which there is NO file in decisions/. The recorded OWNER verbatim is 'Das Gesamtrisiko koennen wir noch optimieren denke ich, mach das noch' — the number 11.0 comes from an 'orchestrator_interpretation' of a builder sweep. The same record also carries the OWNER sentence 'Alle weiteren offenen Punkte musst Du ebenfalls vor dem Buch noch loesen', which is never reconciled with taking 20 OPEN + 9 RED Q16 cells into the ceremony.",
+      "severity": "major"
+    },
+    {
+      "action": "Back part (b) with `agent_router.py list-tasks` output (or a dated evidence JSON) naming task id, state transition, artifact path and verdict, and add the current REVIEW queue depth.",
+      "check_performed": "Searched the inputs for a task-state artifact path backing the approval list; none provided. Confirmed the sprint log is the sole written source.",
+      "claim": "Part (b) 'what moved to REVIEW/APPROVED in the last 24 h' — 12–13 deliveries, 7 with task IDs.",
+      "evidence": "docs/ops/BOOK_SPRINT_2026-09-20.md:87-88, :89-93; stage-1 'orchestrator_session_facts_2026-09-15_overnight' (no path, not a file in the repo); unverifiable: agent_tasks state not queryable in this stage",
+      "id": "F11",
+      "problem": "The authority for task state is the agent_tasks table (CLAUDE.md). The deliverable's counts rest entirely on prose in the sprint log and an unsourced 'orchestrator_session_facts' block; no query output, no artifact path per task, and it does not list what is currently sitting in REVIEW (the head-block risk the Orchestrator Mandate names). The 5-vs-6 inconsistency it flags is itself a symptom of counting from prose.",
+      "severity": "major"
+    },
+    {
+      "action": "Produce an evidence line showing how `strategy_calendar_symbol=XAGUSD.DWX` resolves on T_Live (resolver base-name comparison or a corrected preset), before the copy plan is applied.",
+      "check_performed": "Read the staged target preset for the new XAGUSD sleeve end to end; checked RISK_FIXED=0 / RISK_PERCENT set (correct, line 19-20) and the symbol fields.",
+      "claim": "Staged live presets are ready; the deliverable raises no symbol issue for the four new sleeves.",
+      "evidence": "C:/QM/deploy/DXZ_V2_20260913/presets/new_target/25_XAGUSD_D1_QM5_1537_aa-vol-sma10.set:7,39,43",
+      "id": "F12",
+      "problem": "The staged live preset for 25/1537 carries `strategy_calendar_symbol=XAGUSD.DWX` — a `.DWX` factory name inside a live preset, three lines below its own comment 'live_broker_symbol: XAGUSD (bare name; .DWX is tester-only)'. Whether the live EA's resolver reduces this to the base name is not evidenced in any artifact cited by the deliverable, and XAGUSD is exactly the symbol not yet in T_Live's Market Watch.",
+      "severity": "major"
+    },
+    {
+      "action": "Name the authoritative dry-run artifact path and quote one range and one universe definition from it.",
+      "check_performed": "Line-by-line comparison of the FTMO numbers inside the sprint file against the deliverable's summary and facts table.",
+      "claim": "\"F3 … Fund-Scores 0,05–0,22 gegen Floor 1,0\"; strict gate '0 von 16 Paaren'; F2 'FUND_SCORE aller 26 Paare'.",
+      "evidence": "docs/ops/BOOK_SPRINT_2026-09-20.md:55 (0.05–0.22), :79 (0.05–0.09), :43 (16 pairs), :54 (26 pairs)",
+      "id": "F13",
+      "problem": "The sprint file states two different ranges for the same builder dry-run (0.05–0.22 in the F3 cell, 0.05–0.09 in the Mon 20:5xZ log) and two different pair universes (16 vs 26) without reconciliation. The deliverable propagates all three numbers and flags none of the contradictions.",
+      "severity": "minor"
+    },
+    {
+      "action": "Quote test counts with the commit they were measured at, and attach `git show --stat <sha>` evidence for commit claims in an OWNER-facing report.",
+      "check_performed": "Counted test functions with grep; matched the quoted commit ids against the recent-commit list available in this session.",
+      "claim": "\"agent_chain.py neu gebaut …, 15 Tests, Commit f426d249ef\"; various commits (5b3481a462, 29a47ac35f, 81cd1527b1, b70adc6525, cc33300782, e246cc0dab, 350925f3b9, 3601a2974d, 867c215a96).",
+      "evidence": "tools/strategy_farm/tests/test_agent_chain.py — 17 `def test_` occurrences; unverifiable: no git access in this stage, only the session's recent-commit list (f426d249ef, c53a2760bb, 2d1a98d485 present there)",
+      "id": "F14",
+      "problem": "tools/strategy_farm/tests/test_agent_chain.py currently contains 17 test functions, not 15 (plausibly 15 at f426d249ef plus 2 added by the later commit 2d1a98d485, but the deliverable states it as a current fact). All commit ids other than f426d249ef and c53a2760bb could not be verified in this stage.",
+      "severity": "minor"
+    }
+  ],
+  "open_questions": [
+    "Does the OWNER's 09-14 Freifahrtsschein subsume the Q16 check-3 manifest signature and the OWNER-only T_Live chart attach, or are both still separate OWNER acts? The lift file's 'What this lift does NOT change' section answers neither.",
+    "How is the OWNER's 09-13 instruction 'Alle weiteren offenen Punkte musst Du ebenfalls vor dem Buch noch loesen' reconciled with deploying a book in which no sleeve is fully GREEN (20 OPEN, 9 RED)?",
+    "Which sleeves will the FTMO demo book v2 contain, given 0/16 admitted and a builder returning 0 sleeves, and under which written admission rule?",
+    "Who closes Q16 check 1 (fresh T_Live compile, owner Codex) and check 10 (magic embedding 9641, owner Codex) before Sunday, with Codex throttled until Fri 09-19 08:29Z?",
+    "Which of the 11 Q10_NEWS REVIEW_REQUIRED rows are affected, and is the QM_NEWS_IMPACT_MAPPING_V2 flag activation still planned for Thursday or dropped?",
+    "Is the 9.75 % → 11.0 % live-risk step (and 13128/NDX moving to ~10 % of book risk) an OWNER decision with its own receipt, or an orchestrator optimisation the OWNER has not seen as a number?"
+  ],
+  "schema": "qm.agent-chain.critic.v1",
+  "scope_drift": "narrowed: reports ticket-level 'done' as item-level done (D2 with an OPEN Q16 cell, F3 as a re-reading rather than a result) and omits the Q16 readiness surface (48 GREEN/20 OPEN/9 RED, 'no sleeve fully GREEN') and two OWNER acts, so part (d) 'remaining OWNER acts' is incomplete.",
+  "unverifiable_claims": [
+    "Commits 5b3481a462, 29a47ac35f, 81cd1527b1, b70adc6525, cc33300782, e246cc0dab, 350925f3b9, 3601a2974d, 867c215a96 — no git access in this stage; only f426d249ef and c53a2760bb appear in the session's recent-commit list.",
+    "Freeze state D:/QM/reports/state/live_risk_freeze.json status=LIFTED, lift_authority, lifted_at_utc — read access to D: denied in this stage; the LIFTED state is asserted only in prose.",
+    "That the OWNER committed decisions/2026-09-14_owner_book_order_ftmo.md and .../2026-09-13_owner_book_order_dxz.md themselves — both files state 'effective only when the OWNER COMMITS this file … Minting alone authorizes nothing'; committer identity not checkable here. F1 'done' may therefore rest on an orchestrator-minted, orchestrator-committed order.",
+    "Seat/quota figures (Codex 80.0 % vs 73.2 %, Claude 64 %, agy 401 since 05:40Z), counter 26/25, live drift 19 OK / 2 WARN / 3 dark, D:/RAM figures — asserted in an inline 'orchestrator_session_facts' block with no file path.",
+    "Task ids 4927dcbb, 7db4e521, 47a70f66, bd212b3b, 60174747, ca955879, dc7f0545 and work item b2c57e7f — no agent_tasks/work_items query output supplied.",
+    "OWNER attestation receipt 424fb9d6 exists as a file (docs/ops/evidence/2026-09-13_m06_attest_current/consumer_receipt_424fb9d6.json — confirmed present), but that it satisfies condition 1 for a live deployment was not independently re-measured here.",
+    "That the 07:2xZ daily check was actually written into the sprint file's status columns as protocol §4(a) requires — only the Daily log entry is present; the D/F status cells are unchanged from 09-14."
+  ],
+  "verdict": "REJECT"
+}
