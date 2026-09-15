@@ -142,3 +142,35 @@ lane's role, and (d) several live control-plane mechanisms never documented in C
 research provider (registry lane `kimi`, `kimi_governor.py`, `KIMI_LOW_QUOTA.flag`,
 `QM_StrategyFarm_KimiGovernor_15min`, `QM_StrategyFarm_KimiOrchestration_15min`) is
 documented in CLAUDE.md and `docs/ops/KIMI_INTEGRATION_ARCHITECTURE.md` in the same change.
+
+## Annex 2026-09-15 — Continuous Book Evolution (OWNER-DEC-CBE-20260915)
+
+Authority: OWNER directive 2026-09-15,
+`docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_verbatim.md`; decision
+record `decisions/2026-09-15_owner_continuous_book_evolution.md`; canonical model
+`docs/ops/CONTINUOUS_BOOK_EVOLUTION.md`. This annex corrects statements in the body above that are
+now superseded or stale. History is preserved — the body is not rewritten.
+
+- **Gate naming SUPERSEDED (§65).** "Factory phase names are `Q00` through `Q13`" (body, Current
+  Runtime Model) is stale. The active pipeline is the **v4 linear path Q00–Q17** since the
+  2026-08-23 rebaseline (`tools/strategy_farm/config/gate_manifest.v4.json`;
+  `gate_manifest.py DEFAULT_MANIFEST = V4_MANIFEST`). Q15 Final Portfolio Construction, Q16
+  Operational Readiness, Q17 Live Burn-In DXZ are the OWNER gates. Storage keeps legacy `P*` keys
+  for compatibility; operator surfaces display only Qxx.
+- **Fixed 25-candidate book trigger SUPERSEDED (§4).** Any surface (here or in the book-ceremony
+  runbook / vault Q15) that states `BOOK BUILD PERMITTED ⇔ qualified_candidates >= 25` is
+  superseded. There is **no OWNER-mandated minimum candidate count**; the portfolio engine
+  evaluates whatever currently valid qualified pool exists. Unqualified candidates still fail
+  closed (Q02–Q14 predicates unchanged); the OWNER book-order artifact requirement is retained.
+  Candidate count is a diagnostic, not a business goal (WAY TO 25 abolished, §3).
+- **Global drain-first doctrine SUPERSEDED (§23).** The old "drain the whole pipeline before
+  building a book" rule is superseded. The pipeline is continuous: frontier progression and
+  backlog hygiene run simultaneously; old early-stage backlog must not globally block a material
+  live portfolio improvement. See `docs/ops/OPERATING_RULES_2026-07-03.md` Amendment 2026-09-15.
+- **Tester-cache purge low-water DRIFT (correct value = 60 GB).** Any body/CLAUDE.md prose stating
+  "no-op ≥150 GB free; LowWater 80→150" is stale — the live scheduled-task action runs
+  `tester_cache_purge.ps1 -LowWaterGB 60` (10-min cadence). Required layering invariant:
+  `worker_disk_floor (40) ≤ purge_low_water (60) ≤ research_floor`.
+- **Q17 evidence-based introduction (§10).** The Q17 live stage is evidence-based probation, not a
+  mandatory min-lot 14-day burn-in; see `docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md` (P10/Q17) and
+  `docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md`. Live AutoTrading remains OWNER-only.

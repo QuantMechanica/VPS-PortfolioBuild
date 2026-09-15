@@ -190,3 +190,42 @@ agy citation discipline all stand).
     (quota/rate limits, not a pay-per-token budget); purchase/renewal is OWNER-only. On
     EXHAUSTED or period-end the lane is disabled and OWNER is notified — never an
     auto-purchase.
+
+## Amendment 2026-09-15 (OWNER-DEC-CBE-20260915 — Continuous Book Evolution)
+
+Authority: OWNER directive 2026-09-15,
+`docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_verbatim.md`; decision
+record `decisions/2026-09-15_owner_continuous_book_evolution.md`. Canonical operating model:
+`docs/ops/CONTINUOUS_BOOK_EVOLUTION.md`. The following supersede the stated earlier text; the old
+text is retained above as history (do not re-apply the superseded mandates).
+
+**A. Global "drain-everything-first" doctrine SUPERSEDED (directive §23).** The old doctrine —
+*everything must completely drain before another book can be built* — is superseded. The pipeline
+is **continuous, not a global drain barrier**. Two objectives run simultaneously: **frontier
+progression** (advance promising/current candidates toward book eligibility) and **backlog
+hygiene** (resolve stale items, infra failures, unknown dispositions as capacity permits).
+Thousands of old early-stage items must never globally block a material live portfolio
+improvement. This supersedes the standing "erst leerlaufen, dann Buch" Zwischenziel wherever it is
+written as a hard block (vault `08 Current State/Current Objective`, `12 ToDo/10_Pipeline_Leerlauf`).
+Frontier-priority queueing (rule 22) is retained and reinforced by this amendment.
+
+**B. HR16 "one research / one EA at a time" SUPERSEDED as an absolute (directive §24).** The old
+absolute HR16 serialization — *only one research / one EA development at a time* — is **no longer
+binding as an absolute restriction**. OWNER authorizes **controlled parallelism**: Fable may run
+multiple parallel research programmes, mechanization tasks, coding tasks, reviews and analyses,
+**only when** all of these hold: evidence remains isolated; task identity remains clear; repo
+changes do not conflict; compute allows it; MT5 capacity is protected; AI quotas allow it;
+critical-path work is protected. Do **not** create uncontrolled idea spam, and do **not** serialize
+independent useful work merely because the old system did so.
+
+**C. Determinism-first spirit RETAINED (directive §25/§26).** Parallelism is permitted, but the
+determinism-first discipline is unchanged: use a deterministic Python/SQL tool where one exists or
+can reliably solve the task; reserve LLM capacity for interpretation, hypothesis generation,
+ambiguity resolution, synthesis and adversarial reasoning (§26). The anti-idea-spam pacer
+(`agent_router.py min_ready_strategy_cards`) stays as a throttle, not as a one-at-a-time gate.
+
+**D. What is NOT changed.** Factory-op discipline (rules 9–14, 23), magic-registry order-of-
+operations (rule 10), path-anchored terminal selection + T_Live exclusion (rule 11), survivor-port
+purity (rule 6), and the Q02 frequency floor (rule 1) are unchanged. T_Live, AutoTrading,
+deployment, gate thresholds and book construction remain separately OWNER-authorized (directive
+§64). Backtests are never throttled.

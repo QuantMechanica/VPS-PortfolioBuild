@@ -248,7 +248,35 @@ exception using this report together with the complete promotion evidence.
 - combined verdict
 - raw bootstrap distributions attached as JSON
 
-## P10 — Live Burn-In Window (KS-Test Kill-Switch)
+## P10 / Q17 — Evidence-Based Live Introduction (Probation) with KS-Test Kill-Switch
+
+> **CURRENT GUIDANCE — OWNER-DEC-CBE-20260915 (directive §10).** P10 (operator-facing
+> **Q17 Live Burn-In DXZ**) is an **evidence-based live introduction / probation / deployment
+> stage**, no longer a universal mandatory-min-lot 14-day burn-in. The historic mandatory
+> min-lot rule and the fixed 14-day waiting period are **SUPERSEDED** (see the SUPERSEDED block
+> below, retained as history). Mandatory min-lot does not automatically produce meaningful
+> evidence, and a fixed 14-day wait must not automatically block weekly portfolio evolution.
+>
+> **Initial live risk is chosen from the evidence**, using these decision inputs: amount of
+> validated historical evidence; novelty; strategy tail risk; execution uncertainty;
+> broker-equivalence confidence; current portfolio risk; available live evidence; liquidity;
+> expected trade frequency. **Valid introduction choices:** intended full portfolio weight ·
+> reduced probation weight · staged risk increase · incumbent/challenger parallel observation ·
+> no introduction. Min-lot is one option, never a procedural checkbox — any reduced-risk
+> probation must carry an explicit evidence/risk reason. The **observation window is likewise
+> evidence-dependent** (a well-validated sleeve may enter at probation weight without a fixed
+> 14-day wait; a novel or higher-tail-risk sleeve may warrant a longer look and more trades).
+>
+> **What is UNCHANGED (retained safety controls):** live AutoTrading activation remains
+> **OWNER-only** (Hard Rule; §64); the KS-test kill-switch below remains the divergence guard;
+> the news-calendar staleness gate (`framework/include/QM/QM_News.mqh`) is a separate class-A
+> safety control and is untouched. The KS sample-size logic (`N_fwd ≥ 30`) still governs when a
+> kill check is decisive; it is a statistical-power floor, not a mandated calendar duration.
+>
+> Canonical model: `docs/ops/CONTINUOUS_BOOK_EVOLUTION.md` §8; ceremony:
+> `docs/ops/BOOK_CEREMONY_RUNBOOK_2026-09.md`.
+
+<details><summary>SUPERSEDED 2026-09-15 by OWNER-DEC-CBE-20260915 — original mandatory-min-lot / fixed-14-day P10 (retained as history, do not re-apply the min-lot/14-day mandates)</summary>
 
 **Purpose**: 2-week first-live window at minimum lot, with an automatic KS-test kill-switch if forward distribution diverges from backtest distribution. **No demo intermediary** — DarwinexZero is live-only (per OWNER 2026-04-26), so P10 is the first money-at-risk window.
 
@@ -291,6 +319,13 @@ exception using this report together with the complete promotion evidence.
 
 OWNER decision 2026-04-26: DarwinexZero is live-only (monthly subscription fee, no demo account in between). Building a separate demo-broker pre-step would (a) duplicate infrastructure, (b) test against a different liquidity profile than DXZ uses, (c) delay learning real DXZ behavior. Trade-off: P10 is genuinely money-at-risk from day 1, mitigated by minimum-lot size + tight KS kill-switch. See `decisions/2026-04-26_dxz_live_only_and_p10_live_burn_in.md`.
 
+</details>
+
+> **NOTE (CBE annex):** the DXZ-live-only decision (no demo intermediary) and the KS-test
+> kill-switch above still hold. What is superseded is only the **mandatory** min-lot size and the
+> **fixed** 14-day window: initial live risk and observation length are now chosen from the
+> evidence per the CURRENT GUIDANCE at the top of this section.
+
 ## V5 vs V2.1 — Where defaults differ
 
 | Item | V2.1 (V4 inherited) | V5 default | Reason |
@@ -301,7 +336,7 @@ OWNER decision 2026-04-26: DarwinexZero is live-only (monthly subscription fee, 
 | P7 consolidated runner | none (4 tests run separately) | single runner returns combined verdict | reduces orchestration drift |
 | P10 KS p-threshold | not numerically specified anywhere | `p < 0.01` | conservative against the failure mode being detected |
 | P10 lookback | not specified | trailing 6 months of BT | matches regime persistence |
-| P10 architecture | "shadow on demo" (V4 implicit, never implemented) | "Live Burn-In with minimum lot + KS-test kill-switch" | DXZ is live-only per OWNER 2026-04-26; no demo intermediary |
+| P10 architecture | "shadow on demo" (V4 implicit, never implemented) | "Live Burn-In with evidence-based initial risk + KS-test kill-switch" (the fixed "minimum lot" wording is SUPERSEDED 2026-09-15 by OWNER-DEC-CBE-20260915) | DXZ is live-only per OWNER 2026-04-26; no demo intermediary |
 | All sub-gate runners | Python scripts under `Company/scripts/` | Python scripts under `framework/scripts/` (V5 namespace) | V5 framework boundary |
 | Calibration JSON | `Company/Results/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json` | `framework/calibrations/VPS_SLIPPAGE_LATENCY_CALIBRATION_V2.json`, V5 must re-measure from VPS | new VPS, new calibration |
 
@@ -321,7 +356,7 @@ For any V5 EA to reach P10 PASS, it must clear:
 10. P8 news impact (OFF / PAUSE / SKIP_DAY mode chosen, plus FTMO / 5ers compliance flags per `decisions/2026-04-25_news_compliance_variants_TBD.md` Hybrid A+C)
 11. P9 portfolio construction (admitted to a basket without breaching family cap 3 / symbol cap 2 / portfolio risk budget)
 12. P9b operational readiness checklist
-13. P10 shadow deploy (KS p ≥ 0.01 over 14 days with N_fwd ≥ 30)
+13. P10 / Q17 evidence-based live introduction (KS p ≥ 0.01 with N_fwd ≥ 30; initial risk and observation length chosen from the evidence — the "minimum lot / fixed 14 days" wording is SUPERSEDED 2026-09-15 by OWNER-DEC-CBE-20260915, see the P10/Q17 section above)
 
 Then: live promotion via `processes/03-v-portfolio-deploy.md`.
 

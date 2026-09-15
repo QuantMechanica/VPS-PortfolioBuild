@@ -383,6 +383,29 @@ vault `02 Org/Stehende Vollmacht Claude 2026-08-20.md`.
 - **Q09_NEWS seeds are inert** (RNG never drawn when `qm_stress_reject_probability=0`):
   40 cells = 8 configs. A+B contract v3 (1 seed + seam-reconstructed full window) is
   OWNER-approved; the 40-cell v2 pilot (`cba63d44`) runs as the reference measurement.
+- **OWNER-DEC-CBE-20260915 — Continuous Book Evolution (OWNER 2026-09-15).** Full directive
+  `docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_verbatim.md`; decision
+  `decisions/2026-09-15_owner_continuous_book_evolution.md`; canonical model
+  `docs/ops/CONTINUOUS_BOOK_EVOLUTION.md`; rule audit `docs/ops/RULE_EFFECTIVENESS_AUDIT_2026-09.md`.
+  Binding changes: **WAY TO 25 abolished** as a business target (candidate count is a diagnostic,
+  not a goal); **book trigger = any currently valid qualified pool** — no fixed 25-candidate
+  minimum (unqualified candidates still fail closed; OWNER book-order artifact still required);
+  **two permanently living books** (`DXZ_BOOK`, `FTMO_BOOK`) with separate `DXZ_FITNESS` /
+  `FTMO_FITNESS`, evolved by a **weekly recomposition** (Friday evidence cut → Sat analysis → Sun
+  recommendation → OWNER handoff; weekly default is KEEP unless material evidence supports change);
+  **Q17 = evidence-based live introduction/probation**, not mandatory min-lot / fixed 14-day burn-in
+  (min-lot is one option; AutoTrading stays OWNER-only); **old portfolio caps are advisory**
+  (family≤3 / symbol≤2 / fixed pairwise-correlation become guardrails/warnings/risk inputs — measure
+  real economic dependence, not labels); **controlled parallelism allowed** (HR16 no longer absolute;
+  determinism-first spirit retained; §24 isolation/compute/quota conditions); **pipeline is
+  continuous** (global drain-first doctrine superseded — frontier progression + backlog hygiene run
+  together). **FTMO:** mandatory **two-week demo before purchase**; **one paid challenge at a time**;
+  **100k 2-Step** default; **probability of success over speed** (FUND_SCORE/first-passage remain
+  evidence, not eternal hard targets); **scalping and trailing stops expressly allowed**; ML allowed
+  in offline research only (HR14 unchanged — no ML in EA runtime). **Fable may originate strategies**
+  (internal QM-RESEARCH:// artifact is a valid R1 source; provenance/hash fail-closed retained).
+  Purchase, live AutoTrading, deployment, gate thresholds and book construction remain OWNER-only
+  (ROT). Older docs are marked SUPERSEDED, not deleted.
 
 ## Current Operating Rules
 

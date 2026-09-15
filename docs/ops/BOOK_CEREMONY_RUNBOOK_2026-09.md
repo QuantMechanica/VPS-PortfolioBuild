@@ -159,7 +159,7 @@ are read-only/analytic and can be rehearsed; the live boundary is step 8+.
 | 10 | **Deploy copy-plan (dry-run then apply)** | Claude (dry-run) + **OWNER** (approval evidence) | `python tools/strategy_farm/deploy_tlive_book.py --plan <plan.json> [--apply --backup-dir <outside T_Live>]` | copy-plan `qm.tlive_book_copy_plan.v1` JSON; dry-run report; backup dir |
 | 11 | **Claude T_Live verification** | Claude | SHA256 factory==T_Live, magic formula, setfile ENV/risk, news calendar (see §4) | `decisions/YYYY-MM-DD_t_live_<ea>_<symbol>.md` with the SHA table |
 | 12 | **AutoTrading ON** | **OWNER ALONE** | OWNER flips AutoTrading in MetaTrader on T_Live | note the toggle timestamp in the step-11 decision record |
-| 13 | **Q17 Live Burn-In** | OWNER (authority) + Claude (monitor) | 14-day min, min-lot, KS kill-switch, Myfxbook/pulse monitoring (vault Q17) | `D:/QM/reports/state/live_book_pulse.json` cadence |
+| 13 | **Q17 Live Introduction (evidence-based probation)** | OWNER (authority) + Claude (monitor) | evidence-based initial live risk (§10 decision inputs), KS kill-switch, Myfxbook/pulse monitoring (vault Q17); min-lot is one option not a default, observation length evidence-dependent — SUPERSEDES the old "14-day min, min-lot" mandate (see note below) | `D:/QM/reports/state/live_book_pulse.json` cadence |
 
 Step-5 note on builder semantics: both builders are **fail-closed analytic dry-runs** and cannot
 deploy (vault Q15; `build_book_dxz.py` docstring lines 1-8). The DXZ builder emits one of
@@ -168,6 +168,21 @@ deploy (vault Q15; `build_book_dxz.py` docstring lines 1-8). The DXZ builder emi
 incumbent "not worse" gate to pass on identical sealed common history **and** an OWNER-ratified
 concentration policy — application to live weights is still a separate OWNER ceremony (steps 7–12),
 never the builder's act.
+
+> **Step 13 — Q17 evidence-based introduction (CBE annex, OWNER-DEC-CBE-20260915, directive §10).**
+> The step-13 cell above replaces the historic mandatory Q17 burn-in. **SUPERSEDED text (retained
+> as history, do not re-apply):** *"14-day min, min-lot, KS kill-switch, Myfxbook/pulse monitoring
+> (vault Q17)."* The universal mandatory **min-lot** and the **fixed 14-day** waiting period are
+> superseded — mandatory min-lot does not automatically produce meaningful evidence, and a fixed
+> 14-day wait must not automatically block weekly portfolio evolution. Initial live risk is chosen
+> from the evidence (validated history · novelty · tail risk · execution uncertainty ·
+> broker-equivalence confidence · current portfolio risk · available live evidence · liquidity ·
+> expected trade frequency); valid choices are intended full weight / reduced probation weight /
+> staged risk increase / incumbent-challenger parallel observation / no introduction. **Unchanged:**
+> AutoTrading activation is OWNER-only (step 12), the KS-test kill-switch remains the divergence
+> guard, and the news-calendar staleness gate is untouched. Canonical model:
+> `docs/ops/CONTINUOUS_BOOK_EVOLUTION.md` §8; spec: `docs/ops/PIPELINE_V5_SUB_GATE_SPEC.md`
+> (P10/Q17 section).
 
 ---
 
