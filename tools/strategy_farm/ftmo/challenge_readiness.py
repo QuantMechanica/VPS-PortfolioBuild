@@ -24,6 +24,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.strategy_farm.ftmo import demo_cycle as demo_cycle_mod
 from tools.strategy_farm.ftmo import demo_metrics as demo_metrics_mod
+from tools.strategy_farm.ftmo import first_passage as first_passage_mod
 from tools.strategy_farm.ftmo import ftmo_fitness as fitness_mod
 from tools.strategy_farm.ftmo import policy_config
 from tools.strategy_farm.ftmo import rules_snapshot as rules_mod
@@ -193,10 +194,18 @@ def build_readiness(
     journal_path: Path = demo_metrics_mod.DEFAULT_JOURNAL,
     q10_admission: dict[str, Any] | None = None,
     first_passage: dict[str, Any] | None = None,
+    first_passage_path: Path = first_passage_mod.DEFAULT_OUT,
     now: dt.datetime | None = None,
     write: bool = True,
 ) -> dict[str, Any]:
     now = now or dt.datetime.now(dt.timezone.utc)
+
+    # When no first-passage evidence is passed explicitly, load the read-model
+    # produced by tools/strategy_farm/ftmo/first_passage.py so simulations.first_passage
+    # carries real numbers instead of EVIDENCE_MISSING when they exist (directive
+    # section 34). Absent read-model -> stays None -> EVIDENCE_MISSING, never invented.
+    if first_passage is None:
+        first_passage = first_passage_mod.load_for_readiness(first_passage_path)
 
     # Prefer the persisted demo-cycle ledger (written by demo_cycle.py build) so
     # cycle_start / validation_days stay stable across readiness runs. If a
@@ -400,6 +409,43 @@ def _render_doc(model: dict[str, Any], doc_path: Path) -> None:
         f"- Overall verdict: **{fit.get('overall_verdict')}**  ·  admitted pairs: {fit.get('admitted_pairs')}",
         f"- Best FUND_SCORE: {fit.get('best_fund_score')} vs floor {fit.get('fund_score_floor')}",
         "",
+        "## First-passage / breach model",
+        "",
+    ]
+    fp = model.get("simulations", {}).get("first_passage")
+    if isinstance(fp, dict):
+        lines += [
+            "Seeded calendar-aligned block-bootstrap path simulation over the "
+            "representative intended Demo portfolio (per-sleeve daily-PnL streams "
+            "scaled to each sleeve's risk), official parameters from the bound "
+            "rulepack, breaches on a conservative per-trade-MAE intraday-low proxy, "
+            "no time limit. Read-model: `D:/QM/reports/state/ftmo_first_passage.json` "
+            "(`tools/strategy_farm/ftmo/first_passage.py`). Not one number:",
+            "",
+            f"- P(profit target hit, within horizon): {fp.get('p_target_hit')}  ·  "
+            f"conditional on resolution: {fp.get('p_target_hit_eventual')}",
+            f"- P(daily-loss breach): {fp.get('p_daily_loss_breach')}  ·  "
+            f"P(max-loss breach): {fp.get('p_max_loss_breach')}  ·  "
+            f"censored (still live at horizon): {fp.get('p_censored')}",
+            f"- P(pass within 30 cal-days): {fp.get('p_pass_30d')}  ·  "
+            f"within 60 cal-days: {fp.get('p_pass_60d')}  ·  "
+            f"median business days to target: {fp.get('median_days')}",
+            "",
+            "Speed, not eventual pass, is the binding constraint on the current book. "
+            "Full time distribution (p10/p50/p90), cost/slippage sensitivity and "
+            "conditional failure modes (dominant breach sleeve/symbol/weekday) are in "
+            "the read-model.",
+            "",
+        ]
+    else:
+        lines += [
+            "First-passage evidence not available (`first_passage.py` read-model "
+            "absent or evidence-missing). Run "
+            "`python tools/strategy_farm/ftmo/first_passage.py build "
+            "--recompose-manifest <sealed manifest>`.",
+            "",
+        ]
+    lines += [
         "## Rules snapshot",
         "",
         f"- Source: {rs['source_url']}  ·  fetched: {rs['fetched_utc']}  ·  freshness: "
@@ -416,6 +462,9 @@ def _render_doc(model: dict[str, Any], doc_path: Path) -> None:
         "- Account/sleeve metrics from the demo journal: `tools/strategy_farm/ftmo/demo_metrics.py`.",
         "- FTMO fitness (separate from DXZ): `tools/strategy_farm/ftmo/ftmo_fitness.py`, reusing the "
         "FUND_SCORE cache and, when present, first-passage outputs.",
+        "- First-passage / breach model: `tools/strategy_farm/ftmo/first_passage.py` "
+        "(read-model `D:/QM/reports/state/ftmo_first_passage.json`, schema "
+        "`qm.ftmo-first-passage/v1`).",
         "- Rule freshness: `tools/strategy_farm/ftmo/rules_snapshot.py` against "
         "`docs/ops/evidence/2026-09-15_ftmo_official_rules_snapshot.json`.",
         "",

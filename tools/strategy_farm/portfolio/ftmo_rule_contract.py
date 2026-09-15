@@ -63,9 +63,13 @@ def load_two_step_contract(
 
     pack = target_rulepacks.load_rulepack_path(path)
     payload = pack.as_dict()
-    if pack.rulepack_id != "FTMO_2S_100K_SWING_V2" or pack.target != "FTMO":
+    # The projected official 2-Step / 100k fields are identical across the STANDARD
+    # and SWING packs (verified 2026-09-15); both are accepted so the same evaluator
+    # can bind whichever pack the caller declares (e.g. the demo-compliance STANDARD
+    # pack for first-passage) without duplicating thresholds.
+    if pack.rulepack_id not in {"FTMO_2S_100K_SWING_V2", "FTMO_2S_100K_STANDARD_V2"} or pack.target != "FTMO":
         raise target_rulepacks.RulepackValidationError(
-            "evaluator requires FTMO_2S_100K_SWING_V2"
+            "evaluator requires FTMO_2S_100K_SWING_V2 or FTMO_2S_100K_STANDARD_V2"
         )
     rules = _by_id(payload["official_rules"], "rule_id")
     guardrails = _by_id(payload["internal_guardrails"], "guardrail_id")

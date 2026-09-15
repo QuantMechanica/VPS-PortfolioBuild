@@ -91,14 +91,34 @@ def compute_ftmo_fitness(snapshot: dict[str, Any]) -> dict[str, Any]:
             status = "MARGINAL"
         else:
             status = "FAIL"
+        survival_value = {
+            "admitted_pairs": admitted_pairs,
+            "best_fund_score": best_fund_score,
+            "fund_score_floor": floor,
+            "sleeves_at_or_above_floor": n_at_floor,
+        }
+        # Surface first-passage/breach evidence in the challenge-survival block when
+        # the model has run (directive section 34). This ENRICHES the evidence; it
+        # does not introduce a new economic threshold (verdict logic unchanged).
+        if fp and any(
+            k in fp for k in ("p_target_hit", "p_daily_loss_breach", "p_max_loss_breach")
+        ):
+            survival_value["first_passage"] = {
+                k: fp.get(k)
+                for k in (
+                    "p_target_hit",
+                    "p_target_hit_eventual",
+                    "p_daily_loss_breach",
+                    "p_max_loss_breach",
+                    "p_pass_60d",
+                    "median_days",
+                    "p_censored",
+                )
+                if k in fp
+            }
         axes["challenge_survival"] = _axis(
             status,
-            {
-                "admitted_pairs": admitted_pairs,
-                "best_fund_score": best_fund_score,
-                "fund_score_floor": floor,
-                "sleeves_at_or_above_floor": n_at_floor,
-            },
+            survival_value,
             "0 admitted / best FUND_SCORE below floor => not survivable"
             if status == "FAIL"
             else admitted_basis,
