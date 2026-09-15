@@ -240,6 +240,11 @@ def _default_state_builds() -> list[dict[str, Any]]:
         # (deterministic, read-only DB) feed the Research section and Kimi/Fable prioritisation.
         {"name": "universe_map", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "research" / "universe_map.py")]},
         {"name": "research_roi", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "research" / "external_roi.py")]},
+        # Third directive (OWNER-DEC-D3-20260915) §36/§43A: AI factory capacity read-model
+        # (qm.ai-capacity/v1) — provider quota/shadow-price/offload/review-independence for
+        # Mission Control + the vault AI Factory Capacity & Routing page. Deterministic,
+        # read-only governor state; --no-render so the Friday cut never writes the vault.
+        {"name": "ai_capacity", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "ai_capacity_readmodel.py"), "build", "--no-render"]},
     ]
 
 
