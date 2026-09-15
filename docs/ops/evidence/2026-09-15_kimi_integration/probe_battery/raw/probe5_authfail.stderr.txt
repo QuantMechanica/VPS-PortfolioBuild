@@ -1,0 +1,2 @@
+error: failed to run prompt: No model configured. Run `kimi` and use /login to sign in, then retry; or set default_model in config.toml.
+See log: C:\QM\repo\.claude\worktrees\agent-ae4cb8280a2e0e580\.kimi_scratch\fake_home\.kimi-code\logs\kimi-code.log

@@ -1,0 +1,90 @@
+{
+  "schema": "qm.kimi-adapter.v1",
+  "_doc": "Single-choke-point config for every Kimi Code CLI call. Values learned by the probe battery under docs/ops/evidence/2026-09-15_kimi_integration/probe_battery/. OWNER-tunable; the adapter never hardcodes what lives here. Kill switch: env QM_KIMI=0 makes the adapter return status 'error' reason 'kill_switch' WITHOUT spawning. Fake mode: env QM_KIMI_FAKE=1 (tests) returns canned output; QM_KIMI_FAKE_STATUS forces a status.",
+
+  "bin": "C:/Users/Administrator/.kimi-code/bin/kimi.exe",
+  "credential_file": "C:/Users/Administrator/.kimi-code/credentials/kimi-code.json",
+  "repo_root": "C:/QM/repo",
+  "kill_switch_env": "QM_KIMI",
+  "fake_env": "QM_KIMI_FAKE",
+  "fake_status_env": "QM_KIMI_FAKE_STATUS",
+  "fake_ledger_env": "QM_KIMI_FAKE_LEDGER",
+
+  "output_format": "stream-json",
+  "default_model": "kimi-code/kimi-for-coding",
+  "_models_doc": "Model per capability first, else per role, else default. K2.8 (kimi-for-coding, 1M ctx) for reasoning/creation; k3-256k as the cheaper critic; highspeed for short summary work (audit kimi_cli.md sec3).",
+  "models_by_capability": {
+    "edge_discovery": "kimi-code/kimi-for-coding",
+    "hypothesis_authoring": "kimi-code/kimi-for-coding",
+    "cross_experiment_analysis": "kimi-code/kimi-for-coding",
+    "long_context_synthesis": "kimi-code/kimi-for-coding",
+    "deep_research": "kimi-code/kimi-for-coding",
+    "research": "kimi-code/kimi-for-coding",
+    "strategy": "kimi-code/kimi-for-coding",
+    "research_critic": "kimi-code/k3-256k",
+    "research_review": "kimi-code/k3-256k",
+    "summary": "kimi-code/kimi-for-coding-highspeed",
+    "source_discovery": "kimi-code/kimi-for-coding"
+  },
+  "models_by_role": {
+    "creator": "kimi-code/kimi-for-coding",
+    "research": "kimi-code/kimi-for-coding",
+    "critic": "kimi-code/k3-256k",
+    "formatter": "kimi-code/kimi-for-coding-highspeed"
+  },
+
+  "timeout_default_s": 600,
+  "timeout_max_s": 1800,
+
+  "retry": {
+    "_doc": "Bounded retries ONLY for transient classes; never retry auth_expired or cli_missing.",
+    "max_retries": 2,
+    "retry_statuses": ["timeout", "rate_limited"],
+    "backoff_s": [20, 60]
+  },
+
+  "single_flight": {
+    "_doc": "Machine-wide lock around EVERY invocation regardless of caller (orchestration lane + critique sweep both spawn Kimi). The OAuth credential is a 15-min rolling token refreshed via a shared file: concurrent processes race the refresh (Codex class). Serialize.",
+    "lock_path": "D:/QM/strategy_farm/state/kimi_adapter.lock",
+    "wait_s": 300,
+    "stale_s": 7200
+  },
+
+  "_roles_doc": "Probe battery finding: '-p' (prompt) mode is already non-interactive AND auto-executes tools (Read/Write ran without approval, no hang). '--auto' and '--plan' BOTH error out when combined with '-p' ('Cannot combine --prompt with --auto/--plan'). So creator/research use plain '-p'; NO '--auto'. Critic read-only posture = an --agent-file whose 'tools:' allowlist excludes Write/Edit/Bash (proven in probe 4: the model had no Write tool and refused), backed by a scratch-only cwd and the repo git-hash guard.",
+  "roles": {
+    "creator":   { "extra_flags": [], "read_only": false, "use_agent_file": false },
+    "research":  { "extra_flags": [], "read_only": false, "use_agent_file": false },
+    "formatter": { "extra_flags": [], "read_only": false, "use_agent_file": false },
+    "critic":    { "extra_flags": [], "read_only": true,  "use_agent_file": true }
+  },
+  "critic_agent_filename": "kimi_readonly_critic.agent.md",
+  "critic_agent_file_content": "---\nname: qm-readonly-critic\ndescription: Read-only QuantMechanica research critic. Never mutates the filesystem.\ntools:\n  - Read\n  - Grep\n  - Glob\n  - List\n---\nYou are a strictly read-only critic. You may ONLY read files. You must NEVER\ncreate, modify, move or delete any file, and you must never run shell commands.\nIf asked to write a file, refuse and explain that you are read-only.\n",
+
+  "prompt_pointer_template": "Read the file '{prompt_path}' and execute its instructions exactly; write your complete answer to '{answer_path}' and also print it; then exit.",
+
+  "_error_class_doc": "Applied to (stderr + stdout), lowercased, after a non-zero exit or an empty/unparseable success. First matching class wins. timeout is set by the watchdog, cli_missing / auth_expired(missing credential) by pre-flight checks, malformed_output by the parser. Tunable without code changes; the CLI auto-updates.",
+  "error_class_patterns": [
+    { "status": "auth_expired", "patterns": ["no model configured", "/login", "sign in", "unauthenticated", "401", "token expired", "not authenticated", "credential"] },
+    { "status": "rate_limited", "patterns": ["rate limit", "429", "too many requests", "quota exceeded", "overloaded", "capacity"] }
+  ],
+
+  "ledger_path": "D:/QM/reports/state/kimi_usage_ledger.jsonl",
+  "ledger_schema": "qm.kimi-usage/v1",
+  "subscription_period": { "start": "2026-09-15", "end": "2026-10-15" },
+
+  "governor": {
+    "_doc": "See kimi_governor.py. No programmatic Kimi usage endpoint exists (audit kimi_cli.md sec6) -> state is derived from this local ledger only, and that fact is surfaced as usage_source='local_ledger_only'.",
+    "state_path": "D:/QM/reports/state/kimi_governor_state.json",
+    "log_path": "D:/QM/reports/state/kimi_governor.log",
+    "flag_path": "D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag",
+    "ledger_path": "D:/QM/reports/state/kimi_usage_ledger.jsonl",
+    "managed_by": "kimi_governor",
+    "caps": { "day": 40, "week": 200 },
+    "conserve_pct": 70,
+    "consecutive_fail_threshold": 2,
+    "consecutive_fail_statuses": ["rate_limited", "auth_expired"],
+    "conserve_allowed_capabilities": ["edge_discovery", "hypothesis_authoring", "cross_experiment_analysis", "research_critic"],
+    "subscription_period": { "start": "2026-09-15", "end": "2026-10-15" },
+    "period_conserve_days_before_end": 3
+  }
+}

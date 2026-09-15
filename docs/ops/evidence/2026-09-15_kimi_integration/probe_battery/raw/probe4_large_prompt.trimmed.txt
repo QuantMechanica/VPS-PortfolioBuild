@@ -1,0 +1,6 @@
+PROMPT_FILE_BYTES=72039  EXIT=0  LATENCY=16s
+{"role":"meta","type":"system.version","version":"0.43.1"}
+{"role":"assistant","tool_calls":[{"type":"function","id":"tool_kGnxUBIsrr2gjUtP0pFh8j2X","function":{"name":"Read","arguments":"{\"path\":\"prompt_probe6.txt\"}"}}]}
+{"role":"tool",...}  <-- 72KB document read result elided for evidence brevity
+{"role":"assistant","content":"LARGEOK"}
+{"role":"meta","type":"session.resume_hint","session_id":"session_d20cfd14-8a54-47ad-91c7-483c5fee3d0a","command":"kimi -r session_d20cfd14-8a54-47ad-91c7-483c5fee3d0a","content":"To resume this session: kimi -r session_d20cfd14-8a54-47ad-91c7-483c5fee3d0a"}

@@ -428,3 +428,11 @@ Review file: `docs/ops/evidence/2026-09-15_kimi_integration/design/KIMI_INTEGRAT
 | F9 | minor | §14 collapsed "malformed output" and "schema failure" into one test. | **applied.** Split into `test_malformed_stream_json_class` (non-JSON) and `test_stream_json_schema_mismatch_class` (valid JSON, wrong/renamed events); added `schema_mismatch` error class (§3.2, §3.4, §14). |
 
 All items the review marked **keep** are retained: two-plane model with the flag consumed by both planes; cost_rank=12 with the "never < 10" rule; R1-source-agnostic recognition with the prescreen scoping change gated behind the signed HR14/R4 annex; runtime R4 untouched; layered LLM-PASS-≠-pipeline-PASS defence; `by_creator_vendor.kimi`=non-kimi; DSR trial-counting hook; case-by-case §22 test matrix; probe battery deferred and capped with mocks; single-commit discipline + full rollback table; research intermediates small/off-D:; the git-hash guard kept as the secondary detector (now prevention-first via R-D, extended to D:/QM).
+
+## Addendum 2026-09-15 11:1xZ — probe battery results that amend §3 (implementation C1, commit see git log)
+
+- `--auto` and `--plan` do NOT combine with `-p` (argparse rejects both). Creator/research roles therefore run plain `-p` (non-interactive, auto-runs Read/Write inside `--add-dir`); §3.1's `--auto` assumption is withdrawn.
+- Read-only critic posture = `--agent-file` with a `tools:` allowlist that omits Write (prevention, proven: the model could not create a file); the `git status --porcelain` before/after guard on C:/QM/repo stays as the detection belt (`critic_wrote`, output discarded).
+- stream-json = JSONL; final text = last `{"role":"assistant","content":<non-empty>}`; `cli_version` from the `system.version` meta line. Pointer prompt file proven with a 72 KB prompt; argv stays tiny.
+- Auth-failure simulation (redirected HOME) exits 1 with `No model configured … /login`; the real credential file was never touched.
+- Ledger `D:/QM/reports/state/kimi_usage_ledger.jsonl` (first real line = adapter smoke), flag `D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag` (MANAGED_BY=kimi_governor, evaluated, not set), plus `state/kimi_adapter.lock` and `state/kimi_governor_state.json`. Evidence: `docs/ops/evidence/2026-09-15_kimi_integration/probe_battery/README.md`.

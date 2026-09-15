@@ -1,0 +1,7 @@
+{"role":"meta","type":"system.version","version":"0.43.1"}
+{"role":"assistant","tool_calls":[{"type":"function","id":"tool_ftDi9yG0d8RKZM5Cq3iNHaS7","function":{"name":"Read","arguments":"{\"path\":\"C:\\\\QM\\\\repo\\\\.claude\\\\worktrees\\\\agent-ae4cb8280a2e0e580\\\\.kimi_scratch\\\\adapter_smoke_out\\\\research_prompt.md\"}"}}]}
+{"role":"tool","tool_call_id":"tool_ftDi9yG0d8RKZM5Cq3iNHaS7","content":"1\tReply with exactly the word SMOKEOK and nothing else."}
+{"role":"assistant","tool_calls":[{"type":"function","id":"tool_r1G5RzI1FJ2lxcHhlMO5lQZK","function":{"name":"Write","arguments":"{\"path\":\"C:\\\\QM\\\\repo\\\\.claude\\\\worktrees\\\\agent-ae4cb8280a2e0e580\\\\.kimi_scratch\\\\adapter_smoke_out\\\\research_answer.md\",\"content\":\"SMOKEOK\\n\"}"}}]}
+{"role":"tool","tool_call_id":"tool_r1G5RzI1FJ2lxcHhlMO5lQZK","content":"Wrote 8 bytes to C:\\QM\\repo\\.claude\\worktrees\\agent-ae4cb8280a2e0e580\\.kimi_scratch\\adapter_smoke_out\\research_answer.md"}
+{"role":"assistant","content":"SMOKEOK"}
+{"role":"meta","type":"session.resume_hint","session_id":"session_10fb0b8c-5cc7-49d1-ab98-64354646b1e3","command":"kimi -r session_10fb0b8c-5cc7-49d1-ab98-64354646b1e3","content":"To resume this session: kimi -r session_10fb0b8c-5cc7-49d1-ab98-64354646b1e3"}
