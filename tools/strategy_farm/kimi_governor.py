@@ -23,11 +23,17 @@ States (NORMAL / CONSERVE / EXHAUSTED):
                auth_expired statuses, OR a cli_missing status, OR the
                subscription period has ended. No capabilities allowed.
 
-Flag (honored by both router and chain planes once they are wired):
-  D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag  (written on EXHAUSTED)
-Ownership-tracked exactly like quota_governor.py: the flag body's first line is
-``MANAGED_BY=kimi_governor``; the governor only clears a flag carrying THAT
-marker, never one another owner set.
+Flag (honored by both router and chain planes):
+  D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag  (written on CONSERVE **and** EXHAUSTED)
+The flag body is a JSON object (schema ``qm.kimi-low-quota-flag/v1``) carrying the
+computed ``state`` so both consumers (agent_router.kimi_quota_state, JSON-only, and
+agent_chain._read_kimi_flag_state) learn CONSERVE as well as EXHAUSTED - the earlier
+key=value body only ever reached EXHAUSTED by the routers' fail-closed accident and
+silently discarded CONSERVE (review finding F1, 2026-09-15).
+Ownership-tracked exactly like quota_governor.py: the JSON body carries
+``managed_by: kimi_governor``; the governor only clears/rewrites a flag carrying THAT
+marker, never one another owner set. ``_flag_owned`` still tolerates the legacy
+first-line ``MANAGED_BY=kimi_governor`` key=value body so an in-flight upgrade is safe.
 
   python kimi_governor.py status      # print state JSON (no writes)
   python kimi_governor.py evaluate    # recompute + reconcile the flag
@@ -47,6 +53,9 @@ from typing import Any
 # --------------------------------------------------------------------------- config
 
 _CONFIG_PATH = Path(__file__).with_name("config") / "kimi_adapter.v1.json"
+
+# One canonical flag-body schema written by the governor and parsed by both planes.
+FLAG_SCHEMA = "qm.kimi-low-quota-flag/v1"
 
 
 def load_config(path: Path | str = _CONFIG_PATH) -> dict[str, Any]:
@@ -266,28 +275,65 @@ def allowed_capabilities(state: str, gov: dict[str, Any] | None = None) -> list[
 # --------------------------------------------------------------------------- flag reconciliation
 
 def _flag_owned(flag: Path, managed_by: str) -> bool:
+    """True iff this governor owns the flag. Reads ``managed_by`` from the JSON body
+    and tolerates the legacy first-line ``MANAGED_BY=<owner>`` key=value body."""
     try:
-        first = flag.read_text(encoding="utf-8").splitlines()[0].strip()
+        raw = flag.read_text(encoding="utf-8").strip()
     except Exception:
         return False
+    if not raw:
+        return False
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict):
+            return str(obj.get("managed_by") or "") == managed_by
+    except ValueError:
+        pass
+    # legacy key=value body: first line MANAGED_BY=<owner>
+    first = raw.splitlines()[0].strip()
     return first == f"MANAGED_BY={managed_by}"
 
 
-def _write_flag(flag: Path, managed_by: str, reason: str, state_info: dict[str, Any]) -> None:
+def _flag_state_on_disk(flag: Path) -> str | None:
+    """The ``state`` currently recorded in the (owned) flag, or None if unreadable.
+    Tolerant of the legacy body, which never carried a state (-> None)."""
+    try:
+        raw = flag.read_text(encoding="utf-8").strip()
+    except Exception:
+        return None
+    if not raw:
+        return None
+    try:
+        obj = json.loads(raw)
+        if isinstance(obj, dict) and obj.get("state"):
+            return str(obj["state"]).upper()
+    except ValueError:
+        pass
+    return None
+
+
+def _write_flag(flag: Path, managed_by: str, state: str, reason: str,
+                state_info: dict[str, Any]) -> None:
+    """Write the canonical JSON flag body carrying the computed ``state`` so both
+    planes (router JSON-only, chain JSON-or-key=value) transmit CONSERVE and
+    EXHAUSTED faithfully."""
     flag.parent.mkdir(parents=True, exist_ok=True)
-    body = (
-        f"MANAGED_BY={managed_by}\n"
-        f"set_at={_now().strftime('%Y-%m-%dT%H:%M:%SZ')}\n"
-        f"reason={reason}\n"
-        f"counts=day {state_info['counts']['day']}/{state_info['caps']['day']}, "
-        f"week {state_info['counts']['week']}/{state_info['caps']['week']}\n"
-    )
-    flag.write_text(body, encoding="utf-8")
+    body = {
+        "schema": FLAG_SCHEMA,
+        "state": state,
+        "managed_by": managed_by,
+        "reason": reason,
+        "set_at_utc": _now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "counts": dict(state_info.get("counts") or {}),
+        "caps": dict(state_info.get("caps") or {}),
+    }
+    flag.write_text(json.dumps(body, indent=2), encoding="utf-8")
 
 
 def reconcile_flag(state_info: dict[str, Any], gov: dict[str, Any], *, dry_run: bool = False) -> dict[str, Any]:
-    """Write the flag on EXHAUSTED, clear it otherwise - but only ever touch a
-    flag this governor owns (MANAGED_BY marker). Returns the flag action taken."""
+    """Write the flag on CONSERVE **and** EXHAUSTED (carrying the state), clear it
+    only when NORMAL - but only ever touch a flag this governor owns (managed_by
+    marker). Returns the flag action taken."""
     flag = Path(gov["flag_path"])
     managed_by = gov.get("managed_by", "kimi_governor")
     state = state_info["state"]
@@ -296,16 +342,23 @@ def reconcile_flag(state_info: dict[str, Any], gov: dict[str, Any], *, dry_run: 
     reason = "; ".join(state_info.get("reasons") or [])
 
     action = "noop"
-    if state == "EXHAUSTED":
+    if state in ("EXHAUSTED", "CONSERVE"):
         if not exists:
             action = "SET"
             if not dry_run:
-                _write_flag(flag, managed_by, reason, state_info)
+                _write_flag(flag, managed_by, state, reason, state_info)
         elif owned:
-            action = "hold"
+            # keep the flag current: rewrite when the recorded state changed
+            # (e.g. CONSERVE -> EXHAUSTED, or a legacy body with no state).
+            if _flag_state_on_disk(flag) != state:
+                action = "UPDATE"
+                if not dry_run:
+                    _write_flag(flag, managed_by, state, reason, state_info)
+            else:
+                action = "hold"
         else:
             action = "leave-external"  # someone else owns this flag; never overwrite
-    else:  # NORMAL / CONSERVE -> the flag (a hard lane-disable) should not be present
+    else:  # NORMAL -> the flag (a lane brake) should not be present
         if exists and owned:
             action = "CLEAR"
             if not dry_run:

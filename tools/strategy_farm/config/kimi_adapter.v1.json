@@ -50,15 +50,27 @@
     "stale_s": 7200
   },
 
-  "_roles_doc": "Probe battery finding: '-p' (prompt) mode is already non-interactive AND auto-executes tools (Read/Write ran without approval, no hang). '--auto' and '--plan' BOTH error out when combined with '-p' ('Cannot combine --prompt with --auto/--plan'). So creator/research use plain '-p'; NO '--auto'. Critic read-only posture = an --agent-file whose 'tools:' allowlist excludes Write/Edit/Bash (proven in probe 4: the model had no Write tool and refused), backed by a scratch-only cwd and the repo git-hash guard.",
+  "_roles_doc": "Probe battery finding: '-p' (prompt) mode is already non-interactive AND auto-executes tools (Read/Write ran without approval, no hang). '--auto' and '--plan' BOTH error out when combined with '-p' ('Cannot combine --prompt with --auto/--plan'). So all roles use plain '-p'; NO '--auto'. SHELL POSTURE (review F2, 2026-09-15): every UNATTENDED role (creator/research/formatter) carries a no-shell --agent-file allowlist (Read/Grep/Glob/List/Write/Edit, NO Bash/PowerShell) so a prompt-injected run cannot shell out to farmctl/close-review/git/T_Live; the critic keeps the read-only allowlist (no Write/Edit either). 'research_ml' is the ONLY shell-capable role - it has NO agent file (full default toolset for ML exploration in the research venv) and 'requires_allow_shell' so run_kimi rejects it unless the caller passes allow_shell=True; the orchestration lane and agent_chain never pass it.",
   "roles": {
-    "creator":   { "extra_flags": [], "read_only": false, "use_agent_file": false },
-    "research":  { "extra_flags": [], "read_only": false, "use_agent_file": false },
-    "formatter": { "extra_flags": [], "read_only": false, "use_agent_file": false },
-    "critic":    { "extra_flags": [], "read_only": true,  "use_agent_file": true }
+    "creator":     { "extra_flags": [], "read_only": false, "use_agent_file": true,  "agent_file": "research" },
+    "research":    { "extra_flags": [], "read_only": false, "use_agent_file": true,  "agent_file": "research" },
+    "formatter":   { "extra_flags": [], "read_only": false, "use_agent_file": true,  "agent_file": "research" },
+    "critic":      { "extra_flags": [], "read_only": true,  "use_agent_file": true,  "agent_file": "critic" },
+    "research_ml": { "extra_flags": [], "read_only": false, "use_agent_file": false, "requires_allow_shell": true }
   },
   "critic_agent_filename": "kimi_readonly_critic.agent.md",
   "critic_agent_file_content": "---\nname: qm-readonly-critic\ndescription: Read-only QuantMechanica research critic. Never mutates the filesystem.\ntools:\n  - Read\n  - Grep\n  - Glob\n  - List\n---\nYou are a strictly read-only critic. You may ONLY read files. You must NEVER\ncreate, modify, move or delete any file, and you must never run shell commands.\nIf asked to write a file, refuse and explain that you are read-only.\n",
+  "research_agent_filename": "kimi_noshell_research.agent.md",
+  "research_agent_file_content": "---\nname: qm-noshell-research\ndescription: QuantMechanica unattended research/creator/formatter role. Writes artifacts, never runs a shell.\ntools:\n  - Read\n  - Grep\n  - Glob\n  - List\n  - Write\n  - Edit\n---\nYou are an unattended research writer. You may read files and Write/Edit files ONLY\ninside the directories granted via --add-dir (your worktree / out_dir). You must NEVER\nrun shell commands (no Bash, no PowerShell), never invoke git, farmctl, or\nagent_router, never move a task to APPROVED/PIPELINE/PASSED, and never touch D:/QM\nverdict/evidence state or C:/QM/mt5/T_Live. If a task needs any of that, stop and\nleave the work in REVIEW for the orchestrator.\n",
+
+  "_protected_trees_doc": "Trees the before/after mutation guard hashes (in addition to the repo git-porcelain hash) on EVERY run; absent paths are skipped and the adapter's own ledger/lock/governor-state files are excluded. A critic mutating any of these -> critic_wrote; a non-critic role -> status 'protected_write' (text kept but flagged).",
+  "protected_trees": [
+    "D:/QM/strategy_farm/state",
+    "D:/QM/reports/state",
+    "D:/QM/strategy_farm/artifacts/cards_approved",
+    "C:/QM/mt5/T_Live/MT5_Base/MQL5",
+    "C:/QM/mt5/T_Live/MT5_Base/config"
+  ],
 
   "prompt_pointer_template": "Read the file '{prompt_path}' and execute its instructions exactly; write your complete answer to '{answer_path}' and also print it; then exit.",
 

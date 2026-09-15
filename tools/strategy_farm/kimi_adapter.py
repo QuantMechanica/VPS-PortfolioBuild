@@ -51,17 +51,36 @@ CONFIG_PATH = Path(__file__).with_name("config") / "kimi_adapter.v1.json"
 KIMI_BIN = Path(r"C:/Users/Administrator/.kimi-code/bin/kimi.exe")
 AGENT_USER_HOME = Path(r"C:/Users/Administrator")
 
-VALID_ROLES = {"creator", "critic", "formatter", "research"}
+# 'research' is the unattended writer role (orchestration lane): its --agent-file
+# allowlist grants Read/Grep/Glob/List/Write/Edit but NO Bash/PowerShell, so a
+# prompt-injected run cannot shell out to farmctl/close-review/git/T_Live. 'creator'
+# and 'formatter' share that no-shell posture. 'research_ml' is the ONLY shell-capable
+# role and run_kimi accepts it only when the caller passes allow_shell=True (the
+# orchestration lane and agent_chain never do; only the research package tooling may).
+VALID_ROLES = {"creator", "critic", "formatter", "research", "research_ml"}
 STATUS_OK = "ok"
 STATUS_TIMEOUT = "timeout"
 STATUS_AUTH_EXPIRED = "auth_expired"
 STATUS_RATE_LIMITED = "rate_limited"
 STATUS_MALFORMED = "malformed_output"
+STATUS_SCHEMA_MISMATCH = "schema_mismatch"  # valid JSONL, no recognizable assistant content
 STATUS_CLI_MISSING = "cli_missing"
 STATUS_ERROR = "error"
 STATUS_CRITIC_WROTE = "critic_wrote"
+STATUS_PROTECTED_WRITE = "protected_write"  # a non-critic role touched a protected tree
 
 RETRYABLE_DEFAULT = {STATUS_TIMEOUT, STATUS_RATE_LIMITED}
+
+# Trees a Kimi run must never mutate (verdict/evidence state + live terminal). The
+# before/after listing hash of these (skipping absent paths) backs the mutation guard
+# in addition to the repo git-porcelain hash. Overridable via config.protected_trees.
+DEFAULT_PROTECTED_TREES = (
+    "D:/QM/strategy_farm/state",
+    "D:/QM/reports/state",
+    "D:/QM/strategy_farm/artifacts/cards_approved",
+    "C:/QM/mt5/T_Live/MT5_Base/MQL5",
+    "C:/QM/mt5/T_Live/MT5_Base/config",
+)
 
 
 # --------------------------------------------------------------------------- helpers
@@ -130,6 +149,23 @@ def parse_stream_json(raw: str) -> str | None:
     if not saw_any_json:
         return None
     return answer
+
+
+def _has_json_lines(raw: str) -> bool:
+    """True iff at least one line of ``raw`` parses as JSON. Distinguishes a
+    valid-JSONL-but-unrecognized-schema run (schema_mismatch) from non-JSON garbage
+    (malformed_output) - a CLI auto-update that renames event shapes must fail with a
+    distinct, operator-visible class rather than collapsing into malformed_output."""
+    for line in (raw or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            json.loads(line)
+            return True
+        except ValueError:
+            continue
+    return False
 
 
 def extract_cli_version(raw: str) -> str | None:
@@ -260,6 +296,56 @@ def _dir_listing_hash(root: Path) -> str | None:
         return None
 
 
+def _protected_snapshot(roots: list[Any], excludes: set[str]) -> dict[str, str]:
+    """{abs_path: 'size|mtime_ns'} for every file under each protected tree, skipping
+    absent trees and the adapter's own ledger/lock/state files (``excludes``). Used
+    before/after every run to detect a write into a verdict/evidence/T_Live tree."""
+    snap: dict[str, str] = {}
+    for root in roots:
+        try:
+            rp = Path(str(root))
+        except Exception:
+            continue
+        if not rp.exists():
+            continue
+        try:
+            files = [rp] if rp.is_file() else [p for p in rp.rglob("*") if p.is_file()]
+        except OSError:
+            continue
+        for p in files:
+            sp = str(p)
+            if sp in excludes:
+                continue
+            try:
+                st = p.stat()
+            except OSError:
+                continue
+            snap[sp] = f"{st.st_size}|{st.st_mtime_ns}"
+    return snap
+
+
+def _snapshot_diff(before: dict[str, str], after: dict[str, str]) -> list[str]:
+    """Sorted list of paths that were added, removed, or changed between snapshots."""
+    changed: set[str] = {k for k, v in after.items() if before.get(k) != v}
+    changed |= {k for k in before if k not in after}
+    return sorted(changed)
+
+
+def _protected_excludes(cfg: dict[str, Any]) -> set[str]:
+    """The adapter's own ledger/lock/governor-state files, which live inside the
+    protected trees and would otherwise trip the guard on every call."""
+    gov = cfg.get("governor") or {}
+    candidates = [
+        cfg.get("ledger_path"),
+        (cfg.get("single_flight") or {}).get("lock_path"),
+        gov.get("state_path"),
+        gov.get("log_path"),
+        gov.get("flag_path"),
+        gov.get("ledger_path"),
+    ]
+    return {str(Path(str(p))) for p in candidates if p}
+
+
 # --------------------------------------------------------------------------- fake mode (tests)
 
 def _fake_ledger_path(cfg: dict[str, Any], env: dict[str, str]) -> Path:
@@ -331,7 +417,8 @@ def _finalize(cfg: dict[str, Any], *, role: str, capability: str, task_id: str, 
               status: str, text: str, rc: int, latency_s: float, cli_version: str | None,
               prompt: str, retries: int, usage: Any, repo_write: bool, log_path: Path,
               raw_path: Path, cmd: list[str], error: str, env: dict[str, str],
-              ledger_path: Path, call_governor: bool = True) -> dict[str, Any]:
+              ledger_path: Path, call_governor: bool = True,
+              protected_write: bool = False, changed_paths: list[str] | None = None) -> dict[str, Any]:
     prompt_sha = _sha256_text(prompt)
     output_sha = _sha256_text(text)
     line = _ledger_line(
@@ -357,6 +444,8 @@ def _finalize(cfg: dict[str, Any], *, role: str, capability: str, task_id: str, 
         "retries": retries,
         "usage": usage,
         "repo_write": repo_write,
+        "protected_write": protected_write,
+        "changed_paths": list(changed_paths or []),
         "log_path": str(log_path),
         "raw_path": str(raw_path),
         "cmd": cmd,
@@ -378,24 +467,42 @@ def _resolve_model(cfg: dict[str, Any], role: str, capability: str, model: str |
     return str(cfg.get("default_model") or "kimi-code/kimi-for-coding")
 
 
-def _materialize_critic_agent_file(cfg: dict[str, Any], out_dir: Path) -> Path:
-    name = cfg.get("critic_agent_filename", "kimi_readonly_critic.agent.md")
-    content = cfg.get("critic_agent_file_content") or ""
+def _materialize_agent_file(cfg: dict[str, Any], out_dir: Path, kind: str) -> Path:
+    """Write the role's --agent-file allowlist into out_dir. ``kind`` selects the
+    posture: 'critic' = read-only (no Write/Edit/Bash); 'research' = a no-shell
+    writer (Read/Grep/Glob/List/Write/Edit, NO Bash/PowerShell) for the unattended
+    creator/research/formatter roles."""
+    if kind == "critic":
+        name = cfg.get("critic_agent_filename", "kimi_readonly_critic.agent.md")
+        content = cfg.get("critic_agent_file_content") or ""
+    else:  # 'research' no-shell writer posture
+        name = cfg.get("research_agent_filename", "kimi_noshell_research.agent.md")
+        content = cfg.get("research_agent_file_content") or ""
     path = out_dir / name
     _write_text(path, content)
     return path
 
 
+def _materialize_critic_agent_file(cfg: dict[str, Any], out_dir: Path) -> Path:
+    """Back-compat shim: the read-only critic agent file."""
+    return _materialize_agent_file(cfg, out_dir, "critic")
+
+
 def build_argv(cfg: dict[str, Any], *, bin_path: Path, role: str, model: str, pointer: str,
                add_dirs: list[Path], out_dir: Path) -> list[str]:
     """Construct the Kimi argv. The prompt is delivered as a short pointer (never
-    the prompt contents); the prompt file itself is passed via --add-dir."""
+    the prompt contents); the prompt file itself is passed via --add-dir.
+
+    Non-critic unattended roles (creator/research/formatter) carry a no-shell
+    --agent-file so their default toolset cannot Bash/PowerShell out of the sandbox;
+    'research_ml' deliberately keeps the full shell toolset (no agent file) and is
+    only reachable through run_kimi(allow_shell=True)."""
     cmd: list[str] = [str(bin_path), "-p", pointer,
                       "--output-format", str(cfg.get("output_format", "stream-json")),
                       "-m", model]
     roles_cfg = (cfg.get("roles") or {}).get(role) or {}
     if roles_cfg.get("use_agent_file"):
-        agent_file = _materialize_critic_agent_file(cfg, out_dir)
+        agent_file = _materialize_agent_file(cfg, out_dir, str(roles_cfg.get("agent_file") or "critic"))
         cmd += ["--agent-file", str(agent_file)]
     for flag in roles_cfg.get("extra_flags") or []:
         cmd.append(str(flag))
@@ -462,15 +569,26 @@ def _spawn_once(cmd: list[str], *, cwd: Path, env: dict[str, str], timeout_s: in
 def run_kimi(prompt: str, *, role: str, capability: str, task_id: str, model: str | None = None,
              cwd: Path, add_dirs: list[Path] | None = None, timeout_s: int = 600,
              out_dir: Path, environ: dict[str, str] | None = None,
-             config: dict[str, Any] | None = None) -> dict[str, Any]:
+             config: dict[str, Any] | None = None, allow_shell: bool = False) -> dict[str, Any]:
     """The single choke point for every Kimi call. See the module docstring for the
     contract. Returns a dict with keys: status, text, rc, latency_s, cli_version,
-    model, prompt_sha256, output_sha256, retries, usage, repo_write, log_path,
-    raw_path, cmd, error."""
+    model, prompt_sha256, output_sha256, retries, usage, repo_write, protected_write,
+    changed_paths, log_path, raw_path, cmd, error.
+
+    ``allow_shell`` gates the shell-capable roles: a role whose config carries
+    ``requires_allow_shell`` (i.e. 'research_ml') raises ValueError unless the caller
+    opts in explicitly. The orchestration lane and agent_chain never pass it."""
     cfg = config or load_config()
     env = _env(environ)
     if role not in VALID_ROLES:
         raise ValueError(f"invalid role {role!r}; expected one of {sorted(VALID_ROLES)}")
+    roles_cfg = (cfg.get("roles") or {}).get(role) or {}
+    if roles_cfg.get("requires_allow_shell") and not allow_shell:
+        raise ValueError(
+            f"role {role!r} is shell-capable and requires allow_shell=True "
+            "(only the research package tooling may opt in; the orchestration lane "
+            "and agent_chain never do)"
+        )
 
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -552,8 +670,11 @@ def run_kimi(prompt: str, *, role: str, capability: str, task_id: str, model: st
                          error="single_flight_busy", env=env, ledger_path=ledger_path)
 
     repo_root = Path(cfg.get("repo_root") or "C:/QM/repo")
-    is_critic = bool(((cfg.get("roles") or {}).get(role) or {}).get("read_only"))
+    is_critic = bool(roles_cfg.get("read_only"))
     repo_before = _repo_porcelain_hash(repo_root)
+    protected_roots = list(cfg.get("protected_trees", DEFAULT_PROTECTED_TREES) or [])
+    protected_excludes = _protected_excludes(cfg)
+    protected_before = _protected_snapshot(protected_roots, protected_excludes)
 
     retry_cfg = cfg.get("retry") or {}
     max_retries = int(retry_cfg.get("max_retries", 2))
@@ -577,16 +698,23 @@ def run_kimi(prompt: str, *, role: str, capability: str, task_id: str, model: st
                 status, text, error = STATUS_TIMEOUT, "", f"timeout_after_{timeout_s}s_tree_killed"
             else:
                 parsed = parse_stream_json(raw)
+                saw_json = _has_json_lines(raw)
                 if parsed is None:
                     # fallback: the answer file the model may have written
                     if answer_path.exists():
                         parsed = answer_path.read_text(encoding="utf-8", errors="replace").strip() or None
-                if parsed is None and raw.strip():
-                    # last-ditch: text-mode stripping (in case format changed)
+                if parsed is None and raw.strip() and not saw_json:
+                    # last-ditch text-mode stripping - ONLY when the output was not
+                    # JSON at all, so valid JSONL with a renamed schema is not
+                    # mistaken for plain text (would mask a schema_mismatch).
                     stripped = strip_text_mode(raw)
                     parsed = stripped or None
                 if result_run["rc"] == 0 and parsed:
                     status, text, error = STATUS_OK, parsed, ""
+                elif result_run["rc"] == 0 and not parsed and saw_json:
+                    # valid JSON, but no recognizable assistant content (unknown/renamed
+                    # event shapes) - a config-class error distinct from non-JSON garbage.
+                    status, text, error = STATUS_SCHEMA_MISMATCH, "", "valid_json_no_assistant_content"
                 elif result_run["rc"] == 0 and not parsed:
                     status, text, error = STATUS_MALFORMED, "", "empty_or_unparseable_output"
                 else:
@@ -602,20 +730,31 @@ def run_kimi(prompt: str, *, role: str, capability: str, task_id: str, model: st
     finally:
         _release_single_flight(lock_path)
 
-    # 8) Repo-mutation guard.
+    # 8) Mutation guard - two scopes: (a) the repo git-porcelain hash, and (b) a
+    #    before/after listing hash of the protected verdict/evidence/T_Live trees.
     repo_after = _repo_porcelain_hash(repo_root)
     repo_write = bool(repo_before is not None and repo_after is not None and repo_before != repo_after)
-    if is_critic and repo_write:
+    protected_after = _protected_snapshot(protected_roots, protected_excludes)
+    changed_paths = _snapshot_diff(protected_before, protected_after)
+    protected_write = bool(changed_paths)
+    if is_critic and (repo_write or protected_write):
+        # a critic that mutated anything is a failed run; discard its text
         status = STATUS_CRITIC_WROTE
-        text = ""  # a critic that mutated the repo is a failed run; discard its text
-        error = "critic_mutated_repo"
+        text = ""
+        error = "critic_mutated_protected" if protected_write else "critic_mutated_repo"
+    elif protected_write and status == STATUS_OK:
+        # a non-critic role (research/creator/formatter) wrote into a protected tree:
+        # keep its text, but flag it loudly so the lane result and review can see it.
+        status = STATUS_PROTECTED_WRITE
+        error = "protected_write:" + ";".join(changed_paths[:5])
 
     return _finalize(cfg, role=role, capability=capability, task_id=task_id, model=model,
                      status=status, text=text, rc=result_run.get("rc", -1),
                      latency_s=result_run.get("latency_s", 0.0), cli_version=cli_version,
                      prompt=prompt, retries=attempt, usage=None, repo_write=repo_write,
                      log_path=log_path, raw_path=raw_path, cmd=cmd, error=error,
-                     env=env, ledger_path=ledger_path)
+                     env=env, ledger_path=ledger_path,
+                     protected_write=protected_write, changed_paths=changed_paths)
 
 
 # --------------------------------------------------------------------------- CLI (manual smoke)

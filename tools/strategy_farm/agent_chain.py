@@ -284,6 +284,11 @@ def vendor_gate(
             return "agy_missing"
         return None
     if vendor == "kimi":
+        # Kimi-specific runtime kill switch (review F8, 2026-09-15): QM_KIMI=0 removes
+        # kimi from selection here, consistently with kimi_adapter.run_kimi which refuses
+        # to spawn under the same switch. QM_AGENT_CHAIN=0 above is the whole-chain kill.
+        if str(env.get("QM_KIMI", "")).strip() == "0":
+            return "kill_switch_QM_KIMI=0"
         flag = Path(str(gates.get("kimi_low_quota_flag") or ""))
         state = _read_kimi_flag_state(flag) if str(flag) and flag.exists() else None
         if state == "EXHAUSTED":

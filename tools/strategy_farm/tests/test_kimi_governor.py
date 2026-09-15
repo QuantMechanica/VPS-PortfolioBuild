@@ -148,8 +148,31 @@ def test_flag_written_on_exhausted_with_owner_marker(gov: dict) -> None:
     action = kg.reconcile_flag(info, gov)
     flag = Path(gov["flag_path"])
     assert action["action"] == "SET" and flag.exists()
-    first = flag.read_text(encoding="utf-8").splitlines()[0].strip()
-    assert first == "MANAGED_BY=kimi_governor"
+    body = json.loads(flag.read_text(encoding="utf-8"))
+    assert body["schema"] == kg.FLAG_SCHEMA
+    assert body["managed_by"] == "kimi_governor"
+    assert body["state"] == "EXHAUSTED"
+
+
+def test_flag_written_on_conserve_carries_state(gov: dict) -> None:
+    # F1 (2026-09-15): CONSERVE must be durable at the flag boundary so both planes
+    # learn it (previously CONSERVE wrote no flag and silently collapsed to NORMAL).
+    info = kg.compute_state(_rows(7), gov, now=NOW)  # 7/10 = 70% -> CONSERVE
+    assert info["state"] == "CONSERVE"
+    action = kg.reconcile_flag(info, gov)
+    flag = Path(gov["flag_path"])
+    assert action["action"] == "SET" and flag.exists()
+    body = json.loads(flag.read_text(encoding="utf-8"))
+    assert body["state"] == "CONSERVE" and body["managed_by"] == "kimi_governor"
+
+
+def test_flag_updated_on_conserve_to_exhausted_transition(gov: dict) -> None:
+    flag = Path(gov["flag_path"])
+    kg.reconcile_flag(kg.compute_state(_rows(7), gov, now=NOW), gov)   # CONSERVE
+    assert json.loads(flag.read_text(encoding="utf-8"))["state"] == "CONSERVE"
+    action = kg.reconcile_flag(kg.compute_state(_rows(10), gov, now=NOW), gov)  # EXHAUSTED
+    assert action["action"] == "UPDATE"
+    assert json.loads(flag.read_text(encoding="utf-8"))["state"] == "EXHAUSTED"
 
 
 def test_flag_cleared_when_recovered_if_owned(gov: dict) -> None:
@@ -177,10 +200,11 @@ def test_flag_not_overwritten_when_foreign_owned_on_exhausted(gov: dict) -> None
     assert "some_other_owner" in flag.read_text(encoding="utf-8")
 
 
-def test_conserve_does_not_write_hard_flag(gov: dict) -> None:
-    info = kg.compute_state(_rows(7), gov, now=NOW)  # CONSERVE
+def test_normal_writes_no_flag_and_clears_owned(gov: dict) -> None:
+    # NORMAL is the only state that leaves no flag; an owned flag is cleared.
+    info = kg.compute_state(_rows(2), gov, now=NOW)  # NORMAL
     action = kg.reconcile_flag(info, gov)
-    assert action["action"] in {"noop", "CLEAR"}
+    assert action["action"] == "noop"
     assert not Path(gov["flag_path"]).exists()
 
 

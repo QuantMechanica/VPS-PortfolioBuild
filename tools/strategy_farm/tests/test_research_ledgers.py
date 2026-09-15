@@ -134,6 +134,44 @@ def test_preregistration_immutable_and_versioned(tmp_path):
     assert [r["version"] for r in rows] == [1, 2]
 
 
+def test_preregister_against_research_source_minted_lineage(tmp_path):
+    # F6 (2026-09-15): research_source.mint writes lineage.json WITHOUT a 'versions'
+    # list; preregister._update_lineage must accept that shape (init versions=[],
+    # preserve the C4 keys) rather than KeyError. One schema id, one versions[] array.
+    import research_source as rs
+
+    store = tmp_path / "store"
+    src_ledger = tmp_path / "research_source_ledger.jsonl"
+    minted = rs.mint(author="kimi", model="kimi-code/kimi-for-coding", task_id="T-1",
+                     research_id="QM-RESEARCH-2026-0001", store_root=store, ledger_path=src_ledger)
+    artifact_dir = Path(minted["path"])
+    minted_lineage = json.loads((artifact_dir / "lineage.json").read_text(encoding="utf-8"))
+    assert "versions" not in minted_lineage  # the C4 skeleton has no versions[] yet
+    assert minted_lineage["schema"] == preregister.LINEAGE_SCHEMA
+
+    prereg_ledger = tmp_path / "prereg_ledger.jsonl"
+    spec = tmp_path / "spec.md"
+    spec.write_text("# spec v1\nchannel_len: 10 .. 80\n", encoding="utf-8")
+
+    # first preregistration against the minted artifact must NOT crash.
+    rec = preregister.build_preregistration(**_prereg_kwargs(spec))
+    preregister.write_preregistration(artifact_dir, rec, ledger_path=prereg_ledger)
+    lineage = json.loads((artifact_dir / "lineage.json").read_text(encoding="utf-8"))
+    assert lineage["schema"] == preregister.LINEAGE_SCHEMA
+    assert [v["version"] for v in lineage["versions"]] == [1]
+    assert lineage["versions"][0]["parent_version"] is None
+    # the C4 skeleton keys are preserved, not clobbered.
+    assert "mechanization" in lineage and "discovery_sample" in lineage
+
+    # a changed spec mints v2 with parent v1.
+    spec.write_text("# spec v2 changed\nchannel_len: 10 .. 120\n", encoding="utf-8")
+    v2 = preregister.build_preregistration(parent_version=1, **_prereg_kwargs(spec))
+    preregister.write_preregistration(artifact_dir, v2, ledger_path=prereg_ledger)
+    lineage2 = json.loads((artifact_dir / "lineage.json").read_text(encoding="utf-8"))
+    assert [v["version"] for v in lineage2["versions"]] == [1, 2]
+    assert [v["parent_version"] for v in lineage2["versions"]] == [None, 1]
+
+
 # --- experiment-memory ledger + projector -----------------------------------
 
 

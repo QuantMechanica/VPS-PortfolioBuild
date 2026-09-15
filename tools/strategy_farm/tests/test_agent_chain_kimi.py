@@ -172,6 +172,16 @@ def test_vendor_gate_kimi_kill_switch_first(cfg: dict) -> None:
     assert ac.vendor_gate("kimi", cfg, {"QM_AGENT_CHAIN": "0"}) == "kill_switch_QM_AGENT_CHAIN=0"
 
 
+def test_vendor_gate_kimi_honours_qm_kimi_kill_switch(cfg: dict) -> None:
+    # F8 (2026-09-15): QM_KIMI=0 removes kimi from chain selection (consistent with the
+    # adapter, which refuses to spawn under the same switch). Other vendors are unaffected.
+    assert ac.vendor_gate("kimi", cfg, {"QM_AGENT_CHAIN": "1", "QM_KIMI": "0"}) == "kill_switch_QM_KIMI=0"
+    # non-kimi vendors ignore QM_KIMI.
+    assert ac.vendor_gate("codex", cfg, {"QM_AGENT_CHAIN": "1", "QM_KIMI": "0"}) is None
+    # kimi open again once the switch is not 0.
+    assert ac.vendor_gate("kimi", cfg, {"QM_AGENT_CHAIN": "1", "QM_KIMI": "1"}) is None
+
+
 def test_vendor_gate_kimi_normal_open(cfg: dict) -> None:
     # no flag + CLI + credential present -> open.
     assert ac.vendor_gate("kimi", cfg, {"QM_AGENT_CHAIN": "1"}) is None

@@ -175,6 +175,55 @@ class KimiLaneRouterTests(unittest.TestCase):
             decision = self._route(root, kimi_flag=flag)
             self.assertIsNone(decision.assigned_agent)
 
+    def _work_items_count(self, root: Path) -> int | None:
+        with agent_router.connect(root) as conn:
+            has = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='work_items'"
+            ).fetchone()
+            if not has:
+                return None
+            return int(conn.execute("SELECT COUNT(*) AS c FROM work_items").fetchone()["c"])
+
+    def test_kimi_unavailable_leaves_other_lanes_and_work_items_untouched(self) -> None:
+        # F7 (2026-09-15): with kimi EXHAUSTED (routing-disabled) and, separately, with
+        # kimi entirely absent from the registry (the cli_missing/unavailable posture -
+        # the router never calls the adapter, so its absence must be inert), build_ea and
+        # ops_issue still route to their non-kimi lanes and no kimi path touches work_items.
+        scenarios = ["exhausted", "kimi_absent"]
+        for scenario in scenarios:
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+                root = Path(tmp)
+                if scenario == "exhausted":
+                    flag = self._write_flag(root, "EXHAUSTED")
+                    agent_router.sync_default_registry(
+                        root, claude_disabled_flag=root / "missing.flag", kimi_low_quota_flag=flag)
+                else:
+                    flag = root / "missing_kimi.flag"
+                    reg = {k: v for k, v in agent_router.DEFAULT_AGENT_REGISTRY.items() if k != "kimi"}
+                    with patch.object(agent_router, "DEFAULT_AGENT_REGISTRY", reg):
+                        agent_router.sync_default_registry(
+                            root, claude_disabled_flag=root / "missing.flag", kimi_low_quota_flag=flag)
+
+                wi_before = self._work_items_count(root)
+                agent_router.enqueue_task(root, "build_ea", priority=80)
+                agent_router.enqueue_task(root, "ops_issue", priority=80)
+
+                seen: dict[str, str] = {}
+                for _ in range(4):
+                    decision = self._route(root, kimi_flag=flag)
+                    if decision.assigned_agent:
+                        seen[decision.task_type] = decision.assigned_agent
+
+                self.assertIn("build_ea", seen, scenario)
+                self.assertNotEqual(seen["build_ea"], "kimi", scenario)
+                self.assertIn("ops_issue", seen, scenario)
+                self.assertNotEqual(seen["ops_issue"], "kimi", scenario)
+
+                wi_after = self._work_items_count(root)
+                self.assertEqual(wi_before, wi_after, f"{scenario}: work_items changed")
+                if wi_after is not None:
+                    self.assertEqual(wi_after, 0, scenario)
+
     def test_bare_flag_fails_closed_to_exhausted(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)

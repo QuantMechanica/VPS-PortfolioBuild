@@ -56,6 +56,9 @@ def cfg(tmp_path: Path) -> dict:
     (tmp_path / "repo" / ".git").mkdir(parents=True)
     c["single_flight"] = {"lock_path": str(tmp_path / "kimi.lock"), "wait_s": 0, "stale_s": 7200}
     c["retry"] = {"max_retries": 2, "retry_statuses": ["timeout", "rate_limited"], "backoff_s": [0, 0]}
+    # Default the protected-tree guard to a non-existent temp path so the general tests
+    # never scan the live D:/QM trees; the F3 guard test overrides this explicitly.
+    c["protected_trees"] = [str(tmp_path / "protected_none")]
     c.setdefault("governor", {})
     c["governor"]["ledger_path"] = c["ledger_path"]
     c["governor"]["flag_path"] = str(tmp_path / "KIMI_LOW_QUOTA.flag")
@@ -113,7 +116,9 @@ def test_classify_error_table(cfg: dict) -> None:
 
 # --- argv construction per role --------------------------------------------------
 
-def test_build_argv_creator_has_no_agent_file(cfg: dict, tmp_path: Path) -> None:
+def test_build_argv_creator_has_noshell_research_agent_file(cfg: dict, tmp_path: Path) -> None:
+    # F2 (2026-09-15): the unattended creator/research/formatter roles now carry a
+    # no-shell --agent-file (Write/Edit but NO Bash/PowerShell).
     out = tmp_path / "out"
     out.mkdir()
     cmd = ka.build_argv(cfg, bin_path=Path(cfg["bin"]), role="creator", model="kimi-code/kimi-for-coding",
@@ -121,10 +126,45 @@ def test_build_argv_creator_has_no_agent_file(cfg: dict, tmp_path: Path) -> None
     assert cmd[1] == "-p" and cmd[2] == "POINTER"
     assert "--output-format" in cmd and "stream-json" in cmd
     assert "-m" in cmd and "kimi-code/kimi-for-coding" in cmd
-    assert "--agent-file" not in cmd
+    assert "--agent-file" in cmd
+    body = Path(cmd[cmd.index("--agent-file") + 1]).read_text(encoding="utf-8")
+    assert "- Read" in body and "- Write" in body and "- Edit" in body  # writer, not read-only
+    assert "- Bash" not in body and "- PowerShell" not in body           # no shell-capable tool
     assert "--auto" not in cmd and "--plan" not in cmd  # probe: both refuse to combine with -p
     assert cmd.count("--add-dir") == 2  # scratch + out_dir
     assert str(out) in cmd
+
+
+def test_build_argv_research_role_has_no_shell_tool(cfg: dict, tmp_path: Path) -> None:
+    out = tmp_path / "out"
+    out.mkdir()
+    cmd = ka.build_argv(cfg, bin_path=Path(cfg["bin"]), role="research", model="m",
+                        pointer="P", add_dirs=[], out_dir=out)
+    assert "--agent-file" in cmd
+    body = Path(cmd[cmd.index("--agent-file") + 1]).read_text(encoding="utf-8")
+    for shell_tool in ("- Bash", "- PowerShell", "- Shell", "- Terminal"):
+        assert shell_tool not in body
+
+
+def test_build_argv_research_ml_keeps_full_shell_no_agent_file(cfg: dict, tmp_path: Path) -> None:
+    out = tmp_path / "out"
+    out.mkdir()
+    cmd = ka.build_argv(cfg, bin_path=Path(cfg["bin"]), role="research_ml", model="m",
+                        pointer="P", add_dirs=[], out_dir=out)
+    assert "--agent-file" not in cmd  # full default toolset (shell) for ML exploration
+
+
+def test_run_kimi_research_ml_requires_allow_shell(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(ka, "_spawn_once", _fake_spawn(PROBE1_OK))
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "x")
+    # without allow_shell -> ValueError before any spawn
+    with pytest.raises(ValueError):
+        ka.run_kimi("x", role="research_ml", capability="research", task_id="t", cwd=tmp_path,
+                    add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
+    # with allow_shell=True the role is accepted and runs
+    res = ka.run_kimi("x", role="research_ml", capability="research", task_id="t", cwd=tmp_path,
+                      add_dirs=[], out_dir=tmp_path / "o2", config=cfg, environ={}, allow_shell=True)
+    assert res["status"] == "ok"
 
 
 def test_build_argv_critic_materializes_readonly_agent_file(cfg: dict, tmp_path: Path) -> None:
@@ -345,3 +385,142 @@ def test_no_secret_fields_logged(cfg: dict, tmp_path: Path, monkeypatch) -> None
                       add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
     assert "absent-cred.json" in res["error"]
     assert "access_token" not in res["error"] and "refresh_token" not in res["error"]
+
+
+# --- F3: protected-tree mutation guard (D:/QM state, T_Live, cards_approved) -----
+
+def _spawn_that_writes(target: Path, raw: str = PROBE1_OK):
+    """A _spawn_once replacement that also writes a file into a protected tree."""
+    def _spawn(cmd, *, cwd, env, timeout_s, raw_path, log_path):
+        Path(raw_path).write_text(raw, encoding="utf-8")
+        Path(log_path).write_text("", encoding="utf-8")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("mutation", encoding="utf-8")
+        return {"rc": 0, "timed_out": False, "latency_s": 0.1, "raw": raw, "stderr": ""}
+    return _spawn
+
+
+def test_research_protected_write_flags_status_but_keeps_text(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    prot = tmp_path / "protected_state"
+    prot.mkdir()
+    (prot / "existing.txt").write_text("a", encoding="utf-8")
+    cfg["protected_trees"] = [str(prot)]
+    monkeypatch.setattr(ka, "_spawn_once", _spawn_that_writes(prot / "kimi_wrote_here.txt"))
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "same")  # no repo change
+    res = ka.run_kimi("x", role="research", capability="research", task_id="t", cwd=tmp_path,
+                      add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
+    assert res["status"] == "protected_write"
+    assert res["protected_write"] is True and res["repo_write"] is False
+    assert res["text"] == "OK"  # a research write is flagged, not discarded
+    assert any("kimi_wrote_here.txt" in p for p in res["changed_paths"])
+
+
+def test_critic_protected_write_becomes_critic_wrote(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    prot = tmp_path / "protected_state"
+    prot.mkdir()
+    cfg["protected_trees"] = [str(prot)]
+    monkeypatch.setattr(ka, "_spawn_once", _spawn_that_writes(prot / "critic_wrote.txt"))
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "same")
+    res = ka.run_kimi("x", role="critic", capability="research_critic", task_id="t", cwd=tmp_path,
+                      add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
+    assert res["status"] == "critic_wrote"
+    assert res["protected_write"] is True and res["text"] == ""
+
+
+def test_no_protected_write_when_trees_untouched(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    prot = tmp_path / "protected_state"
+    prot.mkdir()
+    (prot / "existing.txt").write_text("a", encoding="utf-8")
+    cfg["protected_trees"] = [str(prot)]
+    monkeypatch.setattr(ka, "_spawn_once", _fake_spawn(PROBE1_OK))  # writes nothing into prot
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "same")
+    res = ka.run_kimi("x", role="research", capability="research", task_id="t", cwd=tmp_path,
+                      add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
+    assert res["status"] == "ok" and res["protected_write"] is False and res["changed_paths"] == []
+
+
+def test_adapter_ledger_file_excluded_from_protected_guard(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    # the adapter's own ledger lives under a protected tree; its write must NOT trip the guard.
+    prot = tmp_path / "state"
+    prot.mkdir()
+    cfg["protected_trees"] = [str(prot)]
+    cfg["ledger_path"] = str(prot / "kimi_usage_ledger.jsonl")
+    cfg["governor"]["ledger_path"] = cfg["ledger_path"]
+    cfg["single_flight"] = {"lock_path": str(prot / "kimi_adapter.lock"), "wait_s": 0, "stale_s": 7200}
+    monkeypatch.setattr(ka, "_spawn_once", _fake_spawn(PROBE1_OK))
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "same")
+    res = ka.run_kimi("x", role="research", capability="research", task_id="t", cwd=tmp_path,
+                      add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
+    assert res["status"] == "ok" and res["protected_write"] is False
+
+
+# --- F4: schema_mismatch distinct from malformed_output --------------------------
+
+SCHEMA_MISMATCH_RAW = (
+    '{"role":"meta","type":"system.version","version":"0.99.0"}\n'
+    '{"type":"message","payload":{"speaker":"assistant","body":"renamed shape"}}\n'
+    '{"event":"turn.complete","data":{}}\n'
+)
+
+
+def test_parse_stream_json_schema_mismatch_yields_no_answer() -> None:
+    # valid JSONL, but no line matches the known assistant-content shape.
+    assert ka.parse_stream_json(SCHEMA_MISMATCH_RAW) is None
+    assert ka._has_json_lines(SCHEMA_MISMATCH_RAW) is True
+    assert ka._has_json_lines("total garbage\nnot json at all\n") is False
+
+
+def test_run_kimi_schema_mismatch_class_distinct_from_malformed(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "x")
+    # (a) valid JSONL with renamed/unknown events -> schema_mismatch
+    monkeypatch.setattr(ka, "_spawn_once", _fake_spawn(SCHEMA_MISMATCH_RAW, rc=0))
+    res = ka.run_kimi("x", role="research", capability="research", task_id="t", cwd=tmp_path,
+                      add_dirs=[], out_dir=tmp_path / "o1", config=cfg, environ={})
+    assert res["status"] == "schema_mismatch" and res["text"] == ""
+    assert res["retries"] == 0  # schema_mismatch is a config-class error, not retried
+    # (b) non-JSON empty output -> malformed_output (the distinct class)
+    monkeypatch.setattr(ka, "_spawn_once", _fake_spawn("", rc=0))
+    res2 = ka.run_kimi("x", role="research", capability="research", task_id="t", cwd=tmp_path,
+                       add_dirs=[], out_dir=tmp_path / "o2", config=cfg, environ={})
+    assert res2["status"] == "malformed_output"
+    assert res["status"] != res2["status"]
+
+
+# --- F5: real concurrency -> single-flight enforces max_parallel 1 ---------------
+
+def test_max_parallel_1_enforced(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    import threading
+
+    cfg["single_flight"] = {"lock_path": str(tmp_path / "kimi.lock"), "wait_s": 1, "stale_s": 7200}
+    started = threading.Event()
+    release = threading.Event()
+
+    def _blocking_spawn(cmd, *, cwd, env, timeout_s, raw_path, log_path):
+        started.set()               # signals the lock is held by this thread
+        release.wait(10)            # hold the single-flight lock until released
+        Path(raw_path).write_text(PROBE1_OK, encoding="utf-8")
+        Path(log_path).write_text("", encoding="utf-8")
+        return {"rc": 0, "timed_out": False, "latency_s": 0.1, "raw": PROBE1_OK, "stderr": ""}
+
+    monkeypatch.setattr(ka, "_spawn_once", _blocking_spawn)
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "same")
+
+    results: dict[str, dict] = {}
+
+    def _call(name: str, out: Path) -> None:
+        results[name] = ka.run_kimi("x", role="research", capability="research", task_id=name,
+                                    cwd=tmp_path, add_dirs=[], out_dir=out, config=cfg, environ={})
+
+    t1 = threading.Thread(target=_call, args=("winner", tmp_path / "o1"))
+    t1.start()
+    assert started.wait(5), "first run never acquired the lock / entered spawn"
+
+    t2 = threading.Thread(target=_call, args=("loser", tmp_path / "o2"))
+    t2.start()
+    t2.join(10)                     # loser returns single_flight_busy after wait_s
+    release.set()
+    t1.join(10)
+
+    assert results["loser"]["status"] == "error"
+    assert results["loser"]["error"] == "single_flight_busy"
+    assert results["winner"]["status"] == "ok"  # exactly one ran

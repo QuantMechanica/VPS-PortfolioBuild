@@ -144,15 +144,25 @@ def _append_ledger(ledger_path: Path, row: dict[str, Any]) -> None:
 
 
 def _update_lineage(artifact_dir: Path, record: Mapping[str, Any]) -> dict[str, Any]:
+    """Append a preregistration version to lineage.json.
+
+    Tolerates a lineage.json minted by research_source.mint (contract F6, 2026-09-15):
+    that skeleton carries schema/research_id/version/parent_version_id/... but NO
+    ``versions`` list. We initialise ``versions`` when absent and PRESERVE every
+    existing key, so both tools share one schema id (qm.research-lineage/v1) with a
+    ``versions[]`` array rather than colliding on incompatible shapes.
+    """
     lineage_path = artifact_dir / "lineage.json"
     if lineage_path.exists():
-        lineage = json.loads(lineage_path.read_text(encoding="utf-8"))
+        loaded = json.loads(lineage_path.read_text(encoding="utf-8"))
+        lineage = loaded if isinstance(loaded, dict) else {}
     else:
-        lineage = {
-            "schema": LINEAGE_SCHEMA,
-            "research_id": record.get("research_id"),
-            "versions": [],
-        }
+        lineage = {}
+    lineage.setdefault("schema", LINEAGE_SCHEMA)
+    lineage.setdefault("research_id", record.get("research_id"))
+    lineage.setdefault("versions", [])
+    if not isinstance(lineage.get("versions"), list):
+        lineage["versions"] = []
     lineage["versions"].append(
         {
             "version": record["version"],
