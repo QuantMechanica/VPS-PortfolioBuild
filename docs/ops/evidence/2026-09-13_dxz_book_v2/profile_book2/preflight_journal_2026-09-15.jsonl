@@ -1,0 +1,20 @@
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "start", "cmd": "plan", "argv": ["plan"]}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "freeze_lifted", "ok": true}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "decision_present:2026-09-14_owner_risk_freeze_lift.md", "ok": true, "path": "C:\\QM\\repo\\decisions\\2026-09-14_owner_risk_freeze_lift.md"}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "decision_present:2026-09-15_owner_freifahrtsschein_scope_1_to_3.md", "ok": true, "path": "C:\\QM\\repo\\decisions\\2026-09-15_owner_freifahrtsschein_scope_1_to_3.md"}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "decision_present:2026-09-13_owner_governor_enforce_dxz.md", "ok": true, "path": "C:\\QM\\repo\\decisions\\2026-09-13_owner_governor_enforce_dxz.md"}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "decision_evidence_for_copy_plan", "ok": true, "path": "C:\\QM\\repo\\decisions\\2026-09-15_owner_freifahrtsschein_scope_1_to_3.md"}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "profile_staged", "ok": true, "path": "C:\\QM\\deploy\\DXZ_V2_20260913\\profile\\DarwinexZero_Book2_LiveOps"}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "profile_verify_staging", "ok": true, "mismatches": [], "charts": 29}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "profile_28_sleeves_plus_monitor", "ok": true, "n_sleeves": 28, "n_charts": 29, "total_risk": 9.801297}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "monitor_v2_artifact", "ok": true, "path": "C:\\QM\\deploy\\governor_v2_20260913\\staging\\QM_AccountMonitor.ex5"}
+{"ts_utc": "2026-09-15T08:01:23Z", "event": "preflight", "check": "profile_dst_absent", "ok": true, "path": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Profiles\\Charts\\DarwinexZero_Book2_LiveOps"}
+{"ts_utc": "2026-09-15T08:01:25Z", "event": "preflight", "check": "copy_plan_v3_dry_run", "ok": true, "items": 34, "plan": "C:\\QM\\deploy\\DXZ_V2_20260913\\copy_plan_v3_cutover.json", "result_keys": ["items", "live_root", "mode", "owner_approval_evidence", "plan", "schema", "validated_items", "written_items"]}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight", "check": "tlive_single_process", "ok": true, "pids": [9288], "sessions": [1]}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight", "check": "maintenance_flag_absent", "ok": true}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight", "check": "recovery_pointer_absent", "ok": true}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight", "check": "common_ini_present", "ok": true}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight", "check": "governor_policy_sha", "ok": true}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight", "check": "governor_activation_sha", "ok": true}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight", "check": "console_helper_present", "ok": true}
+{"ts_utc": "2026-09-15T08:01:27Z", "event": "preflight_result", "ok": true, "failed": []}

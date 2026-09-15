@@ -1,0 +1,347 @@
+{
+ "mode": "APPLY",
+ "staged": [
+  {
+   "preset": "01_GDAXI_M5_QM5_13301_balke-minute-range-breakout.set",
+   "ea_id": 13301,
+   "symbol": "GDAXI",
+   "old_risk": "0.0692",
+   "new_risk": "0.064799",
+   "header_fixes": [],
+   "sha256_deployed": "1dca1d10d8cfb3ecb4e2e665f76eb0e153ec93f1e030acad3a939c033c4faf18",
+   "sha256_staged": "ee4c3c9da4b67182064d85969732005a5d9df91459d084de2a402cde5f2fe888",
+   "changed_lines": [
+    "-RISK_PERCENT=0.0692",
+    "+RISK_PERCENT=0.064799"
+   ]
+  },
+  {
+   "preset": "02_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout.set",
+   "ea_id": 13213,
+   "symbol": "USDJPY",
+   "old_risk": "0.0431",
+   "new_risk": "0.044306",
+   "header_fixes": [],
+   "sha256_deployed": "768d2bbe70c220368df0af4fabc4dd50d1106174bf5f5f3d38086b890090211b",
+   "sha256_staged": "1b56c8c84970690cbb3fa7a507c434d06c760df9ea85a55fa8c35408c6c64b5b",
+   "changed_lines": [
+    "-RISK_PERCENT=0.0431",
+    "+RISK_PERCENT=0.044306"
+   ]
+  },
+  {
+   "preset": "03_EURUSD_H4_QM5_1567_demark-td-reverse-sequential-h4.set",
+   "ea_id": 1567,
+   "symbol": "EURUSD",
+   "old_risk": "0.1791",
+   "new_risk": "0.184783",
+   "header_fixes": [],
+   "sha256_deployed": "69f49d7a2f1dd90d4d010e355dfd11378e38b02bcc1c3de7fb8465f6c0de19a6",
+   "sha256_staged": "e85700f1e173cc75a79f5da4a56ef3b16cd7e730e7575e0452194c2c8ba83646",
+   "changed_lines": [
+    "-RISK_PERCENT=0.1791",
+    "+RISK_PERCENT=0.184783"
+   ]
+  },
+  {
+   "preset": "04_XTIUSD_H4_QM5_10919_grimes-overshoot.set",
+   "ea_id": 10919,
+   "symbol": "XTIUSD",
+   "old_risk": "0.9181",
+   "new_risk": "0.857769",
+   "header_fixes": [],
+   "sha256_deployed": "af3f2a4a2aa656ec1f9f5f247c55b2331a3c2c842d633afb48f849b98da735fc",
+   "sha256_staged": "b2988894553f5098da06bb10e8a288f277eaefe3c5ccdab9a1e0bdca077f1cd5",
+   "changed_lines": [
+    "-RISK_PERCENT=0.9181",
+    "+RISK_PERCENT=0.857769"
+   ]
+  },
+  {
+   "preset": "05_AUDCAD_H1_QM5_11165_weiss-rsi-ma.set",
+   "ea_id": 11165,
+   "symbol": "AUDCAD",
+   "old_risk": "0.5230",
+   "new_risk": "0.508245",
+   "header_fixes": [],
+   "sha256_deployed": "cbcc937c54560b9488cea970c6497faa0d98ea68a85c165671605688d9ba63b3",
+   "sha256_staged": "c03af83f19a08708104a72489e1f554a613d5862a39f510b4a06336fd8d2bfa6",
+   "changed_lines": [
+    "-RISK_PERCENT=0.5230",
+    "+RISK_PERCENT=0.508245"
+   ]
+  },
+  {
+   "preset": "06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set",
+   "ea_id": 12778,
+   "symbol": "AUDUSD",
+   "old_risk": "0.4905",
+   "new_risk": "0.439281",
+   "header_fixes": [],
+   "sha256_deployed": "9b4f4e7c5f0a0587787c285a92099607e7ef6607fa5e2f577f831b223100104b",
+   "sha256_staged": "80b9b85106442e8ecc6965cb76d7a11812338613371a61e7eb7502670dc6d5ee",
+   "changed_lines": [
+    "-RISK_PERCENT=0.4905",
+    "+RISK_PERCENT=0.439281"
+   ]
+  },
+  {
+   "preset": "07_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+   "ea_id": 11421,
+   "symbol": "AUDUSD",
+   "old_risk": "0.3614",
+   "new_risk": "0.321345",
+   "header_fixes": [],
+   "sha256_deployed": "35253aba58f16d6f79cec385efa00cfbccb41f58506fc64745657c48d91e1d20",
+   "sha256_staged": "37e171f10040dcd903bb14a26d5029dbeb503c79f453bc9e645d4fd0588ced46",
+   "changed_lines": [
+    "-RISK_PERCENT=0.3614",
+    "+RISK_PERCENT=0.321345"
+   ]
+  },
+  {
+   "preset": "08_EURUSD_H1_QM5_11165_weiss-rsi-ma.set",
+   "ea_id": 11165,
+   "symbol": "EURUSD",
+   "old_risk": "0.4127",
+   "new_risk": "0.409674",
+   "header_fixes": [],
+   "sha256_deployed": "0479d713294cac06b8c719e0d1b7baf54dc8adb30df16ed23267b0a10e586656",
+   "sha256_staged": "4254a9808fbd74ee74915e5dffb6b87b755a4637b0d2df2caf5b76d15754f655",
+   "changed_lines": [
+    "-RISK_PERCENT=0.4127",
+    "+RISK_PERCENT=0.409674"
+   ]
+  },
+  {
+   "preset": "09_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+   "ea_id": 11421,
+   "symbol": "EURUSD",
+   "old_risk": "0.3364",
+   "new_risk": "0.324694",
+   "header_fixes": [],
+   "sha256_deployed": "92735cc37d6b60473eedbd5c009e561944ddf4f4a465f0e66d3b1bd3cb339d70",
+   "sha256_staged": "31d42c7b9cf143047c42062b86b7deb139bce0e3e0b6a07bd74c1212f3a46637",
+   "changed_lines": [
+    "-RISK_PERCENT=0.3364",
+    "+RISK_PERCENT=0.324694"
+   ]
+  },
+  {
+   "preset": "10_EURUSD_D1_QM5_11708_anon-market-squeeze-d1.set",
+   "ea_id": 11708,
+   "symbol": "EURUSD",
+   "old_risk": "0.5080",
+   "new_risk": "0.544893",
+   "header_fixes": [],
+   "sha256_deployed": "7344e48059138eb753924b7f2c29475a5678bf580131b89b67730181784d3657",
+   "sha256_staged": "738cf7c4822014ab74f3ebc854cadd7307f4c50a9a2c9ba6adf591687173a668",
+   "changed_lines": [
+    "-RISK_PERCENT=0.5080",
+    "+RISK_PERCENT=0.544893"
+   ]
+  },
+  {
+   "preset": "11_GBPUSD_H1_QM5_10706_tv-mon-ls.set",
+   "ea_id": 10706,
+   "symbol": "GBPUSD",
+   "old_risk": "0.0530",
+   "new_risk": "0.052676",
+   "header_fixes": [],
+   "sha256_deployed": "d9d432347648a41b5dfefeb98f1aedf1c26b4d19f0a9db07ea3e1d0bc900f26f",
+   "sha256_staged": "6c012dadbcabf929dc7c300e62e027c7cbd73dfaec701a18077c5013a234001d",
+   "changed_lines": [
+    "-RISK_PERCENT=0.0530",
+    "+RISK_PERCENT=0.052676"
+   ]
+  },
+  {
+   "preset": "12_GBPUSD_H4_QM5_10939_grimes-context-pb.set",
+   "ea_id": 10939,
+   "symbol": "GBPUSD",
+   "old_risk": "0.1887",
+   "new_risk": "0.195791",
+   "header_fixes": [],
+   "sha256_deployed": "298bcd6a7867a967c1b491953fecad83e631b3dc5c001af70462be9e11e4c60e",
+   "sha256_staged": "d674e8ddcad0520f213bf85d3c53cc1c566106832dbbc28e89872d029cd4e6b6",
+   "changed_lines": [
+    "-RISK_PERCENT=0.1887",
+    "+RISK_PERCENT=0.195791"
+   ]
+  },
+  {
+   "preset": "13_GDAXI_H1_QM5_10911_grimes-complex-pb.set",
+   "ea_id": 10911,
+   "symbol": "GDAXI",
+   "old_risk": "0.1276",
+   "new_risk": "0.125988",
+   "header_fixes": [],
+   "sha256_deployed": "daf0f2143955d3bc052f5bce5b6b8510e7a55354839139f587e11d6ef13f6e1c",
+   "sha256_staged": "4e9b7a55b087cdf388ad0a32562985c89dd4b521e8dfa4d8613cf70706e57471",
+   "changed_lines": [
+    "-RISK_PERCENT=0.1276",
+    "+RISK_PERCENT=0.125988"
+   ]
+  },
+  {
+   "preset": "14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set",
+   "ea_id": 13128,
+   "symbol": "NDX",
+   "old_risk": "1.0000",
+   "new_risk": "1.102818",
+   "header_fixes": [],
+   "sha256_deployed": "743326c316de6c2ccdab6080dab6dfff2d010afc9843a75798701f39e981be4e",
+   "sha256_staged": "e4274846831d357a0d75e376b204f822450e62e672fad70044666a20a3863cbb",
+   "changed_lines": [
+    "-RISK_PERCENT=1.0000",
+    "+RISK_PERCENT=1.102818"
+   ]
+  },
+  {
+   "preset": "15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set",
+   "ea_id": 10440,
+   "symbol": "NDX",
+   "old_risk": "0.0577",
+   "new_risk": "0.058434",
+   "header_fixes": [],
+   "sha256_deployed": "af2678b4446e10741f68444cb457a16da33059b0150658857f400aa575cea717",
+   "sha256_staged": "97ff904cd795b592f84529a2266f1ca7fa43340d908bb9c04b5e5f0bcad135db",
+   "changed_lines": [
+    "-RISK_PERCENT=0.0577",
+    "+RISK_PERCENT=0.058434"
+   ]
+  },
+  {
+   "preset": "16_SP500_D1_QM5_11132_tm-cum-rsi2.set",
+   "ea_id": 11132,
+   "symbol": "SP500",
+   "old_risk": "0.4562",
+   "new_risk": "0.427189",
+   "header_fixes": [],
+   "sha256_deployed": "87fc8288070ab8bf56356ec9ab6a89f0216004df03dd2766e49e3aef3bdd5694",
+   "sha256_staged": "d33ae329d16904114697b95e8ca89861822050a35be9ec647586c4a3d34797a0",
+   "changed_lines": [
+    "-RISK_PERCENT=0.4562",
+    "+RISK_PERCENT=0.427189"
+   ]
+  },
+  {
+   "preset": "17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set",
+   "ea_id": 12969,
+   "symbol": "USDJPY",
+   "old_risk": "0.5100",
+   "new_risk": "0.590437",
+   "header_fixes": [],
+   "sha256_deployed": "360991b5a72f2451c47c01dabf1c12f3f2ec96470dd1047d44a26a502ddc4649",
+   "sha256_staged": "6078d478b4a35b783c937fe8d34b39771f764fc508722562829db1ef0717274e",
+   "changed_lines": [
+    "-RISK_PERCENT=0.5100",
+    "+RISK_PERCENT=0.590437"
+   ]
+  },
+  {
+   "preset": "18_XAUUSD_D1_QM5_10403_et-turtle20x.set",
+   "ea_id": 10403,
+   "symbol": "XAUUSD",
+   "old_risk": "0.2204",
+   "new_risk": "0.217916",
+   "header_fixes": [],
+   "sha256_deployed": "a902a73a66436d63c3c7caf59f6c2b233e2f9e479e0bc6d164ecd7ea6de29c5f",
+   "sha256_staged": "1f767e0832dcdbb29cd9cbbf004da2c1af7f3ba45d3c29e75a262dd88ea3be99",
+   "changed_lines": [
+    "-RISK_PERCENT=0.2204",
+    "+RISK_PERCENT=0.217916"
+   ]
+  },
+  {
+   "preset": "19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set",
+   "ea_id": 10513,
+   "symbol": "XAUUSD",
+   "old_risk": "0.3050",
+   "new_risk": "0.298731",
+   "header_fixes": [],
+   "sha256_deployed": "722e1344a4fa6bd60a43be79d1d1920730b7a5d62f8236c0b812f8764f596dde",
+   "sha256_staged": "873076ba66428c53631c2c2e9df0d4d80f52127183d9ce3b3eb5130b568072ae",
+   "changed_lines": [
+    "-RISK_PERCENT=0.3050",
+    "+RISK_PERCENT=0.298731"
+   ]
+  },
+  {
+   "preset": "20_XAUUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+   "ea_id": 12567,
+   "symbol": "XAUUSD",
+   "old_risk": "0.7465",
+   "new_risk": "0.784834",
+   "header_fixes": [],
+   "sha256_deployed": "b75574e3bf3fb20ec63e8ad94854bc18e542324256f861733adbcd2f8cccf256",
+   "sha256_staged": "234e21174aeb87e1d15be0a67fc0d2b56b88d828a6f71c2a5bbc044178b902a9",
+   "changed_lines": [
+    "-RISK_PERCENT=0.7465",
+    "+RISK_PERCENT=0.784834"
+   ]
+  },
+  {
+   "preset": "21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set",
+   "ea_id": 12989,
+   "symbol": "XAUUSD",
+   "old_risk": "0.2420",
+   "new_risk": "0.227473",
+   "header_fixes": [],
+   "sha256_deployed": "9fb2c0f85ad92a1b6de7afeb58988c7fe3fbe56ac9be5f6025af6a5d18d2a5f4",
+   "sha256_staged": "b23b7633c00d49cffb25364a7d13b35b3954379fa1bd0b4c762f88adbec9efed",
+   "changed_lines": [
+    "-RISK_PERCENT=0.2420",
+    "+RISK_PERCENT=0.227473"
+   ]
+  },
+  {
+   "preset": "22_XAUUSD_D1_QM5_1556_aa-zak-mom12.set",
+   "ea_id": 1556,
+   "symbol": "XAUUSD",
+   "old_risk": "0.6017",
+   "new_risk": "0.540735",
+   "header_fixes": [],
+   "sha256_deployed": "d6dae289eea21a4e47dc99c59598f25b6c9271a852214d0f8d6bff3ba8fb0d5c",
+   "sha256_staged": "9cbc920e86e1eb2360577839e3650c5e1ae7bb82c4e90f5c08e4b280d95e5a7c",
+   "changed_lines": [
+    "-RISK_PERCENT=0.6017",
+    "+RISK_PERCENT=0.540735"
+   ]
+  },
+  {
+   "preset": "23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+   "ea_id": 12567,
+   "symbol": "XNGUSD",
+   "old_risk": "0.9797",
+   "new_risk": "0.957698",
+   "header_fixes": [],
+   "sha256_deployed": "26537d011b553ba6acb668d99945584be3c0ab0991dc4459fc84de8278cc4e79",
+   "sha256_staged": "a0e6ec8111df89e4952129ca72cb8b5beb8b5519f474fb2c1ee97b72191691a2",
+   "changed_lines": [
+    "-RISK_PERCENT=0.9797",
+    "+RISK_PERCENT=0.957698"
+   ]
+  },
+  {
+   "preset": "24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set",
+   "ea_id": 13117,
+   "symbol": "EURGBP",
+   "old_risk": "0.4199",
+   "new_risk": "0.409988",
+   "header_fixes": [],
+   "sha256_deployed": "398248d72873a795de78298e257ad202fed9aacfe2c6b0eb005bdd4c85b55c2c",
+   "sha256_staged": "319857a162ece132e71857cb58f3423a551a557fd0000b3ae35fc79a8433cd51",
+   "changed_lines": [
+    "-RISK_PERCENT=0.4199",
+    "+RISK_PERCENT=0.409988"
+   ]
+  }
+ ],
+ "problems": [
+  "manifest sleeve QM5_1537/XAGUSD has no deployed preset",
+  "manifest sleeve QM5_9641/WS30 has no deployed preset",
+  "manifest sleeve QM5_10700/XAUUSD has no deployed preset",
+  "manifest sleeve QM5_13013/NDX has no deployed preset"
+ ]
+}

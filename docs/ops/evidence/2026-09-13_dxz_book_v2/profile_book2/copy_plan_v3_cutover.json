@@ -1,0 +1,322 @@
+{
+  "schema": "qm.tlive_book_copy_plan.v1",
+  "source": "C:\\QM\\deploy\\DXZ_V2_20260913",
+  "destination": "C:\\QM\\mt5\\T_Live\\MT5_Base",
+  "destination_relative": "MQL5",
+  "owner_approval_evidence": "C:\\QM\\repo\\decisions\\2026-09-15_owner_freifahrtsschein_scope_1_to_3.md",
+  "book": "DXZ_4000090541",
+  "as_of": "2026-09-20",
+  "variant": "28_SLEEVE_BOOK_TOTALRISK11_CAP15",
+  "owner_decision": "OWNER-DEC-BOOK-RISK-11-20260913",
+  "note": "cutover plan v3: 8 v2 items + 24 promoted re-weights + 2 repair items",
+  "items": [
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\eas\\QM5_10700_tv-liq-break.ex5",
+      "destination_relative": "MQL5/Experts/Live EAs/QM5_10700_tv-liq-break.ex5",
+      "sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+      "class": "new_binary"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\eas\\QM5_13013_grimes-trendday-v2.ex5",
+      "destination_relative": "MQL5/Experts/Live EAs/QM5_13013_grimes-trendday-v2.ex5",
+      "sha256": "bf2cc2ecaff8ae556c06986aac8b6fb5e55d828d5ef5f6c81d8a4fc48bd44c41",
+      "class": "new_binary"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\eas\\QM5_1537_aa-vol-sma10.ex5",
+      "destination_relative": "MQL5/Experts/Live EAs/QM5_1537_aa-vol-sma10.ex5",
+      "sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
+      "class": "new_binary"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\eas\\QM5_9641_bandy-cci-extreme-fade-mr-index.ex5",
+      "destination_relative": "MQL5/Experts/Live EAs/QM5_9641_bandy-cci-extreme-fade-mr-index.ex5",
+      "sha256": "21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21",
+      "class": "new_binary"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\new_burnin\\25_XAGUSD_D1_QM5_1537_aa-vol-sma10.set",
+      "destination_relative": "MQL5/Presets/25_XAGUSD_D1_QM5_1537_aa-vol-sma10.set",
+      "sha256": "4d9204361e08e47ebae22e025d0809316b811287373d6f32c086cfc77899f11d",
+      "class": "new_preset_burn_in"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\new_burnin\\26_WS30_D1_QM5_9641_bandy-cci-extreme-fade-mr-index.set",
+      "destination_relative": "MQL5/Presets/26_WS30_D1_QM5_9641_bandy-cci-extreme-fade-mr-index.set",
+      "sha256": "ce0b76ed9fc7e04da3dca266ba7cf3e9d7f9159d282cce1ad69a49b8567e2e22",
+      "class": "new_preset_burn_in"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\new_burnin\\27_XAUUSD_H1_QM5_10700_tv-liq-break.set",
+      "destination_relative": "MQL5/Presets/27_XAUUSD_H1_QM5_10700_tv-liq-break.set",
+      "sha256": "f06c660fa8f85c1c60643fb4fa99786839160ff03bb6eac1363ce8584244dc3b",
+      "class": "new_preset_burn_in"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\new_burnin\\28_NDX_M15_QM5_13013_grimes-trendday-v2.set",
+      "destination_relative": "MQL5/Presets/28_NDX_M15_QM5_13013_grimes-trendday-v2.set",
+      "sha256": "6f3f55adeb471dbe08c92571a4990db36611e622de78dd8a884d95aa9712cfa5",
+      "class": "new_preset_burn_in"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\01_GDAXI_M5_QM5_13301_balke-minute-range-breakout.set",
+      "destination_relative": "MQL5/Presets/01_GDAXI_M5_QM5_13301_balke-minute-range-breakout.set",
+      "sha256": "ee4c3c9da4b67182064d85969732005a5d9df91459d084de2a402cde5f2fe888",
+      "class": "existing_risk_change",
+      "old_risk": "0.0692",
+      "new_risk": "0.064799",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\02_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout.set",
+      "destination_relative": "MQL5/Presets/02_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout.set",
+      "sha256": "1b56c8c84970690cbb3fa7a507c434d06c760df9ea85a55fa8c35408c6c64b5b",
+      "class": "existing_risk_change",
+      "old_risk": "0.0431",
+      "new_risk": "0.044306",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\03_EURUSD_H4_QM5_1567_demark-td-reverse-sequential-h4.set",
+      "destination_relative": "MQL5/Presets/03_EURUSD_H4_QM5_1567_demark-td-reverse-sequential-h4.set",
+      "sha256": "e85700f1e173cc75a79f5da4a56ef3b16cd7e730e7575e0452194c2c8ba83646",
+      "class": "existing_risk_change",
+      "old_risk": "0.1791",
+      "new_risk": "0.184783",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\04_XTIUSD_H4_QM5_10919_grimes-overshoot.set",
+      "destination_relative": "MQL5/Presets/04_XTIUSD_H4_QM5_10919_grimes-overshoot.set",
+      "sha256": "b2988894553f5098da06bb10e8a288f277eaefe3c5ccdab9a1e0bdca077f1cd5",
+      "class": "existing_risk_change",
+      "old_risk": "0.9181",
+      "new_risk": "0.857769",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\05_AUDCAD_H1_QM5_11165_weiss-rsi-ma.set",
+      "destination_relative": "MQL5/Presets/05_AUDCAD_H1_QM5_11165_weiss-rsi-ma.set",
+      "sha256": "c03af83f19a08708104a72489e1f554a613d5862a39f510b4a06336fd8d2bfa6",
+      "class": "existing_risk_change",
+      "old_risk": "0.5230",
+      "new_risk": "0.508245",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set",
+      "destination_relative": "MQL5/Presets/06_AUDUSD_D1_QM5_12778_edgelab-audusd-eurjpy-cointegration.set",
+      "sha256": "80b9b85106442e8ecc6965cb76d7a11812338613371a61e7eb7502670dc6d5ee",
+      "class": "existing_risk_change",
+      "old_risk": "0.4905",
+      "new_risk": "0.439281",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\07_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+      "destination_relative": "MQL5/Presets/07_AUDUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+      "sha256": "37e171f10040dcd903bb14a26d5029dbeb503c79f453bc9e645d4fd0588ced46",
+      "class": "existing_risk_change",
+      "old_risk": "0.3614",
+      "new_risk": "0.321345",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\08_EURUSD_H1_QM5_11165_weiss-rsi-ma.set",
+      "destination_relative": "MQL5/Presets/08_EURUSD_H1_QM5_11165_weiss-rsi-ma.set",
+      "sha256": "4254a9808fbd74ee74915e5dffb6b87b755a4637b0d2df2caf5b76d15754f655",
+      "class": "existing_risk_change",
+      "old_risk": "0.4127",
+      "new_risk": "0.409674",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\09_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+      "destination_relative": "MQL5/Presets/09_EURUSD_D1_QM5_11421_ohlc-daily-squeeze-reversal-d1.set",
+      "sha256": "31d42c7b9cf143047c42062b86b7deb139bce0e3e0b6a07bd74c1212f3a46637",
+      "class": "existing_risk_change",
+      "old_risk": "0.3364",
+      "new_risk": "0.324694",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\10_EURUSD_D1_QM5_11708_anon-market-squeeze-d1.set",
+      "destination_relative": "MQL5/Presets/10_EURUSD_D1_QM5_11708_anon-market-squeeze-d1.set",
+      "sha256": "738cf7c4822014ab74f3ebc854cadd7307f4c50a9a2c9ba6adf591687173a668",
+      "class": "existing_risk_change",
+      "old_risk": "0.5080",
+      "new_risk": "0.544893",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\11_GBPUSD_H1_QM5_10706_tv-mon-ls.set",
+      "destination_relative": "MQL5/Presets/11_GBPUSD_H1_QM5_10706_tv-mon-ls.set",
+      "sha256": "6c012dadbcabf929dc7c300e62e027c7cbd73dfaec701a18077c5013a234001d",
+      "class": "existing_risk_change",
+      "old_risk": "0.0530",
+      "new_risk": "0.052676",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\12_GBPUSD_H4_QM5_10939_grimes-context-pb.set",
+      "destination_relative": "MQL5/Presets/12_GBPUSD_H4_QM5_10939_grimes-context-pb.set",
+      "sha256": "d674e8ddcad0520f213bf85d3c53cc1c566106832dbbc28e89872d029cd4e6b6",
+      "class": "existing_risk_change",
+      "old_risk": "0.1887",
+      "new_risk": "0.195791",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\13_GDAXI_H1_QM5_10911_grimes-complex-pb.set",
+      "destination_relative": "MQL5/Presets/13_GDAXI_H1_QM5_10911_grimes-complex-pb.set",
+      "sha256": "4e9b7a55b087cdf388ad0a32562985c89dd4b521e8dfa4d8613cf70706e57471",
+      "class": "existing_risk_change",
+      "old_risk": "0.1276",
+      "new_risk": "0.125988",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set",
+      "destination_relative": "MQL5/Presets/14_NDX_H1_QM5_13128_pre-fomc-drift-ndx.set",
+      "sha256": "e4274846831d357a0d75e376b204f822450e62e672fad70044666a20a3863cbb",
+      "class": "existing_risk_change",
+      "old_risk": "1.0000",
+      "new_risk": "1.102818",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set",
+      "destination_relative": "MQL5/Presets/15_NDX_H1_QM5_10440_mql5-ohlc-mtf.set",
+      "sha256": "97ff904cd795b592f84529a2266f1ca7fa43340d908bb9c04b5e5f0bcad135db",
+      "class": "existing_risk_change",
+      "old_risk": "0.0577",
+      "new_risk": "0.058434",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\16_SP500_D1_QM5_11132_tm-cum-rsi2.set",
+      "destination_relative": "MQL5/Presets/16_SP500_D1_QM5_11132_tm-cum-rsi2.set",
+      "sha256": "d33ae329d16904114697b95e8ca89861822050a35be9ec647586c4a3d34797a0",
+      "class": "existing_risk_change",
+      "old_risk": "0.4562",
+      "new_risk": "0.427189",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set",
+      "destination_relative": "MQL5/Presets/17_USDJPY_M30_QM5_12969_usdjpy-gotobi-nakane-fix.set",
+      "sha256": "6078d478b4a35b783c937fe8d34b39771f764fc508722562829db1ef0717274e",
+      "class": "existing_risk_change",
+      "old_risk": "0.5100",
+      "new_risk": "0.590437",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\18_XAUUSD_D1_QM5_10403_et-turtle20x.set",
+      "destination_relative": "MQL5/Presets/18_XAUUSD_D1_QM5_10403_et-turtle20x.set",
+      "sha256": "1f767e0832dcdbb29cd9cbbf004da2c1af7f3ba45d3c29e75a262dd88ea3be99",
+      "class": "existing_risk_change",
+      "old_risk": "0.2204",
+      "new_risk": "0.217916",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set",
+      "destination_relative": "MQL5/Presets/19_XAUUSD_D1_QM5_10513_mql5-ichimoku.set",
+      "sha256": "873076ba66428c53631c2c2e9df0d4d80f52127183d9ce3b3eb5130b568072ae",
+      "class": "existing_risk_change",
+      "old_risk": "0.3050",
+      "new_risk": "0.298731",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\20_XAUUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+      "destination_relative": "MQL5/Presets/20_XAUUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+      "sha256": "234e21174aeb87e1d15be0a67fc0d2b56b88d828a6f71c2a5bbc044178b902a9",
+      "class": "existing_risk_change",
+      "old_risk": "0.7465",
+      "new_risk": "0.784834",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set",
+      "destination_relative": "MQL5/Presets/21_XAUUSD_H4_QM5_12989_grimes-nested-pb-v2.set",
+      "sha256": "b23b7633c00d49cffb25364a7d13b35b3954379fa1bd0b4c762f88adbec9efed",
+      "class": "existing_risk_change",
+      "old_risk": "0.2420",
+      "new_risk": "0.227473",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\22_XAUUSD_D1_QM5_1556_aa-zak-mom12.set",
+      "destination_relative": "MQL5/Presets/22_XAUUSD_D1_QM5_1556_aa-zak-mom12.set",
+      "sha256": "9cbc920e86e1eb2360577839e3650c5e1ae7bb82c4e90f5c08e4b280d95e5a7c",
+      "class": "existing_risk_change",
+      "old_risk": "0.6017",
+      "new_risk": "0.540735",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+      "destination_relative": "MQL5/Presets/23_XNGUSD_D1_QM5_12567_cum-rsi2-commodity.set",
+      "sha256": "a0e6ec8111df89e4952129ca72cb8b5beb8b5519f474fb2c1ee97b72191691a2",
+      "class": "existing_risk_change",
+      "old_risk": "0.9797",
+      "new_risk": "0.957698",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\presets\\existing\\24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set",
+      "destination_relative": "MQL5/Presets/24_EURGBP_D1_QM5_13117_eurgbp-audjpy.set",
+      "sha256": "319857a162ece132e71857cb58f3423a551a557fd0000b3ae35fc79a8433cd51",
+      "class": "existing_risk_change",
+      "old_risk": "0.4199",
+      "new_risk": "0.409988",
+      "promoted_from": "pending_items (LIVE_RISK_FREEZE lifted 2026-09-14)"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\repair_v2\\eas\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix.ex5",
+      "destination_relative": "MQL5/Experts/Live EAs/QM5_41470_usdjpy-gotobi-nakane-fix-symfix.ex5",
+      "sha256": "ef34638d26eb4e8ddc839e0790457ee898e5a7aedfcd5774eb733c69608e2cf2",
+      "class": "repair_v2_41470"
+    },
+    {
+      "source": "C:\\QM\\deploy\\DXZ_V2_20260913\\repair_v2\\presets\\17_USDJPY_M30_QM5_41470_usdjpy-gotobi-nakane-fix-symfix.set",
+      "destination_relative": "MQL5/Presets/17_USDJPY_M30_QM5_41470_usdjpy-gotobi-nakane-fix-symfix.set",
+      "sha256": "2060856175f12722c3752ad073b1e785896e5435f34a700caf765622ae5368d7",
+      "class": "repair_v2_41470"
+    }
+  ],
+  "skipped_pending": [
+    {
+      "class": "dark_sleeve_repair_noop_until_source_fix",
+      "ea_id": null,
+      "symbol": null,
+      "status": null
+    },
+    {
+      "class": "dark_sleeve_repair_noop_until_source_fix",
+      "ea_id": null,
+      "symbol": null,
+      "status": null
+    },
+    {
+      "class": "dark_sleeve_repair_noop_until_source_fix",
+      "ea_id": null,
+      "symbol": null,
+      "status": null
+    },
+    {
+      "class": "deferred_new_sleeve",
+      "ea_id": 13054,
+      "symbol": "XTIUSD",
+      "status": "DEFERRED_SYMBOL_LITERAL_FIX"
+    },
+    {
+      "class": "deferred_new_sleeve",
+      "ea_id": 21505,
+      "symbol": "XAGUSD",
+      "status": "DEFERRED_SYMBOL_LITERAL_FIX"
+    }
+  ]
+}
