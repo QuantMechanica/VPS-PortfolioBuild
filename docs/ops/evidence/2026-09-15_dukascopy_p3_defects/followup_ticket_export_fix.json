@@ -1,0 +1,32 @@
+{
+  "title": "Dukascopy lane export-side fix (no T1 run in this ticket): (1) QM_DWX_M1_Overlap_Export.mq5 CopyChunk must not accept copied=0 as final - retry a zero-tick chunk with bounded backoff and record per-chunk tick counts and the expected-minute bar per chunk; (2) ExportOne/receipt: a symbol is COMPLETE only when exported minutes >= expected minutes from the fixed-window bar minus the documented session-closure allowance, else SHORT_READ with ratio and the list of short chunks (never PASS on written_rows>0); (3) wrapper dwx_m1_overlap_export.py surfaces the per-chunk journal into export_receipt.json and fails the receipt loud on any SHORT_READ; (4) reconcile_overlap.py: gap-based check (longest silent interval between consecutive DWX minutes within a trading week) so the AUDCAD class (25-day hole at 84% aggregate coverage) is labeled SHORT_READ_GAP, not ordinary FAIL; compile the script with MetaEditor on a NON-factory path (framework compile path, not T1-T10/T_Live) and bind the .ex5 sha; the governed T1 export rerun is a separate work item the orchestrator enqueues after review",
+  "why_now": "ca955879 (APPROVED 2026-09-15 05:3xZ) proved the 2026-09-13 export receipt was PASS 37/37 while 10 symbols carried 61-2,607 of ~180,000 minutes and AUDCAD lost 25 days: CopyChunk treats copied=0 as a valid final result with no retry and no completeness bar, and the receipt's only success criterion was written_rows>0. Every future Dukascopy overlap/splice decision reads these receipts, so the export must be fixed before any T1 probe slot is spent again. Not book-sprint critical; paced behind sprint tickets.",
+  "acceptance": [
+    "mq5: CopyChunk retries a copied=0 chunk at least 3 times with backoff (e.g. 2 s / 5 s / 10 s) and journals per chunk: symbol, chunk window, attempt, copied ticks, GetLastError; a chunk that stays at 0 after retries is recorded as ZERO_TICK_CHUNK, not silently accepted",
+    "mq5 + wrapper: expected minutes per symbol computed from the fixed-window bar (the P1 manifest minute counts or the Dukascopy-side count; state which) minus a documented session-closure allowance per instrument class (FX 24x5, indices/commodities session hours); receipt status COMPLETE / SHORT_READ with exported/expected ratio and the short chunks listed; SHORT_READ never becomes COMPLETE by any downstream aggregation",
+    "wrapper: export_receipt.json carries the per-chunk journal and an overall status that is FAIL when any symbol is SHORT_READ; unit tests for the receipt classification with synthetic chunk journals",
+    "reconcile_overlap.py: gap-based check (longest silent interval inside a trading week, threshold documented, e.g. > 24 h on a weekday) yields SHORT_READ_GAP; unit test with the AUDCAD pattern (dense - 25-day hole - dense) asserting SHORT_READ_GAP; existing 34 tests stay green",
+    "compile: MetaEditor compile of the diagnostics script on the framework compile path (NOT inside D:/QM/mt5/T1..T10 or C:/QM/mt5/T_Live), 0 errors, .ex5 sha256 bound in the evidence; no terminal started, no export run",
+    "evidence: docs/ops/evidence/2026-09-15_dukascopy_export_fix/README.md with commit sha, compile log path + sha, test commands + results, and the exact enqueue line the orchestrator should use for the governed T1 rerun work item (same path as 156ed639 / 030e8488)",
+    "no archive write, no manifest update, no production splice; production_import=false everywhere"
+  ],
+  "evidence": [
+    "docs/ops/evidence/2026-09-15_dukascopy_p3_defects/README.md (root cause, CopyChunk/ExportOne analysis, AUDCAD gap table)",
+    "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/README.md",
+    "framework/scripts/mt5_diagnostics/QM_DWX_M1_Overlap_Export.mq5",
+    "tools/dukascopy/dwx_m1_overlap_export.py",
+    "tools/dukascopy/reconcile_overlap.py (867c215a96)",
+    "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260913_114500 (defective export, read only)"
+  ],
+  "hard_limits": [
+    "never start terminal64.exe, never signal T1-T10 or T_Live, no export run; the rerun is a governed work item the orchestrator enqueues",
+    "no compile inside the factory or live terminal trees; use the framework compile path and bind the sha",
+    "fixed reconciliation thresholds (1.5x spread p95, 99% bilateral coverage, DST 0 s) unchanged; new checks are additive and fail-closed",
+    "no archive/manifest/splice writes; append-only evidence; explicit git pathspecs; files touched only under framework/scripts/mt5_diagnostics/, tools/dukascopy/ (+tests) and the evidence dir"
+  ],
+  "required_capabilities": ["code", "ops"],
+  "model_tier": "terra",
+  "requested_by": "Orchestrator Claude 2026-09-15 05:3xZ (review of ca955879)",
+  "parent_task": "ca955879-fd90-4889-9f72-187dfd4e3522",
+  "lane_note": "Claude headless lane (Sonnet) per OWNER 2026-09-14; priority below the book-sprint tickets"
+}
