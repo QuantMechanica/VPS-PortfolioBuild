@@ -47,7 +47,7 @@ the gate ruled on.
 
 | # | Check | Owner | 25/1537 | 26/9641 | 27/10700 | 28/13013 | 06/12778 | 17/12969 | 24/13117 |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | fresh compile on T_Live | Codex | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN |
+| 1 | binary identity SHA256 factory build → T_Live (re-scoped 2026-09-15: no recompile on T_Live, identity rule; closes at the copy step of the ceremony) | Claude | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN | OPEN |
 | 2 | deploy manifest created | Codex | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) | GREEN(draft) |
 | 3 | manifest signed by OWNER | OWNER | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) | GREEN (by ref) |
 | 4 | RISK_PERCENT set, min-lot for burn-in | Claude | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
@@ -56,7 +56,7 @@ the gate ruled on.
 | 7 | DST timezone on T_Live | Claude | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 8 | kill-switch threshold defined | Codex | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 9 | symbol routing `.DWX` → broker | Codex | **OPEN** | **OPEN** | GREEN | GREEN | **RED** | **RED** | **RED** |
-| 10 | magic registered + unique | Claude | GREEN | **OPEN** | GREEN | GREEN | GREEN | GREEN | GREEN |
+| 10 | magic registered + unique (INIT log after the profile attach) | Claude | GREEN | **OPEN** | GREEN | GREEN | GREEN | GREEN | GREEN |
 | 11 | SHA256 factory → T_Live | Claude | GREEN | GREEN | GREEN | GREEN | n/a | n/a | n/a |
 
 `GREEN*` = class-level evidence only (the instrument itself has no live deal history yet;
@@ -247,3 +247,11 @@ demonstrated by `stage_tlive_presets_risk.py --apply` (§3), which calls the sam
 ### Addendum 2026-09-15 07:5xZ — check 3
 
 OWNER approval of manifest v2 rev 3 by reference: `decisions/2026-09-15_owner_freifahrtsschein_scope_1_to_3.md` (sha256 1187af1d87fd09fcd448095d570e127c585f265769816945b1dffc43748d43dd, commit 6646c3b217); `owner_signature` field set in `deploy_manifest_v2_DRAFT.yaml` (2954c4bc5c). `claude_verification_signature` stays PENDING until the ceremony verification.
+
+### Addendum 2026-09-15 08:0xZ — chain-critic finding B12 (`strategy_calendar_symbol=XAGUSD.DWX` in the staged 25/1537 live preset) RESOLVED BY DESIGN
+
+`QM5_1537_aa-vol-sma10.mq5:58-62` documents the input as the calendar/registry key: "On a broker account whose chart is the plain name (FTMO/Darwinex live: XAGUSD) set it to the registry name (XAGUSD.DWX) so the sha-bound sleeve calendar keeps matching without a calendar rebuild." Every use of `QM1537_HostSymbol()` is an identity/key comparison (`.mq5:170` registry-slot check against the `.DWX` basket names; `QM5_1537_MonthlySleeveCalendar.mqh:289,308` sleeve-calendar host match); all market-data and pricing reads use `_Symbol` (`.mq5:198,199,207,348,349`). An EMPTY value on live would make the slot check compare `XAGUSD` against `XAGUSD.DWX` and reject. The staged value is therefore correct and required; no preset change. Bound by the orchestrator 2026-09-15.
+
+### Addendum 2026-09-15 10:3xZ — ownership + scope (daily-check critic B4/B5)
+
+Check 1 re-scoped from 'fresh compile on T_Live' to binary identity by SHA256 (July precedent §0, identity rule: a rebuilt ex5 is a new identity); owner Claude, closes inside `tlive_book_cutover.py` step S4 (deploy_tlive_book enforces the sha per item). Check 10 owner Claude (INIT_OK scan in step S7). No Codex-owned Q16 item remains; the Codex weekly throttle no longer gates the cutover.
