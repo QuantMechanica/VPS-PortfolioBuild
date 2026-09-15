@@ -116,6 +116,7 @@ class Sources:
     book_ftmo: Path
     lineage_map: Path
     health_out: Path
+    live_attribution: Path
 
     @property
     def ea_registry(self) -> Path:
@@ -136,6 +137,16 @@ class Sources:
     @property
     def sidecar_path(self) -> Path:
         return self.generated_dir / ".sync" / "state.json"
+
+    @property
+    def second_chance_register(self) -> Path:
+        """Optional read-only join: the Second-Chance Register read-model.
+
+        Written by ``research/second_chance_register.py``. When present, the
+        generated nodes render their second-chance fields; when absent, nodes are
+        unchanged. Lives beside the other state read-models.
+        """
+        return self.health_out.parent / "second_chance_register.json"
 
     def card_stores(self) -> list[tuple[str, Path, str]]:
         """(store_name, directory, class_hint), most-authoritative first.
@@ -168,6 +179,7 @@ def default_sources(
     book_ftmo: Path | None = None,
     lineage_map: Path | None = None,
     health_out: Path | None = None,
+    live_attribution: Path | None = None,
 ) -> Sources:
     rr = repo_root or _repo_root()
     d = d_runtime or Path(r"D:\QM\strategy_farm")
@@ -181,6 +193,7 @@ def default_sources(
         book_ftmo=book_ftmo or (state / "book_evolution_ftmo.json"),
         lineage_map=lineage_map or (state / "lineage_map.json"),
         health_out=health_out or (state / "strategy_wiki_sync.json"),
+        live_attribution=live_attribution or (state / "live_sleeve_attribution.json"),
     )
 
 
@@ -347,6 +360,39 @@ def _book_membership(path: Path) -> dict[str, str]:
         key = normalize_ea_key(ch.get("ea_id"))
         if key and key not in out:
             out[key] = "CHALLENGER"
+    return out
+
+
+def load_live_pnl(path: Path) -> dict[str, dict[str, Any]]:
+    """ea_key -> aggregated live realized PnL from the §33 attribution feed (read-only join).
+
+    An EA may run several live sleeves (magics); realized_pnl / realized_dd / trade_count
+    are summed per ea_id.  Absent or non-PRESENT feed -> empty map (nodes render
+    NOT_APPLICABLE, stable, no churn).
+    """
+    out: dict[str, dict[str, Any]] = {}
+    if not path.is_file():
+        return out
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return out
+    if not isinstance(data, dict) or data.get("status") != "PRESENT":
+        return out
+    for sleeve in data.get("sleeves") or []:
+        key = normalize_ea_key(sleeve.get("ea_id"))
+        if not key:
+            continue
+        agg = out.setdefault(key, {"realized_net": 0.0, "realized_dd": 0.0, "trade_count": 0, "last_deal_utc": ""})
+        agg["realized_net"] += float(sleeve.get("realized_pnl") or 0.0)
+        agg["realized_dd"] += float(sleeve.get("realized_dd") or 0.0)
+        agg["trade_count"] += int(sleeve.get("trade_count") or 0)
+        last = str(sleeve.get("last_deal_utc") or "")
+        if last > agg["last_deal_utc"]:
+            agg["last_deal_utc"] = last
+    for agg in out.values():
+        agg["realized_net"] = round(agg["realized_net"], 2)
+        agg["realized_dd"] = round(agg["realized_dd"], 2)
     return out
 
 
@@ -646,10 +692,44 @@ def _handwritten_link(record: Record, handwritten: dict[str, Path]) -> str:
     return NOT_APPLICABLE
 
 
+def load_second_chance(sources: Sources) -> dict[str, dict[str, Any]]:
+    """Read-only join of the Second-Chance Register keyed by EA id.
+
+    Returns ``{}`` when the register is absent (nodes then render unchanged).
+    Only the per-node CONTENT fields are extracted — deterministic given the
+    register's inputs — so folding them into the node input digest keeps
+    idempotency (a node re-renders only when its own second-chance verdict
+    changes, never merely because the register was regenerated).
+    """
+    path = sources.second_chance_register
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(_read_text(path))
+    except (OSError, ValueError):
+        return {}
+    out: dict[str, dict[str, Any]] = {}
+    for rec in data.get("records", []):
+        key = normalize_ea_key(rec.get("ea_id"))
+        if not key:
+            continue
+        out[key] = {
+            "second_chance_reason": rec.get("primary_reason", UNKNOWN),
+            "second_chance_status": rec.get("second_chance_status", UNKNOWN),
+            "second_chance_eligibility": rec.get("eligibility", UNKNOWN),
+            "second_chance_priority": rec.get("priority", UNKNOWN),
+            "portfolio_utility_challenger": rec.get("portfolio_utility_challenger", False),
+            "second_chance_tail_risk": rec.get("tail_risk_flag", False),
+        }
+    return out
+
+
 def resolve_fields(
     record: Record,
     sources: Sources,
     handwritten: dict[str, Path],
+    second_chance: dict[str, dict[str, Any]] | None = None,
+    live_pnl: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     card = record.card
     reg = record.registry or {}
@@ -705,6 +785,20 @@ def resolve_fields(
     else:
         live_demo = NOT_APPLICABLE
 
+    # §33 live money join (read-only): realized live PnL for this EA's live sleeve(s).
+    live_map = live_pnl or {}
+    live_row = live_map.get(record.ea_key) if record.ea_key else None
+    if live_row is not None:
+        live_realized_net = f"{live_row['realized_net']:.2f}"
+        live_realized_dd = f"{live_row['realized_dd']:.2f}"
+        live_trade_count = str(live_row["trade_count"])
+        live_last_deal = live_row["last_deal_utc"] or NOT_APPLICABLE
+    else:
+        # feed present but this EA is not in the live book -> NOT_APPLICABLE;
+        # feed absent entirely -> EVIDENCE_MISSING (stable, no node churn).
+        na_or_missing = NOT_APPLICABLE if live_map else EVIDENCE_MISSING
+        live_realized_net = live_realized_dd = live_trade_count = live_last_deal = na_or_missing
+
     family = _first(
         card.scalars.get("strategy_family") if card else "",
         (record.lineage_node or {}).get("family") if record.lineage_node else "",
@@ -751,9 +845,18 @@ def resolve_fields(
         "dxz_status": dxz_status,
         "ftmo_status": ftmo_status,
         "live_demo_status": live_demo,
+        "live_realized_net_usd": live_realized_net,
+        "live_realized_dd_usd": live_realized_dd,
+        "live_trade_count": live_trade_count,
+        "live_last_deal_utc": live_last_deal,
         "evidence_freshness": evidence_freshness,
         "handwritten_node": _handwritten_link(record, handwritten),
     }
+    # Optional read-only Second-Chance join (only for the historical population).
+    sc = (second_chance or {}).get(record.ea_key or "")
+    if sc:
+        fields.update(sc)
+
     # Per-node input digest (directive §7 idempotency): only THIS node's inputs.
     fields["inputs_sha256"] = _node_inputs_sha256(record, fields)
     fields["last_sync_inputs_sha256"] = fields["inputs_sha256"]
@@ -784,7 +887,28 @@ def _node_inputs_sha256(record: Record, fields: dict[str, Any]) -> str:
             (r["relation"], r["other"], r["direction"]) for r in record.lineage_relations
         ),
         "source_hash": fields["source_hash"],
+        # Live money join: only live-book nodes carry a numeric value, so only they
+        # re-render when realized PnL moves; the 5000+ non-live nodes stay stable.
+        "live_realized_net_usd": fields["live_realized_net_usd"],
+        "live_last_deal_utc": fields["live_last_deal_utc"],
     }
+    # Second-chance content fields (deterministic). Only fold them in when this
+    # node actually carries a register entry, so nodes without one (and every
+    # node when the register is absent) keep their prior hash — no mass re-render.
+    sc = {
+        k: fields[k]
+        for k in (
+            "second_chance_reason",
+            "second_chance_status",
+            "second_chance_eligibility",
+            "second_chance_priority",
+            "portfolio_utility_challenger",
+            "second_chance_tail_risk",
+        )
+        if k in fields
+    }
+    if sc:
+        payload["second_chance"] = sc
     blob = json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str)
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
 
@@ -802,9 +926,21 @@ _FRONTMATTER_ORDER = [
     "highest_contiguous_gate", "pipeline_status", "terminal_verdict",
     "current_blocker", "duplicate_relationships", "parent_lineage",
     "dxz_status", "ftmo_status", "live_demo_status",
+    "live_realized_net_usd", "live_realized_dd_usd", "live_trade_count",
+    "live_last_deal_utc",
     "evidence_freshness", "handwritten_node",
+    "second_chance_reason", "second_chance_status", "second_chance_eligibility",
+    "second_chance_priority", "portfolio_utility_challenger", "second_chance_tail_risk",
     "inputs_sha256", "last_sync_inputs_sha256",
 ]
+
+# Optional frontmatter keys: present only on historical-population nodes that
+# carry a Second-Chance Register entry (read-only join). Excluded from the
+# "every node has every key" completeness invariant.
+_OPTIONAL_FRONTMATTER_KEYS = frozenset({
+    "second_chance_reason", "second_chance_status", "second_chance_eligibility",
+    "second_chance_priority", "portfolio_utility_challenger", "second_chance_tail_risk",
+})
 
 
 def _yaml_scalar(value: Any) -> str:
@@ -864,6 +1000,9 @@ def render_node(fields: dict[str, Any]) -> str:
         f"- **DXZ status:** {fields['dxz_status']}",
         f"- **FTMO status:** {fields['ftmo_status']}",
         f"- **Live / demo status:** {fields['live_demo_status']}",
+        f"- **Live realized PnL (USD):** {fields['live_realized_net_usd']}",
+        f"- **Live realized DD (USD):** {fields['live_realized_dd_usd']}",
+        f"- **Live trades / last deal (UTC):** {fields['live_trade_count']} / {fields['live_last_deal_utc']}",
         "",
         "## Relationships",
         "",
@@ -872,6 +1011,24 @@ def render_node(fields: dict[str, Any]) -> str:
         f"- **Hand-written node:** {fields['handwritten_node']}",
         "",
     ]
+    if "second_chance_reason" in fields:
+        challenger = "yes" if fields.get("portfolio_utility_challenger") else "no"
+        tail = "yes" if fields.get("second_chance_tail_risk") else "no"
+        body += [
+            "## Second-chance (Strategy Eligibility V2)",
+            "",
+            "> Generated join from the Second-Chance Register "
+            "(`tools/strategy_farm/research/second_chance_register.py`). Historical "
+            "verdicts are immutable; any re-test runs as NEW lineage.",
+            "",
+            f"- **Primary rejection reason:** {fields['second_chance_reason']}",
+            f"- **Second-chance status:** {fields['second_chance_status']}",
+            f"- **Eligibility:** {fields['second_chance_eligibility']}",
+            f"- **Re-test priority:** {fields['second_chance_priority']}",
+            f"- **Portfolio-utility challenger:** {challenger}",
+            f"- **Tail-risk flagged (needs bounded-risk contract):** {tail}",
+            "",
+        ]
     return "\n".join(lines) + "\n" + "\n".join(body)
 
 
@@ -968,6 +1125,8 @@ def build(
     ftmo = _book_membership(sources.book_ftmo)
     lineage = load_lineage(sources)
     handwritten = _hand_written_index(sources)
+    second_chance = load_second_chance(sources)
+    live_pnl = load_live_pnl(sources.live_attribution)
 
     records = build_records(sources, cards, registry, pipeline, dxz, ftmo, lineage)
     only_key = normalize_ea_key(only) if only else None
@@ -981,7 +1140,7 @@ def build(
         record = records[key]
         if only_key and record.ea_key != only_key:
             continue
-        fields = resolve_fields(record, sources, handwritten)
+        fields = resolve_fields(record, sources, handwritten, second_chance, live_pnl)
         pclass = fields["projection_class"]
         class_counts[pclass] = class_counts.get(pclass, 0) + 1
         target = sources.generated_dir / pclass / node_filename(record)
@@ -1166,13 +1325,14 @@ def lint(
     ftmo = _book_membership(sources.book_ftmo)
     lineage = load_lineage(sources)
     handwritten = _hand_written_index(sources)
+    live_pnl = load_live_pnl(sources.live_attribution)
     records = build_records(sources, cards, registry, pipeline, dxz, ftmo, lineage)
 
     expected_fields: dict[str, dict[str, Any]] = {}
     expected_path: dict[str, Path] = {}
     class_counts: dict[str, int] = {c: 0 for c in PROJECTION_CLASSES}
     for key in sorted(records):
-        fields = resolve_fields(records[key], sources, handwritten)
+        fields = resolve_fields(records[key], sources, handwritten, live_pnl=live_pnl)
         expected_fields[key] = fields
         expected_path[key] = (
             sources.generated_dir / fields["projection_class"] / node_filename(records[key])

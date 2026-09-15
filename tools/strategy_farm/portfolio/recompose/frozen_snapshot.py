@@ -243,7 +243,60 @@ def _incumbent_keys(incumbents: Iterable[Mapping[str, Any]]) -> list[Key]:
     return sorted(keys)
 
 
-def _live_evidence(venue: str) -> dict[str, Any]:
+# §33/§43H live-money blend rule.  Backtest (sealed Q14 streams) remains the PRIMARY
+# selection evidence; live realized attribution is a SECONDARY confirmation signal until a
+# sleeve has accumulated enough live history to be statistically usable.  The live
+# correlation matrix is only consumed when it reports >= this many calendar days.
+LIVE_BLEND_MIN_DAYS = 20
+LIVE_BLEND_RULE = (
+    "Backtest sealed-Q14 evidence is PRIMARY for selection; live realized per-sleeve "
+    f"attribution is confirmatory and becomes a weighted input only once n_days >= "
+    f"{LIVE_BLEND_MIN_DAYS} (the correlation-matrix threshold).  Dark sleeves (zero live "
+    "closes) are treated as no-data, never zero-return.  Per-sleeve floating PnL is "
+    "EVIDENCE_MISSING (only book-level floating is exported)."
+)
+
+
+def _live_attribution_block(state: Path) -> dict[str, Any]:
+    """Read-only realized per-sleeve contribution/DD summary from the §33 attribution feed."""
+    ptr = _file_pointer(state / "live_sleeve_attribution.json")
+    block: dict[str, Any] = {"pointer": ptr, "blend_rule": LIVE_BLEND_RULE, "blend_min_days": LIVE_BLEND_MIN_DAYS}
+    if ptr.get("status") != "PRESENT":
+        block["status"] = "EVIDENCE_MISSING"
+        return block
+    try:
+        payload = json.loads((state / "live_sleeve_attribution.json").read_text(encoding="utf-8"))
+    except Exception:  # noqa: BLE001 - a bad live file must never fail the freeze
+        block["status"] = "EVIDENCE_MISSING"
+        block["reason"] = "unreadable"
+        return block
+    totals = payload.get("book_totals", {}) if isinstance(payload, dict) else {}
+    corr = payload.get("correlation_matrix", {}) if isinstance(payload, dict) else {}
+    n_days = corr.get("n_days", 0) if isinstance(corr, dict) else 0
+    block["status"] = payload.get("status", "EVIDENCE_MISSING")
+    block["realized_contribution"] = [
+        {
+            "ea_id": s.get("ea_id"),
+            "symbol": s.get("symbol"),
+            "magic": s.get("magic"),
+            "realized_pnl": s.get("realized_pnl"),
+            "realized_dd": s.get("realized_dd"),
+            "contribution_to_book_return": s.get("contribution_to_book_return"),
+            "contribution_to_book_dd": s.get("contribution_to_book_dd"),
+            "trade_count": s.get("trade_count"),
+        }
+        for s in (payload.get("sleeves") or [])
+    ]
+    block["book_realized_pnl"] = totals.get("realized_pnl", "EVIDENCE_MISSING")
+    block["book_realized_dd"] = totals.get("realized_dd", "EVIDENCE_MISSING")
+    block["correlation_matrix_status"] = corr.get("status", "EVIDENCE_MISSING") if isinstance(corr, dict) else "EVIDENCE_MISSING"
+    block["live_n_days"] = n_days
+    # Backtest stays primary until the live history clears the threshold.
+    block["blend_stage"] = "LIVE_CONFIRMATORY_ACTIVE" if isinstance(n_days, int) and n_days >= LIVE_BLEND_MIN_DAYS else "BACKTEST_PRIMARY_LIVE_INSUFFICIENT"
+    return block
+
+
+def _live_evidence(venue: str, inputs_dir: Path | None = None, out_dir: Path | None = None) -> dict[str, Any]:
     state = Path(r"D:\QM\reports\state")
     if venue == "dxz":
         dd = _file_pointer(state / "live_book_dd_guard_state.json")
@@ -256,12 +309,23 @@ def _live_evidence(venue: str) -> dict[str, Any]:
                 live_since = payload.get("equity_observed_at_utc")
             except Exception:  # noqa: BLE001
                 pass
+        attribution = _live_attribution_block(state)
+        # Freeze the attribution file byte-for-byte into the snapshot so evaluate reads
+        # only the frozen input (section 70 reproducibility).
+        attr_src = state / "live_sleeve_attribution.json"
+        if inputs_dir is not None and out_dir is not None and attr_src.is_file():
+            dest = inputs_dir / "live_sleeve_attribution.json"
+            shutil.copyfile(attr_src, dest)
+            attribution["frozen_input_path"] = str(dest.relative_to(out_dir)).replace("\\", "/")
+            attribution["frozen_input_sha256"] = _sha256_file(dest)
         return {
             "status": dd.get("status", "EVIDENCE_MISSING"),
             "live_equity": equity if equity is not None else "EVIDENCE_MISSING",
             "live_dd_pct": dd_pct if dd_pct is not None else "EVIDENCE_MISSING",
             "live_since": live_since if live_since is not None else "EVIDENCE_MISSING",
-            "sources": [dd, _file_pointer(state / "live_sleeve_drift.json")],
+            "live_attribution": attribution,
+            "sources": [dd, _file_pointer(state / "live_sleeve_drift.json"),
+                        _file_pointer(state / "live_sleeve_attribution.json")],
         }
     pulse = _file_pointer(state / "ftmo_trial_pulse.json")
     equity = None
@@ -395,8 +459,8 @@ def freeze(
     for name, path in {**to_pin, **(extra_config_inputs or {})}.items():
         config_inputs[name] = _file_pointer(Path(path))
 
-    # Live/demo evidence
-    live = _live_evidence(venue)
+    # Live/demo evidence (dxz also freezes the §33 per-sleeve attribution into inputs/)
+    live = _live_evidence(venue, inputs_dir=inputs_dir, out_dir=out_dir)
 
     # F1 readiness capture (E1 M1): frozen into the snapshot so evaluate never reads
     # the mutable live read-model.  Captured for both venues (used by FTMO evaluate).
@@ -470,5 +534,18 @@ def load_snapshot(snapshot_dir: Path | str) -> dict[str, Any]:
         if actual != readiness.get("sha256"):
             raise SnapshotError(
                 f"frozen ftmo readiness sha mismatch: manifest {readiness.get('sha256')}, disk {actual}"
+            )
+    # Re-hash the frozen live per-sleeve attribution (§33): a frozen capture must match
+    # its manifest sha so live realized contribution stays byte-stable at evaluate time.
+    attribution = (manifest.get("live_evidence") or {}).get("live_attribution") or {}
+    if attribution.get("frozen_input_path") and attribution.get("frozen_input_sha256"):
+        apath = snapshot_dir / attribution["frozen_input_path"]
+        if not apath.is_file():
+            raise SnapshotError(f"frozen live attribution missing on disk: {apath}")
+        actual = _sha256_file(apath)
+        if actual != attribution.get("frozen_input_sha256"):
+            raise SnapshotError(
+                f"frozen live attribution sha mismatch: manifest "
+                f"{attribution.get('frozen_input_sha256')}, disk {actual}"
             )
     return manifest

@@ -237,3 +237,40 @@ and §11.3 (under R4). Append-only; historical evidence unchanged.
 > be prescreen-rejected for it (see `INTERNAL_RESEARCH_SOURCE_CONTRACT.md` §9.4). Mirror of the
 > `build_check.ps1` L888-901 principle: "prose describing ML is not ML."
 
+## Annex 2026-09-15 (D3) — Strategy Eligibility V2: style is not a rejection reason (OWNER-DEC-D3-20260915)
+
+Appended verbatim-in-substance from OWNER directive 3 (§14–§21), `OWNER-DEC-D3-20260915`.
+Verbatim source:
+`docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_3_max_factory_utilization_verbatim.md`.
+Append-only; historical evidence and prior verdicts unchanged. Affects **new** intake only.
+Canonical doctrine: `docs/research/STRATEGY_ELIGIBILITY_V2.md` and vault
+`01 Identity/Strategy Eligibility & Tail-Risk Doctrine.md`.
+
+### R4 annex (append under R4) — martingale/grid/pyramiding: bounded-risk contract, not a style ban
+
+> **Style is not an R4 rejection reason (annex 2026-09-15 D3).** The general "no martingale
+> runaway" default (and any style-based intake rejection for HFT / grid / scalping / averaging /
+> negative pyramiding / recovery / multi-position) is **SUPERSEDED**. A strategy STYLE alone is
+> never a rejection reason (directive §14). The **runtime-ML** half of R4 / Hard Rule 14 is
+> **unchanged and binding**: neural nets, ONNX/inference, PnL-adaptive parameters, online/
+> retraining logic, and non-deterministic entries remain REJECT.
+>
+> The old "no unbounded martingale" is generalized (not removed) into a positive **bounded-risk
+> requirement**: a *tail-amplifying* mechanism (martingale, grid, negative pyramiding, recovery,
+> unbounded multi-position) PASSES R4 only when it exposes a valid, bounded
+> `strategy_risk_contract.v1` (`tools/strategy_farm/config/strategy_risk_contract.v1.json`) —
+> finite `max_levels`, a real equity stop or a positive `max_basket_loss_pct`, and the §18
+> fields. No infinite recovery sequence; no "price must return" without a bounded account-loss
+> condition. This **generalizes the DL-081 exception** (bounded basket-equity-stop martingale)
+> from the grid/basket class to all tail-amplifying styles. Intake enforces this fail-closed via
+> `card_intake_prescreen.py` reasons `RISK_CONTRACT_MISSING` and `UNBOUNDED_RECOVERY`; the former
+> style rejections (`PROHIBITED_MECHANICS:HFT|GRID|MARTINGALE|AVERAGING_INTO_LOSERS`) are removed.
+> The 1-position-per-magic convention and deterministic execution requirement are unchanged
+> (multi-position/basket strategies use explicit slot allocation and their declared
+> `max_open_positions`).
+>
+> **How to apply (revised R4 line):** `R4: ML-free EA runtime (HR14) AND — if tail-amplifying —
+> a valid bounded strategy_risk_contract.v1` → PASS / REJECT. Positive pyramiding and
+> anti-martingale are not tail-amplifying and need no contract; negative pyramiding does
+> (directive §21, treated as distinct mechanisms).
+

@@ -2,6 +2,7 @@
 param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonwExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe",
+    [string]$TaskUser = "qm-admin",
     [switch]$RunNow,
     [switch]$Uninstall
 )
@@ -39,7 +40,10 @@ if ($Uninstall) {
 
 foreach ($p in @($PythonwExe, $runner)) { if (-not (Test-Path -LiteralPath $p)) { throw "missing: $p" } }
 
-$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+# 2026-09-15 incident repair: SYSTEM has no G: drive mapping and would taint
+# repo/report file ownership; the interactive qm-admin session is permanent on
+# this VPS (same pattern as QM_Live_MT5_SessionSupervisor).
+$principal = New-ScheduledTaskPrincipal -UserId $TaskUser -LogonType Interactive -RunLevel Highest
 
 # --- four weekly ceremony tasks (local-time triggers; DST handled by the OS clock) ---
 foreach ($t in $weeklyTasks) {

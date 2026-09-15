@@ -29,8 +29,10 @@ def _card(
     timeframe: str = "H1",
     dd: str = "8",
     extra: str = "",
+    fm_extra: str = "",
 ) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
+    fm_extra_block = (fm_extra.rstrip("\n") + "\n") if fm_extra else ""
     path.write_text(
         f"""---
 ea_id: {ea_id}
@@ -39,7 +41,7 @@ target_symbols: {symbols}
 timeframe: {timeframe}
 expected_dd_pct: {dd}
 r4_ml_forbidden: true
----
+{fm_extra_block}---
 
 # {slug}
 
@@ -113,7 +115,6 @@ def test_duplicate_fixture_is_rejected(tmp_path: Path) -> None:
     [
         ("invalid-symbol-breakout", {"symbols": "[DE40, US30]"}, "TARGET_SYMBOL_NOT_IN_DWX_MATRIX"),
         ("vix-divergence", {"extra": "Entry requires the VIX index to cross its 20-day high."}, "EXTERNAL_DATA_FEED_MISSING"),
-        ("tick-vol-scalp", {"extra": "Entry uses a 1-second tick trigger and sub-second execution."}, "PROHIBITED_MECHANICS:HFT"),
         ("rf-sentiment", {"extra": "A pre-trained Random Forest predicts each entry."}, "PROHIBITED_MECHANICS:ML"),
     ],
 )
@@ -166,3 +167,166 @@ def test_utf8_bom_and_wrapped_negative_prohibition_are_supported(tmp_path: Path)
     result = _evaluate(candidate, tmp_path)
     assert result["ea_id"] == "QM5_90001"
     assert result["verdict"] == "KEEP", result["reasons"]
+
+
+# --- Strategy Eligibility V2 (OWNER-DEC-D3-20260915) ------------------------------
+
+
+import json as _json
+
+
+def _valid_risk_contract(
+    path: Path,
+    *,
+    max_levels: int = 5,
+    equity_stop_pct=8.0,
+    emergency_type: str = "equity_stop",
+) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        _json.dumps(
+            {
+                "schema": "qm.strategy-risk-contract/v1",
+                "tail_amplifying": True,
+                "max_levels": max_levels,
+                "sizing_progression": {"type": "geometric", "multiplier": "2"},
+                "max_open_positions": max(max_levels, 1),
+                "max_basket_exposure": "0.5",
+                "max_gross_notional": "50000",
+                "max_margin_pct": 20.0,
+                "max_basket_loss_pct": 1.0,
+                "emergency_exit": {
+                    "type": emergency_type,
+                    "equity_stop_pct": equity_stop_pct,
+                    "rule": "Flatten all basket legs when open basket loss reaches 1% of account equity.",
+                },
+                "gap_sensitivity": "NOT_EVALUATED",
+                "spread_slippage_sensitivity": "NOT_EVALUATED",
+                "worst_historical_sequence": {
+                    "max_adverse_levels": "EVIDENCE_MISSING",
+                    "max_drawdown_pct": "EVIDENCE_MISSING",
+                    "evidence": "EVIDENCE_MISSING",
+                },
+                "stress_sequence": {
+                    "scenario": "adverse trend to max_levels then continues",
+                    "result_pct": "EVIDENCE_MISSING",
+                    "evidence": "EVIDENCE_MISSING",
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    return path
+
+
+def test_scalping_style_now_passes(tmp_path: Path) -> None:
+    # Old doctrine rejected HFT/scalping style; Strategy Eligibility V2 does not.
+    result = _evaluate(
+        _card(
+            tmp_path / "review" / "scalp.md",
+            slug="fast-tick-scalp",
+            timeframe="M15",
+            extra="Entry uses a fast M15 tick-vol scalping trigger and sub-second fills.",
+        ),
+        tmp_path,
+    )
+    assert result["verdict"] == "KEEP", result["reasons"]
+    assert not any("PROHIBITED_MECHANICS:HFT" in r for r in result["reasons"])
+
+
+def test_martingale_without_contract_fails_closed(tmp_path: Path) -> None:
+    result = _evaluate(
+        _card(
+            tmp_path / "review" / "mart.md",
+            slug="martingale-basket",
+            fm_extra="mechanism_flags: [martingale]",
+        ),
+        tmp_path,
+    )
+    assert result["verdict"] == "REJECT"
+    assert "RISK_CONTRACT_MISSING" in result["reasons"]
+
+
+def test_martingale_with_valid_contract_passes(tmp_path: Path) -> None:
+    _valid_risk_contract(tmp_path / "review" / "rc.json")
+    result = _evaluate(
+        _card(
+            tmp_path / "review" / "mart_ok.md",
+            slug="martingale-basket-bounded",
+            fm_extra="mechanism_flags: [martingale]\nrisk_contract: rc.json",
+        ),
+        tmp_path,
+    )
+    assert result["verdict"] == "KEEP", result["reasons"]
+
+
+def test_unbounded_recovery_is_rejected(tmp_path: Path) -> None:
+    # Structurally valid contract, but max_levels 0 == infinite recovery sequence.
+    _valid_risk_contract(tmp_path / "review" / "rc0.json", max_levels=0)
+    result = _evaluate(
+        _card(
+            tmp_path / "review" / "grid_unbounded.md",
+            slug="grid-unbounded",
+            fm_extra="mechanism_flags: [grid]\nrisk_contract: rc0.json",
+        ),
+        tmp_path,
+    )
+    assert result["verdict"] == "REJECT"
+    assert "UNBOUNDED_RECOVERY" in result["reasons"]
+
+
+def test_no_equity_stop_is_unbounded_recovery(tmp_path: Path) -> None:
+    rc = tmp_path / "review" / "rc_noeq.json"
+    _valid_risk_contract(rc, emergency_type="none", equity_stop_pct=None)
+    payload = _json.loads(rc.read_text(encoding="utf-8"))
+    payload["max_basket_loss_pct"] = "NOT_EVALUATED"  # drop the account-loss bound too
+    rc.write_text(_json.dumps(payload, indent=2), encoding="utf-8")
+    result = _evaluate(
+        _card(
+            tmp_path / "review" / "rec_noeq.md",
+            slug="recovery-no-stop",
+            fm_extra="mechanism_flags: [recovery]\nrisk_contract: rc_noeq.json",
+        ),
+        tmp_path,
+    )
+    assert result["verdict"] == "REJECT"
+    assert "UNBOUNDED_RECOVERY" in result["reasons"]
+
+
+def test_ml_runtime_card_still_rejected(tmp_path: Path) -> None:
+    result = _evaluate(
+        _card(
+            tmp_path / "review" / "ml.md",
+            slug="lstm-entry",
+            extra="Each entry is produced by an online LSTM neural network at runtime.",
+        ),
+        tmp_path,
+    )
+    assert result["verdict"] == "REJECT"
+    assert any(r.startswith("PROHIBITED_MECHANICS:") and "ML" in r for r in result["reasons"])
+
+
+def test_positive_vs_negative_pyramiding_are_distinct(tmp_path: Path) -> None:
+    # Positive pyramiding (add to winners) is NOT tail-amplifying -> KEEP w/o contract.
+    positive = _evaluate(
+        _card(
+            tmp_path / "review" / "pos.md",
+            slug="pos-pyramid",
+            extra="Trade management adds to winners as the trend extends (positive pyramiding).",
+        ),
+        tmp_path,
+    )
+    assert positive["verdict"] == "KEEP", positive["reasons"]
+
+    # Negative pyramiding (add to losers) is tail-amplifying -> needs a contract.
+    negative = _evaluate(
+        _card(
+            tmp_path / "review2" / "neg.md",
+            slug="neg-pyramid",
+            extra="Trade management keeps adding to a losing position to average down.",
+        ),
+        tmp_path,
+    )
+    assert negative["verdict"] == "REJECT"
+    assert "RISK_CONTRACT_MISSING" in negative["reasons"]

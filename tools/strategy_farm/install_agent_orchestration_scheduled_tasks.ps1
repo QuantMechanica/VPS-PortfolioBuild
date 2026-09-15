@@ -62,8 +62,9 @@ $definitions = @(
 # Kimi research lane definition, appended only behind -IncludeKimi (default OFF).
 # MaxSessions MUST stay 1: the kimi OAuth credential has a 15-min rolling token
 # and a concurrent refresh WRITE corrupts the login (Codex-class token race).
-# Uses the plain SYSTEM branch below unless a probe shows the credential refresh
-# needs the console-session hop.
+# 2026-09-15 incident repair: the plain-SYSTEM branch was probed in production and
+# FAILED (rc=1) — the kimi CLI credential lives in the qm-admin user profile, so
+# this lane needs the same console-session hop as the gemini lane (MNT-003 v2).
 if ($IncludeKimi.IsPresent) {
     $definitions += @{ Name = "QM_StrategyFarm_KimiOrchestration_15min"; Agent = "kimi"; MaxSessions = 1; EveryMinutes = 15 }
 }
@@ -88,9 +89,11 @@ foreach ($definition in $definitions) {
     $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary `
         -RepetitionInterval (New-TimeSpan -Minutes $everyMin) `
         -RepetitionDuration (New-TimeSpan -Days 3650)
-    if ($taskName -eq 'QM_StrategyFarm_GeminiOrchestration_15min') {
+    if ($taskName -eq 'QM_StrategyFarm_GeminiOrchestration_15min' -or $taskName -eq 'QM_StrategyFarm_KimiOrchestration_15min') {
         # MNT-003 v2: one outer double-quoted -Arguments value. Literal
         # apostrophe wrappers become child pathname bytes and are forbidden.
+        # (Kimi added 2026-09-15: same console-session hop — its CLI credential
+        # is per-user, the SYSTEM branch provably fails with rc=1.)
         $childArguments = "$wrapper --agent $agent --max-sessions $maxSessions"
         $arguments = (
             '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -WindowStyle Hidden -File "{0}" -Exe "{1}" -Arguments "{2}" -WorkDir "{3}" -TargetUser "{4}" -WaitSeconds 14100' -f `

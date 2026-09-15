@@ -407,6 +407,24 @@ vault `02 Org/Stehende Vollmacht Claude 2026-08-20.md`.
   Purchase, live AutoTrading, deployment, gate thresholds and book construction remain OWNER-only
   (ROT). Older docs are marked SUPERSEDED, not deleted.
 
+- **OWNER-DEC-D3-20260915 — Max Factory Utilization / Dynamic AI Routing / Eligibility v2 (OWNER 2026-09-15, third
+  directive).** Verbatim
+  `docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_3_max_factory_utilization_verbatim.md`;
+  decision `decisions/2026-09-15_owner_max_factory_utilization_eligibility_v2.md`. Extends CBE. **Provider silos
+  abolished** — AI roles become empirical; a **capability benchmark** (`AI_CAPABILITY_SCORECARD`) gates reversible,
+  path-scoped, test-gated scoped grants to underused providers. **AI capacity has a shadow price**
+  (`remaining_pct / hours_to_reset` vs fleet median) — route scarce-provider work to qualified spare providers, never
+  hoard, never vanity-100%; re-measure via the authoritative governors only (a flag is cleared only by its owner);
+  cross-provider review uses spare capacity; task-risk routing LOW/MED/HIGH/OWNER-LIVE + tier-matches-difficulty.
+  **Eligibility v2:** style alone is not a rejection reason (scalping/trailing/martingale/grid/pyramiding/basket allowed
+  **if** mechanical, testable, risk-bounded, positive portfolio value); no external source required (provenance is); ML
+  offline-only (HR14 unchanged); tail-amplifying strategies need a **deterministic risk contract** and one EA must not
+  destroy the account. **Second-chance** reclassifies historical rejects; **PORTFOLIO_UTILITY_CHALLENGER** may rescue
+  non-standard candidates (no auto live eligibility). Fable may derive **selection** thresholds via the §30
+  counterfactual procedure (never evidence-integrity/provenance/lookahead/holdout/determinism/data-validity). **OWNER
+  decision: NO VPS UPGRADE / NO VPS MIGRATION** — solve throughput in software/scheduling. Purchase, AutoTrading,
+  deployment, gate integrity and book construction remain OWNER-only (ROT).
+
 ## Current Operating Rules
 
 At session start and before handoff, read and update the Vault ToDo boards —

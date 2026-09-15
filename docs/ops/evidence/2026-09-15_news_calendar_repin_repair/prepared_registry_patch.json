@@ -1,0 +1,267 @@
+{
+  "schema_version": "qm.prepared-registry-patch/v1",
+  "prepared_at_utc": "2026-09-15T21:11:31Z",
+  "prepared_by": "Kimi Code subagent (read-only diagnosis + patch preparation; NOTHING applied)",
+  "status": "PREPARED_FOR_OWNER_APPROVAL_NOT_APPLIED",
+  "authority": {
+    "decision_id": "OWNER-DEC-CALENDAR-REPIN",
+    "constraint": "kein AI-Commit - OWNER or Fable must review and apply; no AI-applied commit, no AI-minted receipt"
+  },
+  "governing_receipt": {
+    "sequence": 16,
+    "path": "D:/QM/reports/news_calendar/repin_receipts/000016_d8683b53aef9bdf8c644d6fa71465c72e3aff41bc22395fa2c09009685a6738c.json",
+    "receipt_sha256": "3e78681ed28a08aa6aa896a1f8719627a88707a479e60017f3dba0a6b29e4773",
+    "created_at_utc": "2026-09-15T02:47:15Z",
+    "before_file_sha256": "c6a3ee795b689b1a7bf729161a03538b8cf0386000a5c4adefe5265b22be51f2",
+    "after_file_sha256": "5a00ce07ad14b9d796cc58a23e3a1c8ddb618951e198eb8332038b415789ae8c"
+  },
+  "registry": {
+    "path": "C:/QM/repo/framework/registry/dxz23_execution_contracts.json",
+    "current_raw_file_sha256": "a95fd02cd98b20bac63a325434a35ad7faa979df5331bf7b7e715fb5340c605d",
+    "current_git_state": "byte-identical to git HEAD (commit 76dca44dab, 2026-09-12T04:56:54Z); git diff empty"
+  },
+  "classification": {
+    "reverted_to_before_count": 38,
+    "other_divergent_count": 0,
+    "already_matches_after_count": 19
+  },
+  "reverted_to_before_fields": [
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[0]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[0]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[2]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[2]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[0]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[0]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[2]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[2]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[0]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[0]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[2]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[2]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[0]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[0]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[2]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[2]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[27].data_dependencies[0]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[27].data_dependencies[0]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[30].data_dependencies[0]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[30].data_dependencies[0]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[31].data_dependencies[0]/sha256",
+      "current_value": "1a82f3f57be9c8513fdce28f02e17505c70906c58cfbd79e707bbe1504c7915d",
+      "restore_to": "8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[31].data_dependencies[0]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[1]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[1]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[3]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[23].calendar.sources[3]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[1]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[1]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[3]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[24].calendar.sources[3]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[1]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[1]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[3]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[25].calendar.sources[3]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[1]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[1]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[3]/sha256",
+      "current_value": "0ce1802b31f1b905bb0b6ef698f3ce5ea0222afa805d411996f9932ac6141c70",
+      "restore_to": "3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94"
+    },
+    {
+      "path": "framework/registry/dxz23_execution_contracts.json",
+      "json_pointer": "$.contracts[26].calendar.sources[3]/coverage_end",
+      "current_value": "2026-09-12",
+      "restore_to": "2026-09-19"
+    }
+  ],
+  "other_divergent_fields": [],
+  "unchanged_in_both_states_note": "coverage_start is 2015-01-01 in receipt-16 before AND after at all 19 target objects; only sha256 and coverage_end require restore (38 field writes across 19 objects).",
+  "human_note": "Applying this patch = setting the reverted_to_before_fields in C:/QM/repo/framework/registry/dxz23_execution_contracts.json to their restore_to values (receipt-16 attested after state: primary sha256 8744295adcb7c3aeb0a8fd25d7209f37d34159aee1913472b7c0522afa916a46, secondary sha256 3abc0cd3cea5c5385e78f5c7027de11d0932202971f886704e6668fcef75da94, coverage_end 2026-09-19). Once the registry pin again equals the receipt-chain tail (000016), the next scheduled run of QM_NewsCalendar_Refresh accepts the precondition, re-renders the registry to the LIVE calendar bytes and mints receipt 000017, binding the live bytes; the chain then self-heals. Do NOT hand-run record; do NOT commit the patched registry without OWNER direction (kein AI-Commit).",
+  "expected_post_apply": [
+    "registry pin == receipt-16 tail, so record() precondition is ACCEPTED on the next scheduled refresh",
+    "next QM_NewsCalendar_Refresh run mints receipt 000017 binding live primary sha256 c48ad8b4bf667001ef7204d37f5420504f853ac25aa6f0a70152b3d743a1c134 (48825 data rows, mtime 2026-09-15T20:31:59Z) and live secondary sha256 e15b6fe1f80f2f6a82a612f16ef7aaf6b9cc450d3eba1c3a94690ceee2f3b935",
+    "python tools/strategy_farm/news_calendar_repin.py verify returns PASS only AFTER 000017 exists; immediately post-patch verify still REFUSEs on tail-vs-live sha256, which is expected and proves no premature re-pin"
+  ],
+  "collateral_caveat": "Receipt-16 before_file_sha256 (c6a3ee79...) does NOT equal the current file bytes (a95fd02c...) under any CRLF/LF/trailing-newline variant, and no copy of the receipt-time before/after bytes was found in git objects, worktrees, stashes, or D:/QM backups. The receipt attests its own diff was exactly the 19 calendar-identity targets (policy_or_threshold_changes: 0), so applying the 38 field restores below is necessary and sufficient for chain self-heal; any OTHER working-tree registry edits made between 2026-09-12T04:56Z and 2026-09-15T02:45Z were destroyed by the un-attested git restore and are unrecoverable. OWNER may wish to check session logs for what else was in flight."
+}

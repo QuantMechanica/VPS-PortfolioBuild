@@ -240,6 +240,15 @@ def _default_state_builds() -> list[dict[str, Any]]:
         # (deterministic, read-only DB) feed the Research section and Kimi/Fable prioritisation.
         {"name": "universe_map", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "research" / "universe_map.py")]},
         {"name": "research_roi", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "research" / "external_roi.py")]},
+        # Third directive (OWNER-DEC-D3-20260915) §36/§43A: AI factory capacity read-model
+        # (qm.ai-capacity/v1) — provider quota/shadow-price/offload/review-independence for
+        # Mission Control + the vault AI Factory Capacity & Routing page. Deterministic,
+        # read-only governor state; --no-render so the Friday cut never writes the vault.
+        {"name": "ai_capacity", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "ai_capacity_readmodel.py"), "build", "--no-render"]},
+        # §33/§43H live money signal: per-sleeve realized PnL attribution from the real
+        # DXZ deal stream (read-only). Feeds recompose live_evidence, research ROI and the
+        # strategy wiki live join. Runs before the freeze so the frozen snapshot pins it.
+        {"name": "live_sleeve_attribution", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "live_sleeve_attribution.py")]},
     ]
 
 

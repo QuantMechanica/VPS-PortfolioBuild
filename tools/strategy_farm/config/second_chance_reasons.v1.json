@@ -1,0 +1,196 @@
+{
+  "schema": "qm.second-chance-reasons/v1",
+  "version": "v1",
+  "authority": "OWNER follow-up directive 2026-09-15 (third), sections 23-28, 31-32, 38",
+  "decision_record": "decisions/2026-09-15_owner_max_factory_utilization_eligibility_v2.md",
+  "note": "Deterministic rule table for tools/strategy_farm/research/second_chance_register.py. Classifies every REJECTED / RETIRED / DRAFT / policy-blocked strategy record into ONE primary reason from the directive-24 enum. Rules are applied in ascending 'precedence' order; the FIRST rule whose match fires sets the primary reason. Lower precedence number = higher priority. Nothing is guessed: a record whose signals match no rule is OTHER. All matching is on lower-cased text; 'match_any' = OR of substrings.",
+  "reason_enum": [
+    "NO_EXTERNAL_SOURCE",
+    "MARTINGALE",
+    "GRID",
+    "PYRAMIDING",
+    "MULTI_POSITION",
+    "SCALPING",
+    "HISTORICAL_POLICY",
+    "OLD_PORTFOLIO_CAP",
+    "OLD_HR16",
+    "ML_RUNTIME",
+    "ECONOMIC_FAIL",
+    "INFRA_FAIL",
+    "DUPLICATE",
+    "INSUFFICIENT_EVIDENCE",
+    "OTHER"
+  ],
+  "eligibility_defaults": {
+    "NO_EXTERNAL_SOURCE": "ELIGIBLE_FOR_RECONSIDERATION",
+    "MARTINGALE": "ELIGIBLE_FOR_RECONSIDERATION",
+    "GRID": "ELIGIBLE_FOR_RECONSIDERATION",
+    "PYRAMIDING": "ELIGIBLE_FOR_RECONSIDERATION",
+    "MULTI_POSITION": "ELIGIBLE_FOR_RECONSIDERATION",
+    "SCALPING": "ELIGIBLE_FOR_RECONSIDERATION",
+    "HISTORICAL_POLICY": "ELIGIBLE_FOR_RECONSIDERATION",
+    "OLD_PORTFOLIO_CAP": "ELIGIBLE_FOR_RECONSIDERATION",
+    "OLD_HR16": "ELIGIBLE_FOR_RECONSIDERATION",
+    "ML_RUNTIME": "STILL_INVALID",
+    "ECONOMIC_FAIL": "STILL_INVALID",
+    "INFRA_FAIL": "ELIGIBLE_FOR_RECONSIDERATION",
+    "DUPLICATE": "STILL_INVALID",
+    "INSUFFICIENT_EVIDENCE": "STILL_INVALID",
+    "OTHER": "STILL_INVALID"
+  },
+  "eligibility_rationale": {
+    "superseded_style_or_policy": "Directive 16 (no external source required), 17 (style is not a rejection reason), 18-21 (martingale/grid/pyramiding/multi-position testable under bounded-risk), 30 (activity/economic selection thresholds may be reviewed). Records rejected only for these become second-chance candidates.",
+    "ML_RUNTIME": "HR14 / directive 15 unchanged: runtime ML in the EA decision engine stays prohibited. STILL_INVALID.",
+    "ECONOMIC_FAIL": "A measured economic failure stays invalid unless the directive-27 counterfactual shows positive out-of-sample portfolio utility, in which case the record is additionally flagged PORTFOLIO_UTILITY_CHALLENGER (directive 28).",
+    "INFRA_FAIL": "An infrastructure / operational failure never judged the strategy; eligible for a clean rerun as NEW lineage.",
+    "DUPLICATE": "A clone / functional duplicate is not worth factory time (directive 25) unless lineage says materially different.",
+    "INSUFFICIENT_EVIDENCE": "The card never carried a testable mechanical spec, symbols, period, or the required DWX-testable data. It needs a repaired/complete card (fresh intake), not a retest of the old record."
+  },
+  "clone_relations_suppress": ["exact_clone", "close_implementation_clone"],
+  "materially_different_relations": ["materially_different"],
+  "reason_text_rules": [
+    {
+      "id": "ml_runtime",
+      "precedence": 10,
+      "reason": "ML_RUNTIME",
+      "match_any": ["runtime ml", "online learning", "ml inference", "inference api", "black-box adaptive", "black box adaptive", "neural net", "online-learning", "model file", "adaptive prediction"],
+      "note": "Runtime ML in the trading engine (HR14). Distinct from the HR14 one-position-per-magic convention, which is MULTI_POSITION."
+    },
+    {
+      "id": "economic_pipeline_blocker",
+      "precedence": 12,
+      "reason": "ECONOMIC_FAIL",
+      "match_any": ["fail_portfolio", "fail_dd_portfolio", "fail_dd", "q10:fail", "q13:fail", "q14:fail", "portfolio_review", "dd_portfolio_review"],
+      "note": "A measured pipeline / portfolio economic failure recorded on the record's own current_blocker or terminal_verdict. Ranks above stale G0 card notes because the pipeline verdict is the operative reason a record that reached the pipeline is now blocked (an approved card carries no style rejection)."
+    },
+    {
+      "id": "infra_pipeline_blocker",
+      "precedence": 13,
+      "reason": "INFRA_FAIL",
+      "match_any": ["q08:invalid", "q07:invalid", "q06:invalid", "q05:invalid", "q04:invalid", "q02:invalid", "q08:incomplete", "compile_fail", "invalid_evidence", "invalid_build", "stale_build", "blocked_stale"],
+      "note": "A pipeline invalidity / build fault on the record's own blocker: operational, rerunnable, never an economic judgement."
+    },
+    {
+      "id": "duplicate",
+      "precedence": 15,
+      "reason": "DUPLICATE",
+      "match_any": ["duplicate:", "functional duplicate", "operational_duplicate", "operational duplicate", "same ea id", "already exists in cards_approved", "already-approved", "already approved", "ea_id_collision", "identical mechanism to later versions", "same mechanic", "no new mechanic", "near-duplicate", "near duplicate", "already-large approved", "already large approved", "family already satur", "family already large"],
+      "note": "Explicit duplicate / clone rejection text. Eligibility upgraded only if lineage carries a materially_different edge."
+    },
+    {
+      "id": "martingale",
+      "precedence": 20,
+      "reason": "MARTINGALE",
+      "match_any": ["martingale"],
+      "note": "Directive 18: not automatically prohibited; testable under a deterministic tail-risk contract."
+    },
+    {
+      "id": "grid",
+      "precedence": 21,
+      "reason": "GRID",
+      "match_any": ["grid system", "grid trading", "bounded grid", " grid ", "grid-based", "recovery grid"],
+      "note": "Directive 17/18: bounded grid/recovery testable under a tail-risk contract."
+    },
+    {
+      "id": "pyramiding",
+      "precedence": 22,
+      "reason": "PYRAMIDING",
+      "match_any": ["pyramid", "add-on entr", "add on entr", "adding to winner", "adding to loser", "scale-in", "scale in", "add to position", "multiple additions", "add-on", "staggered orders", "staggered order", "staggered same-side", "additions are specified"],
+      "note": "Directive 21: positive and negative pyramiding both allowed as distinct mechanisms; tail-risk contract required."
+    },
+    {
+      "id": "multi_position",
+      "precedence": 23,
+      "reason": "MULTI_POSITION",
+      "match_any": ["hr14", "hard rule 14", "1-position-per-magic", "one-position-per-magic", "1-pos-per-magic", "one position per magic", "per-magic hard rule", "per-magic convention", "multi-position", "multiple positions", "two legs", "two-leg", "split position", "split-position", "split tp", "split-tp", "tiered tp", "tiered exits", "simultaneous same-side", "simultaneous positions", "simultaneous same-cycle positions", "per-slot magic", "explicit slot allocation", "slot allocation", "pending orders", "basket of", "multiple simultaneous"],
+      "note": "Directive 17/20: multiple simultaneous positions, basket management, partial exits are explicitly allowed. Old HR14 one-position-per-magic rejections are superseded by portfolio-level risk control."
+    },
+    {
+      "id": "scalping",
+      "precedence": 24,
+      "reason": "SCALPING",
+      "match_any": ["scalp", "crypto-style threshold", "extreme crypto-style", "high-frequency", "sub-minute", " m1 ", " m5 ", "tick-scalp"],
+      "note": "Directive 17: scalping / high-frequency-enough mechanical intraday trading is an allowed family."
+    },
+    {
+      "id": "old_hr16",
+      "precedence": 30,
+      "reason": "OLD_HR16",
+      "match_any": ["hr16", "hard rule 16", "max filters", "maximum filters", "max n filters", "too many filters", "filter cap"],
+      "note": "Directive 22: no arbitrary 'max N filters' rule as a Hard Rule unless evidence supports it."
+    },
+    {
+      "id": "old_portfolio_cap",
+      "precedence": 31,
+      "reason": "OLD_PORTFOLIO_CAP",
+      "match_any": ["portfolio cap", "portfolio slot cap", "cohort cap", "max slots", "book cap", "12% threshold", "12%-threshold", "slot budget exceeded"],
+      "note": "Superseded portfolio-slot / cohort caps."
+    },
+    {
+      "id": "no_external_source_superseded",
+      "precedence": 38,
+      "reason": "NO_EXTERNAL_SOURCE",
+      "match_any": ["source-only rejection", "recovered under owner r1", "source attribution insufficient"],
+      "note": "Explicit superseded-source marker (a source-only rejection later recovered under the OWNER R1 policy). Ranks above the generic insufficient-evidence rule so the operative reason is the superseded source requirement, not the residual spec text."
+    },
+    {
+      "id": "insufficient_evidence",
+      "precedence": 40,
+      "reason": "INSUFFICIENT_EVIDENCE",
+      "match_any": ["card_body_incomplete", "card body incomplete", "body incomplete", "incomplete card", "incomplete pipeline spec", "missing source_citation", "missing target_symbols", "missing period", "entry/exit unknown", "entry/exit/stop", "are unknown", "is unknown", "no mechanical rules", "not fully specified", "underspecified", "schema missing", "metadata incomplete", "not build-ready", "not pipeline-ready", "no approved dwx", "no confirmed dwx", "not testable", "unavailable in governed dwx", "history is unavailable", "data unavailable", "requires multi-expiry", "requires multi-month forward", "no dwx bond", "no approved proxy", "cannot be tested on a complete dwx", "fundamentally requires a feature unavailable", "outside the dwx symbol universe", "unavailable in dwx", "unavailable in backtests", "respecify attempted", "conceded", "does not close the implementation", "no real structural cause", "no structural cause", "not a structural cause", "isn't a structural cause", "structural cause", "truism", "indicator mining", "indicator-on-indicator", "numerology", "no economic cause", "no stated economic cause", "no source evidence", "unspecified", "data is unavailable"],
+      "note": "The card never carried a testable/complete mechanical spec or the required DWX-testable data. Needs a repaired card (fresh intake), not a retest."
+    },
+    {
+      "id": "no_external_source",
+      "precedence": 45,
+      "reason": "NO_EXTERNAL_SOURCE",
+      "match_any": ["uncited", "no source_id", "not cited", "no source citation", "source index only", "index only names", "under-sourced", "undersourced", "academic claim is uncited", "academic_backtest is uncited", "track record", "no track record", "requires one canonical source", "single source_id", "multiple source articles", "r1 fail", "r1/", "/r1", "source-only rejection", "recovered under owner r1", "source attribution insufficient", "attribution insufficient", "lacks farmctl-recognized dated", "dated source", "r1 source"],
+      "note": "Directive 16: no external source required. Provenance still required, so an accepted record needs a QM-RESEARCH id, but the original 'uncited / no track record' rejection is superseded."
+    },
+    {
+      "id": "historical_policy_activity",
+      "precedence": 50,
+      "reason": "HISTORICAL_POLICY",
+      "match_any": ["trades/year", "trades per year", "trade/year", "below 2 trades", "below 5 trades", "frequency floor", "frequency-floor", "activity criterion", "cadence", "not supported and likely below", "regime-cross events", "slow allocation switch", "near-permanent membership", "rare regime", "low-frequency", "low frequency", "below-floor", "retired_low_freq", "retire only", "d1 disposition", "action=retire"],
+      "note": "Activity / cadence / frequency floor and OWNER D1 dispositions. Directive 27/30: activity and low-frequency thresholds may be too strict and are reviewable; low-frequency records may still be valuable portfolio components."
+    }
+  ],
+  "verdict_class_rules": [
+    {"id": "vc_economic_fail", "precedence": 60, "reason": "ECONOMIC_FAIL", "taxonomy_any": ["strategy"], "verdict_any": ["FAIL", "FAIL_HARD", "FAIL_SOFT", "FAIL_PORTFOLIO", "FAIL_DD_PORTFOLIO_REVIEW", "RETIRE", "RETIRED_LOW_FREQ", "ZERO_TRADES", "PASS_LOWFREQ", "OPT_REJECTED"], "note": "A measured economic / portfolio failure from work_items."},
+    {"id": "vc_infra_fail", "precedence": 70, "reason": "INFRA_FAIL", "taxonomy_any": ["infra"], "verdict_any": ["INFRA_FAIL"], "note": "Infrastructure failure only; the strategy was never economically judged."},
+    {"id": "vc_invalid", "precedence": 72, "reason": "INFRA_FAIL", "taxonomy_any": ["invalid", "build", "draft_defect", "artifact"], "verdict_any": ["INVALID", "INVALID_EVIDENCE", "COMPILE_FAIL", "DRAFT_DEFECT", "INVALID_BUILD_STATIC_FIDELITY", "BLOCKED_STALE_BUILD_RESULT"], "note": "Build/artifact/evidence invalidity is an operational (rerunnable) fault, not an economic verdict."}
+  ],
+  "registry_reason_rules": [
+    {"id": "reg_unmaterialized", "precedence": 41, "reason": "HISTORICAL_POLICY", "match_any": ["unmaterialized legacy reservation", "fresh intake only", "no ea directory", "reservation only", "reserved and nothing followed"], "eligibility_override": "STILL_INVALID", "note": "Empty ID reservation that never carried a strategy spec. Administratively retired; there is nothing to reconsider without a fresh card."},
+    {"id": "reg_d1_disposition", "precedence": 51, "reason": "HISTORICAL_POLICY", "match_any": ["owner-approved d1 disposition", "d1 disposition", "action=retire", "drain condition"], "note": "OWNER D1 drain disposition RETIRE. Reason is drawn from the underlying rejected card when one exists; otherwise a policy retirement."},
+    {"id": "reg_freq_prior", "precedence": 52, "reason": "HISTORICAL_POLICY", "match_any": ["rejected_frequency_prior", "median-score state"], "note": "Frequency-prior retirement (activity threshold)."}
+  ],
+  "hold_code_rules": [
+    {"id": "hold_ram", "precedence": 74, "reason": "INFRA_FAIL", "match_any": ["ram_reservation", "not_winnable", "44gb"], "note": "Resource / RAM head-of-line block. Rerunnable once scheduling improves (directive 12/G)."},
+    {"id": "hold_operational", "precedence": 75, "reason": "INFRA_FAIL", "match_any": ["worker_rollout_pending", "prescreen", "awaiting_sealed_plan", "news_calendar_tainted", "artifact_binding", "spawn_silent_abort", "compile_gate_broken", "context_unavailable"], "note": "Operational hold; rerunnable."}
+  ],
+  "scoring": {
+    "note": "Priority (directive 26) = 100 * weighted-sum of components in [0,1], minus tail_penalty. FTMO relevance and expected edge are weighted highest (directive 26/31: FTMO is the larger business gap). Only ELIGIBLE_FOR_RECONSIDERATION and PORTFOLIO_UTILITY_CHALLENGER records are ranked; STILL_INVALID and SUPPRESSED_CLONE_OF records are scored for completeness but excluded from the ranked list.",
+    "weights": {
+      "ftmo_relevance": 0.22,
+      "expected_edge": 0.18,
+      "whitespace_bonus": 0.15,
+      "novelty": 0.12,
+      "independence": 0.10,
+      "dxz_relevance": 0.08,
+      "validation_cost_inv": 0.08,
+      "execution_complexity_inv": 0.07
+    },
+    "tail_penalty_if_unbounded": 5.0,
+    "symbol_ram_class": {
+      "SP500": 44, "US500": 44, "NDX": 12, "NAS100": 12, "WS30": 12, "US30": 12,
+      "GDAXI": 24, "GER40": 24, "DAX": 24, "UK100": 24, "FTSE": 24,
+      "_default_index": 24, "_default_light": 4
+    },
+    "ram_cost_inv": {"44": 0.25, "24": 0.55, "12": 0.7, "4": 1.0},
+    "ftmo_intraday_timeframes": ["M1", "M5", "M15", "M30", "H1"],
+    "ftmo_relevance_markers": ["scalp", "intraday", "session", "trailing", "mean-reversion", "mean reversion", "break-even", "time-stop", "time exit", "day-flat", "day flat"],
+    "low_swap_symbol_prefixes": ["EUR", "USD", "GBP", "AUD", "NZD", "CAD", "CHF"],
+    "tail_risk_reasons": ["MARTINGALE", "GRID", "PYRAMIDING"]
+  }
+}

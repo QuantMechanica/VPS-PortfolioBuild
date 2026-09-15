@@ -35,6 +35,13 @@ of the two rule sets is the binding box:
   latency arbitrage.
 - **No prohibited techniques:** no martingale, no grid, no averaging into
   losers. RISK_FIXED for backtest, RISK_PERCENT for live.
+  > **SUPERSEDED 2026-09-15 (OWNER-DEC-D3-20260915, directive 3 §14–§18).** The style
+  > prohibition on this line is no longer in force: strategy style alone is not a rejection
+  > reason. Martingale / grid / negative pyramiding / recovery / unbounded multi-position are
+  > allowed when they expose a valid, bounded `strategy_risk_contract.v1`
+  > (`tools/strategy_farm/config/strategy_risk_contract.v1.json`); the runtime-ML boundary
+  > (HR14) and `RISK_FIXED`/`RISK_PERCENT` convention are unchanged. Canonical:
+  > `docs/research/STRATEGY_ELIGIBILITY_V2.md`. Historical text retained for context.
 - Mechanical, deterministic, reproducible.
 
 An EA "graduates" the Edge Lab only on a real Q11 PASS **and** a passed

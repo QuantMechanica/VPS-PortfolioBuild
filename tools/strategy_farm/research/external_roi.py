@@ -69,6 +69,8 @@ DEFAULT_OUT = DEFAULT_STATE_DIR / "research_roi.json"
 DEFAULT_DOC = _REPO_ROOT / "docs" / "research" / "RESEARCH_PROGRAMME_ROI_2026-09.md"
 DEFAULT_BOOK_DXZ = DEFAULT_STATE_DIR / "book_evolution_dxz.json"
 DEFAULT_BOOK_FTMO = DEFAULT_STATE_DIR / "book_evolution_ftmo.json"
+# §33/§43H live money signal: per-sleeve realized attribution feeds economic_contribution.
+DEFAULT_LIVE_ATTRIBUTION = DEFAULT_STATE_DIR / "live_sleeve_attribution.json"
 DEFAULT_CARD_DIRS = (
     Path(r"D:\QM\strategy_farm\artifacts\cards_approved"),
     _REPO_ROOT / "artifacts" / "cards_approved",
@@ -330,6 +332,53 @@ def load_incumbent_ea_keys(book_path: Path) -> set[str]:
     return out
 
 
+def load_live_economic_contribution(
+    attribution_path: Path,
+    origin_by_ea: dict[str, str],
+) -> dict[str, Any]:
+    """Sum realized live PnL per origin programme from the §33 attribution feed.
+
+    Read-only join: attribution sleeve ``ea_id`` -> ``QM5_<id>`` -> origin_programme.
+    Returns per-origin realized PnL/DD/trade counts plus mapping health.  When the feed is
+    absent the result is EVIDENCE_MISSING (never invented).
+    """
+    data = _read_json(attribution_path)
+    if not isinstance(data, dict) or data.get("status") != "PRESENT":
+        return {"status": "EVIDENCE_MISSING", "source": str(attribution_path)}
+    per_origin: dict[str, dict[str, float]] = {
+        o: {"realized_pnl": 0.0, "realized_dd": 0.0, "trade_count": 0, "sleeves": 0}
+        for o in ORIGIN_VALUES
+    }
+    unmapped_eas: list[int] = []
+    for sleeve in data.get("sleeves") or []:
+        ea_id = sleeve.get("ea_id")
+        if ea_id is None:
+            continue
+        ea_key = op._registry_ea_key(ea_id)
+        origin = origin_by_ea.get(ea_key)
+        if origin is None:
+            unmapped_eas.append(ea_id)
+            continue
+        bucket = per_origin[origin]
+        bucket["realized_pnl"] += float(sleeve.get("realized_pnl") or 0.0)
+        bucket["realized_dd"] += float(sleeve.get("realized_dd") or 0.0)
+        bucket["trade_count"] += int(sleeve.get("trade_count") or 0)
+        bucket["sleeves"] += 1
+    for bucket in per_origin.values():
+        bucket["realized_pnl"] = round(bucket["realized_pnl"], 2)
+        bucket["realized_dd"] = round(bucket["realized_dd"], 2)
+    totals = data.get("book_totals", {})
+    return {
+        "status": "PRESENT",
+        "source": str(attribution_path),
+        "generated_at_utc": data.get("generated_at_utc"),
+        "book_realized_pnl": totals.get("realized_pnl"),
+        "book_realized_dd": totals.get("realized_dd"),
+        "per_origin": per_origin,
+        "unmapped_live_eas": sorted(set(unmapped_eas)),
+    }
+
+
 def _count_sources(seed_sources_dir: Path) -> dict[str, int]:
     """External-harvest source counts: tracked seed-source folders, split internal/external."""
     base = Path(seed_sources_dir)
@@ -371,6 +420,7 @@ def build_roi(
     seed_sources_dir: Path | str = DEFAULT_SEED_SOURCES_DIR,
     book_dxz_path: Path | str = DEFAULT_BOOK_DXZ,
     book_ftmo_path: Path | str = DEFAULT_BOOK_FTMO,
+    live_attribution_path: Path | str = DEFAULT_LIVE_ATTRIBUTION,
     origin_rows: list[dict[str, str]] | None = None,
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
@@ -381,6 +431,7 @@ def build_roi(
         origin_rows = build_origin_table(Path(registry_path), card_dirs)
     origin_by_ea = {r["ea_id"]: r["origin_programme"] for r in origin_rows}
     has_card_by_ea = {r["ea_id"]: r["has_card"] == "1" for r in origin_rows}
+    live_econ = load_live_economic_contribution(Path(live_attribution_path), origin_by_ea)
 
     reached = _ea_max_reached(db_path)
     dxz_inc = load_incumbent_ea_keys(Path(book_dxz_path))
@@ -446,13 +497,28 @@ def build_roi(
                 "yield_admit_per_q02_pct": (
                     round(100.0 * admitted / f["reached_q02"], 3) if f["reached_q02"] else None
                 ),
-                "economic_contribution": {
-                    "pnl": "EVIDENCE_MISSING",
-                    "note": (
-                        "No per-EA live/demo PnL attribution file exists yet; "
-                        "book_admission is the closest available economic-relevance signal."
-                    ),
-                },
+                "economic_contribution": (
+                    {
+                        "pnl": live_econ["per_origin"][origin]["realized_pnl"],
+                        "realized_dd": live_econ["per_origin"][origin]["realized_dd"],
+                        "live_trade_count": live_econ["per_origin"][origin]["trade_count"],
+                        "live_sleeves": live_econ["per_origin"][origin]["sleeves"],
+                        "unit": "USD_realized_live",
+                        "source": live_econ["source"],
+                        "note": (
+                            "Realized live per-sleeve PnL (§33 attribution) summed by origin; "
+                            "book_admission remains the reach signal."
+                        ),
+                    }
+                    if live_econ.get("status") == "PRESENT"
+                    else {
+                        "pnl": "EVIDENCE_MISSING",
+                        "note": (
+                            "Live per-sleeve PnL attribution feed absent; "
+                            "book_admission is the closest available economic-relevance signal."
+                        ),
+                    }
+                ),
             }
         )
 
@@ -461,6 +527,7 @@ def build_roi(
         _file_fingerprint(Path(registry_path)).encode(),
         _file_fingerprint(Path(book_dxz_path)).encode(),
         _file_fingerprint(Path(book_ftmo_path)).encode(),
+        _file_fingerprint(Path(live_attribution_path)).encode(),
         json.dumps(sources, sort_keys=True).encode(),
     )
 
@@ -473,8 +540,13 @@ def build_roi(
             "reached_qNN": "the EA has a work_item row at gate NN or deeper on any symbol (reached, not a pass claim)",
             "book_admission": "EA present in the live DXZ incumbent book / FTMO demo incumbent book",
             "origin_programme": "derived per-EA in framework/registry/ea_origin.v1.csv (read-only sidecar); see basis column",
-            "economic_contribution_pnl": "EVIDENCE_MISSING — no per-EA PnL attribution artifact exists yet",
+            "economic_contribution_pnl": (
+                "realized live USD summed by origin from live_sleeve_attribution.json (§33)"
+                if live_econ.get("status") == "PRESENT"
+                else "EVIDENCE_MISSING — live per-sleeve PnL attribution feed absent"
+            ),
         },
+        "live_economic_contribution": live_econ,
         "origin_derivation": {
             "sidecar": str(DEFAULT_ORIGIN_OUT),
             "precedence": "card markers (internal>rebuild>failure>external-url) > slug markers > owner mission > slug-default external > unknown",
@@ -525,7 +597,8 @@ def summary_for_research_state(model: dict[str, Any]) -> dict[str, Any]:
         "inputs_sha256": model["inputs_sha256"],
         "origin_distribution": model["origin_derivation"]["origin_distribution"],
         "sources_considered": model["sources_considered"],
-        "economic_contribution_pnl": "EVIDENCE_MISSING",
+        "economic_contribution_pnl": model["definitions"]["economic_contribution_pnl"],
+        "live_economic_contribution": model.get("live_economic_contribution", {"status": "EVIDENCE_MISSING"}),
         "programmes": prog,
     }
 
@@ -574,10 +647,33 @@ def render_doc(model: dict[str, Any]) -> str:
     lines.append("")
     lines.append("## Economic contribution")
     lines.append("")
-    lines.append("Per-EA live/demo PnL attribution is **EVIDENCE_MISSING** — no attribution "
-                 "artifact exists yet. `book_admission` (EAs in the live DXZ / FTMO demo book) "
-                 "is reported as the closest available economic-relevance signal. Building a "
-                 "per-EA PnL attribution feed is the next step to make §49 a true money-ROI.")
+    live_econ = model.get("live_economic_contribution", {})
+    if live_econ.get("status") == "PRESENT":
+        lines.append(
+            "Realized **live money** per-sleeve PnL (§33 `live_sleeve_attribution.json`) "
+            "summed by origin programme. Book realized PnL: "
+            f"**{live_econ.get('book_realized_pnl')}** USD; book realized DD: "
+            f"**{live_econ.get('book_realized_dd')}** USD "
+            f"(generated {live_econ.get('generated_at_utc')})."
+        )
+        lines.append("")
+        lines.append("| origin | live realized PnL (USD) | realized DD | live sleeves | live trades |")
+        lines.append("|---|---:|---:|---:|---:|")
+        for origin in ORIGIN_VALUES:
+            b = live_econ.get("per_origin", {}).get(origin, {})
+            if not b or (b.get("sleeves", 0) == 0 and b.get("realized_pnl", 0) == 0):
+                continue
+            lines.append(
+                f"| {origin} | {b.get('realized_pnl')} | {b.get('realized_dd')} | "
+                f"{b.get('sleeves')} | {b.get('trade_count')} |"
+            )
+        if live_econ.get("unmapped_live_eas"):
+            lines.append("")
+            lines.append(f"- Unmapped live EAs (no origin row): {live_econ['unmapped_live_eas']}")
+    else:
+        lines.append("Live per-sleeve PnL attribution feed is **EVIDENCE_MISSING**. "
+                     "`book_admission` (EAs in the live DXZ / FTMO demo book) is the closest "
+                     "available economic-relevance signal.")
     lines.append("")
     lines.append("## Allocation reading")
     lines.append("")
@@ -617,6 +713,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed-sources-dir", type=Path, default=DEFAULT_SEED_SOURCES_DIR)
     parser.add_argument("--book-dxz", type=Path, default=DEFAULT_BOOK_DXZ)
     parser.add_argument("--book-ftmo", type=Path, default=DEFAULT_BOOK_FTMO)
+    parser.add_argument("--live-attribution", type=Path, default=DEFAULT_LIVE_ATTRIBUTION)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--doc", type=Path, default=DEFAULT_DOC)
     parser.add_argument("--origin-out", type=Path, default=DEFAULT_ORIGIN_OUT)
@@ -629,6 +726,7 @@ def main(argv: list[str] | None = None) -> int:
         seed_sources_dir=args.seed_sources_dir,
         book_dxz_path=args.book_dxz,
         book_ftmo_path=args.book_ftmo,
+        live_attribution_path=args.live_attribution,
         origin_rows=origin_rows,
     )
     written = write_outputs(model, origin_rows, args.out, args.doc, args.origin_out)

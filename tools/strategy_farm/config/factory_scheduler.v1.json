@@ -1,0 +1,20 @@
+{
+  "schema": "qm.factory-scheduler/v1",
+  "owner_decision": "OWNER directive 3 (2026-09-15) §12 FIXED-VPS THROUGHPUT PROGRAMME; §13 NO VPS UPGRADE / NO VPS MIGRATION (OWNER-DEC-D3-20260915).",
+  "description": "Resource-aware admission knobs for terminal_worker.py, consumed by tools/strategy_farm/resource_scheduler.py. Kill switch QM_RESOURCE_SCHEDULER (default off) must be truthy for any of this to take effect; with it off the worker's legacy claim/drain behaviour runs unchanged. All defaults here reproduce the pre-existing thresholds so activation is a pure staged rollout.",
+  "kill_switch_env": "QM_RESOURCE_SCHEDULER",
+  "heavy_reservation_gb": 24.0,
+  "fit_post_reservation_floor_gb": 14.0,
+  "quiet_window_max_active_cells": 2,
+  "head_window_candidates": 12,
+  "heavy_starvation_max_wait_minutes": 45.0,
+  "frontier_weight": 0.0,
+  "notes": {
+    "heavy_reservation_gb": "A candidate at/above this launch reservation is a heavy job that may require the exclusive pre-drain. Matches terminal_worker DRAIN_WINDOW_MIN_RESERVATION_GB (24 GB): two-leg metal/index and 44 GB single-index/heavy-multisymbol.",
+    "fit_post_reservation_floor_gb": "Free RAM that must remain AFTER a candidate's reservation for it to be considered a fit. Matches terminal_worker RAM_MIN_FREE_GB (14 GB).",
+    "quiet_window_max_active_cells": "A heavy candidate may open a pre-drain only when strictly fewer than this many cells are active fleet-wide. Directive: heavy jobs run in quieter windows / with reduced worker concurrency.",
+    "head_window_candidates": "Number of claimable head-window rows the worker surveys for a fitting smaller job before letting a heavy row arm a pre-drain. Widens the legacy top-3 preflight window (directive §12: replace simplistic queue ordering with resource-aware scheduling).",
+    "heavy_starvation_max_wait_minutes": "A heavy candidate continuously suppressed for at least this long is allowed to open a pre-drain regardless of fill, so heavy work never starves. Bounded and logged.",
+    "frontier_weight": "Value = priority + frontier_weight * frontier_gate. Default 0.0 keeps priority as today's sole ranking key; raise to prefer the highest-leverage frontier band among equally-fitting candidates. Facts-only ranking; never a verdict."
+  }
+}

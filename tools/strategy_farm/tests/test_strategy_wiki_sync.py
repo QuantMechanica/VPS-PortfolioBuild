@@ -123,6 +123,7 @@ def fixture(tmp_path):
         book_ftmo=state / "book_evolution_ftmo.json",
         lineage_map=state / "lineage_map.json",
         health_out=state / "strategy_wiki_sync.json",
+        live_attribution=state / "live_sleeve_attribution.json",
     )
 
 
@@ -149,8 +150,52 @@ def test_field_completeness_on_every_node(fixture):
         for node in d.glob("*.md"):
             scalars, _ = sws.parse_frontmatter(sws._read_text(node))
             for key in sws._FRONTMATTER_ORDER:
+                if key in sws._OPTIONAL_FRONTMATTER_KEYS:
+                    continue  # present only when a Second-Chance Register entry exists
                 assert key in scalars, f"{node.name} missing {key}"
                 assert scalars[key] != "", f"{node.name} empty {key}"
+
+
+def _write_register(fixture, ea_id: str) -> None:
+    fixture.second_chance_register.write_text(json.dumps({
+        "schema": "qm.second-chance-register/v1",
+        "records": [{
+            "ea_id": ea_id,
+            "primary_reason": "MULTI_POSITION",
+            "second_chance_status": "ELIGIBLE_FOR_RECONSIDERATION",
+            "eligibility": "ELIGIBLE_FOR_RECONSIDERATION",
+            "priority": 77.5,
+            "portfolio_utility_challenger": False,
+            "tail_risk_flag": False,
+        }],
+    }), encoding="utf-8")
+
+
+def test_second_chance_join_renders_and_is_idempotent(fixture):
+    # Build with no register: no second-chance section, capture baseline hashes.
+    sws.build(fixture)
+    node = fixture.generated_dir / sws.CLASS_REJECTED / "QM5_400_delta-rejected.md"
+    assert "Second-chance" not in sws._read_text(node)
+    baseline = sws._read_text(node)
+
+    # Add the register and rebuild: the rejected node now carries the section.
+    _write_register(fixture, "QM5_400")
+    r2 = sws.build(fixture)
+    text = sws._read_text(node)
+    assert "## Second-chance (Strategy Eligibility V2)" in text
+    assert "MULTI_POSITION" in text
+    assert "second_chance_reason: MULTI_POSITION" in text
+    assert r2.written >= 1  # the joined node re-rendered
+
+    # A node WITHOUT a register entry keeps its baseline bytes (no mass churn).
+    active = fixture.generated_dir / sws.CLASS_ACTIVE / "QM5_100_alpha-breakout.md"
+    active_bytes = active.read_bytes()
+
+    # Rebuild again with the SAME register: fully idempotent (nothing re-written).
+    r3 = sws.build(fixture)
+    assert r3.written == 0
+    assert active.read_bytes() == active_bytes
+    assert sws._read_text(node) == text
 
 
 def test_index_then_lint_green(fixture):
@@ -205,6 +250,30 @@ def test_idempotency_byte_identical(fixture):
     assert r2.written == 0
     assert r2.skipped == 6
     assert active.read_bytes() == first
+
+
+def test_live_pnl_join_renders_on_live_node(fixture):
+    import json as _json
+    # QM5_100 is the DXZ incumbent (ea_id 100) -> gets a live realized value.
+    fixture.live_attribution.write_text(_json.dumps({
+        "schema": "qm.live-sleeve-attribution/v1",
+        "status": "PRESENT",
+        "sleeves": [
+            {"ea_id": 100, "magic": 1000000, "symbol": "EURUSD",
+             "realized_pnl": 342.96, "realized_dd": 55.0, "trade_count": 7,
+             "last_deal_utc": "2026-09-15T15:00:00Z"},
+        ],
+        "book_totals": {"realized_pnl": 342.96, "realized_dd": 55.0},
+    }), encoding="utf-8")
+    sws.build(fixture)
+    node = fixture.generated_dir / sws.CLASS_ACTIVE / "QM5_100_alpha-breakout.md"
+    scalars, _ = sws.parse_frontmatter(sws._read_text(node))
+    assert scalars["live_realized_net_usd"] == "342.96"
+    assert scalars["live_trade_count"] == "7"
+    # A non-live EA (QM5_200 draft) with feed PRESENT renders NOT_APPLICABLE (no churn value).
+    draft = fixture.generated_dir / sws.CLASS_DRAFT / "QM5_200_beta-draft.md"
+    dscalars, _ = sws.parse_frontmatter(sws._read_text(draft))
+    assert dscalars["live_realized_net_usd"] == sws.NOT_APPLICABLE
 
 
 def test_handwritten_node_never_overwritten(fixture):

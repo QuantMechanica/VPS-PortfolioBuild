@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://qm.local/schemas/strategy_risk_contract.v1.json",
+  "title": "QuantMechanica Strategy Risk Contract v1",
+  "description": "Deterministic bounded-risk contract for a tail-amplifying strategy mechanism (martingale / grid / negative pyramiding / recovery / unbounded multi-position). Authority: OWNER-DEC-D3-20260915 (directive 3 sections 14-21), verbatim at docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_3_max_factory_utilization_verbatim.md. This contract makes tail risk MEASURABLE and BOUNDED; it does not itself approve, deploy, size, or authorize a live weight. A strategy style is never a rejection reason on its own (directive section 14); uncontrolled ruin risk is (directive section 18).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "tail_amplifying",
+    "max_levels",
+    "sizing_progression",
+    "max_open_positions",
+    "max_basket_exposure",
+    "max_gross_notional",
+    "max_margin_pct",
+    "max_basket_loss_pct",
+    "emergency_exit",
+    "gap_sensitivity",
+    "spread_slippage_sensitivity",
+    "worst_historical_sequence",
+    "stress_sequence"
+  ],
+  "properties": {
+    "schema": {"const": "qm.strategy-risk-contract/v1"},
+    "tail_amplifying": {
+      "type": "boolean",
+      "description": "True when the mechanism amplifies adverse exposure (martingale, grid, negative pyramiding, recovery, unbounded multi-position). A tail-amplifying contract MUST be bounded (finite max_levels and a real equity stop) or intake fails closed with UNBOUNDED_RECOVERY."
+    },
+    "max_levels": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum number of averaging / grid / scale-in levels a single basket may reach. Finite and >= 1 for a bounded mechanism. A value of 0 (or levels_unbounded=true) declares an infinite recovery sequence and is rejected at intake as UNBOUNDED_RECOVERY. Prohibited: 'eventually price must return' without a bounded account-loss condition (directive section 18)."
+    },
+    "levels_unbounded": {
+      "type": "boolean",
+      "description": "Optional explicit declaration that the level count is unbounded. When true the mechanism is unbounded regardless of max_levels and is rejected at intake as UNBOUNDED_RECOVERY."
+    },
+    "sizing_progression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["flat", "linear", "geometric", "custom"]},
+        "multiplier": {"type": ["number", "string", "null"], "description": "Per-level size multiplier (geometric) or increment (linear); decimal string preferred. null for flat."},
+        "notes": {"type": "string"}
+      }
+    },
+    "max_open_positions": {"type": "integer", "minimum": 1, "description": "Hard cap on simultaneously open positions/legs for this mechanism."},
+    "max_basket_exposure": {"type": ["number", "string"], "description": "Maximum aggregate basket exposure in lots (or the declared unit). Decimal string preferred."},
+    "max_gross_notional": {"type": ["number", "string"], "description": "Maximum gross notional across all open legs (account currency). Decimal string preferred."},
+    "max_margin_pct": {"type": "number", "exclusiveMinimum": 0, "maximum": 100, "description": "Maximum margin consumption as a percent of account equity."},
+    "max_basket_loss_pct": {"type": "number", "exclusiveMinimum": 0, "maximum": 100, "description": "Hard account-loss bound for the whole basket, in percent of account equity. This is the ruin bound: a portfolio-level safety boundary may substitute for individual-trade SLs where the design requires basket management (directive section 18)."},
+    "emergency_exit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "rule"],
+      "properties": {
+        "type": {"enum": ["equity_stop", "basket_sl", "account_equity_stop", "time_stop", "none"], "description": "'none' declares no deterministic emergency exit and is rejected at intake as UNBOUNDED_RECOVERY unless a positive max_basket_loss_pct bound is present."},
+        "equity_stop_pct": {"type": ["number", "null"], "description": "Deterministic equity-stop trigger as percent of account equity. A positive value (or a positive max_basket_loss_pct) is required for a bounded mechanism."},
+        "rule": {"type": "string", "minLength": 1, "description": "Plain-language deterministic rule that flattens all legs (e.g. 'flatten all basket legs when open basket loss reaches max_basket_loss_pct of account equity')."}
+      }
+    },
+    "gap_sensitivity": {"type": "string", "minLength": 1, "description": "How the mechanism behaves through weekend / news gaps that jump past intermediate levels. Use NOT_EVALUATED / UNKNOWN when not yet measured."},
+    "spread_slippage_sensitivity": {"type": "string", "minLength": 1, "description": "How basket P&L degrades under wider spread / realistic slippage (tie to Q06 HARSH stress). Use NOT_EVALUATED / UNKNOWN when not yet measured."},
+    "worst_historical_sequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_adverse_levels", "max_drawdown_pct", "evidence"],
+      "properties": {
+        "max_adverse_levels": {"type": ["integer", "string"], "description": "Deepest level reached in the worst observed historical adverse run (integer), or NOT_EVALUATED / EVIDENCE_MISSING."},
+        "max_drawdown_pct": {"type": ["number", "string"], "description": "Worst observed basket drawdown percent, or NOT_EVALUATED / EVIDENCE_MISSING."},
+        "evidence": {"type": "string", "minLength": 1, "description": "Path to the sealed evidence stream/report (Q08/Q14 or demo), or EVIDENCE_MISSING."}
+      }
+    },
+    "stress_sequence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenario", "result_pct", "evidence"],
+      "properties": {
+        "scenario": {"type": "string", "minLength": 1, "description": "Preregistered stress scenario (e.g. adverse trend that hits max_levels then continues)."},
+        "result_pct": {"type": ["number", "string"], "description": "Account-loss percent under the stress scenario, or NOT_EVALUATED / EVIDENCE_MISSING."},
+        "evidence": {"type": "string", "minLength": 1, "description": "Path to the stress evidence, or EVIDENCE_MISSING."}
+      }
+    },
+    "notes": {"type": "string"}
+  }
+}

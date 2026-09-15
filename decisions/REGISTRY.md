@@ -18,6 +18,7 @@ approval gates.
 
 | Topic | Canonical document |
 |---|---|
+| Max factory utilization / dynamic AI routing / eligibility v2 / second-chance / tail-risk / fixed-hardware / decision-grade vault (OWNER-DEC-D3-20260915) | [`2026-09-15_owner_max_factory_utilization_eligibility_v2.md`](2026-09-15_owner_max_factory_utilization_eligibility_v2.md) |
 | Continuous book evolution / FTMO acceleration / autonomous edge discovery (OWNER-DEC-CBE-20260915) | [`2026-09-15_owner_continuous_book_evolution.md`](2026-09-15_owner_continuous_book_evolution.md) |
 | Kimi research provider, ML-in-research, internal R1 source (OWNER-DEC-KIMI-INTEGRATION-20260915) | [`2026-09-15_owner_kimi_integration_ml_research_r1_internal.md`](2026-09-15_owner_kimi_integration_ml_research_r1_internal.md) |
 | Backtest report retention | [`DL-090_backtest_report_retention_policy.md`](DL-090_backtest_report_retention_policy.md) |
