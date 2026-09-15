@@ -4828,3 +4828,14 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - DONE 08:0xZ: D4 (Book2 profile builder + verify, presets staged, T_Live_ON recovery pointer, cutover ceremony script; preflight
   all green). Q16 check 1 re-scoped: binary identity by SHA256 factory→T_Live (no recompile, identity rule). Next: F4 FTMO demo package.
 - OPEN 08:1xZ (Sonnet 42a437a4, due Wed): FTMO demo book v2 admission census; Fri: package + profile + FTMO_ON pointer (Claude).
+
+## Addendum 2026-09-15 09:4xZ — claim starvation (head-of-line preflight), fleet-wide 09:00–09:31Z
+
+- SYMPTOM: 10 workers, 1 active cell, 827 claimable rows, every pass `no_pending_claimable`; hourly watch printed no ALERT.
+- CAUSE: the 2026-09-14 release of RAM_RESERVATION_44GB holds surfaced Q08 index rows WITHOUT a sealed DSR context at the head of the
+  claim order; the out-of-lock history preflight covers only the top ~3 candidates, those are rejected in-lock
+  (CANDIDATE_WINDOW_UNAVAILABLE / SINGLE_CONFIGURATION_UNAVAILABLE), all other rows stay unchecked → skipped (history_preflight_deferred 103/pass).
+- FIX (GRÜN, reversible): all 45 context-less Q08 rows parked (hold codes Q08_DSR_CONTEXT_UNAVAILABLE / _20260915, files
+  `docs/ops/evidence/2026-09-14_q08_context_repair/hold_q08ctx_*_20260915*.json`); claims resumed 09:31Z (4 claims in 1 min, 5 cells).
+- OPEN: worker defect + missing watch signal → ticket (evidence dir `2026-09-15_claim_head_of_line_preflight`); 381 pending rows carry a 44 GB
+  multisymbol reservation and can never be admitted at ≤43 GB free (skipped each pass, cost = scan CPU) → re-park after the exclusive-lane fix.

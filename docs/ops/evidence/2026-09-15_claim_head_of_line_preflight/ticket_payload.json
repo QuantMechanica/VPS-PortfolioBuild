@@ -1,0 +1,28 @@
+{
+  "title": "terminal_worker claim starvation class HEAD-OF-LINE PREFLIGHT (2026-09-15 ~09:00-09:31Z, fleet-wide, no ALERT fired): the out-of-lock history preflight (history_claim_preflights) is computed only for the first few candidates of the claim order (3 per pass); when those candidates are then rejected INSIDE the lock by a filter the preflight selection does not apply (here: Q08 rows without a sealed DSR context -> _seal_q08_dsr_at_claim not claimable, CANDIDATE_WINDOW_UNAVAILABLE / SINGLE_CONFIGURATION_UNAVAILABLE), every other pending row is skipped as history_preflight_deferred (skip_unchecked_history) and the pass ends with no_pending_claimable; the preflight window never advances past the rejected head, so ten workers claim nothing for ~30 min although 347 plain <=14 GB rows were claimable (measured 09:2xZ: per pass history_skipped 103, q08_dsr_context_skipped 7-8, ram_class_skipped ~296). Fix: (1) the preflight candidate window must skip candidates that a cheap in-lock-equivalent pre-check already rejects (Q08 DSR context, RAM class, poison-pill, terminal_avoid) so the window reaches claimable rows, or (2) the atomic claim must compute the history preflight lazily for the next N unchecked candidates instead of deferring them, bounded; plus (3) a watch signal: 'workers idle with claimable plain rows' -> ALERT line in hourly_watch and health contract (no_pending_claimable across >= 8 workers for >= 10 min while rows with reservation <= 14 GB and no hold exist)",
+  "why_now": "Reproduced today after the 2026-09-14 release of RAM_RESERVATION_44GB_NOT_WINNABLE holds surfaced 3 context-less Q08 index rows at the head of the claim order; the orchestrator parked all 45 context-less Q08 rows (hold codes Q08_DSR_CONTEXT_UNAVAILABLE / _20260915) at 09:3xZ and claims resumed within a minute (4 claims by 09:32Z). The parking is a workaround: any future row class rejected in-lock but passing the preflight selection re-creates the deadlock silently. The hourly watch printed 'OK no alerts' during the whole starvation.",
+  "acceptance": [
+    "root cause bound in code with line references (claim-order preflight window size, skip_unchecked_history branch, _seal_q08_dsr_at_claim rejection path) and a timeline from the worker logs 2026-09-15 08:47Z-09:32Z (last claims 08:59Z, first claim after the parking 09:31Z)",
+    "fix implemented with tests: a unit test that builds a claim order whose head is in-lock-rejected (Q08 context unavailable) followed by plain claimable rows and asserts a claim happens in one pass; a test that the preflight window bounds stay bounded (no unbounded scan)",
+    "watch/health signal: hourly_watch_0909.py (session_tools) and health_contract emit an ALERT when >= 8 workers report no_pending_claimable for >= 10 min while claimable rows with reservation <= 14 GB exist; test",
+    "no gate/verdict change, no hold release (the 45 Q08 holds stay until their contexts are sealed), no worker restart in the ticket (reload is the orchestrator's staggered act)",
+    "evidence dir docs/ops/evidence/2026-09-15_claim_head_of_line_preflight/README.md with commit sha, tests, timeline CSV"
+  ],
+  "evidence": [
+    "D:/QM/strategy_farm/logs/terminal_worker_T8.log, T9.log, T2.log (claim_result records with skips/skip_samples 09:2xZ)",
+    "tools/strategy_farm/terminal_worker.py (history_claim_preflights, skip_unchecked_history, history_preflight_deferred ~line 6166, _seal_q08_dsr_at_claim ~6187, no_pending_claimable return ~6306)",
+    "docs/ops/evidence/2026-09-14_q08_context_repair/hold_q08ctx_*_20260915*.json (45 holds)",
+    "tools/strategy_farm/session_tools/hourly_watch_0909.py (no alert during starvation)",
+    "memory: project_qm_claim_starvation_recovery_cap_2026-08-04.md, project_qm_idle_claim_scan_cpu_and_drain_window_2026-09-07.md (related classes)"
+  ],
+  "hard_limits": [
+    "no change to claim priority semantics, gate thresholds, verdicts or holds; the fix is admission-window mechanics + alerting",
+    "tests first; rollback documented (env switch); blast radius named (claim path of every worker)",
+    "no worker restart from the ticket"
+  ],
+  "required_capabilities": ["code", "ops"],
+  "model_tier": "sol",
+  "codex_reasoning_effort": "high",
+  "requested_by": "Orchestrator Claude 2026-09-15 09:4xZ (hourly watch incident)",
+  "lane_note": "Claude headless lane (Sonnet) or Codex sol when the budget line allows; priority above the Dukascopy lane, below the book sprint"
+}

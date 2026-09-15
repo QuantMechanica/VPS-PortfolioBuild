@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789464680561545600,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 4161232
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T093120Z_bb16f725.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T093120Z_bb16f725.sqlite.identity.json",
+    "sha256": "fa86b9fbce656ba0513689a855113802df1c37116e438e19d527c84e5e131237"
+  },
+  "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+  "inserted": 0,
+  "mode": "apply",
+  "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (CANDIDATE_WINDOW_UNAVAILABLE); parked with the rows held at 09:3xZ.",
+  "release_condition": "Release when the Q08 context repair programme seals a context for this row or after the head-of-line preflight defect is fixed and workers reloaded.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-18T18:24:14+00:00",
+        "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+        "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (CANDIDATE_WINDOW_UNAVAILABLE); parked with the rows held at 09:3xZ.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T09:32:55+00:00",
+        "work_item_id": "b68d05cd-e52c-43a5-96aa-5e0306efa60f"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T21:55:23+00:00",
+        "ea_id": "QM5_12712",
+        "id": "b68d05cd-e52c-43a5-96aa-5e0306efa60f",
+        "kind": "backtest",
+        "phase": "Q08",
+        "status": "pending",
+        "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+        "updated_at": "2026-08-18T15:48:20+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+  "superseded": 1
+}

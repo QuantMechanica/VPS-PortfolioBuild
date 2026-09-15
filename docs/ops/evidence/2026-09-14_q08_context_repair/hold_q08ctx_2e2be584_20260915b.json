@@ -1,0 +1,5 @@
+{
+  "reason": "supersede_hold_code_equals_hold_code",
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "aborted"
+}

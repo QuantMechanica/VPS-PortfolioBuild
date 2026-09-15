@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789464680561545600,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 4161232
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T093120Z_bb16f725.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T093120Z_bb16f725.sqlite.identity.json",
+    "sha256": "fa86b9fbce656ba0513689a855113802df1c37116e438e19d527c84e5e131237"
+  },
+  "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+  "inserted": 0,
+  "mode": "apply",
+  "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+  "release_condition": "Release when the Q08 context repair programme seals a context for this row or after the head-of-line preflight defect is fixed and workers reloaded.",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T04:23:10+00:00",
+        "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+        "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T09:32:55+00:00",
+        "work_item_id": "15f2ecb0-97dd-4a7b-91d7-ff540857adb6"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-09-13T07:21:21+00:00",
+        "ea_id": "QM5_13137",
+        "id": "15f2ecb0-97dd-4a7b-91d7-ff540857adb6",
+        "kind": "backtest",
+        "phase": "Q08",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-13T13:10:32+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+  "superseded": 1
+}
