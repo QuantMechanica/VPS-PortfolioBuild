@@ -16,8 +16,8 @@
     "profile_version": 2,
     "as_of": "2026-09-04",
     "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
-    "file_sha256": "77dd22c2db0350c2cbbbb84f020f24cb8c166370e78aff87772a3e571c7b7eff",
-    "canonical_sha256": "d792302ac1c732471fbccda8d2ad2ac1b0c804bfd2413ef16140dccdd8618b62"
+    "file_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+    "canonical_sha256": "857e2d4baf481a079da8726606a5561a6f525b959803790b72f9aebe5f4dcda5"
   },
   "official_limits": {
     "maximum_daily_loss_percent": "5",
@@ -41,9 +41,9 @@
     "module": "tools/strategy_farm/portfolio/ftmo_book3_standalone_evaluator.py",
     "selection_mode": "EXPLICIT_M13_DEMO_BINDING",
     "rulepack_path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
-    "rulepack_file_sha256": "77dd22c2db0350c2cbbbb84f020f24cb8c166370e78aff87772a3e571c7b7eff",
+    "rulepack_file_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
     "rulepack_file_sha256_note": "Re-pinned 2026-09-15 after the OWNER-DEC-CBE-20260915 s63 official-rules refresh (commit 992c59d1af rebound FTMO_2S_100K_STANDARD_V2.json to the 2026-09-15 snapshot); previous pin dbec5494... (2026-09-06 snapshot)",
-    "rulepack_canonical_sha256": "d792302ac1c732471fbccda8d2ad2ac1b0c804bfd2413ef16140dccdd8618b62"
+    "rulepack_canonical_sha256": "857e2d4baf481a079da8726606a5561a6f525b959803790b72f9aebe5f4dcda5"
   },
   "governor": {
     "ea_id": 13206,
