@@ -32,6 +32,7 @@ import csv
 import datetime as dt
 import hashlib
 import json
+import re
 import sqlite3
 import subprocess
 import sys
@@ -92,6 +93,171 @@ def classify_family(slug: Any) -> str:
         if any(needle in text for needle in needles):
             return family
     return "other"
+
+
+# --- White-space classifiers (directive §45/§46; audit research_universe_whitespace.md)
+# The whitespace audit found the projector was missing timeframe, session,
+# holding-duration and symbol-class fields — the exact axes §46 white-space
+# research and the §47 FTMO gap value most. These are deterministic, read-only
+# heuristics over the already-projected columns (setfile_path + registry slug +
+# symbol); they invent nothing (an underivable value is the empty string).
+
+# Timeframe token, matched on an underscore/dot-delimited setfile path segment.
+# Order the alternation longest-first so ``M15`` wins over ``M1`` at the same spot.
+_TIMEFRAME_RE = re.compile(
+    r"(?<![A-Za-z0-9])(MN1|W1|D1|H4|H1|M30|M15|M5|M1)(?![A-Za-z0-9])"
+)
+
+# Holding-duration class per timeframe (matches the audit's holding buckets:
+# scalp M1-M5, intraday M15-H1, swing H4, position D1+).
+_HOLDING_BY_TF = {
+    "M1": "scalp",
+    "M5": "scalp",
+    "M15": "intraday",
+    "M30": "intraday",
+    "H1": "intraday",
+    "H4": "swing",
+    "D1": "position",
+    "W1": "position",
+    "MN1": "position",
+}
+
+# Symbol-class token sets (base name, ``.DWX`` / suffix stripped, upper-cased).
+_FX_MAJORS = frozenset(
+    {"EURUSD", "GBPUSD", "USDJPY", "USDCHF", "USDCAD", "AUDUSD", "NZDUSD"}
+)
+_METALS = frozenset({"XAUUSD", "XAGUSD", "XPTUSD", "XPDUSD"})
+_INDICES = frozenset(
+    {
+        "SP500", "US500", "NDX", "US100", "NAS100", "GDAXI", "GER40", "GER30",
+        "WS30", "US30", "DJ30", "UK100", "FTSE100", "NIKKEI", "JP225", "JPN225",
+        "STOXX50", "EU50", "AUS200", "HK50", "ES35", "SPA35", "FRA40", "NETH25",
+    }
+)
+_ENERGY = frozenset(
+    {"XTIUSD", "XBRUSD", "USOIL", "UKOIL", "XNGUSD", "NATGAS", "WTI", "BRENT"}
+)
+_CRYPTO_TOKENS = ("BTC", "ETH", "LTC", "XRP", "DOGE", "SOL", "ADA")
+
+# Session / time-of-day keyword families (matched on the registry slug). Order
+# matters: the opening-range/ORB family is checked before the city sessions so a
+# generic ``session-open`` is not mislabelled, then city sessions, then overnight.
+_SESSION_KEYWORDS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("open", ("opening-range", "opening_range", "orb", "open-box", "openbox",
+              "session-open", "session_open", "session-break", "session_break",
+              "openrange")),
+    ("london", ("london", "-lo-", "eu-session", "europe-session")),
+    ("ny", ("newyork", "new-york", "ny-session", "us-session", "ny-open")),
+    ("asian", ("asian", "asia", "tokyo", "sydney")),
+    ("overnight", ("overnight", "seasonal", "turn-of", "day-of-week", "carry",
+                   "rollover", "holdover")),
+)
+
+
+def classify_timeframe(setfile_path: Any) -> str:
+    """Extract the MT5 timeframe token from a setfile path, or '' if absent."""
+
+    match = _TIMEFRAME_RE.search(str(setfile_path or ""))
+    return match.group(1) if match else ""
+
+
+def classify_holding(timeframe: Any) -> str:
+    """Map a timeframe token to a holding-duration class ('' when unknown)."""
+
+    return _HOLDING_BY_TF.get(str(timeframe or "").upper(), "")
+
+
+def classify_symbol_class(symbol: Any) -> str:
+    """Coarse asset class from a (possibly ``.DWX``-suffixed) symbol name."""
+
+    base = str(symbol or "").upper().split(".")[0].strip()
+    if not base:
+        return ""
+    if base in _METALS or base.startswith(("XAU", "XAG", "XPT", "XPD")):
+        return "metal"
+    if base in _ENERGY or "OIL" in base or base.startswith(("XNG", "XTI", "XBR")):
+        return "energy"
+    if base in _INDICES:
+        return "index"
+    if any(tok in base for tok in _CRYPTO_TOKENS):
+        return "crypto"
+    if base in _FX_MAJORS:
+        return "fx_major"
+    if len(base) == 6 and base.isalpha():
+        return "fx_cross"
+    return "other"
+
+
+def classify_session(slug: Any) -> str:
+    """Infer a session / time-of-day intent from the slug ('unspecified' default)."""
+
+    text = str(slug or "").lower()
+    if not text:
+        return "unspecified"
+    for label, needles in _SESSION_KEYWORDS:
+        if any(needle in text for needle in needles):
+            return label
+    return "unspecified"
+
+
+def extract_parameter_sensitivity(detail_json_text: Any) -> dict[str, Any] | None:
+    """Derive a parameter-sensitivity summary from an OPT_CENSUS ``detail_json``.
+
+    An optimisation census records one entry per parameter-configuration run
+    under ``runs`` (each carrying ``profit_factor`` / ``net_profit``). The spread
+    of the objective across those runs is a genuine, computed parameter-
+    sensitivity signal (a flat plateau vs a single spike). Returns None when the
+    payload carries no usable ``runs`` list — the field is emitted only *where
+    derivable*, never invented.
+    """
+
+    text = str(detail_json_text or "").strip()
+    if not text or text == "{}":
+        return None
+    try:
+        data = json.loads(text)
+    except (ValueError, TypeError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    runs = data.get("runs")
+    if not isinstance(runs, list) or not runs:
+        return None
+    pfs: list[float] = []
+    nets: list[float] = []
+    for run in runs:
+        if not isinstance(run, dict):
+            continue
+        pf = run.get("profit_factor")
+        net = run.get("net_profit")
+        if isinstance(pf, (int, float)) and not isinstance(pf, bool):
+            pfs.append(float(pf))
+        if isinstance(net, (int, float)) and not isinstance(net, bool):
+            nets.append(float(net))
+    if not pfs:
+        return None
+    n = len(pfs)
+    pf_min, pf_max = min(pfs), max(pfs)
+    pf_mean = sum(pfs) / n
+    if n >= 2:
+        variance = sum((x - pf_mean) ** 2 for x in pfs) / n
+        pf_std = variance ** 0.5
+        pf_cv = (pf_std / pf_mean) if pf_mean not in (0.0, -0.0) else None
+        derivation = "objective_spread_over_census_runs"
+    else:
+        pf_cv = None
+        derivation = "single_run"
+    return {
+        "n_runs": int(data.get("n_runs") or n),
+        "pf_min": round(pf_min, 6),
+        "pf_max": round(pf_max, 6),
+        "pf_range": round(pf_max - pf_min, 6),
+        "pf_mean": round(pf_mean, 6),
+        "pf_cv": (round(pf_cv, 6) if pf_cv is not None else ""),
+        "net_min": (round(min(nets), 6) if nets else ""),
+        "net_max": (round(max(nets), 6) if nets else ""),
+        "derivation": derivation,
+    }
 
 
 def _registry_ea_key(raw: Any) -> str:
@@ -218,7 +384,7 @@ def load_idea_families(registry_path: Path) -> dict[str, dict[str, str]]:
 
 _SQL_GATE_OUTCOMES = (
     "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, verdict_reason, "
-    "data_window_start, data_window_end, created_at "
+    "setfile_path, data_window_start, data_window_end, created_at "
     "FROM work_items_clean ORDER BY created_at, id{limit}"
 )
 
@@ -257,17 +423,25 @@ def project(
     query_text: dict[str, str] = {}
     taxonomy_counter: Counter[str] = Counter()
 
+    # Load the idea->slug/family map up front: the white-space session classifier
+    # (directive §46) keys off the registry slug, so it must be available inside
+    # the gate loop, not only for idea_families.csv further down.
+    families = load_idea_families(registry_path)
+
     connection = work_item_clean_view.open_clean_view_connection(db_path)
     try:
         connection.row_factory = sqlite3.Row
 
-        # gate_outcomes.csv -- one row per run, taxonomy-labelled.
+        # gate_outcomes.csv -- one row per run, taxonomy-labelled, plus the
+        # white-space axes (timeframe/holding/symbol_class/session).
         gate_sql = _SQL_GATE_OUTCOMES.format(limit=limit_clause)
         query_text["gate_outcomes.csv"] = gate_sql
         gate_rows: list[dict[str, Any]] = []
         for row in connection.execute(gate_sql):
             taxonomy = str(row["verdict_taxonomy"] or "unknown")
             taxonomy_counter[taxonomy] += 1
+            timeframe = classify_timeframe(row["setfile_path"])
+            slug = (families.get(str(row["ea_id"] or "")) or {}).get("slug", "")
             gate_rows.append(
                 {
                     "work_item_id": row["id"],
@@ -278,6 +452,10 @@ def project(
                     "verdict_taxonomy": taxonomy,
                     "reason_class": _reason_class(taxonomy, row["verdict"], row["verdict_reason"]),
                     "window": _window(row["data_window_start"], row["data_window_end"]),
+                    "timeframe": timeframe,
+                    "holding_class": classify_holding(timeframe),
+                    "symbol_class": classify_symbol_class(row["symbol"]),
+                    "session": classify_session(slug),
                     "created": row["created_at"],
                 }
             )
@@ -292,6 +470,10 @@ def project(
                 "verdict_taxonomy",
                 "reason_class",
                 "window",
+                "timeframe",
+                "holding_class",
+                "symbol_class",
+                "session",
                 "created",
             ],
             gate_rows,
@@ -353,11 +535,45 @@ def project(
             ["id", "source_type", "lane", "status", "uri", "title"],
             source_rows,
         )
+
+        # parameter_sensitivity.csv -- derived ONLY where an ea_metrics.detail_json
+        # carries an optimisation-census ``runs`` list (directive §45 "parameters
+        # that do not matter"; audit missing field (d)). A row is emitted only when
+        # the sensitivity is genuinely derivable — never invented for the rest.
+        param_header = [
+            "work_item_id", "ea_id", "symbol", "phase",
+            "n_runs", "pf_min", "pf_max", "pf_range", "pf_mean", "pf_cv",
+            "net_min", "net_max", "derivation",
+        ]
+        param_rows: list[dict[str, Any]] = []
+        if _table_exists(connection, "ea_metrics"):
+            param_sql = (
+                "SELECT work_item_id, ea_id, symbol, phase, detail_json "
+                f"FROM ea_metrics ORDER BY work_item_id{limit_clause}"
+            )
+            for r in connection.execute(param_sql):
+                sens = extract_parameter_sensitivity(r["detail_json"])
+                if sens is None:
+                    continue
+                entry = {
+                    "work_item_id": r["work_item_id"],
+                    "ea_id": r["ea_id"],
+                    "symbol": r["symbol"],
+                    "phase": r["phase"],
+                }
+                entry.update(sens)
+                param_rows.append(entry)
+        else:
+            param_sql = "-- ea_metrics table absent"
+        query_text["parameter_sensitivity.csv"] = param_sql
+        row_counts["parameter_sensitivity.csv"] = _write_csv(
+            dataset_dir / "parameter_sensitivity.csv", param_header, param_rows
+        )
     finally:
         connection.close()
 
-    # idea_families.csv -- derived from the registry slug/family metadata.
-    families = load_idea_families(registry_path)
+    # idea_families.csv -- derived from the registry slug/family metadata (loaded
+    # once above and reused here).
     query_text["idea_families.csv"] = f"-- derived from {registry_path.name} (slug->family heuristic)"
     row_counts["idea_families.csv"] = _write_csv(
         dataset_dir / "idea_families.csv",

@@ -1,0 +1,141 @@
+{
+  "dataset_dir": "D:\\QM\\research\\campaigns\\CAMP-2026-0001-ftmo-gap\\observe\\2026-09-15T14-12-39Z",
+  "h1_outcome_by_holding_class": {
+    "intraday": {
+      "fail": 9127,
+      "pass": 10079,
+      "pass_rate": 0.5164,
+      "total": 19516,
+      "zero": 295
+    },
+    "position": {
+      "fail": 8621,
+      "pass": 11430,
+      "pass_rate": 0.5567,
+      "total": 20533,
+      "zero": 430
+    },
+    "scalp": {
+      "fail": 2049,
+      "pass": 1388,
+      "pass_rate": 0.3991,
+      "total": 3478,
+      "zero": 41
+    },
+    "swing": {
+      "fail": 4017,
+      "pass": 4652,
+      "pass_rate": 0.5079,
+      "total": 9160,
+      "zero": 481
+    },
+    "unknown": {
+      "fail": 406,
+      "pass": 626,
+      "pass_rate": 0.6048,
+      "total": 1035,
+      "zero": 3
+    }
+  },
+  "h2_activity": {
+    "low_activity_below_floor": 424,
+    "strategy_metric_rows": 4455,
+    "trades_max": 8302.0,
+    "trades_mean": 373.1749,
+    "trades_min": 0.0
+  },
+  "h3_failure_clusters_top": [
+    {
+      "fail_pairs": 4539,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 3042,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 2820,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 2332,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 2107,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 1738,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "fx_cross"
+    },
+    {
+      "fail_pairs": 1109,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "energy"
+    },
+    {
+      "fail_pairs": 858,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 784,
+      "holding_class": "scalp",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 758,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "metal"
+    },
+    {
+      "fail_pairs": 683,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "fx_cross"
+    },
+    {
+      "fail_pairs": 652,
+      "holding_class": "scalp",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 650,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "metal"
+    },
+    {
+      "fail_pairs": 606,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "fx_cross"
+    },
+    {
+      "fail_pairs": 578,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "metal"
+    }
+  ],
+  "schema": "qm.observe-summary/v1",
+  "strategy_row_count": 53722
+}

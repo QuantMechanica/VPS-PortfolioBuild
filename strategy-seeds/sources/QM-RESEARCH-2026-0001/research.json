@@ -1,0 +1,64 @@
+{
+  "author": "Kimi",
+  "candidate_edge": "Intraday session-bounded mean-reversion, session-flat, ATR-stopped (H1).",
+  "computed_outputs": [
+    {
+      "claim_ref": "H1_holding_outcomes",
+      "description": "economic outcome distribution by holding class (H1)",
+      "file": "h1_result.json"
+    },
+    {
+      "claim_ref": "H2_activity",
+      "description": "activity distribution / low-activity count (H2)",
+      "file": "h2_result.json"
+    },
+    {
+      "claim_ref": "H3_failure_clusters",
+      "description": "economic-FAIL clusters by symbol_class/session/holding (H3)",
+      "file": "h3_result.json"
+    }
+  ],
+  "confidence": "medium (research hypothesis; pipeline Q00-Q17 remains the judge)",
+  "confounders": [
+    "census survivorship",
+    "symbol concentration on majors/metals",
+    "multiple testing across candidate filters"
+  ],
+  "created_utc": "2026-09-15T14:30:20+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": "offline clustering / regression / feature-importance permitted (directive §41); no runtime model (directive §42)",
+  "model": "kimi-code/kimi-for-coding",
+  "observations": "Kimi answer summary is stored at kimi_answer.md; the proven inventory is swing with low trade density and an overnight/swap tail incompatible with the FTMO daily-loss box.",
+  "originating_task_id": "CAMP-2026-0001-ftmo-gap",
+  "proposed_mechanism": "A mechanical intraday strategy that opens and flattens within one trading session (no overnight hold) achieves higher simulated P(pass<=60d) at <=10% max-DD than the best current swing sleeve, because it removes the overnight/swap tail that produced the -10.26% FTMO demo breach.",
+  "quantitative_claims": [
+    {
+      "claim": "Economic outcome rates differ by holding class in the OBSERVE population.",
+      "computed_output_ref": "H1_holding_outcomes"
+    },
+    {
+      "claim": "A material share of strategy rows fall below the >=5 trades/yr activity floor.",
+      "computed_output_ref": "H2_activity"
+    },
+    {
+      "claim": "Economic FAILs concentrate in identifiable symbol_class/session/holding cells.",
+      "computed_output_ref": "H3_failure_clusters"
+    }
+  ],
+  "related_strategies": [
+    "DXZ v2 swing roster (opposite profile)"
+  ],
+  "research_id": "QM-RESEARCH-2026-0001",
+  "research_question": "What type of mechanical edge is our FTMO book missing? (directive §47)",
+  "research_trial_count": 3,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "intraday-session-mean-reversion",
+  "source_datasets": [
+    {
+      "dataset_id": null,
+      "description": "OBSERVE read-only projection of farm_state.sqlite (INFRA separated)",
+      "path": "observe_manifest.json"
+    }
+  ]
+}

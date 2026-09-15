@@ -1,0 +1,34 @@
+{
+  "blockers": [],
+  "campaign_id": "CAMP-2026-0001-ftmo-gap",
+  "chain_attempt": {
+    "chain_id": "CAMP-2026-0001-ftmo-gap_attack",
+    "critic_seat_final": null,
+    "critic_verdict": null,
+    "plan": null,
+    "reason": "no critic seat available for creator vendor 'kimi': [{'seat': 'claude:sonnet', 'skipped': 'claude_disabled_flag', 'routing_reason': 'claude_disabled_flag'}, {'seat': 'codex:terra/medium', 'skipped': 'codex_low_tokens_flag', 'routing_reason': 'codex_low_tokens_flag'}, {'seat': 'agy:default', 'skipped': 'agy_low_quota_flag', 'routing_reason': 'agy_low_quota_flag'}]",
+    "receipt_path": "D:\\QM\\strategy_farm\\state\\agent_chain\\CAMP-2026-0001-ftmo-gap_attack.json",
+    "status": "gated"
+  },
+  "critic_provider": "claude",
+  "critic_verdict": "REVISE",
+  "cross_vendor": true,
+  "finalized_utc": "2026-09-15T14:30:20+00:00",
+  "provider_separation": {
+    "ok": true,
+    "reason": "cross_provider_ok"
+  },
+  "research_id": "QM-RESEARCH-2026-0001",
+  "research_state": "D:\\QM\\reports\\state\\research_state.json",
+  "seal": {
+    "sha256": "e2c72cf9fd430a8639531199e15758897f9e4dd5aace0a77c12cd417d28950cf",
+    "status": "reviewed"
+  },
+  "sealed": true,
+  "verify": {
+    "ok": true,
+    "reasons": [],
+    "resolved_id": "QM-RESEARCH-2026-0001",
+    "source_hash": "e2c72cf9fd430a8639531199e15758897f9e4dd5aace0a77c12cd417d28950cf"
+  }
+}

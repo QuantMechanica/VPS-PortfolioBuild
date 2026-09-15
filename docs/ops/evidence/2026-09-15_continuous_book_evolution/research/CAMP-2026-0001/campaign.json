@@ -1,0 +1,34 @@
+{
+  "artifact": "QM-RESEARCH-2026-0001",
+  "campaign_id": "CAMP-2026-0001-ftmo-gap",
+  "creator_provider": "kimi",
+  "critic_provider": "claude",
+  "critic_verdict": "REVISE",
+  "cross_vendor": true,
+  "generated_at_utc": "2026-09-15T14:30:21+00:00",
+  "hypotheses": [
+    {
+      "id": "H1",
+      "status": "mechanized",
+      "title": "Intraday session-bounded mean-reversion beats swing on FTMO first-passage"
+    },
+    {
+      "id": "H2",
+      "status": "preregistered",
+      "title": "Trade density, not per-trade edge, is the binding FTMO constraint"
+    },
+    {
+      "id": "H3",
+      "status": "mechanized",
+      "title": "A recurring daily-loss-cluster condition can be excluded by a mechanical no-trade filter"
+    }
+  ],
+  "lessons": [
+    "The proven inventory's swing profile (D1/H1/H4, low density, overnight swap tail) is structurally the OPPOSITE of the FTMO-fit profile; adding more swing cousins cannot close the FTMO gap. FTMO edge must come from a higher-density, session-flat, low-swap intraday direction."
+  ],
+  "programme": "ftmo_gap_research",
+  "question": "What type of mechanical edge is our FTMO book missing? (directive §47)",
+  "schema": "qm.research-campaign/v1",
+  "sealed": true,
+  "status": "sealed"
+}

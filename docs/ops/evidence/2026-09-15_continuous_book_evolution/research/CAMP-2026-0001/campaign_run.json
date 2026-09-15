@@ -1,0 +1,155 @@
+{
+  "blockers": [],
+  "campaign_id": "CAMP-2026-0001-ftmo-gap",
+  "schema": "qm.campaign-run/v1",
+  "started_utc": "2026-09-15T14:12:39+00:00",
+  "steps": {
+    "kimi": {
+      "changed_paths": [
+        "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\account_snapshot.json",
+        "C:\\QM\\mt5\\T_Live\\MT5_Base\\config\\accounts.dat",
+        "C:\\QM\\mt5\\T_Live\\MT5_Base\\config\\servers.dat",
+        "C:\\QM\\mt5\\T_Live\\MT5_Base\\config\\terminal.ini",
+        "D:\\QM\\reports\\state\\agy_governor.log",
+        "D:\\QM\\reports\\state\\agy_quota.json",
+        "D:\\QM\\reports\\state\\backup_retention_continuous.jsonl",
+        "D:\\QM\\reports\\state\\book_evolution_dxz.json",
+        "D:\\QM\\reports\\state\\book_evolution_ftmo.json",
+        "D:\\QM\\reports\\state\\codex_fleet_pacer.log",
+        "D:\\QM\\reports\\state\\codex_fleet_pacer_state.json",
+        "D:\\QM\\reports\\state\\commit_sampler.log",
+        "D:\\QM\\reports\\state\\continuous_retention\\20260915T141928Z\\20260915T141928Z_backup_delete.json",
+        "D:\\QM\\reports\\state\\continuous_retention\\20260915T141928Z\\20260915T141928Z_log_delete.json",
+        "D:\\QM\\reports\\state\\continuous_retention\\20260915T141928Z\\run_summary.json",
+        "D:\\QM\\reports\\state\\factory_mutation_lock_holds.jsonl",
+        "D:\\QM\\reports\\state\\factory_watchdog.jsonl",
+        "D:\\QM\\reports\\state\\ftmo_challenge_readiness.json",
+        "D:\\QM\\reports\\state\\ftmo_trial_pulse.json",
+        "D:\\QM\\reports\\state\\ftmo_trial_pulse.log",
+        "D:\\QM\\reports\\state\\governor_dry_run_watch.log",
+        "D:\\QM\\reports\\state\\governor_dry_run_watch_history.jsonl",
+        "D:\\QM\\reports\\state\\governor_dry_run_watch_state.json",
+        "D:\\QM\\reports\\state\\heartbeat.md",
+        "D:\\QM\\reports\\state\\heartbeat_events.jsonl",
+        "D:\\QM\\reports\\state\\heartbeat_state.json",
+        "D:\\QM\\reports\\state\\kimi_quota_state.json",
+        "D:\\QM\\reports\\state\\live_alarm_mailer.jsonl",
+        "D:\\QM\\reports\\state\\live_alarm_mailer_state.json",
+        "D:\\QM\\reports\\state\\live_alarm_state.json",
+        "D:\\QM\\reports\\state\\live_book_dd_guard.log",
+        "D:\\QM\\reports\\state\\live_book_dd_guard_state.json",
+        "D:\\QM\\reports\\state\\live_session_supervisor.json",
+        "D:\\QM\\reports\\state\\live_sleeve_drift.json",
+        "D:\\QM\\reports\\state\\live_uptime_watchdog.json",
+        "D:\\QM\\reports\\state\\live_uptime_watchdog.jsonl",
+        "D:\\QM\\reports\\state\\pipeline_state.json",
+        "D:\\QM\\reports\\state\\q10_long_cell_breaker_state.json",
+        "D:\\QM\\reports\\state\\quota_governor.log",
+        "D:\\QM\\reports\\state\\quota_governor_state.json",
+        "D:\\QM\\reports\\state\\quota_headroom_summary.json",
+        "D:\\QM\\reports\\state\\r_eval_drain.jsonl",
+        "D:\\QM\\reports\\state\\reports_log_purge.log",
+        "D:\\QM\\reports\\state\\silent_failure_alarms.json",
+        "D:\\QM\\reports\\state\\silent_failure_monitor.log",
+        "D:\\QM\\reports\\state\\silent_failure_monitor_state.json",
+        "D:\\QM\\reports\\state\\tester_cache_purge.log",
+        "D:\\QM\\reports\\state\\tester_memory_expectations.json",
+        "D:\\QM\\reports\\state\\tester_memory_ledger.jsonl",
+        "D:\\QM\\strategy_farm\\state\\build_dispatch_claims\\STRATEGY_FARM_GLOBAL_PUMP.lock",
+        "D:\\QM\\strategy_farm\\state\\codex_kill_safety_cache.json",
+        "D:\\QM\\strategy_farm\\state\\dashboard_render_state.json",
+        "D:\\QM\\strategy_farm\\state\\drain_window.json",
+        "D:\\QM\\strategy_farm\\state\\farm_state.sqlite-wal",
+        "D:\\QM\\strategy_farm\\state\\health.json",
+        "D:\\QM\\strategy_farm\\state\\health_alarms.log",
+        "D:\\QM\\strategy_farm\\state\\lane_claude_heartbeat.json",
+        "D:\\QM\\strategy_farm\\state\\lane_codex_heartbeat.json",
+        "D:\\QM\\strategy_farm\\state\\lane_gemini_heartbeat.json",
+        "D:\\QM\\strategy_farm\\state\\lane_kimi_heartbeat.json",
+        "D:\\QM\\strategy_farm\\state\\launch_slots\\T4_20076_1789482332655.lock",
+        "D:\\QM\\strategy_farm\\state\\launch_slots\\T8_10552_1789480694893.lock",
+        "D:\\QM\\strategy_farm\\state\\pump_task_termination_history.json",
+        "D:\\QM\\strategy_farm\\state\\quota_snapshot.json",
+        "D:\\QM\\strategy_farm\\state\\terminal_reservations.json"
+      ],
+      "cli_version": "0.43.1",
+      "error": "protected_write:C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Files\\QM\\journal\\account_snapshot.json;C:\\QM\\mt5\\T_Live\\MT5_Base\\config\\accounts.dat;C:\\QM\\mt5\\T_Live\\MT5_Base\\config\\servers.dat;C:\\QM\\mt5\\T_Live\\MT5_Base\\config\\terminal.ini;D:\\QM\\reports\\state\\agy_governor.log",
+      "latency_s": 932.907,
+      "output_sha256": "64d456d00e83001c001dab30f40ebfbd0fbbf18df386306333d6270d52e71081",
+      "prompt_sha256": "680a8a9ece2a00f38822e866f23dfea62dbea3745f651e28158f6ba0819c155f",
+      "protected_write": true,
+      "status": "protected_write"
+    },
+    "kimi_governor": {
+      "quota_fetch_status": "ok",
+      "real": null,
+      "state": "NORMAL",
+      "usage_source": "managed_usage_endpoint"
+    },
+    "mechanization": {
+      "H1": {
+        "findings": [],
+        "mechanizable": true,
+        "verdict": "PASS"
+      },
+      "H2": {
+        "findings": [],
+        "mechanizable": false,
+        "verdict": "PASS"
+      },
+      "H3": {
+        "findings": [],
+        "mechanizable": true,
+        "verdict": "PASS"
+      }
+    },
+    "observe": {
+      "dataset_dir": "D:\\QM\\research\\campaigns\\CAMP-2026-0001-ftmo-gap\\observe\\2026-09-15T14-12-39Z",
+      "dataset_id": "4deb0c2198ba3bbcefd371a698d2f3f0f326b188149cf9496cc232627781cba0",
+      "row_counts": {
+        "ea_metrics.csv": 100213,
+        "gate_outcomes.csv": 149166,
+        "holds.csv": 5367,
+        "idea_families.csv": 4876,
+        "parameter_sensitivity.csv": 21651,
+        "sources.csv": 118
+      }
+    },
+    "observe_summary": {
+      "strategy_row_count": 53722
+    },
+    "preregister": [
+      {
+        "hid": "H1",
+        "record_sha256": "69383c38003f3a0a2b68314f2190c5513c7c32faf617404b81ae84877766a7d9"
+      },
+      {
+        "hid": "H2",
+        "record_sha256": "1f61c56250d1302bfdd46ebaee3e4e6f29166f7b741674f3de9fdc6a0c8389ca"
+      },
+      {
+        "hid": "H3",
+        "record_sha256": "473fd483b78af8bd73ada41404b950c745d09e5699e4eb19216ec1ec280bc6ed"
+      }
+    ],
+    "research_guard": {
+      "allowed": true,
+      "max_worker_processes": 2,
+      "measurements": {
+        "cpu_high_pause_percent": 97.0,
+        "cpu_percent": 0.0,
+        "factory_free_gb": 77.46245956420898,
+        "factory_min_free_gb": 60.0,
+        "free_ram_gb": 21.146312713623047,
+        "mutation_lock_status": "absent",
+        "ram_min_free_gb": 14.0,
+        "scratch_free_gb": 77.46245956420898,
+        "scratch_min_free_gb": 20.0,
+        "scratch_on_factory_drive": true,
+        "scratch_root": "D:\\QM\\research\\campaigns\\CAMP-2026-0001-ftmo-gap"
+      },
+      "reasons": [],
+      "schema": "qm.research-guard/v1"
+    }
+  }
+}

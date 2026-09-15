@@ -339,3 +339,11 @@ framework/EAs/QM5_10928_grimes-yoyo-break/sets/QM5_10928_grimes-yoyo-break_XAUUS
 framework/EAs/QM5_11179_ft001-ema-ha/sets/QM5_11179_ft001-ema-ha_XAUUSD.DWX_M5_backtest_s20260907-001.set -text
 tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json text eol=lf
 tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json text eol=lf
+
+# QM-RESEARCH internal-source artifacts are raw-byte hash contracts:
+# research_source.py records sha256(source.md) and the sha256 of every sibling
+# (research.json / lineage.json / critic_receipt.json / computed outputs) in the
+# ledger and the in-file qm-source-manifest block, verified from disk at intake.
+# core.autocrlf re-smudging them on checkout would break the seal in one checkout
+# while it verifies in another (the LF-blob Pin-SHA trap). Keep the exact bytes.
+strategy-seeds/sources/QM-RESEARCH-*/** -text

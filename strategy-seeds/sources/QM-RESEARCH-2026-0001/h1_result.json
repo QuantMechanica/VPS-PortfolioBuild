@@ -1,0 +1,41 @@
+{
+  "claim_ref": "H1_holding_outcomes",
+  "h1_outcome_by_holding_class": {
+    "intraday": {
+      "fail": 9127,
+      "pass": 10079,
+      "pass_rate": 0.5164,
+      "total": 19516,
+      "zero": 295
+    },
+    "position": {
+      "fail": 8621,
+      "pass": 11430,
+      "pass_rate": 0.5567,
+      "total": 20533,
+      "zero": 430
+    },
+    "scalp": {
+      "fail": 2049,
+      "pass": 1388,
+      "pass_rate": 0.3991,
+      "total": 3478,
+      "zero": 41
+    },
+    "swing": {
+      "fail": 4017,
+      "pass": 4652,
+      "pass_rate": 0.5079,
+      "total": 9160,
+      "zero": 481
+    },
+    "unknown": {
+      "fail": 406,
+      "pass": 626,
+      "pass_rate": 0.6048,
+      "total": 1035,
+      "zero": 3
+    }
+  },
+  "strategy_row_count": 53722
+}

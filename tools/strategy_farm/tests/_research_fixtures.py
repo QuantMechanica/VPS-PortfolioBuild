@@ -35,6 +35,7 @@ def build_fixture_db(path: Path) -> Path:
             CREATE TABLE work_items (
                 id TEXT PRIMARY KEY,
                 kind TEXT, phase TEXT, ea_id TEXT, symbol TEXT,
+                setfile_path TEXT,
                 status TEXT, verdict TEXT, payload_json TEXT,
                 created_at TEXT, updated_at TEXT,
                 data_window_start TEXT, data_window_end TEXT,
@@ -70,22 +71,30 @@ def build_fixture_db(path: Path) -> Path:
 
         infra_payload = json.dumps({"verdict_reason": "run_smoke_fail:ACTIVE_TIMEOUT"})
         win = ("2015.01.01", "2019.12.31")
+
+        def _setfile(ea: str, sym: str, tf: str) -> str:
+            slug = ea.split("_", 1)[-1]
+            return (
+                f"framework/EAs/{ea}_{slug}/sets/"
+                f"{ea}_{slug}_{sym}_{tf}_q05_stress_medium.set"
+            )
+
         work_items = [
-            # id, phase, ea, symbol, status, verdict, payload, window, created
-            ("w1", "Q02", "QM5_1001", "EURUSD.DWX", "done", "PASS", "{}", win, "2026-01-01T00:00:00+00:00"),
-            ("w2", "Q02", "QM5_1001", "EURUSD.DWX", "done", "FAIL", "{}", win, "2026-01-02T00:00:00+00:00"),
-            ("w3", "Q02", "QM5_1002", "XAUUSD.DWX", "failed", "INFRA_FAIL", infra_payload, win, "2026-01-03T00:00:00+00:00"),
-            ("w4", "Q02", "QM5_1002", "XAUUSD.DWX", "done", "ZERO_TRADES", "{}", win, "2026-01-04T00:00:00+00:00"),
-            ("w5", "OPT_CENSUS", "QM5_1003", "GBPUSD.DWX", "done", "MEASURED", "{}", win, "2026-01-05T00:00:00+00:00"),
-            ("w6", "Q02", "QM5_1001", "EURUSD.DWX", "done", "FAIL", "{}", win, "2026-01-06T00:00:00+00:00"),
+            # id, phase, ea, symbol, tf, status, verdict, payload, window, created
+            ("w1", "Q02", "QM5_1001", "EURUSD.DWX", "H1", "done", "PASS", "{}", win, "2026-01-01T00:00:00+00:00"),
+            ("w2", "Q02", "QM5_1001", "EURUSD.DWX", "H1", "done", "FAIL", "{}", win, "2026-01-02T00:00:00+00:00"),
+            ("w3", "Q02", "QM5_1002", "XAUUSD.DWX", "M15", "failed", "INFRA_FAIL", infra_payload, win, "2026-01-03T00:00:00+00:00"),
+            ("w4", "Q02", "QM5_1002", "XAUUSD.DWX", "M15", "done", "ZERO_TRADES", "{}", win, "2026-01-04T00:00:00+00:00"),
+            ("w5", "OPT_CENSUS", "QM5_1003", "GBPUSD.DWX", "D1", "done", "MEASURED", "{}", win, "2026-01-05T00:00:00+00:00"),
+            ("w6", "Q02", "QM5_1001", "EURUSD.DWX", "H1", "done", "FAIL", "{}", win, "2026-01-06T00:00:00+00:00"),
         ]
-        for wid, phase, ea, sym, status, verdict, payload, window, created in work_items:
+        for wid, phase, ea, sym, tf, status, verdict, payload, window, created in work_items:
             connection.execute(
-                "INSERT INTO work_items (id, kind, phase, ea_id, symbol, status, verdict, "
+                "INSERT INTO work_items (id, kind, phase, ea_id, symbol, setfile_path, status, verdict, "
                 "payload_json, created_at, updated_at, data_window_start, data_window_end, evidence_path) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (
-                    wid, "backtest", phase, ea, sym, status, verdict, payload,
+                    wid, "backtest", phase, ea, sym, _setfile(ea, sym, tf), status, verdict, payload,
                     created, created, window[0], window[1],
                     f"D:/QM/reports/work_items/{wid}/summary.json.gz",
                 ),
@@ -106,6 +115,27 @@ def build_fixture_db(path: Path) -> Path:
                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 (wid, ea, "Q02", sym, verdict, "done", net, pf, trades, ddm, ddp, sharpe, "{}"),
             )
+
+        # An OPT_CENSUS metrics row carrying a parameter-sweep ``runs`` list, so the
+        # projector can derive parameter_sensitivity (measurement taxonomy; never an
+        # economic-answer input for the section-19 projector).
+        census_detail = json.dumps(
+            {
+                "n_runs": 3,
+                "runs": [
+                    {"net_profit": 5000.0, "profit_factor": 1.30, "trades": 120},
+                    {"net_profit": 1200.0, "profit_factor": 1.05, "trades": 80},
+                    {"net_profit": -400.0, "profit_factor": 0.95, "trades": 60},
+                ],
+            }
+        )
+        connection.execute(
+            "INSERT INTO ea_metrics (work_item_id, ea_id, phase, symbol, verdict, status, "
+            "net_profit, profit_factor, trades, drawdown_money, drawdown_pct, sharpe, detail_json) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            ("w5", "QM5_1003", "OPT_CENSUS", "GBPUSD.DWX", "MEASURED", "done",
+             5000.0, 1.30, 120, 1000.0, 4.0, 0.5, census_detail),
+        )
 
         connection.execute(
             "INSERT INTO work_item_holds (work_item_id, hold_code, reason, active) VALUES (?,?,?,?)",
