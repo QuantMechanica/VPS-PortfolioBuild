@@ -68,7 +68,8 @@ class KimiOrchestrationTests(unittest.TestCase):
         self.assertEqual(orch.KIMI_MAX_SESSIONS, 1)
         calls: list[int] = []
 
-        def _stub_slot(agent, slot, dry_run, stale_minutes, timeout_minutes, inv, lease):
+        def _stub_slot(agent, slot, dry_run, stale_minutes, timeout_minutes, inv, lease, *exec_lease_args):
+            # exec_lease_args: (pinned_task_id, exec_lease) added by the fan-out fix (OWNER-DEC-CBE-20260915 s35).
             calls.append(slot)
             return {"agent": agent, "ok": True, "slot": slot}
 

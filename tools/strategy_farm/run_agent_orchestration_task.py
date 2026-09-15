@@ -200,9 +200,15 @@ def resolve_cli(agent: str) -> str:
     raise ValueError(f"unsupported agent: {agent}")
 
 
-def agent_env(agent: str) -> dict[str, str]:
+def agent_env(agent: str, assigned_task_id: str | None = None) -> dict[str, str]:
     env = os.environ.copy()
     env["QM_AGENT_ID"] = agent
+    # Fan-out fix (OWNER-DEC-CBE-20260915 §35): when the launcher has leased a
+    # single concrete task to this session it pins the id here, so the child
+    # process can refuse any work other than the one it owns. Absent for the
+    # task-agnostic single-session lanes (codex/gemini).
+    if assigned_task_id:
+        env["QM_ASSIGNED_TASK_ID"] = str(assigned_task_id)
     if agent == "codex":
         env["CODEX_HOME"] = str(CODEX_HOME)
     if agent == "gemini":
@@ -232,7 +238,7 @@ def agent_env(agent: str) -> dict[str, str]:
     return env
 
 
-def build_prompt(agent: str, cwd: Path) -> str:
+def build_prompt(agent: str, cwd: Path, assigned_task_id: str | None = None) -> str:
     edge_charter = cwd / "docs" / "ops" / "EDGE_LAB_CHARTER_2026-05-22.md"
     profitability = cwd / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
     canonical_farmctl = (REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py").as_posix()
@@ -293,6 +299,40 @@ Hard rules for the kimi lane (research-only):
             "- G:/My Drive/QuantMechanica - Company Reference/02 Org/AI Agent Routing and Role Contracts.md\n"
             "- G:/My Drive/QuantMechanica - Company Reference/12 ToDo/_INDEX.md\n"
         )
+    if assigned_task_id:
+        # Fan-out fix (OWNER-DEC-CBE-20260915 §35): this session was launched with
+        # a distinct pid-owned exec-lease on exactly ONE task. The prompt pins that
+        # id so the session never touches a sibling session's ticket even if the
+        # lease layer ever regresses (defence in depth, ticket 3e0c8b83).
+        task_cycle = f"""2. Work ONLY task `{assigned_task_id}` (also in env QM_ASSIGNED_TASK_ID). The
+   launcher already holds a distinct exec-lease (`agent_task_exec:{assigned_task_id}`)
+   for this session, so you own it exclusively. Do NOT list all IN_PROGRESS tasks
+   and work them - that is the fan-out defect this pin closes. If task
+   `{assigned_task_id}` is no longer IN_PROGRESS for {agent}, or is not visible to
+   you, do nothing and exit idle; never pick a different task.
+   Read its payload and skills, produce a durable artifact, run focused
+   verification, then update the router with:
+   python {canonical_router} update-task {assigned_task_id} --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
+   Write your artifact under a task-scoped subdir keyed by this id
+   (e.g. `<evidence_dir>/task_{assigned_task_id}/` or `slot<N>_*/`), never onto a
+   path a sibling session may also write - this keeps parallel sessions idempotent.
+3. Do NOT loop over other tasks. After task `{assigned_task_id}` is in REVIEW (or
+   found not-actionable), stop taking work.
+4. Run `python {canonical_farmctl} health` for a final sanity check. Do not invent untracked work.
+5. Exit."""
+    else:
+        task_cycle = f"""2. For every IN_PROGRESS task assigned to {agent}, in ascending numeric priority:
+   The router claims a 30-minute spawn lease (`agent_task:<task_id>`) when it
+   moves work to IN_PROGRESS. If you were launched directly for a specific task
+   outside the router path, acquire that same lease before doing any work; if the
+   lease is live, skip/defer instead of duplicating the task.
+   read payload and skills, produce a durable artifact, run focused verification,
+   then update the router with:
+   python {canonical_router} update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
+3. Repeat task handling until `python {canonical_router} list-tasks --agent {agent} --state IN_PROGRESS`
+   returns an empty list. Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
+4. If no task remains, run `python {canonical_farmctl} health` and check QM5_10260 queue state. Do not invent untracked work.
+5. Exit."""
     return f"""You are {agent} for QuantMechanica, launched by a headless scheduled task.
 
 Execute exactly one single-pass orchestration cycle, then exit. Do not start a
@@ -320,18 +360,7 @@ Cycle:
    writer gate, and it assigned an OWNER-only video ticket to a lane that cannot
    watch videos. A guard only exists in the code that runs it - so routing runs
    in exactly one place.
-2. For every IN_PROGRESS task assigned to {agent}, in ascending numeric priority:
-   The router claims a 30-minute spawn lease (`agent_task:<task_id>`) when it
-   moves work to IN_PROGRESS. If you were launched directly for a specific task
-   outside the router path, acquire that same lease before doing any work; if the
-   lease is live, skip/defer instead of duplicating the task.
-   read payload and skills, produce a durable artifact, run focused verification,
-   then update the router with:
-   python {canonical_router} update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
-3. Repeat task handling until `python {canonical_router} list-tasks --agent {agent} --state IN_PROGRESS`
-   returns an empty list. Ignore REVIEW/BLOCKED/PASSED tasks; they are not yours.
-4. If no task remains, run `python {canonical_farmctl} health` and check QM5_10260 queue state. Do not invent untracked work.
-5. Exit.
+{task_cycle}
 
 No-change dedupe:
 - A recheck whose blocker facts have not changed must not create another timestamped
@@ -988,6 +1017,8 @@ def run_agent_slot(
     timeout_minutes: int,
     invocation_profile: dict[str, Any] | None = None,
     session_lease: dict[str, Any] | None = None,
+    assigned_task_id: str | None = None,
+    exec_lease: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = utc_stamp()
@@ -1003,19 +1034,22 @@ def run_agent_slot(
     else:
         cwd = REPO_ROOT if agent == "codex" and slot == 0 else worktree_path(agent, slot)
         worktree = ensure_worktree(agent, slot)
-    prompt = build_prompt(agent, cwd)
+    prompt = build_prompt(agent, cwd, assigned_task_id)
     prompt_path = LOG_DIR / f"{agent}_orchestration_slot{slot}_prompt_{stamp}.md"
     live_log = LOG_DIR / f"{agent}_orchestration_slot{slot}_{stamp}.live.log"
     result_path = LOG_DIR / f"{agent}_orchestration_slot{slot}_{stamp}.json"
     prompt_path.write_text(prompt, encoding="utf-8", newline="\n")
 
     if worktree.get("ok") is False:
+        # Free the pinned task so a healthy launcher can retake it immediately.
+        release_task_exec_lease(exec_lease)
         payload = {
             "agent": agent,
             "slot": slot,
             "ok": False,
             "returncode": 1,
             "worktree": worktree,
+            "assigned_task_id": assigned_task_id,
             "result_path": str(result_path),
         }
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -1023,6 +1057,7 @@ def run_agent_slot(
 
     locked, lock_info = acquire_lock(agent, stale_minutes, slot=slot)
     if not locked:
+        release_task_exec_lease(exec_lease)
         payload = {
             "agent": agent,
             "slot": slot,
@@ -1030,6 +1065,7 @@ def run_agent_slot(
             "skipped": True,
             "reason": lock_info.get("reason"),
             "lock": lock_info,
+            "assigned_task_id": assigned_task_id,
             "result_path": str(result_path),
         }
         result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
@@ -1070,6 +1106,7 @@ def run_agent_slot(
         "agent": agent,
         "execution_backend": "agy" if agent == "gemini" else agent,
         "model_contract": model_contract,
+        "assigned_task_id": assigned_task_id,
         "slot": slot,
         "dry_run": dry_run,
         "prompt_path": str(prompt_path),
@@ -1186,7 +1223,7 @@ def run_agent_slot(
                 "stdin": stdin_f,
                 "stdout": stdout_f,
                 "stderr": subprocess.STDOUT,
-                "env": agent_env(agent),
+                "env": agent_env(agent, assigned_task_id),
                 "shell": agent != "gemini",
                 "creationflags": creationflags,
                 "close_fds": True,
@@ -1221,7 +1258,7 @@ def run_agent_slot(
                     proc,
                     timeout_minutes * 60,
                     HEARTBEAT_REFRESH_INTERVAL_SECONDS,
-                    lambda: _refresh_headless_ownership(agent, slot, session_lease),
+                    lambda: _refresh_headless_ownership(agent, slot, session_lease, exec_lease),
                 )
                 payload["ok"] = payload["returncode"] == 0
                 managed_process_finished = managed_pid is not None
@@ -1279,6 +1316,11 @@ def run_agent_slot(
             )
         return payload
     finally:
+        # Release the per-task exec-lease (fan-out fix): a clean or crashed exit
+        # frees the task immediately; if release storage is unavailable, the TTL
+        # is the fail-safe. Never before this point - the pin must outlive the
+        # child process for the whole run.
+        release_task_exec_lease(exec_lease)
         # A lease may be removed only after the exact registered process is
         # known to have exited.  If waiting or termination fails, retain it so
         # the ownership-safe reaper can retry instead of orphaning the tree.
@@ -1668,6 +1710,161 @@ def release_headless_session_lease(lease: dict[str, Any]) -> None:
         pass
 
 
+# --- Per-task exec-lease (Claude fan-out fix, OWNER-DEC-CBE-20260915 §35) -----
+# The router's `agent_task:<id>` lease is written with NO owner tuple, so it
+# cannot tell two sibling worker sessions of ONE launcher apart. This ADDITIVE
+# key binds a concrete pid-owned session to exactly one task BEFORE it does any
+# work. The router path (`agent_task:*`) is deliberately left untouched.
+
+
+def _task_exec_lease_key(task_id: str) -> str:
+    return f"agent_task_exec:{task_id}"
+
+
+def acquire_task_exec_lease(
+    agent: str,
+    task_id: str,
+    *,
+    now: dt.datetime | None = None,
+    session_token: str | None = None,
+    owner_pid: int | None = None,
+    owner_host: str | None = None,
+) -> tuple[bool, dict[str, Any]]:
+    """Atomically claim one task for one concrete worker session.
+
+    Fail-closed: any storage error refuses the claim so a visibility incident
+    spawns FEWER sessions, never a duplicate. A crashed owner's lease is stolen
+    only after TTL expiry (``acquire_spawn_lease`` replaces solely when
+    ``expires_at <= now``), which is the crash fail-safe.
+    """
+    observed = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC).replace(microsecond=0)
+    token = session_token or uuid.uuid4().hex
+    pid = int(owner_pid or os.getpid())
+    host = owner_host or socket.gethostname()
+    task_key = _task_exec_lease_key(task_id)
+    expires = observed + dt.timedelta(minutes=HEADLESS_SESSION_LEASE_TTL_MINUTES)
+    try:
+        conn = agent_router.connect(FARM_ROOT)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            acquired = agent_router.agent_scopes.acquire_spawn_lease(
+                conn,
+                task_key,
+                agent,
+                observed.isoformat(timespec="seconds"),
+                expires.isoformat(timespec="seconds"),
+                owner_token=token,
+                owner_pid=pid,
+                owner_host=host,
+                fail_open_on_error=False,
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as exc:
+        return False, {
+            "task_key": task_key,
+            "task_id": task_id,
+            "reason": "task_exec_lease_error_fail_closed",
+            "error": repr(exc),
+        }
+    info = {
+        "task_key": task_key,
+        "task_id": task_id,
+        "agent": agent,
+        "session_token": token,
+        "owner_pid": pid,
+        "owner_host": host,
+        "acquired_at": observed.isoformat(timespec="seconds"),
+        "expires_at": expires.isoformat(timespec="seconds"),
+    }
+    if not acquired:
+        info["reason"] = "task_exec_lease_held_by_live_session"
+    return bool(acquired), info
+
+
+def renew_task_exec_lease(lease: dict[str, Any], *, now: dt.datetime | None = None) -> bool:
+    observed = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC).replace(microsecond=0)
+    expires = observed + dt.timedelta(minutes=HEADLESS_SESSION_LEASE_TTL_MINUTES)
+    try:
+        conn = agent_router.connect(FARM_ROOT)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            renewed = agent_router.agent_scopes.renew_spawn_lease(
+                conn,
+                str(lease["task_key"]),
+                owner_token=str(lease["session_token"]),
+                owner_pid=int(lease["owner_pid"]),
+                owner_host=str(lease["owner_host"]),
+                now_iso=observed.isoformat(timespec="seconds"),
+                expires_iso=expires.isoformat(timespec="seconds"),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        return False
+    if renewed:
+        lease["expires_at"] = expires.isoformat(timespec="seconds")
+    return bool(renewed)
+
+
+def release_task_exec_lease(lease: dict[str, Any] | None) -> None:
+    if not lease or not lease.get("session_token"):
+        return
+    try:
+        conn = agent_router.connect(FARM_ROOT)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            agent_router.agent_scopes.release_spawn_lease(
+                conn,
+                str(lease["task_key"]),
+                owner_token=str(lease["session_token"]),
+                owner_pid=int(lease["owner_pid"]),
+                owner_host=str(lease["owner_host"]),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception:
+        # Expiry (TTL) remains the fail-safe if release storage is unavailable.
+        pass
+
+
+def claim_task_exec_leases(
+    agent: str,
+    task_ids: list[str],
+    limit: int,
+    *,
+    now: dt.datetime | None = None,
+    owner_pid: int | None = None,
+    owner_host: str | None = None,
+) -> list[dict[str, Any]]:
+    """Claim up to ``limit`` distinct tasks, in the given priority order.
+
+    Each won task carries a distinct pid-owned exec-lease. Tasks already pinned
+    by another live session are skipped (never duplicated). Returns the leases
+    for the tasks this launcher won; ``len(result) <= min(limit, len(task_ids))``.
+    """
+    leases: list[dict[str, Any]] = []
+    if limit <= 0:
+        return leases
+    seen: set[str] = set()
+    for task_id in task_ids:
+        if len(leases) >= limit:
+            break
+        tid = str(task_id)
+        if not tid or tid in seen:
+            continue
+        seen.add(tid)
+        acquired, lease = acquire_task_exec_lease(
+            agent, tid, now=now, owner_pid=owner_pid, owner_host=owner_host
+        )
+        if acquired:
+            leases.append(lease)
+    return leases
+
+
 def reserve_no_change_evidence(
     agent: str,
     task_id: str,
@@ -2028,12 +2225,20 @@ def _write_lane_heartbeat(agent: str, slot: int = 0) -> None:
 
 
 def _refresh_headless_ownership(
-    agent: str, slot: int, session_lease: dict[str, Any] | None
+    agent: str,
+    slot: int,
+    session_lease: dict[str, Any] | None,
+    exec_lease: dict[str, Any] | None = None,
 ) -> None:
     _write_lane_heartbeat(agent, slot=slot)
     if session_lease is not None and not renew_headless_session_lease(session_lease):
         _journal_headless_skip(agent, "headless_session_lease_lost", session_lease)
         raise RuntimeError("headless session lease renewal refused")
+    # Keep the per-task exec-lease alive for the duration of a legitimately long
+    # task so it is never stolen by TTL expiry while the session is still working.
+    if exec_lease is not None and not renew_task_exec_lease(exec_lease):
+        _journal_headless_skip(agent, "task_exec_lease_lost", exec_lease)
+        raise RuntimeError("task exec-lease renewal refused")
 
 
 def _run_agent_with_session_lease(
@@ -2114,40 +2319,90 @@ def _run_agent_with_session_lease(
             return None
         return dict(slot_invocations[min(slot_index, len(slot_invocations) - 1)] or {})
 
-    if session_count == 1:
-        results = [
-            run_agent_slot(
-                agent,
-                1,
-                dry_run,
-                stale_minutes,
-                timeout_minutes,
-                slot_invocation(0),
-                session_lease,
+    # --- Claude fan-out fix (OWNER-DEC-CBE-20260915 §35) ---------------------
+    # Only the Claude lane can spawn >1 concurrent session. Bind each session to
+    # exactly one distinct task via a pid-owned exec-lease BEFORE spawning, so
+    # --max-sessions is an upper bound on concurrently leased tasks, never an
+    # N*M multiplier over the shared task list. Codex/Gemini run one task-
+    # agnostic session (F6) and keep their historical path untouched.
+    exec_leases: list[dict[str, Any]] = []
+    if agent == "claude" and not dry_run:
+        candidates, candidate_status = _quota_lane_candidates("claude")
+        # Only tasks the router already assigned to this lane are worked by a
+        # session (the prompt cycle acts on IN_PROGRESS/assigned work); fail OPEN
+        # to a single task-agnostic session if the candidate query is unavailable.
+        if candidate_status == "ok":
+            assigned_task_ids = [
+                str(c["task_id"]) for c in candidates if c.get("assigned")
+            ]
+            exec_leases = claim_task_exec_leases(
+                "claude",
+                assigned_task_ids,
+                session_count,
+                owner_pid=os.getpid(),
             )
-        ]
-    else:
-        with ThreadPoolExecutor(max_workers=session_count) as executor:
-            futures = [
-                executor.submit(
-                    run_agent_slot,
+            if not exec_leases:
+                # Every eligible task is already pinned by a live sibling/foreign
+                # session (or none is assigned): spawn nothing rather than a
+                # duplicate. This is a safe throughput failure, never a collision.
+                return {
+                    "agent": agent,
+                    "ok": True,
+                    "skipped": True,
+                    "reason": "no_unpinned_claude_task",
+                    "candidate_status": candidate_status,
+                    "assigned_candidates": len(assigned_task_ids),
+                    "quota_gate_check": quota_check,
+                }
+            session_count = len(exec_leases)
+
+    try:
+        if session_count == 1:
+            results = [
+                run_agent_slot(
                     agent,
-                    slot,
+                    1,
                     dry_run,
                     stale_minutes,
                     timeout_minutes,
-                    slot_invocation(slot - 1),
+                    slot_invocation(0),
                     session_lease,
+                    exec_leases[0]["task_id"] if exec_leases else None,
+                    exec_leases[0] if exec_leases else None,
                 )
-                for slot in range(1, session_count + 1)
             ]
-            results = [future.result() for future in futures]
+        else:
+            with ThreadPoolExecutor(max_workers=session_count) as executor:
+                futures = [
+                    executor.submit(
+                        run_agent_slot,
+                        agent,
+                        slot,
+                        dry_run,
+                        stale_minutes,
+                        timeout_minutes,
+                        slot_invocation(slot - 1),
+                        session_lease,
+                        exec_leases[slot - 1]["task_id"] if exec_leases else None,
+                        exec_leases[slot - 1] if exec_leases else None,
+                    )
+                    for slot in range(1, session_count + 1)
+                ]
+                results = [future.result() for future in futures]
+    finally:
+        # Backstop: run_agent_slot releases its own exec-lease on exit, but if a
+        # slot never reached that release (e.g. executor.submit raised) the TTL
+        # would be the only fail-safe - release here too so a re-run is not
+        # blocked for 30 minutes. Release is owner-scoped and idempotent.
+        for lease in exec_leases:
+            release_task_exec_lease(lease)
     ok = all(bool(r.get("ok")) for r in results)
     return {
         "agent": agent,
         "ok": ok,
         "returncode": 0 if ok else 1,
         "max_sessions": session_count,
+        "leased_task_ids": [lease["task_id"] for lease in exec_leases],
         "quota_gate_check": quota_check,
         "results": results,
     }

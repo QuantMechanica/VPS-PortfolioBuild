@@ -1579,7 +1579,9 @@ def _slot_harness(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setattr(orchestration, "FARM_ROOT", tmp_path / "farm")
     monkeypatch.setattr(orchestration, "resolve_cli", lambda agent: f"{agent}.cmd")
     monkeypatch.setattr(orchestration, "_CODEX_MODEL_ENV_OVERRIDE", "")
-    monkeypatch.setattr(orchestration, "build_prompt", lambda agent, cwd: "prompt")
+    monkeypatch.setattr(
+        orchestration, "build_prompt", lambda agent, cwd, assigned_task_id=None: "prompt"
+    )
     monkeypatch.setattr(
         orchestration,
         "ensure_worktree",
@@ -1590,7 +1592,7 @@ def _slot_harness(tmp_path: Path, monkeypatch) -> None:
     )
     monkeypatch.setattr(orchestration, "release_lock", lambda info: None)
     monkeypatch.setattr(orchestration, "_write_lane_heartbeat", lambda agent, slot=0: None)
-    monkeypatch.setattr(orchestration, "agent_env", lambda agent: {})
+    monkeypatch.setattr(orchestration, "agent_env", lambda agent, assigned_task_id=None: {})
     monkeypatch.setattr(
         orchestration, "release_managed_codex_process", lambda root, lease_id: True
     )

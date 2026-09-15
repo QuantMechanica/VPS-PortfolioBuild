@@ -3,6 +3,13 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonwExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe",
     [int]$EveryMinutes = 15,
+    # Interim mitigation (OWNER-DEC-CBE-20260915 s35, Claude fan-out fix): the
+    # Claude orchestration lane defaults to ONE session per run until the new
+    # per-task exec-lease (run_agent_orchestration_task.py) has proven itself for
+    # one clean week in production. Raise back to 3 by passing -ClaudeMaxSessions 3
+    # ONLY after: (a) the fan-out regression tests are green, and (b) one week of
+    # clean parallel runs (no duplicate-session collision in the cycle logs).
+    [int]$ClaudeMaxSessions = 1,
     [switch]$RunNow,
     # Kimi research orchestration lane (OWNER-DEC-KIMI-INTEGRATION-20260915).
     # DEFAULT OFF: the kimi task is NOT installed until the §13 probe battery
@@ -44,10 +51,12 @@ if (-not (Test-Path -LiteralPath $helper)) {
 # EveryMinutes is per-agent. OWNER 2026-06-09: throttle eased back to 3 (use the
 # weekly token headroom before the Wed reset) — claude max-sessions 2->3, codex
 # cadence restored 30->15. Codex MaxSessions stays 1 (token-race hard limit).
+# SUPERSEDED 2026-09-15 by OWNER-DEC-CBE-20260915 s35: the Claude lane MaxSessions is now
+# the -ClaudeMaxSessions parameter (default 1, interim mitigation for the fan-out defect).
 $definitions = @(
     @{ Name = "QM_StrategyFarm_CodexOrchestration_15min"; Agent = "codex"; MaxSessions = 1; EveryMinutes = 15 },
     @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini"; MaxSessions = 1; EveryMinutes = 15 },
-    @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 3; EveryMinutes = 15 }
+    @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = $ClaudeMaxSessions; EveryMinutes = 15 }
 )
 
 # Kimi research lane definition, appended only behind -IncludeKimi (default OFF).
