@@ -1,0 +1,111 @@
+{
+  "schema": "qm.strategy-families/v1",
+  "generated_by": "hand-authored config (OWNER directive 2026-09-15 §9 / master §56)",
+  "description": "Deterministic family taxonomy and relationship-class thresholds consumed by tools/strategy_farm/lineage_map.py. Coarse families reuse the whitespace-audit slug derivation (research_universe_whitespace.md; observe_projector.classify_family). Named families scope the §9 heavily-represented clusters. Thresholds are the audit-proposed lineage cut-offs; changing any threshold is a GELB decision (report the raw evidence, never re-cut silently).",
+  "coarse_families": {
+    "_note": "Ordered first-match slug classifier (a slug is lower-cased; the first family whose keyword substring appears wins). Ties broken by list order, exactly as observe_projector._FAMILY_KEYWORDS. An empty slug -> 'unclassified'; no match -> 'other'.",
+    "order": [
+      "news",
+      "fomc",
+      "carry",
+      "seasonal",
+      "gap",
+      "breakout",
+      "mean_reversion",
+      "momentum",
+      "volatility",
+      "pairs",
+      "trend",
+      "pattern"
+    ],
+    "keywords": {
+      "news": ["news", "nfp", "cpi"],
+      "fomc": ["fomc", "fed", "rate-decision"],
+      "carry": ["carry", "swap", "rollover"],
+      "seasonal": ["season", "turn-of", "day-of-week", "month", "calendar"],
+      "gap": ["gap", "opening-range", "orb", "open-box"],
+      "breakout": ["break", "breakout", "donchian", "channel", "turtle", "range"],
+      "mean_reversion": ["mr", "mean-rev", "reversion", "bounce", "fade", "stretch", "bollinger", "rsi"],
+      "momentum": ["momo", "momentum", "roc", "thrust"],
+      "volatility": ["vol", "atr", "squeeze", "keltner", "stddev"],
+      "pairs": ["pair", "cointegration", "spread", "basket", "dual"],
+      "trend": ["trend", "ema", "sma", "ma-cross", "macd", "supertrend", "st-adx", "adx"],
+      "pattern": ["pinbar", "engulf", "candle", "pattern", "wyckoff", "smc", "fvg"]
+    }
+  },
+  "named_families": {
+    "_note": "Non-exclusive tags for the §9 heavily-represented clusters. Membership is by slug substring (lower-cased) OR by traded symbol base name (for symbol-scoped clusters). An EA can be tagged by several named families (e.g. a Balke XAU range breakout is balke + breakout + xau_systems). Report order below is the §9 order.",
+    "report_order": ["gold_reaper", "balke", "orb", "session_breakout", "breakout", "xau_systems"],
+    "materially_different_scope": {
+      "_note": "Mechanism-scoped families for which a MEASURED same-symbol pair that is not a clone/same-edge is emitted as a 'materially_different' edge (a genuine 'same mechanism label, different edge' finding). Symbol-scoped families (xau_systems) are excluded: two distinct gold strategies trading XAU are not a same-label finding, so only their positive relationships (clones / same-edge convergence) are emitted, not the materially-different default.",
+      "families": ["gold_reaper", "balke", "orb", "session_breakout", "breakout"]
+    },
+    "definitions": {
+      "gold_reaper": {"slug_substrings": ["reaper", "gold-reaper"]},
+      "balke": {"slug_substrings": ["balke"]},
+      "orb": {"slug_substrings": ["orb", "opening-range", "opening_range", "open-box", "openbox"]},
+      "session_breakout": {"slug_substrings": ["session-break", "session_break", "london-session", "asian-box", "asian-session", "ny-session", "ny-open", "london-break", "session-open"]},
+      "breakout": {"slug_substrings": ["break", "breakout", "donchian", "channel", "turtle", "range-break", "rangebreak"]},
+      "xau_systems": {"slug_substrings": ["xau", "gold"], "symbol_bases": ["XAUUSD", "XAGUSD"]}
+    }
+  },
+  "thresholds": {
+    "_rationale": "Audit-proposed cut-offs (lineage_tooling.md). rule_sim = normalized-strategy-region token similarity in [0,1]; jaccard = entry-day trade-overlap in [0,1] on the same symbol+overlapping window; rho = Pearson correlation of daily net-PnL vectors. Clone bars are deliberately strict so a clone claim is defensible; same-edge bars are looser to catch convergent-death families without over-merging.",
+    "rule_sim_close_clone": 0.90,
+    "rule_sim_param_variant": 0.98,
+    "jaccard_close_clone": 0.80,
+    "jaccard_param_variant": 0.50,
+    "jaccard_same_edge": 0.40,
+    "rho_close_clone": 0.95,
+    "rho_same_edge": 0.70,
+    "param_variant_max_distance": 1.0,
+    "min_overlap_days": 10
+  },
+  "relationship_classes": {
+    "_note": "Evaluated top-down; first match wins. Pairwise §9 classes. Basis records which input decided the class.",
+    "order": [
+      "exact_clone",
+      "close_implementation_clone",
+      "parameter_variant",
+      "same_edge_different_implementation",
+      "child_challenger",
+      "superseded",
+      "materially_different"
+    ],
+    "rules": {
+      "exact_clone": "rule_signature equal (byte-normalized strategy region) OR a runtime IDENTICAL equivalence proof.",
+      "close_implementation_clone": "rule_signature differs but rule_sim >= rule_sim_close_clone AND (no stream evidence, else jaccard >= jaccard_close_clone AND rho >= rho_close_clone). Same mechanism re-typed.",
+      "parameter_variant": "same rule_signature (or rule_sim >= rule_sim_param_variant) with a differing parameter set (0 < param_distance <= param_variant_max_distance) and, where streams exist, jaccard >= jaccard_param_variant. Retuned knobs on identical code.",
+      "same_edge_different_implementation": "rule_sim < rule_sim_close_clone but streams give jaccard >= jaccard_same_edge AND rho >= rho_same_edge on the same symbol/window. Different code, correlated trades -> same underlying edge.",
+      "child_challenger": "declared parent_ea_id / variant_of link that is not already exact/parameter_variant (a materially reworked declared descendant).",
+      "superseded": "a declared descendant or parameter_variant whose parent carries a terminal RETIRE / worse terminal verdict, or an explicit OWNER supersede receipt.",
+      "materially_different": "none of the above (jaccard < jaccard_same_edge and rho < rho_same_edge, no declared link, rule_sim below close-clone). Genuinely distinct."
+    }
+  },
+  "master_directive_classes_56": {
+    "_note": "Per-rebuild §56 classification (reported in the Markdown census, not an edge relation). Mapped from the pairwise §9 evidence + census findings.",
+    "A": "NEW EDGE",
+    "B": "EXISTING EDGE - BETTER IMPLEMENTATION",
+    "C": "CONFIG / PARAMETER VARIANT",
+    "D": "DUPLICATE",
+    "E": "MATERIALLY DISTINCT DESPITE SIMILAR LABEL"
+  },
+  "seed_edges": {
+    "_note": "Hand-seeded edges for relationships that are established by a dated research verdict but where one endpoint has no built EA (so no signature/stream can confirm them). basis=HAND_SEEDED. These are documentation of an existing verdict, never a new gate decision.",
+    "edges": [
+      {
+        "from": "QM5_31008",
+        "to": "QM5_13213",
+        "relation": "same_edge_different_implementation",
+        "note": "Gold Reaper (Wim Schrynemakers / Profalgo) classified as the same dead XAU session-breakout edge as Balke XAU (QM5_13213 XAUUSD, Q02 RETIRE). Seed card QM5_31008 status REJECTED, never built. Source: docs/research/GOLD_REAPER_BREAKOUT_MINING_2026-07-23.md.",
+        "confidence": 0.6
+      }
+    ]
+  },
+  "seed_nodes": {
+    "_note": "Minimal nodes for seed-only EAs referenced by seed_edges that have no framework/EAs build (no .mq5, no stream). Family is declared, mechanism_signature is null (EVIDENCE_MISSING).",
+    "nodes": {
+      "QM5_31008": {"slug": "gold-reaper-order-block-mitigation", "family": "gap", "named_families": ["gold_reaper", "xau_systems"], "note": "seed card only (strategy-seeds/cards/QM5_31008_gold-reaper-order-block-mitigation.md), status REJECTED, never mechanised into the pipeline."}
+    }
+  }
+}
