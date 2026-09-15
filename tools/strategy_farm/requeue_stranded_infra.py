@@ -327,7 +327,8 @@ def _poison_pill_quarantined(
     try:
         row = conn.execute(
             "SELECT 1 FROM poison_pill_quarantine "
-            "WHERE ea_id=? AND symbol=? AND phase=? AND active=1 LIMIT 1",
+            "WHERE ea_id=? AND symbol=? AND (phase=? OR phase='*') "
+            "AND active=1 LIMIT 1",
             (ea_id, symbol, phase),
         ).fetchone()
     except sqlite3.OperationalError as exc:

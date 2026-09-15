@@ -2775,7 +2775,8 @@ def pending_claim_order_sql() -> str:
           )
           AND NOT EXISTS (
             SELECT 1 FROM poison_pill_quarantine q
-            WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol AND q.phase=w.phase
+            WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol
+              AND (q.phase=w.phase OR q.phase='*')
               AND q.active=1
           )
         ORDER BY {order_by}

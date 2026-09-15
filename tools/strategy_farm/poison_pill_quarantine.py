@@ -20,6 +20,9 @@ from typing import Any
 DEFAULT_DB = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 DEFAULT_THRESHOLD = 5
 MERIT_VERDICTS = frozenset({"PASS", "FAIL"})
+TESTER_CACHE_BUDGET_REASON = "TESTER_CACHE_BUDGET_EXCEEDED"
+TESTER_CACHE_PAIR_PHASE = "*"
+TESTER_CACHE_PAIR_THRESHOLD = 2
 QUARANTINE_DDL = """
 CREATE TABLE IF NOT EXISTS poison_pill_quarantine (
  ea_id TEXT NOT NULL, symbol TEXT NOT NULL, phase TEXT NOT NULL,
@@ -118,7 +121,15 @@ def diagnose_triple(
         streak += 1
     return {
         "ea_id": ea_id, "symbol": symbol, "phase": phase,
-        "eligible": successes == 0 and streak >= threshold and bool(streak_reason),
+        # Cache-budget breaches have their own two-hit, phase-independent pair
+        # hold below.  Never create a second phase-local hold that would survive
+        # release of the canonical wildcard row.
+        "eligible": (
+            successes == 0
+            and streak >= threshold
+            and bool(streak_reason)
+            and streak_reason != TESTER_CACHE_BUDGET_REASON
+        ),
         "verdict_reason": streak_reason, "consecutive_failures": streak,
         "successes_ever": successes, "evidence_path": evidence_path,
         "released_at": released_at,
@@ -246,6 +257,93 @@ def refresh_pending(
         )
         item["sealed_pending_rows"] = _seal_summary_missing_pending(conn, item, now)
     return found
+
+
+def record_tester_cache_budget_hit(
+    conn: sqlite3.Connection,
+    ea_id: str,
+    symbol: str,
+    *,
+    evidence_path: str | None,
+    now: str | None = None,
+    threshold: int = TESTER_CACHE_PAIR_THRESHOLD,
+) -> dict[str, Any]:
+    """Activate an exact EA/symbol hold after two guarded cache aborts.
+
+    The wildcard phase is intentional: a hidden cross-symbol implementation can
+    build the same tick payload under later Q phases, so an exact pair must not
+    escape merely by changing phase.  An explicit ``release --phase '*'`` grants
+    a fresh observation window; hits at or before that release are not counted.
+    The caller owns the surrounding transaction.
+    """
+
+    ensure_schema(conn)
+    now = now or utc_now()
+    required = max(1, int(threshold))
+    existing = conn.execute(
+        "SELECT active,released_at,quarantined_at FROM poison_pill_quarantine "
+        "WHERE ea_id=? AND symbol=? AND phase=?",
+        (ea_id, symbol, TESTER_CACHE_PAIR_PHASE),
+    ).fetchone()
+    released_at = str(existing["released_at"]) if existing and existing["released_at"] else None
+    rows = conn.execute(
+        """SELECT id,verdict,evidence_path,payload_json,updated_at
+           FROM work_items
+           WHERE ea_id=? AND symbol=? AND verdict='INFRA_FAIL'
+             AND (? IS NULL OR updated_at>?)
+           ORDER BY updated_at DESC,id DESC""",
+        (ea_id, symbol, released_at, released_at),
+    ).fetchall()
+    hits = [row for row in rows if _reason(row) == TESTER_CACHE_BUDGET_REASON]
+    hit_count = len({str(row["id"]) for row in hits})
+    successes = conn.execute(
+        "SELECT COUNT(*) FROM work_items WHERE ea_id=? AND symbol=? "
+        "AND upper(COALESCE(verdict,'')) IN ('PASS','FAIL')",
+        (ea_id, symbol),
+    ).fetchone()[0]
+    active = hit_count >= required
+    bound_evidence = evidence_path
+    if not bound_evidence and hits:
+        bound_evidence = _evidence(hits[0])
+    if active:
+        conn.execute(
+            """INSERT INTO poison_pill_quarantine
+               (ea_id,symbol,phase,active,verdict_reason,consecutive_failures,
+                successes_ever,evidence_path,quarantined_at,updated_at,released_at,release_note)
+               VALUES(?,?,?,1,?,?,?,?,?,?,NULL,NULL)
+               ON CONFLICT(ea_id,symbol,phase) DO UPDATE SET
+                active=1,verdict_reason=excluded.verdict_reason,
+                consecutive_failures=excluded.consecutive_failures,
+                successes_ever=excluded.successes_ever,
+                evidence_path=excluded.evidence_path,
+                quarantined_at=excluded.quarantined_at,
+                updated_at=excluded.updated_at,released_at=NULL,release_note=NULL""",
+            (
+                ea_id,
+                symbol,
+                TESTER_CACHE_PAIR_PHASE,
+                TESTER_CACHE_BUDGET_REASON,
+                hit_count,
+                int(successes),
+                bound_evidence,
+                now,
+                now,
+            ),
+        )
+    return {
+        "active": active,
+        "ea_id": ea_id,
+        "symbol": symbol,
+        "phase": TESTER_CACHE_PAIR_PHASE,
+        "hold_code": TESTER_CACHE_BUDGET_REASON,
+        "hit_count": hit_count,
+        "threshold": required,
+        "evidence_path": bound_evidence,
+        "release_rule": (
+            "explicit operator release after the cache cause is fixed or bounded; "
+            "use poison_pill_quarantine.py release with the exact EA, symbol, and --phase '*'"
+        ),
+    }
 
 
 def main() -> int:

@@ -51,6 +51,7 @@ import dl089_scheduling
 import longrun_scheduling_policy
 import next_cell_prestage
 import monitor_budget
+import tester_cache_budget
 import finished_terminal
 import opt_census_pruning
 import opt_census_select
@@ -621,6 +622,7 @@ LOG_BOMB_RATE_MB_PER_MIN = 1500.0             # >> any legit EA's journal growth
 LOG_BOMB_HARD_CEIL_BYTES = 4 * 1024 ** 3      # 4 GB absolute backstop (disk safety; 4x7 terminals = 28GB worst case)
 LOG_BOMB_JOURNAL_CAP_BYTES = LOG_BOMB_HARD_CEIL_BYTES  # back-compat alias (kill-record field)
 LOG_BOMB_CHECK_EVERY_ITERS = 5                # ~every 10s (loop sleeps 2s)
+TESTER_CACHE_BUDGET_SAMPLE_SECONDS = 5.0       # opt-in only; tree walk is not free
 SQLITE_WRITE_RETRIES = 8
 SQLITE_WRITE_RETRY_SLEEP_SECONDS = 0.05
 # FACTORY_MUTATION.lock must never span the ordinary multi-attempt SQLite
@@ -1012,6 +1014,13 @@ def _merge_history_window_payload(payload: dict[str, Any], history: dict[str, An
 
 
 MULTISYMBOL_REGISTRY_PATH = Path("D:/QM/strategy_farm/state/multisymbol_eas.txt")
+# Source-audited legacy implementations whose peer universe uses a different
+# declaration idiom than the registry generator's historical markers.  Each is
+# also a >=20 GB Q02 tester-memory-ledger outlier.  Keep this exact and reviewed;
+# unknown EAs still fail heavy only when the normal registry/payload says basket.
+_AUDITED_HIDDEN_MULTISYMBOL_EAS = frozenset(
+    {"QM5_9107", "QM5_1540", "QM5_1536", "QM5_10316"}
+)
 _multisym_cache: dict[str, Any] = {
     "mtime": -1.0,
     "ids": frozenset(),
@@ -1092,7 +1101,7 @@ def _work_item_is_multisymbol(
     """
 
     ea_id = str(_work_item_value(item, "ea_id", "") or "")
-    if ea_id in multisym_ids:
+    if ea_id in multisym_ids or ea_id.upper() in _AUDITED_HIDDEN_MULTISYMBOL_EAS:
         return True
     if str(payload.get("portfolio_scope") or "").strip().lower() == "basket":
         return True
@@ -1216,6 +1225,14 @@ def _tester_memory_ledger_path() -> Path:
     return Path(
         os.environ.get("QM_TESTER_MEMORY_LEDGER")
         or "D:/QM/reports/state/tester_memory_ledger.jsonl"
+    )
+
+
+def _tester_cache_budget_ledger_path() -> Path:
+    """Opt-in cache-growth ledger location (env override for tests)."""
+    return Path(
+        os.environ.get("QM_TESTER_CACHE_BUDGET_LEDGER")
+        or "D:/QM/reports/state/tester_cache_budget_ledger.jsonl"
     )
 
 
@@ -3527,6 +3544,67 @@ def _write_tester_memory_ledger(
             "terminal": str(terminal or ""),
         }
         path = _tester_memory_ledger_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "a", encoding="utf-8") as handle:
+            handle.write(json.dumps(record, sort_keys=True) + "\n")
+    except Exception:
+        return
+
+
+def _write_tester_cache_budget_ledger(
+    item: sqlite3.Row | dict[str, Any],
+    state: dict[str, Any],
+    terminal: str,
+    *,
+    run_seconds: float,
+    outcome: str,
+    evidence_path: str | None = None,
+    pair_hold: dict[str, Any] | None = None,
+) -> None:
+    """Append one enabled-run cache measurement record (fail-open)."""
+
+    if not state.get("enabled"):
+        return
+    try:
+        gib = float(1024 ** 3)
+
+        def _gb(value: Any) -> float | None:
+            if value is None:
+                return None
+            return round(int(value) / gib, 3)
+
+        current = state.get("last_cache_bytes")
+        baseline = state.get("baseline_cache_bytes")
+        growth = (
+            max(0, int(current) - int(baseline))
+            if current is not None and baseline is not None
+            else None
+        )
+        record = {
+            "schema": "qm.tester_cache_budget_ledger/v1",
+            "ts_utc": farmctl.utc_now(),
+            "work_item_id": str(_work_item_value(item, "id", "") or ""),
+            "ea_id": str(_work_item_value(item, "ea_id", "") or ""),
+            "symbol": str(_work_item_value(item, "symbol", "") or ""),
+            "phase": str(_work_item_value(item, "phase", "") or ""),
+            "terminal": str(terminal or ""),
+            "run_seconds": round(float(run_seconds), 3),
+            "outcome": str(outcome),
+            "baseline_source": state.get("baseline_source"),
+            "configured_budget_gb": _gb(state.get("configured_budget_bytes")),
+            "effective_budget_gb": _gb(state.get("effective_budget_bytes")),
+            "baseline_cache_gb": _gb(baseline),
+            "final_cache_gb": _gb(current),
+            "net_growth_gb": _gb(growth),
+            "peak_growth_gb": _gb(state.get("peak_growth_bytes")),
+            "initial_free_gb": _gb(state.get("initial_free_bytes")),
+            "minimum_free_gb": _gb(state.get("minimum_free_bytes")),
+            "samples": int(state.get("samples") or 0),
+            "sample_errors": int(state.get("sample_errors") or 0),
+            "evidence_path": evidence_path,
+            "pair_hold": pair_hold,
+        }
+        path = _tester_cache_budget_ledger_path()
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "a", encoding="utf-8") as handle:
             handle.write(json.dumps(record, sort_keys=True) + "\n")
@@ -6159,9 +6237,16 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         ) OR EXISTS (
                             SELECT 1 FROM work_item_supersedes
                             WHERE work_item_id=?
+                        ) OR EXISTS (
+                            SELECT 1 FROM poison_pill_quarantine q
+                            WHERE q.ea_id=? AND q.symbol=?
+                              AND (q.phase=? OR q.phase='*') AND q.active=1
                         )
                         """,
-                        (item["id"], item["id"]),
+                        (
+                            item["id"], item["id"], item["ea_id"],
+                            item["symbol"], item["phase"],
+                        ),
                     ).fetchone()
                     if blocked is not None:
                         conn.rollback()
@@ -6179,6 +6264,13 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                           AND NOT EXISTS (
                             SELECT 1 FROM work_item_supersedes s
                             WHERE s.work_item_id=work_items.id
+                          )
+                          AND NOT EXISTS (
+                            SELECT 1 FROM poison_pill_quarantine q
+                            WHERE q.ea_id=work_items.ea_id
+                              AND q.symbol=work_items.symbol
+                              AND (q.phase=work_items.phase OR q.phase='*')
+                              AND q.active=1
                           )
                         """,
                         (terminal, json.dumps(payload, sort_keys=True), now, item["id"]),
@@ -6663,6 +6755,24 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                         "status": item["status"],
                     }
 
+                pair_quarantine = conn.execute(
+                    """SELECT phase,verdict_reason,evidence_path
+                       FROM poison_pill_quarantine
+                       WHERE ea_id=? AND symbol=? AND (phase=? OR phase='*')
+                         AND active=1
+                       ORDER BY CASE WHEN phase='*' THEN 0 ELSE 1 END
+                       LIMIT 1""",
+                    (item["ea_id"], item["symbol"], item["phase"]),
+                ).fetchone()
+                if pair_quarantine is not None:
+                    conn.commit()
+                    return {
+                        "claimed": False,
+                        "reason": "poison_pill_quarantined",
+                        "item_id": item_id,
+                        "quarantine": dict(pair_quarantine),
+                    }
+
                 payload = _json_loads(item["payload_json"])
                 try:
                     from tools.strategy_farm import news_calendar_taint
@@ -6888,6 +6998,13 @@ def claim_specific_atomic(root: Path, terminal: str, item_id: str) -> dict[str, 
                     UPDATE work_items
                     SET status='active', claimed_by=?, payload_json=?, updated_at=?
                     WHERE id=? AND status='pending'
+                      AND NOT EXISTS (
+                        SELECT 1 FROM poison_pill_quarantine q
+                        WHERE q.ea_id=work_items.ea_id
+                          AND q.symbol=work_items.symbol
+                          AND (q.phase=work_items.phase OR q.phase='*')
+                          AND q.active=1
+                      )
                     """,
                     (terminal, json.dumps(payload, sort_keys=True), now, item_id),
                 )
@@ -11115,6 +11232,193 @@ def _record_monitor_budget_kill(root, item, terminal, spawn, payload, runtime_se
     return marker
 
 
+def _record_tester_cache_budget_exceeded(
+    root: Path,
+    item: dict[str, Any],
+    terminal: str,
+    spawn: dict[str, Any],
+    state: dict[str, Any],
+    decision: dict[str, Any],
+    *,
+    run_seconds: float,
+    runner_stopped: bool,
+    terminal_stopped: bool | None,
+) -> dict[str, Any]:
+    """Seal a cache-budget abort as INFRA_FAIL and count its exact pair hit."""
+
+    detected_at = farmctl.utc_now()
+    raw_report_root = spawn.get("report_root")
+    report_root = (
+        Path(str(raw_report_root))
+        if raw_report_root
+        else WORK_ITEM_REPORTS_ROOT
+        / str(item["id"])
+        / str(item.get("ea_id") or "UNKNOWN")
+        / str(item.get("phase") or "UNKNOWN")
+    )
+    evidence_path = report_root / "tester_cache_budget_exceeded.json"
+    evidence = {
+        "schema": "qm.tester_cache_budget_exceeded/v1",
+        "event": tester_cache_budget.VERDICT_REASON,
+        "detected_at_utc": detected_at,
+        "item_id": str(item["id"]),
+        "ea_id": str(item.get("ea_id") or ""),
+        "symbol": str(item.get("symbol") or ""),
+        "phase": str(item.get("phase") or ""),
+        "terminal": terminal,
+        "runner_pid": spawn.get("pid"),
+        "runner_stopped": bool(runner_stopped),
+        "terminal_stopped": terminal_stopped,
+        "run_seconds": round(float(run_seconds), 3),
+        "decision": decision,
+        "monitor_state": state,
+        "pair_hold": None,
+    }
+    durable_path: str
+    try:
+        evidence_path.parent.mkdir(parents=True, exist_ok=True)
+        evidence_path.write_text(
+            json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        durable_path = str(evidence_path)
+    except OSError:
+        durable_path = farmctl._evidence_unavailable_sentinel(
+            "tester_cache_budget_exceeded:evidence_write_failed"
+        )
+
+    def _record() -> dict[str, Any]:
+        with farmctl.connect(root) as conn:
+            row = conn.execute(
+                "SELECT status,claimed_by,payload_json FROM work_items WHERE id=?",
+                (item["id"],),
+            ).fetchone()
+            if (
+                row is None
+                or str(row["status"]) != "active"
+                or str(row["claimed_by"] or "").upper() != str(terminal).upper()
+            ):
+                return {"recorded": False, "reason": "work_item_ownership_changed"}
+            current_payload = _json_loads(row["payload_json"])
+            reason_classes = [
+                str(reason)
+                for reason in (current_payload.get("reason_classes") or [])
+                if str(reason).strip()
+            ]
+            if tester_cache_budget.VERDICT_REASON not in {
+                reason.upper() for reason in reason_classes
+            }:
+                reason_classes.append(tester_cache_budget.VERDICT_REASON)
+            current_payload.update(
+                {
+                    "reason_classes": reason_classes,
+                    "verdict_reason": tester_cache_budget.VERDICT_REASON,
+                    "verdict_taxonomy": "infra",
+                    "final_failure": tester_cache_budget.VERDICT_REASON,
+                    "tester_cache_budget": state,
+                    "tester_cache_budget_decision": decision,
+                    "tester_cache_budget_evidence_path": durable_path,
+                    "killed_at": detected_at,
+                    "terminal_stopped_on_release": terminal_stopped,
+                }
+            )
+            cursor = conn.execute(
+                """UPDATE work_items
+                   SET status='failed',verdict='INFRA_FAIL',verdict_taxonomy='infra',
+                       evidence_path=?,claimed_by=NULL,payload_json=?,updated_at=?
+                   WHERE id=? AND status='active' AND claimed_by=?""",
+                (
+                    durable_path,
+                    json.dumps(current_payload, sort_keys=True),
+                    detected_at,
+                    item["id"],
+                    terminal,
+                ),
+            )
+            if cursor.rowcount != 1:
+                conn.rollback()
+                return {"recorded": False, "reason": "work_item_ownership_changed"}
+            try:
+                from tools.strategy_farm import poison_pill_quarantine
+            except ModuleNotFoundError:
+                import poison_pill_quarantine
+            pair_hold = poison_pill_quarantine.record_tester_cache_budget_hit(
+                conn,
+                str(item.get("ea_id") or ""),
+                str(item.get("symbol") or ""),
+                evidence_path=durable_path,
+                now=detected_at,
+            )
+            current_payload["tester_cache_pair_hold"] = pair_hold
+            conn.execute(
+                "UPDATE work_items SET payload_json=? WHERE id=?",
+                (json.dumps(current_payload, sort_keys=True), item["id"]),
+            )
+            farmctl.event(
+                conn,
+                "work_item",
+                item["id"],
+                "tester_cache_budget_exceeded",
+                {
+                    "verdict_reason": tester_cache_budget.VERDICT_REASON,
+                    "evidence_path": durable_path,
+                    "decision": decision,
+                    "pair_hold": pair_hold,
+                },
+            )
+            conn.commit()
+            return {"recorded": True, "pair_hold": pair_hold}
+
+    recorded = _with_sqlite_retry(_record)
+    pair_hold = recorded.get("pair_hold") if isinstance(recorded, dict) else None
+    evidence["pair_hold"] = pair_hold
+    if not durable_path.startswith("EVIDENCE_UNAVAILABLE:"):
+        try:
+            evidence_path.write_text(
+                json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
+        except OSError:
+            pass
+    _write_tester_cache_budget_ledger(
+        item,
+        state,
+        terminal,
+        run_seconds=run_seconds,
+        outcome="budget_exceeded",
+        evidence_path=durable_path,
+        pair_hold=pair_hold,
+    )
+    print(
+        json.dumps(
+            {
+                "event": "tester_cache_budget_exceeded",
+                "item_id": item["id"],
+                "terminal": terminal,
+                "decision": decision,
+                "pair_hold": pair_hold,
+                "recorded": bool(recorded.get("recorded")),
+            },
+            sort_keys=True,
+        ),
+        flush=True,
+    )
+    return {
+        "action": "tester_cache_budget_exceeded",
+        "item_id": item["id"],
+        "status": "failed" if recorded.get("recorded") else None,
+        "verdict": "INFRA_FAIL" if recorded.get("recorded") else None,
+        "reason": tester_cache_budget.VERDICT_REASON,
+        "evidence_path": durable_path,
+        "pair_hold": pair_hold,
+        "runner_stopped": bool(runner_stopped),
+        "terminal_stopped": terminal_stopped,
+        "aggregate": (
+            _aggregate_finished_parent(root, item.get("parent_task_id"))
+            if recorded.get("recorded")
+            else None
+        ),
+    }
+
+
 def _recover_finished_terminal(root, item, terminal, spawn, payload, state, now_monotonic):
     if root.resolve() != farmctl.DEFAULT_ROOT.resolve():
         return None
@@ -11179,6 +11483,25 @@ def _monitor_spawned_work_item(
         "peak_terminal_ws": 0,
     }
     _last_mem_sample = 0.0
+    raw_cache_budget_state = (
+        spawn.get("tester_cache_budget_state")
+        or payload.get("tester_cache_budget")
+    )
+    if (
+        isinstance(raw_cache_budget_state, dict)
+        and raw_cache_budget_state.get("schema") == tester_cache_budget.SCHEMA
+        and raw_cache_budget_state.get("enabled") is True
+    ):
+        cache_budget_state = raw_cache_budget_state
+    else:
+        # Adoption of a pre-feature run can only baseline from this point.  The
+        # state marks that limitation; the free-space reserve still applies.
+        cache_budget_state = tester_cache_budget.arm(farmctl.MT5_ROOT, terminal)
+        if cache_budget_state.get("enabled"):
+            cache_budget_state["baseline_source"] = (
+                "adoption" if adopted else "monitor_start"
+            )
+    _last_cache_budget_sample = 0.0
     while time.monotonic() < deadline:
         child_alive = bool(_bound_runner_identity(identity_payload).get("alive"))
         terminal_alive_after_child_exit = (not child_alive) and _terminal_slot_running(root, terminal)
@@ -11243,10 +11566,66 @@ def _monitor_spawned_work_item(
                 farmctl._stop_pid_tree(pid)
                 break
         _now_mem = time.monotonic()
+        if (
+            cache_budget_state.get("enabled")
+            and _now_mem - _last_cache_budget_sample >= TESTER_CACHE_BUDGET_SAMPLE_SECONDS
+        ):
+            _last_cache_budget_sample = _now_mem
+            try:
+                cache_decision = tester_cache_budget.sample(cache_budget_state)
+            except Exception as exc:
+                # Measurement faults are visible but fail-open: a malformed or
+                # transient probe must never kill a legitimate strategy run.
+                cache_budget_state["sample_errors"] = int(
+                    cache_budget_state.get("sample_errors") or 0
+                ) + 1
+                cache_budget_state["last_error"] = f"{type(exc).__name__}:{exc}"
+                cache_decision = {"tripped": False, "measurement_ok": False}
+            if cache_decision.get("tripped"):
+                runner_stopped = farmctl._stop_pid_tree(pid) if child_alive else False
+                terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+                return _record_tester_cache_budget_exceeded(
+                    root,
+                    item,
+                    terminal,
+                    spawn,
+                    cache_budget_state,
+                    cache_decision,
+                    run_seconds=time.monotonic() - spawn_started + elapsed_before_adoption,
+                    runner_stopped=bool(runner_stopped),
+                    terminal_stopped=terminal_stopped,
+                )
         if _now_mem - _last_mem_sample >= TESTER_MEMORY_SAMPLE_SECONDS:
             _last_mem_sample = _now_mem
             _sample_tester_memory(pid, _mem_acc)
         time.sleep(DETACHED_TERMINAL_POLL_SECONDS)
+    if not log_bomb_path and cache_budget_state.get("enabled"):
+        # Capture a final write burst that landed between the last interval
+        # sample and process exit.  The process may already be gone, but the
+        # result must still be classified as a budget breach rather than merit.
+        try:
+            final_cache_decision = tester_cache_budget.sample(cache_budget_state)
+        except Exception as exc:
+            cache_budget_state["sample_errors"] = int(
+                cache_budget_state.get("sample_errors") or 0
+            ) + 1
+            cache_budget_state["last_error"] = f"{type(exc).__name__}:{exc}"
+            final_cache_decision = {"tripped": False, "measurement_ok": False}
+        if final_cache_decision.get("tripped"):
+            final_child_alive = bool(_bound_runner_identity(identity_payload).get("alive"))
+            runner_stopped = farmctl._stop_pid_tree(pid) if final_child_alive else False
+            terminal_stopped = _stop_terminal_slot_for_release(root, terminal)
+            return _record_tester_cache_budget_exceeded(
+                root,
+                item,
+                terminal,
+                spawn,
+                cache_budget_state,
+                final_cache_decision,
+                run_seconds=time.monotonic() - spawn_started + elapsed_before_adoption,
+                runner_stopped=bool(runner_stopped),
+                terminal_stopped=terminal_stopped,
+            )
     if log_bomb_path:
         # Reclaim the disk immediately and record a terminal verdict with a high
         # attempt_count so the sweep does NOT re-enqueue (it would re-bomb).
@@ -11436,6 +11815,18 @@ def _monitor_spawned_work_item(
         _write_tester_memory_ledger(
             root, item, payload, spawn, _mem_acc, terminal,
             run_seconds=ran_seconds,
+            outcome=(
+                "timeout"
+                if (child_alive or terminal_alive_after_child_exit)
+                else "finished"
+            ),
+        )
+    if cache_budget_state.get("enabled"):
+        _write_tester_cache_budget_ledger(
+            item,
+            cache_budget_state,
+            terminal,
+            run_seconds=ran_seconds + elapsed_before_adoption,
             outcome=(
                 "timeout"
                 if (child_alive or terminal_alive_after_child_exit)
@@ -12055,6 +12446,10 @@ def _run_claimed_item(
         row["payload_json"] = json.dumps(existing_payload, sort_keys=True)
     try:
         _acquire_launch_slot(terminal)
+        # Arm after the launch semaphore but before the child exists, so the
+        # baseline belongs to this run and cannot include its first cache writes.
+        # With no positive environment value this is a cheap Default-OFF marker.
+        cache_budget_state = tester_cache_budget.arm(farmctl.MT5_ROOT, terminal)
         spawn = farmctl._spawn_work_item_runner(root, row, terminal)
     except BaseException:
         _release_q09_helper_terminals(root, q09_helper_lease)
@@ -12139,6 +12534,21 @@ def _run_claimed_item(
         }
 
     payload = _json_loads(row["payload_json"])
+    if cache_budget_state.get("enabled"):
+        spawn["tester_cache_budget_state"] = cache_budget_state
+        payload["tester_cache_budget"] = cache_budget_state
+    elif cache_budget_state.get("configuration") == "invalid_or_non_positive":
+        print(
+            json.dumps(
+                {
+                    "event": "tester_cache_budget_disabled_invalid_configuration",
+                    "item_id": item["id"],
+                    "environment_variable": tester_cache_budget.ENV_BUDGET_GB,
+                },
+                sort_keys=True,
+            ),
+            flush=True,
+        )
     expected_from_date, expected_to_date = _resolved_evidence_window(spawn)
     payload.update({
         "started_at_iso": now,
