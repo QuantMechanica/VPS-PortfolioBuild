@@ -1,0 +1,4 @@
+scope,rows,rows_unpriced_no_phase_sample,terminal_hours_at_phase_median,terminal_hours_at_phase_p75,wallclock_hours_at_measured_mean_concurrency,wallclock_hours_at_measured_peak_concurrency,phase_mix
+A_all_exposed_executed,1047,0,116.9,175.3,23.7,11.7,OPT_CENSUS=809;Q02=12;Q03=2;Q04=2;Q05=56;Q06=32;Q07=50;Q08=14;Q09=60;Q11=10
+B_pipeline_gates_only,238,0,77.1,122.0,15.7,7.7,Q02=12;Q03=2;Q04=2;Q05=56;Q06=32;Q07=50;Q08=14;Q09=60;Q11=10
+C_pass_like_gates_only,168,0,54.6,82.4,11.1,5.5,Q02=10;Q04=1;Q05=31;Q06=31;Q07=37;Q09=48;Q11=10
