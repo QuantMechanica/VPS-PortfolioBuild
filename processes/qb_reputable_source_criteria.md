@@ -198,3 +198,37 @@ times before exhaustion. Books and papers will exhaust faster.
 
 Per card frontmatter, the source UUID is embedded as `source_id: <uuid>` so
 resume-mining can trace card → source lineage without filename parsing.
+
+## Annex 2026-09-15 — Internal-research sources & R4 scope (OWNER-DEC-KIMI-INTEGRATION-20260915)
+
+Appended verbatim from `docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md` §11.2 (under R1)
+and §11.3 (under R4). Append-only; historical evidence unchanged.
+
+### R1 annex (append under R1)
+
+> **Internal-research sources (annex 2026-09-15).** A QuantMechanica-discovered edge does not
+> require an external human author, book, paper, video or website to satisfy R1. For an internally
+> discovered edge the canonical internal research artifact is the source. R1 PASSES for a card
+> whose single `source_id` is a reserved internal id of the form `QM-RESEARCH-YYYY-NNNN`, provided
+> the card also carries `source_type: internal_research`, `source_author`, `source_model`,
+> `source_artifact: QM-RESEARCH://<id>` (resolvable), `source_hash` (`sha256(source.md)`), and a
+> `research_trial_count` consistent with the research-search ledger — **and the internal-source
+> intake verify passes** (`INTERNAL_RESEARCH_SOURCE_CONTRACT.md` §9.3). `source = Kimi` (or any
+> author name) WITHOUT a resolvable, hash-verified artifact is INVALID and is rejected at intake
+> with reason `INTERNAL_SOURCE_UNRESOLVED`. The durable artifact lives at
+> `strategy-seeds/sources/QM-RESEARCH-YYYY-NNNN/` and is governed by
+> `docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md`. **External attribution is unchanged:** an
+> external card still requires its verifiable external source exactly as before, on the unchanged
+> code path. This annex adds a namespace and an intake check; it does not weaken external R1.
+
+### R4 annex (append under R4)
+
+> **R4 scope clarification (annex 2026-09-15).** R4 (Hard Rule 14) forbids ML **in the EA runtime
+> decision engine**. An ML-assisted *research provenance* — an edge discovered with ML/statistical
+> methods and then reduced to explicit mechanical rules — is explicitly NOT an R4 concern. R4's
+> in-EA reject list (neural nets, ONNX/inference, PnL-adaptive parameters, online/retraining
+> logic, non-deterministic entries, unbounded martingale) stands verbatim. A card describing its
+> ML-derived provenance in a `## Research provenance` section is not an R4 violation and must not
+> be prescreen-rejected for it (see `INTERNAL_RESEARCH_SOURCE_CONTRACT.md` §9.4). Mirror of the
+> `build_check.ps1` L888-901 principle: "prose describing ML is not ML."
+

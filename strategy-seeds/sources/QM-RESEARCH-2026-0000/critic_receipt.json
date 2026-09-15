@@ -1,0 +1,37 @@
+{
+  "chain_id": "EXAMPLE-CHAIN-0000",
+  "critic_fallback_used": false,
+  "critic_seat_final": "claude-sonnet",
+  "critic_verdict": "PASS_WITH_NOTES (informational; never a pipeline PASS)",
+  "finding_counts": {
+    "blocking": 0,
+    "major": 1,
+    "minor": 2
+  },
+  "generated_at_utc": "2026-09-15T00:00:00+00:00",
+  "plan": {
+    "creator": {
+      "model": "kimi-code/kimi-for-coding",
+      "vendor": "kimi"
+    },
+    "critic": {
+      "model": "claude-sonnet",
+      "vendor": "claude"
+    }
+  },
+  "receipt_path": "EXAMPLE/agent_chain/EXAMPLE-CHAIN-0000.json",
+  "repo_write": false,
+  "schema": "qm.agent-chain.receipt.v1",
+  "scope_drift": false,
+  "stages": [
+    {
+      "seat": "creator"
+    },
+    {
+      "seat": "critic"
+    },
+    {
+      "seat": "formatter"
+    }
+  ]
+}

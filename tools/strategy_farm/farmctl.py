@@ -4424,7 +4424,72 @@ def _q09_requal8_card_authority(card_path: Path, fm: dict[str, Any]) -> bool:
     )
 
 
-def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> dict[str, Any]:
+def _load_research_source():
+    """Load the sibling ``research_source`` module robustly (see contract C4)."""
+    import importlib
+
+    try:
+        return importlib.import_module("research_source")
+    except Exception:  # pragma: no cover - import-style fallback
+        import importlib.util
+
+        module_path = Path(__file__).resolve().parent / "research_source.py"
+        spec = importlib.util.spec_from_file_location("research_source", module_path)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        sys.modules.setdefault("research_source", module)
+        spec.loader.exec_module(module)
+        return module
+
+
+def _internal_research_source_error(
+    fm: dict[str, Any],
+    *,
+    research_store_root: Path | None = None,
+    research_ledger: Path | None = None,
+    research_search_ledger: Path | None = None,
+) -> str | None:
+    """Fail-closed internal-source verify for the G0 build-ready path.
+
+    Contract Section 9.3 (R-A): when the card declares
+    ``source_type: internal_research`` OR carries a ``source_id`` /
+    ``source_artifact`` in the QM-RESEARCH namespace, the card MUST pass
+    ``research_source.verify``. Any miss refuses promotion with the canonical
+    verdict ``INTERNAL_SOURCE_UNRESOLVED``. External cards never reach this
+    branch and keep the unchanged code path. The raw ``_card_r1_build_ready``
+    field is unchanged; this is an added guard, not a re-scoring of R1.
+    """
+    research_source = _load_research_source()
+    source_type = str(fm.get("source_type") or "").strip().lower()
+    source_id = str(fm.get("source_id") or "").strip()
+    source_ref = str(fm.get("source_artifact") or fm.get("source_uri") or "").strip()
+    is_internal = (
+        source_type == "internal_research"
+        or research_source.is_internal_reference(source_id)
+        or research_source.is_internal_reference(source_ref)
+    )
+    if not is_internal:
+        return None
+    result = research_source.verify(
+        card_frontmatter=dict(fm),
+        store_root=research_store_root,
+        ledger_path=research_ledger,
+        search_ledger_path=research_search_ledger,
+    )
+    if result.ok:
+        return None
+    return research_source.INTAKE_REASON + ":" + ",".join(result.reasons)
+
+
+def prebuild_validate_card(
+    root: Path,
+    card_path: Path,
+    fm: dict[str, Any],
+    *,
+    research_store_root: Path | None = None,
+    research_ledger: Path | None = None,
+    research_search_ledger: Path | None = None,
+) -> dict[str, Any]:
     """Hard gate before creating build_ea tasks.
 
     This prevents the expensive Codex/build/smoke path from discovering basic
@@ -4466,6 +4531,17 @@ def prebuild_validate_card(root: Path, card_path: Path, fm: dict[str, Any]) -> d
     # lineage; r2/r3/r4 stay strict PASS.
     if not _card_r1_build_ready(fm):
         errors.append(f"r1_source_id_missing:{fm.get('source_id')!r}")
+    # Contract Section 9.3 (R-A): internal-research cards additionally must pass
+    # the deterministic, fail-closed internal-source verify. External cards are
+    # untouched (the branch does not fire for them).
+    internal_source_error = _internal_research_source_error(
+        fm,
+        research_store_root=research_store_root,
+        research_ledger=research_ledger,
+        research_search_ledger=research_search_ledger,
+    )
+    if internal_source_error:
+        errors.append(internal_source_error)
     for key in R_STRICT_PASS_FIELDS:
         if str(fm.get(key) or "").strip().upper() != "PASS":
             errors.append(f"{key}_not_PASS:{fm.get(key)!r}")
@@ -33580,6 +33656,10 @@ def update_card_frontmatter(card_path: Path, updates: dict[str, str]) -> None:
 VALID_SOURCE_TYPES = (
     "book", "paper", "web_forum", "web_blog",
     "mql5_codebase", "mql5_articles", "video", "local_archive",
+    # Internal QuantMechanica research lane (Kimi-authored or other internal
+    # AI/tool-authored edge discovery). Governed by
+    # docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md Section 9.2.
+    "internal_research",
 )
 VALID_LANES = ("research", "recovery", "legacy", "discovery")
 

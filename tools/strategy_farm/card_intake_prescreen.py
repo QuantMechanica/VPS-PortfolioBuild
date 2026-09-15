@@ -39,6 +39,28 @@ from pathlib import Path
 from typing import Iterable, Mapping
 
 
+def _load_research_source():
+    """Load the sibling ``research_source`` module robustly.
+
+    Works whether this file is imported as a package member, run directly, or
+    loaded by file location in a test harness.
+    """
+    import importlib
+
+    try:
+        return importlib.import_module("research_source")
+    except Exception:  # pragma: no cover - import-style fallback
+        import importlib.util
+
+        module_path = Path(__file__).resolve().parent / "research_source.py"
+        spec = importlib.util.spec_from_file_location("research_source", module_path)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        sys.modules.setdefault("research_source", module)
+        spec.loader.exec_module(module)
+        return module
+
+
 REPO_ROOT = Path(r"C:\QM\repo")
 FARM_ARTIFACTS = Path(r"D:\QM\strategy_farm\artifacts")
 DEFAULT_INPUT_ROOT = FARM_ARTIFACTS / "cards_review"
@@ -461,6 +483,21 @@ def _timeframe_allowed(value: str | None) -> bool:
     return 5 <= amount <= 15 if match.group(1) == "M" else 1 <= amount <= 24
 
 
+def _strip_provenance_section(text: str) -> str:
+    """Blank the '## Research provenance' span up to the next H2 heading.
+
+    Contract Section 9.4: provenance prose (which legitimately describes
+    ML-assisted discovery) is exempt from the affirmative ML-term scan. The span
+    runs from the '## Research provenance' heading to the next same-level ('## ')
+    heading, or end of document.
+    """
+    return re.sub(
+        r"(?ims)^\#\#[ \t]+research[ \t]+provenance\b.*?(?=^\#\#[ \t]|\Z)",
+        "\n",
+        text,
+    )
+
+
 def _affirmative_prohibited_mechanics(document: CardDocument) -> tuple[str, ...]:
     findings: set[str] = set()
     r4 = document.frontmatter.get("r4_ml_forbidden", "").strip().lower()
@@ -480,13 +517,61 @@ def _affirmative_prohibited_mechanics(document: CardDocument) -> tuple[str, ...]
     # Markdown prose is commonly hard-wrapped after a comma. Join lowercase
     # continuation lines so "No HFT, ML, grid,\nmartingale ..." remains one
     # negative clause rather than turning the second physical line affirmative.
-    scan_text = re.sub(r"(?<!\n)\n(?=[a-z])", " ", document.text)
-    for line in scan_text.splitlines():
-        for name, pattern in patterns.items():
+    full_scan = re.sub(r"(?<!\n)\n(?=[a-z])", " ", document.text)
+    # Contract Section 9.4 (Fable design D5): the affirmative ML-term scan is
+    # scoped to the mechanics/rules sections and must NEVER fire inside a
+    # '## Research provenance' section. A card that truthfully describes its
+    # ML-assisted research provenance ("edge discovered via a random-forest
+    # study") is not runtime ML and must not be rejected for it. Strip that span
+    # for the ML pattern only; HFT/GRID/MARTINGALE/AVERAGING stay whole-card,
+    # unchanged, and the frontmatter r4_ml_forbidden/ml_required check above is
+    # unchanged (a card claiming the EA itself uses ML still trips ML).
+    ml_scan = re.sub(r"(?<!\n)\n(?=[a-z])", " ", _strip_provenance_section(document.text))
+    for name, pattern in patterns.items():
+        text_for_pattern = ml_scan if name == "ML" else full_scan
+        for line in text_for_pattern.splitlines():
             match = pattern.search(line)
             if match and not _line_is_negated(line, match):
                 findings.add(name)
     return tuple(sorted(findings))
+
+
+def _internal_source_reason(
+    document: CardDocument,
+    *,
+    research_store_root: Path | None = None,
+    research_ledger: Path | None = None,
+    research_search_ledger: Path | None = None,
+) -> str | None:
+    """Return the fail-closed INTERNAL_SOURCE_UNRESOLVED reason, or None.
+
+    Fires when the card declares ``source_type: internal_research`` or carries a
+    ``source_id``/``source_artifact`` in the QM-RESEARCH namespace (contract
+    Section 9.3). Delegates to ``research_source.verify``; any miss is a hard
+    REJECT carrying the diagnostic sub-reasons as detail. External cards never
+    reach this branch (KEEP path unchanged).
+    """
+    fm = document.frontmatter
+    research_source = _load_research_source()
+    source_type = str(fm.get("source_type") or "").strip().lower()
+    source_id = str(fm.get("source_id") or "").strip()
+    source_ref = str(fm.get("source_artifact") or fm.get("source_uri") or "").strip()
+    is_internal = (
+        source_type == "internal_research"
+        or research_source.is_internal_reference(source_id)
+        or research_source.is_internal_reference(source_ref)
+    )
+    if not is_internal:
+        return None
+    result = research_source.verify(
+        card_frontmatter=dict(fm),
+        store_root=research_store_root,
+        ledger_path=research_ledger,
+        search_ledger_path=research_search_ledger,
+    )
+    if result.ok:
+        return None
+    return research_source.INTAKE_REASON + ":" + ",".join(result.reasons)
 
 
 def evaluate_card(
@@ -495,6 +580,9 @@ def evaluate_card(
     symbols: set[str],
     data_root: Path,
     references: ReferenceIndex,
+    research_store_root: Path | None = None,
+    research_ledger: Path | None = None,
+    research_search_ledger: Path | None = None,
 ) -> CardResult:
     reasons: list[str] = []
     warnings: list[str] = []
@@ -541,6 +629,20 @@ def evaluate_card(
     prohibited = _affirmative_prohibited_mechanics(document)
     if prohibited:
         reasons.append("PROHIBITED_MECHANICS:" + ",".join(prohibited))
+
+    # Contract Section 9.3 (R-A): internal-research cards (source_type
+    # internal_research OR a source_id/source_artifact in the QM-RESEARCH
+    # namespace) must pass the deterministic, fail-closed internal-source
+    # verify. External cards never trigger this branch; their code path is
+    # unchanged.
+    internal_reason = _internal_source_reason(
+        document,
+        research_store_root=research_store_root,
+        research_ledger=research_ledger,
+        research_search_ledger=research_search_ledger,
+    )
+    if internal_reason:
+        reasons.append(internal_reason)
 
     return CardResult(
         path=str(document.path),
@@ -619,6 +721,9 @@ def run_prescreen(
     approved_root: Path,
     rejected_root: Path,
     apply: bool = False,
+    research_store_root: Path | None = None,
+    research_ledger: Path | None = None,
+    research_search_ledger: Path | None = None,
 ) -> dict:
     symbols = load_symbol_matrix(symbol_matrix)
     references = _build_reference_index(_load_reference_cards((approved_root, rejected_root)))
@@ -626,7 +731,13 @@ def run_prescreen(
     for path in card_paths:
         document = load_card(path)
         result = evaluate_card(
-            document, symbols=symbols, data_root=data_root, references=references
+            document,
+            symbols=symbols,
+            data_root=data_root,
+            references=references,
+            research_store_root=research_store_root,
+            research_ledger=research_ledger,
+            research_search_ledger=research_search_ledger,
         )
         if apply and result.verdict == "REJECT":
             result = _annotate_and_reject(result, rejected_root)
