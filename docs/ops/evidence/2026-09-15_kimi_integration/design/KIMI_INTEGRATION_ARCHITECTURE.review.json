@@ -1,0 +1,83 @@
+{
+  "verdict": "ACCEPT_WITH_FIXES",
+  "findings": [
+    {
+      "severity": "blocking",
+      "claim": "The Kimi critic read-only posture is enforced only by a post-hoc repo git-hash guard (draft 3.5), and the probe battery (draft 13) has no probe verifying Kimi can even be run read-only.",
+      "problem": "Directive 8.4-8.5 forbid critics from mutating repo code AND agent_tasks/verdicts/evidence/pipeline state. The draft's only enforcement for a Kimi critic is (a) --auto (which the audit kimi_cli.md 4/9 documents as 'everything runs, no interruption' i.e. FULL tool execution incl. file writes and shell) plus (b) a git status hash of C:/QM/repo before/after. That is DETECTION not PREVENTION (a critic that wrote has already written before the run fails), and its scope is the repo tree ONLY. farm_state.sqlite, verdicts and evidence live under D:/QM (data_memory.md 1), which is outside the repo and reachable by any shell tool the --auto critic runs, so a mutating critic passes the guard while corrupting the verdict store. Kimi exposes no documented tool-restriction flag equivalent to the claude chain envelope's --tools/--disallowedTools/--permission-mode (kimi_cli.md 4 lists only --plan, --auto, -y/--yolo); --plan behaviour is itself UNVERIFIED (draft probe 4). Unattended Kimi critique cannot be safely enabled on this basis.",
+      "fix": "Add a probe to the battery: does --add-dir grant write access, and can a critic be forced genuinely read-only (--plan and/or an agent-file/skills posture that denies Bash/Write). Run the Kimi critic against a throwaway COPY of the repo (never --add-dir the live tree with --auto), so a mutation cannot reach the real repo OR D:/QM at all; keep the git-hash guard as a secondary detector and EXTEND it to cover the D:/QM verdict/evidence paths (or deny the critic any shell/write tool). Gate QM_StrategyFarm_KimiOrchestration/Critique install on this probe passing, not merely on a smoke receipt.",
+      "evidence": "kimi_cli.md sec4 (--auto = everything runs; no --tools flag); agent_chain.v1.json vendors.claude _envelope_doc (the claude critic needs --tools/--disallowedTools/--permission-mode dontAsk precisely because defaultMode=auto let a headless critic run Bash); data_memory.md sec1 (farm_state.sqlite at D:/QM, outside repo); directive 8.5."
+    },
+    {
+      "severity": "major",
+      "claim": "Draft 3.6 asserts 'max_parallel = 1 for the kimi lane (D3)' prevents the shared-credential (Codex-class 15-min OAuth) refresh race.",
+      "problem": "Registry max_parallel is consulted only by the Plane-A router (_eligible_agents / _running_count at agent_router.py:1681). Plane B has TWO independent spawners that DO NOT consult the registry (router_providers.md sec1,11): QM_StrategyFarm_KimiOrchestration_15min and the QM_StrategyFarm_AgentChain_Critique_15min sweep. Each can spawn a Kimi process concurrently, and MaxSessions=1 only prevents the SAME task overlapping itself, not two different tasks. So two Kimi processes racing the same rolling refresh_token (critic.md sec4: token expired ~14s before read) is not prevented by max_parallel=1.",
+      "fix": "Make kimi_adapter.py (the single choke point, draft sec3) hold a machine-wide single-flight lock (lockfile/named mutex) around every Kimi invocation regardless of caller, so orchestration and critique serialize. Make test_max_parallel_1_enforced assert the adapter-level cross-process lock, not a registry field. State this explicitly in 3.6.",
+      "evidence": "router_providers.md sec1 & risk1; agent_router.py:1681 _running_count is registry/DB-scoped; critic.md sec4."
+    },
+    {
+      "severity": "major",
+      "claim": "Draft 4.2 'Denied authority - the exact code guards' lists 'verdict write / APPROVED' as guarded because 'A kimi task terminates in REVIEW, never self-approves ... - mirror the gemini rule (run_agent_orchestration_task.py:273-274,292-294)'.",
+      "problem": "Lines 273-294 are inside the HARD_RULES prompt docstring handed to the LLM ('leave Gemini code tasks in REVIEW and do not self-approve'; 'Leave the board-advisor artifact in REVIEW'), NOT executable enforcement. Presenting a prompt instruction as an 'exact code guard' is inaccurate. A Kimi orchestration run uses --auto (full shell); farmctl close-review is on PATH from the worktree, so a rogue/confused Kimi agent could self-approve or advance state via the CLI - prevented today only by prompt compliance, which is weakest for a brand-new unproven vendor.",
+      "fix": "Reword the table to distinguish code-level guards (capability omission at agent_router.py:1678-1680 - no code/ops caps so build_ea/ops_issue rows are unclaimable; verdicts written only by the human close-review CLI) from prompt-level constraints. Add a real guard for the Kimi lane: restrict the orchestration tool envelope so the Kimi creator cannot invoke farmctl close-review / git main operations (same read-only-enforcement work as the blocking finding), rather than trusting the prompt.",
+      "evidence": "run_agent_orchestration_task.py:271-294 verified to be prompt docstring text, not enforcement; capability-omission guard confirmed at agent_router.py:1678-1680."
+    },
+    {
+      "severity": "major",
+      "claim": "Draft 5.1 rationale: cost_rank=12 'keeps kimi behind gemini for cheap generic research ... without capturing the whole [research,strategy] funnel from the cheaper gemini lane'.",
+      "problem": "That protection holds ONLY while the gemini lane is enabled. drift.md (Quota flags & state) shows gemini/agy is currently auth-degraded (agy_quota.json HTTP 401 token_expired, AGY_LOW_QUOTA.flag set). With gemini out, kimi at cost_rank 12 becomes the cheapest eligible lane for research_strategy and agent_learn (codex 20 / claude 30 are dearer), so it will immediately capture the generic research funnel and burn the fixed one-month USD 99 subscription on exactly the low-value log/summary work the OWNER said it is NOT for (directive 4 'Kimi is NOT merely a log summarizer'; directive 20 'not the number of strategies'). The draft never addresses the gemini-down case and overstates the guarantee.",
+      "fix": "Document the gemini-down interaction explicitly. Since D3 fixes the classic caps and rank 12, mitigate at the governor: set conservative daily/weekly call caps so generic-research capture cannot silently drain the month, and have the routing policy (draft sec11) treat generic research_strategy as a low-value class that prefers gemini/codex and uses kimi only as a bounded last resort (e.g. CONSERVE already narrows kimi to the high-value caps - ensure generic research_strategy is excluded from kimi in CONSERVE, and consider a soft cap even in NORMAL).",
+      "evidence": "agent_router.py:542-614 (gemini rank10, codex20, claude30) and :1668-1685 (ORDER BY cost_rank ASC among enabled lanes); drift.md Quota flags (gemini auth-degraded now)."
+    },
+    {
+      "severity": "minor",
+      "claim": "Draft 7.2 CONSERVE keeps allowed 'research_critic-for-Kimi-authored'.",
+      "problem": "As written this reads as permitting Kimi to critique Kimi-authored work, which contradicts directive 8.2 (a Kimi-authored hypothesis must receive a NON-Kimi critic). The functional invariant is actually preserved elsewhere (by_creator_vendor.kimi = non-kimi seats, draft sec6, test_kimi_creator_critic_is_non_kimi), so this is a wording hazard rather than a live hole - but a load-bearing safety invariant should not be stated backwards.",
+      "fix": "Reword to 'research_critic (only for NON-Kimi-authored creators; the by_creator_vendor.kimi=non-kimi invariant is never relaxed by quota state)'.",
+      "evidence": "directive 8.2; agent_chain.v1.json roles.critic.by_creator_vendor (verified vendors=claude/codex/agy, cross_vendor_required true)."
+    },
+    {
+      "severity": "minor",
+      "claim": "Draft 6 sets the chain gate for kimi to gates.kimi_low_quota_flag only.",
+      "problem": "D4 specifies the Kimi vendor gate = KIMI_LOW_QUOTA.flag + CLI present + auth file present. The draft's vendor_gate only reads the flag, so a missing CLI or missing/expired credential file would not fail the chain closed at the gate (it would fail later mid-run as malformed/auth_expired).",
+      "fix": "Add CLI-present and credential-file-present checks to the kimi vendor_gate branch (fail closed, like the unknown-vendor path at agent_chain.py:172), matching D4.",
+      "evidence": "D4; agent_chain.v1.json gates:60-65 (flag-only pattern today)."
+    },
+    {
+      "severity": "minor",
+      "claim": "Draft 7.2 records the subscription period (start 2026-09-15, one month) in config but the governor derives state only from call counts and error streaks.",
+      "problem": "Directive 25 requires that subscription/quota 'cannot silently run out without visibility if technically measurable'. The month boundary IS a known, measurable date; a governor that ignores it will only discover exhaustion via rate_limited/auth error classes AFTER the subscription lapses, i.e. silently until first failure.",
+      "fix": "Have kimi_governor.py act on the recorded period: raise CONSERVE as period-end approaches and EXHAUSTED (with an OWNER-visible reason, not auto-purchase) once it passes, surfacing it in the routing receipts / mission control.",
+      "evidence": "directive 25; directive 1.1 (no auto-renew)."
+    },
+    {
+      "severity": "minor",
+      "claim": "Draft treats the credential as an operational input (3.6) but does not address its at-rest exposure.",
+      "problem": "critic.md sec4 describes the credential as a plain-JSON, qm-admin-owned, world-readable file holding a live Bearer refresh token. Any process/user on the VPS can read a valid token. Directive 5 says do not expose secrets; a world-readable bearer credential is a secret-at-rest risk this integration now depends on and normalizes.",
+      "fix": "Add a one-line hardening step: verify and, if needed, tighten the ACL on C:/Users/Administrator/.kimi-code/credentials/kimi-code.json to qm-admin/SYSTEM only, and confirm the adapter continues to log field-names/expiry-epoch only (never token values).",
+      "evidence": "critic.md sec4; kimi_cli.md sec2."
+    },
+    {
+      "severity": "minor",
+      "claim": "Draft 14 maps both directive-22 'malformed output' and 'schema failure' to test_malformed_stream_json_class.",
+      "problem": "Directive 22 lists them as distinct cases: garbage/non-JSON output vs valid JSON that violates the expected stream-json event schema. Collapsing them leaves the valid-JSON-wrong-schema path (a realistic outcome when the auto-updater changes the event framing) untested.",
+      "fix": "Split into test_malformed_stream_json_class (non-JSON) and test_stream_json_schema_mismatch_class (well-formed JSON, unexpected/renamed events), the latter also guarding against silent breakage after a CLI auto-update.",
+      "evidence": "directive 22; kimi_cli.md sec1 (auto_install=true self-updating CLI)."
+    }
+  ],
+  "keep": [
+    "Correctly anchors authority to the now-existing decisions/2026-09-15_owner_kimi_integration_ml_research_r1_internal.md, closing the critic.md sec1 'authorization artifact missing' top gap (that critic ran before the decision file was written).",
+    "The two-plane model (Plane A router / Plane B two spawners) and the explicit requirement that KIMI_LOW_QUOTA.flag be consumed by BOTH planes - this closes the real router-vs-execution pacing gap (GATED_AGENTS={codex,claude} verified quota_spawn_gate.py:36; sync_default_registry only special-cases claude at agent_router.py:1072-1074).",
+    "cost_rank=12 with the explicit 'never < 10' rule, correctly avoiding the D10 gemini-capture defect documented at agent_router.py:118-127.",
+    "R1 handling: recognises R1 is already source-agnostic (_card_r1_build_ready returns bool(source_id) verified farmctl.py:4229-4237; R_STRICT_PASS_FIELDS excludes r1 verified :4219), so only the card_intake_prescreen ML-scan scoping change is strictly required - and correctly gates that change behind the signed HR14/R4 Vault annex (S6 rollback note).",
+    "Keeps runtime R4 (build_check.ps1, .mq5/.mqh only, comments/strings blanked) untouched, so ML-research provenance prose can never trip runtime R4.",
+    "Layered defence keeping an LLM PASS from becoming a pipeline PASS: no code/ops caps (capability omission at agent_router.py:1678-1680), REVIEW-terminal, manual close-review, and Q00-Q17 remaining the judge (directive 17).",
+    "by_creator_vendor.kimi = non-Kimi seats only (never kimi), with test_kimi_creator_critic_is_non_kimi - preserves cross-vendor review for Kimi-authored work per directive 8.2.",
+    "Acknowledges the DSR multiple-testing hook (dsr_cohort.py search_history/research_trial_count/effective_trial_count verified :751-758) so Kimi hypothesis volume must feed trial counting rather than silently inflating survivorship.",
+    "Comprehensive test matrix mapped case-by-case to directive 22, plus the D5 external-unattributed-FAILS / external-valid-PASSES / internal-valid-PASSES / author-Kimi-without-artifact-FAILS / missing-hash-fails-closed cases.",
+    "Probe battery deferred out of the design pass, capped at <=6 tiny live calls with mocks for retry paths, and the scheduled task installed only after the smoke receipt (respects directive 22 'do not burn meaningful subscription capacity').",
+    "Full path-scoped single-commit discipline and a complete rollback table (flag write, registry disable+sync, JSON-only chain revert, task delete, QM_AGENT_CHAIN=0, task-type revert).",
+    "Research intermediates kept small and off D: (65 GB free, below purge lines) and subordinated to the terminal_worker CPU/RAM latches so backtests keep winning contention (directive 6/data_memory.md sec5,7).",
+    "The critic repo-mutation git-hash guard is a good primitive worth keeping (it just needs to become prevention-by-copy plus D:/QM scope per the blocking finding)."
+  ]
+}

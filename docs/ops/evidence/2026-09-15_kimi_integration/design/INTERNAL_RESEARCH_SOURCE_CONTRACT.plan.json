@@ -1,0 +1,111 @@
+{
+  "title": "INTERNAL_RESEARCH_SOURCE_CONTRACT.md — canonical R1 contract for QM-RESEARCH internal sources",
+  "implementation_plan": [
+    {
+      "slice": "S1 — research_source.py resolver/mint/verify tool",
+      "files": [
+        "tools/strategy_farm/research_source.py (new)",
+        "tools/strategy_farm/tests/test_research_source.py (new)"
+      ],
+      "tests": [
+        "test_r1_internal_research_valid_passes",
+        "test_r1_internal_kimi_no_artifact_fails",
+        "test_r1_internal_missing_hash_fails_closed",
+        "test_internal_source_critic_non_kimi"
+      ],
+      "rollback": "Delete tools/strategy_farm/research_source.py; no other module imports it yet, so removal is inert. No DB or ledger writes performed by verify/resolve (mint is the only writer and is not called by the pipeline).",
+      "depends_on": []
+    },
+    {
+      "slice": "S2 — research_source_ledger.jsonl schema + mint/status writer",
+      "files": [
+        "tools/strategy_farm/research_source.py (mint + status_change + reversion append-only writer)",
+        "D:/QM/reports/state/research_source_ledger.jsonl (runtime, created on first mint)"
+      ],
+      "tests": [
+        "test_ledger_append_only_remint",
+        "test_fingerprint_internal_ids_distinct"
+      ],
+      "rollback": "Ledger is append-only and consumed by no gate; stop calling mint. Truncating/removing the JSONL loses provenance index but affects no verdict. Immutability guarantee means no historic row is ever mutated.",
+      "depends_on": [
+        "S1"
+      ]
+    },
+    {
+      "slice": "S3 — card_intake_prescreen ML-scan scoping (the one required gate fix)",
+      "files": [
+        "tools/strategy_farm/card_intake_prescreen.py (_affirmative_prohibited_mechanics: exempt the '## Research provenance' section from the ML text-scan)",
+        "tools/strategy_farm/tests/test_card_intake_prescreen.py (extend)"
+      ],
+      "tests": [
+        "test_prescreen_ml_provenance_exempt",
+        "test_prescreen_r4_frontmatter_ml_trips"
+      ],
+      "rollback": "Revert the single function; the change is additive scoping (a body-span strip before the existing per-line scan). Reverting restores whole-card ML scanning. Keep the frontmatter r4_ml_forbidden/ml_required check and all non-ML patterns untouched, so rollback cannot re-open an EA-ML hole.",
+      "depends_on": []
+    },
+    {
+      "slice": "S4 — farmctl VALID_SOURCE_TYPES += internal_research",
+      "files": [
+        "tools/strategy_farm/farmctl.py (VALID_SOURCE_TYPES tuple at :33580-33583; argparse choices at :38232 inherit automatically)",
+        "tools/strategy_farm/tests/ (add test_valid_source_types_internal_research)"
+      ],
+      "tests": [
+        "test_valid_source_types_internal_research",
+        "test_r1_external_valid_passes",
+        "test_r1_external_unattributed_fails"
+      ],
+      "rollback": "Remove 'internal_research' from the tuple; add_source reverts to rejecting it. Cards-plus-decisions path is unaffected (needs no DB row). No migration, no schema change to the sources table (source_type is free-text there).",
+      "depends_on": []
+    },
+    {
+      "slice": "S5 — canonical doc annexes (paste the §11 texts)",
+      "files": [
+        "docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md (this document, new canonical)",
+        "processes/qb_reputable_source_criteria.md (R1 + R4 annexes)",
+        "01 Identity/Hard Rules.md (HR14 annex — requires the dated DL already minted)",
+        "04 Processes/Research Methodology.md (R1/R4 mirror + source-category row)",
+        "CLAUDE.md (ML bullet cross-ref)"
+      ],
+      "tests": [
+        "docs-only; covered indirectly by T12 test_build_check_runtime_ml_rejected proving runtime R4 is unchanged"
+      ],
+      "rollback": "Annexes are append-only text blocks with a dated 2026-09-15 header; revert by deleting the annex block. Historical evidence and the R1-R4 body remain intact. Do NOT touch dated decisions/ files.",
+      "depends_on": [
+        "S1",
+        "S3",
+        "S4"
+      ]
+    },
+    {
+      "slice": "S6 — regression suite closure + runtime-ML guard proof",
+      "files": [
+        "tools/strategy_farm/tests/test_research_source.py",
+        "tools/strategy_farm/tests/test_card_intake_prescreen.py",
+        "framework/scripts/build_check.ps1 (no change — asserted unchanged by test)"
+      ],
+      "tests": [
+        "test_build_check_runtime_ml_rejected",
+        "full T1-T12 matrix green"
+      ],
+      "rollback": "Tests are additive; removing them does not affect runtime. build_check.ps1 is asserted-unchanged, so this slice proves the safety invariant rather than modifying behaviour.",
+      "depends_on": [
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ]
+    }
+  ],
+  "open_questions": [
+    "Routable DB sources row vs cards-plus-decisions-only for the internal lane: this contract adds internal_research to VALID_SOURCE_TYPES so the option exists, but whether the discovery lane should actually create DB rows (vs the AI-CODEX card+decisions precedent) is a routing decision, not resolved here.",
+    "Scan-exemption anchor: the '## Research provenance' heading is a Fable D5 design choice; if the prescreen implementer prefers a frontmatter flag (provenance_section: true) the §9.3 scoping logic and the annex text must move together.",
+    "source_model attestation: the Kimi CLI -p output prints no confirmed model line (kimi_cli audit §5), so source_model reflects the requested -m alias, not a CLI-confirmed model; acceptable per directive (never invent), recorded as UNKNOWN when the adapter cannot attest it."
+  ],
+  "unverified": [
+    "The exact '## Research provenance' heading as the prescreen scan-exemption marker is a design choice (Fable D5), not an OWNER-fixed constant; alternative markers are possible.",
+    "Whether source_model can be CLI-confirmed per run — the Kimi -p text output carries no model line (kimi_cli audit §5); the adapter records the requested -m alias only.",
+    "Whether the OWNER wants the DB sources row (VALID_SOURCE_TYPES extension exercised) or cards-plus-decisions-only; both are supported, the choice is deferred.",
+    "The precise current line text of Hard Rules HR14 and Research Methodology R1/R4 rows was read via the vault_contracts audit (Hard Rules.md:78-79, Research Methodology.md:90/93) rather than re-opened line-by-line this session for the mirror wording; the annex texts are written to append, not to match a specific surrounding line."
+  ]
+}

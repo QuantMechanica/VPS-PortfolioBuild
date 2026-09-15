@@ -1,0 +1,132 @@
+{
+  "title": "Kimi Internal Edge-Discovery Layer Design",
+  "implementation_plan": [
+    {
+      "slice": "Research package skeleton + resource guard + venv provisioning",
+      "files": [
+        "tools/strategy_farm/research/__init__.py",
+        "tools/strategy_farm/research/research_guard.py",
+        "docs/ops/KIMI_EDGE_DISCOVERY_DESIGN.md"
+      ],
+      "tests": [
+        "tests/research/test_research_guard.py: refuses when simulated CPU>90% / RAM<20GB free / D: free<80GB; passes when all clear"
+      ],
+      "rollback": "Delete tools/strategy_farm/research/ package; no scheduled task installed, no state written; doc removal.",
+      "depends_on": []
+    },
+    {
+      "slice": "OBSERVE — observe_projector.py emitting versioned datasets + manifest with INFRA/economic/measurement split",
+      "files": [
+        "tools/strategy_farm/research/observe_projector.py"
+      ],
+      "tests": [
+        "tests/research/test_observe_projector.py: opens fixture DB mode=ro; economic_runs contains ONLY verdict_taxonomy=strategy; infra/measurement kept in separate files; manifest carries sha256 per file + row_counts + verdict_taxonomy_split; no gzip tree read"
+      ],
+      "rollback": "Delete observe_projector.py and any datasets under D:/QM/reports/research/datasets/ (all derived/rebuildable).",
+      "depends_on": [
+        "Research package skeleton + resource guard + venv provisioning"
+      ]
+    },
+    {
+      "slice": "R1 internal-source enablement — prescreen ML-scan scoping + VALID_SOURCE_TYPES + resolver",
+      "files": [
+        "tools/strategy_farm/card_intake_prescreen.py",
+        "tools/strategy_farm/farmctl.py",
+        "tools/strategy_farm/research_source.py"
+      ],
+      "tests": [
+        "tests/test_card_intake_prescreen.py: card with source_type internal_research + affirmative ML-provenance sentence in '## Research provenance' returns KEEP (no PROHIBITED_MECHANICS:ML); ML term in a mechanics section still REJECTs",
+        "test: external unattributed card still FAILS R1; external valid PASSES; internal QM-RESEARCH valid PASSES; author=Kimi without artifact FAILS; missing hash fails closed",
+        "tests/research/test_research_source.py: mint/resolve/verify QM-RESEARCH://id sha round-trip"
+      ],
+      "rollback": "Revert the three files (scoping change, VALID_SOURCE_TYPES tuple entry); delete research_source.py; external-card behaviour is unchanged so no data migration needed.",
+      "depends_on": [
+        "Research package skeleton + resource guard + venv provisioning"
+      ]
+    },
+    {
+      "slice": "MECHANIZE — mechanization_check.py + templates",
+      "files": [
+        "tools/strategy_farm/research/mechanization_check.py",
+        "processes/qm_research_mechanization_template.md",
+        "strategy-seeds/sources/QM-RESEARCH-TEMPLATE/source.md"
+      ],
+      "tests": [
+        "tests/research/test_mechanization_check.py: missing required section -> MECH_SECTIONS_MISSING; ML term in rules -> MECH_ML_IN_RULES; unbounded param -> MECH_PARAM_UNBOUNDED; dataset/model reference -> MECH_MODEL_DEPENDENCY; complete spec -> PASS"
+      ],
+      "rollback": "Delete mechanization_check.py + template files; no state or schema touched.",
+      "depends_on": [
+        "R1 internal-source enablement — prescreen ML-scan scoping + VALID_SOURCE_TYPES + resolver"
+      ]
+    },
+    {
+      "slice": "PRE-REGISTER — preregister.py + search_history_ledger + research_source_ledger + DSR coupling",
+      "files": [
+        "tools/strategy_farm/research/preregister.py",
+        "tools/strategy_farm/research/stats_corrections.py"
+      ],
+      "tests": [
+        "tests/research/test_preregister.py: freeze record is sha256-stamped and immutable; post-holdout edit mints a new lineage version id",
+        "tests/research/test_search_history.py: each search appended before run; research_trial_count derived from family attempt count",
+        "tests/research/test_stats_corrections.py: Deflated-Sharpe / BH-FDR deterministic given trial count"
+      ],
+      "rollback": "Delete the two files and the append-only JSONL ledgers (D:/QM/reports/research/search_history_ledger.jsonl, D:/QM/reports/state/research_source_ledger.jsonl); ledgers are additive, DSR consumers fall back to declared census count when the ledger is absent.",
+      "depends_on": [
+        "MECHANIZE — mechanization_check.py + templates"
+      ]
+    },
+    {
+      "slice": "LEARN — experiment_memory_ledger + experiment_memory_projector answering the section-19 questions",
+      "files": [
+        "tools/strategy_farm/research/experiment_memory_projector.py"
+      ],
+      "tests": [
+        "tests/research/test_experiment_memory_projector.py: rebuilds idea_outcome_projection.json from fixture work_items_clean+ea_metrics+holds+transition_ledger+poison_pill joined via ea_id_registry.csv; each of the 8 section-19 answers resolves to a work_item_id/evidence_path; INFRA rows excluded from economic answers"
+      ],
+      "rollback": "Delete projector + idea_outcome_projection.json (derived, rebuildable); experiment_memory_ledger.jsonl is append-only and can be removed.",
+      "depends_on": [
+        "OBSERVE — observe_projector.py emitting versioned datasets + manifest with INFRA/economic/measurement split"
+      ]
+    },
+    {
+      "slice": "ATTACK wiring for research artifacts (agent_chain kimi-creator critic receipt into source record)",
+      "files": [
+        "tools/strategy_farm/research/attach_critic_receipt.py"
+      ],
+      "tests": [
+        "tests/research/test_attach_critic_receipt.py: copies qm.agent-chain.receipt.v1 into strategy-seeds/sources/<id>/critic_receipt.json, records its sha256 in research.json; refuses to mint a card if critic_receipt absent; verifies kimi never appears in its own critic table"
+      ],
+      "rollback": "Delete attach_critic_receipt.py; agent_chain config changes are owned by KIMI_INTEGRATION_ARCHITECTURE.md (D4), not this slice.",
+      "depends_on": [
+        "PRE-REGISTER — preregister.py + search_history_ledger + research_source_ledger + DSR coupling"
+      ]
+    },
+    {
+      "slice": "First campaign dry-run (robust-but-inactive cluster) once D: >= 80 GB",
+      "files": [
+        "tools/strategy_farm/research/campaigns/2026-0001_robust_but_inactive.py"
+      ],
+      "tests": [
+        "tests/research/test_campaign_robust_inactive.py: over a fixture economic_runs.parquet, isolates candidates with PF>1, dd within 10%, sharpe>0, trades/yr<5; writes small JSON output; research_guard blocks the run when D: free<80GB"
+      ],
+      "rollback": "Delete the campaign script + its dataset/output under D:/QM/reports/research/; nothing enters the pipeline until a card is manually authored, so no gate/verdict impact.",
+      "depends_on": [
+        "LEARN — experiment_memory_ledger + experiment_memory_projector answering the section-19 questions",
+        "ATTACK wiring for research artifacts (agent_chain kimi-creator critic receipt into source record)"
+      ]
+    }
+  ],
+  "open_questions": [
+    "Dataset reproducibility vs a live DB: observe_projector snapshots farm_state.sqlite (1.26 GB, live, growing). manifest.json records mtime + sha256 of emitted files, but two runs on different days over the same query yield different datasets. Is a per-stamp snapshot sufficient for 'reproducibility', or should the layer pin a copy of the DB per campaign (disk cost)? Not decided by D1-D6.",
+    "search_history_ledger -> research_trial_count injection into a sealed DSR cohort: dsr_cohort.py is fail-closed and only accepts a sealed DL-089 ledger reconstruction (dsr_cohort.py:1-8, 628-663). Exactly how the research-search trial count augments effective_trial_count for a QM-RESEARCH-derived candidate without breaking the sealed-ledger invariant needs a concrete contract (a new source-of-trials field vs a wrapper cohort). Flagged as a design detail, not reopened.",
+    "id form: D5 fixes source_type=internal_research and QM-RESEARCH-YYYY-NNNN, but the qb_reputable_source_criteria.md convention is AI-<agent>-<tag>-<YYYYMMDD> (audit cards_r1_research.md 1a L36). Both are documented; confirm QM-RESEARCH- is the canonical prefix and AI-KIMI- is only an alias, to avoid two namespaces (INTERNAL_RESEARCH_SOURCE_CONTRACT.md territory).",
+    "Whether an internal-research card needs a distinct '## Research provenance' heading name that both the prescreen exemption and the mechanization_check exemption key on identically -- the exact heading string must be a shared constant between card_intake_prescreen.py and mechanization_check.py or the two exemptions can drift."
+  ],
+  "unverified": [
+    "Disk figure D: 65.6 GB free and the 80 GB DISCOVER gate tension is taken from audit data_memory.md 5 and D6; the live free-space number will differ by the time of implementation (tester-cache purge runs every 10 min) -- treat 80 GB as the gate, not 65.6 as a fixed state.",
+    "The exact agent_chain by_creator_vendor.kimi table contents ([claude sonnet, codex terra, agy]) are per D4; I did not read agent_chain.v1.json directly this session (router_providers.md 4 confirms current vendors are claude/codex/agy with no kimi key). The critic table is created by the KIMI_INTEGRATION_ARCHITECTURE.md work, not this doc.",
+    "Kimi model display K2.8 for kimi-code/kimi-for-coding is from kimi_cli.md 3; the running model id per call must be recorded at runtime (D1: --version per run, auto-updater on) since the CLI self-updates (kimi_cli.md 7).",
+    "ea_metrics.detail_json is stated to carry per-year/fold/seed structure (ea_metrics.py docstring per audit 1.3); the exact per-year consistency fields the first campaign needs were not opened this session and must be confirmed against a live detail_json before the campaign query is written.",
+    "The Q02 frequency floor of >=5 trades/yr is cited from OPERATING_RULES_2026-07-03.md via CLAUDE.md; I did not re-open that file this session to confirm the exact current threshold."
+  ]
+}

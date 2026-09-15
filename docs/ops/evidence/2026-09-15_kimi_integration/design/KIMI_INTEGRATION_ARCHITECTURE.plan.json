@@ -1,0 +1,202 @@
+{
+  "title": "KIMI_INTEGRATION_ARCHITECTURE.md",
+  "implementation_plan": [
+    {
+      "slice": "S1 — Provider adapter (kimi_adapter.py) + config",
+      "files": [
+        "tools/strategy_farm/kimi_adapter.py (new)",
+        "tools/strategy_farm/config/kimi_adapter.v1.json (new: KIMI_BIN path, model-per-capability map, timeout=600/max=1800, retries=2)",
+        "tests/test_kimi_adapter.py (new)",
+        "tests/test_kimi_backend_contract.py (new, mirror test_antigravity_backend_contract.py)"
+      ],
+      "tests": [
+        "test_invoke_stream_json_parses_final_text (mock subprocess)",
+        "test_auth_expired_classified_no_silent_retry",
+        "test_watchdog_timeout_classified",
+        "test_rate_limited_class",
+        "test_malformed_stream_json_class",
+        "test_retry_exhaustion_max2",
+        "test_cli_missing_class",
+        "test_no_secret_fields_logged",
+        "test_max_parallel_1_enforced",
+        "test_critic_repo_mutation_guard_fails_run (git hash before/after)"
+      ],
+      "rollback": "Delete the two new modules; no other surface references them yet. Adapter is inert until a lane calls it.",
+      "depends_on": []
+    },
+    {
+      "slice": "S2 — Quota governor + flag + usage ledger",
+      "files": [
+        "tools/strategy_farm/kimi_governor.py (new, mirror agy_governor.py)",
+        "tools/strategy_farm/config/kimi_governor.v1.json (new: daily/weekly call caps, subscription period 2026-09-15 + 1 month)",
+        "D:/QM/reports/state/kimi_usage_ledger.jsonl (runtime, written by adapter)",
+        "D:/QM/reports/state/kimi_governor_state.json (runtime ownership state)",
+        "tests/test_kimi_governor.py (new)"
+      ],
+      "tests": [
+        "test_states_normal_conserve_exhausted",
+        "test_conserve_on_quota_streak",
+        "test_conserve_allows_only_high_value_caps",
+        "test_exhausted_writes_KIMI_LOW_QUOTA_flag_with_managed_by",
+        "test_flag_never_gates_backtests",
+        "test_clear_only_own_flag_by_marker"
+      ],
+      "rollback": "Write KIMI_LOW_QUOTA.flag manually to force EXHAUSTED, or delete kimi_governor.py + its scheduled task; adapter still records the ledger harmlessly.",
+      "depends_on": [
+        "S1"
+      ]
+    },
+    {
+      "slice": "S3 — Router lane + task types (Plane A)",
+      "files": [
+        "tools/strategy_farm/agent_router.py (DEFAULT_AGENT_REGISTRY += kimi row max_parallel=1 cost_rank=12; TASK_TYPE_CAPABILITIES += research_edge_discovery/research_hypothesis/research_critique; sync_default_registry reads KIMI_LOW_QUOTA.flag like CLAUDE_DISABLED at :1072-1074)",
+        "tests/test_agent_router.py (extend)"
+      ],
+      "tests": [
+        "test_kimi_routable_new_task_types",
+        "test_cost_rank_12_no_research_strategy_capture",
+        "test_kimi_low_quota_disables_lane",
+        "test_kimi_excluded_from_build_ea_and_ops (no code cap)",
+        "test_kimi_not_in_AGENT_TASK_TYPE_LANES"
+      ],
+      "rollback": "Set kimi row enabled:False/max_parallel:0 then run sync_default_registry (5-min task or manual); revert the three TASK_TYPE_CAPABILITIES entries. Registry DB row updates on next canonical sync.",
+      "depends_on": [
+        "S1",
+        "S2"
+      ]
+    },
+    {
+      "slice": "S4 — Orchestration lane branch (Plane B spawner)",
+      "files": [
+        "tools/strategy_farm/run_agent_orchestration_task.py (KIMI_BIN + KIMI_HEADLESS_MODEL consts; kimi branch in resolve_cli:155, agent_env:182 (USERPROFILE/HOME), build_prompt:206, command_for:408 (prompt file + pointer argv, --auto, stream-json), headless_model_contract:501, run_agent_slot:697, --agent choices:1906; REVIEW-terminal/no-self-approve mirror of gemini :273-294)",
+        "tests/test_agent_orchestration_lock.py (extend for kimi lock/lease release)"
+      ],
+      "tests": [
+        "test_kimi_branch_builds_prompt_file_and_pointer_argv",
+        "test_kimi_terminates_in_REVIEW_no_self_approve",
+        "test_kimi_lock_released_on_failure"
+      ],
+      "rollback": "Remove kimi from the --agent choices tuple (branch becomes unreachable) and do not install the scheduled task; other lanes untouched.",
+      "depends_on": [
+        "S1",
+        "S3"
+      ]
+    },
+    {
+      "slice": "S5 — agent_chain vendor + critic tables (Plane B chain)",
+      "files": [
+        "tools/strategy_farm/config/agent_chain.v1.json (vendors.kimi; gates.kimi_low_quota_flag; by_creator_vendor.kimi = non-kimi only; insert kimi into claude/codex/agy/unknown creator tables; formatter stays haiku)",
+        "tools/strategy_farm/agent_chain.py (VENDOR_ALIASES moonshot/k2->kimi :68; vendor_gate kimi branch :172; resolve_cli/seat_env/_model_id :352-393; run_seat elif + run_kimi mirroring _run_agy/_run_claude :421/:552/:617)",
+        "tests/test_agent_chain.py (extend)"
+      ],
+      "tests": [
+        "test_kimi_creator_critic_is_non_kimi",
+        "test_kimi_eligible_as_critic_for_claude_codex",
+        "test_kimi_gated_falls_to_next_critic_seat (cross_vendor recorded)",
+        "test_kimi_never_formatter",
+        "test_unknown_vendor_still_fails_closed"
+      ],
+      "rollback": "Remove the kimi vendor block + creator-table entries from agent_chain.v1.json (JSON-only revert); chain reverts to claude/codex/agy. Env kill switch QM_AGENT_CHAIN=0 disables the whole sweep.",
+      "depends_on": [
+        "S1",
+        "S2"
+      ]
+    },
+    {
+      "slice": "S6 — R1 internal_research source class + resolver",
+      "files": [
+        "tools/strategy_farm/card_intake_prescreen.py (_affirmative_prohibited_mechanics :464-489 scoped to mechanics sections, exempt '## Research provenance')",
+        "tools/strategy_farm/farmctl.py (VALID_SOURCE_TYPES :33580 += 'internal_research' — only if a routable DB sources row is wanted)",
+        "tools/strategy_farm/research_source.py (new: mint/resolve/verify QM-RESEARCH://id)",
+        "strategy-seeds/sources/QM-RESEARCH-YYYY-NNNN/ (durable store convention)",
+        "D:/QM/reports/state/research_source_ledger.jsonl (append-only registry)",
+        "tests/test_card_intake_prescreen.py, tests/test_internal_research_source.py (new)"
+      ],
+      "tests": [
+        "test_ml_provenance_section_not_rejected",
+        "test_external_unattributed_fails",
+        "test_external_valid_passes",
+        "test_valid_kimi_source_passes",
+        "test_author_kimi_without_artifact_fails",
+        "test_missing_hash_fails_closed",
+        "test_qm_research_uri_resolves_and_verifies_sha"
+      ],
+      "rollback": "Revert the prescreen scoping and VALID_SOURCE_TYPES edits; research_source.py is standalone and can be left unused. NOTE: gate the prescreen change behind the signed HR14/R4 DL annex — do not ship ahead of it.",
+      "depends_on": []
+    },
+    {
+      "slice": "S7 — Scheduled tasks (only after smoke receipt)",
+      "files": [
+        "tools/strategy_farm/install_agent_orchestration_scheduled_tasks.ps1 (definitions :42-46 += QM_StrategyFarm_KimiOrchestration_15min; new QM_StrategyFarm_KimiGovernor_15min mirroring AgyGovernor; SYSTEM branch :83-91 unless probe requires console hop :68-82; MaxSessions=1)",
+        "docs/ops/evidence/2026-09-15_kimi_integration/kimi_smoke_receipt.json (runtime, from probe battery)"
+      ],
+      "tests": [
+        "manual: kimi smoke receipt exists and rc=0 before task install",
+        "QM_StrategyFarm_KimiGovernor_15min runs kimi_governor.py --dry-run clean"
+      ],
+      "rollback": "Disable or delete both scheduled tasks (Unregister-ScheduledTask); lanes stop spawning while code stays inert.",
+      "depends_on": [
+        "S2",
+        "S4",
+        "S5",
+        "S8"
+      ]
+    },
+    {
+      "slice": "S8 — Probe battery (<=6 tiny live calls) + observability wiring",
+      "files": [
+        "tools/strategy_farm/logs/routing_receipts/ (runtime receipt dir)",
+        "docs/ops/evidence/2026-09-15_kimi_integration/kimi_probe_results.md (findings: stream-json schema, prompt delivery, exit codes, plan mode, stdin/TTY, SYSTEM credential refresh)"
+      ],
+      "tests": [
+        "probe 1 prompt delivery (-p argv vs @file vs stdin)",
+        "probe 2 stream-json event schema",
+        "probe 3 exit codes on auth failure (bogus config in temp HOME)",
+        "probe 4 plan-mode",
+        "probe 5 stdin-vs-ConPTY headless",
+        "probe 6 credential refresh under SYSTEM"
+      ],
+      "rollback": "Probes are read-only observations; no rollback. Findings feed S4/S7 config choices. Do not burn meaningful quota — mocks for retry paths.",
+      "depends_on": [
+        "S1"
+      ]
+    },
+    {
+      "slice": "S9 — Documentation + drift closure",
+      "files": [
+        "CLAUDE.md (roster: three->four agents; Quota Governance: add kimi_governor.py + KIMI_LOW_QUOTA.flag + QM_StrategyFarm_Kimi* tasks)",
+        "docs/ops/KIMI_INTEGRATION_ARCHITECTURE.md (this document)",
+        "G:/.../02 Org/Company Structure.md + AI Agent Routing and Role Contracts.md (annex: fourth AI, kimi row, cross-vendor rotation)",
+        "G:/.../01 Identity/Hard Rules.md HR14 + processes/qb_reputable_source_criteria.md R4 (OWNER-signed DL annex scoping ML ban to EA decision engine — companion deliverable, gates S6)"
+      ],
+      "tests": [
+        "doc review: no undocumented-but-live mechanism remains (drift audit cross-check)",
+        "registry vs Vault agree on four lanes"
+      ],
+      "rollback": "Docs are annexes (append-only); revert the CLAUDE.md edits if the integration is rolled back. Historical decisions/evidence untouched.",
+      "depends_on": [
+        "S3",
+        "S4",
+        "S5",
+        "S6",
+        "S7"
+      ]
+    }
+  ],
+  "open_questions": [
+    "cost_rank=12 is the design choice (behind gemini 10, ahead of codex 20/claude 30) to make kimi preferred for the NEW research task types without capturing the generic [research,strategy] funnel from the cheaper gemini lane. If OWNER wants kimi preferred for ALL research including research_strategy, cost_rank must go below 10 AND gemini's research capture must be re-examined — that is a routing-policy decision, not settled here.",
+    "Whether a routable DB `sources` row (extending farmctl.VALID_SOURCE_TYPES with 'internal_research') is wanted, or card+decisions-only per the existing AI-source precedent (AI-CODEX-... sources). cards_r1_research §2b defers this; it changes whether add-source accepts internal research.",
+    "Whether Kimi may ever be a SOLE critic. Directive §8 requires a non-Kimi critic for Kimi-authored work but is silent on whether Kimi can be the only critic for a Claude/Codex creator; agy is explicitly backup-only, so a parallel 'kimi backup-only until it proves itself' stance may be warranted for its first weeks (critic §2)."
+  ],
+  "unverified": [
+    "Kimi stream-json event schema (parsed to final assistant text) — untested; settled by probe 2.",
+    "Prompt delivery: whether `-p` accepts a file pointer (@file), stdin, or whether large (>32KB) prompts require `kimi acp` stdio server — the kimi_cli-vs-router_providers contradiction; settled by probe 1.",
+    "Non-zero CLI exit-code taxonomy — only exit 0 observed (audit §6); settled by probe 3 with a bogus provider config in a temp HOME.",
+    "Concurrency / rate-limit behaviour of the coding subscription — undocumented locally (audit §6).",
+    "Whether the status_line `usage` JSON field is subscription-remaining vs per-session tokens (critic §3) — determines if usage_snapshot in the ledger is meaningful.",
+    "Whether the 15-min OAuth token refresh succeeds under a SYSTEM (session-0) scheduled task or needs the run_in_console_session.ps1 hop (audit §2, critic §4); settled by probe 6.",
+    "Plan-mode (--plan) output shape and whether it is useful for a read-only critic dry pass; settled by probe 4.",
+    "stdin-vs-TTY/ConPTY: whether a piped/SYSTEM invocation runs headless or hangs agy-class (router_providers risk 3); settled by probe 5.",
+    "Exact D: free space at implementation time — was ~65GB (below purge lines) at audit; research/kimi outputs must stay off D: (data_memory §5)."
+  ]
+}
