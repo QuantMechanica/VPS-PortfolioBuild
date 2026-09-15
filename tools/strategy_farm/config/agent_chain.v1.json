@@ -1,0 +1,74 @@
+{
+  "schema": "qm.agent-chain.v1",
+  "_doc": "Creator -> Critic -> Formatter prompt chain with a cross-vendor critic (OWNER 2026-09-15). The critic for a deliverable is resolved from a DIFFERENT vendor than the creator whenever a seat is available; same-vendor fallbacks are allowed only as the last candidate and are recorded as cross_vendor=false in the receipt. Seats: claude (Claude Code headless, models opus/sonnet/haiku), codex (Codex CLI, tiers from agent_quota_gate.v1.json), agy (Antigravity, research-only backup: hallucinates, never the sole critic unless allow_agy is set on the spec). Kill switch: env QM_AGENT_CHAIN=0.",
+  "vendors": {
+    "claude": {
+      "models": {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku"},
+      "read_only_tools": ["Read", "Grep", "Glob"]
+    },
+    "codex": {
+      "tiers": {"sol": "gpt-5.6-sol", "terra": "gpt-5.6-terra", "luna": "gpt-5.6-luna"},
+      "sandbox": "read-only"
+    },
+    "agy": {
+      "models": {"default": ""}
+    }
+  },
+  "roles": {
+    "creator": {
+      "default": {"vendor": "claude", "model": "sonnet"}
+    },
+    "critic": {
+      "cross_vendor_required": true,
+      "by_creator_vendor": {
+        "claude": [
+          {"vendor": "codex", "model": "terra", "effort": "medium"},
+          {"vendor": "agy", "model": "default"},
+          {"vendor": "claude", "model": "opus", "note": "same-vendor fallback: different model, cross_vendor=false"}
+        ],
+        "codex": [
+          {"vendor": "claude", "model": "sonnet"},
+          {"vendor": "claude", "model": "opus"},
+          {"vendor": "agy", "model": "default"}
+        ],
+        "agy": [
+          {"vendor": "claude", "model": "sonnet"},
+          {"vendor": "codex", "model": "terra", "effort": "medium"}
+        ],
+        "unknown": [
+          {"vendor": "codex", "model": "terra", "effort": "medium"},
+          {"vendor": "claude", "model": "opus"},
+          {"vendor": "agy", "model": "default"}
+        ]
+      }
+    },
+    "formatter": {
+      "default": {"vendor": "claude", "model": "haiku"},
+      "fallback": [{"vendor": "claude", "model": "sonnet"}]
+    }
+  },
+  "limits": {
+    "stage_timeout_seconds": 900,
+    "max_rounds": 1,
+    "critique_pending_max": 2,
+    "input_max_bytes": 240000,
+    "inline_input_max_bytes": 60000
+  },
+  "gates": {
+    "codex_budget_line": true,
+    "claude_disabled_flag": "D:/QM/strategy_farm/CLAUDE_DISABLED.flag",
+    "codex_low_tokens_flag": "D:/QM/strategy_farm/CODEX_LOW_TOKENS.flag",
+    "agy_low_quota_flag": "D:/QM/strategy_farm/AGY_LOW_QUOTA.flag"
+  },
+  "paths": {
+    "artifact_root": "D:/QM/strategy_farm/artifacts/agent_chain",
+    "receipt_root": "D:/QM/strategy_farm/state/agent_chain",
+    "lane_log_dir": "D:/QM/strategy_farm/logs",
+    "farm_db": "D:/QM/strategy_farm/state/farm_state.sqlite"
+  },
+  "critique": {
+    "task_states": ["REVIEW"],
+    "skip_task_types": ["review_ea"],
+    "_skip_doc": "review_ea already runs the build chain codex_build_ea -> codex_review_ea -> claude_review_ea; the generic critic must not double it."
+  }
+}
