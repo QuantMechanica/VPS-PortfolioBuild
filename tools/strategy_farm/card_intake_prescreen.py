@@ -170,7 +170,7 @@ def _sha256(path: Path) -> str:
 
 
 def _parse_frontmatter(text: str) -> tuple[dict[str, str], str]:
-    normalized = text.replace("\r\n", "\n")
+    normalized = text.replace("\r\n", "\n").lstrip("\ufeff")
     if not normalized.startswith("---\n"):
         return {}, normalized
     end = normalized.find("\n---", 4)
@@ -377,7 +377,7 @@ def _heading_has(document: CardDocument, *needles: str) -> bool:
 
 
 def missing_charter_sections(document: CardDocument) -> tuple[str, ...]:
-    lower = document.body.lower()
+    lower = re.sub(r"\s+", " ", document.body.lower())
     missing: list[str] = []
     structural = _heading_has(document, "structural cause", "hypothesis", "thesis", "edge hypothesis")
     structural = structural and bool(
@@ -477,7 +477,11 @@ def _affirmative_prohibited_mechanics(document: CardDocument) -> tuple[str, ...]
         "MARTINGALE": re.compile(r"\bmartingale\b", re.I),
         "AVERAGING_INTO_LOSERS": re.compile(r"\b(?:averag(?:e|ing) (?:down|into (?:a )?los)|add(?:ing)? to losers)\b", re.I),
     }
-    for line in document.text.splitlines():
+    # Markdown prose is commonly hard-wrapped after a comma. Join lowercase
+    # continuation lines so "No HFT, ML, grid,\nmartingale ..." remains one
+    # negative clause rather than turning the second physical line affirmative.
+    scan_text = re.sub(r"(?<!\n)\n(?=[a-z])", " ", document.text)
+    for line in scan_text.splitlines():
         for name, pattern in patterns.items():
             match = pattern.search(line)
             if match and not _line_is_negated(line, match):
@@ -502,7 +506,7 @@ def evaluate_card(
         differentiation = any(
             phrase in document.body.lower()
             for phrase in (
-                "dedup", "different from", "differs from", "distinct from",
+                "dedup", "duplicate fingerprint", "different from", "differs from", "distinct from",
                 "evidence-based delta", "sole carrier change",
             )
         )

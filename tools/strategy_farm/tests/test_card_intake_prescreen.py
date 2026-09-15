@@ -153,3 +153,16 @@ def test_apply_is_default_off_and_moves_only_when_called(tmp_path: Path, monkeyp
     assert destination.exists()
     assert "prescreen_reason:" in destination.read_text(encoding="utf-8")
     assert applied["summary"]["mutated"] == 1
+
+
+def test_utf8_bom_and_wrapped_negative_prohibition_are_supported(tmp_path: Path) -> None:
+    candidate = _card(tmp_path / "review" / "bom.md", slug="bom-safe")
+    text = candidate.read_text(encoding="utf-8")
+    text = text.replace(
+        "No HFT, ML, grid, martingale, or averaging into losers.",
+        "No HFT, ML, grid,\nmartingale, or averaging into losers.",
+    )
+    candidate.write_text("\ufeff" + text, encoding="utf-8")
+    result = _evaluate(candidate, tmp_path)
+    assert result["ea_id"] == "QM5_90001"
+    assert result["verdict"] == "KEEP", result["reasons"]
