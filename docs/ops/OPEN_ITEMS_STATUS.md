@@ -4827,3 +4827,4 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - RESOLVED 08:0xZ (chain critic B12): `strategy_calendar_symbol=XAGUSD.DWX` in the staged 1537 live preset is the registry KEY by EA design (identity checks only; market data via `_Symbol`); evidence in the Q16 checklist addendum. No change.
 - DONE 08:0xZ: D4 (Book2 profile builder + verify, presets staged, T_Live_ON recovery pointer, cutover ceremony script; preflight
   all green). Q16 check 1 re-scoped: binary identity by SHA256 factory→T_Live (no recompile, identity rule). Next: F4 FTMO demo package.
+- OPEN 08:1xZ (Sonnet 42a437a4, due Wed): FTMO demo book v2 admission census; Fri: package + profile + FTMO_ON pointer (Claude).

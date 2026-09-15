@@ -1,0 +1,31 @@
+{
+  "title": "FTMO demo book v2 admission census (book sprint F4, due Wed 2026-09-16 18:00Z): for every sleeve of the DXZ v2 roster (28 in D:/QM/reports/portfolio/dxz_v2_20260913/build_28_r11/analytic_preview_manifest_28_r11.json; 12969 is replaced by QM5_41470, 12778/13117 are dark .DWX-literal no-ops) decide ADMIT / EXCLUDE for a burn-in deployment on the FTMO DEMO terminal (account 1514536732, FTMO-Demo, data dir C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850, governor QM5_13206 policy FTMO_2S_P1_100K_V2 unchanged): (a) FTMO raw symbol per sleeve from framework/registry/execution_symbol_aliases_v1.json (FTMO_TRIAL venue: GBPUSD, GER40.cash, US100.cash, US30.cash, USDJPY, USOIL.cash, XAUUSD) plus the bare FX names and XAGUSD already used by the Default profile; for symbols without a verified FTMO name (SP500 -> US500.cash?, XNGUSD -> ?, EURGBP, AUDCAD, AUDUSD) bind the name from the FTMO terminal's own symbol inventory (bases/FTMO-Demo symbols.raw, terminal logs, or the 2026-09-14 cost snapshot) or mark UNVERIFIED -> EXCLUDE; (b) EA symbol-handling class of the exact binary that would be deployed (the DXZ live binary in C:/QM/mt5/T_Live/MT5_Base/MQL5/Experts/Live EAs/<name>.ex5, or the staging binary in C:/QM/deploy/DXZ_V2_20260913/eas and repair_v2/eas; bind sha256): chart-symbol-only / symbol-input-slot / .DWX-literal (use tools/strategy_farm/ea_symbol_literal_inventory.py and the mq5 source) -> .DWX-literal = EXCLUDE; (c) whether that binary supports qm_news_compliance=2 (FTMO news rule) or only mode 1 (older framework) - record, do not exclude (demo burn-in); (d) magic = ea_id*10000+slot with the slot from the DXZ preset, collision check against the 8 magics the FTMO governor already allows (107060001,114210000,114220004,119100006,130540000,15370001,200480000,215050000) and the registry; (e) RISK_PERCENT = the DXZ v2 per-sleeve weight (weight_risk_percent for existing, burn_in_risk_percent for new) - list per sleeve. Output roster_ftmo_demo_v2.json (schema documented in the README) + README with the ADMIT/EXCLUDE table, evidence paths and sha256 bindings. No terminal start, no chart attach, no file written into the FTMO data dir, no governor policy change.",
+  "why_now": "OWNER order 2026-09-14: a new FTMO book by Sunday 2026-09-20 12:00 local; strict Q11_FTMO gate admits 0/16 (builder BAR_NOT_MET), so the deliverable is the FTMO DEMO book v2 = DXZ v2 roster on FTMO names as burn-in (sprint file F3 decision 2026-09-15). The FTMO demo terminal today runs 8 sleeves at 0.3125 % each with FTMO-flavour binaries (Experts\\QM_FTMO); the roster's other EAs have no FTMO-flavour build, and rebuilding = new identity (identity rule) - so the package must reuse the sha-bound DXZ binaries and needs this census before the profile/copy plan is built (Fri).",
+  "acceptance": [
+    "roster_ftmo_demo_v2.json: one row per roster sleeve with ea_id, dxz_symbol, ftmo_symbol (or UNVERIFIED), symbol_source (alias table / terminal inventory / cost snapshot / unverified), binary_path, binary_sha256, symbol_handling_class, news_compliance_capability, slot, magic, magic_collision (bool), risk_percent, decision ADMIT|EXCLUDE, reason",
+    "README table + counts; every EXCLUDE has a reason bound to evidence (file:line or tool output path)",
+    "the governor input deltas listed: new allowed_magics_csv and governed_symbols_csv values (as a proposal, not applied)",
+    "tests or a re-runnable script (tools/strategy_farm/ftmo_demo_v2_census.py) so the census can be re-run after Codex/agy review; 0 writes outside docs/ops/evidence/2026-09-15_ftmo_demo_v2_census/ and tools/",
+    "no terminal start, no FTMO data-dir writes, no chart attach, no governor policy change, no recompile"
+  ],
+  "evidence": [
+    "docs/ops/BOOK_SPRINT_2026-09-20.md (F3 decision, F4 item)",
+    "decisions/2026-09-14_owner_book_order_ftmo.md",
+    "docs/ops/evidence/2026-09-14_ftmo_book_v2/README.md (cost snapshot v2, 5/10 symbols)",
+    "framework/registry/execution_symbol_aliases_v1.json",
+    "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Profiles/Charts/Default (current demo book: governor chart01 inputs, 8 sleeves)",
+    "C:/QM/deploy/DXZ_V2_20260913/profile/DarwinexZero_Book2_LiveOps/profile_manifest.json (DXZ v2 charts: ea, slot, magic, risk, expert path)",
+    "tools/strategy_farm/ea_symbol_literal_inventory.py",
+    "docs/ops/evidence/2026-09-06_ftmo_demo_governor/ (governor 13206 contract)"
+  ],
+  "hard_limits": [
+    "read-only against both live terminals; never start terminal64.exe; no writes into the FTMO or T_Live data dirs",
+    "no recompile of any EA (identity rule: rebuilt ex5 = new identity); the census binds the existing sha-bound binaries",
+    "governor policy FTMO_2S_P1_100K_V2 and its thresholds untouched; input deltas are a proposal",
+    "append-only evidence; explicit git pathspecs"
+  ],
+  "required_capabilities": ["code", "ops"],
+  "model_tier": "terra",
+  "requested_by": "Orchestrator Claude 2026-09-15 08:1xZ (book sprint F4)",
+  "lane_note": "Claude headless lane (Sonnet); SPRINT ticket - above the Dukascopy work"
+}

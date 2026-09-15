@@ -108,3 +108,9 @@ book with the exact remaining OWNER acts.
   precedent + identity rule), 1537 sleeve-calendar dependency bound (Common/Files, sha 401E0D91…). Sunday sequence: OWNER Market
   Watch → `tlive_book_cutover.py apply --i-am-orchestrator` → verification → governor enforce (adapter dry-run first, then
   `--governor-apply` once the monitor v2 snapshot reports v2). Next: F4 FTMO demo package.
+- **2026-09-15 (Tue, 08:1xZ)** — F4 plan fixed: the FTMO demo terminal runs FTMO-flavour builds for only 9 EAs (Experts\QM_FTMO); the
+  roster's other binaries would need a rebuild = new identity → the demo book v2 reuses the sha-bound DXZ binaries. Before any
+  package: admission census per sleeve (FTMO raw symbol, symbol-handling class, news-compliance capability, magic collision, risk)
+  → Sonnet ticket 42a437a4 (due Wed 18:00Z). Fri: profile `FTMO_Demo_Book2` via build_tlive_book_profile.py (template = Default charts),
+  governor chart01 input deltas (allowed_magics_csv, governed_symbols_csv; policy unchanged), copy plan into the FTMO data dir,
+  FTMO_ON recovery pointer (same pattern as T_Live_ON), ceremony variant; Sunday after DXZ.
