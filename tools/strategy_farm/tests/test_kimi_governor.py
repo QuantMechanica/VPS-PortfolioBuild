@@ -219,3 +219,101 @@ def test_evaluate_writes_state_file_and_flag(tmp_path: Path, gov: dict) -> None:
     assert Path(gov["state_path"]).exists()
     assert Path(gov["flag_path"]).exists()
     assert info["allowed_capabilities"] == []
+
+
+# --- real quota telemetry (OWNER-DEC-CBE-20260915 sec30-33) ----------------------
+
+def _quota(*, fetch_status: str = "ok", r5h: float | None = None, r7d: float | None = None,
+           monthly: float | None = None, ts: dt.datetime = NOW, plan: str = "Allegro") -> dict:
+    def win(r):
+        return None if r is None else {"used_ratio": r, "reset_at": ts.isoformat()}
+    return {
+        "schema": "qm.kimi-quota/v1", "fetch_status": fetch_status, "plan": plan,
+        "source": "api.kimi.com/coding/v1/usages",
+        "source_timestamp": ts.replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "rolling_5h": win(r5h), "rolling_7d": win(r7d), "monthly": win(monthly),
+        "breakdown": None, "extra_quota_active": False,
+    }
+
+
+def test_real_ratios_drive_normal(gov: dict) -> None:
+    info = kg.compute_state(_rows(2), gov, now=NOW, quota_state=_quota(r5h=0.10, r7d=0.02))
+    assert info["state"] == "NORMAL"
+    assert info["usage_source"] == "managed_usage_endpoint"
+    assert info["real_quota"]["plan"] == "Allegro"
+
+
+def test_real_ratios_drive_conserve_on_window(gov: dict) -> None:
+    # 5h window at 0.85 >= 0.80 conserve threshold -> CONSERVE from REAL telemetry,
+    # even though only 2 calls are in the ledger (well below the runaway guard).
+    info = kg.compute_state(_rows(2), gov, now=NOW, quota_state=_quota(r5h=0.85, r7d=0.05))
+    assert info["state"] == "CONSERVE"
+    assert info["usage_source"] == "managed_usage_endpoint"
+
+
+def test_real_ratios_drive_conserve_on_monthly(gov: dict) -> None:
+    info = kg.compute_state(_rows(1), gov, now=NOW, quota_state=_quota(r5h=0.1, monthly=0.90))
+    assert info["state"] == "CONSERVE"
+
+
+def test_real_ratios_drive_exhausted(gov: dict) -> None:
+    info = kg.compute_state(_rows(1), gov, now=NOW, quota_state=_quota(r5h=0.99, r7d=0.2))
+    assert info["state"] == "EXHAUSTED"
+    assert info["usage_source"] == "managed_usage_endpoint"
+
+
+def test_runaway_guard_still_trips_with_normal_real_ratios(gov: dict) -> None:
+    # Real subscription is basically unused, but a runaway loop burned the local guard
+    # (10/10 daily) -> EXHAUSTED anyway. Anomaly protection is never disabled (sec33).
+    info = kg.compute_state(_rows(10), gov, now=NOW, quota_state=_quota(r5h=0.0, r7d=0.0))
+    assert info["state"] == "EXHAUSTED"
+    assert any("runaway guard" in r for r in info["reasons"])
+
+
+def test_stale_real_state_falls_back_to_ledger(gov: dict) -> None:
+    stale = _quota(r5h=0.99, ts=NOW - dt.timedelta(hours=2))  # older than max_state_age_s
+    info = kg.compute_state(_rows(2), gov, now=NOW, quota_state=stale)
+    # The stale 0.99 must NOT drive EXHAUSTED; we fall back to the (quiet) ledger.
+    assert info["state"] == "NORMAL"
+    assert info["usage_source"] == "local_ledger_fallback"
+    assert info["fallback_class"] == "ok"
+
+
+def test_auth_error_real_state_falls_back(gov: dict) -> None:
+    info = kg.compute_state(_rows(2), gov, now=NOW,
+                            quota_state=_quota(fetch_status="auth_error"))
+    assert info["usage_source"] == "local_ledger_fallback"
+    assert info["fallback_class"] == "auth_error"
+    assert info["state"] == "NORMAL"  # ledger is quiet -> safe fallback
+
+
+def test_network_error_fallback_still_honours_ledger_exhaustion(gov: dict) -> None:
+    # Fetch failed, but the local ledger shows the runaway guard is hit -> EXHAUSTED.
+    info = kg.compute_state(_rows(10), gov, now=NOW,
+                            quota_state=_quota(fetch_status="network_error"))
+    assert info["usage_source"] == "local_ledger_fallback"
+    assert info["state"] == "EXHAUSTED"
+
+
+def test_legacy_path_unchanged_when_no_quota_state(gov: dict) -> None:
+    info = kg.compute_state(_rows(2), gov, now=NOW)  # no quota_state
+    assert info["usage_source"] == "local_ledger_only"
+    assert info["fallback_class"] is None and info["real_quota"] is None
+
+
+def test_evaluate_prefers_injected_real_quota(tmp_path: Path, gov: dict) -> None:
+    ledger = Path(gov["ledger_path"])
+    ledger.write_text("\n".join(json.dumps(r) for r in _rows(2)) + "\n", encoding="utf-8")
+    cfg = {"schema": "qm.kimi-adapter.v1", "governor": gov}
+    info = kg.evaluate(cfg, now=NOW, quota_state=_quota(r5h=0.99))
+    assert info["state"] == "EXHAUSTED"
+    assert info["usage_source"] == "managed_usage_endpoint"
+    assert Path(gov["flag_path"]).exists()
+
+
+def test_runaway_guard_default_raised_to_120_600() -> None:
+    # Directive sec33: with no explicit caps, the guard defaults are raised well above
+    # the old 40/200 so they cannot bind before the real telemetry does.
+    gov = kg.governor_config({"schema": "qm.kimi-adapter.v1", "governor": {}})
+    assert gov["runaway_guard"] == {"day": 120, "week": 600}
+    assert gov["caps"] == {"day": 120, "week": 600}  # legacy alias preserved

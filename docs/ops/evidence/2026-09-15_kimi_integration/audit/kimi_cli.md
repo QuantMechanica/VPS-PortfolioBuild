@@ -112,3 +112,14 @@ C:\Users\Administrator\.kimi-code\bin\kimi.exe -p "<PROMPT>" --output-format str
 - **Error classes:** exit 0 = ok; non-zero/empty → classify auth-expired (needs `kimi login`/`kimi acp --login` device-code, not silently automatable) vs transient network/region (retry+backoff) vs other. Cheap health checks: `kimi provider list` (source=oauth) and `kimi doctor` before batches.
 - **Multi-turn / tools:** drive `kimi acp` (Agent Client Protocol over stdio); manage sessions with `kimi session list --json` and archive with `kimi export`.
 - **Governance:** track spend in an external ledger (quota_governor pattern) — the subscription allowance is NOT CLI-observable. Record CLI version per run (auto-update is on).
+
+---
+
+## CORRECTION ANNEX — 2026-09-15 (OWNER-DEC-CBE-20260915, slice c2_kimi_quota_fetcher)
+
+**Supersedes §6's claim that "spend is not CLI-queryable / the subscription allowance is NOT CLI-observable."** That was true only for a CLI *subcommand* (there is none). It was **wrong** about the underlying capability: the installed client's usage panel calls a real, first-party, read-only endpoint, and this VPS can call the same one.
+
+- **Endpoint (authoritative):** `GET https://api.kimi.com/coding/v1/usages` with `Authorization: Bearer <oauth access_token>` (the token already in `credentials/kimi-code.json`) and `Accept: application/json`. Region `mainland-cn` → `api.kimi.com`; global accounts use `api.kimi.ai`; override via env `KIMI_CODE_BASE_URL`. Plan label comes from `GET .../me` (`user_level_name`; PII-bearing — field-filter to `user_level_name`/`status`/`region`).
+- **Live-verified 2026-09-15** from the worktree (one refresh + read): HTTP 200, plan `Allegro`, `usages.limit_5h`/`limit_7d` each `{used_ratio, reset_time}` (both 0.0 on a near-idle account), no `limit_month_*` and no `boosterWallet` returned for this account (the binary defines them; they appear only when populated). The stale-token case returns HTTP 401 `invalid_authentication_error`.
+- **Token refresh:** the 15-min OAuth token is refreshed by the CLI **only on a real authenticated model call** (a `-p` prompt); neither `kimi provider list` nor `kimi doctor` refreshes it (both verified 2026-09-15). Re-implementing the OAuth grant is a documented non-goal.
+- **Implementation:** `tools/strategy_farm/kimi_quota_fetcher.py` (+ `config/kimi_quota_fetcher.v1.json`) performs the single read-only GET, normalizes to `D:/QM/reports/state/kimi_quota_state.json`, and never logs/persists the token. `kimi_governor.evaluate()` calls it in-process (guarded, 15 s) and prefers the real ratios; the local 40/200 call caps became `runaway_guard` (120/600) anomaly protection only. Full evidence: `docs/ops/evidence/2026-09-15_continuous_book_evolution/design/c2_kimi_quota_fetcher_report.md` and `audit/kimi_quota_discovery.md`.

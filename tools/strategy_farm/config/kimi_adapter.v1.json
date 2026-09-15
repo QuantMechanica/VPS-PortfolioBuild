@@ -85,13 +85,16 @@
   "subscription_period": { "start": "2026-09-15", "end": "2026-10-15" },
 
   "governor": {
-    "_doc": "See kimi_governor.py. No programmatic Kimi usage endpoint exists (audit kimi_cli.md sec6) -> state is derived from this local ledger only, and that fact is surfaced as usage_source='local_ledger_only'.",
+    "_doc": "See kimi_governor.py. CORRECTED 2026-09-15 (OWNER-DEC-CBE-20260915 sec31-33): a real, authoritative usage endpoint DOES exist and is the same read-only call the official CLI usage panel makes - GET https://api.kimi.com/coding/v1/usages (Bearer OAuth). tools/strategy_farm/kimi_quota_fetcher.py performs it and writes D:/QM/reports/state/kimi_quota_state.json; kimi_governor.evaluate() calls the fetcher in-process (guarded, 15 s) and PREFERS the real subscription used-ratios (usage_source='managed_usage_endpoint'). SUPERSEDED: the earlier claim 'No programmatic Kimi usage endpoint exists -> local ledger only'. The local call counts below are now RUNAWAY/anomaly guards ONLY (runaway_guard), not the primary ceiling; on any fetch failure the governor falls back to the ledger path and marks usage_source='local_ledger_fallback'. Real-telemetry thresholds live in kimi_quota_fetcher.v1.json (Fable-adjustable per sec33).",
     "state_path": "D:/QM/reports/state/kimi_governor_state.json",
     "log_path": "D:/QM/reports/state/kimi_governor.log",
     "flag_path": "D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag",
     "ledger_path": "D:/QM/reports/state/kimi_usage_ledger.jsonl",
+    "quota_fetcher_config": "kimi_quota_fetcher.v1.json",
     "managed_by": "kimi_governor",
-    "caps": { "day": 40, "week": 200 },
+    "_caps_doc": "RENAMED to runaway_guard (sec33): these are anomaly/runaway-loop protection, NOT contractual limits and NOT the primary ceiling. Raised from the old 40/200 rollout caps to 120/600 so they cannot bind before the real subscription telemetry does. 'caps' kept as a legacy alias for older readers; the governor prefers 'runaway_guard'.",
+    "runaway_guard": { "day": 120, "week": 600 },
+    "caps": { "day": 120, "week": 600 },
     "conserve_pct": 70,
     "consecutive_fail_threshold": 2,
     "consecutive_fail_statuses": ["rate_limited", "auth_expired"],

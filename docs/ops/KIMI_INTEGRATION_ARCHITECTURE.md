@@ -32,7 +32,7 @@ Source: `audit/kimi_cli.md` (read-only, one live probe call).
 | Tool-restriction flag | **none** equivalent to the claude chain envelope (`--tools/--disallowedTools/--permission-mode`); posture is set only via `--agent-file`/`--skills-dir`/`--plan` | `kimi --help` (absent); critic F1 |
 | Timeout flag | **none** — must be bounded by an external watchdog | `kimi --help` (absent) |
 | stdin prompt | **UNVERIFIED** (only `-p <arg>` tested) | audit §4 |
-| Usage / quota subcommand | **none** — spend is NOT CLI-queryable; only a `status_line` hook receives a JSON `usage` field | `kimi --help`; `tui.toml [status_line]` |
+| Usage / quota subcommand | **no CLI *subcommand*** — but the CLI's usage panel calls a real read-only endpoint `GET /coding/v1/usages` (Bearer OAuth), which IS queryable. **SUPERSEDED 2026-09-15 by OWNER-DEC-CBE-20260915**: the old "spend is NOT queryable" conclusion is wrong; see §7 and `kimi_quota_fetcher.py` | `kimi --help`; `tui.toml [status_line]`; `kimi.exe` `fetchManagedUsage`; live probe 2026-09-15 |
 | Exit-code taxonomy | only `0` observed; non-zero classes **UNVERIFIED** | audit §6 |
 | Concurrency / rate limits | **UNVERIFIED** | audit §6 |
 | Auto-updater | `updates auto_install=true` — **CLI self-updates** | `updates/latest.json` |
@@ -237,7 +237,30 @@ Config (`config/agent_chain.v1.json`) and code (`agent_chain.py`) changes:
 
 ## 7. Subscription / quota management (D2, R-G)
 
-No programmatic usage endpoint exists (audit §6), so governance is a **local ledger + a governor deriving states**, with honest uncertainty surfaced (directive §6, §21).
+> **CORRECTION 2026-09-15 (OWNER-DEC-CBE-20260915 §31–§33).** The original premise of this
+> section — *"No programmatic usage endpoint exists (audit §6), so governance is a local ledger
+> only"* — is **SUPERSEDED**. A real, authoritative usage endpoint **does** exist and is the
+> exact read-only call the official Kimi Code CLI's usage panel makes:
+> **`GET https://api.kimi.com/coding/v1/usages`** with `Authorization: Bearer <oauth access_token>`
+> (the same token the CLI stores in `credentials/kimi-code.json`). `tools/strategy_farm/kimi_quota_fetcher.py`
+> performs that single read-only GET (+ `GET /me` for the plan label only, PII discarded),
+> normalizes it into `D:/QM/reports/state/kimi_quota_state.json`, and `kimi_governor.evaluate()`
+> now calls the fetcher **in-process** (guarded, 15 s timeout — no separate task) and **prefers the
+> real subscription used-ratios** (`usage_source='managed_usage_endpoint'`). Live-verified 2026-09-15
+> (`docs/ops/evidence/2026-09-15_continuous_book_evolution/design/c2_kimi_quota_fetcher_report.md`):
+> plan `Allegro`, 5h/7d `used_ratio` + `reset_time` returned; monthly + booster fields absent on this
+> low-usage account (parsed defensively as null). The local **40/200 call caps are now RUNAWAY /
+> anomaly guards only** (renamed `runaway_guard`, raised to **120/day, 600/week**, config-driven,
+> Fable-adjustable per §33), never the primary ceiling. On **any** fetch failure the governor falls
+> back to the local ledger path exactly as before and marks `usage_source='local_ledger_fallback'`
+> with the failure class (`auth_error`/`network_error`/`schema_error`/`disabled`); a stale `ok` state
+> (> 2× cadence) is also treated as a fallback. The MT5 factory is never affected by a Kimi telemetry
+> failure. The paragraphs below are retained as the historical rollout design.
+
+The original local-ledger-only governance is retained here as the **fallback plane** (it is exactly
+what runs when the real fetch fails). Historically: no programmatic usage endpoint was believed to
+exist (audit §6), so governance was a **local ledger + a governor deriving states**, with honest
+uncertainty surfaced (directive §6, §21).
 
 ### 7.1 Append-only usage ledger
 
@@ -245,7 +268,7 @@ No programmatic usage endpoint exists (audit §6), so governance is a **local le
 
 ### 7.2 Governor `tools/strategy_farm/kimi_governor.py`
 
-Mirrors `agy_governor.py`. Derives NORMAL / CONSERVE / EXHAUSTED from: rolling call counts vs the **daily/weekly call caps** (R-G: 40/day, 200/week defaults, config, OWNER-adjustable), consecutive `rate_limited`/`quota`/auth error classes, `auth_expired`, `cli_missing`, **and the recorded subscription period** (F7). Ownership-tracked state `D:/QM/reports/state/kimi_governor_state.json`; flag helpers mirror `agy_governor._set_flag/_clear_flag` (`:79-102`) with a `MANAGED_BY` marker (only clears a flag it set). Subscription period (**start 2026-09-15, one month**) recorded in `config/kimi_governor.v1.json` (directive §1.1, §6).
+Mirrors `agy_governor.py`. **Primary state (since 2026-09-15) is driven by the REAL managed-usage ratios** (§7 correction): CONSERVE when any rolling window ≥ 0.80 used or monthly ≥ 0.85; EXHAUSTED when any window ≥ 0.98 (thresholds in `kimi_quota_fetcher.v1.json`, Fable-adjustable). It **also** derives state from: rolling call counts vs the **runaway guard** (**SUPERSEDED**: the old "40/day, 200/week caps"; now `runaway_guard` 120/600 anomaly protection only — §33), consecutive `rate_limited`/`quota`/auth error classes, `auth_expired`, `cli_missing`, **and the recorded subscription period** (F7). The runaway guard and error/period rules stay active in every mode; on a fetch failure they are the sole basis (fallback plane). Ownership-tracked state `D:/QM/reports/state/kimi_governor_state.json`; flag helpers mirror `agy_governor._set_flag/_clear_flag` (`:79-102`) with a `MANAGED_BY` marker (only clears a flag it set). Subscription period (**start 2026-09-15, one month**) recorded in `config/kimi_governor.v1.json` (directive §1.1, §6).
 
 | State | Trigger (R-G) | Effect |
 |---|---|---|

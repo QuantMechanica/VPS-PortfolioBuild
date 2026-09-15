@@ -65,16 +65,40 @@ def load_config(path: Path | str = _CONFIG_PATH) -> dict[str, Any]:
     return cfg
 
 
+# Default real-telemetry thresholds (directive OWNER-DEC-CBE-20260915 sec33; the
+# authoritative, OWNER/Fable-adjustable values live in kimi_quota_fetcher.v1.json).
+DEFAULT_REAL_THRESHOLDS = {
+    "conserve_window_ratio": 0.80,
+    "conserve_monthly_ratio": 0.85,
+    "exhausted_window_ratio": 0.98,
+}
+# Runaway/anomaly guard defaults (directive sec33): raised well above the old 40/200
+# rollout caps so they cannot bind before the real subscription telemetry does, while
+# still stopping a runaway loop. These are NOT contractual limits.
+DEFAULT_RUNAWAY_GUARD = {"day": 120, "week": 600}
+DEFAULT_MAX_STATE_AGE_S = 1800  # 2x the 15-min governor cadence (directive freshness rule)
+
+
 def governor_config(cfg: dict[str, Any] | None = None) -> dict[str, Any]:
     cfg = cfg or load_config()
-    gov = dict(cfg.get("governor") or {})
+    raw = dict(cfg.get("governor") or {})
+    gov = dict(raw)
     # Sensible fallbacks so the governor never crashes on a partial config.
     gov.setdefault("ledger_path", cfg.get("ledger_path", "D:/QM/reports/state/kimi_usage_ledger.jsonl"))
     gov.setdefault("flag_path", "D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag")
     gov.setdefault("state_path", "D:/QM/reports/state/kimi_governor_state.json")
     gov.setdefault("log_path", "D:/QM/reports/state/kimi_governor.log")
     gov.setdefault("managed_by", "kimi_governor")
-    gov.setdefault("caps", {"day": 40, "week": 200})
+    # Runaway guard (formerly "caps"): directive sec33 renamed the local 40/200 call
+    # caps into anomaly/runaway-loop protection only. We honour an explicit
+    # ``runaway_guard`` first, then the legacy ``caps`` key (back-compat / existing
+    # tests), then the raised default. ``caps`` stays as an alias so any older reader
+    # keeps working.
+    guard_user_specified = ("runaway_guard" in raw) or ("caps" in raw)
+    guard = raw.get("runaway_guard") or raw.get("caps") or dict(DEFAULT_RUNAWAY_GUARD)
+    gov["runaway_guard"] = dict(guard)
+    gov["caps"] = dict(guard)
+    gov["_guard_user_specified"] = guard_user_specified
     gov.setdefault("conserve_pct", 70)
     gov.setdefault("consecutive_fail_threshold", 2)
     gov.setdefault("consecutive_fail_statuses", ["rate_limited", "auth_expired"])
@@ -84,6 +108,11 @@ def governor_config(cfg: dict[str, Any] | None = None) -> dict[str, Any]:
     )
     gov.setdefault("subscription_period", cfg.get("subscription_period") or {})
     gov.setdefault("period_conserve_days_before_end", 3)
+    # Real-quota consumption params (populated at runtime from the fetcher config by
+    # evaluate(); defaults here keep compute_state usable when called directly).
+    gov.setdefault("real_thresholds", dict(DEFAULT_REAL_THRESHOLDS))
+    gov.setdefault("max_state_age_s", DEFAULT_MAX_STATE_AGE_S)
+    gov.setdefault("quota_state_path", "D:/QM/reports/state/kimi_quota_state.json")
     return gov
 
 
@@ -145,16 +174,98 @@ def _log(gov: dict[str, Any], msg: str) -> None:
 
 # --------------------------------------------------------------------------- state derivation
 
+_STATE_ORDER = {"NORMAL": 0, "CONSERVE": 1, "EXHAUSTED": 2}
+
+
+def _escalate(current: str, candidate: str) -> str:
+    """Return the more severe of two states (NORMAL < CONSERVE < EXHAUSTED)."""
+    return candidate if _STATE_ORDER.get(candidate, 0) > _STATE_ORDER.get(current, 0) else current
+
+
+def _real_ratio(entry: Any) -> float | None:
+    if not isinstance(entry, dict):
+        return None
+    v = entry.get("used_ratio")
+    try:
+        return None if v is None else float(v)
+    except (TypeError, ValueError):
+        return None
+
+
+def _quota_state_fresh(quota_state: dict[str, Any] | None, max_age_s: int,
+                       now: dt.datetime) -> bool:
+    """True iff the fetched quota state is an ``ok`` fetch within ``max_age_s``
+    (directive: prefer real telemetry only when fetch_status==ok AND source_timestamp
+    is fresh, at most 2x the governor cadence)."""
+    if not isinstance(quota_state, dict) or quota_state.get("fetch_status") != "ok":
+        return False
+    ts = _parse_ts(quota_state.get("source_timestamp"))
+    if ts is None:
+        return False
+    age = (now - ts).total_seconds()
+    return 0 <= age <= int(max_age_s)
+
+
+def _real_state_from_ratios(quota_state: dict[str, Any],
+                            thresholds: dict[str, Any]) -> tuple[str, list[str]]:
+    """Derive NORMAL/CONSERVE/EXHAUSTED from the real subscription used-ratios.
+
+    CONSERVE when any rolling window >= conserve_window_ratio (0.80) or monthly >=
+    conserve_monthly_ratio (0.85); EXHAUSTED when any window (incl. monthly) >=
+    exhausted_window_ratio (0.98). Thresholds are Fable-adjustable (directive sec33).
+    """
+    cw = float(thresholds.get("conserve_window_ratio", 0.80))
+    cm = float(thresholds.get("conserve_monthly_ratio", 0.85))
+    ex = float(thresholds.get("exhausted_window_ratio", 0.98))
+
+    rolling: list[tuple[str, float]] = []
+    for key in ("rolling_5h", "rolling_7d"):
+        r = _real_ratio(quota_state.get(key))
+        if r is not None:
+            rolling.append((key, r))
+    monthly_ratio = _real_ratio(quota_state.get("monthly"))
+
+    state = "NORMAL"
+    reasons: list[str] = []
+    all_windows = rolling + ([("monthly", monthly_ratio)] if monthly_ratio is not None else [])
+    for name, r in all_windows:
+        if r >= ex:
+            state = _escalate(state, "EXHAUSTED")
+            reasons.append(f"real {name} {r:.2%} >= exhausted {ex:.0%}")
+    if state != "EXHAUSTED":
+        for name, r in rolling:
+            if r >= cw:
+                state = _escalate(state, "CONSERVE")
+                reasons.append(f"real {name} {r:.2%} >= conserve {cw:.0%}")
+        if monthly_ratio is not None and monthly_ratio >= cm:
+            state = _escalate(state, "CONSERVE")
+            reasons.append(f"real monthly {monthly_ratio:.2%} >= conserve {cm:.0%}")
+    if not reasons:
+        reasons.append("real usage within limits")
+    return state, reasons
+
+
 def compute_state(
     rows: list[dict[str, Any]],
     gov: dict[str, Any],
     now: dt.datetime | None = None,
+    quota_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Derive NORMAL / CONSERVE / EXHAUSTED from the ledger rows. Pure function."""
+    """Derive NORMAL / CONSERVE / EXHAUSTED. Pure function.
+
+    When ``quota_state`` is supplied and it is a fresh ``ok`` fetch from the managed
+    usage endpoint, the primary state is driven by the REAL subscription used-ratios
+    and ``usage_source='managed_usage_endpoint'``. The local call counts then act only
+    as a runaway/anomaly guard (they can still escalate to EXHAUSTED). When a fetch was
+    attempted but is unusable (auth_error/network_error/schema_error/disabled or stale),
+    the governor falls back to the local ledger path exactly as before and marks
+    ``usage_source='local_ledger_fallback'`` with the failure class. When ``quota_state``
+    is None (no fetch attempted), the legacy ledger-only path is used.
+    """
     now = now or _now()
-    caps = gov.get("caps") or {"day": 40, "week": 200}
-    cap_day = int(caps.get("day", 40))
-    cap_week = int(caps.get("week", 200))
+    caps = gov.get("runaway_guard") or gov.get("caps") or {"day": 120, "week": 600}
+    cap_day = int(caps.get("day", 120))
+    cap_week = int(caps.get("week", 600))
     conserve_pct = float(gov.get("conserve_pct", 70))
     fail_statuses = set(gov.get("consecutive_fail_statuses") or ["rate_limited", "auth_expired"])
     fail_threshold = int(gov.get("consecutive_fail_threshold", 2))
@@ -202,44 +313,83 @@ def compute_state(
     period_near_end = bool(period_end and not period_ended
                            and (period_end - now.date()).days <= days_before)
 
+    # Decide which telemetry drives the primary state (directive sec33):
+    #   * real     - a fresh, ``ok`` managed-usage fetch was supplied.
+    #   * fallback - a fetch was attempted but is unusable (auth/network/schema/
+    #                disabled or stale) -> ledger path, marked local_ledger_fallback.
+    #   * legacy   - no fetch attempted (quota_state is None) -> ledger-only as before.
+    max_age_s = int(gov.get("max_state_age_s", DEFAULT_MAX_STATE_AGE_S))
+    if quota_state is None:
+        mode = "legacy"
+        usage_source = "local_ledger_only" if not any_usage_snapshot else "usage_snapshot"
+        fallback_class = None
+    elif _quota_state_fresh(quota_state, max_age_s, now):
+        mode = "real"
+        usage_source = "managed_usage_endpoint"
+        fallback_class = None
+    else:
+        mode = "fallback"
+        usage_source = "local_ledger_fallback"
+        fallback_class = str(quota_state.get("fetch_status") or "unusable")
+
     reasons: list[str] = []
     state = "NORMAL"
 
-    # EXHAUSTED conditions (any one).
+    # --- Runaway / anomaly guard + calendar conditions: ALWAYS active (all modes) ---
+    # The renamed local call caps are now runaway-loop protection only (directive sec33).
     if calls_day >= cap_day:
-        state = "EXHAUSTED"
-        reasons.append(f"daily cap hit ({calls_day}/{cap_day})")
+        state = _escalate(state, "EXHAUSTED")
+        reasons.append(f"runaway guard: daily calls {calls_day}/{cap_day}")
     if calls_week >= cap_week:
-        state = "EXHAUSTED"
-        reasons.append(f"weekly cap hit ({calls_week}/{cap_week})")
+        state = _escalate(state, "EXHAUSTED")
+        reasons.append(f"runaway guard: weekly calls {calls_week}/{cap_week}")
     if tail_fail_streak >= fail_threshold:
-        state = "EXHAUSTED"
+        state = _escalate(state, "EXHAUSTED")
         reasons.append(f"{tail_fail_streak} consecutive {'/'.join(sorted(fail_statuses))} statuses")
     if saw_cli_missing:
-        state = "EXHAUSTED"
+        state = _escalate(state, "EXHAUSTED")
         reasons.append("last status cli_missing")
     if period_ended:
-        state = "EXHAUSTED"
+        state = _escalate(state, "EXHAUSTED")
         reasons.append(f"subscription period ended {period_end.isoformat()}")
+    if period_near_end and state != "EXHAUSTED":
+        state = _escalate(state, "CONSERVE")
+        reasons.append(f"subscription period ends {period_end.isoformat()} (<= {days_before}d)")
 
-    # CONSERVE conditions (only if not already EXHAUSTED).
-    if state != "EXHAUSTED":
-        if day_pct >= conserve_pct or week_pct >= conserve_pct:
-            state = "CONSERVE"
+    real_quota: dict[str, Any] | None = None
+    if mode == "real":
+        # Primary state from the REAL subscription used-ratios.
+        real_state, real_reasons = _real_state_from_ratios(
+            quota_state, gov.get("real_thresholds") or DEFAULT_REAL_THRESHOLDS)
+        state = _escalate(state, real_state)
+        reasons = real_reasons + reasons
+        real_quota = {
+            "plan": quota_state.get("plan"),
+            "source_timestamp": quota_state.get("source_timestamp"),
+            "monthly": quota_state.get("monthly"),
+            "rolling_5h": quota_state.get("rolling_5h"),
+            "rolling_7d": quota_state.get("rolling_7d"),
+            "breakdown": quota_state.get("breakdown"),
+            "extra_quota_active": quota_state.get("extra_quota_active"),
+        }
+    else:
+        # Ledger fallback / legacy: CONSERVE on approaching the (raised) guard.
+        if state != "EXHAUSTED" and (day_pct >= conserve_pct or week_pct >= conserve_pct):
+            state = _escalate(state, "CONSERVE")
             reasons.append(
-                f"approaching cap (day {day_pct:.0f}%, week {week_pct:.0f}% >= {conserve_pct:.0f}%)"
+                f"approaching runaway guard (day {day_pct:.0f}%, week {week_pct:.0f}% >= {conserve_pct:.0f}%)"
             )
-        if period_near_end:
-            state = "CONSERVE"
-            reasons.append(f"subscription period ends {period_end.isoformat()} (<= {days_before}d)")
+        if mode == "fallback":
+            reasons.insert(0, f"real quota fetch {fallback_class} -> local ledger fallback")
 
     if not reasons:
-        reasons.append("within caps")
+        reasons.append("within limits")
 
     return {
         "state": state,
         "counts": {"day": calls_day, "week": calls_week},
         "caps": {"day": cap_day, "week": cap_week},
+        "runaway_guard": {"day": cap_day, "week": cap_week},
         "pct": {"day": round(day_pct, 1), "week": round(week_pct, 1)},
         "last_statuses": last_statuses,
         "consecutive_fail_streak": tail_fail_streak,
@@ -249,7 +399,10 @@ def compute_state(
             "ended": period_ended,
             "near_end": period_near_end,
         },
-        "usage_source": "local_ledger_only" if not any_usage_snapshot else "usage_snapshot",
+        "usage_source": usage_source,
+        "quota_fetch_status": (quota_state or {}).get("fetch_status") if quota_state else None,
+        "fallback_class": fallback_class,
+        "real_quota": real_quota,
         "reasons": reasons,
         "computed_at": now.isoformat(),
     }
@@ -374,15 +527,108 @@ def reconcile_flag(state_info: dict[str, Any], gov: dict[str, Any], *, dry_run: 
     return {"action": action, "flag_path": str(flag), "owned": owned, "existed": exists}
 
 
+# --------------------------------------------------------------------------- real-quota wiring
+
+_QUOTA_FETCHER_CONFIG = Path(__file__).with_name("config") / "kimi_quota_fetcher.v1.json"
+_FETCH_TIMEOUT_S = 15  # directive: guard the in-process fetch with a 15 s timeout
+
+
+def _load_quota_fetcher_config(cfg: dict[str, Any]) -> dict[str, Any] | None:
+    """Load the quota-fetcher config (guarded); None if absent/broken so the governor
+    keeps running on the local ledger."""
+    gov_cfg = cfg.get("governor") or {}
+    path = Path(gov_cfg.get("quota_fetcher_config") or _QUOTA_FETCHER_CONFIG)
+    try:
+        obj = json.loads(path.read_text(encoding="utf-8"))
+        return obj if isinstance(obj, dict) else None
+    except Exception:
+        return None
+
+
+def _apply_fetcher_params(gov: dict[str, Any], fetcher_cfg: dict[str, Any]) -> None:
+    """Merge the fetcher config's real-quota params into ``gov`` (thresholds, freshness
+    window, quota-state path, and the raised runaway guard unless the caller pinned it)."""
+    fgov = fetcher_cfg.get("governor") or {}
+    if fgov.get("thresholds"):
+        gov["real_thresholds"] = dict(fgov["thresholds"])
+    if fgov.get("max_state_age_s") is not None:
+        gov["max_state_age_s"] = int(fgov["max_state_age_s"])
+    if fetcher_cfg.get("state_path"):
+        gov["quota_state_path"] = fetcher_cfg["state_path"]
+    # Only adopt the fetcher's raised runaway guard when the governor config did not
+    # pin its own caps/runaway_guard (keeps existing configs and tests authoritative).
+    if not gov.get("_guard_user_specified") and fgov.get("runaway_guard"):
+        gov["runaway_guard"] = dict(fgov["runaway_guard"])
+        gov["caps"] = dict(fgov["runaway_guard"])
+
+
+def _fetch_quota_state(fetcher_cfg: dict[str, Any], *, timeout_s: int = _FETCH_TIMEOUT_S,
+                       now: dt.datetime | None = None) -> dict[str, Any] | None:
+    """Call the quota fetcher in-process, bounded by ``timeout_s`` and fully guarded.
+    Returns the normalized state dict, or None if the fetcher is unavailable/hangs -
+    the caller then marks a fallback. Never raises (MT5 factory unaffected)."""
+    import threading
+
+    box: dict[str, Any] = {}
+
+    def _run() -> None:
+        try:
+            import kimi_quota_fetcher as kqf  # same dir; guarded
+            box["state"] = kqf.fetch(fetcher_cfg, now=now)
+        except Exception as exc:  # pragma: no cover - defensive
+            box["error"] = type(exc).__name__
+
+    th = threading.Thread(target=_run, daemon=True)
+    th.start()
+    th.join(timeout_s)
+    if th.is_alive():
+        return None
+    return box.get("state")
+
+
 # --------------------------------------------------------------------------- public API
 
 def evaluate(cfg: dict[str, Any] | None = None, *, dry_run: bool = False,
-             now: dt.datetime | None = None) -> dict[str, Any]:
-    """Recompute state from the ledger and reconcile the flag."""
+             now: dt.datetime | None = None, fetch: bool = False,
+             quota_state: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Recompute state and reconcile the flag.
+
+    ``fetch=True`` (the ``evaluate`` CLI subcommand and the 15-min governor task)
+    performs the in-process real-quota fetch first (guarded, 15 s timeout) and prefers
+    the real subscription ratios. ``fetch=False`` (adapter ``record()``) consumes the
+    last fetched ``kimi_quota_state.json`` if present, so ordinary calls do not spend a
+    fetch. An explicit ``quota_state`` overrides both (tests / injection). Any fetch
+    failure falls back to the local ledger path (directive sec33/sec70)."""
     cfg = cfg or load_config()
     gov = governor_config(cfg)
+    fetcher_cfg = _load_quota_fetcher_config(cfg)
+    if fetcher_cfg:
+        _apply_fetcher_params(gov, fetcher_cfg)
+
+    # Resolve the quota telemetry to feed compute_state.
+    if quota_state is None:
+        if fetch and fetcher_cfg is not None:
+            fetched = _fetch_quota_state(fetcher_cfg, now=now)
+            if fetched is None:
+                # Fetch was attempted but the fetcher was unavailable/hung -> fallback.
+                quota_state = {"fetch_status": "network_error", "error": "fetcher_unavailable",
+                               "source_timestamp": (now or _now()).replace(microsecond=0)
+                               .isoformat().replace("+00:00", "Z")}
+            else:
+                quota_state = fetched
+        elif not fetch:
+            # Consume the freshest state the governor task last wrote, if any.
+            try:
+                sp = Path(gov.get("quota_state_path") or "")
+                if sp and sp.exists():
+                    obj = json.loads(sp.read_text(encoding="utf-8"))
+                    if isinstance(obj, dict):
+                        quota_state = obj
+            except Exception:
+                quota_state = None
+
     rows = read_ledger(gov["ledger_path"])
-    state_info = compute_state(rows, gov, now=now)
+    state_info = compute_state(rows, gov, now=now, quota_state=quota_state)
     state_info["allowed_capabilities"] = allowed_capabilities(state_info["state"], gov)
     flag_action = reconcile_flag(state_info, gov, dry_run=dry_run)
     state_info["flag"] = flag_action
@@ -417,10 +663,12 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     cfg = load_config(args.config)
     if args.command == "status":
-        info = evaluate(cfg, dry_run=True)
+        # Read-only: no fetch (would write the quota-state file), consume last state.
+        info = evaluate(cfg, dry_run=True, fetch=False)
         print(json.dumps(info, indent=2))
         return 0
-    info = evaluate(cfg, dry_run=False)
+    # evaluate: perform the real-quota fetch first (in-process, guarded), then derive.
+    info = evaluate(cfg, dry_run=False, fetch=True)
     print(json.dumps(info, indent=2))
     return 0
 
