@@ -1,0 +1,31 @@
+{
+  "title": "Dukascopy lane P3 follow-up: fix the two defects the fail-closed 0/37 run exposed BEFORE any rerun - (a) reconciler end-boundary contract (last observed minute compared against the exclusive interval end = 60 s shortfall on every full row), (b) governed T1 CopyTicksRange M1 export is sparse for 10 symbols (EURAUD, EURCHF, EURJPY, EURUSD, GBPAUD, GBPJPY, NDX, USDJPY, XAUUSD, XNGUSD: 61-2,607 bars vs 158,906-184,215 in the P1 inputs) and truncated for AUDCAD (October 1-8 only, 8,581 of 32,880 rows) although the export receipt classified 37/37 symbol calls as PASS - root-cause the export (tick-history availability on T1 per symbol/month, CopyTicksRange chunking/limits, silent short reads) and harden the receipt so a short read can never be PASS; no rerun of the T1 probe until both fixes are tested",
+  "why_now": "Task 60174747 (APPROVED 2026-09-15 04:3xZ as EXECUTION_PASS / RECONCILIATION_FAIL_CLOSED) showed that the reconciliation cannot pass for structural reasons unrelated to data quality: the boundary contract fails every row by construction, and the DWX side of the overlap is missing for 10 majors/indices and one truncated month. Until both are fixed, any rerun burns a governed T1 probe slot for a guaranteed FAIL. Not book-sprint critical (Dukascopy splice is a data-lane initiative); paced behind sprint tickets.",
+  "acceptance": [
+    "reconcile_overlap.py: the required-overlap check treats the export's half-open interval correctly (last observed minute == interval_end - 60 s is complete); unit test with a synthetic full-coverage pair that previously failed by 60 s and now passes; a genuinely short file still fails with the exact shortfall in seconds",
+    "export root cause written with evidence paths: for each of the 10 sparse symbols and AUDCAD, which month(s) returned short and why (T1 tick history depth per symbol read from the terminal's history/bases inventory or the export journal; CopyTicksRange result sizes per call; any 'no ticks'/error journal lines); no guessing - if the cause cannot be bound, say UNKNOWN per symbol",
+    "export receipt hardening: a symbol call is PASS only if the returned minute count is >= the expected minute count from the P1 fixed-window manifest minus the documented session-closure allowance; short reads are SHORT_READ with the ratio; test",
+    "no T1 probe rerun in this ticket; the rerun is a separate governed work item enqueued by the orchestrator after review",
+    "no archive write, no production splice, no manifest update; archive_write_authorized=false and production_splice_authorized=false stay as they are",
+    "REVIEW artifact: docs/ops/evidence/2026-09-15_dukascopy_p3_defects/README.md with commit sha, test command + result, per-symbol root-cause table"
+  ],
+  "evidence": [
+    "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/README.md",
+    "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/p3_symbol_outcomes.csv",
+    "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/conversion_receipt.json",
+    "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260913_114500 (governed export, work item 030e8488-5372-439e-be03-0430748cf83b)",
+    "D:/QM/reports/dukascopy/reconciliation/20260915_60174747 (scratch root, 0.937 GB)",
+    "tools/dukascopy/reconcile_overlap.py (sha256 d0740da790985ee5ef85945b34a278e2a064f216a97a20040e6e982c3c18397f at the 60174747 run)"
+  ],
+  "hard_limits": [
+    "read-only against terminals: never start terminal64.exe, never signal T1-T10 or T_Live; the export path is a governed work item only the orchestrator enqueues",
+    "no change to the fixed acceptance thresholds of the reconciliation (1.5x spread p95, 99% bilateral coverage, DST 0 s) - only the boundary CONTRACT bug and the receipt classification",
+    "no archive/manifest/splice writes; keep production_import=false sidecars",
+    "append-only evidence; explicit git pathspecs; do not touch files outside tools/dukascopy, its tests and the evidence dir"
+  ],
+  "required_capabilities": ["code", "ops"],
+  "model_tier": "terra",
+  "requested_by": "Orchestrator Claude 2026-09-15 04:3xZ (review of 60174747)",
+  "parent_task": "60174747-2b7b-4326-88fe-3f3e1adc3ba3",
+  "lane_note": "Claude headless lane (Sonnet) per OWNER 2026-09-14 'Unterstuetz die Codex Lane mit Sonnet'; priority below the book-sprint tickets"
+}
