@@ -307,15 +307,11 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     # The cockpit-v2 no longer renders the path_to_25 block (slice D1); the
     # morning brief keeps the rerun-class breakdown.
     assert "RERUN_INFRA" in owner_html
-    assert "Committed" in cockpit and "1.124" in cockpit
-    assert "ETA zu 25" in cockpit and "Queue-leer-ETA" in cockpit
-    assert "Zählung VERSIEGELT" in cockpit
-    assert "Zählung PROVISORISCH" not in cockpit
-    assert "decisions/2026-08-27_owner_count_definition_option_a.md" in cockpit
-    assert "Sekundärdiagnostik · KEIN Trigger" in cockpit
-    assert "V4_TERMINAL_ROW_ONLY · kein Trigger" in cockpit
-    assert "Q09-Reservoir" in cockpit and "Q10 chosen" in cockpit
-    assert "QM5_900001" in cockpit
+    # The cockpit-v2 path_to_25 detail block (ETA, seal, reservoir) was retired by
+    # slice D1 (OWNER-DEC-CBE-20260915 §3/§60); the cockpit must not present the
+    # count as an objective any more.
+    assert "ETA zu 25" not in cockpit
+
 
 
 def test_sealed_option_a_excludes_holes_pilots_and_historical_q14(
