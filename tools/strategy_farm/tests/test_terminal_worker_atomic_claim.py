@@ -2269,7 +2269,14 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
             terminal_worker._commit_reservation_gb(four_leg_class),
             terminal_worker.MULTISYMBOL_MULTI_LEG_FX_COMMIT_RESERVATION_GB,
         )
-        for commit_class in (ten_leg_class, metal_class, unknown_class):
+        # ab37b2f8c2 (2026-09-14): a two-leg XAU+XAG basket is its own provisional 24 GB class,
+        # no longer the flat 44 GB heavy class; ten-leg and unknown baskets stay heavy.
+        self.assertEqual(metal_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_TWO_LEG_METAL)
+        self.assertEqual(
+            terminal_worker._commit_reservation_gb(metal_class),
+            terminal_worker.MULTISYMBOL_TWO_LEG_METAL_COMMIT_RESERVATION_GB,
+        )
+        for commit_class in (ten_leg_class, unknown_class):
             self.assertEqual(commit_class, terminal_worker.MULTISYMBOL_COMMIT_CLASS_HEAVY)
             self.assertEqual(
                 terminal_worker._commit_reservation_gb(commit_class),
