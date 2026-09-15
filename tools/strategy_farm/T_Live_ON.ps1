@@ -20,7 +20,11 @@ $ErrorActionPreference = 'Continue'
 $base   = 'C:\QM\mt5\T_Live\MT5_Base'
 $exe    = Join-Path $base 'terminal64.exe'
 $common = Join-Path $base 'config\common.ini'
-$profile = 'DarwinexZero_V2_LiveOps'
+# Recovery profile + verifier come from the optional pointer file (book cutover 2026-09-20,
+# tlive_recovery_profile.ps1); without a pointer the historical V2 values apply unchanged.
+. (Join-Path $PSScriptRoot 'tlive_recovery_profile.ps1')
+$recovery = Get-TLiveRecoveryProfile
+$profile = $recovery.profile
 $profileDir = Join-Path $base "MQL5\Profiles\Charts\$profile"
 $profileVerifier = 'C:\QM\repo\tools\strategy_farm\prepare_dxz_v2_liveops_profile.ps1'
 $maintenanceFlag = 'D:\QM\reports\state\LIVE_UPTIME_MAINTENANCE.flag'
@@ -203,11 +207,16 @@ if (-not (Test-Path $profileDir)) {
     Write-Error "ERROR: recovery profile not found: $profileDir"
     Complete-TLiveLauncher -Code 2 -Reason 'recovery_profile_missing'
 }
-if (-not (Test-Path -LiteralPath $profileVerifier -PathType Leaf)) {
+if ($recovery.source -eq 'pointer_invalid') {
+    Write-Error "ERROR: recovery profile pointer invalid ($($recovery.pointer_path)): $($recovery.error)"
+    Complete-TLiveLauncher -Code 2 -Reason 'recovery_pointer_invalid' -Details @{ error = [string]$recovery.error }
+}
+if ($recovery.verifier_kind -eq 'ps1' -and $recovery.source -eq 'default' -and -not (Test-Path -LiteralPath $profileVerifier -PathType Leaf)) {
     Write-Error "ERROR: recovery profile verifier not found: $profileVerifier"
     Complete-TLiveLauncher -Code 2 -Reason 'profile_verifier_missing'
 }
-& powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File $profileVerifier -VerifyOnly
+Write-Host "recovery profile: $profile (source=$($recovery.source), verifier=$($recovery.verifier_kind))"
+& $recovery.verifier_exe @($recovery.verifier_args)
 if ($LASTEXITCODE -ne 0) {
     Write-Error "ERROR: recovery profile contract verification failed: $profile"
     Complete-TLiveLauncher -Code 2 -Reason 'profile_contract_failed' -Details @{ verifier_exit_code = $LASTEXITCODE }
