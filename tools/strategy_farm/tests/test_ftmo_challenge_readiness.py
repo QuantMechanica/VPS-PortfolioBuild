@@ -130,3 +130,40 @@ def test_build_readiness_offline_smoke(tmp_path):
     assert model["fitness"]["venue"] == "ftmo"
     # demo journal missing -> evidence missing, not invented
     assert model["demo_metrics_detail"]["status"] == "EVIDENCE_MISSING"
+
+
+def test_worst_across_cycles_and_metric_aliases():
+    """F1 review M1+M2: canonical metric names + aliases + worst-across-cycles."""
+    # Worst across cycles = the most-adverse (minimum) value, even if the LATEST cycle is benign.
+    cycles = [
+        {"realized_max_dd_pct": -10.26, "worst_day_pct": -4.9, "closed_trades": 40, "entry_trading_days": 8},
+        {"realized_max_dd_pct": -2.0, "worst_day_pct": -1.0, "closed_trades": 20, "entry_trading_days": 10},
+    ]
+    assert cr._worst_across_cycles(cycles, "realized_max_dd_pct") == -10.26
+    assert cr._worst_across_cycles(cycles, "worst_day_pct") == -4.9
+    assert cr._worst_across_cycles(None, "worst_day_pct") == cr._MISSING
+    # per-day density derives from the latest cycle; div-by-zero -> EVIDENCE_MISSING.
+    assert cr._trade_density_per_day({"closed_trades": 40, "entry_trading_days": 8}) == 5.0
+    assert cr._trade_density_per_day({"closed_trades": 40, "entry_trading_days": 0}) == cr._MISSING
+
+
+def test_readiness_metrics_carry_canonical_and_alias_names(tmp_path):
+    out = tmp_path / "readiness.json"
+    model = cr.build_readiness(
+        out=out,
+        fund_score_cache=tmp_path / "missing_cache.json",
+        demo_cycle_path=tmp_path / "missing_ledger.json",
+        terminal_dir=tmp_path / "no_terminal",
+        journal_path=tmp_path / "no_journal.csv",
+        now=dt.datetime(2026, 9, 15, tzinfo=dt.timezone.utc),
+        write=False,
+    )
+    m = model["metrics"]
+    for k in ("trade_density_per_day", "swap_cost", "max_dd_pct_worst_cycle",
+              "worst_daily_loss_pct_worst_cycle"):
+        assert k in m, k
+    # old names kept as aliases
+    assert "trade_density_entry_days" in m
+    assert "swap_cost_usd" in m
+    # swap alias mirrors the canonical name
+    assert m["swap_cost"] == m["swap_cost_usd"]

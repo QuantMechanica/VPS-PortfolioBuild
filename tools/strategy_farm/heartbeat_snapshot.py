@@ -44,6 +44,8 @@ DB_PATH = Path(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 DB = f"file:{DB_PATH.as_posix()}?mode=ro"
 STATE = Path(r"D:/QM/reports/state/heartbeat_state.json")
 QUOTA = Path(r"D:/QM/reports/state/quota_governor_state.json")
+# Continuous Book Evolution health (D1 slice; produced by factory_bottleneck_readmodel.py).
+BOOK_EVOLUTION_HEALTH = Path(r"D:/QM/reports/state/book_evolution_health.json")
 FLAG_DIR = Path(r"D:/QM/strategy_farm/state")
 SYMBOL_LIST_GENERATOR = REPO / "tools" / "vault" / "gen_symbol_list_page.py"
 
@@ -203,6 +205,33 @@ def probe_operator_surface(out):
     snapshot = build_operator_snapshot(DB_PATH)
     out["operator_surface"] = snapshot
     out["path_to_25"] = snapshot.get("path_to_25") or {}
+
+
+@guarded
+def probe_book_evolution_health(out):
+    """Continuous Book Evolution health (OWNER-DEC-CBE-20260915, D1 review).
+
+    Reads the shared ``book_evolution_health.json`` read-model and surfaces its four
+    health keys so the vault Heartbeat shows book-evolution readiness at a glance. A
+    missing/unreadable read-model is EVIDENCE_MISSING, never invented; a RED read-model
+    grade or a NOT_READY FTMO recommendation raises a flag."""
+    if not BOOK_EVOLUTION_HEALTH.exists():
+        out["book_evolution_health"] = {"status": "EVIDENCE_MISSING"}
+        return
+    data = json.loads(BOOK_EVOLUTION_HEALTH.read_text(encoding="utf-8"))
+    keys = (
+        "book_evolution_readmodels",
+        "ftmo_readiness_recommendation",
+        "research_state_freshness",
+        "factory_bottleneck_top",
+    )
+    beh = {k: data.get(k, "EVIDENCE_MISSING") for k in keys}
+    beh["generated_at_utc"] = data.get("generated_at_utc", "UNKNOWN")
+    out["book_evolution_health"] = beh
+    if beh["book_evolution_readmodels"] == "RED":
+        out["flags"].append("BOOK_EVOLUTION_READMODELS_RED")
+    if str(beh["research_state_freshness"]).upper() == "STALE":
+        out["flags"].append("RESEARCH_STATE_STALE")
 
 
 @guarded
@@ -469,6 +498,19 @@ def render_markdown(out) -> str:
         L.append(f"| Fehlschlagende Aufgaben | {', '.join(tf)} |")
     L.append("")
 
+    beh = out.get("book_evolution_health") or {}
+    if beh:
+        L.append("## Buchentwicklungs-Gesundheit")
+        L.append("")
+        if beh.get("status") == "EVIDENCE_MISSING":
+            L.append("- Read-Model `book_evolution_health.json` nicht vorhanden (EVIDENCE_MISSING).")
+        else:
+            L.append(f"- **Read-Models:** {beh.get('book_evolution_readmodels', 'EVIDENCE_MISSING')}")
+            L.append(f"- **FTMO-Empfehlung:** {beh.get('ftmo_readiness_recommendation', 'EVIDENCE_MISSING')}")
+            L.append(f"- **Research-Aktualität:** {beh.get('research_state_freshness', 'EVIDENCE_MISSING')}")
+            L.append(f"- **Fabrik-Engpass (Top):** {beh.get('factory_bottleneck_top', 'EVIDENCE_MISSING')}")
+        L.append("")
+
     if path25:
         news = path25.get("news_gate") or {}
         opt = path25.get("opt_fork") or {}
@@ -601,6 +643,7 @@ def sync_symbol_list_page(out) -> None:
 def main() -> int:
     out = {"ts": _iso(_now()), "flags": []}
     probe_quota(out)
+    probe_book_evolution_health(out)
     probe_health(out)
     probe_risk_freeze(out)
     probe_scheduled_tasks(out)

@@ -9,6 +9,14 @@ change is declared MATERIAL only when ALL of the following hold; the default is 
 * confidence          -- seeded blocked-bootstrap CI of the daily book-PnL
   difference (alternative minus incumbent) excludes 0 at level alpha,
 * downside_risk       -- worst day not worse AND max-drawdown not materially worse,
+* dependence_risk     -- the alternative's concentration / dependence diagnostics are
+  weighed as downside risk (E1 review M2): the surviving hard portfolio guard
+  (joint-tail / data validity) must pass, and real economic dependence (the mean
+  absolute *downside* correlation from ``metrics.py``) must not worsen beyond a bounded
+  band.  Advisory label-concentration increases (per OWNER-DEC-CBE-20260915 sec 8, the
+  static family/symbol caps are advisory, not refusals) are recorded as non-blocking
+  warnings, never a hard block -- but a genuine worsening of measured dependence, or a
+  hard-guard breach, blocks the change,
 * model_uncertainty   -- split-half sign consistency of the improvement,
 * live_uncertainty    -- incumbent live evidence (when present) does not contradict,
 * switching_cost      -- expected return improvement exceeds a turnover-cost proxy,
@@ -42,6 +50,9 @@ DEFAULT_CONFIG: dict[str, Any] = {
     "min_oos_sharpe_delta": MIN_OOS_SHARPE_DELTA,
     "switching_cost_pct_per_change": 0.02,  # annual return pp charged per added+removed sleeve
     "operational_complexity_budget": 2,
+    # E1 review M2: how much the alternative may worsen measured downside dependence
+    # (mean |downside correlation|) before the change is blocked as a downside risk.
+    "max_downside_corr_worsening": 0.10,
 }
 
 
@@ -135,6 +146,8 @@ def assess(
     alt_book_by_date: Mapping[dt.date, float],
     incumbent_symbols: Sequence[str],
     incumbent_live_evidence: Mapping[str, Any] | None = None,
+    alt_risk_diagnostics: Mapping[str, Any] | None = None,
+    baseline_risk_diagnostics: Mapping[str, Any] | None = None,
     seed: int = 0,
     config: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
@@ -208,6 +221,39 @@ def assess(
     if not downside_ok:
         reasons.append("downside_risk_worsens")
 
+    # 3b. dependence risk (E1 review M2): weigh the alternative's concentration /
+    # dependence diagnostics as downside risk.  The surviving HARD portfolio guard
+    # (joint-tail / data validity) blocks; a material worsening of measured downside
+    # correlation blocks (real economic dependence, directive sec 8 "measure real
+    # economic dependence, not labels").  Advisory label-concentration increases are
+    # recorded but NON-blocking (the static family/symbol caps are advisory since b2).
+    alt_diag = dict(alt_risk_diagnostics or {})
+    hard_guards = alt_diag.get("hard_guards") or {}
+    hard_ok = bool(hard_guards.get("passed", True)) if hard_guards else True
+    b_down = _num(baseline_metrics.get("mean_abs_downside_correlation"))
+    a_down = _num(alt_metrics.get("mean_abs_downside_correlation"))
+    delta_down = None if (a_down is None or b_down is None) else a_down - b_down
+    down_corr_ok = delta_down is None or delta_down <= cfg["max_downside_corr_worsening"] + 1e-12
+    advisory_conc = list(alt_diag.get("cap_warnings") or []) + list(
+        alt_diag.get("change_concentration_warnings") or []
+    )
+    dependence_ok = hard_ok and down_corr_ok
+    factors["dependence_risk"] = {
+        "hard_guards_passed": hard_ok,
+        "delta_mean_abs_downside_correlation": None if delta_down is None else round(delta_down, 8),
+        "max_downside_corr_worsening": cfg["max_downside_corr_worsening"],
+        "downside_correlation_ok": bool(down_corr_ok),
+        "advisory_concentration_warnings_introduced": [
+            {"cap": w.get("cap"), "key": w.get("key")} for w in advisory_conc
+        ],
+        "advisory_non_blocking": True,
+        "pass": bool(dependence_ok),
+    }
+    if not hard_ok:
+        reasons.append("hard_portfolio_guard_breached")
+    if not down_corr_ok:
+        reasons.append("downside_dependence_worsens")
+
     # 4. model uncertainty (split-half sign consistency)
     model_ok = _split_half_consistent(diff)
     factors["model_uncertainty"] = {"split_half_consistent": bool(model_ok), "pass": bool(model_ok)}
@@ -273,8 +319,8 @@ def assess(
     # is never material regardless of the CI (and the bootstrap is the expensive step).
     dxz_ok = dxz_gate.get("pass", True) if venue == "dxz" else True
     cheap_gates_pass = (
-        not is_noop and improve_ok and downside_ok and model_ok and switch_ok
-        and op_ok and band_ok and dxz_ok
+        not is_noop and improve_ok and downside_ok and dependence_ok and model_ok
+        and switch_ok and op_ok and band_ok and dxz_ok
     )
     if cheap_gates_pass:
         ci = _block_bootstrap_mean_ci(
@@ -302,6 +348,7 @@ def assess(
         and improve_ok
         and conf_ok
         and downside_ok
+        and dependence_ok
         and model_ok
         and live_ok
         and switch_ok

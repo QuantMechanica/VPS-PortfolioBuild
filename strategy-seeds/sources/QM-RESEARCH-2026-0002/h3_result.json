@@ -1,0 +1,97 @@
+{
+  "claim_ref": "H3_failure_clusters",
+  "h3_failure_clusters_top": [
+    {
+      "fail_pairs": 4539,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 3042,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 2820,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 2332,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 2107,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 1738,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "fx_cross"
+    },
+    {
+      "fail_pairs": 1109,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "energy"
+    },
+    {
+      "fail_pairs": 858,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 784,
+      "holding_class": "scalp",
+      "session": "unspecified",
+      "symbol_class": "fx_major"
+    },
+    {
+      "fail_pairs": 758,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "metal"
+    },
+    {
+      "fail_pairs": 683,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "fx_cross"
+    },
+    {
+      "fail_pairs": 652,
+      "holding_class": "scalp",
+      "session": "unspecified",
+      "symbol_class": "index"
+    },
+    {
+      "fail_pairs": 650,
+      "holding_class": "swing",
+      "session": "unspecified",
+      "symbol_class": "metal"
+    },
+    {
+      "fail_pairs": 606,
+      "holding_class": "intraday",
+      "session": "unspecified",
+      "symbol_class": "fx_cross"
+    },
+    {
+      "fail_pairs": 578,
+      "holding_class": "position",
+      "session": "unspecified",
+      "symbol_class": "metal"
+    }
+  ],
+  "note": "All top clusters are session=unspecified; the H3 regime is unidentifiable here.",
+  "verdict": "NOT_ESTABLISHED"
+}

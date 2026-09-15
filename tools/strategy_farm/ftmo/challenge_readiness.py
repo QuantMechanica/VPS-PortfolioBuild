@@ -56,6 +56,32 @@ def _load_json(path: Path) -> Any:
         return None
 
 
+def _worst_across_cycles(cycles: Any, field: str) -> Any:
+    """Most-adverse (minimum, i.e. most-negative) value of ``field`` across all demo
+    cycles.  Loss/drawdown fields are negative, so the worst is the minimum.  Returns
+    EVIDENCE_MISSING when no cycle carries the field (F1 review M2)."""
+    if not isinstance(cycles, list):
+        return _MISSING
+    vals = []
+    for c in cycles:
+        if isinstance(c, dict) and isinstance(c.get(field), (int, float)):
+            vals.append(float(c[field]))
+    return round(min(vals), 4) if vals else _MISSING
+
+
+def _trade_density_per_day(latest_cycle: dict[str, Any]) -> Any:
+    """Closed trades per entry-trading-day for the latest cycle (F1 review M1).
+
+    ``trade_density_per_day`` is the shared-contract density metric; it is derived from
+    the same journal fields as the kept ``trade_density_entry_days`` alias.  Returns
+    EVIDENCE_MISSING when the inputs are absent, never invents a rate on zero days."""
+    trades = latest_cycle.get("closed_trades")
+    days = latest_cycle.get("entry_trading_days")
+    if not isinstance(trades, (int, float)) or not isinstance(days, (int, float)) or not days:
+        return _MISSING
+    return round(float(trades) / float(days), 4)
+
+
 def map_recommendation(
     *,
     blockers: list[str],
@@ -223,16 +249,32 @@ def build_readiness(
     )
     strongest = _strongest_failure_mode(fitness, demo_metrics, blockers)
 
-    # metrics block (§16 selection)
+    # metrics block (§16 selection).
+    #
+    # F1 review M1+M2: the shared read-model contract names trade density as
+    # ``trade_density_per_day`` and swap cost as ``swap_cost``; the pre-existing
+    # ``trade_density_entry_days`` / ``swap_cost_usd`` names are kept as aliases so no
+    # consumer breaks.  Worst-across-cycles risk metrics sit next to the current-cycle
+    # ones so a demo that already breached in an EARLIER cycle is not hidden by a
+    # benign latest cycle.
     lc = latest_cycle or {}
+    cycles = demo_metrics.get("cycles") if isinstance(demo_metrics, dict) else None
+    worst_dd_across = _worst_across_cycles(cycles, "realized_max_dd_pct")
+    worst_daily_across = _worst_across_cycles(cycles, "worst_day_pct")
     metrics = {
         "target_progress_pct": lc.get("target_progress_pct", _MISSING),
         "net_pct": lc.get("net_pct", _MISSING),
         "worst_daily_loss_pct": lc.get("worst_day_pct", _MISSING),
+        "worst_daily_loss_pct_worst_cycle": worst_daily_across,
         "max_dd_pct": lc.get("realized_max_dd_pct", _MISSING),
+        "max_dd_pct_worst_cycle": worst_dd_across,
+        # Canonical shared-contract name + kept alias.
+        "trade_density_per_day": _trade_density_per_day(lc),
         "trade_density_entry_days": lc.get("entry_trading_days", _MISSING),
         "losing_streak_max": lc.get("losing_streak_max", _MISSING),
         "median_holding_hours": lc.get("median_holding_hours", _MISSING),
+        # Canonical shared-contract name + kept alias.
+        "swap_cost": lc.get("swap_total_usd", _MISSING),
         "swap_cost_usd": lc.get("swap_total_usd", _MISSING),
         "commission_cost_usd": lc.get("commission_total_usd", _MISSING),
         "recovery_days": "NOT_EVALUATED",
@@ -346,9 +388,12 @@ def _render_doc(model: dict[str, Any], doc_path: Path) -> None:
         "## Metrics (latest demo cycle)",
         "",
         f"- Target progress: {m['target_progress_pct']}%  ·  net: {m['net_pct']}%",
-        f"- Worst daily loss: {m['worst_daily_loss_pct']}% (limit 5%)  ·  realized max-DD: {m['max_dd_pct']}% (limit 10%)",
-        f"- Entry trading days: {m['trade_density_entry_days']}  ·  max losing streak: {m['losing_streak_max']}",
-        f"- Swap: {m['swap_cost_usd']} USD  ·  commission: {m['commission_cost_usd']} USD  ·  median holding: {m['median_holding_hours']} h",
+        f"- Worst daily loss: {m['worst_daily_loss_pct']}% (limit 5%; worst across cycles "
+        f"{m['worst_daily_loss_pct_worst_cycle']}%)  ·  realized max-DD: {m['max_dd_pct']}% "
+        f"(limit 10%; worst across cycles {m['max_dd_pct_worst_cycle']}%)",
+        f"- Trade density: {m['trade_density_per_day']}/day over {m['trade_density_entry_days']} "
+        f"entry days  ·  max losing streak: {m['losing_streak_max']}",
+        f"- Swap: {m['swap_cost']} USD  ·  commission: {m['commission_cost_usd']} USD  ·  median holding: {m['median_holding_hours']} h",
         "",
         "## Fitness",
         "",

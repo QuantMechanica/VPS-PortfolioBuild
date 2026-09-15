@@ -1,6 +1,6 @@
 # FTMO Challenge Readiness (living)
 
-Generated 2026-09-15T14:13:50Z by `tools/strategy_farm/ftmo/challenge_readiness.py`.
+Generated 2026-09-15T15:32:47Z by `tools/strategy_farm/ftmo/challenge_readiness.py`.
 OWNER-DEC-CBE-20260915 (directive 2026-09-15 sections 62-63). Read-model: `D:/QM/reports/state/ftmo_challenge_readiness.json`.
 
 This is not one number. Readiness is a multi-axis picture; the paid decision is OWNER-only and cannot be taken by automation.
@@ -16,14 +16,14 @@ a demo cycle realized a >=10% total-loss breach
 ## Demo cycle
 
 - Roster under validation: `6c5383d8777728ba17abd1a836858b9db87c306d2931445ac642762075ac9bf2` (chart_profile), 8 sleeves
-- Cycle start: 2026-09-15T14:12:11Z  ·  validation days: 0.0 (min 14)  ·  state: NEW  ·  representative: False
+- Cycle start: 2026-09-15T14:12:11Z  ·  validation days: 0.023 (min 14)  ·  state: RUNNING  ·  representative: False
 - Material changes this cycle: 0
 
 ## Metrics (latest demo cycle)
 
 - Target progress: -1.46%  ·  net: -0.1464%
-- Worst daily loss: -0.1808% (limit 5%)  ·  realized max-DD: -0.2856% (limit 10%)
-- Entry trading days: 8  ·  max losing streak: 3
+- Worst daily loss: -0.1808% (limit 5%; worst across cycles -2.3389%)  ·  realized max-DD: -0.2856% (limit 10%; worst across cycles -10.2649%)
+- Trade density: 1.125/day over 8 entry days  ·  max losing streak: 3
 - Swap: -14.73 USD  ·  commission: -6.29 USD  ·  median holding: 5.056 h
 
 ## Fitness
@@ -33,7 +33,7 @@ a demo cycle realized a >=10% total-loss breach
 
 ## Rules snapshot
 
-- Source: https://ftmo.com/en/trading-objectives/  ·  fetched: 2026-09-15T13:59:31Z  ·  freshness: 0.01 days (OK)
+- Source: https://ftmo.com/en/trading-objectives/  ·  fetched: 2026-09-15T13:59:31Z  ·  freshness: 0.065 days (OK)
 
 ## How it is computed
 

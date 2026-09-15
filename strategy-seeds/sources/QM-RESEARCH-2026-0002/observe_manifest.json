@@ -1,0 +1,78 @@
+{
+  "dataset_id": null,
+  "farm_state_snapshot_note": "farm_state.sqlite is a live, growing DB; this dataset is a timestamped snapshot, not reproducible-forever. Content-address via the per-file sha256 map and this manifest's own sha256 (dataset_id).",
+  "git_commit": "4ad7ab7016a77f25323b95912573eafbb21c5e69",
+  "limit": null,
+  "query_text": {
+    "ea_metrics.csv": "SELECT work_item_id, ea_id, symbol, phase, verdict, net_profit, profit_factor, trades, drawdown_money, drawdown_pct, sharpe FROM ea_metrics ORDER BY work_item_id",
+    "gate_outcomes.csv": "SELECT id, ea_id, symbol, phase, verdict, verdict_taxonomy, verdict_reason, setfile_path, data_window_start, data_window_end, created_at FROM work_items_clean ORDER BY created_at, id",
+    "holds.csv": "SELECT work_item_id, hold_code, reason, active FROM work_item_holds ORDER BY work_item_id",
+    "idea_families.csv": "-- derived from ea_id_registry.csv (slug->family heuristic)",
+    "parameter_sensitivity.csv": "SELECT work_item_id, ea_id, symbol, phase, detail_json FROM ea_metrics ORDER BY work_item_id",
+    "sources.csv": "SELECT id, source_type, lane, status, uri, title FROM sources ORDER BY id"
+  },
+  "registry_path": "C:\\QM\\repo\\.claude\\worktrees\\wf_4fa62b18-d2d-5\\framework\\registry\\ea_id_registry.csv",
+  "row_counts": {
+    "ea_metrics.csv": 100213,
+    "gate_outcomes.csv": 149166,
+    "holds.csv": 5367,
+    "idea_families.csv": 4876,
+    "parameter_sensitivity.csv": 21651,
+    "sources.csv": 118
+  },
+  "schema": "qm.research-dataset/v1",
+  "sha256": {
+    "ea_metrics.csv": "d00b4311ab63382b1dc27d02ea279f6bfb91a7e5a40ec38a84c7c0e09100838f",
+    "gate_outcomes.csv": "1416236bc956f9a8ed1ca86d66d52bc426b5fd43b4e9678331121901cf5c28b3",
+    "holds.csv": "d7766ae22b0087c613c678d7d13ab5705e2c737f107b9c08c1ca0b1a69d81f1c",
+    "idea_families.csv": "fffd3c5b580e3a73a9ffddcab80dc65f16e2567cbfd200ef76cd9ef5e0f78151",
+    "parameter_sensitivity.csv": "5e7b1f6eb41e39c34da9ebca9e24a01b939e417a1b45a8509b4483037457dde5",
+    "sources.csv": "26f75c1e9a61c823422436b63fed332d59adf1321d6e2cf1f1ef327511cc5d16"
+  },
+  "source_db_mtime_utc": "2026-09-15T14:02:50+00:00",
+  "source_db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "source_db_size_bytes": 1266081792,
+  "stamp_utc": "2026-09-15T14-12-39Z",
+  "verdict_taxonomy_split": {
+    "draft_defect": {
+      "disposition": "excluded",
+      "rows": 67
+    },
+    "governance": {
+      "disposition": "excluded",
+      "rows": 242
+    },
+    "infra": {
+      "disposition": "infra",
+      "rows": 55883
+    },
+    "invalid": {
+      "disposition": "invalid",
+      "rows": 2384
+    },
+    "measurement": {
+      "disposition": "measurement",
+      "rows": 31426
+    },
+    "open": {
+      "disposition": "excluded",
+      "rows": 3807
+    },
+    "prescreen_measurement": {
+      "disposition": "measurement",
+      "rows": 350
+    },
+    "review": {
+      "disposition": "excluded",
+      "rows": 240
+    },
+    "strategy": {
+      "disposition": "economic",
+      "rows": 53722
+    },
+    "unknown": {
+      "disposition": "excluded",
+      "rows": 1045
+    }
+  }
+}

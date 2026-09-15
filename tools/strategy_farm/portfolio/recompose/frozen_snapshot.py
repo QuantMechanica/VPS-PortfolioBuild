@@ -37,6 +37,10 @@ SCHEMA = "qm.recompose-frozen-inputs/v1"
 REPO_ROOT = Path(__file__).resolve().parents[4]
 DEFAULT_DB_PATH = Path(r"D:\QM\strategy_farm\state\farm_state.sqlite")
 PORTFOLIO_REPORTS = Path(r"D:\QM\reports\portfolio")
+STATE_DIR = Path(r"D:\QM\reports\state")
+# F1 readiness read-model captured at freeze time so ``evaluate`` reads only the
+# snapshot (E1 review M1): the live file may change between freeze and evaluate.
+FTMO_READINESS_STATE = STATE_DIR / "ftmo_challenge_readiness.json"
 
 # Sealed-stream search order (current v2 sealed bundle first, then the durable store,
 # then the historical July bundle).  A stream is copied only when its file is found; a
@@ -274,6 +278,36 @@ def _live_evidence(venue: str) -> dict[str, Any]:
     }
 
 
+def _ftmo_readiness_capture(inputs_dir: Path, out_dir: Path, readiness_state: Path) -> dict[str, Any]:
+    """Capture the F1 readiness read-model into the snapshot at freeze time (E1 M1).
+
+    Copies ``ftmo_challenge_readiness.json`` byte-for-byte into ``inputs/`` with its
+    sha256 pinned and embeds the ``demo_cycle`` sub-object + recommendation directly in
+    the manifest, so ``evaluate`` is a pure function of the frozen snapshot and never
+    re-reads the (mutable) live read-model.  Absent/unreadable state degrades to
+    EVIDENCE_MISSING, never invented.
+    """
+    if not readiness_state.is_file():
+        return {"status": "EVIDENCE_MISSING", "reason": "readiness_read_model_absent",
+                "demo_cycle": "EVIDENCE_MISSING", "recommendation": "EVIDENCE_MISSING"}
+    try:
+        payload = json.loads(readiness_state.read_text(encoding="utf-8"))
+    except Exception as exc:  # noqa: BLE001 - a bad live file must not fail the freeze
+        return {"status": "EVIDENCE_MISSING", "reason": f"unreadable:{type(exc).__name__}",
+                "demo_cycle": "EVIDENCE_MISSING", "recommendation": "EVIDENCE_MISSING"}
+    dest = inputs_dir / "ftmo_challenge_readiness.json"
+    shutil.copyfile(readiness_state, dest)
+    return {
+        "status": "PRESENT",
+        "frozen_input_path": str(dest.relative_to(out_dir)).replace("\\", "/"),
+        "sha256": _sha256_file(dest),
+        "source": _file_pointer(readiness_state),
+        "generated_at_utc": payload.get("generated_at_utc", "UNKNOWN"),
+        "recommendation": payload.get("recommendation", "EVIDENCE_MISSING"),
+        "demo_cycle": payload.get("demo_cycle", "EVIDENCE_MISSING"),
+    }
+
+
 def freeze(
     venue: str,
     out: Path | str,
@@ -286,6 +320,7 @@ def freeze(
     stream_source_roots: Sequence[Path] | None = None,
     git_commit: str | None = None,
     extra_config_inputs: Mapping[str, Path] | None = None,
+    readiness_state: Path | None = None,
 ) -> dict[str, Any]:
     """Freeze inputs for ``venue`` into ``out`` and return the written manifest."""
     venue = str(venue).lower()
@@ -363,6 +398,12 @@ def freeze(
     # Live/demo evidence
     live = _live_evidence(venue)
 
+    # F1 readiness capture (E1 M1): frozen into the snapshot so evaluate never reads
+    # the mutable live read-model.  Captured for both venues (used by FTMO evaluate).
+    ftmo_readiness = _ftmo_readiness_capture(
+        inputs_dir, out_dir, readiness_state or FTMO_READINESS_STATE
+    )
+
     manifest = {
         "schema": SCHEMA,
         "venue": venue,
@@ -388,6 +429,7 @@ def freeze(
         },
         "config_inputs": config_inputs,
         "live_evidence": live,
+        "ftmo_readiness": ftmo_readiness,
     }
     manifest_path = out_dir / "manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8")
@@ -416,5 +458,17 @@ def load_snapshot(snapshot_dir: Path | str) -> dict[str, Any]:
             raise SnapshotError(
                 f"frozen stream sha mismatch for {record['key']}: "
                 f"manifest {record.get('sha256')}, disk {actual}"
+            )
+    # Re-hash the captured F1 readiness file (E1 M1, section 70): a frozen capture
+    # must match its manifest sha so the FTMO demo_cycle stays byte-stable.
+    readiness = manifest.get("ftmo_readiness") or {}
+    if readiness.get("status") == "PRESENT" and readiness.get("frozen_input_path"):
+        rpath = snapshot_dir / readiness["frozen_input_path"]
+        if not rpath.is_file():
+            raise SnapshotError(f"frozen ftmo readiness missing on disk: {rpath}")
+        actual = _sha256_file(rpath)
+        if actual != readiness.get("sha256"):
+            raise SnapshotError(
+                f"frozen ftmo readiness sha mismatch: manifest {readiness.get('sha256')}, disk {actual}"
             )
     return manifest

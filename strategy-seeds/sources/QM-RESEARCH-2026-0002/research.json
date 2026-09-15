@@ -1,0 +1,76 @@
+{
+  "author": "multi-agent:Kimi+Fable",
+  "candidate_edge": "H-CW: cash-window index continuation on NDX/GDAXI/SP500, H1, session-flat, ATR-stopped, daily-breaker-bounded.",
+  "computed_outputs": [
+    {
+      "claim_ref": "H1_holding_outcomes",
+      "description": "holding-class outcome distribution (H1, inconclusive)",
+      "file": "h1_result.json"
+    },
+    {
+      "claim_ref": "H2_activity",
+      "description": "activity distribution / low-activity count (H2, refuted-in-proxy)",
+      "file": "h2_result.json"
+    },
+    {
+      "claim_ref": "H3_failure_clusters",
+      "description": "economic-FAIL clusters (H3, not established)",
+      "file": "h3_result.json"
+    },
+    {
+      "claim_ref": "HCW_evidence",
+      "description": "holding-class pass rates + index Q10 record supporting H-CW",
+      "file": "h_cw_result.json"
+    }
+  ],
+  "confidence": "medium (research hypothesis; small-sample Q10 support; pipeline Q00-Q17 remains the judge)",
+  "confounders": [
+    "10-row Q10 index sample",
+    "index-symbol co-movement / concentration",
+    "census survivorship",
+    "96.5% session-unspecified rows",
+    "multiple testing across candidate filters"
+  ],
+  "created_utc": "2026-09-15T15:20:04+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": "offline clustering / regression / feature-importance permitted (directive sec41); no runtime model (directive sec42)",
+  "model": "kimi-code/kimi-for-coding",
+  "observations": "Successor to QM-RESEARCH-2026-0001 (G1 review): adds the campaign's actual surviving candidate H-CW as an honest mechanizable card and rewrites H1/H2/H3 as truthful findings (H1 inconclusive, H2 analytical/non-mechanizable, H3 not established).",
+  "originating_task_id": "CAMP-2026-0001-ftmo-gap",
+  "proposed_mechanism": "Cash-window index continuation, session-flat: trade equity-index CFDs only inside the cash-session overlap on H1, flat before rollover, with a hard daily loss breaker -- removing the overnight/swap tail that produced the -10.26% FTMO demo breach.",
+  "quantitative_claims": [
+    {
+      "claim": "Gate outcome rates differ by holding class; the intraday-vs-swing gap is noise-level (+0.85pp) and H1 is inconclusive on this projection.",
+      "computed_output_ref": "H1_holding_outcomes"
+    },
+    {
+      "claim": "Only ~9.5% of scored rows fall below the activity floor; density is not the binding FTMO constraint (expectancy dominates).",
+      "computed_output_ref": "H2_activity"
+    },
+    {
+      "claim": "Economic-FAIL clusters are dominated by session=unspecified rows; the H3 regime cannot be identified from this projection.",
+      "computed_output_ref": "H3_failure_clusters"
+    },
+    {
+      "claim": "Index intraday is the farm's FTMO-shaped quality pocket; holding-class pass rates support a session-flat index-continuation candidate (H-CW).",
+      "computed_output_ref": "HCW_evidence"
+    }
+  ],
+  "related_strategies": [
+    "DXZ v2 swing roster (opposite profile)",
+    "QM-RESEARCH-2026-0001 (parent; boilerplate cards corrected)"
+  ],
+  "research_id": "QM-RESEARCH-2026-0002",
+  "research_question": "What type of mechanical edge is our FTMO book missing? (directive sec47)",
+  "research_trial_count": 4,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "cash-window-index-continuation",
+  "source_datasets": [
+    {
+      "dataset_id": null,
+      "description": "OBSERVE read-only projection of farm_state.sqlite (INFRA separated)",
+      "path": "observe_manifest.json"
+    }
+  ]
+}

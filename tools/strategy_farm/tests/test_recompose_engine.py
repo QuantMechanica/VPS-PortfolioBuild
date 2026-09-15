@@ -164,9 +164,15 @@ class VenueFitnessSeparationTests(unittest.TestCase):
         self.assertEqual(dxz, dxz_fitness.compute_dxz_fitness(metrics))
 
     def test_ftmo_degrades_to_not_evaluated_when_module_absent(self) -> None:
+        # F1's ftmo_fitness module has since landed, so simulate the module-absent path
+        # by forcing the lazy loader to return None (the degradation contract stands).
         venue_fitness.register_venue_fitness("ftmo", None)
-        out = venue_fitness.compute_venue_fitness("ftmo", {"sharpe": 1.0})
-        # F1 module is not present in this worktree.
+        original = venue_fitness._load_ftmo_fitness
+        try:
+            venue_fitness._load_ftmo_fitness = lambda: None  # type: ignore[assignment]
+            out = venue_fitness.compute_venue_fitness("ftmo", {"sharpe": 1.0})
+        finally:
+            venue_fitness._load_ftmo_fitness = original  # type: ignore[assignment]
         self.assertEqual(out["objective"], "NOT_EVALUATED")
 
 
@@ -280,6 +286,112 @@ class RiskDiagnosticsCarryTests(unittest.TestCase):
             self.assertTrue(diag["dependence_panel"])
             self.assertIn("downside_correlation", diag["dependence_panel"][0])
             self.assertIn("trade_overlap_jaccard", diag["dependence_panel"][0])
+
+
+class FrozenReadinessCaptureTests(unittest.TestCase):
+    """E1 review M1: FTMO readiness is captured at freeze; evaluate reads only the snapshot."""
+
+    def _ftmo_incumbent(self):
+        return [{
+            "label": "demo_8", "source_path": "X", "status": "DEMO_RUNNING",
+            "sleeves": [
+                {"ea_id": 101, "symbol": "EURUSD.DWX", "magic": 1010000, "risk_pct": 0.3125},
+                {"ea_id": 102, "symbol": "XAUUSD.DWX", "magic": 1020000, "risk_pct": 0.3125},
+                {"ea_id": 103, "symbol": "USDJPY.DWX", "magic": 1030000, "risk_pct": 0.3125},
+            ],
+        }]
+
+    def test_evaluate_byte_identical_across_change_to_live_readiness(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            src = _source_root(tmp)
+            snap = tmp / "snap"
+            live_readiness = tmp / "ftmo_challenge_readiness.json"
+            live_readiness.write_text(json.dumps({
+                "generated_at_utc": "2026-09-15T00:00:00Z",
+                "recommendation": "NOT_READY",
+                "demo_cycle": {"roster_hash": "AAA", "state": "NEW", "validation_days": 3},
+            }), encoding="utf-8")
+            fs.freeze(
+                "ftmo", snap,
+                as_of=dt.datetime(2026, 9, 18, 20, 0, tzinfo=dt.UTC), seed=5,
+                qualified_pairs=[(101, "EURUSD.DWX"), (102, "XAUUSD.DWX"), (103, "USDJPY.DWX")],
+                incumbents=self._ftmo_incumbent(), stream_source_roots=[src], git_commit="r",
+                readiness_state=live_readiness,
+            )
+            rm1 = rc.evaluate("ftmo", snap, tmp / "rm1.json", book_evolution_root=tmp / "be1")
+            # The captured demo_cycle came from the snapshot, not the live file.
+            self.assertEqual(rm1["demo_cycle"]["roster_hash"], "AAA")
+            # Change the LIVE readiness file after freeze.
+            live_readiness.write_text(json.dumps({
+                "generated_at_utc": "2026-09-16T00:00:00Z",
+                "recommendation": "BUY_100K_2STEP_RECOMMENDED",
+                "demo_cycle": {"roster_hash": "ZZZ", "state": "DECISION_PACKAGE", "validation_days": 99},
+            }), encoding="utf-8")
+            rm2 = rc.evaluate("ftmo", snap, tmp / "rm2.json", book_evolution_root=tmp / "be2")
+            # Evaluate is a pure function of the snapshot: unchanged, byte-identical.
+            self.assertEqual(rm2["demo_cycle"]["roster_hash"], "AAA")
+            self.assertEqual((tmp / "rm1.json").read_bytes(), (tmp / "rm2.json").read_bytes())
+
+    def test_load_snapshot_rehashes_readiness_capture(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            src = _source_root(tmp)
+            snap = tmp / "snap"
+            live_readiness = tmp / "ftmo_challenge_readiness.json"
+            live_readiness.write_text(json.dumps({"demo_cycle": {"roster_hash": "AAA"}}), encoding="utf-8")
+            fs.freeze(
+                "ftmo", snap,
+                qualified_pairs=[(101, "EURUSD.DWX")], incumbents=self._ftmo_incumbent(),
+                stream_source_roots=[src], git_commit="r", readiness_state=live_readiness,
+            )
+            # Tamper with the frozen capture -> load_snapshot must fail closed.
+            (snap / "inputs" / "ftmo_challenge_readiness.json").write_text("{}", encoding="utf-8")
+            with self.assertRaises(fs.SnapshotError):
+                fs.load_snapshot(snap)
+
+
+class DependenceRiskMaterialityTests(unittest.TestCase):
+    """E1 review M2: materiality weighs concentration/dependence as downside risk."""
+
+    def _daily(self):
+        with tempfile.TemporaryDirectory() as td:
+            src = _source_root(Path(td))
+            trades = load_streams(src, candidates=[(101, "EURUSD.DWX"), (102, "XAUUSD.DWX"), (103, "USDJPY.DWX"), (201, "GBPUSD.DWX")])
+            return {k: to_daily_pnl(v) for k, v in trades.items()}
+
+    def test_hard_guard_breach_blocks_materiality(self) -> None:
+        daily = self._daily()
+        keys = [(101, "EURUSD.DWX"), (102, "XAUUSD.DWX"), (103, "USDJPY.DWX")]
+        w = {k: 2.0 for k in keys}
+        base_m = metrics_mod.compute_roster_metrics(keys, w, daily)
+        base_f = dxz_fitness.compute_dxz_fitness(base_m)
+        base_book = metrics_mod.book_by_date(keys, w, daily)
+        # A strongly-improving alternative that would otherwise be material...
+        alt_f = dict(base_f)
+        alt_f["objective"] = (base_f.get("objective") or 0) + 0.5
+        assessment = mat_mod.assess(
+            venue="dxz",
+            change={"outcome": "ADD_SLEEVE", "add": [[201, "GBPUSD.DWX"]], "remove": [], "replace": []},
+            baseline_fitness=base_f, alt_fitness=alt_f,
+            baseline_metrics=base_m, alt_metrics=base_m,
+            baseline_book_by_date=base_book, alt_book_by_date=base_book,
+            incumbent_symbols=["EURUSD", "XAUUSD", "USDJPY"],
+            alt_risk_diagnostics={"hard_guards": {"passed": False}},
+            seed=0,
+        )
+        # ... is blocked because the alternative's hard portfolio guard failed.
+        self.assertFalse(assessment["material"])
+        self.assertIn("hard_portfolio_guard_breached", assessment["reasons"])
+        self.assertFalse(assessment["factors"]["dependence_risk"]["pass"])
+
+    def test_change_concentration_names_symbol(self) -> None:
+        base_m = {"symbol_exposure_risk_pct": {"XAUUSD": 2.39, "EURUSD": 1.6}, "total_risk_pct": 11.0}
+        alt_m = {"symbol_exposure_risk_pct": {"XAUUSD": 2.47, "EURUSD": 1.6}, "total_risk_pct": 11.0}
+        warns = rc._change_concentration(base_m, alt_m, {"add": [[10700, "XAUUSD.DWX"]]})
+        self.assertEqual(len(warns), 1)
+        self.assertEqual(warns[0]["key"], "XAUUSD")
+        self.assertTrue(warns[0]["is_largest_symbol"])
 
 
 if __name__ == "__main__":

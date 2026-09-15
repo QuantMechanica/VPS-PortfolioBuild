@@ -1,0 +1,37 @@
+{
+  "chain_id": "CAMP-2026-0001-ftmo-gap_v2_attack_fallback",
+  "critic_fallback_used": true,
+  "critic_seat_final": {
+    "model": "opus-4.8 (Fable orchestrator, inline read-only)",
+    "vendor": "claude"
+  },
+  "critic_verdict": "REVISE",
+  "cross_vendor": true,
+  "fallback_reason": "no critic seat available for creator vendor 'kimi': [{'seat': 'claude:sonnet', 'skipped': 'claude_disabled_flag', 'routing_reason': 'claude_disabled_flag'}, {'seat': 'codex:terra/medium', 'skipped': 'codex_low_tokens_flag', 'routing_reason': 'codex_low_tokens_flag'}, {'seat': 'agy:default', 'skipped': 'agy_low_quota_flag', 'routing_reason': 'agy_low_quota_flag'}]",
+  "finding_counts": {
+    "blocking": 0,
+    "major": 3,
+    "minor": 3
+  },
+  "generated_at_utc": "2026-09-15T15:20:04+00:00",
+  "plan": {
+    "creator": {
+      "model": "kimi-code/kimi-for-coding",
+      "vendor": "kimi"
+    },
+    "critic": {
+      "model": "opus-4.8 (Fable orchestrator, inline read-only)",
+      "vendor": "claude"
+    }
+  },
+  "receipt_path": "D:\\QM\\research\\campaigns\\CAMP-2026-0001-ftmo-gap\\critique_claude_v2.md",
+  "repo_write": false,
+  "schema": "qm.agent-chain.receipt.v1",
+  "scope_drift": false,
+  "stages": [
+    {
+      "note": "automated lanes quota-gated; Fable inline read-only cross-vendor critique; Fable is a co-author (partial corroboration, documented)",
+      "role": "critic"
+    }
+  ]
+}

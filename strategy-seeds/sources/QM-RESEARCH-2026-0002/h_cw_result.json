@@ -1,0 +1,13 @@
+{
+  "candidate": "cash-window index continuation, session-flat (H-CW)",
+  "claim_ref": "HCW_evidence",
+  "holding_class_pass_rates": {
+    "intraday": 0.5164,
+    "position": 0.5567,
+    "scalp": 0.3991,
+    "swing": 0.5079,
+    "unknown": 0.6048
+  },
+  "index_intraday_q10_pass_record": "9 PASS / 1 FAIL (campaign kimi_answer recompute; NOT in the deterministic OBSERVE summary -- motivation, not proof)",
+  "provenance": "D:/QM/research/campaigns/CAMP-2026-0001-ftmo-gap/kimi_answer.md section 2"
+}

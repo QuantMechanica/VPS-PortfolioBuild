@@ -266,3 +266,79 @@ def test_is_fresh_respects_max_age(tmp_path: Path) -> None:
     assert kqf.is_fresh(stale, 1800, now=NOW) is False
     assert kqf.is_fresh({"fetch_status": "auth_error",
                          "source_timestamp": kqf._utc_iso(NOW)}, 1800, now=NOW) is False
+
+
+# --- bounded refresh interval guard (directive sec31-33) ---------------------------
+
+def _cfg_refresh(tmp_path: Path, cred: Path, *, min_interval_s: int = 21600) -> dict:
+    cfg = _cfg(tmp_path, cred, refresh=True)
+    cfg["refresh"]["min_interval_s"] = min_interval_s
+    cfg["ledger_path"] = str(tmp_path / "kimi_usage_ledger.jsonl")
+    return cfg
+
+
+def test_refresh_allowed_gated_by_last_success(tmp_path: Path) -> None:
+    cfg = _cfg_refresh(tmp_path, tmp_path / "c.json")
+    # A recent successful fetch -> no refresh needed (clock not elapsed).
+    recent = {"fetch_status": "ok", "source_timestamp": kqf._utc_iso(NOW - dt.timedelta(hours=1))}
+    assert kqf.refresh_allowed(cfg, recent, NOW) is False
+    # An old successful fetch AND no recent refresh -> allowed.
+    old = {"fetch_status": "ok", "source_timestamp": kqf._utc_iso(NOW - dt.timedelta(hours=7))}
+    assert kqf.refresh_allowed(cfg, old, NOW) is True
+    # No prior state at all -> allowed.
+    assert kqf.refresh_allowed(cfg, None, NOW) is True
+    # A recent refresh attempt blocks even when the last success is old (no loop).
+    looping = {"fetch_status": "auth_error",
+               "refresh_last_utc": kqf._utc_iso(NOW - dt.timedelta(minutes=15))}
+    assert kqf.refresh_allowed(cfg, looping, NOW) is False
+    # via_cli off -> never.
+    cfg_off = _cfg_refresh(tmp_path, tmp_path / "c.json")
+    cfg_off["refresh"]["via_cli"] = False
+    assert kqf.refresh_allowed(cfg_off, None, NOW) is False
+
+
+def test_stale_token_recent_success_does_not_spawn_refresh(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    cred = _write_cred(tmp_path, fresh=False)  # stale token
+    cfg = _cfg_refresh(tmp_path, cred)
+    # Seed a RECENT successful fetch so the interval guard blocks a paid refresh.
+    kqf.write_state({"fetch_status": "ok", "source_timestamp": kqf._utc_iso(NOW - dt.timedelta(minutes=30))},
+                    cfg["state_path"])
+    calls: list[int] = []
+    monkeypatch.setattr(kqf, "_refresh_via_cli", lambda *a, **k: calls.append(1) or True)
+    state = kqf.fetch(cfg, now=NOW)
+    assert not calls, "refresh must not be spawned within min_interval of a success"
+    assert state["fetch_status"] == "auth_error"  # stale token, fell back
+    assert state["refresh_calls"] == 0
+
+
+def test_stale_token_old_success_spawns_bounded_refresh_and_records(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    cred = _write_cred(tmp_path, fresh=False)  # stale token
+    cfg = _cfg_refresh(tmp_path, cred)
+    kqf.write_state({"fetch_status": "ok", "source_timestamp": kqf._utc_iso(NOW - dt.timedelta(hours=8))},
+                    cfg["state_path"])
+    calls: list[int] = []
+    # Refresh "succeeds" but token stays stale (CLI ran, our fixture token unchanged).
+    monkeypatch.setattr(kqf, "_refresh_via_cli", lambda *a, **k: calls.append(1) or True)
+    state = kqf.fetch(cfg, now=NOW)
+    assert calls, "an elapsed interval must allow one bounded refresh"
+    assert state["refresh_calls"] == 1
+    assert state["refresh_last_utc"] is not None
+    # The refresh was recorded in the usage ledger with role 'quota_refresh'.
+    ledger = Path(cfg["ledger_path"]).read_text(encoding="utf-8").strip().splitlines()
+    roles = [json.loads(line)["role"] for line in ledger]
+    assert "quota_refresh" in roles
+
+
+def test_refresh_never_leaks_token_in_state_or_ledger(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    cred = _write_cred(tmp_path, fresh=False, token=SECRET)
+    cfg = _cfg_refresh(tmp_path, cred)
+    kqf.write_state({"fetch_status": "ok", "source_timestamp": kqf._utc_iso(NOW - dt.timedelta(hours=8))},
+                    cfg["state_path"])
+    monkeypatch.setattr(kqf, "_refresh_via_cli", lambda *a, **k: True)
+    kqf.fetch(cfg, now=NOW)
+    state_text = Path(cfg["state_path"]).read_text(encoding="utf-8")
+    ledger_text = Path(cfg["ledger_path"]).read_text(encoding="utf-8")
+    assert SECRET not in state_text and "refresh_token" not in state_text
+    assert SECRET not in ledger_text
+    # _print_redacted's defence-in-depth guard passes on the written state.
+    kqf._print_redacted(json.loads(state_text))

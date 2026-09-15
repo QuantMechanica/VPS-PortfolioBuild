@@ -162,6 +162,65 @@ def _risk_diagnostics(
     return diagnostics
 
 
+def _change_concentration(
+    baseline_metrics: Mapping[str, Any],
+    alt_metrics: Mapping[str, Any],
+    change: Mapping[str, Any],
+) -> list[dict[str, Any]]:
+    """Advisory warnings when a proposed change RAISES a symbol's concentration (E1 M2).
+
+    OWNER-DEC-CBE-20260915 sec 8 makes the static per-symbol cap advisory, so a change
+    that does not breach the 46 %-of-budget cap can still concentrate the book further
+    into its most-exposed symbol.  This surfaces that explicitly (naming the symbol and
+    its share of the risk budget) as an advisory, non-blocking warning -- it is NOT a new
+    permanent cap, it is a measured observation about what the change does.  The
+    2026-W38 ADD_SLEEVE 10700 XAUUSD proposal therefore shows its XAUUSD concentration
+    increase even though the advisory 46 % cap is not breached.
+    """
+    base_exp = baseline_metrics.get("symbol_exposure_risk_pct") or {}
+    alt_exp = alt_metrics.get("symbol_exposure_risk_pct") or {}
+    if not isinstance(alt_exp, Mapping) or not alt_exp:
+        return []
+    total = _num(alt_metrics.get("total_risk_pct")) or sum(
+        v for v in alt_exp.values() if isinstance(v, (int, float))
+    )
+    top_symbol = max(alt_exp, key=lambda s: alt_exp.get(s) or 0.0)
+    added_bare = {str(sym).upper().split(".", 1)[0] for _ea, sym in (change.get("add") or [])}
+    warnings: list[dict[str, Any]] = []
+    for sym in sorted(added_bare):
+        a_val = _num(alt_exp.get(sym))
+        if a_val is None:
+            continue
+        b_val = _num(base_exp.get(sym)) or 0.0
+        if a_val <= b_val + 1e-12:
+            continue
+        share = round(a_val / total * 100.0, 2) if total else None
+        warnings.append({
+            "cap": "symbol_concentration_increase",
+            "key": sym,
+            "value": round(a_val, 6),
+            "baseline_value": round(b_val, 6),
+            "share_of_budget_pct": share,
+            "is_largest_symbol": sym == str(top_symbol).upper().split(".", 1)[0],
+            "unit": "planned_stop_risk_pct",
+            "severity": "WARN",
+            "note": (
+                f"change raises book exposure to {sym} from {round(b_val, 4)}% to "
+                f"{round(a_val, 4)}%"
+                + (" (already the largest symbol)" if sym == top_symbol else "")
+            ),
+        })
+    return warnings
+
+
+def _num(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    return None
+
+
 def _change_outcome(added: list[Key], removed: list[Key]) -> str:
     if added and removed:
         return "REPLACE_SLEEVE"
@@ -245,6 +304,15 @@ def evaluate(
     baseline_book = metrics_mod.book_by_date(primary_keys, baseline_weights, daily) if primary_keys else {}
     incumbent_symbols = [s for _e, s in primary_keys]
 
+    # Advisory concentration / dependence diagnostics for the incumbent baseline roster
+    # (b2 caps -> advisory; carried into the output, never a silent no-op).  Computed
+    # BEFORE the alternatives loop so materiality can weigh each alternative's dependence
+    # against the baseline (E1 review M2).
+    baseline_risk_diag = (
+        _risk_diagnostics(primary_keys, baseline_weights, daily, trades, baseline_metrics)
+        if primary_keys else {"status": "EVIDENCE_MISSING", "reason": "no_incumbent_streams"}
+    )
+
     # Alternatives: standard add/remove/replace + each secondary incumbent as an explicit book.
     alternatives = alt_mod.enumerate_alternatives(
         primary_keys, pool, daily, total_risk_budget=budget, sleeve_cap=sleeve_cap
@@ -278,6 +346,13 @@ def evaluate(
         m = metrics_mod.compute_roster_metrics(keys, weights, daily, trades_by_key=trades)
         f = venue_fitness.compute_venue_fitness(venue, m, snapshot=manifest)
         alt_book = metrics_mod.book_by_date(keys, weights, daily)
+        # Risk diagnostics for THIS alternative roster (E1 review M2): the same advisory
+        # cap warnings + hard guards + dependence panel the incumbent gets, plus the
+        # change-level symbol-concentration diagnostic.  These weigh into materiality.
+        alt_risk_diag = _risk_diagnostics(keys, weights, daily, trades, m)
+        change_conc = _change_concentration(baseline_metrics, m, a["change"])
+        if isinstance(alt_risk_diag, dict):
+            alt_risk_diag["change_concentration_warnings"] = change_conc
         assessment = mat_mod.assess(
             venue=venue,
             change=a["change"],
@@ -289,6 +364,8 @@ def evaluate(
             alt_book_by_date=alt_book,
             incumbent_symbols=incumbent_symbols,
             incumbent_live_evidence=live_evidence,
+            alt_risk_diagnostics=alt_risk_diag,
+            baseline_risk_diagnostics=baseline_risk_diag,
             seed=seed,
         )
         assessed.append({
@@ -297,6 +374,7 @@ def evaluate(
             "metrics": m,
             "fitness": f,
             "materiality": assessment,
+            "risk_diagnostics": alt_risk_diag,
         })
 
     challengers_available = any(
@@ -332,12 +410,15 @@ def evaluate(
             "marginal_value": mv,
         })
 
-    # Advisory concentration diagnostics for the incumbent baseline roster (b2 caps ->
-    # advisory; the cap warnings are carried into the output, never a silent no-op).
-    baseline_risk_diag = (
-        _risk_diagnostics(primary_keys, baseline_weights, daily, trades, baseline_metrics)
-        if primary_keys else {"status": "EVIDENCE_MISSING", "reason": "no_incumbent_streams"}
-    )
+    # Risk diagnostics for the SELECTED alternative (E1 review M2): carried into the
+    # read-model proposal so the proposal's own concentration / dependence risk is
+    # visible, not only the incumbent's.
+    selected_label = proposal.get("selected_alternative")
+    selected_risk_diag = None
+    if selected_label:
+        match = next((a for a in assessed if a["label"] == selected_label), None)
+        if match is not None:
+            selected_risk_diag = match.get("risk_diagnostics")
 
     # Engine outputs are a PURE function of the frozen snapshot (directive section 70):
     # the generation timestamp is the snapshot's freeze instant, so two evaluations of the
@@ -355,6 +436,7 @@ def evaluate(
         challengers=challenger_rows,
         proposal=proposal,
         risk_diagnostics=baseline_risk_diag,
+        selected_risk_diagnostics=selected_risk_diag,
         snapshot_dir=Path(snapshot_dir),
     )
 
@@ -405,6 +487,7 @@ def _build_read_model(
     challengers: Sequence[Mapping[str, Any]],
     proposal: Mapping[str, Any],
     risk_diagnostics: Mapping[str, Any],
+    selected_risk_diagnostics: Mapping[str, Any] | None,
     snapshot_dir: Path,
 ) -> dict[str, Any]:
     sleeves = []
@@ -469,12 +552,11 @@ def _build_read_model(
             "materiality": proposal.get("materiality", {}),
             "confidence": proposal.get("confidence"),
             "operational_risk": proposal.get("operational_risk"),
-            "risk_diagnostics": {
-                "status": risk_diagnostics.get("status", "EVIDENCE_MISSING"),
-                "cap_warnings": risk_diagnostics.get("cap_warnings", []),
-                "hard_guards_passed": (risk_diagnostics.get("hard_guards") or {}).get("passed"),
-                "reason": risk_diagnostics.get("reason"),
-            },
+            "risk_diagnostics": _risk_diag_summary(risk_diagnostics),
+            "selected_alternative_risk_diagnostics": (
+                _risk_diag_summary(selected_risk_diagnostics)
+                if selected_risk_diagnostics is not None else "NOT_APPLICABLE_KEEP"
+            ),
         },
         "next_recomposition_utc": _next_recomposition_utc(as_of),
         "recommendation_text": _recommendation_text(venue, proposal, manifest),
@@ -483,9 +565,21 @@ def _build_read_model(
     }
 
     if venue == "ftmo":
-        read_model["demo_cycle"] = _ftmo_demo_cycle()
+        read_model["demo_cycle"] = _ftmo_demo_cycle(manifest)
 
     return read_model
+
+
+def _risk_diag_summary(diag: Mapping[str, Any] | None) -> dict[str, Any]:
+    """Compact risk-diagnostics view for the read-model proposal (incumbent + selected)."""
+    diag = diag or {}
+    return {
+        "status": diag.get("status", "EVIDENCE_MISSING"),
+        "cap_warnings": diag.get("cap_warnings", []),
+        "change_concentration_warnings": diag.get("change_concentration_warnings", []),
+        "hard_guards_passed": (diag.get("hard_guards") or {}).get("passed"),
+        "reason": diag.get("reason"),
+    }
 
 
 def _freshness(live: Mapping[str, Any]) -> str:
@@ -495,15 +589,16 @@ def _freshness(live: Mapping[str, Any]) -> str:
     return "EVIDENCE_MISSING"
 
 
-def _ftmo_demo_cycle() -> dict[str, Any]:
-    readiness = STATE_DIR / "ftmo_challenge_readiness.json"
-    if readiness.is_file():
-        try:
-            payload = json.loads(readiness.read_text(encoding="utf-8"))
-            return payload.get("demo_cycle", "EVIDENCE_MISSING")
-        except Exception:  # noqa: BLE001
-            return "EVIDENCE_MISSING"
-    return "EVIDENCE_MISSING"
+def _ftmo_demo_cycle(manifest: Mapping[str, Any]) -> Any:
+    """Return the FTMO demo_cycle captured into the snapshot at freeze time (E1 M1).
+
+    ``evaluate`` is a pure function of the frozen snapshot: the readiness read-model is
+    captured (with sha256) in ``freeze`` and read ONLY from the manifest here, so a
+    change to the live ``ftmo_challenge_readiness.json`` after freeze never alters an
+    evaluation of the same snapshot.
+    """
+    readiness = manifest.get("ftmo_readiness") or {}
+    return readiness.get("demo_cycle", "EVIDENCE_MISSING")
 
 
 def _recommendation_text(venue: str, proposal: Mapping[str, Any], manifest: Mapping[str, Any]) -> str:
@@ -603,6 +698,9 @@ def _render_evidence(evaluation: Mapping[str, Any], manifest: Mapping[str, Any])
     else:
         lines.append(f"- Risk diagnostics EVIDENCE_MISSING: `{rd.get('reason')}`.")
     lines.append("")
+    lines.append("## Selected / proposed alternative risk diagnostics (E1 review M2)")
+    lines.extend(_selected_risk_lines(evaluation))
+    lines.append("")
     lines.append("## Streams")
     st = manifest["streams"]
     lines.append(f"- Present: {st['count_present']} · missing: {st['count_missing']}.")
@@ -613,6 +711,58 @@ def _render_evidence(evaluation: Mapping[str, Any], manifest: Mapping[str, Any])
     lines.append("- Deterministic code for all numbers; the only RNG is the seeded materiality bootstrap.")
     lines.append("- No farm-DB write, no terminal start, no deployment, no AutoTrading toggle (OWNER-only).")
     return "\n".join(lines) + "\n"
+
+
+def _selected_risk_lines(evaluation: Mapping[str, Any]) -> list[str]:
+    """Render the proposed alternative's concentration/dependence diagnostics.
+
+    When the outcome is KEEP there is no selected alternative; the top-by-delta
+    alternative is shown instead so the reviewer still sees what a change would concentrate.
+    """
+    prop = evaluation.get("proposal", {})
+    assessed = [a for a in evaluation.get("alternatives_assessed", []) if a.get("label") != "incumbent"]
+    label = prop.get("selected_alternative")
+    if not label:
+        ranked = sorted(
+            assessed,
+            key=lambda a: -(a["materiality"]["factors"].get("delta_objective") or float("-inf")),
+        )
+        chosen = ranked[0] if ranked else None
+        prefix = "Top-by-delta alternative (outcome is KEEP; shown for concentration visibility)"
+    else:
+        chosen = next((a for a in assessed if a.get("label") == label), None)
+        prefix = f"Selected alternative `{label}`"
+    if chosen is None:
+        return ["- No alternative evaluated."]
+    rd = chosen.get("risk_diagnostics") or {}
+    lines = [f"- {prefix}."]
+    if rd.get("status") == "PRESENT":
+        hard = (rd.get("hard_guards") or {}).get("passed")
+        warns = rd.get("cap_warnings", [])
+        lines.append(f"  - Hard portfolio guards passed: `{hard}`; advisory cap warnings: `{len(warns)}`.")
+        for w in warns:
+            lines.append(
+                f"    - `{w.get('cap')}` `{w.get('key')}`: `{w.get('value')}` vs `{w.get('threshold')}`."
+            )
+    else:
+        lines.append(f"  - Risk diagnostics: `{rd.get('status')}` ({rd.get('reason')}).")
+    conc = rd.get("change_concentration_warnings") or []
+    if conc:
+        lines.append(f"  - Change-concentration warnings (advisory, non-blocking): `{len(conc)}`.")
+        for w in conc:
+            lines.append(
+                f"    - `{w.get('key')}`: {w.get('note')} "
+                f"(share of budget `{w.get('share_of_budget_pct')}%`)."
+            )
+    else:
+        lines.append("  - Change-concentration warnings: none.")
+    dep = chosen["materiality"]["factors"].get("dependence_risk") or {}
+    lines.append(
+        f"  - Dependence risk: hard_guards_passed=`{dep.get('hard_guards_passed')}` · "
+        f"Δmean|downside-corr|=`{dep.get('delta_mean_abs_downside_correlation')}` "
+        f"(band `{dep.get('max_downside_corr_worsening')}`) · pass=`{dep.get('pass')}`."
+    )
+    return lines
 
 
 def _reconciliation_lines(evaluation: Mapping[str, Any], manifest: Mapping[str, Any]) -> list[str]:

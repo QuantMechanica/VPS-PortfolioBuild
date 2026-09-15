@@ -25,10 +25,16 @@ escapes ``fetch``; the MT5 factory is never affected by a Kimi telemetry failure
 
 TOKEN REFRESH: the 15-min OAuth token is refreshed by the CLI only on a real
 authenticated model call, which costs quota (live-verified 2026-09-15). Re-implementing
-the OAuth grant is a documented non-goal (kimi_quota_discovery.md risk 6). So refresh
-is best-effort and OFF by default (config ``refresh.via_cli``): a stale token with
-refresh disabled -> ``fetch_status='auth_error'`` -> ledger fallback. In production the
-frequent adapter research calls keep the token fresh for the governor's fetch.
+the OAuth grant is a documented non-goal (kimi_quota_discovery.md risk 6). Because the
+15-min governor fetch mostly runs when the token is already stale, refresh is now a
+BOUNDED best-effort CLI call, ON by default (config ``refresh.via_cli``): when the token
+is stale AND the last successful fetch is older than ``refresh.min_interval_s`` (default
+6h) AND ``via_cli`` is true, the fetcher spends ONE cheap model call then fetches. A
+successful fetch resets the min_interval clock, self-bounding to <=4 refresh calls/day;
+a separate ``refresh_last_utc`` guard stops a failing refresh from looping. Each refresh
+is counted in ``refresh_calls`` in the state file and recorded in the usage ledger with
+role ``quota_refresh``. Set ``via_cli=false`` to disable (stale token -> auth_error ->
+ledger fallback, no request).
 
   python -X utf8 tools/strategy_farm/kimi_quota_fetcher.py fetch
   python -X utf8 tools/strategy_farm/kimi_quota_fetcher.py fetch --print-redacted
@@ -163,6 +169,80 @@ def _refresh_via_cli(cfg: dict[str, Any], env: dict[str, str]) -> bool:
         return proc.returncode == 0
     except Exception:
         return False
+
+
+def _age_s(iso_ts: Any, now: dt.datetime) -> float | None:
+    """Age in seconds of an ISO-8601 timestamp, or None if unparseable/absent."""
+    if not iso_ts:
+        return None
+    try:
+        parsed = dt.datetime.fromisoformat(str(iso_ts).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=dt.timezone.utc)
+    return (now - parsed).total_seconds()
+
+
+def refresh_allowed(cfg: dict[str, Any], prev_state: dict[str, Any] | None,
+                    now: dt.datetime) -> bool:
+    """Interval guard for the bounded CLI refresh (directive sec31-33).
+
+    A refresh (one paid model call) is allowed only when ALL hold:
+      * ``refresh.via_cli`` is true, AND
+      * the last SUCCESSFUL fetch is older than ``refresh.min_interval_s`` (a recent
+        success means the token was fresh recently -> no need to spend a call), AND
+      * the last REFRESH attempt is older than ``min_interval_s`` (so a failing refresh
+        cannot loop every 15 min).
+    A successful fetch resets the min_interval clock, self-bounding to <=1 refresh per
+    min_interval (<=4/day at 6h)."""
+    rc = dict(cfg.get("refresh") or {})
+    if not rc.get("via_cli"):
+        return False
+    min_interval = int(rc.get("min_interval_s", 21600))
+    prev = prev_state or {}
+    # last successful fetch age
+    if prev.get("fetch_status") == OK:
+        succ_age = _age_s(prev.get("source_timestamp"), now)
+        if succ_age is not None and succ_age < min_interval:
+            return False
+    # last refresh attempt age
+    last_refresh_age = _age_s(prev.get("refresh_last_utc"), now)
+    if last_refresh_age is not None and last_refresh_age < min_interval:
+        return False
+    return True
+
+
+def _append_refresh_ledger(cfg: dict[str, Any], *, status: str, now: dt.datetime) -> None:
+    """Record the quota-refresh model call in the shared Kimi usage ledger.
+
+    Role ``quota_refresh`` so the governor and any audit can see the (bounded) telemetry
+    calls the fetcher spends.  Never contains a token.  Best-effort; a ledger write
+    failure never affects the fetch result."""
+    ledger_path = cfg.get("ledger_path") or "D:/QM/reports/state/kimi_usage_ledger.jsonl"
+    line = {
+        "schema": "qm.kimi-usage/v1",
+        "ts_utc": _utc_iso(now),
+        "task_id": "quota_refresh",
+        "role": "quota_refresh",
+        "capability": "quota_refresh",
+        "model": "kimi-code/kimi-for-coding",
+        "prompt_sha256": None,
+        "output_sha256": None,
+        "latency_s": 0.0,
+        "status": status,
+        "retries": 0,
+        "cli_version": "quota_fetcher",
+        "usage": None,
+        "subscription_period": dict(cfg.get("subscription_period") or {}),
+    }
+    try:
+        path = Path(ledger_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(line) + "\n")
+    except Exception:
+        pass
 
 
 def _child_env(environ: dict[str, str] | None) -> dict[str, str]:
@@ -342,10 +422,18 @@ def fetch(cfg: dict[str, Any] | None = None, *, env: dict[str, str] | None = Non
     environ = dict(os.environ if env is None else env)
     now = now or _now()
 
+    state_path = cfg.get("state_path") or "D:/QM/reports/state/kimi_quota_state.json"
+    prev_state = read_state(state_path)
+    # Refresh bookkeeping carried forward across cycles (never a token).
+    refresh_calls = int((prev_state or {}).get("refresh_calls") or 0)
+    refresh_last_utc = (prev_state or {}).get("refresh_last_utc")
+
     def _finish(state: dict[str, Any]) -> dict[str, Any]:
+        state["refresh_calls"] = refresh_calls
+        state["refresh_last_utc"] = refresh_last_utc
         if write:
             try:
-                write_state(state, cfg.get("state_path") or "D:/QM/reports/state/kimi_quota_state.json")
+                write_state(state, state_path)
             except Exception:
                 pass
         return state
@@ -365,11 +453,18 @@ def fetch(cfg: dict[str, Any] | None = None, *, env: dict[str, str] | None = Non
         return _finish(normalize(None, None, cfg, fetch_status=AUTH_ERROR,
                                  error=cred_err or "no_token", now=now))
 
-    # Stale token: best-effort refresh (OFF by default), then re-read.
+    # Stale token: bounded best-effort refresh (interval-guarded), then re-read. The
+    # guard bounds paid refresh calls to <=1 per refresh.min_interval_s (directive
+    # sec31-33); a fresh token needs no refresh at all.
     if not fresh:
-        if _refresh_via_cli(cfg, _child_env(environ)):
-            token, _exp, fresh, cred_err = read_access_token(
-                cfg.get("credential_file") or "", skew_s=skew_s, now=now)
+        if refresh_allowed(cfg, prev_state, now):
+            ok = _refresh_via_cli(cfg, _child_env(environ))
+            refresh_calls += 1
+            refresh_last_utc = _utc_iso(now)
+            _append_refresh_ledger(cfg, status=(OK if ok else "error"), now=now)
+            if ok:
+                token, _exp, fresh, cred_err = read_access_token(
+                    cfg.get("credential_file") or "", skew_s=skew_s, now=now)
         if not fresh or token is None:
             # A guaranteed 401 - short-circuit to auth_error, no wasted request.
             return _finish(normalize(None, None, cfg, fetch_status=AUTH_ERROR,

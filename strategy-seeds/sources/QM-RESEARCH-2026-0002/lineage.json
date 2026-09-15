@@ -1,0 +1,29 @@
+{
+  "discovery_sample": {
+    "dataset_ids": [],
+    "instruments": [
+      "NDX",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2015-2020 in-sample economic runs (strategy taxonomy)"
+  },
+  "mechanization": {
+    "codex_implementable": true,
+    "spec_section": "H_CW_card.md"
+  },
+  "parent_version_id": "QM-RESEARCH-2026-0001",
+  "preregistration": null,
+  "research_id": "QM-RESEARCH-2026-0002",
+  "schema": "qm.research-lineage/v1",
+  "validation_sample": {
+    "dataset_ids": [],
+    "instruments": [
+      "NDX",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2021-2024 held-out; never touched during discovery"
+  },
+  "version": 2
+}

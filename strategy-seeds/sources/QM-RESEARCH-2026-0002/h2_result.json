@@ -1,0 +1,10 @@
+{
+  "claim_ref": "H2_activity",
+  "low_activity_below_floor": 424,
+  "note": "Only ~9.5% below the activity floor; density is not the binding constraint.",
+  "strategy_metric_rows": 4455,
+  "trades_max": 8302.0,
+  "trades_mean": 373.1749,
+  "trades_min": 0.0,
+  "verdict": "REFUTED_IN_PROXY"
+}

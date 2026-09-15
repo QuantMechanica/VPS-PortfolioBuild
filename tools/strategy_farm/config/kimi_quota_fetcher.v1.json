@@ -19,13 +19,15 @@
   "skew_s": 60,
 
   "state_path": "D:/QM/reports/state/kimi_quota_state.json",
+  "ledger_path": "D:/QM/reports/state/kimi_usage_ledger.jsonl",
   "raw_schema_version": "coding/v1/usages@2026-09-15",
 
   "subscription_period": { "start": "2026-09-15", "end": "2026-10-15" },
 
   "refresh": {
-    "_doc": "The OAuth access_token is a 15-min rolling token. Live-verified 2026-09-15: neither 'kimi provider list' nor 'kimi doctor' refreshes it; only a real authenticated model call (a '-p' prompt) triggers ensureFresh, which costs quota. Re-implementing the OAuth grant against auth.kimi.com is a documented non-goal (brittle client_id, auth-surface risk - see kimi_quota_discovery.md risk 6). So token refresh here is BEST-EFFORT and OFF by default: when the stored token is stale and via_cli is false, the fetcher returns fetch_status='auth_error' and the governor falls back to the local ledger. In production the frequent kimi_adapter research calls keep the token fresh, so the 15-min governor fetch normally sees a fresh token. Set via_cli=true only if measured CLI cadence proves insufficient; it spends one model call per refresh.",
-    "via_cli": false,
+    "_doc": "The OAuth access_token is a 15-min rolling token. Live-verified 2026-09-15: neither 'kimi provider list' nor 'kimi doctor' refreshes it; only a real authenticated model call (a '-p' prompt) triggers ensureFresh, which costs quota. Re-implementing the OAuth grant against auth.kimi.com is a documented non-goal (brittle client_id, auth-surface risk - see kimi_quota_discovery.md risk 6). Because the 15-min governor fetch mostly runs when the token is already stale (no recent adapter call), a BOUNDED best-effort refresh is now ON by default: when the token is stale AND the last successful fetch is older than min_interval_s AND via_cli is true, the fetcher performs ONE cheap model call (cli_args) then fetches. A successful fetch resets the min_interval clock, so this self-bounds to <=4 refresh calls/day at min_interval_s=21600 (6h) - the documented price of real telemetry per directive sec31-33. A separate refresh_last_utc guard prevents a failing refresh from looping. Set via_cli=false to fully disable (stale token -> auth_error -> ledger fallback, no request).",
+    "via_cli": true,
+    "min_interval_s": 21600,
     "cli_args": ["-p", "Reply with the single word OK and nothing else."],
     "timeout_s": 120
   },
