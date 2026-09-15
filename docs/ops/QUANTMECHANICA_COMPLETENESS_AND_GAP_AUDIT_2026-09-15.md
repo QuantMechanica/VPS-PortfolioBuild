@@ -419,3 +419,13 @@ non-blocking** findings from the i5 review the orchestrator must reconcile at ap
 runtime state (`D:/QM/reports/state/*`, `D:/QM/reports/book_evolution*`), the Vault
 (`09 Strategy Wiki/`), the sealed research ledger, `Get-ScheduledTask QM_*`, the farm DB via
 orchestration/factory read-models, and `git log 6019af7a17..HEAD` at audit time.*
+
+
+---
+
+## Orchestrator close-out annex (2026-09-15 ~17:2xZ)
+
+- Phase-I patches i1–i6 APPLIED and committed (`0a19623231`, `b5ef49ac77`, `32afb00057`, `e5844fb090`, `2bfc27dece`, `743dbc716f`, `8672210f57`, `dba804196e`); gap #3 ("Phase-I not self-sustaining") is closed: `QM_StrategyFarm_StrategyWikiSync_60min` (lineage map → build → index → lint) and the extended `QM_StrategyFarm_BookEvolutionReadModels_15min` (adds orchestration health, universe map, research ROI) are registered and Ready.
+- Stale-task disposition plan applied with `--allow-candidate-park` (receipt in the evidence dir): 324 rows executed (COMMISSION 49, PARK incl. build_ea candidates, KEEP 59 untouched); the 16 candidate `CLOSE` rows were deliberately NOT executed (candidate-pool action, needs `--allow-candidate-close`, left for the weekly review). Note per review finding 1: the applier passes a task-lifecycle annotation through `agent_router` `verdict=COALESCE(?, verdict)`, i.e. it OVERWRITES that annotation column on the touched agent_tasks rows; this column is not a gate verdict or trade stream.
+- Review finding 2 (ORCHESTRATION_HEALTH prose vs read-model): the read-model is authoritative; the prose figures are RAM/token-volatile snapshots.
+- Test-suite state at close-out: the four real regressions from the FTMO rules refresh were fixed (`aabacec330`, `769cf3f0e5`, `c30b121289`, `0c52cefb02`, `6794e1b8fb`, `871dc4ca58`, `4aaedf94db`). A residual class of ~44 static tests (review-rework set-file cohorts, set_priority_track, atomic-claim SH-3, v4 readiness) flips with the live working tree — the factory writes stress `.set` files into `framework/EAs/*/sets` (367 untracked today) and those tests read `C:/QM/repo` absolute paths; they fail on the untouched baseline export as well and are not programme regressions. Ticket-worthy: make those tests tree-independent.

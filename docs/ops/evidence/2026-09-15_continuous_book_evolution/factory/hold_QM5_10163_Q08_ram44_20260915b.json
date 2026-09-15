@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_governed_hold_20260915T152254_359272Z.json",
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789484458751171700,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 4012912
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T152224Z_a08aceed.sqlite",
+    "reused": false,
+    "reused_from_sidecar": null,
+    "sha256": "206511b741419c0f35ebf6657b115b7ad3416cb30a3570af8473a02e0215a947"
+  },
+  "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+  "inserted": 1,
+  "mode": "apply",
+  "reason": "2026-09-15 15:2xZ Orchestrator (watch ALERT CENSUS STALL): un-held heavy_or_unknown_multisymbol (44 GB) rows at the claim head re-opened drain_predrain (7 terminals idle ~136 min). Parked like the 09-14 class hold; no verdict touched.",
+  "release_condition": "RAM class calibration (ticket 6cdc6811) or host RAM upgrade; release via farmctl release-hold",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-15T15:22:54+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:2xZ Orchestrator (watch ALERT CENSUS STALL): un-held heavy_or_unknown_multisymbol (44 GB) rows at the claim head re-opened drain_predrain (7 terminals idle ~136 min). Parked like the 09-14 class hold; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:22:54+00:00",
+        "work_item_id": "2d3da3de-6169-4d41-861f-99035151b187"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-09-15T10:15:46+00:00",
+        "ea_id": "QM5_10163",
+        "id": "2d3da3de-6169-4d41-861f-99035151b187",
+        "kind": "backtest",
+        "phase": "Q08",
+        "status": "pending",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-09-15T10:15:46+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": null,
+  "superseded": 0
+}

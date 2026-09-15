@@ -1,0 +1,82 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_governed_hold_20260915T152332_285987Z.json",
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789485793827492100,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 4845152
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T152313Z_72a17d51.sqlite",
+    "reused": false,
+    "reused_from_sidecar": null,
+    "sha256": "eb1199ae77d80d729c4f4ed31a2fbf4b32d49d737a450f89d62c761f53505d6e"
+  },
+  "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+  "inserted": 2,
+  "mode": "apply",
+  "reason": "2026-09-15 15:2xZ Orchestrator (watch ALERT CENSUS STALL): un-held heavy_or_unknown_multisymbol (44 GB) rows at the claim head re-opened drain_predrain (7 terminals idle ~136 min). Parked like the 09-14 class hold; no verdict touched.",
+  "release_condition": "RAM class calibration (ticket 6cdc6811) or host RAM upgrade; release via farmctl release-hold",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:42:04+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:2xZ Orchestrator (watch ALERT CENSUS STALL): un-held heavy_or_unknown_multisymbol (44 GB) rows at the claim head re-opened drain_predrain (7 terminals idle ~136 min). Parked like the 09-14 class hold; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:23:32+00:00",
+        "work_item_id": "f52ffb33-0900-4db1-a31f-8e4226beeceb"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T17:52:58+00:00",
+        "ea_id": "QM5_1069",
+        "id": "f52ffb33-0900-4db1-a31f-8e4226beeceb",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "USDCAD.DWX",
+        "updated_at": "2026-08-17T17:52:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:40:58+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:2xZ Orchestrator (watch ALERT CENSUS STALL): un-held heavy_or_unknown_multisymbol (44 GB) rows at the claim head re-opened drain_predrain (7 terminals idle ~136 min). Parked like the 09-14 class hold; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:23:32+00:00",
+        "work_item_id": "5e7e7692-73dc-4a2f-b8be-815f66f6e30f"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T19:52:58+00:00",
+        "ea_id": "QM5_1069",
+        "id": "5e7e7692-73dc-4a2f-b8be-815f66f6e30f",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "WS30.DWX",
+        "updated_at": "2026-08-17T19:52:58+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": null,
+  "superseded": 0
+}

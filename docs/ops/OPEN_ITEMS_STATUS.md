@@ -4885,3 +4885,15 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - DONE: Kimi = governed research provider (adapter, governor + 15-min task, router lane, chain critic, R1 internal source class, pre-Q00 research package, canonical annexes incl. Vault), 208 tests, smoke receipt, adversarial review (12 findings fixed). Final report `docs/ops/evidence/2026-09-15_kimi_integration/FINAL_REPORT.md` (rollback per slice inside).
 - NOT installed on purpose: `QM_StrategyFarm_KimiOrchestration_15min` (installer switch -IncludeKimi) until Fable starts the first research campaign; campaign blocked by D: < 80 GB research rule (68 GB today).
 - OPEN (OWNER, optional): codex_budget_line_exempt for critic calls; credential-file ACL tightening; the two v1 FTMO demo sleeves 13054/21505 keep running until the demo book v2 replaces them.
+
+
+### 2026-09-15 ~17:2xZ — Continuous Book Evolution programme, Phases D–I RESULT
+
+- D Mission Control: Book Evolution primary view (DXZ / FTMO / Research / Factory) + FTMO Challenge Readiness block live; "Weg zu 25" removed from cockpit, heartbeat, morning brief (`7bf54a133c`, `aaaede446c`, `22597ce2a2`); Cockpit task trigger PT1M→PT5M (0x800710E0 fixed).
+- E Portfolio engine: `tools/strategy_farm/portfolio/recompose/` (freeze/evaluate, deterministic); 2026-W38 real run: DXZ ADD_SLEEVE 10700 XAUUSD (already in the v2 cutover), FTMO CONTINUE_OBSERVATION (`e61e6d5261`, `8a9e20d053`).
+- F FTMO: official rules snapshot 2026-09-15 + rulepack rebind; demo-cycle ledger + material-change contract (`docs/ops/FTMO_DEMO_VALIDATION_CONTRACT.md`); readiness NOT_READY (`docs/ops/FTMO_CHALLENGE_READINESS.md`) (`992c59d1af` + fixes).
+- G Research: `docs/research/AUTONOMOUS_EDGE_DISCOVERY.md`; first real Kimi campaign CAMP-2026-0001 (FTMO gap) → QM-RESEARCH-2026-0001 + successor 0002 with the H-CW cash-window index-continuation card (`32e130dd03`, `8a9e20d053`).
+- H Weekly automation: `book_evolution_runner.py` + tasks QM_BookEvolution_{FridayEvidenceCut, SaturdayAnalysis, SundayRecommendation, RuntimeVerify} + 15-min read-models (`efb5d8ed8c`, `9976ddbaa3`, `dba804196e`).
+- I Knowledge completeness: generated Strategy Wiki (5265 nodes, STRATEGY_WIKI_SYNC GREEN, hourly task), lineage map (768 edges), old-rules sweep, documentation completeness matrix, universe map + research ROI, orchestration health, final audit `docs/ops/QUANTMECHANICA_COMPLETENESS_AND_GAP_AUDIT_2026-09-15.md` (verdict PARTIALLY → trending YES; top-5 gaps listed there).
+- Factory today: three head-of-line drain stalls from un-held 44 GB rows; sweep parked 375 rows (evidence `…/factory/`); new watch ALERT "CENSUS STALL in drain" active.
+- Open: agy OAuth re-login (OWNER); 16 candidate CLOSE dispositions pending weekly review; live per-EA PnL attribution feed; H-CW mechanization to Q00; tree-independent static tests.

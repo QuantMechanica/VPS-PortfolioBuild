@@ -1,0 +1,186 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789485994667276900,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 5244792
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T152634Z_5f75035a.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260915T152634Z_5f75035a.sqlite.identity.json",
+    "sha256": "431cd0a4848bfa1804011f75616a251b8e637671a8bc239c42a418a23fecd106"
+  },
+  "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+  "inserted": 6,
+  "mode": "apply",
+  "reason": "2026-09-15 15:3xZ Orchestrator sweep: every pending row the worker classifies heavy_or_unknown_multisymbol (44 GB) parked in one pass after three head-of-line drain stalls today (QM5_10025, QM5_1069, QM5_1226). Same class hold as 09-14; no verdict touched.",
+  "release_condition": "RAM class calibration (ticket 6cdc6811) or host RAM upgrade; release via farmctl release-hold",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:39:37+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:3xZ Orchestrator sweep: every pending row the worker classifies heavy_or_unknown_multisymbol (44 GB) parked in one pass after three head-of-line drain stalls today (QM5_10025, QM5_1069, QM5_1226). Same class hold as 09-14; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:26:55+00:00",
+        "work_item_id": "884f8ba1-4799-4913-84d7-cffe1335d577"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-05T01:05:28+00:00",
+        "ea_id": "QM5_12382",
+        "id": "884f8ba1-4799-4913-84d7-cffe1335d577",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-05T01:05:28+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:42:05+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:3xZ Orchestrator sweep: every pending row the worker classifies heavy_or_unknown_multisymbol (44 GB) parked in one pass after three head-of-line drain stalls today (QM5_10025, QM5_1069, QM5_1226). Same class hold as 09-14; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:26:55+00:00",
+        "work_item_id": "cae1e289-adcd-470b-8b43-2551512d063c"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T19:52:58+00:00",
+        "ea_id": "QM5_12382",
+        "id": "cae1e289-adcd-470b-8b43-2551512d063c",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "USDCHF.DWX",
+        "updated_at": "2026-08-17T19:52:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:42:05+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:3xZ Orchestrator sweep: every pending row the worker classifies heavy_or_unknown_multisymbol (44 GB) parked in one pass after three head-of-line drain stalls today (QM5_10025, QM5_1069, QM5_1226). Same class hold as 09-14; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:26:55+00:00",
+        "work_item_id": "3f9214c6-587d-404c-8b88-6c358704b0c4"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T19:52:58+00:00",
+        "ea_id": "QM5_12382",
+        "id": "3f9214c6-587d-404c-8b88-6c358704b0c4",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "USDCAD.DWX",
+        "updated_at": "2026-08-17T19:52:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:42:05+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:3xZ Orchestrator sweep: every pending row the worker classifies heavy_or_unknown_multisymbol (44 GB) parked in one pass after three head-of-line drain stalls today (QM5_10025, QM5_1069, QM5_1226). Same class hold as 09-14; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:26:55+00:00",
+        "work_item_id": "efbdb694-3fa8-4833-a4e7-3d35131b3669"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T19:52:58+00:00",
+        "ea_id": "QM5_12382",
+        "id": "efbdb694-3fa8-4833-a4e7-3d35131b3669",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-08-17T19:52:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:42:05+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:3xZ Orchestrator sweep: every pending row the worker classifies heavy_or_unknown_multisymbol (44 GB) parked in one pass after three head-of-line drain stalls today (QM5_10025, QM5_1069, QM5_1226). Same class hold as 09-14; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:26:55+00:00",
+        "work_item_id": "929086d5-bceb-4ea2-bcb7-ba6b2377fa50"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T19:52:58+00:00",
+        "ea_id": "QM5_12382",
+        "id": "929086d5-bceb-4ea2-bcb7-ba6b2377fa50",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-17T19:52:58+00:00",
+        "verdict": null
+      }
+    },
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-14T03:42:05+00:00",
+        "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+        "reason": "2026-09-15 15:3xZ Orchestrator sweep: every pending row the worker classifies heavy_or_unknown_multisymbol (44 GB) parked in one pass after three head-of-line drain stalls today (QM5_10025, QM5_1069, QM5_1226). Same class hold as 09-14; no verdict touched.",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-15T15:26:55+00:00",
+        "work_item_id": "bffb8eaf-beff-4dee-93e6-2920bdbdd106"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-17T19:52:58+00:00",
+        "ea_id": "QM5_12382",
+        "id": "bffb8eaf-beff-4dee-93e6-2920bdbdd106",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-17T19:52:58+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": null,
+  "superseded": 0
+}
