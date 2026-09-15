@@ -175,11 +175,75 @@ def test_research_state_tolerates_all_inputs_absent(tmp_path):
         experiment_memory_ledger=tmp_path / "b.jsonl",
         kimi_quota_state=tmp_path / "c.json",
         kimi_governor_state=tmp_path / "d.json",
+        universe_map_state=tmp_path / "no_universe_map.json",
+        research_roi_state=tmp_path / "no_roi.json",
     )
     assert model["kimi_campaigns"] == []
     assert model["most_important_failed_lesson"] == "EVIDENCE_MISSING"
     assert model["quota"]["kimi"]["real"] is None
     assert model["quota"]["kimi"]["usage_source"] == "UNKNOWN"
+    # New §19/§20 blocks degrade gracefully when the read-models are absent.
+    assert model["universe_map"]["status"] == "EVIDENCE_MISSING"
+    assert model["roi"]["status"] == "EVIDENCE_MISSING"
+
+
+def test_research_state_folds_universe_map_and_roi(tmp_path):
+    """§19/§20: research_state folds compact universe_map + roi summaries when present."""
+    umap = tmp_path / "strategy_universe_map.json"
+    umap.write_text(json.dumps({
+        "schema": "qm.strategy-universe-map/v1",
+        "generated_at_utc": "2026-09-15T12:00:00+00:00",
+        "inputs_sha256": "abc",
+        "totals": {"pairs": 100, "qualified": 5, "dxz_incumbent": 3, "ftmo_incumbent": 2},
+        "directive_answers": {
+            "breakout_derivative_share": {"count": 30, "share_pct": 30.0},
+            "mean_reversion": {"count": 10, "share_pct": 10.0},
+            "short_duration_fx_systems": {"count": 8, "share_pct": 8.0},
+            "gold_share": {"count": 12, "share_pct": 12.0},
+            "session_diversification": {"count": 5, "share_pct": 5.0, "by_session": {}},
+            "high_density_ftmo_systems": {"count": 1, "share_pct": 1.0},
+        },
+        "whitespace_ranked": [{"style": "breakout", "expected_value": 20}] * 8,
+    }), encoding="utf-8")
+    roi = tmp_path / "research_roi.json"
+    roi.write_text(json.dumps({
+        "schema": "qm.research-roi/v1",
+        "generated_at_utc": "2026-09-15T12:00:00+00:00",
+        "inputs_sha256": "def",
+        "origin_derivation": {"origin_distribution": {"external_source": 90, "internal_discovery": 10}},
+        "sources_considered": {"external_seed_dirs": 5},
+        "programmes": [
+            {"origin_programme": "external_source", "is_directive_roi_programme": True,
+             "funnel": {"registry_eas": 90, "reached_q02": 80, "reached_q08": 10, "reached_q14": 3},
+             "book_admission": {"total": 3}, "yield_admit_per_q02_pct": 3.75},
+            {"origin_programme": "failure_mining", "is_directive_roi_programme": True,
+             "funnel": {"registry_eas": 0, "reached_q02": 0, "reached_q08": 0, "reached_q14": 0},
+             "book_admission": {"total": 0}, "yield_admit_per_q02_pct": None},
+        ],
+    }), encoding="utf-8")
+
+    model = research_state_readmodel.build_research_state(
+        campaigns_root=tmp_path / "nope",
+        research_source_ledger=tmp_path / "a.jsonl",
+        experiment_memory_ledger=tmp_path / "b.jsonl",
+        kimi_quota_state=tmp_path / "c.json",
+        kimi_governor_state=tmp_path / "d.json",
+        universe_map_state=umap,
+        research_roi_state=roi,
+    )
+    um = model["universe_map"]
+    assert um["status"] == "PRESENT"
+    assert um["totals"]["pairs"] == 100
+    assert um["breakout_share_pct"] == 30.0
+    assert um["gold_share_pct"] == 12.0
+    assert len(um["top_whitespace"]) == 5  # capped at 5
+    r = model["roi"]
+    assert r["status"] == "PRESENT"
+    assert r["origin_distribution"]["external_source"] == 90
+    assert r["economic_contribution_pnl"] == "EVIDENCE_MISSING"
+    assert r["programmes"]["external_source"]["reached_q14"] == 3
+    # failure_mining is a directive programme so it is kept even at zero.
+    assert "failure_mining" in r["programmes"]
 
 
 def test_observe_summary_deterministic_and_infra_free(tmp_path):

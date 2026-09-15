@@ -192,6 +192,67 @@ def _kimi_quota(
     }
 
 
+def _universe_map_summary(path: Path) -> dict[str, Any]:
+    """Compact §19 universe-map slice for Mission Control / Kimi-Fable prioritisation.
+
+    Reads the already-generated ``strategy_universe_map.json`` read-model (written
+    by ``universe_map.py``); never recomputes. Absent -> EVIDENCE_MISSING so the
+    research view degrades gracefully.
+    """
+    model = _read_json(path)
+    if not isinstance(model, dict) or model.get("schema") != "qm.strategy-universe-map/v1":
+        return {"status": "EVIDENCE_MISSING", "path": str(path)}
+    da = model.get("directive_answers") or {}
+
+    def _share(block: Any) -> Any:
+        return block.get("share_pct") if isinstance(block, dict) else None
+
+    def _count(block: Any) -> Any:
+        return block.get("count") if isinstance(block, dict) else None
+
+    return {
+        "status": "PRESENT",
+        "generated_at_utc": model.get("generated_at_utc"),
+        "inputs_sha256": model.get("inputs_sha256"),
+        "totals": model.get("totals"),
+        "breakout_share_pct": _share(da.get("breakout_derivative_share")),
+        "mean_reversion_pairs": _count(da.get("mean_reversion")),
+        "short_duration_fx_pairs": _count(da.get("short_duration_fx_systems")),
+        "gold_share_pct": _share(da.get("gold_share")),
+        "session_tagged_pct": _share(da.get("session_diversification")),
+        "high_density_ftmo_pairs": _count(da.get("high_density_ftmo_systems")),
+        "top_whitespace": (model.get("whitespace_ranked") or [])[:5],
+    }
+
+
+def _roi_summary(path: Path) -> dict[str, Any]:
+    """Compact §20/§49 ROI slice from the generated ``research_roi.json`` read-model."""
+    model = _read_json(path)
+    if not isinstance(model, dict) or model.get("schema") != "qm.research-roi/v1":
+        return {"status": "EVIDENCE_MISSING", "path": str(path)}
+    programmes = {
+        p.get("origin_programme"): {
+            "registry_eas": (p.get("funnel") or {}).get("registry_eas"),
+            "reached_q02": (p.get("funnel") or {}).get("reached_q02"),
+            "reached_q08": (p.get("funnel") or {}).get("reached_q08"),
+            "reached_q14": (p.get("funnel") or {}).get("reached_q14"),
+            "book_admission_total": (p.get("book_admission") or {}).get("total"),
+            "yield_admit_per_q02_pct": p.get("yield_admit_per_q02_pct"),
+        }
+        for p in (model.get("programmes") or [])
+        if p.get("is_directive_roi_programme") or ((p.get("funnel") or {}).get("registry_eas") or 0) > 0
+    }
+    return {
+        "status": "PRESENT",
+        "generated_at_utc": model.get("generated_at_utc"),
+        "inputs_sha256": model.get("inputs_sha256"),
+        "origin_distribution": (model.get("origin_derivation") or {}).get("origin_distribution"),
+        "sources_considered": model.get("sources_considered"),
+        "economic_contribution_pnl": "EVIDENCE_MISSING",
+        "programmes": programmes,
+    }
+
+
 def _programme_status(name: str, campaigns: list[dict[str, Any]]) -> str:
     """A programme is ACTIVE once it has at least one campaign, else PLANNED."""
     key = name.replace("_research", "").replace("_", "-")
@@ -213,6 +274,8 @@ def build_research_state(
     experiment_memory_ledger: Path | str = DEFAULT_STATE_DIR / "experiment_memory_ledger.jsonl",
     kimi_quota_state: Path | str = DEFAULT_STATE_DIR / "kimi_quota_state.json",
     kimi_governor_state: Path | str = DEFAULT_STATE_DIR / "kimi_governor_state.json",
+    universe_map_state: Path | str = DEFAULT_STATE_DIR / "strategy_universe_map.json",
+    research_roi_state: Path | str = DEFAULT_STATE_DIR / "research_roi.json",
     now: dt.datetime | None = None,
 ) -> dict[str, Any]:
     """Assemble the ``qm.research-state/v1`` read-model dict deterministically."""
@@ -240,6 +303,8 @@ def build_research_state(
         "hypotheses": _bucket_hypotheses(campaigns),
         "most_important_failed_lesson": _most_important_failed_lesson(experiment_rows, campaigns),
         "quota": _kimi_quota(Path(kimi_quota_state), Path(kimi_governor_state)),
+        "universe_map": _universe_map_summary(Path(universe_map_state)),
+        "roi": _roi_summary(Path(research_roi_state)),
         "counts": {
             "campaigns": len(campaigns),
             "research_source_ledger_rows": len(source_rows),
@@ -269,6 +334,10 @@ def main(argv: list[str] | None = None) -> int:
                         default=DEFAULT_STATE_DIR / "kimi_quota_state.json")
     parser.add_argument("--kimi-governor-state", type=Path,
                         default=DEFAULT_STATE_DIR / "kimi_governor_state.json")
+    parser.add_argument("--universe-map-state", type=Path,
+                        default=DEFAULT_STATE_DIR / "strategy_universe_map.json")
+    parser.add_argument("--research-roi-state", type=Path,
+                        default=DEFAULT_STATE_DIR / "research_roi.json")
     args = parser.parse_args(argv)
     model = write_research_state(
         out_path=args.out,
@@ -277,6 +346,8 @@ def main(argv: list[str] | None = None) -> int:
         experiment_memory_ledger=args.experiment_memory_ledger,
         kimi_quota_state=args.kimi_quota_state,
         kimi_governor_state=args.kimi_governor_state,
+        universe_map_state=args.universe_map_state,
+        research_roi_state=args.research_roi_state,
     )
     print(json.dumps({
         "out": str(args.out),
