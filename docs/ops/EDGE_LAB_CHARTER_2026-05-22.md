@@ -85,3 +85,37 @@ Gemini (breadth) → Claude (adversarial screen + thesis specs) → Codex
 - Thesis bank: `docs/research/EDGE_THESES_*.md`, one per direction.
 - Card drafts: `D:/QM/strategy_farm/artifacts/cards_review/` (never written
   directly to `cards_approved/`).
+
+## Annex 2026-09-15 — ML in offline research; internal research source class; pre-Q00 Internal Edge Discovery layer (OWNER-DEC-KIMI-INTEGRATION-20260915)
+
+Authority: `decisions/2026-09-15_owner_kimi_integration_ml_research_r1_internal.md`
+(OWNER-DEC-KIMI-INTEGRATION-20260915, BINDING). This annex appends; it changes no
+historical text above and alters no historical evidence.
+
+- **ML is allowed in the offline research layer, and stays forbidden in the EA.** This
+  annex generalizes the charter's existing statement (above: "No ML inside the EA (Hard
+  Rule 14): the AIs are the research / development tools, never a model embedded in the
+  EA") to the full OWNER ruling: Hard Rule 14 reads as *no ML in the EA or its
+  live/backtest decision engine*. Machine learning and advanced statistics ARE permitted
+  as offline research instruments for edge discovery (clustering, feature importance,
+  regime detection, hypothesis generation, cross-experiment analysis). The permission
+  never reaches trading logic.
+- **The EA must be executable from its mechanical specification alone.** Before a candidate
+  enters Q00 it must be reduced to explicit mechanical rules — finite bounded parameters,
+  deterministic entry/exit/risk/filter logic, no inference API, no model file, no online
+  learning, no retraining, no adaptive black box. Codex must be able to implement it from
+  the Strategy Card without the research model.
+- **Internal research source class.** A QuantMechanica-discovered edge does not require an
+  external human author to satisfy R1. For an internally discovered edge the canonical
+  internal research artifact (Kimi-authored or otherwise AI/tool-authored) is the source,
+  referenced as `QM-RESEARCH://<id>` (durable, content-addressed, hash-verified). `source =
+  Kimi` without a resolvable, hash-verified artifact is invalid. Governed by
+  `docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md`; external attribution rules are unchanged.
+- **Pre-Q00 Internal Edge Discovery layer.** The Edge Lab now has an explicit pre-Q00
+  research layer (OBSERVE → DISCOVER → HYPOTHESIZE → MECHANIZE → ATTACK → PRE-REGISTER →
+  STRATEGY CARD → Q00–Q17 → LEARN), with search-history tracking against data snooping,
+  preregistration before validation, and an experiment memory built additively on the
+  existing SQLite/report architecture. It adds no new Q-gate; from Q00 the card runs the
+  identical Q00–Q17 path and the deterministic pipeline remains the sole judge — Kimi
+  authorship or ML-assisted discovery never improves a gate score. Design:
+  `docs/ops/KIMI_EDGE_DISCOVERY_DESIGN.md`.

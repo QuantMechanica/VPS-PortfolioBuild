@@ -9,8 +9,10 @@ below for what that obliges you to do.
 
 QuantMechanica is a one-person + AI quant shop. The mission: build mechanical MT5 expert
 advisors, prove them through a deterministic Q-gate pipeline, and trade the survivors
-live on Darwinex Zero. Codex and Antigravity (agy) are the other working agents; a
-deterministic capability router coordinates execution across all three. Antigravity
+live on Darwinex Zero. Codex and Antigravity (agy) are the other working agents, and
+Kimi is a research-only capability provider added by OWNER-DEC-KIMI-INTEGRATION-20260915
+(`decisions/2026-09-15_owner_kimi_integration_ml_research_r1_internal.md`); a
+deterministic capability router coordinates execution across all four. Antigravity
 replaced Gemini (OWNER 2026-07-02): the router's research lane keeps the legacy name
 "gemini" but executes via the agy CLI (`%LOCALAPPDATA%\agy\bin\agy.exe`, headless
 `agy -p`); gemini-cli is dead — do not revive it.
@@ -92,6 +94,17 @@ Agents and their capabilities:
   `AGY_LOW_QUOTA.flag` via `agy_governor.py`. **Not the video seat** — see OWNER below.
 - **Claude (you)** — premium reasoning: deep strategy critique, synthesis, reviews,
   dashboard/UX and information-architecture work, high-signal synthesis for OWNER.
+- **Kimi (research-only, OWNER-DEC-KIMI-INTEGRATION-20260915)** — deep quantitative
+  research, autonomous edge discovery, large-context synthesis, cross-experiment analysis,
+  ML/statistical exploration, hypothesis authoring, and research critique. It is a
+  **capability provider inside the Strategy Farm, not a second orchestrator**; Fable alone
+  chooses it per task. Research caps only — **no `code`/`tests`/`repo_edit`/`ops` caps, no
+  verdict-write path, no gate/T_Live/deployment/queue-control authority, never a formatter**
+  (a Kimi-authored hypothesis always gets a non-Kimi critic). Registry lane `kimi`
+  (`cost_rank 12`, `max_parallel 1`), governed by `kimi_governor.py` +
+  `KIMI_LOW_QUOTA.flag`; every invocation runs through `kimi_adapter.py` (machine-wide
+  single-flight lock). Specs: `docs/ops/KIMI_INTEGRATION_ARCHITECTURE.md`,
+  `docs/ops/KIMI_EDGE_DISCOVERY_DESIGN.md`, `docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md`.
 - **OWNER (`owner` lane, human)** — holds `video_analysis` since OWNER 2026-08-21. This
   build of agy has no video tool (verified 3× 2026-07-12) and the VPS IP is bot-blocked on
   YouTube, so the old "agy = video, the one task only it can do" premise was false and made
@@ -107,6 +120,14 @@ Agents and their capabilities:
 Canonical contract: `G:\My Drive\QuantMechanica - Company Reference\02 Org\AI Agent
 Routing and Role Contracts.md`. Research is throttled — new research work is created
 only when the ready Strategy Card reservoir is below 5.
+
+**Cross-vendor critic sweep (OWNER 2026-09-15).** Beyond EA builds, every AI-seat
+delivery passes an automated Creator → Critic → Formatter chain before your review:
+`agent_chain.py` (`critique-pending --apply --max 2`) run by task
+`QM_StrategyFarm_AgentChain_Critique_15min` every 15 min. Critics are read-only, cross-
+vendor by construction (never the creator's own vendor), never write verdicts or the repo,
+and honour the quota flags. The chain is **input to** your review, never the verdict —
+closure stays your act. Runbook: `docs/ops/AGENT_CHAIN_CREATOR_CRITIC_FORMATTER_2026-09-15.md`.
 
 ### Agent Router Quick Reference
 
@@ -172,9 +193,17 @@ that breaches them. The ones that operationally hit you:
   If asked, refuse and route to OWNER.
 - **Evidence over claims.** Strategy/pipeline assertions need a CSV / report / log path,
   never a screenshot or visual inspection alone — including your own findings.
-- No credentials in the repo, no public VPS detail exposure, no ML libraries in V5 EAs,
+- No credentials in the repo, no public VPS detail exposure,
   `RISK_FIXED` for backtest / `RISK_PERCENT` for live, no invented commission/swap/DST
   values.
+- **No ML in the EA or its live/backtest decision engine** (HR14, scoped by the
+  2026-09-15 annex). ML/statistics ARE allowed as **offline research instruments** for
+  edge discovery per OWNER 2026-09-15 (OWNER-DEC-KIMI-INTEGRATION-20260915); every
+  candidate entering Q00 must be fully mechanical — finite bounded parameters, no inference
+  API, no model file, no online learning — and executable from its mechanical spec alone.
+  Internal Kimi-authored research can satisfy R1 via a durable, hash-verified
+  `QM-RESEARCH://<id>` artifact that passes the internal-source intake verify — see
+  `docs/ops/INTERNAL_RESEARCH_SOURCE_CONTRACT.md`.
 - **Symbols are inputs, never code literals (OWNER 2026-09-06).** Chart symbol or `input`;
   multi-symbol EAs carry one input per symbol slot. `.DWX` is the factory custom-symbol name
   only; live (Darwinex Zero) and FTMO charts use plain broker names. Vault: `01 Identity/Hard
@@ -227,7 +256,10 @@ keep the assumptions feeding it documented and correct.
 - Timezone: `W. Europe Standard Time`
 - Broker time (Darwinex/DXZ NY-Close): GMT+2 outside US DST, GMT+3 during US DST
 - `terminal64.exe` is transient per backtest — never start it manually. After a VPS
-  reboot, check the `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` scheduled task.
+  reboot, workers come up via `QM_StrategyFarm_FactoryON_AtLogon` →
+  `Factory_ON.ps1 -CanonicalRuntimeHost -NoPause` — check that task.
+  `QM_StrategyFarm_TerminalWorkers_AT_STARTUP` is **retired/Disabled** (drift audit
+  2026-09-15) and must not be relied on.
 
 ## Quota Governance & Factory Recovery (current runbooks)
 
@@ -241,6 +273,19 @@ operational state. Essentials:
   (`CODEX_LOW_TOKENS.flag` / `CLAUDE_DISABLED.flag` + lane-boost). **Backtests are never
   throttled.** State: `D:/QM/reports/state/quota_governor_state.json` + `.log`. Headless
   Claude builds run Sonnet (separate cheap quota) — Claude can build while Codex rests.
+- **Codex weekly budget line + fleet pacer (OWNER 2026-09-13):** in addition to the quota
+  governor, `codex_budget_line.py` binds the Codex pacer and tickets (incl. priority ≥70)
+  to a weekly budget line, and `codex_fleet_pacer.py` (task `QM_StrategyFarm_CodexFleetPacer`,
+  every 5 min) paces the Codex lane. State `D:/QM/reports/state/codex_budget_line.json`;
+  exemption `codex_budget_line_exempt`; rollback `QM_CODEX_BUDGET_LINE=0`.
+- **Kimi research lane (OWNER 2026-09-15):** paced by `tools/strategy_farm/kimi_governor.py`
+  (task `QM_StrategyFarm_KimiGovernor_15min`) which derives NORMAL / CONSERVE / EXHAUSTED
+  from an append-only usage ledger `D:/QM/reports/state/kimi_usage_ledger.jsonl` and
+  conservative call caps (40/day, 200/week defaults, OWNER-adjustable) plus the recorded
+  one-month subscription period (start 2026-09-15). `KIMI_LOW_QUOTA.flag` (under
+  `D:/QM/strategy_farm/`) is read by **both** planes — it disables the `kimi` registry lane
+  and gates the critic chain. **No AI seat buys, upgrades or renews the subscription** —
+  OWNER-only. Backtests are never affected.
 - **Factory wedged / `launch_fault` (terminal64 instant-exits, real-rate ~0, host idle):**
   recover with **`Factory_OFF.ps1` then `Factory_ON.ps1 -CanonicalRuntimeHost -NoPause`**
   (admin, visible session; `echo '' |` pipes Enter past OFF's Read-Host). Factory_ON is
@@ -250,9 +295,17 @@ operational state. Essentials:
   aborted ON rewrites the flag to `OFF_RECOVERY_REQUIRED` — re-run Factory_OFF (it
   preserves the saved task map) before re-minting. A worker-only restart does NOT fix a
   wedge. **Do NOT VPS-reboot** (stops T_Live live trading) unless OFF/ON fails.
-- **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **10min** (task `QM_StrategyFarm_TesterCachePurge`; no-op ≥150GB free; LowWater 80→150 seit 2026-07-21).
-  `NO_HISTORY;INCOMPLETE_RUNS` = first-attempt cold-cache transient (self-heals; do NOT
-  re-import .DWX history — ops 6e26c61f for the worker-retry fix).
+  T_Live recovery (chart re-seal, live-launcher checks) is its own runbook — see
+  `project_qm_tlive_recovery_chart09_reseal_2026-08-13` in memory and
+  `docs/ops/` T_Live evidence; it is separate from a factory wedge and never a VPS-reboot
+  decision.
+- **Disk (D:) fast-burn:** `tester_cache_purge.ps1` runs every **10min** (task
+  `QM_StrategyFarm_TesterCachePurge`). The **live task action runs `-LowWaterGB 60`** (drift
+  audit 2026-09-15; the older "no-op ≥150GB / LowWater 80→150" prose is stale). After any
+  Factory OFF/ON or task-map change, **verify the purge task is re-enabled and its 10-min
+  trigger relaunched** (a wedge/OFF can leave it disabled). `NO_HISTORY;INCOMPLETE_RUNS` =
+  first-attempt cold-cache transient (self-heals; do NOT re-import .DWX history — ops
+  6e26c61f for the worker-retry fix).
 
 ## Repo Map (orientation)
 

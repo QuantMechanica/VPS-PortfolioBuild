@@ -149,3 +149,44 @@ and its lane heartbeats are healthy (audit evidence
 "keep disabled until Codex-Fix" text is stale and no longer binds. agy job constraints per
 current memory are unchanged (server-side headless `agy -p --dangerously-skip-permissions`,
 ≤6 URLs/job, citations mandatory). Reference: `docs/ops/source_harvest/audit/AUDIT_REPORT.md` §1.
+
+## Annex 2026-09-15 — Kimi research seat + quota states (OWNER-DEC-KIMI-INTEGRATION-20260915)
+
+Authority: `decisions/2026-09-15_owner_kimi_integration_ml_research_r1_internal.md`
+(OWNER-DEC-KIMI-INTEGRATION-20260915, BINDING). This annex appends; it changes no rule
+above and touches no historical evidence. Kimi authorship does not relax any existing rule
+here (Q02 frequency floor, HR16 one-research-at-a-time, survivor-port purity, no-auto-swap,
+agy citation discipline all stand).
+
+25. **Kimi is a research-only capability seat.** Kimi is a provider inside the Strategy
+    Farm, not a second orchestrator; Fable alone selects it per task. It is intended for
+    deep quantitative research, autonomous edge discovery, large-context synthesis,
+    cross-experiment analysis, ML/statistical exploration, hypothesis authoring and
+    research critique. It carries **no** `code`/`tests`/`repo_edit`/`ops` capability, no
+    verdict-write path, and no gate/T_Live/deployment/queue-control authority (registry
+    lane `kimi`, `cost_rank 12`, `max_parallel 1`). A Kimi-authored hypothesis always
+    receives a **non-Kimi** critic (read-only), and Kimi is never a formatter. The
+    deterministic Q00–Q17 pipeline remains the sole judge; an LLM "PASS" is never a
+    pipeline PASS.
+26. **CONSERVE / EXHAUSTED quota states (`kimi_governor.py`).** Kimi spend is paced by a
+    local usage ledger (`D:/QM/reports/state/kimi_usage_ledger.jsonl`) plus conservative
+    call caps (40/day, 200/week defaults, OWNER-adjustable) and the recorded one-month
+    subscription period (start 2026-09-15). The governor derives:
+    - **NORMAL** — within caps and comfortably before period end: Kimi routable for all its
+      capabilities.
+    - **CONSERVE** — ≥70 % of a daily/weekly cap, a soft rate/auth error streak, or
+      period-end approaching: only the high-value capabilities stay allowed (edge
+      discovery, hypothesis authoring, cross-experiment analysis, research critique for
+      **non-Kimi-authored** creators); generic `research_strategy` is **excluded** from
+      Kimi (it prefers gemini/codex, Kimi only as a bounded last resort even in NORMAL).
+    - **EXHAUSTED** — 100 % of a cap, 2 consecutive rate/auth failures, expired auth,
+      missing CLI, or the subscription period passed: `KIMI_LOW_QUOTA.flag` is written, the
+      lane is disabled in both planes, and an OWNER-visible reason is surfaced.
+    Because gemini is currently auth-degraded, `cost_rank 12` alone does not protect the
+    subscription — the caps and the low-value-class routing of generic `research_strategy`
+    do. **Backtests are never throttled by any Kimi state.**
+27. **Never-buy rule.** No AI seat purchases, upgrades or renews the Kimi subscription (or
+    any paid resource). The active subscription is a fixed one-month coding subscription
+    (quota/rate limits, not a pay-per-token budget); purchase/renewal is OWNER-only. On
+    EXHAUSTED or period-end the lane is disabled and OWNER is notified — never an
+    auto-purchase.
