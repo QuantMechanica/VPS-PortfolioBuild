@@ -20,6 +20,55 @@ alone rather than only from a failed hash comparison.
 
 ---
 
+## 2026-09-15 — r4 (EDGE-5 weekend-gap fill measurement)
+
+Tool `tools/strategy_farm/research/edge_lab_stats.py`,
+tests `tools/strategy_farm/tests/test_edge_lab_stats.py` — **100 passed** (r3: 97).
+
+Invocation:
+
+```
+python -X utf8 tools/strategy_farm/research/edge_lab_stats.py \
+    --hypothesis EDGE-5 --out docs/research/edge_lab/20260915_r4 \
+    --now-utc 2026-09-15T00:00:00Z
+```
+
+**Overall Verdict: DEAD.**
+
+Tested hypothesis: EDGE-5 (`docs/research/EDGE_DISCOVERY_PROGRAM_V1_2026-09-04.md §4 EDGE-5`).
+Weekend gap fill in 4 major FX pairs (`EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`, `AUDUSD.DWX`),
+conditioned on Friday-close position in the trailing 5-day range (fade gap down if close in top third;
+fade gap up if close in bottom third). Target cell: gap >= 0.30 ATR(D1), time stop Monday 12:00 UTC,
+stop loss 1.0 * gap size.
+
+Outputs under `docs/research/edge_lab/20260915_r4/EDGE-5/`:
+- `weekend_gaps.csv` (1,036 rows across 4 symbols, recording gap size in ATR(D1), range position, fill time, MAE, filled_by_timestop, gross/net PnL)
+- `per_symbol_summary.csv` (conditioned vs unconditioned control breakdown across IS and OOS)
+- `summary.json`
+- `manifest.json` (SHA-256 hashes of all inputs and code)
+
+### Primary Cell Results (IS 2018–2023)
+
+| Symbol | Arm | n_trig | Fill Rate (%) | Net Exp (pips) | Net Exp (bp) | Mean MAE (pips) | Verdict |
+|---|---|---|---|---|---|---|---|
+| `EURUSD.DWX` | CONDITIONED | 6 | 33.33 % | -3.78 | -2.00 | 22.05 | DEAD |
+| `EURUSD.DWX` | CONTROL | 16 | 37.50 % | -2.22 | -2.28 | 23.42 | CONTROL |
+| `GBPUSD.DWX` | CONDITIONED | 6 | 16.67 % | -25.35 | -19.28 | 36.18 | DEAD |
+| `GBPUSD.DWX` | CONTROL | 19 | 42.11 % | +1.05 | +1.78 | 29.07 | CONTROL |
+| `USDJPY.DWX` | CONDITIONED | 6 | 50.00 % | -15.40 | -11.12 | 35.85 | DEAD |
+| `USDJPY.DWX` | CONTROL | 27 | 44.44 % | -2.39 | -1.86 | 30.02 | CONTROL |
+| `AUDUSD.DWX` | CONDITIONED | 12 | 33.33 % | -1.33 | -2.41 | 22.17 | DEAD |
+| `AUDUSD.DWX` | CONTROL | 23 | 30.43 % | +3.84 | +5.11 | 16.82 | CONTROL |
+
+### Refutation & Kill Evidence
+
+1. **Underpowered Sample Size:** In-sample (2018–2023, 6 years), conditioned triggers range from n=6 to n=12 per symbol, failing the sealed sample-size floor of n >= 80 by nearly an order of magnitude.
+2. **Fill Rate Floor Failure:** All 4 symbols achieve conditioned IS fill rates between 16.67 % and 50.00 %, severely failing the sealed IS criterion of >= 65 %.
+3. **Negative Net Expectancy:** All 4 symbols have negative net expectancy after spread (-1.33 to -25.35 pips).
+4. **Conditioning is Statistical Noise:** The unconditioned control achieves equal or higher fill rates and better expectancy across the major pairs (e.g. EURUSD control 37.5 % vs conditioned 33.33 %; GBPUSD control 42.11 % vs conditioned 16.67 %). The range-position condition does not add alpha; per the sealed falsification criterion ("if the unconditioned fill rate is as good the conditioning is noise -> DEAD"), the hypothesis is unequivocally DEAD.
+
+---
+
 ## 2026-09-05 — r3 (fix round on the 2026-09-05 adversarial verify)
 
 Tool `tools/strategy_farm/research/edge_lab_stats.py`

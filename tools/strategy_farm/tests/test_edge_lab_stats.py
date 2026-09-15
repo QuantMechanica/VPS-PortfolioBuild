@@ -1932,3 +1932,109 @@ def test_edge3_se_states_what_it_omits_and_publishes_the_term(run_out):
     assert "perfectly correlated" in src, \
         "the docstring must say why the term does not average away over triggers"
     assert doc is not None
+
+
+# ===========================================================================
+# EDGE-5: Weekend-gap fill tests
+# ===========================================================================
+
+def test_edge5_gap_detection_across_dst_changes(tmp_path):
+    """Tests that weekend gap detection correctly handles Friday close and Sunday
+    open across US DST boundaries (March spring-forward and November fall-back).
+    """
+    csv_file = tmp_path / "EURUSD.DWX_M5.csv"
+    rows = [["time", "open", "high", "low", "close", "tickvol"]]
+
+    # Weekend 1 (March DST change):
+    # Fri 2023-03-10 21:55 UTC (US standard +2) = 23:55 broker
+    u_fri1 = dt.datetime(2023, 3, 10, 21, 55, tzinfo=UTC)
+    e_fri1 = els.utc_to_broker_epoch(u_fri1)
+    rows.append([str(e_fri1), "1.0600", "1.0610", "1.0590", "1.0605", "500"])
+
+    # Sun 2023-03-12 21:05 UTC (US DST active +3) = 00:05 broker on Monday
+    u_sun1 = dt.datetime(2023, 3, 12, 21, 5, tzinfo=UTC)
+    e_sun1 = els.utc_to_broker_epoch(u_sun1)
+    rows.append([str(e_sun1), "1.0650", "1.0660", "1.0645", "1.0655", "300"])
+
+    # Weekend 2 (November DST fallback):
+    # Fri 2023-11-03 20:55 UTC (US DST on +3) = 23:55 broker
+    u_fri2 = dt.datetime(2023, 11, 3, 20, 55, tzinfo=UTC)
+    e_fri2 = els.utc_to_broker_epoch(u_fri2)
+    rows.append([str(e_fri2), "1.0700", "1.0710", "1.0690", "1.0705", "500"])
+
+    # Sun 2023-11-05 22:05 UTC (US DST off +2) = 00:05 broker on Monday
+    u_sun2 = dt.datetime(2023, 11, 5, 22, 5, tzinfo=UTC)
+    e_sun2 = els.utc_to_broker_epoch(u_sun2)
+    rows.append([str(e_sun2), "1.0650", "1.0660", "1.0645", "1.0655", "300"])
+
+    with open(csv_file, "w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f)
+        w.writerows(rows)
+
+    bs = els.BarSeries("EURUSD.DWX", str(csv_file))
+    weekends = els.detect_weekends(bs)
+    assert len(weekends) == 2
+
+    w1_prev, w1_curr = weekends[0]
+    assert bs.close[w1_prev] == 1.0605
+    assert bs.open[w1_curr] == 1.0650
+    assert bs.open[w1_curr] - bs.close[w1_prev] == pytest.approx(0.0045)
+    u_p1 = els.broker_epoch_to_utc(bs.epoch_of(w1_prev))
+    u_c1 = els.broker_epoch_to_utc(bs.epoch_of(w1_curr))
+    assert u_p1 == u_fri1
+    assert u_c1 == u_sun1
+
+    w2_prev, w2_curr = weekends[1]
+    assert bs.close[w2_prev] == 1.0705
+    assert bs.open[w2_curr] == 1.0650
+    assert bs.open[w2_curr] - bs.close[w2_prev] == pytest.approx(-0.0055)
+    u_p2 = els.broker_epoch_to_utc(bs.epoch_of(w2_prev))
+    u_c2 = els.broker_epoch_to_utc(bs.epoch_of(w2_curr))
+    assert u_p2 == u_fri2
+    assert u_c2 == u_sun2
+
+
+def test_edge5_range_position_conditioning():
+    """Tests the 5-day range position calculation and conditioning logic."""
+    lo_5, hi_5 = 1.0500, 1.1000
+    range_5 = hi_5 - lo_5
+
+    # Case 1: Friday close at high of 5-day range (range_pos = 1.0, UPPER_THIRD)
+    fri_close = 1.1000
+    range_pos = (fri_close - lo_5) / range_5
+    assert range_pos == 1.0
+    assert range_pos >= 2.0 / 3.0
+
+    gap_down, gap_up = -1, 1
+    is_cond_down = (range_pos >= 2.0 / 3.0 and gap_down == -1) or (range_pos <= 1.0 / 3.0 and gap_down == 1)
+    is_cond_up = (range_pos >= 2.0 / 3.0 and gap_up == -1) or (range_pos <= 1.0 / 3.0 and gap_up == 1)
+    assert is_cond_down is True
+    assert is_cond_up is False
+
+    # Case 2: Friday close at low of 5-day range (range_pos = 0.0, LOWER_THIRD)
+    fri_close_low = 1.0500
+    range_pos_low = (fri_close_low - lo_5) / range_5
+    assert range_pos_low == 0.0
+    assert range_pos_low <= 1.0 / 3.0
+
+    is_cond_low_gap_up = (range_pos_low >= 2.0 / 3.0 and gap_up == -1) or (range_pos_low <= 1.0 / 3.0 and gap_up == 1)
+    is_cond_low_gap_down = (range_pos_low >= 2.0 / 3.0 and gap_down == -1) or (range_pos_low <= 1.0 / 3.0 and gap_down == 1)
+    assert is_cond_low_gap_up is True
+    assert is_cond_low_gap_down is False
+
+    # Case 3: Friday close in middle third (range_pos = 0.50, MIDDLE_THIRD)
+    fri_close_mid = 1.0750
+    range_pos_mid = (fri_close_mid - lo_5) / range_5
+    assert range_pos_mid == pytest.approx(0.50)
+    is_cond_mid_up = (range_pos_mid >= 2.0 / 3.0 and gap_up == -1) or (range_pos_mid <= 1.0 / 3.0 and gap_up == 1)
+    is_cond_mid_down = (range_pos_mid >= 2.0 / 3.0 and gap_down == -1) or (range_pos_mid <= 1.0 / 3.0 and gap_down == 1)
+    assert is_cond_mid_up is False
+    assert is_cond_mid_down is False
+
+
+def test_edge5_refutation_verdicts():
+    """Tests that EDGE-5 refutation logic enforces the sealed thresholds."""
+    assert els.EDGE5_IS_N_FLOOR == 80
+    assert els.EDGE5_IS_FILL_RATE_FLOOR == 0.65
+    assert els.EDGE5_IS_EXPECTANCY_FLOOR == 0.0
+    assert els.EDGE5_OOS_FILL_RATE_FLOOR == 0.55

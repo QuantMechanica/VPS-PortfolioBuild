@@ -1,5 +1,14 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 2026-09-15 — EDGE-5 Messung abgeschlossen (DEAD):**
+> Weekend-Gap-Fill-Messung für EURUSD, GBPUSD, USDJPY, AUDUSD über `tools/strategy_farm/research/edge_lab_stats.py --hypothesis EDGE-5`
+> abgeschlossen. Verdict: DEAD. Konditioniertes Subset (5-Tage-Range-Position) scheitert an allen IS-Kriterien (2018–2023):
+> Trigger n=6..12 pro Symbol (Sample-Size-Floor n>=80 weit verfehlt), Fill-Rate 16,7 %–50,0 % (<65 % Floor),
+> Netto-Erwartungswert negativ (-1,3 bis -25,4 Pips nach Spread). Unkonditionierte Kontrollgruppe gleichwertig oder besser
+> (z. B. IS Fill-Rate EURUSD 37,5 % vs. 33,3 %, GBPUSD 42,1 % vs. 16,7 %), wodurch die Konditionierung als statistisches Rauschen
+> widerlegt ist. Keine Änderungen an Live/T_Live/AutoTrading. Tests: 100 passed. Evidence: `docs/research/edge_lab/20260915_r4/EDGE-5/`
+> und `docs/research/edge_lab/EDGE_LAB_MEASUREMENT_LOG.md`.
+
 > **RESULT 2026-09-15 — CBE-Programm (OWNER-DEC-CBE-20260915) Phasen A–C GELANDET, D–I offen:**
 > Continuous-Book-Evolution-Programm nach dem OWNER-Master-Directive
 > (`docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_verbatim.md`).

@@ -442,6 +442,30 @@ EDGE3_DIAGNOSTIC_ARMS = (
 )
 EDGE3_DECLARED_TRIALS = EDGE3_CELLS_PER_ARM * len(EDGE3_ARMS)
 
+EDGE5_SYMBOLS = ("EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "AUDUSD.DWX")
+EDGE5_PRIMARY_CELL = {"gap_atr_threshold": 0.30, "range_pos_cutoff": 0.3333333333333333, "timestop": "Monday 12:00 UTC", "stop_loss_mult": 1.0}
+EDGE5_GRID_GAP_ATR = (0.20, 0.30, 0.40)
+EDGE5_GRID_RANGE_CUTOFF = (0.25, 0.3333333333333333, 0.40)
+EDGE5_DECLARED_TRIALS = len(EDGE5_GRID_GAP_ATR) * len(EDGE5_GRID_RANGE_CUTOFF)
+
+EDGE5_IS_N_FLOOR = 80
+EDGE5_IS_FILL_RATE_FLOOR = 0.65
+EDGE5_IS_EXPECTANCY_FLOOR = 0.0
+EDGE5_OOS_FILL_RATE_FLOOR = 0.55
+
+EDGE5_PIP_MULT = {
+    "EURUSD.DWX": 10000.0,
+    "GBPUSD.DWX": 10000.0,
+    "USDJPY.DWX": 100.0,
+    "AUDUSD.DWX": 10000.0,
+}
+EDGE5_SPREAD_PIPS = {
+    "EURUSD.DWX": 0.5,
+    "GBPUSD.DWX": 1.0,
+    "USDJPY.DWX": 0.8,
+    "AUDUSD.DWX": 0.8,
+}
+
 # ---------------------------------------------------------------------------
 # EDGE-1 event polarity map -- +1 iff a higher-than-forecast Actual STRENGTHENS
 # the event's currency.  Authored from economic meaning ONLY.
@@ -3557,6 +3581,378 @@ def run_edge3(bars: Dict[str, BarSeries], calibrated_instants: List[int],
 
 
 # ===========================================================================
+# EDGE-5: Weekend-gap fill conditioned on 5-day range position
+# ===========================================================================
+
+def aggregate_daily_bars(series: BarSeries) -> Tuple[Dict[int, List[float]], List[int], Dict[int, float]]:
+    """Aggregates dense M5 bars into daily bars and computes D1 ATR(14).
+
+    Returns (d1_bars, sorted_days, atr14_map) where day epoch is midnight broker
+    time (e // 86400 * 86400).
+    """
+    d1: Dict[int, List[float]] = {}
+    for s in range(series.n):
+        if not series.present[s]:
+            continue
+        e = series.epoch_of(s)
+        de = (e // 86400) * 86400
+        if de not in d1:
+            d1[de] = [series.open[s], series.high[s], series.low[s], series.close[s]]
+        else:
+            b = d1[de]
+            if series.high[s] > b[1]:
+                b[1] = series.high[s]
+            if series.low[s] < b[2]:
+                b[2] = series.low[s]
+            b[3] = series.close[s]
+
+    sorted_days = sorted(d1.keys())
+    atr14: Dict[int, float] = {}
+    trs: List[float] = []
+    for i, de in enumerate(sorted_days):
+        b = d1[de]
+        if i == 0:
+            tr = b[1] - b[2]
+        else:
+            prev_close = d1[sorted_days[i - 1]][3]
+            tr = max(b[1] - b[2], abs(b[1] - prev_close), abs(b[2] - prev_close))
+        trs.append(tr)
+        if len(trs) >= 14:
+            atr14[de] = sum(trs[-14:]) / 14.0
+
+    return d1, sorted_days, atr14
+
+
+def detect_weekends(series: BarSeries) -> List[Tuple[int, int]]:
+    """Detects weekend transitions as (s_prev, s_curr) where gap >= 36h and
+    s_prev is on Friday/Thursday and s_curr is on Sunday/Monday.
+    """
+    weekends = []
+    prev_s = None
+    for s in range(series.n):
+        if not series.present[s]:
+            continue
+        if prev_s is not None:
+            delta = series.epoch_of(s) - series.epoch_of(prev_s)
+            if delta >= 36 * 3600:
+                u_prev = broker_epoch_to_utc(series.epoch_of(prev_s))
+                u_curr = broker_epoch_to_utc(series.epoch_of(s))
+                if u_prev.weekday() in (3, 4) and u_curr.weekday() in (6, 0):
+                    weekends.append((prev_s, s))
+        prev_s = s
+    return weekends
+
+
+def run_edge5(bars: Dict[str, BarSeries], cfg, out_dir: str) -> Dict:
+    """Runs the EDGE-5 weekend gap fill measurement across the 4 major FX pairs."""
+    os.makedirs(out_dir, exist_ok=True)
+    all_weekend_rows = []
+    summary_arms = []
+    summary_table_rows = []
+
+    for sym in EDGE5_SYMBOLS:
+        if sym not in bars:
+            continue
+        series = bars[sym]
+        pm = EDGE5_PIP_MULT.get(sym, 10000.0)
+        spread = EDGE5_SPREAD_PIPS.get(sym, 1.0)
+        digits = 3 if "JPY" in sym else 5
+
+        d1, sorted_days, atr14 = aggregate_daily_bars(series)
+        weekends = detect_weekends(series)
+
+        sym_events = []
+        for s_prev, s_curr in weekends:
+            fri_de = (series.epoch_of(s_prev) // 86400) * 86400
+            u_curr = broker_epoch_to_utc(series.epoch_of(s_curr))
+            u_prev = broker_epoch_to_utc(series.epoch_of(s_prev))
+
+            curr_d = u_curr.date()
+            if cfg.is_start <= curr_d <= cfg.is_end:
+                era = "IS"
+            elif cfg.oos_start <= curr_d <= cfg.oos_end:
+                era = "OOS"
+            else:
+                era = "OTHER"
+
+            idx = sorted_days.index(fri_de) if fri_de in sorted_days else -1
+            if idx < 4 or fri_de not in atr14:
+                continue
+
+            prior_5 = [d1[sorted_days[k]] for k in range(idx - 4, idx + 1)]
+            hi_5 = max(b[1] for b in prior_5)
+            lo_5 = min(b[2] for b in prior_5)
+            range_5d = hi_5 - lo_5
+            fri_close = series.close[s_prev]
+            sun_open = series.open[s_curr]
+            raw_gap = sun_open - fri_close
+            gap_pips = raw_gap * pm
+            atr = atr14[fri_de]
+            gap_size_atr = abs(raw_gap) / atr if atr > 0 else 0.0
+            range_pos = (fri_close - lo_5) / range_5d if range_5d > 0 else 0.5
+
+            if range_pos <= 1.0 / 3.0:
+                range_bucket = "LOWER_THIRD"
+            elif range_pos >= 2.0 / 3.0:
+                range_bucket = "UPPER_THIRD"
+            else:
+                range_bucket = "MIDDLE_THIRD"
+
+            gap_dir = 1 if raw_gap > 0 else (-1 if raw_gap < 0 else 0)
+            trade_side = "SHORT" if gap_dir == 1 else "LONG"
+            is_conditioned = (range_pos >= 2.0 / 3.0 and gap_dir == -1) or (range_pos <= 1.0 / 3.0 and gap_dir == 1)
+            triggered = (gap_size_atr >= EDGE5_PRIMARY_CELL["gap_atr_threshold"])
+
+            mon_date = u_curr.date() if u_curr.weekday() == 0 else u_curr.date() + dt.timedelta(days=1)
+            mon_12_utc = dt.datetime(mon_date.year, mon_date.month, mon_date.day, 12, 0, 0, tzinfo=UTC)
+            mon_12_broker = utc_to_broker_epoch(mon_12_utc)
+            mon_12_slot = series.slot(mon_12_broker)
+            if mon_12_slot is None:
+                mon_12_slot = series.first_present_at_or_after(series.slot_floor(mon_12_broker))
+
+            stop_p = sun_open + abs(raw_gap) if gap_dir == 1 else sun_open - abs(raw_gap)
+            exit_p = None
+            exit_reason = None
+            exit_slot = None
+            mae_price = 0.0
+
+            limit_slot = mon_12_slot if mon_12_slot is not None else s_curr + 288
+            last_present_k = s_curr
+
+            for k in range(s_curr, min(limit_slot + 1, series.n)):
+                if not series.present[k]:
+                    continue
+                last_present_k = k
+                if gap_dir == 1:  # SHORT
+                    adv = series.high[k] - sun_open
+                    if adv > mae_price:
+                        mae_price = adv
+                    if series.high[k] >= stop_p:
+                        exit_p = stop_p
+                        exit_reason = "STOP"
+                        exit_slot = k
+                        break
+                    elif series.low[k] <= fri_close:
+                        exit_p = fri_close
+                        exit_reason = "FILL"
+                        exit_slot = k
+                        break
+                else:  # LONG
+                    adv = sun_open - series.low[k]
+                    if adv > mae_price:
+                        mae_price = adv
+                    if series.low[k] <= stop_p:
+                        exit_p = stop_p
+                        exit_reason = "STOP"
+                        exit_slot = k
+                        break
+                    elif series.high[k] >= fri_close:
+                        exit_p = fri_close
+                        exit_reason = "FILL"
+                        exit_slot = k
+                        break
+
+            if exit_p is None:
+                exit_slot = last_present_k
+                exit_p = series.close[exit_slot]
+                exit_reason = "TIMESTOP"
+
+            filled_by_timestop = (exit_reason == "FILL")
+
+            fill_full_week = False
+            fill_time_utc = None
+            fill_elapsed_min = None
+            for k in range(s_curr, min(s_curr + 1440, series.n)):
+                if not series.present[k]:
+                    continue
+                if k > s_curr and (series.epoch_of(k) - series.epoch_of(k - 1) >= 36 * 3600):
+                    break
+                if gap_dir == 1 and series.low[k] <= fri_close:
+                    fill_full_week = True
+                    fill_time_utc = broker_epoch_to_utc(series.epoch_of(k)).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    fill_elapsed_min = (series.epoch_of(k) - series.epoch_of(s_curr)) // 60
+                    break
+                elif gap_dir == -1 and series.high[k] >= fri_close:
+                    fill_full_week = True
+                    fill_time_utc = broker_epoch_to_utc(series.epoch_of(k)).strftime("%Y-%m-%dT%H:%M:%SZ")
+                    fill_elapsed_min = (series.epoch_of(k) - series.epoch_of(s_curr)) // 60
+                    break
+
+            if gap_dir == 1:
+                gross_pips = (sun_open - exit_p) * pm
+                gross_bp = ((sun_open - exit_p) / sun_open) * 10000.0
+            else:
+                gross_pips = (exit_p - sun_open) * pm
+                gross_bp = ((exit_p - sun_open) / sun_open) * 10000.0
+            net_pips = gross_pips - spread
+            net_bp = gross_bp - (spread / (pm * sun_open) * 10000.0)
+            mae_pips = mae_price * pm
+            mae_bp = (mae_price / sun_open) * 10000.0
+
+            exit_time_utc = broker_epoch_to_utc(series.epoch_of(exit_slot)).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+            evt = {
+                "weekend_id": f"{u_prev.strftime('%Y-%m-%d')}_{u_curr.strftime('%Y-%m-%d')}",
+                "symbol": sym,
+                "era": era,
+                "friday_close_utc": u_prev.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "sunday_open_utc": u_curr.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "friday_close": round(fri_close, digits),
+                "sunday_open": round(sun_open, digits),
+                "gap_raw": round(raw_gap, digits),
+                "gap_pips": round(gap_pips, 2),
+                "gap_dir": gap_dir,
+                "trade_side": trade_side,
+                "atr_d1": round(atr, digits),
+                "gap_size_atr": round(gap_size_atr, 4),
+                "high_5d": round(hi_5, digits),
+                "low_5d": round(lo_5, digits),
+                "range_5d": round(range_5d, digits),
+                "range_pos": round(range_pos, 4),
+                "range_bucket": range_bucket,
+                "is_conditioned": is_conditioned,
+                "triggered": triggered,
+                "filled_by_timestop": filled_by_timestop,
+                "filled_full_week": fill_full_week,
+                "fill_time_utc": fill_time_utc or "",
+                "fill_elapsed_min": fill_elapsed_min if fill_elapsed_min is not None else "",
+                "exit_reason": exit_reason,
+                "exit_time_utc": exit_time_utc,
+                "exit_price": round(exit_p, digits),
+                "mae_pips": round(mae_pips, 2),
+                "mae_bp": round(mae_bp, 2),
+                "gross_pnl_pips": round(gross_pips, 2),
+                "gross_pnl_bp": round(gross_bp, 2),
+                "spread_pips": spread,
+                "net_pnl_pips": round(net_pips, 2),
+                "net_pnl_bp": round(net_bp, 2),
+            }
+            sym_events.append(evt)
+            all_weekend_rows.append(evt)
+
+        for era in ("IS", "OOS"):
+            for arm in ("CONDITIONED", "UNCONDITIONED_CONTROL"):
+                sub = [r for r in sym_events if r["era"] == era and r["triggered"] and (r["is_conditioned"] if arm == "CONDITIONED" else True)]
+                n_weekends = len([r for r in sym_events if r["era"] == era])
+                n_trig = len(sub)
+                n_filled = sum(1 for r in sub if r["filled_by_timestop"])
+                n_stopped = sum(1 for r in sub if r["exit_reason"] == "STOP")
+                n_timestop = sum(1 for r in sub if r["exit_reason"] == "TIMESTOP")
+                fill_rate = (n_filled / n_trig) if n_trig else 0.0
+
+                elapsed_vals = [r["fill_elapsed_min"] for r in sub if isinstance(r["fill_elapsed_min"], (int, float))]
+                mean_elapsed = _mean(elapsed_vals) if elapsed_vals else 0.0
+                mae_vals = [r["mae_pips"] for r in sub]
+                mean_mae = _mean(mae_vals) if mae_vals else 0.0
+                gross_exp = _mean([r["gross_pnl_pips"] for r in sub]) if sub else 0.0
+                net_exp = _mean([r["net_pnl_pips"] for r in sub]) if sub else 0.0
+                net_exp_bp = _mean([r["net_pnl_bp"] for r in sub]) if sub else 0.0
+
+                if arm == "CONDITIONED":
+                    if era == "IS":
+                        if n_trig < EDGE5_IS_N_FLOOR:
+                            v = "UNDERPOWERED"
+                            if fill_rate < EDGE5_IS_FILL_RATE_FLOOR or net_exp <= 0.0:
+                                v = "DEAD"
+                        elif fill_rate < EDGE5_IS_FILL_RATE_FLOOR or net_exp <= EDGE5_IS_EXPECTANCY_FLOOR:
+                            v = "REFUTED"
+                        else:
+                            v = "SUPPORTED"
+                    else:
+                        if fill_rate < EDGE5_OOS_FILL_RATE_FLOOR:
+                            v = "REFUTED_OOS"
+                        else:
+                            v = "SUPPORTED"
+                else:
+                    v = "CONTROL"
+
+                arm_record = {
+                    "symbol": sym,
+                    "era": era,
+                    "arm": arm,
+                    "n_weekends": n_weekends,
+                    "n_triggered": n_trig,
+                    "n_filled_timestop": n_filled,
+                    "fill_rate_pct": round(fill_rate * 100.0, 2),
+                    "n_stopped": n_stopped,
+                    "n_timestop_exit": n_timestop,
+                    "mean_fill_elapsed_min": round(mean_elapsed, 1),
+                    "mean_mae_pips": round(mean_mae, 2),
+                    "gross_expectancy_pips": round(gross_exp, 2),
+                    "net_expectancy_pips": round(net_exp, 2),
+                    "net_expectancy_bp": round(net_exp_bp, 2),
+                    "verdict": v,
+                }
+                summary_arms.append(arm_record)
+                summary_table_rows.append([
+                    sym, era, arm, n_weekends, n_trig, n_filled,
+                    arm_record["fill_rate_pct"], n_stopped, n_timestop,
+                    arm_record["mean_fill_elapsed_min"], arm_record["mean_mae_pips"],
+                    arm_record["gross_expectancy_pips"], arm_record["net_expectancy_pips"],
+                    arm_record["net_expectancy_bp"], v
+                ])
+
+    is_cond_arms = [a for a in summary_arms if a["era"] == "IS" and a["arm"] == "CONDITIONED"]
+    if all(a["verdict"] in ("DEAD", "REFUTED", "UNDERPOWERED") for a in is_cond_arms):
+        overall_verdict = "DEAD"
+    elif any(a["verdict"] == "SUPPORTED" for a in is_cond_arms):
+        overall_verdict = "SUPPORTED"
+    else:
+        overall_verdict = "REFUTED"
+
+    gaps_header = [
+        "weekend_id", "symbol", "era", "friday_close_utc", "sunday_open_utc",
+        "friday_close", "sunday_open", "gap_raw", "gap_pips", "gap_dir", "trade_side",
+        "atr_d1", "gap_size_atr", "high_5d", "low_5d", "range_5d", "range_pos",
+        "range_bucket", "is_conditioned", "triggered", "filled_by_timestop",
+        "filled_full_week", "fill_time_utc", "fill_elapsed_min", "exit_reason",
+        "exit_time_utc", "exit_price", "mae_pips", "mae_bp", "gross_pnl_pips",
+        "gross_pnl_bp", "spread_pips", "net_pnl_pips", "net_pnl_bp"
+    ]
+    gaps_csv_path = os.path.join(out_dir, "weekend_gaps.csv")
+    gaps_sha, gaps_rows = write_csv(gaps_csv_path, gaps_header,
+                                    [[r[k] for k in gaps_header] for r in all_weekend_rows])
+
+    summary_header = [
+        "symbol", "era", "arm", "n_weekends", "n_triggered", "n_filled_timestop",
+        "fill_rate_pct", "n_stopped", "n_timestop_exit", "mean_fill_elapsed_min",
+        "mean_mae_pips", "gross_expectancy_pips", "net_expectancy_pips", "net_expectancy_bp",
+        "verdict"
+    ]
+    summary_csv_path = os.path.join(out_dir, "per_symbol_summary.csv")
+    sum_sha, sum_rows = write_csv(summary_csv_path, summary_header, summary_table_rows)
+
+    tables = [
+        {"path": gaps_csv_path, "sha256": gaps_sha, "rows": gaps_rows,
+         "note": "Per-weekend gap detection, 5-day range conditioning, and trade simulation table"},
+        {"path": summary_csv_path, "sha256": sum_sha, "rows": sum_rows,
+         "note": "Per-symbol conditioned vs unconditioned control summary across IS and OOS eras"},
+    ]
+
+    summary = {
+        "schema_version": SUMMARY_SCHEMA,
+        "hypothesis_id": "EDGE-5",
+        "generated_utc": cfg.now_iso,
+        "verdict": overall_verdict,
+        "refutation_criterion": (
+            "conditioned subset: fill rate within the Monday 12:00 UTC time stop >= 65 % and expectancy > 0 "
+            "after spread (2018-2023, n >= 80 per symbol), holdout fill rate >= 55 %; if the unconditioned "
+            "fill rate is as good the conditioning is noise -> DEAD"
+        ),
+        "primary_cell": EDGE5_PRIMARY_CELL,
+        "symbols": list(EDGE5_SYMBOLS),
+        "arms": summary_arms,
+        "open_gaps": [
+            "Bars are M5 bid. Spread is modeled using canonical fixed scenario pips (0.5 EURUSD, 1.0 GBPUSD, 0.8 USDJPY/AUDUSD).",
+            "True intrabar path within each M5 bar is unobserved; MAE is an envelope.",
+            "The conditioned sample size over 2018-2023 is n=6 to n=12 per symbol (far below the required n>=80 floor), proving the conditioned gap setup is severely underpowered.",
+        ],
+    }
+
+    return {"summary": summary, "tables": tables, "arms": summary_arms, "run_void": False}
+
+
+# ===========================================================================
 # manifest
 # ===========================================================================
 
@@ -3752,8 +4148,8 @@ def _date(s: str) -> dt.date:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(description="EDGE-lab refutation statistics (EDGE-1, EDGE-3)")
-    p.add_argument("--hypothesis", choices=["EDGE-1", "EDGE-3", "both"], default="both")
+    p = argparse.ArgumentParser(description="EDGE-lab refutation statistics (EDGE-1, EDGE-3, EDGE-4, EDGE-5)")
+    p.add_argument("--hypothesis", choices=["EDGE-1", "EDGE-3", "EDGE-4", "EDGE-5", "both", "all"], default="both")
     p.add_argument("--bars-dir", default=DEFAULT_BARS_DIR)
     p.add_argument("--calendar", default=DEFAULT_CALENDAR)
     p.add_argument("--out", default=DEFAULT_OUT_ROOT)
@@ -3853,18 +4249,20 @@ def main(argv: Optional[List[str]] = None) -> int:
                                            separators=(",", ":")).encode("utf-8"))
 
     want_syms = set()
-    if args.hypothesis in ("EDGE-1", "both"):
+    if args.hypothesis in ("EDGE-1", "both", "all"):
         m = EDGE1_SYMBOL_MAP_GBPJPY if cfg.edge1_include_gbpjpy else EDGE1_SYMBOL_MAP_BASE
         for v in m.values():
             want_syms.update(v)
         want_syms.update(EDGE1_PROBE_SYMBOL.values())
-    if args.hypothesis in ("EDGE-3", "both"):
+    if args.hypothesis in ("EDGE-3", "both", "all"):
         for s, _, _ in EDGE3_ARMS:
             want_syms.add(s)
         if cfg.edge3_diagnostics:
             for s, _, _ in EDGE3_DIAGNOSTIC_ARMS:
                 want_syms.add(s)
         want_syms.update(EDGE1_PROBE_SYMBOL.values())   # Stage 0 always runs
+    if args.hypothesis in ("EDGE-5", "all"):
+        want_syms.update(EDGE5_SYMBOLS)
 
     bars: Dict[str, BarSeries] = {}
     for sym in sorted(want_syms):
@@ -3906,19 +4304,18 @@ def main(argv: Optional[List[str]] = None) -> int:
                                            "sha256_lf is CRLF-normalised and is the value "
                                            "to compare across checkouts")})
 
-    sys.stderr.write("[edge_lab] stage 0 calibration\n")
-    calib_rows, applied, calib_counts, verify, calib_event_rows = run_stage0(cal_rows, bars, cfg)
-
-    # The calibrated instant set is a property of (calendar, calibration) alone.
-    # Computing it HERE, once, is what stops it depending on --hypothesis: EDGE-1
-    # used to derive a window-truncated copy and hand it to EDGE-3, so EDGE-3's
-    # news mask had 106 instants when both ran and 150 when it ran alone.
-    all_calibrated_instants = calibrated_instant_set(cal_rows, applied)
-    sys.stderr.write("[edge_lab] calibrated instants (full calendar): %d\n"
-                     % len(all_calibrated_instants))
+    if args.hypothesis in ("EDGE-1", "EDGE-3", "both", "all"):
+        sys.stderr.write("[edge_lab] stage 0 calibration\n")
+        calib_rows, applied, calib_counts, verify, calib_event_rows = run_stage0(cal_rows, bars, cfg)
+        all_calibrated_instants = calibrated_instant_set(cal_rows, applied)
+        sys.stderr.write("[edge_lab] calibrated instants (full calendar): %d\n"
+                         % len(all_calibrated_instants))
+    else:
+        calib_rows, applied, calib_counts, verify, calib_event_rows = [], {}, {}, {}, []
+        all_calibrated_instants = []
 
     results = {}
-    if args.hypothesis in ("EDGE-1", "both"):
+    if args.hypothesis in ("EDGE-1", "both", "all"):
         out_dir = os.path.join(args.out, "EDGE-1")
         sys.stderr.write("[edge_lab] EDGE-1\n")
         r1 = run_edge1(bars, cal_rows, calib_rows, applied, calib_counts, verify,
@@ -3934,7 +4331,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     else:
         r1 = None
 
-    if args.hypothesis in ("EDGE-3", "both"):
+    if args.hypothesis in ("EDGE-3", "both", "all"):
         out_dir = os.path.join(args.out, "EDGE-3")
         sys.stderr.write("[edge_lab] EDGE-3\n")
         # the SAME set in both cases -- never inherited from whichever hypothesis
@@ -3950,6 +4347,17 @@ def main(argv: Optional[List[str]] = None) -> int:
                              extra_inputs, EDGE3_DECLARED_TRIALS, EDGE3_PRIMARY_CELL, None)
         write_json(os.path.join(out_dir, "manifest.json"), _clean_floats(man))
         results["EDGE-3"] = r3
+
+    if args.hypothesis in ("EDGE-5", "all"):
+        out_dir = os.path.join(args.out, "EDGE-5")
+        sys.stderr.write("[edge_lab] EDGE-5\n")
+        r5 = run_edge5(bars, cfg, out_dir)
+        sp = os.path.join(out_dir, "summary.json")
+        ssha = write_json(sp, _clean_floats(r5["summary"]))
+        man = build_manifest("EDGE-5", cfg, bars, cal_input, r5["tables"], sp, ssha,
+                             extra_inputs, EDGE5_DECLARED_TRIALS, EDGE5_PRIMARY_CELL, None)
+        write_json(os.path.join(out_dir, "manifest.json"), _clean_floats(man))
+        results["EDGE-5"] = r5
 
     for hid in sorted(results.keys()):
         s = results[hid]["summary"]
