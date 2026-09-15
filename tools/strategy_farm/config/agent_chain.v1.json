@@ -26,8 +26,8 @@
       "by_creator_vendor": {
         "claude": [
           {"vendor": "codex", "model": "terra", "effort": "medium"},
-          {"vendor": "agy", "model": "default"},
-          {"vendor": "claude", "model": "opus", "note": "same-vendor fallback: different model, cross_vendor=false"}
+          {"vendor": "claude", "model": "opus", "note": "same-vendor fallback: different model, cross_vendor=false"},
+          {"vendor": "agy", "model": "default", "note": "third lens: headless agy print-timed-out (15 min, no answer file) on a 27 KB audit 2026-09-15 07:52Z; stays last until it proves itself"}
         ],
         "codex": [
           {"vendor": "claude", "model": "sonnet"},

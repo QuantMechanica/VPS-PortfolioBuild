@@ -1,0 +1,29 @@
+{
+  "title": "T1 tick-archive integrity: ~21 of 27 DWX symbols in the 2026-09-13 governed T1 M1 export share the SAME ~25-day gap 2025-10-09 .. 2025-11-03 (found by 9e0fb916 F5 re-run; not AUDCAD-specific). Root-cause read-only: (1) is the gap in T1's Bases/Custom tick archive itself (.tkc per symbol-month 202510/202511: content-verify against the signed custom-history manifest of Variant A, copy-on-claim receipts, containment/archive-loss journals of Oct-Nov 2025 = DL-085 class?) or only in the CopyTicksRange path (terminal tick DB not serving that window)? (2) do T2..T10 show the same hole (compare the .tkc sizes/hashes for 202510 across terminals against the archive manifest)? (3) which backtest windows are affected: any Q10_NEWS / Q11 full-history / OOS-2026 / DL-089 census run whose window covers 2025-10-09..2025-11-03 on an affected terminal - list the work items (read-only DB query) and classify the evidence impact (verdict-relevant or not); (4) propose the repair path (re-import of the affected months from the signed archive via the governed custom-history tooling) as a proposal, do not execute",
+  "why_now": "If the T1 archive lost ~25 days of ticks for 21 symbols, every full-history or recent-window backtest on T1 over that window ran on a hole without saying so; the Variant A isolation is content-verified against a signed manifest, so this is either a manifest-vs-disk drift (containment/archive-eater class, DL-085) or a tick-DB serving defect. Not book-sprint critical (live EAs never read the archive), but evidence integrity for Q10/Q11/OOS rows is at stake. Source: docs/ops/evidence/2026-09-15_dukascopy_export_fix_r2/README.md (F5 section, 'Major finding').",
+  "acceptance": [
+    "table per symbol (37): 202510/202511 .tkc present? size, sha256, manifest expectation (signed Variant A archive manifest), verdict INTACT / HOLE / UNVERIFIABLE, for T1 and at least two other terminals (T2, T5)",
+    "classification of the gap origin: archive-on-disk vs tick-DB serving path, with the evidence that decides it (e.g. bar counts read via the archive files vs CopyTicksRange result sizes from the 9e0fb916 chunk journals)",
+    "list of work items (id, ea, symbol, phase, status, window) run on affected terminals whose window covers 2025-10-09..2025-11-03, with an evidence-impact class each (read-only DB query bound as CSV)",
+    "repair proposal (which months, which terminals, which governed tool, cost in factory time) - proposal only; no import, no containment change, no terminal start",
+    "evidence dir docs/ops/evidence/2026-09-15_t1_archive_gap_oct2025/ with README, CSVs, sha256 bindings, DB query text"
+  ],
+  "evidence": [
+    "docs/ops/evidence/2026-09-15_dukascopy_export_fix_r2/README.md",
+    "D:/QM/reports/dukascopy/reconciliation/20260915_60174747/ (reconciliation outputs incl. per-symbol gaps)",
+    "D:/QM/mt5/T1/bases/Custom/ticks/<SYMBOL>.DWX/2025xx.tkc",
+    "D:/QM/strategy_farm/artifacts/ops/custom_history_custom_history_variant_a_20260809/archive_manifest_owner_approved.json",
+    "docs/ops/evidence/2026-08-10_ramp10_serialization_gate_statonly_fix.md (Variant A isolation)",
+    "D:/QM/strategy_farm/state/custom_history_containment_mode.json"
+  ],
+  "hard_limits": [
+    "read-only everywhere: no terminal start, no archive write, no re-import, no containment-scope change (ROT), no hold/verdict change",
+    "farm DB opened read-only (mode=ro); queries bound in the evidence dir",
+    "append-only evidence; explicit git pathspecs"
+  ],
+  "required_capabilities": ["code", "ops"],
+  "model_tier": "terra",
+  "requested_by": "Orchestrator Claude 2026-09-15 08:3xZ (review of 9e0fb916)",
+  "parent_task": "9e0fb916-27d3-4022-9a95-dc0547883896",
+  "lane_note": "Claude headless lane (Sonnet); priority below the sprint tickets, above the Dukascopy lane"
+}

@@ -235,9 +235,26 @@ def resolve_critic(
 ) -> tuple[Seat, bool, list[dict[str, Any]]]:
     """Pick the first open critic seat for this creator vendor; record the trace."""
     creator_vendor = normalize_vendor(creator_vendor)
+    open_seats, trace = open_critic_seats(creator_vendor, cfg, gate, allow_agy=allow_agy)
+    if not open_seats:
+        raise ChainGated(f"no critic seat available for creator vendor {creator_vendor!r}: {trace}")
+    seat, cross = open_seats[0]
+    return seat, cross, trace
+
+
+def open_critic_seats(
+    creator_vendor: str,
+    cfg: dict[str, Any],
+    gate: GateFn,
+    *,
+    allow_agy: bool = True,
+) -> tuple[list[tuple[Seat, bool]], list[dict[str, Any]]]:
+    """All open critic seats in config order (first = selected, the rest = runtime fallbacks)."""
+    creator_vendor = normalize_vendor(creator_vendor)
     table = (cfg.get("roles") or {}).get("critic", {}).get("by_creator_vendor", {})
     candidates = table.get(creator_vendor) or table.get("unknown") or []
     trace: list[dict[str, Any]] = []
+    open_seats: list[tuple[Seat, bool]] = []
     for entry in candidates:
         seat = _seat_from(entry)
         if seat.vendor == "agy" and not allow_agy:
@@ -248,9 +265,9 @@ def resolve_critic(
             trace.append({"seat": seat.label(), "skipped": reason})
             continue
         cross = seat.vendor != creator_vendor
-        trace.append({"seat": seat.label(), "selected": True, "cross_vendor": cross})
-        return seat, cross, trace
-    raise ChainGated(f"no critic seat available for creator vendor {creator_vendor!r}: {trace}")
+        trace.append({"seat": seat.label(), "selected": not open_seats, "fallback": bool(open_seats), "cross_vendor": cross})
+        open_seats.append((seat, cross))
+    return open_seats, trace
 
 
 def resolve_formatter(cfg: dict[str, Any], gate: GateFn) -> tuple[Seat, list[dict[str, Any]]]:
@@ -573,8 +590,11 @@ def _run_agy(
 def _fake_adapter(seat: Seat, role: str, prompt: str, environ: dict[str, str] | None) -> dict[str, Any]:
     env = os.environ if environ is None else environ
     override = env.get(f"{FAKE_ENV}_{role.upper()}_FILE", "")
+    unparsed_vendors = {v.strip() for v in env.get(f"{FAKE_ENV}_UNPARSED_VENDORS", "").split(",") if v.strip()}
     if override and Path(override).exists():
         text = Path(override).read_text(encoding="utf-8")
+    elif role == "critic" and seat.vendor in unparsed_vendors:
+        text = "[fake] critic returned prose only, no JSON block (simulated timeout / partial output)\n"
     elif role == "creator":
         text = "## Summary\n\nFAKE creator summary.\n\n## Facts with sources\n\n| fact | source | kind |\n|---|---|---|\n| f | p:1 | measured |\n\n## Unknowns\n\n- none\n"
     elif role == "critic":
@@ -753,8 +773,11 @@ def run_chain(
             creator_seat, trace = resolve_creator(spec, cfg, gate)
             creator_vendor = creator_seat.vendor
             receipt["seat_trace"]["creator"] = trace
-        critic_seat, cross_vendor, trace = resolve_critic(creator_vendor, cfg, gate,
-                                                          allow_agy=bool(spec.get("allow_agy", True)))
+        critic_candidates, trace = open_critic_seats(creator_vendor, cfg, gate,
+                                                      allow_agy=bool(spec.get("allow_agy", True)))
+        if not critic_candidates:
+            raise ChainGated(f"no critic seat available for creator vendor {creator_vendor!r}: {trace}")
+        critic_seat, cross_vendor = critic_candidates[0]
         receipt["seat_trace"]["critic"] = trace
         formatter_seat, trace = resolve_formatter(cfg, gate)
         receipt["seat_trace"]["formatter"] = trace
@@ -811,6 +834,7 @@ def run_chain(
     critic_data: dict[str, Any] | None = None
     verdict = "UNPARSED"
     stage2: StageResult | None = None
+    fallback_used = False
     for round_no in range(1, max_rounds + 1):
         critic_inputs = f"### Stage 1 output (creator {creator_vendor})\n\n{creator_text}\n\n### Original inputs\n\n{inputs_text}"
         prompt = render("critic", {
@@ -818,18 +842,27 @@ def run_chain(
             "creator_vendor": creator_vendor,
             "creator_model": str((stage1.seat or {}).get("model") or "unknown"),
         })
-        stage_name = "stage2_critic" if round_no == 1 else f"stage2_critic_round{round_no}"
-        result = run_seat(critic_seat, "critic", prompt, cfg=cfg, out_dir=out_dir, stage_name=stage_name,
-                          cwd=cwd, add_dirs=add_dirs, timeout=timeout, environ=environ)
-        stage2 = _stage_from("critic", critic_seat, result, out_dir, stage_name, cross_vendor=cross_vendor)
-        critic_data = parse_critic_json(stage2.text) if stage2.status == "ok" else None
+        # A critic that returns nothing parseable (timeout, empty answer, no JSON block) is replaced by the
+        # next open seat ONCE (live finding 2026-09-15: agy print-timeout after 15 min left no answer file).
+        attempt_seats = [(critic_seat, cross_vendor)] + [c for c in critic_candidates[1:2]]
+        for attempt, (seat_try, cross_try) in enumerate(attempt_seats):
+            stage_name = ("stage2_critic" if round_no == 1 else f"stage2_critic_round{round_no}") + ("" if attempt == 0 else f"_fallback{attempt}")
+            result = run_seat(seat_try, "critic", prompt, cfg=cfg, out_dir=out_dir, stage_name=stage_name,
+                              cwd=cwd, add_dirs=add_dirs, timeout=timeout, environ=environ)
+            stage2 = _stage_from("critic", seat_try, result, out_dir, stage_name, cross_vendor=cross_try)
+            critic_data = parse_critic_json(stage2.text) if stage2.status == "ok" else None
+            if stage2.status == "ok" and critic_data is None:
+                stage2.status = "unparsed"
+                stage2.reason = "critic_json_missing"
+            receipt["stages"].append(stage2.as_dict())
+            if critic_data is not None:
+                _write_json(out_dir / f"{stage_name}.json", critic_data)
+                if attempt > 0:
+                    fallback_used = True
+                    critic_seat, cross_vendor = seat_try, cross_try
+                break
         verdict = critic_verdict(critic_data)
-        if stage2.status == "ok" and critic_data is None:
-            stage2.reason = "critic_json_missing"
-        if critic_data is not None:
-            _write_json(out_dir / f"{stage_name}.json", critic_data)
-        receipt["stages"].append(stage2.as_dict())
-        if stage2.status != "ok" or verdict in {"PASS", "UNPARSED"} or existing or round_no == max_rounds:
+        if stage2 is None or stage2.status != "ok" or verdict in {"PASS", "UNPARSED"} or existing or round_no == max_rounds:
             break
         # revision: the creator gets the findings and revises (AutoGen-style, bounded)
         revise_task = (
@@ -854,6 +887,8 @@ def run_chain(
             counts[sev] = counts.get(sev, 0) + 1
     receipt["critic_verdict"] = verdict
     receipt["finding_counts"] = counts
+    receipt["critic_fallback_used"] = fallback_used
+    receipt["critic_seat_final"] = critic_seat.as_dict()
     receipt["scope_drift"] = (critic_data or {}).get("scope_drift")
 
     # ---- stage 3: formatter
@@ -871,7 +906,8 @@ def run_chain(
                              reason="critic_stage_failed")
         receipt["stages"].append(stage3.as_dict())
 
-    statuses = [s["status"] for s in receipt["stages"]]
+    # An unparsed critic attempt that a fallback seat superseded does not degrade the chain.
+    statuses = [s["status"] for s in receipt["stages"] if not (s["role"] == "critic" and s["status"] == "unparsed" and critic_data is not None)]
     if all(s in {"ok", "reused"} for s in statuses) and critic_data is not None:
         receipt["status"] = "ok"
     elif stage2 is not None and stage2.status == "ok":

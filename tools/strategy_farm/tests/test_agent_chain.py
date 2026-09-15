@@ -53,7 +53,9 @@ def test_resolve_critic_prefers_cross_vendor_and_records_trace() -> None:
     cfg = ac.load_config()
     seat, cross, trace = ac.resolve_critic("claude", cfg, _open_gate)
     assert seat.vendor == "codex" and cross is True
-    assert trace[-1]["selected"] is True
+    selected = [t for t in trace if t.get("selected")]
+    assert len(selected) == 1 and selected[0]["seat"].startswith("codex")
+    assert [t.get("fallback") for t in trace] == [False, True, True]  # opus, agy remain as runtime fallbacks
     seat, cross, _ = ac.resolve_critic("codex", cfg, _open_gate)
     assert seat.vendor == "claude" and cross is True
 
@@ -67,7 +69,8 @@ def test_resolve_critic_falls_back_same_vendor_only_last_and_flags_it() -> None:
     seat, cross, trace = ac.resolve_critic("claude", cfg, gate)
     assert seat.vendor == "claude" and seat.model == "opus"
     assert cross is False
-    assert [t.get("skipped") for t in trace[:2]] == ["closed", "closed"]
+    assert [t.get("skipped") for t in trace if t.get("skipped")] == ["closed", "closed"]  # codex + agy gated
+    assert [t["seat"] for t in trace if t.get("selected")] == ["claude:opus"]
 
 
 def test_resolve_critic_respects_no_agy() -> None:
@@ -161,6 +164,27 @@ def test_revision_round_is_bounded(cfg: dict, fake_env: dict) -> None:
     roles = [s["role"] for s in receipt["stages"]]
     # fake critic always returns GAPS -> creator/critic alternate, bounded by max_rounds, then formatter
     assert roles == ["creator", "critic", "creator", "critic", "creator", "critic", "formatter"]
+
+
+def test_unparsed_critic_falls_back_to_next_open_seat_once(cfg: dict, fake_env: dict) -> None:
+    # creator = claude lane -> candidates codex, claude:opus, agy; codex returns prose only
+    env = {**fake_env, "QM_AGENT_CHAIN_FAKE_UNPARSED_VENDORS": "codex"}
+    spec = {"kind": "critique", "task": "t", "existing_artifact": {"vendor": "claude", "model": "sonnet", "text": "delivered"}}
+    receipt = ac.run_chain(spec, apply=True, cfg=cfg, environ=env)
+    roles = [(s["role"], s["status"], (s.get("seat") or {}).get("vendor")) for s in receipt["stages"]]
+    assert roles == [("creator", "reused", "claude"), ("critic", "unparsed", "codex"), ("critic", "ok", "claude"), ("formatter", "ok", "claude")]
+    assert receipt["critic_fallback_used"] is True
+    assert receipt["critic_seat_final"]["vendor"] == "claude" and receipt["stages"][2]["cross_vendor"] is False
+    assert receipt["status"] == "ok" and receipt["critic_verdict"] == "GAPS"
+
+
+def test_unparsed_critic_without_fallback_skips_formatter(cfg: dict, fake_env: dict) -> None:
+    env = {**fake_env, "QM_AGENT_CHAIN_FAKE_UNPARSED_VENDORS": "codex,claude,agy"}
+    spec = {"kind": "critique", "task": "t", "existing_artifact": {"vendor": "claude", "model": "sonnet", "text": "delivered"}}
+    receipt = ac.run_chain(spec, apply=True, cfg=cfg, environ=env)
+    statuses = [(s["role"], s["status"]) for s in receipt["stages"]]
+    assert statuses[1:] == [("critic", "unparsed"), ("critic", "unparsed"), ("formatter", "skipped")]
+    assert receipt["status"] == "error" and receipt["critic_verdict"] == "UNPARSED"
 
 
 def test_gated_chain_writes_gated_receipt(cfg: dict, tmp_path: Path) -> None:
