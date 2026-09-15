@@ -84,7 +84,7 @@ This audit distinguishes the two states everywhere it matters.
   **Caveat:** the automated `agent_chain` critic was quota-gated (Codex+agy down) and the critique
   ran as the Fable-inline fallback (`research_state.json.kimi_campaigns[].critic_provider="claude"`;
   `orchestration_health.json.critic_chain.independence_degraded=true`).
-- **Sealed?** YES (`research_state.json.kimi_campaigns[].sealed=true`, `status=sealed`).
+- **Sealed?** YES in the summary read-model (`research_state.json.kimi_campaigns[].sealed=true`); the append-only `research_source_ledger.jsonl` terminates QM-RESEARCH-2026-0001/0002 at status `reviewed` (cross-vendor critic verdict REVISE attached) — the artifacts are hash-verified and immutable, the ledger row name is `reviewed`, not `sealed` (critic note 2026-09-15).
 - **Mechanical hypothesis or useful negative finding?** BOTH — mechanizable candidate **H-CW**
   (cash-window index continuation, session-flat, ≤432-combo bounded grid) plus negative/inconclusive
   H1/H2/H3 verdicts (`research_state.json.hypotheses.mechanized=["…/H-CW"]`; receipt).
@@ -146,8 +146,8 @@ This audit distinguishes the two states everywhere it matters.
   `scratch_free_gb≈46`, `scratch_on_factory_drive=false`, `free_ram_gb≈28.5`, `max_worker_processes=2`
   (`orchestration_health.json.research_guard`; landed commit `7139ccf959`). The empirically
   unjustified 80 GB D: floor is retired; factory low-water 60 GB is shared config; invariant
-  `worker_floor(40) ≤ purge_low_water(60) ≤ research_floor`. D: free now **73.3 GB**
-  (`factory_bottleneck.json.resources`), up from the 61.2 GB Phase-A reading. MT5/live headroom untouched.
+  `worker_floor(40) ≤ purge_low_water(60) ≤ research_floor`. D: free is a VOLATILE snapshot (73.3 GB at audit time, 52.8 GB at critic time;
+  `factory_bottleneck.json.resources`, tester cache churn) and no longer gates research. MT5/live headroom untouched.
 
 ### OWNER — what genuinely requires OWNER action now (§21 strict standard)
 Applying the both-conditions test (material economic/operational impact AND unresolvable under
