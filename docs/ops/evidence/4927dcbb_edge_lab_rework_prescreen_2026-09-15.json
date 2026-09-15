@@ -1,0 +1,366 @@
+{
+  "armed": false,
+  "generated_at": "2026-09-15T01:49:03.341409+00:00",
+  "input_root": "D:\\QM\\strategy_farm\\artifacts\\cards_review",
+  "mode": "DRY_RUN",
+  "results": [
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9913_bandy-rsi3-low-adx-mr-index.md",
+      "ea_id": "PENDING_4927DCBB",
+      "expected_dd_pct": 9.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_4927DCBB_unger-rsi2-extreme-fallback-v1.md",
+      "reasons": [],
+      "slug": "unger-rsi2-extreme-fallback-v1",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_9913_bandy-rsi3-low-adx-mr-index.md:score=0.8000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10146_tii-meanrev.md",
+      "ea_id": "QM5_1063_v2",
+      "expected_dd_pct": 9.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_1063_unger-bollinger-fx-meanrev-v2.md",
+      "reasons": [],
+      "slug": "unger-bollinger-fx-meanrev-v2",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10146_tii-meanrev.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11937",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11937_ff-agnew-h1-break.md",
+      "reasons": [],
+      "slug": "ff-agnew-h1-break",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11943",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11943_ff-wae-explosion.md",
+      "reasons": [],
+      "slug": "ff-wae-explosion",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11944",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11944_ff-d1-simplicity.md",
+      "reasons": [],
+      "slug": "ff-d1-simplicity",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11910_larry-williams-18ma-2outside-bars-d1.md",
+      "ea_id": "11945",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11945_ff-the-strat-212.md",
+      "reasons": [],
+      "slug": "ff-the-strat-212",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_11910_larry-williams-18ma-2outside-bars-d1.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11948",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11948_ff-davit-pivots.md",
+      "reasons": [],
+      "slug": "ff-davit-pivots",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11950",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11950_ff-ozfx-mechanical.md",
+      "reasons": [],
+      "slug": "ff-ozfx-mechanical",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11962",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11962_ff-3ema-trend-cont.md",
+      "reasons": [],
+      "slug": "ff-3ema-trend-cont",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_2023_demark-td-d-wave-wave5-h4.md",
+      "ea_id": "11972",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11972_mql5-wolfe-waves.md",
+      "reasons": [],
+      "slug": "mql5-wolfe-waves",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_2023_demark-td-d-wave-wave5-h4.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12785_timerangebreakout-orb.md",
+      "ea_id": "11992",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11992_cup-vol-breakout-atr.md",
+      "reasons": [],
+      "slug": "cup-vol-breakout-atr",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_12785_timerangebreakout-orb.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11997",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11997_qc-dynamic-breakout-ii.md",
+      "reasons": [],
+      "slug": "qc-dynamic-breakout-ii",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12003",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12003_ano-commodity-lead-lag.md",
+      "reasons": [],
+      "slug": "ano-commodity-lead-lag",
+      "target_symbols": [
+        "USDCAD.DWX",
+        "XTIUSD.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12018",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12018_ru-kravchuk-digital-filters.md",
+      "reasons": [],
+      "slug": "ru-kravchuk-digital-filters",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10016_ff-ema100-bb-tdi-h1.md",
+      "ea_id": "12037",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12037_ru-tdi-angle-attack.md",
+      "reasons": [],
+      "slug": "ru-tdi-angle-attack",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10016_ff-ema100-bb-tdi-h1.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10098_mql5-memory.md",
+      "ea_id": "12055",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12055_yt-secret-monday-sweep.md",
+      "reasons": [],
+      "slug": "yt-secret-monday-sweep",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10098_mql5-memory.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12750_wti-weekend-gap-fade.md",
+      "ea_id": "12064",
+      "expected_dd_pct": 8.5,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12064_yt-inst-gap-fill.md",
+      "reasons": [],
+      "slug": "yt-inst-gap-fill",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "GDAXI.DWX",
+        "NDX.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_12750_wti-weekend-gap-fade.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20024",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20024_london-fix-reversion.md",
+      "reasons": [],
+      "slug": "london-fix-reversion",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX",
+        "GBPJPY.DWX",
+        "GBPUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "KEEP",
+      "warnings": []
+    }
+  ],
+  "schema": "qm.card-intake-prescreen/v1",
+  "summary": {
+    "cards": 18,
+    "keep": 18,
+    "mutated": 0,
+    "reject": 0
+  },
+  "symbol_matrix_sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+}
