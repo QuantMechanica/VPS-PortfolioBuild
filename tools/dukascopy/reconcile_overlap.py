@@ -44,8 +44,25 @@ MIN_SESSION_COVERAGE = 0.99
 REQUIRED_DST_OFFSET_SECONDS = 0
 MAX_COMPUTE_SECONDS = 2 * 60 * 60
 SUMMARY_SCHEMA = "qm.dukascopy-dwx-overlap-reconciliation/v1"
+# The required window is the half-open UTC interval [START, END). An M1 bar
+# is keyed by its open time, so a fully complete series ends on the minute
+# bar opening at END - M1_BAR_SECONDS (e.g. 2026-03-31T23:59:00Z for the
+# 2026-04-01T00:00:00Z end below), never on END itself. Comparing the last
+# observed bar directly against END rejected every complete row by exactly
+# one bar (60 s) -- discovered 2026-09-15 when a fail-closed run reported
+# required_overlap_window=FAIL on all 37 symbols including bilaterally
+# complete ones.
+M1_BAR_SECONDS = 60
 REQUIRED_OVERLAP_START = dt.datetime(2025, 10, 1, tzinfo=UTC)
 REQUIRED_OVERLAP_END = dt.datetime(2026, 4, 1, tzinfo=UTC)
+# Below this fraction of Dukascopy-side minutes also present on the DWX
+# side, a failure is a short/incomplete read of the DWX source (export or
+# import defect) rather than an ordinary bilateral-coverage shortfall.
+# Ordinary FX/CFD coverage gaps observed in production stay well above 80%;
+# a genuine short read observed 2026-09-13 was below 2.3% for every
+# affected symbol, so 0.5 cleanly separates the two populations without
+# being tunable into a pass.
+SHORT_READ_COVERAGE_RATIO = 0.5
 
 
 @dataclass(frozen=True)
@@ -351,7 +368,7 @@ def reconcile_symbol(
     dst_exact = dst_complete and all(bool(item["pass"]) for item in dst_windows)
     overlap_window_complete = (
         start_s <= broker_epoch_seconds_for_utc(REQUIRED_OVERLAP_START)
-        and end_s >= broker_epoch_seconds_for_utc(REQUIRED_OVERLAP_END)
+        and end_s >= broker_epoch_seconds_for_utc(REQUIRED_OVERLAP_END) - M1_BAR_SECONDS
     )
     close_limit = CLOSE_P95_SPREAD_MULTIPLIER * effective_spread
     checks = {
@@ -362,7 +379,13 @@ def reconcile_symbol(
     }
     compute_seconds = time.monotonic() - started
     checks["compute_budget"] = compute_seconds < MAX_COMPUTE_SECONDS
-    status = "PASS" if all(checks.values()) else "FAIL"
+    is_short_read = dukascopy_coverage < SHORT_READ_COVERAGE_RATIO
+    if all(checks.values()):
+        status = "PASS"
+    elif is_short_read:
+        status = "SHORT_READ"
+    else:
+        status = "FAIL"
     return {
         "schema": SUMMARY_SCHEMA,
         "symbol": symbol,
@@ -386,6 +409,7 @@ def reconcile_symbol(
         "typical_spread_points": effective_spread,
         "typical_spread_source": typical_spread_source,
         "close_delta_p95_limit_points": close_limit,
+        "short_read_threshold": SHORT_READ_COVERAGE_RATIO,
         **metrics,
         "dst_windows": dst_windows,
         "checks": checks,

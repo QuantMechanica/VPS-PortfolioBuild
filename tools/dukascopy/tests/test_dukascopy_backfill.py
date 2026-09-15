@@ -472,3 +472,69 @@ def test_reconciliation_detects_one_hour_timestamp_offset() -> None:
     offset, matches = reconcile_overlap.estimate_best_offset_seconds(candidate, reference)
     assert offset == -3600
     assert matches == len(reference)
+
+
+def test_required_overlap_window_is_half_open_at_the_required_end(
+    tmp_path: Path,
+) -> None:
+    """A complete series ends on the minute bar opening one minute before
+    REQUIRED_OVERLAP_END (the interval is [START, END)), never on END
+    itself. Discovered 2026-09-15: comparing the last observed minute
+    directly against END rejected every bilaterally complete symbol in a
+    37/37 fail-closed run by exactly 60 s."""
+
+    first_bar = common.broker_epoch_seconds_for_utc(
+        reconcile_overlap.REQUIRED_OVERLAP_START
+    )
+    last_complete_bar = (
+        common.broker_epoch_seconds_for_utc(reconcile_overlap.REQUIRED_OVERLAP_END)
+        - reconcile_overlap.M1_BAR_SECONDS
+    )
+    complete_rows = [(first_bar, 1.10000, 10, 1.0), (last_complete_bar, 1.10000, 10, 1.0)]
+    dukascopy = tmp_path / "duk_complete.csv"
+    dwx = tmp_path / "dwx_complete.csv"
+    _write_header_m1(dukascopy, complete_rows)
+    _write_header_m1(dwx, complete_rows)
+    complete = reconcile_overlap.reconcile_symbol(
+        symbol="EURUSD.DWX", dukascopy_csv=dukascopy, dwx_csv=dwx
+    )
+    assert complete["checks"]["required_overlap_window"] is True
+
+    # A genuinely short DWX file (missing the final required minute) must
+    # still fail -- the fix must not weaken the boundary into always-pass.
+    short_last_bar = last_complete_bar - 60
+    short_rows = [(first_bar, 1.10000, 10, 1.0), (short_last_bar, 1.10000, 10, 1.0)]
+    dwx_short = tmp_path / "dwx_short.csv"
+    _write_header_m1(dwx_short, short_rows)
+    short = reconcile_overlap.reconcile_symbol(
+        symbol="EURUSD.DWX", dukascopy_csv=dukascopy, dwx_csv=dwx_short
+    )
+    assert short["checks"]["required_overlap_window"] is False
+    assert short["overlap_last_broker_epoch"] == short_last_bar
+
+
+def test_short_read_status_is_distinct_from_an_ordinary_coverage_failure(
+    tmp_path: Path,
+) -> None:
+    """A DWX file with only a handful of ticks scattered across a large
+    Dukascopy-covered span (the 2026-09-13 T1 export pattern: dwx_coverage
+    ~100% of a tiny sample, dukascopy_coverage a fraction of a percent) must
+    be classified SHORT_READ, not a generic FAIL, so it can never be
+    silently treated as a passing session-coverage shortfall."""
+
+    base = common.broker_epoch_seconds_for_utc(reconcile_overlap.REQUIRED_OVERLAP_START)
+    dense_minutes = [base + minute * 60 for minute in range(1000)]
+    dukascopy_rows = [(value, 1.10000, 100, 1.0) for value in dense_minutes]
+    scattered = [dense_minutes[index] for index in (100, 300, 500, 700, 900)]
+    dwx_rows = [(value, 1.10000, 5, 1.0) for value in scattered]
+    dukascopy = tmp_path / "duk_dense.csv"
+    dwx = tmp_path / "dwx_scattered.csv"
+    _write_header_m1(dukascopy, dukascopy_rows)
+    _write_header_m1(dwx, dwx_rows)
+    result = reconcile_overlap.reconcile_symbol(
+        symbol="EURUSD.DWX", dukascopy_csv=dukascopy, dwx_csv=dwx
+    )
+    assert result["dwx_coverage"] == pytest.approx(1.0)
+    assert result["dukascopy_coverage"] < reconcile_overlap.SHORT_READ_COVERAGE_RATIO
+    assert result["status"] == "SHORT_READ"
+    assert result["checks"]["session_coverage"] is False
