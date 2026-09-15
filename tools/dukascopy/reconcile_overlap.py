@@ -73,6 +73,16 @@ SHORT_READ_COVERAGE_RATIO = 0.5
 # at its edges, while AUDCAD's 25-day hole contributes ~18 weekday days. 24h
 # of weekday-only silence cleanly separates the two without touching the
 # fixed reconciliation thresholds.
+#
+# Status priority is PASS > SHORT_READ > SHORT_READ_GAP > FAIL:
+# SHORT_READ_COVERAGE_RATIO (dukascopy_coverage < 0.5) is evaluated first
+# because it is the more catastrophic, unambiguous defect signature (the
+# 2026-09-13 run's 10 sub-2.3%-coverage symbols); the weekday-gap check only
+# applies to the remaining, less-catastrophic population where a single
+# concentrated hole hides inside an otherwise-ordinary aggregate coverage
+# ratio (AUDCAD's 84.48% case). Evaluating the gap check first would have
+# relabeled all 10 catastrophic symbols SHORT_READ_GAP -- collapsing the two
+# populations the 2026-09-15 defect audit deliberately kept separate.
 SHORT_READ_GAP_WEEKDAY_HOURS = 24.0
 _UTC_SATURDAY = 5  # datetime.weekday(): Monday=0 .. Sunday=6
 
@@ -454,10 +464,10 @@ def reconcile_symbol(
     )
     if all(checks.values()):
         status = "PASS"
-    elif is_short_read_gap:
-        status = "SHORT_READ_GAP"
     elif is_short_read:
         status = "SHORT_READ"
+    elif is_short_read_gap:
+        status = "SHORT_READ_GAP"
     else:
         status = "FAIL"
     return {

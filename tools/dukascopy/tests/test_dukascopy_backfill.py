@@ -546,20 +546,32 @@ def test_short_read_gap_status_flags_a_multiweek_weekday_hole(tmp_path: Path) ->
     band, so SHORT_READ_COVERAGE_RATIO alone never caught it and it was
     classified a generic FAIL (see docs/ops/evidence/2026-09-15_dukascopy_p3_defects/README.md).
     The gap-based check on the DWX side's own longest silent weekday interval
-    must instead label this class SHORT_READ_GAP."""
+    must instead label this class SHORT_READ_GAP.
+
+    This reproduces the real pattern at true M1 (60s) spacing, not a coarser
+    proxy: two dense 3-day DWX blocks bracketing a genuine 25-day hole, with
+    Dukascopy holding the same dense blocks plus sparse (3h-spaced, still
+    M1-aligned) proof-of-life ticks through the hole -- enough to prove the
+    market was open and DWX alone is missing the data, without claiming
+    Dukascopy itself is minute-dense through a 25-day span."""
 
     anchor = int(dt.datetime(2026, 1, 5, tzinfo=UTC).timestamp())  # Monday 00:00 UTC
-    step = 600  # 10 minutes; coarser than 1-minute bars, preserves exact gap durations
+    m1_step = 60
     day = 86400
-    block1_end = anchor + 5 * day  # Mon-Fri dense
-    gap_end = block1_end + 4 * day  # Sat, Sun, Mon, Tue silent (>=48h of weekday)
-    block2_end = gap_end + 5 * day  # Wed-Sun dense
+    block_days = 3
+    gap_days = 25
+    block1_end = anchor + block_days * day
+    gap_end = block1_end + gap_days * day
+    block2_end = gap_end + block_days * day
 
-    def _points(start: int, end: int) -> list[int]:
+    def _points(start: int, end: int, step: int) -> list[int]:
         return list(range(start, end, step))
 
-    dukascopy_points = _points(anchor, block2_end)
-    dwx_points = _points(anchor, block1_end) + _points(gap_end, block2_end)
+    dense_points = _points(anchor, block1_end, m1_step) + _points(gap_end, block2_end, m1_step)
+    proof_of_life_points = _points(block1_end, gap_end, 3 * 3600)  # every 3h through the hole
+    dukascopy_points = sorted(set(dense_points) | set(proof_of_life_points))
+    dwx_points = dense_points
+
     dukascopy_rows = [(value, 1.10000, 10, 1.0) for value in dukascopy_points]
     dwx_rows = [(value, 1.10000, 10, 1.0) for value in dwx_points]
     dukascopy = tmp_path / "duk_audcad.csv"
@@ -577,3 +589,35 @@ def test_short_read_gap_status_flags_a_multiweek_weekday_hole(tmp_path: Path) ->
         reconcile_overlap.SHORT_READ_GAP_WEEKDAY_HOURS * 3600
     )
     assert result["status"] == "SHORT_READ_GAP"
+
+
+def test_longest_weekday_gap_ignores_an_ordinary_weekend() -> None:
+    """An ordinary Friday-evening/Monday-early weekend must stay comfortably
+    under SHORT_READ_GAP_WEEKDAY_HOURS: only the couple of weekday hours at
+    each edge of the weekend count, never the intervening Sat/Sun."""
+
+    friday_evening = int(dt.datetime(2026, 1, 9, 20, 0, tzinfo=UTC).timestamp())  # Friday
+    monday_early = friday_evening + 2 * 86400 + 2 * 3600  # + Sat + Sun + 02:00 Monday
+    saturday_noon = friday_evening + 86400 + 12 * 3600  # Dukascopy proof-of-life mid-weekend
+    dwx_times = [friday_evening, monday_early]
+    dukascopy_times = [friday_evening, saturday_noon, monday_early]
+
+    gap = reconcile_overlap.longest_weekday_gap(dwx_times, dukascopy_times)
+    assert 0 < gap["longest_weekday_gap_seconds"] < (
+        reconcile_overlap.SHORT_READ_GAP_WEEKDAY_HOURS * 3600
+    )
+
+
+def test_longest_weekday_gap_ignores_a_mutually_silent_weekday_holiday() -> None:
+    """A weekday where BOTH sources are silent (an exchange holiday, not a
+    DWX-side defect) must not register as a weekday gap at all: the detector
+    requires Dukascopy evidence strictly inside the interval as proof the
+    market was open and DWX alone is missing data."""
+
+    tuesday = int(dt.datetime(2026, 1, 6, 0, 0, tzinfo=UTC).timestamp())
+    thursday = tuesday + 2 * 86400  # Wednesday holiday silent for both sources
+    dwx_times = [tuesday, thursday]
+    dukascopy_times = [tuesday, thursday]
+
+    gap = reconcile_overlap.longest_weekday_gap(dwx_times, dukascopy_times)
+    assert gap["longest_weekday_gap_seconds"] == 0

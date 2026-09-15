@@ -51,15 +51,32 @@ CHUNK_JOURNAL_HEADER = [
 # provenance) -- not a live Dukascopy-side count, so this classification
 # needs no network access and no T1 run to compute. downloaded_hours*60 is a
 # per-symbol upper bound on obtainable minutes; the session-closure allowance
-# below then converts it into a floor. Calibrated against the 2026-09-13
-# fixed-window reconciliation, which showed two populations: 27 FX/index
-# symbols at 83.8%-98.5% dukascopy_coverage (ordinary DWX/Dukascopy
+# below then converts it into a whole-window floor. Calibrated against the
+# 2026-09-13 fixed-window reconciliation, which showed two populations: 27
+# FX/index symbols at 83.8%-98.5% dukascopy_coverage (ordinary DWX/Dukascopy
 # session-accounting differences, not a defect) and 10 symbols at
 # 0.03%-2.3% (catastrophic short reads). The allowances below sit below the
 # ordinary population's worst case so a legitimate export still classifies
-# COMPLETE, while a catastrophic short read (or AUDCAD's 25-day hole, see
-# reconcile_overlap.SHORT_READ_GAP_WEEKDAY_HOURS for that specific case)
-# still classifies SHORT_READ.
+# COMPLETE.
+#
+# This whole-window floor is deliberately NOT the AUDCAD-class defect's
+# catching mechanism: AUDCAD's real 2026-09-13 failure (dense - 25-day hole -
+# dense, 155,802 DWX bars over a 184,920-minute FX ceiling = 84.25% of
+# ceiling) sits *inside* the ordinary 83.8%-98.5% legitimate-shortfall band,
+# so no whole-window allowance can separate it from a legitimate export
+# without also rejecting some legitimate ones. The authoritative closing
+# check for that class is reconcile_overlap.longest_weekday_gap at the
+# reconciliation stage, since it alone compares against Dukascopy ground
+# truth per symbol rather than a static P1 ceiling. The per-chunk floor
+# below (chunk_expected_minutes) is a *diagnostic* companion, not a second
+# status gate: it surfaces which of a symbol's ~26 chunks are materially
+# short in short_chunks even when the whole-window ratio does not trip, but
+# does not by itself flip a symbol's status -- there is no production
+# evidence yet (the chunk journal is new; the 2026-09-13 raw exports predate
+# it) that a per-chunk allowance this tight would not also reject a
+# legitimate single-holiday chunk, so it is left informational until a real
+# governed rerun's chunk journals can calibrate it the way the 2026-09-13
+# reconciliation calibrated the whole-window allowances above.
 P1_WINDOW_MANIFEST_RECEIPT = (
     REPO_ROOT
     / "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/p1_window_manifest_receipt.json"
@@ -185,15 +202,46 @@ def parse_chunk_journal(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def short_chunks_from_journal(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    return [
-        {
-            "chunk_start_epoch": row["chunk_start_epoch"],
-            "chunk_end_epoch": row["chunk_end_epoch"],
-        }
+def chunk_expected_minutes(symbol: str, chunk_start_epoch: int, chunk_end_epoch: int) -> int:
+    """Per-chunk floor: weekday-only seconds in the chunk's span (the same
+    "inside a trading week" proxy reconcile_overlap.longest_weekday_gap uses
+    for the AUDCAD-class defect), minus the symbol's session-closure
+    allowance. A 7-day chunk sitting entirely inside a genuine multi-week
+    hole starves this floor even when the symbol's whole-window aggregate
+    (load_expected_minutes) stays above its own floor."""
+    weekday_seconds = reconcile_overlap._weekday_seconds_in_range(
+        int(chunk_start_epoch), int(chunk_end_epoch)
+    )
+    allowance = SESSION_CLOSURE_ALLOWANCE_FRACTION[instrument_class(symbol)]
+    return int((weekday_seconds / 60) * (1.0 - allowance))
+
+
+def short_chunks_from_journal(
+    symbol: str, rows: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    zero_chunks = {
+        (row["chunk_start_epoch"], row["chunk_end_epoch"])
         for row in rows
         if row["status"] == "ZERO_TICK_CHUNK"
-    ]
+    }
+    short: dict[tuple[int, int], dict[str, Any]] = {
+        window: {"chunk_start_epoch": window[0], "chunk_end_epoch": window[1]}
+        for window in zero_chunks
+    }
+    for row in rows:
+        if row["status"] != "CHUNK_ROWS":
+            continue
+        window = (row["chunk_start_epoch"], row["chunk_end_epoch"])
+        floor = chunk_expected_minutes(symbol, window[0], window[1])
+        rows_written = int(row["copied"])
+        if floor > 0 and rows_written < floor:
+            short[window] = {
+                "chunk_start_epoch": window[0],
+                "chunk_end_epoch": window[1],
+                "chunk_rows_written": rows_written,
+                "chunk_expected_minutes": floor,
+            }
+    return [short[window] for window in sorted(short)]
 
 
 def classify_completeness(
@@ -342,9 +390,16 @@ def canonicalize_export_set(
         chunk_filename = f"{symbol}_M1_chunks.csv"
         chunk_source = raw_dir / chunk_filename
         chunk_rows: list[dict[str, Any]] = []
+        chunk_journal_binding: dict[str, Any] | None = None
         if chunk_source.is_file():
-            shutil.copyfile(chunk_source, raw_copy_dir / chunk_filename)
+            chunk_copy = raw_copy_dir / chunk_filename
+            shutil.copyfile(chunk_source, chunk_copy)
             chunk_rows = parse_chunk_journal(chunk_source)
+            chunk_journal_binding = {
+                "path": str(chunk_copy.resolve()),
+                "sha256": sha256_file(chunk_copy),
+                "row_count": len(chunk_rows),
+            }
         final_path = final_dir / filename
         try:
             binding = canonicalize_raw_symbol(
@@ -362,7 +417,8 @@ def canonicalize_export_set(
             continue
         binding["raw_path"] = str(raw_copy.resolve())
         binding["raw_sha256"] = sha256_file(raw_copy)
-        binding["short_chunks"] = short_chunks_from_journal(chunk_rows)
+        binding["short_chunks"] = short_chunks_from_journal(symbol, chunk_rows)
+        binding["chunk_journal"] = chunk_journal_binding
         binding.update(
             classify_completeness(symbol, int(binding["rows"]), expected_minutes)
         )
@@ -480,6 +536,53 @@ def _summary_path_guard(summary_path: Path, work_item_id: str) -> Path:
     if resolved != expected:
         raise ValueError("summary path must be the exact M1 export work-item summary")
     return resolved
+
+
+def _compute_receipt_status(
+    result: Mapping[str, Any], manifest_binding: Mapping[str, Any]
+) -> str:
+    return (
+        "PASS"
+        if (
+            "error" not in result
+            and "cleanup_error" not in result
+            and "post_audit_error" not in result
+            and "output_error" not in result
+            and str(result.get("completion", "")).startswith(
+                "successes=37 failures=0 terminal=T1 "
+            )
+            and result.get("signed_archive_unchanged") is True
+            and result.get("canonicalization_status") == "COMPLETE"
+            and result.get("failed_symbol_count") == 0
+            and manifest_binding.get("symbols") == 37
+            and int(manifest_binding.get("total_rows") or 0) > 0
+            # SHORT_READ never becomes COMPLETE by any downstream
+            # aggregation: a single short-read symbol fails the receipt
+            # even though written_rows>0 and canonicalization succeeded.
+            and not manifest_binding.get("short_read_symbol_count")
+        )
+        else "FAIL"
+    )
+
+
+def _summary_error_text(result: Mapping[str, Any]) -> str | None:
+    return (
+        result.get("error")
+        or result.get("output_error")
+        or result.get("post_audit_error")
+        or (
+            "M1 canonicalization completed with "
+            f"{result.get('failed_symbol_count', 0)} failed symbol(s)"
+            if result.get("failed_symbol_count", 0)
+            else None
+        )
+        or (
+            f"SHORT_READ symbol(s) below the expected-minutes floor: "
+            f"{', '.join(result.get('short_read_symbols', []))}"
+            if result.get("short_read_symbol_count", 0)
+            else None
+        )
+    )
 
 
 def run(
@@ -748,28 +851,7 @@ def run(
 
         result["completed_at_utc"] = boot.utc_now()
         manifest_binding = result.get("m1_export_manifest") or {}
-        result["status"] = (
-            "PASS"
-            if (
-                "error" not in result
-                and "cleanup_error" not in result
-                and "post_audit_error" not in result
-                and "output_error" not in result
-                and result.get("completion", "").startswith(
-                    "successes=37 failures=0 terminal=T1 "
-                )
-                and result.get("signed_archive_unchanged") is True
-                and result.get("canonicalization_status") == "COMPLETE"
-                and result.get("failed_symbol_count") == 0
-                and manifest_binding.get("symbols") == 37
-                and int(manifest_binding.get("total_rows") or 0) > 0
-                # SHORT_READ never becomes COMPLETE by any downstream
-                # aggregation: a single short-read symbol fails the receipt
-                # even though written_rows>0 and canonicalization succeeded.
-                and not manifest_binding.get("short_read_symbol_count")
-            )
-            else "FAIL"
-        )
+        result["status"] = _compute_receipt_status(result, manifest_binding)
         receipt_path = out / "export_receipt.json"
         _atomic_write_json(receipt_path, result)
         summary = {
@@ -797,23 +879,7 @@ def run(
                 "signed_archive_unchanged", False
             ),
             "completed_at_utc": result["completed_at_utc"],
-            "error": (
-                result.get("error")
-                or result.get("output_error")
-                or result.get("post_audit_error")
-                or (
-                    "M1 canonicalization completed with "
-                    f"{result.get('failed_symbol_count', 0)} failed symbol(s)"
-                    if result.get("failed_symbol_count", 0)
-                    else None
-                )
-                or (
-                    f"SHORT_READ symbol(s) below the expected-minutes floor: "
-                    f"{', '.join(result.get('short_read_symbols', []))}"
-                    if result.get("short_read_symbol_count", 0)
-                    else None
-                )
-            ),
+            "error": _summary_error_text(result),
         }
         _atomic_write_json(summary_path, summary)
     return result

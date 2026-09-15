@@ -138,8 +138,102 @@ def test_parse_chunk_journal_and_short_chunks_extraction(tmp_path: Path) -> None
     assert len(rows) == 5
     assert rows[0]["copied"] == 500 and rows[0]["chunk_start_epoch"] == 1000
 
-    short_chunks = export.short_chunks_from_journal(rows)
+    short_chunks = export.short_chunks_from_journal("EURUSD.DWX", rows)
     assert short_chunks == [{"chunk_start_epoch": 2000, "chunk_end_epoch": 3000}]
+
+
+def test_chunk_expected_minutes_matches_weekday_seconds_and_allowance() -> None:
+    """A full Mon-Fri weekday chunk (no weekend inside) floors at
+    (5 days * 1440 min) * (1 - allowance); the index/commodity allowance
+    stays the strictly larger one, matching the whole-window floor."""
+
+    # Chunk epochs are broker epochs treated directly as UTC-day boundaries
+    # by _weekday_seconds_in_range (the same coarse proxy
+    # reconcile_overlap.longest_weekday_gap uses) -- a raw UTC timestamp, not
+    # a broker_epoch_seconds_for_utc conversion.
+    monday = int(dt.datetime(2026, 1, 5, tzinfo=UTC).timestamp())  # Monday 00:00 UTC
+    saturday = monday + 5 * 86400
+    fx_floor = export.chunk_expected_minutes("EURUSD.DWX", monday, saturday)
+    assert fx_floor == int(5 * 1440 * (1.0 - export.SESSION_CLOSURE_ALLOWANCE_FRACTION["fx"]))
+
+    index_floor = export.chunk_expected_minutes("GDAXI.DWX", monday, saturday)
+    assert index_floor == int(
+        5 * 1440 * (1.0 - export.SESSION_CLOSURE_ALLOWANCE_FRACTION["index_commodity"])
+    )
+    assert index_floor < fx_floor
+
+
+def test_short_chunks_from_journal_flags_material_shortfall_not_only_zero(
+) -> None:
+    """The AUDCAD-class defect (2026-09-15 export-fix ticket, F4): 3 of ~26
+    chunks starved by a concentrated hole, none of them fully zero. A journal
+    carrying only ZERO_TICK_CHUNK rows would miss all three; short_chunks
+    must also catch chunks materially under their per-chunk floor."""
+
+    symbol = "EURUSD.DWX"
+    monday = int(dt.datetime(2026, 1, 5, tzinfo=UTC).timestamp())  # Monday 00:00 UTC
+    week = 7 * 86400
+    floor = export.chunk_expected_minutes(symbol, monday, monday + week)
+    assert floor > 0
+
+    def _chunk_rows_row(index: int, rows_written: int) -> dict[str, object]:
+        start = monday + index * week
+        end = start + week
+        return {
+            "symbol": symbol, "chunk_start_epoch": start, "chunk_end_epoch": end,
+            "phase": "bars", "attempt": 0, "copied": rows_written, "error_code": 0,
+            "status": "CHUNK_ROWS",
+        }
+
+    rows = [
+        _chunk_rows_row(0, floor + 500),  # healthy
+        _chunk_rows_row(1, floor - 1),  # materially short, not zero
+        _chunk_rows_row(2, floor - 1),  # materially short, not zero
+        _chunk_rows_row(3, floor - 1),  # materially short, not zero
+        _chunk_rows_row(4, floor + 500),  # healthy
+    ]
+    short_chunks = export.short_chunks_from_journal(symbol, rows)
+    assert len(short_chunks) == 3
+    flagged_starts = {row["chunk_start_epoch"] for row in short_chunks}
+    assert flagged_starts == {monday + week, monday + 2 * week, monday + 3 * week}
+    for row in short_chunks:
+        assert row["chunk_rows_written"] == floor - 1
+        assert row["chunk_expected_minutes"] == floor
+
+
+def test_compute_receipt_status_fails_on_short_read_symbol_count() -> None:
+    """Ticket F7: run()'s receipt status must FAIL on any SHORT_READ symbol
+    even when every other PASS condition is otherwise met."""
+
+    base_result: dict[str, object] = {
+        "completion": "successes=37 failures=0 terminal=T1 build=1 total_rows=1 elapsed_ms=1",
+        "signed_archive_unchanged": True,
+        "canonicalization_status": "COMPLETE",
+        "failed_symbol_count": 0,
+    }
+    passing_manifest = {"symbols": 37, "total_rows": 12345, "short_read_symbol_count": 0}
+    assert export._compute_receipt_status(base_result, passing_manifest) == "PASS"
+
+    short_read_manifest = {"symbols": 37, "total_rows": 12345, "short_read_symbol_count": 1}
+    assert export._compute_receipt_status(base_result, short_read_manifest) == "FAIL"
+
+
+def test_summary_error_text_names_short_read_symbols() -> None:
+    """Ticket F7: summary.json's error field must name the SHORT_READ
+    symbol(s), not just report a generic non-PASS status."""
+
+    result = {
+        "short_read_symbol_count": 2,
+        "short_read_symbols": ["AUDCAD.DWX", "NZDJPY.DWX"],
+        "failed_symbol_count": 0,
+    }
+    error_text = export._summary_error_text(result)
+    assert error_text is not None
+    assert "AUDCAD.DWX" in error_text
+    assert "NZDJPY.DWX" in error_text
+
+    clean_result = {"short_read_symbol_count": 0, "failed_symbol_count": 0}
+    assert export._summary_error_text(clean_result) is None
 
 
 def test_canonicalize_export_set_flags_short_read_symbol_and_surfaces_chunk_journal(
