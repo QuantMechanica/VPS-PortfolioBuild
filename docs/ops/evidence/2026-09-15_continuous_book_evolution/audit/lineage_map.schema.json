@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QuantMechanica strategy lineage / duplicate map",
+  "description": "Proposed deterministic output of tools/strategy_farm/lineage_map.py (Directive 2026-09-15 §9). Read-only builder; idempotent; same inputs -> same JSON.",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "thresholds", "nodes", "edges"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "thresholds": {
+      "type": "object",
+      "description": "Config-driven; GELB decision to change. Values are proposals.",
+      "properties": {
+        "rule_sim_close_clone": {"type": "number", "default": 0.90},
+        "rule_sim_param_variant": {"type": "number", "default": 0.98},
+        "jaccard_close_clone": {"type": "number", "default": 0.80},
+        "jaccard_param_variant": {"type": "number", "default": 0.50},
+        "jaccard_same_edge": {"type": "number", "default": 0.40},
+        "rho_close_clone": {"type": "number", "default": 0.95},
+        "rho_same_edge": {"type": "number", "default": 0.70}
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["ea_id"],
+        "properties": {
+          "ea_id": {"type": "string"},
+          "symbol": {"type": ["string", "null"]},
+          "slug": {"type": ["string", "null"]},
+          "family_declared": {"type": ["string", "null"], "description": "card family: field, weak prior only"},
+          "parent_ea_id_declared": {"type": ["string", "null"]},
+          "source_id": {"type": ["string", "null"]},
+          "mq5_sha256": {"type": ["string", "null"]},
+          "include_closure_sha256": {"type": ["string", "null"]},
+          "rule_signature": {"type": ["string", "null"], "description": "SHA256 of normalized strategy region (comments/whitespace/default-literals stripped)"},
+          "has_q08_stream": {"type": "boolean"},
+          "has_q14_stream": {"type": "boolean"},
+          "behaviour_status": {"type": "string", "enum": ["EVALUATED", "NOT_EVALUATED", "EVIDENCE_MISSING", "UNKNOWN"]}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["a", "b", "class", "basis"],
+        "properties": {
+          "a": {"type": "string", "description": "node key ea_id[:symbol]"},
+          "b": {"type": "string"},
+          "class": {
+            "type": "string",
+            "enum": [
+              "EXACT_CLONE",
+              "CLOSE_IMPL_CLONE",
+              "PARAMETER_VARIANT",
+              "SAME_EDGE_DIFF_IMPL",
+              "CHILD_CHALLENGER",
+              "SUPERSEDED",
+              "MATERIALLY_DIFFERENT"
+            ]
+          },
+          "basis": {
+            "type": "string",
+            "enum": ["SOURCE_SIGNATURE", "RUNTIME_EQUIVALENCE", "BEHAVIOUR", "DECLARED", "OWNER_RECEIPT", "HAND_SEEDED"],
+            "description": "which input decided the class"
+          },
+          "evidence": {
+            "type": "object",
+            "properties": {
+              "s_src_match": {"type": ["boolean", "null"]},
+              "runtime_equivalence": {"type": ["string", "null"], "enum": ["IDENTICAL", "DEVIATION", null]},
+              "rule_sim": {"type": ["number", "null"]},
+              "d_param": {"type": ["number", "null"]},
+              "jaccard": {"type": ["number", "null"]},
+              "rho": {"type": ["number", "null"]},
+              "n_days": {"type": ["integer", "null"]},
+              "symbol": {"type": ["string", "null"]},
+              "window": {"type": ["string", "null"]},
+              "stream_paths": {"type": "array", "items": {"type": "string"}}
+            }
+          },
+          "note": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}
