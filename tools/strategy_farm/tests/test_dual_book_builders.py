@@ -89,11 +89,24 @@ def test_dxz_not_worse_gate_requires_every_metric() -> None:
     assert result["checks"]["worst_day_not_worse"] is False
 
 
-def test_dxz_spc3_gate_precedes_incumbent_recommendation() -> None:
+def test_dxz_final_status_only_blocks_on_hard_portfolio_guard() -> None:
+    # OWNER-DEC-CBE-20260915 section 8: a static concentration-cap breach (symbol/family/...)
+    # is ADVISORY and no longer forces CONCENTRATION_CAP_BREACH; only a portfolio-level hard
+    # guard (joint_tail) or the fail-closed data-validity guard blocks the book.
     assert _final_status(
         {"passed": True},
-        {"builder_eligible": False, "concentration_reject": [{"dim": "symbol"}]},
+        {"builder_eligible": True, "concentration_reject": [{"dim": "joint_tail"}]},
     ) == "CONCENTRATION_CAP_BREACH"
+    assert _final_status(
+        {"passed": True},
+        {"builder_eligible": False, "concentration_reject": [{"dim": "data"}]},
+    ) == "CONCENTRATION_CAP_BREACH"
+    # A symbol-cap breach that leaves the book eligible is advisory -> the not-worse gate wins.
+    assert _final_status(
+        {"passed": True},
+        {"builder_eligible": True, "concentration_reject": [],
+         "cap_warnings": [{"cap": "symbol"}]},
+    ) == "APPLY_RECOMMENDED"
     assert _final_status(
         {"passed": True},
         {"builder_eligible": False, "concentration_reject": []},
@@ -139,9 +152,10 @@ def test_ftmo_aggregate_control_admits_two_low_corr_eas_on_same_symbol() -> None
     assert control["max_admitted_pairwise_correlation"] == 0.05
 
 
-def test_ftmo_aggregate_control_excludes_high_corr_ea_with_explicit_reason() -> None:
-    # Two EURUSD sleeves that are highly correlated: the lower-scoring one is rejected
-    # with an explicit CLUSTER_CORRELATION_EXCLUDED reason, never dropped silently.
+def test_ftmo_aggregate_control_admits_high_corr_with_warn_and_panel_entry() -> None:
+    # OWNER-DEC-CBE-20260915 section 8: two highly correlated EURUSD sleeves are BOTH admitted
+    # (admit-with-WARN) instead of the lower-scoring one being excluded; the WARN and a
+    # dependence-panel entry are recorded so the relaxed cap is never a silent no-op.
     roster = [(1, "EURUSD.DWX"), (2, "EURUSD.DWX")]
     scores = {
         roster[0]: {"status": "SCORED", "fund_score": 1.2},
@@ -151,23 +165,31 @@ def test_ftmo_aggregate_control_excludes_high_corr_ea_with_explicit_reason() -> 
     selected, rows, control = select_under_aggregate_control(
         roster, scores, correlation, max_pairwise_correlation=0.50,
     )
-    assert selected == [(2, "EURUSD.DWX")]  # highest score admitted first
-    excluded = {(row["ea_id"], row["symbol"]): row for row in rows if not row["eligible"]}
-    assert excluded[(1, "EURUSD.DWX")]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
-    assert excluded[(1, "EURUSD.DWX")]["aggregate_control"]["correlation"] == 0.92
-    assert control["excluded"][0]["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
+    assert selected == [(1, "EURUSD.DWX"), (2, "EURUSD.DWX")]
+    warned = {(row["ea_id"], row["symbol"]): row for row in rows if row["eligible"]}
+    assert warned[(1, "EURUSD.DWX")]["reason"] == "ADMITTED_CORRELATION_WARN"
+    assert warned[(1, "EURUSD.DWX")]["aggregate_control"]["correlation"] == 0.92
+    assert control["excluded"] == []
+    assert control["correlation_warnings"][0]["severity"] == "WARN"
+    assert control["correlation_warnings"][0]["correlation"] == 0.92
+    panel = {entry["severity"] for entry in control["dependence_panel"]}
+    assert "WARN" in panel
 
 
-def test_ftmo_aggregate_control_rejects_high_negative_absolute_correlation() -> None:
+def test_ftmo_aggregate_control_admits_high_negative_absolute_correlation_with_warn() -> None:
+    # Absolute correlation is what matters: a strongly negative correlation is also admitted-
+    # with-WARN (not excluded) and appears in the dependence panel.
     roster = [(1, "EURUSD.DWX"), (2, "GBPUSD.DWX")]
     scores = {
         roster[0]: {"status": "SCORED", "fund_score": 1.4},
         roster[1]: {"status": "SCORED", "fund_score": 1.2},
     }
     correlation = {frozenset(roster): -0.92}
-    selected, rows, _control = select_under_aggregate_control(roster, scores, correlation)
-    assert selected == [roster[0]]
-    assert next(row for row in rows if row["ea_id"] == 2)["reason"] == "CLUSTER_CORRELATION_EXCLUDED"
+    selected, rows, control = select_under_aggregate_control(roster, scores, correlation)
+    assert selected == roster
+    assert next(row for row in rows if row["ea_id"] == 2)["reason"] == "ADMITTED_CORRELATION_WARN"
+    assert control["dependence_panel"][0]["correlation"] == pytest.approx(0.92)
+    assert control["dependence_panel"][0]["severity"] == "WARN"
 
 
 def test_ftmo_correlation_loader_consumes_only_v4_layer_a_certified_ci(tmp_path: Path) -> None:
@@ -322,3 +344,61 @@ def test_ftmo_aggregate_thresholds_unratified_override_stays_open_owner_item() -
     assert "decision" not in control["max_pairwise_correlation_ratification"]
     assert "decision" not in control["account_weight_budget_ratification"]
     assert "receipt" not in control["account_weight_budget_ratification"]
+
+
+def test_ftmo_aggregate_control_is_deterministic_under_warn_admission() -> None:
+    # OWNER-DEC-CBE-20260915 section 26/58: same inputs -> same output, including the WARN
+    # admissions and dependence panel.
+    roster = [(1, "EURUSD.DWX"), (2, "EURUSD.DWX")]
+    scores = {
+        roster[0]: {"status": "SCORED", "fund_score": 1.2},
+        roster[1]: {"status": "SCORED", "fund_score": 1.4},
+    }
+    correlation = {frozenset({(1, "EURUSD.DWX"), (2, "EURUSD.DWX")}): 0.92}
+    first = select_under_aggregate_control(roster, scores, correlation)
+    second = select_under_aggregate_control(roster, scores, correlation)
+    assert first[0] == second[0]
+    assert json.dumps(first[2], sort_keys=True) == json.dumps(second[2], sort_keys=True)
+
+
+def test_ftmo_unverified_correlation_still_fails_closed_under_advisory_regime() -> None:
+    # RED boundary preserved (section 71): an UNMEASURED pairwise correlation is not a WARN;
+    # it stays CLUSTER_CORRELATION_UNVERIFIED fail-closed.
+    roster = [(1, "EURUSD.DWX"), (2, "EURUSD.DWX")]
+    scores = {
+        roster[0]: {"status": "SCORED", "fund_score": 1.4},
+        roster[1]: {"status": "SCORED", "fund_score": 1.2},
+    }
+    selected, rows, control = select_under_aggregate_control(roster, scores, {})
+    assert selected == [(1, "EURUSD.DWX")]
+    reasons = {(row["ea_id"], row["symbol"]): row["reason"] for row in rows}
+    assert reasons[(2, "EURUSD.DWX")] == "CLUSTER_CORRELATION_UNVERIFIED"
+    assert control["correlation_warnings"] == []
+
+
+def test_risk_diagnostics_surface_cap_warnings_and_hard_guards() -> None:
+    # OWNER-DEC-CBE-20260915 section 70: cap warnings must be present in the builder output
+    # (never a silent no-op) and the hard-guard summary must reflect the surviving guard.
+    from tools.strategy_farm.portfolio import risk_diagnostics
+
+    concentration = {
+        "policy_status": "OWNER_RATIFIED",
+        "tail": {"status": "PASS", "worst_joint_day_loss_pct": 0.1, "cap_loss_pct": 4.0},
+        "cap_warnings": [{"cap": "family", "key": "clone", "value": 1.4,
+                          "threshold": 1.25, "unit": "planned_stop_risk_pct",
+                          "severity": "WARN", "affected_sleeves": ["1:EURUSD.DWX"]}],
+        "concentration_reject": [],
+    }
+    diagnostics = risk_diagnostics.build(concentration)
+    assert diagnostics["cap_warnings"][0]["cap"] == "family"
+    assert diagnostics["hard_guards"]["passed"] is True
+    assert "OWNER-DEC-CBE-20260915" in diagnostics["supersedes_static_caps"]
+    # A joint-tail breach is a surviving hard guard.
+    breached = risk_diagnostics.build({
+        "policy_status": "OWNER_RATIFIED",
+        "tail": {"status": "BREACH", "worst_joint_day_loss_pct": 9.0, "cap_loss_pct": 4.0},
+        "cap_warnings": [],
+        "concentration_reject": [{"dim": "joint_tail", "value": 9.0, "cap": 4.0}],
+    })
+    assert breached["hard_guards"]["passed"] is False
+    assert breached["hard_guards"]["hard_guard_rejects"][0]["dim"] == "joint_tail"

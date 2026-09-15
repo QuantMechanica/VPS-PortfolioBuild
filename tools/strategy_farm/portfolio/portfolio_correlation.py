@@ -71,10 +71,73 @@ COMMISSION_BASIS = "worst_case_dxz_ftmo"
 # Q14-terminal cohort (standard sec 4, sec 8; thresholds are ROT).
 # ---------------------------------------------------------------------------
 
-# Q15 hard rule, |r| < 0.50 -- the only external gate constant, NOT a working
-# default.  Mirrors build_book_ftmo.py:70 WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION
+# Q15 |r| < 0.50 reference.  Mirrors build_book_ftmo.py WORKING_DEFAULT_MAX_PAIRWISE_CORRELATION
 # and Vault Q15 (standard sec 2.1).
+#
+# OWNER-DEC-CBE-20260915 (docs/ops/evidence/2026-09-15_continuous_book_evolution/
+# owner_directive_verbatim.md section 8) SUPERSEDES the fixed 0.50 pairwise-correlation
+# cutoff as an absolute, ROT_SEALED book-admission Hard Rule.  Book admission is now
+# admit-with-WARN: a pair at/above 0.50 is admitted and recorded in the portfolio
+# dependence panel (see ``dependence_panel_entry`` below and build_book_ftmo.select_under_
+# aggregate_control), not silently excluded; portfolio-level risk is the surviving hard
+# guard.  This constant is retained UNCHANGED as (a) the Layer-A CI *measurement* band used
+# by ``_layer_a_verdict`` -- a measurement standard, not an admission gate -- and (b) the
+# advisory reference threshold for the dependence panel below.
 Q15_HARD_RULE_MAX_ABS_R = 0.50
+
+# Advisory reference for the (now non-absolute) pairwise-correlation book-admission cutoff
+# (OWNER-DEC-CBE-20260915 section 8).  A pair at/above this is admitted-with-WARN.
+ADVISORY_PAIRWISE_CORRELATION_REFERENCE = 0.50
+
+
+def dependence_panel_entry(
+    a_label: str,
+    b_label: str,
+    *,
+    pairwise_correlation: float | None,
+    downside_correlation: float | None = None,
+    trade_overlap: float | None = None,
+    reference: float = ADVISORY_PAIRWISE_CORRELATION_REFERENCE,
+) -> dict[str, Any]:
+    """Build one dependence-panel entry for a sleeve pair (OWNER-DEC-CBE-20260915 section 8).
+
+    The panel replaces the old absolute pairwise-correlation exclusion with a measured
+    dependence view: pairwise correlation plus, where computable from the existing return
+    series / overlap primitive, downside correlation and trade overlap.  ``severity`` is
+    ``WARN`` when the absolute pairwise correlation reaches the advisory reference, else
+    ``OK``; a pair with no measured correlation is ``UNVERIFIED`` (the caller keeps that
+    fail-closed).  This function measures and classifies only -- it never excludes.
+    """
+    if pairwise_correlation is None:
+        severity = "UNVERIFIED"
+    elif abs(float(pairwise_correlation)) >= reference:
+        severity = "WARN"
+    else:
+        severity = "OK"
+    return {
+        "a": a_label,
+        "b": b_label,
+        "correlation": (
+            round(abs(float(pairwise_correlation)), 8)
+            if pairwise_correlation is not None
+            else None
+        ),
+        "signed_correlation": (
+            round(float(pairwise_correlation), 8)
+            if pairwise_correlation is not None
+            else None
+        ),
+        "downside_correlation": (
+            round(float(downside_correlation), 8)
+            if downside_correlation is not None
+            else None
+        ),
+        "trade_overlap": (
+            round(float(trade_overlap), 8) if trade_overlap is not None else None
+        ),
+        "threshold": reference,
+        "severity": severity,
+    }
 
 # WORKING_DEFAULT_OPEN_OWNER_ITEM constants (standard sec 4 table + sec 8 ledger).
 # None is a gate threshold; each is a proposed default with its cited basis, open

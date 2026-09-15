@@ -4,6 +4,16 @@
 The calculations consume only already-sealed trade streams plus repository
 registries.  They complement planned stop-risk totals; they never replace those
 totals, mutate a book, or authorize a live weight.
+
+OWNER-DEC-CBE-20260915 (docs/ops/evidence/2026-09-15_continuous_book_evolution/
+owner_directive_verbatim.md section 8) supersedes the per-dimension concentration
+cutoffs (symbol / asset-class / family / session) as absolute Hard Rules.  A breach of
+those dimensions is now an ADVISORY warning surfaced in ``cap_warnings`` (with cap name,
+value, threshold and the affected sleeves) rather than a book refusal.  The ONLY surviving
+hard guard emitted in ``concentration_reject`` is the portfolio-level joint-tail /
+venue-daily-loss limit (plus the fail-closed data-validity guard in ``unknown_report``).
+The percent-of-budget numbers themselves are unchanged and are kept as the warning
+thresholds; no new arbitrary cap is invented (section 8, final paragraph).
 """
 
 from __future__ import annotations
@@ -26,6 +36,8 @@ if __package__ in (None, ""):
 
 SCHEMA = "qm.concentration-tail-report/v1"
 POLICY_SCHEMA = "qm.concentration-tail-policy/v1"
+# Dated OWNER decision that turned the static concentration caps into advisory warnings.
+CAP_ADVISORY_DECISION = "OWNER-DEC-CBE-20260915"
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_POLICY_PATH = (
     REPO_ROOT / "tools" / "strategy_farm" / "config" / "concentration_tail_limits.v1.json"
@@ -319,6 +331,7 @@ def unknown_report(
             "d_leverage_like_stop_risk_to_var95_ratio": None,
             "classification": "D_LEVERAGE_LIKE_PROXY_NOT_PROVIDER_METRIC",
         },
+        "cap_warnings": [],
         "concentration_reject": [{"dim": "data", "reason": reason}],
         "application_authority": "OWNER_ONLY",
         "deployment_action": "NONE",
@@ -384,12 +397,28 @@ def evaluate(
     asset_groups: dict[str, float] = defaultdict(float)
     family_groups: dict[str, float] = defaultdict(float)
     session_groups: dict[str, float] = defaultdict(float)
+    # Sleeve membership per group so an advisory cap warning can name the affected sleeves.
+    symbol_members: dict[str, list[str]] = defaultdict(list)
+    asset_members: dict[str, list[str]] = defaultdict(list)
+    family_members: dict[str, list[str]] = defaultdict(list)
+    session_members: dict[str, list[str]] = defaultdict(list)
     for key in keys:
         weight = normalized_weights[key]
+        label = f"{key[0]}:{key[1]}"
         symbol_groups[str(key[1]).upper()] += weight
         asset_groups[str(asset_by_key[key])] += weight
         family_groups[str(family_by_key[key])] += weight
         session_groups[str(session_by_key[key])] += weight
+        symbol_members[str(key[1]).upper()].append(label)
+        asset_members[str(asset_by_key[key])].append(label)
+        family_members[str(family_by_key[key])].append(label)
+        session_members[str(session_by_key[key])].append(label)
+    members_by_dim = {
+        "symbol": symbol_members,
+        "asset_class": asset_members,
+        "family": family_members,
+        "session": session_members,
+    }
 
     caps = policy["caps_percent_of_budget"]
     dimensions = {
@@ -478,17 +507,27 @@ def evaluate(
         "xauusd_pct_of_total_book_risk": round(xau / total_for_share * 100.0, 8),
     }
 
-    rejects: list[dict[str, Any]] = []
+    # OWNER-DEC-CBE-20260915 section 8: a per-dimension concentration breach is now an
+    # ADVISORY warning, not a book refusal.  It carries the cap name, the observed value,
+    # the (unchanged) threshold and the affected sleeves so the warning cannot silently
+    # become a no-op risk analysis (section 70).
+    cap_warnings: list[dict[str, Any]] = []
     for dimension, block in dimensions.items():
+        members = members_by_dim.get(dimension, {})
         for row in block["rows"]:
             if row["status"] == "BREACH":
-                rejects.append({
-                    "dim": dimension,
+                cap_warnings.append({
+                    "cap": dimension,
                     "key": row["key"],
                     "value": row["stop_risk_pct"],
-                    "cap": row["cap_stop_risk_pct"],
+                    "threshold": row["cap_stop_risk_pct"],
                     "unit": "planned_stop_risk_pct",
+                    "severity": "WARN",
+                    "affected_sleeves": sorted(members.get(row["key"], [])),
+                    "superseded_hard_cap": CAP_ADVISORY_DECISION,
                 })
+    # The surviving hard guard is the portfolio-level joint-tail / venue-daily-loss limit.
+    rejects: list[dict[str, Any]] = []
     if tail_status == "BREACH":
         rejects.append({
             "dim": "joint_tail",
@@ -522,6 +561,7 @@ def evaluate(
         "tail": tail,
         "risk_proxies": risk_proxies,
         "highlights": highlights,
+        "cap_warnings": cap_warnings,
         "concentration_reject": rejects,
         "classification_basis": {
             "asset_class": "dwx_symbol_matrix.csv; commodities split by canonical metal/energy symbols",
@@ -570,9 +610,22 @@ def markdown_panel(report: Mapping[str, Any]) -> str:
         f"worst joint day loss `{tail.get('worst_joint_day_loss_pct')}%` vs cap "
         f"`{tail.get('cap_loss_pct')}%` => `{tail.get('status')}`.",
     ])
+    warnings = report.get("cap_warnings") or []
+    if warnings:
+        # OWNER-DEC-CBE-20260915 section 8: advisory cap warnings must be rendered, never a
+        # silent no-op (section 70).
+        lines.append(
+            f"- Advisory concentration cap warnings (`{len(warnings)}`, no longer a hard cap):"
+        )
+        for warning in warnings:
+            lines.append(
+                f"  - `{warning.get('cap')}` `{warning.get('key')}`: "
+                f"`{warning.get('value')}` vs threshold `{warning.get('threshold')}` "
+                f"({warning.get('unit')}); sleeves: {warning.get('affected_sleeves')}"
+            )
     rejects = report.get("concentration_reject") or []
     if rejects:
-        lines.append(f"- Machine-readable rejection count: `{len(rejects)}`.")
+        lines.append(f"- Hard-guard rejection count: `{len(rejects)}`.")
     return "\n".join(lines)
 
 

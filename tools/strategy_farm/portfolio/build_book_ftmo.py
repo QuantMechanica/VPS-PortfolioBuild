@@ -35,6 +35,8 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     write_text,
 )
 from tools.strategy_farm.portfolio import concentration_tail
+from tools.strategy_farm.portfolio import portfolio_correlation
+from tools.strategy_farm.portfolio import risk_diagnostics
 from tools.strategy_farm.portfolio.ftmo_probability_contract import (
     load_probability_contract,
 )
@@ -304,22 +306,29 @@ def select_under_aggregate_control(
             if worst is None or abs_corr > worst[0]:
                 worst = (abs_corr, peer)
         if unverified_peer is not None:
+            # A genuinely unmeasured pairwise correlation stays fail-closed
+            # (OWNER-DEC-CBE-20260915 section 71 keeps CLUSTER_CORRELATION_UNVERIFIED hard).
             decisions[key] = (False, "CLUSTER_CORRELATION_UNVERIFIED", {
                 "peer": f"{unverified_peer[0]}:{unverified_peer[1]}",
             })
             continue
+        admitted.append(key)
+        admitted_weight += unit_weight
         if worst is not None and worst[0] >= max_pairwise_correlation:
-            decisions[key] = (False, "CLUSTER_CORRELATION_EXCLUDED", {
+            # OWNER-DEC-CBE-20260915 section 8: the fixed pairwise-correlation cutoff is no
+            # longer an absolute exclusion.  A measured high correlation is admitted-with-WARN
+            # and recorded in the dependence panel; portfolio-level risk stays the hard guard.
+            decisions[key] = (True, "ADMITTED_CORRELATION_WARN", {
                 "peer": f"{worst[1][0]}:{worst[1][1]}",
                 "correlation": worst[0],
                 "threshold": max_pairwise_correlation,
+                "severity": "WARN",
+                "superseded_hard_cap": risk_diagnostics.SUPERSEDING_DECISION,
             })
-            continue
-        admitted.append(key)
-        admitted_weight += unit_weight
-        decisions[key] = (True, "ADMITTED_AGGREGATE_CONTROL", {
-            "max_peer_correlation": (worst[0] if worst is not None else None),
-        })
+        else:
+            decisions[key] = (True, "ADMITTED_AGGREGATE_CONTROL", {
+                "max_peer_correlation": (worst[0] if worst is not None else None),
+            })
 
     for row in assessments:
         key = (int(row["ea_id"]), str(row["symbol"]))
@@ -350,6 +359,29 @@ def select_under_aggregate_control(
     account_weight_budget_ratification = _threshold_ratification(
         account_weight_budget, WORKING_DEFAULT_ACCOUNT_WEIGHT_BUDGET
     )
+    # OWNER-DEC-CBE-20260915 section 8: correlation warnings (admitted-with-WARN pairs) and
+    # a dependence panel (measured pairwise correlation per admitted pair) so a relaxed cap
+    # never becomes a silent no-op (section 70).
+    correlation_warnings = [
+        {
+            "ea_id": key[0],
+            "symbol": key[1],
+            "a": f"{key[0]}:{key[1]}",
+            "b": detail.get("peer"),
+            "correlation": detail.get("correlation"),
+            "threshold": detail.get("threshold"),
+            "severity": "WARN",
+        }
+        for key, (admitted_flag, reason, detail) in sorted(decisions.items())
+        if admitted_flag and reason == "ADMITTED_CORRELATION_WARN"
+    ]
+    dependence_panel = [
+        portfolio_correlation.dependence_panel_entry(
+            pair["a"], pair["b"], pairwise_correlation=pair["correlation"],
+            reference=max_pairwise_correlation,
+        )
+        for pair in admitted_pairs
+    ]
     control_summary = {
         "policy": "AGGREGATE_CORRELATION_CLUSTER_AND_ACCOUNT_RISK_BUDGET",
         "max_pairwise_correlation": max_pairwise_correlation,
@@ -362,6 +394,8 @@ def select_under_aggregate_control(
         "admitted_weight": admitted_weight,
         "admitted_pairs": admitted_pairs,
         "max_admitted_pairwise_correlation": max_admitted,
+        "correlation_warnings": correlation_warnings,
+        "dependence_panel": dependence_panel,
         "excluded": [
             {"ea_id": key[0], "symbol": key[1], "reason": reason, **detail}
             for key, (admitted_flag, reason, detail) in sorted(decisions.items())
@@ -581,8 +615,12 @@ def build_ftmo_manifest(
     )
     fund_pass = bool(selected) and all(row["fund_score"] >= FUND_SCORE_FLOOR for row in bindings)
     admitted_pair_corrs = [p["correlation"] for p in aggregate_control["admitted_pairs"]]
+    # OWNER-DEC-CBE-20260915 section 8: a pairwise correlation at/above the (now advisory)
+    # cutoff no longer fails the aggregate control -- it is admitted-with-WARN.  The
+    # surviving hard requirements are: every admitted pair has a MEASURED correlation
+    # (unknown stays fail-closed, section 71) and the account risk budget is respected.
     aggregate_control_pass = bool(selected) and all(
-        c is not None and abs(c) < max_pairwise_correlation for c in admitted_pair_corrs
+        c is not None for c in admitted_pair_corrs
     ) and aggregate_control["admitted_weight"] <= account_weight_budget + 1e-9
     aggregate_control["passed"] = aggregate_control_pass
     checks = {
@@ -591,11 +629,18 @@ def build_ftmo_manifest(
         "density": density["passed"],
         "cost_and_swap_snapshot_coverage": cost_pass,
         "bootstrap_lower_bound_at_least_0p80": bootstrap["passed"],
-        "concentration_tail_caps": concentration["builder_eligible"],
+        # builder_eligible is now hard-guard-clean (portfolio joint-tail) + OWNER-ratified
+        # policy; static concentration-cap breaches are advisory (risk_diagnostics.cap_warnings).
+        "concentration_tail_hard_guards": concentration["builder_eligible"],
     }
     bar_met = all(checks.values())
     status = "BAR_MET_OWNER_REVIEW" if bar_met else "BAR_NOT_MET"
     sleeve_hash = sha256_bytes(canonical_json(bindings).encode("ascii"))
+    diagnostics = risk_diagnostics.build(
+        concentration,
+        dependence_panel=aggregate_control.get("dependence_panel"),
+        correlation_warnings=aggregate_control.get("correlation_warnings"),
+    )
     return {
         "schema": "qm.dual-book-manifest/v1",
         "lane": "Q11_FTMO",
@@ -622,6 +667,7 @@ def build_ftmo_manifest(
         ),
         "aggregate_control": aggregate_control,
         "concentration_tail": concentration,
+        "risk_diagnostics": diagnostics,
         "density": density,
         "ftmo_cost_swap": cost,
         "phase1_bootstrap": bootstrap,
@@ -651,6 +697,8 @@ def evidence_markdown(manifest: Mapping[str, Any], manifest_path: Path) -> str:
 {checks}
 
 {concentration_tail.markdown_panel(manifest['concentration_tail'])}
+
+{risk_diagnostics.markdown(manifest.get('risk_diagnostics') or {})}
 
 The manifest remains parked. A paid challenge or any live action is outside this tool and requires the OWNER ceremony after every bar is evidenced.
 """

@@ -40,6 +40,7 @@ from tools.strategy_farm.portfolio.book_builder_common import (
     write_text,
 )
 from tools.strategy_farm.portfolio import concentration_tail
+from tools.strategy_farm.portfolio import risk_diagnostics
 from tools.strategy_farm.portfolio.portfolio_common import load_streams
 from tools.strategy_farm import book_build_guard, risk_freeze
 
@@ -205,7 +206,11 @@ def _gate(proposal: Mapping[str, Any], incumbent: Mapping[str, Any]) -> dict[str
 
 
 def _final_status(gate: Mapping[str, Any], concentration: Mapping[str, Any]) -> str:
-    if concentration.get("concentration_reject"):
+    # OWNER-DEC-CBE-20260915 section 8: only a portfolio-level hard guard (joint-tail /
+    # venue-daily-loss) or the fail-closed data-validity guard blocks the book.  Static
+    # concentration-cap breaches are advisory (surfaced as risk_diagnostics.cap_warnings)
+    # and no longer force CONCENTRATION_CAP_BREACH.
+    if risk_diagnostics.hard_guard_rejects(concentration):
         return "CONCENTRATION_CAP_BREACH"
     if concentration.get("builder_eligible") is not True:
         return "CONCENTRATION_POLICY_UNRATIFIED"
@@ -308,6 +313,7 @@ def build_dxz_manifest(
         })
     sleeve_hash = sha256_bytes(canonical_json(sleeves).encode("ascii"))
     status = _final_status(gate, concentration)
+    diagnostics = risk_diagnostics.build(concentration)
     return {
         "schema": "qm.dual-book-manifest/v1",
         "lane": "Q11_DXZ",
@@ -350,6 +356,7 @@ def build_dxz_manifest(
             "sources": stream_provenance,
         },
         "concentration_tail": concentration,
+        "risk_diagnostics": diagnostics,
         "schema_binding": file_binding(SCHEMA_PATH),
     }
 
@@ -374,7 +381,9 @@ def analysis_summary(manifest: Mapping[str, Any], *, analysis_only: bool = True)
         "concentration": {
             "builder_eligible": concentration.get("builder_eligible"),
             "concentration_reject": concentration.get("concentration_reject"),
+            "cap_warnings": concentration.get("cap_warnings"),
         },
+        "risk_diagnostics": (manifest.get("risk_diagnostics") or {}),
         "stream_roots": [part.get("root") for part in stream_basis.get("sources", [])],
         "deployment_action": manifest.get("deployment_action"),
         "autotrading_action": manifest.get("autotrading_action"),
@@ -403,9 +412,13 @@ def evidence_markdown(manifest: Mapping[str, Any], manifest_path: Path) -> str:
 
 {concentration_tail.markdown_panel(manifest['concentration_tail'])}
 
-`APPLY_RECOMMENDED` is emitted only when every incumbent and SP-C3 check passes
-under an OWNER-ratified cap policy. Application remains an OWNER ceremony outside
-this tool.
+{risk_diagnostics.markdown(manifest.get('risk_diagnostics') or {})}
+
+`APPLY_RECOMMENDED` is emitted only when the incumbent not-worse gate passes and no
+portfolio-level hard guard (joint-tail / venue-daily-loss) is breached, under an
+OWNER-ratified cap policy. Static concentration-cap breaches are advisory
+(`risk_diagnostics.cap_warnings`), per OWNER-DEC-CBE-20260915 section 8. Application
+remains an OWNER ceremony outside this tool.
 """
 
 

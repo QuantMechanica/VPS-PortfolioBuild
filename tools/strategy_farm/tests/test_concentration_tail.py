@@ -59,7 +59,11 @@ def _evaluate(
     )
 
 
-def test_three_sleeves_same_symbol_trigger_d1_reject(tmp_path: Path) -> None:
+def test_three_sleeves_same_symbol_trigger_d1_advisory_warning(tmp_path: Path) -> None:
+    # OWNER-DEC-CBE-20260915 section 8: a per-symbol concentration breach is now an ADVISORY
+    # warning, not a book refusal. The arithmetic is unchanged (the dimension row still reads
+    # BREACH), but it surfaces in cap_warnings (with the affected sleeves) instead of
+    # concentration_reject, and no longer blocks builder eligibility.
     keys = [(1, "EURUSD.DWX"), (2, "EURUSD.DWX"), (3, "EURUSD.DWX")]
     matrix = [[10.0, 5.0, 2.0] for _ in range(20)]
     report = _evaluate(tmp_path, keys, {key: 0.4 for key in keys}, matrix)
@@ -68,7 +72,50 @@ def test_three_sleeves_same_symbol_trigger_d1_reject(tmp_path: Path) -> None:
     assert symbol["stop_risk_pct"] == pytest.approx(1.2)
     assert symbol["cap_stop_risk_pct"] == pytest.approx(1.0)
     assert symbol["status"] == "BREACH"
-    assert any(row["dim"] == "symbol" for row in report["concentration_reject"])
+    # Advisory: no hard reject, book stays eligible under the ratified policy.
+    assert not any(row["dim"] == "symbol" for row in report["concentration_reject"])
+    assert report["concentration_reject"] == []
+    assert report["builder_eligible"] is True
+    warning = next(w for w in report["cap_warnings"] if w["cap"] == "symbol")
+    assert warning["value"] == pytest.approx(1.2)
+    assert warning["threshold"] == pytest.approx(1.0)
+    assert warning["severity"] == "WARN"
+    assert warning["affected_sleeves"] == ["1:EURUSD.DWX", "2:EURUSD.DWX", "3:EURUSD.DWX"]
+    assert warning["superseded_hard_cap"] == "OWNER-DEC-CBE-20260915"
+
+
+def test_family_cap_breach_is_advisory_and_book_still_builds(tmp_path: Path) -> None:
+    # A book that violates the family cap builds (builder_eligible True) but carries a
+    # structured family cap warning (OWNER-DEC-CBE-20260915 section 8).
+    keys = [(1, "EURUSD.DWX"), (2, "GBPUSD.DWX"), (3, "USDJPY.DWX"), (4, "AUDUSD.DWX")]
+    matrix = [[1.0, 2.0, 3.0, 4.0] for _ in range(20)]
+    report = _evaluate(
+        tmp_path, keys, {key: 0.35 for key in keys}, matrix,
+        families={key: "clone" for key in keys},
+    )
+    assert report["dimensions"]["family"]["rows"][0]["status"] == "BREACH"
+    assert report["concentration_reject"] == []
+    assert report["builder_eligible"] is True
+    family_warning = next(w for w in report["cap_warnings"] if w["cap"] == "family")
+    assert family_warning["key"] == "clone"
+    assert len(family_warning["affected_sleeves"]) == 4
+
+
+def test_portfolio_joint_tail_guard_still_fails_closed(tmp_path: Path) -> None:
+    # OWNER-DEC-CBE-20260915 section 8: the portfolio-level joint-tail / venue-daily-loss
+    # limit remains the surviving HARD guard -- a breach still fails the book closed.
+    keys = [(index + 1, f"S{index}.DWX") for index in range(6)]
+    matrix = [[10.0 for _ in keys] for _ in range(20)]
+    # Drive one catastrophic joint-tail day well past the venue daily-loss cap.
+    for column in range(6):
+        matrix[0][column] = -100_000.0
+    report = _evaluate(
+        tmp_path, keys, {key: 0.15 for key in keys}, matrix,
+        assets={key: ("fx", "indices", "metals")[index % 3] for index, key in enumerate(keys)},
+    )
+    assert report["tail"]["status"] == "BREACH"
+    assert any(row["dim"] == "joint_tail" for row in report["concentration_reject"])
+    assert report["passed"] is False
     assert report["builder_eligible"] is False
 
 
