@@ -38,6 +38,41 @@ RECEIPT_SCHEMA = "qm.dwx-m1-overlap-export-receipt/v2"
 EXPORT_MANIFEST_SCHEMA = dwx_m1_overlap_export_work_item.EXPORT_MANIFEST_SCHEMA
 FORBIDDEN_CUSTOM_API_TOKENS = (r"\bCustom[A-Za-z0-9_]*\s*\(",)
 
+# Per-chunk tick-copy journal written by QM_DWX_M1_Overlap_Export.mq5's
+# CopyChunk/JournalChunk next to each symbol's raw M1 CSV.
+CHUNK_JOURNAL_HEADER = [
+    "symbol", "chunk_start_epoch", "chunk_end_epoch", "phase", "attempt",
+    "copied", "error_code", "status",
+]
+
+# Completeness floor source: the P1 manifest's per-symbol downloaded_hours
+# (docs/ops/evidence/2026-09-15_dukascopy_p3_completion/p1_window_manifest_receipt.json,
+# schema qm.dukascopy-p3-p1-window/v1, sha256-bound download_manifest.jsonl
+# provenance) -- not a live Dukascopy-side count, so this classification
+# needs no network access and no T1 run to compute. downloaded_hours*60 is a
+# per-symbol upper bound on obtainable minutes; the session-closure allowance
+# below then converts it into a floor. Calibrated against the 2026-09-13
+# fixed-window reconciliation, which showed two populations: 27 FX/index
+# symbols at 83.8%-98.5% dukascopy_coverage (ordinary DWX/Dukascopy
+# session-accounting differences, not a defect) and 10 symbols at
+# 0.03%-2.3% (catastrophic short reads). The allowances below sit below the
+# ordinary population's worst case so a legitimate export still classifies
+# COMPLETE, while a catastrophic short read (or AUDCAD's 25-day hole, see
+# reconcile_overlap.SHORT_READ_GAP_WEEKDAY_HOURS for that specific case)
+# still classifies SHORT_READ.
+P1_WINDOW_MANIFEST_RECEIPT = (
+    REPO_ROOT
+    / "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/p1_window_manifest_receipt.json"
+)
+INDEX_COMMODITY_SYMBOLS = frozenset({
+    "GDAXI.DWX", "UK100.DWX", "NDX.DWX", "SP500.DWX", "WS30.DWX",
+    "XAUUSD.DWX", "XAGUSD.DWX", "XNGUSD.DWX", "XTIUSD.DWX",
+})
+SESSION_CLOSURE_ALLOWANCE_FRACTION = {
+    "fx": 0.20,
+    "index_commodity": 0.35,
+}
+
 
 def sha256_file(path: Path) -> str:
     return dwx_m1_overlap_export_work_item.sha256_file(Path(path))
@@ -98,6 +133,78 @@ def validate_mql_source(path: Path = SOURCE) -> dict[str, Any]:
         "period": "M1",
         "overlap_start_utc": dwx_m1_overlap_export_work_item.OVERLAP_START_TEXT,
         "overlap_end_utc": dwx_m1_overlap_export_work_item.OVERLAP_END_TEXT,
+    }
+
+
+def instrument_class(symbol: str) -> str:
+    return "index_commodity" if symbol in INDEX_COMMODITY_SYMBOLS else "fx"
+
+
+def load_expected_minutes(
+    path: Path = P1_WINDOW_MANIFEST_RECEIPT,
+) -> dict[str, int]:
+    payload = json.loads(Path(path).read_text(encoding="utf-8-sig"))
+    if (
+        payload.get("schema") != "qm.dukascopy-p3-p1-window/v1"
+        or payload.get("window_start_utc")
+        != dwx_m1_overlap_export_work_item.OVERLAP_START_TEXT
+        or payload.get("window_end_utc_exclusive")
+        != dwx_m1_overlap_export_work_item.OVERLAP_END_TEXT
+    ):
+        raise ValueError("P1 window manifest receipt contract mismatch")
+    expected: dict[str, int] = {}
+    for row in payload.get("symbols") or []:
+        symbol = str(row["symbol"]).strip().upper()
+        ceiling_minutes = int(row["downloaded_hours"]) * 60
+        allowance = SESSION_CLOSURE_ALLOWANCE_FRACTION[instrument_class(symbol)]
+        expected[symbol] = int(ceiling_minutes * (1.0 - allowance))
+    if set(expected) != set(dukascopy_common.CANONICAL_SYMBOLS):
+        raise ValueError("P1 window manifest receipt symbol coverage mismatch")
+    return expected
+
+
+def parse_chunk_journal(path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with Path(path).open(encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle)
+        if reader.fieldnames != CHUNK_JOURNAL_HEADER:
+            raise ValueError(f"chunk journal schema mismatch: {path}")
+        for raw in reader:
+            rows.append(
+                {
+                    "symbol": raw["symbol"],
+                    "chunk_start_epoch": int(raw["chunk_start_epoch"]),
+                    "chunk_end_epoch": int(raw["chunk_end_epoch"]),
+                    "phase": raw["phase"],
+                    "attempt": int(raw["attempt"]),
+                    "copied": int(raw["copied"]),
+                    "error_code": int(raw["error_code"]),
+                    "status": raw["status"],
+                }
+            )
+    return rows
+
+
+def short_chunks_from_journal(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "chunk_start_epoch": row["chunk_start_epoch"],
+            "chunk_end_epoch": row["chunk_end_epoch"],
+        }
+        for row in rows
+        if row["status"] == "ZERO_TICK_CHUNK"
+    ]
+
+
+def classify_completeness(
+    symbol: str, rows: int, expected_minutes: Mapping[str, int]
+) -> dict[str, Any]:
+    floor = int(expected_minutes[symbol])
+    ratio = (rows / floor) if floor > 0 else 0.0
+    return {
+        "expected_minutes": floor,
+        "completeness_ratio": ratio,
+        "status": "COMPLETE" if rows >= floor else "SHORT_READ",
     }
 
 
@@ -207,13 +314,20 @@ def canonicalize_export_set(
     output_dir = Path(output_dir).resolve()
     symbols = dwx_m1_overlap_export_work_item.load_symbols()
     expected_names = {f"{symbol}_M1.csv" for symbol in symbols}
+    # The per-symbol chunk journal (item 1 of the 2026-09-15 export-fix
+    # ticket) is written by the mq5 script beside each M1 CSV but is
+    # optional here: older exports (and existing fixtures) predate it, and
+    # its absence must not turn into a file-set mismatch.
+    optional_chunk_names = {f"{symbol}_M1_chunks.csv" for symbol in symbols}
     actual_names = {path.name for path in raw_dir.glob("*.csv") if path.is_file()}
-    if actual_names != expected_names:
+    missing = expected_names - actual_names
+    unexpected = actual_names - expected_names - optional_chunk_names
+    if missing or unexpected:
         raise ValueError(
             "raw M1 export file set mismatch: "
-            f"missing={sorted(expected_names - actual_names)} "
-            f"extra={sorted(actual_names - expected_names)}"
+            f"missing={sorted(missing)} extra={sorted(unexpected)}"
         )
+    expected_minutes = load_expected_minutes()
     raw_copy_dir = output_dir / "raw"
     final_dir = output_dir / "dwx_m1"
     raw_copy_dir.mkdir(parents=True, exist_ok=False)
@@ -225,6 +339,12 @@ def canonicalize_export_set(
         filename = f"{symbol}_M1.csv"
         raw_copy = raw_copy_dir / filename
         shutil.copyfile(raw_dir / filename, raw_copy)
+        chunk_filename = f"{symbol}_M1_chunks.csv"
+        chunk_source = raw_dir / chunk_filename
+        chunk_rows: list[dict[str, Any]] = []
+        if chunk_source.is_file():
+            shutil.copyfile(chunk_source, raw_copy_dir / chunk_filename)
+            chunk_rows = parse_chunk_journal(chunk_source)
         final_path = final_dir / filename
         try:
             binding = canonicalize_raw_symbol(
@@ -242,8 +362,20 @@ def canonicalize_export_set(
             continue
         binding["raw_path"] = str(raw_copy.resolve())
         binding["raw_sha256"] = sha256_file(raw_copy)
+        binding["short_chunks"] = short_chunks_from_journal(chunk_rows)
+        binding.update(
+            classify_completeness(symbol, int(binding["rows"]), expected_minutes)
+        )
         bindings.append(binding)
         total_rows += int(binding["rows"])
+    # A symbol is COMPLETE only when exported minutes >= its expected-minutes
+    # floor; SHORT_READ never becomes COMPLETE by any downstream aggregation
+    # -- canonicalization_status stays PARTIAL/COMPLETE on parse success only,
+    # short_read_symbols is the separate, additive completeness gate that
+    # run()'s overall status also enforces.
+    short_read_symbols = [
+        str(binding["symbol"]) for binding in bindings if binding["status"] == "SHORT_READ"
+    ]
     canonicalization_status = "COMPLETE" if not failed_symbols else "PARTIAL"
     price_scale = dwx_m1_overlap_export_work_item._price_scale_binding()
     manifest = {
@@ -262,6 +394,8 @@ def canonicalize_export_set(
         "successful_symbol_count": len(bindings),
         "failed_symbol_count": len(failed_symbols),
         "failed_symbols": failed_symbols,
+        "short_read_symbols": short_read_symbols,
+        "short_read_symbol_count": len(short_read_symbols),
         "total_rows": total_rows,
         "price_scale_csv": price_scale,
         "reconcile_overlap": {
@@ -284,6 +418,8 @@ def canonicalize_export_set(
         "successful_symbol_count": len(bindings),
         "failed_symbol_count": len(failed_symbols),
         "failed_symbols": failed_symbols,
+        "short_read_symbols": short_read_symbols,
+        "short_read_symbol_count": len(short_read_symbols),
         "total_rows": total_rows,
         "schema": FINAL_HEADER,
         "overlap_start_utc": dwx_m1_overlap_export_work_item.OVERLAP_START_TEXT,
@@ -603,6 +739,8 @@ def run(
                     "successful_symbol_count",
                     "failed_symbol_count",
                     "failed_symbols",
+                    "short_read_symbols",
+                    "short_read_symbol_count",
                 ):
                     result[key] = manifest_binding[key]
             except Exception as exc:
@@ -625,6 +763,10 @@ def run(
                 and result.get("failed_symbol_count") == 0
                 and manifest_binding.get("symbols") == 37
                 and int(manifest_binding.get("total_rows") or 0) > 0
+                # SHORT_READ never becomes COMPLETE by any downstream
+                # aggregation: a single short-read symbol fails the receipt
+                # even though written_rows>0 and canonicalization succeeded.
+                and not manifest_binding.get("short_read_symbol_count")
             )
             else "FAIL"
         )
@@ -649,6 +791,8 @@ def run(
             "successful_symbol_count": result.get("successful_symbol_count", 0),
             "failed_symbol_count": result.get("failed_symbol_count", 0),
             "failed_symbols": result.get("failed_symbols", []),
+            "short_read_symbol_count": result.get("short_read_symbol_count", 0),
+            "short_read_symbols": result.get("short_read_symbols", []),
             "signed_archive_unchanged": result.get(
                 "signed_archive_unchanged", False
             ),
@@ -661,6 +805,12 @@ def run(
                     "M1 canonicalization completed with "
                     f"{result.get('failed_symbol_count', 0)} failed symbol(s)"
                     if result.get("failed_symbol_count", 0)
+                    else None
+                )
+                or (
+                    f"SHORT_READ symbol(s) below the expected-minutes floor: "
+                    f"{', '.join(result.get('short_read_symbols', []))}"
+                    if result.get("short_read_symbol_count", 0)
                     else None
                 )
             ),

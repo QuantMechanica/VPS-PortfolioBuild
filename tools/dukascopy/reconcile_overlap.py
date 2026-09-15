@@ -63,6 +63,18 @@ REQUIRED_OVERLAP_END = dt.datetime(2026, 4, 1, tzinfo=UTC)
 # affected symbol, so 0.5 cleanly separates the two populations without
 # being tunable into a pass.
 SHORT_READ_COVERAGE_RATIO = 0.5
+# A genuine short-read gap (AUDCAD 2026-09-13: dense - 25-day hole - dense,
+# 84.48% aggregate dukascopy_coverage) can sit inside the ordinary bilateral
+# shortfall band and evade SHORT_READ_COVERAGE_RATIO. Instead of the coverage
+# ratio, measure the longest silent interval between consecutive DWX minutes,
+# counting only the UTC-weekday portion of that interval (a coarse proxy for
+# "inside a trading week", not an exact FX session calendar): an ordinary
+# Friday-close/Sunday-open weekend contributes only a couple of weekday hours
+# at its edges, while AUDCAD's 25-day hole contributes ~18 weekday days. 24h
+# of weekday-only silence cleanly separates the two without touching the
+# fixed reconciliation thresholds.
+SHORT_READ_GAP_WEEKDAY_HOURS = 24.0
+_UTC_SATURDAY = 5  # datetime.weekday(): Monday=0 .. Sunday=6
 
 
 @dataclass(frozen=True)
@@ -205,6 +217,61 @@ def read_m1_csv(path: Path) -> dict[int, Bar]:
     if ordered != sorted(ordered):
         raise ValueError(f"M1 timestamps are not strictly ordered in {path}")
     return bars
+
+
+def _weekday_seconds_in_range(start_s: int, end_s: int) -> int:
+    """UTC-weekday (Mon-Fri calendar day) seconds within the half-open range.
+
+    A coarse UTC-calendar-day proxy for "trading week", not an exact FX
+    session calendar (Friday evening close / Sunday evening open); see
+    SHORT_READ_GAP_WEEKDAY_HOURS.
+    """
+
+    if end_s <= start_s:
+        return 0
+    total = 0
+    cursor = start_s
+    while cursor < end_s:
+        day_start = (cursor // 86400) * 86400
+        day_end = day_start + 86400
+        segment_end = min(day_end, end_s)
+        weekday = dt.datetime.fromtimestamp(day_start, tz=UTC).weekday()
+        if weekday < _UTC_SATURDAY:
+            total += segment_end - cursor
+        cursor = segment_end
+    return total
+
+
+def longest_weekday_gap(
+    dwx_times: Iterable[int], dukascopy_times: Iterable[int]
+) -> dict[str, object]:
+    """Longest silent DWX interval, by weekday-only duration, that Dukascopy
+    proves had real ticks -- i.e. the market was open and DWX alone is
+    missing the data, not a stretch where both sources are equally silent
+    (an ordinary weekend, or a narrow shared test/probe window)."""
+
+    dwx_ordered = sorted(set(dwx_times))
+    duk_ordered = sorted(set(dukascopy_times))
+    best_weekday_seconds = 0
+    best_gap: tuple[int, int] | None = None
+    duk_index = 0
+    for previous, current in zip(dwx_ordered, dwx_ordered[1:]):
+        gap_start = previous + M1_BAR_SECONDS
+        if current <= gap_start:
+            continue
+        while duk_index < len(duk_ordered) and duk_ordered[duk_index] < gap_start:
+            duk_index += 1
+        if not (duk_index < len(duk_ordered) and duk_ordered[duk_index] < current):
+            continue
+        weekday_seconds = _weekday_seconds_in_range(gap_start, current)
+        if weekday_seconds > best_weekday_seconds:
+            best_weekday_seconds = weekday_seconds
+            best_gap = (previous, current)
+    return {
+        "longest_weekday_gap_seconds": best_weekday_seconds,
+        "longest_weekday_gap_start_broker_epoch": best_gap[0] if best_gap else None,
+        "longest_weekday_gap_end_broker_epoch": best_gap[1] if best_gap else None,
+    }
 
 
 def estimate_best_offset_seconds(
@@ -380,8 +447,15 @@ def reconcile_symbol(
     compute_seconds = time.monotonic() - started
     checks["compute_budget"] = compute_seconds < MAX_COMPUTE_SECONDS
     is_short_read = dukascopy_coverage < SHORT_READ_COVERAGE_RATIO
+    gap_info = longest_weekday_gap(dwx_overlap.keys(), duk_overlap.keys())
+    is_short_read_gap = (
+        float(gap_info["longest_weekday_gap_seconds"])
+        > SHORT_READ_GAP_WEEKDAY_HOURS * 3600.0
+    )
     if all(checks.values()):
         status = "PASS"
+    elif is_short_read_gap:
+        status = "SHORT_READ_GAP"
     elif is_short_read:
         status = "SHORT_READ"
     else:
@@ -410,6 +484,8 @@ def reconcile_symbol(
         "typical_spread_source": typical_spread_source,
         "close_delta_p95_limit_points": close_limit,
         "short_read_threshold": SHORT_READ_COVERAGE_RATIO,
+        "short_read_gap_threshold_hours": SHORT_READ_GAP_WEEKDAY_HOURS,
+        **gap_info,
         **metrics,
         "dst_windows": dst_windows,
         "checks": checks,

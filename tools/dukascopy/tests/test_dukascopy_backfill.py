@@ -538,3 +538,42 @@ def test_short_read_status_is_distinct_from_an_ordinary_coverage_failure(
     assert result["dukascopy_coverage"] < reconcile_overlap.SHORT_READ_COVERAGE_RATIO
     assert result["status"] == "SHORT_READ"
     assert result["checks"]["session_coverage"] is False
+
+
+def test_short_read_gap_status_flags_a_multiweek_weekday_hole(tmp_path: Path) -> None:
+    """AUDCAD 2026-09-13: dense - 25-day hole - dense, 84.48% aggregate
+    dukascopy_coverage -- comfortably inside the >0.5 "ordinary" coverage
+    band, so SHORT_READ_COVERAGE_RATIO alone never caught it and it was
+    classified a generic FAIL (see docs/ops/evidence/2026-09-15_dukascopy_p3_defects/README.md).
+    The gap-based check on the DWX side's own longest silent weekday interval
+    must instead label this class SHORT_READ_GAP."""
+
+    anchor = int(dt.datetime(2026, 1, 5, tzinfo=UTC).timestamp())  # Monday 00:00 UTC
+    step = 600  # 10 minutes; coarser than 1-minute bars, preserves exact gap durations
+    day = 86400
+    block1_end = anchor + 5 * day  # Mon-Fri dense
+    gap_end = block1_end + 4 * day  # Sat, Sun, Mon, Tue silent (>=48h of weekday)
+    block2_end = gap_end + 5 * day  # Wed-Sun dense
+
+    def _points(start: int, end: int) -> list[int]:
+        return list(range(start, end, step))
+
+    dukascopy_points = _points(anchor, block2_end)
+    dwx_points = _points(anchor, block1_end) + _points(gap_end, block2_end)
+    dukascopy_rows = [(value, 1.10000, 10, 1.0) for value in dukascopy_points]
+    dwx_rows = [(value, 1.10000, 10, 1.0) for value in dwx_points]
+    dukascopy = tmp_path / "duk_audcad.csv"
+    dwx = tmp_path / "dwx_audcad.csv"
+    _write_header_m1(dukascopy, dukascopy_rows)
+    _write_header_m1(dwx, dwx_rows)
+
+    result = reconcile_overlap.reconcile_symbol(
+        symbol="AUDCAD.DWX", dukascopy_csv=dukascopy, dwx_csv=dwx
+    )
+    assert result["dwx_coverage"] == pytest.approx(1.0)
+    assert result["dukascopy_coverage"] > reconcile_overlap.SHORT_READ_COVERAGE_RATIO
+    assert result["checks"]["session_coverage"] is False
+    assert result["longest_weekday_gap_seconds"] > (
+        reconcile_overlap.SHORT_READ_GAP_WEEKDAY_HOURS * 3600
+    )
+    assert result["status"] == "SHORT_READ_GAP"
