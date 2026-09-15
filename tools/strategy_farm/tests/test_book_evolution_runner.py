@@ -302,3 +302,18 @@ class OwnerCardIdempotencyTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_runtime_verify_defaults_to_previous_weeks_closed_cut(tmp_path, monkeypatch):
+    """Monday runtime-verify must target the Friday cut of the previous ISO week."""
+    import datetime as _dt
+    from tools.strategy_farm import book_evolution_runner as ber
+    root = tmp_path / "be"
+    friday = _dt.date(2026, 9, 18)
+    monday = _dt.date(2026, 9, 21)
+    assert ber.iso_week_of(friday) == "2026-W38" and ber.iso_week_of(monday) == "2026-W39"
+    cut = ber.cut_dir(root, "2026-W38", "c1")
+    cut.mkdir(parents=True)
+    (cut / "cut_manifest.json").write_text('{"schema": "qm.book-evolution-cut/v1", "status": "CLOSED", "cut_id": "c1", "iso_week": "2026-W38"}', encoding="utf-8")
+    monkeypatch.setattr(ber, "_now", lambda: _dt.datetime(2026, 9, 21, 6, 30, tzinfo=_dt.timezone.utc))
+    assert ber.latest_week_with_closed_cut(root) == "2026-W38"

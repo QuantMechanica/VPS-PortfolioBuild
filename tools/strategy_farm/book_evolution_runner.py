@@ -840,6 +840,25 @@ def _default_live_profile_dir() -> Path:
         return Path(r"C:\QM\mt5\T_Live\MT5_Base\MQL5\Profiles\Charts\DarwinexZero_Book2_LiveOps")
 
 
+def latest_week_with_closed_cut(root: Path, cut_id: str | None = None, *, lookback_weeks: int = 3) -> str:
+    """Return the most recent ISO week (this week first, then earlier) that holds a CLOSED cut.
+
+    ISO weeks run Monday..Sunday, so the Monday runtime-verify task runs in week W+1
+    while the OWNER acted on the Friday cut of week W (review finding 2026-09-15).
+    """
+    root = Path(root)
+    day = _now().date()
+    for _ in range(lookback_weeks + 1):
+        week = iso_week_of(day)
+        try:
+            cid = resolve_cut_id(root, week, cut_id)
+            _assert_closed_cut(cut_dir(root, week, cid))
+            return week
+        except Exception:  # noqa: BLE001 - probe the previous week
+            day = day - dt.timedelta(days=7)
+    raise BookEvolutionError(f"no CLOSED cut in the last {lookback_weeks + 1} ISO weeks under {root}")
+
+
 def runtime_verify(
     *,
     iso_week: str | None = None,
@@ -855,7 +874,8 @@ def runtime_verify(
     FTMO terminal, or any state outside its own report.
     """
     root = Path(root)
-    week = iso_week or iso_week_of(_now().date())
+    # Default to the most recent CLOSED cut (Monday belongs to ISO week W+1).
+    week = iso_week or latest_week_with_closed_cut(root, cut_id)
     cid = resolve_cut_id(root, week, cut_id)
     cut = cut_dir(root, week, cid)
     _assert_closed_cut(cut)

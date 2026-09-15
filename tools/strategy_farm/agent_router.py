@@ -558,6 +558,21 @@ RECYCLE_MAX_ATTEMPTS = 3
 CLOSING_PIPELINE_PHASES = ("Q10", "P8")
 LIMBO_STATES = ("RECYCLE", "APPROVED", "PIPELINE")
 
+# Controlled parallelism (OWNER-DEC-CBE-20260915 §24): running multiple research /
+# mechanization / coding / review lanes at once is EXPRESSLY ALLOWED - the old
+# absolute "one at a time" restriction is superseded. `max_parallel` is the router-
+# side cap on concurrent IN_PROGRESS routes per lane; the launcher's --max-sessions
+# and the quota flags (CODEX_LOW_TOKENS / CLAUDE_DISABLED / AGY_LOW_QUOTA) remain
+# the runtime PACING knobs (they change volume, never depth). The per-lane caps
+# below are the OWNER-sanctioned concurrency ceilings and are unchanged by this
+# directive: codex 5 and claude 3 are the audited-eligible ceilings (the Claude
+# fan-out defect that made claude>1 unsafe is fixed by the per-task exec-lease in
+# run_agent_orchestration_task.py, so claude=3 is now safe controlled parallelism,
+# not a duplication multiplier); gemini 2 is its research ceiling. Two lanes stay
+# pinned: kimi at max_parallel 1 because its adapter is machine-wide single-flight
+# (OAuth refresh race) - never raise it; owner at max_parallel 0 because it is the
+# human video lane with no worker process. Raising a cap above these is a separate
+# OWNER decision, not implied by §24.
 DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
     "codex": {
         "enabled": True,
