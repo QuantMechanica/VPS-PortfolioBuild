@@ -36,7 +36,9 @@ Merge executed by Kimi interim per §38/§39/§40 (reviews on disk = independent
 ## New EAs implemented
 
 - **QM5_41475_cash-window-index-continuation-h1** — worktree `C:\QM\worktrees\kimi-hcw-60915` (branch `agents/kimi-hcw-20260915`), commits `807038391e` (card+prereg) → `1c1896ed23` (EA+setfiles) → `b053b3670b` (receipt) → `b18a46b5cf` (fixes). V5 skeleton + EA-dir module `QM41475_CashWindowCore.mqh`; UTC sessions via QM_DSTAware (13–17 entry / 20 flatten / Fri 17 cutoff); closed-bar breakout of first N session bars + EMA confirm; ATR stop 1.0×; TP 1.75R; 6-bar time stop; shock/spread-median/fail-closed-news/daily −1%/weekly −2%/one-entry-per-day filters; **Design-2 `QM_ChartPanelCompare` panel integrated** (tester-bypassed); SPEC.md + visualization_spec.md. **Compile: 0 errors 0 warnings** (MetaEditor vs staged include tree; log in evidence). 21 allocator/precheck/resolver tests pass.
-- **STATUS = REVIEW_PENDING.** Blocked at magic allocation: governed allocator accepted the card but refuse fail-closed because **QM5_11924 / QM5_11941 EA dirs exist only as uncommitted content in the canonical worktree** (allocated 2026-09-13, never committed) — no clean worktree can regenerate the resolver without dropping them. No registry hand-edits done. **Unblock for Fable:** commit those two orphan EA dirs (verify content first!) or OWNER-reviewed `--allow-dropped`, then rerun allocator from the H-CW worktree → gen_setfile (`build_hash: pending`) → governed COMPILE_EA + smoke on a free terminal.
+- **STATUS = REVIEW_PENDING.** ~~Blocked at magic allocation~~ **ALLOCATION UNBLOCKED 2026-09-15 ~23:45Z**: card+prereg cherry-picked to main (`c062742682`), governed allocator run from the canonical worktree (`--repo C:/QM/repo`, default — sees the on-disk 11924/11941 dirs), committed `57d48627e4` (magic **414750000/414750001/414750002** = NDX/GDAXI/SP500 slots 0/1/2; 21/21 allocator verification tests pass). The orphan-dir inconsistency (11924/11941 gitignored docs-only skeletons vs active registry rows) remains for Fable to settle properly.
+- Final branch state `agents/kimi-hcw-20260915` @ `86e166f26f`: all 6 setfiles canonically generated (build_hash `pending` = correct pre-compile value; real hash is stamped by the governed COMPILE_EA lane), `.ex5` rebuilt against the new resolver (0 errors/0 warnings, sha `99126310…60461`, uncommitted per EX5_COMMIT_GUARD), 21/21 tests, lint clean. Smoke: skipped (farm-reservation gate writes factory state = outside delegation; T6/T8 reserved by other smoke jobs) — recorded acceptance rule: governed smoke on NDX.DWX, ≥1 trade or documented zero-trade reason.
+- **Integration note for Fable:** the H-CW branch merged ONLY the allocation commit `57d48627e4`, not full main (full merge surfaces Q14–Q16 factory-file replay add/add conflicts between lineages — agent-4 reset that attempt, documented in its receipt). When promoting the EA later: merge EA dir `framework/EAs/QM5_41475_cash-window-index-continuation-h1/` + SPEC/visualization_spec + setfiles; take main's side for everything else.
 - Evidence: `docs/ops/evidence/2026-09-15_kimi_hcw/RECEIPT.md`.
 
 ## Factory work enqueued
@@ -61,7 +63,7 @@ Inspection complete (agent-6): shell reusable today — include `QM_ChartPanelCo
 
 ## Open blockers
 
-1. H-CW magic allocation (orphan EA dirs QM5_11924/11941 — Fable decision).
+1. ~~H-CW magic allocation~~ RESOLVED (see New EAs). Remaining H-CW items: independent non-Kimi critique (codex earliest 09-19) → then Q00 governance decision → governed COMPILE_EA (stamps setfile build_hash + .ex5 provenance) → smoke on a free terminal.
 2. News-calendar registry patch awaiting OWNER/Fable apply (kein AI-Commit). After apply, scheduled refresh self-heals (receipt 000017).
 3. 99 NEWS_CALENDAR_TAINTED holds need OWNER E1-C decision (Q09 manifest repin vs remeasurement) — orthogonal to #2.
 4. ba6-2 completion decision (Fable).
@@ -74,9 +76,9 @@ Live AutoTrading / T_Live / DXZ v2 cutover (OWNER-only, Sun 2026-09-20), FTMO pu
 
 ## Recommended next actions for Fable
 
-1. Verify + push main (95+ commits unpushed; includes the entire Wave-1 merge).
-2. Unblock H-CW allocation (commit orphan dirs 11924/11941 after content check) → setfiles → governed compile + smoke → independent critique (codex 09-19) → then Q00 governance decision.
+1. Verify + push main (~100 commits unpushed; includes the entire Wave-1 merge + H-CW card/prereg/allocation).
+2. H-CW: independent critique (codex 09-19) → Q00 governance decision → governed COMPILE_EA + smoke (acceptance rule in the H-CW receipt) → promote EA dir from `agents/kimi-hcw-20260915` per the integration note above.
 3. Apply the news-calendar registry patch (5 min, guarded applier ready) → verify self-heal; decide Q09 E1-C separately.
-4. Complete ba6-2 (design report + adversarial review) then merge; define Directive-3 Wave 2 (c1 routing, e2, f1/f2 tail-risk engine now unblocked).
+4. Complete ba6-2 (design report + adversarial review) then merge; define Directive-3 Wave 2 (c1 routing, e2, f1/f2 tail-risk engine now unblocked); settle the 11924/11941 orphan-dir inconsistency.
 5. Friday 2026-09-18: watch the first live BookEvolution ceremony (23:15 local evidence cut) — first run with merged runner (ai_capacity + live_sleeve_attribution state builds inside).
 6. Disposition Q08_DSR_CONTEXT_UNAVAILABLE class (49+ holds) — QM5_11563 retest likely lands there.
