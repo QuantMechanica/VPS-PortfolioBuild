@@ -1,0 +1,146 @@
+{
+  "activation": {
+    "default_behaviour": "unset/observed/0 -> live reservation table (terminal_worker) unchanged; this proposal is NOT applied.",
+    "env": "QM_RAM_TABLE",
+    "note": "This generator NEVER switches the live reservation table.",
+    "staged_rollout": "set QM_RAM_TABLE=calibrated at machine scope, then staggered worker reload; measure 1h; rollback by clearing the env.",
+    "value_to_activate": "calibrated"
+  },
+  "calibration_config": {
+    "cap_gb": 48.0,
+    "floor_gb": 6.0,
+    "formula": "proposed = clamp(ceil(p95*safety_factor + launch_margin_gb), floor, cap)",
+    "launch_margin_gb": 2.0,
+    "min_samples_for_proposal": 8,
+    "safety_factor": 1.5
+  },
+  "generated_at_utc": "2026-09-15T17:54:12.317380+00:00",
+  "index_reservation_by_symbol_base": {
+    "GDAXI": {
+      "delta_vs_live_gb": -8.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 24.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 35.444,
+      "n": 162,
+      "p95_peak_ram_gb": 9.311,
+      "proposed_reservation_gb": 16.0,
+      "safety_factor": 1.5
+    },
+    "NDX": {
+      "delta_vs_live_gb": 6.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 12.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 39.516,
+      "n": 284,
+      "p95_peak_ram_gb": 10.643,
+      "proposed_reservation_gb": 18.0,
+      "safety_factor": 1.5
+    },
+    "SP500": {
+      "live_reservation_gb": 44.0,
+      "low_evidence": true,
+      "n": 0,
+      "note": "EVIDENCE_MISSING: no full-window index run in window; keep live reservation (index full-window runs are rare in the ledger; see terminal_worker INDEX_TICK_RESERVATION_GB_BY_BASE).",
+      "proposed_reservation_gb": 44.0
+    },
+    "UK100": {
+      "delta_vs_live_gb": -3.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 24.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 17.86,
+      "n": 12,
+      "p95_peak_ram_gb": 12.061,
+      "proposed_reservation_gb": 21.0,
+      "safety_factor": 1.5
+    },
+    "WS30": {
+      "delta_vs_live_gb": -5.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 12.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 4.636,
+      "n": 31,
+      "p95_peak_ram_gb": 3.203,
+      "proposed_reservation_gb": 7.0,
+      "safety_factor": 1.5
+    }
+  },
+  "records_in_window": 19210,
+  "reservation_by_ram_class": {
+    "heavy_or_unknown_multisymbol": {
+      "live_reservation_gb": 44.0,
+      "low_evidence": true,
+      "n": 0,
+      "note": "EVIDENCE_MISSING: no run in window; keep live reservation.",
+      "proposed_reservation_gb": 44.0
+    },
+    "multi_leg_fx_basket": {
+      "delta_vs_live_gb": 4.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 44.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 33.512,
+      "n": 26,
+      "p95_peak_ram_gb": 33.378,
+      "proposed_reservation_gb": 48.0,
+      "safety_factor": 1.5
+    },
+    "opt_census_cell": {
+      "delta_vs_live_gb": 4.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 4.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 13.6,
+      "n": 16259,
+      "p95_peak_ram_gb": 3.379,
+      "proposed_reservation_gb": 8.0,
+      "safety_factor": 1.5
+    },
+    "ordinary": {
+      "delta_vs_live_gb": 12.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 8.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 39.18,
+      "n": 2421,
+      "p95_peak_ram_gb": 11.92,
+      "proposed_reservation_gb": 20.0,
+      "safety_factor": 1.5
+    },
+    "single_index_tick": {
+      "delta_vs_live_gb": -26.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 44.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 39.516,
+      "n": 489,
+      "p95_peak_ram_gb": 10.615,
+      "proposed_reservation_gb": 18.0,
+      "safety_factor": 1.5
+    },
+    "two_leg_fx_pair": {
+      "delta_vs_live_gb": 24.0,
+      "launch_margin_gb": 2.0,
+      "live_reservation_gb": 24.0,
+      "low_evidence": false,
+      "max_peak_ram_gb": 34.025,
+      "n": 15,
+      "p95_peak_ram_gb": 33.323,
+      "proposed_reservation_gb": 48.0,
+      "safety_factor": 1.5
+    },
+    "two_leg_metal_pair": {
+      "live_reservation_gb": 24.0,
+      "low_evidence": true,
+      "n": 0,
+      "note": "EVIDENCE_MISSING: no run in window; keep live reservation.",
+      "proposed_reservation_gb": 24.0
+    }
+  },
+  "schema": "qm.resource-footprints-proposal/v1",
+  "source_ledger": "D:\\QM\\reports\\state\\tester_memory_ledger.jsonl",
+  "window_days": 14
+}

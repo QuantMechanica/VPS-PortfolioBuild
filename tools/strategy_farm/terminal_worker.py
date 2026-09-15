@@ -51,6 +51,7 @@ import dl089_scheduling
 import longrun_scheduling_policy
 import next_cell_prestage
 import monitor_budget
+import resource_scheduler
 import tester_cache_budget
 import finished_terminal
 import opt_census_pruning
@@ -360,6 +361,83 @@ def _index_tick_reservation_gb(host_symbol: object) -> float:
     if not math.isfinite(value) or value <= 0.0:
         return SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
     return value
+
+
+# --- Calibrated reservation table (OWNER directive 3, 2026-09-15 §12) ---------
+# The empirical footprint read-model (resource_footprint_readmodel.py) writes a
+# calibrated reservation-table PROPOSAL to config/resource_footprints.v1.json
+# (schema qm.resource-footprints-proposal/v1: n, p95, safety margin, proposed
+# reservation per RAM class and per index base).  The directive requires that the
+# live reservation table is NOT switched automatically; the calibrated table is
+# an OPT-IN staged rollout gated by QM_RAM_TABLE=calibrated.  Default (unset /
+# "observed" / "0") reproduces today's flat/table behaviour byte-for-byte.  When
+# active, the calibrated value substitutes ONLY the a-priori flat reservation for
+# a class/base; the max(flat, measured, phase_floor) machinery, the RAM emergency
+# reaper backstop, and every admission floor are unchanged, so a calibrated value
+# can only ever be over-ridden UPWARD by a live measurement -- never a verdict.
+CALIBRATED_RAM_TABLE_ENV = "QM_RAM_TABLE"
+_CALIBRATED_RAM_TABLE_PATH = (
+    Path(__file__).resolve().parent / "config" / "resource_footprints.v1.json"
+)
+_CALIBRATED_RAM_TABLE_CACHE: dict[str, Any] = {"loaded": False, "by_class": {}, "by_base": {}}
+
+
+def _calibrated_ram_table_active() -> bool:
+    """OPT-IN: QM_RAM_TABLE=calibrated. Default off -> live table unchanged."""
+    return str(os.environ.get(CALIBRATED_RAM_TABLE_ENV, "")).strip().lower() == "calibrated"
+
+
+def _calibrated_ram_table() -> dict[str, Any]:
+    """Load and cache the calibrated proposal; fail-open to empty (no override)."""
+    if _CALIBRATED_RAM_TABLE_CACHE["loaded"]:
+        return _CALIBRATED_RAM_TABLE_CACHE
+    _CALIBRATED_RAM_TABLE_CACHE["loaded"] = True
+    try:
+        with open(_CALIBRATED_RAM_TABLE_PATH, "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, ValueError, TypeError):
+        return _CALIBRATED_RAM_TABLE_CACHE
+    if not isinstance(data, dict):
+        return _CALIBRATED_RAM_TABLE_CACHE
+    by_class: dict[str, float] = {}
+    for cls, entry in (data.get("reservation_by_ram_class") or {}).items():
+        if isinstance(entry, dict):
+            try:
+                gb = float(entry.get("proposed_reservation_gb"))
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(gb) and gb > 0.0:
+                by_class[str(cls)] = gb
+    by_base: dict[str, float] = {}
+    for base, entry in (data.get("index_reservation_by_symbol_base") or {}).items():
+        if isinstance(entry, dict):
+            try:
+                gb = float(entry.get("proposed_reservation_gb"))
+            except (TypeError, ValueError):
+                continue
+            if math.isfinite(gb) and gb > 0.0:
+                by_base[str(base).strip().upper()] = gb
+    _CALIBRATED_RAM_TABLE_CACHE["by_class"] = by_class
+    _CALIBRATED_RAM_TABLE_CACHE["by_base"] = by_base
+    return _CALIBRATED_RAM_TABLE_CACHE
+
+
+def _calibrated_flat_reservation_gb(
+    ram_class: str, host_symbol: object, live_flat_gb: float
+) -> float:
+    """Calibrated flat reservation for a class/base, or live_flat_gb when off/absent."""
+    if not _calibrated_ram_table_active():
+        return live_flat_gb
+    table = _calibrated_ram_table()
+    if ram_class == COMMIT_CLASS_SINGLE_INDEX_TICK:
+        base = str(host_symbol or "").strip().upper().split(".")[0]
+        gb = table["by_base"].get(base)
+        if gb is not None:
+            return float(gb)
+    gb = table["by_class"].get(ram_class)
+    if gb is not None:
+        return float(gb)
+    return live_flat_gb
 # 2026-09-11 17:4xZ (Orchestrator, infra repair under the Stehende Vollmacht
 # GRUEN zone; OWNER "Fabrik auf Anschlag"): a single ANNUAL OPT_CENSUS cell on
 # an index symbol inherited the 44 GB single_index_tick commit class although
@@ -1742,6 +1820,11 @@ def _ram_reservation_detail_for_candidate(
         )
     ram_class = _multisymbol_commit_class(item, payload, multisymbol)
     flat_gb = float(_commit_reservation_gb_for_item(ram_class, item, payload))
+    # OPT-IN calibrated table (QM_RAM_TABLE=calibrated, directive 3 §12): replace
+    # only the a-priori flat reservation; measured/floor semantics are unchanged.
+    flat_gb = _calibrated_flat_reservation_gb(
+        ram_class, _work_item_test_symbol(item, payload), flat_gb
+    )
     measured_gb = None
     phase_floor_gb = None
     if not multisymbol:
@@ -2801,6 +2884,190 @@ def _drain_abandon(
     return new_state, events
 
 
+# --- Resource-aware admission seam (OWNER directive 3, 2026-09-15 §12, §44G) --
+# The head-of-line block (factory_bottleneck.json 2026-09-15: "8/10 terminals
+# self-parked in drain_predrain while 355 claimable pending rows wait") happens
+# when a heavy (>=24 GB) row at the claim head arms an exclusive pre-drain that
+# parks the whole fleet, even though many smaller rows would fit the current
+# headroom.  When QM_RESOURCE_SCHEDULER is on, this seam suppresses that
+# pre-drain arm whenever a fitting smaller candidate exists in the head window
+# and the fleet is not quiet -- the decision math lives in resource_scheduler.py.
+# Default OFF (kill switch): the seam is skipped and the legacy drain behaviour
+# runs unchanged.  It NEVER changes a verdict, a reservation, or the drain lane
+# semantics for the case where a pre-drain IS opened; it only decides whether to
+# arm one this pass.
+RESOURCE_SCHEDULER_STATE_FILENAME = "resource_scheduler.json"
+
+
+def _resource_scheduler_state_path(root: Path) -> Path:
+    return Path(root) / "state" / RESOURCE_SCHEDULER_STATE_FILENAME
+
+
+def _load_resource_scheduler_state(root: Path) -> dict[str, Any]:
+    """Load the scheduler sidecar (heavy-row suppression tracking); fail-open."""
+    try:
+        with open(_resource_scheduler_state_path(root), "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        if isinstance(data, dict) and isinstance(data.get("tracking"), dict):
+            return data
+    except (OSError, ValueError, TypeError):
+        pass
+    return {"schema": "qm.resource-scheduler-state/v1", "tracking": {}}
+
+
+def _write_resource_scheduler_state_atomic(root: Path, state: dict[str, Any]) -> bool:
+    """Atomically replace the scheduler sidecar; fail-open (never raises)."""
+    path = _resource_scheduler_state_path(root)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = path.with_suffix(path.suffix + ".tmp")
+        with open(tmp, "w", encoding="utf-8") as handle:
+            json.dump(state, handle, sort_keys=True)
+        os.replace(tmp, path)
+        return True
+    except OSError:
+        return False
+
+
+def _resource_scheduler_head_window(
+    root: Path,
+    *,
+    free_ram_gb: float,
+    multisym_ids: frozenset,
+    limit: int,
+) -> tuple[list["resource_scheduler.Candidate"], int]:
+    """Read-only survey of the claimable head window + active-cell count.
+
+    Returns (candidates, active_cells).  Candidates carry the same conservative
+    reservation the claim path uses (_ram_reservation_for_candidate).  Fail-open
+    to ([], a large active count) so the seam never *causes* a drain to arm on a
+    bad probe -- an empty window with a busy fleet simply lets the legacy path
+    decide.
+    """
+    candidates: list[resource_scheduler.Candidate] = []
+    active_cells = 0
+    try:
+        with farmctl.connect(root) as conn:
+            conn.row_factory = sqlite3.Row
+            active_cells = int(
+                conn.execute(
+                    "SELECT COUNT(*) FROM work_items WHERE status='active'"
+                ).fetchone()[0]
+            )
+            rows = conn.execute(
+                """
+                SELECT * FROM work_items w
+                WHERE w.status='pending'
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_holds h
+                    WHERE h.work_item_id=w.id AND h.active=1
+                  )
+                  AND NOT EXISTS (
+                    SELECT 1 FROM work_item_supersedes s
+                    WHERE s.work_item_id=w.id
+                  )
+                ORDER BY w.priority DESC, w.id
+                LIMIT ?
+                """,
+                (int(limit),),
+            ).fetchall()
+            for row in rows:
+                payload = _json_loads(row["payload_json"])
+                try:
+                    multisymbol = _work_item_is_multisymbol(row, payload, multisym_ids)
+                except Exception:
+                    multisymbol = False
+                try:
+                    _cls, reservation_gb = _ram_reservation_for_candidate(
+                        row, payload, multisymbol
+                    )
+                except Exception:
+                    continue
+                try:
+                    priority = float(_work_item_value(row, "priority", 0) or 0)
+                except (TypeError, ValueError):
+                    priority = 0.0
+                candidates.append(
+                    resource_scheduler.Candidate(
+                        item_id=str(_work_item_value(row, "id", "") or ""),
+                        reservation_gb=float(reservation_gb),
+                        priority=priority,
+                        ea_id=str(_work_item_value(row, "ea_id", "") or ""),
+                    )
+                )
+    except Exception:
+        return [], 10_000
+    return candidates, active_cells
+
+
+def _resource_scheduler_gate_predrain(
+    root: Path,
+    *,
+    qualifying: dict[str, Any] | None,
+    free_ram_gb: float,
+    multisym_ids: frozenset,
+    now_epoch: float,
+) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
+    """Apply the resource scheduler to a heavy drain candidate.
+
+    Returns (qualifying_out, event).  When the scheduler is disabled, or the
+    candidate is not heavy, or arming is allowed, returns the candidate
+    unchanged and no event.  When arming is suppressed, returns (None, event)
+    so the caller arms no pre-drain this pass and the fleet keeps claiming the
+    fitting smaller rows.  Fail-open: any error returns the candidate unchanged.
+    """
+    if qualifying is None or not resource_scheduler.is_enabled():
+        return qualifying, None
+    try:
+        cfg = resource_scheduler.load_config()
+        heavy = resource_scheduler.Candidate(
+            item_id=str(qualifying.get("item_id") or ""),
+            reservation_gb=float(qualifying.get("reservation_gb") or 0.0),
+            ea_id=str(qualifying.get("ea_id") or ""),
+        )
+        if not heavy.is_heavy(cfg):
+            return qualifying, None
+        window, active_cells = _resource_scheduler_head_window(
+            root,
+            free_ram_gb=free_ram_gb,
+            multisym_ids=multisym_ids,
+            limit=int(cfg.get("head_window_candidates", 12)),
+        )
+        state = _load_resource_scheduler_state(root)
+        decision = resource_scheduler.predrain_decision(
+            heavy,
+            window_candidates=window,
+            free_ram_gb=free_ram_gb,
+            active_cells=active_cells,
+            tracking=state.get("tracking"),
+            now_epoch=now_epoch,
+            cfg=cfg,
+        )
+        live_heavy_keys = {
+            str(c.ea_id or c.item_id) for c in window if c.is_heavy(cfg)
+        }
+        live_heavy_keys.add(str(heavy.ea_id or heavy.item_id))
+        state["tracking"] = resource_scheduler.prune_tracking(
+            decision.tracking_out, live_heavy_ea_keys=live_heavy_keys
+        )
+        _write_resource_scheduler_state_atomic(root, state)
+        if decision.arm_allowed:
+            return qualifying, None
+        event = {
+            "event": "resource_scheduler_predrain_suppressed",
+            "item_id": heavy.item_id,
+            "ea_id": heavy.ea_id,
+            "reservation_gb": round(float(heavy.reservation_gb), 1),
+            "free_ram_gb": round(float(free_ram_gb), 1),
+            "active_cells": int(active_cells),
+            "head_window_size": len(window),
+            "reason": decision.reason,
+        }
+        return None, event
+    except Exception:
+        return qualifying, None
+
+
 def _drain_scan_candidate(
     root: Path,
     *,
@@ -3290,6 +3557,32 @@ def _drain_run_postprocess(
                     now_epoch=now_epoch,
                     predrain_item_id=predrain_id,
                 )
+                # Resource-aware admission (directive 3 §12): when enabled, a
+                # heavy qualifying row does NOT arm a pre-drain while a fitting
+                # smaller candidate exists in the head window and the fleet is not
+                # quiet (starvation-guarded).  Default OFF -> no-op.
+                if predrain_id is None:
+                    qualifying, _sched_event = _resource_scheduler_gate_predrain(
+                        root,
+                        qualifying=qualifying,
+                        free_ram_gb=free_ram_gb,
+                        multisym_ids=multisym_ids,
+                        now_epoch=now_epoch,
+                    )
+                    if _sched_event is not None:
+                        winnable = False
+                        winnable_reason = str(_sched_event.get("reason") or "")
+                        print(
+                            json.dumps(
+                                {
+                                    **_sched_event,
+                                    "terminal": terminal,
+                                    "at_utc": _drain_iso(now_epoch),
+                                },
+                                sort_keys=True,
+                            ),
+                            flush=True,
+                        )
                 predrain_row_pending: bool | None = None
                 if predrain_id is not None:
                     predrain_row_pending = (
