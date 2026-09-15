@@ -84,6 +84,12 @@ cause**, per the standing doctrine:
    This direct draft handoff is required for OWNER-forwarded sources because the generic research
    replenishment lane is backlog-gated. If add-source, ID reservation, or card creation fails, use
    `DEFERRED:HANDOFF_FAILED`, not QUALIFIED; this status is explicitly retryable.
+   Before handing the draft onward, run the deterministic intake paper gate:
+   `python C:\QM\repo\tools\strategy_farm\card_intake_prescreen.py --card "<path>"`.
+   It is read-only by default. Only when the scheduled environment already has
+   `QM_CARD_INTAKE_PRESCREEN=1` may you repeat the same command with `--apply`; never set that
+   environment variable yourself. A prescreen REJECT is not G0 and cannot be converted into an
+   approval claim.
 4. Update that lead's `status` column in `D:\QM\reports\sourcing_intake\leads.csv`
    (`QUALIFIED:<source_id>` / `REJECTED:<short reason>` / `DEFERRED:<short reason>`), editing only the
    `status` cell for that exact URL row — do not rewrite other rows.

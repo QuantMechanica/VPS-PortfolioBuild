@@ -1,0 +1,5408 @@
+{
+  "armed": false,
+  "generated_at": "2026-09-15T01:36:44.876979+00:00",
+  "input_root": "D:\\QM\\strategy_farm\\artifacts\\cards_review",
+  "mode": "DRY_RUN",
+  "results": [
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_124ED2DF",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_124ED2DF_vol-gated-index-short.md",
+      "reasons": [
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "vol-gated-index-short",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "SP500.DWX",
+        "UK100.DWX",
+        "WS30.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_33F6DE13",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_33F6DE13_lien-perfect-order.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "lien-perfect-order",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_62AA9F7C",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_62AA9F7C_dollar-smile-global-stress-usd.md",
+      "reasons": [
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "dollar-smile-global-stress-usd",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "NZDUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10044_ff-vr-gap-fade.md",
+      "ea_id": "PENDING_68333E26",
+      "expected_dd_pct": 10.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_68333E26_index-cash-open-gap-fade.md",
+      "reasons": [],
+      "slug": "index-cash-open-gap-fade",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "UK100.DWX",
+        "WS30.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "KEEP",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10044_ff-vr-gap-fade.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_6DFA3117",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_6DFA3117_wti-dom-ctrreg-session-tick.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "wti-dom-ctrreg-session-tick",
+      "target_symbols": [
+        "XTIUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_6DFA3117",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_6DFA3117_wti-mclose-mom-session-tick.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "wti-mclose-mom-session-tick",
+      "target_symbols": [
+        "XTIUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_10313_market-intraday-momentum.md",
+      "ea_id": "PENDING_75E821E0",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_75E821E0_market-intraday-momentum.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10313_market-intraday-momentum.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:M30"
+      ],
+      "slug": "market-intraday-momentum",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "SP500.DWX",
+        "UK100.DWX",
+        "WS30.DWX"
+      ],
+      "timeframe": "M30",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_A38AF97C",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_A38AF97C_carney-ab-cd-pattern-h1-density.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "carney-ab-cd-pattern-h1-density",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+        "WS30.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10681_tv-sd-engulf.md",
+      "ea_id": "PENDING_B1BF37BC",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_B1BF37BC_hyonix-bb-adx-mr-density.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10681_tv-sd-engulf.md:score=1.0000",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "hyonix-bb-adx-mr-density",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_D7B1FC80",
+      "expected_dd_pct": null,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_D7B1FC80_breakout-atr.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "breakout-atr",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDJPY.DWX",
+        "WS30.DWX",
+        "XAUUSD.DWX",
+        "XTIUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING_E7D0E62C",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_E7D0E62C_lien-carry-trade.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "lien-carry-trade",
+      "target_symbols": [
+        "AUDCHF.DWX",
+        "AUDJPY.DWX",
+        "GBPCHF.DWX",
+        "GBPJPY.DWX",
+        "NZDCHF.DWX",
+        "NZDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PRICE_SIGNATURE",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_EDGECAL04_xau-turn-month.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:PRICE_SIGNATURE,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "edgelab-xau-turn-month",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PRICE_SIGNATURE",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_EDGECAL06_xau-august-week.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:PRICE_SIGNATURE,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "edgelab-xau-august-first-week",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "PENDING",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PRICE_SIGNATURE",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_EDGECAL09_usdjpy-tokyo-fade.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:PRICE_SIGNATURE,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "edgelab-usdjpy-tokyo-fade",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_10349",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10349_savor-wilson-macro-announcement-idx.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "savor-wilson-macro-announcement-idx",
+      "target_symbols": [],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10024_rw-fx-comm-basket.md",
+      "ea_id": "QM5_10350",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10350_savor-wilson-macro-beta-spread.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "savor-wilson-macro-beta-spread",
+      "target_symbols": [],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10024_rw-fx-comm-basket.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10146_tii-meanrev.md",
+      "ea_id": "QM5_1063_v2",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_1063_unger-bollinger-fx-meanrev-v2.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10146_tii-meanrev.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "unger-bollinger-fx-meanrev-v2",
+      "target_symbols": [],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1064_unger-inside-day-bias-dax.md",
+      "ea_id": "QM5_1064_v2",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_1064_unger-inside-day-bias-dax-v2.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_1064_unger-inside-day-bias-dax.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "unger-inside-day-bias-dax-v2",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11043_atc-d1-correct.md",
+      "ea_id": "QM5_10719",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10719_edge-lab-t3-fx-short-reversion.md",
+      "reasons": [
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "edge-lab-t3-fx-short-reversion",
+      "target_symbols": [
+        "AUDCAD.DWX",
+        "AUDCHF.DWX",
+        "AUDJPY.DWX",
+        "AUDNZD.DWX",
+        "AUDUSD.DWX",
+        "CADCHF.DWX",
+        "CADJPY.DWX",
+        "CHFJPY.DWX",
+        "EURAUD.DWX",
+        "EURCAD.DWX",
+        "EURCHF.DWX",
+        "EURGBP.DWX",
+        "EURJPY.DWX",
+        "EURNZD.DWX",
+        "EURUSD.DWX",
+        "GBPAUD.DWX",
+        "GBPCAD.DWX",
+        "GBPCHF.DWX",
+        "GBPJPY.DWX",
+        "GBPNZD.DWX",
+        "GBPUSD.DWX",
+        "NZDCAD.DWX",
+        "NZDCHF.DWX",
+        "NZDJPY.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_11043_atc-d1-correct.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_10720",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10720_edge-lab-t4-safehaven-rotation.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "edge-lab-t4-safehaven-rotation",
+      "target_symbols": [
+        "AUDCHF.DWX",
+        "AUDJPY.DWX",
+        "CADCHF.DWX",
+        "CADJPY.DWX",
+        "NZDCHF.DWX",
+        "NZDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_10739",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10739_ff-gemini-el-d1-t1-mom-v1.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "ff-gemini-el-d1-t1-mom-v1",
+      "target_symbols": [],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10740_ff-gemini-el-d1-t1-mom-v2.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ff-gemini-el-d1-t1-mom-v2",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10741_ff-gemini-el-d1-t2-cry-v1.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ff-gemini-el-d1-t2-cry-v1",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10742_ff-gemini-el-d1-t2-cry-v2.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ff-gemini-el-d1-t2-cry-v2",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "10764",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10764_idx-totm.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "idx-totm",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "10765",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10765_gold-monthly-seasonal.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "gold-monthly-seasonal",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "10766",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10766_pre-nfp-drift.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "pre-nfp-drift",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "10767",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10767_idx-earnings-drift.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "idx-earnings-drift",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "10768",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_10768_fomc-post-mom.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "fomc-post-mom",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1080_as-sell-may.md",
+      "ea_id": "QM5_1080_v2",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PERSISTENCE",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_1080_as-sell-may-v2.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_1080_as-sell-may.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:PERSISTENCE,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "as-sell-may-v2",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11924",
+      "expected_dd_pct": 10.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11924_rb-mean-reversion.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK"
+      ],
+      "slug": "rb-mean-reversion",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11937",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11937_ff-agnew-h1-break.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12"
+      ],
+      "slug": "ff-agnew-h1-break",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11941",
+      "expected_dd_pct": 10.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11941_ff-inst-code-levels.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "ff-inst-code-levels",
+      "target_symbols": [
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11943",
+      "expected_dd_pct": 14.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11943_ff-wae-explosion.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:14",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ff-wae-explosion",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11944",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11944_ff-d1-simplicity.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12"
+      ],
+      "slug": "ff-d1-simplicity",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11910_larry-williams-18ma-2outside-bars-d1.md",
+      "ea_id": "11945",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11945_ff-the-strat-212.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_11910_larry-williams-18ma-2outside-bars-d1.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12"
+      ],
+      "slug": "ff-the-strat-212",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11948",
+      "expected_dd_pct": 13.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11948_ff-davit-pivots.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:13"
+      ],
+      "slug": "ff-davit-pivots",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "11950",
+      "expected_dd_pct": 14.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11950_ff-ozfx-mechanical.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:14",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ff-ozfx-mechanical",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11962_ff-3ema-trend-cont.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "ff-3ema-trend-cont",
+      "target_symbols": [],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_2023_demark-td-d-wave-wave5-h4.md",
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11972_mql5-wolfe-waves.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_2023_demark-td-d-wave-wave5-h4.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "mql5-wolfe-waves",
+      "target_symbols": [],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11992_cup-vol-breakout-atr.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "cup-vol-breakout-atr",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_11997_qc-dynamic-breakout-ii.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "qc-dynamic-breakout-ii",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12001",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12001_ano-totm-ultimo.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "ano-totm-ultimo",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12003_ano-commodity-lead-lag.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ano-commodity-lead-lag",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12005",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12005_ssrn-short-horizon-xmom.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "ssrn-short-horizon-xmom",
+      "target_symbols": [
+        "AUDCAD.DWX",
+        "AUDCHF.DWX",
+        "AUDJPY.DWX",
+        "AUDNZD.DWX",
+        "AUDUSD.DWX",
+        "CADCHF.DWX",
+        "CADJPY.DWX",
+        "CHFJPY.DWX",
+        "EURAUD.DWX",
+        "EURCAD.DWX",
+        "EURCHF.DWX",
+        "EURGBP.DWX",
+        "EURJPY.DWX",
+        "EURNZD.DWX",
+        "EURUSD.DWX",
+        "GBPAUD.DWX",
+        "GBPCAD.DWX",
+        "GBPCHF.DWX",
+        "GBPJPY.DWX",
+        "GBPNZD.DWX",
+        "GBPUSD.DWX",
+        "NZDCAD.DWX",
+        "NZDCHF.DWX",
+        "NZDJPY.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12018_ru-kravchuk-digital-filters.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ru-kravchuk-digital-filters",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12609_wti-cad-spread-mr_card.md",
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12030_ru-basket-zscore-arb.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_12609_wti-cad-spread-mr_card.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ru-basket-zscore-arb",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10016_ff-ema100-bb-tdi-h1.md",
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12037_ru-tdi-angle-attack.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10016_ff-ema100-bb-tdi-h1.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ru-tdi-angle-attack",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9212_mql5-rsi-fail.md",
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12055_yt-secret-monday-sweep.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_9212_mql5-rsi-fail.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "yt-secret-monday-sweep",
+      "target_symbols": [],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12064_yt-inst-gap-fill.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "yt-inst-gap-fill",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12548",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12548_singh-trend-rider.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "singh-trend-rider",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12549",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12549_singh-trend-bouncer.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "singh-trend-bouncer",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12550",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12550_singh-fifth-element.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "singh-fifth-element",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12551",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12551_singh-pendulum.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "singh-pendulum",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12552",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12552_singh-guppy-burst.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "singh-guppy-burst",
+      "target_symbols": [
+        "GBPJPY.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12763_wti-ref-sqz-brk.md",
+      "ea_id": "12553",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12553_singh-english-breakfast-tea.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "singh-english-breakfast-tea",
+      "target_symbols": [
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_12763_wti-ref-sqz-brk.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10657_tv-fvg-retrace.md",
+      "ea_id": "12554",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12554_ict-london-close-reversal.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10657_tv-fvg-retrace.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ict-london-close-reversal",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "12555",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12555_abraham-trend-bible-breakout-macd-atr-d1.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "abraham-trend-bible-breakout-macd-atr-d1",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NDX.DWX",
+        "USDJPY.DWX",
+        "WS30.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_1284_as-trendycmacro.md",
+      "ea_id": "QM5_12872",
+      "expected_dd_pct": 22.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12872_eia-xng-stor-drift.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:22",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "eia-xng-stor-drift",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_1284_as-trendycmacro.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12873",
+      "expected_dd_pct": 22.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12873_xng-latewinter-decay-short.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:22",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xng-latewinter-decay-short",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12874",
+      "expected_dd_pct": 25.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12874_xng-inject-slope-short.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:25",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xng-inject-slope-short",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12875",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12875_xag-q4-industrial-season.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xag-q4-industrial-season",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12876",
+      "expected_dd_pct": 22.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12876_xag-goldlead-mom.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:22",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xag-goldlead-mom",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12753_wti-thu-pb-fri-bounce.md",
+      "ea_id": "QM5_12877",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12877_xag-london-fix-rev.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xag-london-fix-rev",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_12753_wti-thu-pb-fri-bounce.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10001_ff-static-fib-open.md",
+      "ea_id": "QM5_12879",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12879_ftmo-set-up-4-fibs-break-out-v2.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10001_ff-static-fib-open.md:score=1.0000",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "ftmo-set-up-4-fibs-break-out-v2",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10886_risk-comm-rot.md",
+      "ea_id": "QM5_12893",
+      "expected_dd_pct": 22.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12893_xng-12m-carry.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:22"
+      ],
+      "slug": "xng-12m-carry",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10886_risk-comm-rot.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12894",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12894_xng-mar-transseason-short.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xng-mar-transseason-short",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10886_risk-comm-rot.md",
+      "ea_id": "QM5_12895",
+      "expected_dd_pct": 24.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12895_xng-6m-reversal.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:24"
+      ],
+      "slug": "xng-6m-reversal",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10886_risk-comm-rot.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12896",
+      "expected_dd_pct": 22.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12896_xng-oct-turn-long.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:22",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xng-oct-turn-long",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10942_grimes-run-fade.md",
+      "ea_id": "QM5_12897",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12897_xag-donchian55-trend.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20"
+      ],
+      "slug": "xag-donchian55-trend",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10942_grimes-run-fade.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12898",
+      "expected_dd_pct": 24.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12898_xng-eia-multiday-drift.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:24",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xng-eia-multiday-drift",
+      "target_symbols": [
+        "XNGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12899",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12899_xag-goldlead-follow.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18"
+      ],
+      "slug": "xag-goldlead-follow",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10694_tv-ict-silver.md",
+      "ea_id": "QM5_12900",
+      "expected_dd_pct": 22.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12900_xag-xau-filter-trend.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:22",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xag-xau-filter-trend",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10694_tv-ict-silver.md:score=0.3333"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12901",
+      "expected_dd_pct": 22.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12901_xag-industrial-3m-mom.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:22"
+      ],
+      "slug": "xag-industrial-3m-mom",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10694_tv-ict-silver.md",
+      "ea_id": "QM5_12902",
+      "expected_dd_pct": 26.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12902_xag-vol-regime-donchian.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:26",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xag-vol-regime-donchian",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10694_tv-ict-silver.md:score=0.3333"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10694_tv-ict-silver.md",
+      "ea_id": "QM5_12903",
+      "expected_dd_pct": 25.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12903_xag-xau-lag-entry.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:25",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "xag-xau-lag-entry",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10694_tv-ict-silver.md:score=0.5000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12922_ariel-first-half-month-idx.md",
+      "ea_id": "QM5_12904",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12904_uk100-tom-pension.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "uk100-tom-pension",
+      "target_symbols": [
+        "UK100.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_12922_ariel-first-half-month-idx.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10003_ff-xaron-morning-breakout.md",
+      "ea_id": "QM5_12905",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12905_uk100-london-open-breakout.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12",
+        "TIMEFRAME_OUTSIDE_BOX:M30"
+      ],
+      "slug": "uk100-london-open-breakout",
+      "target_symbols": [
+        "UK100.DWX"
+      ],
+      "timeframe": "M30",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_12906",
+      "expected_dd_pct": 10.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12906_uk100-exdiv-reversion.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT"
+      ],
+      "slug": "uk100-exdiv-reversion",
+      "target_symbols": [
+        "UK100.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10003_ff-xaron-morning-breakout.md",
+      "ea_id": "QM5_12907",
+      "expected_dd_pct": 8.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12907_ws30-orb-15m.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT"
+      ],
+      "slug": "ws30-orb-15m",
+      "target_symbols": [
+        "WS30.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10003_ff-xaron-morning-breakout.md",
+      "ea_id": "QM5_12908",
+      "expected_dd_pct": 10.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12908_ndx-orb-30m.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT"
+      ],
+      "slug": "ndx-orb-30m",
+      "target_symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10003_ff-xaron-morning-breakout.md",
+      "ea_id": "QM5_12909",
+      "expected_dd_pct": 7.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_12909_sp500-orb-60m.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT"
+      ],
+      "slug": "sp500-orb-60m",
+      "target_symbols": [
+        "SP500.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10834_tv-nq-ict-ob.md",
+      "ea_id": "20002",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "PRICE_SIGNATURE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20002_ict-icytea-core_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10834_tv-nq-ict-ob.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:PRICE_SIGNATURE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:M1"
+      ],
+      "slug": "ict-icytea-core",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "M1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20024",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20024_london-fix-reversion.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING"
+      ],
+      "slug": "london-fix-reversion",
+      "target_symbols": [],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20096",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20096_ha-stoch-h4-swing_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "ha-stoch-h4-swing",
+      "target_symbols": [
+        "EURAUD.DWX",
+        "EURCAD.DWX",
+        "GBPUSD.DWX",
+        "USDCHF.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20097",
+      "expected_dd_pct": 16.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20097_three-little-pigs-mtf-sma_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:16"
+      ],
+      "slug": "three-little-pigs-mtf-sma",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURGBP.DWX",
+        "EURJPY.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10651_tv-koz-sweep.md",
+      "ea_id": "QM5_20098",
+      "expected_dd_pct": 14.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20098_weekly-open-liquidity-sweep_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10651_tv-koz-sweep.md:score=1.0000",
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:14"
+      ],
+      "slug": "weekly-open-liquidity-sweep",
+      "target_symbols": [
+        "XAGUSD.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20101",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20101_simplicity-ha-ema100-london_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18"
+      ],
+      "slug": "simplicity-ha-ema100-london",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20102",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20102_prevday-breakout-close-edge_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18"
+      ],
+      "slug": "prevday-breakout-close-edge",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20103",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20103_daylight-wpr-smma-m15_card.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "daylight-wpr-smma-m15",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "NDX.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20104",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20104_notable-number-fade-m5_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "notable-number-fade-m5",
+      "target_symbols": [
+        "AUDCAD.DWX",
+        "AUDNZD.DWX",
+        "AUDUSD.DWX",
+        "EURCAD.DWX",
+        "EURGBP.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDCAD.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20105",
+      "expected_dd_pct": 10.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20105_notable-number-breakout-m5_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "notable-number-breakout-m5",
+      "target_symbols": [
+        "CADJPY.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20106",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20106_daily-wick-stop-breakout_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "daily-wick-stop-breakout",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURAUD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20107",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20107_asian-range-straddle-m15_card.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "asian-range-straddle-m15",
+      "target_symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20108",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20108_ema144-displaced-breach-m5_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20"
+      ],
+      "slug": "ema144-displaced-breach-m5",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9151_chan-at-fstx-gap-mom.md",
+      "ea_id": "QM5_20109",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20109_vr-gap-fade-d1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "vr-gap-fade-d1",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "NDX.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_9151_chan-at-fstx-gap-mom.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20111",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20111_london-box-fib-straddle_card.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:MARTINGALE"
+      ],
+      "slug": "london-box-fib-straddle",
+      "target_symbols": [
+        "EURJPY.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20112",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20112_ema9-pullback-m15_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "ema9-pullback-m15",
+      "target_symbols": [
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9970_ff-369ema-scalp-m5.md",
+      "ea_id": "QM5_20113",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20113_ema369-cross-m5_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_9970_ff-369ema-scalp-m5.md:score=0.8000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20"
+      ],
+      "slug": "ema369-cross-m5",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11425_williams-smash-day-stop-entry-d1.md",
+      "ea_id": "QM5_20114",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20114_h4-engulf-sma50-stop_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_11425_williams-smash-day-stop-entry-d1.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "h4-engulf-sma50-stop",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20116",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20116_ema512-rsi7-m15_card.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18"
+      ],
+      "slug": "ema512-rsi7-m15",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20118",
+      "expected_dd_pct": 14.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20118_dtrt-cci-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:14"
+      ],
+      "slug": "dtrt-cci-h1",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11578_neely-weller-pct-filter-rule-d1.md",
+      "ea_id": "QM5_20119",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20119_macd50-ukgrid-gbpusd_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_11578_neely-weller-pct-filter-rule-d1.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "macd50-ukgrid-gbpusd",
+      "target_symbols": [
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20120",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20120_simple-daily-3rise_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12"
+      ],
+      "slug": "simple-daily-3rise",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_1284_as-trendycmacro.md",
+      "ea_id": "QM5_20121",
+      "expected_dd_pct": 16.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20121_mtf-rsi2-align-m15_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_1284_as-trendycmacro.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:16",
+        "PROHIBITED_MECHANICS:MARTINGALE"
+      ],
+      "slug": "mtf-rsi2-align-m15",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20122",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20122_bb-stoch-bandcross-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "bb-stoch-bandcross-h1",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20123",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20123_dailyopen-h1-basket_card.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "dailyopen-h1-basket",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20125",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20125_rsi2-obos-scalp-m15_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "rsi2-obos-scalp-m15",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20126",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20126_abo-atr-straddle-h1_card.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "abo-atr-straddle-h1",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11365_connors-rsi2-sma200-pullback-d1.md",
+      "ea_id": "QM5_20127",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20127_sisyphus-2ma-rsi2-d1_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_11365_connors-rsi2-sma200-pullback-d1.md:score=1.0000",
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "sisyphus-2ma-rsi2-d1",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20129",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20129_ema-rsi-cci-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "ema-rsi-cci-h1",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9989_ff-channel-ma-m15.md",
+      "ea_id": "QM5_20130",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20130_channel-ma-m15_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_9989_ff-channel-ma-m15.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "channel-ma-m15",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20131",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20131_wick-latest-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "wick-latest-h1",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20138",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20138_stoch-ema50-pullback-h4_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "stoch-ema50-pullback-h4",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "XAGUSD.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10048_ff-toby-inside-d1.md",
+      "ea_id": "QM5_20139",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20139_dibs-inside-bar-h1_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10048_ff-toby-inside-d1.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "dibs-inside-bar-h1",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20140",
+      "expected_dd_pct": 18.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20140_roundnum-sma50-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:18",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "roundnum-sma50-h1",
+      "target_symbols": [
+        "EURJPY.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10123_don20-break.md",
+      "ea_id": "QM5_20142",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20142_mtf-ema25-align-h4_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10123_don20-break.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "mtf-ema25-align-h4",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20143",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20143_macd-bb-campaign-m5_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20"
+      ],
+      "slug": "macd-bb-campaign-m5",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "M5",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20144",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20144_ichimoku-atr-cloud-d1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "ichimoku-atr-cloud-d1",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20146",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20146_london-orb-3candle-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "london-orb-3candle-h1",
+      "target_symbols": [
+        "EURGBP.DWX",
+        "EURUSD.DWX",
+        "GBPJPY.DWX",
+        "GBPUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20147",
+      "expected_dd_pct": 20.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20147_ndx-ema50-momentum-d1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:20"
+      ],
+      "slug": "ndx-ema50-momentum-d1",
+      "target_symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": "D1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20148",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [
+        "OPTIONS"
+      ],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20148_usdjpy-pretokyo-straddle_card.md",
+      "reasons": [
+        "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "usdjpy-pretokyo-straddle",
+      "target_symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": "M15",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20150",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20150_emacross-stochhook-fib-h4_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "emacross-stochhook-fib-h4",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H4",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20151",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20151_dual-supertrend-confluence-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "dual-supertrend-confluence-h1",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NZDUSD.DWX",
+        "USDCAD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_20152",
+      "expected_dd_pct": 12.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_20152_sma-cross-pullback-h1_card.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:12"
+      ],
+      "slug": "sma-cross-pullback-h1",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41215",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41215_pre-fomc-drift-ndx-requal8.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "pre-fomc-drift-ndx-requal8",
+      "target_symbols": [
+        "NDX.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41216",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41216_grimes-nested-pb-v2-requal8.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "grimes-nested-pb-v2-requal8",
+      "target_symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_1314_vwap-sigma-band-breakout-intraday.md",
+      "ea_id": "QM5_41217",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41217_tv-post-vwap-requal8.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_1314_vwap-sigma-band-breakout-intraday.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "tv-post-vwap-requal8",
+      "target_symbols": [
+        "GDAXI.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41218",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41218_demark-td-reverse-sequential-h4-requal8.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "demark-td-reverse-sequential-h4-requal8",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41346_cum-rsi2-commodity-requal8-opt.md",
+      "ea_id": "QM5_41219",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41219_cum-rsi2-commodity-requal8.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_41346_cum-rsi2-commodity-requal8-opt.md:score=0.9286",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "cum-rsi2-commodity-requal8",
+      "target_symbols": [
+        "XAUUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41220",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41220_grimes-context-pb-requal8.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "grimes-context-pb-requal8",
+      "target_symbols": [
+        "GBPUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt.md",
+      "ea_id": "QM5_41221",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_41344_ohlc-daily-squeeze-reversal-d1-requal8-opt.md:score=0.9500",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "ohlc-daily-squeeze-reversal-d1-requal8",
+      "target_symbols": [
+        "EURUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41222",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41222_lien-k-double-bb-trend-h1-requal8.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "lien-k-double-bb-trend-h1-requal8",
+      "target_symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10001_ff-static-fib-open.md",
+      "ea_id": "QM5_41405",
+      "expected_dd_pct": 15.0,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41405_balke-clock-audit-opt.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10001_ff-static-fib-open.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_OUTSIDE_BOX:15"
+      ],
+      "slug": "balke-clock-audit-opt",
+      "target_symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41470",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "usdjpy-gotobi-nakane-fix-symfix",
+      "target_symbols": [
+        "USDJPY.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12778_edgelab-audusd-eurjpy-cointegration.md",
+      "ea_id": "QM5_41471",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_12778_edgelab-audusd-eurjpy-cointegration.md:score=0.9091",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "edgelab-audusd-eurjpy-cointegration-symfix",
+      "target_symbols": [
+        "AUDUSD.DWX",
+        "EURJPY.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41472",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41472_eurgbp-audjpy-symfix.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "eurgbp-audjpy-symfix",
+      "target_symbols": [
+        "AUDJPY.DWX",
+        "EURGBP.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41473",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41473_brent-tom-mom-symfix.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "brent-tom-mom-symfix",
+      "target_symbols": [
+        "XTIUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41474",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_41474_xag-weekly-lowvol-momentum-symfix.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "xag-weekly-lowvol-momentum-symfix",
+      "target_symbols": [
+        "XAGUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_99999",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_99999_sandbox-verification.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "sandbox-verification",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "DRAFT_CARRY",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_DRAFT_miffre-comm-swap-carry.md",
+      "reasons": [
+        "TARGET_SYMBOL_NOT_IN_DWX_MATRIX:XBRUSD.DWX,XCUUSD.DWX",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "miffre-comm-swap-carry",
+      "target_symbols": [
+        "XBRUSD.DWX",
+        "XCUUSD.DWX",
+        "XNGUSD.DWX",
+        "XTIUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1246_miffre-comm-mom.md",
+      "ea_id": "DRAFT_XMOM",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM5_DRAFT_miffre-comm-week-xmom.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_1246_miffre-comm-mom.md:score=1.0000",
+        "TARGET_SYMBOL_NOT_IN_DWX_MATRIX:XBRUSD.DWX,XCUUSD.DWX",
+        "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "miffre-comm-week-xmom",
+      "target_symbols": [
+        "XBRUSD.DWX",
+        "XCUUSD.DWX",
+        "XNGUSD.DWX",
+        "XTIUSD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM_10844_cs-fx-mom-v1.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "qm_10844_cs-fx-mom-v1",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM_10845_cs-fx-mom-v2.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "qm_10845_cs-fx-mom-v2",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM_10846_cs-fx-mom-v3.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "qm_10846_cs-fx-mom-v3",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM_10847_regime-carry-v1.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "qm_10847_regime-carry-v1",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM_10848_regime-carry-v2.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "qm_10848_regime-carry-v2",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\QM_10849_regime-carry-v3.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "qm_10849_regime-carry-v3",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11401_davey-low-volume-mean-reversion-d1.md",
+      "ea_id": "TBD",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\qs-audnzd-mr_card.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_11401_davey-low-volume-mean-reversion-d1.md:score=1.0000",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING",
+        "PROHIBITED_MECHANICS:GRID"
+      ],
+      "slug": "qs-audnzd-mr",
+      "target_symbols": [
+        "AUDNZD.DWX"
+      ],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "RESEARCH",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\RESEARCH_BRIEF_R1_R2_XNGUSD_XAGUSD_2026-07-02.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "research_brief_r1_r2_xngusd_xagusd_2026-07-02",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10003_ff-xaron-morning-breakout.md",
+      "ea_id": "RESEARCH",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\RESEARCH_BRIEF_R3_R4_UK100_INDEX_ORB_2026-07-02.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "research_brief_r3_r4_uk100_index_orb_2026-07-02",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12807_xng-52w-anchor.md",
+      "ea_id": "RESEARCH",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\RESEARCH_R1_natgas_xngusd_2026-07-02.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "research_r1_natgas_xngusd_2026-07-02",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_12807_xng-52w-anchor.md:score=1.0000"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10694_tv-ict-silver.md",
+      "ea_id": "RESEARCH",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\RESEARCH_R2_silver_xagusd_2026-07-02.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "research_r2_silver_xagusd_2026-07-02",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": [
+        "NEAR_DUPLICATE:QM5_10694_tv-ict-silver.md:score=0.3333"
+      ]
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12922_ariel-first-half-month-idx.md",
+      "ea_id": "RESEARCH",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\RESEARCH_R3_uk100_2026-07-02.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_12922_ariel-first-half-month-idx.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "research_r3_uk100_2026-07-02",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10003_ff-xaron-morning-breakout.md",
+      "ea_id": "RESEARCH",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PRICE_SIGNATURE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\RESEARCH_R4_index_orb_2026-07-02.md",
+      "reasons": [
+        "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PRICE_SIGNATURE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "research_r4_index_orb_2026-07-02",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_10260_SANDBOX_VERIFY",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FALSIFICATION",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\SANDBOX_VERIFY_f5043456.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "sandbox-verify-ftmo-gift",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "TBD",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "Q08_Q11_RISK",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\TBD_cs-spread-rev.md",
+      "reasons": [
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "PROHIBITED_MECHANICS:GRID,MARTINGALE"
+      ],
+      "slug": "cs-spread-rev",
+      "target_symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "NDX.DWX",
+        "USDJPY.DWX",
+        "XAUUSD.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    },
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_99999",
+      "expected_dd_pct": null,
+      "missing_feeds": [],
+      "missing_sections": [
+        "STRUCTURAL_CAUSE",
+        "PERSISTENCE",
+        "FTMO_FIT"
+      ],
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\VERIFICATION_f5043456.md",
+      "reasons": [
+        "TARGET_SYMBOLS_MISSING",
+        "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FTMO_FIT",
+        "EXPECTED_DD_PCT_MISSING",
+        "TIMEFRAME_OUTSIDE_BOX:MISSING"
+      ],
+      "slug": "verification-f5043456",
+      "target_symbols": [],
+      "timeframe": null,
+      "verdict": "REJECT",
+      "warnings": []
+    }
+  ],
+  "schema": "qm.card-intake-prescreen/v1",
+  "summary": {
+    "cards": 158,
+    "keep": 1,
+    "mutated": 0,
+    "reject": 157
+  },
+  "symbol_matrix_sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d",
+  "triage_recall": {
+    "caught_rows": 90,
+    "details": [
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_10721_edge-lab-t1-fx-relative-momentum.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FTMO_FIT",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_10722_edge-lab-t2-fx-filtered-carry.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_10864_edge-lab-d1-momentum-v1.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12707_commodity-tsmom-12m.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_10865_edge-lab-d1-carry-v1.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12707_commodity-tsmom-12m.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:SWAP_HISTORY,VIX",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_10889_el-d1-t8-macro-cycle.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:BOND_YIELDS",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_10894_el-d1-t13-ctot-momentum.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10025_rw-fx-broad-pairs.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:VIX",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_10901_ftmo-set-up-1-quick-move-v2.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_10902_ftmo-set-up-2-fibs-retracement-v2.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12888_ftmo-set-up-2-fibs-retracement-v3.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_11918_el-d1-t5-bond-convergence.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12797_oil-silver-brk_card.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:BOND_YIELDS",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_11920_el-d1-t7-vol-premium.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:VIX",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11921_rb-range-breakout.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10001_ff-static-fib-open.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11922_rb-go-long.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11578_neely-weller-pct-filter-rule-d1.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11923_rb-turnaround-tue.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12836_turnaround-tuesday-ws30.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11946_ff-genesis-matrix.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_9696_ff-genesis-matrix-m5.md:score=0.9189",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11949_ff-london-7am-break.md",
+        "reasons": [
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_OUTSIDE_BOX:12"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_11952_ff-mad-scalper.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:M1",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_11955_breakout-momentum-scalp.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_11957_hft-momentum-ny.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11964_nnfx-supercycle-surge.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_2006_nnfx-ichimoku-core.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11965_nnfx-algotrade-pro.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1380_brooks-h2l2-second-pullback-h4.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11966_systematic-fx-carry-vol-filt.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_11967_crypto-funding-momentum.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11968_smc-fvg-mechanical.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10703_tv-neura-orb.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11969_commodity-price-momentum-rotation.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12780_wti-52w-anchor.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11970_mql5-mech-engulfing.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11339_tc20-h1-15-ema5-21-rsi21-candle-pattern.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11971_mql5-123-trend.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1604_sperandeo-123-reversal-h4.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11973_mql5-stat-arb-pairs.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1280_chan-ou-half-life-exit.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11974_mql5-seo-harmonic-x3.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_11975_mql5-ml-rf-sentiment.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING",
+          "PROHIBITED_MECHANICS:ML"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_11976_mql5-tick-vol-scalp.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:M1",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11977_mql5-ema-rsi-trend.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_11978_bp-cowabunga-system.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_11979_bp-3-little-pigs.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11980_bp-amazing-crossover.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11806_carter-h1-s18-ema510-stoch-rsi-h1.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11981_bp-psar-ema-system.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12502_psar-reversal.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11982_bp-inside-bar-mom.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10048_ff-toby-inside-d1.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11983_bp-bollinger-reversion.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11984_bp-stoch-crossover-pullback.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11419_144-lwma-5smma-proximity-crossover-m5.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11986_ff-vegas-tunnel-144.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1289_donchian-vegas-hybrid.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11988_connors-rsi-2-meanrev.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12815_stat-mr-confint.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11989_connors-double-7.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1325_connors-rsi2-fx-intraday-h1.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11990_ff-rubber-band-bb.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10681_tv-sd-engulf.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_11991_cup-vix-divergence.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:VIX",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_11994_cup-cot-commercial-trend.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:COT",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11995_cup-fib-set-forget.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_11996_qc-dual-thrust.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11373_100pips-daily-range-bracket-usdjpy.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_11998_ssrn-fx-vrp-straddle.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_11999_academic-macro-surprise-mom.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10025_rw-fx-broad-pairs.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:MACRO_SURPRISE",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_12000_ano-pfs-time-asymmetry.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1593_carney-bat-pattern-h4.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:M2",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_12004_ssrn-vanna-skew-harvest.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_12006_ssrn-crash-neutral-carry.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:OPTIONS",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_12009_qc-liquid-value.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:FUNDAMENTALS",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_12010_qc-vrp-jade-lizard.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:OPTIONS,VIX",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12013_qc-pairs-kalman.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1280_chan-ou-half-life-exit.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12014_qc-fx-multi-factor-alpha.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:SWAP_HISTORY",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12015_qc-fx-currency-strength-index.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "FEED",
+        "file": "QM5_12016_qc-fx-short-term-rates-lag.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10123_don20-break.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:BOND_YIELDS",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12019_ru-garch-quantile-action.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_37008_garch-volatility-forecast-breakout.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_12021_ru-hmm-regime-switching.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11236_ft-tr-bb.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING",
+          "PROHIBITED_MECHANICS:ML"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12022_prop-london-ny-breakout.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12887_ftmo-set-up-1-quick-move-v5.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12023_prop-ict-silver-bullet.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10653_tv-lsf-fvg.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12024_prop-ict-unicorn.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10651_tv-koz-sweep.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12025_prop-nq-vwap-reversion.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1314_vwap-sigma-band-breakout-intraday.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12026_prop-gold-m15-trend.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12027_ru-spider-gold-smc.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_9193_mql5-rsi-sweep.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12029_ru-ppr-reversal-mech.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12032_ru-skyline-relative-mom.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10305_narang-xmom.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12034_ru-adaptive-breakthrough.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12036_ru-fisher-rsi-square.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_33003_ehlers-superpassband-fisher-cycle-scalper.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12038_ru-poc-retest-vol.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10681_tv-sd-engulf.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12039_ru-ctr-box-breakout.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10001_ff-static-fib-open.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_12041_ru-tick-density-hft.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK,FTMO_FIT",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12045_pro-inst-mean-rev.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10681_tv-sd-engulf.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12046_pro-brooks-h2l2.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12047_pro-nr7-contraction.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12048_pro-vola-squeeze.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12049_pro-liquidity-void-fill.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10679_tv-fvg-rr1.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12050_pro-orb-5min-opt.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11373_100pips-daily-range-bracket-usdjpy.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12051_yt-rayner-200day-tf.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12707_commodity-tsmom-12m.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_12052_yt-secret-bb-squeeze.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12053_yt-tsg-tdi-allinone.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_20070_antor-mtf-macd-scalper-r1-recovery.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12054_yt-triple-supertrend-ema.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12056_yt-apex-swing-smc.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10628_et-fvg-sweep-fill.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12057_yt-3step-checklist-day.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12058_yt-ema-rsi-2025.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1549_hopwood-bermaui-rsi-mtf-h4.md:score=0.6667",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_12059_yt-rockzfx-1cdt.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12060_yt-orb-vwap-bias.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12785_timerangebreakout-orb.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12061_yt-ict-amd-po3.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10686_tv-fvg-0931.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12062_yt-karyong-structure.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "MISSED"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_12063_yt-prob-tdt-levels.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:M1"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12065_yt-ict-ote-fib.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10744_tv-ict-ote.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:PRICE_SIGNATURE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12066_yt-ema-stack-momentum.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_1593_carney-bat-pattern-h4.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12067_yt-smc-orderblock-mitigation.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10834_tv-nq-ict-ob.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "HFT_OR_ML",
+        "file": "QM5_12068_yt-ha-smoothed-scalp.md",
+        "reasons": [
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:M1",
+          "PROHIBITED_MECHANICS:HFT"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_12878_bp-simple-system-32-review.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12502_psar-reversal.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,PERSISTENCE,FALSIFICATION,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12880_ftmo-set-up-4-fibs-break-out-v3.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12881_ftmo-set-up-4-fibs-break-out-v4.md:score=0.9677",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12881_ftmo-set-up-4-fibs-break-out-v4.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10001_ff-static-fib-open.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:STRUCTURAL_CAUSE,Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12882_ftmo-set-up-3-20-ma-v2.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12883_ftmo-set-up-3-20-ma-v3.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12883_ftmo-set-up-3-20-ma-v3.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10530_mql5-evening-star.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "SYMBOL",
+        "file": "QM5_12884_ftmo-set-up-3-20-ma-v4.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10530_mql5-evening-star.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12885_ftmo-set-up-1-quick-move-v3.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10113_tv-ob-matrix.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12886_ftmo-set-up-1-quick-move-v4.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12885_ftmo-set-up-1-quick-move-v3.md:score=0.9630",
+          "TARGET_SYMBOLS_MISSING",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12887_ftmo-set-up-1-quick-move-v5.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10003_ff-xaron-morning-breakout.md:score=1.0000",
+          "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12888_ftmo-set-up-2-fibs-retracement-v3.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_11025_atc-fib-levels.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12889_ftmo-set-up-2-fibs-retracement-v4.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12888_ftmo-set-up-2-fibs-retracement-v3.md:score=0.9697",
+          "TARGET_SYMBOLS_MISSING",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12891_ftmo-system-overview-v3.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_10900_ftmo-system-overview-v2.md:score=1.0000",
+          "TARGET_SYMBOLS_MISSING",
+          "EXTERNAL_DATA_FEED_MISSING:VIX",
+          "EXPECTED_DD_PCT_MISSING"
+        ],
+        "status": "CAUGHT"
+      },
+      {
+        "class": "DUPLICATE",
+        "file": "QM5_12892_ftmo-system-overview-v4.md",
+        "reasons": [
+          "NEAR_DUPLICATE:QM5_12891_ftmo-system-overview-v3.md:score=0.9565",
+          "TARGET_SYMBOLS_MISSING",
+          "CHARTER_SECTIONS_MISSING:Q08_Q11_RISK",
+          "EXPECTED_DD_PCT_MISSING",
+          "TIMEFRAME_OUTSIDE_BOX:MISSING"
+        ],
+        "status": "CAUGHT"
+      }
+    ],
+    "located_rows": 107,
+    "recall_pct": 84.11,
+    "target_rows": 107,
+    "triage_path": "docs\\ops\\evidence\\2026-09-12_edge_lab_triage\\edge_lab_triage_2026-09-12.json"
+  }
+}
