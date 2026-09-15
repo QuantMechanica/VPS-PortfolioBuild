@@ -33869,6 +33869,20 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
     else:
         final_path = card_path
 
+    # Persist a deterministic, self-excluding content hash into the card so the
+    # Strategy Wiki sync can compute staleness by hash rather than mtime
+    # (directive 2026-09-15 §6). The hash drops any prior card_sha256 line, so
+    # writing it back is stable (same content -> same hash on the next run).
+    try:
+        from tools.strategy_farm import vault_paths as _vp
+    except ImportError:  # pragma: no cover - run-from-tools-dir shim
+        import vault_paths as _vp  # type: ignore
+    try:
+        content_hash = _vp.card_file_content_sha256(final_path)
+        update_card_frontmatter(final_path, {"card_sha256": content_hash})
+    except (OSError, ValueError):
+        content_hash = None
+
     with connect(root) as conn:
         event(conn, "card", ea_id, "amended" if in_place_amendment else "approved", {
             "card_path": str(final_path),
@@ -33879,6 +33893,21 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
 
     registry_precondition = _approved_card_registry_precondition(root, final_path)
     registry_ready = bool(registry_precondition["precheck"].get("ready"))
+
+    # Best-effort post-approve hook: project this EA's generated Strategy Wiki
+    # node so a new strategy appears in the vault without a manual Drive copy
+    # (directive 2026-09-15 §7). Never fatal to the approval; opt out with
+    # QM_WIKI_SYNC_HOOK=0.
+    if os.environ.get("QM_WIKI_SYNC_HOOK", "1") != "0":
+        try:
+            try:
+                from tools.strategy_farm import strategy_wiki_sync as _sws
+            except ImportError:  # pragma: no cover - run-from-tools-dir shim
+                import strategy_wiki_sync as _sws  # type: ignore
+            _sws.build_single(str(ea_id))
+        except Exception:  # pragma: no cover - hook must never break approval
+            pass
+
     return {
         "approved": True,
         "amended": in_place_amendment,
@@ -33886,6 +33915,7 @@ def approve_card(root: Path, card_path_str: str, reasoning: str,
         "card_path": str(final_path),
         "prior_card_sha256": prior_card_sha256,
         "card_sha256": _sha256_file(final_path),
+        "card_content_sha256": content_hash,
         "reasoning": reasoning,
         "registry_precondition": registry_precondition,
         "next_action_hint": (

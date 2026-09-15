@@ -57,7 +57,23 @@ REPO = Path(r"C:\QM\repo")
 EA_REG = REPO / "framework" / "registry" / "ea_id_registry.csv"
 MAGIC = REPO / "framework" / "registry" / "magic_numbers.csv"
 CARDS_DIR = REPO / "strategy-seeds" / "cards"
-DEFAULT_WIKI_VAULT = Path(r"G:\My Drive\09 Strategy Wiki")
+
+# Shared vault root (drift D1, audit 2026-09-15): this file historically
+# hard-coded ``G:\My Drive\09 Strategy Wiki`` — missing the
+# ``QuantMechanica - Company Reference`` segment — so the vault-side dedup
+# fail-closed on every run. Resolve the wiki root through the single source of
+# truth ``tools/strategy_farm/vault_paths.py`` (honours QM_VAULT_ROOT).
+try:
+    from tools.strategy_farm import vault_paths as _vault_paths
+except ImportError:  # running from an arbitrary cwd — add the repo root
+    sys.path.insert(0, str(REPO))
+    try:
+        from tools.strategy_farm import vault_paths as _vault_paths  # type: ignore
+    except ImportError:  # last resort: the tools dir directly
+        sys.path.insert(0, str(REPO / "tools" / "strategy_farm"))
+        import vault_paths as _vault_paths  # type: ignore
+
+DEFAULT_WIKI_VAULT = _vault_paths.strategy_wiki_root()
 TOOL_VERSION = "2.0.0"
 EVIDENCE_SCHEMA = "qm.research-dedup-check.evidence.v2"
 

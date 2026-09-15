@@ -62,6 +62,8 @@ BOOK_EVOLUTION_DXZ = REPORTS_STATE / "book_evolution_dxz.json"
 BOOK_EVOLUTION_FTMO = REPORTS_STATE / "book_evolution_ftmo.json"
 FTMO_READINESS = REPORTS_STATE / "ftmo_challenge_readiness.json"
 RESEARCH_STATE = REPORTS_STATE / "research_state.json"
+# Strategy Wiki completeness read-model (tools/strategy_farm/strategy_wiki_sync.py lint).
+STRATEGY_WIKI_SYNC = REPORTS_STATE / "strategy_wiki_sync.json"
 
 FLEET = tuple(f"T{i}" for i in range(1, 11))
 
@@ -193,11 +195,14 @@ def load_book_evolution_readmodels(*, now: dt.datetime | None = None,
                               now=now, sla_sec=SLA_RESEARCH_SEC)
     bottleneck = load_readmodel(paths.get("bottleneck", OUTPUT_PATH),
                                 now=now, sla_sec=SLA_FACTORY_BOTTLENECK_SEC)
+    wiki_sync = load_readmodel(paths.get("strategy_wiki_sync", STRATEGY_WIKI_SYNC),
+                               now=now, sla_sec=SLA_BOOK_EVOLUTION_SEC)
     return {
         "book_evolution": {"dxz": dxz, "ftmo": ftmo},
         "ftmo_challenge_readiness": ftmo_readiness,
         "research_state": research,
         "factory_bottleneck": bottleneck,
+        "strategy_wiki_sync": wiki_sync,
     }
 
 
@@ -239,11 +244,19 @@ def compute_book_evolution_health(loaded: dict[str, Any]) -> dict[str, Any]:
     else:
         top = "EVIDENCE_MISSING"
 
+    wiki_sync = loaded.get("strategy_wiki_sync", {}) or {}
+    if wiki_sync.get("present"):
+        wiki_state = str((wiki_sync.get("payload") or {}).get("STRATEGY_WIKI_SYNC")
+                         or "UNKNOWN")
+    else:
+        wiki_state = "EVIDENCE_MISSING"
+
     return {
         "book_evolution_readmodels": readmodels_state,
         "ftmo_readiness_recommendation": rec,
         "research_state_freshness": research_freshness,
         "factory_bottleneck_top": top,
+        "strategy_wiki_sync": wiki_state,
     }
 
 
