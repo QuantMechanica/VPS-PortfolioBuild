@@ -328,3 +328,20 @@ def test_fetcher_config_bare_name_resolves_against_config_dir():
     assert g._load_quota_fetcher_config(cfg) is not None
     cfg2 = {"governor": {"quota_fetcher_config": "kimi_quota_fetcher.v1.json"}}
     assert g._load_quota_fetcher_config(cfg2) is not None
+
+
+def test_fresh_last_ok_is_reused_when_current_fetch_failed():
+    """A failed cycle with a fresh last_ok snapshot keeps the real telemetry authoritative."""
+    import datetime as _dt
+    import kimi_governor as g
+    now = _dt.datetime(2026, 9, 15, 18, 0, tzinfo=_dt.timezone.utc)
+    last_ok = {"plan": "Allegro", "monthly": {"used_ratio": 0.01}, "rolling_5h": {"used_ratio": 0.0},
+               "rolling_7d": {"used_ratio": 0.0}, "source": "api.kimi.com/coding/v1/usages",
+               "source_timestamp": "2026-09-15T13:00:00Z"}
+    fetched = {"fetch_status": "auth_error", "error": "token_stale", "last_ok": last_ok}
+    gov = {"max_state_age_s": 25200}
+    out = g._prefer_fresh_last_ok(fetched, gov, now=now)
+    assert out["fetch_status"] == "ok" and out["last_ok_reused"] is True
+    assert out["current_cycle_fetch_status"] == "auth_error"
+    stale = dict(fetched, last_ok=dict(last_ok, source_timestamp="2026-09-15T05:00:00Z"))
+    assert g._prefer_fresh_last_ok(stale, gov, now=now)["fetch_status"] == "auth_error"

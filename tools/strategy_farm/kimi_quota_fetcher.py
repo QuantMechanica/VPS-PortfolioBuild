@@ -428,9 +428,27 @@ def fetch(cfg: dict[str, Any] | None = None, *, env: dict[str, str] | None = Non
     refresh_calls = int((prev_state or {}).get("refresh_calls") or 0)
     refresh_last_utc = (prev_state or {}).get("refresh_last_utc")
 
+    _LAST_OK_KEYS = ("plan", "plan_status", "plan_region", "subscription_period", "monthly",
+                     "rolling_5h", "rolling_7d", "breakdown", "extra_quota_active",
+                     "source", "source_timestamp", "raw_schema_version")
+
     def _finish(state: dict[str, Any]) -> dict[str, Any]:
         state["refresh_calls"] = refresh_calls
         state["refresh_last_utc"] = refresh_last_utc
+        # Carry the last successful fetch forward across failed cycles (the OAuth
+        # token is a 15-min rolling token, so most 15-min governor cycles between
+        # the bounded refreshes see auth_error). The governor treats a fresh
+        # ``last_ok`` as authoritative; it never contains a token.
+        if state.get("fetch_status") == "ok":
+            state["last_ok"] = {k: state.get(k) for k in _LAST_OK_KEYS}
+        else:
+            prev_ok = None
+            if isinstance(prev_state, dict):
+                if prev_state.get("fetch_status") == "ok":
+                    prev_ok = {k: prev_state.get(k) for k in _LAST_OK_KEYS}
+                elif isinstance(prev_state.get("last_ok"), dict):
+                    prev_ok = dict(prev_state["last_ok"])
+            state["last_ok"] = prev_ok
         if write:
             try:
                 write_state(state, state_path)

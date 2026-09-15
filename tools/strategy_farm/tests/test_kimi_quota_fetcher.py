@@ -342,3 +342,27 @@ def test_refresh_never_leaks_token_in_state_or_ledger(tmp_path: Path, monkeypatc
     assert SECRET not in ledger_text
     # _print_redacted's defence-in-depth guard passes on the written state.
     kqf._print_redacted(json.loads(state_text))
+
+
+def test_failed_fetch_carries_last_ok_forward(tmp_path):
+    """A failed cycle must keep the previous successful snapshot under last_ok (no token)."""
+    import json as _json
+    import kimi_quota_fetcher as f
+    state_path = tmp_path / "state.json"
+    prev = {"fetch_status": "ok", "plan": "Allegro", "monthly": {"used_ratio": 0.01},
+            "rolling_5h": None, "rolling_7d": None, "source": "x",
+            "source_timestamp": "2026-09-15T13:00:00Z",
+            "refresh_calls": 1, "refresh_last_utc": "2026-09-15T13:00:00Z"}
+    state_path.write_text(_json.dumps(prev), encoding="utf-8")
+    cfg = dict(f.load_config())
+    cfg["state_path"] = str(state_path)
+    cfg["refresh"] = dict(cfg.get("refresh") or {}, via_cli=False)
+    # Point the credential lookup at an empty profile so the fetch fails before any network call.
+    cfg["credential_file"] = str(tmp_path / "missing-credentials.json")
+    out = f.fetch(cfg, env={"HOME": str(tmp_path), "USERPROFILE": str(tmp_path)}, write=True)
+    assert out["fetch_status"] != "ok"
+    assert out["last_ok"]["plan"] == "Allegro"
+    assert out["last_ok"]["source_timestamp"] == "2026-09-15T13:00:00Z"
+    persisted = _json.loads(state_path.read_text(encoding="utf-8"))
+    assert persisted["last_ok"]["plan"] == "Allegro"
+    assert "access_token" not in _json.dumps(persisted)

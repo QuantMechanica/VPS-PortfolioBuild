@@ -569,6 +569,28 @@ def _apply_fetcher_params(gov: dict[str, Any], fetcher_cfg: dict[str, Any]) -> N
         gov["caps"] = dict(fgov["runaway_guard"])
 
 
+
+def _prefer_fresh_last_ok(fetched: dict[str, Any], gov: dict[str, Any], *,
+                          now: dt.datetime | None = None) -> dict[str, Any]:
+    """When the current fetch failed but the fetcher carried a ``last_ok`` snapshot that
+    is still within ``max_state_age_s``, treat that snapshot as the authoritative state
+    (fetch_status ok, annotated ``last_ok_reused`` + the failure class of the current
+    cycle). Beyond the window the failed state is returned unchanged -> ledger fallback."""
+    if not isinstance(fetched, dict) or fetched.get("fetch_status") == "ok":
+        return fetched
+    last_ok = fetched.get("last_ok")
+    if not isinstance(last_ok, dict):
+        return fetched
+    candidate = dict(last_ok)
+    candidate["fetch_status"] = "ok"
+    if _quota_state_fresh(candidate, int(gov.get("max_state_age_s") or 0), now or _now()):
+        candidate["last_ok_reused"] = True
+        candidate["current_cycle_fetch_status"] = fetched.get("fetch_status")
+        candidate["refresh_calls"] = fetched.get("refresh_calls")
+        candidate["refresh_last_utc"] = fetched.get("refresh_last_utc")
+        return candidate
+    return fetched
+
 def _fetch_quota_state(fetcher_cfg: dict[str, Any], *, timeout_s: int = _FETCH_TIMEOUT_S,
                        now: dt.datetime | None = None) -> dict[str, Any] | None:
     """Call the quota fetcher in-process, bounded by ``timeout_s`` and fully guarded.
@@ -622,7 +644,7 @@ def evaluate(cfg: dict[str, Any] | None = None, *, dry_run: bool = False,
                                "source_timestamp": (now or _now()).replace(microsecond=0)
                                .isoformat().replace("+00:00", "Z")}
             else:
-                quota_state = fetched
+                quota_state = _prefer_fresh_last_ok(fetched, gov, now=now)
         elif not fetch:
             # Consume the freshest state the governor task last wrote, if any.
             try:

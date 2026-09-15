@@ -1,45 +1,50 @@
 {
   "schema": "qm.kimi-quota-fetcher.v1",
   "_doc": "Config for tools/strategy_farm/kimi_quota_fetcher.py (OWNER directive 2026-09-15, OWNER-DEC-CBE-20260915 sec30-33). One read-only GET to the SAME managed usage endpoint the official Kimi Code CLI usage panel calls, normalized into state_path. Live-verified 2026-09-15 (docs/ops/evidence/2026-09-15_continuous_book_evolution/design/c2_kimi_quota_fetcher_report.md). Every value here is OWNER/Fable-adjustable; the fetcher hardcodes nothing that lives here. NEVER logs/prints/persists the OAuth token. Kill switch: env QM_KIMI_QUOTA_FETCH=0 -> fetch_status 'disabled' without any network call.",
-
   "enabled": true,
   "kill_switch_env": "QM_KIMI_QUOTA_FETCH",
-
   "base_url": "https://api.kimi.com/coding/v1",
   "_base_url_doc": "Region mainland-cn -> api.kimi.com; global accounts use api.kimi.ai. The installed client honours env KIMI_CODE_BASE_URL as an override; so does this fetcher (base_url_env).",
   "base_url_env": "KIMI_CODE_BASE_URL",
   "credential_file": "C:/Users/Administrator/.kimi-code/credentials/kimi-code.json",
   "kimi_bin": "C:/Users/Administrator/.kimi-code/bin/kimi.exe",
-
-  "endpoints": { "usages": "/usages", "me": "/me" },
+  "endpoints": {
+    "usages": "/usages",
+    "me": "/me"
+  },
   "fetch_me": true,
   "_fetch_me_doc": "GET /me carries the plan label (user_level_name, live-verified 'Allegro') plus PII (email/phone/nickname/user_id/global_id/avatar). Only user_level_name/status/region are persisted; every PII field is discarded and never logged.",
-
   "timeout_s": 8,
   "skew_s": 60,
-
   "state_path": "D:/QM/reports/state/kimi_quota_state.json",
   "ledger_path": "D:/QM/reports/state/kimi_usage_ledger.jsonl",
   "raw_schema_version": "coding/v1/usages@2026-09-15",
-
-  "subscription_period": { "start": "2026-09-15", "end": "2026-10-15" },
-
+  "subscription_period": {
+    "start": "2026-09-15",
+    "end": "2026-10-15"
+  },
   "refresh": {
     "_doc": "The OAuth access_token is a 15-min rolling token. Live-verified 2026-09-15: neither 'kimi provider list' nor 'kimi doctor' refreshes it; only a real authenticated model call (a '-p' prompt) triggers ensureFresh, which costs quota. Re-implementing the OAuth grant against auth.kimi.com is a documented non-goal (brittle client_id, auth-surface risk - see kimi_quota_discovery.md risk 6). Because the 15-min governor fetch mostly runs when the token is already stale (no recent adapter call), a BOUNDED best-effort refresh is now ON by default: when the token is stale AND the last successful fetch is older than min_interval_s AND via_cli is true, the fetcher performs ONE cheap model call (cli_args) then fetches. A successful fetch resets the min_interval clock, so this self-bounds to <=4 refresh calls/day at min_interval_s=21600 (6h) - the documented price of real telemetry per directive sec31-33. A separate refresh_last_utc guard prevents a failing refresh from looping. Set via_cli=false to fully disable (stale token -> auth_error -> ledger fallback, no request).",
     "via_cli": true,
     "min_interval_s": 21600,
-    "cli_args": ["-p", "Reply with the single word OK and nothing else."],
+    "cli_args": [
+      "-p",
+      "Reply with the single word OK and nothing else."
+    ],
     "timeout_s": 120
   },
-
   "governor": {
     "_doc": "Real-telemetry thresholds consumed by kimi_governor.compute_state when fetch_status=='ok' and the state is fresh (<= max_state_age_s, i.e. 2x the 15-min governor cadence). Fable-adjustable conservative defaults per directive sec33; they are NOT OWNER Hard Rules and NOT assumed to equal Kimi contractual limits. runaway_guard replaces the old 40/200 call caps as anomaly/runaway-loop protection ONLY - raised so it cannot bind before the real subscription telemetry does (directive sec33: 'do not preserve an arbitrary low ceiling that wastes most of an already-paid subscription' / 'do not remove runaway protection').",
-    "max_state_age_s": 1800,
+    "max_state_age_s": 25200,
     "thresholds": {
-      "conserve_window_ratio": 0.80,
+      "conserve_window_ratio": 0.8,
       "conserve_monthly_ratio": 0.85,
       "exhausted_window_ratio": 0.98
     },
-    "runaway_guard": { "day": 120, "week": 600 }
+    "runaway_guard": {
+      "day": 120,
+      "week": 600
+    },
+    "_max_state_age_doc": "25200 s = 7 h: covers refresh.min_interval_s (6 h) plus slack so the last successful fetch (carried as last_ok) stays authoritative between the bounded token refreshes; beyond it the governor falls back to the local ledger (2026-09-15 x2 follow-up review M1)."
   }
 }
