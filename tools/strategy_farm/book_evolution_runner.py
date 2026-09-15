@@ -236,6 +236,10 @@ def _default_state_builds() -> list[dict[str, Any]]:
         {"name": "factory_bottleneck", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "factory_bottleneck_readmodel.py"), "build"]},
         # §18 AI orchestration health read-model (qm.orchestration-health/v1) for Mission Control.
         {"name": "orchestration_health", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "orchestration_health_readmodel.py"), "build"]},
+        # Follow-up directive s19/s20: strategy universe map + research programme ROI
+        # (deterministic, read-only DB) feed the Research section and Kimi/Fable prioritisation.
+        {"name": "universe_map", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "research" / "universe_map.py")]},
+        {"name": "research_roi", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "research" / "external_roi.py")]},
     ]
 
 

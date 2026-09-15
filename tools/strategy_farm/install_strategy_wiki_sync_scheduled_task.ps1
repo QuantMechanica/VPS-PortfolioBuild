@@ -34,6 +34,8 @@ $trigger = New-ScheduledTaskTrigger -Once -At $startBoundary `
     -RepetitionInterval (New-TimeSpan -Minutes $EveryMinutes) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 $actions = @(
+    # Lineage map first (follow-up directive s9): the wiki build renders per-node relationships from it.
+    New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$RepoRoot	ools\strategy_farm\lineage_map.py`" --summary" -WorkingDirectory $RepoRoot
     New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$tool`" build" -WorkingDirectory $RepoRoot
     New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$tool`" index --init-root-index" -WorkingDirectory $RepoRoot
     New-ScheduledTaskAction -Execute $PythonwExe -Argument "-X utf8 `"$tool`" lint" -WorkingDirectory $RepoRoot
