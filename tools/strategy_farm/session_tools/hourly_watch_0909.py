@@ -60,5 +60,16 @@ try:
     print('live drift', _counts, 'known-dark', sorted(x[0] for x in _alarm if x[0] in _known_dark), 'warn', _warn)
     for x in _new: al.append(f'live_sleeve_drift ALARM {x[0]}/{x[1]} {x[2]}')
 except Exception as e: print('live drift err', e)
+# 2026-09-15: head-of-line claim-order preflight starvation tripwire. The
+# 15-min QM_StrategyFarm_Health_15min task writes this check into health.json
+# via health.chk_q08_head_of_line_claim_starvation; reuse its verdict here
+# instead of re-scanning worker logs (single source of truth).
+try:
+    hj = json.load(open('D:/QM/strategy_farm/state/health.json'))
+    hc = next((r for r in hj.get('checks', []) if r.get('name') == 'q08_head_of_line_claim_starvation'), None)
+    if hc:
+        print('q08_head_of_line_claim_starvation', hc.get('status'), hc.get('detail'))
+        if hc.get('status') == 'FAIL': al.append(f"q08_head_of_line_claim_starvation: {hc.get('detail')}")
+except Exception as e: print('q08_head_of_line_claim_starvation err', e)
 for a in al: print('ALERT', a)
 if not al: print('OK no alerts')

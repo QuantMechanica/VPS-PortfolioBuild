@@ -769,7 +769,74 @@ def assemble(
     }
 
 
-def assemble_single_configuration(conn, candidate, payload, timeframe, window, window_source=None):
+def claimability_precheck(
+    conn: sqlite3.Connection,
+    candidate_row: Mapping[str, Any],
+    payload: Mapping[str, Any],
+    *,
+    ledger_root: Path = DEFAULT_LEDGER_ROOT,
+) -> dict[str, Any]:
+    """Claim-time-independent subset of assemble()'s checks.
+
+    Used by the claim-order preflight (terminal_worker.claim_atomic) to skip
+    Q08 candidates that are doomed regardless of when they get claimed --
+    bad identity/timeframe/window, or (absent a DL-089 search ledger) a
+    single-configuration card/build-identity mismatch -- BEFORE they consume
+    the bounded out-of-lock history-preflight budget. Head-of-line
+    starvation class (2026-09-15): CLAIM_PREFLIGHT_MAX_CANDIDATES exhausted
+    on doomed Q08 rows at the head of the claim order (their DSR-context
+    rejection was only discovered AFTER paying for a preflight slot), so the
+    scan never reached hundreds of plain claimable rows behind them; all ten
+    workers reported no_pending_claimable for ~30 minutes.
+
+    A True result is NOT a guarantee of eventual claimability. The DL-089
+    grouped-cohort path's remaining assembly (matrix rows, peer dispersion)
+    and the single-configuration path's factory-search-ledger step (which
+    needs payload['claimed_at_iso'], only known at real claim time) are
+    intentionally NOT run here -- both are deferred to the real check in
+    _seal_q08_dsr_at_claim. Only a False result is authoritative and safe to
+    skip a candidate on.
+    """
+    candidate = _row_dict(candidate_row)
+    try:
+        ea_id = str(candidate.get("ea_id") or "")
+        symbol = str(candidate.get("symbol") or "")
+        _require(bool(ea_id and symbol), "CANDIDATE_IDENTITY_UNAVAILABLE")
+        timeframe = _timeframe(candidate, payload)
+        _candidate_window(conn, candidate, payload)
+    except CohortUnavailable as exc:
+        return {"claimable": False, "reason": str(exc)}
+    try:
+        _find_ledger(
+            ea_id=ea_id, symbol=symbol, timeframe=timeframe,
+            ledger_root=Path(ledger_root),
+        )
+        # DL-089 ledger found: the rest of assemble()'s grouped-cohort branch
+        # has no claim-time dependency either, but re-running its full
+        # DB-bound assembly here would double the in-lock query cost of
+        # every claim attempt for every DL-089 EA. The ledger's presence is
+        # already a strong claimable signal; defer full assembly to the real
+        # seal, consistent with this function's "only False is
+        # authoritative" contract.
+        return {"claimable": True, "reason": None}
+    except CohortUnavailable as exc:
+        if str(exc) != "SEALED_SEARCH_LEDGER_UNAVAILABLE":
+            return {"claimable": False, "reason": str(exc)}
+    try:
+        _resolve_single_configuration_identity(candidate, payload, timeframe)
+    except CohortUnavailable as exc:
+        return {"claimable": False, "reason": str(exc)}
+    return {"claimable": True, "reason": None}
+
+
+def _resolve_single_configuration_identity(candidate, payload, timeframe):
+    """Card declaration + build-identity match: the claim-time-independent
+    half of assemble_single_configuration(). Raises CohortUnavailable
+    (wrapped SINGLE_CONFIGURATION_UNAVAILABLE) on the same failure modes as
+    before extraction; needs no payload['claimed_at_iso']. Shared by
+    assemble_single_configuration() and claimability_precheck() so the
+    preflight-budget precheck can never drift from the real check.
+    """
     try:
         from . import dsr_single_configuration as single
     except ImportError:
@@ -790,6 +857,20 @@ def assemble_single_configuration(conn, candidate, payload, timeframe, window, w
             _require(all(value == identity[role+'_sha256'] for value in claims if value), 'CONFLICTING_BUILD_IDENTITY:'+role)
         candidate_id = {'ea_id': str(candidate['ea_id']), 'symbol': str(candidate['symbol']), 'timeframe': timeframe}
         single.validate(provenance, candidate_id, identity)
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:'+str(exc)) from exc
+    return candidate_id, provenance, identity
+
+
+def assemble_single_configuration(conn, candidate, payload, timeframe, window, window_source=None):
+    try:
+        from . import dsr_single_configuration as single
+    except ImportError:
+        import dsr_single_configuration as single
+    candidate_id, provenance, identity = _resolve_single_configuration_identity(
+        candidate, payload, timeframe
+    )
+    try:
         factory_search_ledger = _factory_search_before_q08_claim(conn, candidate, payload)
     except (OSError, ValueError, KeyError, TypeError) as exc:
         raise CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:'+str(exc)) from exc

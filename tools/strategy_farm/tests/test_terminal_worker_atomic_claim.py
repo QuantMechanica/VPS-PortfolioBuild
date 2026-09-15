@@ -182,6 +182,123 @@ class TerminalWorkerAtomicClaimTests(unittest.TestCase):
         self.assertTrue(result["claimable"])
         self.assertEqual(result["status"], "SEALED")
 
+    def test_head_of_line_doomed_q08_rows_do_not_starve_a_claimable_row_behind_them(
+        self,
+    ) -> None:
+        """2026-09-15 head-of-line preflight starvation: Q08 rows whose DSR
+        context can never seal (bad window/timeframe, independent of claim
+        time) used to be discovered only AFTER paying for a scarce
+        out-of-lock history-preflight slot (CLAIM_PREFLIGHT_MAX_CANDIDATES).
+        With enough such rows bunched at the head of the claim order, every
+        slot got spent on doomed rows before the scan ever reached a plain
+        claimable row behind them -> the whole fleet reported
+        no_pending_claimable despite claimable work existing. The claim-time-
+        independent precheck must catch these before they touch the budget."""
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            doomed_count = terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2
+            for index in range(doomed_count):
+                self._insert_work_item(
+                    root,
+                    f"doomed-q08-{index}",
+                    "EURUSD.DWX",
+                    phase="Q08",
+                    ea_id=f"QM5_{9500 + index}",
+                    # setfile_path stays the "dummy.set" default: no
+                    # timeframe token and no from_date/to_date in payload,
+                    # so the DSR window/timeframe can never resolve no
+                    # matter when this row is claimed.
+                )
+            self._insert_work_item(
+                root, "plain-claimable", "GBPUSD.DWX", phase="Q04",
+            )
+            with patch.dict(
+                os.environ,
+                {
+                    "QM_DSR_V2": "1",
+                    terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+                },
+                clear=False,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "plain-claimable")
+            # The doomed rows must be caught by the cheap precheck, not by
+            # burning the out-of-lock history-preflight budget: the only
+            # out-of-lock history preflight paid for is the plain row's own
+            # (unavoidable, unrelated to this fix) -- none of the ten doomed
+            # Q08 rows ahead of it consumed a CLAIM_PREFLIGHT_MAX_CANDIDATES
+            # slot, proving the scan reached the plain row without the
+            # budget ever being exhausted on the doomed head.
+            preflights = result.get("history_claim_preflights", [])
+            self.assertEqual(
+                [entry["item_id"] for entry in preflights], ["plain-claimable"]
+            )
+
+    def test_head_of_line_doomed_q08_rows_report_the_precheck_stage_when_no_row_is_claimable(
+        self,
+    ) -> None:
+        """Companion to the test above: with no plain row behind the doomed
+        Q08 rows, the scan legitimately ends no_pending_claimable -- but
+        every doomed row must be attributed to the cheap precheck stage, and
+        the out-of-lock preflight budget must show zero retries spent."""
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            doomed_count = terminal_worker.CLAIM_PREFLIGHT_MAX_CANDIDATES + 2
+            for index in range(doomed_count):
+                self._insert_work_item(
+                    root,
+                    f"doomed-q08-{index}",
+                    "EURUSD.DWX",
+                    phase="Q08",
+                    ea_id=f"QM5_{9500 + index}",
+                )
+            with patch.dict(
+                os.environ,
+                {
+                    "QM_DSR_V2": "1",
+                    terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV: "1",
+                },
+                clear=False,
+            ):
+                result = terminal_worker.claim_atomic(root, "T1")
+
+            self.assertFalse(result.get("claimed"), result)
+            self.assertEqual(result.get("reason"), "no_pending_claimable")
+            self.assertEqual(
+                len(result.get("q08_dsr_context_skipped", [])), doomed_count
+            )
+            for skipped in result["q08_dsr_context_skipped"]:
+                self.assertEqual(
+                    skipped["stage"], "claim_time_independent_precheck"
+                )
+            self.assertNotIn("history_claim_preflights", result)
+
+    def test_q08_precheck_disabled_by_default_flag_leaves_starvation_path_unchanged(
+        self,
+    ) -> None:
+        """The precheck must be inert unless both Q08 DSR preflight env
+        vars are set -- matching _seal_q08_dsr_at_claim's own gate -- so a
+        site that never enabled the DSR preflight sees byte-identical
+        behavior to before this fix."""
+        with self._root() as tmp:
+            root = Path(tmp) / "farm"
+            self._insert_work_item(
+                root, "doomed-q08-0", "EURUSD.DWX", phase="Q08", ea_id="QM5_9500",
+            )
+            with patch.dict(os.environ, {}, clear=False):
+                os.environ.pop("QM_DSR_V2", None)
+                os.environ.pop(terminal_worker.Q08_DSR_CONTEXT_PREFLIGHT_ENV, None)
+                result = terminal_worker.claim_atomic(root, "T1")
+            # With the DSR preflight flag off, _seal_q08_dsr_at_claim always
+            # reports claimable=True (best-effort sealing only) -- so the row
+            # is claimed exactly as it was before this fix existed, and the
+            # new precheck must never have engaged.
+            self.assertTrue(result.get("claimed"), result)
+            self.assertEqual(result["item"]["id"], "doomed-q08-0")
+            self.assertEqual(result.get("q08_dsr_context_skipped", []), [])
+
     def test_longrun_ram_probe_reuses_prelock_process_snapshot(self) -> None:
         with self._root() as tmp:
             root = Path(tmp) / "farm"

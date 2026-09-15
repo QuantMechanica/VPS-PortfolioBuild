@@ -127,6 +127,91 @@ def test_existing_payload_context_is_removed_on_refusal(tmp_path, monkeypatch):
     assert payload["dsr_context_status"]["status"] == "UNAVAILABLE"
 
 
+def test_claimability_precheck_agrees_with_attach_on_a_sealed_dl089_candidate(tmp_path, monkeypatch):
+    con, candidate, payload = fixture(tmp_path, monkeypatch)
+    result = dsr_cohort.claimability_precheck(
+        con, candidate, payload, ledger_root=tmp_path / "ledgers"
+    )
+    assert result == {"claimable": True, "reason": None}
+    # Precheck must never mutate the caller's payload (it is speculative,
+    # run before the row is claimed; the real seal below still needs a
+    # pristine payload to attach dsr_context to).
+    assert "dsr_context" not in payload
+    status = dsr_cohort.attach(
+        con, candidate, payload, ledger_root=tmp_path / "ledgers",
+        artifact_root=tmp_path / "out",
+    )
+    assert status["status"] == "SEALED"
+
+
+def test_claimability_precheck_rejects_unresolvable_window_same_as_assemble(tmp_path, monkeypatch):
+    """2026-09-15 head-of-line starvation fix: a Q08 row whose window can never
+    resolve (no from_date/to_date, no data_window_start/end, no lineage) must
+    be predicted False by the cheap precheck -- and that False must agree
+    with what attach() would find at real claim time, so the claim-order
+    preflight can safely skip it without ever paying for the out-of-lock
+    history preflight."""
+    con, candidate, payload = fixture(tmp_path, monkeypatch)
+    broken_payload = {"expected_period": "D1"}  # from_date/to_date removed
+    result = dsr_cohort.claimability_precheck(con, candidate, broken_payload)
+    assert result["claimable"] is False
+    assert result["reason"] == "CANDIDATE_WINDOW_UNAVAILABLE"
+    broken_payload["claimed_at_iso"] = "2026-09-15T09:30:00+00:00"
+    status = dsr_cohort.attach(
+        con, candidate, broken_payload, ledger_root=tmp_path / "ledgers",
+        artifact_root=tmp_path / "out",
+    )
+    assert status["status"] == "UNAVAILABLE"
+    assert status["reason"] == "CANDIDATE_WINDOW_UNAVAILABLE"
+
+
+def test_claimability_precheck_rejects_unresolvable_timeframe(tmp_path, monkeypatch):
+    con, candidate, payload = fixture(tmp_path, monkeypatch)
+    broken_payload = {"from_date": "2024.01.01", "to_date": "2025.12.31"}
+    broken_candidate = dict(candidate, setfile_path="no_timeframe_token.set")
+    result = dsr_cohort.claimability_precheck(con, broken_candidate, broken_payload)
+    assert result == {"claimable": False, "reason": "CANDIDATE_TIMEFRAME_UNAVAILABLE"}
+
+
+def test_claimability_precheck_never_needs_claimed_at_iso_on_the_single_configuration_path(
+    tmp_path, monkeypatch
+):
+    """The single-configuration fallback's factory-search-ledger step is the
+    ONE part of assemble() that depends on payload['claimed_at_iso'] (the
+    claim timestamp is not known until the row is actually claimed). The
+    precheck must never reach it -- if it did, this monkeypatched sentinel
+    would raise on a payload that deliberately has no claimed_at_iso."""
+    import dsr_cohort as dc
+
+    def _boom(*_args, **_kwargs):
+        raise AssertionError(
+            "claimability_precheck must never call the claim-time-dependent "
+            "factory-search-ledger step"
+        )
+
+    monkeypatch.setattr(dc, "_find_ledger", lambda **_k: (_ for _ in ()).throw(
+        dc.CohortUnavailable("SEALED_SEARCH_LEDGER_UNAVAILABLE")
+    ))
+    monkeypatch.setattr(dc, "_factory_search_before_q08_claim", _boom)
+    monkeypatch.setattr(
+        dc,
+        "_resolve_single_configuration_identity",
+        lambda candidate, payload, timeframe: (
+            {"ea_id": "QM5_42", "symbol": "EURUSD.DWX", "timeframe": timeframe},
+            {},
+            {},
+        ),
+    )
+    con = sqlite3.connect(":memory:")
+    candidate = {
+        "id": "q08-single", "ea_id": "QM5_42", "symbol": "EURUSD.DWX",
+        "setfile_path": "x_D1_x.set",
+    }
+    payload_without_claim_time = {"from_date": "2024.01.01", "to_date": "2025.12.31"}
+    result = dc.claimability_precheck(con, candidate, payload_without_claim_time)
+    assert result == {"claimable": True, "reason": None}
+
+
 def test_window_pair_accepts_bare_year_edges():
     """2026-09-14: Q08 reruns declare expected_from_date='2017'/expected_to_date='2022'; a bare year is a
     whole-year edge (first day for from, last day for to); partial or malformed dates stay refused."""

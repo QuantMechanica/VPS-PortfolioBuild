@@ -6154,6 +6154,47 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                             "candidate": dict(item),
                             "program_id": opt_program,
                         }
+                    q08_preflight_enabled = (
+                        os.environ.get(Q08_DSR_CONTEXT_PREFLIGHT_ENV) == "1"
+                        and os.environ.get("QM_DSR_V2") == "1"
+                    )
+                    if (
+                        q08_preflight_enabled
+                        and str(_work_item_value(item, "phase", "") or "").upper()
+                        == "Q08"
+                    ):
+                        # Head-of-line preflight starvation (2026-09-15): a Q08
+                        # row whose DSR context is doomed by bad identity/
+                        # timeframe/window or a single-configuration build-
+                        # identity mismatch used to reach that verdict only
+                        # AFTER paying for a scarce out-of-lock history-
+                        # preflight slot (below), because _seal_q08_dsr_at_claim
+                        # ran after the history gate. With claimable Q08 rows
+                        # bunched at the head of the claim order, three such
+                        # rows exhausted CLAIM_PREFLIGHT_MAX_CANDIDATES before
+                        # the scan ever reached the hundreds of plain claimable
+                        # rows behind them (fleet-wide no_pending_claimable for
+                        # ~30 min despite 347 claimable <=14GB rows). This
+                        # cheap, claim-time-independent precheck runs first so
+                        # a permanently-doomed row is skipped without spending
+                        # preflight budget; it never says a row IS claimable
+                        # (that still needs the real claim-time seal below),
+                        # only that it definitely is NOT.
+                        try:
+                            from tools.strategy_farm import dsr_cohort
+                        except ModuleNotFoundError:
+                            import dsr_cohort
+                        q08_precheck = dsr_cohort.claimability_precheck(
+                            conn, item, payload
+                        )
+                        if q08_precheck.get("claimable") is False:
+                            skipped_q08_dsr_context.append({
+                                "item_id": item["id"],
+                                "ea_id": item["ea_id"],
+                                "reason": q08_precheck.get("reason"),
+                                "stage": "claim_time_independent_precheck",
+                            })
+                            continue
                     history_fingerprint = _history_preflight_fingerprint(item)
                     history_preflight = history_preflight_cache.get(str(item["id"]))
                     if (

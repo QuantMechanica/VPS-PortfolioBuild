@@ -1447,6 +1447,111 @@ def chk_claude_review_starved(con) -> dict:
     return _check("claude_review_starved", "OK", n_starved, 3, "no starvation", "")
 
 
+def chk_q08_head_of_line_claim_starvation(con) -> dict:
+    """Fleet-wide claim starvation despite a claimable backlog.
+
+    2026-09-15 incident: Q08 rows at the head of the claim order whose DSR
+    context could never seal (independent of when they were claimed) burned
+    the bounded out-of-lock history-preflight budget
+    (CLAIM_PREFLIGHT_MAX_CANDIDATES) before the scan ever reached the
+    hundreds of plain claimable rows behind them. All ten workers reported
+    no_pending_claimable for ~30 minutes while claimable work sat unclaimed;
+    this check had no alert for it. Fixed in terminal_worker.claim_atomic
+    (claim-time-independent Q08 precheck, dsr_cohort.claimability_precheck),
+    but a *new* claim-order class rejected in-lock while still passing an
+    out-of-lock preflight selection could reopen the same deadlock silently
+    -- this check is the fleet-wide tripwire for that recurrence, not a
+    guard against this one specific cause.
+
+    "Claimable backlog" is approximated as pending rows blocked by neither
+    an active hold, an active supersede, nor an active poison-pill
+    quarantine -- the same predicate claim_atomic's own in-lock blocked-check
+    uses (terminal_worker.py, the UPDATE ... WHERE NOT EXISTS clauses) minus
+    the live, host-state-dependent RAM/commit admission checks, which this
+    read-only check cannot evaluate without a live host probe. "Idle
+    worker" is a terminal whose terminal_worker_T*.log shows at least one
+    claim_result in the last 10 minutes and NONE of them claimed=true.
+    """
+    claimable = con.execute(
+        """
+        SELECT COUNT(*) FROM work_items w
+        WHERE w.status='pending'
+          AND NOT EXISTS (
+            SELECT 1 FROM work_item_holds h
+            WHERE h.work_item_id=w.id AND h.active=1
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM work_item_supersedes s
+            WHERE s.work_item_id=w.id
+          )
+          AND NOT EXISTS (
+            SELECT 1 FROM poison_pill_quarantine q
+            WHERE q.ea_id=w.ea_id AND q.symbol=w.symbol
+              AND (q.phase=w.phase OR q.phase='*') AND q.active=1
+          )
+        """
+    ).fetchone()[0]
+    if claimable == 0:
+        return _check("q08_head_of_line_claim_starvation", "OK", claimable, 0,
+                      "0 claimable pending rows (idle workers expected)", "")
+    cutoff = _utc_now() - dt.timedelta(minutes=10)
+    idle_terminals: list[str] = []
+    seen_terminals = 0
+    try:
+        for path in sorted(LOG_DIR.glob("terminal_worker_T*.log")):
+            terminal = path.stem.replace("terminal_worker_", "")
+            try:
+                tail = path.read_text(encoding="utf-8", errors="replace")[-200_000:]
+            except OSError:
+                continue
+            saw_result = False
+            saw_claim = False
+            for line in tail.splitlines()[-2000:]:
+                line = line.strip()
+                if not line or '"claim_result"' not in line and '"stage_event": "claim_result"' not in line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if entry.get("stage_event") != "claim_result":
+                    continue
+                try:
+                    at = dt.datetime.fromisoformat(str(entry.get("at_utc")).replace("Z", "+00:00"))
+                except (TypeError, ValueError):
+                    continue
+                if at < cutoff:
+                    continue
+                saw_result = True
+                if entry.get("claimed"):
+                    saw_claim = True
+                    break
+            if saw_result:
+                seen_terminals += 1
+                if not saw_claim:
+                    idle_terminals.append(terminal)
+    except OSError as exc:
+        return _check("q08_head_of_line_claim_starvation", "WARN", claimable, 0,
+                      f"log scan failed: {exc!r}",
+                      "Confirm D:/QM/strategy_farm/logs is reachable.")
+    if seen_terminals >= 8 and len(idle_terminals) >= 8:
+        return _check(
+            "q08_head_of_line_claim_starvation", "FAIL", len(idle_terminals), 8,
+            f"{len(idle_terminals)}/{seen_terminals} terminals claimed nothing in "
+            f"the last 10min while {claimable} pending rows are unblocked "
+            f"(idle: {','.join(idle_terminals)})",
+            "Check claim_result skip_samples in the idle terminals' logs for a "
+            "row class rejected in-lock but passing the out-of-lock preflight "
+            "selection (the 2026-09-15 class was Q08 DSR context); do not "
+            "release holds by RAM class alone.",
+        )
+    return _check(
+        "q08_head_of_line_claim_starvation", "OK", len(idle_terminals), 8,
+        f"{len(idle_terminals)}/{seen_terminals} terminals idle >=10min, "
+        f"{claimable} pending rows unblocked", "",
+    )
+
+
 def chk_mt5_dispatch_idle(con) -> dict:
     """Dispatch idle = pending queue piling up with no progress.
 
@@ -4628,6 +4733,8 @@ ALL_CHECKS = [
     ("claim_to_complete_latency", chk_claim_to_complete_latency, True),
     ("q10_cell_throughput", chk_q10_cell_throughput, True),
     ("terminal_requalification_verdicts_count", chk_terminal_requalification_verdicts_count, True),
+    # Head-of-line claim-order preflight starvation tripwire (2026-09-15)
+    ("q08_head_of_line_claim_starvation", chk_q08_head_of_line_claim_starvation, True),
 ]
 
 
