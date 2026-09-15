@@ -2,84 +2,81 @@
 
 **Owner of this file:** Kimi (interim Quant Research + Strategy Engineering lead, OWNER_DIRECT_SESSION_DELEGATION, started 2026-09-15).
 **Purpose:** continuity contract for Fable/Claude on return. Keep current.
-**Last update:** 2026-09-15 ~20:50 UTC.
+**Last update:** 2026-09-15 ~23:30 UTC.
 
 ## Current branch / HEAD
 
-- Main repo `C:\QM\repo`: branch `agents/board-advisor`, HEAD `da1b4b4e0c` ("EDGE-2 & EDGE-4 REFUTED"), ahead 86+ of origin.
-- ~438 dirty files in main worktree. **Mine (safe to commit):** 3 installer ps1 files, this handoff, the run-as repair receipt. **Pre-existing, ownership unknown — DO NOT touch:** `decisions/REGISTRY.md`, `docs/ops/FTMO_CHALLENGE_READINESS.md`, `docs/ops/OPEN_ITEMS_STATUS.md`, `docs/research/RESEARCH_PROGRAMME_ROI_2026-09.md`, `docs/research/STRATEGY_UNIVERSE_MAP_2026-09.md`, `docs/research/edge_lab/EDGE_LAB_MEASUREMENT_LOG.md`, `framework/EAs/QM5_12109.../sets/...NDX.DWX_H4_q05_stress_medium.set`, `framework/registry/ea_origin.v1.csv`, `tools/strategy_farm/book_evolution_runner.py`, `tools/strategy_farm/research/edge_lab_stats.py`, `tools/strategy_farm/tests/test_edge_lab_stats.py`.
-- Directive-3 base commit: `1617cb22be` (verbatim directive at `docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_3_max_factory_utilization_verbatim.md`; master CBE directive alongside it).
+- Main repo `C:\QM\repo`: branch `agents/board-advisor`, HEAD `0b2a5a6b63` (all Wave-1 slices merged), ahead ~95 of origin. NOTHING pushed.
+- Remaining dirty files are pre-existing unknown-owner items (`.set` file, `ea_origin.v1.csv` line-endings, deleted `artifacts/qm5_41262_build_result_20260901.json`, machine regen drift recurring on the living docs — normal cadence). Not mine, not touched.
 
-## Directive-3 worktree state — Wave 1 audit COMPLETE (2026-09-15 ~20:25 UTC)
+## Directive-3 worktree state — **WAVE 1 MERGED INTO MAIN 2026-09-15** 
 
-8 slices at `.claude/worktrees/wf_717b9d36-ba6-1..8`, based on `1617cb22be`, none committed beyond base.
-Wave/reviewer structure came from the Claude orchestrator session fanout (temp dir `%TEMP%\1\claude\C--QM-repo\15a7ddd6-...` — **may be wiped on reboot; the review files live in each worktree's `docs/ops/evidence/2026-09-15_continuous_book_evolution/review/<slice>_review.md`**). No Wave 2 was ever defined for Directive 3 (session died on Claude weekly limit; resets 2026-09-17 22:00 UTC).
+Merge executed by Kimi interim per §38/§39/§40 (reviews on disk = independent Claude adversarial passes; all test suites re-verified; zero merge-caused regressions — proof in receipt). Full plan: `docs/ops/evidence/2026-09-15_directive3_wave1_merge_map.md` · execution receipt: `docs/ops/evidence/2026-09-15_directive3_wave1_merge/receipt.md`.
 
-| Slice | Workstream | Review (Claude adversarial) | Classification |
-|---|---|---|---|
-| ba6-1 | a1 AI capacity read-model | ACCEPT 20:05 | DONE/REVIEWED — merge candidate |
-| ba6-2 | b1 AI capability benchmark | **NONE — impl died on quota, patch never extracted** | **BLOCKED/AT RISK** — substantial uncommitted work + real scorecard at `D:\QM\reports\state\ai_capability_scorecard.json` |
-| ba6-3 | d1 Strategy Eligibility V2 | ACCEPT_WITH_FIXES 20:09 | DONE/REVIEWED |
-| ba6-4 | e1 second-chance register | ACCEPT_WITH_FIXES 20:21 | DONE/REVIEWED (register output already live: `D:\QM\reports\state\second_chance_register.json`, 542 eligible) |
-| ba6-5 | g1 VPS resource scheduler | ACCEPT_WITH_FIXES 20:11 | DONE/REVIEWED |
-| ba6-6 | h1 live sleeve PnL attribution | ACCEPT_WITH_FIXES 20:09 | DONE/REVIEWED |
-| ba6-7 | i1 FTMO first-passage | ACCEPT_WITH_FIXES 20:08 — apply blocked on main's dirty `FTMO_CHALLENGE_READINESS.md` | DONE/REVIEWED |
-| ba6-8 | j1 pattern-filter catalog | ACCEPT_WITH_FIXES 20:05 (1 MAJOR: contaminated census baseline) | DONE/REVIEWED |
-
-**Collisions:** `book_evolution_runner.py` = MAIN + ba6-1 + ba6-6 (triple); `strategy_wiki_sync.py` = ba6-4 + ba6-6; `decisions/REGISTRY.md` = MAIN + ba6-1; `docs/ops/FTMO_CHALLENGE_READINESS.md` = MAIN + ba6-7. No other overlaps.
-**All 4 other wf_* families (4fa62b18/65943105/7604e910/897bf49f) are today's CBE master-directive programme — their commits are already merged into main (`da1b4b4e0c`); only uncommitted remnants remain in those worktrees (quiet since 18:38 local).**
+- Merged (cherry-picked `-x` from checkpoint commits): ba6-1 a1 AI capacity `5f20a0532f` · ba6-6 h1 live sleeve PnL `484d3f0228` · ba6-4 e1 second-chance `a6752e7254` · ba6-7 i1 FTMO first-passage `f35f303e4a` (+ readiness doc regenerated `167174f837` per review blocking fix) · ba6-3 d1 eligibility v2 `9cad21ef11` · ba6-5 g1 resource scheduler `4eb4058012` · ba6-8 j1 pattern catalog `0b2a5a6b63`.
+- Conflicts resolved: book_evolution_runner keep-both (ai_capacity + live_sleeve_attribution state builds); strategy_wiki_sync keep-both (second_chance + live_pnl joins; one mis-resolution caught by tests and fixed, 27/27 green).
+- **ba6-2 (b1 AI benchmark) deliberately NOT merged** — decision gate: unreviewed, no design report. Worktree checkpointed `8d203c053e`; evidence verified real (scorecard at `D:\QM\reports\state\ai_capability_scorecard.json` matches its doc). Recommendation: Fable completes it (write b1 design report + one adversarial review pass, focus: providers.py spawn guards + benchmark_code shell fencing), then merge. Abandonment also defensible.
+- Slice worktrees still on disk with checkpoint commits; fanout temp JSONs in `%TEMP%\1\claude\...` may be wiped on reboot — everything essential is now committed.
+- **OPEN tracked fixes from the reviews (for Fable):** j1 census-join contaminated baseline (fix `load_census_join` strict arm + re-run before citing figures; the "0 filters ever selected" headline is verified independent of the defect) · g1 STEP-2 calibrated RAM table 4→8 GB census doubling (default-off; pin before activation) · d1 residual grid guard at `governed_magic_allocator.py:374` (known; fail-closed) · e1 OOS-window caveat must travel with any second-chance enqueue.
+- **No Wave 2 was ever defined for Directive 3** — orchestrator session died on Claude weekly limit. §43 order A–J residuals ready to commission: c1 routing, e2, f1/f2 tail-risk engine (prerequisite: merged eligibility v2 + tail-risk research doc, both now on main).
 
 ## Completed work (Kimi interim)
 
-1. **Full collision/truth audit** (this file + subagent reports).
-2. **P5 scheduled-task run-as repair** — evidence: `docs/ops/evidence/2026-09-15_scheduled_task_runas_repair/receipt.md`. Root causes: SYSTEM has no G: mapping (probed with a SYSTEM probe task: G_MISSING); literal TAB in wiki-sync installer path; kimi lane needs console-session hop. Fixed 3 canonical installers, re-registered, verified: wiki-sync GREEN 20:41Z, KimiOrchestration rc=0. BookEvolution weekly suite re-registered (first live firing **Friday 2026-09-18 23:15 local** — watch item).
+1. Full collision/truth audit (4 subagent passes).
+2. P5 scheduled-task run-as repair — `db4bd1fa83`, receipt `docs/ops/evidence/2026-09-15_scheduled_task_runas_repair/receipt.md` (wiki-sync GREEN, KimiOrchestration rc=0, BookEvolution readmodels rc=0; weekly ceremony first live firing **Fri 2026-09-18 23:15 local**).
+3. **Directive-3 Wave-1 merge** (above).
+4. P2 second-chance Wave-1 commission: QM5_11563 retest task `b0ef5d66` (gemini lane IN_PROGRESS; receipt `docs/ops/evidence/2026-09-15_second_chance_wave1/`).
+5. News-calendar REFUSED root-caused + repair **prepared not applied** (`docs/ops/evidence/2026-09-15_news_calendar_repin_repair/` — guarded applier + 38-field verified patch; needs OWNER/Fable hand per "kein AI-Commit").
+6. Design-2 reuse assessment (shell reusable today; checklist delivered to H-CW implementer).
 
 ## New Strategy Cards
 
-- **H-CW (cash-window index continuation, session-flat, NDX/GDAXI/SP500 H1)** — mechanized card sealed as `strategy-seeds/sources/QM-RESEARCH-2026-0002/H_CW_card.md` (provenance QM-RESEARCH-2026-0002, lineage parent 0001). **Preregistration was NULL → delegated**: coder agent (agent-4) is running preregistration + formal card + Q00 intake + V5 EA implementation in isolated worktree `C:\QM\worktrees\kimi-hcw-20260915`, branch `agents/kimi-hcw-20260915`. Status: **REVIEW_PENDING** (independent non-Kimi critique cannot run: claude disabled to 09-17, codex hold to 09-19, agy quota-dead).
+- **QM5_41475_cash-window-index-continuation-h1** (H-CW) — `artifacts/cards_approved/QM5_41475_cash-window-index-continuation-h1.md`, house format, provenance QM-RESEARCH-2026-0002, deterministic risk contract, prescreen **KEEP** (0 reasons). **Preregistered:** `strategy-seeds/sources/QM-RESEARCH-2026-0002/preregistration.json` v1, record_sha256 `cd661891…54322e`, spec=H_CW_card.md (`--check` unchanged).
 
 ## New EAs implemented
 
-- In progress by agent-4 (H-CW EA). Expected: `QM5_<new-id>_cash-window-index-continuation-h1`, Design-2 visual family, REVIEW_PENDING.
+- **QM5_41475_cash-window-index-continuation-h1** — worktree `C:\QM\worktrees\kimi-hcw-60915` (branch `agents/kimi-hcw-20260915`), commits `807038391e` (card+prereg) → `1c1896ed23` (EA+setfiles) → `b053b3670b` (receipt) → `b18a46b5cf` (fixes). V5 skeleton + EA-dir module `QM41475_CashWindowCore.mqh`; UTC sessions via QM_DSTAware (13–17 entry / 20 flatten / Fri 17 cutoff); closed-bar breakout of first N session bars + EMA confirm; ATR stop 1.0×; TP 1.75R; 6-bar time stop; shock/spread-median/fail-closed-news/daily −1%/weekly −2%/one-entry-per-day filters; **Design-2 `QM_ChartPanelCompare` panel integrated** (tester-bypassed); SPEC.md + visualization_spec.md. **Compile: 0 errors 0 warnings** (MetaEditor vs staged include tree; log in evidence). 21 allocator/precheck/resolver tests pass.
+- **STATUS = REVIEW_PENDING.** Blocked at magic allocation: governed allocator accepted the card but refuse fail-closed because **QM5_11924 / QM5_11941 EA dirs exist only as uncommitted content in the canonical worktree** (allocated 2026-09-13, never committed) — no clean worktree can regenerate the resolver without dropping them. No registry hand-edits done. **Unblock for Fable:** commit those two orphan EA dirs (verify content first!) or OWNER-reviewed `--allow-dropped`, then rerun allocator from the H-CW worktree → gen_setfile (`build_hash: pending`) → governed COMPILE_EA + smoke on a free terminal.
+- Evidence: `docs/ops/evidence/2026-09-15_kimi_hcw/RECEIPT.md`.
 
 ## Factory work enqueued
 
-- None yet by Kimi. Factory was IDLE at audit: 3,795 queue / 2 active Q07 backtests (T3/T6), 75 build_ea tasks stalled (codex hold + repo-dirty guard), 531-item RAM_44GB hold wall (GRÜN fix defined in Phase-A snapshot — not yet executed by me), 2,555 PRESCREEN_SKIPPED holds.
-- Quota at audit: claude 100% (dead to 09-17), codex 80% hold (to 09-19), **kimi fully available**, gemini active (3 REVIEW tasks).
+- Second-chance Wave-1: QM5_11563 retest, agent task `b0ef5d66`, gemini lane IN_PROGRESS (20:52Z). Note its terminal history = Q08 INVALID ×2 (DSR-context class) — may stall on the Q08_DSR hold class; disposition is Fable's.
+- Nothing else enqueued by me. Factory at audit: 2 active Q07 backtests, build lane stalled (codex hold to 09-19 + repo-dirty guard now PARTIALLY relieved — Wave-1 merge removed ~30 dirty files; the guard's remaining blockers are the unknown-owner stragglers above).
 
 ## Research findings
 
-- H-CW motivation: 9/10 index intraday/scalp Q10 rows PASS in farm's own evidence; universe map: high-density FTMO-fit = only 1.05% of pairs; top white space = mean-reversion/intraday × session-open × **index** (EV 34, n=0).
-- EDGE-2/4/5 all REFUTED/DEAD (committed by prior session, `da1b4b4e0c`/`0062d3fc58`).
-- FTMO: NOT_READY (realized -10.26% DD breach in cycle 1); current 8-sleeve swing demo unrepresentative; #1 gap = purpose-built FTMO-fit roster (H-CW is the first candidate).
+- H-CW motivation: farm's own evidence shows 9/10 index intraday/scalp Q10 rows PASS; universe map high-density FTMO-fit = 1.05% of pairs; top white space = intraday × session-open × index (EV 34, n=0). H-CW is the momentum-side candidate; a session-open mean-reversion complement remains unwritten white space.
+- EDGE-2/4/5 all REFUTED/DEAD (pre-session commits). FTMO NOT_READY (−10.26% realized DD breach history); current 8-sleeve swing demo unrepresentative.
+- Second-chance register (now merged tooling): 1,285 records → 542 eligible; only 60 have any metrics; Wave-1 = QM5_11563 commissioned.
 
-## Second-chance candidates
+## Design-2 visual standard
 
-Register live (ba6-4): 1,285 records → 542 eligible. Best evidence-bearing: **QM5_11563** (INFRA_FAIL, Q06 PASS, PF 1.57, 94 trades, DD 4.37%, GBPUSD — register priority 89.7, Wave-1 retest = clean rerun), then QM5_10648 (GDAXI Q04 PASS PF 1.33/375), QM5_1355 (NDX Q06 PASS PF 1.27/122/DD 8.5%), QM5_1354 (XAUUSD Q09 PASS PF 1.25/58), QM5_9576 (NDX Q05 PASS PF 1.22/50). All SCALPING/PYRAMIDING/MULTI_POSITION eligible records are card-stage rejections with zero backtests. 116 NO_EXTERNAL_SOURCE need `QM-RESEARCH://` provenance mint before Q00.
+Inspection complete (agent-6): shell reusable today — include `QM_ChartPanelCompare.mqh` + 13-arg Initialize + EA-local snapshot builder (~100–150 lines mirroring real trading gates). QM5_41475 is the second adopter. No generic presenter extension point yet (by design). Reword `QM_ChartPanelCompare.mqh:10-11` canary comment when Fable accepts the pattern.
 
 ## Tests / evidence
 
-- `docs/ops/evidence/2026-09-15_scheduled_task_runas_repair/receipt.md` (probe result, diffs, verification).
-- Wiki-sync health read-model `D:\QM\reports\state\strategy_wiki_sync.json` GREEN 20:41Z (post-repair).
-- H-CW: preregistration hash + compile/test/smoke receipts → agent-4 will land them under `docs/ops/evidence/2026-09-15_kimi_hcw/`.
+- Wave-1 merge: per-slice suites + 88/88 d1/e1/g1/j1 + 41/41 ftmo/book-evolution + 27/27 wiki-sync — all green on merged main; 11 failures in the touched-module sweep proven byte-identical at pre-merge base (pre-existing noise).
+- Receipts: `2026-09-15_scheduled_task_runas_repair/` · `2026-09-15_directive3_wave1_merge/` (+ merge_map.md) · `2026-09-15_second_chance_wave1/` · `2026-09-15_news_calendar_repin_repair/` · `2026-09-15_kimi_hcw/`.
 
 ## Open blockers
 
-- ba6-2 (AI benchmark) uncommitted + unreviewed — recommend Fable extract/apply its patch first (scorecard already at `D:\QM\reports\state\ai_capability_scorecard.json`).
-- News-calendar refresh REFUSED (`registry pin does not continue from the receipt-chain tail`) — data/guard issue, gates ~200 NEWS-tainted work items; investigation delegated, NOT fixed (evidence-semantics caution).
-- `QM_WorkItemLogPruner_Daily_0310` rc=1 cause undiagnosed.
-- RAM_44GB head-of-line hold wall (531 items) — GRÜN-class fix available per Phase-A snapshot; not yet executed.
-- repo-dirty build guard (438 dirty files) blocks the build lane — mostly other agents' uncommitted work; needs Fable's merge pass.
+1. H-CW magic allocation (orphan EA dirs QM5_11924/11941 — Fable decision).
+2. News-calendar registry patch awaiting OWNER/Fable apply (kein AI-Commit). After apply, scheduled refresh self-heals (receipt 000017).
+3. 99 NEWS_CALENDAR_TAINTED holds need OWNER E1-C decision (Q09 manifest repin vs remeasurement) — orthogonal to #2.
+4. ba6-2 completion decision (Fable).
+5. `QM_WorkItemLogPruner_Daily_0310` rc=1 undiagnosed (deliberately untouched).
+6. Independent critique backlog: H-CW card/prereg/EA (codex earliest 09-19), cross-vendor critic independence degraded (agy OAuth dead — OWNER re-login action from the audit still open).
 
 ## Work intentionally not touched
 
-- Live AutoTrading / T_Live / DXZ v2 cutover (OWNER-only, Sunday 2026-09-20), FTMO purchases, gate verdicts, trade streams, claude/codex/agy lanes, WorkItemLogPruner, NewsCalendar data, main-worktree files owned by others, ba6 worktree contents (preserved as-is for Fable's merge).
+Live AutoTrading / T_Live / DXZ v2 cutover (OWNER-only, Sun 2026-09-20), FTMO purchases, gate verdicts, trade streams, claude/codex/agy lanes, WorkItemLogPruner, news-calendar data/registry (patch prepared only), unknown-owner dirty files, nothing pushed to origin.
 
 ## Recommended next actions for Fable
 
-1. Apply Directive-3 Wave-1 patches (7 ACCEPT*) from the ba6 worktrees; resolve the 5 collision paths (main's dirty files first); extract ba6-2's benchmark patch.
-2. Trigger Directive-3 Wave 2 per §43 order A–J residuals (c1 routing, e2, f1/f2 tail-risk engine) — prerequisites now exist.
-3. Review/merge the H-CW EA (agents/kimi-hcw-20260915) after independent critique becomes possible (codex 09-19).
-4. Run second-chance Wave-1 retest (QM5_11563 clean rerun) once the build lane is unblocked.
-5. Execute the RAM_44GB hold disposition (Phase-A snapshot, GRÜN).
-6. Friday 2026-09-18: watch the first live BookEvolution ceremony firing (23:15 local evidence cut).
+1. Verify + push main (95+ commits unpushed; includes the entire Wave-1 merge).
+2. Unblock H-CW allocation (commit orphan dirs 11924/11941 after content check) → setfiles → governed compile + smoke → independent critique (codex 09-19) → then Q00 governance decision.
+3. Apply the news-calendar registry patch (5 min, guarded applier ready) → verify self-heal; decide Q09 E1-C separately.
+4. Complete ba6-2 (design report + adversarial review) then merge; define Directive-3 Wave 2 (c1 routing, e2, f1/f2 tail-risk engine now unblocked).
+5. Friday 2026-09-18: watch the first live BookEvolution ceremony (23:15 local evidence cut) — first run with merged runner (ai_capacity + live_sleeve_attribution state builds inside).
+6. Disposition Q08_DSR_CONTEXT_UNAVAILABLE class (49+ holds) — QM5_11563 retest likely lands there.
