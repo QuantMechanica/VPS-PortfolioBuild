@@ -546,26 +546,47 @@ Implementation notes: simple MQL5 date filter and narrow setfile.
     def test_route_once_skips_temporarily_unavailable_head_task(self) -> None:
         with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
-            agent_router.sync_default_registry(root, claude_disabled_flag=root / "missing.flag")
+            # Kimi flag pinned absent so the source_discovery lane set is
+            # deterministic (gemini + kimi both declare source_discovery since
+            # OWNER-DEC-KIMI-INTEGRATION-20260915).
+            kimi_flag = root / "missing_kimi.flag"
+            agent_router.sync_default_registry(
+                root,
+                claude_disabled_flag=root / "missing.flag",
+                kimi_low_quota_flag=kimi_flag,
+            )
             blocked = agent_router.enqueue_task(
                 root,
                 "research_strategy",
                 priority=90,
                 required_capabilities=["research", "strategy", "source_discovery"],
             )
-            for _ in range(2):
+            # source_discovery is served by gemini (max_parallel 2) and kimi
+            # (max_parallel 1). Fill all three slots so the blocked head task has
+            # no available lane and must be skipped. Fillers route cheapest-first:
+            # gemini, gemini, then kimi.
+            expected_lanes = ["gemini", "gemini", "kimi"]
+            for expected in expected_lanes:
                 filler = agent_router.enqueue_task(
                     root,
                     "research_strategy",
                     priority=100,
                     required_capabilities=["research", "strategy", "source_discovery"],
                 )
-                decision = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
-                self.assertEqual(decision.assigned_agent, "gemini")
+                decision = agent_router.route_once(
+                    root,
+                    claude_disabled_flag=root / "missing.flag",
+                    kimi_low_quota_flag=kimi_flag,
+                )
+                self.assertEqual(decision.assigned_agent, expected)
                 self.assertEqual(decision.task_id, filler["task_id"])
 
             ops = agent_router.enqueue_task(root, "ops_issue", priority=80)
-            decision = agent_router.route_once(root, claude_disabled_flag=root / "missing.flag")
+            decision = agent_router.route_once(
+                root,
+                claude_disabled_flag=root / "missing.flag",
+                kimi_low_quota_flag=kimi_flag,
+            )
 
             self.assertEqual(decision.task_id, ops["task_id"])
             self.assertEqual(decision.assigned_agent, "codex")

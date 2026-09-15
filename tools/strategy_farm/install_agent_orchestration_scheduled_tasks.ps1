@@ -3,7 +3,12 @@ param(
     [string]$RepoRoot = "C:\QM\repo",
     [string]$PythonwExe = "C:\Users\Administrator\AppData\Local\Programs\Python\Python311\pythonw.exe",
     [int]$EveryMinutes = 15,
-    [switch]$RunNow
+    [switch]$RunNow,
+    # Kimi research orchestration lane (OWNER-DEC-KIMI-INTEGRATION-20260915).
+    # DEFAULT OFF: the kimi task is NOT installed until the §13 probe battery
+    # (probes 4/5/7: read-only critic + credential refresh) and the smoke
+    # receipt exist. Pass -IncludeKimi only once those gates have passed.
+    [switch]$IncludeKimi
 )
 
 Set-StrictMode -Version Latest
@@ -44,6 +49,15 @@ $definitions = @(
     @{ Name = "QM_StrategyFarm_GeminiOrchestration_15min"; Agent = "gemini"; MaxSessions = 1; EveryMinutes = 15 },
     @{ Name = "QM_StrategyFarm_ClaudeOrchestration_15min"; Agent = "claude"; MaxSessions = 3; EveryMinutes = 15 }
 )
+
+# Kimi research lane definition, appended only behind -IncludeKimi (default OFF).
+# MaxSessions MUST stay 1: the kimi OAuth credential has a 15-min rolling token
+# and a concurrent refresh WRITE corrupts the login (Codex-class token race).
+# Uses the plain SYSTEM branch below unless a probe shows the credential refresh
+# needs the console-session hop.
+if ($IncludeKimi.IsPresent) {
+    $definitions += @{ Name = "QM_StrategyFarm_KimiOrchestration_15min"; Agent = "kimi"; MaxSessions = 1; EveryMinutes = 15 }
+}
 
 $startBoundary = (Get-Date).Date
 

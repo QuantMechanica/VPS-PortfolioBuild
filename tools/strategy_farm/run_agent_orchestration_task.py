@@ -112,6 +112,22 @@ CODEX_HOME = Path(os.environ.get("CODEX_HOME", r"C:\Users\Administrator\.codex")
 AGENT_USER_HOME = Path(r"C:\Users\Administrator")
 CLAUDE_DISABLED_FLAG = FARM_ROOT / "CLAUDE_DISABLED.flag"
 CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
+# Kimi Code CLI (OWNER-DEC-KIMI-INTEGRATION-20260915,
+# KIMI_INTEGRATION_ARCHITECTURE.md §1, §5.4). Pinned path: kimi.exe is NOT on
+# PATH and its auto-updater is on, so the pinned constant plus the adapter's
+# per-run version stamp is the version-pinning defence.
+KIMI_BIN = Path(r"C:\Users\Administrator\.kimi-code\bin\kimi.exe")
+# Adapter config that carries the per-capability model map (§3.3). Read at
+# dispatch if present; otherwise the documented default model is used.
+KIMI_ADAPTER_CONFIG = REPO_ROOT / "tools" / "strategy_farm" / "config" / "kimi_adapter.v1.json"
+# MaxSessions is hard-capped at 1 for kimi: the OAuth credential has a 15-min
+# rolling token and a refresh WRITE race across concurrent processes corrupts
+# the login (Codex-class failure). The cross-plane guarantee is the adapter's
+# machine-wide single-flight lock (§3.6); this cap is the lane-level belt.
+KIMI_MAX_SESSIONS = 1
+_KIMI_MODEL_ENV_OVERRIDE = os.environ.get("QM_KIMI_HEADLESS_MODEL", "").strip()
+# Documented default model (§3.3): the K2.8 default with the 1M-token context.
+KIMI_HEADLESS_MODEL = _KIMI_MODEL_ENV_OVERRIDE or "kimi-code/kimi-for-coding"
 
 # --- Headless model selection (weekly-quota cost control) -------------------
 # Each headless cycle is mostly routine orchestration (claim work, run gates,
@@ -176,6 +192,11 @@ def resolve_cli(agent: str) -> str:
         if found:
             return found
         return str(CLAUDE_FALLBACK if CLAUDE_FALLBACK.exists() else "claude")
+    if agent == "kimi":
+        # kimi.exe is not on PATH (audit §1). Return the pinned path and let a
+        # missing binary fail LOUDLY in the adapter (status cli_missing) instead
+        # of resolving a wrong CLI. No npm/other fallback exists for kimi.
+        return str(KIMI_BIN)
     raise ValueError(f"unsupported agent: {agent}")
 
 
@@ -200,6 +221,14 @@ def agent_env(agent: str) -> dict[str, str]:
         env["HOME"] = str(AGENT_USER_HOME)
         env["HOMEDRIVE"] = "C:"
         env["HOMEPATH"] = r"\Users\Administrator"
+    if agent == "kimi":
+        # Point kimi at the operator profile so its OAuth credential file
+        # (C:\Users\Administrator\.kimi-code\credentials\kimi-code.json) resolves
+        # under the SYSTEM scheduled task, mirroring the claude lane (§3.6).
+        env["USERPROFILE"] = str(AGENT_USER_HOME)
+        env["HOME"] = str(AGENT_USER_HOME)
+        env["HOMEDRIVE"] = "C:"
+        env["HOMEPATH"] = r"\Users\Administrator"
     return env
 
 
@@ -208,6 +237,50 @@ def build_prompt(agent: str, cwd: Path) -> str:
     profitability = cwd / "docs" / "ops" / "PROFITABILITY_TRACK_2026-05-21.md"
     canonical_farmctl = (REPO_ROOT / "tools" / "strategy_farm" / "farmctl.py").as_posix()
     canonical_router = (REPO_ROOT / "tools" / "strategy_farm" / "agent_router.py").as_posix()
+    if agent == "kimi":
+        # Research-only lane prompt (KIMI_INTEGRATION_ARCHITECTURE.md §4, §5.4).
+        # Kimi is a capability provider, never an orchestrator. The restrictions
+        # below are prompt-level REINFORCEMENT of the code-level guards (no
+        # code/ops caps, no verdict-write path, no farmctl mutation reachable);
+        # they are stated so a headless kimi run has no ambiguity about scope.
+        return f"""You are kimi for QuantMechanica, launched by a headless scheduled task.
+
+Execute exactly one single-pass RESEARCH cycle, then exit. Do not start a
+15-minute sleep loop; the Windows scheduler provides cadence.
+
+Working directory: {cwd.as_posix()}
+
+Scope — you are a research-only capability provider:
+1. Run only for tasks the deterministic router assigned to the kimi lane:
+   python {canonical_router} list-tasks --agent kimi --state IN_PROGRESS
+   You never choose your own work and never route. Do NOT run `agent_router.py run`,
+   `route-many`, `route-once`, or `replenish`.
+2. For each IN_PROGRESS task assigned to kimi, produce a durable research artifact
+   (edge discovery, hypothesis authoring, cross-experiment synthesis, or an
+   independent research critique) and leave it in REVIEW:
+   python {canonical_router} update-task <task_id> --state REVIEW --artifact-path "<artifact>" --verdict "<short_verdict>"
+3. Repeat until the kimi IN_PROGRESS list is empty, then exit.
+
+Hard rules for the kimi lane (research-only):
+- You may ONLY work tasks assigned to the kimi lane. Ignore every other lane's work.
+- NEVER run any farmctl mutation subcommand (no approve-card, close-review,
+  enqueue-backtest, pipeline advance, or any state-changing command). Read-only
+  `python {canonical_farmctl} health` is the only farmctl call permitted.
+- NEVER write a pipeline verdict or move a task to APPROVED/PIPELINE/PASSED. The
+  pipeline is the sole judge; an LLM "PASS" is never a pipeline PASS. Leave every
+  artifact in REVIEW for orchestrator review.
+- NEVER touch T_Live paths (C:/QM/mt5/T_Live), the gate manifest, live book, or
+  AutoTrading in any way.
+- Machine learning may inform OFFLINE research only. Any strategy you propose must
+  reduce to explicit mechanical rules (finite parameters, deterministic logic, no
+  inference API, no model file, no online learning) before it could enter Q00.
+  ML is FORBIDDEN inside any EA or its live/backtest decision engine.
+- Write REVIEW artifacts under docs/ops/evidence/ (absolute canonical path
+  C:/QM/repo/docs/ops/evidence/) like the other lanes; strategy-card drafts go to
+  D:/QM/strategy_farm/artifacts/cards_review/. Every quantitative claim must cite a
+  computed output file, never an LLM-computed number.
+- Never start terminal64.exe; never interrupt T1-T10 backtests.
+"""
     # G: drive (Google Drive for Desktop) is mounted per-user. Antigravity/agy runs as SYSTEM
     # in a scheduled task with no G: mount -> any G: access raises PermissionError and
     # strands the task IN_PROGRESS (Rule 13, OPERATING_RULES_2026-07-03). Skip G: paths
@@ -495,6 +568,39 @@ def command_for(
             "--add-dir",
             str(cwd),
         ]
+    if agent == "kimi":
+        # Kimi Code CLI headless invocation (KIMI_INTEGRATION_ARCHITECTURE.md
+        # §3.1). Prompt delivery = a prompt FILE plus a short argv POINTER
+        # (mirroring agy), because the Windows argv path risks the ~32 KB
+        # cmdline cap for a full orchestration prompt and kimi has no dedicated
+        # --prompt-file flag. Output is stream-json (text mode is dirty). --auto
+        # guarantees no interactive prompt hangs a headless run; --add-dir scopes
+        # the workspace. The adapter (kimi_adapter.run_kimi) actually spawns this
+        # under a watchdog + single-flight lock; this argv is the documented
+        # shape recorded in the result JSON and handed to the adapter.
+        contract = headless_model_contract(agent, model_contract)
+        model = str(contract.get("model") or KIMI_HEADLESS_MODEL)
+        model_args = ["-m", model] if model else []
+        add_dirs = [str(cwd)]
+        if prompt_path is not None:
+            add_dirs.append(str(Path(prompt_path).parent))
+        add_dir_flags: list[str] = []
+        for d in add_dirs:
+            add_dir_flags += ["--add-dir", d]
+        pointer = (
+            f"Read the file '{prompt_path}' and execute its instructions exactly, then exit."
+            if prompt_path is not None
+            else "Execute one single-pass QuantMechanica research cycle, then exit."
+        )
+        return [
+            cli,
+            "-p",
+            pointer,
+            "--output-format",
+            "stream-json",
+            *model_args,
+            *add_dir_flags,
+        ]
     raise ValueError(f"unsupported agent: {agent}")
 
 
@@ -541,7 +647,45 @@ def headless_model_contract(
             contract["model"] = _CLAUDE_MODEL_ENV_OVERRIDE
             contract["model_override_source"] = "QM_CLAUDE_HEADLESS_MODEL"
         return contract
+    if agent == "kimi":
+        # Model per capability (KIMI_INTEGRATION_ARCHITECTURE.md §3.3): resolved
+        # from config/kimi_adapter.v1.json when present, else the documented
+        # default. The caller may pass a capability via `selected` to pick a
+        # cheaper critic/summary model; env override always wins.
+        contract: dict[str, Any] = dict(selected or {})
+        capability = str(contract.get("capability") or "").strip()
+        model = str(contract.get("model") or "")
+        if not model:
+            model = _kimi_model_for_capability(capability)
+        if _KIMI_MODEL_ENV_OVERRIDE:
+            model = _KIMI_MODEL_ENV_OVERRIDE
+            contract["model_override_source"] = "QM_KIMI_HEADLESS_MODEL"
+        contract["model"] = model
+        contract.setdefault("reasoning_effort", None)
+        return contract
     return {"model": GEMINI_HEADLESS_MODEL or None, "reasoning_effort": None}
+
+
+def _kimi_model_for_capability(capability: str) -> str:
+    """Resolve the kimi model id for a capability (§3.3).
+
+    Config-first: config/kimi_adapter.v1.json may carry
+    ``{"models": {"<capability>": "<model>", "default": "<model>"}}``. If the
+    file is absent or unreadable (it is authored by kimi_adapter.py in parallel),
+    fall back to the documented defaults so this lane never hard-fails on a
+    missing config.
+    """
+    documented_default = KIMI_HEADLESS_MODEL
+    try:
+        raw = KIMI_ADAPTER_CONFIG.read_text(encoding="utf-8")
+        models = (json.loads(raw) or {}).get("models") or {}
+    except (OSError, ValueError, TypeError):
+        models = {}
+    if capability and isinstance(models, dict) and models.get(capability):
+        return str(models[capability])
+    if isinstance(models, dict) and models.get("default"):
+        return str(models["default"])
+    return documented_default
 
 
 def worktree_path(agent: str, slot: int) -> Path:
@@ -694,6 +838,148 @@ def _wait_with_heartbeat_refresh(
             continue
 
 
+def _sha256_file(path: Path) -> str | None:
+    try:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    except OSError:
+        return None
+
+
+def _run_kimi_slot(
+    slot: int,
+    cwd: Path,
+    prompt_path: Path,
+    live_log: Path,
+    result_path: Path,
+    worktree: dict[str, Any],
+    dry_run: bool,
+    invocation_profile: dict[str, Any] | None,
+    timeout_minutes: int,
+) -> dict[str, Any]:
+    """Execute one kimi research slot via kimi_adapter.run_kimi (§5.4, §9).
+
+    Fail-closed contract: the adapter module is authored in parallel, so it is
+    imported LAZILY here; if it is missing the branch returns a result JSON with
+    status ``cli_missing`` and never raises into the lane loop. Any exception the
+    adapter itself raises is caught and classified, never propagated.
+    """
+    agent = "kimi"
+    started_at = dt.datetime.now(dt.UTC).isoformat()
+    task_id = str((invocation_profile or {}).get("task_id") or f"orchestration:kimi:slot{slot}")
+    model_contract = headless_model_contract(agent, invocation_profile)
+    model = str(model_contract.get("model") or KIMI_HEADLESS_MODEL)
+    cmd = command_for(agent, cwd, prompt_path, model_contract)
+    add_dirs = [str(cwd), str(prompt_path.parent)]
+    try:
+        quota_state = agent_router.kimi_quota_state()
+    except Exception:
+        quota_state = "unknown"
+    prompt_sha256 = _sha256_file(prompt_path)
+    payload: dict[str, Any] = {
+        "agent": agent,
+        "provider": "kimi",
+        "execution_backend": "kimi_adapter",
+        "task_id": task_id,
+        "model": model,
+        "model_contract": model_contract,
+        "slot": slot,
+        "dry_run": dry_run,
+        "prompt_path": str(prompt_path),
+        "live_log": str(live_log),
+        "command": cmd,
+        "cwd": str(cwd),
+        "worktree": worktree,
+        "quota_state": quota_state,
+        "prompt_sha256": prompt_sha256,
+        "output_sha256": None,
+        "latency_s": None,
+        "retries": 0,
+        "started_at": started_at,
+    }
+    try:
+        if dry_run:
+            payload.update(
+                {
+                    "ok": True,
+                    "returncode": 0,
+                    "status": "dry_run_verified",
+                    "dry_run_verified": True,
+                }
+            )
+            return payload
+
+        try:
+            try:
+                import kimi_adapter  # type: ignore
+            except ModuleNotFoundError:
+                from tools.strategy_farm import kimi_adapter  # type: ignore
+        except ModuleNotFoundError:
+            # Adapter not present yet: fail closed, do not raise (§5.4).
+            payload.update(
+                {
+                    "ok": False,
+                    "returncode": 127,
+                    "status": "cli_missing",
+                    "error": "kimi_adapter module not found",
+                }
+            )
+            return payload
+
+        start = time.monotonic()
+        try:
+            # Real adapter contract (kimi_adapter.run_kimi, slice C1): the prompt TEXT goes in,
+            # the adapter writes its own pointer file under out_dir; role 'research' = the
+            # orchestration lane; the capability names the model tier from the adapter config.
+            result = kimi_adapter.run_kimi(
+                Path(prompt_path).read_text(encoding="utf-8"),
+                role="research",
+                capability=str((invocation_profile or {}).get("capability") or "deep_research"),
+                task_id=task_id,
+                model=model,
+                cwd=Path(cwd),
+                add_dirs=[Path(d) for d in add_dirs],
+                timeout_s=timeout_minutes * 60,
+                out_dir=Path(live_log).parent / f"kimi_slot{slot}_{Path(live_log).stem}",
+                environ=agent_env(agent),
+            )
+        except Exception as exc:  # adapter must never crash the lane loop
+            payload.update(
+                {
+                    "ok": False,
+                    "returncode": 1,
+                    "status": "unknown",
+                    "error": repr(exc),
+                    "latency_s": round(time.monotonic() - start, 3),
+                }
+            )
+            return payload
+        result = dict(result or {})
+        status = str(result.get("status") or "unknown")
+        payload.update(
+            {
+                "status": status,
+                "ok": status == "ok",
+                "returncode": int(result.get("returncode") if result.get("returncode") is not None else (0 if status == "ok" else 1)),
+                "latency_s": result.get("latency_s", round(time.monotonic() - start, 3)),
+                "retries": int(result.get("retries") or 0),
+                "output_sha256": result.get("output_sha256"),
+                "cli_version": result.get("cli_version"),
+                "quota_state": result.get("quota_state", quota_state),
+            }
+        )
+        if result.get("model"):
+            payload["model"] = str(result["model"])
+        if result.get("error"):
+            payload["error"] = str(result["error"])
+        return payload
+    finally:
+        payload["finished_at"] = dt.datetime.now(dt.UTC).isoformat()
+        try:
+            result_path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+        except OSError:
+            pass
+
+
 def run_agent_slot(
     agent: str,
     slot: int,
@@ -752,6 +1038,25 @@ def run_agent_slot(
     # Refresh lane heartbeat at spawn time (initial write happens in run_agent
     # BEFORE the empty-spawn guards — see _write_lane_heartbeat).
     _write_lane_heartbeat(agent, slot=slot)
+
+    if agent == "kimi":
+        # Kimi executes through kimi_adapter.run_kimi, NOT the generic Popen path
+        # (§5.4): the adapter owns the stream-json parse, the watchdog, bounded
+        # retries, the usage ledger and the machine-wide single-flight lock. This
+        # branch returns before the codex/claude/gemini spawn machinery.
+        payload = _run_kimi_slot(
+            slot,
+            cwd,
+            prompt_path,
+            live_log,
+            result_path,
+            worktree,
+            dry_run,
+            invocation_profile,
+            timeout_minutes,
+        )
+        release_lock(lock_info)
+        return payload
 
     model_contract = headless_model_contract(agent, invocation_profile)
     # CEO decision D3 (round 3, 2026-09-04): BOOK FIRST, RENDER SECOND. The argv
@@ -1798,6 +2103,10 @@ def _run_agent_with_session_lease(
     session_count = max(1, max_sessions)
     if agent != "claude":
         session_count = 1
+    if agent == "kimi":
+        # Hard cap, explicit (belt to the non-claude rule above): the OAuth
+        # credential refresh race forbids concurrent kimi sessions (§3.6, §8).
+        session_count = min(session_count, KIMI_MAX_SESSIONS)
     slot_invocations = list((quota_check or {}).get("allowed_invocations") or [])
 
     def slot_invocation(slot_index: int) -> dict[str, Any] | None:
@@ -1903,7 +2212,7 @@ def run_agent(
 def main() -> int:
     os.environ.setdefault("QM_AGENT_ID", "controller")
     parser = argparse.ArgumentParser(description="Run one headless agent orchestration pass.")
-    parser.add_argument("--agent", choices=("codex", "gemini", "claude"))
+    parser.add_argument("--agent", choices=("codex", "gemini", "claude", "kimi"))
     parser.add_argument("--dry-run", action="store_true", help="Verify prompt/lock/command without launching the model.")
     # Must remain above the 225-minute agent timeout and the PT4H task limit.
     parser.add_argument("--stale-minutes", type=int, default=250)

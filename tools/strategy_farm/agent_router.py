@@ -77,6 +77,14 @@ except ModuleNotFoundError:  # pragma: no cover - direct script execution
 
 DEFAULT_ROOT = farmctl.DEFAULT_ROOT
 CLAUDE_DISABLED_FLAG = Path(r"D:\QM\strategy_farm\CLAUDE_DISABLED.flag")
+# Kimi research lane pacing flag (OWNER-DEC-KIMI-INTEGRATION-20260915,
+# KIMI_INTEGRATION_ARCHITECTURE.md §7). Mirrors CLAUDE_DISABLED.flag but its
+# body may carry a JSON object with a "state" field so kimi_governor.py can
+# express CONSERVE (narrow the lane to the high-value research task types) or
+# EXHAUSTED (disable the lane) without a code change. Bare presence, an empty
+# body, or an unrecognised state all fail closed to EXHAUSTED - the flag is a
+# brake, never an accelerator.
+KIMI_LOW_QUOTA_FLAG = Path(r"D:\QM\strategy_farm\KIMI_LOW_QUOTA.flag")
 CARDS_REVIEW_REL = Path("artifacts") / "cards_review"
 CARDS_APPROVED_REL = Path("artifacts") / "cards_approved"
 ROUTER_CHECKOUT_ROOT = Path(__file__).resolve().parents[2]
@@ -125,6 +133,17 @@ TASK_TYPE_CAPABILITIES: dict[str, list[str]] = {
     # the LANE level because `quota_spawn_gate.GATED_AGENTS` is {codex, claude}.
     # OWNER 2026-09-03 declared agy backup-only ("agy halluziniert").
     "strategy_mechanize_source": ["research", "strategy", "scalpel_mechanization"],
+    # Kimi research lane task types (OWNER-DEC-KIMI-INTEGRATION-20260915,
+    # KIMI_INTEGRATION_ARCHITECTURE.md §5.3). The 8 new kimi capabilities map to
+    # no existing task type, so a lane declaring only them would never be
+    # selected (the "unroutable-capability trap"). These three task types make
+    # the high-value research work routable; they carry NO code/ops/build
+    # capability, so no build/ops lane is pulled onto them and kimi cannot reach
+    # gate/verdict work through them. They are also the CONSERVE-survivor set
+    # (KIMI_CONSERVE_TASK_TYPES).
+    "research_edge_discovery": ["research", "edge_discovery"],
+    "research_hypothesis": ["research", "strategy", "hypothesis_authoring"],
+    "research_critique": ["research_critic"],
 }
 
 # CEO decision D10 (round 4, 2026-09-04). Declared ONLY by the codex and claude
@@ -596,6 +615,41 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
         "max_parallel": 2,
         "cost_rank": 10,
     },
+    "kimi": {
+        # OWNER-DEC-KIMI-INTEGRATION-20260915 (KIMI_INTEGRATION_ARCHITECTURE.md
+        # §5.1). Research-only capability provider. It deliberately declares NO
+        # code/tests/repo_edit/repo/ops/scalpel_mechanization capability, so a
+        # lane is eligible only if `required subset caps` (_eligible_agents) can
+        # never place a build_ea/ops_issue/triage_failure/review_ea/scalpel row
+        # on kimi - the code-level authority guard (§4.2). kimi is likewise kept
+        # out of AGENT_TASK_TYPE_LANES so no task type is pinned to it, and it
+        # has no verdict-write path anywhere.
+        "enabled": True,
+        "capabilities": [
+            "research",
+            "strategy",
+            "summary",
+            "source_discovery",
+            "deep_research",
+            "long_context_synthesis",
+            "edge_discovery",
+            "cross_experiment_analysis",
+            "research_review",
+            "research_critic",
+            "hypothesis_authoring",
+            "ml_research",
+        ],
+        # Second belt only; the real cross-process guard is the adapter's
+        # machine-wide single-flight lock (§3.6, R-E), because max_parallel is
+        # consulted by Plane A alone.
+        "max_parallel": 1,
+        # cost_rank 12 is load-bearing (§5.1): after gemini(10) so the cheaper
+        # gemini lane keeps generic [research,strategy] work, before codex(20)/
+        # claude(30) so kimi wins the new research task types that only it
+        # declares. NEVER give kimi a cost_rank < 10 or it recaptures the whole
+        # generic research funnel.
+        "cost_rank": 12,
+    },
     "owner": {
         # OWNER 2026-08-21: the human lane. Declared so that routing KNOWS who
         # holds `video_analysis`; disabled with max_parallel 0 because there is
@@ -615,6 +669,100 @@ DEFAULT_AGENT_REGISTRY: dict[str, dict[str, Any]] = {
 
 STALE_IN_PROGRESS_HOURS = 6
 LANE_HEARTBEAT_STALE_HOURS = 2  # release IN_PROGRESS tasks / skip lane if heartbeat is older than this
+
+# --- Kimi research lane pacing (OWNER-DEC-KIMI-INTEGRATION-20260915) ---------
+KIMI_LANE = "kimi"
+KIMI_QUOTA_NORMAL = "NORMAL"
+KIMI_QUOTA_CONSERVE = "CONSERVE"
+KIMI_QUOTA_EXHAUSTED = "EXHAUSTED"
+# The task types that stay routable to kimi under CONSERVE (the high-value
+# research set, KIMI_INTEGRATION_ARCHITECTURE.md §7.2). Generic research_strategy
+# is deliberately absent so a degraded gemini lane cannot push cheap log/summary
+# work onto the fixed one-month subscription; the route-time gate in `route_once`
+# enforces this even though {research,strategy} is a subset of a survivor's caps.
+KIMI_CONSERVE_TASK_TYPES: frozenset[str] = frozenset(
+    {"research_edge_discovery", "research_hypothesis", "research_critique"}
+)
+# The capability set the kimi registry row advertises under CONSERVE: exactly
+# what the survivor task types require, so the expensive long-context / ml
+# capabilities stop attracting payload-pinned routable work while the lane stays
+# enabled. (research_strategy is a subset of these, hence the companion
+# route-time task-type gate.)
+KIMI_CONSERVE_CAPABILITIES: tuple[str, ...] = (
+    "research",
+    "strategy",
+    "edge_discovery",
+    "hypothesis_authoring",
+    "research_critic",
+)
+
+
+def _effective_kimi_low_quota_flag(root: Path, kimi_low_quota_flag: Path) -> Path:
+    """Root-local KIMI flag override for tests, mirroring the claude flag helper.
+
+    A test passes a bespoke path (used verbatim). When the default D:\\ flag is
+    requested against a non-default root, a ``KIMI_LOW_QUOTA.flag`` inside that
+    root wins so a temp-root test never depends on the live D:\\ file.
+    """
+    if kimi_low_quota_flag != KIMI_LOW_QUOTA_FLAG:
+        return kimi_low_quota_flag
+    root_flag = root / "KIMI_LOW_QUOTA.flag"
+    if root != DEFAULT_ROOT and root_flag.exists():
+        return root_flag
+    return kimi_low_quota_flag
+
+
+def kimi_quota_state(
+    root: Path = DEFAULT_ROOT,
+    kimi_low_quota_flag: Path = KIMI_LOW_QUOTA_FLAG,
+) -> str:
+    """Derive NORMAL / CONSERVE / EXHAUSTED from the KIMI_LOW_QUOTA flag.
+
+    Fail-closed: an unreadable, empty, non-JSON, or unrecognised-state flag is
+    EXHAUSTED. Only an explicit ``{"state": "CONSERVE"}`` (or ``"NORMAL"``) is
+    honoured as a softer state. Absent flag => NORMAL.
+    """
+    flag = _effective_kimi_low_quota_flag(root, kimi_low_quota_flag)
+    try:
+        if not flag.exists():
+            return KIMI_QUOTA_NORMAL
+        raw = flag.read_text(encoding="utf-8").strip()
+    except OSError:
+        return KIMI_QUOTA_EXHAUSTED
+    if not raw:
+        return KIMI_QUOTA_EXHAUSTED
+    try:
+        data = json.loads(raw)
+    except (ValueError, TypeError):
+        return KIMI_QUOTA_EXHAUSTED
+    state = str((data or {}).get("state") or "").strip().upper()
+    if state == KIMI_QUOTA_CONSERVE:
+        return KIMI_QUOTA_CONSERVE
+    if state == KIMI_QUOTA_NORMAL:
+        return KIMI_QUOTA_NORMAL
+    return KIMI_QUOTA_EXHAUSTED
+
+
+def _write_routing_receipt(
+    receipts_dir: Path,
+    receipt: dict[str, Any],
+) -> Path | None:
+    """Write one compact routing receipt; observability never breaks routing.
+
+    KIMI_INTEGRATION_ARCHITECTURE.md §9: whenever kimi is a candidate for the
+    routed task (chosen or beaten on cost_rank), the seat choice is recorded.
+    Any write failure is swallowed - a full/unwritable log directory must not
+    fail the route that already committed.
+    """
+    try:
+        receipts_dir.mkdir(parents=True, exist_ok=True)
+        task_id8 = str(receipt.get("task_id") or "unknown")[:8]
+        stamp = dt.datetime.now(dt.UTC).strftime("%Y%m%dT%H%M%S%fZ")
+        path = receipts_dir / f"{task_id8}_{stamp}.json"
+        path.write_text(_json(receipt), encoding="utf-8")
+        return path
+    except OSError:
+        return None
 
 STRATEGY_CARD_SCHEMA: dict[str, list[str]] = {
     "frontmatter_required": [
@@ -1037,8 +1185,13 @@ def registry_contract(root: Path = DEFAULT_ROOT) -> dict[str, Any]:
         return _registry_contract_from_conn(conn)
 
 
-def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG) -> dict[str, Any]:
+def sync_default_registry(
+    root: Path = DEFAULT_ROOT,
+    claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+    kimi_low_quota_flag: Path = KIMI_LOW_QUOTA_FLAG,
+) -> dict[str, Any]:
     claude_disabled_flag = _effective_claude_disabled_flag(root, claude_disabled_flag)
+    kimi_state = kimi_quota_state(root, kimi_low_quota_flag)
     if not _registry_writer_authorized():
         with closing(connect(root)) as conn:
             contract = _registry_contract_from_conn(conn)
@@ -1046,6 +1199,7 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
         return {
             "synced": [],
             "claude_disabled": claude_disabled_flag.exists(),
+            "kimi_quota_state": kimi_state,
             "read_only": True,
             "reason": "linked_worktree_registry_reader",
             "checkout_root": str(ROUTER_CHECKOUT_ROOT),
@@ -1072,6 +1226,18 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
             if agent_id == "claude" and claude_disabled_flag.exists():
                 effective["enabled"] = False
                 effective["max_parallel"] = 0
+            # Kimi lane pacing (KIMI_INTEGRATION_ARCHITECTURE.md §7.3, Plane A).
+            # EXHAUSTED disables the lane exactly like CLAUDE_DISABLED; CONSERVE
+            # keeps it enabled but narrows the advertised capabilities to the
+            # survivor set so the expensive research capabilities stop drawing
+            # payload-pinned work. The route-time task-type gate (route_once)
+            # completes the CONSERVE contract for generic research_strategy.
+            if agent_id == KIMI_LANE:
+                if kimi_state == KIMI_QUOTA_EXHAUSTED:
+                    effective["enabled"] = False
+                    effective["max_parallel"] = 0
+                elif kimi_state == KIMI_QUOTA_CONSERVE:
+                    effective["capabilities"] = list(KIMI_CONSERVE_CAPABILITIES)
             conn.execute(
                 """
                 INSERT INTO agent_registry(
@@ -1104,6 +1270,7 @@ def sync_default_registry(root: Path = DEFAULT_ROOT, claude_disabled_flag: Path 
     return {
         "synced": changed,
         "claude_disabled": claude_disabled_flag.exists(),
+        "kimi_quota_state": kimi_state,
         "read_only": False,
         "checkout_root": str(ROUTER_CHECKOUT_ROOT),
         "contract": contract,
@@ -1725,14 +1892,26 @@ def route_once(
     root: Path = DEFAULT_ROOT,
     *,
     claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+    kimi_low_quota_flag: Path = KIMI_LOW_QUOTA_FLAG,
     quota_gate_enabled: bool | None = None,
     quota_config_path: Path | None = None,
     quota_state_path: Path | None = None,
     quota_summary_path: Path | None = None,
+    routing_receipts_dir: Path | None = None,
 ) -> RouteDecision:
     _require_canonical_router_command("route-once")
-    sync_default_registry(root, claude_disabled_flag=claude_disabled_flag)
+    sync_default_registry(
+        root,
+        claude_disabled_flag=claude_disabled_flag,
+        kimi_low_quota_flag=kimi_low_quota_flag,
+    )
     release_stale_in_progress(root)
+    kimi_state = kimi_quota_state(root, kimi_low_quota_flag)
+    receipts_dir = (
+        routing_receipts_dir
+        if routing_receipts_dir is not None
+        else Path(root) / "logs" / "routing_receipts"
+    )
     now_dt = dt.datetime.now(dt.UTC).replace(microsecond=0)
     now = now_dt.isoformat()
     with closing(connect(root)) as conn:
@@ -1755,6 +1934,7 @@ def route_once(
         model_window_holds: list[tuple[sqlite3.Row, dict[str, Any]]] = []
         decision_bound_waits: list[tuple[sqlite3.Row, str]] = []
         selected: tuple[sqlite3.Row, sqlite3.Row, set[str], dict[str, Any]] | None = None
+        selected_candidates: list[sqlite3.Row] = []
         quota_blocked: list[dict[str, Any]] = []
         for task in tasks:
             required = set(json.loads(task["required_capabilities_json"] or "[]"))
@@ -1805,6 +1985,14 @@ def route_once(
                 skipped.append(task["id"])
                 continue
             agents = _eligible_agents(conn, required, root)
+            # Kimi CONSERVE routing gate (KIMI_INTEGRATION_ARCHITECTURE.md §7.2).
+            # Under CONSERVE, kimi may only take the high-value research task
+            # types. This closes the residual capture that capability reduction
+            # alone cannot: generic research_strategy requires {research,strategy}
+            # which is a subset of research_hypothesis's caps, so it can never be
+            # excluded by the registry capability set - only by task type here.
+            if kimi_state == KIMI_QUOTA_CONSERVE and str(task["task_type"]) not in KIMI_CONSERVE_TASK_TYPES:
+                agents = [row for row in agents if str(row["agent_id"]) != KIMI_LANE]
             pin = decision_bound_pin(task_payload)
             pinned = DECISION_BOUND_INVALID if pin["invalid"] else pin["agent"]
             if pinned is not None:
@@ -1873,6 +2061,7 @@ def route_once(
                 skipped.append(task["id"])
                 continue
             selected = (task, chosen_agent, required, chosen_gate)
+            selected_candidates = agents
             break
         if selected is None:
             conn.commit()
@@ -1973,6 +2162,29 @@ def route_once(
             (agent["agent_id"], _json(payload), now, task["id"]),
         )
         conn.commit()
+        # Routing receipt (KIMI_INTEGRATION_ARCHITECTURE.md §9): recorded when
+        # kimi was chosen OR was an eligible candidate that lost on cost_rank, so
+        # the seat choice for every non-deterministic kimi decision is auditable.
+        chosen_id = str(agent["agent_id"])
+        kimi_candidate = any(str(row["agent_id"]) == KIMI_LANE for row in selected_candidates)
+        if chosen_id == KIMI_LANE or kimi_candidate:
+            _write_routing_receipt(
+                receipts_dir,
+                {
+                    "schema": "qm.router_routing_receipt.v1",
+                    "task_id": str(task["id"]),
+                    "task_type": str(task["task_type"]),
+                    "capability_set": sorted(required),
+                    "candidates_considered": [
+                        {"lane": str(row["agent_id"]), "cost_rank": int(row["cost_rank"])}
+                        for row in selected_candidates
+                    ],
+                    "chosen_lane": chosen_id,
+                    "reason": "assigned",
+                    "kimi_quota_state": kimi_state,
+                    "routed_at": now,
+                },
+            )
         return RouteDecision(task["id"], task["task_type"], agent["agent_id"], "assigned")
 
 
@@ -1981,10 +2193,12 @@ def route_many(
     *,
     max_routes: int = 5,
     claude_disabled_flag: Path = CLAUDE_DISABLED_FLAG,
+    kimi_low_quota_flag: Path = KIMI_LOW_QUOTA_FLAG,
     quota_gate_enabled: bool | None = None,
     quota_config_path: Path | None = None,
     quota_state_path: Path | None = None,
     quota_summary_path: Path | None = None,
+    routing_receipts_dir: Path | None = None,
 ) -> list[dict[str, Any]]:
     """Route up to `max_routes` waiting tickets.
 
@@ -1998,10 +2212,12 @@ def route_many(
         decision = route_once(
             root,
             claude_disabled_flag=claude_disabled_flag,
+            kimi_low_quota_flag=kimi_low_quota_flag,
             quota_gate_enabled=quota_gate_enabled,
             quota_config_path=quota_config_path,
             quota_state_path=quota_state_path,
             quota_summary_path=quota_summary_path,
+            routing_receipts_dir=routing_receipts_dir,
         )
         decisions.append(decision.__dict__)
         if decision.reason != "assigned":
