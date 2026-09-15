@@ -1,0 +1,118 @@
+{
+  "schema": "qm.dukascopy-splice-exclusion-proposal/v1",
+  "task_id": "60174747-2b7b-4326-88fe-3f3e1adc3ba3",
+  "status": "OWNER_SCOPE_DECISION_READY_P3_FAIL_CLOSED",
+  "requested_decision": {
+    "action": "APPROVE_PRODUCTION_SPLICE_SCOPE_EXCLUSIONS",
+    "symbols": [
+      "UK100.DWX",
+      "XTIUSD.DWX"
+    ],
+    "recommended_option": "APPROVE_EXCLUSION_ONLY",
+    "effect_if_approved": {
+      "nominal_future_splice_scope_count": 35,
+      "dukascopy_splice_treatment": "EXCLUDED",
+      "existing_dwx_history_treatment": "ARCHIVE_ONLY",
+      "does_not_approve_any_archive_or_splice_write": true
+    },
+    "owner_options": [
+      "APPROVE_EXCLUSION_ONLY",
+      "REJECT_AND_REQUIRE_CONTRACT_MATCHED_SOURCE",
+      "DEFER_FOR_REVIEWED_TIME_VARYING_TRANSFORMATION"
+    ]
+  },
+  "recommendation_basis": {
+    "UK100.DWX": {
+      "p3_status": "FAIL",
+      "matched_m1_bars": 161985,
+      "close_delta_p95_points": 222.0100000000093,
+      "close_delta_p95_limit_points": 32.9528565,
+      "price_tolerance_multiple": 6.737200460907214,
+      "dst_zero_second_offset": true,
+      "disposition": "STRUCTURAL_CONTRACT_BASIS_EXCLUSION"
+    },
+    "XTIUSD.DWX": {
+      "p3_status": "FAIL",
+      "matched_m1_bars": 168190,
+      "close_delta_p95_points": 150.0,
+      "close_delta_p95_limit_points": 7.5,
+      "price_tolerance_multiple": 20.0,
+      "dst_zero_second_offset": true,
+      "disposition": "STRUCTURAL_CONTRACT_BASIS_EXCLUSION"
+    },
+    "prior_signed_basis_proof": {
+      "path": "docs/ops/evidence/2026-09-12_dukascopy_p3_followup/basis_proof.csv",
+      "sha256": "0fe7695f2059a074abb0d76b948df48c01a09249d93937b31e9bf6e274dad0b4",
+      "finding": "time-varying provider/broker basis; a static offset is not defensible"
+    }
+  },
+  "current_p3": {
+    "attempted_symbols": 37,
+    "executed_symbols": 37,
+    "passed_symbols": 0,
+    "failed_symbols": 37,
+    "failures_explained": 37,
+    "manifest_update_candidates": [],
+    "manifest_update_status": "BLOCKED_NO_P3_PASS",
+    "summary_path": "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/p3_reconciliation_summary.json",
+    "summary_sha256": "55d00bb48ea73567f40ca85af6ce3ddffad4198a3df1802fccc2791a8808422f",
+    "outcomes_path": "docs/ops/evidence/2026-09-15_dukascopy_p3_completion/p3_symbol_outcomes.csv",
+    "outcomes_sha256": "b555ad52fb01d30cd19af96e3d34d7401682dad7e9cab4ce1528fd911128a429"
+  },
+  "non_exclusion_blockers": {
+    "required_overlap_window_failed": 37,
+    "session_coverage_failed": 37,
+    "dst_zero_second_offset_failed": 17,
+    "close_delta_p95_failed": 13,
+    "compute_budget_failed": 0,
+    "sparse_dwx_symbols_under_10000_bars": [
+      "EURAUD.DWX",
+      "EURCHF.DWX",
+      "EURJPY.DWX",
+      "EURUSD.DWX",
+      "GBPAUD.DWX",
+      "GBPJPY.DWX",
+      "NDX.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX",
+      "XNGUSD.DWX"
+    ]
+  },
+  "authority": {
+    "proposal_only": true,
+    "archive_write_authorized": false,
+    "production_splice_authorized": false,
+    "factory_archive_mutation_authorized": false,
+    "terminal_or_autotrading_change_authorized": false,
+    "signed_archive_unchanged_by_this_task": true
+  },
+  "ceremony_boundary": {
+    "scope_decision_ready": true,
+    "archive_write_ceremony_ready": false,
+    "production_splice_ceremony_ready": false,
+    "required_before_any_write": [
+      "OWNER records the UK100.DWX/XTIUSD.DWX scope decision",
+      "a separately reviewed run resolves the fixed P3 endpoint/session/DST blockers",
+      "each proposed manifest symbol has reviewed source-reconciliation PASS evidence",
+      "OWNER separately authorizes the exact signed manifest and write boundary"
+    ]
+  },
+  "evidence_bindings": {
+    "governed_dwx_export_receipt": {
+      "path": "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260913_114500/export_receipt.json",
+      "sha256": "996553f4c4274a15527ee2fddc049a72f3440578b4ad9ab3dacd8c79c2cb14a9"
+    },
+    "governed_dwx_export_manifest": {
+      "path": "D:/QM/reports/dukascopy/reconciliation_inputs/dwx_m1/20260913_114500/dwx_m1_manifest.json",
+      "sha256": "9a055f50ab8936b0d6734148dd80eff8b5b4142f848c23e3659a9b005d74d284"
+    },
+    "p1_download_manifest": {
+      "path": "D:/QM/reports/dukascopy/backfill/20260909T191800Z_hardened/download_manifest.jsonl",
+      "sha256": "a7d9fe65494f126f7cf468bb7158396469801f52a95db2868c5b21afb1dade42"
+    },
+    "reconciler": {
+      "path": "tools/dukascopy/reconcile_overlap.py",
+      "sha256": "d0740da790985ee5ef85945b34a278e2a064f216a97a20040e6e982c3c18397f"
+    }
+  }
+}

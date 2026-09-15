@@ -1,0 +1,637 @@
+{
+  "production_import": false,
+  "results": [
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800872,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598717,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDCAD_DWX\\AUDCAD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184250,
+        "sha256": "b19e2a66d4c8442372993a360a05cb16fbc2cd89793fa848cc46b450dc9fc15b",
+        "source_ticks": 11728161
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDCAD_DWX\\AUDCAD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "a4e7a03015f3c3f5d70b24d7cda7bc79f78d7b063ba9b0a1bb49f4455bf0aa40",
+      "symbol": "AUDCAD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800261,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598844,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDCHF_DWX\\AUDCHF_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184121,
+        "sha256": "9818df7571e882c9c0c35a4c99cffeee6c7c70da45f9eb8aa332f494f7f3e0bc",
+        "source_ticks": 6566973
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDCHF_DWX\\AUDCHF.DWX.dukascopy-source.json",
+      "sidecar_sha256": "7174d155ac1de5f1f03f1aa058fc2d1ede204e7c285a9e44077b1e93eaa539e6",
+      "symbol": "AUDCHF.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800081,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599108,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDJPY_DWX\\AUDJPY_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184182,
+        "sha256": "bef5e44c81e284ce86c74189be569155d7656569cbec22cf371107df992fa713",
+        "source_ticks": 15554674
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDJPY_DWX\\AUDJPY.DWX.dukascopy-source.json",
+      "sidecar_sha256": "c5672dc429285e629d2e933bbd3e9d98fb2a2fccd730643ff9a8f5135dfd0237",
+      "symbol": "AUDJPY.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276801253,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599173,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDNZD_DWX\\AUDNZD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183769,
+        "sha256": "ae94e6d75377449c70c1c86bdebfc687a570c62a7a38b15c5b04d9e51755f208",
+        "source_ticks": 9462588
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDNZD_DWX\\AUDNZD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "104c0d1d2ac727569c0926c8c3a9f3dd5715f8c90385d27ce5eb1a2123eeaef1",
+      "symbol": "AUDNZD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800373,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599007,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDUSD_DWX\\AUDUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183843,
+        "sha256": "bcf1c4c87ac7cfb8491688658f33ae569f7a5aca3bab733fd0cc128026dbacce",
+        "source_ticks": 9801747
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\AUDUSD_DWX\\AUDUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "5b845159b4e7b89b5cd256f84c5fb2f6ce73143ddce0813ac9fabc3d51d7d38f",
+      "symbol": "AUDUSD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800255,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598715,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\CADCHF_DWX\\CADCHF_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183549,
+        "sha256": "b7ad13bfa08e45a586ee9bfd9644c74d06788f39e117003c57e211938b6ae7fd",
+        "source_ticks": 5172605
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\CADCHF_DWX\\CADCHF.DWX.dukascopy-source.json",
+      "sidecar_sha256": "0d067ee83571f8c5216fc87dcbe318dd0d1561291e200cfb4cadada1c755e1dc",
+      "symbol": "CADCHF.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800114,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599129,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\CADJPY_DWX\\CADJPY_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184009,
+        "sha256": "c0a6b1dab2f99a502d58f04dff9cc925d1b98e448fc106a0aeb61bb2133d12f7",
+        "source_ticks": 10917058
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\CADJPY_DWX\\CADJPY.DWX.dukascopy-source.json",
+      "sidecar_sha256": "8c95479ce0068ebf9099bf823541028d4fdad40e8c8c3b0e6a2d6ee57adb4478",
+      "symbol": "CADJPY.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800089,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598835,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\CHFJPY_DWX\\CHFJPY_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183616,
+        "sha256": "e6745e3e590885899d17e72444d9771182fd0582c2eec803c1b9582d0579d9f2",
+        "source_ticks": 13846762
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\CHFJPY_DWX\\CHFJPY.DWX.dukascopy-source.json",
+      "sidecar_sha256": "a9c177f16369a512280377c7ba5e4c7147a06d37b3e508335413639022aa615d",
+      "symbol": "CHFJPY.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800123,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599946,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURAUD_DWX\\EURAUD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184208,
+        "sha256": "68cd8580195d4ef0756983b5a831a646f03eb1c6b606b4a4bcffa1683b25e682",
+        "source_ticks": 20884490
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURAUD_DWX\\EURAUD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "a7a390d114cfe124d362370e0de82e01d4059b9e6bd0e1951bad418431865fd5",
+      "symbol": "EURAUD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800113,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599200,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURCAD_DWX\\EURCAD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183560,
+        "sha256": "d5f4dc637ffcae0bf50d57037dfcbbccbdd3823745484762b12f355a7dcb43bc",
+        "source_ticks": 13840229
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURCAD_DWX\\EURCAD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "2fc5055c9393480c09e3bd71264133d4810283b320a074325e9f3f8b45c43d16",
+      "symbol": "EURCAD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800153,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598706,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURCHF_DWX\\EURCHF_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183686,
+        "sha256": "268e30804039bf2407a284aa85397d5e5642fcc8e26d1c9c60110a653d52a79c",
+        "source_ticks": 7610605
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURCHF_DWX\\EURCHF.DWX.dukascopy-source.json",
+      "sidecar_sha256": "0947db9931face160d7c38fa4080979b96f3970c853cc9c3a27368bea5b21c8a",
+      "symbol": "EURCHF.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800095,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001590762,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURGBP_DWX\\EURGBP_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183669,
+        "sha256": "2e626a01733a689fa68f7581bec83e1b6218f445cb5256decb7f7b1d1b256c69",
+        "source_ticks": 8286891
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURGBP_DWX\\EURGBP.DWX.dukascopy-source.json",
+      "sidecar_sha256": "77ffed6d3699540f760640c97b2bd73f6d657fb5ec968bacd8abc84f06997ed9",
+      "symbol": "EURGBP.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800078,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599185,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURJPY_DWX\\EURJPY_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184215,
+        "sha256": "018ec334ea3a6ed77858f56b27ebdf13aeb73b5f45342001c0e7512bb784e1fc",
+        "source_ticks": 21157747
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURJPY_DWX\\EURJPY.DWX.dukascopy-source.json",
+      "sidecar_sha256": "5ed64c397e35ae49a3560dd64f29da7e99fac815caa1de4dd414a2e2ebb3c025",
+      "symbol": "EURJPY.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800218,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599162,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURNZD_DWX\\EURNZD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183255,
+        "sha256": "2058f90ad251c45e8f8588988023bc8e11fa0a42eee1493598db6723a483bb74",
+        "source_ticks": 13055358
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURNZD_DWX\\EURNZD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "1f327361ebf786cd25e2a49da96e2e4a0497baae6124862c396d24128a95c7cf",
+      "symbol": "EURNZD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800106,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598871,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURUSD_DWX\\EURUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183921,
+        "sha256": "ac67f4a324b62926450620998d4a0196e89b6f616534c97ab90d1005f9fe4f78",
+        "source_ticks": 9478310
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\EURUSD_DWX\\EURUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "47d826b32dc37f02bc8e48c010f580bdedb1963dc3f9fae515ecfbdbca78220a",
+      "symbol": "EURUSD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800074,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599060,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPAUD_DWX\\GBPAUD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183353,
+        "sha256": "0412ceb7b7449cda5cedc242856f46e39536cd44f86d7a034eba6275e0c857cc",
+        "source_ticks": 14401449
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPAUD_DWX\\GBPAUD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "e0bc05e9745e9235ecac7c284d982d70eb5303678843fc1ecc49c05a053254cc",
+      "symbol": "GBPAUD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800107,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599865,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPCAD_DWX\\GBPCAD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183426,
+        "sha256": "32869cc451a8f5532ae33b006ca6d55c74a599931f525bbe5465c055c0a9d31f",
+        "source_ticks": 15255394
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPCAD_DWX\\GBPCAD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "7c378c5bf1d4d8243277ab87fa45fe854f47671eacb0298fcc17f21c1d7c434d",
+      "symbol": "GBPCAD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800132,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598864,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPCHF_DWX\\GBPCHF_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183960,
+        "sha256": "546748e96bd82806e92478595b5214fd700273e7d1ac5cb967b29884ada6fc5e",
+        "source_ticks": 11421535
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPCHF_DWX\\GBPCHF.DWX.dukascopy-source.json",
+      "sidecar_sha256": "fc593978f464f9dbbe572d950c6a88dbcb6270e8a922008b5e2e9b4c127c8acf",
+      "symbol": "GBPCHF.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800125,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598991,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPJPY_DWX\\GBPJPY_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184130,
+        "sha256": "2c47043dac23c1cbb76ffa5ad9c391aebe717f22c049fe1fc3e2d720d4d6f79d",
+        "source_ticks": 20067981
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPJPY_DWX\\GBPJPY.DWX.dukascopy-source.json",
+      "sidecar_sha256": "a15ecb3431658d87848afea62cd19bbb1e0bde9abeee3663c107ac67ba1ad941",
+      "symbol": "GBPJPY.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800386,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599386,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPNZD_DWX\\GBPNZD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183145,
+        "sha256": "ed696d10f78bb85931c0911f47306896cdb614bbbcd158ea80cbb092ade8f562",
+        "source_ticks": 11792523
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPNZD_DWX\\GBPNZD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "a204affb091d2eb7fb05ca5d52ff8b0cf2e941e241ddf8921b72958b22c160a9",
+      "symbol": "GBPNZD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800102,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001597069,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPUSD_DWX\\GBPUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183612,
+        "sha256": "30200e4c09eb6019adf62db58cd3d867eefcc6e582db0b5df4882cee86aa5133",
+        "source_ticks": 11728875
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GBPUSD_DWX\\GBPUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "cacb61eb502876dd373901fd1d724842683ce45d8ea966462755f9f9d7da04fd",
+      "symbol": "GBPUSD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800303,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599969,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GDAXI_DWX\\GDAXI_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 167754,
+        "sha256": "572806253f77576be672ed011f6a3e6ee3d2cdff2171e1460a60001ad8206e1c",
+        "source_ticks": 8704825
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\GDAXI_DWX\\GDAXI.DWX.dukascopy-source.json",
+      "sidecar_sha256": "a85f9d9d9a89d67852a6d35ef9481fc4350ee7e1962c712303f3d65be76f7a2c",
+      "symbol": "GDAXI.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800306,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599943,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NDX_DWX\\NDX_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 169238,
+        "sha256": "e355559a2aa63d2d146f728b5b290887ae0b42fd877831d65ec73b181c02bc41",
+        "source_ticks": 41111314
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NDX_DWX\\NDX.DWX.dukascopy-source.json",
+      "sidecar_sha256": "e88fde3db0228776b9849ea37befe0dad54407bce7255f4fb5665fee2d4b7c68",
+      "symbol": "NDX.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800205,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599124,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDCAD_DWX\\NZDCAD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183915,
+        "sha256": "b8543c7a28788f780400dbd9bfc59991fa8aed3a68b611fc23ae43d1a5443f2b",
+        "source_ticks": 6998934
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDCAD_DWX\\NZDCAD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "2122c66e2d94df442db298d8f18a22573678de9c7a8973f3b8ffcaf2e3e9bb9e",
+      "symbol": "NZDCAD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800164,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001595316,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDCHF_DWX\\NZDCHF_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184039,
+        "sha256": "c5864927c198a2210521d0cba5aea989ddaf0cc8bebea008c5042c3882fb97c6",
+        "source_ticks": 5848194
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDCHF_DWX\\NZDCHF.DWX.dukascopy-source.json",
+      "sidecar_sha256": "ffa0f7fbe48b2d44aab3b0b7e0b06d1988ed2ddc6aa3b70376801900065122c0",
+      "symbol": "NZDCHF.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800975,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599150,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDJPY_DWX\\NZDJPY_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184173,
+        "sha256": "062026def82e17ddcdd82b7a709556d7f011c98f675f6e55395d4d4903062aec",
+        "source_ticks": 10860770
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDJPY_DWX\\NZDJPY.DWX.dukascopy-source.json",
+      "sidecar_sha256": "9f016f3b08d7df4049afc0a0aa84d098e37ab0906098e040cbd4ab7f98fa9262",
+      "symbol": "NZDJPY.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276801121,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599136,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDUSD_DWX\\NZDUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183666,
+        "sha256": "f48aea40ef52583538966b60291f77212cea93dd14ddf1fcaac8471d1d34ba9b",
+        "source_ticks": 7253689
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\NZDUSD_DWX\\NZDUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "cd2963c6201f153efbcff602a4385bcf2844a3970056604ae24c53643c596025",
+      "symbol": "NZDUSD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800304,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599972,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\SP500_DWX\\SP500_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 168689,
+        "sha256": "a8c5149b6f14fc38e94d1edc936957b33fbf066fe3bf6f27840ac26b1d979d9f",
+        "source_ticks": 10054055
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\SP500_DWX\\SP500.DWX.dukascopy-source.json",
+      "sidecar_sha256": "e7c8a8ca2452993cbbca283f278c7b971e31b8ef30e035bc9e7ff54d70560096",
+      "symbol": "SP500.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276811842,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001537996,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\UK100_DWX\\UK100_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 167272,
+        "sha256": "2b368154d9b63fc621800159d8152be184d25171153cdb06b9b6132504e54c8d",
+        "source_ticks": 6023217
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\UK100_DWX\\UK100.DWX.dukascopy-source.json",
+      "sidecar_sha256": "6e1388ebe5cd353ac1e51e28278371c1579f1658a5a61894abf98485845edf6a",
+      "symbol": "UK100.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276801240,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598804,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\USDCAD_DWX\\USDCAD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184051,
+        "sha256": "33fcdeedc15438bf96c7f3f2277eb9690c53d1c5ab2571a0b23227548fb9ef3e",
+        "source_ticks": 10763142
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\USDCAD_DWX\\USDCAD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "15fa5cb3b2c40e8220dfd870a7da9ce746d181aaac73d47945e27f6dc3e24a28",
+      "symbol": "USDCAD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800119,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001598898,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\USDCHF_DWX\\USDCHF_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 183707,
+        "sha256": "3394040e12fcc390939c7a2678e81303061cd11b6a375dc29bf19fd827ca6d5c",
+        "source_ticks": 7318896
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\USDCHF_DWX\\USDCHF.DWX.dukascopy-source.json",
+      "sidecar_sha256": "adc523a75e2dfac13e04f2d6c1f60ebaff138a5cdddbdd0efb75788b5cb7185f",
+      "symbol": "USDCHF.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800117,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599022,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\USDJPY_DWX\\USDJPY_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 184117,
+        "sha256": "a2d0bcdd57110455657c6da591877bd1efc547df0e8cd4a5bd0c2e3c49971223",
+        "source_ticks": 13193750
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\USDJPY_DWX\\USDJPY.DWX.dukascopy-source.json",
+      "sidecar_sha256": "310e353d46c0c7112fcfe26d97d68a0952b19131b98c10aff9ed82a063ccf856",
+      "symbol": "USDJPY.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800305,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599870,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\WS30_DWX\\WS30_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 169167,
+        "sha256": "14b8e03ec39d69a1d6d4fbcb6aac5d3234ee9f7107d28d5030a3dd677a554ae0",
+        "source_ticks": 18570667
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\WS30_DWX\\WS30.DWX.dukascopy-source.json",
+      "sidecar_sha256": "f7affe45734dd26d088b8efbc1606a247690da9ebf638e4c487234f8f193665c",
+      "symbol": "WS30.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800118,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599719,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XAGUSD_DWX\\XAGUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 174795,
+        "sha256": "122f852cef32aa41ef747410537be4a677c02d6ac8538e2a8c5a713753e1e200",
+        "source_ticks": 37667082
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XAGUSD_DWX\\XAGUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "f54f5a42ac5cff0889b9c53f2e791704d150dfa35b3d4e4ea8a7d6af0d7f3514",
+      "symbol": "XAGUSD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800050,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599956,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XAUUSD_DWX\\XAUUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 175773,
+        "sha256": "6a2f9e2afa09e80a17a01f220d75a744266973830754a422fbc44932c1e1758d",
+        "source_ticks": 49923156
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XAUUSD_DWX\\XAUUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "5654f231d8db49ca337f788bcce4deeb9791ca7beeaab48cdf352f0ae94a8b17",
+      "symbol": "XAUUSD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800493,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001528490,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XNGUSD_DWX\\XNGUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 158906,
+        "sha256": "626c1ac877fcde40d7fd0234811fd36e715585a0f305d55362883f12589f8814",
+        "source_ticks": 2055322
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XNGUSD_DWX\\XNGUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "3e493a16348da623af33f98342eceaacd4248df13c2d2b4a13397b7735b8f7d1",
+      "symbol": "XNGUSD.DWX"
+    },
+    {
+      "production_import": false,
+      "reconciliation_m1_output": {
+        "first_source_utc_msc": 1759276800504,
+        "from_source_utc": "2025-10-01T00:00:00.000Z",
+        "import_authorized": false,
+        "last_source_utc_msc": 1775001599319,
+        "path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XTIUSD_DWX\\XTIUSD_GMT+2_US-DST_RECONCILIATION_ONLY_M1.csv",
+        "purpose": "Dukascopy/DWX overlap reconciliation only",
+        "rows": 172118,
+        "sha256": "e83f928f55d6f258110f631221e56f3ad93e1db75554e5b41eb84e069bfe8b5a",
+        "source_ticks": 7689882
+      },
+      "sidecar_path": "D:\\QM\\reports\\dukascopy\\reconciliation\\20260915_60174747\\conversion\\XTIUSD_DWX\\XTIUSD.DWX.dukascopy-source.json",
+      "sidecar_sha256": "d6ffa9fa3825225e8dfd25ea8b263b8f64c97bea225f057ba421a896161852c9",
+      "symbol": "XTIUSD.DWX"
+    }
+  ],
+  "schema": "qm.dukascopy-p3-conversion-receipt/v1",
+  "symbol_count": 37,
+  "task_id": "60174747-2b7b-4326-88fe-3f3e1adc3ba3"
+}
