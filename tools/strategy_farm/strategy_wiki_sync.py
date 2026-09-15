@@ -116,6 +116,7 @@ class Sources:
     book_ftmo: Path
     lineage_map: Path
     health_out: Path
+    live_attribution: Path
 
     @property
     def ea_registry(self) -> Path:
@@ -168,6 +169,7 @@ def default_sources(
     book_ftmo: Path | None = None,
     lineage_map: Path | None = None,
     health_out: Path | None = None,
+    live_attribution: Path | None = None,
 ) -> Sources:
     rr = repo_root or _repo_root()
     d = d_runtime or Path(r"D:\QM\strategy_farm")
@@ -181,6 +183,7 @@ def default_sources(
         book_ftmo=book_ftmo or (state / "book_evolution_ftmo.json"),
         lineage_map=lineage_map or (state / "lineage_map.json"),
         health_out=health_out or (state / "strategy_wiki_sync.json"),
+        live_attribution=live_attribution or (state / "live_sleeve_attribution.json"),
     )
 
 
@@ -347,6 +350,39 @@ def _book_membership(path: Path) -> dict[str, str]:
         key = normalize_ea_key(ch.get("ea_id"))
         if key and key not in out:
             out[key] = "CHALLENGER"
+    return out
+
+
+def load_live_pnl(path: Path) -> dict[str, dict[str, Any]]:
+    """ea_key -> aggregated live realized PnL from the §33 attribution feed (read-only join).
+
+    An EA may run several live sleeves (magics); realized_pnl / realized_dd / trade_count
+    are summed per ea_id.  Absent or non-PRESENT feed -> empty map (nodes render
+    NOT_APPLICABLE, stable, no churn).
+    """
+    out: dict[str, dict[str, Any]] = {}
+    if not path.is_file():
+        return out
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return out
+    if not isinstance(data, dict) or data.get("status") != "PRESENT":
+        return out
+    for sleeve in data.get("sleeves") or []:
+        key = normalize_ea_key(sleeve.get("ea_id"))
+        if not key:
+            continue
+        agg = out.setdefault(key, {"realized_net": 0.0, "realized_dd": 0.0, "trade_count": 0, "last_deal_utc": ""})
+        agg["realized_net"] += float(sleeve.get("realized_pnl") or 0.0)
+        agg["realized_dd"] += float(sleeve.get("realized_dd") or 0.0)
+        agg["trade_count"] += int(sleeve.get("trade_count") or 0)
+        last = str(sleeve.get("last_deal_utc") or "")
+        if last > agg["last_deal_utc"]:
+            agg["last_deal_utc"] = last
+    for agg in out.values():
+        agg["realized_net"] = round(agg["realized_net"], 2)
+        agg["realized_dd"] = round(agg["realized_dd"], 2)
     return out
 
 
@@ -650,6 +686,7 @@ def resolve_fields(
     record: Record,
     sources: Sources,
     handwritten: dict[str, Path],
+    live_pnl: dict[str, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     card = record.card
     reg = record.registry or {}
@@ -705,6 +742,20 @@ def resolve_fields(
     else:
         live_demo = NOT_APPLICABLE
 
+    # §33 live money join (read-only): realized live PnL for this EA's live sleeve(s).
+    live_map = live_pnl or {}
+    live_row = live_map.get(record.ea_key) if record.ea_key else None
+    if live_row is not None:
+        live_realized_net = f"{live_row['realized_net']:.2f}"
+        live_realized_dd = f"{live_row['realized_dd']:.2f}"
+        live_trade_count = str(live_row["trade_count"])
+        live_last_deal = live_row["last_deal_utc"] or NOT_APPLICABLE
+    else:
+        # feed present but this EA is not in the live book -> NOT_APPLICABLE;
+        # feed absent entirely -> EVIDENCE_MISSING (stable, no node churn).
+        na_or_missing = NOT_APPLICABLE if live_map else EVIDENCE_MISSING
+        live_realized_net = live_realized_dd = live_trade_count = live_last_deal = na_or_missing
+
     family = _first(
         card.scalars.get("strategy_family") if card else "",
         (record.lineage_node or {}).get("family") if record.lineage_node else "",
@@ -751,6 +802,10 @@ def resolve_fields(
         "dxz_status": dxz_status,
         "ftmo_status": ftmo_status,
         "live_demo_status": live_demo,
+        "live_realized_net_usd": live_realized_net,
+        "live_realized_dd_usd": live_realized_dd,
+        "live_trade_count": live_trade_count,
+        "live_last_deal_utc": live_last_deal,
         "evidence_freshness": evidence_freshness,
         "handwritten_node": _handwritten_link(record, handwritten),
     }
@@ -784,6 +839,10 @@ def _node_inputs_sha256(record: Record, fields: dict[str, Any]) -> str:
             (r["relation"], r["other"], r["direction"]) for r in record.lineage_relations
         ),
         "source_hash": fields["source_hash"],
+        # Live money join: only live-book nodes carry a numeric value, so only they
+        # re-render when realized PnL moves; the 5000+ non-live nodes stay stable.
+        "live_realized_net_usd": fields["live_realized_net_usd"],
+        "live_last_deal_utc": fields["live_last_deal_utc"],
     }
     blob = json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str)
     return hashlib.sha256(blob.encode("utf-8")).hexdigest()
@@ -802,6 +861,8 @@ _FRONTMATTER_ORDER = [
     "highest_contiguous_gate", "pipeline_status", "terminal_verdict",
     "current_blocker", "duplicate_relationships", "parent_lineage",
     "dxz_status", "ftmo_status", "live_demo_status",
+    "live_realized_net_usd", "live_realized_dd_usd", "live_trade_count",
+    "live_last_deal_utc",
     "evidence_freshness", "handwritten_node",
     "inputs_sha256", "last_sync_inputs_sha256",
 ]
@@ -864,6 +925,9 @@ def render_node(fields: dict[str, Any]) -> str:
         f"- **DXZ status:** {fields['dxz_status']}",
         f"- **FTMO status:** {fields['ftmo_status']}",
         f"- **Live / demo status:** {fields['live_demo_status']}",
+        f"- **Live realized PnL (USD):** {fields['live_realized_net_usd']}",
+        f"- **Live realized DD (USD):** {fields['live_realized_dd_usd']}",
+        f"- **Live trades / last deal (UTC):** {fields['live_trade_count']} / {fields['live_last_deal_utc']}",
         "",
         "## Relationships",
         "",
@@ -968,6 +1032,7 @@ def build(
     ftmo = _book_membership(sources.book_ftmo)
     lineage = load_lineage(sources)
     handwritten = _hand_written_index(sources)
+    live_pnl = load_live_pnl(sources.live_attribution)
 
     records = build_records(sources, cards, registry, pipeline, dxz, ftmo, lineage)
     only_key = normalize_ea_key(only) if only else None
@@ -981,7 +1046,7 @@ def build(
         record = records[key]
         if only_key and record.ea_key != only_key:
             continue
-        fields = resolve_fields(record, sources, handwritten)
+        fields = resolve_fields(record, sources, handwritten, live_pnl)
         pclass = fields["projection_class"]
         class_counts[pclass] = class_counts.get(pclass, 0) + 1
         target = sources.generated_dir / pclass / node_filename(record)
@@ -1166,13 +1231,14 @@ def lint(
     ftmo = _book_membership(sources.book_ftmo)
     lineage = load_lineage(sources)
     handwritten = _hand_written_index(sources)
+    live_pnl = load_live_pnl(sources.live_attribution)
     records = build_records(sources, cards, registry, pipeline, dxz, ftmo, lineage)
 
     expected_fields: dict[str, dict[str, Any]] = {}
     expected_path: dict[str, Path] = {}
     class_counts: dict[str, int] = {c: 0 for c in PROJECTION_CLASSES}
     for key in sorted(records):
-        fields = resolve_fields(records[key], sources, handwritten)
+        fields = resolve_fields(records[key], sources, handwritten, live_pnl)
         expected_fields[key] = fields
         expected_path[key] = (
             sources.generated_dir / fields["projection_class"] / node_filename(records[key])

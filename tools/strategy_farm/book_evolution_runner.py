@@ -245,6 +245,10 @@ def _default_state_builds() -> list[dict[str, Any]]:
         # Mission Control + the vault AI Factory Capacity & Routing page. Deterministic,
         # read-only governor state; --no-render so the Friday cut never writes the vault.
         {"name": "ai_capacity", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "ai_capacity_readmodel.py"), "build", "--no-render"]},
+        # §33/§43H live money signal: per-sleeve realized PnL attribution from the real
+        # DXZ deal stream (read-only). Feeds recompose live_evidence, research ROI and the
+        # strategy wiki live join. Runs before the freeze so the frozen snapshot pins it.
+        {"name": "live_sleeve_attribution", "argv": [py, "-X", "utf8", str(_FARM_ROOT / "live_sleeve_attribution.py")]},
     ]
 
 

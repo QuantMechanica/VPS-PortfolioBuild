@@ -123,6 +123,7 @@ def fixture(tmp_path):
         book_ftmo=state / "book_evolution_ftmo.json",
         lineage_map=state / "lineage_map.json",
         health_out=state / "strategy_wiki_sync.json",
+        live_attribution=state / "live_sleeve_attribution.json",
     )
 
 
@@ -205,6 +206,30 @@ def test_idempotency_byte_identical(fixture):
     assert r2.written == 0
     assert r2.skipped == 6
     assert active.read_bytes() == first
+
+
+def test_live_pnl_join_renders_on_live_node(fixture):
+    import json as _json
+    # QM5_100 is the DXZ incumbent (ea_id 100) -> gets a live realized value.
+    fixture.live_attribution.write_text(_json.dumps({
+        "schema": "qm.live-sleeve-attribution/v1",
+        "status": "PRESENT",
+        "sleeves": [
+            {"ea_id": 100, "magic": 1000000, "symbol": "EURUSD",
+             "realized_pnl": 342.96, "realized_dd": 55.0, "trade_count": 7,
+             "last_deal_utc": "2026-09-15T15:00:00Z"},
+        ],
+        "book_totals": {"realized_pnl": 342.96, "realized_dd": 55.0},
+    }), encoding="utf-8")
+    sws.build(fixture)
+    node = fixture.generated_dir / sws.CLASS_ACTIVE / "QM5_100_alpha-breakout.md"
+    scalars, _ = sws.parse_frontmatter(sws._read_text(node))
+    assert scalars["live_realized_net_usd"] == "342.96"
+    assert scalars["live_trade_count"] == "7"
+    # A non-live EA (QM5_200 draft) with feed PRESENT renders NOT_APPLICABLE (no churn value).
+    draft = fixture.generated_dir / sws.CLASS_DRAFT / "QM5_200_beta-draft.md"
+    dscalars, _ = sws.parse_frontmatter(sws._read_text(draft))
+    assert dscalars["live_realized_net_usd"] == sws.NOT_APPLICABLE
 
 
 def test_handwritten_node_never_overwritten(fixture):

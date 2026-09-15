@@ -115,11 +115,13 @@ def _inputs(tmp_path):
     return db, reg, dxz, ftmo, seeds
 
 
-def _build(tmp_path, db, reg, dxz, ftmo, seeds):
+def _build(tmp_path, db, reg, dxz, ftmo, seeds, live_attribution=None):
     origin_rows = roi.build_origin_table(reg, card_dirs=[tmp_path / "no_cards"])
     return roi.build_roi(
         db, registry_path=reg, card_dirs=[tmp_path / "no_cards"],
         seed_sources_dir=seeds, book_dxz_path=dxz, book_ftmo_path=ftmo,
+        # Default to an ABSENT path so the funnel tests stay hermetic (no real D: read).
+        live_attribution_path=live_attribution or (tmp_path / "no_live_attribution.json"),
         origin_rows=origin_rows, now=_FIXED_NOW,
     ), origin_rows
 
@@ -186,3 +188,28 @@ def test_schema_and_totals(tmp_path):
     assert m["schema"] == "qm.research-roi/v1"
     assert m["totals"]["registry_eas"] == 3
     assert m["totals"]["dxz_book_eas"] == 1
+
+
+def test_live_economic_contribution_join(tmp_path):
+    db, reg, dxz, ftmo, seeds = _inputs(tmp_path)
+    live = tmp_path / "live_sleeve_attribution.json"
+    live.write_text(json.dumps({
+        "schema": "qm.live-sleeve-attribution/v1",
+        "status": "PRESENT",
+        "generated_at_utc": "2026-09-15T18:00:00Z",
+        "sleeves": [
+            # ea 2001 external_source -> +120.50 ; ea 2003 internal_discovery -> -30.00
+            {"ea_id": 2001, "realized_pnl": 120.50, "realized_dd": 40.0, "trade_count": 5},
+            {"ea_id": 2003, "realized_pnl": -30.0, "realized_dd": 30.0, "trade_count": 2},
+            # ea 9999 not in registry -> unmapped
+            {"ea_id": 9999, "realized_pnl": 5.0, "realized_dd": 1.0, "trade_count": 1},
+        ],
+        "book_totals": {"realized_pnl": 95.5, "realized_dd": 71.0},
+    }), encoding="utf-8")
+    m, _ = _build(tmp_path, db, reg, dxz, ftmo, seeds, live_attribution=live)
+    prog = {p["origin_programme"]: p for p in m["programmes"]}
+    assert prog["external_source"]["economic_contribution"]["pnl"] == 120.5
+    assert prog["internal_discovery"]["economic_contribution"]["pnl"] == -30.0
+    assert m["live_economic_contribution"]["status"] == "PRESENT"
+    assert m["live_economic_contribution"]["unmapped_live_eas"] == [9999]
+    assert m["definitions"]["economic_contribution_pnl"].startswith("realized live USD")
