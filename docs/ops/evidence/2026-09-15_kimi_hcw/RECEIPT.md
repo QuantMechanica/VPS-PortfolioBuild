@@ -33,7 +33,7 @@ book until allocation completes.
   `Include\` + terminal stdlib; the Roaming profile include tree is stale and
   was NOT mutated).
 - Result: **0 errors, 0 warnings** (`artifacts/builds/compile/QM5_41475_local_wt_includes.log`).
-- `.ex5` sha256 2df0c458…89f4f.
+- `.ex5` sha256 0ac48861…04cee (post-review-fix rebuild; compile 0 errors / 0 warnings).
 - `compile_one.ps1 -Strict` and `build_check.ps1` refused with
   `LIVE_FACTORY_AD_HOC_COMPILE_REFUSED` (terminal64 alive; governed path would
   enqueue into the live factory — out of bounds for this delegation). Refusal

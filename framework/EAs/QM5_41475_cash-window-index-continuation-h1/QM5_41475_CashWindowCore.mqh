@@ -280,7 +280,8 @@ bool HcwBuildBreakoutWindow(const datetime closed_bar_time)
    int counted = 0;
    double hi = 0.0;
    double lo = 0.0;
-   for(int i = copied - 1; i >= 0; --i)
+   // Index 0 is the still-forming bar; the reference uses closed bars only.
+   for(int i = copied - 1; i >= 1; --i)
      {
       MqlDateTime bar_utc;
       HcwUtcStruct(rates[i].time, bar_utc);
@@ -577,7 +578,16 @@ void HcwManageOpenPosition()
    if(g_hcw_be_done || open_price <= 0.0)
       return;
 
-   const double atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+   // ATR cache: refreshed once per H1 bar (management is per-tick).
+   const datetime bar0 = iTime(_Symbol, PERIOD_H1, 0);
+   static datetime s_be_atr_bar = 0;
+   static double s_be_atr = 0.0;
+   if(bar0 != s_be_atr_bar)
+     {
+      s_be_atr_bar = bar0;
+      s_be_atr = QM_ATR(_Symbol, PERIOD_H1, strategy_atr_period, 1);
+     }
+   const double atr = s_be_atr;
    const double bid = SymbolInfoDouble(_Symbol, SYMBOL_BID);
    const double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
    if(atr <= 0.0 || bid <= 0.0 || ask <= 0.0)
