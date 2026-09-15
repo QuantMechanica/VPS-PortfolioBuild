@@ -4,7 +4,10 @@
   "vendors": {
     "claude": {
       "models": {"opus": "opus", "sonnet": "sonnet", "haiku": "haiku"},
-      "read_only_tools": ["Read", "Grep", "Glob"]
+      "read_only_tools": ["Read", "Grep", "Glob"],
+      "disallowed_tools": ["Bash", "PowerShell", "Edit", "Write", "MultiEdit", "NotebookEdit", "WebFetch", "WebSearch", "Agent", "Workflow", "Artifact"],
+      "max_turns": 40,
+      "_envelope_doc": "Live finding 2026-09-15: user settings defaultMode=auto let a headless critic run Bash despite --allowedTools. The runner therefore passes --tools <read_only_tools>, --disallowedTools <disallowed_tools>, --permission-mode dontAsk, --max-turns, --strict-mcp-config with an empty MCP config (no connectors)."
     },
     "codex": {
       "tiers": {"sol": "gpt-5.6-sol", "terra": "gpt-5.6-terra", "luna": "gpt-5.6-luna"},

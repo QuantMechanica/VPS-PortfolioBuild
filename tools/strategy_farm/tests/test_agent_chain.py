@@ -218,6 +218,72 @@ def test_critique_sweep_selects_review_rows_skips_review_ea_and_receipted(cfg: d
         conn.close()
 
 
+class _FakePopen:
+    """Records the argv and writes a Claude-style JSON result to the stdout handle."""
+
+    last_cmd: list[str] = []
+    behaviour = "ok"  # ok | hang
+
+    def __init__(self, cmd, cwd=None, stdin=None, stdout=None, stderr=None, env=None, shell=False, creationflags=0):
+        _FakePopen.last_cmd = list(cmd)
+        self.pid = 4242
+        self.returncode = 0
+        self._stdout = stdout
+        if _FakePopen.behaviour == "ok" and stdout is not None:
+            stdout.write(json.dumps({"result": "## Audit notes\nok\n```json\n" + json.dumps(
+                {"schema": ac.CRITIC_SCHEMA, "verdict": "PASS", "findings": []}) + "\n```\n",
+                "is_error": False, "total_cost_usd": 0.01, "usage": {"output_tokens": 1}}).encode("utf-8"))
+            stdout.flush()
+
+    def wait(self, timeout=None):
+        if _FakePopen.behaviour == "hang":
+            raise ac.subprocess.TimeoutExpired(cmd="fake", timeout=timeout)
+        return 0
+
+    def kill(self):
+        _FakePopen.behaviour = "ok"
+        self.returncode = -9
+
+
+def test_headless_claude_command_carries_hard_read_only_envelope(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(ac.subprocess, "Popen", _FakePopen)
+    _FakePopen.behaviour = "ok"
+    seat = ac.Seat(vendor="claude", model="opus")
+    out_dir = tmp_path / "stage"
+    out_dir.mkdir()
+    (out_dir / "p.md").write_text("prompt", encoding="utf-8")
+    result = ac._run_claude(seat, "prompt", cfg=cfg, cwd=tmp_path, add_dirs=[tmp_path], timeout=5,
+                            log_path=out_dir / "x.log", prompt_path=out_dir / "p.md", out_path=out_dir / "raw.json",
+                            environ={})
+    cmd = _FakePopen.last_cmd
+    assert result["status"] == "ok" and "Audit notes" in result["text"]
+    assert cmd[cmd.index("--permission-mode") + 1] == "dontAsk"
+    assert "--strict-mcp-config" in cmd and (out_dir / "mcp_empty.json").exists()
+    tools = cmd[cmd.index("--tools") + 1: cmd.index("--disallowedTools")]
+    assert tools == ["Read", "Grep", "Glob"]
+    disallowed = cmd[cmd.index("--disallowedTools") + 1:]
+    assert {"Bash", "Edit", "Write", "WebFetch", "Agent"} <= set(disallowed)
+    assert "--max-turns" in cmd
+    assert "--dangerously-skip-permissions" not in cmd
+
+
+def test_headless_claude_timeout_kills_tree_and_reports(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(ac.subprocess, "Popen", _FakePopen)
+    killed: list[list[str]] = []
+    monkeypatch.setattr(ac.subprocess, "run", lambda cmd, **kw: killed.append(list(cmd)))
+    _FakePopen.behaviour = "hang"
+    seat = ac.Seat(vendor="claude", model="opus")
+    out_dir = tmp_path / "stage"
+    out_dir.mkdir()
+    (out_dir / "p.md").write_text("prompt", encoding="utf-8")
+    result = ac._run_claude(seat, "prompt", cfg=cfg, cwd=tmp_path, add_dirs=[], timeout=1,
+                            log_path=out_dir / "x.log", prompt_path=out_dir / "p.md", out_path=out_dir / "raw.json",
+                            environ={})
+    assert result["status"] == "timeout" and "tree_killed" in result["reason"]
+    if ac.sys.platform == "win32":
+        assert killed and killed[0][:4] == ["taskkill", "/F", "/T", "/PID"]
+
+
 def test_critique_never_touches_agent_tasks(cfg: dict, fake_env: dict, tmp_path: Path) -> None:
     artifact = tmp_path / "deliv.md"
     artifact.write_text("RESULT\n", encoding="utf-8")

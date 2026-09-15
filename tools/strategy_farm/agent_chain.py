@@ -376,6 +376,31 @@ def _model_id(seat: Seat, cfg: dict[str, Any]) -> str:
     return ""
 
 
+def _kill_tree(proc: subprocess.Popen[Any]) -> None:
+    """Kill the whole process tree (shell=True leaves the CLI alive when only the shell dies)."""
+    try:
+        if sys.platform == "win32":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True,
+                           creationflags=_creationflags(), timeout=60)
+        proc.kill()
+    except Exception:  # noqa: BLE001 - best effort; the caller records the timeout regardless
+        pass
+    try:
+        proc.wait(timeout=30)
+    except Exception:  # noqa: BLE001
+        pass
+
+
+def _wait_or_kill(proc: subprocess.Popen[Any], timeout: int) -> bool:
+    """True when the process ended in time; False after a tree kill on timeout."""
+    try:
+        proc.wait(timeout=timeout)
+        return True
+    except subprocess.TimeoutExpired:
+        _kill_tree(proc)
+        return False
+
+
 def _run_claude(
     seat: Seat,
     prompt: str,
@@ -385,33 +410,52 @@ def _run_claude(
     add_dirs: list[Path],
     timeout: int,
     log_path: Path,
+    prompt_path: Path,
+    out_path: Path,
     environ: dict[str, str] | None,
 ) -> dict[str, Any]:
-    tools = list(((cfg.get("vendors") or {}).get("claude") or {}).get("read_only_tools") or ["Read", "Grep", "Glob"])
-    cmd = [resolve_cli("claude"), "-p", "--model", _model_id(seat, cfg), "--output-format", "json"]
+    """Headless Claude Code with a HARD read-only envelope.
+
+    Live finding 2026-09-15 07:1xZ: ``--allowedTools`` alone does not restrict a
+    headless run when the user settings carry ``permissions.defaultMode: auto`` -
+    the first live critic ran Bash. Hence: ``--tools`` (the built-in tool set is
+    reduced to Read/Grep/Glob), ``--disallowedTools`` as the second belt,
+    ``--permission-mode dontAsk`` (anything that would prompt is denied, never
+    blocks), ``--strict-mcp-config`` with an empty config (no connectors such as
+    Gmail/Notion reach the critic), ``--max-turns`` to bound tool loops.
+    """
+    claude_cfg = (cfg.get("vendors") or {}).get("claude") or {}
+    tools = list(claude_cfg.get("read_only_tools") or ["Read", "Grep", "Glob"])
+    disallowed = list(claude_cfg.get("disallowed_tools") or
+                      ["Bash", "PowerShell", "Edit", "Write", "MultiEdit", "NotebookEdit", "WebFetch", "WebSearch",
+                       "Agent", "Workflow", "Artifact"])
+    max_turns = int(claude_cfg.get("max_turns") or 40)
+    mcp_empty = out_path.parent / "mcp_empty.json"
+    if not mcp_empty.exists():
+        _write_json(mcp_empty, {"mcpServers": {}})
+    cmd = [resolve_cli("claude"), "-p", "--model", _model_id(seat, cfg), "--output-format", "json",
+           "--permission-mode", "dontAsk", "--max-turns", str(max_turns),
+           "--strict-mcp-config", "--mcp-config", str(mcp_empty)]
     for d in add_dirs:
         cmd += ["--add-dir", str(d)]
-    cmd += ["--allowedTools", *tools]
+    cmd += ["--tools", *tools, "--disallowedTools", *disallowed]
     started = time.monotonic()
-    with open(log_path, "wb") as log_f:
+    with open(prompt_path, "rb") as stdin_f, open(out_path, "wb") as out_f, open(log_path, "wb") as log_f:
         proc = subprocess.Popen(
             cmd,
             cwd=str(cwd),
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
+            stdin=stdin_f,
+            stdout=out_f,
             stderr=log_f,
             env=seat_env("claude", environ),
             shell=True,
             creationflags=_creationflags(),
         )
-        try:
-            out, _ = proc.communicate(prompt.encode("utf-8"), timeout=timeout)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            out, _ = proc.communicate()
-            return {"rc": -9, "status": "timeout", "text": out.decode("utf-8", "replace"), "cmd": cmd,
-                    "duration_s": time.monotonic() - started}
-    raw = out.decode("utf-8", "replace")
+        finished = _wait_or_kill(proc, timeout)
+    raw = out_path.read_text(encoding="utf-8", errors="replace") if out_path.exists() else ""
+    if not finished:
+        return {"rc": -9, "status": "timeout", "text": raw, "cmd": cmd, "duration_s": time.monotonic() - started,
+                "reason": f"timeout_after_{timeout}s_tree_killed"}
     result: dict[str, Any] = {"rc": proc.returncode, "cmd": cmd, "duration_s": time.monotonic() - started}
     try:
         data = json.loads(raw)
@@ -478,12 +522,9 @@ def _run_codex(
             )
         except ImportError:
             proc = subprocess.Popen(cmd, cwd=str(cwd), **popen_kwargs)
-        try:
-            proc.wait(timeout=timeout)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait()
-            return {"rc": -9, "status": "timeout", "text": "", "cmd": cmd, "duration_s": time.monotonic() - started}
+        if not _wait_or_kill(proc, timeout):
+            return {"rc": -9, "status": "timeout", "text": "", "cmd": cmd, "duration_s": time.monotonic() - started,
+                    "reason": f"timeout_after_{timeout}s_tree_killed"}
     text = out_path.read_text(encoding="utf-8", errors="replace") if out_path.exists() else ""
     status = "ok" if proc.returncode == 0 and text.strip() else "error"
     return {"rc": proc.returncode, "status": status, "text": text, "cmd": cmd,
@@ -518,12 +559,9 @@ def _run_agy(
     with open(log_path, "wb") as log_f:
         proc = subprocess.Popen(cmd, cwd=str(cwd), stdout=log_f, stderr=subprocess.STDOUT,
                                 env=seat_env("agy", environ), shell=False, creationflags=_creationflags())
-        try:
-            proc.wait(timeout=timeout + 60)
-        except subprocess.TimeoutExpired:
-            proc.kill()
-            proc.wait()
-            return {"rc": -9, "status": "timeout", "text": "", "cmd": cmd, "duration_s": time.monotonic() - started}
+        if not _wait_or_kill(proc, timeout + 60):
+            return {"rc": -9, "status": "timeout", "text": "", "cmd": cmd, "duration_s": time.monotonic() - started,
+                    "reason": f"timeout_after_{timeout + 60}s_tree_killed"}
     text = out_path.read_text(encoding="utf-8", errors="replace") if out_path.exists() else ""
     if not text.strip() and log_path.exists():
         text = log_path.read_text(encoding="utf-8", errors="replace")
@@ -578,7 +616,8 @@ def run_seat(
         out_path = out_dir / f"{stage_name}_{seat.vendor}_answer.md"
         if seat.vendor == "claude":
             result = _run_claude(seat, prompt, cfg=cfg, cwd=cwd, add_dirs=add_dirs, timeout=timeout,
-                                 log_path=log_path, environ=environ)
+                                 log_path=log_path, prompt_path=prompt_path,
+                                 out_path=out_dir / f"{stage_name}_{seat.vendor}_raw.json", environ=environ)
         elif seat.vendor == "codex":
             result = _run_codex(seat, prompt, cfg=cfg, cwd=cwd, timeout=timeout, log_path=log_path,
                                 prompt_path=prompt_path, out_path=out_path, environ=environ)
