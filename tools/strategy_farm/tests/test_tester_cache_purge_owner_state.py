@@ -9,6 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPT = ROOT / "tools" / "strategy_farm" / "tester_cache_purge.ps1"
+RELAUNCH = ROOT / "tools" / "strategy_farm" / "tester_cache_relaunch.ps1"
 
 
 @pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell 5.1 only")
@@ -26,10 +27,25 @@ def test_tester_cache_purge_parses_in_windows_powershell_51() -> None:
     assert result.returncode == 0, result.stderr or result.stdout
 
 
+@pytest.mark.skipif(os.name != "nt", reason="Windows PowerShell 5.1 only")
+def test_relaunch_helper_parses_in_windows_powershell_51() -> None:
+    command = (
+        "$tokens=$null;$errors=$null;"
+        f"[Management.Automation.Language.Parser]::ParseFile('{RELAUNCH}',"
+        "[ref]$tokens,[ref]$errors)|Out-Null;"
+        "if($errors.Count){$errors|ForEach-Object{Write-Error $_};exit 1}"
+    )
+    result = subprocess.run(
+        ("powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command),
+        cwd=ROOT, capture_output=True, text=True, timeout=20, check=False,
+    )
+    assert result.returncode == 0, result.stderr or result.stdout
+
+
 def test_purge_preserves_factory_owner_state_before_interactive_restart() -> None:
     source = SCRIPT.read_text(encoding="utf-8")
     guard = source.index("if (-not $factoryRestartAuthorized)")
-    start = source.index("$launchEvidence = Invoke-InteractiveWorkerDedupe")
+    start = source.index("$launchAction = { Invoke-InteractiveWorkerDedupe }")
     assert guard < start
     assert "$factoryOffWasPresent" in source
     assert "$pumpWasEnabled -or $tickWasEnabled" in source
@@ -40,6 +56,20 @@ def test_purge_preserves_factory_owner_state_before_interactive_restart() -> Non
     assert "--dedupe" in source
     assert "Start-ScheduledTask -TaskName $dedupeTask.TaskName" not in source
     assert "QM_StrategyFarm_WorkerDedupe" not in source
+
+
+def test_purge_binds_relaunch_to_exact_pre_purge_worker_set() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    capture = source.index("$expectedWorkerTerminals = @(Get-RunningFactoryWorkerTerminals)")
+    stop = source.index("Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min'")
+    verify = source.index("Invoke-VerifiedFactoryWorkerRelaunch")
+    assert capture < stop < verify
+    assert "WORKER_RELAUNCH_OUTCOME attempt=" in source
+    assert "WORKER_RELAUNCH_VERIFIED" in source
+    assert "ALARM event=TESTER_CACHE_RELAUNCH_INCOMPLETE" in source
+    assert "if ($relaunchFailed) { exit 4 }" in source
+    assert "-Expected $expectedWorkerTerminals" in source
+    assert "--dedupe" in source
 
 
 def test_busy_scratch_mode_has_all_three_safety_layers() -> None:

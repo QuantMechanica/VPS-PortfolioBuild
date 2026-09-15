@@ -50,10 +50,15 @@ $ErrorActionPreference = 'Continue'
 $py = 'C:\Users\Administrator\AppData\Local\Programs\Python\Python311\python.exe'
 $log = "D:\QM\reports\state\tester_cache_purge.log"
 $resourcePolicy = Join-Path $RepoRoot 'tools\strategy_farm\resource_headroom.py'
+$relaunchVerifier = Join-Path $RepoRoot 'tools\strategy_farm\tester_cache_relaunch.ps1'
 if (-not $FarmDbPath) { $FarmDbPath = Join-Path $FarmRoot 'state\farm_state.sqlite' }
 if (-not $EvidenceGuardPath) {
     $EvidenceGuardPath = Join-Path $RepoRoot 'tools\strategy_farm\tester_cache_purge_guard.py'
 }
+if (-not (Test-Path -LiteralPath $relaunchVerifier -PathType Leaf)) {
+    throw "worker relaunch verifier missing: $relaunchVerifier"
+}
+. $relaunchVerifier
 function Now { (Get-Date).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') }
 function FreeGB { [math]::Round((Get-PSDrive D).Free/1GB,2) }
 function Log($m) { $line = "$(Now) $m"; Write-Output $line; try { Add-Content -Path $log -Value $line -Encoding UTF8 } catch {} }
@@ -205,6 +210,19 @@ function Get-FactoryTerminalFromCommandLine {
     if ($CommandLine -match '\\mt5\\(T(?:[1-9]|10))\\') { return $matches[1].ToUpperInvariant() }
     if ($CommandLine -match '--terminal\s+(T(?:[1-9]|10))\b') { return $matches[1].ToUpperInvariant() }
     return $null
+}
+function Get-RunningFactoryWorkerTerminals {
+    # Exact maintenance scope only. T_Live, T_Export, and T11/T12 canaries are
+    # excluded even if their command lines happen to contain terminal_worker.py.
+    $running = foreach ($process in @(Get-CimInstance Win32_Process `
+            -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction Stop |
+            Where-Object { $_.CommandLine -match 'terminal_worker\.py' })) {
+        $terminalName = Get-FactoryTerminalFromCommandLine $process.CommandLine
+        if ($terminalName -and $terminalName -match '^T(?:[1-9]|10)$') {
+            $terminalName
+        }
+    }
+    return @(ConvertTo-NormalizedFactoryWorkerSet -Terminals $running)
 }
 $claimLockProtectionSeconds = 180
 function Get-ClaimLockHolderSnapshot {
@@ -450,7 +468,9 @@ $tickWasEnabled = ($null -ne $tickTask -and $tickTask.State -ne 'Disabled')
 $factoryOffFlag = Join-Path $FarmRoot 'state\FACTORY_OFF.flag'
 $factoryOffWasPresent = Test-Path -LiteralPath $factoryOffFlag -PathType Leaf
 $factoryRestartAuthorized = (-not $factoryOffWasPresent) -and ($pumpWasEnabled -or $tickWasEnabled)
+$expectedWorkerTerminals = @(Get-RunningFactoryWorkerTerminals)
 Log "owner state captured: pump_enabled=$pumpWasEnabled tick_enabled=$tickWasEnabled factory_off_flag=$factoryOffWasPresent restart_authorized=$factoryRestartAuthorized"
+Log "WORKER_RELAUNCH_EXPECTED source=pre_purge_running_set terminals=[$($expectedWorkerTerminals -join ',')] count=$($expectedWorkerTerminals.Count)"
 Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Disable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction SilentlyContinue | Out-Null
 Stop-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction SilentlyContinue | Out-Null
@@ -604,16 +624,38 @@ if (-not $factoryRestartAuthorized) {
 #    same idempotent, interactive-session token launcher used by the hardened
 #    factory watchdog. Unlike Factory_ON, it neither removes FACTORY_OFF nor
 #    tears down healthy/protected worker slots.
+$relaunchFailed = $false
 try {
     if ($pumpWasEnabled) { Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Pump_5min' -ErrorAction Stop | Out-Null }
     if ($tickWasEnabled) { Enable-ScheduledTask -TaskName 'QM_StrategyFarm_Tick_5min' -ErrorAction Stop | Out-Null }
-    $launchEvidence = Invoke-InteractiveWorkerDedupe
-    Start-Sleep -Seconds 10
-    $daemons = @(Get-CimInstance Win32_Process -Filter "Name='pythonw.exe' OR Name='python.exe'" -ErrorAction SilentlyContinue |
-                 Where-Object { $_.CommandLine -match 'terminal_worker\.py' })
-    Log "missing workers requested via interactive-session token launcher: $($daemons.Count) total worker daemon(s); D: free $(FreeGB)GB; $launchEvidence"
+    $launchAction = { Invoke-InteractiveWorkerDedupe }
+    $probeAction = { @(Get-RunningFactoryWorkerTerminals) }
+    $journalAction = {
+        param($outcome)
+        $safeLaunchError = ([string]$outcome.launch_error) -replace '[\r\n]+', ' '
+        $safeProbeError = ([string]$outcome.probe_error) -replace '[\r\n]+', ' '
+        Log ("WORKER_RELAUNCH_OUTCOME attempt={0} matched={1} launch_status={2} probe_status={3} expected=[{4}] running=[{5}] missing=[{6}] unexpected=[{7}] launch_error={8} probe_error={9}" -f `
+            $outcome.attempt, $outcome.matched, $outcome.launch_status, $outcome.probe_status,
+            ($outcome.expected -join ','), ($outcome.running -join ','),
+            ($outcome.missing -join ','), ($outcome.unexpected -join ','),
+            $safeLaunchError, $safeProbeError)
+    }
+    $relaunchOutcome = Invoke-VerifiedFactoryWorkerRelaunch `
+        -Expected $expectedWorkerTerminals `
+        -Launch $launchAction `
+        -Probe $probeAction `
+        -Journal $journalAction `
+        -SettleSeconds 10
+    if ($relaunchOutcome.matched) {
+        Log "WORKER_RELAUNCH_VERIFIED attempts=$($relaunchOutcome.attempt) terminals=[$($relaunchOutcome.running -join ',')] d_free_gb=$(FreeGB)"
+    } else {
+        $relaunchFailed = $true
+        Log "ALARM event=TESTER_CACHE_RELAUNCH_INCOMPLETE attempts=2 expected=[$($relaunchOutcome.expected -join ',')] running=[$($relaunchOutcome.running -join ',')] missing=[$($relaunchOutcome.missing -join ',')] unexpected=[$($relaunchOutcome.unexpected -join ',')]"
+    }
 } catch {
-    Log "factory missing-worker recovery FAILED (interactive-session token launcher): $($_.Exception.Message) - existing protected slots were not killed"
+    $relaunchFailed = $true
+    Log "ALARM event=TESTER_CACHE_RELAUNCH_EXCEPTION reason=$($_.Exception.Message) existing_running_workers_not_restarted=true"
 }
 if ($evidenceRefreshFailed) { exit 3 }
+if ($relaunchFailed) { exit 4 }
 if ($telemetryErrors.Count -gt 0) { exit 2 }
