@@ -25,5 +25,14 @@
     ],
     "period": "2021-2024 held-out; never touched during discovery"
   },
-  "version": 2
+  "version": 2,
+  "versions": [
+    {
+      "created_at": "2026-09-15T20:38:41+00:00",
+      "mechanical_spec_sha256": "e23e2f61ccf62d86b337f20b080eafc53558ed4aa7e32b2f64c3896c8f33499b",
+      "parent_version": null,
+      "record_sha256": "cd661891447f6bb2ef2465607f7df40138e6a9de0879d0242b5dc7c35554322e",
+      "version": 1
+    }
+  ]
 }
