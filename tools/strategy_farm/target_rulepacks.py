@@ -53,6 +53,15 @@ ROOT_KEYS = {
     "evaluation_profile",
     "deployment_boundary",
 }
+RULE_SNAPSHOT_BINDING_KEYS = {
+    "bound_snapshot_path",
+    "bound_snapshot_sha256",
+    "bound_snapshot_retrieved_at_utc",
+    "rebound_at_utc",
+    "freshness_max_age_days",
+    "readiness_blocker_age_days",
+    "note",
+}
 SOURCE_REQUIRED_KEYS = {"source_id", "title", "url", "authority", "retrieved_on"}
 SOURCE_SNAPSHOT_KEYS = {
     "retrieved_at_utc",
@@ -711,7 +720,16 @@ def validate_rulepack(payload: Mapping[str, Any]) -> None:
     """Validate structure, separation of authority, and target invariants."""
 
     _assert_json_types(payload)
-    _require_exact_keys(payload, ROOT_KEYS, "$")
+    # rule_snapshot_binding is OPTIONAL (2026-09-15 official-rules refresh, OWNER-DEC-CBE-20260915
+    # s63): it binds the rulepack to a dated official-rules snapshot for freshness tracking only
+    # and never carries go-criteria; validated as a closed object when present.
+    root_payload = {k: v for k, v in payload.items() if k != "rule_snapshot_binding"}
+    _require_exact_keys(root_payload, ROOT_KEYS, "$")
+    if "rule_snapshot_binding" in payload:
+        binding = payload["rule_snapshot_binding"]
+        if not isinstance(binding, Mapping):
+            _fail("$.rule_snapshot_binding", "must be an object")
+        _require_exact_keys(binding, RULE_SNAPSHOT_BINDING_KEYS, "$.rule_snapshot_binding")
     if payload["schema_version"] != SCHEMA_VERSION:
         _fail("$.schema_version", f"must equal {SCHEMA_VERSION}")
     if payload["schema_ref"] != "tools/strategy_farm/schemas/target_rulepack_v1.schema.json":
