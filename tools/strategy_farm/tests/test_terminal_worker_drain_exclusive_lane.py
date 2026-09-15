@@ -9,6 +9,7 @@ PRE-DRAIN refuses NEW long-run claims (short rows keep flowing) until they finis
 drain parks the fleet and the row runs alone.  Duty cycle: exclusive cooldown + a daily cap.
 Kill switch QM_DRAIN_EXCLUSIVE=0 restores the prior behaviour byte-for-byte.
 """
+import json
 import sys
 from pathlib import Path
 
@@ -16,6 +17,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+import farmctl  # noqa: E402
 import terminal_worker as tw  # noqa: E402
 
 NOW = 20_000_000.0
@@ -129,15 +131,26 @@ def test_daily_cap_blocks_further_exclusive_arming():
     assert state["active"] is not None
 
 
-def test_predrain_expires_and_abandons_when_the_candidate_changes():
+def test_predrain_survives_a_differing_scan_candidate_and_still_expires():
+    # 2026-09-14 fix (was test_predrain_expires_and_abandons_when_the_candidate_changes,
+    # which asserted the DEFECT behaviour): a differing scan candidate no longer
+    # abandons the pre-drain (that oscillation reset opened_epoch every pass so the
+    # 240-min bound never expired and refused new long runs for ~4 h).  Only the
+    # kill switch, the max-window bound, or the row leaving the pending set closes it.
     state, _ = tw._drain_evaluate(_tracked_state(), now_epoch=NOW, qualifying_candidate=_cand(),
                                   winnable=False, winnable_reason="exclusive_waits_for_long_runs", long_run_ids_active=["LR1"])
+    opened0 = state["pre_drain"]["opened_epoch"]
     other = {**_cand(), "item_id": "SPX2"}
     st, events = tw._drain_evaluate(state, now_epoch=NOW + 60.0, qualifying_candidate=other,
-                                    winnable=False, winnable_reason="exclusive_waits_for_long_runs", long_run_ids_active=["LR1"])
-    assert any(e["event"] == "drain_predrain_abandoned" for e in events)
-    st, events = tw._drain_evaluate(state, now_epoch=NOW + tw.DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0 + 1.0, qualifying_candidate=_cand(),
-                                    winnable=False, winnable_reason="exclusive_waits_for_long_runs", long_run_ids_active=["LR1"])
+                                    winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                    long_run_ids_active=["LR1"], predrain_row_pending=True)
+    assert not any(e["event"] == "drain_predrain_abandoned" for e in events)
+    assert st["pre_drain"]["item_id"] == "SPX1" and st["pre_drain"]["opened_epoch"] == opened0
+    # the max-window bound still fires, measured from the ORIGINAL open, with cooldown
+    st, events = tw._drain_evaluate(st, now_epoch=opened0 + tw.DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0 + 1.0,
+                                    qualifying_candidate=_cand(), winnable=False,
+                                    winnable_reason="exclusive_waits_for_long_runs",
+                                    long_run_ids_active=["LR1"], predrain_row_pending=True)
     assert any(e["event"] == "drain_predrain_expired" for e in events)
     assert st.get("exclusive_cooldown_until_epoch", 0.0) > NOW
 
@@ -147,3 +160,135 @@ def test_ordinary_drain_bookkeeping_survives_abandon():
              "exclusive_claims": {"day": tw._drain_utc_day(NOW), "count": 2}, "exclusive_cooldown_until_epoch": NOW + 100.0}
     st, _ = tw._drain_abandon(state, now_epoch=NOW, reason="test")
     assert st["exclusive_claims"]["count"] == 2 and st["exclusive_cooldown_until_epoch"] == NOW + 100.0
+
+
+# --- 2026-09-14 sticky pre-drain fix (BOOK_SPRINT_2026-09-20 defect) ------------
+#
+# The 44 GB row f15ac955 re-opened its pre-drain on EVERY claim pass: another
+# worker's pass picked a different first candidate, the old code abandoned the
+# pre-drain, and the next pass re-opened it -- resetting opened_epoch so the
+# 240-min bound never expired (waited 77,608 s) while NEW long runs were refused
+# for ~4 h.  The fix makes the pre-drain STICKY and row-bound.
+
+
+def _insert_wi(conn, item_id, symbol="SP500.DWX", phase="Q04", *, status="pending",
+               kind="backtest", payload=None):
+    now = "2026-09-14T00:00:00+00:00"
+    conn.execute(
+        """
+        INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,status,
+                               verdict,evidence_path,payload_json,created_at,
+                               updated_at)
+        VALUES(?,?,?,?,?, 'x.set', ?, NULL, NULL, ?, ?, ?)
+        """,
+        (item_id, kind, phase, "QM5_10145", symbol, status,
+         json.dumps(payload or {}), now, now),
+    )
+
+
+def test_predrain_is_sticky_across_two_passes_and_does_not_reopen():
+    # (a) two consecutive passes with the SAME exclusive row keep opened_epoch and
+    # do not re-emit drain_predrain_open.
+    state, events = tw._drain_evaluate(_tracked_state(), now_epoch=NOW, qualifying_candidate=_cand(),
+                                       winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                       long_run_ids_active=["LR1"])
+    assert [e["event"] for e in events] == ["drain_predrain_open"]
+    opened0 = state["pre_drain"]["opened_epoch"]
+    later = NOW + 45 * 60.0
+    state2, events2 = tw._drain_evaluate(state, now_epoch=later, qualifying_candidate=_cand(),
+                                         winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                         long_run_ids_active=["LR1"], predrain_row_pending=True)
+    assert state2["pre_drain"]["item_id"] == "SPX1"
+    assert state2["pre_drain"]["opened_epoch"] == opened0            # not reset
+    assert not any(e["event"] == "drain_predrain_open" for e in events2)  # no churn
+    # the bound is still measured from the ORIGINAL open
+    assert tw._drain_predrain_now(
+        state2, opened0 + tw.DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0 + 1.0
+    ) == (False, None)
+
+
+def test_scan_prefers_the_predrain_row_over_other_exclusive_rows(tmp_path):
+    # (b) a pass whose first candidate would be a DIFFERENT exclusive row returns
+    # the pre-drain row R instead, so the fleet converges on R.
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    with farmctl.connect(root) as conn:
+        _insert_wi(conn, "SPX_R", symbol="SP500.DWX")
+        _insert_wi(conn, "SPX_R2", symbol="SP500.DWX")
+        conn.commit()
+    kw = dict(free_ram_gb=30.0, host_total_gb=63.1, multisym_ids=frozenset(),
+              releasable_short_ram_gb=10.0, long_run_ram_gb=8.0, now_epoch=NOW)
+    # both rows are exclusive candidates; a long run is active so neither is winnable
+    base, base_winnable, base_reason = tw._drain_scan_candidate(root, **kw)
+    assert base is not None and base["exclusive"] is True
+    assert (base_winnable, base_reason) == (False, "exclusive_waits_for_long_runs")
+    # with a pre-drain on SPX_R2 the scan converges on SPX_R2 regardless of order
+    pref, pref_winnable, pref_reason = tw._drain_scan_candidate(
+        root, predrain_item_id="SPX_R2", **kw
+    )
+    assert pref is not None and pref["item_id"] == "SPX_R2"
+    assert (pref_winnable, pref_reason) == (False, "exclusive_waits_for_long_runs")
+
+
+def test_evaluate_keeps_predrain_when_scan_candidate_differs():
+    # (b, pure): _drain_evaluate must NOT abandon R's pre-drain merely because the
+    # candidate it is handed is a different exclusive row (row R still pending).
+    state, _ = tw._drain_evaluate(_tracked_state(), now_epoch=NOW, qualifying_candidate=_cand(),
+                                  winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                  long_run_ids_active=["LR1"])
+    other = {**_cand(), "item_id": "SPX2"}
+    st, events = tw._drain_evaluate(state, now_epoch=NOW + 90.0, qualifying_candidate=other,
+                                    winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                    long_run_ids_active=["LR1"], predrain_row_pending=True)
+    assert not any(e["event"] == "drain_predrain_abandoned" for e in events)
+    assert st["pre_drain"]["item_id"] == "SPX1"
+
+
+def test_predrain_bound_expires_from_original_open_with_cooldown():
+    # (c) the 240-min bound expires from the ORIGINAL opened_epoch even after
+    # intervening passes, and closes with reason predrain_max_minutes + cooldown.
+    state, _ = tw._drain_evaluate(_tracked_state(), now_epoch=NOW, qualifying_candidate=_cand(),
+                                  winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                  long_run_ids_active=["LR1"])
+    opened0 = state["pre_drain"]["opened_epoch"]
+    # a mid-window pass keeps it sticky, original open unchanged
+    state, _ = tw._drain_evaluate(state, now_epoch=NOW + 100 * 60.0, qualifying_candidate=_cand(),
+                                  winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                  long_run_ids_active=["LR1"], predrain_row_pending=True)
+    assert state["pre_drain"]["opened_epoch"] == opened0
+    expire_at = opened0 + tw.DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0 + 1.0
+    state, events = tw._drain_evaluate(state, now_epoch=expire_at, qualifying_candidate=_cand(),
+                                       winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                       long_run_ids_active=["LR1"], predrain_row_pending=True)
+    assert any(e["event"] == "drain_predrain_expired" and e["reason"] == "predrain_max_minutes"
+               for e in events)
+    assert "pre_drain" not in state
+    assert state["exclusive_cooldown_until_epoch"] == expire_at + tw.DRAIN_EXCLUSIVE_COOLDOWN_MIN * 60.0
+    assert not any(e["event"] == "drain_predrain_open" for e in events)
+
+
+def test_predrain_abandoned_when_row_leaves_pending():
+    # (d) the pre-drain is abandoned once its row is no longer pending (claimed /
+    # done / held / deleted): the scan cannot return R, so predrain_row_pending=False.
+    state, _ = tw._drain_evaluate(_tracked_state(), now_epoch=NOW, qualifying_candidate=_cand(),
+                                  winnable=False, winnable_reason="exclusive_waits_for_long_runs",
+                                  long_run_ids_active=["LR1"])
+    assert state["pre_drain"]["item_id"] == "SPX1"
+    state, events = tw._drain_evaluate(state, now_epoch=NOW + 120.0, qualifying_candidate=None,
+                                       predrain_row_pending=False)
+    assert any(e["event"] == "drain_predrain_abandoned" and e["reason"] == "row_not_pending"
+               for e in events)
+    assert "pre_drain" not in state
+
+
+def test_kill_switch_drops_stale_predrain_and_leaves_legacy_behaviour(monkeypatch):
+    # (e) QM_DRAIN_EXCLUSIVE=0: the exclusive lane is off, a stale pre-drain from
+    # before the switch is closed (not carried), and no exclusive pre-drain opens.
+    monkeypatch.setenv(tw.QM_DRAIN_EXCLUSIVE_ENV, "0")
+    state = _tracked_state()
+    state["pre_drain"] = {"item_id": "SPX1", "ea_id": "QM5_10145", "reservation_gb": 44.0,
+                          "opened_epoch": NOW - 60.0, "long_run_ids_at_open": []}
+    state, events = tw._drain_evaluate(state, now_epoch=NOW, qualifying_candidate=None)
+    assert "pre_drain" not in state
+    assert any(e["event"] == "drain_predrain_abandoned" and e["reason"] == "exclusive_lane_disabled"
+               for e in events)

@@ -2474,6 +2474,7 @@ def _drain_evaluate(
     winnable_reason: str = "",
     long_run_ids_active: list[str] | None = None,
     decision_facts: dict[str, Any] | None = None,
+    predrain_row_pending: bool | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """Pure open/expire/track state transition.  Returns (new_state, events).
 
@@ -2504,23 +2505,45 @@ def _drain_evaluate(
             pre_opened = float(pre_drain.get("opened_epoch") or now_epoch)
         except (TypeError, ValueError):
             pre_opened = now_epoch
-        candidate_id = str(qualifying_candidate.get("item_id")) if qualifying_candidate else None
-        if now_epoch - pre_opened >= DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0:
-            events.append({
-                "event": "drain_predrain_expired",
-                "item_id": pre_drain.get("item_id"),
-                "ea_id": pre_drain.get("ea_id"),
-                "reason": "max_predrain_window",
-                "open_seconds": round(now_epoch - pre_opened, 1),
-            })
-            exclusive_cooldown_until = now_epoch + DRAIN_EXCLUSIVE_COOLDOWN_MIN * 60.0
-            pre_drain = None
-        elif candidate_id != str(pre_drain.get("item_id")):
+        # STICKY pre-drain (2026-09-14 fix, evidence docs/ops/BOOK_SPRINT_2026-09-20.md
+        # daily log 23:4xZ + OPEN_ITEMS_STATUS.md): once a pre-drain exists for row R
+        # it is bound to R and to its ORIGINAL opened_epoch.  Earlier this record was
+        # dropped whenever another worker's pass produced a DIFFERENT first candidate
+        # and re-opened on the next pass, resetting opened_epoch so the 240-min bound
+        # never expired (waited 77,608 s) while NEW long runs were refused for ~4 h.
+        # It is now closed for exactly three reasons and never silently re-opened:
+        #   1. the lane kill switch turned the exclusive lane off;
+        #   2. the 240-min bound, measured from the ORIGINAL opened_epoch, elapsed
+        #      (-> exclusive cooldown, the ordinary duty-cycle machinery);
+        #   3. its row left the pending set (claimed/done/held/deleted), signalled by
+        #      the caller as predrain_row_pending=False.
+        # A merely differing scan candidate no longer drops it (the scan prefers R
+        # while it is pending, so the fleet converges instead of oscillating).
+        if not _drain_exclusive_enabled():
             events.append({
                 "event": "drain_predrain_abandoned",
                 "item_id": pre_drain.get("item_id"),
                 "ea_id": pre_drain.get("ea_id"),
-                "reason": "candidate_changed_or_gone",
+                "reason": "exclusive_lane_disabled",
+                "open_seconds": round(now_epoch - pre_opened, 1),
+            })
+            pre_drain = None
+        elif now_epoch - pre_opened >= DRAIN_EXCLUSIVE_PREDRAIN_MAX_MIN * 60.0:
+            events.append({
+                "event": "drain_predrain_expired",
+                "item_id": pre_drain.get("item_id"),
+                "ea_id": pre_drain.get("ea_id"),
+                "reason": "predrain_max_minutes",
+                "open_seconds": round(now_epoch - pre_opened, 1),
+            })
+            exclusive_cooldown_until = now_epoch + DRAIN_EXCLUSIVE_COOLDOWN_MIN * 60.0
+            pre_drain = None
+        elif predrain_row_pending is False:
+            events.append({
+                "event": "drain_predrain_abandoned",
+                "item_id": pre_drain.get("item_id"),
+                "ea_id": pre_drain.get("ea_id"),
+                "reason": "row_not_pending",
                 "open_seconds": round(now_epoch - pre_opened, 1),
             })
             pre_drain = None
@@ -2713,6 +2736,10 @@ def _drain_note_claim(
         new_state["exclusive_claims"] = dict(state["exclusive_claims"])
     if state.get("exclusive_cooldown_until_epoch") and "exclusive_cooldown_until_epoch" not in new_state:
         new_state["exclusive_cooldown_until_epoch"] = state["exclusive_cooldown_until_epoch"]
+    # 2026-09-14: an independent pre-drain (normally consumed before an active drain
+    # exists) must not be dropped by closing the active drain -- carry it forward.
+    if isinstance(state.get("pre_drain"), dict):
+        new_state["pre_drain"] = state["pre_drain"]
     return new_state, events
 
 
@@ -2765,6 +2792,12 @@ def _drain_abandon(
     for key in ("exclusive_claims", "exclusive_cooldown_until_epoch"):
         if state.get(key):
             new_state[key] = state[key]
+    # 2026-09-14 (point 2): abandoning an ACTIVE drain must not drop an independent
+    # pre-drain record merely because the current candidate differs -- carry it
+    # forward.  (Active drain and pre-drain are normally mutually exclusive; this is
+    # a defensive guarantee that no non-pre-drain path silently discards it.)
+    if isinstance(state.get("pre_drain"), dict):
+        new_state["pre_drain"] = state["pre_drain"]
     return new_state, events
 
 
@@ -2778,6 +2811,7 @@ def _drain_scan_candidate(
     long_run_ram_gb: float = 0.0,
     plateau_memory: dict[str, Any] | None = None,
     now_epoch: float | None = None,
+    predrain_item_id: str | None = None,
 ) -> tuple[dict[str, Any] | None, bool, str]:
     """Read-only scan for the first winnable priority heavy row.
 
@@ -2823,6 +2857,46 @@ def _drain_scan_candidate(
                 lane_aware=lane_aware,
             )
             exclusive_scan = _drain_exclusive_enabled()
+            # Point 3 (2026-09-14): while a pre-drain is open the fleet converges on
+            # ITS row.  Prefer the pre-drain row as the candidate whenever it is
+            # still a pending, qualifying candidate that census-first does not
+            # defer -- ahead of any other qualifying row -- so passes stop
+            # oscillating between competing exclusive rows.  If the row has left the
+            # pending set (or no longer qualifies) the preference simply falls
+            # through to the ordinary scan, and the caller reads its absence from
+            # the returned candidate as "no longer pending".
+            if predrain_item_id is not None and exclusive_scan:
+                prow = conn.execute(
+                    "SELECT * FROM work_items WHERE id=? AND status='pending'",
+                    (str(predrain_item_id),),
+                ).fetchone()
+                if prow is not None:
+                    ppayload = _json_loads(prow["payload_json"])
+                    pcand = _drain_candidate_from_row(
+                        prow, ppayload, free_ram_gb, host_total_gb, multisym_ids
+                    )
+                    if pcand is not None and not _census_first_defers_heavy_candidate(
+                        reservation_gb=pcand["reservation_gb"],
+                        free_ram_gb=free_ram_gb + max(0.0, releasable_short_ram_gb or 0.0),
+                        census_cells_claimable=census_pending,
+                        is_priority_tracked_lineage_rerun=_is_priority_tracked_lineage_rerun(
+                            ppayload
+                        ),
+                        is_compile=str(prow["phase"]).upper() == farmctl.COMPILE_EA_PHASE,
+                        enabled=_census_first_ram_priority_enabled(),
+                    ):
+                        if releasable_short_ram_gb is None:
+                            return pcand, True, ""
+                        winnable, reason = _drain_candidate_is_winnable(
+                            pcand,
+                            free_ram_gb=free_ram_gb,
+                            releasable_short_ram_gb=releasable_short_ram_gb,
+                            long_run_ram_gb=long_run_ram_gb,
+                            host_total_gb=host_total_gb,
+                            plateau_memory=plateau_memory,
+                            now_epoch=now_epoch,
+                        )
+                        return pcand, winnable, reason
             scanned = 0
             for item in conn.execute(_priority_pending_query()).fetchall():
                 payload = _json_loads(item["payload_json"])
@@ -3192,6 +3266,19 @@ def _drain_run_postprocess(
                         for event in events:
                             event["arithmetic"] = dict(memory)
             else:
+                # A sticky pre-drain steers the scan (point 3): while it is open the
+                # scan prefers ITS row.  If that row does not come back as the
+                # candidate it has left the pending set, which closes the pre-drain
+                # (predrain_row_pending=False) instead of the old candidate-change
+                # churn that reset opened_epoch every pass.
+                pre = (
+                    state.get("pre_drain")
+                    if isinstance(state.get("pre_drain"), dict)
+                    else None
+                )
+                predrain_id = (
+                    str(pre.get("item_id")) if pre and pre.get("item_id") else None
+                )
                 qualifying, winnable, winnable_reason = _drain_scan_candidate(
                     root,
                     free_ram_gb=free_ram_gb,
@@ -3201,7 +3288,14 @@ def _drain_run_postprocess(
                     long_run_ram_gb=facts.get("long_run_ram_gb", 0.0),
                     plateau_memory=state.get("plateau_memory"),
                     now_epoch=now_epoch,
+                    predrain_item_id=predrain_id,
                 )
+                predrain_row_pending: bool | None = None
+                if predrain_id is not None:
+                    predrain_row_pending = (
+                        qualifying is not None
+                        and str(qualifying.get("item_id")) == predrain_id
+                    )
                 decision_facts: dict[str, Any] | None = None
                 if qualifying is not None:
                     try:
@@ -3238,6 +3332,7 @@ def _drain_run_postprocess(
                     winnable_reason=winnable_reason,
                     long_run_ids_active=facts["long_run_active_ids"],
                     decision_facts=decision_facts,
+                    predrain_row_pending=predrain_row_pending,
                 )
         if events or new_state != state:
             _write_drain_state_atomic(root, new_state)
