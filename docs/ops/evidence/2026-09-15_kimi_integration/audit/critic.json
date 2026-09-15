@@ -1,0 +1,112 @@
+{
+  "gaps": [
+    {
+      "gap": "No signed ULTRACODE / OWNER authorization artifact exists. The OWNER 2026-09-15 ULTRACODE directive text and DL number are not in decisions/ or the Vault (vault_contracts UNKNOWN); all six audits audit the contracts it WOULD amend, not the directive itself. Yet the integration touches three ROT-zone items: Company Structure hard-codes 'drei ... AIs' (a 4th AI seat is a structural change), and HR14/R4 are Hard Rules (a hard-rule change requires a DL + written OWNER approval per the Lessons-Learned Loop anti-pattern). It is also unresolved whether 'Kimi may author internal strategies' means a routable lane or an offline-only role feeding an existing seat — which determines whether any router change is even needed.",
+      "impact": "Blocks legitimate start of ALL implementation. Building against un-written intent lets agents 'read intent' into a Hard Rule (exactly the HR14/R4 relaxation risk). Everything downstream is unauthorized until the directive is a dated decisions/ file naming: seat-vs-offline role, cost_rank, and the HR14/R4 EA-vs-research boundary.",
+      "how_to_close": "Obtain the ULTRACODE directive as a dated immutable decisions/DL-NNN file that explicitly (a) grants/denies a routable Kimi seat, (b) states the EA-vs-research ML boundary preserving R4's in-EA reject list verbatim, (c) amends Company Structure 'drei AIs', and (d) fixes Kimi's cost_rank and pacing model. Confirm OWNER signature before any code/registry change."
+    },
+    {
+      "gap": "Kimi spend is a total governance blind spot. The CLI has NO usage/quota/limits subcommand (spend not programmatically queryable); the USD 99/mo subscription allowance, reset date, concurrency/rate-limit behavior are all UNKNOWN and untested. No KIMI governor lane, no KIMI_LOW_TOKENS-style flag, and the quota-governance contract names only Codex+Claude. An unthrottled AI seat directly violates the quota-governance contract.",
+      "impact": "CRITICAL. A routed Kimi seat can silently exhaust the subscription or hit rate limits mid-pipeline with no pacing and no visibility, and the only budget-enforcement mechanism (weekly budget line + governor flags) cannot see it.",
+      "how_to_close": "Design an external spend tracker (the status_line JSON snapshot exposes a 'usage' field on stdin — the only workaround) plus a governor lane and a router-side KIMI_DISABLED flag. First empirically characterize whether 'usage' is subscription-remaining vs per-session tokens, and probe parallel-call and rate-limit behavior."
+    },
+    {
+      "gap": "cost_rank for Kimi is unspecified and load-bearing, with a concrete capture failure mode. route_once orders eligible lanes by cost_rank ASC (gemini 10 / codex 20 / claude 30). The D10 code comment (agent_router.py) documents that because gemini declares [research,strategy] at the LOWEST cost_rank it captured EVERY research/strategy row — the weakest seat doing the hardest work. If Kimi is made routable via research/strategy and given a cost_rank below gemini's 10, it would capture all research/strategy AND the scalpel class the same way. No auditor stated what cost_rank Kimi should get.",
+      "impact": "HIGH. Wrong cost_rank silently reroutes the entire research funnel (and possibly the scalpel-mechanization class) to an unproven, unpaced seat, bypassing existing tier contracts at the lane level.",
+      "how_to_close": "OWNER/orchestrator must fix Kimi's cost_rank explicitly and decide which task_types it may claim. Prefer NEW task_types requiring the 8 Kimi-specific capabilities (so it is selectable only for intended work) over reusing research_strategy, and verify eligibility against _eligible_agents ordering before enabling the lane."
+    },
+    {
+      "gap": "Router-vs-execution pacing gap. A KIMI_LOW_QUOTA flag mirroring agy is read ONLY by agent_chain.vendor_gate/execution consumers, never by route_once. GATED_AGENTS = {codex, claude} (verified). So a Kimi flag alone paces the critic chain but NOT the deterministic router — the router keeps dispatching Kimi orchestration tickets while nominally 'paced'.",
+      "impact": "HIGH. Kimi can appear throttled yet keep routing and spending. This is the same trap that required the claude-style CLAUDE_DISABLED router disable.",
+      "how_to_close": "Add Kimi to GATED_AGENTS or add a claude-style KIMI_DISABLED handling in sync_default_registry so the router disables the lane, in addition to any vendor_gate flag."
+    },
+    {
+      "gap": "Execution-adapter behavior is almost entirely untested (one 6.2s call, exit 0 only). UNKNOWN: whether kimi -p reads a piped prompt from stdin vs only argv (~32KB Windows cmdline limit, no --prompt-file — research prompts are large); stdin vs TTY/ConPTY (agy-class silent hang-to-timeout); stream-json event framing (parser undesigned); non-zero exit-code taxonomy (no robust error handling possible); no CLI timeout flag (needs external watchdog); malformed argv drops into the interactive TUI (headless hang). Text output is dirty (version banner + thinking bullets + resume trailer) so naive stdout capture fails.",
+      "impact": "HIGH. Any of these can hang a slot to timeout or silently corrupt captured research output. An adapter cannot be built robustly without empirically characterizing them.",
+      "how_to_close": "Run a short controlled probe battery (read-only-safe): stream-json framing, stdin-vs-argv prompt delivery, deliberate error to map exit codes, and a malformed-argv guard. Design the adapter on stream-json (not text), bound every call with an external watchdog, and default MaxSessions=1."
+    },
+    {
+      "gap": "Auth is a short-lived (900s) rolling token dependent on refresh; the credential file is a plain-JSON file owned by qm-admin, world-readable but qm-admin-writable. Scheduled tasks run as SYSTEM (session 0). If a SYSTEM-run Kimi orchestration must WRITE a refreshed token it may lack write permission (needs the run_in_console_session.ps1 hop used by agy/gemini), and a shared single credential file across concurrent processes is a Codex-class refresh race that can invalidate the login.",
+      "impact": "HIGH. Silent auth failure under the scheduled-task identity, or a token race that logs Kimi out (requiring interactive kimi login, not headlessly automatable except via kimi acp --login).",
+      "how_to_close": "icacls-check the credential file ACL for SYSTEM write; route Kimi orchestration through the console-session hop like agy if auth is user-bound; keep MaxSessions=1 until per-session auth isolation is proven; monitor token-refresh failures."
+    },
+    {
+      "gap": "The internal R1 QM-RESEARCH source contract has no resolver/store and a concrete false-reject blocker. QM-RESEARCH://<id> exists nowhere (no path/format/content-addressing). card_intake_prescreen._affirmative_prohibited_mechanics scans the WHOLE card text for ML terms (verified line 483/541) — an internal-research card describing ML-derived provenance in affirmative prose is tagged PROHIBITED_MECHANICS:ML and moved to cards_rejected on --apply. VALID_SOURCE_TYPES is a fixed 8-tuple excluding internal_research and add-source rejects others (verified). Identifier form (AI-KIMI-... vs QM-RESEARCH://) unspecified; six-section charter-check applicability to internal cards UNKNOWN.",
+      "impact": "HIGH. Kimi-authored cards get auto-rejected at prescreen, and there is no durable content-addressed store — recreating the agy-video hallucination-as-source failure mode the org explicitly guards against.",
+      "how_to_close": "Scope the prescreen ML scan to the mechanics section (or exempt a declared provenance section); decide DB-row vs card+decisions-only lane (extend VALID_SOURCE_TYPES only if a routable DB row is wanted); reserve an AI-KIMI-/QM-RESEARCH- namespace with mandatory source_author + source_sha256; store the artifact in-repo on C: (strategy-seeds/sources/) with the sha256 authority recorded in an immutable decisions/ receipt."
+    },
+    {
+      "gap": "HR14 (Vault, blanket 'alles verboten', EA-agnostic) lags the repo, where R4 is already 'narrowed to ML-only' (qb_reputable_source_criteria.md:19) and EA-runtime-scoped (build_check scans only .mq5/.mqh). ULTRACODE's 'ML allowed offline in research' has no signed annex reconciling these two surfaces, and Determinism-Over-LLM-Calls binds any offline ML to terminate in mechanical rules + a durable auditable artifact.",
+      "impact": "MEDIUM-HIGH. Without an explicit annexed EA-vs-research boundary that preserves R4's in-EA reject list verbatim, an agent can justify PnL-adaptive/online-learning logic by 'intent'. The two ML surfaces (Vault HR14 vs repo R4) can also drift further.",
+      "how_to_close": "Annex HR14 and R4 with the EA-vs-research boundary, keep R4's in-EA list (neural nets/ONNX/PnL-adaptive/online-retrain) unchanged, and require every offline-ML research output to reduce to mechanical rules + a durable artifact per Determinism-Over-LLM-Calls."
+    },
+    {
+      "gap": "The pre-Q00 edge-discovery layer has no experiment-memory / search-history ledger, and Kimi's hypothesis volume is not connected to DSR multiple-testing correction. The dsr_cohort/v1 schema already REQUIRES search_history + declared/selection/research/effective trial_count, but no populated store exists. If Kimi generates many offline hypotheses without logging trial counts into the DSR path, survivorship/DSR is uncorrectable. Also: the research Python env is bare (numpy only; pandas/scipy/sklearn/duckdb missing), offline wheel resolution untested; D: has only ~65 GB free (below the 60 GB live purge line's headroom and the 150 GB no-op line) so research intermediates on D: risk tripping DISK_MIN_FREE_GB=40 and stalling backtests.",
+      "impact": "MEDIUM-HIGH. Uncounted trials silently inflate DSR-based survivorship (a scientific-integrity failure); an uncontrolled research job can starve the MT5 workers that are the primary throughput metric.",
+      "how_to_close": "Design a NEW append-only versioned JSONL search-history ledger (mirroring tester_memory_ledger.jsonl) that feeds trial_count into dsr_cohort; build an isolated uv venv (never pip into Python311); land research outputs small and on C:/G:, and gate the research process on the same worker CPU/RAM latches at low priority."
+    },
+    {
+      "gap": "Cross-vendor critic integration is undesigned for Kimi, and the 'research critic' capability is unexecutable today. run_seat's vendor switch is hardcoded claude/codex/agy and raises ChainError on unknown vendors (verified agent_chain.v1.json vendors = claude/codex/agy, cross_vendor_required true, no kimi key). A Kimi-created artifact would fall to the 'unknown' creator bucket (non-kimi critics — structurally OK), but Kimi can never BE a critic without a vendor block + by_creator_vendor candidacy + VENDOR_ALIASES + run_kimi adapter. Whether Kimi may be a SOLE critic is undecided (agy is explicitly backup-only, 'halluziniert').",
+      "impact": "MEDIUM. The requested 'research critic' capability cannot run; and giving Kimi critic authority without deciding sole-critic eligibility repeats the agy quality risk.",
+      "how_to_close": "If Kimi is to critique, add the full vendor block/adapter and an explicit allow-sole-critic decision (mirror the allow_agy gate); if not, keep Kimi creator-only and REVIEW-terminal so run_seat is never asked to dispatch it."
+    }
+  ],
+  "contradictions": [
+    "Integration-mechanism fork, unreconciled: kimi_cli calls the ACP-over-stdio server (`kimi acp`) 'the most robust programmatic integration path', while router_providers designs entirely around per-agent one-shot CLI branches (resolve_cli/command_for/run_kimi using `kimi -p`). The two auditors propose different execution substrates and neither reconciles which the farm should adopt — a foundational design decision left open.",
+    "Template-seat state is itself unresolved: vault_contracts treats agy/Antigravity as research-only per the routing contract, but drift shows the LIVE registry gemini(=agy) lane declares code/tests/repo_edit and the orchestration prompt lets it draft code (an in-code comment says this is a 'SEPARATE OWNER decision ... Leave the rest exactly as-is'). router_providers proposes copying agy's patterns for Kimi — so the design copies a seat whose own capability scope is an open OWNER question, propagating the ambiguity.",
+    "Kimi token 'validity' is point-in-time only: kimi_cli reports the access token 'valid at audit time' (expires_at 2026-09-15T09:57:48Z), but at my read (2026-09-15T09:58:02Z) the on-disk token had already expired (~14s prior), confirming a rolling 900s token refreshed only on invocation, not a stable credential — the summary's 'valid' should not be read as durable.",
+    "Surface-agreement fragility: vault_contracts stresses the code registry beats the Vault table and they currently AGREE on four seats; but the same audit notes CLAUDE.md prose, the routing-contract table, and DEFAULT_AGENT_REGISTRY are three separate surfaces. A partial Kimi add (any one surface without DEFAULT_AGENT_REGISTRY + agent_chain vendor block + a quota flag) leaves Kimi either non-existent as a lane or unthrottled — the auditors agree it's a risk but no single owner of 'all surfaces updated atomically' is named."
+  ],
+  "verified_now": [
+    {
+      "claim": "Kimi binary and an actively auto-refreshing credential are present; the endpoint is the coding-subscription API.",
+      "outcome": "CONFIRMED",
+      "evidence": "ls: C:/Users/Administrator/.kimi-code/bin/kimi.exe (151,553,536 bytes, mtime Sep 15 08:53); credentials/kimi-code.json 1556 bytes mtime advanced to Sep 15 11:42 (was 11:25 at kimi_cli audit); config.toml base_url = https://api.kimi.com/coding/v1 (plus /search and /fetch)."
+    },
+    {
+      "claim": "The live agent_registry has exactly four seats and no Kimi lane.",
+      "outcome": "CONFIRMED",
+      "evidence": "sqlite3 mode=ro on D:/QM/strategy_farm/state/farm_state.sqlite: rows gemini(en=1,par=2,rank=10), codex(1,5,20), claude(1,3,30), owner(0,0,99); COUNT agent_id LIKE '%kimi%' = 0."
+    },
+    {
+      "claim": "No 'kimi'/'moonshot' token exists anywhere in C:/QM/repo.",
+      "outcome": "CONFIRMED",
+      "evidence": "Grep -i 'kimi|moonshot' over C:/QM/repo -> No files found."
+    },
+    {
+      "claim": "A Kimi lane declaring only its 8 capabilities is unroutable; and via research/strategy it would capture the funnel if cost_rank < gemini's 10.",
+      "outcome": "CONFIRMED",
+      "evidence": "agent_router.py:106-128 TASK_TYPE_CAPABILITIES lists only {research,strategy,review,code,ops,scalpel_mechanization} across task types; the inline D10 comment documents gemini's cost_rank 10 (lowest) captured every [research,strategy] row via route_once ORDER BY cost_rank ASC."
+    },
+    {
+      "claim": "GATED_AGENTS = {codex, claude}, so a Kimi flag not added there won't pace the router.",
+      "outcome": "CONFIRMED",
+      "evidence": "quota_spawn_gate.py:36 GATED_AGENTS = {\"codex\", \"claude\"}."
+    },
+    {
+      "claim": "card_intake_prescreen scans the whole card text for ML terms, risking false PROHIBITED_MECHANICS:ML rejection of internal-research cards.",
+      "outcome": "CONFIRMED",
+      "evidence": "card_intake_prescreen.py: _affirmative_prohibited_mechanics at L464/483 builds scan_text from document.text; evaluate_card L541-543 appends 'PROHIBITED_MECHANICS:'."
+    },
+    {
+      "claim": "VALID_SOURCE_TYPES is a fixed tuple excluding internal_research and add-source rejects anything else.",
+      "outcome": "CONFIRMED",
+      "evidence": "farmctl.py:33580 VALID_SOURCE_TYPES = (...); :33597 'if source_type not in VALID_SOURCE_TYPES' returns a reject reason."
+    },
+    {
+      "claim": "Reboot-recovery and cache-purge drift from CLAUDE.md is real.",
+      "outcome": "CONFIRMED",
+      "evidence": "Get-ScheduledTask: QM_StrategyFarm_TerminalWorkers_AT_STARTUP State=Disabled, QM_StrategyFarm_FactoryON_AtLogon Ready; TesterCachePurge Arguments '-LowWaterGB 60' (CLAUDE.md documents 150)."
+    },
+    {
+      "claim": "The cross-vendor critic chain knows only claude/codex/agy; Kimi cannot be dispatched as a seat.",
+      "outcome": "CONFIRMED",
+      "evidence": "agent_chain.v1.json vendors=['claude','codex','agy'], cross_vendor_required=True, by_creator_vendor has no 'kimi' key (only claude/codex/agy/unknown creators)."
+    },
+    {
+      "claim": "Kimi's access token is a short-lived 900s rolling token, expired on-disk between refreshes.",
+      "outcome": "CONFIRMED",
+      "evidence": "credentials/kimi-code.json: expires_in=900, scope=kimi-code, token_type=Bearer; expires_at 1789466268 = 2026-09-15T09:57:48Z, my now_utc 2026-09-15T09:58:02Z (token expired ~14s before read); refresh_token present."
+    }
+  ]
+}

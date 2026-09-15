@@ -1,0 +1,115 @@
+{
+  "summary": "G: is mounted and every requested Vault page exists and was read. The binding contracts split cleanly across six topics. (a) Kimi is NOT a provider anywhere: the code source-of-truth DEFAULT_AGENT_REGISTRY (agent_router.py) and every contract lists exactly four seats — codex, claude, gemini(=agy), owner — and Company Structure fixes \"drei ... AIs\"; adding Kimi requires a code registry row plus annexes to the routing table, agent_chain.v1.json vendor+critic map, the 2026-09-15 cross-vendor annex, and Company Structure. (b) ML: HR14 (Hard Rules) currently forbids ML blanket (\"alles verboten\") with OWNER-written exception only, and R4 (qb_reputable_source_criteria.md, echoed in Research Methodology) calls it \"Nicht relaxbar\" — but the Edge Lab Charter already states the exact ULTRACODE distinction (\"No ML inside the EA ... the AIs are the research/development tools, never a model embedded in the EA\") and START_HERE rule 8 is EA-scoped (\"V5-EAs sind mechanisch\"); ULTRACODE generalizes the EA-scoping and needs annexes on HR14 and R4. (c) R1 already admits AI-authored sources (source_id: AI-<agent>-...-<date> with prompt/output trail in strategy-seeds/sources/), so Kimi authoring fits, but the new QM-RESEARCH://<id> URI scheme and Kimi as a valid <agent> tag need an annex on the criteria file and the Research Methodology R1 row; note the standing \"agy video-links are NOT R1 evidence (hallucination precedent)\" guard. (d) Quota governance names only Codex+Claude weekly limits and three flags (CODEX_LOW_TOKENS/CLAUDE_DISABLED/AGY_LOW_QUOTA), backtests never throttled — no Kimi lane/flag exists. (e) Determinism-Over-LLM-Calls binds any new LLM use: reasoning/synthesis only, deterministic result artifacts, which is exactly why ULTRACODE's offline-ML-in-research must terminate in mechanical rules + a durable auditable artifact. (f) Research Methodology (depth-first, one source at a time, HR16) and the Lessons-Learned Loop (daily, lessons become scripts/pre-flight not memory) govern how a Kimi-authored strategy enters the funnel. Truth precedence honored: code registry beats the contract table (they currently agree). No verdicts, files, or T_Live touched — read-only throughout.",
+  "key_facts": [
+    {
+      "fact": "The code source-of-truth for provider seats lists exactly four lanes — codex, claude, gemini, owner — and no Kimi/Moonshot entry.",
+      "evidence": "C:/QM/repo/tools/strategy_farm/agent_router.py:542-614 DEFAULT_AGENT_REGISTRY keys {codex, claude, gemini, owner}; grep -rilE 'kimi|moonshot' over tools/decisions/docs returned only a binary PNG false positive."
+    },
+    {
+      "fact": "The routing contract's canonical registry table enumerates the same four runtime-IDs and states code wins on divergence.",
+      "evidence": "G:/My Drive/QuantMechanica - Company Reference/02 Org/AI Agent Routing and Role Contracts.md:22-31 (rows codex/claude/gemini/owner; 'Aktueller Code gewinnt bei Abweichung')."
+    },
+    {
+      "fact": "Company Structure fixes the org at three AIs, so Kimi is a structural fourth AI, not a config toggle.",
+      "evidence": "02 Org/Company Structure.md:12-14 'QuantMechanica besteht aus einem OWNER, drei capability-basiert eingesetzten AIs und deterministischen Systemen.'"
+    },
+    {
+      "fact": "The cross-vendor critic chain (OWNER 2026-09-15) and agent_chain.v1.json vendor map define vendors as claude/codex/agy only, with an explicit by_creator_vendor critic routing table — Kimi is absent from both.",
+      "evidence": "02 Org/AI Agent Routing and Role Contracts.md:142-153 (annex); C:/QM/repo/tools/strategy_farm/config/agent_chain.v1.json:4-46 ('vendors': claude, codex, agy; 'by_creator_vendor')."
+    },
+    {
+      "fact": "HR14 currently forbids ML blanket, EA-agnostic in wording, with OWNER-written exception only.",
+      "evidence": "01 Identity/Hard Rules.md:78-79 'ML ist verboten (EA_ML_FORBIDDEN) ... Machine Learning, Neural Networks, adaptive Parameter — alles verboten. Ausnahme: nur wenn OWNER explizit und schriftlich eine Ausnahme gewährt.'"
+    },
+    {
+      "fact": "The Edge Lab Charter already encodes the ULTRACODE distinction: ML forbidden inside the EA, AIs are the research/development tools.",
+      "evidence": "C:/QM/repo/docs/ops/EDGE_LAB_CHARTER_2026-05-22.md:17-18 'No ML inside the EA (Hard Rule 14): the AIs are the research / development tools, never a model embedded in the EA.'"
+    },
+    {
+      "fact": "START_HERE rule 8 is already EA-scoped, supporting the offline/EA split.",
+      "evidence": "G:/My Drive/QuantMechanica - Company Reference/START_HERE.md rule 8 'Kein ML. V5-EAs sind mechanisch und regelbasiert.'"
+    },
+    {
+      "fact": "R4 is the binding card-gate expression of HR14 and is declared non-relaxable; it forbids neural nets, ONNX, PnL-adaptive params, online/retraining logic inside the strategy.",
+      "evidence": "C:/QM/repo/processes/qb_reputable_source_criteria.md:26-53 'R4 — No ML ... REJECT any of: Neural networks, deep learning, ONNX inference ... R4 is binding Hard Rule 14 — not relaxable beyond what's above.'; mirrored 04 Processes/Research Methodology.md:93 'Nicht relaxbar.'"
+    },
+    {
+      "fact": "R1 already accepts AI-originated sources with a structured source_id and a durable prompt/output trail; author track record is not required.",
+      "evidence": "C:/QM/repo/processes/qb_reputable_source_criteria.md:27-56 'AI-originated idea — source_id: AI-<agent>-<short-tag>-<YYYYMMDD> ... with the AI's prompt/output trail captured in strategy-seeds/sources/<source_id>/ ... Author track record is NOT required.'"
+    },
+    {
+      "fact": "There is a standing guard that agy video-links are NOT valid R1 evidence due to a hallucination precedent — the durability/verifiability bar any Kimi-authored artifact must clear.",
+      "evidence": "C:/QM/repo/docs/ops/OPERATING_RULES_2026-07-03.md:27 'Primärquellen-Zitat (Video-Links von agy gelten NICHT als R1-Beleg — Halluzinations-Präzedenz)'."
+    },
+    {
+      "fact": "The Research Methodology R1 row rejects only when there is no source attribution at all, and requires a verifiable URL/reference — a QM-RESEARCH:// artifact would need to be declared a valid reference type.",
+      "evidence": "04 Processes/Research Methodology.md:90 'R1 Source-Link | Karte zitiert verifizierbare URL/Referenz ... | Keine Source-Attribution überhaupt.'"
+    },
+    {
+      "fact": "The strategy-card schema in code requires r1_track_record and r4_ml_forbidden frontmatter fields, so any Kimi-authored card must populate them.",
+      "evidence": "C:/QM/repo/tools/strategy_farm/agent_router.py STRATEGY_CARD_SCHEMA frontmatter_required includes 'r1_track_record','r4_ml_forbidden' (block at ~line 620-628)."
+    },
+    {
+      "fact": "Quota governance steers only Codex+Claude weekly spend via three flags, agy paced separately; backtests are never throttled. No Kimi lane/flag/governor exists.",
+      "evidence": "06 Infrastructure/AI Spend and Quota Governance.md:20-34 (CODEX_LOW_TOKENS.flag, CLAUDE_DISABLED.flag, AGY_LOW_QUOTA.flag; 'Backtests are NEVER throttled'); agent_chain.v1.json:60-65 gates {codex_budget_line, claude_disabled_flag, codex_low_tokens_flag, agy_low_quota_flag}."
+    },
+    {
+      "fact": "Determinism-Over-LLM-Calls binds new LLM usage to reasoning/synthesis only and demands reproducible, auditable outputs — the frame ULTRACODE's offline-research-ML must satisfy.",
+      "evidence": "04 Processes/Determinism Over LLM Calls.md:26-32 (Faustregel: LLM only when 'echtes Reasoning' needed) and table lines 13-17 (Reproduzierbar/Auditierbar columns); restated in Hard Rules.md:98-100."
+    },
+    {
+      "fact": "Research is depth-first, one source fully worked before the next, and HR16 permits only one research at a time — the entry discipline for a Kimi-authored strategy.",
+      "evidence": "04 Processes/Research Methodology.md:11-13 'Eine Quelle vollständig abarbeiten, bevor die nächste beginnt.'; 01 Identity/Hard Rules.md:88-92 (HR16 'Ein Research zur Zeit')."
+    },
+    {
+      "fact": "The Lessons-Learned Loop routes generalizable lessons into scripts/pre-flight checks rather than memory notes, and Hard-Rule changes require a DL + OWNER approval.",
+      "evidence": "04 Processes/Lessons Learned Loop.md:84-88 (Determinism cross-ref: lessons become script updates/pre-flight) and :88 'Lesson erfindet eine neue Hard Rule ohne DL' anti-pattern; Determinism Over LLM Calls.md:84-85."
+    }
+  ],
+  "risks": [
+    "HR14 as written is blanket ('alles verboten') and EA-agnostic; if ULTRACODE's 'ML allowed offline in research' is applied by reading intent rather than by a signed annex, an agent could justify PnL-adaptive or online-learning logic that R4 still forbids inside the EA. The annex must state the EA-vs-research boundary explicitly and preserve R4's non-relaxable in-EA list verbatim.",
+    "R1 already permits AI-authored sources but the guard 'agy video-links are NOT R1 evidence (hallucination precedent)' shows the org's fear of ungrounded AI citations. A QM-RESEARCH://<id> artifact authored by Kimi must be durable, content-addressed and independently readable (not a transient chat log) or it recreates the hallucination-as-source failure mode.",
+    "Adding Kimi touches code that has fail-closed DB triggers (agent_registry requires canonical router generation) and a cross-vendor critic map that assumes exactly three AI vendors; a partial add (contract annex without the code registry row + agent_chain vendor entry + a KIMI quota flag) would leave Kimi unroutable or unthrottled, and unthrottled AI spend violates the quota-governance contract.",
+    "Company Structure hard-codes 'drei ... AIs' and the cost-model/quota governor only knows Codex+Claude weekly limits; a Kimi seat with no governor lane and no spend flag would run outside the only mechanism that enforces the weekly budget line.",
+    "Truth-precedence trap: the routing-contract table and the code registry currently agree, but they are two surfaces. If Kimi is added to the Vault table (or CLAUDE.md prose) but not to DEFAULT_AGENT_REGISTRY, the code wins and Kimi silently does not exist as a lane."
+  ],
+  "unknowns": [
+    "The exact full ULTRACODE directive text (OWNER 2026-09-15) was not present in the repo or Vault at audit time (grep for 'kimi|moonshot' and 'ultracode' in decisions/ found no dedicated decision file). The directive's precise wording, DL number, and whether it has been written into decisions/ or the OWNER-Entscheidungsregister is UNKNOWN — I audited the CURRENT contracts it would amend, not the directive itself.",
+    "Whether a QM-RESEARCH://<id> resolver/store already exists (path, format, content-addressing) is UNKNOWN — the scheme appears nowhere in the read files; strategy-seeds/sources/<source_id>/ is the only existing AI-source artifact location referenced.",
+    "The concrete quota/pacing figures for a Kimi/Moonshot seat (weekly limit, cost_rank, a KIMI_LOW_TOKENS-style flag) are UNKNOWN — no such config exists; agent_quota_gate.v1.json was listed but not opened line-by-line.",
+    "Whether 'Kimi may author internal strategies' is meant to grant Kimi a routable research/strategy lane (like gemini/agy) or only an offline authoring role feeding an existing seat is not resolvable from the current contracts alone.",
+    "The gate_manifest.v4.json carries no R1/ML criteria text (gates are function-named only); ML/R1 enforcement lives in qb_reputable_source_criteria.md + agent_router.py schema + Q00, so no gate-manifest annex is implied — but whether ULTRACODE intends any gate-level change is UNKNOWN."
+  ],
+  "integration_points": [
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/agent_router.py — DEFAULT_AGENT_REGISTRY (~line 542) + RESEARCH_PERSPECTIVES (~line 644)",
+      "what": "Code source-of-truth for seats; a Kimi lane must be added here (with capabilities, max_parallel, cost_rank) or Kimi does not exist as a routable provider. Guarded by canonical-generation DB triggers.",
+      "why": "Truth precedence: code beats the Vault table; the routing contract itself says 'Aktueller Code gewinnt bei Abweichung'."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/config/agent_chain.v1.json — vendors + roles.critic.by_creator_vendor",
+      "what": "Cross-vendor Creator→Critic→Formatter map; Kimi needs a vendor block and placement in every critic list to be usable as a cross-vendor critic (and to have its own deliverables critiqued cross-vendor).",
+      "why": "OWNER 2026-09-15 requires every seat's delivery to pass a different-vendor critic; a Kimi with no critic mapping breaks that guarantee."
+    },
+    {
+      "where": "G:/My Drive/QuantMechanica - Company Reference/02 Org/AI Agent Routing and Role Contracts.md (registry table L22-31, annex L142-153) and 02 Org/Company Structure.md (L12, L18-27)",
+      "what": "Annex adding the Kimi row/capability contract and updating 'drei AIs' → four; extend the 2026-09-15 cross-vendor annex to name Kimi.",
+      "why": "These are the human-facing binding contracts; they must not silently diverge from the code registry, and Company Structure fixes the AI count."
+    },
+    {
+      "where": "C:/QM/repo/processes/qb_reputable_source_criteria.md (R1 L27-56, R4 L26-53) and 04 Processes/Research Methodology.md (R1 row L90, R4 row L93)",
+      "what": "Annex: (i) register QM-RESEARCH://<id> as a valid R1 reference type and Kimi as a valid AI <agent> author; (ii) clarify R4 forbids ML inside the EA decision engine while offline research ML is permitted — without deleting the existing non-relaxable in-EA reject list.",
+      "why": "R1/R4 are the binding G0 gate; canonical file wins over Vault, so both must be annexed consistently for a Kimi-authored, research-ML-derived card to pass."
+    },
+    {
+      "where": "C:/QM/repo/CLAUDE.md (Capability Router + Quota Governance sections) and 06 Infrastructure/AI Spend and Quota Governance.md",
+      "what": "Annex adding Kimi to the agent roster and a Kimi spend lane/flag under the quota governor (or an explicit statement Kimi runs under an existing budget line).",
+      "why": "The quota governor only governs Codex+Claude weekly spend; an ungoverned Kimi lane violates the spend-governance contract and CLAUDE.md's router description would be stale."
+    },
+    {
+      "where": "01 Identity/Hard Rules.md — HR14 (L78-79), plus a new Amendments-2026-09 entry",
+      "what": "OWNER-signed annex (ergänzt, ersetzt nichts) scoping HR14 to 'ML in EA decision engines', explicitly permitting offline ML in research; requires a DL number per the Lessons-Learned-Loop rule that Hard-Rule changes need DL + OWNER approval.",
+      "why": "HR14 is a hard rule and ROT; only an OWNER-written annex (never a rewrite) can add the research/EA distinction, and historical evidence must remain unaltered."
+    }
+  ]
+}

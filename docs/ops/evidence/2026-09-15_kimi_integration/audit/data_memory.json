@@ -1,0 +1,142 @@
+{
+  "summary": "The VPS already holds a deep, well-structured evidence base usable for a pre-Q00 OBSERVE/DISCOVER research layer, but has no dedicated \"experiment memory\" or \"search-history\" ledger yet. The authority is farm_state.sqlite (1.26 GB, 37 tables + 2 views): work_items (149,094 rows) is the central run record carrying phase, ea_id, symbol, verdict, evidence_path, data_window, and a verdict_taxonomy that cleanly separates INFRA failure (56,044) from economic/strategy outcomes (53,752) and measurements (19,962); ea_metrics (100,110) is the normalized numeric projection. Verdict-taxonomy classification is canonical in tools/strategy_farm/work_item_clean_view.py (exposed as the read-only work_items_clean TEMP view). Parameter-sweep memory already exists as OPT_CENSUS (34,342 rows / DL-089) and WINDOW_SWEEP surfaces; per-run evidence lives under D:/QM/reports/work_items as 45,008 gzipped summary.json/report.htm trees. The strongest precedent for an additive ledger is D:/QM/reports/state/tester_memory_ledger.jsonl (append-only JSONL, schema-versioned) and the qm.dsr-cohort/v1 schema which already defines a search_history field. The research Python env is bare: numpy 2.4.6 only; pandas/scipy/sklearn/statsmodels/duckdb/polars/pyarrow/lightgbm/xgboost all missing, though uv 0.11.7 is present to build an isolated venv. Resources are adequate (63 GB RAM / 50 free; D: 65.6 GB free but below the 150 GB purge line) but research must yield to MT5 workers, which self-throttle at CPU 97%/resume 90% and RAM floor 14/resume 20 GB. The additive design is a new versioned JSONL ledger plus a read-only projector under existing conventions — never a second database.",
+  "key_facts": [
+    {
+      "fact": "farm_state.sqlite is 1.26 GB with 37 tables and 2 views; opened read-only via URI mode=ro",
+      "evidence": "ls D:/QM/strategy_farm/state/farm_state.sqlite = 1266081792 bytes; sqlite_master query returned 37 tables + 2 views"
+    },
+    {
+      "fact": "work_items (149,094 rows) is the central run table; columns include phase, ea_id, symbol, status, verdict, verdict_taxonomy, evidence_path, data_window_start/end, payload_json, created_at/updated_at, and identity SHAs (ex5/setfile/mq5/include_closure)",
+      "evidence": "PRAGMA table_info(work_items); COUNT(*)=149094"
+    },
+    {
+      "fact": "verdict_taxonomy is the canonical INFRA-vs-economic separator: infra=56044, strategy=53752, measurement=19962, None=14418, invalid=2001, open=1277, prescreen_measurement=350",
+      "evidence": "SELECT verdict_taxonomy,COUNT(*) FROM work_items GROUP BY verdict_taxonomy"
+    },
+    {
+      "fact": "The taxonomy classifier is tools/strategy_farm/work_item_clean_view.py: verdict_taxonomy() maps INFRA_FAIL->infra (line 139-140), MEASURED/prescreen->measurement (146-150), gate pass/fail->strategy (158); exposed as the read-only work_items_clean TEMP view",
+      "evidence": "work_item_clean_view.py lines 58-70, 132-158"
+    },
+    {
+      "fact": "verdict field distribution: INFRA_FAIL=55882, PASS=27468, FAIL=23327, MEASURED=19967, SKIPPED_EXCLUDED=6219, SKIPPED_PRESCREEN=5240, ZERO_TRADES=1250, plus RETIRE/RETIRED_LOW_FREQ/FAIL_PORTFOLIO etc.",
+      "evidence": "SELECT verdict,COUNT(*) FROM work_items GROUP BY verdict ORDER BY c DESC"
+    },
+    {
+      "fact": "phase distribution shows the full pipeline plus research phases: Q02=76125, OPT_CENSUS=34342, Q04=18854, Q03=13297, ... Q14=53, WINDOW_SWEEP_OWNER=3, Q00=7",
+      "evidence": "SELECT phase,COUNT(*) FROM work_items GROUP BY phase"
+    },
+    {
+      "fact": "ea_metrics (100,110 rows) is the normalized numeric projection keyed by work_item_id: net_profit, profit_factor, trades, drawdown_money, drawdown_pct, sharpe + phase-specific detail_json; built by tools/strategy_farm/ea_metrics.py which reads each evidence_path once",
+      "evidence": "PRAGMA table_info(ea_metrics); ea_metrics.py module docstring lines 1-25"
+    },
+    {
+      "fact": "OPT_CENSUS (34,342 work_items / 31,787 ea_metrics) is the DL-089 parameter-sweep census; cells carry cell_key like DL089_QM5_41097_USDJPY_DWX_2019_2025:2019:baseline in payload_json and in artifacts/opt_census/<program>/ledger.json + q12_selection_receipt.json",
+      "evidence": "work_items phase=OPT_CENSUS payload sample; D:/QM/strategy_farm/artifacts/opt_census/DL089_QM5_10145_XAUUSD_DWX_2019_2025/ledger.json"
+    },
+    {
+      "fact": "Window-sweep results are stored as a flat CSV surface with join keys and evidence SHAs: cell_key, work_item_id, start/length/exit params, trades, entry_days, net_native, maxdd, score, native_report+sha256, summary+sha256, window_admissible",
+      "evidence": "docs/ops/evidence/2026-09-09_window_sweep_surface.csv header + rows"
+    },
+    {
+      "fact": "tester_memory_ledger.jsonl (19,077 lines, 11 MB, schema qm.tester_memory_ledger/v1) is the append-only JSONL precedent for a new ledger; written by terminal_worker.py",
+      "evidence": "D:/QM/reports/state/tester_memory_ledger.jsonl head/tail; grep tester_memory_ledger -> terminal_worker.py"
+    },
+    {
+      "fact": "The qm.dsr-cohort/v1 schema ALREADY defines search_history plus declared/selection/research/effective trial_count fields for multiple-testing correction",
+      "evidence": "tools/strategy_farm/schemas/dsr_cohort_v1.schema.json required[] includes search_history, research_trial_count, effective_trial_count"
+    },
+    {
+      "fact": "Per-run evidence lives under D:/QM/reports/work_items as 45,008 per-work-item dirs; format is gzipped: raw/run_NN/report.htm.gz, tester.ini, summary.json.gz (schema run_smoke/v2 with reason_classes list)",
+      "evidence": "ls D:/QM/reports/work_items | wc -l = 45008; gzip -dc summary.json.gz keys include evidence_schema=run_smoke/v2, reason_classes"
+    },
+    {
+      "fact": "evidence_cohort_baseline.json (9.7 MB, schema qm.evidence-cohort-baseline/v1) tracks forward evidence survival keyed by work_item_id with ea_id/symbol/phase/verdict/evidence_path",
+      "evidence": "C:/QM/repo/artifacts/evidence_cohort_baseline.json head; entries keyed by work_item_id"
+    },
+    {
+      "fact": "ea_id_registry.csv is the idea<->EA join: ea_id,slug,strategy_id(UUID idea identity),status,retired_reason,retired_evidence",
+      "evidence": "framework/registry/ea_id_registry.csv header + rows"
+    },
+    {
+      "fact": "Research Python env is minimal: farm python 3.11.9 has numpy 2.4.6 only; pandas, scipy, sklearn, statsmodels, lightgbm, xgboost, pyarrow, polars, duckdb, matplotlib ALL MISSING; uv 0.11.7, metatrader5 5.0.5735, openpyxl, beautifulsoup4, playwright, pymupdf present; sqlite3 3.45.1",
+      "evidence": "python -c import checks; pip list from C:/Users/Administrator/AppData/Local/Programs/Python/Python311/python.exe"
+    },
+    {
+      "fact": "Resources: 63.1 GB RAM total / 50.3 GB free; D: 65.6 GB free of ~953 GB (below the 150 GB tester-cache-purge no-op line); C: 89.5 GB free; G: 85 GB free",
+      "evidence": "Get-CimInstance Win32_OperatingSystem; Get-PSDrive; wmic logicaldisk"
+    },
+    {
+      "fact": "MT5 workers self-throttle: CPU_MAX_LOAD_PERCENT=97.0 / CPU_RESUME_LOAD_PERCENT=90.0 (hysteresis latch, emits cpu_high_pause, sleeps with jitter); RAM_MIN_FREE_GB=14 / RAM_RESUME_FREE_GB=20; DISK_MIN_FREE_GB=40; COMMIT_MIN_FREE_GB=24; backtests are never throttled",
+      "evidence": "tools/strategy_farm/terminal_worker.py lines 210-211, 146,168-169,234; 13203-13215"
+    },
+    {
+      "fact": "Read-models that already partly answer 'which ideas failed and why': ea_metrics.py (metrics), mission_control_v2_data.py -> mission_control_v2_preview.json (reads work_items_clean, funnel+holds), render_cockpit.py (cockpit.html), work_item_clean_view.py (taxonomy view)",
+      "evidence": "ea_metrics.py, mission_control_v2_data.py docstrings; render_cockpit.py present"
+    },
+    {
+      "fact": "No dedicated experiment-memory / search-history / pre-Q00 research ledger table or file exists today",
+      "evidence": "grep -riE 'experiment_memory|search_history|research_ledger|observe_discover|pre_q00' across tools/docs/decisions returned only dsr_cohort search_history field, no ledger"
+    },
+    {
+      "fact": "Supporting verdict-history and quarantine memory exists: work_item_transition_ledger (4,340 rows, from/to verdict+reason), work_item_holds (5,366, hold_code+reason), poison_pill_quarantine (219, verdict_reason), claim_class_ledger (64)",
+      "evidence": "COUNT(*) + PRAGMA table_info for each; hold_code and verdict_reason distributions"
+    },
+    {
+      "fact": "News A/B experiment storage: q09_news_cells (1,937; grain arm x temporal_mode x compliance_mode x seed), q09_news_tests (187), q09_news_arms (142), q09_news_cell_occurrences (2,450)",
+      "evidence": "COUNT(*) + PRAGMA table_info(q09_news_cells/tests/arms)"
+    },
+    {
+      "fact": "Research-source provenance for a DISCOVER layer already exists: sources table (118 rows: id,priority,lane,source_type,uri,title,status,notes_path); status done=96/pending=13/blocked=9",
+      "evidence": "PRAGMA table_info(sources); SELECT status,COUNT(*) FROM sources"
+    }
+  ],
+  "risks": [
+    "D: has only 65.6 GB free (below the 150 GB purge no-op line), so an offline research job that materializes large intermediates on D: could trip the DISK_MIN_FREE_GB=40 worker floor and stall backtests; research outputs should be small JSONL/parquet and ideally land on C: or G:.",
+    "The scientific stack (pandas/scipy/duckdb/sklearn) is entirely absent from the farm python; installing into the system python risks polluting the MT5/worker runtime. Use uv (0.11.7, already present) to build an isolated venv instead of pip-installing into Python311.",
+    "Re-parsing the 45,008 gzipped work_item summary/report trees at runtime is expensive and competes with worker I/O; a research layer must read the sqlite (mode=ro) + ea_metrics table + JSONL ledgers, not walk the gzip trees on every run.",
+    "verdict vs verdict_taxonomy must not be conflated: a MEASURED OPT_CENSUS row is taxonomy 'measurement' (deliberately DISJOINT from 'strategy'), so counting economic failures must filter taxonomy='strategy' or use the work_items_clean view, or the 56k INFRA_FAIL and 20k measurement rows will pollute 'which ideas failed' aggregates.",
+    "14,418 work_items have NULL verdict_taxonomy and 3,833 have NULL verdict (open/pending/legacy); any idea-outcome projection must handle these as 'open/unknown', not silently drop or miscount them.",
+    "WINDOW_SWEEP_OWNER work_items carry verdict DECLARED with evidence_path=EVIDENCE_UNAVAILABLE (they are program declarations); the real per-cell measurements are OPT_CENSUS/backtest rows under WINSWEEP_* cell_keys — a naive join on phase would miss the actual sweep evidence.",
+    "Writing anything into farm_state.sqlite or the reports tree violates the read-only mandate and could corrupt the live factory state DB (workers hold it busy); the experiment-memory ledger must be a NEW append-only file, never a schema change to the existing DB.",
+    "A research process that ignores the worker resource latches (CPU>90% sustained, RAM<14 GB free) will directly slow MT5 saturation, the primary throughput metric; it must gate on the same thresholds and run at low priority."
+  ],
+  "unknowns": [
+    "Exact byte size of the D:/QM/reports/work_items tree: du -sm timed out at 90s over 45,008 dirs; it is the dominant consumer of D: but the precise figure is UNVERIFIED.",
+    "Whether candidate_qualifications (schema present, 0 rows currently) is actively populated by the current pipeline or is a staged/empty table — could not confirm live write path in the read-only window.",
+    "The full reason_classes vocabulary (the economic-vs-infra sub-reasons inside summary.json, e.g. MIN_TRADES_NOT_MET) was sampled but not exhaustively enumerated; a complete controlled vocabulary would require scanning the gzip summaries or the classifier source.",
+    "Whether a uv-built research venv on this VPS can resolve pandas/duckdb wheels offline or needs network egress (not tested; installing is outside the read-only mandate).",
+    "Current live CPU load and how many MT5 workers are active right now (RAM was 50 GB free implying light load, but instantaneous CPU headroom for research was not measured)."
+  ],
+  "integration_points": [
+    {
+      "where": "D:/QM/reports/state/experiment_memory_ledger.jsonl (NEW, append-only)",
+      "what": "A new schema-versioned JSONL ledger (schema 'qm.experiment_memory/v1') mirroring the tester_memory_ledger.jsonl convention: one line per idea/experiment observation with {schema, ts_utc, strategy_id, ea_id, symbol, timeframe, phase, hypothesis, verdict, verdict_taxonomy, reason, evidence_path, work_item_id}. Additive, no DB change.",
+      "why": "tester_memory_ledger.jsonl already proves this exact pattern (append-only JSONL under reports/state, schema field, written incrementally); reusing it avoids a second database and stays inside the read-only/additive convention."
+    },
+    {
+      "where": "tools/strategy_farm/ + D:/QM/reports/state/idea_outcome_projection.json (NEW projector, modeled on ea_metrics.py)",
+      "what": "A read-only projector tool that SELECTs from work_items_clean + ea_metrics + work_item_holds + work_item_transition_ledger + poison_pill_quarantine and emits a versioned 'which ideas failed and why' projection JSON, joined idea->ea via ea_id_registry.csv.",
+      "why": "ea_metrics.py and mission_control_v2_data.py already establish the read-only projector pattern (rebuildable derived JSON under reports/state); this fills the missing idea-grain, INFRA-vs-economic-aware failure view without new storage."
+    },
+    {
+      "where": "qm.dsr-cohort/v1 search_history field (tools/strategy_farm/schemas/dsr_cohort_v1.schema.json) and artifacts/dsr_cohorts/",
+      "what": "Reuse the already-defined search_history / research_trial_count concept as the canonical shape for pre-Q00 search history, and reference sealed cohort search_history from the experiment-memory ledger rather than inventing a parallel trial-count model.",
+      "why": "The multiple-testing search-history vocabulary already exists and is schema-enforced; a DISCOVER layer should extend it, not duplicate it, to keep DSR trial accounting consistent."
+    },
+    {
+      "where": "work_items.phase token space (as OPT_CENSUS / WINDOW_SWEEP_OWNER already do)",
+      "what": "If OBSERVE/DISCOVER runs need to be recorded as farm work, use a new non-gate phase token with measurement/measurement-only taxonomy (never 'strategy'), exactly how OPT_CENSUS sits beside the Qxx gates.",
+      "why": "The schema already tolerates research phases outside Q00-Q17 with their own taxonomy kept DISJOINT from the gate funnel (work_item_clean_view.py), so a pre-Q00 layer can be represented without corrupting gate counts."
+    },
+    {
+      "where": "sources table (farm_state.sqlite) + tools/strategy_farm/agent_router.py research_strategy lane",
+      "what": "Feed the OBSERVE/DISCOVER layer from the existing sources provenance table (118 rows, uri/lane/status/notes_path) and the research_strategy agent-task lane rather than a new intake store.",
+      "why": "Research-source provenance and the throttled research lane already exist; the DISCOVER layer should consume them, keeping the '<5 ready cards' research throttle intact."
+    },
+    {
+      "where": "uv 0.11.7 (installed) -> isolated research venv",
+      "what": "Provision pandas/duckdb/scipy in a uv-managed venv separate from Python311, and read the sqlite in mode=ro; do not pip-install into the farm/system python.",
+      "why": "The system python is the MT5 worker runtime (metatrader5 module) and must stay untouched; uv is already present to isolate research dependencies."
+    }
+  ]
+}

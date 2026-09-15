@@ -1,0 +1,111 @@
+{
+  "summary": "Adding provider \"kimi\" touches two orthogonal planes. Plane A is the deterministic router (agent_router.py + farm_state.sqlite agent_registry/agent_tasks), which decides which lane CLAIMS a ticket by a capability-subset filter then cost_rank ordering. Plane B is execution: run_agent_orchestration_task.py (the scheduled orchestration lane, per-agent hardcoded branches) and agent_chain.py (creator/critic/formatter chain, vendor switch in run_seat). A kimi lane declaring ONLY the 8 requested capabilities is UNROUTABLE: none appear in TASK_TYPE_CAPABILITIES, so no task ever requires them; a capability becomes routable only via a task_type, a payload required_capabilities entry, or a required_skill, and only when a registered lane declares it. Pacing has two surfaces that do not share state: the router disables a lane only for claude (CLAUDE_DISABLED.flag via sync_default_registry) and for the codex/claude weekly spawn gate (GATED_AGENTS is codex and claude); AGY_LOW_QUOTA is read ONLY by execution consumers (agent_chain.vendor_gate, harvest), never by route_once. So a KIMI_LOW_QUOTA flag mirroring agy paces the chain but NOT the router unless kimi is also disabled router-side (claude pattern) or added to GATED_AGENTS. In agent_chain, vendors resolve from config/agent_chain.v1.json vendors plus roles tables and dispatch via a hardcoded vendor switch; kimi needs a config vendor block, a by_creator_vendor table, candidate rows in the other creators' critic lists, a VENDOR_ALIASES entry, a vendor_gate branch, resolve_cli/seat_env/model_id branches, and a run_kimi adapter. The Kimi-creator to non-Kimi-critic rule holds structurally because by_creator_vendor for kimi would list only non-kimi seats and cross_vendor is computed as seat.vendor not equal to creator_vendor. No gate/live/deployment/verdict authority is enforced by NOT declaring code/ops/scalpel_mechanization, NOT adding kimi to AGENT_TASK_TYPE_LANES, and keeping review_ea/close-review out of reach. Top risks mirror existing seats: Codex-style shared-token auth race (keep MaxSessions at 1 unless auth isolated), SYSTEM session-0 vs console-session DPAPI token access (agy/gemini hop via run_in_console_session.ps1), and agy-style stdin/TTY behavior (agy needs ConPTY plus pointer prompt; claude/codex read a stdin prompt file).",
+  "key_facts": [
+    {
+      "fact": "The live agent roster is codex, claude, gemini, owner — no kimi exists anywhere in the codebase.",
+      "evidence": "agent_router.py:542-614 DEFAULT_AGENT_REGISTRY; DB agent_registry rows (codex/claude/gemini/owner); grep for kimi or moonshot in tools/strategy_farm returned no matches."
+    },
+    {
+      "fact": "A capability is routable only if required by a task_type (TASK_TYPE_CAPABILITIES), a payload required_capabilities entry, or a required_skill, and only when a registered lane declares it. The 8 requested kimi capabilities appear in none, so a lane declaring only those is never selected.",
+      "evidence": "agent_router.py:106-128 TASK_TYPE_CAPABILITIES; route_once required-set build agent_router.py:1760-1800; enqueue_task union restricted to declared caps agent_router.py:1217-1235."
+    },
+    {
+      "fact": "Lane selection is a capability-subset filter then ORDER BY cost_rank ASC: gemini 10, codex 20, claude 30, owner 99. Kimi cost_rank sets its selection precedence.",
+      "evidence": "agent_router.py:1668-1686 _eligible_agents (enabled=1 AND max_parallel greater than 0, ORDER BY cost_rank ASC); cost_rank values :559,582,597,612."
+    },
+    {
+      "fact": "The router disables a lane only for claude (CLAUDE_DISABLED.flag in sync_default_registry). AGY_LOW_QUOTA is never read by route_once; it is consumed only by execution-time gates. Router-lane pacing for kimi needs a claude-style KIMI_DISABLED in sync_default_registry OR GATED_AGENTS membership.",
+      "evidence": "agent_router.py:1072-1074; quota_spawn_gate.py:36 GATED_AGENTS is codex and claude; agent_chain.py:207-213 vendor_gate reads agy_low_quota_flag; agy_governor.py:21-24."
+    },
+    {
+      "fact": "agent_chain dispatches vendors via a hardcoded switch in run_seat (claude/codex/agy) and resolves seats from config/agent_chain.v1.json. Cross-vendor-critic is cross = seat.vendor not equal creator_vendor, so Kimi-creator to non-Kimi-critic holds if by_creator_vendor for kimi lists only non-kimi seats.",
+      "evidence": "agent_chain.py:637-648 run_seat switch (raise ChainError on unknown); agent_chain.py:245-270 open_critic_seats (cross computed line 267); config/agent_chain.v1.json roles.critic.by_creator_vendor + cross_vendor_required true."
+    },
+    {
+      "fact": "The scheduled orchestration runner accepts only codex/gemini/claude with per-agent branches. gemini(agy) is special: no stdin, needs ConPTY (agy_conpty_run.py) plus pointer prompt plus print-timeout, runs shared-repo, runs as SYSTEM so G: is skipped.",
+      "evidence": "run_agent_orchestration_task.py:1906 choices codex/gemini/claude; resolve_cli:155-179; agent_env:182-203; command_for:408-498 (gemini ConPTY 439-485); shared-repo 708-716; shell true unless gemini line 885; build_prompt G: skip 215-222."
+    },
+    {
+      "fact": "agent_tasks and agent_registry are the only provider/lane tables; no separate provider table. agent_registry writes are DB-trigger gated to the canonical checkout, so a new kimi row lands only when sync_default_registry runs from C:/QM/repo (the 5-min router task).",
+      "evidence": "DB tables list; agent_router.py:756-796 schema; _registry_writer_authorized :826-833; triggers trg_agent_registry_canonical_ :936-964."
+    },
+    {
+      "fact": "The per-seat governor+flag pattern (agy) is the template for a KIMI quota state: pull, compare to FLOOR, ownership-tracked flag write/clear with MANAGED_BY marker, plus a scheduled task. quota_governor (codex/claude) instead uses weekly-pace plus burn flags.",
+      "evidence": "agy_governor.py:33-39 (AGY_LOW_QUOTA.flag, FLOOR_PCT 20), :79-102 set/clear ownership; quota_governor.py:52-55 FLAGS, :215-226 _decide, :181-184 BURN_FLAGS; scheduled task QM_StrategyFarm_AgyGovernor (Ready)."
+    }
+  ],
+  "risks": [
+    "Auth token race (Codex class): if the kimi CLI shares one OAuth/token file across processes, more than one concurrent session races on refresh and invalidates the login as codex did. Keep kimi orchestration MaxSessions at 1 unless per-session auth isolation exists. Evidence: install_agent_orchestration_scheduled_tasks.ps1:31-41.",
+    "Session-0 vs console session: scheduled tasks run as SYSTEM (session 0); agy/gemini hop to the qm-admin console via run_in_console_session.ps1 because the DPAPI/Credential-Manager token decrypts only in the operator context. Route kimi the same way if its auth is user-bound. Evidence: agy_governor.py:14-16; install ps1 gemini branch :68-82.",
+    "stdin/TTY handling (agy class): agy does not read stdin and hangs on non-TTY stdout, needing ConPTY plus a file-pointer prompt; claude/codex read a prompt file bound to stdin. Wrong pattern silently hangs the slot to timeout. Evidence: run_agent_orchestration_task.py:439-485, 879-888; agent_chain _run_agy :552-587.",
+    "Router-vs-execution pacing gap: a KIMI_LOW_QUOTA flag consumed only by agent_chain.vendor_gate will NOT stop the router from dispatching kimi orchestration tickets. Without a router-side disable or GATED_AGENTS membership, kimi keeps routing while nominally paced. Evidence: agent_router.py:1072-1074; route_once :1724-1976 reads no such flag.",
+    "Unroutable-capability trap: declaring only the 8 descriptive capabilities makes kimi idle. Add new task_types requiring them, or route research via payload required_capabilities / required_skills naming those strings (gate only because kimi declares them). Evidence: agent_router.py:106-128, :1770-1800.",
+    "Verdict/authority leakage: giving kimi code/ops/review/scalpel_mechanization caps, adding it to AGENT_TASK_TYPE_LANES, or letting it reach review_ea/close-review grants forbidden authority. Keep it research-only and REVIEW-terminal. Evidence: AGENT_TASK_TYPE_LANES agent_router.py:215-220; gemini no-self-approve :273-274; agent_chain.v1.json critique.skip_task_types review_ea.",
+    "Cross-vendor rule regression: if by_creator_vendor for kimi accidentally includes a kimi seat, the Kimi-to-non-Kimi invariant breaks (cross_vendor false). Preserve agy-last ordering. Evidence: agent_chain.py:258-269.",
+    "agy-class quality/hallucination risk: config brands agy research-only backup, never sole critic unless allow_agy. If kimi is a research backup, decide explicitly whether it may be a sole critic or mirror the allow_agy gate. Evidence: config/agent_chain.v1.json vendors._doc; open_critic_seats allow_agy :260-262."
+  ],
+  "unknowns": [
+    "The kimi CLI: binary name/path, headless flags, whether it reads stdin or needs TTY/ConPTY, auth mechanism (API key env vs OAuth file vs Credential Manager), model ids. Not in the repo; determines resolve_cli, agent_env, command_for, seat_env, run_kimi, and the auth-race/session-0 mitigations.",
+    "Whether kimi is paced via the weekly-pace model (GATED_AGENTS plus model_matrix plus task_class in agent_quota_gate.v1.json) or the agy-style governor+flag. The NORMAL/CONSERVE/EXHAUSTED wording matches agy, but that alone does not pace the router.",
+    "Whether a kimi quota/usage telemetry source exists analogous to agy_quota.py or quota_pull.py. Without one a governor tracks only heuristically.",
+    "Whether kimi orchestration runs in a git worktree (codex/claude) or shared-repo (gemini), and its push/commit policy. A research-only REVIEW-terminal lane likely wants shared-repo plus no push, but this is a policy choice.",
+    "Exact new task_types (if any) to carry the 8 capabilities versus reusing research_strategy/review_strategy/agent_learn with payload required_capabilities. An OWNER/orchestrator routing-design decision."
+  ],
+  "integration_points": [
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/agent_router.py:542-614 DEFAULT_AGENT_REGISTRY",
+      "what": "Add a kimi entry: enabled True, capabilities (research/strategy/summary/source_discovery plus whichever new routable caps you honor, NOT code/ops/repo_edit/scalpel_mechanization), max_parallel (start 1), cost_rank (vs gemini10/codex20/claude30), budget_class standard.",
+      "why": "Source of truth the router syncs into agent_registry; enabled/max_parallel/capabilities/cost_rank drive _eligible_agents selection."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/agent_router.py:106-128 TASK_TYPE_CAPABILITIES (and enqueue paths)",
+      "what": "Make the 8 caps routable: add new task_types requiring them, or emit research/review tickets carrying them via payload required_capabilities / required_skills. _governed_routing_capabilities (:1511-1517) auto-derives once caps are in the registry.",
+      "why": "route_once routes only to a lane whose caps superset the task required set; caps no task requires leave kimi idle."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/agent_router.py pacing hook (sync_default_registry:1072-1074) or quota_spawn_gate GATED_AGENTS:36",
+      "what": "Decide router-side pacing: a KIMI_DISABLED.flag check in sync_default_registry setting enabled=0/max_parallel=0 (mirror claude), or add kimi to GATED_AGENTS with a model_matrix plus task_class. Without one the router ignores KIMI_LOW_QUOTA.",
+      "why": "route_once does not read agy/kimi execution flags; only claude and the codex/claude spawn gate throttle at routing time."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/run_agent_orchestration_task.py: resolve_cli:155-179, agent_env:182-203, build_prompt:206-295, command_for:408-498, headless_model_contract:501-544, run_agent_slot:708-724 and 879-912, main:1906",
+      "what": "Add a kimi branch to each: CLI path plus resolve_cli, auth/env, prompt (G: skip if SYSTEM), argv (stdin-file vs ConPTY per kimi behavior), model contract, worktree-vs-shared-repo plus shell flag, and argparse choices.",
+      "why": "The scheduled headless lane keys every per-agent behavior on the agent string."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/agent_chain.py: VENDOR_ALIASES:68, vendor_gate:172-214, resolve_cli:352-359, seat_env:362-378, _model_id:385-393, run_seat:637-648, new run_kimi (mirror _run_agy:552-587 or _run_claude:421+)",
+      "what": "Add kimi alias(es), a vendor_gate branch reading gates.kimi_low_quota_flag, CLI/env/model-id resolution, a run_seat elif dispatching to run_kimi, and the adapter with correct stdin/TTY handling.",
+      "why": "The chain resolves and spawns vendors here; an unknown vendor raises ChainError."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/config/agent_chain.v1.json",
+      "what": "Add vendors.kimi (models, tool posture), gates.kimi_low_quota_flag, roles.critic.by_creator_vendor.kimi containing ONLY non-kimi seats, and add kimi as a candidate in the claude/codex/agy/unknown creator tables. Optionally a creator default.",
+      "why": "Authority for vendor availability, model resolution, and the cross-vendor critic tables read by open_critic_seats."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/config/agent_quota_gate.v1.json (plus quota_spawn_gate.py:36, invocation_profile:249)",
+      "what": "Only if kimi is paced via the weekly-pace gate: add model_matrix.kimi, list kimi task_types under task_classes.research, add kimi to GATED_AGENTS plus an invocation_profile branch. If paced via the agy governor, no change (evaluate_spawn returns agent_not_quota_gated for non-gated agents :626-639).",
+      "why": "Determines whether the spawn-gate model-tier/weekly machinery applies to kimi."
+    },
+    {
+      "where": "New C:/QM/repo/tools/strategy_farm/kimi_governor.py plus kimi_quota.py (mirror agy_governor.py/agy_quota.py); D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag; D:/QM/reports/state/kimi_governor_state.json",
+      "what": "Implement NORMAL/CONSERVE/EXHAUSTED to an ownership-tracked KIMI_LOW_QUOTA.flag write/clear with a MANAGED_BY marker, a FLOOR threshold, and a stale-safe quota pull; state/log under D:/QM/reports/state.",
+      "why": "The KIMI quota state parallels the agy governor; ownership tracking prevents clearing a manually-set flag."
+    },
+    {
+      "where": "C:/QM/repo/tools/strategy_farm/install_agent_orchestration_scheduled_tasks.ps1:42-46 plus a new install_kimi_governor_scheduled_task.ps1",
+      "what": "Add a definition row for QM_StrategyFarm_KimiOrchestration_15min (Agent kimi, MaxSessions per auth-race decision, EveryMinutes), using the console-session helper branch if kimi auth needs the operator context; register QM_StrategyFarm_KimiGovernor mirroring QM_StrategyFarm_AgyGovernor.",
+      "why": "Scheduled tasks run the orchestration lane and governor; SYSTEM-vs-console LogonType is chosen here."
+    },
+    {
+      "where": "Tests: tools/strategy_farm/tests/test_agent_router.py, test_agent_chain.py, test_quota_spawn_gate.py, test_agy_governor.py, test_antigravity_backend_contract.py, test_agent_selection_skill_contract.py, test_agent_orchestration_lock.py",
+      "what": "Extend router selection/registry tests for the kimi lane, agent_chain tests for kimi vendor resolution plus the Kimi-creator/non-Kimi-critic rule, and add a kimi backend-contract test plus kimi governor test modeled on the antigravity/agy ones.",
+      "why": "These are the existing guards for the registry, routing, chain-vendor, and governor behaviors kimi extends."
+    },
+    {
+      "where": "Observability artifacts (produced by the branches above)",
+      "what": "Orchestration result JSON under D:/QM/strategy_farm/logs/ named kimi_orchestration_slotN_STAMP.json with keys agent, execution_backend, model_contract, slot, dry_run, prompt_path, live_log, command, cwd, worktree, started_at, pid, returncode, ok, push, finished_at; the prompt md and live.log siblings; lane heartbeat D:/QM/strategy_farm/state/lane_kimi_heartbeat.json (checked by _lane_heartbeat_stale); agent_chain receipt schema qm.agent-chain.receipt.v1 under D:/QM/strategy_farm/state/agent_chain/ and artifact_root, with stages array, seat_trace, critic_verdict, finding_counts, critic_fallback_used, critic_seat_final, cross_vendor flags, per-stage prompt/log/answer files.",
+      "why": "These are the exact fields existing adapters emit; kimi must match the shape for the router heartbeat check, dashboards, and the chain receipt trail."
+    }
+  ]
+}

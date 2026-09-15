@@ -1,0 +1,39 @@
+## Completeness critique — Kimi CLI research-provider integration (read-only audit, 2026-09-15)
+
+Scope: I reviewed the six auditor bundles (kimi_cli, vault_contracts, router_providers, cards_r1_research, data_memory, drift) for missing/unverified facts, contradictions, and unanswered questions, and independently re-verified 10 of the most consequential claims on the VPS read-only. All checks passed against the source-of-truth (live code, farm_state.sqlite mode=ro, scheduled tasks, on-disk config).
+
+### 1. The authorization artifact is missing (top gap)
+Every auditor audits the contracts the ULTRACODE directive *would* amend; none can produce the directive. vault_contracts confirms no `kimi|moonshot` or `ultracode` decision file exists in `decisions/` or the Vault. The integration crosses three ROT-zone lines: Company Structure hard-codes "drei ... AIs" (02 Org/Company Structure.md:12-14), and HR14/R4 are Hard Rules whose change requires a dated DL + written OWNER approval. Until the directive lands as an immutable `decisions/DL-NNN` file that fixes (a) routable-seat vs offline-only role, (b) the HR14/R4 EA-vs-research ML boundary, (c) a Company-Structure amendment, and (d) Kimi's cost_rank and pacing model, no implementation is legitimately authorized. It is also unresolved whether "Kimi may author internal strategies" even implies a router change at all.
+
+### 2. Router mechanics — verified hazards
+- **Four seats, no Kimi** (verified sqlite + registry code + repo grep). Adding Kimi requires atomic updates across DEFAULT_AGENT_REGISTRY (agent_router.py:542-614), the DB `agent_registry` row (trigger-gated to the canonical checkout), agent_chain.v1.json vendors + by_creator_vendor + VENDOR_ALIASES, VALID_SOURCE_TYPES (if a DB source row is wanted), the routing-contract table, and CLAUDE.md. A partial add leaves Kimi either non-existent as a lane (code wins) or unthrottled.
+- **Unroutable-capability trap + cost_rank capture** (verified). The 8 requested capabilities appear in no `TASK_TYPE_CAPABILITIES` entry, so a lane declaring only them is idle. The inline D10 comment (agent_router.py near :128) documents that gemini's lowest cost_rank (10) caused it to capture *every* `[research,strategy]` row via `route_once ORDER BY cost_rank ASC` — the weakest seat doing the hardest work. If Kimi is made routable through research/strategy and given a cost_rank < 10, it repeats that capture (including the scalpel class). **No auditor stated Kimi's cost_rank** — it is load-bearing and unspecified.
+- **Router-vs-execution pacing gap** (verified `GATED_AGENTS = {codex, claude}`). A `KIMI_LOW_QUOTA` flag read only by `agent_chain.vendor_gate` will NOT stop `route_once`. Kimi needs a router-side disable (claude pattern) or GATED_AGENTS membership.
+- **Cross-vendor critic undesigned** (verified vendors = claude/codex/agy, cross_vendor_required true, no kimi key). `run_seat` raises ChainError on unknown vendors, so the requested "research critic" capability is unexecutable today; and whether Kimi may be a *sole* critic is undecided (agy is explicitly backup-only).
+
+### 3. Spend governance blind spot (critical, from kimi_cli, unresolved)
+No usage/quota subcommand → subscription allowance, reset date, concurrency and rate-limit behavior all UNKNOWN and untested. No governor lane / flag; the quota contract knows only Codex+Claude. An unthrottled AI seat violates the quota-governance contract. The only telemetry path is the `status_line` JSON `usage` field (a scrape) — and whether that is subscription-remaining vs per-session tokens is UNKNOWN.
+
+### 4. Execution adapter — one live call, everything else untested (kimi_cli)
+stdin-vs-argv prompt delivery (32KB Windows cmdline limit, no `--prompt-file`), stdin-vs-TTY/ConPTY (agy-class silent hang), stream-json framing, non-zero exit codes, absence of a CLI timeout flag, and the malformed-argv→interactive-TUI hang are all uncharacterized. Text output is dirty (banner + thinking bullets + resume trailer). Auth is a rolling 900s token (verified: on-disk token had expired ~14s before my read) dependent on refresh; the credential is plain-JSON qm-admin-owned/world-readable → a SYSTEM (session-0) scheduled task may READ it but fail to WRITE a refresh (needs the run_in_console_session hop agy/gemini use), and a shared credential across concurrent processes is a Codex-class refresh race → keep MaxSessions=1.
+
+### 5. R1 internal-source contract (cards_r1_research — one verified blocker)
+R1 is already source-agnostic (only a non-empty `source_id` gates build), so a Kimi-authored internal source fits with minimal validator change. But: `QM-RESEARCH://` resolver/store exists nowhere; `card_intake_prescreen._affirmative_prohibited_mechanics` scans the **whole** card text for ML (verified L483/541) → a card describing ML-derived provenance is auto-rejected PROHIBITED_MECHANICS:ML; `VALID_SOURCE_TYPES` excludes internal_research and add-source rejects others (verified). The artifact must be content-addressed, in-repo on C:, sha256-authoritative in a decisions/ receipt (the agy-video hallucination precedent is the durability bar).
+
+### 6. ML boundary drift (vault_contracts vs repo)
+Vault HR14 reads blanket "alles verboten"; repo R4 is already "narrowed to ML-only" (qb_reputable_source_criteria.md:19) and EA-runtime-scoped (build_check scans only .mq5/.mqh). ULTRACODE's "offline ML in research" needs a signed annex reconciling the two surfaces, preserving R4's in-EA reject list verbatim, and binding offline ML to terminate in mechanical rules + a durable artifact (Determinism-Over-LLM-Calls).
+
+### 7. Pre-Q00 edge-discovery layer (data_memory)
+No experiment-memory/search-history ledger exists, though `dsr_cohort/v1` already *requires* `search_history` + trial_count fields. **No auditor connected Kimi's hypothesis volume to DSR multiple-testing correction** — uncounted trials silently inflate survivorship. Research Python env is bare (numpy only); use uv, not pip-into-Python311. D: ~65 GB free (below purge lines) → research intermediates on D: risk tripping DISK_MIN_FREE_GB=40 and stalling backtests; outputs must be small and on C:/G:, gated on the worker CPU/RAM latches.
+
+### 8. Contradictions between auditors
+1. **Integration substrate fork:** kimi_cli favors `kimi acp` (stdio server); router_providers designs one-shot `kimi -p` CLI branches. Unreconciled.
+2. **Template seat is itself unresolved:** vault says agy research-only; drift shows the live gemini lane carries code/tests/repo_edit (an open OWNER question in code). Copying agy's patterns propagates that ambiguity.
+3. **Token "validity" is momentary:** kimi_cli's "valid at audit time" is a rolling 900s token (verified expired on disk at my read).
+4. **Surface agreement is fragile:** code registry and Vault table agree *now* on four seats, but three-plus surfaces exist; no single owner of "update all atomically" is named.
+
+### 9. Independently verified this session (all CONFIRMED)
+Kimi binary + auto-refreshing credential + coding-subscription endpoint; 4-seat registry with zero kimi; no kimi in repo; the unroutable-capability + cost_rank capture mechanism; GATED_AGENTS={codex,claude}; whole-card ML prescreen scan; fixed VALID_SOURCE_TYPES; reboot/purge drift (TerminalWorkers Disabled, purge LowWater 60 not 150); agent_chain vendors=claude/codex/agy; 900s rolling token expired on disk. See verified_now for exact evidence lines.
+
+### Note on read-only discipline
+No file in C:/QM/repo or D:/QM was modified; farm_state.sqlite was opened `mode=ro`; no secret values were printed (only credential field names/metadata and non-secret expiry epoch). terminal64.exe, workers, and T_Live were untouched.

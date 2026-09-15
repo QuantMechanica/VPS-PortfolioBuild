@@ -1,0 +1,91 @@
+{
+  "summary": "R1 is already fully source-agnostic on author: the canonical rubric (processes/qb_reputable_source_criteria.md) and the code (_card_r1_build_ready in farmctl.py) treat R1 as informational lineage — the only build-gating requirement is a non-empty source_id in the card frontmatter. An internal QM-RESEARCH source authored by Kimi therefore already satisfies R1 with essentially no validator change; the existing AI-agent source convention (source_id AI-agent-tag-date with a durable artifact directory under strategy-seeds/sources/{source_id}/ carrying a sha256) is a working precedent (e.g. AI-CODEX-XTIXNG-WCLVDIV-RV-20260906 with parent_sha256). The minimal additive design is a distinct namespace (source_id QM-RESEARCH-{id} or AI-KIMI-tag-date) plus optional non-gating frontmatter (source_type internal_research, source_author, source_uri, source_sha256), leaving external cards untouched; external attribution is preserved precisely because the internal namespace is separate and never reuses the OWNER recovery fallback. The research-artifact store follows the existing strategy-seeds/sources/{source_id}/source.md convention (version-controlled on C:, unlike D: card mirrors) with the sha256 in the source frontmatter and an immutable dated decisions/ approval receipt. R4 (ML-forbidden) enforcement is already cleanly separated from provenance: build_check.ps1 Invoke-ForbiddenScan (EA_ML_FORBIDDEN) scans only compiled EA code (.mq5/.mqh) on comment- and string-blanked text, so prose describing ML is not treated as ML; the review prompts likewise scope R4 to runtime code. The one real wording/scoping fix is card_intake_prescreen._affirmative_prohibited_mechanics, which scans the whole card text for ML terms and could falsely trip PROHIBITED_MECHANICS:ML on an internal-research card that describes an ML-derived provenance in affirmative prose. No code today defines internal_research or QM-RESEARCH; the DB VALID_SOURCE_TYPES tuple does not include it, but AI/internal cards historically do not require a DB sources row.",
+  "key_facts": [
+    {
+      "fact": "R1 is source-agnostic on author and requires only exactly ONE source_id in frontmatter; author track record is explicitly NOT required, and AI-originated ideas are first-class (source_id AI-agent-shorttag-YYYYMMDD with the prompt/output trail in strategy-seeds/sources/{source_id}/).",
+      "evidence": "processes/qb_reputable_source_criteria.md L27-60 (R1 section), esp. L36-38 (AI-originated) and L54-56 (Author track record is NOT required)."
+    },
+    {
+      "fact": "The code treats R1 as informational: _card_r1_build_ready returns True whenever source_id is a non-empty string. This is the only R1 gate at approval.",
+      "evidence": "tools/strategy_farm/farmctl.py L4229-4237 (_card_r1_build_ready) and L4467-4468 (approve-card contract emits r1_source_id_missing only when source_id is blank)."
+    },
+    {
+      "fact": "approve-card enforces r2_mechanical/r3_data_available/r4_ml_forbidden equal to PASS strictly, but R1 stays non-gating; R_STRICT_PASS_FIELDS excludes R1.",
+      "evidence": "tools/strategy_farm/farmctl.py L4218-4219 (R1_BUILD_READY_VALUES, R_STRICT_PASS_FIELDS) and L4469-4471 (only R2/R3/R4 must be PASS)."
+    },
+    {
+      "fact": "card_intake_prescreen.py never checks source/R1 at all; it gates on duplicate slug/mechanism, target-symbol matrix membership, external feeds, six charter sections, expected_dd_pct (0 to 10 exclusive of 0), timeframe box, and prohibited mechanics.",
+      "evidence": "tools/strategy_farm/card_intake_prescreen.py L8-14 (docstring), evaluate_card L492-559 (no source_id branch)."
+    },
+    {
+      "fact": "An internal AI source convention with a durable artifact plus sha256 already exists in production: AI-CODEX child sources carry source_type (free text), parent_sha256, and an approval_basis pointing to an immutable dated decisions/ file.",
+      "evidence": "strategy-seeds/sources/AI-CODEX-XTIXNG-WCLVDIV-RV-20260906/source.md frontmatter (source_id, source_type government_peer_reviewed_bounded_mechanization, parent_sha256, approval_basis decisions/2026-09-06_xtixng_...source_approval.md)."
+    },
+    {
+      "fact": "The DB sources lane restricts source_type to a fixed tuple that does NOT include an AI/internal value; add_source rejects anything else. AI/internal cards historically bypass the DB sources row (they use strategy-seeds/sources/ plus decisions/).",
+      "evidence": "tools/strategy_farm/farmctl.py L33580-33583 (VALID_SOURCE_TYPES = book, paper, web_forum, web_blog, mql5_codebase, mql5_articles, video, local_archive) and L33597-33601 (add_source rejects other types)."
+    },
+    {
+      "fact": "R4 runtime ML enforcement scans ONLY compiled EA code (.mq5/.mqh) with comments and string literals blanked before matching, by design so that prose describing ML is not treated as ML; identifier names are explicitly not evidence of ML (2026-09-06 scoping, ticket 690fc42a).",
+      "evidence": "framework/scripts/build_check.ps1 Invoke-ForbiddenScan L888-960 (EA_ML_FORBIDDEN), comment/string blanking L942-947, scoping rationale L888-901."
+    },
+    {
+      "fact": "The card-level R4 text scan can trip on affirmative ML mentions anywhere in the card body, not just in mechanics — this is the single place an internal-research card describing ML-derived provenance could be falsely rejected.",
+      "evidence": "tools/strategy_farm/card_intake_prescreen.py _affirmative_prohibited_mechanics L464-489 (scans document.text; ML pattern L471-474; emits PROHIBITED_MECHANICS via evaluate_card L541-543)."
+    },
+    {
+      "fact": "Review prompts confirm R4 is a runtime-code judgement: static/const weight arrays are OK, ambiguous hits become advisories not fails, and reviewers are told they are NOT checking R1-R4 reputable-source criteria.",
+      "evidence": "tools/strategy_farm/prompts/codex_review_ea.md L155-168 (hard ML in mq5; static const OK; ambiguous=advisory) and L215 (You are NOT checking R1-R4 reputable-source criteria); prompts/claude_review_ea.md L88-89."
+    },
+    {
+      "fact": "Required card frontmatter already includes r1_track_record alongside r2/r3/r4; approve-card seeds r1_track_record UNKNOWN when body coverage is incomplete, confirming R1 is a lineage label not a pass/fail gate.",
+      "evidence": "tools/strategy_farm/farmctl.py L4569-4579 (STRATEGY_CARD_REQUIRED_FRONTMATTER) and L4218 / L33713-33716 (r1_track_record set to UNKNOWN)."
+    }
+  ],
+  "risks": [
+    "False R4 rejection (concrete blocker): card_intake_prescreen._affirmative_prohibited_mechanics (L464-489) scans the whole card text; an internal-research card that describes an ML/neural-network-derived provenance in an affirmative (non-negated) sentence would be tagged PROHIBITED_MECHANICS:ML and moved to cards_rejected on --apply. Needs a wording/scoping fix.",
+    "Attribution erosion: if internal cards reuse the OWNER recovery fallback source_id (OWNER-FABIAN-GRABNER-R1-RECOVERY-20260723) or omit an author, internal-vs-external lineage becomes unauditable. Mitigate with a reserved QM-RESEARCH-/AI-KIMI- namespace and a mandatory source_author field.",
+    "Dedupe collision: strategy_card_fingerprint (farmctl.py L4548-4566) folds source_id into the fingerprint; a single shared QM-RESEARCH umbrella id across many child ideas could inflate near-duplicate hits in card_intake_prescreen. Use one child source_id per distinct idea.",
+    "DB lane mismatch: add-source (farmctl.py L33597-33601) rejects any source_type outside VALID_SOURCE_TYPES (L33580-33583). If a routable DB sources row is wanted, the tuple must be extended; otherwise the internal lane stays card+decisions-only.",
+    "Immutability gap: decisions/ files are immutable once dated (repo map), but strategy-seeds/sources/{id}/source.md is a normal mutable repo file. Integrity rests on the recorded sha256 plus git history, not filesystem immutability; the store design must state the sha256 in the decision receipt is the authority.",
+    "Location drift: card_intake_prescreen and approve-card default to D:/QM/strategy_farm/artifacts (non-version-controlled), while the durable source store is strategy-seeds/sources/ on C: (git-tracked). Putting the QM-RESEARCH artifact only on D: would lose it from the evidence trail; it must live in the repo."
+  ],
+  "unknowns": [
+    "Whether OWNER wants a routable DB sources row (extending VALID_SOURCE_TYPES with internal_research) or only a card-level source_id plus strategy-seeds/sources/ plus decisions/ receipt (the pattern AI-CODEX sources already use). No internal_research or QM-RESEARCH token exists anywhere in tools/strategy_farm/*.py or processes/ today.",
+    "The exact desired identifier form for Kimi: follow the documented AI-agent convention (source_id AI-KIMI-tag-YYYYMMDD) or introduce a QM-RESEARCH:// URI scheme (or both, with source_uri QM-RESEARCH://id and source_id AI-KIMI-...). Both satisfy R1; not specified in any current doc.",
+    "Whether the six-section charter check in card_intake_prescreen (missing_charter_sections L379-425) applies unchanged to internal-research cards, or whether internal cards should carry an extra provenance section. Not addressed by any existing internal-source example.",
+    "Where the Lessons Learned store should record this change: lessons-learned/ exists with a publish process but cannot create an approval layer or override a deterministic gate (lessons-learned/README.md), so the binding change must land in processes/qb_reputable_source_criteria.md, not lessons-learned. Whether OWNER also wants a lessons entry is unconfirmed."
+  ],
+  "integration_points": [
+    {
+      "where": "processes/qb_reputable_source_criteria.md — R1 section (L27-60) and R4 section (L105-133)",
+      "what": "Add one clause to R1 stating that an internal research source (source_id QM-RESEARCH-id / AI-KIMI-tag-date, author Kimi, durable artifact plus sha256) is a first-class single source — documentation-only, consistent with the existing AI-originated bullet. Add one clause to R4 stating R4 forbids ML in the EA runtime logic only, and that an AI/ML-assisted research provenance is explicitly not an R4 concern (mirrors the build_check.ps1 2026-09-06 scoping comment). This file is canonical and wins over prompts/vault.",
+      "why": "R1/R4 semantics are defined here; every prompt and the code defer to it. This is the load-bearing wording change."
+    },
+    {
+      "where": "tools/strategy_farm/card_intake_prescreen.py — _affirmative_prohibited_mechanics (L464-489)",
+      "what": "Scope the ML text-scan to the mechanics/rules portion of the card (or exclude a provenance/source section) so an affirmative description of ML-derived research provenance no longer emits PROHIBITED_MECHANICS:ML. Keep the r4_ml_forbidden frontmatter check (L466-469) and the mechanics-section ML check intact. This is the only code change strictly needed to make internal cards pass the paper gate.",
+      "why": "This is the one enforcement point that scans full card text for ML and would false-positive on internal-research provenance."
+    },
+    {
+      "where": "strategy-seeds/sources/QM-RESEARCH-{id}/source.md (new) plus decisions/YYYY-MM-DD_qm_research_{id}_source_approval.md (new)",
+      "what": "Create the durable research-artifact store under the existing strategy-seeds/sources/{source_id}/ convention: source.md with frontmatter source_id, source_type internal_research, author Kimi, source_uri QM-RESEARCH://id, self sha256, plus findings and prompt/output trail. Record the sha256 and approval in an immutable dated decisions/ receipt (same pattern as decisions/2026-09-06_xtixng_...source_approval.md). Git-tracked on C: (unlike D: card mirrors).",
+      "why": "Matches the working AI-CODEX precedent for internal sources with sha256 plus immutable decision, keeping the evidence trail version-controlled."
+    },
+    {
+      "where": "tools/strategy_farm/farmctl.py — VALID_SOURCE_TYPES (L33580-33583), only if a DB sources row is desired",
+      "what": "Optionally add internal_research to VALID_SOURCE_TYPES so add-source can register an internal lane row. Purely additive; leave existing types and the add_source guard (L33597-33601) otherwise unchanged. Skip entirely if OWNER prefers the card+decisions-only path that AI sources already use.",
+      "why": "Only needed if internal research must be a routable DB source lane; not required for R1/approve-card, which key off the card source_id string."
+    },
+    {
+      "where": "tools/strategy_farm/tests/test_card_intake_prescreen.py and tests covering approve-card contract",
+      "what": "Add tests: (a) a card with source_id QM-RESEARCH-id and an affirmative ML-provenance sentence returns KEEP (no PROHIBITED_MECHANICS:ML) after the scoping fix; (b) approve-card contract passes for an internal source_id and still emits r1_source_id_missing only when blank; (c) a regression test that external book/paper cards validate unchanged; (d) lineage test that a QM-RESEARCH- source_id is preserved distinctly through fingerprinting.",
+      "why": "Locks in the additive behavior and proves external cards are unchanged."
+    },
+    {
+      "where": "Research/G0 prompts: prompts/claude_research_source.md (L96-112 frontmatter block, L57-73 R-rules), prompts/codex_g0_review.md (L34-43), prompts/codex_research_source.md (L96-99)",
+      "what": "Document, non-gating, that source_id may be a QM-RESEARCH-/AI-KIMI- internal id with author Kimi and that R1 backfill to the OWNER fallback is not needed when a real internal source_id exists. No logic in these files; they defer to qb_reputable_source_criteria.md.",
+      "why": "Keeps the human/agent-facing instructions aligned with the canonical rubric so internal cards are authored with the correct namespace."
+    }
+  ]
+}

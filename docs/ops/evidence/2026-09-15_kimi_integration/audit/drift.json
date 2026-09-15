@@ -1,0 +1,80 @@
+{
+  "summary": "The core architecture contracts in CLAUDE.md, the COMPANY_AUDIT_LIVE_SOURCES doc, and the v4 gate manifest are largely faithful to the running system: all 18 gate names Q00–Q17 match the active manifest exactly, all 14 spot-checked tool paths exist, the gemini lane genuinely executes via the agy CLI (gemini-cli is dead in code), the headless Claude lane genuinely runs Sonnet, and the quota-governor/agy-governor throttle flags are present and behaving as documented. Three material drifts exist. (1) HIGH: CLAUDE.md's reboot-recovery instruction points operators to QM_StrategyFarm_TerminalWorkers_AT_STARTUP, which is Disabled; workers now come up via QM_StrategyFarm_FactoryON_AtLogon (Factory_ON.ps1). (2) MEDIUM: docs say the tester cache purge uses LowWater 150 GB, but the live task runs -LowWaterGB 60. (3) MEDIUM: CLAUDE.md describes agy/Antigravity as research-only, but the live registry and the orchestration prompt still grant the gemini lane code/tests/repo_edit and explicitly allow it to draft code. Several live mechanisms are undocumented in CLAUDE.md: the agent_chain cross-vendor critique sweep (OWNER 2026-09-15), the codex_budget_line + codex_fleet_pacer weekly pacer (OWNER 2026-09-13), quota_pull.py, the Codex model-tier ladder (sol/terra/luna, observe mode), and several dry-run/watchdog tasks. Runtime health note: agy quota auth is currently expired (HTTP 401) and several daily tasks show non-zero LastTaskResult.",
+  "key_facts": [
+    {
+      "fact": "All 18 v4 gate names Q00–Q17 in the active manifest match CLAUDE.md and the COMPANY_AUDIT 2026-09-13 addendum verbatim (no gate-naming drift).",
+      "evidence": "gate_manifest.v4.json dumped: Q00 Research Intake … Q10 News Impact + FTMO Recommendation, Q11 Incumbent Full-History Confirmation, Q12 Pattern Filter Selection, Q13 Parameter Optimization & Freeze, Q14 Best-Settings Head-to-Head, Q15 Final Portfolio Construction, Q16 Operational Readiness, Q17 Live Burn-In DXZ"
+    },
+    {
+      "fact": "All 14 spot-checked tool paths named in CLAUDE.md/OPERATING_RULES exist on disk.",
+      "evidence": "Bash file-existence loop: OK for heartbeat_snapshot.py, quota_governor.py, agy_governor.py, fetch_transcript.py, build_runtime_activation_decision.py, dashboards/render_dashboards.py, render_cockpit.py, framework/scripts/gen_setfile.ps1, gate_manifest.v4.json, farmctl.py, codex_budget_line.py, agent_chain.py, install_quota_governor_scheduled_task.ps1; find located Factory_OFF.ps1/Factory_ON.ps1/tester_cache_purge.ps1"
+    },
+    {
+      "fact": "The gemini lane really executes via agy.exe; gemini-cli is dead in code, matching CLAUDE.md.",
+      "evidence": "run_agent_orchestration_task.py lines 96-106 (_AGY_BIN_CANDIDATES, agy replaces deprecated gemini-cli 2026-06-29) and 161-173 (agent=='gemini' returns AGY_BIN); QM_StrategyFarm_GeminiOrchestration_15min action runs run_agent_orchestration_task.py --agent gemini"
+    },
+    {
+      "fact": "Headless Claude orchestration runs Sonnet; Codex orchestration runs codex CLI at model gpt-5.6-sol (tier sol).",
+      "evidence": "claude_orchestration_slot1_20260915T083001Z.json model_contract.model='sonnet', selection_reason='sonnet_default_deliberate_opus_only'; codex_orchestration_slot1_20260915T011502Z.json execution_backend='codex', model='gpt-5.6-sol', cmd0=codex.cmd"
+    },
+    {
+      "fact": "DRIFT (HIGH): CLAUDE.md tells operators to check QM_StrategyFarm_TerminalWorkers_AT_STARTUP after a reboot, but that task is Disabled; workers come up via QM_StrategyFarm_FactoryON_AtLogon.",
+      "evidence": "Get-ScheduledTask: QM_StrategyFarm_TerminalWorkers_AT_STARTUP State=Disabled (LastRun 23.05.2026); QM_StrategyFarm_FactoryON_AtLogon action = Factory_ON.ps1 -CanonicalRuntimeHost -NoPause (LastResult 1)"
+    },
+    {
+      "fact": "DRIFT (MEDIUM): tester cache purge runs at LowWater 60 GB, not the 150 GB documented in CLAUDE.md and the quota-recovery runbook.",
+      "evidence": "QM_StrategyFarm_TesterCachePurge action ARG '-LowWaterGB 60'; repetition Interval PT10M. CLAUDE.md text: 'no-op ≥150GB free; LowWater 80→150 seit 2026-07-21'"
+    },
+    {
+      "fact": "DRIFT (MEDIUM): CLAUDE.md frames agy/Antigravity as research/source-discovery/mechanization only, but the live registry gemini lane declares code/tests/repo_edit and the orchestration prompt explicitly permits it to draft code.",
+      "evidence": "agent_router.py DEFAULT_AGENT_REGISTRY gemini capabilities=['code','tests','repo_edit','research','strategy','source_discovery'] (code comment: 'Whether code/tests/repo_edit belong on this lane is a SEPARATE OWNER decision … Leave the rest exactly as-is'); COMPANY_AUDIT_LIVE_SOURCES lines 273-274 'Gemini may draft code, but Codex review is mandatory'"
+    },
+    {
+      "fact": "UNDOCUMENTED live mechanism: agent_chain.py cross-vendor critique sweep, wired to a 15-min task.",
+      "evidence": "agent_chain.py header 'Creator -> Critic -> Formatter … OWNER 2026-09-15'; QM_StrategyFarm_AgentChain_Critique_15min action runs agent_chain.py critique-pending --apply --max 2, PT15M. Not mentioned in CLAUDE.md."
+    },
+    {
+      "fact": "UNDOCUMENTED live mechanism: codex_budget_line.py + codex_fleet_pacer.py weekly Codex pacer.",
+      "evidence": "codex_budget_line.py header 'OWNER 2026-09-13 … Codex weekly budget line'; QM_StrategyFarm_CodexFleetPacer action runs codex_fleet_pacer.py (PT5M). CLAUDE.md quota section names only quota_governor.py and agy_governor.py."
+    },
+    {
+      "fact": "Live quota state: Codex throttled (CODEX_LOW_TOKENS.flag present, 80% used, +36pts ahead of pace); Claude not throttled and parallel-boosted; agy quota auth is currently expired (HTTP 401).",
+      "evidence": "quota_governor_state.json codex action='hold' want_throttle=true, claude action='noop' boosted=true; CODEX_LOW_TOKENS.flag present; agy_quota.json ok=false HTTP 401 token_expired=true; AGY_LOW_QUOTA.flag reason='quota_unknown' failure_class='token_expired'"
+    }
+  ],
+  "risks": [
+    "Reboot-recovery drift (HIGH): an operator following CLAUDE.md after a VPS reboot would inspect/re-enable QM_StrategyFarm_TerminalWorkers_AT_STARTUP (Disabled) and could conclude the factory is broken, or miss that recovery now runs through Factory_ON.ps1 via QM_StrategyFarm_FactoryON_AtLogon — wrong mental model during an outage.",
+    "tester_cache_purge LowWater is 60 GB live vs 150 GB documented: disk-pressure behaviour is far more permissive than the runbook claims; an operator sizing D: headroom off the doc would misjudge when purges kick in.",
+    "agy/gemini lane still carries code/tests/repo_edit in the live registry despite the doc + memory ('agy=NUR BACKUP, halluziniert') treating it as research-only; a code ticket could still route to the weakest seat if capability routing selects it, and the code comment confirms this is an unresolved OWNER decision, not an intended state.",
+    "agy research lane is effectively degraded right now: OAuth token expired (401), AGY_LOW_QUOTA.flag set — research throughput is paused, which the static docs do not surface.",
+    "Undocumented control-plane mechanisms (agent_chain critique sweep, codex budget line/fleet pacer, quota_pull, Codex model-tier ladder in 'observe' mode) mean a new session reading only CLAUDE.md would not know these are actively spawning agents/critics and pacing spend."
+  ],
+  "unknowns": [
+    "Exact meaning of LastTaskResult 2147946720 on the Running Cockpit_2min and Pump_5min tasks — reported as a prior-run error code but not decoded; these tasks are currently in State=Running so the code may be stale.",
+    "Whether the several daily tasks with non-zero LastTaskResult (QM_NewsCalendar_Refresh=1, QM_StrategyFarm_MailboxSourceIntake_Daily=1, QM_Public_Snapshot_Hourly=1, QM_EvidenceCohortWatch_Daily_0420=3, QM_WorkItemLogPruner_Daily_0310=1) are persistent failures or transient — not investigated in depth (outside architecture-drift scope).",
+    "Whether an OWNER decision has since resolved the gemini-lane code-capability question; only the in-code comment ('SEPARATE OWNER decision … Leave the rest exactly as-is') was read, not a dated decision record.",
+    "Whether QM_StrategyFarm_QuotaPull (quota_pull.py) and the GovernorDryRunWatch / Q10Breaker_DryRun watchers have any doc coverage elsewhere in docs/ops — only their scheduled-task actions were confirmed, not searched across all runbooks."
+  ],
+  "integration_points": [
+    {
+      "where": "C:/QM/repo/CLAUDE.md — Infrastructure Constants",
+      "what": "Reboot-recovery pointer names a Disabled task (TerminalWorkers_AT_STARTUP); real path is FactoryON_AtLogon/Factory_ON.ps1",
+      "why": "Prevents wrong operator action during an outage"
+    },
+    {
+      "where": "C:/QM/repo/CLAUDE.md — Quota Governance section",
+      "what": "Add codex_budget_line/codex_fleet_pacer and agent_chain critique sweep; correct tester-purge LowWater to 60 GB",
+      "why": "Three live mechanisms/values missing or wrong in the canonical brief"
+    },
+    {
+      "where": "tools/strategy_farm/agent_router.py DEFAULT_AGENT_REGISTRY['gemini']",
+      "what": "Lane still declares code/tests/repo_edit despite doc/memory treating agy as research-backup-only; unresolved OWNER decision per in-code comment",
+      "why": "Capability routing could still send code work to the weakest seat"
+    },
+    {
+      "where": "docs/ops/COMPANY_AUDIT_LIVE_SOURCES_2026-05-30.md",
+      "what": "Body still says 'Q00 through Q13'; only the 2026-09-13 addendum is correct",
+      "why": "Stale gate-model text above a correcting addendum invites misreading"
+    }
+  ]
+}

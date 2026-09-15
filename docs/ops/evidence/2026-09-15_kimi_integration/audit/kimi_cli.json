@@ -1,0 +1,148 @@
+{
+  "summary": "Kimi CLI is installed on the VPS as \"Kimi Code\" v0.43.1 at C:\\Users\\Administrator\\.kimi-code\\bin\\kimi.exe (151 MB standalone binary, mtime 2026-09-15 08:53). It is NOT on PATH and NOT installed via npm/pip/pipx — it is a self-contained per-user install with an auto-updater. Authentication is a device-code OAuth flow (not an API key): credentials at C:\\Users\\Administrator\\.kimi-code\\credentials\\kimi-code.json (mtime 2026-09-15 11:25) hold Bearer access_token/refresh_token, scope=kimi-code, and the provider \"managed:kimi-code\" points at https://api.kimi.com/coding/v1 with source=oauth — i.e. the Kimi Code coding-subscription endpoint, consistent with the OWNER's USD 99/month subscription and distinct from a platform pay-as-you-go API balance. Region is mainland-cn (kimi.com). A single live headless call (kimi -p \"Reply with exactly the word OK.\" --output-format text) succeeded: exit 0, 6.2 s latency, returned \"OK\" — auth works. Headless mode is -p/--prompt with --output-format {text,stream-json}, model selection via -m (4 models: kimi-for-coding/K2.8 1M ctx default, k3 1M, highspeed & k3-256k at 256K), permission modes --auto (never ask) and -y/--yolo. There is NO usage/quota/account/limits subcommand — spend cannot be queried programmatically via the CLI. No existing QuantMechanica Kimi wrapper exists in the repo and no KIMI_ flags exist under D:/QM. An ACP-over-stdio server mode (kimi acp) exists and is the most robust programmatic integration path.",
+  "key_facts": [
+    {
+      "fact": "Kimi CLI product is \"Kimi Code\", version 0.43.1",
+      "evidence": "kimi.exe --version -> 0.43.1; also updates/latest.json latest:\"0.43.1\"; help banner 'The Starting Point for Next-Gen Agents'"
+    },
+    {
+      "fact": "Executable path: C:\\Users\\Administrator\\.kimi-code\\bin\\kimi.exe (151,553,536 bytes, LastWriteTime 2026-09-15 08:53:24)",
+      "evidence": "Get-ChildItem recurse -Filter kimi* found it; a companion bin\\fd.exe (search helper) sits alongside"
+    },
+    {
+      "fact": "NOT on PATH; NOT installed via npm-global, pip, pipx, Scoop",
+      "evidence": "where.exe kimi/kimi.cmd/kimi.exe = 'Could not find files'; Get-Command kimi = not recognized; npm ls -g kimi = empty; pip show kimi-cli = not found; pipx = not recognized"
+    },
+    {
+      "fact": "Native runtime unpacked under %LOCALAPPDATA%\\kimi-code\\native\\0.43.1\\win32-x64\\<hash>\\ (node_modules incl. @moonshot-ai/pi-tui, @mariozechner/clipboard; runtime kap-server + minidb)",
+      "evidence": "Get-ChildItem C:\\Users\\Administrator\\AppData\\Local\\kimi-code -Recurse"
+    },
+    {
+      "fact": "Authentication = device-code OAuth (Bearer), not an API key. Provider managed:kimi-code, source=oauth",
+      "evidence": "kimi provider list -> 'managed:kimi-code  type=kimi  models=4  source=oauth'; config.toml [providers.\"managed:kimi-code\"] api_key=\"\" with [.oauth] storage=\"file\" key=\"oauth/kimi-code\""
+    },
+    {
+      "fact": "Credential file: C:\\Users\\Administrator\\.kimi-code\\credentials\\kimi-code.json EXISTS, 1556 bytes, mtime 2026-09-15 11:25:36. Fields: access_token, refresh_token, expires_at, scope, token_type, expires_in (values NOT printed)",
+      "evidence": "Get-ChildItem + ConvertFrom-Json property names; token_type=Bearer, scope=kimi-code, expires_in=900"
+    },
+    {
+      "fact": "Auth token was valid at audit time: access_token expires_at=1789466268 (2026-09-15T09:57:48Z) > now(09:43:45Z); refresh_token present (access token lifetime 900s, auto-refreshed)",
+      "evidence": "expires_at parsed epoch->UTC, valid_now=True; refresh_token length 705 (non-empty)"
+    },
+    {
+      "fact": "Subscription endpoint = https://api.kimi.com/coding/v1 (Kimi Code coding plan), region mainland-cn (kimi.com), consistent with the OWNER's USD 99/month subscription and NOT a pay-as-you-go API balance",
+      "evidence": "config.toml base_url https://api.kimi.com/coding/v1; region file = 'mainland-cn'; acp --help notes mainland-cn=kimi.com vs global=kimi.ai"
+    },
+    {
+      "fact": "Headless one-shot mode: -p/--prompt <prompt> 'Run one prompt non-interactively and print the response'; --output-format {text,stream-json} (default text)",
+      "evidence": "kimi --help Options block"
+    },
+    {
+      "fact": "Live verification call succeeded: `kimi -p \"Reply with exactly the word OK.\" --output-format text` -> EXIT 0, latency 6.2s, output 'OK'",
+      "evidence": "Timed Start-Job run; stdout: 'kimi version 0.43.1' + thinking bullet + '• OK' + 'To resume this session: kimi -r session_26f56c6d-...'"
+    },
+    {
+      "fact": "Text output is NOT clean: it prepends a 'kimi version 0.43.1' banner and thinking bullets ('• ...'), and appends a 'To resume this session: kimi -r <id>' trailer around the actual answer",
+      "evidence": "first 600 chars of live-call stdout showed all four segments"
+    },
+    {
+      "fact": "4 models available. Default kimi-code/kimi-for-coding (display 'K2.8 Preview', max_context_size 1048576, efforts low/high/max, default max). Also k3 (1048576), kimi-for-coding-highspeed (K2.7, 262144), k3-256k (262144). Select via -m/--model",
+      "evidence": "config.toml [models.*] blocks; kimi --help -m option 'Defaults to default_model in config.toml'"
+    },
+    {
+      "fact": "Permission/automation flags: --auto (Never Ask mode, everything runs automatically), -y/--yolo (Ask When Needed; risky actions still ask), --plan (plan mode)",
+      "evidence": "kimi --help Options"
+    },
+    {
+      "fact": "Workspace/tools flags: --add-dir <dir> (extra workspace dir, repeatable), --skills-dir <dir>, --agent <name>, --agent-file <path>",
+      "evidence": "kimi --help Options"
+    },
+    {
+      "fact": "NO usage/quota/account/limits/status subcommand exists. Usage is NOT programmatically queryable via CLI",
+      "evidence": "kimi --help Commands list = export, fork, provider, session, acp, web, server, rc, login, doctor, vis, migrate, upgrade — none for usage/quota"
+    },
+    {
+      "fact": "Usage IS exposed only to a custom status_line command (receives JSON snapshot with model,cwd,git,usage,mode on stdin) — a workaround, not a direct query",
+      "evidence": "tui.toml [status_line] comment block: 'It receives a JSON snapshot (model, cwd, git, usage, mode) on stdin'"
+    },
+    {
+      "fact": "ACP stdio server mode exists: `kimi acp` runs an Agent Client Protocol server over stdio (with --login/--region entry points) — the robust programmatic multi-turn integration path",
+      "evidence": "kimi acp --help"
+    },
+    {
+      "fact": "Session management is scriptable: `kimi session list --json --all --limit N --cwd <path>`; sessions resumable via -S/--session [id] or -c/--continue or `kimi -r <sessionId>`",
+      "evidence": "kimi session list --help; kimi --help -S/-c; live-call resume-hint 'kimi -r session_...'"
+    },
+    {
+      "fact": "kimi doctor validates config non-interactively and reports OK for config.toml and tui.toml",
+      "evidence": "kimi doctor -> 'OK config.toml ... OK tui.toml ... All checked config files are valid.'"
+    },
+    {
+      "fact": "Log/transcript locations: global log C:\\Users\\Administrator\\.kimi-code\\logs\\kimi-code.log (minidb/session index lines); user-history C:\\Users\\Administrator\\.kimi-code\\user-history\\*.jsonl; session store in cache\\query-store (16 shards); updates\\rollout.log; telemetry\\ dir",
+      "evidence": "Get-ChildItem .kimi-code -Recurse; logs/kimi-code.log content shown"
+    },
+    {
+      "fact": "Auto-updater is ACTIVE: tui.toml [upgrade] auto_install=true; staged rollout manifest in updates/latest.json; `kimi upgrade` command exists",
+      "evidence": "tui.toml; updates/latest.json rollout percentages; kimi --help 'upgrade|update'"
+    },
+    {
+      "fact": "No existing QuantMechanica Kimi wrapper in repo and no KIMI_ flags/files under D:/QM",
+      "evidence": "Grep kimi over C:/QM/repo *.py/*.md/*.json/*.ps1 = No files found; broad bash grep only hit a .png binary (false positive); D:/QM/strategy_farm & reports/state searches for kimi = empty; no KIMI* env vars"
+    }
+  ],
+  "risks": [
+    "Text output mode (--output-format text) mixes a version banner, thinking bullets, and a session-resume trailer around the answer, so naive stdout capture will NOT yield a clean response — an adapter must use stream-json or strip the wrapper lines.",
+    "No usage/quota/limits subcommand: the USD 99 subscription's remaining allowance cannot be checked via the CLI. Spend/rate must be tracked externally (or scraped from the status_line JSON snapshot). This is a real blind spot for governance/pacing analogous to quota_governor.",
+    "Access token lifetime is only 900s (15 min); relies on the refresh_token for continuity. If the refresh flow fails (region block, revoked device), headless calls will fail and require an interactive `kimi login` device-code flow — not automatable headlessly except via `kimi acp --login`.",
+    "Auto-update is enabled (auto_install=true) and the binary self-updates on a staged rollout; an adapter pinned to CLI flag/output behavior of 0.43.1 could break silently after an upgrade. Consider pinning or monitoring version.",
+    "Region is mainland-cn (api.kimi.com). If the VPS network path to kimi.com is throttled/blocked (this VPS is documented as bot-blocked on YouTube), latency/availability of Kimi calls could degrade; not verified beyond the single 6.2s call.",
+    "No documented CLI timeout flag — a hung/long generation must be bounded by an external watchdog; the interactive TUI launches if arguments are malformed (subcommand help via wrong argv dropped into the TUI during this audit), which in a headless context would hang until externally killed.",
+    "stream-json output format and whether -p reads a prompt from stdin (vs only the argument) were NOT live-verified (audit was limited to one live call); recommendations relying on them are documented-but-untested and should be confirmed before production use."
+  ],
+  "unknowns": [
+    "Documented failure/exit codes: only exit 0 (success) observed. kimi --help does not enumerate non-zero exit codes; error-class -> exit-code mapping is UNKNOWN and must be characterized empirically before building robust error handling.",
+    "Whether `kimi -p` reads the prompt from stdin when the argument is omitted (enabling large/piped prompts) — UNKNOWN; only the -p <arg> form was documented and tested. Large prompts via argv may hit the ~32KB Windows command-line limit; no --prompt-file flag is documented.",
+    "Exact structure of --output-format stream-json events (message/thinking/usage framing) — UNKNOWN; not live-tested (one-call limit). Needs one probe run to design the parser.",
+    "Concurrency / rate-limit behavior and whether parallel headless invocations are allowed under the subscription — UNKNOWN; not documented locally and not tested.",
+    "Remaining subscription quota / monthly allowance and reset date — UNKNOWN and not queryable via CLI (see risks).",
+    "Whether the status_line JSON 'usage' field contains subscription-level remaining quota vs per-session token counts — UNKNOWN (would require configuring a status_line command, out of read-only scope).",
+    "Global diagnostic log rotation policy and whether transcripts contain full prompt/response content usable for audit — partially seen (session index lines only); user-history jsonl content not inspected in depth."
+  ],
+  "integration_points": [
+    {
+      "where": "Adapter argv (recommended primary shape)",
+      "what": "kimi.exe -p \"<PROMPT>\" --output-format stream-json -m kimi-code/kimi-for-coding --auto  (run with cwd set to the target dir, or add --add-dir <dir>). Use full path C:\\Users\\Administrator\\.kimi-code\\bin\\kimi.exe since it is not on PATH.",
+      "why": "-p is the documented non-interactive one-shot; --auto prevents any interactive permission prompt from hanging a headless run; -m pins the model; stream-json avoids the banner/thinking/resume-trailer contamination seen in text mode. Evidence: kimi --help; live text-mode output showed the contamination."
+    },
+    {
+      "where": "Output parsing",
+      "what": "Prefer parsing stream-json events (confirm event schema with one probe first). If forced to use --output-format text, strip: leading line matching '^kimi version ', any lines beginning with the thinking bullet '• ', and the trailing 'To resume this session: kimi -r ...' line; the residual is the answer.",
+      "why": "Live call in text mode returned exactly those wrapper segments around 'OK'. Evidence: first-600-char capture of the live call."
+    },
+    {
+      "where": "Timeouts / watchdog",
+      "what": "Wrap every invocation in an external timeout (e.g. Start-Job/Wait-Job or a subprocess timeout of 120-300s); kill on expiry. Do not rely on a CLI timeout flag (none exists).",
+      "why": "No documented timeout option; trivial call took 6.2s but generations can run long; malformed argv can launch the TUI and hang. Evidence: kimi --help has no timeout flag; subcommand-help misfire launched the TUI during audit."
+    },
+    {
+      "where": "Auth handling / error classes",
+      "what": "Treat exit 0 = success. On non-zero exit or empty answer, classify as (a) auth-expired -> requires `kimi acp --login` / interactive `kimi login` device-code re-auth (cannot be done silently), (b) transient network/region error -> retry with backoff, (c) other -> surface. Verify auth health cheaply via `kimi provider list` (prints source=oauth) and config via `kimi doctor` before a batch.",
+      "why": "Auth is OAuth with a 900s access token auto-refreshed by refresh_token; provider list and doctor are non-LLM health checks. Exit-code taxonomy is otherwise undocumented (UNKNOWN). Evidence: provider list, doctor outputs; credentials fields."
+    },
+    {
+      "where": "Programmatic multi-turn / tool-use integration",
+      "what": "For anything beyond one-shot prompts, drive `kimi acp` (Agent Client Protocol server over stdio) rather than repeated -p spawns; use `kimi session list --json` to enumerate/resume sessions and `kimi export -o <zip>` to archive transcripts for the evidence trail.",
+      "why": "ACP is the documented stdio server mode; session list --json and export give scriptable session/evidence management. Evidence: kimi acp --help, session list --help, export --help."
+    },
+    {
+      "where": "Quota/spend governance",
+      "what": "Do NOT expect a CLI usage query. Track Kimi invocations/tokens in an external ledger (mirror the quota_governor pattern) or, if needed, configure a tui.toml status_line command to capture the JSON 'usage' snapshot. Budget against the USD 99/month subscription, not a per-call API balance.",
+      "why": "No usage/quota subcommand exists; usage is only exposed to a status_line command's stdin JSON. Evidence: kimi --help command list; tui.toml status_line comment."
+    },
+    {
+      "where": "Version pinning",
+      "what": "Record the CLI version per run (banner/`--version`) and be aware auto_install=true will self-update the binary; re-validate adapter flags/output after version changes.",
+      "why": "tui.toml [upgrade] auto_install=true with an active staged rollout manifest. Evidence: tui.toml, updates/latest.json, rollout.log."
+    }
+  ]
+}
