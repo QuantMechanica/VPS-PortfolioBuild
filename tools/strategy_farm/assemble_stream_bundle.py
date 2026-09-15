@@ -4,11 +4,15 @@
 Closes defect D4 of docs/ops/evidence/2026-09-03_book_path_rehearsal_5pair_pool.md:
 the dual-venue book builders consume a sealed stream bundle laid out as
 ``<stream_root>/QM/q08_trades/<ea>_<symbol_with_dots_as_underscores>.jsonl``
-(book_builder_common.load_daily -> portfolio_common.load_streams), yet the default
-bundle ``D:/QM/reports/portfolio/dxz_final_20260719`` only covers a stale July
-roster.  This tool binds each qualified (EA, symbol) pair to the sealed stream of
-its CURRENT identity and copies it, byte-for-byte, into a caller-supplied ``--out``
-bundle root.
+(book_builder_common.load_daily -> portfolio_common.load_streams).  The sealed-stream
+search order prefers the durable ``sleeve_streams`` store and the current v2 sealed
+bundle (``dxz_v2_20260913/streams_v2b``); the stale July bundle
+``D:/QM/reports/portfolio/dxz_final_20260719`` remains only a last-resort fallback and
+is accepted solely on an exact content-hash match (audit D4,
+docs/ops/evidence/2026-09-15_continuous_book_evolution/audit/portfolio_engine_existing.md;
+OWNER-DEC-CBE-20260915).  This tool binds each qualified (EA, symbol) pair to the sealed
+stream of its CURRENT identity and copies it, byte-for-byte, into a caller-supplied
+``--out`` bundle root.
 
 Binding contract (fail-closed, never fabricates a stream):
 
@@ -80,8 +84,15 @@ BUILD_HASH_KEYS = (
 # physical file matching the pinned content hash.  Sealed streams are written to
 # sleeve_streams; frozen bundles and the volatile MT5 Common\Files dir are searched
 # only as fallbacks and are accepted solely on an exact content-hash match.
+# Audit D4 (portfolio_engine_existing.md, OWNER-DEC-CBE-20260915): the current v2 sealed
+# bundle is searched ahead of the stale July ``dxz_final_20260719`` fallback so a current
+# identity binds to its current sealed stream first.  Acceptance is content-hash gated in
+# every case, so ordering only affects which matching file is found first, never whether a
+# stale non-matching file could be accepted.
 DEFAULT_SEARCH_ROOTS = (
     Path(r"D:\QM\reports\portfolio\sleeve_streams"),
+    Path(r"D:\QM\reports\portfolio\dxz_v2_20260913\streams_v2b"),
+    Path(r"D:\QM\reports\portfolio\dxz_v2_20260913\streams"),
     Path(r"D:\QM\reports\portfolio\dxz_final_20260719"),
     Path(r"C:\Users\Administrator\AppData\Roaming\MetaQuotes\Terminal\Common\Files"),
 )
