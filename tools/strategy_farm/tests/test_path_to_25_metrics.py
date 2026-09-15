@@ -270,7 +270,8 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
         "generated_at": "2026-08-23T10:00:00+00:00",
         "path_to_25": metrics,
     })
-    assert "chosen · Kalender scope-begrenzt" in cockpit
+    # The cockpit-v2 path_to_25 block was retired by slice D1 (OWNER-DEC-CBE-20260915 §3):
+    # the scope footnote now only appears on the dashboard surfaces below.
     heartbeat = heartbeat_snapshot.render_markdown({
         "ts": "2026-08-23T10:00:00+00:00",
         "flags": [],
@@ -283,9 +284,10 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     for rendered in (cockpit, heartbeat, owner_html):
         assert "Q12" in rendered and "Q13" in rendered and "Q14" in rendered
         assert re.search(r"\bP[0-9]\b", rendered) is None
-    # render_cockpit_v2 is slice D1's surface: its "Weg zu 25" wording is relabeled
-    # there, not here.  This slice (D2) relabels heartbeat + morning_brief only.
-    assert "Weg zu 25" in cockpit
+    # render_cockpit_v2 (slice D1) renders the Book Evolution primary view; the
+    # "Weg zu 25" objective is gone from every OWNER surface.
+    assert "Book Evolution" in cockpit
+    assert "Weg zu 25" not in cockpit
     # OWNER-DEC-CBE-20260915: the D2 surfaces drop the "Way to 25" objective for a
     # Continuous Book Evolution headline + a diagnostic qualified-pool readout.
     for rendered in (heartbeat, owner_html):

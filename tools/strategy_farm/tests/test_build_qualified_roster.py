@@ -134,6 +134,8 @@ def test_roster_binds_the_census_snapshot_and_qualified_ids(tmp_path: Path) -> N
     assert set(guard) == {
         "allowed", "qualified_pairs", "distinct_eas",
         "strategy_families", "order_artifact", "reasons",
+        # OWNER-DEC-CBE-20260915: diagnostic pool size + trigger policy (b1 slice).
+        "reference_pool_size", "trigger_policy",
     }
     assert roster["generated_at"] == "2026-09-03T12:34:56Z"
     assert roster["venue"] == "ftmo"
