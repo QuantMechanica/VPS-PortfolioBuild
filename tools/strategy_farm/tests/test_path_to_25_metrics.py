@@ -281,7 +281,9 @@ def test_all_owner_surfaces_render_the_shared_metrics(tmp_path: Path) -> None:
     scratch_cockpit = tmp_path / "cockpit_path_to_25.html"
     scratch_cockpit.write_text(cockpit, encoding="utf-8", newline="\n")
 
-    for rendered in (cockpit, heartbeat, owner_html):
+    # Frontier bands are rendered by the heartbeat and the morning brief; the
+    # cockpit-v2 shows the pool only as a diagnostic line (slice D1).
+    for rendered in (heartbeat, owner_html):
         assert "Q12" in rendered and "Q13" in rendered and "Q14" in rendered
         assert re.search(r"\bP[0-9]\b", rendered) is None
     # render_cockpit_v2 (slice D1) renders the Book Evolution primary view; the
