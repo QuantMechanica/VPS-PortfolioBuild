@@ -6,7 +6,7 @@
 
 ## Current branch / HEAD
 
-- Main repo `C:\QM\repo`: branch `agents/board-advisor`, HEAD `0b2a5a6b63` (all Wave-1 slices merged), ahead ~95 of origin. NOTHING pushed.
+- Main repo `C:\QM\repo`: branch `agents/board-advisor`, HEAD `c9dcd9b5fa` (watchdog NO_RUNNABLE_WORK fix), **pushed to origin, divergence 0** (2026-09-16 ~04:40Z).
 - Remaining dirty files are pre-existing unknown-owner items (`.set` file, `ea_origin.v1.csv` line-endings, deleted `artifacts/qm5_41262_build_result_20260901.json`, machine regen drift recurring on the living docs — normal cadence). Not mine, not touched.
 
 ## Directive-3 worktree state — **WAVE 1 MERGED INTO MAIN 2026-09-15** 
@@ -20,7 +20,25 @@ Merge executed by Kimi interim per §38/§39/§40 (reviews on disk = independent
 - **OPEN tracked fixes from the reviews (for Fable):** j1 census-join contaminated baseline (fix `load_census_join` strict arm + re-run before citing figures; the "0 filters ever selected" headline is verified independent of the defect) · g1 STEP-2 calibrated RAM table 4→8 GB census doubling (default-off; pin before activation) · d1 residual grid guard at `governed_magic_allocator.py:374` (known; fail-closed) · e1 OOS-window caveat must travel with any second-chance enqueue.
 - **No Wave 2 was ever defined for Directive 3** — orchestrator session died on Claude weekly limit. §43 order A–J residuals ready to commission: c1 routing, e2, f1/f2 tail-risk engine (prerequisite: merged eligibility v2 + tail-risk research doc, both now on main).
 
+## Factory state — IDLE ROOT-CAUSED 2026-09-16 ~04:30Z
+
+**Classification: NO_RUNNABLE_WORK** (not a scheduler/lock fault). Chain of evidence:
+- 0 active work items; 10/10 workers alive and cycling claims every ~12s; last successful claim 01:51Z.
+- The canonical selector (`farmctl.pending_claim_order_sql()`, verified by executing it) returns **22 rows**: 21 Q08 + 1 Q06. Of 3,794 raw pending: 2,555 PRESCREEN_SKIPPED OPT_CENSUS (inert by design), 225 superseded, ~86 governed-analytic/Q12 matrix declarations, 22 quarantined, rest held.
+- All 21 Q08 rows fail the claim-time-independent DSR precheck: `SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED` — their cards lack the `qm-dsr-single-configuration` declaration block (a governance-sealed card amendment, NOT an ops fix). This is the Q08_DSR_CONTEXT_UNAVAILABLE class the Phase-A audit assigned to Fable.
+- The 1 Q06 row is RAM-class-skipped (37.9 GB measured reservation vs 14 GB threshold, 45 GB free) — legitimate guard.
+- The watchdog had been FALSE-classifying this as dispatch_stall every 10 min and flapping FactoryON_AtLogon (rc=1, itself failing) + parking workers 5 min of every 10. **FIXED** `c9dcd9b5fa`: watchdog now counts canonically-claimable rows (`claimable` + `no_runnable_work` fields in factory_watchdog.jsonl every 15 min = the §12I deterministic idle signal) and only heals a stall when ≥3 claimable rows exist. Static tests 4/4 + PS syntax verified.
+
+**Recovery actions taken / in flight:**
+- `c9dcd9b5fa` watchdog classification fix (committed + pushed).
+- Background agent (agent-10) servicing the 86 pending Q12-analytic DL-089 declarations via canonical `farmctl service-dl089-matrix` → expands frontier cells into runnable census work (the Phase-A-recommended Q12 prioritization for the 51 Q11-frontier pairs).
+- Second-chance QM5_11563: gemini lane produced a REVIEW_READY card draft (PENDING_B0EF5D66 in cards_review); next step = controller/Codex allocation — quota-gated to 09-19.
+
+**Remaining blocked classes (governance-gated, documented for Fable):** Q08 DSR single-configuration declarations (21 rows) · COMPILE_EA/build lane (codex quota to 09-19 + repo-dirty guard stragglers: `.set` file, `ea_origin.v1.csv` line-endings, deleted artifact JSON — unknown-owner) · NEWS-lane work (E1-C OWNER decision) · Q09 news rows need bound run plans.
+
 ## Completed work (Kimi interim)
+
+0. **Factory idle root-cause + watchdog fix + safe push** (above; branch pushed to origin, divergence 0).
 
 1. Full collision/truth audit (4 subagent passes).
 2. P5 scheduled-task run-as repair — `db4bd1fa83`, receipt `docs/ops/evidence/2026-09-15_scheduled_task_runas_repair/receipt.md` (wiki-sync GREEN, KimiOrchestration rc=0, BookEvolution readmodels rc=0; weekly ceremony first live firing **Fri 2026-09-18 23:15 local**).
