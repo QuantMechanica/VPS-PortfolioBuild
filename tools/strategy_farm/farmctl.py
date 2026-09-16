@@ -28158,6 +28158,72 @@ def _q02_strategy_params_contract(setfile_path: str) -> tuple[bool, dict[str, An
     }
 
 
+Q08_SETFILE_EMPTY_STRATEGY_PARAMS_REASON = "SETFILE_EMPTY_STRATEGY_PARAMS"
+_Q08_ABLATION_SETFILE_MARKER = "_ablation_"
+
+
+def _q08_baseline_setfile_admission(
+    setfile_path: str, symbol: str
+) -> tuple[bool, dict[str, Any]]:
+    """Fail closed when a Q08 baseline setfile cannot yield neighborhood lineage.
+
+    Q08.5 raises a hard ValueError on every run when the baseline setfile has
+    zero ``strategy_*`` parameters (the ``card_defaults_source=not_found``
+    setgen defect): the row burns a full-window run and INVALIDs at 8.5/8.7
+    without earning a merit verdict (QM5_10211 2026-09-16; QM5_10280 parked
+    the same day).  An explicit ablation-setfile marker rescues the enqueue:
+    the aggregate baseline resolver is known to fall back to same-symbol
+    ``*_ablation_*`` siblings (QM5_10804 GDAXI.DWX H1), so those rows still
+    produce lineage evidence.  This is intake admission only; it changes no
+    gate calibration.
+    """
+    detail: dict[str, Any] = {
+        "setfile_path": str(setfile_path),
+        "symbol": str(symbol or ""),
+        "contract": "q08_baseline_strategy_params",
+    }
+    path = Path(setfile_path)
+    if not path.is_file():
+        # The caller's missing-setfile skip is the authority for absent files.
+        return True, {**detail, "reason": "setfile_exists_deferred"}
+    if _Q08_ABLATION_SETFILE_MARKER in path.name.lower():
+        return True, {**detail, "reason": "ablation_setfile_bound"}
+    try:
+        values = _setfile_semantic_parameters(path)
+    except (OSError, UnicodeError, ValueError) as exc:
+        # Duplicate/empty-value grammar defects stay on the sweep triage path.
+        return True, {**detail, "reason": "setfile_parse_deferred", "detail": str(exc)}
+    strategy_values = {
+        key: value for key, value in values.items() if key.startswith("strategy_")
+    }
+    if strategy_values:
+        return True, {
+            **detail,
+            "reason": "strategy_params_present",
+            "strategy_parameter_count": len(strategy_values),
+        }
+    symbol_token = str(symbol or "").strip()
+    ablation_siblings: list[str] = []
+    if symbol_token and path.parent.is_dir():
+        ablation_siblings = sorted(
+            sibling.name
+            for sibling in path.parent.glob("*.set")
+            if _Q08_ABLATION_SETFILE_MARKER in sibling.name.lower()
+            and symbol_token in sibling.name
+        )
+    if ablation_siblings:
+        return True, {
+            **detail,
+            "reason": "ablation_setfile_marker_present",
+            "ablation_setfiles": ablation_siblings,
+        }
+    return False, {
+        **detail,
+        "reason": Q08_SETFILE_EMPTY_STRATEGY_PARAMS_REASON,
+        "strategy_parameter_count": 0,
+    }
+
+
 def _q02_post_requal_refusal(
     reason: str,
     source_work_item_id: str,
@@ -32116,6 +32182,27 @@ def enqueue_cascade_backtest_for_ea(
                     "reason": "missing_setfile",
                 })
                 continue
+            if phase == "Q08":
+                # Pre-enqueue guard (intake, not gate semantics): a baseline
+                # setfile with zero strategy_* params deterministically
+                # INVALIDs Q08.5 on every run. Refuse unless an explicit
+                # ablation-setfile marker can carry the lineage instead.
+                q08_admission_ok, q08_admission_detail = (
+                    _q08_baseline_setfile_admission(
+                        str(prev["setfile_path"]), str(prev["symbol"])
+                    )
+                )
+                if not q08_admission_ok:
+                    skipped.append({
+                        "id": prev["id"],
+                        "symbol": prev["symbol"],
+                        **{
+                            key: value
+                            for key, value in q08_admission_detail.items()
+                            if key != "symbol"
+                        },
+                    })
+                    continue
             q08_evidence_sha256: str | None = None
             q08_input_work_item: sqlite3.Row | None = None
             q10_dependency_context: dict[str, Any] | None = None
