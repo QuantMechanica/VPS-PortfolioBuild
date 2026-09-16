@@ -112,6 +112,12 @@ Inspection complete (agent-6): shell reusable today — include `QM_ChartPanelCo
 
 Live AutoTrading / T_Live / DXZ v2 cutover (OWNER-only, Sun 2026-09-20), FTMO purchases, gate verdicts, trade streams, claude/codex/agy lanes, WorkItemLogPruner, news-calendar data/registry (patch prepared only), unknown-owner dirty files, nothing pushed to origin.
 
+## OWNER decisions — approved 2026-09-16, execution state
+
+- **D1 Q08 amendment cohort (OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916):** PARTIAL + STOP per conditions. Reconciliation PASS (exactly 16 cards/16 work items, exclusions untouched). Batch 1 (8 cards) amended + journaled (`2b141a1b91`, `6f89b532f5`); proof (c) caught a pre-existing cohort defect — the staged rows carry NULL build identity (masked until now because the declaration check ran first). Batch 2 stopped, 0 holds released (rows carry none), 0 claimable. Repair in flight (agent-26): V2-pattern append-only supersede + fresh Q08 enqueue for the 8 amended rows → claimable with proper identity. Evidence: `docs/ops/evidence/2026-09-16_q08_amend_v3/`.
+- **D2 (requeue lifts):** agent-24 executing (11561 unconditional; 11731 EURUSD-M5 pilot with fanout gate).
+- **D3 (41478 seal):** agent-25 executing (seal → allocation → provider-mandate determination → compile → matrix service).
+
 ## Continuous-throughput mode (from 2026-09-16 ~06:30Z)
 
 - **Health cadence:** cron `01M2MDAC7H6S7B9CBCM3Z6MNM8` (×:13/×:53) = three-number watch + cascade verification + watchdog freshness + path-scoped handoff updates; agents building `factory_three_numbers.py` read-model (+15-min task) and `second_chance_funnel.py` tracker.
