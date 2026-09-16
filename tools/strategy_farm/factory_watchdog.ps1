@@ -28,6 +28,10 @@ param(
     [int]$MinWorkers = 10,           # legacy healthy-floor parameter; shortage heals to the capped target
     [int]$ExpectWorkers = 10,
     [int]$StallPendingThreshold = 50 # heal when workers are ALIVE but WEDGED: 0 active +
+    # >= StallPendingThreshold pending. 2026-09-16: raw pending is not claimability —
+    # a stall heal additionally requires >= StallMinClaimable canonically-claimable rows
+    # (else the truth is NO_RUNNABLE_WORK and a respawn heals nothing).
+    [int]$StallMinClaimable = 3
                                      # >= this many pending + 0 terminal64 = dispatcher stalled
 )
 
@@ -691,6 +695,7 @@ $stallInfo = ''
 $nTerm = 0
 $nActive = 0
 $nPending = 0
+$nClaimable = -1
 if ($factoryEnabled) {
     try {
         # Count ONLY factory T1-T12 terminals, not every terminal64 on the box. A
@@ -701,20 +706,32 @@ if ($factoryEnabled) {
         $nTerm = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                    Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|1[0-2])\\' }).Count
         # single-quoted here-string + stdin pipe avoids all PowerShell/SQL quote escaping
+        # 2026-09-16 (kimi interim): also count CANONICALLY-CLAIMABLE rows (farmctl
+        # pending_claim_order_sql). Raw pending includes superseded/quarantined/governed-
+        # analytic rows; without this the watchdog declared dispatch stalls (and looped
+        # FactoryON respawns) while the true state was NO_RUNNABLE_WORK.
         $q = @'
-import sqlite3
+import sqlite3, sys
+sys.path.insert(0, r"C:/QM/repo/tools/strategy_farm")
 c = sqlite3.connect(r"D:/QM/strategy_farm/state/farm_state.sqlite")
 a = c.execute("SELECT COUNT(*) FROM work_items WHERE status='active'").fetchone()[0]
 p = c.execute("SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
-print(str(a) + " " + str(p))
+claimable = -1
+try:
+    import farmctl
+    claimable = len(c.execute(farmctl.pending_claim_order_sql()).fetchall())
+except Exception:
+    pass
+print(str(a) + " " + str(p) + " " + str(claimable))
 '@
         $out = ($q | & $py - 2>$null) -join ' '
-        $m = [regex]::Match($out, '(\d+)\s+(\d+)')
+        $m = [regex]::Match($out, '(\d+)\s+(\d+)\s+(-?\d+)')
         if ($m.Success) {
             $nActive = [int]$m.Groups[1].Value
             $nPending = [int]$m.Groups[2].Value
-            $stallInfo = "active=$nActive pending=$nPending term64=$nTerm"
-            if ($nActive -eq 0 -and $nPending -ge $StallPendingThreshold -and $nTerm -eq 0) {
+            $nClaimable = [int]$m.Groups[3].Value
+            $stallInfo = "active=$nActive pending=$nPending claimable=$nClaimable term64=$nTerm"
+            if ($nActive -eq 0 -and $nPending -ge $StallPendingThreshold -and $nTerm -eq 0 -and $nClaimable -ge $StallMinClaimable) {
                 $dispatchStalled = $true
             }
         }
@@ -1233,6 +1250,8 @@ $record = [ordered]@{
     expect           = $ExpectWorkers
     disk_free_gb     = $diskFreeGb
     dispatch_stalled = $dispatchStalled
+    claimable        = $nClaimable
+    no_runnable_work = [bool]($factoryEnabled -and $nActive -eq 0 -and $nTerm -eq 0 -and $nClaimable -ge 0 -and $nClaimable -lt $StallMinClaimable)
     real_stall       = $realStall
     session_lost     = $sessionLost
     lsm_degraded     = $lsmDegraded        # FIX 2: true when qwinsta failed but worker daemons alive
