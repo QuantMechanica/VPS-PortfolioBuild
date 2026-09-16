@@ -1,0 +1,19 @@
+{
+  "created": [
+    {
+      "id": "12d85591-6842-4255-a305-09507056a982",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10269_gawd-wma30-trend\\sets\\QM5_10269_gawd-wma30-trend_NDX.DWX_D1_backtest.set",
+      "symbol": "NDX.DWX"
+    }
+  ],
+  "ea_id": "QM5_10269",
+  "enqueued": true,
+  "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+  "phase": "Q08",
+  "previous_phase": "Q07",
+  "requeued": [],
+  "skipped": [],
+  "skipped_cache_history_count": 0,
+  "skipped_count": 0,
+  "skipped_missing_setfiles_count": 0
+}

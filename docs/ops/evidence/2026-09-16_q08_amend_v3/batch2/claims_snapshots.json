@@ -1,0 +1,4556 @@
+[
+  {
+    "at_utc": "2026-09-16T12:26:41.387117+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:26:56.091733+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:27:10.257212+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:27:24.173079+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:27:37.669665+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:27:51.143969+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:28:04.679269+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:28:18.547775+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:28:32.475782+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:28:46.330350+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:28:59.922653+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:29:13.821547+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:29:27.569430+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:29:41.234574+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:29:54.594851+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:30:08.490608+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:30:22.745371+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:30:36.243503+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:30:50.043245+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:31:04.225310+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:31:18.086675+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:31:31.783563+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:31:45.496133+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:31:59.283607+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:32:12.842228+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:32:26.746554+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:32:40.418646+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:32:54.146321+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:33:07.969367+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:33:21.925823+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:33:35.729556+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:33:49.339931+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:34:03.118990+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:34:16.857757+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:34:30.360987+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:34:43.757228+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:34:57.217300+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:35:10.622739+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:35:23.769958+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:35:37.271468+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:35:50.471829+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:36:03.644220+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:36:16.854871+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:36:30.366244+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:36:43.970966+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:36:57.226654+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:37:10.692448+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:37:24.751139+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:37:38.487622+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:37:51.988177+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:38:05.085715+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:38:18.743369+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:38:32.738813+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:38:47.219821+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:39:01.516047+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:39:15.353650+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:39:29.171771+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:39:42.529797+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:39:56.107309+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:40:09.167880+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:40:22.998287+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:40:36.459395+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:40:50.279540+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:41:04.092213+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:41:18.125718+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  },
+  {
+    "at_utc": "2026-09-16T12:41:31.997310+00:00",
+    "states": {
+      "12d85591-6842-4255-a305-09507056a982": {
+        "id": "12d85591-6842-4255-a305-09507056a982",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:38+00:00",
+        "evidence_path": null
+      },
+      "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78": {
+        "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:40+00:00",
+        "evidence_path": null
+      },
+      "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c": {
+        "id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T6",
+        "updated_at": "2026-09-16T12:00:39+00:00",
+        "evidence_path": null
+      },
+      "8dac9856-3790-41ab-bea9-92c9a445caab": {
+        "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:36+00:00",
+        "evidence_path": null
+      },
+      "db1da509-e2f5-4fc8-8e5d-09a35b43a10b": {
+        "id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:29+00:00",
+        "evidence_path": null
+      },
+      "bc626c1f-5674-454c-92d4-8d6172eb1f1b": {
+        "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:34+00:00",
+        "evidence_path": null
+      },
+      "3043d412-a1a9-4330-9442-3b1c6ffb61dc": {
+        "id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+        "status": "active",
+        "verdict": null,
+        "claimed_by": "T3",
+        "updated_at": "2026-09-16T12:01:03+00:00",
+        "evidence_path": null
+      },
+      "aa660882-a200-4663-8441-f8e1ebdebcee": {
+        "id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+        "status": "pending",
+        "verdict": null,
+        "claimed_by": null,
+        "updated_at": "2026-09-16T12:00:32+00:00",
+        "evidence_path": null
+      }
+    }
+  }
+]

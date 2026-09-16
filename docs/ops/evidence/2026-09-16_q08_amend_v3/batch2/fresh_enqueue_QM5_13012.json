@@ -1,0 +1,19 @@
+{
+  "created": [
+    {
+      "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13012_grimes-complex-pb-v2\\sets\\QM5_13012_grimes-complex-pb-v2_GDAXI.DWX_H1_backtest.set",
+      "symbol": "GDAXI.DWX"
+    }
+  ],
+  "ea_id": "QM5_13012",
+  "enqueued": true,
+  "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+  "phase": "Q08",
+  "previous_phase": "Q07",
+  "requeued": [],
+  "skipped": [],
+  "skipped_cache_history_count": 0,
+  "skipped_count": 0,
+  "skipped_missing_setfiles_count": 0
+}

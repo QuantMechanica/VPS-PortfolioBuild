@@ -1,0 +1,71 @@
+{
+  "all_untouched": true,
+  "rows": {
+    "QM5_10145": {
+      "live": "14e394fbfa44316046a05c6b3bc083c688f9ade8be024e924dc7de2249f6e5c6",
+      "baseline": "14e394fbfa44316046a05c6b3bc083c688f9ade8be024e924dc7de2249f6e5c6",
+      "unchanged": true
+    },
+    "QM5_12350": {
+      "live": "6c11196b6280c6036bbba57aa0bb926f3ca462e36dc6d3be8acaa1a247be059a",
+      "baseline": "6c11196b6280c6036bbba57aa0bb926f3ca462e36dc6d3be8acaa1a247be059a",
+      "unchanged": true
+    },
+    "QM5_12361": {
+      "live": "d936e4291a7a021afcb45b34bd6a2b81356f8a71b3798263c29d0ef5815a6912",
+      "baseline": "d936e4291a7a021afcb45b34bd6a2b81356f8a71b3798263c29d0ef5815a6912",
+      "unchanged": true
+    },
+    "QM5_1551": {
+      "live": "af7a55c6659982d27e437f1c7c7c6dcd9f9663ec9847035fde13955206a73d11",
+      "baseline": "af7a55c6659982d27e437f1c7c7c6dcd9f9663ec9847035fde13955206a73d11",
+      "unchanged": true
+    },
+    "QM5_12484": {
+      "live": "8a6f0afb19b2262c1ba7465f20c3d392dbeda4e93137f3c0a86a276b8e7a62e7",
+      "baseline": "8a6f0afb19b2262c1ba7465f20c3d392dbeda4e93137f3c0a86a276b8e7a62e7",
+      "unchanged": true
+    },
+    "batch1:QM5_1159": {
+      "live": "0c836211dcda9d36819a6e0b2f14a20621d33787e94c51cf55692281154fbe74",
+      "journal_after": "0c836211dcda9d36819a6e0b2f14a20621d33787e94c51cf55692281154fbe74",
+      "unchanged": true
+    },
+    "batch1:QM5_10804": {
+      "live": "661a2124931c8652f0e8ecb50b17ad5a2817620beb40ce71a46356a4781bca9c",
+      "journal_after": "661a2124931c8652f0e8ecb50b17ad5a2817620beb40ce71a46356a4781bca9c",
+      "unchanged": true
+    },
+    "batch1:QM5_10661": {
+      "live": "bb782b86511b48a49333ad965bcb3d3566e0ecfcd1d53a81b4045be736b20f88",
+      "journal_after": "bb782b86511b48a49333ad965bcb3d3566e0ecfcd1d53a81b4045be736b20f88",
+      "unchanged": true
+    },
+    "batch1:QM5_10211": {
+      "live": "4d563e2df477a25ea540cee75266972d0d4a8ceb409bfc2ffcc633b436433112",
+      "journal_after": "4d563e2df477a25ea540cee75266972d0d4a8ceb409bfc2ffcc633b436433112",
+      "unchanged": true
+    },
+    "batch1:QM5_12958": {
+      "live": "36043cf78d5a10fe1957eb34cdc00ba198fbc430af1d90b241a2ccc1b930bbdb",
+      "journal_after": "36043cf78d5a10fe1957eb34cdc00ba198fbc430af1d90b241a2ccc1b930bbdb",
+      "unchanged": true
+    },
+    "batch1:QM5_9123": {
+      "live": "6f23e69e1fb8c9ab518d8eb330e26638df49a6e50f1b655cb84bfdf262c4c101",
+      "journal_after": "6f23e69e1fb8c9ab518d8eb330e26638df49a6e50f1b655cb84bfdf262c4c101",
+      "unchanged": true
+    },
+    "batch1:QM5_10291": {
+      "live": "f70710a043495153459982c241e9bb31b53fda29099bc93d3af8098777e80da9",
+      "journal_after": "f70710a043495153459982c241e9bb31b53fda29099bc93d3af8098777e80da9",
+      "unchanged": true
+    },
+    "batch1:QM5_10267": {
+      "live": "3e68c693243bbef34491daacdb8b1ce7432c4c020157af9e6ee1ffa4d56d44b3",
+      "journal_after": "3e68c693243bbef34491daacdb8b1ce7432c4c020157af9e6ee1ffa4d56d44b3",
+      "unchanged": true
+    }
+  },
+  "note": "excluded-5 vs D1 baseline sha256; batch-1 8 vs journal card_sha_after"
+}

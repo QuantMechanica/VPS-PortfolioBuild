@@ -1,0 +1,9 @@
+APPLY  456f590f QM5_10287_cinar-ichimoku NDX.DWX D1 params=31 set=QM5_10287_cinar-ichimoku_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  ff0b551b QM5_9576_bandy-zscore-mr-index NDX.DWX D1 params=22 set=QM5_9576_bandy-zscore-mr-index_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  a591ff4c QM5_1230_carver-dynvol-mav NDX.DWX D1 params=35 set=QM5_1230_carver-dynvol-mav_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  885b82ab QM5_9973_bandy-ibs-extreme-mr-index NDX.DWX D1 params=21 set=QM5_9973_bandy-ibs-extreme-mr-index_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  bb5eccf7 QM5_13012_grimes-complex-pb-v2 GDAXI.DWX H1 params=26 set=QM5_13012_grimes-complex-pb-v2_GDAXI.DWX_H1_backtest.set mirrorC=False
+APPLY  1494bfb4 QM5_11882_connors-double-7s NDX.DWX D1 params=31 set=QM5_11882_connors-double-7s_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  b11e5b43 QM5_10269_gawd-wma30-trend NDX.DWX D1 params=19 set=QM5_10269_gawd-wma30-trend_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  aec37e79 QM5_10280_whc-rsrs NDX.DWX D1 params=31 set=QM5_10280_whc-rsrs_NDX.DWX_D1_backtest.set mirrorC=False
+ok 8 skipped 0 failed 0 mode apply

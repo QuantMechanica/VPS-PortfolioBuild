@@ -1,0 +1,27 @@
+APPLY A 456f590f QM5_10287 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A ff0b551b QM5_9576 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A a591ff4c QM5_1230 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A 885b82ab QM5_9973 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A bb5eccf7 QM5_13012 GDAXI.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A 1494bfb4 QM5_11882 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A b11e5b43 QM5_10269 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A aec37e79 QM5_10280 NDX.DWX pending None | superseded already: False | hold: False | release: False
+Traceback (most recent call last):
+  File "C:\QM\repo\tools\strategy_farm\factory_mutation_lock.py", line 527, in __enter__
+    self._fd = _open_exclusive_lock(self.path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\QM\repo\tools\strategy_farm\factory_mutation_lock.py", line 127, in _open_exclusive_lock
+    raise FileExistsError(error, os.strerror(error), str(path))
+FileExistsError: [Errno 80] Unknown error: 'D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\QM\repo\tools\strategy_farm\session_tools\q08_repair_dispositions_0914.py", line 172, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "C:\QM\repo\tools\strategy_farm\session_tools\q08_repair_dispositions_0914.py", line 119, in main
+    with FactoryMutationLock(LOCK, owner=f"q08-repair-dispositions:{TASK_ID}"):
+  File "C:\QM\repo\tools\strategy_farm\factory_mutation_lock.py", line 531, in __enter__
+    raise RuntimeError(
+RuntimeError: factory mutation lock is busy: D:\QM\strategy_farm\state\FACTORY_MUTATION.lock (stale_reap=unreadable)

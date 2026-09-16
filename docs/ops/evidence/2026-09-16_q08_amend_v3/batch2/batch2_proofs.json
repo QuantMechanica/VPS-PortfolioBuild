@@ -1,0 +1,242 @@
+{
+  "456f590f": {
+    "ea_id": "QM5_10287",
+    "label": "QM5_10287_cinar-ichimoku",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "445ae8ad330879a5fd7e12fd09f54aa1c544cacf3e216b542da5acfc333ce1d3",
+    "journal": {
+      "before": "816fb37bed2fed4cb136344b792c07b0ff3a4b90f5002980ac72e13e4dcc2096",
+      "after": "445ae8ad330879a5fd7e12fd09f54aa1c544cacf3e216b542da5acfc333ce1d3"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 31,
+    "manifest_locked_parameter_count": 31,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 429,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  },
+  "ff0b551b": {
+    "ea_id": "QM5_9576",
+    "label": "QM5_9576_bandy-zscore-mr-index",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "a238bc3dd00b43c35e84395f8e6f768ddff2f455daa015faad6031e5f31a6706",
+    "journal": {
+      "before": "8dd23c27c475ed97c907dc8392e7450adeee9051920e8bf3c80585dff35ce4a4",
+      "after": "a238bc3dd00b43c35e84395f8e6f768ddff2f455daa015faad6031e5f31a6706"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 22,
+    "manifest_locked_parameter_count": 22,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 14,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  },
+  "a591ff4c": {
+    "ea_id": "QM5_1230",
+    "label": "QM5_1230_carver-dynvol-mav",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "0912d53da452db01b6bc9cba7184a665e6dfb47e5e3bb017fa0a39c2dde1b978",
+    "journal": {
+      "before": "ed320a5e2694c1270ef88aea0208505174b382f1440ecd58ca63eaa099eaa17a",
+      "after": "0912d53da452db01b6bc9cba7184a665e6dfb47e5e3bb017fa0a39c2dde1b978"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 35,
+    "manifest_locked_parameter_count": 35,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 385,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  },
+  "885b82ab": {
+    "ea_id": "QM5_9973",
+    "label": "QM5_9973_bandy-ibs-extreme-mr-index",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "b4d8d40ffcddc547e27695ec679a69c6750339bc515a09b1de04fdb8c7765520",
+    "journal": {
+      "before": "e50f231f197b0c87f1a063b1c1a3ef4328c7b0e1a4e2596b95dcb7dcd48a7721",
+      "after": "b4d8d40ffcddc547e27695ec679a69c6750339bc515a09b1de04fdb8c7765520"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 21,
+    "manifest_locked_parameter_count": 21,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 14,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  },
+  "bb5eccf7": {
+    "ea_id": "QM5_13012",
+    "label": "QM5_13012_grimes-complex-pb-v2",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "7e628465b99257e713804555a690871d876fe22e13b7839030eeed93276486ff",
+    "journal": {
+      "before": "6e569c0d6716cfb20ab7eeeefbecc2f03daab81067bd15a219dc108388961e60",
+      "after": "7e628465b99257e713804555a690871d876fe22e13b7839030eeed93276486ff"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 26,
+    "manifest_locked_parameter_count": 26,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 11,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  },
+  "1494bfb4": {
+    "ea_id": "QM5_11882",
+    "label": "QM5_11882_connors-double-7s",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "e896d003136235a4a745c93f42086589d9ca1d384627248d868dd98c88905697",
+    "journal": {
+      "before": "a504a0abe8a221002f3e0af33f141c9e8f36c87d7dbcc6b4ad4bd253c50af8d9",
+      "after": "e896d003136235a4a745c93f42086589d9ca1d384627248d868dd98c88905697"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 31,
+    "manifest_locked_parameter_count": 31,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 56,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  },
+  "b11e5b43": {
+    "ea_id": "QM5_10269",
+    "label": "QM5_10269_gawd-wma30-trend",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "9e2623a639d61647f6aa70dabfaae41da2ae09131e6ad172f4225bfaba744338",
+    "journal": {
+      "before": "f400ae4718832b0c237bdfa821760ec8497d0cda8777b29bc1a9f0e9d463bc3d",
+      "after": "9e2623a639d61647f6aa70dabfaae41da2ae09131e6ad172f4225bfaba744338"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 19,
+    "manifest_locked_parameter_count": 19,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 87,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  },
+  "aec37e79": {
+    "ea_id": "QM5_10280",
+    "label": "QM5_10280_whc-rsrs",
+    "hashes_match": true,
+    "declaration_block_byte_identical_to_staged": true,
+    "card_sha_after": "ed9d4e00d9af238d1e90ce9cddf12afe2fd2368790c08b3ac74375e53cbddea2",
+    "journal": {
+      "before": "00541c8c3fd44c160e5dde25360f661e3431123227b03ff155824d21666fcbbb",
+      "after": "ed9d4e00d9af238d1e90ce9cddf12afe2fd2368790c08b3ac74375e53cbddea2"
+    },
+    "declaration_correct": true,
+    "declaration_why": "ok",
+    "locked_params_match_effective": true,
+    "locked_parameter_count": 31,
+    "manifest_locked_parameter_count": 31,
+    "count_match": true,
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    },
+    "factory_search": {
+      "clean": true,
+      "work_items_examined": 171,
+      "optimization_rows": []
+    },
+    "assemble_ok": false,
+    "assemble_error": "CohortUnavailable('SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5')",
+    "assemble_mode": null,
+    "ok": true
+  }
+}

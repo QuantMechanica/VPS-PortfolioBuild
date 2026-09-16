@@ -1,0 +1,19 @@
+{
+  "created": [
+    {
+      "id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11882_connors-double-7s\\sets\\QM5_11882_connors-double-7s_NDX.DWX_D1_backtest.set",
+      "symbol": "NDX.DWX"
+    }
+  ],
+  "ea_id": "QM5_11882",
+  "enqueued": true,
+  "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+  "phase": "Q08",
+  "previous_phase": "Q07",
+  "requeued": [],
+  "skipped": [],
+  "skipped_cache_history_count": 0,
+  "skipped_count": 0,
+  "skipped_missing_setfiles_count": 0
+}

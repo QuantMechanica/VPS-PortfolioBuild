@@ -1,20 +1,23 @@
-"""Append-only dispositions for OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916 (batch-1 build-identity repair).
+"""Append-only dispositions for OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916 (batch-2 build-identity repair).
 
 Mirrors apply_q09_retire2_dispositions.py: online SQLite backup, FactoryMutationLock, one
 ``kind='disposition'`` row per target (status failed, verdict SUPERSEDED_<why>), one
 ``work_item_supersedes`` edge (target -> disposition row, or -> the named successor), and the
 release of the target's active hold when one is named.  Original rows are never edited.
 
-Targets (plan below, frozen in this file) — the 8 batch-1 rows of OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916
-whose cards were amended (valid single-configuration declaration) but whose staged Q08 rows carry
-NULL build identity (mq5/ex5/setfile_sha256 columns + no payload artifact_identity), an enqueue-time
-defect of the 2026-09-15/16 parked cohort (claimability_precheck: BUILD_IDENTITY_MISMATCH:<role>):
-  A  7bc8b34e QM5_1159, d4aebc12 QM5_10804, 383c45b0 QM5_10661, 20c533da QM5_10211,
-     a937b9bc QM5_12958, 15fed5d8 QM5_9123, aa0fa828 QM5_10291, 94d46fe7 QM5_10267
+Targets (plan below, frozen in this file) — the 8 batch-2 rows of OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916
+whose cards were amended under the same decision (valid single-configuration declaration) but whose
+staged Q08 rows carry NULL build identity (mq5/ex5/setfile_sha256 columns + no payload
+artifact_identity), an enqueue-time defect of the 2026-09-15/16 parked cohort (claimability_precheck:
+BUILD_IDENTITY_MISMATCH:<role>) — the identical defect and repair pattern as batch-1
+(repair_fresh_enqueue/RECEIPT.md):
+  A  456f590f QM5_10287, ff0b551b QM5_9576, a591ff4c QM5_1230, 885b82ab QM5_9973,
+     bb5eccf7 QM5_13012, 1494bfb4 QM5_11882, b11e5b43 QM5_10269, aec37e79 QM5_10280
      -> superseded by the disposition row; a fresh Q08 from the Q07 predecessor with the
         current-build binding follows (farmctl enqueue-backtest --phase Q08 --from-work-item-id
         <Q07> --expected-current-ex5-sha256 <current ex5 sha>); no holds exist on these rows.
-Default = dry-run (prints the plan); --apply executes; receipt JSON under the evidence dir.
+Default = dry-run (prints the plan); --apply executes; receipt JSON under the evidence dir
+(batch2/ — never overwrites the batch-1 receipt in repair_fresh_enqueue/).
 """
 from __future__ import annotations
 
@@ -36,11 +39,11 @@ from factory_mutation_lock import FactoryMutationLock  # noqa: E402
 DB = Path("D:/QM/strategy_farm/state/farm_state.sqlite")
 BACKUP_DIR = Path("D:/QM/strategy_farm/state/backups")
 LOCK = Path("D:/QM/strategy_farm/state/FACTORY_MUTATION.lock")
-EVID = REPO / "docs" / "ops" / "evidence" / "2026-09-16_q08_amend_v3" / "repair_fresh_enqueue"
+EVID = REPO / "docs" / "ops" / "evidence" / "2026-09-16_q08_amend_v3" / "batch2"
 RECEIPT = EVID / "dispositions_receipt.json"
 DECISION_ID = "OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916"
 OWNER_RECEIPT = "d59b2277"
-TASK_ID = "c4f2a8e1"
+TASK_ID = "d1-batch2"
 HOLD = "Q08_DSR_CONTEXT_UNAVAILABLE"
 
 _REASON_V3 = (
@@ -52,7 +55,7 @@ _REASON_V3 = (
 PLAN = [
     {"prefix": p, "cls": "A", "verdict": "SUPERSEDED_REPAIR", "successor_prefix": None, "release_hold": False,
      "reason": _REASON_V3}
-    for p in ("7bc8b34e", "d4aebc12", "383c45b0", "20c533da", "a937b9bc", "15fed5d8", "aa0fa828", "94d46fe7")
+    for p in ("456f590f", "ff0b551b", "a591ff4c", "885b82ab", "bb5eccf7", "1494bfb4", "b11e5b43", "aec37e79")
 ]
 
 
@@ -106,14 +109,17 @@ def main() -> int:
     if not args.apply:
         print(f"dry-run: {len(resolved)} dispositions would be written")
         return 0
-    backup_path, backup_sha = backup()
     applied_at = dt.datetime.now(dt.timezone.utc).isoformat()
     global RECEIPT
     if RECEIPT.exists():  # append-only receipts: never overwrite an earlier run
         RECEIPT = EVID / f"dispositions_receipt_{dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}.json"
     receipt = {"schema": "qm.q08-context-repair-dispositions/v1", "decision_id": DECISION_ID, "owner_receipt_prefix": OWNER_RECEIPT,
-               "router_task_prefix": TASK_ID, "applied_at_utc": applied_at, "backup": {"path": str(backup_path), "sha256": backup_sha}, "rows": []}
+               "router_task_prefix": TASK_ID, "applied_at_utc": applied_at, "backup": None, "rows": []}
+    # The online backup is taken while HOLDING the mutation lock: the copy cannot interleave
+    # another committed mutation, and a lost lock race no longer burns a 1.2 GB backup.
     with FactoryMutationLock(LOCK, owner=f"q08-repair-dispositions:{TASK_ID}"):
+        backup_path, backup_sha = backup()
+        receipt["backup"] = {"path": str(backup_path), "sha256": backup_sha}
         conn = sqlite3.connect(str(DB), timeout=60)
         conn.row_factory = sqlite3.Row
         try:

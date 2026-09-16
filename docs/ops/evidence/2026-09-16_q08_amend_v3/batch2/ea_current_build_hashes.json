@@ -1,0 +1,138 @@
+{
+  "456f590f": {
+    "ea": "QM5_10287",
+    "symbol": "NDX.DWX",
+    "label": "QM5_10287_cinar-ichimoku",
+    "mq5_sha": "d2860b749bfbc06a5de7d02efd095f4153fead238f4dd6fdcbc38dc6f557ba4a",
+    "ex5_sha": "fcb9e40bcfc4ddd152734c5730cab83ca49bf75c73b4ad37e2ff41007546d878",
+    "spec_sha": "ab3c15b3d7e8195a594dd0a5ddbd937236d91e34495d5fbf9e0e969c35b26cfd",
+    "setfile_sha": "8148552ef8dc30c4f911dcae50fff649d2d42694cd7ca6ab007350e6780056fe",
+    "card_sha": "445ae8ad330879a5fd7e12fd09f54aa1c544cacf3e216b542da5acfc333ce1d3",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  },
+  "ff0b551b": {
+    "ea": "QM5_9576",
+    "symbol": "NDX.DWX",
+    "label": "QM5_9576_bandy-zscore-mr-index",
+    "mq5_sha": "7e339eee8197d048b54c043462f3c8ad7c380a912a4c99c7c360be90e8bfe85b",
+    "ex5_sha": "903d5f83d398fac83a1f816a185d81bc4cc9ac79c08c021621ef8c740e7cddbb",
+    "spec_sha": "c4f66468bcaa3d6dae1e3f25fdcf65c34afdf69a52891e2a23af091e60122a44",
+    "setfile_sha": "285203181f7d27553e51801340bae043790187929208d074ef66989848dc4661",
+    "card_sha": "a238bc3dd00b43c35e84395f8e6f768ddff2f455daa015faad6031e5f31a6706",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  },
+  "a591ff4c": {
+    "ea": "QM5_1230",
+    "symbol": "NDX.DWX",
+    "label": "QM5_1230_carver-dynvol-mav",
+    "mq5_sha": "4c50e902ab722f86c281541280df598c5a27886b2ac82074bc5edd9e6c45d629",
+    "ex5_sha": "52e05c77f94ae8cb2b2c8f84ad60992a01728eb6493874caae89a92bd64fdf60",
+    "spec_sha": "95168464a47e60cf0e0ec73b849dc3c451b885d699960466852acd79135ac465",
+    "setfile_sha": "f1f70c05764e917c73ed896e42be305eae6685e69862a101dc22ac99e357e939",
+    "card_sha": "0912d53da452db01b6bc9cba7184a665e6dfb47e5e3bb017fa0a39c2dde1b978",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  },
+  "885b82ab": {
+    "ea": "QM5_9973",
+    "symbol": "NDX.DWX",
+    "label": "QM5_9973_bandy-ibs-extreme-mr-index",
+    "mq5_sha": "9b0a215c307053daa74a63d5c775674d06ebd47de0d7920d87709e09a01ad8d8",
+    "ex5_sha": "16fc3e85e4c31a5572427b36a399ed428eecff8bc4cf32fe632e2843393756b2",
+    "spec_sha": "eefb4f989ae5a96bd3441d3578df26120a63fa1179f1cf76d34b4ac297cdc1e6",
+    "setfile_sha": "8b7eebffcf5207b1b89cd0de9da4f478cd248c898d033e6e1d1f19c96bff3fc7",
+    "card_sha": "b4d8d40ffcddc547e27695ec679a69c6750339bc515a09b1de04fdb8c7765520",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  },
+  "bb5eccf7": {
+    "ea": "QM5_13012",
+    "symbol": "GDAXI.DWX",
+    "label": "QM5_13012_grimes-complex-pb-v2",
+    "mq5_sha": "756832a9541c910a36c1eba850226d3285ac5cfb8b0d1c58650d35fa9eae618b",
+    "ex5_sha": "7e7dcc70b36171bf66b228f00e13fd8e0553eecd5ed6f08aff78634c0abebf59",
+    "spec_sha": "a8cd800abedf28d015f40b4a15cc78450258c9fba2e63bc8654d194d2484cae2",
+    "setfile_sha": "139ff7517ca4d74f41090ea7edd27bf41f7ed047518520dac77118b0c3f7cf5b",
+    "card_sha": "7e628465b99257e713804555a690871d876fe22e13b7839030eeed93276486ff",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  },
+  "1494bfb4": {
+    "ea": "QM5_11882",
+    "symbol": "NDX.DWX",
+    "label": "QM5_11882_connors-double-7s",
+    "mq5_sha": "5a300c0539c818c4d25dd1d1ed134158bc640c1fab23689e6dfcaf9e88d634a3",
+    "ex5_sha": "3dc602363fc2f607df6f90055f264e1dbc323e0ecd4209617efa1829f464827b",
+    "spec_sha": "b32bb1e4baca58c55deae3a25392554893199812af0010c9af1df3dabf54d928",
+    "setfile_sha": "a5a66db4268fe71932af30eb1556dfc2669c63667b8acc093252757656e37fd0",
+    "card_sha": "e896d003136235a4a745c93f42086589d9ca1d384627248d868dd98c88905697",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  },
+  "b11e5b43": {
+    "ea": "QM5_10269",
+    "symbol": "NDX.DWX",
+    "label": "QM5_10269_gawd-wma30-trend",
+    "mq5_sha": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+    "ex5_sha": "284d46702d34032f95322197fed9295d6e4296ffd387da49c5aa76b7961aecf6",
+    "spec_sha": "8ed288af94e4cde2f4a281c7e73a97d35fbbffae81a61f17ab3bab5ffd289154",
+    "setfile_sha": "980070777d3e6259e9d5737492da72c6e1ea9c9c31105d4590745d886dc26529",
+    "card_sha": "9e2623a639d61647f6aa70dabfaae41da2ae09131e6ad172f4225bfaba744338",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  },
+  "aec37e79": {
+    "ea": "QM5_10280",
+    "symbol": "NDX.DWX",
+    "label": "QM5_10280_whc-rsrs",
+    "mq5_sha": "b61ce628043589d2e624cd64d963e80ac6f7d2127eadb96695a5838bc594b5f7",
+    "ex5_sha": "8829d63ab2d8e09361daf9f4d046cf6378d395ec1239bf782129effcb9c42804",
+    "spec_sha": "6d9f9bbddf4a02b7351c7a67006631bfbff644235ca97c5f896d34c33252a07f",
+    "setfile_sha": "446661163bcfd0f8cd607251ec7fa83693b2cff54f7a8cd9223202fd0a4f1a23",
+    "card_sha": "ed9d4e00d9af238d1e90ce9cddf12afe2fd2368790c08b3ac74375e53cbddea2",
+    "files_ok": {
+      "mq5": true,
+      "ex5": true,
+      "spec": true,
+      "setfile": true,
+      "card": true
+    }
+  }
+}

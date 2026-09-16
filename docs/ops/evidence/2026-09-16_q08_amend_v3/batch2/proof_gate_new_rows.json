@@ -1,0 +1,202 @@
+{
+  "456f590f": {
+    "ea_id": "QM5_10287",
+    "symbol": "NDX.DWX",
+    "new_id": "e1c0d6c1-1108-4974-ba3b-0a0bab7bfe9c",
+    "new_status": "active",
+    "q07_id": "176bd347-d860-433f-a7cc-d20ff220067d",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 431,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  },
+  "ff0b551b": {
+    "ea_id": "QM5_9576",
+    "symbol": "NDX.DWX",
+    "new_id": "3043d412-a1a9-4330-9442-3b1c6ffb61dc",
+    "new_status": "active",
+    "q07_id": "ed61aeac-2fd5-45a7-a03a-831b84104d6a",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 16,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  },
+  "a591ff4c": {
+    "ea_id": "QM5_1230",
+    "symbol": "NDX.DWX",
+    "new_id": "db1da509-e2f5-4fc8-8e5d-09a35b43a10b",
+    "new_status": "pending",
+    "q07_id": "531d5f03-f16e-4d71-bbb5-06c922da06e7",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 387,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  },
+  "885b82ab": {
+    "ea_id": "QM5_9973",
+    "symbol": "NDX.DWX",
+    "new_id": "aa660882-a200-4663-8441-f8e1ebdebcee",
+    "new_status": "pending",
+    "q07_id": "33044e80-a4e1-4eed-8fd5-0cd2d7e8b8ef",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 16,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  },
+  "bb5eccf7": {
+    "ea_id": "QM5_13012",
+    "symbol": "GDAXI.DWX",
+    "new_id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+    "new_status": "pending",
+    "q07_id": "41def8d1-3832-423e-aed7-b18f9e3b9452",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 13,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  },
+  "1494bfb4": {
+    "ea_id": "QM5_11882",
+    "symbol": "NDX.DWX",
+    "new_id": "8dac9856-3790-41ab-bea9-92c9a445caab",
+    "new_status": "pending",
+    "q07_id": "cd38e969-f4c9-4b57-8857-265d96313317",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 58,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  },
+  "b11e5b43": {
+    "ea_id": "QM5_10269",
+    "symbol": "NDX.DWX",
+    "new_id": "12d85591-6842-4255-a305-09507056a982",
+    "new_status": "pending",
+    "q07_id": "3b1011e4-dcba-445b-9b22-592834aa0002",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 89,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  },
+  "aec37e79": {
+    "ea_id": "QM5_10280",
+    "symbol": "NDX.DWX",
+    "new_id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+    "new_status": "pending",
+    "q07_id": "9a8d31a6-3238-410c-b85d-c6af1def0c5d",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 173,
+    "holds_active_on_new_row": 0,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    },
+    "ok": true
+  }
+}

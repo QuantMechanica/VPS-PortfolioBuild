@@ -1,0 +1,10 @@
+FRESH-ENQUEUE PREFLIGHT batch-2 (read-only mirror of enqueue_cascade_backtest_for_ea gates)
+456f590f QM5_10287 NDX.DWX Q07=176bd347(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+ff0b551b QM5_9576 NDX.DWX Q07=ed61aeac(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+a591ff4c QM5_1230 NDX.DWX Q07=531d5f03(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+885b82ab QM5_9973 NDX.DWX Q07=33044e80(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+bb5eccf7 QM5_13012 GDAXI.DWX Q07=41def8d1(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+1494bfb4 QM5_11882 NDX.DWX Q07=cd38e969(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+b11e5b43 QM5_10269 NDX.DWX Q07=3b1011e4(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+aec37e79 QM5_10280 NDX.DWX Q07=9a8d31a6(done/PASS) setfile_exists=True same_setfile=True artifact_failure=None bindings_ok=True
+ALL PREFLIGHT GATES PASS

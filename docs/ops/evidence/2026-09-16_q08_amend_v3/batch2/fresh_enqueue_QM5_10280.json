@@ -1,0 +1,19 @@
+{
+  "created": [
+    {
+      "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10280_whc-rsrs\\sets\\QM5_10280_whc-rsrs_NDX.DWX_D1_backtest.set",
+      "symbol": "NDX.DWX"
+    }
+  ],
+  "ea_id": "QM5_10280",
+  "enqueued": true,
+  "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+  "phase": "Q08",
+  "previous_phase": "Q07",
+  "requeued": [],
+  "skipped": [],
+  "skipped_cache_history_count": 0,
+  "skipped_count": 0,
+  "skipped_missing_setfiles_count": 0
+}
