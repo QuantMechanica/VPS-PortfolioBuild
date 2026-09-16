@@ -90,3 +90,19 @@ pending cells are intentionally left to the normal scheduled fleet. A fresh
 post-repair cell receipt is still required before the operational acceptance
 can be considered fully observed.
 
+## 2026-09-17 typed taxonomy-contract follow-up
+
+`terminal_worker.py` now catches `artifact_identity.VerdictTaxonomyContractError`
+on the ordinary completion path and on stranded-claim recovery through the same
+typed landing helper. It records `INFRA_FAIL` with
+`payload.verdict_reason=verdict_taxonomy_contract`, preserves the offending
+taxonomy in `payload.offending_verdict_taxonomy`, and creates the exact active
+hold `VERDICT_TAXONOMY_CONTRACT`; the daemon continues running. The new
+`health.py` read-only check exposes the hold code, reason, and offending
+taxonomy in `farmctl.py health`. No verdict-selection logic or gate criteria
+changed.
+
+Verification: `test_terminal_worker_verdict_taxonomy_contract.py` plus
+`test_schema_hardening_sh2_sh3.py` — **7 passed**. The live health snapshot
+remained free of this hold during review, so no production row was manufactured
+to demonstrate it.

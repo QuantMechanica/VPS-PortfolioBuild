@@ -4319,6 +4319,42 @@ def chk_q10_long_cell_breaker_holds(con) -> dict:
     )
 
 
+VERDICT_TAXONOMY_CONTRACT_HOLD_CODE = "VERDICT_TAXONOMY_CONTRACT"
+
+
+def chk_verdict_taxonomy_contract_holds(con) -> dict:
+    """Surface typed verdict-taxonomy contract failures with their reason."""
+
+    rows = con.execute(
+        """
+        SELECT w.id,w.ea_id,w.symbol,w.phase,
+               json_extract(w.payload_json,'$.verdict_reason') AS verdict_reason,
+               json_extract(w.payload_json,'$.offending_verdict_taxonomy') AS offending
+        FROM work_items w
+        JOIN work_item_holds h ON h.work_item_id=w.id
+        WHERE h.hold_code=? AND h.active=1
+        ORDER BY w.updated_at ASC,w.id ASC
+        """,
+        (VERDICT_TAXONOMY_CONTRACT_HOLD_CODE,),
+    ).fetchall()
+    if not rows:
+        return _check(
+            "verdict_taxonomy_contract_holds", "OK", 0, 0,
+            "no active verdict taxonomy contract holds", "",
+        )
+    rendered = ", ".join(
+        f"{row['id'][:8]}:{row['ea_id']}:{row['symbol']}:{row['phase']}"
+        f":reason={row['verdict_reason'] or 'missing'}"
+        f":taxonomy={row['offending'] or 'missing'}"
+        for row in rows[:12]
+    )
+    return _check(
+        "verdict_taxonomy_contract_holds", "WARN", len(rows), 0,
+        f"{len(rows)} active {VERDICT_TAXONOMY_CONTRACT_HOLD_CODE} hold(s); {rendered}",
+        "Inspect the typed contract error and apply the governed schema fix before releasing the hold.",
+    )
+
+
 def chk_q09_autoseal_hold_census(con) -> dict:
     """Surface held Q09 autoseal failures by state/reason, not as empty queue."""
 
@@ -4722,6 +4758,7 @@ ALL_CHECKS = [
     ("terminal_finished_but_alive", chk_terminal_finished_but_alive, True),
     ("q09_sealed_plan_hold_age", chk_q09_sealed_plan_hold_age, True),
     ("q10_long_cell_breaker_holds", chk_q10_long_cell_breaker_holds, True),
+    ("verdict_taxonomy_contract_holds", chk_verdict_taxonomy_contract_holds, True),
     ("q09_autoseal_hold_census", chk_q09_autoseal_hold_census, True),
     ("pending_artifact_binding_drift", chk_pending_artifact_binding_drift, True),
     ("news_gate_service_rate", chk_news_gate_service_rate, True),

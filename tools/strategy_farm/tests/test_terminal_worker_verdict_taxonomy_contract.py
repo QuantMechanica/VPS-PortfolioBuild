@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from tools.strategy_farm import farmctl, terminal_worker
+from tools.strategy_farm import farmctl, health, terminal_worker
 from artifact_identity import VerdictTaxonomyContractError
 
 
@@ -58,6 +58,11 @@ def _assert_landed(root: Path, item_id: str) -> None:
         1,
         0,
     )
+    with farmctl.connect(root) as conn:
+        health_result = health.chk_verdict_taxonomy_contract_holds(conn)
+    assert health_result["status"] == "WARN"
+    assert "reason=verdict_taxonomy_contract" in health_result["detail"]
+    assert "taxonomy=strategy" in health_result["detail"]
 
 
 def test_finish_path_lands_typed_taxonomy_error_as_infra_hold(tmp_path: Path) -> None:

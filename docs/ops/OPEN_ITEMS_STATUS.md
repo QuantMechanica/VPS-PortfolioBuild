@@ -4931,6 +4931,11 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - PASS: read-only plan covers 57 safe Q12 duplicates and 2 Q14 duplicates with verdict `SUPERSEDED_DUPLICATE_DECLARATION`; 16 Q12 rows are explicitly excluded for missing receipts or changed/mismatched census universes. Source rows remain untouched. Plan SHA-256: `58fb570c9f4bb7667d3b099d224406066616fae1eb9b3bbb8416202c577e92da`.
 - APPLY PENDING explicit plan-SHA confirmation; no farm-state mutation was performed in this cycle. Evidence: `docs/ops/evidence/2026-09-13_dl089_zombie_declarations.md` and `docs/ops/evidence/2026-09-17_dl089_zombie_declaration_disposition_plan.json`.
 
+### 2026-09-17 — RESULT: typed verdict-taxonomy contract handling
+
+- PASS: terminal completion and stranded-claim recovery now catch `VerdictTaxonomyContractError`, land a clean `INFRA_FAIL` with `verdict_reason=verdict_taxonomy_contract`, preserve the offending taxonomy, and place the exact `VERDICT_TAXONOMY_CONTRACT` hold without terminating the daemon.
+- PASS: farm health now exposes active taxonomy-contract holds with row, phase, `verdict_reason`, and offending taxonomy; focused worker/schema verification passed 7/7. No verdict-selection logic changed and no live row was manufactured. Evidence: `docs/ops/evidence/2026-09-13_prescreen_model_marker_gate_repair.md`.
+
 ### 2026-09-17 — RESULT: QM5_1627 / QM5_1628 governed identity precondition
 
 - PASS: exact-card orphan-identity recovery was added to the governed allocator, gated to explicit cards and exact active magic rows; focused allocator/resolver tests pass (23/23).
