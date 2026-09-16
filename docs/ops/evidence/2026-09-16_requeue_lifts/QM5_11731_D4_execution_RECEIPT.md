@@ -136,3 +136,18 @@ None. D4 executed to completion within its OWNER conditions. The one incident
 the sweep's own archive, and left documented for the operators' hygiene runbook
 (scoped sweeps should prefer `--ea` targeting; a fresh uncommitted COMPILE_EA
 ex5 is otherwise exposed between compile and Q02 binding).
+
+## 11. Addendum — post-pipeline development (same day, after D4 scope)
+
+The normal pump promoted the canary symbol to a Q04 early probe on its own:
+`afff917f-a6f5-4e70-8c9d-96a27d9fab1` (EURUSD.DWX M5, promoted from
+`55d28c4a`, terminal T2) came back **done/FAIL at 12:25:40Z,
+`verdict_reason: F1:pf_net=0.795;F2:pf_net=0.632;F3:pf_net=0.666`,
+`verdict_taxonomy: strategy`** — a pure economic/walk-forward failure (all
+three folds below the PF gate), exactly the "economic FAIL is a legitimate
+result" class; no setup/data/infra content. The fresh identity flowed through
+the whole chain (expected/staged ex5 6e6fbf44… at dispatch). Disposition of
+the EURUSD leg (and the 3 in-flight fanout Q02 rows: GBPUSD T8, USDCHF T9,
+USDJPY T1) is governed by the normal pipeline machinery outside D4's scope.
+D4's pilot conditions (a–e) were evaluated at the Q02 canary and were CLEAN;
+this Q04 FAIL does not retroactively change the pilot verdict.
