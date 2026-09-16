@@ -1,0 +1,308 @@
+{
+  "ea_metrics_summary_runs": [],
+  "g0_rejection_reason_verbatim": "R1 FAIL: card frontmatter missing source_citation, farmctl approval rejected as card_body_incomplete despite body URL; lean reject for incomplete card metadata.",
+  "generated_at_utc": "2026-09-16T04:48:40+00:00",
+  "generator": "second_chance_continuation deterministic extract (register + farm_state.sqlite read-only + cards + lineage_map + book/roster read-models)",
+  "inputs": {
+    "book_evolution_dxz": {
+      "generated_at_utc": "2026-09-15T14:23:04.444189+00:00",
+      "path": "D:\\QM\\reports\\state\\book_evolution_dxz.json"
+    },
+    "farm_state_sqlite": {
+      "path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "tables": [
+        "work_items",
+        "ea_metrics"
+      ]
+    },
+    "ftmo_demo_cycle": {
+      "generated_at_utc": "2026-09-16T04:37:01Z",
+      "path": "D:\\QM\\reports\\state\\ftmo_demo_cycle.json",
+      "sleeve_count": 8
+    },
+    "lineage_map": {
+      "path": "D:\\QM\\reports\\state\\lineage_map.json",
+      "sha256": "0a3556414b4c9190e77607acb628fb808dd9988a94801223ec3ff9aa02ce3cb1"
+    },
+    "rejected_card": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_10648_tv-velox-mtf.md",
+      "sha256": "41fc5363c3efd44f4bc10caff84c672cbeb4d067d38dc0b600ae1130f59039d5"
+    },
+    "second_chance_register": {
+      "generated_at_utc": "2026-09-15T18:11:23+00:00",
+      "inputs_sha256": "37ec3be93ae709404a2c829429084cdf9266ed8b916bb29d780adad69fb15982",
+      "path": "D:\\QM\\reports\\state\\second_chance_register.json",
+      "sha256": "96beee4ec0b51e4c849ea45f2edbbc1c0c62f666fc4006b5bec472371c899812"
+    }
+  },
+  "lineage_check": {
+    "card_lineage": {
+      "parent_id": null,
+      "rerun_of": null,
+      "variant_of": null
+    },
+    "clone_edge_count": 0,
+    "mechanism_signature": "fb03def4c4d727ad50b3baeba3ed2778841e2b114e2415513d8be130ea331c40",
+    "register_suppressed_clone_of": "",
+    "signature_status": "EVALUATED"
+  },
+  "pipeline_history": {
+    "counts": {
+      "economic_fail": 3,
+      "infra_fail": 5,
+      "q02_pass": 4,
+      "total": 14
+    },
+    "open_items": [
+      {
+        "created_at": "2026-08-10T14:52:59+00:00",
+        "id": "1d63db4a-4de4-4be7-8847-41ea599be0a1",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "failed",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-08-10T15:52:04+00:00",
+        "verdict": "INFRA_FAIL"
+      }
+    ],
+    "work_items": [
+      {
+        "created_at": "2026-08-10T14:11:10+00:00",
+        "id": "e12a4bcd-0a30-4ca7-92c8-ac9c0e08cf34",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "GBPJPY.DWX",
+        "updated_at": "2026-08-10T15:27:44+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-10T14:11:10+00:00",
+        "id": "9857d911-1117-4a17-8f14-bbdbd73696f8",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-08-10T14:23:29+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-10T14:11:10+00:00",
+        "id": "c862318a-d2f6-4726-a354-7fcf2e062623",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-10T14:53:14+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-10T14:52:59+00:00",
+        "id": "1d63db4a-4de4-4be7-8847-41ea599be0a1",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "failed",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-08-10T15:52:04+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      {
+        "created_at": "2026-08-10T15:52:58+00:00",
+        "id": "e0e10e22-6dfc-4743-ad52-8177eed96d0e",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-08-10T16:12:15+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-10T15:54:36+00:00",
+        "id": "b89aa8ac-e7d1-47c6-b905-92e2feafa269",
+        "kind": "backtest",
+        "phase": "Q03",
+        "status": "done",
+        "symbol": "GBPJPY.DWX",
+        "updated_at": "2026-08-10T20:37:10+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-10T15:54:42+00:00",
+        "id": "f4205722-127d-4565-b2ea-5698fae99e0d",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-08-10T17:14:06+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      {
+        "created_at": "2026-08-10T15:54:43+00:00",
+        "id": "5c973e98-057a-4e98-87a8-da49b5f2dd8c",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-11T09:55:21+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-10T18:18:59+00:00",
+        "id": "ea443500-629e-49f8-a527-3c974d56a73f",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "GBPJPY.DWX",
+        "updated_at": "2026-08-10T20:02:49+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      {
+        "created_at": "2026-08-10T18:18:59+00:00",
+        "id": "5712bfb6-1987-4ea8-849c-4f621af2486a",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-08-10T19:37:27+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      {
+        "created_at": "2026-08-10T20:37:10+00:00",
+        "id": "e644e6c4-121b-4f32-9775-6d0b4aa41626",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "GBPJPY.DWX",
+        "updated_at": "2026-08-10T20:57:05+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      {
+        "created_at": "2026-09-02T10:16:49+00:00",
+        "id": "66b4ecf6-6814-4415-bcbd-888fbc4b715f",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "GBPJPY.DWX",
+        "updated_at": "2026-09-06T20:41:53+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-09-02T10:19:46+00:00",
+        "id": "959776bb-ce3d-4d17-955f-882f9fb20eb1",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-09-02T11:51:26+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-09-02T10:19:48+00:00",
+        "id": "1218f926-b606-4bc1-b9f6-07771d465f7d",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-09-02T12:03:43+00:00",
+        "verdict": "FAIL"
+      }
+    ]
+  },
+  "register_row": {
+    "ea_id": "QM5_10648",
+    "eligibility": "ELIGIBLE_FOR_RECONSIDERATION",
+    "intended_symbols": "GBPJPY.DWX, GER40.DWX, NDX.DWX, XAUUSD.DWX",
+    "matched_rule": "no_external_source_superseded",
+    "portfolio_utility_challenger": false,
+    "primary_reason": "NO_EXTERNAL_SOURCE",
+    "priority": 78.636,
+    "projection_class": "REJECTED",
+    "reason_evidence": "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected. | legacy_contract_repair | card_body_incomplete",
+    "score_components": {
+      "dxz_relevance": 0.8,
+      "execution_complexity_inv": 1.0,
+      "expected_edge": 0.4,
+      "ftmo_relevance": 1.0,
+      "independence": 1.0,
+      "novelty": 0.7,
+      "validation_cost_inv": 0.55,
+      "whitespace_bonus": 0.8824
+    },
+    "second_chance_status": "ELIGIBLE_FOR_RECONSIDERATION",
+    "slug": "tv-velox-mtf",
+    "strategy_family": "other",
+    "suppressed_clone_of": "",
+    "tail_risk_flag": false,
+    "timeframes": "M30"
+  },
+  "schema": "qm.second-chance-review-extract/v1",
+  "venue_role_inputs": {
+    "dxz_book_24sleeve_symbols": [
+      "AUDCAD.DWX",
+      "AUDUSD.DWX",
+      "EURGBP.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "SP500.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX",
+      "XNGUSD.DWX",
+      "XTIUSD.DWX"
+    ],
+    "ftmo_demo_roster": [
+      {
+        "ea_id": 10706,
+        "ea_name": "QM5_10706_tv-mon-ls",
+        "symbol": "GBPUSD"
+      },
+      {
+        "ea_id": 11421,
+        "ea_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "symbol": "EURUSD"
+      },
+      {
+        "ea_id": 11422,
+        "ea_name": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "symbol": "USDCAD"
+      },
+      {
+        "ea_id": 11910,
+        "ea_name": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+        "symbol": "NZDUSD"
+      },
+      {
+        "ea_id": 13054,
+        "ea_name": "QM5_13054_brent-tom-mom",
+        "symbol": "USOIL.cash"
+      },
+      {
+        "ea_id": 20048,
+        "ea_name": "QM5_20048_wti-preholiday",
+        "symbol": "USOIL.cash"
+      },
+      {
+        "ea_id": 1537,
+        "ea_name": "QM5_1537_aa-vol-sma10",
+        "symbol": "XAGUSD"
+      },
+      {
+        "ea_id": 21505,
+        "ea_name": "QM5_21505_xag-weekly-lowvol-momentum",
+        "symbol": "XAGUSD"
+      }
+    ],
+    "intended_symbols": [
+      "GBPJPY.DWX",
+      "GER40.DWX",
+      "NDX.DWX",
+      "XAUUSD.DWX"
+    ],
+    "overlap_with_dxz_symbols": [
+      "NDX.DWX",
+      "XAUUSD.DWX"
+    ],
+    "overlap_with_ftmo_roster_symbols": []
+  }
+}

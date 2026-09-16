@@ -1,0 +1,67 @@
+{
+  "author": "Kimi",
+  "candidate_edge": "H1 pattern-based trend continuation on XAUUSD.DWX and GBPUSD.DWX - an intraday holding shape absent from the all-D1 FTMO roster, with an old-lineage Q09 portfolio PASS on XAUUSD already on record.",
+  "computed_outputs": [
+    {
+      "claim_ref": "review_extract",
+      "description": "Deterministic extract: register row verbatim, work_items verdict history, ea_metrics summary_runs, g0_rejection_reason verbatim, lineage-map clone check, DXZ/FTMO venue overlap.",
+      "file": "second_chance_review.json"
+    }
+  ],
+  "confidence": "medium-low (single-pass review; old-lineage evidence is real but thin and partly negative; the deterministic Q00-Q17 rerun under a NEW lineage is the judge, per directive sec17 - Kimi authorship confers no gate advantage)",
+  "confounders": [
+    "single-pass second-chance review over a 1285-record register (multiple-testing across records)",
+    "Q02 PASS verdicts include negative-net-profit rows (Q02 is a smoke/build gate, not an economic verdict)",
+    "Q08 FAIL_SOFT on XAUUSD old lineage",
+    "XAUUSD is the most crowded DXZ symbol class (6 of 24 sleeves)",
+    "Woodie-pattern parameterization folklore risk (periods 34/6 are community-canonical, not optimized here)"
+  ],
+  "created_utc": "2026-09-16T04:47:39+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "kimi-code/kimi-for-coding",
+  "observations": "Register classifies the record ELIGIBLE_FOR_RECONSIDERATION (NO_EXTERNAL_SOURCE, no_external_source_superseded). Verbatim G0 rejection (2026-05-19) is card-form only. Old-lineage evidence is the deepest of the four candidates: Q02 7/8 PASS (2026-08-21; standout GBPUSD PF 1.83, +12328.49, 39 trades, DD 4.84%), Q03 XAUUSD PASS, Q05-Q07 XAUUSD PASS chain, Q08 FAIL_SOFT, Q09 PASS + Q09_PORTFOLIO PASS_PORTFOLIO (XAUUSD), Q09_NEWS REVIEW_REQUIRED then PASS, Q10_NEWS INFRA_FAIL (2026-08-23) followed by a CONFIG_LOCKED disposition (2026-09-13). One stale unclaimed pending Q04 XAUUSD item from 2026-08-21 (orphaned pre-cascade; capacity note, not an active run). Honest reading: the strategy was never economically refuted - it died at a news-gate infra failure with its config locked; the superseded G0 reason is valid to overturn; a NEW-lineage rerun (or a direct Q10 rescue under existing lineage per centralized commissioning) is warranted, with the tail of the old lineage kept as read-only evidence.",
+  "originating_task_id": "CAMP-2026-0002-second-chance",
+  "proposed_mechanism": "Dual-period CCI trend-and-timing: TrendCCI(34) establishes trend (sustained >=6 bars above/below zero), TurboCCI(6) pulls back to the zero line and rejects (ZLR pattern) for entry; TrendCCI flip exit, TurboCCI >250 partial, 2.5xATR alternative target, 48-bar time stop, 1.8xATR hard stop. H1 holding period; one position per magic.",
+  "quantitative_claims": [
+    {
+      "claim": "Register row: REJECTED / NO_EXTERNAL_SOURCE / no_external_source_superseded, ELIGIBLE_FOR_RECONSIDERATION, priority 62.103, ftmo_relevance 0.4, expected_edge 0.35, whitespace 0.8235, novelty 0.8625, independence 1.0, dxz 0.8; strategy_family pairs; intended symbols AUDUSD/EURUSD/GBPUSD/GDAXI/NDX/USDJPY/WS30/XAUUSD (.DWX).",
+      "computed_output_ref": "review_extract"
+    },
+    {
+      "claim": "Verbatim historical rejection (card G0, 2026-05-19): \"R1 FAIL: farmctl reports missing source_citation metadata despite body attribution; card_body_incomplete blocks G0 approval.\" - card-form only.",
+      "computed_output_ref": "review_extract"
+    },
+    {
+      "claim": "Old-lineage pipeline: 27 work items; Q02 7/8 PASS (2026-08-21) incl. GBPUSD PF 1.83 (+12328.49, 39 trades, DD 4.84%) and XAUUSD PF 1.18 (35 trades); XAUUSD chain Q03 PASS, Q05 PASS, Q06 PASS, Q07 PASS; Q08 FAIL_SOFT; Q09 PASS + Q09_PORTFOLIO PASS_PORTFOLIO; Q09_NEWS REVIEW_REQUIRED -> PASS; Q10_NEWS INFRA_FAIL (2026-08-23); disposition CONFIG_LOCKED (2026-09-13); one stale unclaimed pending Q04 XAUUSD (2026-08-21).",
+      "computed_output_ref": "review_extract"
+    },
+    {
+      "claim": "Clone/duplicate check: lineage_map.json node mechanism_signature 628d16b3.., 0 clone edges touching the id; register suppressed_clone_of empty - not a clone.",
+      "computed_output_ref": "review_extract"
+    },
+    {
+      "claim": "Venue role: FTMO roster (8 sleeves) has no XAUUSD and no H1/intraday coverage - an XAUUSD H1 ZLR candidate is FTMO white space; DXZ book holds 6 XAUUSD sleeves but all at D1-ish holding shapes, so an H1 pattern adds a differentiated time-axis diversifier rather than a crowded duplicate. GBPUSD Q02 PF 1.83 is the strongest single old-lineage economic datum among the four candidates.",
+      "computed_output_ref": "review_extract"
+    }
+  ],
+  "related_strategies": [
+    "QM5_1354 (origin record; append-only)",
+    "DXZ XAUUSD sleeves 10403/10513/12567/12989/1556 (crowding reference)",
+    "QM5_1225 channel-cci-bollinger-mr (card-noted distinct strategy)",
+    "FTMO roster - no XAUUSD sleeve (white-space for a gold H1 candidate)"
+  ],
+  "research_id": "QM-RESEARCH-2026-0004",
+  "research_question": "Does the historical record QM5_1354 (woodie-cci-dual-h1, H1 dual-period CCI(34)/CCI(6) Zero-Line-Reject pattern on FX/indices/gold) carry portfolio value under Strategy Eligibility V2, given its only rejection was the 2026-05-19 G0 card-form R1 rejection (missing source_citation), now superseded?",
+  "research_trial_count": 1,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "second-chance-QM5_1354",
+  "source_datasets": [
+    {
+      "dataset_id": "second-chance-register-2026-09-15",
+      "description": "Read-only snapshot of the candidate register row + pipeline history + venue books, frozen into second_chance_review.json by the deterministic extract (register inputs_sha256 37ec3be9..5982).",
+      "path": "second_chance_review.json"
+    }
+  ]
+}

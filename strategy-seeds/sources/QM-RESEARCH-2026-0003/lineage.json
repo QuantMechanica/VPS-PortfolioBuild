@@ -1,0 +1,41 @@
+{
+  "discovery_sample": {
+    "dataset_ids": [
+      "second-chance-register-2026-09-15"
+    ],
+    "instruments": [
+      "GBPJPY.DWX",
+      "GER40.DWX",
+      "NDX.DWX",
+      "XAUUSD.DWX"
+    ],
+    "period": "historical evidence 2026-05-22 (G0 rejection) .. 2026-09-06 (last old-lineage run); register generated 2026-09-15"
+  },
+  "mechanization": {
+    "codex_implementable": true,
+    "spec_section": "origin card mechanics (approved card on file at D:/QM/strategy_farm/artifacts/cards_approved/); Codex-implementable - finite bounded parameters, deterministic"
+  },
+  "origin_record": {
+    "ea_id": "QM5_10648",
+    "origin_card_approved": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10648_tv-velox-mtf.md",
+    "origin_card_rejected": "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_10648_tv-velox-mtf.md",
+    "register_ref": "second_chance_register.json#records[QM5_10648]",
+    "relation": "second-chance NEW-lineage re-evaluation: this artifact is the provenance parent for a NEW work-item lineage; the historical record, its verdicts and its trade streams stay untouched (append-only)",
+    "slug": "tv-velox-mtf"
+  },
+  "parent_version_id": null,
+  "preregistration": null,
+  "research_id": "QM-RESEARCH-2026-0003",
+  "schema": "qm.research-lineage/v1",
+  "validation_sample": {
+    "dataset_ids": [],
+    "instruments": [
+      "GBPJPY.DWX",
+      "GER40.DWX",
+      "NDX.DWX",
+      "XAUUSD.DWX"
+    ],
+    "period": "none sealed by this review - the proposed NEW-lineage Q00->Q17 rerun is the validation; no sealed stream was reused to mint a new economic claim"
+  },
+  "version": 1
+}

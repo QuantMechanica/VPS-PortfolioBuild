@@ -1,0 +1,542 @@
+{
+  "ea_metrics_summary_runs": [
+    {
+      "drawdown_pct": 11.59,
+      "net_profit": -6755.44,
+      "phase": "Q02",
+      "profit_factor": 0.65,
+      "symbol": "AUDUSD.DWX",
+      "trades": 33,
+      "verdict": "PASS"
+    },
+    {
+      "drawdown_pct": 8.65,
+      "net_profit": -3855.38,
+      "phase": "Q02",
+      "profit_factor": 0.8,
+      "symbol": "EURUSD.DWX",
+      "trades": 34,
+      "verdict": "PASS"
+    },
+    {
+      "drawdown_pct": 4.84,
+      "net_profit": 12328.49,
+      "phase": "Q02",
+      "profit_factor": 1.83,
+      "symbol": "GBPUSD.DWX",
+      "trades": 39,
+      "verdict": "PASS"
+    },
+    {
+      "drawdown_pct": 4.48,
+      "net_profit": 4072.51,
+      "phase": "Q02",
+      "profit_factor": 1.46,
+      "symbol": "GDAXI.DWX",
+      "trades": 18,
+      "verdict": "FAIL"
+    },
+    {
+      "drawdown_pct": 9.15,
+      "net_profit": -6172.61,
+      "phase": "Q02",
+      "profit_factor": 0.53,
+      "symbol": "NDX.DWX",
+      "trades": 19,
+      "verdict": "PASS"
+    },
+    {
+      "drawdown_pct": 6.71,
+      "net_profit": -2361.15,
+      "phase": "Q02",
+      "profit_factor": 0.81,
+      "symbol": "USDJPY.DWX",
+      "trades": 26,
+      "verdict": "PASS"
+    },
+    {
+      "drawdown_pct": 3.05,
+      "net_profit": -2580.8,
+      "phase": "Q02",
+      "profit_factor": 0.35,
+      "symbol": "WS30.DWX",
+      "trades": 5,
+      "verdict": "FAIL"
+    },
+    {
+      "drawdown_pct": 6.8,
+      "net_profit": 2831.76,
+      "phase": "Q02",
+      "profit_factor": 1.18,
+      "symbol": "XAUUSD.DWX",
+      "trades": 35,
+      "verdict": "PASS"
+    },
+    {
+      "drawdown_pct": 2.37,
+      "net_profit": 209.62,
+      "phase": "Q03",
+      "profit_factor": 1.08,
+      "symbol": "XAUUSD.DWX",
+      "trades": 6,
+      "verdict": "PASS"
+    }
+  ],
+  "g0_rejection_reason_verbatim": "R1 FAIL: farmctl reports missing source_citation metadata despite body attribution; card_body_incomplete blocks G0 approval.",
+  "generated_at_utc": "2026-09-16T04:48:40+00:00",
+  "generator": "second_chance_continuation deterministic extract (register + farm_state.sqlite read-only + cards + lineage_map + book/roster read-models)",
+  "inputs": {
+    "book_evolution_dxz": {
+      "generated_at_utc": "2026-09-15T14:23:04.444189+00:00",
+      "path": "D:\\QM\\reports\\state\\book_evolution_dxz.json"
+    },
+    "farm_state_sqlite": {
+      "path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "tables": [
+        "work_items",
+        "ea_metrics"
+      ]
+    },
+    "ftmo_demo_cycle": {
+      "generated_at_utc": "2026-09-16T04:37:01Z",
+      "path": "D:\\QM\\reports\\state\\ftmo_demo_cycle.json",
+      "sleeve_count": 8
+    },
+    "lineage_map": {
+      "path": "D:\\QM\\reports\\state\\lineage_map.json",
+      "sha256": "0a3556414b4c9190e77607acb628fb808dd9988a94801223ec3ff9aa02ce3cb1"
+    },
+    "rejected_card": {
+      "path": "D:\\QM\\strategy_farm\\artifacts\\cards_rejected\\QM5_1354_woodie-cci-dual-h1.md",
+      "sha256": "c087964c04063860f6219db25c7e543ea85f849a4da7d8372b093a593161e582"
+    },
+    "second_chance_register": {
+      "generated_at_utc": "2026-09-15T18:11:23+00:00",
+      "inputs_sha256": "37ec3be93ae709404a2c829429084cdf9266ed8b916bb29d780adad69fb15982",
+      "path": "D:\\QM\\reports\\state\\second_chance_register.json",
+      "sha256": "96beee4ec0b51e4c849ea45f2edbbc1c0c62f666fc4006b5bec472371c899812"
+    }
+  },
+  "lineage_check": {
+    "card_lineage": {
+      "parent_id": null,
+      "rerun_of": null,
+      "variant_of": null
+    },
+    "clone_edge_count": 0,
+    "mechanism_signature": "628d16b351c3484c4d73d947a63d06cb435adeb2a8ec1d5c8089db5efeade54a",
+    "register_suppressed_clone_of": "",
+    "signature_status": "EVALUATED"
+  },
+  "pipeline_history": {
+    "counts": {
+      "economic_fail": 8,
+      "infra_fail": 1,
+      "q02_pass": 6,
+      "total": 27
+    },
+    "open_items": [
+      {
+        "created_at": "2026-08-21T16:25:02+00:00",
+        "id": "aef407bb-452b-43d8-8fcf-71a8c6ad8a84",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T16:25:02+00:00",
+        "verdict": null
+      },
+      {
+        "created_at": "2026-08-23T16:25:18+00:00",
+        "id": "dac8cff3-bc8a-4112-b418-3bed399fb510",
+        "kind": "backtest",
+        "phase": "Q10_NEWS",
+        "status": "failed",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-23T22:31:42+00:00",
+        "verdict": "INFRA_FAIL"
+      }
+    ],
+    "work_items": [
+      {
+        "created_at": "2026-08-21T08:52:58+00:00",
+        "id": "e556ae66-8fa1-426f-b09b-4d22c33934b1",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "AUDUSD.DWX",
+        "updated_at": "2026-08-21T09:59:49+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T08:52:58+00:00",
+        "id": "a420aaf0-4188-4bde-9c08-aee289fac456",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "GDAXI.DWX",
+        "updated_at": "2026-08-21T09:42:22+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-21T08:52:58+00:00",
+        "id": "c607f389-af96-48ae-8554-95e76bc6533a",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T09:43:37+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T10:52:58+00:00",
+        "id": "d55c0855-2d26-45f0-9953-24711a030403",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-08-21T11:40:00+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T10:52:58+00:00",
+        "id": "7afa3e4a-17c8-4c32-a8b9-411ca332912d",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-21T17:31:50+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T10:52:58+00:00",
+        "id": "c01e6de1-273c-4155-9044-47b54a1e3890",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-08-21T11:21:44+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T10:52:58+00:00",
+        "id": "de1823d6-7b06-47b2-a0c6-e0df54aa2cf4",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-21T17:38:31+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T10:52:58+00:00",
+        "id": "532ea486-f04b-4933-a6c0-cd1d8be535be",
+        "kind": "backtest",
+        "phase": "Q02",
+        "status": "done",
+        "symbol": "WS30.DWX",
+        "updated_at": "2026-08-21T11:32:36+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-21T11:43:24+00:00",
+        "id": "e8e1432a-3c6b-40c4-a85f-b2711b6da9e4",
+        "kind": "backtest",
+        "phase": "Q03",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T16:25:01+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T11:43:29+00:00",
+        "id": "d8fca3be-1145-4f11-990e-bf57a624d81e",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T13:25:33+00:00",
+        "verdict": "PASS_SOFT"
+      },
+      {
+        "created_at": "2026-08-21T11:43:30+00:00",
+        "id": "438f7756-c3a6-4ac6-a081-bc800cc15fc1",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "AUDUSD.DWX",
+        "updated_at": "2026-08-21T16:24:45+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-21T11:43:31+00:00",
+        "id": "a09e3cf6-8ed3-4a1f-8521-a6e6db6e77f9",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "NDX.DWX",
+        "updated_at": "2026-08-21T14:10:30+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-21T11:43:32+00:00",
+        "id": "2a91cb8a-57f8-4afe-bbcc-5d6da4533c8d",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-08-21T16:34:05+00:00",
+        "verdict": "PASS_LOWFREQ"
+      },
+      {
+        "created_at": "2026-08-21T13:54:30+00:00",
+        "id": "e518a6db-97fb-4f96-aff9-8eaab27b0889",
+        "kind": "backtest",
+        "phase": "Q05",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T15:33:40+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T15:40:45+00:00",
+        "id": "64ef7cc2-d5af-4941-9d85-7473bd5a34ed",
+        "kind": "backtest",
+        "phase": "Q06",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T16:03:12+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T16:23:47+00:00",
+        "id": "c37dd716-df34-4dde-bba5-7f6d84b88adc",
+        "kind": "backtest",
+        "phase": "Q07",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T17:04:14+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T16:25:02+00:00",
+        "id": "aef407bb-452b-43d8-8fcf-71a8c6ad8a84",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "pending",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T16:25:02+00:00",
+        "verdict": null
+      },
+      {
+        "created_at": "2026-08-21T17:02:40+00:00",
+        "id": "614ed4d3-3930-43d8-bc16-35dc16e96ae9",
+        "kind": "backtest",
+        "phase": "Q05",
+        "status": "done",
+        "symbol": "EURUSD.DWX",
+        "updated_at": "2026-08-21T17:09:32+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-21T17:21:36+00:00",
+        "id": "7b6dd303-ae03-4a51-97d9-6b8bbe56f253",
+        "kind": "backtest",
+        "phase": "Q08",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T18:00:40+00:00",
+        "verdict": "FAIL_SOFT"
+      },
+      {
+        "created_at": "2026-08-21T17:41:33+00:00",
+        "id": "c23c9d15-8ac7-4418-a1e6-c69f3fcaf801",
+        "kind": "backtest",
+        "phase": "Q03",
+        "status": "done",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-21T18:10:09+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-21T17:41:35+00:00",
+        "id": "391bd465-9033-41d9-9d8d-111c1278a4e2",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-21T17:54:30+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-21T17:41:35+00:00",
+        "id": "d4a6d756-3b52-4354-bfa5-6f7d0cf95a3b",
+        "kind": "backtest",
+        "phase": "Q04",
+        "status": "done",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-08-21T18:05:14+00:00",
+        "verdict": "FAIL"
+      },
+      {
+        "created_at": "2026-08-21T18:06:56+00:00",
+        "id": "790fe047-c00a-496d-a2fb-9f11ac6ea093",
+        "kind": "backtest",
+        "phase": "Q09_PORTFOLIO",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-21T18:37:44+00:00",
+        "verdict": "PASS_PORTFOLIO"
+      },
+      {
+        "created_at": "2026-08-22T15:29:41+00:00",
+        "id": "317b916e-f93f-43ce-9b40-1c43d1639a49",
+        "kind": "backtest",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-23T08:23:34+00:00",
+        "verdict": "REVIEW_REQUIRED"
+      },
+      {
+        "created_at": "2026-08-23T16:24:49+00:00",
+        "id": "eb00acbc-127a-456f-bc82-361b84430042",
+        "kind": "backtest",
+        "phase": "Q09",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-24T04:43:35+00:00",
+        "verdict": "PASS"
+      },
+      {
+        "created_at": "2026-08-23T16:25:18+00:00",
+        "id": "dac8cff3-bc8a-4112-b418-3bed399fb510",
+        "kind": "backtest",
+        "phase": "Q10_NEWS",
+        "status": "failed",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-08-23T22:31:42+00:00",
+        "verdict": "INFRA_FAIL"
+      },
+      {
+        "created_at": "2026-09-13T16:01:07+00:00",
+        "id": "33015990-054a-5370-90e5-2bafa8eea4d8",
+        "kind": "disposition",
+        "phase": "Q09_NEWS",
+        "status": "done",
+        "symbol": "XAUUSD.DWX",
+        "updated_at": "2026-09-13T16:01:07+00:00",
+        "verdict": "CONFIG_LOCKED"
+      }
+    ]
+  },
+  "register_row": {
+    "ea_id": "QM5_1354",
+    "eligibility": "ELIGIBLE_FOR_RECONSIDERATION",
+    "intended_symbols": "AUDUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX, NDX.DWX, USDJPY.DWX, WS30.DWX, XAUUSD.DWX",
+    "matched_rule": "no_external_source_superseded",
+    "portfolio_utility_challenger": false,
+    "primary_reason": "NO_EXTERNAL_SOURCE",
+    "priority": 62.103,
+    "projection_class": "REJECTED",
+    "reason_evidence": "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected. | legacy_contract_repair | card_body_incomplete",
+    "score_components": {
+      "dxz_relevance": 0.8,
+      "execution_complexity_inv": 0.5,
+      "expected_edge": 0.35,
+      "ftmo_relevance": 0.4,
+      "independence": 1.0,
+      "novelty": 0.8625,
+      "validation_cost_inv": 0.55,
+      "whitespace_bonus": 0.8235
+    },
+    "second_chance_status": "ELIGIBLE_FOR_RECONSIDERATION",
+    "slug": "woodie-cci-dual-h1",
+    "strategy_family": "pairs",
+    "suppressed_clone_of": "",
+    "tail_risk_flag": false,
+    "timeframes": "UNKNOWN"
+  },
+  "schema": "qm.second-chance-review-extract/v1",
+  "venue_role_inputs": {
+    "dxz_book_24sleeve_symbols": [
+      "AUDCAD.DWX",
+      "AUDUSD.DWX",
+      "EURGBP.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "SP500.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX",
+      "XNGUSD.DWX",
+      "XTIUSD.DWX"
+    ],
+    "ftmo_demo_roster": [
+      {
+        "ea_id": 10706,
+        "ea_name": "QM5_10706_tv-mon-ls",
+        "symbol": "GBPUSD"
+      },
+      {
+        "ea_id": 11421,
+        "ea_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "symbol": "EURUSD"
+      },
+      {
+        "ea_id": 11422,
+        "ea_name": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "symbol": "USDCAD"
+      },
+      {
+        "ea_id": 11910,
+        "ea_name": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+        "symbol": "NZDUSD"
+      },
+      {
+        "ea_id": 13054,
+        "ea_name": "QM5_13054_brent-tom-mom",
+        "symbol": "USOIL.cash"
+      },
+      {
+        "ea_id": 20048,
+        "ea_name": "QM5_20048_wti-preholiday",
+        "symbol": "USOIL.cash"
+      },
+      {
+        "ea_id": 1537,
+        "ea_name": "QM5_1537_aa-vol-sma10",
+        "symbol": "XAGUSD"
+      },
+      {
+        "ea_id": 21505,
+        "ea_name": "QM5_21505_xag-weekly-lowvol-momentum",
+        "symbol": "XAGUSD"
+      }
+    ],
+    "intended_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "USDJPY.DWX",
+      "WS30.DWX",
+      "XAUUSD.DWX"
+    ],
+    "overlap_with_dxz_symbols": [
+      "AUDUSD.DWX",
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX"
+    ],
+    "overlap_with_ftmo_roster_symbols": [
+      "EURUSD",
+      "GBPUSD"
+    ]
+  }
+}
