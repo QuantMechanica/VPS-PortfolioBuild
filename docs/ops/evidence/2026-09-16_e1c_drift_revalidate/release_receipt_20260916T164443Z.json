@@ -1,0 +1,19 @@
+{
+ "schema": "qm.e1c-optionb-release-receipt/v1",
+ "at_utc": "2026-09-16T16:44:43+00:00",
+ "actor": "kimi-interim-e1c-followup",
+ "decision_id": "OWNER-E1C-OPTIONB-20260916",
+ "mode": "apply",
+ "note": "post-census drift hold (appeared 2026-09-16T14:08Z, after the 99-row census); revalidated against CURRENT clean calendar bytes 2026-09-16T16:4xZ (record byte-identical to the 14:4xZ classification, record_sha256 779492a0...)",
+ "pin_manifest": "D:\\QM\\data\\news_calendar\\q09_bundles\\q09cal-20150101-20260809-0bb19b5bb9790b76\\manifest.json",
+ "record_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-16_e1c_drift_revalidate\\rows\\564c7e0e-9f1f-446b-918a-1a2cb9d1ab0f.json",
+ "rows": [
+  {
+   "work_item_id": "564c7e0e-9f1f-446b-918a-1a2cb9d1ab0f",
+   "released": true,
+   "record_sha256": "779492a066d898210b2ded10ab1c0e2298392351bac2ac83d8b8dd50b12c3c8b",
+   "tainted_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1"
+  }
+ ],
+ "released_count": 1
+}

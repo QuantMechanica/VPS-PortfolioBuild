@@ -1,0 +1,57 @@
+{
+ "calendar_coverage_note": "both calendars verified EMPTY for every currency for 2025-05-01T00:00:00Z..2026-06-30T23:59:59Z (shared upstream gap; backfill is the separate human-gated registry-repair/refresh program)",
+ "currency_exposure": [
+  "USD"
+ ],
+ "currency_source": "XAUUSD.DWX:owner_override",
+ "delta": null,
+ "delta_validation_reason": "evidence window could not be resolved (sealed plan unbuilt/unreadable; no hash-bound Q09 window exists for this row)",
+ "delta_validation_status": "EVIDENCE_INCOMPLETE",
+ "ea_id": "QM5_12989",
+ "hold_created_at": "2026-08-18T07:26:57+00:00",
+ "new_calendar": {
+  "bundle_id": "news-calendar-9342e8f0f3568bba78994cd2d0f057cac8f1100620076a3fe9bab57c454b6313",
+  "manifest_declared_sha256": "6d7d64b60bb72278e6c65cfb1e738b84a1d9fc5cf11488b573cc136cc1356320",
+  "manifest_file_sha256": "bcf37b37a99932bcc0496998b1757ce17267d9bb5150b324c731efd30aab51a6",
+  "primary_file": {
+   "path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+   "sha256": "c48ad8b4bf667001ef7204d37f5420504f853ac25aa6f0a70152b3d743a1c134"
+  },
+  "secondary_file": {
+   "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+   "sha256": "e15b6fe1f80f2f6a82a612f16ef7aaf6b9cc450d3eba1c3a94690ceee2f3b935"
+  }
+ },
+ "old_calendar": {
+  "bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+  "content_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+  "manifest_sha256": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461"
+ },
+ "option_b_hold_release_eligible": false,
+ "original_evidence_window": null,
+ "original_overlap_result": {
+  "reason": "promoted_from_phase=Q08; Q09 news measurement not yet executed",
+  "status": "NOT_MEASURED"
+ },
+ "original_q09_verdict": {
+  "evidence_path": "D:\\QM\\reports\\work_items\\86abcee3-1e53-4b6d-a576-80fea6e02219\\QM5_12989\\Q08\\XAUUSD_DWX\\aggregate.json",
+  "phase": "Q08",
+  "promoted_from_phase": "Q08",
+  "status": "done",
+  "verdict": "PASS",
+  "work_item_id": "86abcee3-1e53-4b6d-a576-80fea6e02219"
+ },
+ "phase": "Q10_NEWS",
+ "recomputed_overlap_result": null,
+ "recomputed_verdict": null,
+ "record_sha256": "92d6ede856e81a1c5fac45b14b1227f99b4e1d0d26738ef87db096e3763a13a5",
+ "row_class": "promoted",
+ "schema": "qm.e1c-optionb-row-delta/v1",
+ "symbol": "XAUUSD.DWX",
+ "symbols_considered": [
+  "XAUUSD.DWX"
+ ],
+ "timeframe": "H4",
+ "verdict_reproduction": null,
+ "work_item_id": "1cff016c-d25c-4723-a892-6bc53bfafa0b"
+}

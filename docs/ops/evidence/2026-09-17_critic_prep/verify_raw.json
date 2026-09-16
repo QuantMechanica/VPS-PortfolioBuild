@@ -1,0 +1,350 @@
+{
+ "41475": {
+  "card_path": "artifacts/cards_approved/QM5_41475_cash-window-index-continuation-h1.md",
+  "card_exists": true,
+  "card_sha256": "6ac0419e5b98e72023d408f2f13f666a948b5704f23c64dd97209b62bc3e4011",
+  "card_frontmatter": {
+   "g0_status": "APPROVED",
+   "review_status": "REVIEW_PENDING",
+   "source_hash": null,
+   "preregistration_sha256": "cd661891447f6bb2ef2465607f7df40138e6a9de0879d0242b5dc7c35554322e",
+   "card_sha256": null,
+   "source_type": "internal_research",
+   "source_id": "QM-RESEARCH-2026-0002",
+   "expected_trades_per_year_per_symbol": "220"
+  },
+  "prereg_exists": true,
+  "prereg_record_sha256_stored": "cd661891447f6bb2ef2465607f7df40138e6a9de0879d0242b5dc7c35554322e",
+  "prereg_recompute_no_nl": "cd661891447f6bb2ef2465607f7df40138e6a9de0879d0242b5dc7c35554322e",
+  "prereg_recompute_nl": "767b3df7766e3a54433d649ffd0f8398fab6b2e4d47cb1fdf860ec0980c26ec6",
+  "prereg_recompute_match": true,
+  "preregister_check_rc": 0,
+  "preregister_check_out": "{\n  \"unchanged\": true\n}",
+  "ledger_last": {
+   "author": "multi-agent:Kimi+Fable",
+   "created": "2026-09-16T05:59:18+00:00",
+   "event": "status_change",
+   "id": "QM-RESEARCH-2026-0002",
+   "model": "kimi-code/kimi-for-coding",
+   "parent_version_id": "QM-RESEARCH-2026-0001",
+   "schema": "qm.research-source-ledger/v1",
+   "sha256": "fcc8f2dce6d717edc5bd0a391f0591df07196b92ddebbf98cbc971cf117f18ea",
+   "status": "reviewed",
+   "task_id": "CAMP-2026-0001-ftmo-gap",
+   "version": 2
+  },
+  "ledger_status": "reviewed",
+  "verify_rc": 0,
+  "verify_out": "{\"ok\": true, \"reasons\": [], \"resolved_id\": \"QM-RESEARCH-2026-0002\", \"source_hash\": \"fcc8f2dce6d717edc5bd0a391f0591df07196b92ddebbf98cbc971cf117f18ea\"}",
+  "ex5_path": "C:\\QM\\worktrees\\kimi-hcw-20260915\\framework\\EAs\\QM5_41475_cash-window-index-continuation-h1\\QM5_41475_cash-window-index-continuation-h1.ex5",
+  "ex5_exists": true,
+  "ex5_sha256": "99126310ab17af2c67de1ebf7f0d61fb7d42db954fae231c474f4baf7d560461",
+  "ex5_git_tracked": false,
+  "setfiles": [
+   {
+    "file": "QM5_41475_cash-window-index-continuation-h1_GDAXI.DWX_H1_backtest.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41475_cash-window-index-continuation-h1_GDAXI.DWX_H1_live.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41475_cash-window-index-continuation-h1_NDX.DWX_H1_backtest.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41475_cash-window-index-continuation-h1_NDX.DWX_H1_live.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41475_cash-window-index-continuation-h1_SP500.DWX_H1_backtest.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41475_cash-window-index-continuation-h1_SP500.DWX_H1_live.set",
+    "build_hash": "pending"
+   }
+  ],
+  "setfile_count": 6,
+  "prescreen_rc": 0,
+  "prescreen": {
+   "armed": false,
+   "generated_at": "2026-09-16T16:48:20.161136+00:00",
+   "input_root": "D:\\QM\\strategy_farm\\artifacts\\cards_review",
+   "mode": "DRY_RUN",
+   "results": [
+    {
+     "action": "DRY_RUN",
+     "duplicate_of": null,
+     "ea_id": "QM5_41475",
+     "expected_dd_pct": 2.0,
+     "missing_feeds": [],
+     "missing_sections": [],
+     "path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41475_cash-window-index-continuation-h1.md",
+     "reasons": [],
+     "slug": "cash-window-index-continuation-h1",
+     "target_symbols": [
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "SP500.DWX"
+     ],
+     "timeframe": "H1",
+     "verdict": "KEEP",
+     "warnings": []
+    }
+   ],
+   "schema": "qm.card-intake-prescreen/v1",
+   "summary": {
+    "cards": 1,
+    "keep": 1,
+    "mutated": 0,
+    "reject": 0
+   },
+   "symbol_matrix_sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+  },
+  "wt_head": "86e166f26f",
+  "wt_branch": "agents/kimi-hcw-20260915",
+  "work_items_count": 0,
+  "tasks_count": 0
+ },
+ "41476": {
+  "card_path": "artifacts/cards_approved/QM5_41476_cash-open-mean-reversion-h1.md",
+  "card_exists": true,
+  "card_sha256": "a6c1f343317b98e02d380a8d847de73bf358ef97a916dc6aabd799035823e7c5",
+  "card_frontmatter": {
+   "g0_status": "APPROVED",
+   "review_status": "REVIEW_PENDING",
+   "source_hash": "1887b25e0fb0597f97a9a9ae9461333bc16d3b2b6e0a8bf96412cea55032bd19",
+   "preregistration_sha256": "8129b0fc617229c40f7898c64a79072ff93019eb08fc7fa7faef69987b140d2d",
+   "card_sha256": null,
+   "source_type": "internal_research",
+   "source_id": "QM-RESEARCH-2026-0006",
+   "expected_trades_per_year_per_symbol": "35"
+  },
+  "prereg_exists": true,
+  "prereg_record_sha256_stored": "8129b0fc617229c40f7898c64a79072ff93019eb08fc7fa7faef69987b140d2d",
+  "prereg_recompute_no_nl": "8129b0fc617229c40f7898c64a79072ff93019eb08fc7fa7faef69987b140d2d",
+  "prereg_recompute_nl": "d44cd659b0a35521d02c1c200211b99ed50886ec55f05db58b5cc7ccc882a8d8",
+  "prereg_recompute_match": true,
+  "preregister_check_rc": 0,
+  "preregister_check_out": "{\n  \"unchanged\": true\n}",
+  "ledger_last": {
+   "author": "Kimi",
+   "created": "2026-09-16T05:03:50+00:00",
+   "event": "status_change",
+   "id": "QM-RESEARCH-2026-0006",
+   "model": "kimi-code/kimi-for-coding",
+   "parent_version_id": null,
+   "schema": "qm.research-source-ledger/v1",
+   "sha256": "1887b25e0fb0597f97a9a9ae9461333bc16d3b2b6e0a8bf96412cea55032bd19",
+   "status": "preregistered",
+   "task_id": "OWNER-DELEGATION-HMR-20260916",
+   "version": 1
+  },
+  "ledger_status": "preregistered",
+  "verify_rc": 1,
+  "verify_out": "{\"ok\": false, \"reasons\": [\"MISSING_FIELD:critic.chain_id\", \"MISSING_FIELD:critic.plan.creator.vendor\", \"MISSING_FIELD:critic.plan.creator.model\", \"MISSING_FIELD:critic.plan.critic.vendor\", \"MISSING_FIELD:critic.plan.critic.model\", \"MISSING_FIELD:critic.critic_verdict\", \"MISSING_FIELD:critic.critic_seat_final\", \"MISSING_FIELD:critic.generated_at_utc\"], \"resolved_id\": \"QM-RESEARCH-2026-0006\", \"source_hash\": \"1887b25e0fb0597f97a9a9ae9461333bc16d3b2b6e0a8bf96412cea55032bd19\"}",
+  "ex5_path": "C:\\QM\\worktrees\\kimi-hmr-20260916\\framework\\EAs\\QM5_41476_cash-open-mean-reversion-h1\\QM5_41476_cash-open-mean-reversion-h1.ex5",
+  "ex5_exists": true,
+  "ex5_sha256": "89d1107a00ef0365d2a50b7a2a5621c31cba60df9aab39afb131a70d2cf3a702",
+  "ex5_git_tracked": false,
+  "setfiles": [
+   {
+    "file": "QM5_41476_cash-open-mean-reversion-h1_GDAXI.DWX_H1_backtest.set",
+    "build_hash": "136c4473862dc66e164586e7cf4b2acb2f3761306eca79f33bacbd2a22af7685"
+   },
+   {
+    "file": "QM5_41476_cash-open-mean-reversion-h1_GDAXI.DWX_H1_live.set",
+    "build_hash": "538dda5c5ba020bd222ca9ee8f21ffcba14ce31c43022e17ebc23a1a231b4d85"
+   },
+   {
+    "file": "QM5_41476_cash-open-mean-reversion-h1_NDX.DWX_H1_backtest.set",
+    "build_hash": "fb78184c909c5dea4859f446474ea302d353f210e3ea53c98e6ea6cef6a9a50f"
+   },
+   {
+    "file": "QM5_41476_cash-open-mean-reversion-h1_NDX.DWX_H1_live.set",
+    "build_hash": "961c43aec09ab7c257ea86b881afa2af1eecafd9f2ffc6d2e81038453c3569b1"
+   },
+   {
+    "file": "QM5_41476_cash-open-mean-reversion-h1_SP500.DWX_H1_backtest.set",
+    "build_hash": "ff4fe843af513d6338238eca5d082c2d05294ce55d3d65648e7c8e4cecaacbe6"
+   },
+   {
+    "file": "QM5_41476_cash-open-mean-reversion-h1_SP500.DWX_H1_live.set",
+    "build_hash": "b434caabec9d340228f6e242ad93319bcfd5f6efdc70cda3f8ac2ccb5182115d"
+   }
+  ],
+  "setfile_count": 6,
+  "prescreen_rc": 0,
+  "prescreen": {
+   "armed": false,
+   "generated_at": "2026-09-16T16:48:25.240953+00:00",
+   "input_root": "D:\\QM\\strategy_farm\\artifacts\\cards_review",
+   "mode": "DRY_RUN",
+   "results": [
+    {
+     "action": "DRY_RUN",
+     "duplicate_of": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10140_tv-london-session-break.md",
+     "ea_id": "QM5_41476",
+     "expected_dd_pct": 2.0,
+     "missing_feeds": [],
+     "missing_sections": [],
+     "path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41476_cash-open-mean-reversion-h1.md",
+     "reasons": [
+      "NEAR_DUPLICATE:QM5_10140_tv-london-session-break.md:score=1.0000",
+      "INTERNAL_SOURCE_UNRESOLVED:MISSING_FIELD:critic.chain_id,MISSING_FIELD:critic.plan.creator.vendor,MISSING_FIELD:critic.plan.creator.model,MISSING_FIELD:critic.plan.critic.vendor,MISSING_FIELD:critic.plan.critic.model,MISSING_FIELD:critic.critic_verdict,MISSING_FIELD:critic.critic_seat_final,MISSING_FIELD:critic.generated_at_utc"
+     ],
+     "slug": "cash-open-mean-reversion-h1",
+     "target_symbols": [
+      "GDAXI.DWX",
+      "NDX.DWX",
+      "SP500.DWX"
+     ],
+     "timeframe": "H1",
+     "verdict": "REJECT",
+     "warnings": []
+    }
+   ],
+   "schema": "qm.card-intake-prescreen/v1",
+   "summary": {
+    "cards": 1,
+    "keep": 0,
+    "mutated": 0,
+    "reject": 1
+   },
+   "symbol_matrix_sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+  },
+  "wt_head": "04f10839b2",
+  "wt_branch": "agents/kimi-hmr-20260916",
+  "work_items_count": 0,
+  "tasks_count": 0
+ },
+ "41477": {
+  "card_path": "artifacts/cards_approved/QM5_41477_fx-session-mean-reversion-m15.md",
+  "card_exists": true,
+  "card_sha256": "5a52229b2eac826f630b0dc722e41aa85cbd5a3ea420e4a82b7a228fed88a724",
+  "card_frontmatter": {
+   "g0_status": "APPROVED",
+   "review_status": "REVIEW_PENDING",
+   "source_hash": "ba89005b9ed4c93f46681a7504dec9adde3b4abd2bde944f7e2a7048a10b7f8c",
+   "preregistration_sha256": "c408f534bc8825783d44487dd51def684227955988b680fbd4228d4578027475",
+   "card_sha256": null,
+   "source_type": "internal_research",
+   "source_id": "QM-RESEARCH-2026-0005",
+   "expected_trades_per_year_per_symbol": "280"
+  },
+  "prereg_exists": true,
+  "prereg_record_sha256_stored": "c408f534bc8825783d44487dd51def684227955988b680fbd4228d4578027475",
+  "prereg_recompute_no_nl": "c408f534bc8825783d44487dd51def684227955988b680fbd4228d4578027475",
+  "prereg_recompute_nl": "19b1b6413b9080cf1972a0047958857ad5847581904a2e679a9c2194f204da29",
+  "prereg_recompute_match": true,
+  "preregister_check_rc": 0,
+  "preregister_check_out": "{\n  \"unchanged\": true\n}",
+  "ledger_last": {
+   "author": "Kimi",
+   "created": "2026-09-16T04:54:54+00:00",
+   "event": "status_change",
+   "id": "QM-RESEARCH-2026-0005",
+   "model": "kimi-code/kimi-for-coding",
+   "parent_version_id": null,
+   "schema": "qm.research-source-ledger/v1",
+   "sha256": "ba89005b9ed4c93f46681a7504dec9adde3b4abd2bde944f7e2a7048a10b7f8c",
+   "status": "preregistered",
+   "task_id": "owner-delegation-h-fxmr-20260916",
+   "version": 1
+  },
+  "ledger_status": "preregistered",
+  "verify_rc": 1,
+  "verify_out": "{\"ok\": false, \"reasons\": [\"MISSING_FIELD:critic.chain_id\", \"MISSING_FIELD:critic.plan.creator.vendor\", \"MISSING_FIELD:critic.plan.creator.model\", \"MISSING_FIELD:critic.plan.critic.vendor\", \"MISSING_FIELD:critic.plan.critic.model\", \"MISSING_FIELD:critic.critic_verdict\", \"MISSING_FIELD:critic.critic_seat_final\", \"MISSING_FIELD:critic.generated_at_utc\"], \"resolved_id\": \"QM-RESEARCH-2026-0005\", \"source_hash\": \"ba89005b9ed4c93f46681a7504dec9adde3b4abd2bde944f7e2a7048a10b7f8c\"}",
+  "ex5_path": "C:\\QM\\worktrees\\kimi-fxmr-20260916\\framework\\EAs\\QM5_41477_fx-session-mean-reversion-m15\\QM5_41477_fx-session-mean-reversion-m15.ex5",
+  "ex5_exists": true,
+  "ex5_sha256": "4e07143ac4e07ed644ba7865a7b1d8a7b262f16696386bb2f7e1248117c1219b",
+  "ex5_git_tracked": false,
+  "setfiles": [
+   {
+    "file": "QM5_41477_fx-session-mean-reversion-m15_EURUSD.DWX_M15_backtest.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41477_fx-session-mean-reversion-m15_EURUSD.DWX_M15_live.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41477_fx-session-mean-reversion-m15_GBPUSD.DWX_M15_backtest.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41477_fx-session-mean-reversion-m15_GBPUSD.DWX_M15_live.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41477_fx-session-mean-reversion-m15_USDJPY.DWX_M15_backtest.set",
+    "build_hash": "pending"
+   },
+   {
+    "file": "QM5_41477_fx-session-mean-reversion-m15_USDJPY.DWX_M15_live.set",
+    "build_hash": "pending"
+   }
+  ],
+  "setfile_count": 6,
+  "prescreen_rc": 0,
+  "prescreen": {
+   "armed": false,
+   "generated_at": "2026-09-16T16:48:29.771988+00:00",
+   "input_root": "D:\\QM\\strategy_farm\\artifacts\\cards_review",
+   "mode": "DRY_RUN",
+   "results": [
+    {
+     "action": "DRY_RUN",
+     "duplicate_of": null,
+     "ea_id": "QM5_41477",
+     "expected_dd_pct": 2.0,
+     "missing_feeds": [],
+     "missing_sections": [],
+     "path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41477_fx-session-mean-reversion-m15.md",
+     "reasons": [
+      "INTERNAL_SOURCE_UNRESOLVED:MISSING_FIELD:critic.chain_id,MISSING_FIELD:critic.plan.creator.vendor,MISSING_FIELD:critic.plan.creator.model,MISSING_FIELD:critic.plan.critic.vendor,MISSING_FIELD:critic.plan.critic.model,MISSING_FIELD:critic.critic_verdict,MISSING_FIELD:critic.critic_seat_final,MISSING_FIELD:critic.generated_at_utc"
+     ],
+     "slug": "fx-session-mean-reversion-m15",
+     "target_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+     ],
+     "timeframe": "M15",
+     "verdict": "REJECT",
+     "warnings": []
+    }
+   ],
+   "schema": "qm.card-intake-prescreen/v1",
+   "summary": {
+    "cards": 1,
+    "keep": 0,
+    "mutated": 0,
+    "reject": 1
+   },
+   "symbol_matrix_sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+  },
+  "wt_head": "ea38197cc0",
+  "wt_branch": "agents/kimi-fxmr-20260916",
+  "work_items_count": 0,
+  "tasks_count": 0
+ },
+ "registry_magic": [
+  "41475,cash-window-index-continuation-h1,0,NDX.DWX,414750000,2026-09-15,Codex governed allocator,active",
+  "41475,cash-window-index-continuation-h1,1,GDAXI.DWX,414750001,2026-09-15,Codex governed allocator,active",
+  "41475,cash-window-index-continuation-h1,2,SP500.DWX,414750002,2026-09-15,Codex governed allocator,active",
+  "41477,fx-session-mean-reversion-m15,0,EURUSD.DWX,414770000,2026-09-16,Codex governed allocator,active",
+  "41477,fx-session-mean-reversion-m15,1,GBPUSD.DWX,414770001,2026-09-16,Codex governed allocator,active",
+  "41477,fx-session-mean-reversion-m15,2,USDJPY.DWX,414770002,2026-09-16,Codex governed allocator,active",
+  "41476,cash-open-mean-reversion-h1,0,NDX.DWX,414760000,2026-09-16,Codex governed allocator,active",
+  "41476,cash-open-mean-reversion-h1,1,GDAXI.DWX,414760001,2026-09-16,Codex governed allocator,active",
+  "41476,cash-open-mean-reversion-h1,2,SP500.DWX,414760002,2026-09-16,Codex governed allocator,active"
+ ],
+ "registry_ea_id": [
+  "41475,cash-window-index-continuation-h1,QM-RESEARCH-2026-0002,active,Research,2026-09-15,,,",
+  "41477,fx-session-mean-reversion-m15,QM-RESEARCH-2026-0005,active,Research,2026-09-16,,,",
+  "41476,cash-open-mean-reversion-h1,QM-RESEARCH-2026-0006,active,Research,2026-09-16,,,"
+ ]
+}

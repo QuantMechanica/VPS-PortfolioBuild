@@ -1,0 +1,147 @@
+{
+ "QM5_12989": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12989 --phase Q10_NEWS --from-work-item-id 543c693f-867d-40af-b07f-35d501e46485 --append-only-rerun-of 1cff016c-d25c-4723-a892-6bc53bfafa0b --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 77d3c5fda5ef2dfd0c138e6520f76d450a04fe812fcefabac07e2673fcd2e425",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_12989",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q10_NEWS",
+   "previous_phase": "Q09",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "1cff016c-d25c-4723-a892-6bc53bfafa0b",
+     "reason": "append_only_rerun_target_mismatch_or_not_terminal",
+     "symbol": "XAUUSD.DWX"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ "QM5_1567": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_1567 --phase Q10_NEWS --from-work-item-id e8c1e63a-e06c-4988-9ae7-54771bc1fe8c --append-only-rerun-of 2604a1f0-4f58-4597-89ef-432af9093131 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31",
+  "rc": 0,
+  "result": {
+   "ea_id": "QM5_1567",
+   "enqueued": false,
+   "phase": "Q10_NEWS",
+   "reason": "No done Q09 PASS work_items found for QM5_1567 matching predecessor e8c1e63a-e06c-4988-9ae7-54771bc1fe8c"
+  }
+ },
+ "QM5_10847": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_10847 --phase Q10_NEWS --from-work-item-id a201f967-887d-4d77-ac31-c3c00640e6ca --append-only-rerun-of 49a059da-82ab-4835-9c46-f18ba9b94dcf --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 73071f44dd22f2a7394fb1ff2d981a12eafa88498c320fa12142f2af63131673",
+  "rc": 0,
+  "result": {
+   "ea_id": "QM5_10847",
+   "enqueued": false,
+   "phase": "Q10_NEWS",
+   "reason": "No done Q09 PASS work_items found for QM5_10847 matching predecessor a201f967-887d-4d77-ac31-c3c00640e6ca"
+  }
+ },
+ "QM5_10815": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_10815 --phase Q10_NEWS --from-work-item-id c7845c62-6c35-49eb-8e9f-056af2c6c14e --append-only-rerun-of 57d8bacd-2805-45a6-ac51-156e22bb3a65 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 13d7064f539ece81b63e6858908d3ae5de530fa9c600cb75e6d21cf2069ce15a",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_10815",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q10_NEWS",
+   "previous_phase": "Q09",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "c7845c62-6c35-49eb-8e9f-056af2c6c14e",
+     "reason": "q08_evidence_missing_or_unreadable",
+     "symbol": "GDAXI.DWX"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ "QM5_12567": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12567 --phase Q10_NEWS --from-work-item-id 8f43a2f8-d0be-472f-87ca-c2fd628136e4 --append-only-rerun-of 7bbeef66-becf-4bd3-aa5c-1d00bde262d8 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_12567",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q10_NEWS",
+   "previous_phase": "Q09",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "7bbeef66-becf-4bd3-aa5c-1d00bde262d8",
+     "reason": "append_only_rerun_target_mismatch_or_not_terminal",
+     "symbol": "XAUUSD.DWX"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ "QM5_13301": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_13301 --phase Q10_NEWS --from-work-item-id a3538dc4-e7bc-4285-ba2b-6d0858cb3f60 --append-only-rerun-of 84c6e9e9-76a8-4cd4-87b4-647d7fad3c1a --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 64d71b745fade2134967cd1373b39a359f22cadc94933ba8f71c177ff44edc87",
+  "rc": 0,
+  "result": {
+   "ea_id": "QM5_13301",
+   "enqueued": false,
+   "phase": "Q10_NEWS",
+   "reason": "No done Q09 PASS work_items found for QM5_13301 matching predecessor a3538dc4-e7bc-4285-ba2b-6d0858cb3f60"
+  }
+ },
+ "QM5_10939": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_10939 --phase Q10_NEWS --from-work-item-id 7f63d721-b5c3-43ff-83c6-71d64747201a --append-only-rerun-of 9639a773-b913-40a2-b12f-128a027aec98 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_10939",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q10_NEWS",
+   "previous_phase": "Q09",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "7f63d721-b5c3-43ff-83c6-71d64747201a",
+     "reason": "q08_evidence_missing_or_unreadable",
+     "symbol": "GBPUSD.DWX"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ "QM5_13128": {
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_13128 --phase Q10_NEWS --from-work-item-id 7adc5872-626c-4340-9ed5-1f1682c4e332 --append-only-rerun-of aa80274f-fb46-4432-b47e-6fb2bf28c9a2 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement on the clean calendar (canonical news-lane append-only rerun attempt) --expected-current-ex5-sha256 59b9d1657fb04a9f33a030d420da76a1cae92c4223f4404842a53feed1848370",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_13128",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q10_NEWS",
+   "previous_phase": "Q09",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "aa80274f-fb46-4432-b47e-6fb2bf28c9a2",
+     "reason": "append_only_rerun_target_mismatch_or_not_terminal",
+     "symbol": "NDX.DWX"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ }
+}

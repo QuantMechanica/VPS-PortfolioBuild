@@ -1,0 +1,190 @@
+[
+ {
+  "ea": "QM5_10815",
+  "phase": "Q08",
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_10815 --phase Q08 --from-work-item-id 1a7d6630-f840-4987-8dda-d38a67d39526 --append-only-rerun-of e1112871-12a0-4ee9-a565-9f9f19ff54aa --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement - fresh Q08 vintage basis; pump respawns and autoseals the Q10_NEWS successor on the clean calendar --expected-current-ex5-sha256 13d7064f539ece81b63e6858908d3ae5de530fa9c600cb75e6d21cf2069ce15a",
+  "rc": 0,
+  "result": {
+   "created": [
+    {
+     "id": "74718ef2-2e3c-4432-8f3b-07115b6ba632",
+     "rerun_of_work_item_id": "e1112871-12a0-4ee9-a565-9f9f19ff54aa",
+     "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10815_tv-post-vwap\\sets\\QM5_10815_tv-post-vwap_GDAXI.DWX_H1_backtest.set",
+     "superseded_pending_work_item_id": null,
+     "symbol": "GDAXI.DWX"
+    }
+   ],
+   "ea_id": "QM5_10815",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q08",
+   "previous_phase": "Q07",
+   "requeued": [],
+   "skipped": [],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 0,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ {
+  "ea": "QM5_12567",
+  "phase": "Q08",
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12567 --phase Q08 --from-work-item-id 9f65d3ba-7719-4d2f-91d7-d6b3c25615fd --append-only-rerun-of dc267677-1cec-4ec4-9a44-d5c45dd01876 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement - fresh Q08 vintage basis; pump respawns and autoseals the Q10_NEWS successor on the clean calendar --expected-current-ex5-sha256 8d901924fe7dd2cd00c61dac6db78871fdfe34f73e0f003393196992d5143e04",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_12567",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q08",
+   "previous_phase": "Q07",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "c089a98d-2879-4151-8bb4-fbe722cb1b46",
+     "reason": "append_only_rerun_already_exists",
+     "status": "done",
+     "symbol": "XAUUSD.DWX",
+     "verdict": "INFRA_FAIL"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ {
+  "ea": "QM5_13301",
+  "phase": "Q08",
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_13301 --phase Q08 --from-work-item-id e75520f9-8a84-4cc1-957a-d6c32d774a80 --append-only-rerun-of a3538dc4-e7bc-4285-ba2b-6d0858cb3f60 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement - fresh Q08 vintage basis; pump respawns and autoseals the Q10_NEWS successor on the clean calendar --expected-current-ex5-sha256 64d71b745fade2134967cd1373b39a359f22cadc94933ba8f71c177ff44edc87",
+  "rc": 0,
+  "result": {
+   "created": [
+    {
+     "id": "f3132f22-11a8-48e4-8b11-39b4fcfc4e59",
+     "rerun_of_work_item_id": "a3538dc4-e7bc-4285-ba2b-6d0858cb3f60",
+     "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13301_balke-minute-range-breakout\\sets\\QM5_13301_balke-minute-range-breakout_GDAXI.DWX_M5_backtest.set",
+     "superseded_pending_work_item_id": null,
+     "symbol": "GDAXI.DWX"
+    }
+   ],
+   "ea_id": "QM5_13301",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q08",
+   "previous_phase": "Q07",
+   "requeued": [],
+   "skipped": [],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 0,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ {
+  "ea": "QM5_10939",
+  "phase": "Q08",
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_10939 --phase Q08 --from-work-item-id ef98d494-b292-49cb-9e78-01c9000b6b8f --append-only-rerun-of 811fc617-ee41-456b-8e3a-ce672f93c73c --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement - fresh Q08 vintage basis; pump respawns and autoseals the Q10_NEWS successor on the clean calendar --expected-current-ex5-sha256 812fc52a90f0dba0282aa2fecb3a0b3640c18386ac3e2ab7e3b80765a3970278",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_10939",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q08",
+   "previous_phase": "Q07",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "8234812d-b9ff-4652-b4a3-48bcdc41c2b5",
+     "reason": "append_only_rerun_already_exists",
+     "status": "done",
+     "symbol": "GBPUSD.DWX",
+     "verdict": "INFRA_FAIL"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ {
+  "ea": "QM5_13128",
+  "phase": "Q08",
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_13128 --phase Q08 --from-work-item-id e823ce10-dffe-48bd-b895-e96fce43d856 --append-only-rerun-of 91a6f7bc-75dc-4e57-82ef-566c6904deb2 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement - fresh Q08 vintage basis; pump respawns and autoseals the Q10_NEWS successor on the clean calendar --expected-current-ex5-sha256 59b9d1657fb04a9f33a030d420da76a1cae92c4223f4404842a53feed1848370",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_13128",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q08",
+   "previous_phase": "Q07",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "d2d76958-e060-4b65-8074-a63b7c116bf2",
+     "reason": "append_only_rerun_already_exists",
+     "status": "done",
+     "symbol": "NDX.DWX",
+     "verdict": "FAIL_SOFT"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ {
+  "ea": "QM5_12989",
+  "phase": "Q08",
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_12989 --phase Q08 --from-work-item-id 377350fb-2b57-4f72-9372-fef9c94c6f62 --append-only-rerun-of 86abcee3-1e53-4b6d-a576-80fea6e02219 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement - fresh Q08 vintage basis; pump respawns and autoseals the Q10_NEWS successor on the clean calendar --expected-current-ex5-sha256 77d3c5fda5ef2dfd0c138e6520f76d450a04fe812fcefabac07e2673fcd2e425 --replacement-setfile framework/EAs/QM5_12989_grimes-nested-pb-v2/sets/QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_backtest.set",
+  "rc": 0,
+  "result": {
+   "created": [],
+   "ea_id": "QM5_12989",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q08",
+   "previous_phase": "Q07",
+   "requeued": [],
+   "skipped": [
+    {
+     "id": "86abcee3-1e53-4b6d-a576-80fea6e02219",
+     "reason": "replacement_setfile_governed_name_required",
+     "replacement_setfile": "framework/EAs/QM5_12989_grimes-nested-pb-v2/sets/QM5_12989_grimes-nested-pb-v2_XAUUSD.DWX_H4_backtest.set",
+     "symbol": "XAUUSD.DWX"
+    }
+   ],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 1,
+   "skipped_missing_setfiles_count": 0
+  }
+ },
+ {
+  "ea": "QM5_1567",
+  "phase": "Q07",
+  "cmd": "tools/strategy_farm/farmctl.py enqueue-backtest --ea QM5_1567 --phase Q07 --from-work-item-id 5299eb44-8e1d-46c8-938c-06d8c1ac5d52 --append-only-rerun-of fba298c8-4c2c-4162-a194-07cc27e7b805 --rerun-reason OWNER-E1C-OPTIONB-20260916: E1-C Option A full Q09 news remeasurement - step 1 of QM5_1567 EURUSD lineage rebuild (fresh Q07); then Q08 rerun, then pump-spawned Q10_NEWS successor --expected-current-ex5-sha256 aee0eb60798ef7ada09e49df6e9a339dd8199f810de56dab8a25957cb26fba31",
+  "rc": 0,
+  "result": {
+   "created": [
+    {
+     "id": "ceebbe72-4556-4fdb-8f4e-bb623ae22b41",
+     "rerun_of_work_item_id": "fba298c8-4c2c-4162-a194-07cc27e7b805",
+     "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1567_demark-td-reverse-sequential-h4\\sets\\QM5_1567_demark-td-reverse-sequential-h4_EURUSD.DWX_H4_backtest.set",
+     "superseded_pending_work_item_id": null,
+     "symbol": "EURUSD.DWX"
+    }
+   ],
+   "ea_id": "QM5_1567",
+   "enqueued": true,
+   "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+   "phase": "Q07",
+   "previous_phase": "Q06",
+   "requeued": [],
+   "skipped": [],
+   "skipped_cache_history_count": 0,
+   "skipped_count": 0,
+   "skipped_missing_setfiles_count": 0
+  }
+ }
+]

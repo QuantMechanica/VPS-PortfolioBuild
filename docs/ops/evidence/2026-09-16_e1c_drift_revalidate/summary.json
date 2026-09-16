@@ -1,0 +1,177 @@
+{
+ "delegation_census": "NEWS_CALENDAR_TAINTED unreleased holds with created_at < 2026-09-16 (the 99-row OWNER census; later holds are live sweep drift)",
+ "expected_hashes": {
+  "new_manifest_declared_sha256": "6d7d64b60bb72278e6c65cfb1e738b84a1d9fc5cf11488b573cc136cc1356320",
+  "new_primary_sha256": "c48ad8b4bf667001ef7204d37f5420504f853ac25aa6f0a70152b3d743a1c134",
+  "new_secondary_sha256": "e15b6fe1f80f2f6a82a612f16ef7aaf6b9cc450d3eba1c3a94690ceee2f3b935",
+  "old_events_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+  "tainted_pin_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1"
+ },
+ "generated_at_utc": "2026-09-16T16:43:52.284341+00:00",
+ "hold_drift_excluded_from_metrics": [
+  {
+   "classified": true,
+   "delta_validation_status": "UNCHANGED_EQUIVALENT",
+   "ea_id": "QM5_9973",
+   "hold_created_at": "2026-09-16T14:08:21+00:00",
+   "phase": "Q10_NEWS",
+   "symbol": "NDX.DWX",
+   "work_item_id": "564c7e0e-9f1f-446b-918a-1a2cb9d1ab0f"
+  }
+ ],
+ "identity": {
+  "currency_overrides_config": {
+   "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\news_calendar_scoped_consumer_b.v1.json",
+   "sha256": "a6ea1f90b6881cb30e7f795304a512c415892473d30774c71d96c0bf5d0895d2"
+  },
+  "new_manifest": {
+   "declared_manifest_sha256": "6d7d64b60bb72278e6c65cfb1e738b84a1d9fc5cf11488b573cc136cc1356320",
+   "path": "D:\\QM\\data\\news_calendar\\news_calendar_bundle_manifest.json",
+   "sha256": "bcf37b37a99932bcc0496998b1757ce17267d9bb5150b324c731efd30aab51a6"
+  },
+  "new_primary": {
+   "path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+   "sha256": "c48ad8b4bf667001ef7204d37f5420504f853ac25aa6f0a70152b3d743a1c134"
+  },
+  "new_secondary": {
+   "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+   "sha256": "e15b6fe1f80f2f6a82a612f16ef7aaf6b9cc450d3eba1c3a94690ceee2f3b935"
+  },
+  "old_events": {
+   "path": "D:\\QM\\data\\news_calendar\\q09_bundles\\q09cal-20150101-20260809-0bb19b5bb9790b76\\events.csv",
+   "sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1"
+  },
+  "old_manifest": {
+   "path": "D:\\QM\\data\\news_calendar\\q09_bundles\\q09cal-20150101-20260809-0bb19b5bb9790b76\\manifest.json",
+   "sha256": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461"
+  }
+ },
+ "metrics": {
+  "DELTA_NOT_EXACT": 0,
+  "EVIDENCE_INCOMPLETE": 8,
+  "FORECAST_RUNNABLE_HOURS_ADDED": 0,
+  "FULL_REMEASUREMENT_OPTION_A": 8,
+  "HOLDS_RELEASED_OPTION_B": 0,
+  "NEWS_TAINT_TOTAL": 8,
+  "NEW_RUNNABLE_WORK": 0,
+  "UNCHANGED_EQUIVALENT": 0,
+  "VERDICT_FLIP": 0
+ },
+ "metrics_notes": {
+  "FORECAST_RUNNABLE_HOURS_ADDED": "0: Option-B release adds runnable rows without new MT5 measurement, and it is counted only at governed release. The ~93h news figure in KIMI_INTERIM_HANDOFF_2026-09-18.md is the Option-A remeasurement program forecast, not this pass.",
+  "UNCHANGED_EQUIVALENT_note": "equivalence is certified against the LIVE published calendar bytes (hashes above); the shared 2025-05..2026-06 upstream gap is present in BOTH calendars. When the separate human-gated registry repair + refresh backfills those months, equivalence must be re-certified before any further release.",
+  "VERDICT_FLIP": "unreachable by construction: the calendar is not an input to either gate; a non-empty delta fails closed to DELTA_NOT_EXACT."
+ },
+ "reconciliation": "UNCHANGED_EQUIVALENT + VERDICT_FLIP + DELTA_NOT_EXACT + EVIDENCE_INCOMPLETE == NEWS_TAINT_TOTAL == HOLDS_RELEASED_OPTION_B + FULL_REMEASUREMENT_OPTION_A",
+ "rows": [
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_12989",
+   "phase": "Q10_NEWS",
+   "record_sha256": "92d6ede856e81a1c5fac45b14b1227f99b4e1d0d26738ef87db096e3763a13a5",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "H4",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "1cff016c-d25c-4723-a892-6bc53bfafa0b"
+  },
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_1567",
+   "phase": "Q10_NEWS",
+   "record_sha256": "7d6b2aff118cb4607e5b318f65c5be073d2ae1c7ae7e364e436b4962beb2e8af",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "EURUSD.DWX",
+   "timeframe": "H4",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "2604a1f0-4f58-4597-89ef-432af9093131"
+  },
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_10847",
+   "phase": "Q10_NEWS",
+   "record_sha256": "ca34838daa0692e74a29d695f1826959e7eb150e8f4b31b4fd6aa2190b60f699",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "GDAXI.DWX",
+   "timeframe": "H1",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "49a059da-82ab-4835-9c46-f18ba9b94dcf"
+  },
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_10815",
+   "phase": "Q10_NEWS",
+   "record_sha256": "859c0a8de5dfc9a942bd375e7c3cdcef7dcb5cfb0a4eda37bd7ed5fa33825ff8",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "GDAXI.DWX",
+   "timeframe": "H1",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "57d8bacd-2805-45a6-ac51-156e22bb3a65"
+  },
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_12567",
+   "phase": "Q10_NEWS",
+   "record_sha256": "fcf8f95b66595accd245be4b418d6f0b9b5d8543e5b13a0a01d93ad175a3b6e6",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "XAUUSD.DWX",
+   "timeframe": "D1",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "7bbeef66-becf-4bd3-aa5c-1d00bde262d8"
+  },
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_13301",
+   "phase": "Q10_NEWS",
+   "record_sha256": "ce1b61f4a2182de55a8ec129cf5c5bddca09706a44d2c2d0ce6e2707553ecc15",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "GDAXI.DWX",
+   "timeframe": "M5",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "84c6e9e9-76a8-4cd4-87b4-647d7fad3c1a"
+  },
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_10939",
+   "phase": "Q10_NEWS",
+   "record_sha256": "4360c0b27bfed9b94b27dee6b191060b758ccb29c3216873673b758197456015",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "GBPUSD.DWX",
+   "timeframe": "H4",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "9639a773-b913-40a2-b12f-128a027aec98"
+  },
+  {
+   "delta_validation_status": "EVIDENCE_INCOMPLETE",
+   "ea_id": "QM5_13128",
+   "phase": "Q10_NEWS",
+   "record_sha256": "d43a1466d66dab8af25eabb1ad549b3f3e3f0e732fccec83145c615f9650b2e2",
+   "release_eligible": false,
+   "row_class": "promoted",
+   "symbol": "NDX.DWX",
+   "timeframe": "H1",
+   "window_from": null,
+   "window_to": null,
+   "work_item_id": "aa80274f-fb46-4432-b47e-6fb2bf28c9a2"
+  }
+ ],
+ "schema": "qm.e1c-optionb-summary/v1",
+ "status_counts": {
+  "EVIDENCE_INCOMPLETE": 8
+ },
+ "summary_sha256": "d184e952cd6a5060647b61b7a64c926ea45b8e2cb5ed3f09d776962f47aca2fb"
+}
