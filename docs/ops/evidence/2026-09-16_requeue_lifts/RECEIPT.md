@@ -42,12 +42,31 @@ Operator: `kimi-interim` · Date (UTC): 2026-09-16 · Repo: `C:\QM\repo`
   Unblock requires an OWNER-ratified force-rebuild/source-repair authority or a scoped
   single-symbol enqueue variant (the option-(b) code+decision change).
 
+## D4 — QM5_11731 — EXECUTED (2026-09-16, 11:45–12:23Z)
+
+| Step | Result |
+|---|---|
+| Authority | `OWNER-DEC-REQUEUE-LIFT-20260916-D4` registered (document-bound force-rebuild wave, QM5_11731 only) — commit `98207717da` |
+| Compile | COMPILE_EA **`528c42c5-bd83-46d1-ab2c-954cb1669c0b`** done/COMPILE_OK 11:58:27Z, 0E/0W, hardening PASS, new ex5 identity `6e6fbf44…` (worker T3); old ex5/build task untouched |
+| Incident | 12:00:23Z ambient `clean_repo_worktree -RestoreTrackedEx5` reverted worktree ex5; fresh bytes recovered from the sweep's own archive (`C:\QM\archive\repo-dirty-20260916T120023Z`); intake hash guard correctly refused while stale |
+| Lift | `3f092f0a…f3f3` → `a614bfc2…682a`, only the `QM5_11731` line, backup + `d4_lift_hashes.json` |
+| Canary | `intake-first-q02` → ONE row **`55d28c4a-75fd-4084-9444-18666b364dc5`** (EURUSD.DWX M5, `qm-q02-canary-fanout/v1`); claimed T1→T4; done/PASS 12:17:31Z; pilot a–e CLEAN (Model-4 Every Real Tick, deterministic, 1,784 trades, hashes stable); economics net −99,123 / PF 0.65 recorded for later gates |
+| Fanout | `sweep_enqueue_built_eas.py --apply --ea QM5_11731` (RELEASE decision) promoted GBPUSD/USDCHF/USDJPY — rows `5b514f67…`/`bb70676c…`/`9e3b0a5a…`, claimed T10/T8/T7, all bound to ex5 `6e6fbf44…` |
+| STOP | none — detail `QM5_11731_D4_execution_RECEIPT.md` |
+
 ## Files
 
 - `QM5_11561_receipt.md` — D2A detail
 - `QM5_11731_receipt.md` — D2B STOP detail with code references
 - `QM5_11731_D2B_continuation_RECEIPT.md` — D2B continuation STOP (provider mandate + guard refusal)
-- `d2a_lift_hashes.json` — machine-readable lift record
+- `OWNER-DEC-REQUEUE-LIFT-20260916-D4_QM5_11731_force_rebuild.md` — D4 decision document (code-bound)
+- `QM5_11731_D4_authority_registration_RECEIPT.md` — D4 authority registration + verification
+- `QM5_11731_D4_execution_RECEIPT.md` — D4 full execution report
+- `d4_enqueue_result.json` / `d4_release_wave.json` / `d4_intake_result.json` — machine-readable step records
+- `d4_lift_hashes.json` — machine-readable lift record
+- `d4_canary_monitor.log` — canary status transitions
+- `requeue_excluded_eas.txt.before_D4_lift` — backup of prior exclusion-file bytes
 - `d2a_enqueue_result.json` — raw enqueue output
+- `d2a_lift_hashes.json` — machine-readable D2A lift record
 - `d2b_continuation_enqueue_compile_dry_run.json` — machine-readable enqueue-compile refusal
 - `requeue_excluded_eas.txt.before_D2A_lift` — backup of prior exclusion-file bytes
