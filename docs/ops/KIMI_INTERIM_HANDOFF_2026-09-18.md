@@ -120,7 +120,8 @@ Live AutoTrading / T_Live / DXZ v2 cutover (OWNER-only, Sun 2026-09-20), FTMO pu
 
 ## Continuous-throughput mode (from 2026-09-16 ~06:30Z)
 
-- **Health cadence:** cron `01M2MDAC7H6S7B9CBCM3Z6MNM8` (×:13/×:53) = three-number watch + cascade verification + watchdog freshness + path-scoped handoff updates; agents building `factory_three_numbers.py` read-model (+15-min task) and `second_chance_funnel.py` tracker.
+- **Post-verdict note (06:50Z):** QM5_13137's Q08 completed with verdict **INVALID** — `q08_8.5_neighborhood:neighborhood_evidence_lineage_invalid:evidence_status_missing_or_invalid`. This is the evidence-integrity gate working as designed (fail-closed), NOT a semantic defect in the V3 repair (this row is from the 09-14 pair, outside the 16-row V3 cohort) and NOT a verdict rewrite. New diagnosed repair class: §8.5 neighborhood-evidence lineage regeneration for the 09-14 pair. Watch: QM5_11121 (still active) may hit the same gate; the V3 fresh rows' §8.5 readiness must be checked at their first verdict. No cascade expected on INVALID (correct — no successor manufactured).
+- **Health cadence:** cron `01M2MDAC7H6S7B9CBCM3Z6MNM8` (×:13/×:53) = three-number watch + cascade verification + watchdog freshness + path-scoped handoff updates; read-models live (`factory_three_numbers.py` 15-min task, `second_chance_funnel.py`).
 - **Latest three numbers:** ACTIVE=2 (both Q08 XAUUSD) · TRUE_CLAIMABLE=1 (RAM-heavy Q06) · BLOCKED_RECOVERABLE=606 (Q08_DSR staged cohort + RAM parked + artifact-binding).
 - **Buffer plan:** Q08 successors cascade on verdict → second-chance reviews (codex 09-19) → OWNER decisions D1 (19 rows) / D2 (2 Q02s) / D3 (3 pairs) → critic wave for 41475/6/7 (all prescreen-READY or critic-gated only).
 - **H-PY follow-up:** L3-reach design analysis running (agent-22) — classification whether L3 is rare-but-real, unreachable-by-design, or defective; any variant = NEW preregistered lineage (0008), never a silent edit.
