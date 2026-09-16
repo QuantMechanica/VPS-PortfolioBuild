@@ -576,6 +576,7 @@ void OnTick()
    QM_EquityStreamOnNewBar();
 
    QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req) && Pattern_AllowsRequest(req))
      {
       ulong out_ticket = 0;
