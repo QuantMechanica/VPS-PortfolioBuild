@@ -1,0 +1,34 @@
+{
+  "active_opt_census_cells": 0,
+  "applied": true,
+  "capacity_waits": [],
+  "cell_slots_configured": 6,
+  "cell_slots_effective": 6,
+  "deferred": [],
+  "lanes_per_program_configured": 2,
+  "lanes_per_program_effective": 2,
+  "lock_scope": "CLASSIFY_OUTSIDE_EXACT_PROGRAM_WRITES_INSIDE",
+  "maintained": [],
+  "materialized": [],
+  "matrix_runner_revision": "dl089-matrix-runner-v2",
+  "pair_mode": "BOUNDED_PROGRAMS",
+  "priority_window_cap": 8,
+  "program_slots": 8,
+  "program_slots_configured": 8,
+  "program_slots_effective": 8,
+  "program_write_chunks": 1,
+  "q02_prerequisites": [
+    {
+      "created": false,
+      "measurement_ea_id": "QM5_41478",
+      "q12_work_item_id": "779da760-42c2-50ed-80c3-263ef3366edb",
+      "status": "active",
+      "verdict": null,
+      "work_item_id": "ac5325b0-e774-516b-a7fb-b9cd66c342cb"
+    }
+  ],
+  "recoveries": [],
+  "schema": "qm.dl089-matrix-service/v1",
+  "slot_owners": [],
+  "worker_count": 10
+}

@@ -10,36 +10,29 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   b96a75102780b6eaf05dc119a2c22dda42e010d8d02d7e59c258db142f102984
 ; author:       Development
 ; date:         2026-09-16
-; staged_by:    Kimi agent-16 (docs/ops/evidence/2026-09-16_opt_sibling_10911)
-; note:         derived from QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set;
-;               qm_ea_id added (sibling contract), magic slot 0 pending allocator
-;               reconciliation, six opt_pp_* permission inputs appended (neutral).
 ;==========================================================
 qm_ea_id=41478
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
-; strategy-specific params from card must be appended below this line
-; card_defaults_source=not_found
-; time-sensitive strategy params (mq5 defaults, made explicit for build guard 2026-07-10)
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_41478_grimes-complex-pb-opt.md
+strategy_ema_trend_period=50
 strategy_ema_exit_period=20
-; DL-089 pattern measurement surface. Zero disables a slot.
+strategy_atr_period=14
+strategy_thrust_lookback_bars=20
+strategy_thrust_prior_high_bars=20
+strategy_thrust_range_atr_mult=1.00
+strategy_pullback_atr_mult=0.80
+strategy_failure_window_bars=5
+strategy_min_thrust_to_entry_bars=8
+strategy_stop_buffer_atr_mult=0.20
+strategy_target_r_mult=1.50
+strategy_max_hold_bars=30
 opt_pp_buy1=0
 opt_pp_buy2=0
 opt_pp_buy3=0
