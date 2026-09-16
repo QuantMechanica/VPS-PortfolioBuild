@@ -1064,6 +1064,32 @@ QM5_41207_COMPILE_ADVISORY_PREDECESSOR_EX5_SHA256 = (
 QM5_41207_COMPILE_ADVISORY_EVIDENCE_SHA256 = (
     "90f8a719f54d41efe13c2abd705d44ebc4d36e37c63bbb51c7f1a9a4e90cff2a"
 )
+# Exact append-only authority for the first governed QM5_41478 compile
+# (OWNER DECISION 5, 2026-09-16; measurement sibling of QM5_10911).  The
+# predecessor compiled with 0 errors / 0 warnings but failed the deterministic
+# build gate only on EA_TRADE_REQUEST_UNINITIALIZED: a bare QM_EntryRequest
+# declaration reached Strategy_EntrySignal without an explicit zero-init.  The
+# committed repair adds one behavior-preserving `ZeroMemory(req);` line (the
+# struct default constructor already zero-initializes every field, so runtime
+# behavior is unchanged) and build_gate_hardening now reports 0 findings.
+# Authority citation: OWNER-DEC-Q12-SIBLING-41478-20260916-D5 (source-repair:
+# ZeroMemory(req) behavior-preserving, hardening-gate-verified).  Bound below
+# to that immutable failed row, its rejected source hash, and the one reviewed
+# repair hash.  It grants no backtest, gate-verdict, or general EX5-overwrite
+# authority and cannot be used for any other EA.
+QM5_41478_COMPILE_FAIL_REPAIR_PREDECESSOR_ID = (
+    "672431ad-c9eb-45d3-8ebf-057366d07b47"
+)
+QM5_41478_COMPILE_FAIL_REPAIR_AUTHORITY = (
+    "owner_dec_q12_sibling_41478:OWNER-DEC-Q12-SIBLING-41478-20260916-D5"
+)
+QM5_41478_COMPILE_FAIL_REPAIR_EA_LABEL = "QM5_41478_grimes-complex-pb-opt"
+QM5_41478_COMPILE_FAIL_REJECTED_SOURCE_SHA256 = (
+    "ac7476b406a206287e7a9a94dd34fe635f6a93155059d3a96f43a8c456f9d7f2"
+)
+QM5_41478_COMPILE_FAIL_REPAIRED_SOURCE_SHA256 = (
+    "b0771317d8c8fd4c7491ade67dc1ea770a110bcd603b134b3c0aa54e6b7c03d8"
+)
 COMPILE_PROFILE_STDLIB_FAILURE_CLASS = "COMPILE_PROFILE_STDLIB_MISSING"
 VALID_TIMEFRAMES = (
     # Kept exactly aligned with gen_setfile.ps1's ValidateSet: a candidate
@@ -1219,6 +1245,25 @@ PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS = frozenset(
     for value in PRE0803_FORCE_REBUILD_EA_IDS
 )
 
+# OWNER-APPROVED D4 requeue-lift pilot (decision OWNER-DEC-REQUEUE-LIFT-20260916-D4,
+# scoped to QM5_11731 ONLY — no generic force-rebuild authority). Enables the
+# EURUSD.DWX M5 Q02 pilot: a fresh deterministic local MetaEditor compile mints a
+# new COMPILE_EA/build identity while the wave-64 .ex5 and build task
+# 1a17f439-b48e-46db-986b-2a3c62f8816c stay untouched as append-only history.
+# Fail-closed in the same shape as the pre-0803 wave.
+REQUEUE_LIFT_D4_FORCE_REBUILD_OWNER_REFERENCE = "OWNER-DEC-REQUEUE-LIFT-20260916-D4"
+REQUEUE_LIFT_D4_FORCE_REBUILD_DECISION_DOC = (
+    "docs/ops/evidence/2026-09-16_requeue_lifts/"
+    "OWNER-DEC-REQUEUE-LIFT-20260916-D4_QM5_11731_force_rebuild.md"
+)
+REQUEUE_LIFT_D4_FORCE_REBUILD_EA_IDS = frozenset({
+    "QM5_11731",
+})
+REQUEUE_LIFT_D4_FORCE_REBUILD_NUMERIC_EA_IDS = frozenset(
+    value.split("_", 1)[1] if value.upper().startswith("QM5_") else value
+    for value in REQUEUE_LIFT_D4_FORCE_REBUILD_EA_IDS
+)
+
 
 def dl089_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
     """Return the numeric EA ids authorized for a COMPILE_EA force-rebuild.
@@ -1304,15 +1349,46 @@ def pre0803_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
     return frozenset(authorized)
 
 
+def requeue_lift_d4_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
+    """Return the numeric EA ids authorized by OWNER-DEC-REQUEUE-LIFT-20260916-D4.
+
+    Fail-closed in the same shape as pre0803_force_rebuild_allowlist: an id only
+    clears the bypass when the hardcoded REQUEUE_LIFT_D4_FORCE_REBUILD_EA_IDS name
+    AND the OWNER decision document in this checkout agree. The document must carry
+    the exact owner reference and name QM5_11731, so a checkout without the
+    decision (or an OWNER revocation that removes/rewrites it) turns the bypass
+    back off without a code change. Scoped to QM5_11731 only; this is NOT a
+    general .ex5-overwrite path.
+    """
+    try:
+        text = (repo_root / REQUEUE_LIFT_D4_FORCE_REBUILD_DECISION_DOC).read_text(
+            encoding="utf-8-sig"
+        )
+    except OSError:
+        return frozenset()
+    if REQUEUE_LIFT_D4_FORCE_REBUILD_OWNER_REFERENCE not in text:
+        return frozenset()
+    authorized: set[str] = set()
+    for numeric_ea_id in REQUEUE_LIFT_D4_FORCE_REBUILD_NUMERIC_EA_IDS:
+        if not numeric_ea_id.isdigit():
+            continue
+        if re.search(rf"QM5_{numeric_ea_id}(?![0-9])", text):
+            authorized.add(numeric_ea_id)
+    return frozenset(authorized)
+
+
 def force_rebuild_allowlist(root: Path, repo_root: Path) -> frozenset[str]:
     return (
         dl089_force_rebuild_allowlist(repo_root)
         | mae_hook_force_rebuild_allowlist(root)
         | pre0803_force_rebuild_allowlist(repo_root)
+        | requeue_lift_d4_force_rebuild_allowlist(repo_root)
     )
 
 
 def force_rebuild_owner_reference(ea_id: str) -> str:
+    if ea_id in REQUEUE_LIFT_D4_FORCE_REBUILD_NUMERIC_EA_IDS:
+        return REQUEUE_LIFT_D4_FORCE_REBUILD_OWNER_REFERENCE
     if ea_id in MAE_HOOK_FORCE_REBUILD_EA_IDS:
         return MAE_HOOK_FORCE_REBUILD_OWNER_REFERENCE
     if ea_id in PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS:
@@ -1326,6 +1402,8 @@ def force_rebuild_evidence_note(ea_id: str) -> str | None:
     Returns None for the DL-089 and MAE-hook waves so their compile payloads
     stay byte-identical to what they were before the pre-0803 wave existed.
     """
+    if ea_id in REQUEUE_LIFT_D4_FORCE_REBUILD_NUMERIC_EA_IDS:
+        return REQUEUE_LIFT_D4_FORCE_REBUILD_DECISION_DOC
     if ea_id in PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS:
         return PRE0803_NEWS_PROVENANCE_DECISION_DOC
     return None
@@ -2078,6 +2156,53 @@ def _qm5_41207_compile_advisory_repair_authorized(
         and evidence.get("compile_result") == "PASS"
         and "BUILD_CHECK_DWX_ADVISORY_DWX_SPREAD_FAILCLOSED" in output_tail
         and "build_check.warnings=1" in output_tail
+    )
+
+
+def _qm5_41478_compile_fail_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+) -> bool:
+    """Bind the QM5_41478 ZeroMemory repair to one exact failed row."""
+    if (
+        authority != QM5_41478_COMPILE_FAIL_REPAIR_AUTHORITY
+        or ea_label != QM5_41478_COMPILE_FAIL_REPAIR_EA_LABEL
+        or ea_id != "41478"
+        or str(source_sha or "").lower()
+        != QM5_41478_COMPILE_FAIL_REPAIRED_SOURCE_SHA256
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id"))
+            == QM5_41478_COMPILE_FAIL_REPAIR_PREDECESSOR_ID
+        ),
+        None,
+    )
+    if predecessor is None:
+        return False
+    payload = _json_object(predecessor.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    return bool(
+        predecessor.get("phase") == COMPILE_EA_PHASE
+        and predecessor.get("status") == "failed"
+        and predecessor.get("verdict") == "COMPILE_FAIL"
+        and payload.get("ea_label") == ea_label
+        and str(payload.get("mq5_sha256") or "").lower()
+        == QM5_41478_COMPILE_FAIL_REJECTED_SOURCE_SHA256
+        and payload.get("verdict_reason") == "EA_TRADE_REQUEST_UNINITIALIZED"
+        and isinstance(compile_result, dict)
+        and compile_result.get("compile_result") == "PASS"
+        and compile_result.get("build_check_result") == "FAIL"
+        and compile_result.get("failure_classes")
+        == ["EA_TRADE_REQUEST_UNINITIALIZED"]
     )
 
 
@@ -3246,6 +3371,14 @@ def _source_repair_authorized(
         )
     if authority == QM5_41207_COMPILE_ADVISORY_REPAIR_AUTHORITY:
         return _qm5_41207_compile_advisory_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+        )
+    if authority == QM5_41478_COMPILE_FAIL_REPAIR_AUTHORITY:
+        return _qm5_41478_compile_fail_repair_authorized(
             ea_label,
             authority,
             ea_id=ea_id,
