@@ -1,0 +1,38 @@
+{
+  "discovery_sample": {
+    "dataset_ids": [],
+    "instruments": [
+      "NDX (USATECHIDXUSD proxy)",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2018-2020 in-sample (two-level pilot fire count over Dukascopy USATECHIDXUSD ticks); TAIL_RISK Family A contract + parent QM-RESEARCH-2026-0007 L3 root-cause analysis (in-sample) + H-CW envelope context (QM-RESEARCH-2026-0002)"
+  },
+  "mechanization": {
+    "codex_implementable": true,
+    "spec_section": "H_PY2L_card.md"
+  },
+  "parent_version_id": "QM-RESEARCH-2026-0007",
+  "preregistration": null,
+  "research_id": "QM-RESEARCH-2026-0008",
+  "schema": "qm.research-lineage/v1",
+  "validation_sample": {
+    "dataset_ids": [],
+    "instruments": [
+      "NDX",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2021-2024 held-out; never touched during discovery"
+  },
+  "version": 2,
+  "versions": [
+    {
+      "created_at": "2026-09-16T06:40:28+00:00",
+      "mechanical_spec_sha256": "b8a85a485999e7a2078f538e87dd2a6e34813f84e8396799f6821e90c06f681b",
+      "parent_version": null,
+      "record_sha256": "c4f63ce4055df1b1fc3331571063cb35605559f317ee3779a81bd74ac97084db",
+      "version": 1
+    }
+  ]
+}

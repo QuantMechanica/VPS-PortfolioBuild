@@ -1,0 +1,23 @@
+{
+  "chain_id": "",
+  "critic_fallback_used": false,
+  "critic_seat_final": "",
+  "critic_verdict": "",
+  "finding_counts": {},
+  "generated_at_utc": "",
+  "plan": {
+    "creator": {
+      "model": "",
+      "vendor": ""
+    },
+    "critic": {
+      "model": "",
+      "vendor": ""
+    }
+  },
+  "receipt_path": "",
+  "repo_write": false,
+  "schema": "qm.agent-chain.receipt.v1",
+  "scope_drift": false,
+  "stages": []
+}

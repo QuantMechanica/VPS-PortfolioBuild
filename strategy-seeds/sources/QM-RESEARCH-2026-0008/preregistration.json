@@ -1,0 +1,127 @@
+{
+  "created_at": "2026-09-16T06:40:28+00:00",
+  "discovery_sample": {
+    "campaign": "TAIL_RISK programme Family A (docs/research/TAIL_RISK_PROGRAMME_2026-09-16.md) variant of QM-RESEARCH-2026-0007 (H-PY), under the OWNER interim delegation 2026-09-15/16",
+    "instruments": [
+      "NDX (USATECHIDXUSD proxy)",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2018-2020 in-sample window (two-level pilot fire count over a Dukascopy USATECHIDXUSD tick feed) + the parent's in-sample L3 root-cause analysis (ANALYSIS_NOT_PREREGISTERED)"
+  },
+  "expected_behaviour": "At most one basket per symbol per day. Pilot density on the NDX-class feed: roughly 6-7 baskets/month/symbol with ~6.4 active days/month, level-2 reach ~12%; no third level exists. Zero overnight exposure (swap ~ 0, no gap-through-stop); daily circuit breaker -1.0% and weekly -2.0% stop trading; session-flat by flatten_hour_utc (20 UTC default).",
+  "failure_criteria": "Killed if: sealed OOS expectancy < +0.10R/basket or PF < 1.20 after costs; simulated worst-day p95 > 2.5% of equity at 0.25% base risk or MC P(4% daily budget within 60d) > 2%; > 50% of pyramids giveback-stopped before level 2; giveback stop realizes more often than profit-taking exits with no regime explanation; level-2 reach < 2% of sealed baskets (add machinery dead weight); joint-tail protocol shows worst days systematically coinciding with the passive book or H-CW/H-MR streams (hidden common mode); swap > 10% of gross P&L; > half of the +/-1-step neighbourhood negative expectancy; any month < 8 active days.",
+  "holdout_logic": "Discovery consumed only the TAIL_RISK Family A contract, the H-CW campaign context, the parent 0007 pilot and its in-sample L3 root-cause analysis, the two-level pilot fire count on 2018-2020 data, and research-lane reasoning. 2021-2024 is a frozen holdout: no metric, parameter selection, or kill decision may read it before the preregistered validation pass; any post-observation modification mints a new lineage version with a parent link (directive sec16 R-B).",
+  "hypothesis": "H-PY2L (TAIL_RISK Family A - bounded positive pyramiding tightened to TWO levels, session-flat; variant of QM-RESEARCH-2026-0007): equity-index CFDs (NDX/GDAXI/SP500) that break the cash-session opening range and hold the breakout side of a short H1 EMA persist directionally for hours. Entering the H-CW base leg (opening-range breakout + EMA filter, entries 13-17 UTC), adding a single level 2 at +1.0xATR open profit with a new favourable extreme (sizes 1.0/0.75, aggregate <= 1.75 legs, <= 5% margin), trailing a never-widening basket stop (breakeven-plus after level 2, then 1.0x ATR behind the most favourable close), exiting ALL levels at 50% giveback of peak open basket profit or a 0.5% equity adverse bound (whichever first), flat by 20 UTC, with daily -1.0%/weekly -2.0% breakers and H-CW-class shock/spread/news filters, yields positive out-of-sample expectancy (>= +0.10R/basket, PF >= 1.20 after costs) while remaining inside the Family A deterministic risk contract (3-level envelope tightened to 2, never widened, because the parent's L3 root-cause analysis proved the third level structurally unreachable inside the session-flat envelope) and the FTMO session-flat envelope.",
+  "known_risks": "Pilot rests on ONE NDX-class proxy feed (not farm .DWX data) with ZERO costs on mid fills (tick median spread 3.07 points recorded but not charged); the two-level realized path is identical to the parent 3-level pilot by construction (parent L3 never filled), so the 0008 pilot adds no new economic information - only the honest tightened contract and a runner regression check; GDAXI/SP500 behaviour is structural inference from the H-CW shell; the in-sample window calibrated the shock floor (3.0) so the holdout must re-derive it blind; the time stop is dead code at the session defaults (entries 17-18 UTC flatten by 20 UTC, max 3-4 bars vs time_stop_bars 6) but is kept as part of the family envelope; adds concentrate exposure exactly when a parabolic reversal hurts most (bounded by breakeven trail + giveback stop, but repeated givebacks are death by sequence); H-PY2L shares the H-CW entry window so same-session correlation with H-CW/H-MR is unproven; news blackout depends on the MT5 native calendar being present and fresh; UTC/broker session mapping drifts across DST unless anchored via QM_DSTAware.",
+  "mechanical_spec_sha256": "b8a85a485999e7a2078f538e87dd2a6e34813f84e8396799f6821e90c06f681b",
+  "parameter_count": 23,
+  "parameter_ranges": {
+    "add2_trigger_atr": [
+      1.0,
+      1.5
+    ],
+    "atr_period": [
+      10,
+      20
+    ],
+    "atr_stop_mult": [
+      0.75,
+      1.25
+    ],
+    "basket_adverse_bound_pct": [
+      0.25,
+      0.5
+    ],
+    "be_buffer_atr": [
+      0.0,
+      0.1
+    ],
+    "breakout_buffer_atr": [
+      0.0,
+      0.05
+    ],
+    "breakout_window_bars": [
+      2,
+      4
+    ],
+    "daily_stop_pct": [
+      -1.0,
+      -1.0
+    ],
+    "ema_period": [
+      15,
+      30
+    ],
+    "flatten_hour_utc": [
+      20,
+      21
+    ],
+    "friday_cutoff_hour_utc": [
+      17,
+      18
+    ],
+    "giveback_frac": [
+      0.4,
+      0.5
+    ],
+    "level2_size_mult": [
+      0.75,
+      0.75
+    ],
+    "max_positions_total": [
+      1,
+      3
+    ],
+    "news_blackout_minutes": [
+      0,
+      120
+    ],
+    "risk_per_trade_pct": [
+      0.2,
+      0.25
+    ],
+    "session_end_hour_utc": [
+      16,
+      17
+    ],
+    "session_start_hour_utc": [
+      13,
+      14
+    ],
+    "shock_atr_mult": [
+      2.5,
+      3.5
+    ],
+    "spread_median_mult": [
+      1.25,
+      1.75
+    ],
+    "time_stop_bars": [
+      4,
+      8
+    ],
+    "trail_atr_mult": [
+      0.75,
+      1.25
+    ],
+    "weekly_stop_pct": [
+      -2.0,
+      -2.0
+    ]
+  },
+  "parent_version": null,
+  "record_sha256": "c4f63ce4055df1b1fc3331571063cb35605559f317ee3779a81bd74ac97084db",
+  "research_id": "QM-RESEARCH-2026-0008",
+  "schema": "qm.research-preregistration/v1",
+  "success_criteria": "Sealed OOS + Q06 HARSH-class: expectancy >= +0.10R per basket AND net profit factor >= 1.20 after costs; simulated worst-day p95 <= 2.5% of equity at 0.25% base risk AND Monte-Carlo P(hit 4% effective daily-loss budget within 60d) <= 2%; giveback-before-level-2 rate <= 50%; giveback stop must NOT realize more often than profit-taking exits without regime explanation; level-2 reach >= 2% of sealed baskets; <= half of the +/-1-step parameter neighbourhood non-negative expectancy; every month >= 8 active days; realized swap/rollover cost <= 10% of gross P&L; joint-tail protocol must PASS against the H-CW/H-MR/passive-book streams before any book claim.",
+  "validation_sample": {
+    "instruments": [
+      "NDX",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2021-2024 held-out; never touched during discovery"
+  },
+  "version": 1
+}

@@ -1,0 +1,39 @@
+{
+  "_provenance": "Byte-identical contract object to the fenced block in H_PY2L_card.md (mechanical spec, frozen at preregistration). Variant of the QM-RESEARCH-2026-0007 contract: Family A bounds tightened, never widened (max_levels 3->2, progression [1.0,0.75,0.5]->[1.0,0.75], aggregate 2.25->1.75). To be validated with tools/strategy_farm/strategy_risk_contract.py at preregistration.",
+  "daily_breaker_pct": -1.0,
+  "emergency_exit": {
+    "equity_stop_pct": 0.5,
+    "rule": "Flatten the whole basket when (a) open adverse excursion reaches 0.5% of account equity OR (b) open profit giveback reaches 50% of peak open basket profit, whichever occurs first. Stops only ever tighten, never widen.",
+    "type": "equity_stop"
+  },
+  "gap_sensitivity": "SESSION-FLAT: no overnight/weekend exposure by construction; gap tail removed by the flatten-hour rule (FTMO envelope). Sealed stress s01/s04/s05/s06/s08 still to be run by the governed pipeline.",
+  "max_basket_exposure": "1.75",
+  "max_basket_loss_pct": 0.5,
+  "max_gross_notional": "1.75",
+  "max_levels": 2,
+  "max_margin_pct": 5.0,
+  "max_open_positions": 3,
+  "mechanism_flags": [
+    "positive_pyramiding"
+  ],
+  "schema": "qm.strategy-risk-contract/v1",
+  "session_flat": true,
+  "sizing_progression": {
+    "multiplier": null,
+    "notes": "per-level multipliers [1.0, 0.75] of the initial leg; aggregate = 1.75 initial legs (Family A 3-level envelope tightened, never widened)",
+    "type": "custom"
+  },
+  "spread_slippage_sensitivity": "NOT_EVALUATED (Q06 HARSH-class pending)",
+  "stress_sequence": {
+    "evidence": "EVIDENCE_MISSING",
+    "result_pct": "NOT_EVALUATED",
+    "scenario": "s08_combined_worst at max_levels with basket fully built"
+  },
+  "tail_amplifying": false,
+  "weekly_breaker_pct": -2.0,
+  "worst_historical_sequence": {
+    "evidence": "EVIDENCE_MISSING",
+    "max_adverse_levels": "EVIDENCE_MISSING",
+    "max_drawdown_pct": "EVIDENCE_MISSING"
+  }
+}
