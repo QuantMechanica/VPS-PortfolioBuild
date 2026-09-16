@@ -1,0 +1,5732 @@
+[
+ {
+  "id": "b1bd1d06-dbfb-4d16-9951-3ea89e14d64f",
+  "ea_id": "QM5_12712",
+  "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+  "label": "QM5_12712_edgelab-eurgbp-euraud-cointegration",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-07-08T18:01:48+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "b1bd1d06-dbfb-4d16-9951-3ea89e14d64f",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: CANDIDATE_WINDOW_UNAVAILABLE) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:53+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12712_edgelab-eurgbp-euraud-cointegration.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_12712",
+    "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "588c88cd20ce3c1ba94bb93fc2f2dae2d11616a5bf6191f41c2226daa996d7e6"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "b6b18327-dd3a-4d79-a8cd-6b1a24cfd084",
+  "ea_id": "QM5_1328",
+  "symbol": "USDCAD.DWX",
+  "label": "QM5_1328_brooks-3bar-reversal-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-07-18T02:57:20+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "b6b18327-dd3a-4d79-a8cd-6b1a24cfd084",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:53+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017",
+   "end": "2022",
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1328_brooks-3bar-reversal-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1328",
+    "symbol": "USDCAD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f8c043179da742b322f50af265c6ed79bb361bc90ff4c420ea5920a76be5f256"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "7c13c506-ea5b-47f9-a124-219f61bbe0d2",
+  "ea_id": "QM5_1328",
+  "symbol": "USDCAD.DWX",
+  "label": "QM5_1328_brooks-3bar-reversal-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-07-18T03:52:58+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "7c13c506-ea5b-47f9-a124-219f61bbe0d2",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:53+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1328_brooks-3bar-reversal-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1328",
+    "symbol": "USDCAD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f8c043179da742b322f50af265c6ed79bb361bc90ff4c420ea5920a76be5f256"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "8203543c-2966-45ac-9aca-9d60b16b8d58",
+  "ea_id": "QM5_1328",
+  "symbol": "USDCAD.DWX",
+  "label": "QM5_1328_brooks-3bar-reversal-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-07-18T04:52:58+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "8203543c-2966-45ac-9aca-9d60b16b8d58",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:53+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1328_brooks-3bar-reversal-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1328",
+    "symbol": "USDCAD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f8c043179da742b322f50af265c6ed79bb361bc90ff4c420ea5920a76be5f256"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "79b1fcab-7ad6-4363-ae91-9190886a2d45",
+  "ea_id": "QM5_1328",
+  "symbol": "USDCAD.DWX",
+  "label": "QM5_1328_brooks-3bar-reversal-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-07-18T05:52:58+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "79b1fcab-7ad6-4363-ae91-9190886a2d45",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:53+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1328_brooks-3bar-reversal-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1328",
+    "symbol": "USDCAD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f8c043179da742b322f50af265c6ed79bb361bc90ff4c420ea5920a76be5f256"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "2a1a6c86-7796-4762-b7b4-8a7bdff07445",
+  "ea_id": "QM5_1328",
+  "symbol": "USDCAD.DWX",
+  "label": "QM5_1328_brooks-3bar-reversal-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-07-18T06:52:58+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "2a1a6c86-7796-4762-b7b4-8a7bdff07445",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:53+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1328_brooks-3bar-reversal-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1328",
+    "symbol": "USDCAD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f8c043179da742b322f50af265c6ed79bb361bc90ff4c420ea5920a76be5f256"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "0e3f3359-d8ee-4b1c-83ac-58ef97a41848",
+  "ea_id": "QM5_1328",
+  "symbol": "USDCAD.DWX",
+  "label": "QM5_1328_brooks-3bar-reversal-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-07-18T07:52:58+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "0e3f3359-d8ee-4b1c-83ac-58ef97a41848",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:Q08_CLA) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:53+00:00"
+  },
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1328_brooks-3bar-reversal-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1328",
+    "symbol": "USDCAD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f8c043179da742b322f50af265c6ed79bb361bc90ff4c420ea5920a76be5f256"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": "0a607e53948de33f41090ef3208926a342ef2f81c612bf322a278408379f7b4e",
+    "payload_expected": "0a607e53948de33f41090ef3208926a342ef2f81c612bf322a278408379f7b4e"
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": "8b9b19e48e81bd2e666766f3bbfc216aa3a8c47e5cccaf77712f713d5f928262",
+    "payload_expected": "8b9b19e48e81bd2e666766f3bbfc216aa3a8c47e5cccaf77712f713d5f928262"
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": "c0d28f764f40ff473042fce87c435dd7909776ae061b236fb591b972e6bc3f99",
+    "payload_expected": "c0d28f764f40ff473042fce87c435dd7909776ae061b236fb591b972e6bc3f99"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "b68d05cd-e52c-43a5-96aa-5e0306efa60f",
+  "ea_id": "QM5_12712",
+  "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+  "label": "QM5_12712_edgelab-eurgbp-euraud-cointegration",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-08-17T21:55:23+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "b68d05cd-e52c-43a5-96aa-5e0306efa60f",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (CANDIDATE_WINDOW_UNAVAILABLE); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-08-18T18:24:14+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12712_edgelab-eurgbp-euraud-cointegration.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_12712",
+    "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "588c88cd20ce3c1ba94bb93fc2f2dae2d11616a5bf6191f41c2226daa996d7e6"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": "0003ed98f590e95a28a08e7d8198639b48213e882e8c5d2428cad4422355c982",
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "30297fe9-ddc8-43a1-82f7-b3b617980e81",
+  "ea_id": "QM5_12778",
+  "symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1",
+  "label": "QM5_12778_edgelab-audusd-eurjpy-cointegration",
+  "setfile": {
+   "exists": true,
+   "param_lines": 31,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-08-17T21:55:23+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12778_edgelab-audusd-eurjpy-cointegration.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01",
+    "payload_artifact_identity": null,
+    "payload_expected": "2a105cfbb364142c96c552136bb450162c142845665ce3366d0c045248c17a01"
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "3d886f4b-d2b8-4a1f-a3fd-0a8b6c93dc4e",
+  "ea_id": "QM5_12864",
+  "symbol": "QM5_12864_XTI_XAG_RSPREAD_D1",
+  "label": "QM5_12864_oilsilver-rspr",
+  "setfile": {
+   "exists": true,
+   "param_lines": 31,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-08-17T21:55:23+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12864_oilsilver-rspr.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": "5c083a5c6fa75c8184a187b50bc66ae9a30e87ccb25ee423c5c94566812c8b26",
+    "payload_artifact_identity": null,
+    "payload_expected": "5c083a5c6fa75c8184a187b50bc66ae9a30e87ccb25ee423c5c94566812c8b26"
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "cc2be960-a5ab-42dc-8014-36d61b5c0941",
+  "ea_id": "QM5_13059",
+  "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+  "label": "QM5_13059_xti-audjpy-rspr",
+  "setfile": {
+   "exists": true,
+   "param_lines": 31,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-08-17T21:55:23+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13059_xti-audjpy-rspr.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": "056a93e0b1148b35e3ae61666d90661294e7d622ae161560293da53aedea027a",
+    "payload_artifact_identity": null,
+    "payload_expected": "056a93e0b1148b35e3ae61666d90661294e7d622ae161560293da53aedea027a"
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "1f1920cb-d7d4-481d-994d-9bdf2aa38561",
+  "ea_id": "QM5_13076",
+  "symbol": "QM5_13076_XTI_NZDCAD_RSPREAD_D1",
+  "label": "QM5_13076_xti-nzdcad-rspr",
+  "setfile": {
+   "exists": true,
+   "param_lines": 31,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-08-17T21:55:23+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13076_xti-nzdcad-rspr.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": "b0bb17acdeca68880226fad2dd0247595643dc1cf228b9d361fc2eb34becafc5",
+    "payload_artifact_identity": null,
+    "payload_expected": "b0bb17acdeca68880226fad2dd0247595643dc1cf228b9d361fc2eb34becafc5"
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "fda2f049-a7cf-485d-ab07-0439d2487696",
+  "ea_id": "QM5_1206",
+  "symbol": "SP500.DWX",
+  "label": "QM5_1206_lento-sp500-csa-ma",
+  "setfile": {
+   "exists": true,
+   "param_lines": 23,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-08-18T07:26:56+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2018",
+   "end": "2022",
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1206_lento-sp500-csa-ma.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "ffbc4cab-18af-4793-b5b9-8338df851a39",
+  "ea_id": "QM5_1328",
+  "symbol": "USDCAD.DWX",
+  "label": "QM5_1328_brooks-3bar-reversal-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-02T10:11:37+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "ffbc4cab-18af-4793-b5b9-8338df851a39",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:22:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017",
+   "end": "2022",
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1328_brooks-3bar-reversal-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1328",
+    "symbol": "USDCAD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f8c043179da742b322f50af265c6ed79bb361bc90ff4c420ea5920a76be5f256"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "63d4ce1d-6d4c-4c49-adc4-98ae67aa7c27",
+  "ea_id": "QM5_1230",
+  "symbol": "AUDJPY.DWX",
+  "label": "QM5_1230_carver-dynvol-mav",
+  "setfile": {
+   "exists": true,
+   "param_lines": 25,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-02T10:15:33+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "63d4ce1d-6d4c-4c49-adc4-98ae67aa7c27",
+   "hold_code": "Q08_DSR_CANDIDATE_WINDOW_UNAVAILABLE",
+   "reason": "2026-09-14 04:2xZ Orchestrator: no resolvable Q08 candidate window anywhere in payload/lineage (dsr_cohort._candidate_window CANDIDATE_WINDOW_UNAVAILABLE even after the bare-year fix a0e04bd168); the DSR preflight would skip it on every scan while it consumes history-preflight budget",
+   "created_at": "2026-09-14T04:09:49+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1230_carver-dynvol-mav.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1230",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "95168464a47e60cf0e0ec73b849dc3c451b885d699960466852acd79135ac465"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "5901ae3b-8725-4126-841e-d2dcec30184b",
+  "ea_id": "QM5_10287",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10287_cinar-ichimoku",
+  "setfile": {
+   "exists": true,
+   "param_lines": 21,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-04T23:58:48+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10287_cinar-ichimoku.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10287",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "ab3c15b3d7e8195a594dd0a5ddbd937236d91e34495d5fbf9e0e969c35b26cfd"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": "d2860b749bfbc06a5de7d02efd095f4153fead238f4dd6fdcbc38dc6f557ba4a",
+    "payload_artifact_identity": null,
+    "payload_expected": "d2860b749bfbc06a5de7d02efd095f4153fead238f4dd6fdcbc38dc6f557ba4a"
+   },
+   "ex5": {
+    "column": "fcb9e40bcfc4ddd152734c5730cab83ca49bf75c73b4ad37e2ff41007546d878",
+    "payload_artifact_identity": null,
+    "payload_expected": "fcb9e40bcfc4ddd152734c5730cab83ca49bf75c73b4ad37e2ff41007546d878"
+   },
+   "setfile": {
+    "column": "c258e8dec51dc377b8c752a0ad1451581ae54a93e5664821d0fdb79ac25bd184",
+    "payload_artifact_identity": null,
+    "payload_expected": "c258e8dec51dc377b8c752a0ad1451581ae54a93e5664821d0fdb79ac25bd184"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "c8d8c2c7-7287-41d8-98ab-57606bec09f5",
+  "ea_id": "QM5_10848",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_10848_tv-mtf-ambush",
+  "setfile": {
+   "exists": true,
+   "param_lines": 27,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-04T23:58:54+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "c8d8c2c7-7287-41d8-98ab-57606bec09f5",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: CANDIDATE_WINDOW_UNAVAILABLE) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-14T03:39:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10848_tv-mtf-ambush.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "1af41ff9254e8a0adfba2c4fcdcb72ccf440a2901292f6c76f0e105728767de2",
+    "payload_artifact_identity": null,
+    "payload_expected": "1af41ff9254e8a0adfba2c4fcdcb72ccf440a2901292f6c76f0e105728767de2"
+   },
+   "ex5": {
+    "column": "bceec80d71d65ab10a06beeaa625c4e2daac0843736849da3d9113c24df0060b",
+    "payload_artifact_identity": null,
+    "payload_expected": "bceec80d71d65ab10a06beeaa625c4e2daac0843736849da3d9113c24df0060b"
+   },
+   "setfile": {
+    "column": "91062aeb40134d78def39799443b6b0497d3bcf65474899a5996a7dd970f2c75",
+    "payload_artifact_identity": null,
+    "payload_expected": "91062aeb40134d78def39799443b6b0497d3bcf65474899a5996a7dd970f2c75"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "169d5dda-f119-4f87-8c06-c9623733265c",
+  "ea_id": "QM5_11132",
+  "symbol": "NDX.DWX",
+  "label": "QM5_11132_tm-cum-rsi2",
+  "setfile": {
+   "exists": true,
+   "param_lines": 14,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-04T23:58:56+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "169d5dda-f119-4f87-8c06-c9623733265c",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: CANDIDATE_WINDOW_UNAVAILABLE) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-14T03:39:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11132_tm-cum-rsi2.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "5839af64779d2640f6290d4c1e02033327e4027d4e42fa6a8532e8f33b0b9d6c",
+    "payload_artifact_identity": null,
+    "payload_expected": "5839af64779d2640f6290d4c1e02033327e4027d4e42fa6a8532e8f33b0b9d6c"
+   },
+   "ex5": {
+    "column": "e3dea054cce04aba5aec82ceb9a8a0a530acc43c6b4d3783ee5f70d89064a66e",
+    "payload_artifact_identity": null,
+    "payload_expected": "e3dea054cce04aba5aec82ceb9a8a0a530acc43c6b4d3783ee5f70d89064a66e"
+   },
+   "setfile": {
+    "column": "f5abdb8a1fa20d33f42d695d9ef946eba8aa83e2562421a2957bece42c4566e1",
+    "payload_artifact_identity": null,
+    "payload_expected": "f5abdb8a1fa20d33f42d695d9ef946eba8aa83e2562421a2957bece42c4566e1"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "7aaf7760-476c-4599-be92-4dae0a50c6df",
+  "ea_id": "QM5_9573",
+  "symbol": "NDX.DWX",
+  "label": "QM5_9573_brooks-ib-breakout-failure-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 25,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-04T23:58:59+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "7aaf7760-476c-4599-be92-4dae0a50c6df",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: CANDIDATE_WINDOW_UNAVAILABLE) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-14T03:39:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9573_brooks-ib-breakout-failure-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "7f5e0f2a2cc5542de3a7a4501d66edbc9997dd6f7feaa2bab38e59b093c7cfa6",
+    "payload_artifact_identity": null,
+    "payload_expected": "7f5e0f2a2cc5542de3a7a4501d66edbc9997dd6f7feaa2bab38e59b093c7cfa6"
+   },
+   "ex5": {
+    "column": "2f1b0fa01640cca16f766194e42f50057784c1df1efd792180750876e27d0d6b",
+    "payload_artifact_identity": null,
+    "payload_expected": "2f1b0fa01640cca16f766194e42f50057784c1df1efd792180750876e27d0d6b"
+   },
+   "setfile": {
+    "column": "5ee58f6fc88348183619ec56f84f8e3474e50a467c6ae8ceef9f476be14dc42b",
+    "payload_artifact_identity": null,
+    "payload_expected": "5ee58f6fc88348183619ec56f84f8e3474e50a467c6ae8ceef9f476be14dc42b"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "15f2ecb0-97dd-4a7b-91d7-ff540857adb6",
+  "ea_id": "QM5_13137",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_13137_breadth-tue",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T07:21:21+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "15f2ecb0-97dd-4a7b-91d7-ff540857adb6",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:23:10+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13137_breadth-tue.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_13137",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "M30",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "c52101d40f453a495d3339d3b72aae85e4668a616473bfe5679c63a4992132d5"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": "db6eae9a7f81d4dfbfd8c365dfef492fd17d1d658525b2998db075be4cdc9989",
+    "payload_artifact_identity": null,
+    "payload_expected": "db6eae9a7f81d4dfbfd8c365dfef492fd17d1d658525b2998db075be4cdc9989"
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "M30",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "2b5e5be0-5d7f-44ac-b153-50a2757d429a",
+  "ea_id": "QM5_11263",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_11263_qt-dual-thrust",
+  "setfile": {
+   "exists": true,
+   "param_lines": 12,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T09:40:59+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "2b5e5be0-5d7f-44ac-b153-50a2757d429a",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:23:59+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11263_qt-dual-thrust.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_11263",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "M1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "751abec134b98c04d6c81154ff7cab85d642972f003009440097990fad0a8b2a"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "M1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "334ca1c5-c4f7-4c55-93f7-47676333e0e4",
+  "ea_id": "QM5_1910",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_1910_chande-stochastic-rsi-pop-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 20,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T12:01:13+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "334ca1c5-c4f7-4c55-93f7-47676333e0e4",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:24:13+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1910_chande-stochastic-rsi-pop-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1910",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "0b0ba0a5eab3bf6f15aabe278f64a61b673a24837df5781edd94a9addf0a299a"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "1983778f-f72b-4850-80f0-eb906123ef81",
+  "ea_id": "QM5_10145",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10145_tsm-meanret",
+  "setfile": {
+   "exists": true,
+   "param_lines": 20,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T15:10:27+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10145_tsm-meanret.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "fa6b13d47e4c3a34a9456c6ec57899c483e06dca0a593d6a44dfa59860f72d19",
+    "payload_artifact_identity": "fa6b13d47e4c3a34a9456c6ec57899c483e06dca0a593d6a44dfa59860f72d19",
+    "payload_expected": "fa6b13d47e4c3a34a9456c6ec57899c483e06dca0a593d6a44dfa59860f72d19"
+   },
+   "ex5": {
+    "column": "c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86",
+    "payload_artifact_identity": "c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86",
+    "payload_expected": "c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86"
+   },
+   "setfile": {
+    "column": "9a8b6573cec9991f167aa0710e6977c16800150568cdb491e184c1d41f1ccb35",
+    "payload_artifact_identity": "9a8b6573cec9991f167aa0710e6977c16800150568cdb491e184c1d41f1ccb35",
+    "payload_expected": "9a8b6573cec9991f167aa0710e6977c16800150568cdb491e184c1d41f1ccb35"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\ledger.json",
+   "schema": "qm.opt-census.v1",
+   "authority": "DL-089",
+   "declared_trial_count": 154
+  }
+ },
+ {
+  "id": "d1077e5d-7ee4-4382-ab61-65a99d643c94",
+  "ea_id": "QM5_10403",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10403_et-turtle20x",
+  "setfile": {
+   "exists": true,
+   "param_lines": 25,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T15:10:29+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10403_et-turtle20x.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251",
+    "payload_artifact_identity": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251",
+    "payload_expected": "b38cfd471fd31811bb23a5447c430cc1bfcc1f370eb816236c99bb88be55d251"
+   },
+   "ex5": {
+    "column": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+    "payload_artifact_identity": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+    "payload_expected": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3"
+   },
+   "setfile": {
+    "column": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+    "payload_artifact_identity": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72",
+    "payload_expected": "9a6fab053d3814077a015eb9f3a864a0c8a703fbe220ae03e74da195960f4c72"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\ledger.json",
+   "schema": "qm.opt-census.v1",
+   "authority": "DL-089",
+   "declared_trial_count": 154
+  }
+ },
+ {
+  "id": "10e932f5-b367-4d8a-9f62-c46d8df8ad1a",
+  "ea_id": "QM5_10513",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10513_mql5-ichimoku",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T15:10:31+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10513_mql5-ichimoku.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14",
+    "payload_artifact_identity": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14",
+    "payload_expected": "dfccacd6fe901831eed363d296201e64a853bc5d5e3fc6dc30b9f235d8e8ee14"
+   },
+   "ex5": {
+    "column": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087",
+    "payload_artifact_identity": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087",
+    "payload_expected": "3c7f46a1da2dd8f931eef7d0e96fa1214fdbbd5e06d467ed9e840307d9545087"
+   },
+   "setfile": {
+    "column": "4810a3486b6d6cd82931e6ba030d54b7406156a3f4b3d88540867c386edf7ac7",
+    "payload_artifact_identity": "4810a3486b6d6cd82931e6ba030d54b7406156a3f4b3d88540867c386edf7ac7",
+    "payload_expected": "4810a3486b6d6cd82931e6ba030d54b7406156a3f4b3d88540867c386edf7ac7"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\ledger.json",
+   "schema": "qm.opt-census.v1",
+   "authority": "DL-089",
+   "declared_trial_count": 154
+  }
+ },
+ {
+  "id": "ab0f13fc-853a-46cb-894f-a141e3b6c222",
+  "ea_id": "QM5_11660",
+  "symbol": "NDX.DWX",
+  "label": "QM5_11660_pp-wedge",
+  "setfile": {
+   "exists": true,
+   "param_lines": 9,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T15:10:33+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2021",
+   "end": "2022",
+   "payload_from": "2021",
+   "payload_to": "2022"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11660_pp-wedge.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "4640c0eeadcfc7d68e03a8ac2c7f820572d8a2847e560d1253e971ac00b4e95f",
+    "payload_artifact_identity": "4640c0eeadcfc7d68e03a8ac2c7f820572d8a2847e560d1253e971ac00b4e95f",
+    "payload_expected": "4640c0eeadcfc7d68e03a8ac2c7f820572d8a2847e560d1253e971ac00b4e95f"
+   },
+   "ex5": {
+    "column": "5db350ac57411c2b6d81987db4e2f5ec8598eabb05c058f2df6da2dcfe70610e",
+    "payload_artifact_identity": "5db350ac57411c2b6d81987db4e2f5ec8598eabb05c058f2df6da2dcfe70610e",
+    "payload_expected": "5db350ac57411c2b6d81987db4e2f5ec8598eabb05c058f2df6da2dcfe70610e"
+   },
+   "setfile": {
+    "column": "89385a95425cb869931bc17c49e538f62972a0dc9f5fcd461fbfe5f1055a2a2e",
+    "payload_artifact_identity": "89385a95425cb869931bc17c49e538f62972a0dc9f5fcd461fbfe5f1055a2a2e",
+    "payload_expected": "89385a95425cb869931bc17c49e538f62972a0dc9f5fcd461fbfe5f1055a2a2e"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11660_NDX_DWX_2019_2025\\ledger.json",
+   "schema": "qm.opt-census.v1",
+   "authority": "DL-089",
+   "declared_trial_count": 154
+  }
+ },
+ {
+  "id": "7929be53-e4a3-4147-84ca-d5f44196a426",
+  "ea_id": "QM5_12849",
+  "symbol": "XTIUSD.DWX",
+  "label": "QM5_12849_brent-tsmom12m",
+  "setfile": {
+   "exists": true,
+   "param_lines": 11,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T15:10:35+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017",
+   "end": "2022",
+   "payload_from": "2017",
+   "payload_to": "2022"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12849_brent-tsmom12m.md",
+   "card_exists": false
+  },
+  "identity": {
+   "mq5": {
+    "column": "d72f373782ce6ae26b702b1d2ffaf75d4e9711712311726aaa19c7b767299af9",
+    "payload_artifact_identity": "d72f373782ce6ae26b702b1d2ffaf75d4e9711712311726aaa19c7b767299af9",
+    "payload_expected": "d72f373782ce6ae26b702b1d2ffaf75d4e9711712311726aaa19c7b767299af9"
+   },
+   "ex5": {
+    "column": "c9166d7a34d637b6ef8aeb0ea90c72b50675e24f4552704ef96e28b6147f9fe4",
+    "payload_artifact_identity": "c9166d7a34d637b6ef8aeb0ea90c72b50675e24f4552704ef96e28b6147f9fe4",
+    "payload_expected": "c9166d7a34d637b6ef8aeb0ea90c72b50675e24f4552704ef96e28b6147f9fe4"
+   },
+   "setfile": {
+    "column": "a4851b26dc02faeace0e490873e55da3be76540752dba526f9f13ff9549fa33d",
+    "payload_artifact_identity": "a4851b26dc02faeace0e490873e55da3be76540752dba526f9f13ff9549fa33d",
+    "payload_expected": "a4851b26dc02faeace0e490873e55da3be76540752dba526f9f13ff9549fa33d"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\ledger.json",
+   "schema": "qm.opt-census.v1",
+   "authority": "DL-089",
+   "declared_trial_count": 154
+  }
+ },
+ {
+  "id": "08cb518a-acf4-4993-9793-a264f3403c50",
+  "ea_id": "QM5_12855",
+  "symbol": "XTIUSD.DWX",
+  "label": "QM5_12855_brent-nov-fade",
+  "setfile": {
+   "exists": true,
+   "param_lines": 10,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T15:10:37+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017",
+   "end": "2022",
+   "payload_from": "2017",
+   "payload_to": "2022"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12855_brent-nov-fade.md",
+   "card_exists": false
+  },
+  "identity": {
+   "mq5": {
+    "column": "07c82d1358b1f0d1e9604b5792a15b34fd3678c0728a9c3ece39a059670bdd17",
+    "payload_artifact_identity": "07c82d1358b1f0d1e9604b5792a15b34fd3678c0728a9c3ece39a059670bdd17",
+    "payload_expected": "07c82d1358b1f0d1e9604b5792a15b34fd3678c0728a9c3ece39a059670bdd17"
+   },
+   "ex5": {
+    "column": "1e141304275473b0b36160602ec0743635c9ae9ee2e7bbdbe2e7a770fb075f18",
+    "payload_artifact_identity": "1e141304275473b0b36160602ec0743635c9ae9ee2e7bbdbe2e7a770fb075f18",
+    "payload_expected": "1e141304275473b0b36160602ec0743635c9ae9ee2e7bbdbe2e7a770fb075f18"
+   },
+   "setfile": {
+    "column": "3d40f88402717099c7479468b76e3f78e29145ebd5c94b07792a224b733bdd68",
+    "payload_artifact_identity": "3d40f88402717099c7479468b76e3f78e29145ebd5c94b07792a224b733bdd68",
+    "payload_expected": "3d40f88402717099c7479468b76e3f78e29145ebd5c94b07792a224b733bdd68"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\ledger.json",
+   "schema": "qm.opt-census.v1",
+   "authority": "DL-089",
+   "declared_trial_count": 154
+  }
+ },
+ {
+  "id": "94fd38df-198c-47ca-830e-42d856c1bc0f",
+  "ea_id": "QM5_9641",
+  "symbol": "WS30.DWX",
+  "label": "QM5_9641_bandy-cci-extreme-fade-mr-index",
+  "setfile": {
+   "exists": true,
+   "param_lines": 14,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T15:12:57+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2018",
+   "end": "2022",
+   "payload_from": "2018",
+   "payload_to": "2022"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9641_bandy-cci-extreme-fade-mr-index.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": "82dba156ebc91aa4b2000241c1481600ae76410f5d07152ca470ff5df7e0fb5f",
+    "payload_artifact_identity": "82dba156ebc91aa4b2000241c1481600ae76410f5d07152ca470ff5df7e0fb5f",
+    "payload_expected": "82dba156ebc91aa4b2000241c1481600ae76410f5d07152ca470ff5df7e0fb5f"
+   },
+   "ex5": {
+    "column": "21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21",
+    "payload_artifact_identity": "21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21",
+    "payload_expected": "21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21"
+   },
+   "setfile": {
+    "column": "e991aae91a2c0e08afdc56e089854571711faab532125508ca3ec21d36fb50b0",
+    "payload_artifact_identity": "e991aae91a2c0e08afdc56e089854571711faab532125508ca3ec21d36fb50b0",
+    "payload_expected": "e991aae91a2c0e08afdc56e089854571711faab532125508ca3ec21d36fb50b0"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\ledger.json",
+   "schema": "qm.opt-census.v1",
+   "authority": "DL-089",
+   "declared_trial_count": 154
+  }
+ },
+ {
+  "id": "e8e0372e-0c52-42f2-bc10-928fe41677f6",
+  "ea_id": "QM5_10290",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10290_cinar-trix",
+  "setfile": {
+   "exists": true,
+   "param_lines": 9,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T17:15:33+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "e8e0372e-0c52-42f2-bc10-928fe41677f6",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:24:47+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10290_cinar-trix.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10290",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "41c567f58b87eabced35da2a5d2091240ff1cb5028ef94a09aa11327fd8b99da"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "2e2be584-8383-46bd-8737-7eeba6b99ea5",
+  "ea_id": "QM5_12350",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_12350_spec-ema20-40",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T19:35:13+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "2e2be584-8383-46bd-8737-7eeba6b99ea5",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:25:04+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12350_spec-ema20-40.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_12350",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "b4b904fcd83c3e1673c3386e96c454381971a6b1a2be226d24378130bd5d37b2"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "5c8271e0-9bd3-4210-82b3-8a5bbfe1ed85",
+  "ea_id": "QM5_41474",
+  "symbol": "XAGUSD.DWX",
+  "label": "QM5_41474_xag-weekly-lowvol-momentum-symfix",
+  "setfile": {
+   "exists": true,
+   "param_lines": 12,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T20:05:01+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "5c8271e0-9bd3-4210-82b3-8a5bbfe1ed85",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-14 04:3xZ Orchestrator: Q08 DSR context preflight UNAVAILABLE (SINGLE_CONFIGURATION_UNAVAILABLE:[Errno 2] No such file or directory: 'D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\); the row sat at the head of the claim order and consumed the history-preflight budget on every scan while structurally unrunnable (claim-idle fleet). Parked until the input is repaired (ticket 269d5101 Q08 input repair).",
+   "created_at": "2026-09-14T04:25:21+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:[Errno 2] No such file or directory: 'D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\\\QM5_41474_xag-weekly-lowvol-momentum-symfix.md'"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41474_xag-weekly-lowvol-momentum-symfix.md",
+   "card_exists": false
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "249c556b-feca-4c32-9f45-cb858fe53c3b",
+  "ea_id": "QM5_41473",
+  "symbol": "XTIUSD.DWX",
+  "label": "QM5_41473_brent-tom-mom-symfix",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T20:25:36+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "249c556b-feca-4c32-9f45-cb858fe53c3b",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-14 04:3xZ Orchestrator: Q08 DSR context preflight UNAVAILABLE (SINGLE_CONFIGURATION_UNAVAILABLE:[Errno 2] No such file or directory: 'D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\); the row sat at the head of the claim order and consumed the history-preflight budget on every scan while structurally unrunnable (claim-idle fleet). Parked until the input is repaired (ticket 269d5101 Q08 input repair).",
+   "created_at": "2026-09-14T04:25:35+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:[Errno 2] No such file or directory: 'D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\\\QM5_41473_brent-tom-mom-symfix.md'"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41473_brent-tom-mom-symfix.md",
+   "card_exists": false
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "080a08f6-d35f-4d6a-8f2a-07378149f944",
+  "ea_id": "QM5_11121",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_11121_easy-trend-adx",
+  "setfile": {
+   "exists": true,
+   "param_lines": 14,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T22:05:25+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "080a08f6-d35f-4d6a-8f2a-07378149f944",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:25:47+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11121_easy-trend-adx.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_11121",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "d4449d90e5aebc9c4cc3507c0e8301d5d08c06e04226ffe2f0f2404a45265c8b"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "737a2134-5360-463f-9f4c-49b53a750961",
+  "ea_id": "QM5_11167",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_11167_weiss-ichi2-ma",
+  "setfile": {
+   "exists": true,
+   "param_lines": 19,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T22:44:29+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "737a2134-5360-463f-9f4c-49b53a750961",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:LOCKED_); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:26:00+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:LOCKED_PARAMETER_DRIFT"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2020.01.01",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11167_weiss-ichi2-ma.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_11167",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "df4b72137c45e7a6c2af1de7728a26ed90b5e525b5aea29435c021378b877aff"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "ce8f0416-55ac-4a91-b963-ea30f54984a4",
+  "ea_id": "QM5_10932",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10932_grimes-volshock",
+  "setfile": {
+   "exists": true,
+   "param_lines": 28,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-13T23:34:55+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "ce8f0416-55ac-4a91-b963-ea30f54984a4",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-14 04:3xZ Orchestrator: Q08 DSR context preflight UNAVAILABLE (SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED); the row sat at the head of the claim order and consumed the history-preflight budget on every scan while structurally unrunnable (claim-idle fleet). Parked until the input is repaired (ticket 269d5101 Q08 input repair).",
+   "created_at": "2026-09-14T04:26:16+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2020.01.01",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10932_grimes-volshock.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "6caa65b7-e240-4d71-a894-37abc406db71",
+  "ea_id": "QM5_41394",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_41394_weiss-ichi2-ma-calendar-r1",
+  "setfile": {
+   "exists": true,
+   "param_lines": 9,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T00:24:47+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "6caa65b7-e240-4d71-a894-37abc406db71",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:26:29+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41394_weiss-ichi2-ma-calendar-r1.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_41394",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "916259a3dea433dfeb9393ae646c43c1e707833138f5700ab92e0746dfa395a3"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "010fd451-0631-45f0-b4f3-270f70957829",
+  "ea_id": "QM5_9579",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_9579_bandy-atr-channel-breakout-trend",
+  "setfile": {
+   "exists": true,
+   "param_lines": 13,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T00:34:32+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "010fd451-0631-45f0-b4f3-270f70957829",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE_20260915",
+   "reason": "2026-09-15 09:xxZ claim starvation follow-up: Q08 row without sealed DSR context (SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I); parked with the rows held at 09:3xZ.",
+   "created_at": "2026-09-14T04:26:42+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9579_bandy-atr-channel-breakout-trend.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_9579",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "3bdf5a1f16970fa07a8f2ad56bff0aa5cc1e1729b330262b085ec9cffac2e9f5"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "fc6ceb1d-e73a-4639-9ec6-89a85261721a",
+  "ea_id": "QM5_41472",
+  "symbol": "QM5_13117_EURGBP_AUDJPY_COINTEGRATION_D1",
+  "label": "QM5_41472_eurgbp-audjpy-symfix",
+  "setfile": {
+   "exists": true,
+   "param_lines": 31,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T02:59:19+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "fc6ceb1d-e73a-4639-9ec6-89a85261721a",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-14 04:3xZ Orchestrator: Q08 DSR context preflight UNAVAILABLE (SINGLE_CONFIGURATION_UNAVAILABLE:[Errno 2] No such file or directory: 'D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\); the row sat at the head of the claim order and consumed the history-preflight budget on every scan while structurally unrunnable (claim-idle fleet). Parked until the input is repaired (ticket 269d5101 Q08 input repair).",
+   "created_at": "2026-09-14T04:26:54+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:[Errno 2] No such file or directory: 'D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\\\QM5_41472_eurgbp-audjpy-symfix.md'"
+  },
+  "window": {
+   "start": "2018.07.02",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41472_eurgbp-audjpy-symfix.md",
+   "card_exists": false
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "f762cbe6-8b8d-4181-ad42-83799c242040",
+  "ea_id": "QM5_10037",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10037_rw-caa-mvo",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T05:29:29+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "f762cbe6-8b8d-4181-ad42-83799c242040",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:30:39+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10037_rw-caa-mvo.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "bc7d5af7-04c9-403f-95ca-534f48a73866",
+  "ea_id": "QM5_41470",
+  "symbol": "USDJPY.DWX",
+  "label": "QM5_41470_usdjpy-gotobi-nakane-fix-symfix",
+  "setfile": {
+   "exists": true,
+   "param_lines": 11,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T05:59:56+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "bc7d5af7-04c9-403f-95ca-534f48a73866",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:[Errno ) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:30:51+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:[Errno 2] No such file or directory: 'D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix.md'"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41470_usdjpy-gotobi-nakane-fix-symfix.md",
+   "card_exists": false
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "M30",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "75af8ef0-cc4b-4e3d-a600-c559fdf8d553",
+  "ea_id": "QM5_10122",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10122_don-mid-cross",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T11:10:29+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "75af8ef0-cc4b-4e3d-a600-c559fdf8d553",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:04+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10122_don-mid-cross.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "676b23b9-6cd1-4eb3-8b1a-0ff526f71df8",
+  "ea_id": "QM5_12358",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_12358_tmom-fut-mom",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T11:49:54+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "676b23b9-6cd1-4eb3-8b1a-0ff526f71df8",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:20+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12358_tmom-fut-mom.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "4aa9b74b-d52d-4147-b42f-c0cef4fa09d1",
+  "ea_id": "QM5_12366",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_12366_nikh-macd",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T12:50:16+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "4aa9b74b-d52d-4147-b42f-c0cef4fa09d1",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12366_nikh-macd.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "962d1a67-62bd-4722-9052-68f9e799b8ce",
+  "ea_id": "QM5_12549",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_12549_turtle-s2-pyramid-d1",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T12:59:36+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "962d1a67-62bd-4722-9052-68f9e799b8ce",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12549_turtle-s2-pyramid-d1.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "235bf9ad-9d07-4f80-944d-18d956240ae2",
+  "ea_id": "QM5_1615",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_1615_aa-breaktrend-2-12",
+  "setfile": {
+   "exists": true,
+   "param_lines": 13,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T13:29:36+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "235bf9ad-9d07-4f80-944d-18d956240ae2",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1615_aa-breaktrend-2-12.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "4300c5ad-ad70-449b-9952-bfd9444ebf99",
+  "ea_id": "QM5_10134",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10134_bb-double",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T14:05:34+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "4300c5ad-ad70-449b-9952-bfd9444ebf99",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10134_bb-double.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "f8cb2092-70b8-47d2-a620-75d476cde3c4",
+  "ea_id": "QM5_13137",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_13137_breadth-tue",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:14+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "f8cb2092-70b8-47d2-a620-75d476cde3c4",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:55+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13137_breadth-tue.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_13137",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "M30",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "c52101d40f453a495d3339d3b72aae85e4668a616473bfe5679c63a4992132d5"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "M30",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "4b1e1d30-2441-4565-87f0-b39addc1035a",
+  "ea_id": "QM5_11263",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_11263_qt-dual-thrust",
+  "setfile": {
+   "exists": true,
+   "param_lines": 12,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:17+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "4b1e1d30-2441-4565-87f0-b39addc1035a",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:55+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11263_qt-dual-thrust.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_11263",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "M1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "751abec134b98c04d6c81154ff7cab85d642972f003009440097990fad0a8b2a"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "M1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "40cd7dc7-93f8-417a-93f2-a4f2465bfd9d",
+  "ea_id": "QM5_1910",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_1910_chande-stochastic-rsi-pop-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 20,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:19+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "40cd7dc7-93f8-417a-93f2-a4f2465bfd9d",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1910_chande-stochastic-rsi-pop-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1910",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "0b0ba0a5eab3bf6f15aabe278f64a61b673a24837df5781edd94a9addf0a299a"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "fbd3b120-b67d-40e2-b039-5c9c7e9a92ca",
+  "ea_id": "QM5_10290",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_10290_cinar-trix",
+  "setfile": {
+   "exists": true,
+   "param_lines": 9,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:22+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "fbd3b120-b67d-40e2-b039-5c9c7e9a92ca",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10290_cinar-trix.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10290",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "41c567f58b87eabced35da2a5d2091240ff1cb5028ef94a09aa11327fd8b99da"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "9b0c8781-3638-42d4-8016-ec0c2ed48a02",
+  "ea_id": "QM5_12350",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_12350_spec-ema20-40",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:24+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "9b0c8781-3638-42d4-8016-ec0c2ed48a02",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12350_spec-ema20-40.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_12350",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "b4b904fcd83c3e1673c3386e96c454381971a6b1a2be226d24378130bd5d37b2"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "ea144bdc-e49b-4024-929b-620008f338d8",
+  "ea_id": "QM5_11121",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_11121_easy-trend-adx",
+  "setfile": {
+   "exists": true,
+   "param_lines": 14,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:25+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "ea144bdc-e49b-4024-929b-620008f338d8",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11121_easy-trend-adx.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_11121",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "d4449d90e5aebc9c4cc3507c0e8301d5d08c06e04226ffe2f0f2404a45265c8b"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "64bcad6b-a9d2-43d8-bd7c-c65d55de465a",
+  "ea_id": "QM5_41394",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_41394_weiss-ichi2-ma-calendar-r1",
+  "setfile": {
+   "exists": true,
+   "param_lines": 9,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:28+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "64bcad6b-a9d2-43d8-bd7c-c65d55de465a",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41394_weiss-ichi2-ma-calendar-r1.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_41394",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "916259a3dea433dfeb9393ae646c43c1e707833138f5700ab92e0746dfa395a3"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "95bb8e20-1bc7-4687-ad1d-39d8de12fbe8",
+  "ea_id": "QM5_9579",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_9579_bandy-atr-channel-breakout-trend",
+  "setfile": {
+   "exists": true,
+   "param_lines": 13,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:52:29+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "95bb8e20-1bc7-4687-ad1d-39d8de12fbe8",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_I) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9579_bandy-atr-channel-breakout-trend.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_9579",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "3bdf5a1f16970fa07a8f2ad56bff0aa5cc1e1729b330262b085ec9cffac2e9f5"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "a17469d0-649f-4614-ad83-711c2b809114",
+  "ea_id": "QM5_12712",
+  "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+  "label": "QM5_12712_edgelab-eurgbp-euraud-cointegration",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:55:26+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "a17469d0-649f-4614-ad83-711c2b809114",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: CANDIDATE_WINDOW_UNAVAILABLE) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:56+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "CANDIDATE_WINDOW_UNAVAILABLE"
+  },
+  "window": {
+   "start": null,
+   "end": null,
+   "payload_from": null,
+   "payload_to": null
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12712_edgelab-eurgbp-euraud-cointegration.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_12712",
+    "symbol": "QM5_12712_EURGBP_EURAUD_COINTEGRATION_D1",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "588c88cd20ce3c1ba94bb93fc2f2dae2d11616a5bf6191f41c2226daa996d7e6"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": "afdfd1a80dbfcd2c398ddc92dffe2181e5727f3837c37df2a772f25b68e171d1",
+    "payload_artifact_identity": "afdfd1a80dbfcd2c398ddc92dffe2181e5727f3837c37df2a772f25b68e171d1",
+    "payload_expected": "afdfd1a80dbfcd2c398ddc92dffe2181e5727f3837c37df2a772f25b68e171d1"
+   },
+   "ex5": {
+    "column": "0003ed98f590e95a28a08e7d8198639b48213e882e8c5d2428cad4422355c982",
+    "payload_artifact_identity": "0003ed98f590e95a28a08e7d8198639b48213e882e8c5d2428cad4422355c982",
+    "payload_expected": "0003ed98f590e95a28a08e7d8198639b48213e882e8c5d2428cad4422355c982"
+   },
+   "setfile": {
+    "column": "105a23da1d33d559cff4ff19a5e8c5c51e8a72eb6cec5b7f6a92ecedaea6208c",
+    "payload_artifact_identity": "105a23da1d33d559cff4ff19a5e8c5c51e8a72eb6cec5b7f6a92ecedaea6208c",
+    "payload_expected": "105a23da1d33d559cff4ff19a5e8c5c51e8a72eb6cec5b7f6a92ecedaea6208c"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "6a060ccb-1130-48dd-9507-064cf05963e9",
+  "ea_id": "QM5_1910",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_1910_chande-stochastic-rsi-pop-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 20,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:55:35+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1910_chande-stochastic-rsi-pop-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1910",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "H4",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "0b0ba0a5eab3bf6f15aabe278f64a61b673a24837df5781edd94a9addf0a299a"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": "34624896978b23fb849e7789f4e16534098720dbc52f519e3cbcfe33d05167ce",
+    "payload_artifact_identity": "34624896978b23fb849e7789f4e16534098720dbc52f519e3cbcfe33d05167ce",
+    "payload_expected": "34624896978b23fb849e7789f4e16534098720dbc52f519e3cbcfe33d05167ce"
+   },
+   "ex5": {
+    "column": "2e83d7124c898a391640c4b06e36b1e9374acd64142cb17fc116b01e91ebbfe4",
+    "payload_artifact_identity": "2e83d7124c898a391640c4b06e36b1e9374acd64142cb17fc116b01e91ebbfe4",
+    "payload_expected": "2e83d7124c898a391640c4b06e36b1e9374acd64142cb17fc116b01e91ebbfe4"
+   },
+   "setfile": {
+    "column": "6f8908fa5bf441f645f4951aa965811745e6c12ac2f79685d68ec0f10bf8ac59",
+    "payload_artifact_identity": "6f8908fa5bf441f645f4951aa965811745e6c12ac2f79685d68ec0f10bf8ac59",
+    "payload_expected": "6f8908fa5bf441f645f4951aa965811745e6c12ac2f79685d68ec0f10bf8ac59"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "f74cea03-d310-43ee-9e32-6bbdd81c2b76",
+  "ea_id": "QM5_41394",
+  "symbol": "XAUUSD.DWX",
+  "label": "QM5_41394_weiss-ichi2-ma-calendar-r1",
+  "setfile": {
+   "exists": true,
+   "param_lines": 9,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T15:55:44+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2018.07.02",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41394_weiss-ichi2-ma-calendar-r1.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_41394",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "916259a3dea433dfeb9393ae646c43c1e707833138f5700ab92e0746dfa395a3"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": "3e5aae565f2f7faba9082a3ca88719a103f7f5372e228c9e250d00505f335a76",
+    "payload_artifact_identity": "3e5aae565f2f7faba9082a3ca88719a103f7f5372e228c9e250d00505f335a76",
+    "payload_expected": "3e5aae565f2f7faba9082a3ca88719a103f7f5372e228c9e250d00505f335a76"
+   },
+   "ex5": {
+    "column": "68c53b0c6de6ec1675e617b8573d7f6c6e9ef139341369614481e60114623b26",
+    "payload_artifact_identity": "68c53b0c6de6ec1675e617b8573d7f6c6e9ef139341369614481e60114623b26",
+    "payload_expected": "68c53b0c6de6ec1675e617b8573d7f6c6e9ef139341369614481e60114623b26"
+   },
+   "setfile": {
+    "column": "a85e2a61078b396104306ea1a753af4082dce9f1874f7107ce2abb419455ea85",
+    "payload_artifact_identity": "a85e2a61078b396104306ea1a753af4082dce9f1874f7107ce2abb419455ea85",
+    "payload_expected": "a85e2a61078b396104306ea1a753af4082dce9f1874f7107ce2abb419455ea85"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "ba75c59a-e638-425f-a9ad-e06493db0a9c",
+  "ea_id": "QM5_12354",
+  "symbol": "NDX.DWX",
+  "label": "QM5_12354_orev-turtle40",
+  "setfile": {
+   "exists": true,
+   "param_lines": 10,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-14T17:35:23+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "ba75c59a-e638-425f-a9ad-e06493db0a9c",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12354_orev-turtle40.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "443ad2eb-6a9e-4046-80c4-0468b16dcea8",
+  "ea_id": "QM5_10692",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_10692_tv-ls-ms",
+  "setfile": {
+   "exists": true,
+   "param_lines": 27,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T01:40:20+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "443ad2eb-6a9e-4046-80c4-0468b16dcea8",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10692_tv-ls-ms.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "fba34963-564b-4169-b241-1c4156110b98",
+  "ea_id": "QM5_10127",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10127_bb-meanrev",
+  "setfile": {
+   "exists": true,
+   "param_lines": 19,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T02:00:44+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "fba34963-564b-4169-b241-1c4156110b98",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10127_bb-meanrev.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "601a9fa9-211c-4a0c-acd3-93c188e7dc9a",
+  "ea_id": "QM5_10145",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_10145_tsm-meanret",
+  "setfile": {
+   "exists": true,
+   "param_lines": 20,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T02:40:48+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "601a9fa9-211c-4a0c-acd3-93c188e7dc9a",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10145_tsm-meanret.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "c297063b-2483-4cf0-baba-f4696fd3463d",
+  "ea_id": "QM5_10691",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10691_tv-smc-pro-btc",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T09:04:29+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": {
+   "work_item_id": "c297063b-2483-4cf0-baba-f4696fd3463d",
+   "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+   "reason": "2026-09-15 09:xxZ claim starvation: Q08 row without a sealed DSR context (dsr_cohort.assemble: SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICI) at the head of the claim order; the out-of-lock history preflight checks only the top candidates, they are rejected in-lock, all other rows stay unchecked -> no fleet claims since ~09:00Z. Parked so the claim window moves.",
+   "created_at": "2026-09-15T09:31:33+00:00"
+  },
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10691_tv-smc-pro-btc.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "47bea32e-976a-4ede-9246-8498e0f4c0d9",
+  "ea_id": "QM5_10947",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10947_zuck-24h-cont",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T09:46:03+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10947_zuck-24h-cont.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "2d3da3de-6169-4d41-861f-99035151b187",
+  "ea_id": "QM5_10163",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_10163_tv-rsi-macd-long",
+  "setfile": {
+   "exists": true,
+   "param_lines": 27,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T10:15:46+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10163_tv-rsi-macd-long.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "7bc8b34e-afe9-4d30-b90d-2e70e2f94ef5",
+  "ea_id": "QM5_1159",
+  "symbol": "NDX.DWX",
+  "label": "QM5_1159_qp-spy-overnight-ma20",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T10:26:11+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1159_qp-spy-overnight-ma20.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1159",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "e2753137bc21095c00c8b42b51fa3bfbbc43c083aa9ded8bd2248e2786e1ca60"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "d4aebc12-d2a7-4145-912c-8bc7bd5d363b",
+  "ea_id": "QM5_10804",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_10804_tv-st-long",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T10:46:38+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10804_tv-st-long.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10804",
+    "symbol": "GDAXI.DWX",
+    "timeframe": "H1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "004a4f6d0fd885a092f92ff60fc17290f9e787d755d1324cbf643bdcf0982e05"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "383c45b0-5452-4b43-9397-28273202f946",
+  "ea_id": "QM5_10661",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_10661_tv-smc-btc-ob",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T11:35:39+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10661_tv-smc-btc-ob.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10661",
+    "symbol": "GDAXI.DWX",
+    "timeframe": "H1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "aac3f0547022da2129c8a07d929f2c35a4935c7d95c86f509343e9fbfe3bca86"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "20c533da-a745-4dc0-978d-c3dc74e45689",
+  "ea_id": "QM5_10211",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10211_tv-williams-r-spy",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T12:57:01+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10211_tv-williams-r-spy.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10211",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "2f194256f76064b3bc6acce7ea04fc92937fb52de8d4c36c292a0d1b6f80ec5a"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "a937b9bc-2590-4f7c-b799-5e6b1f75c78f",
+  "ea_id": "QM5_12958",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_12958_nnfx-hma-wae-swing",
+  "setfile": {
+   "exists": true,
+   "param_lines": 17,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T13:35:58+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12958_nnfx-hma-wae-swing.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_12958",
+    "symbol": "GDAXI.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "653da9fc6f2e518e9880649e7eae8945ff8f075cf26826ed13b5d1c0b8796559"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "15fed5d8-3c9c-4da2-abe1-e943f2156236",
+  "ea_id": "QM5_9123",
+  "symbol": "NDX.DWX",
+  "label": "QM5_9123_aa-tes01325-cross",
+  "setfile": {
+   "exists": true,
+   "param_lines": 17,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T13:35:59+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9123_aa-tes01325-cross.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_9123",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "1190a36a924c973757c08659a18f858d5a9f94be9fa33cbecff556ff6a3c7b68"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "bdba95f1-9aed-4f2b-af7e-c0cf60407aa5",
+  "ea_id": "QM5_10145",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10145_tsm-meanret",
+  "setfile": {
+   "exists": true,
+   "param_lines": 17,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T14:34:15+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10145_tsm-meanret.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "aa0fa828-5609-4bf6-8e76-bfe813896c10",
+  "ea_id": "QM5_10291",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10291_cinar-alligator",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T15:34:47+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10291_cinar-alligator.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10291",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "bbcbe8c825bb84fa840d2efc5ea6f72fc76ee35555c9a05889ed70f43c42a7e6"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "94d46fe7-3298-43a6-9663-632d45ca7896",
+  "ea_id": "QM5_10267",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10267_gawd-sma25-trend",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T16:06:12+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10267_gawd-sma25-trend.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10267",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "f600c0b08938bae5efa1133006349766d009e3bcdf4700f462efdfd6657e0702"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "2276786b-2a89-4f28-a2ed-ac5dd1b857cb",
+  "ea_id": "QM5_12361",
+  "symbol": "NDX.DWX",
+  "label": "QM5_12361_tmom-ibs",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T17:24:34+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12361_tmom-ibs.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": false,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "456f590f-0ef0-4cbf-8d46-9508f84455ea",
+  "ea_id": "QM5_10287",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10287_cinar-ichimoku",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T19:24:26+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10287_cinar-ichimoku.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10287",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "ab3c15b3d7e8195a594dd0a5ddbd937236d91e34495d5fbf9e0e969c35b26cfd"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "0031f42d-65be-4c1d-ae45-bbaa67c071ca",
+  "ea_id": "QM5_12350",
+  "symbol": "NDX.DWX",
+  "label": "QM5_12350_spec-ema20-40",
+  "setfile": {
+   "exists": true,
+   "param_lines": 22,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T19:34:02+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:SINGLE_CONFIG_CANDIDATE_MISMATCH"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12350_spec-ema20-40.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_12350",
+    "symbol": "XAUUSD.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "b4b904fcd83c3e1673c3386e96c454381971a6b1a2be226d24378130bd5d37b2"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "ff0b551b-b00c-47d0-9040-110fd75e30a9",
+  "ea_id": "QM5_9576",
+  "symbol": "NDX.DWX",
+  "label": "QM5_9576_bandy-zscore-mr-index",
+  "setfile": {
+   "exists": true,
+   "param_lines": 13,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T21:12:29+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9576_bandy-zscore-mr-index.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_9576",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "c4f66468bcaa3d6dae1e3f25fdcf65c34afdf69a52891e2a23af091e60122a44"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "a591ff4c-a104-4d26-b996-0881e3758703",
+  "ea_id": "QM5_1230",
+  "symbol": "NDX.DWX",
+  "label": "QM5_1230_carver-dynvol-mav",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T21:39:31+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1230_carver-dynvol-mav.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_1230",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "95168464a47e60cf0e0ec73b849dc3c451b885d699960466852acd79135ac465"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "885b82ab-b7bb-4c00-85e3-03f1e8170c3d",
+  "ea_id": "QM5_9973",
+  "symbol": "NDX.DWX",
+  "label": "QM5_9973_bandy-ibs-extreme-mr-index",
+  "setfile": {
+   "exists": true,
+   "param_lines": 12,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T21:49:02+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9973_bandy-ibs-extreme-mr-index.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_9973",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "eefb4f989ae5a96bd3441d3578df26120a63fa1179f1cf76d34b4ac297cdc1e6"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "bb5eccf7-1635-4383-9d72-5843408b9567",
+  "ea_id": "QM5_13012",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_13012_grimes-complex-pb-v2",
+  "setfile": {
+   "exists": true,
+   "param_lines": 17,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T22:19:01+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13012_grimes-complex-pb-v2.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_13012",
+    "symbol": "GDAXI.DWX",
+    "timeframe": "H1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "a8cd800abedf28d015f40b4a15cc78450258c9fba2e63bc8654d194d2484cae2"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "1494bfb4-c698-4ad3-99d2-7c3e4e2723a2",
+  "ea_id": "QM5_11882",
+  "symbol": "NDX.DWX",
+  "label": "QM5_11882_connors-double-7s",
+  "setfile": {
+   "exists": true,
+   "param_lines": 31,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T22:19:01+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11882_connors-double-7s.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_11882",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "b32bb1e4baca58c55deae3a25392554893199812af0010c9af1df3dabf54d928"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "3b320089-5553-486e-b824-5c7d1405886d",
+  "ea_id": "QM5_1551",
+  "symbol": "NDX.DWX",
+  "label": "QM5_1551_demark-td-range-projection-h4",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T23:19:14+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1551_demark-td-range-projection-h4.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": false,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H4",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "dfb2f622-b7c0-4da3-a8ac-17825dde0cf9",
+  "ea_id": "QM5_12484",
+  "symbol": "NDX.DWX",
+  "label": "QM5_12484_shv-ma-cross",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-15T23:39:15+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12484_shv-ma-cross.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 0
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": false,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "b11e5b43-f9f5-4238-b00e-3ff73f9c7277",
+  "ea_id": "QM5_10269",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10269_gawd-wma30-trend",
+  "setfile": {
+   "exists": true,
+   "param_lines": 10,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-16T01:54:16+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2021.01.01",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10269_gawd-wma30-trend.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10269",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "8ed288af94e4cde2f4a281c7e73a97d35fbbffae81a61f17ab3bab5ffd289154"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "aec37e79-d8e0-41a6-ab34-16ed3f893715",
+  "ea_id": "QM5_10280",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10280_whc-rsrs",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-16T02:43:58+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": false,
+   "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10280_whc-rsrs.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10280",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "6d9f9bbddf4a02b7351c7a67006631bfbff644235ca97c5f896d34c33252a07f"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "ex5": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   },
+   "setfile": {
+    "column": null,
+    "payload_artifact_identity": null,
+    "payload_expected": null
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "bc626c1f-5674-454c-92d4-8d6172eb1f1b",
+  "ea_id": "QM5_13012",
+  "symbol": "GDAXI.DWX",
+  "label": "QM5_13012_grimes-complex-pb-v2",
+  "setfile": {
+   "exists": true,
+   "param_lines": 17,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-16T12:00:34+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_13012_grimes-complex-pb-v2.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_13012",
+    "symbol": "GDAXI.DWX",
+    "timeframe": "H1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "a8cd800abedf28d015f40b4a15cc78450258c9fba2e63bc8654d194d2484cae2"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": "756832a9541c910a36c1eba850226d3285ac5cfb8b0d1c58650d35fa9eae618b",
+    "payload_artifact_identity": "756832a9541c910a36c1eba850226d3285ac5cfb8b0d1c58650d35fa9eae618b",
+    "payload_expected": "756832a9541c910a36c1eba850226d3285ac5cfb8b0d1c58650d35fa9eae618b"
+   },
+   "ex5": {
+    "column": "7e7dcc70b36171bf66b228f00e13fd8e0553eecd5ed6f08aff78634c0abebf59",
+    "payload_artifact_identity": "7e7dcc70b36171bf66b228f00e13fd8e0553eecd5ed6f08aff78634c0abebf59",
+    "payload_expected": "7e7dcc70b36171bf66b228f00e13fd8e0553eecd5ed6f08aff78634c0abebf59"
+   },
+   "setfile": {
+    "column": "139ff7517ca4d74f41090ea7edd27bf41f7ed047518520dac77118b0c3f7cf5b",
+    "payload_artifact_identity": "139ff7517ca4d74f41090ea7edd27bf41f7ed047518520dac77118b0c3f7cf5b",
+    "payload_expected": "139ff7517ca4d74f41090ea7edd27bf41f7ed047518520dac77118b0c3f7cf5b"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "H1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "12d85591-6842-4255-a305-09507056a982",
+  "ea_id": "QM5_10269",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10269_gawd-wma30-trend",
+  "setfile": {
+   "exists": true,
+   "param_lines": 10,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-16T12:00:38+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2021.01.01",
+   "payload_to": "2022.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10269_gawd-wma30-trend.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10269",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "8ed288af94e4cde2f4a281c7e73a97d35fbbffae81a61f17ab3bab5ffd289154"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+    "payload_artifact_identity": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801",
+    "payload_expected": "ba1bdd99f02957c30d854a243aa870fdbda719cdee8fc0d76b8d788a1c0b1801"
+   },
+   "ex5": {
+    "column": "284d46702d34032f95322197fed9295d6e4296ffd387da49c5aa76b7961aecf6",
+    "payload_artifact_identity": "284d46702d34032f95322197fed9295d6e4296ffd387da49c5aa76b7961aecf6",
+    "payload_expected": "284d46702d34032f95322197fed9295d6e4296ffd387da49c5aa76b7961aecf6"
+   },
+   "setfile": {
+    "column": "980070777d3e6259e9d5737492da72c6e1ea9c9c31105d4590745d886dc26529",
+    "payload_artifact_identity": "980070777d3e6259e9d5737492da72c6e1ea9c9c31105d4590745d886dc26529",
+    "payload_expected": "980070777d3e6259e9d5737492da72c6e1ea9c9c31105d4590745d886dc26529"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ },
+ {
+  "id": "d3f0090c-50e6-43f2-a6cb-6ecf6c109c78",
+  "ea_id": "QM5_10280",
+  "symbol": "NDX.DWX",
+  "label": "QM5_10280_whc-rsrs",
+  "setfile": {
+   "exists": true,
+   "param_lines": 15,
+   "has_optimizer_pipe": false
+  },
+  "created_at": "2026-09-16T12:00:40+00:00",
+  "verdict": null,
+  "attempt_count": 0,
+  "parent_task_id": null,
+  "build_id": null,
+  "hold": null,
+  "precheck": {
+   "claimable": true,
+   "reason": null
+  },
+  "window": {
+   "start": "2017.01.01",
+   "end": "2025.12.31",
+   "payload_from": "2017.01.01",
+   "payload_to": "2025.12.31"
+  },
+  "card": {
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10280_whc-rsrs.md",
+   "card_exists": true,
+   "g0_status": "APPROVED",
+   "decl_block_count": 1,
+   "decl": {
+    "ea_id": "QM5_10280",
+    "symbol": "NDX.DWX",
+    "timeframe": "D1",
+    "no_optimization_search": true,
+    "research_trial_count": 0,
+    "spec_sha256": "6d9f9bbddf4a02b7351c7a67006631bfbff644235ca97c5f896d34c33252a07f"
+   }
+  },
+  "identity": {
+   "mq5": {
+    "column": "b61ce628043589d2e624cd64d963e80ac6f7d2127eadb96695a5838bc594b5f7",
+    "payload_artifact_identity": "b61ce628043589d2e624cd64d963e80ac6f7d2127eadb96695a5838bc594b5f7",
+    "payload_expected": "b61ce628043589d2e624cd64d963e80ac6f7d2127eadb96695a5838bc594b5f7"
+   },
+   "ex5": {
+    "column": "8829d63ab2d8e09361daf9f4d046cf6378d395ec1239bf782129effcb9c42804",
+    "payload_artifact_identity": "8829d63ab2d8e09361daf9f4d046cf6378d395ec1239bf782129effcb9c42804",
+    "payload_expected": "8829d63ab2d8e09361daf9f4d046cf6378d395ec1239bf782129effcb9c42804"
+   },
+   "setfile": {
+    "column": "446661163bcfd0f8cd607251ec7fa83693b2cff54f7a8cd9223202fd0a4f1a23",
+    "payload_artifact_identity": "446661163bcfd0f8cd607251ec7fa83693b2cff54f7a8cd9223202fd0a4f1a23",
+    "payload_expected": "446661163bcfd0f8cd607251ec7fa83693b2cff54f7a8cd9223202fd0a4f1a23"
+   }
+  },
+  "spec_exists": true,
+  "mq5_exists": true,
+  "ex5_exists": true,
+  "timeframe": "D1",
+  "ledger": {
+   "error": "SEALED_SEARCH_LEDGER_UNAVAILABLE"
+  }
+ }
+]
