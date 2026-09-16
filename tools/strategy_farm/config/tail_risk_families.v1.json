@@ -1,0 +1,358 @@
+{
+  "schema": "qm.tail-risk-families/v1",
+  "generated_by": "Kimi (interim Quant Research + Strategy Engineering lead, OWNER_DIRECT_SESSION_DELEGATION) — TAIL_RISK research programme slice",
+  "generated_at_utc": "2026-09-16",
+  "authority": [
+    "OWNER-DEC-D3-20260915 directive 3 sections 17-21 (verbatim: docs/ops/evidence/2026-09-15_continuous_book_evolution/owner_directive_3_max_factory_utilization_verbatim.md)",
+    "OWNER interim directive sections 7-8 (TAIL_RISK programme for aggressive strategy families; joint-tail protocol)",
+    "docs/research/PORTFOLIO_TAIL_RISK_RESEARCH.md (ba6-3, merged 2026-09-15)",
+    "docs/research/STRATEGY_ELIGIBILITY_V2.md section 18 (risk contract doctrine)",
+    "docs/research/TAIL_RISK_PROGRAMME_2026-09-16.md (this config's design document)"
+  ],
+  "status": "RESEARCH_SPECIFICATION__NO_VERDICT_NO_DEPLOYMENT_NO_DB_WRITES",
+  "thresholds_status": "PROPOSED_PENDING_OWNER_RATIFICATION (directive section 30: any threshold here is an economic-selection change — counterfactual first, versioned contract, tests, reversible; never a gate-integrity change)",
+  "unit_convention": {
+    "_note": "Family contracts are symbol-agnostic by design. The per-symbol card at intake translates levels/lots; the family spec bounds the STRUCTURE. risk_unit = the equity risk of the initial leg at its reference stop, expressed as % of account equity.",
+    "initial_leg_risk_pct_equity_max": 0.25,
+    "risk_unit": "percent_of_account_equity_at_reference_stop",
+    "max_basket_exposure_unit": "aggregate_level_lot_units_relative_to_initial_leg",
+    "max_gross_notional_unit": "same_unit_as_max_basket_exposure__symbol_translation_deferred_to_card"
+  },
+  "budgets_reference": {
+    "_note": "Read-only reference copies for stress pass-criteria. Source of truth: tools/strategy_farm/config/concentration_tail_limits.v1.json (OWNER_RATIFIED 2026-09-13). If the source changes, this reference must be re-copied, never diverge silently.",
+    "venue_daily_loss_limit_pct": 5.0,
+    "maximum_fraction_of_daily_limit": 0.8,
+    "effective_joint_daily_loss_budget_pct": 4.0,
+    "stop_risk_budget_pct": 11.0,
+    "per_sleeve_worst_fraction": 0.05,
+    "per_sleeve_worst_case_stop_risk_pct": 0.55
+  },
+  "families": [
+    {
+      "schema": "qm.research-tail-risk-family/v1",
+      "family_id": "positive_pyramiding",
+      "title": "Family A — positive pyramiding (add to winners)",
+      "research_status": "SPECIFICATION_ONLY_NO_EA",
+      "mechanism_flags": ["positive_pyramiding"],
+      "tail_amplifying": false,
+      "contract": {
+        "schema": "qm.strategy-risk-contract/v1",
+        "tail_amplifying": false,
+        "max_levels": 3,
+        "sizing_progression": {"type": "custom", "multiplier": null, "notes": "per-level multipliers [1.0, 0.75, 0.5] of the initial leg; aggregate = 2.25 initial legs"},
+        "max_open_positions": 3,
+        "max_basket_exposure": "2.25",
+        "max_gross_notional": "2.25",
+        "max_margin_pct": 5.0,
+        "max_basket_loss_pct": 0.5,
+        "emergency_exit": {
+          "type": "equity_stop",
+          "equity_stop_pct": 0.5,
+          "rule": "Flatten the whole basket when (a) open adverse excursion reaches 0.5% of account equity OR (b) open profit giveback reaches 50% of peak open basket profit, whichever occurs first. Stops only ever tighten, never widen."
+        },
+        "gap_sensitivity": "NOT_EVALUATED",
+        "spread_slippage_sensitivity": "NOT_EVALUATED",
+        "worst_historical_sequence": {"max_adverse_levels": "EVIDENCE_MISSING", "max_drawdown_pct": "EVIDENCE_MISSING", "evidence": "EVIDENCE_MISSING"},
+        "stress_sequence": {"scenario": "s08_combined_worst at max_levels with basket fully built", "result_pct": "NOT_EVALUATED", "evidence": "EVIDENCE_MISSING"},
+        "notes": "Carried for programme uniformity although positive pyramiding is NOT tail-amplifying under STRATEGY_ELIGIBILITY_V2 section 9 and needs no contract at intake."
+      },
+      "mechanics": {
+        "entry_trigger": "Initial breakout/continuation entry per the base card (H-CW-style session window is the FTMO reference envelope).",
+        "add_trigger": "Add level 2 only when open profit >= 1.0 x ATR(14) in favour and price makes a new favourable extreme; add level 3 only when open profit >= 2.0 x ATR(14) and a second new extreme prints. One add per bar maximum.",
+        "size_progression": [1.0, 0.75, 0.5],
+        "exposure_cap": "Aggregate basket <= 2.25 initial legs AND <= 5% margin AND initial leg <= 0.25% equity risk at reference stop.",
+        "basket_stop": "Hard bound 0.5% equity adverse; plus giveback stop at 50% of peak open profit.",
+        "trailing_logic": "After level 2 fills, basket stop trails to aggregate breakeven plus costs; thereafter trails at 1.0 x ATR(14) behind the peak favourable close. Never widens.",
+        "time_bounds": "Session-flat variant: mandatory flat by the card flatten hour; no overnight carry (FTMO envelope). DXZ variant may hold with the trailing stop but never through a scheduled high-impact event."
+      },
+      "expected_mechanism": "Convex capture of strong intraday trends: exposure concentrates only where the tape has already confirmed direction, so the expectancy comes from letting confirmed winners run while the giveback stop monetizes the fat right tail.",
+      "regime_of_failure": "Trend-exhaustion regimes: parabolic reversal immediately after level 3 prints converts the largest aggregate position at the worst prices; clustered same-session entries across correlated symbols (NDX/GDAXI/SP500) concentrate the giveback. Choppy range sessions produce repeated small giveback stops (death by sequence, not by single loss).",
+      "portfolio_role": {
+        "ftmo": "PRIMARY candidate venue: session-flat envelope removes the gap tail that a built-out basket fears most; giveback stop + daily -1% circuit breaker (H-CW convention) stack inside the 4% effective daily-loss budget.",
+        "dxz": "Valid as a low-margin convex sleeve; subordinate role because the passive book already carries trend capture."
+      },
+      "stress_scenarios": ["s01_gap_x1_sealed", "s04_spread_x2", "s05_spread_x3_slippage", "s06_news_shock", "s08_combined_worst"],
+      "invalidation_criteria": [
+        "Sealed OOS + Q06 HARSH-class evidence: expectancy after costs < +0.10R per basket or net profit factor < 1.20 (H-CW kill-criteria class).",
+        "Simulated worst-day p95 of the built-out basket > 2.5% of equity at the reference 0.25% initial risk, or Monte-Carlo P(hit 4% effective daily-loss budget within 60 days) > 2%.",
+        "Giveback stop realized more often than profit target across the sealed window with no regime explanation (mechanism captures noise, not trends).",
+        "Joint-tail protocol shows the family's worst days systematically coincide with the passive book's worst days (hidden common mode, family is the tail carrier)."
+      ],
+      "evidence_status": "SPECIFICATION_ONLY"
+    },
+    {
+      "schema": "qm.research-tail-risk-family/v1",
+      "family_id": "negative_pyramiding",
+      "title": "Family B — negative pyramiding (add to losers, hard-bounded)",
+      "research_status": "SPECIFICATION_ONLY_NO_EA",
+      "mechanism_flags": ["negative_pyramiding"],
+      "tail_amplifying": true,
+      "contract": {
+        "schema": "qm.strategy-risk-contract/v1",
+        "tail_amplifying": true,
+        "max_levels": 3,
+        "sizing_progression": {"type": "custom", "multiplier": null, "notes": "per-level multipliers [1.0, 0.75, 0.5] — averaging in SMALLER increments; aggregate = 2.25 initial legs. Deliberately anti-martingale in size so the worst price carries the smallest weight."},
+        "max_open_positions": 3,
+        "max_basket_exposure": "2.25",
+        "max_gross_notional": "2.25",
+        "max_margin_pct": 10.0,
+        "max_basket_loss_pct": 1.0,
+        "emergency_exit": {
+          "type": "basket_sl",
+          "equity_stop_pct": 1.0,
+          "rule": "Flatten all basket legs at a hard 1.0% of account equity open-loss bound. No 'price must return' assumption survives this bound; when it triggers, the basket is dead and re-entry requires a fresh signal next session."
+        },
+        "gap_sensitivity": "NOT_EVALUATED",
+        "spread_slippage_sensitivity": "NOT_EVALUATED",
+        "worst_historical_sequence": {"max_adverse_levels": "EVIDENCE_MISSING", "max_drawdown_pct": "EVIDENCE_MISSING", "evidence": "EVIDENCE_MISSING"},
+        "stress_sequence": {"scenario": "adverse trend through all 3 levels then continuation (s02_gap_x2 overlaid)", "result_pct": "NOT_EVALUATED", "evidence": "EVIDENCE_MISSING"},
+        "notes": "Distinct mechanism from positive pyramiding (directive section 21); NEVER collapsed into a generic pyramiding label."
+      },
+      "mechanics": {
+        "entry_trigger": "Initial mean-reversion entry at a defined stretch (e.g. close beyond k x ATR from session VWAP) per the base card.",
+        "add_trigger": "Level 2 at +1.0 x ATR(14) adverse from level 1; level 3 at +2.0 x ATR(14) adverse. Adds require the original mean-reversion hypothesis still intact (no news shock bar printed); a shock bar suspends adds (fail-closed news filter).",
+        "size_progression": [1.0, 0.75, 0.5],
+        "exposure_cap": "Aggregate <= 2.25 initial legs AND <= 10% margin AND hard 1.0% equity basket-loss bound.",
+        "basket_stop": "Hard bound 1.0% equity realized via emergency_exit; individual legs carry no separate widening stops.",
+        "trailing_logic": "On recovery, basket take-profit = blended average entry + 0.5 x ATR(14); breakeven move of the basket stop once basket P&L >= +0.5% equity. Never widens.",
+        "time_bounds": "Session-flat strongly preferred; DXS/DXZ variant may carry overnight ONLY with the trailing basket stop inside the 1.0% bound and no high-impact event within the holding window."
+      },
+      "expected_mechanism": "Mean-reversion capture with an improved blended average price: in range regimes, adverse excursions are usually transitory, so a bounded ladder monetizes reversion while the hard 1.0% bound caps the regime-change loss.",
+      "regime_of_failure": "Sustained directional trend (regime change): every add improves the average price but increases exposure exactly when reversion probability collapses; the terminal loss is realized at the 1.0% bound. Margin escalation at level 3 forces the flatten into the worst liquidity. A gap through the bound realizes MORE than 1.0% (slippage tail) — that overrun IS the family kill test.",
+      "portfolio_role": {
+        "ftmo": "RESEARCH-ONLY initially: one 1.0% basket stop plus the passive book's same-day P&L can approach the 4% effective daily-loss budget; only a session-flat variant with the daily -1% breaker is admissible for FTMO evaluation.",
+        "dxz": "PRIMARY research venue: no daily-loss venue rule at DXZ scale, but the 11% stop-risk budget means at most ~2 sleeves of this family at full bound."
+      },
+      "stress_scenarios": ["s01_gap_x1_sealed", "s02_gap_x2", "s03_gap_x3", "s04_spread_x2", "s05_spread_x3_slippage", "s06_news_shock", "s08_combined_worst"],
+      "invalidation_criteria": [
+        "Stress realization: ANY sealed scenario where the realized basket loss exceeds max_basket_loss_pct by more than the preregistered slippage allowance (+0.25% equity) — the bound is not trustworthy and the family is dead for that venue until re-specified.",
+        "Mechanism death rate: terminal bound hit in > 5% of baskets over the sealed window (reversion is not there; the ladder is a slow bleed into regime change).",
+        "Economics: expectancy after Q06 HARSH-class spread/slippage degradation < 0 (costs eat the reversion edge).",
+        "Joint-tail protocol: lower-tail dependence with the passive book's trend sleeves is materially positive (they lose together exactly in trend-break regimes)."
+      ],
+      "evidence_status": "SPECIFICATION_ONLY"
+    },
+    {
+      "schema": "qm.research-tail-risk-family/v1",
+      "family_id": "bounded_martingale",
+      "title": "Family C — bounded martingale (finite levels, hard equity stop)",
+      "research_status": "SPECIFICATION_ONLY_NO_EA",
+      "mechanism_flags": ["martingale"],
+      "tail_amplifying": true,
+      "contract": {
+        "schema": "qm.strategy-risk-contract/v1",
+        "tail_amplifying": true,
+        "max_levels": 4,
+        "sizing_progression": {"type": "geometric", "multiplier": "2", "notes": "level lots 1x / 2x / 4x / 8x the base unit; aggregate = 15 base units. Finite — level 4 is the LAST level; there is no level 5 by construction."},
+        "max_open_positions": 4,
+        "max_basket_exposure": "15",
+        "max_gross_notional": "15",
+        "max_margin_pct": 15.0,
+        "max_basket_loss_pct": 2.0,
+        "emergency_exit": {
+          "type": "account_equity_stop",
+          "equity_stop_pct": 2.0,
+          "rule": "TERMINAL FAILURE CONDITION: when level 4 is filled and price trades adverse to the level-4 stop, flatten ALL legs immediately and realize the bounded loss <= 2.0% of account equity. Same-session circuit breaker: after a terminal flatten, no re-entry until the next trading session. The sequence is finite; 'eventually price must return' is NOT an argument anywhere in this contract."
+        },
+        "gap_sensitivity": "NOT_EVALUATED",
+        "spread_slippage_sensitivity": "NOT_EVALUATED",
+        "worst_historical_sequence": {"max_adverse_levels": "EVIDENCE_MISSING", "max_drawdown_pct": "EVIDENCE_MISSING", "evidence": "EVIDENCE_MISSING"},
+        "stress_sequence": {"scenario": "s08_combined_worst at level 4 (gap x2 + spread x3 + slippage + margin spike) — the preregistered terminal failure", "result_pct": "NOT_EVALUATED", "evidence": "EVIDENCE_MISSING"},
+        "notes": "margin cap 15% and loss cap 2.0% are HARD; a gap that jumps the level-4 stop realizes the slippage overrun beyond 2.0% — the exact quantity the stress matrix measures."
+      },
+      "mechanics": {
+        "entry_trigger": "Base-unit entry on the card's signal (bounded oscillation regimes only; a trend/regime filter must gate entries — a raw martingale without a regime gate is out of programme scope).",
+        "add_trigger": "Level k+1 at -1.0 x ATR(14) adverse from level k, k = 1..3. Adds suspended inside the fail-closed news blackout and after a shock bar.",
+        "size_progression": [1.0, 2.0, 4.0, 8.0],
+        "exposure_cap": "Aggregate <= 15 base units AND <= 15% margin AND hard 2.0% equity terminal bound. Base unit sized so the TERMINAL realized loss (including the preregistered slippage allowance) stays <= 2.0% under s08.",
+        "basket_stop": "Basket take-profit at blended average entry + 0.25 x ATR(14) (recovery exit); terminal failure as declared in emergency_exit.",
+        "trailing_logic": "None in the classic sense; the recovery TP tightens toward blended average as levels fill. Never widens.",
+        "time_bounds": "DXZ research venue only. No FTMO variant at programme stage: a 2% terminal event plus passive-book same-day P&L can breach the 4% effective daily-loss budget (see portfolio_role)."
+      },
+      "expected_mechanism": "In bounded-oscillation regimes, geometric doubling recovers the whole ladder on a modest reversion; the design bets that regime-filtered entries make full-ladder terminal events rare while their cost is pre-bounded at 2.0% of equity.",
+      "regime_of_failure": "The terminal failure condition itself: a unilateral move of > 4 x ATR(14) against the basket without reversion fills all levels and realizes the 2.0% bound — and a GAP through the level-4 stop realizes MORE than 2.0% (slippage overrun). Trend regimes and news shocks are the two systemic carriers; correlation of terminal events across sleeves is the portfolio-level ruin mode the joint-tail protocol exists to detect.",
+      "portfolio_role": {
+        "ftmo": "EXCLUDED at programme stage: FTMO's daily-loss rule makes a 2% terminal event plus any same-day passive P&L a challenge-killer; a future session-flat FTMO variant with a smaller bound is conceivable but NOT part of this programme.",
+        "dxz": "SOLE research venue. At most ONE martingale sleeve at full 2.0% bound inside the 11% stop-risk budget; two would consume 4% of budget on a mechanism whose terminal events correlate."
+      },
+      "stress_scenarios": ["s02_gap_x2", "s03_gap_x3", "s05_spread_x3_slippage", "s06_news_shock", "s07_margin_spike", "s08_combined_worst"],
+      "invalidation_criteria": [
+        "Terminal condition realized in > 2% of baskets on sealed data (the regime filter is not rare-fying full-ladder events; the ladder is a scheduled 2% loss machine).",
+        "ANY sealed stress scenario realizing a loss beyond 2.0% + 0.5% slippage allowance — the declared bound is proven non-binding and the family is DEAD (unbounded recovery class risk).",
+        "Margin cap breached before level 4 completes on any sealed path (the ladder cannot even finish its finite sequence).",
+        "Joint-tail protocol: terminal events coincide across aggressive sleeves beyond the independence baseline (hidden common ruin mode — family banned from multi-sleeve books regardless of standalone numbers)."
+      ],
+      "evidence_status": "SPECIFICATION_ONLY"
+    },
+    {
+      "schema": "qm.research-tail-risk-family/v1",
+      "family_id": "bounded_grid_recovery",
+      "title": "Family D — bounded grid / recovery (ATR-spaced, finite, equity-bounded)",
+      "research_status": "SPECIFICATION_ONLY_NO_EA",
+      "mechanism_flags": ["bounded_grid", "bounded_recovery"],
+      "tail_amplifying": true,
+      "contract": {
+        "schema": "qm.strategy-risk-contract/v1",
+        "tail_amplifying": true,
+        "max_levels": 5,
+        "sizing_progression": {"type": "flat", "multiplier": null, "notes": "equal unit per grid level; aggregate = 5 base units. Grid spacing = 1.0 x ATR(14) between levels."},
+        "max_open_positions": 5,
+        "max_basket_exposure": "5",
+        "max_gross_notional": "5",
+        "max_margin_pct": 12.0,
+        "max_basket_loss_pct": 1.5,
+        "emergency_exit": {
+          "type": "basket_sl",
+          "equity_stop_pct": 1.5,
+          "rule": "EQUITY BOUNDARY: flatten the entire grid at 1.5% of account equity open loss. BASKET EXIT (recovery): when blended basket P&L reaches blended average entry + 0.25 x ATR(14), close all legs. TIME STOP: flatten after 5 sessions regardless of P&L. Whichever triggers first. No weekend carry in the session-flat variant."
+        },
+        "gap_sensitivity": "NOT_EVALUATED",
+        "spread_slippage_sensitivity": "NOT_EVALUATED",
+        "worst_historical_sequence": {"max_adverse_levels": "EVIDENCE_MISSING", "max_drawdown_pct": "EVIDENCE_MISSING", "evidence": "EVIDENCE_MISSING"},
+        "stress_sequence": {"scenario": "unilateral trend through all 5 grid levels then gap x2 (s02) overlaid", "result_pct": "NOT_EVALUATED", "evidence": "EVIDENCE_MISSING"},
+        "notes": "Grid is symmetric around the initial entry (recovery grid), NOT a trend-following grid; trend-following grids are a different mechanism and are out of this family."
+      },
+      "mechanics": {
+        "entry_trigger": "Initial entry per the base card in a defined mean-reverting range regime; grid levels pre-computed at +/- 1.0 x ATR(14) spacing.",
+        "add_trigger": "Passive limit-style fills at each grid level as price traverses adverse; adds suspended during news blackout / after a shock bar (fail-closed).",
+        "size_progression": [1.0, 1.0, 1.0, 1.0, 1.0],
+        "exposure_cap": "Aggregate <= 5 base units AND <= 12% margin AND hard 1.5% equity boundary AND 5-session time stop.",
+        "basket_stop": "Blended recovery TP (avg entry + 0.25 x ATR) OR 1.5% equity boundary OR 5-session time stop — first hit wins.",
+        "trailing_logic": "Recovery TP ratchets down toward blended average as deeper levels fill; the equity boundary never moves. Never widens.",
+        "time_bounds": "Session-flat variant mandatory for any FTMO evaluation (flat by flatten hour, no weekend carry); DXZ variant bounded by the 5-session time stop."
+      },
+      "expected_mechanism": "In oscillating regimes the grid harvests the range around the blended average and the recovery exit monetizes reversion to mean; equal sizing keeps the tail linear (not geometric) so the equity boundary is reachable and meaningful.",
+      "regime_of_failure": "Unilateral trend traversal of all 5 levels: the grid holds maximal exposure at maximal adverse prices and the 1.5% boundary realizes; a gap through the boundary realizes the overrun. Same-symbol grids across sleeves stack into one deep synthetic basket — the joint-tail protocol's common-symbol exposure metric is the designed detector.",
+      "portfolio_role": {
+        "ftmo": "CONDITIONAL: only the session-flat variant (no gap/weekend tail, daily breaker stacks with the 1.5% boundary inside the 4% effective budget) is admissible for FTMO evaluation.",
+        "dxz": "PRIMARY research venue alongside family B; at most 2 grid sleeves per symbol class inside the 11% stop-risk budget with cross-sleeve grid-depth limits from the joint-tail engine."
+      },
+      "stress_scenarios": ["s01_gap_x1_sealed", "s02_gap_x2", "s03_gap_x3", "s04_spread_x2", "s05_spread_x3_slippage", "s06_news_shock", "s08_combined_worst"],
+      "invalidation_criteria": [
+        "Equity boundary realized in > 4% of baskets on sealed data, or realized boundary loss exceeds 1.5% + 0.4% slippage allowance in ANY sealed scenario (bound not binding -> family dead).",
+        "Recovery exit unreachable: median time-in-basket at max depth exceeds the 5-session time stop on the sealed window (the grid becomes a forced-loss inventory).",
+        "Economics: expectancy after Q06 HARSH-class costs < 0, or swap/rollover cost > 10% of gross P&L in any carried variant (H-CW convention).",
+        "Joint-tail protocol: same-symbol grid depth across sleeves breaches the common-symbol exposure budget under the joint-escalation scenario."
+      ],
+      "evidence_status": "SPECIFICATION_ONLY"
+    }
+  ],
+  "stress_matrix": {
+    "_note": "Deterministic preregistered stress definitions. Base quantities are measured from the SEALED streams per symbol class (never live data): base_gap = empirical 99.5th percentile adverse gap for the symbol class on sealed history; base_spread = 20-day median spread at entry time (H-CW spread_median_mult convention); ATR = ATR(14) on the sealed series. Every scenario is applied at max_levels depth with the basket fully built. Pass criteria reference the family's own contract bounds — a scenario result is EVIDENCE, not a verdict.",
+    "base_quantities": {
+      "base_gap": "empirical 99.5th percentile adverse gap, sealed history, per symbol class",
+      "base_spread": "20-day median spread at entry time, sealed history",
+      "slippage_model": "every forced exit fills at stop - max(1 x spread, 0.1 x ATR(14))",
+      "news_shock_bar": "first bar range after event > 2.5 x ATR(14) (shock_atr_mult upper bound, H-CW convention)"
+    },
+    "scenarios": [
+      {
+        "id": "s01_gap_x1_sealed",
+        "description": "Sealed-history base gap applied against a fully built basket at max_levels; measures the raw gap tail with no multiplier.",
+        "parameters": {"gap_mult": 1, "spread_mult": 1, "margin_mult": 1, "news_shock": false},
+        "applies_to": ["positive_pyramiding", "negative_pyramiding", "bounded_grid_recovery"],
+        "pass_criteria": ["basket_realized_loss_pct <= contract.max_basket_loss_pct + slippage_allowance", "peak_margin_pct <= contract.max_margin_pct"]
+      },
+      {
+        "id": "s02_gap_x2",
+        "description": "Adverse gap of 2 x base_gap through the deepest level's stop; the core gap-overrun measurement for every averaging family.",
+        "parameters": {"gap_mult": 2, "spread_mult": 1, "margin_mult": 1, "news_shock": false},
+        "applies_to": ["negative_pyramiding", "bounded_martingale", "bounded_grid_recovery"],
+        "pass_criteria": ["basket_realized_loss_pct <= contract.max_basket_loss_pct + slippage_allowance", "no residual open risk after flatten"]
+      },
+      {
+        "id": "s03_gap_x3",
+        "description": "Extreme adverse gap 3 x base_gap; the bound-stress case. Realized loss beyond bound + allowance here is a family-level INVALIDATION trigger, not a tuning input.",
+        "parameters": {"gap_mult": 3, "spread_mult": 1, "margin_mult": 1, "news_shock": false},
+        "applies_to": ["negative_pyramiding", "bounded_martingale", "bounded_grid_recovery"],
+        "pass_criteria": ["basket_realized_loss_pct recorded and reported even on breach", "documented_overrun <= family_slippage_allowance or family declared invalid"]
+      },
+      {
+        "id": "s04_spread_x2",
+        "description": "Spread fixed at 2 x base_spread across entry, adds and exits; measures cost degradation of the ladder mechanics (Q06 HARSH-class).",
+        "parameters": {"gap_mult": 1, "spread_mult": 2, "margin_mult": 1, "news_shock": false},
+        "applies_to": ["positive_pyramiding", "negative_pyramiding", "bounded_grid_recovery"],
+        "pass_criteria": ["scenario_expectancy_after_costs recorded", "basket_realized_loss_pct <= contract.max_basket_loss_pct + slippage_allowance"]
+      },
+      {
+        "id": "s05_spread_x3_slippage",
+        "description": "Spread 3 x base_spread plus the slippage model on every forced exit; the HARSH execution floor.",
+        "parameters": {"gap_mult": 1, "spread_mult": 3, "margin_mult": 1, "news_shock": false},
+        "applies_to": ["positive_pyramiding", "negative_pyramiding", "bounded_martingale", "bounded_grid_recovery"],
+        "pass_criteria": ["basket_realized_loss_pct <= contract.max_basket_loss_pct + slippage_allowance", "scenario_expectancy_after_costs >= 0 for economic viability evidence"]
+      },
+      {
+        "id": "s06_news_shock",
+        "description": "Scheduled high-impact event (FOMC/NFP/CPI) inside the holding window; adds suspended by the fail-closed news filter, existing basket marked through the news shock bar. Factory news calendar only (D:/QM/data/news_calendar); never a live source.",
+        "parameters": {"gap_mult": 1, "spread_mult": 1, "margin_mult": 1, "news_shock": true},
+        "applies_to": ["positive_pyramiding", "negative_pyramiding", "bounded_martingale", "bounded_grid_recovery"],
+        "pass_criteria": ["basket_realized_loss_pct <= contract.max_basket_loss_pct + slippage_allowance", "no new levels added inside the blackout window"]
+      },
+      {
+        "id": "s07_margin_spike",
+        "description": "Broker margin requirement multiplied by 1.5 with the basket at max depth; tests whether the finite sequence can even complete.",
+        "parameters": {"gap_mult": 1, "spread_mult": 1, "margin_mult": 1.5, "news_shock": false},
+        "applies_to": ["bounded_martingale", "bounded_grid_recovery"],
+        "pass_criteria": ["peak_margin_pct <= contract.max_margin_pct at all times"]
+      },
+      {
+        "id": "s08_combined_worst",
+        "description": "s02 + s05 + s07 simultaneously at max_levels: gap x2, spread x3 + slippage, margin spike. The preregistered worst case every family contract's stress_sequence names. A family that breaches bound + allowance here is invalid; a family that survives reports the exact realized bound consumption.",
+        "parameters": {"gap_mult": 2, "spread_mult": 3, "margin_mult": 1.5, "news_shock": false},
+        "applies_to": ["positive_pyramiding", "negative_pyramiding", "bounded_martingale", "bounded_grid_recovery"],
+        "pass_criteria": ["basket_realized_loss_pct <= contract.max_basket_loss_pct + slippage_allowance", "peak_margin_pct <= contract.max_margin_pct", "no residual open risk after flatten"]
+      }
+    ],
+    "slippage_allowance_pct_by_family": {
+      "_note": "Preregistered overrun tolerance between the declared bound and the stress-realized loss, per family. Fixed here; changing one is a section-30 threshold change.",
+      "positive_pyramiding": 0.25,
+      "negative_pyramiding": 0.25,
+      "bounded_martingale": 0.5,
+      "bounded_grid_recovery": 0.4
+    }
+  },
+  "joint_tail_protocol": {
+    "_note": "Section 8 procedure: tests whether multiple aggressive sleeves DIVERSIFY or hide a common ruin mode. Aligned to PORTFOLIO_TAIL_RISK_RESEARCH.md sections 2/4/5 (the ten metrics and the four-part acceptance rule). Advisory evidence only; never sizes, deploys, or gates.",
+    "read_only": true,
+    "data_inputs": [
+      "per-sleeve sealed trade streams (entry/exit, per-deal P&L): Q08 stress streams + Q14 head-to-head streams under D:/QM/strategy_farm/ sleeve artifacts + D:/QM/exports",
+      "interval equity / daily net per sleeve: portfolio/interval_equity_export.py, portfolio/ftmo_daily_net_export.py",
+      "declared risk bounds: strategy_risk_contract.v1 per sleeve + this config's family contracts",
+      "news/gap windows: D:/QM/data/news_calendar (factory evidence only; never a live source)",
+      "demo (money-adjacent) trades: FTMO demo journal + portfolio/live_deal_attribution.py (read-only)",
+      "farm DB (D:/QM/strategy_farm/state/farm_state.sqlite) via read-only handle only"
+    ],
+    "known_evidence_gap": "intra-basket per-level state is not universally captured in current sealed streams; the wave-2 engine derives basket depth by open-position reconstruction from the trade stream or requires an EA-emitted basket-depth telemetry column (PORTFOLIO_TAIL_RISK_RESEARCH.md section 3). Never guessed.",
+    "basket_depth_reconstruction": "open-position reconstruction from the sealed trade stream (entry/exit per deal); a derived basket-depth path per sleeve per bar is the input to the escalation metrics",
+    "methods": {
+      "empirical_joint_tails": "co-exceedance counts P(R_i <= q_a, R_j <= q_a) for sleeve daily returns at a in {0.05, 0.025, 0.01}; non-parametric, per pair and joint",
+      "lower_tail_dependence_lambda_L": "non-parametric tail-dependence estimator from the empirical co-exceedance function (e.g. log-periodogram/CFG-class estimator on the lower tail); a high lambda_L at low Pearson r is the common-ruin warning",
+      "worst_day_overlap": "for each sleeve's worst N=10 days, count cross-sleeve coincidences; compare against an independence permutation baseline (2000 seed-pinned permutations); materially worse than the 95th permutation percentile fails acceptance part 2",
+      "correlation_convergence": "rolling pairwise return correlation, calm-window (body, |r| below median) vs shock-window (bottom decile of an aggregate market-factor return); test H0 rho_tail <= rho_body against HA rho_tail > rho_body per pair",
+      "block_bootstrap_joint_worst_sequence": "circular block bootstrap of the joint daily return matrix, block = 10 days, 2000 seed-pinned replications; emits the distribution of joint worst-day and worst-sequence account losses against the venue budget",
+      "drawdown_clustering": "inter-drawdown-interval dispersion index vs the exponential (Poisson) independence baseline; clustering (overdispersion) fails acceptance part 2 evidence",
+      "joint_basket_escalation": "from reconstructed basket-depth paths: probability and depth of >= 2 sleeves at >= 60% and at 100% of their max_levels simultaneously, and the implied joint account loss vs each sleeve's max_basket_loss_pct and the 4% effective daily-loss budget",
+      "common_symbol_exposure": "net + gross same-symbol exposure across sleeves per bar; worst simultaneous same-symbol basket depth; common-session and common-volatility exposure buckets",
+      "margin_escalation_path": "joint max_margin_pct consumption path; peak simultaneous margin under s07/s08",
+      "gaussian_copula_tail_comparison": "BASELINE ONLY: fit a Gaussian copula (implied lambda_L = 0) and report the divergence from empirical lambda_L as a diagnostic of non-Gaussian tail dependence. EXPLICITLY NOT A SAFETY ARGUMENT — no diversification claim may rest on a copula baseline.",
+      "simultaneous_recovery_escalation": "conditional probability that one sleeve's terminal/recovery escalation coincides with another sleeve's escalation start within +/- 2 sessions"
+    },
+    "gap_scenarios_joint": "apply s02/s03 jointly across sleeves sharing a symbol class or session: do baskets sit open into the same weekend/news gap; report joint realized loss vs the 4% effective daily-loss budget",
+    "acceptance_rule": {
+      "source": "PORTFOLIO_TAIL_RISK_RESEARCH.md section 4 (all four must hold; else EVIDENCE_MISSING/FAIL — never 'diversification proven' by normal-period correlation alone)",
+      "part_1_joint_tail_bound": "simulated joint worst-day / worst-sequence account loss within the venue daily-loss budget (5% x 0.8 = 4% effective) and within the 11% total stop-risk budget, under the joint-escalation scenario",
+      "part_2_no_hidden_common_ruin_mode": "lambda_L and joint basket escalation within preregistered thresholds; worst-day overlap not materially worse than independence",
+      "part_3_additive_not_illusory": "joint book tail (CVaR / worst-sequence) materially better than exposure-weighted sum of sleeve tails, surviving shock windows not only calm windows",
+      "part_4_every_sleeve_bounded": "each sleeve carries a valid non-UNBOUNDED_RECOVERY strategy_risk_contract.v1"
+    },
+    "proposed_thresholds": {
+      "_status": "PROPOSED_PENDING_OWNER_RATIFICATION (directive section 30)",
+      "lambda_L_max_at_alpha_0.05": 0.15,
+      "worst_day_overlap_max_vs_independence_p95": "observed overlap must not exceed the 95th percentile of the independence permutation baseline",
+      "joint_escalation_max_prob_per_quarter_sim": 0.01,
+      "joint_worst_day_max_pct_of_equity": 4.0,
+      "correlation_convergence_max_delta_tail_minus_body": 0.2
+    },
+    "output_contract": "read-model D:/QM/reports/state/portfolio_tail_risk.json (schema qm.portfolio-tail-risk/v1 + generated_at_utc), ten metrics per pair and joint, four acceptance outcomes as PASS/FAIL/EVIDENCE_MISSING, hard guard object tail_risk_reject mirroring concentration_tail.py surviving-hard-guard pattern, data-validity fail-closed (unknown_report). Wave-2 engine scope = directive section 43 F (f1/f2, Fable); THIS config does not implement it."
+  }
+}
