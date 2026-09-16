@@ -30,18 +30,25 @@ def test_sp500_keeps_the_measured_44gb(monkeypatch):
 
 def test_other_index_bases_get_the_provisional_table_value(monkeypatch):
     monkeypatch.delenv(tw.INDEX_TICK_RESERVATION_TABLE_ENV, raising=False)
-    for base in ("NDX", "GDAXI", "WS30", "UK100"):
+    # 2026-09-16 calibration (ticket 6cdc6811): NDX/GDAXI sit at the measured
+    # 44 GB fail-safe again; WS30/UK100 remain the provisional sub-44 values.
+    for base in ("WS30", "UK100"):
         expected = tw.INDEX_TICK_RESERVATION_GB_BY_BASE[base]
         assert expected < tw.SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB
         assert tw._index_tick_reservation_gb(f"{base}.DWX") == expected, base
         assert tw._commit_reservation_gb_for_item(
             tw.COMMIT_CLASS_SINGLE_INDEX_TICK, _item(f"{base}.DWX"), {}
         ) == expected, base
+    for base in ("NDX", "GDAXI"):
+        assert tw.INDEX_TICK_RESERVATION_GB_BY_BASE[base] == 44.0
+        assert tw._index_tick_reservation_gb(f"{base}.DWX") == 44.0, base
 
 
 def test_provisional_rows_are_winnable_on_the_63gb_host():
     """44 + 14 = 58 GB never fit (max free seen 54.1 GB); the provisional value must."""
     for base in ("NDX", "GDAXI", "WS30", "UK100"):
+        if tw.INDEX_TICK_RESERVATION_GB_BY_BASE[base] >= 44.0:
+            continue  # measured-necessity lane; unwinnable by design until the RAM decision
         need = tw.INDEX_TICK_RESERVATION_GB_BY_BASE[base] + tw.COMMIT_RESERVATION_FLOOR_GB \
             if hasattr(tw, "COMMIT_RESERVATION_FLOOR_GB") else tw.INDEX_TICK_RESERVATION_GB_BY_BASE[base] + 14.0
         assert need <= 54.0, base
@@ -87,7 +94,12 @@ def test_candidate_detail_labels_the_table_and_measured_can_only_raise(monkeypat
     monkeypatch.setenv("QM_TESTER_MEMORY_ADMISSION", "0")  # no ledger expectation in play
     cls, gb, source = tw._ram_reservation_detail_for_candidate(_item("NDX.DWX", "Q04"), {}, False)
     assert cls == tw.COMMIT_CLASS_SINGLE_INDEX_TICK
-    assert gb == tw.INDEX_TICK_RESERVATION_GB_BY_BASE["NDX"]
+    # 2026-09-16: NDX is back at the measured 44 GB fail-safe, so the resolved
+    # value equals the flat class and carries the flat label (same rule as SP500).
+    assert gb == 44.0
+    assert source == tw.RAM_RESERVATION_SOURCE_FLAT
+    cls, gb, source = tw._ram_reservation_detail_for_candidate(_item("WS30.DWX", "Q04"), {}, False)
+    assert gb == tw.INDEX_TICK_RESERVATION_GB_BY_BASE["WS30"]
     assert source == tw.RAM_RESERVATION_SOURCE_INDEX_TABLE
     # SP500 stays labelled flat (the table value equals the flat class)
     cls, gb, source = tw._ram_reservation_detail_for_candidate(_item("SP500.DWX", "Q04"), {}, False)

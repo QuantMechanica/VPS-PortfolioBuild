@@ -1,0 +1,572 @@
+{
+  "schema": "qm.ram44-class-calibration/v1",
+  "generated_at_utc": "2026-09-16T15:30:00+00:00",
+  "ticket": "6cdc6811",
+  "task_id": "det-repairs",
+  "authority": "FACTORY_RECOVERABLE_BACKLOG/ram_44gb_reservation_class (AUTHORIZED_PENDING_EXECUTION); OWNER 2026-09-14 control-review lever 1 pattern; OWNER directive: never below a measured peak",
+  "question": "Is the 44 GB RAM reservation class measured necessity or stale static classification?",
+  "answer": {
+    "single_index_tick_full_window": "MEASURED NECESSITY. SP500 45.7 GB private / 46.8 GB WS (2026-08-15); NDX.DWX 39.5 GB WS / 49.3 GB private (QM5_10280 Q05 D1, finished 2026-09-15T02:15Z) and 39.2 GB (QM5_1077 Q05 D1, finished 2026-09-15T08:47Z, one ram_emergency_reap at 25.7 GB) -- both admitted under the lever-1 12 GB reservation; GDAXI.DWX 35.4 GB (QM5_1642 Q02 D1 smoke, finished 2026-09-15T16:37Z, under the provisional 24 GB). Full-window dense-tick index D1 runs are monster-class on every measured base.",
+    "heavy_or_unknown_multisymbol": "STALE/FAIL-SAFE STATIC, no measured basis to change. Zero ledger records in the trailing 14-day window (n=0); the class is the documented fail-safe for unclassified multisymbol rows ('defaulting unknowns to heavy'). Lowering without measurements is forbidden; it stays 44 GB.",
+    "lever1_per_base_lowering": "UNDER-CALIBRATED. The NDX 12 GB / WS30 12 GB values generalized Q04-only measurements (NDX n=3 max 2.10 GB, WS30 n=5 max 1.15 GB) to the whole class; the 2026-09-15 ledger falsified that generalization for NDX (39+ GB full-window Q05)."
+  },
+  "measured_evidence": {
+    "source": "D:/QM/reports/state/tester_memory_ledger.jsonl (qm.tester_memory_ledger/v1), trailing 14d, 19,210 records in window",
+    "single_index_tick_peaks_ge_20gb": [
+      {
+        "ea_id": "QM5_10280",
+        "symbol": "NDX.DWX",
+        "phase": "Q05",
+        "timeframe": "D1",
+        "run_kind": "backtest",
+        "peak_subtree_working_set_gb": 39.516,
+        "peak_subtree_private_gb": 49.347,
+        "reservation_gb_at_run": 12.0,
+        "outcome": "finished",
+        "ts_utc": "2026-09-15T02:15:45+00:00"
+      },
+      {
+        "ea_id": "QM5_1077",
+        "symbol": "NDX.DWX",
+        "phase": "Q05",
+        "timeframe": "D1",
+        "run_kind": "backtest",
+        "peak_subtree_working_set_gb": 39.207,
+        "peak_subtree_private_gb": 40.699,
+        "reservation_gb_at_run": 12.0,
+        "outcome": "finished",
+        "ts_utc": "2026-09-15T08:47:06+00:00"
+      },
+      {
+        "ea_id": "QM5_1642",
+        "symbol": "GDAXI.DWX",
+        "phase": "Q02",
+        "timeframe": "D1",
+        "run_kind": "smoke",
+        "peak_subtree_working_set_gb": 35.444,
+        "peak_subtree_private_gb": 35.438,
+        "reservation_gb_at_run": 24.0,
+        "outcome": "finished",
+        "ts_utc": "2026-09-15T16:37:54+00:00"
+      },
+      {
+        "ea_id": "QM5_1077",
+        "symbol": "NDX.DWX",
+        "phase": "Q05",
+        "timeframe": "D1",
+        "run_kind": "backtest",
+        "peak_subtree_working_set_gb": 25.736,
+        "reservation_gb_at_run": 12.0,
+        "outcome": "ram_emergency_reap",
+        "ts_utc": "2026-09-15T04:26:19+00:00"
+      }
+    ],
+    "sp500_pre_window": {
+      "peak_private_gb": 45.7,
+      "peak_working_set_gb": 46.8,
+      "observed": "2026-08-15",
+      "phase": "Q02"
+    },
+    "class_aggregates_14d": {
+      "single_index_tick": {
+        "n": 489,
+        "peak_ws_p50_gb": 2.069,
+        "peak_ws_p95_gb": 10.615,
+        "peak_ws_max_gb": 39.516
+      },
+      "multi_leg_fx_basket": {
+        "n": 26,
+        "peak_ws_p50_gb": 21.221,
+        "peak_ws_p95_gb": 33.378,
+        "peak_ws_max_gb": 33.512,
+        "note": "live flat 32 GB is below the measured max; measured-path raises at admission; NOT a 44 GB class - flagged for a follow-up flat raise, out of scope here"
+      },
+      "heavy_or_unknown_multisymbol": {
+        "n": 0
+      }
+    }
+  },
+  "reclassification": {
+    "mechanism": "terminal_worker.INDEX_TICK_RESERVATION_GB_BY_BASE (governed resource-class table, same lever-1 mechanism); max(flat, measured, floor), RAM_MIN_FREE_GB=14.0 post-reservation floor, drain floor, cold-restart reserve and the RAM emergency reaper are UNCHANGED",
+    "table_before": {
+      "SP500": 44.0,
+      "NDX": 12.0,
+      "GDAXI": 24.0,
+      "WS30": 12.0,
+      "UK100": 24.0,
+      "heavy_or_unknown_multisymbol_flat": 44.0
+    },
+    "table_after": {
+      "SP500": 44.0,
+      "NDX": 44.0,
+      "GDAXI": 44.0,
+      "WS30": 24.0,
+      "UK100": 24.0,
+      "heavy_or_unknown_multisymbol_flat": 44.0
+    },
+    "changes": [
+      {
+        "base": "NDX",
+        "from_gb": 12.0,
+        "to_gb": 44.0,
+        "basis": "measured Q05 D1 39.5/39.2 GB (2026-09-15); never below measured peak"
+      },
+      {
+        "base": "GDAXI",
+        "from_gb": 24.0,
+        "to_gb": 44.0,
+        "basis": "measured Q02 D1 35.4 GB (2026-09-15); never below measured peak"
+      },
+      {
+        "base": "WS30",
+        "from_gb": 12.0,
+        "to_gb": 24.0,
+        "basis": "revert to provisional: the 12 rested on Q04-only evidence of the kind NDX falsified; extend with evidence, not guesses"
+      }
+    ]
+  },
+  "parked_cohort_disposition": {
+    "total_active_holds": 531,
+    "census_method": "each parked row re-classified with terminal_worker._ram_reservation_detail_for_candidate under the CORRECTED table (this receipt)",
+    "release_recommended": {
+      "count": 52,
+      "classes": {
+        "two_leg_metal_pair@24GB": 52
+      },
+      "winnability": "24 GB reservation + 14 GB floor = 38 GB needed <= 54.1 GB max free; winnable in normal quiet windows",
+      "mechanism": "governed release via session_tools/release_44gb_holds_0914.py --max-reservation-gb 40 (farmctl.release_work_item_hold; re-classifies with this commit)",
+      "rows": [
+        {
+          "id": "bd2a50fb-e0c7-4b67-83e9-a16ebdd19a08",
+          "ea_id": "QM5_41060",
+          "symbol": "QM5_41060_XAU_XAG_WEEKNR7_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "d807e15b-9db0-409d-9d96-d0a3ae98d07f",
+          "ea_id": "QM5_41077",
+          "symbol": "QM5_41077_XAU_XAG_WRETR_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "5ee036e7-aab4-4026-a151-8afe3840eaf4",
+          "ea_id": "QM5_41031",
+          "symbol": "QM5_41031_XAU_XAG_GOLDLEAD_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "90862cbf-5209-49bd-9d26-4a0b3ac7b9f5",
+          "ea_id": "QM5_41040",
+          "symbol": "QM5_41040_XAU_XAG_WFLOWFADE_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "7a73239f-a261-422a-b7da-ba3a46cfc7d5",
+          "ea_id": "QM5_41057",
+          "symbol": "QM5_41057_XAU_XAG_WFLOWAGREEFADE_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "e87daf86-b679-42a5-926a-2be6e01302b3",
+          "ea_id": "QM5_41062",
+          "symbol": "QM5_41062_XAU_XAG_WGAPFADE_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "4c4b1548-f0a8-47a3-8929-10117cdaf6c2",
+          "ea_id": "QM5_41066",
+          "symbol": "QM5_41066_XAU_XAG_WDECAY_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "748960a5-0f6f-42b5-bde0-0c9ade541ca4",
+          "ea_id": "QM5_41075",
+          "symbol": "QM5_41075_XAU_XAG_WOVERSHOOT_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "e41cf082-9441-463c-aef9-54a51c74fe33",
+          "ea_id": "QM5_41076",
+          "symbol": "QM5_41076_XAU_XAG_WACCEL_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "f12b965f-5ca4-4b7d-ab18-b028eb7b9e88",
+          "ea_id": "QM5_41078",
+          "symbol": "QM5_41078_XAU_XAG_WSTREAK3_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "ea4809d6-e22f-4994-ba54-6072f858637d",
+          "ea_id": "QM5_41079",
+          "symbol": "QM5_41079_XAU_XAG_WCLOSE_EXTREME_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "240da0d9-c9e6-40f4-a598-a3dc99b6afd1",
+          "ea_id": "QM5_41083",
+          "symbol": "QM5_41083_XAU_XAG_WLEGDIV_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "d446608d-a9f7-489f-a4d3-0c9d60e8f362",
+          "ea_id": "QM5_41085",
+          "symbol": "QM5_41085_XAU_XAG_WDAYBREADTH_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "f67c926d-316f-44ba-92bf-5c8ead7e9fbf",
+          "ea_id": "QM5_41086",
+          "symbol": "QM5_41086_XAU_XAG_COMMONSHOCK_RV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "b9747d17-e3ff-405a-96e6-3a7e2b8aba5f",
+          "ea_id": "QM5_41203",
+          "symbol": "QM5_41203_XAU_XAG_SAMECAL_SR_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "fc00fd9e-98ea-44aa-8502-2f7cf40919ae",
+          "ea_id": "QM5_41206",
+          "symbol": "QM5_41206_XAU_XAG_SAMECAL_HUBER10_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "ae2b6391-f985-4906-9f6a-0a79eb31c463",
+          "ea_id": "QM5_41210",
+          "symbol": "QM5_41210_XAU_XAG_SAMECAL_TSTAT_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "d7bd7a15-0503-4840-b739-e15d40a63189",
+          "ea_id": "QM5_41213",
+          "symbol": "QM5_41213_XAU_XAG_SAMECAL_SIGNSCORE_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "456f5bc8-86ed-4706-b4e4-c9fcf86373c3",
+          "ea_id": "QM5_41248",
+          "symbol": "QM5_41248_XAU_XAG_MPETTITT_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "33f120c3-592c-443e-a0d4-f43a397c3290",
+          "ea_id": "QM5_41263",
+          "symbol": "QM5_41263_XAU_XAG_MKUIPER_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "08b0062e-dd6a-4bd1-88ed-d1eb018423c6",
+          "ea_id": "QM5_41265",
+          "symbol": "QM5_41265_XAU_XAG_MBF_SCALE_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "28d500a0-df20-4e05-8e31-50ecf18a88c8",
+          "ea_id": "QM5_41279",
+          "symbol": "QM5_41279_XAU_XAG_SAVAGE_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "7cb39fc1-991d-4085-8efe-692a285c7017",
+          "ea_id": "QM5_41281",
+          "symbol": "QM5_41281_XAU_XAG_CONOVER_SCALE_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "5d878c73-e206-415a-a67e-0dc7fc0231fb",
+          "ea_id": "QM5_41282",
+          "symbol": "QM5_41282_XAU_XAG_VDW_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "d7e0fb4a-fe05-45b6-8889-32654dfc7289",
+          "ea_id": "QM5_20012",
+          "symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+          "phase": "Q04",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "661e49ad-edb5-4914-b6ea-c578283e331f",
+          "ea_id": "QM5_20057",
+          "symbol": "QM5_20057_XAU_XAG_XMOM1_D1",
+          "phase": "Q04",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "711a2158-025e-44c3-9a17-eb6567c1a758",
+          "ea_id": "QM5_20243",
+          "symbol": "QM5_20243_XAU_XAG_TOM_XMOM3_D1",
+          "phase": "Q04",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "bcbc33e5-50eb-43f2-8384-60c8891a7961",
+          "ea_id": "QM5_12577",
+          "symbol": "QM5_12577_XAU_XAG_RATIO_D1",
+          "phase": "Q04",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "6c424ed0-603c-4d24-b0d6-be2fbea0217b",
+          "ea_id": "QM5_20263",
+          "symbol": "QM5_20263_XAU_XAG_MADRV_D1",
+          "phase": "Q04",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "ff75c8b3-e692-4b87-b7f6-d29e87f8a28e",
+          "ea_id": "QM5_20265",
+          "symbol": "QM5_20265_XAU_XAG_FAILRV_D1",
+          "phase": "Q04",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "879bf081-d920-450e-a8e4-576d1693a98e",
+          "ea_id": "QM5_20268",
+          "symbol": "QM5_20268_XAU_XAG_QTAILRV_D1",
+          "phase": "Q04",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "adfa7182-7db2-45de-badd-f469bc08a928",
+          "ea_id": "QM5_12724",
+          "symbol": "QM5_12724_XAU_XAG_BRK_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "06d828d5-56ee-446e-8770-f71bbc33b54d",
+          "ea_id": "QM5_20012",
+          "symbol": "QM5_20012_XAU_XAG_CMTAR_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "381e3ed3-9ec6-422a-a552-b6c1e7d597e6",
+          "ea_id": "QM5_20243",
+          "symbol": "QM5_20243_XAU_XAG_TOM_XMOM3_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "2343e92a-25da-4285-a4d2-b2df3adb7ff2",
+          "ea_id": "QM5_20265",
+          "symbol": "QM5_20265_XAU_XAG_FAILRV_D1",
+          "phase": "Q03",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "4d537a11-a6d4-4014-bdbf-1a73c1923e7a",
+          "ea_id": "QM5_20095",
+          "symbol": "QM5_20095_XAU_XAG_MON_DIFF_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "6817e2af-060d-4a60-86aa-08f1cb691d12",
+          "ea_id": "QM5_20184",
+          "symbol": "QM5_20184_XAU_XAG_XMOM3_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "e2622f78-39a3-4748-b199-6a6ec431a92a",
+          "ea_id": "QM5_20260",
+          "symbol": "QM5_20260_XAU_XAG_MOMVOTE_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "4db00c93-1456-4b82-ad3c-a04cf046e3dc",
+          "ea_id": "QM5_20236",
+          "symbol": "QM5_20236_XAU_XAG_VOV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "2520b1f2-30f5-41e6-ae1c-00aabaaeea27",
+          "ea_id": "QM5_41164",
+          "symbol": "QM5_41164_XAU_XAG_MREPMEDIAN_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "def1e84b-2ba9-4744-8aec-8055f5209a34",
+          "ea_id": "QM5_41166",
+          "symbol": "QM5_41166_XAU_XAG_MROBUST3_AGREE_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "f7c942b2-e0cb-4476-88f6-0e02d40ce01f",
+          "ea_id": "QM5_41285",
+          "symbol": "QM5_41285_XAU_XAG_JT_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "556bab76-3de2-4124-a577-73ba76fddcd3",
+          "ea_id": "QM5_41226",
+          "symbol": "QM5_41226_XAU_XAG_MEDCAL_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "c7bd17a3-6262-45d6-bd4f-99a982b01a30",
+          "ea_id": "QM5_41413",
+          "symbol": "QM5_41413_XAU_XAG_WALT3_CONT_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "f5d1acbe-4e86-4fd5-9120-8ebf7b816f71",
+          "ea_id": "QM5_41414",
+          "symbol": "QM5_41414_XAU_XAG_WRELVOTE_FLIP_CONT_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "f5f4b2e0-7172-42cc-bbd0-8a01de1c776d",
+          "ea_id": "QM5_41416",
+          "symbol": "QM5_41416_XAU_XAG_WRELVOTE_FLIP_FADE_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "1cecabd6-7778-44aa-9c48-f738c6353655",
+          "ea_id": "QM5_41417",
+          "symbol": "QM5_41417_XAU_XAG_WSTREAK2_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "e02b077e-85e1-433c-a15b-15d2154b5fb5",
+          "ea_id": "QM5_41418",
+          "symbol": "QM5_41418_XAU_XAG_WSTREAK2_CONT_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "7debb301-a598-4864-a14b-adac7001b5c2",
+          "ea_id": "QM5_20291",
+          "symbol": "QM5_20291_XAU_XAG_HKURT_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "e518cba9-bfd7-43bb-8e9b-5a6459d86726",
+          "ea_id": "QM5_41450",
+          "symbol": "QM5_41450_XAU_XAG_NR2_BODY_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "28433272-cc99-48ba-bb04-cc8dcda8a817",
+          "ea_id": "QM5_41452",
+          "symbol": "QM5_41452_XAU_XAG_WR2_CLV_MOM_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        },
+        {
+          "id": "d22217c3-bc38-4d9f-accd-20a589d988fc",
+          "ea_id": "QM5_41455",
+          "symbol": "QM5_41455_XAU_XAG_WR2_BODY_RV_D1",
+          "phase": "Q02",
+          "class": "two_leg_metal_pair",
+          "reservation_gb": 24.0
+        }
+      ]
+    },
+    "stay_parked": {
+      "count": 479,
+      "classes": {
+        "single_index_tick@44GB": 52,
+        "heavy_or_unknown_multisymbol@44GB": 427
+      },
+      "reason": "44 GB + 14 GB floor = 58 GB needed vs 54.1 GB max free seen: structurally unwinnable on this host. single_index_tick@44 is MEASURED NECESSITY (SP500/NDX/GDAXI full-window peaks 35-47 GB); heavy_or_unknown_multisymbol@44 is the fail-safe for unclassified baskets (n=0 measurements; lowering forbidden). OWNER 2026-09-15: no VPS upgrade - park/schedule differently."
+    }
+  },
+  "guardrails": [
+    "reservation value is an admission-lane label, not a kill limit; the RAM emergency reaper stays the backstop",
+    "RAM_MIN_FREE_GB=14.0 post-reservation floor and the drain-window floor unchanged",
+    "no row is ever admitted below its measured peak (max(flat, measured, floor))",
+    "unknown index bases still fall back to the flat 44 GB"
+  ]
+}

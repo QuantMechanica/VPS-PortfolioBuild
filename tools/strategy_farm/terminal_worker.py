@@ -332,10 +332,25 @@ INDEX_TICK_RESERVATION_GB_BY_BASE: dict[str, float] = {
     # NDX n=3 max 2.10 GB (D1 x2, 1 other TF), WS30 n=5 max 1.15 GB (D1) ->
     # 12 GB = >5x the largest measured peak; GDAXI (n=2: H1 1.41 / H4 1.49)
     # and UK100 (n=1: D1 0.70) stay at the provisional 24 GB until n>=3.
-    "NDX": 12.0,    # measured n=3 max 2.10 GB (2026-09-14); was provisional 24
-    "GDAXI": 24.0,  # provisional; measured n=2 max 1.49 GB (2026-09-14)
-    "WS30": 12.0,   # measured n=5 max 1.15 GB (2026-09-14); was provisional 24
-    "UK100": 24.0,  # provisional; measured n=1 max 0.70 GB (2026-09-14)
+    # 2026-09-16 (ticket 6cdc6811 class calibration, det-repairs): the step-2
+    # measurements were Q04-only and did NOT generalize.  The 2026-09-15 ledger
+    # records full-window D1 index runs at true monster footprints:
+    #   NDX.DWX  QM5_10280 Q05 D1 finished 39.5 GB WS / 49.3 GB private
+    #   NDX.DWX  QM5_1077  Q05 D1 finished 39.2 GB (one ram_emergency_reap at
+    #            25.7 GB) -- both admitted under the 12 GB reservation
+    #   GDAXI.DWX QM5_1642 Q02 D1 smoke finished 35.4 GB (under 24 GB)
+    # Per the OWNER calibration rule (never below a measured peak), NDX and
+    # GDAXI return to the measured-necessity 44 GB fail-safe; the class value
+    # is an admission-lane label, not a kill limit (the RAM emergency reaper
+    # stays the backstop).  WS30 reverts to the provisional 24 GB: its 12 GB
+    # rested on Q04-only evidence of exactly the kind NDX just falsified, and
+    # the table is extended with evidence, not guesses.  UK100 stays
+    # provisional 24 GB (n=1, no counterevidence).  Calibration receipt:
+    # docs/ops/evidence/2026-09-16_deterministic_repairs/2026-09-16_ram44_calibration_receipt.json
+    "NDX": 44.0,    # 2026-09-16: Q04-only 2.10 GB evidence falsified by Q05 D1 39.5/39.2 GB (2026-09-15)
+    "GDAXI": 44.0,  # 2026-09-16: provisional 24 falsified by Q02 D1 35.4 GB (2026-09-15)
+    "WS30": 24.0,   # provisional; 12 GB (Q04-only n=5 max 1.15 GB) reverted 2026-09-16 pending full-window evidence
+    "UK100": 24.0,  # provisional; measured n=1 max 0.70 GB (2026-09-14), no counterevidence
 }
 RAM_RESERVATION_SOURCE_INDEX_TABLE = "index_symbol_table"
 
