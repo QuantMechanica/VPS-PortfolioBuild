@@ -27,12 +27,13 @@
 param(
     [int]$MinWorkers = 10,           # legacy healthy-floor parameter; shortage heals to the capped target
     [int]$ExpectWorkers = 10,
-    [int]$StallPendingThreshold = 50 # heal when workers are ALIVE but WEDGED: 0 active +
-    # >= StallPendingThreshold pending. 2026-09-16: raw pending is not claimability —
-    # a stall heal additionally requires >= StallMinClaimable canonically-claimable rows
-    # (else the truth is NO_RUNNABLE_WORK and a respawn heals nothing).
+    # heal when workers are ALIVE but WEDGED: 0 active + >= StallPendingThreshold
+    # pending + 0 terminal64 = dispatcher stalled. 2026-09-16: raw pending is not
+    # claimability — a stall heal additionally requires >= StallMinClaimable
+    # canonically-claimable rows (else the truth is NO_RUNNABLE_WORK and a
+    # respawn heals nothing).
+    [int]$StallPendingThreshold = 50,
     [int]$StallMinClaimable = 3
-                                     # >= this many pending + 0 terminal64 = dispatcher stalled
 )
 
 $ErrorActionPreference = 'Continue'
@@ -696,6 +697,7 @@ $nTerm = 0
 $nActive = 0
 $nPending = 0
 $nClaimable = -1
+$nTrueClaimable = -1
 if ($factoryEnabled) {
     try {
         # Count ONLY factory T1-T12 terminals, not every terminal64 on the box. A
@@ -706,32 +708,56 @@ if ($factoryEnabled) {
         $nTerm = @(Get-CimInstance Win32_Process -Filter "Name='terminal64.exe'" -ErrorAction SilentlyContinue |
                    Where-Object { $_.CommandLine -match '\\mt5\\T(?:[1-9]|1[0-2])\\' }).Count
         # single-quoted here-string + stdin pipe avoids all PowerShell/SQL quote escaping
-        # 2026-09-16 (kimi interim): also count CANONICALLY-CLAIMABLE rows (farmctl
-        # pending_claim_order_sql). Raw pending includes superseded/quarantined/governed-
-        # analytic rows; without this the watchdog declared dispatch stalls (and looped
+        # 2026-09-16 (kimi interim): count TRULY-CLAIMABLE rows, not raw pending.
+        # Level 1 = farmctl.pending_claim_order_sql() (excludes superseded/quarantined/
+        # governed-analytic). Level 2 = the same dsr_cohort.claimability_precheck the
+        # workers run, so Q08 rows doomed by SINGLE_CONFIGURATION_UNAVAILABLE do not
+        # count. Without level 2 the watchdog declared dispatch stalls (and looped
         # FactoryON respawns) while the true state was NO_RUNNABLE_WORK.
         $q = @'
-import sqlite3, sys
+import sqlite3, sys, json
 sys.path.insert(0, r"C:/QM/repo/tools/strategy_farm")
 c = sqlite3.connect(r"D:/QM/strategy_farm/state/farm_state.sqlite")
+c.row_factory = sqlite3.Row
 a = c.execute("SELECT COUNT(*) FROM work_items WHERE status='active'").fetchone()[0]
 p = c.execute("SELECT COUNT(*) FROM work_items WHERE status='pending'").fetchone()[0]
-claimable = -1
+selector_claimable = -1
+true_claimable = -1
 try:
     import farmctl
-    claimable = len(c.execute(farmctl.pending_claim_order_sql()).fetchall())
+    rows = c.execute(farmctl.pending_claim_order_sql()).fetchall()
+    selector_claimable = len(rows)
+    true_claimable = 0
+    try:
+        import dsr_cohort
+        for row in rows:
+            try:
+                payload = json.loads(row["payload_json"] or "{}")
+            except Exception:
+                payload = {}
+            if str(row["phase"] or "").upper() == "Q08":
+                try:
+                    pre = dsr_cohort.claimability_precheck(c, dict(row), payload)
+                    if pre.get("claimable") is False:
+                        continue
+                except Exception:
+                    pass
+            true_claimable += 1
+    except Exception:
+        true_claimable = selector_claimable
 except Exception:
     pass
-print(str(a) + " " + str(p) + " " + str(claimable))
+print(str(a) + " " + str(p) + " " + str(selector_claimable) + " " + str(true_claimable))
 '@
         $out = ($q | & $py - 2>$null) -join ' '
-        $m = [regex]::Match($out, '(\d+)\s+(\d+)\s+(-?\d+)')
+        $m = [regex]::Match($out, '(\d+)\s+(\d+)\s+(-?\d+)\s+(-?\d+)')
         if ($m.Success) {
             $nActive = [int]$m.Groups[1].Value
             $nPending = [int]$m.Groups[2].Value
             $nClaimable = [int]$m.Groups[3].Value
-            $stallInfo = "active=$nActive pending=$nPending claimable=$nClaimable term64=$nTerm"
-            if ($nActive -eq 0 -and $nPending -ge $StallPendingThreshold -and $nTerm -eq 0 -and $nClaimable -ge $StallMinClaimable) {
+            $nTrueClaimable = [int]$m.Groups[4].Value
+            $stallInfo = "active=$nActive pending=$nPending claimable=$nClaimable true_claimable=$nTrueClaimable term64=$nTerm"
+            if ($nActive -eq 0 -and $nPending -ge $StallPendingThreshold -and $nTerm -eq 0 -and $nTrueClaimable -ge $StallMinClaimable) {
                 $dispatchStalled = $true
             }
         }
@@ -979,7 +1005,10 @@ print(n)
         # FactoryON_AtLogon recovery below guards against a transient dip or post-restart ramp.
         $mtFloor = [math]::Max(1, $ExpectWorkers - 2)
         $realStallInfo = "realDone15m=$realN metatester64=$mt/$ExpectWorkers (floor=$mtFloor) terminal64=$nTerm ramFreeGb=$ramFreeGb pending=$nPending recentPurge=$recentPurge activeMultisym=$activeMultisymCount activeRecentProgress=$activeRecentProgressCount"
-        $realStallCandidate = ((($realN -eq 0) -or ($mt -lt $mtFloor)) -and $nPending -ge $StallPendingThreshold)
+        # 2026-09-16 (kimi interim): a real stall requires truly-claimable work to exist;
+        # with true_claimable < StallMinClaimable the correct state is NO_RUNNABLE_WORK
+        # ( governance-gated queue head), not a wedge — a full reset heals nothing.
+        $realStallCandidate = ((($realN -eq 0) -or ($mt -lt $mtFloor)) -and $nPending -ge $StallPendingThreshold -and $nTrueClaimable -ge $StallMinClaimable)
         if ($realStallCandidate) {
             if (-not $activeProtectionProbeOk) {
                 $realStallSuppressedReason = "active-work protection probe failed; refusing full reset"
@@ -1251,7 +1280,8 @@ $record = [ordered]@{
     disk_free_gb     = $diskFreeGb
     dispatch_stalled = $dispatchStalled
     claimable        = $nClaimable
-    no_runnable_work = [bool]($factoryEnabled -and $nActive -eq 0 -and $nTerm -eq 0 -and $nClaimable -ge 0 -and $nClaimable -lt $StallMinClaimable)
+    true_claimable   = $nTrueClaimable
+    no_runnable_work = [bool]($factoryEnabled -and $nActive -eq 0 -and $nTerm -eq 0 -and $nTrueClaimable -ge 0 -and $nTrueClaimable -lt $StallMinClaimable)
     real_stall       = $realStall
     session_lost     = $sessionLost
     lsm_degraded     = $lsmDegraded        # FIX 2: true when qwinsta failed but worker daemons alive
