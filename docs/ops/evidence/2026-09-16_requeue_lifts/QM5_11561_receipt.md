@@ -61,7 +61,16 @@ EA had **zero** prior work items of any kind (verified by DB read before enqueue
 operation created only new rows (one `backtest_p2` task + one pending→active Q02 work
 item). Nothing was requeued, superseded, or invalidated.
 
-## Status at report time
+## Status at report time — Q02 DONE, verdict PASS (06:32:47Z)
 
-Q02 backtest actively running on terminal T8 (worker PID 10960). Enqueue + claim legs
-of D2A are complete; pipeline economics (PASS/FAIL) are for Q02 to decide.
+The backtest completed ~4 min after claim: `status=done`, `verdict=PASS`,
+evidence `D:\QM\reports\work_items\132aca67-b907-4d34-a232-cf972de4fb32\QM5_11561\20260916_062858\summary.json`.
+
+- 1 run, exit_code 0, terminal T8, **Model 4 (Every Real Tick)** with
+  `model_marker_passed: true`, `model4_log_marker_detected: true`, `deterministic: true`,
+  window 2018.07.02–2022.12.31, no ONINIT failure.
+- Recorded economics: net profit −31 256.04, profit factor 0.86, drawdown 38.83% —
+  a legitimate Q02 technical PASS; economic viability is decided by later gates, not Q02.
+
+Enqueue + claim legs of D2A are complete; the new pending work item flowed through the
+pipeline exactly as governed.

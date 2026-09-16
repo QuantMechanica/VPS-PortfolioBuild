@@ -8,7 +8,8 @@ Operator: `kimi-interim` · Date (UTC): 2026-09-16 · Repo: `C:\QM\repo`
 |---|---|
 | Exclusion lift | `c08d677e…f84a` → `3f092f0a…f3f3` (only the `QM5_11561` line removed; backup `requeue_excluded_eas.txt.before_D2A_lift`, hash-bound) |
 | Enqueue | `enqueued: true`; task `3262b0b1-86f4-4edb-aed8-30bb2ba77584`; work item **`132aca67-b907-4d34-a232-cf972de4fb32`** (USDJPY.DWX D1) |
-| Claim | Worker **T8** claimed 3 s after enqueue; worker PID **10960**, tester child PID **21040**; still `active` at second poll |
+| Claim | Worker **T8** claimed 3 s after enqueue; worker PID **10960**, tester child PID **21040** |
+| Terminal outcome | Q02 **done/PASS** at 06:32:47Z — Model 4 (Every Real Tick), 1 run exit 0, deterministic; evidence `D:\QM\reports\work_items\132aca67-…\summary.json`; recorded economics net −31 256 / PF 0.86 (economic gates come later) |
 | History | Zero prior work items; no verdict rewritten |
 | Fanout decision | n/a (single-symbol EA; one work item) |
 | STOP | none |
