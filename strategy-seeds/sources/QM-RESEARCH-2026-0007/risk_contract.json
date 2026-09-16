@@ -1,0 +1,25 @@
+{
+  "schema": "qm.strategy-risk-contract/v1",
+  "tail_amplifying": false,
+  "mechanism_flags": ["positive_pyramiding"],
+  "max_levels": 3,
+  "sizing_progression": {"type": "custom", "multiplier": null, "notes": "per-level multipliers [1.0, 0.75, 0.5] of the initial leg; aggregate = 2.25 initial legs"},
+  "max_open_positions": 3,
+  "max_basket_exposure": "2.25",
+  "max_gross_notional": "2.25",
+  "max_margin_pct": 5.0,
+  "max_basket_loss_pct": 0.5,
+  "emergency_exit": {
+    "type": "equity_stop",
+    "equity_stop_pct": 0.5,
+    "rule": "Flatten the whole basket when (a) open adverse excursion reaches 0.5% of account equity OR (b) open profit giveback reaches 50% of peak open basket profit, whichever occurs first. Stops only ever tighten, never widen."
+  },
+  "gap_sensitivity": "SESSION-FLAT: no overnight/weekend exposure by construction; gap tail removed by the flatten-hour rule (FTMO envelope). Sealed stress s01/s04/s05/s06/s08 still to be run by the governed pipeline.",
+  "spread_slippage_sensitivity": "NOT_EVALUATED (Q06 HARSH-class pending)",
+  "worst_historical_sequence": {"max_adverse_levels": "EVIDENCE_MISSING", "max_drawdown_pct": "EVIDENCE_MISSING", "evidence": "EVIDENCE_MISSING"},
+  "stress_sequence": {"scenario": "s08_combined_worst at max_levels with basket fully built", "result_pct": "NOT_EVALUATED", "evidence": "EVIDENCE_MISSING"},
+  "session_flat": true,
+  "daily_breaker_pct": -1.0,
+  "weekly_breaker_pct": -2.0,
+  "_provenance": "Byte-identical contract object to the fenced block in H_PY_card.md (mechanical spec, frozen at preregistration record_sha256 f601ba6a43beeadb14104114a07988fe2d4445b4e9e1731cfebf7f6b8866cfcb). Validated with tools/strategy_farm/strategy_risk_contract.py on 2026-09-16: validate_contract=[], is_unbounded=False."
+}

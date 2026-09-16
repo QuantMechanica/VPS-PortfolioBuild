@@ -1,0 +1,60 @@
+{
+  "author": "Kimi",
+  "candidate_edge": "H-PY: bounded positive pyramid on the cash-session index trend (NDX/GDAXI/SP500, H1, session-flat) - the first TAIL_RISK Family A candidate; base H-CW breakout entry, levels 2/3 at +1.0/+2.0 ATR with new favourable extremes (1.0/0.75/0.5), never-widening trailing basket stop, 50% giveback stop, 0.5% equity adverse bound; FTMO-primary per the family contract.",
+  "computed_outputs": [
+    {
+      "claim_ref": "MECHANIZE_gate",
+      "description": "deterministic static mechanization check over H_PY_card.md (sections, 25 bounded parameters, no runtime model/feed)",
+      "file": "mechanization_result.json"
+    },
+    {
+      "claim_ref": "pilot_fire_count",
+      "description": "deterministic fire count + basket outcome shape of the exact preregistered rules on a Dukascopy USATECHIDXUSD tick feed (NDX-class proxy), 2018-2020 in-sample; motivation only, not proof",
+      "file": "h_py_pilot.json"
+    }
+  ],
+  "confidence": "low-medium (research hypothesis; pilot is in-sample, zero-cost, single-feed feasibility motivation; although the raw pilot prints sit AT/ABOVE the preregistered success bar, that raises overfitting risk rather than evidence - pipeline Q00-Q17 remains the judge)",
+  "confounders": [
+    "pilot rests on ONE NDX-class proxy feed, not farm .DWX data",
+    "zero costs in the pilot fills (mid prices; tick median spread 3.07 points recorded but not charged) - costs will degrade the raw +0.12R/basket",
+    "level 3 never filled in the pilot (0 of 185 baskets) - the third leg is completely untested even at pilot level",
+    "GDAXI/SP500 density and add reach are structural inference from the H-CW shell, not measured",
+    "H-PY shares the H-CW entry window: same-session correlation with H-CW/H-MR is unproven (joint-tail protocol required before any book claim)",
+    "in-sample window (2018-2020) was used to calibrate the shock floor (3.0) - the frozen 2021-2024 holdout must re-derive it blind"
+  ],
+  "created_utc": "2026-09-16T06:10:00+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "kimi-code/kimi-for-coding",
+  "observations": "The exact preregistered rules fire 6.4 baskets/month (185 taken baskets over 29 months, 187 active days, 489 evaluated session days of which 154 shock-skipped at 3.0x) on the NDX-class proxy feed; raw outcome PF(R) 1.26 at +0.12R/basket with level-2 reach 11.9%, level-3 reach 0%, 15% of baskets giveback-stopped before level 2, average peak open basket profit +0.77R (max +19.1R). These are honest pilot measurements used for density calibration and feasibility only - IN-SAMPLE, ZERO-COST, SINGLE-FEED - so the edge claim is deliberately left to the governed Q00-Q17 pipeline on farm .DWX data. Mechanization gate PASS (mechanization_result.json, 25 bounded parameters, zero findings, codex_implementable=true).",
+  "originating_task_id": "TAIL_RISK-FAMILY-A-20260916",
+  "proposed_mechanism": "Convex capture of persistent cash-session index trends: the H-CW opening-range breakout base leg pays discovery cost; levels 2/3 concentrate exposure only after +1.0/+2.0 ATR of confirmed open profit AND new favourable extremes; a never-widening basket stop (breakeven-plus after level 2, then 1.0x ATR trail) plus a 50%-of-peak giveback stop monetize the right tail of sessions whose trend persists, while the session-flat envelope removes the overnight gap tail a built-out basket fears most. Family A per TAIL_RISK_PROGRAMME_2026-09-16.md section 4 (positive pyramiding, NOT tail-amplifying; contract carried for uniformity).",
+  "quantitative_claims": [
+    {
+      "claim": "The mechanized H-PY spec passes the deterministic MECHANIZE gate (all required sections, 25 bounded parameters, no runtime model, no external feed, codex_implementable=true).",
+      "computed_output_ref": "MECHANIZE_gate"
+    },
+    {
+      "claim": "On the NDX-class proxy feed (2018-2020 in-sample) the exact rules fire ~6.4 baskets/month with ~6.4 active days/month, 187 gross signals and 185 taken baskets over 29 months; raw PF(R) 1.26 at +0.12R/basket, level-2 reach 11.9%, level-3 reach 0%, giveback-before-level-2 rate 15.1%, average peak open +0.77R, 154 of 647 session days shock-skipped at 3.0x. Pilot motivation only, not proof.",
+      "computed_output_ref": "pilot_fire_count"
+    }
+  ],
+  "related_strategies": [
+    "QM5_41475 cash-window-index-continuation-h1 (H-CW; the base entry envelope this card reuses)",
+    "QM-RESEARCH-2026-0006 H-MR cash-open index mean reversion (session sibling; same feed/pilot conventions)",
+    "QM-RESEARCH-2026-0002 (H-CW parent campaign context)"
+  ],
+  "research_id": "QM-RESEARCH-2026-0007",
+  "research_question": "Does bounded positive pyramiding (TAIL_RISK Family A) on the farm's validated cash-session index continuation pocket (H-CW) yield a convex, FTMO-admissible candidate - exposure concentrating only behind confirmed intraday trends, with the giveback stop monetizing the right tail and the session-flat envelope removing the gap tail? (OWNER interim delegation 2026-09-15; TAIL_RISK programme 2026-09-16)",
+  "research_trial_count": 1,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "tail-risk-positive-pyramiding",
+  "source_datasets": [
+    {
+      "dataset_id": null,
+      "description": "Dukascopy USATECHIDXUSD tick feed (NDX-class index CFD proxy), 2018-2020, read-only; NOT farm .DWX data",
+      "path": "h_py_pilot.json"
+    }
+  ]
+}

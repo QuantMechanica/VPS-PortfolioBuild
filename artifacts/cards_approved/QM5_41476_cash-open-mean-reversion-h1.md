@@ -45,6 +45,8 @@ During the cash-session window a single H1 bar pierces the opening-range extreme
 ## Persistence
 The effect rests on recurring opening-auction mechanics (daily inventory reset, cash-open stop runs) rather than a one-off regime, so it is expected to persist; it is defended by hard session-flat exits and a daily loss breaker rather than by a fragile parameter. It complements H-CW by construction: H-MR is exposed exactly on session days where the opening-range breakout fails, so the pair diversifies the same window across breakout outcomes.
 
+**Differentiation from QM5_10140 (tv-london-session-break):** 10140 is a London-session *continuation* system — it enters on a confirmed break of the Asian range in the breakout direction and holds with the move. H-MR is the opposite conditioning on the same opening-range reference: it requires a *failed* break (a pierce of the range extreme that closes back inside within the same H1 bar) and enters in the reversion direction toward the range midpoint, with a mandatory same-session flat. The two can trade the same symbol on the same day with opposite positions only in the rare simultaneous-fill case, which the one-entry-per-day and session-flat guards bound; their return streams are conditioned on disjoint outcome classes of the opening auction (continuation vs failure), not on shared signal logic.
+
 ## Mechanics
 
 ### Entry
