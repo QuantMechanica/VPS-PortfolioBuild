@@ -4920,6 +4920,11 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - PASS: rework evidence corrected to the actual focused-test result, **19 passed**, and records commit `7d1e16253d` as resolving the `news_calendar_taint` full-copy/mutation-lock churn via read-only preflight before governed backup. Default-OFF retention, open-receipt protection, live DB/WAL safety, and quiet-window VACUUM boundaries remain unchanged.
 - Evidence: `docs/ops/evidence/2026-09-13_state_db_growth_and_retention.md`; verification `python -m pytest -q tools/strategy_farm/tests/test_continuous_retention_runner.py tools/strategy_farm/tests/test_hourly_db_backup.py`.
 
+### 2026-09-17 — RESULT: calendar/seasonal thesis-bank follow-up
+
+- PASS: CAL-05, CAL-06, CAL-09, and CAL-12 now carry thesis-specific `UNSOURCED` markers; the explicit raw-CSV versus bank-disposition rule explains CAL-05 folded into `PAPER_REFUTED` and CAL-06 retained as `UNDERPOWERED RESERVE`. Tally: 2 survivors, 1 reserve, 9 refuted, 3 data gaps across 15 IDs.
+- PASS: CAL-06 review draft records the approximately 1 trade/year/symbol ceiling below the Q02 floor of 5 trades/year and bounded widening options requiring preregistration/OWNER review. Docs-only; no card promotion, build, or state change. Evidence: `docs/ops/evidence/2026-09-17_calendar_seasonal_followup.md`.
+
 ### 2026-09-17 — RESULT: QM5_1627 / QM5_1628 governed identity precondition
 
 - PASS: exact-card orphan-identity recovery was added to the governed allocator, gated to explicit cards and exact active magic rows; focused allocator/resolver tests pass (23/23).

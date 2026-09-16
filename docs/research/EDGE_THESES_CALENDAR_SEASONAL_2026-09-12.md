@@ -48,6 +48,23 @@ is the claim falsified below.
 
 ## Thesis bank
 
+## Paper verdict and bank-disposition rule
+
+The CSV keeps the mechanical screen’s raw rule: any thesis with combined
+`n < 20` is `UNDERPOWERED`, so no thin sample can be `PAPER_SURVIVES`. The
+thesis-bank disposition then records whether a thin sample remains a reserve:
+a thin sample whose preregistered in-sample sign is already wrong is folded
+into `PAPER_REFUTED` (CAL-05: `n=8`, IS mean `-25.03 bp`), while a thin sample
+whose in-sample sign agrees remains `UNDERPOWERED RESERVE` pending the required
+20 independent years (CAL-06: `n=8`, IS mean `+108.51 bp`; the three-point OOS
+split is retained as a warning, not promoted evidence). This is a reporting
+disposition over the CSV’s raw `UNDERPOWERED` label; the falsification script
+and gate thresholds are unchanged.
+
+The resulting thesis-bank tally is **PAPER_SURVIVES=2, UNDERPOWERED
+RESERVE=1, PAPER_REFUTED=9, DATA GAP=3** (15 thesis IDs total), matching the
+39 CSV summary rows and the three unavailable exports.
+
 ### CAL-01 — EURUSD month-turn foreign-currency rebound
 
 - **Structural cause:** month-end international portfolio hedge rebalancing.
@@ -95,15 +112,23 @@ is the claim falsified below.
 ### CAL-05 — XAUUSD January first-week strength
 
 - **Structural cause:** annual allocation reset and physical-season demand.
+- **Source status:** **UNSOURCED for this thesis-specific mechanism**; the
+  benchmark sources listed above do not establish January first-week XAUUSD
+  performance or this exact flow claim.
 - **Price signature:** long first through sixth trading-day open in January.
 - **Persistence:** annual mandates and physical calendars recur.
 - **Falsification:** require 20 independent years and same-sign holdout.
 - **Q08/Q11 risk:** thin New-Year liquidity and scheduled releases; blackout.
-- **FTMO fit:** multi-day swing, fixed risk. **UNDERPOWERED**, +10.49 bp, n=8.
+- **FTMO fit:** multi-day swing, fixed risk. **PAPER_REFUTED (thin-sample
+  directional failure; raw CSV label UNDERPOWERED)**, +10.49 bp, n=8; IS
+  mean -25.03 bp and OOS mean +69.69 bp.
 
 ### CAL-06 — XAUUSD August first-week strength
 
 - **Structural cause:** recurring late-summer allocation and physical demand.
+- **Source status:** **UNSOURCED for this thesis-specific mechanism**; the
+  benchmark sources listed above do not establish August first-week XAUUSD
+  performance or this exact flow claim.
 - **Price signature:** long first through sixth trading-day open in August.
 - **Persistence:** calendar demand cannot be fully time-shifted.
 - **Falsification:** 20 independent years plus same-sign holdout; current sample
@@ -134,6 +159,9 @@ is the claim falsified below.
 ### CAL-09 — USDJPY Tokyo impulse fade
 
 - **Structural cause:** opening inventory imbalances are supplied after the first hour.
+- **Source status:** **UNSOURCED for the specific dealer-inventory-transfer
+  mechanism**; this paper screen supplies the price evidence, not an
+  independent structural citation.
 - **Price signature:** fade the 00:00-01:00 UTC direction from 01:00 to 03:00 UTC.
 - **Persistence:** daily dealer inventory transfer; compensation is small and capacity-limited.
 - **Falsification:** either split mean <=0, combined n<20 or t<1.
@@ -164,6 +192,9 @@ is the claim falsified below.
 ### CAL-12 — EURUSD Friday inventory fade
 
 - **Structural cause:** dealers and leveraged accounts reduce weekly inventory.
+- **Source status:** **UNSOURCED for this thesis-specific Friday inventory
+  reduction mechanism**; no independent source is claimed by this paper
+  screen.
 - **Price signature:** fade 12:00-16:00 direction during 16:00-20:00 UTC Fridays.
 - **Persistence:** weekend risk limits recur.
 - **Falsification:** split/t rule and costs.
