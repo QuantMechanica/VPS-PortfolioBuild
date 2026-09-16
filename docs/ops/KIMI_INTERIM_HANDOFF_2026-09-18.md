@@ -20,21 +20,14 @@ Merge executed by Kimi interim per §38/§39/§40 (reviews on disk = independent
 - **OPEN tracked fixes from the reviews (for Fable):** j1 census-join contaminated baseline (fix `load_census_join` strict arm + re-run before citing figures; the "0 filters ever selected" headline is verified independent of the defect) · g1 STEP-2 calibrated RAM table 4→8 GB census doubling (default-off; pin before activation) · d1 residual grid guard at `governed_magic_allocator.py:374` (known; fail-closed) · e1 OOS-window caveat must travel with any second-chance enqueue.
 - **No Wave 2 was ever defined for Directive 3** — orchestrator session died on Claude weekly limit. §43 order A–J residuals ready to commission: c1 routing, e2, f1/f2 tail-risk engine (prerequisite: merged eligibility v2 + tail-risk research doc, both now on main).
 
-## Factory state — IDLE ROOT-CAUSED 2026-09-16 ~04:30Z
+## Factory state — **RUNNING since 2026-09-16T05:52Z (FIRST_BACKTEST_RESTORED)**
 
-**Classification: NO_RUNNABLE_WORK** (not a scheduler/lock fault). Chain of evidence:
-- 0 active work items; 10/10 workers alive and cycling claims every ~12s; last successful claim 01:51Z.
-- The canonical selector (`farmctl.pending_claim_order_sql()`, verified by executing it) returns **22 rows**: 21 Q08 + 1 Q06. Of 3,794 raw pending: 2,555 PRESCREEN_SKIPPED OPT_CENSUS (inert by design), 225 superseded, ~86 governed-analytic/Q12 matrix declarations, 22 quarantined, rest held.
-- All 21 Q08 rows fail the claim-time-independent DSR precheck: `SINGLE_CONFIGURATION_UNAVAILABLE:EXPLICIT_SINGLE_CONFIGURATION_DECLARATION_REQUIRED` — their cards lack the `qm-dsr-single-configuration` declaration block (a governance-sealed card amendment, NOT an ops fix). This is the Q08_DSR_CONTEXT_UNAVAILABLE class the Phase-A audit assigned to Fable.
-- The 1 Q06 row is RAM-class-skipped (37.9 GB measured reservation vs 14 GB threshold, 45 GB free) — legitimate guard.
-- The watchdog had been FALSE-classifying this as dispatch_stall every 10 min and flapping FactoryON_AtLogon (rc=1, itself failing) + parking workers 5 min of every 10. **FIXED** `c9dcd9b5fa`: watchdog now counts canonically-claimable rows (`claimable` + `no_runnable_work` fields in factory_watchdog.jsonl every 15 min = the §12I deterministic idle signal) and only heals a stall when ≥3 claimable rows exist. Static tests 4/4 + PS syntax verified.
-
-**Recovery actions taken / in flight:**
-- `c9dcd9b5fa` watchdog classification fix (committed + pushed).
-- Background agent (agent-10) servicing the 86 pending Q12-analytic DL-089 declarations via canonical `farmctl service-dl089-matrix` → expands frontier cells into runnable census work (the Phase-A-recommended Q12 prioritization for the 51 Q11-frontier pairs).
-- Second-chance QM5_11563: gemini lane produced a REVIEW_READY card draft (PENDING_B0EF5D66 in cards_review); next step = controller/Codex allocation — quota-gated to 09-19.
-
-**Remaining blocked classes (governance-gated, documented for Fable):** Q08 DSR single-configuration declarations (21 rows) · COMPILE_EA/build lane (codex quota to 09-19 + repo-dirty guard stragglers: `.set` file, `ea_origin.v1.csv` line-endings, deleted artifact JSON — unknown-owner) · NEWS-lane work (E1-C OWNER decision) · Q09 news rows need bound run plans.
+Owner P0 executed. Receipt: `docs/ops/evidence/2026-09-16_first_backtest_restored/RECEIPT.md` (all 10 native verification checks).
+- **Live:** 2 × Q08 XAUUSD crisis-gate backtests — QM5_13137 (T10, PID 16668) + QM5_11121 (T4, PID 8804), metatester64 ×2, evidence writing to `D:\QM\reports\pipeline\QM5_*\Q08\_baseline`. Claimed 40s after governed hold release; claim-time DSR seal `SEALED`.
+- **How unblocked:** agent-17 proved the 09-14/15 `Q08_DSR_CONTEXT_UNAVAILABLE` holds on these two rows were stale (their OWNER-authorized input repair was already complete; only worker reload lag blocked claims). Released via governed `release-hold` (CAS, transition-ledger 4343/4344). All other Q08 rows classified: **16 cards need single-config declarations — STAGED for OWNER** (`2026-09-16_q08_dsr_unblock/`, all offline-validated; interim delegation does NOT cover card amendments) · 10145 censused (grouped-cohort-or-retire decision) · 3 missing SPEC.md · 12350 multi-symbol disposition.
+- **Watchdog v2:** gates BOTH heal paths on `true_claimable` (selector + Q08 DSR precheck); last live record `noop_healthy` / `no_runnable_work=false` when running.
+- **OWNER decision package (minimal, pushed `f64ca07446`):** `docs/ops/OWNER_DECISION_PACKAGE_FACTORY_THROUGHPUT_2026-09-16.md` — D1: Q08 amendment cohort authority · D2: lift requeue-exclusions 11561+11731 (smoke-passed, fully admissible; May exclusion reason obsolete) · D3: seal 3 Q12 sibling cards (41478 staged; 41347/41343 target amendments + RAM_WINDOW release).
+- **Health contract:** RUNNABLE_WORK_EXISTS / active=2 / IDLE_RED not raised. Next capacity: 19 Q08 rows on D1 · 2 Q02s on D2 · 3 pairs on D3 · second-chance wave-1/2 review lanes (codex 09-19) · Q08 successors cascade automatically after PASS.
 
 ## Research programmes launched 2026-09-16 (all REVIEW_PENDING / staged for Fable)
 
@@ -45,18 +38,21 @@ Merge executed by Kimi interim per §38/§39/§40 (reviews on disk = independent
 - **H-FXMR (QM5_41477) — BUILD COMPLETE + ALLOCATED, REVIEW_PENDING**: branch `agents/kimi-fxmr-20260916` @ `ea38197cc0` (card+prereg cherry-picked `5a58fdf883`). Provenance QM-RESEARCH-2026-0005, prereg sha `c408f534…7475`. Compile 0/0, ex5 sha `4e07143a…1219b` (uncommitted per EX5_COMMIT_GUARD), 6 setfiles, 21/21 tests, lint clean. Prescreen REJECTs on `MISSING_FIELD:critic.*` only — the fail-closed critic gate validated end-to-end. Magic allocated `6275bfa234` (414770000/1/2).
 - **H-MR (QM5_41476) — BUILD COMPLETE + ALLOCATED, REVIEW_PENDING**: branch `agents/kimi-hmr-20260916` @ `04f10839b2` (card+prereg cherry-picked `c711bf359c`). Provenance QM-RESEARCH-2026-0006, prereg sha `8129b0fc…0d2d`. Compile 0/0 (canonical build_check PASS), ex5 sha `89d1107a…a702` (uncommitted per EX5_COMMIT_GUARD), 6 setfiles, 21/21 tests. Includes an honest deterministic pilot (Dukascopy 2018-2020: 2.9 trades/mo, +0.02R — labeled PILOT_MOTIVATION_NOT_PROOF, below the preregistered bar). Prescreen: critic-pending + one analyzed NEAR_DUPLICATE false-positive vs QM5_10140 (reversion vs continuation thesis, bigram collision). Magic allocated `6e876184f2` (414760000/1/2).
 
-## Interim scoreboard 2026-09-16 ~08:00Z (all pushed)
+## Interim scoreboard 2026-09-16 ~06:15Z (all pushed, HEAD `56541a37b2`)
 
-**Three complete FTMO-class strategies, all REVIEW_PENDING, all magic-allocated:**
-| Strategy | EA id | Magic | Provenance | Branch |
-|---|---|---|---|---|
-| H-CW cash-window index continuation H1 | QM5_41475 | 414750000-2 | QM-RESEARCH-2026-0002 | agents/kimi-hcw-20260915 @ 86e166f26f |
-| H-FXMR FX session mean reversion M15 | QM5_41477 | 414770000-2 | QM-RESEARCH-2026-0005 | agents/kimi-fxmr-20260916 @ ea38197cc0 |
-| H-MR cash-open mean reversion H1 | QM5_41476 | 414760000-2 | QM-RESEARCH-2026-0006 | agents/kimi-hmr-20260916 @ 04f10839b2 |
+**FACTORY: RUNNING** — 2× Q08 XAUUSD live (T4/T10 since 05:52Z); capacity-fill paths = OWNER decision package (3 decisions) + second-chance review lanes (codex 09-19) + Q08 successor cascade.
 
-**Programmes committed on main**: TAIL_RISK families A-D + joint-tail protocol (`56e930f728`) · PATTERN ablation 11 bases (`bdb8aec85d`) · SECOND_CHANCE top-25 + draft provenance 0003/0004 (`3c8e4901be`) · Q12 queue disposition (`8ef7244fe4`) · 10911 sibling staging + OWNER recipe (`e18e5f3f5c`).
+**Four FTMO-class candidates, all REVIEW_PENDING:**
+| Strategy | EA id | Provenance | State |
+|---|---|---|---|
+| H-CW cash-window index continuation H1 | QM5_41475 | QM-RESEARCH-2026-0002 | **prescreen KEEP (birth defect fixed via governed re-seal 05:59Z)** — fully staged for critic |
+| H-MR cash-open mean reversion H1 | QM5_41476 | QM-RESEARCH-2026-0006 | critic-pending only; NEAR_DUPLICATE vs 10140 adjudicated FALSE (evidence note committed) |
+| H-FXMR FX session mean reversion M15 | QM5_41477 | QM-RESEARCH-2026-0005 | critic-pending only (8 MISSING_FIELD:critic.*) |
+| H-PY bounded positive pyramid (family A) | QM5_41479 (unallocated) | QM-RESEARCH-2026-0007 | mechanized card + prereg f601ba6a; pilot honest (L3 reach 0% — untested); EA build after critic |
 
-**Single remaining gate for all three strategies**: independent non-Kimi critic (claude ≥09-17, codex ≥09-19) → then Q00 governance decision → governed COMPILE_EA (stamps build_hash) → smoke → pipeline. Nothing else is mine to advance.
+**Transition machinery:** `docs/ops/CRITIC_TO_Q00_TRANSITION_2026-09-16.md` — exact per-EA commands: critic receipt schema (qm.agent-chain.receipt.v1) → seal → prescreen → **Q00 = `farmctl enqueue-compile`** → COMPILE rollout-hold release (`release_compile_wave.py --apply`) → build_hash stamp → governed smoke → factory. Verified: cards byte-identical branches↔main, zero framework/EAs divergence, merge recipes included.
+
+**Programmes:** TAIL_RISK (A–D contracts + joint-tail protocol) · PATTERN ablation (11 bases, staged for Fable commission) · SECOND_CHANCE wave-1 (REVIEW) + wave-2 commissioned (11211/11855/11373 → f05399de/8eaa5bf9/27ae17d6) · Q08 unblock (2 released, 16 amendments staged for OWNER) · Q12 frontier staged (41478 + 2 card amendments) · OWNER decision package `docs/ops/OWNER_DECISION_PACKAGE_FACTORY_THROUGHPUT_2026-09-16.md`.
 - **10911/GDAXI `_opt` sibling — STAGED, stopped at OWNER seal** (`e18e5f3f5c`): agent-16 completed everything mechanical and verified it against the canonical service code — sibling source (verified 7-hunk transform from the approved 41321 template), GDAXI H1 setfile with `qm_ea_id` + neutral `opt_pp_*` keys, `_pattern_measurement_readiness ready=True zero blockers`, build guardrails PASS, allocation proven card-gated by dry-run. It STOPPED at `g0_status: APPROVED` (OWNER-only per 01-ea-lifecycle/13-strategy-research). **Exact 5-step recipe** in the receipt: OWNER seals the DRAFT card → operator runs allocator → promote staged artifacts → build lane COMPILE_EA (codex 09-19) → central operator re-runs service dry (refusal must flip) + `--apply` on row 96239586. Same pattern needed for 11294/GDAXI and 20086/NDX (card amendments GDAXI→41347 / NDX→41343).
 - **Q12 DL-089 matrix queue DISPOSITIONED** (`8ef7244fe4`, dry-run over all 106 rows via canonical service): 0 serviceable by design — 82 byte-identical re-declarations of completed programs (correct dedup), 15 hold-blocked, **9 = the true frontier: 10911+11294 GDAXI and 20086 NDX lack approved `_opt` siblings**. Fable unblock paths: sealed card amendments (GDAXI→QM5_41347, NDX→QM5_41343), OWNER release of RAM_WINDOW_44GB, bulk-supersede of the 82 duplicates. Agent-16 attempting the mechanical part of the 10911 GDAXI sibling (ea_id 41478) with stop-on-governance boundaries.
 
