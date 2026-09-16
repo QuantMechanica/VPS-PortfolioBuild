@@ -132,6 +132,14 @@ Monte-Carlo). PIDs are the terminal_worker daemon PIDs for T6/T3 (from process c
 `claimability_precheck` but remain `pending` behind the farm-wide Q08 backlog — queued, not
 refused (same pattern as batch-1's 6/8).
 
+**Post-poll development (12:41:48Z, 17 s after the poll closed):** QM5_10287 (`e1c0d6c1`)
+completed end-to-end — **done / FAIL_HARD, DSR context SEALED**, evidence
+`D:\QM\reports\work_items\e1c0d6c1-…\aggregate.json`, run summary T6 12:41:46Z. Identical shape
+to batch-1's first completion (`61ddcbdd` FAIL_HARD): a genuine executed verdict on the repaired
+path, not a repair defect. QM5_1230 (`db1da509`) was additionally claimed by T7 after the poll
+window. State at final check: 1 done (FAIL_HARD, SEALED), 2 active (9576/T3, 1230/T7),
+5 pending-claimable queued.
+
 ## 9. Hard boundary
 
 `hard_boundary_untouched.json`: excluded-5 (QM5_10145, QM5_12350, QM5_12361, QM5_1551, QM5_12484)
