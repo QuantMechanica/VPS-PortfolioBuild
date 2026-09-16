@@ -9,6 +9,16 @@
 - Main repo `C:\QM\repo`: branch `agents/board-advisor`, HEAD `c9dcd9b5fa` (watchdog NO_RUNNABLE_WORK fix), **pushed to origin, divergence 0** (2026-09-16 ~04:40Z).
 - Remaining dirty files are pre-existing unknown-owner items (`.set` file, `ea_origin.v1.csv` line-endings, deleted `artifacts/qm5_41262_build_result_20260901.json`, machine regen drift recurring on the living docs — normal cadence). Not mine, not touched.
 
+## Agent worktree preflight (OWNER mandate 2026-09-16)
+
+Incident: two write-capable agents committed against stale local `main` in shared worktree `C:\QM\worktrees\kimi-readmodels-20260916` (local main = 14 ahead / thousands behind origin/main; a receipt was folded into another lane's commit via `--amend`); recovery = cherry-pick to `agents/board-advisor` + byte-equivalence verification. Root cause: no base verification before write work. Fix: `tools/strategy_farm/agent_worktree_preflight.py` — deterministic, read-only, fail-closed. **Every write-capable agent runs it in its target checkout before its first edit:**
+
+```
+python tools/strategy_farm/agent_worktree_preflight.py --task-id <task-id> --paths <write-scope>
+```
+
+Exit 0 = PASS (one json line: branch/head/base/is_descendant/lease_scan). Exit 2 = hard fail — exactly one line `AGENT_WORKTREE_BASE_INVALID {json}`; the agent STOPS (no auto-reset/rebase, ever) and the orchestrator replays the work onto the canonical base. Canonical base = branch `agents/board-advisor` at `C:/QM/repo`, base commit = local `origin/agents/board-advisor` tip (tool never fetches). Authorized slice worktrees only via `--allow-worktree PATH=BRANCH` exact pair. Details + contract: `lessons-learned/2026-09-16_agent_worktree_base_invalid.md`. 11 hermetic tests green (`tools/strategy_farm/tests/test_agent_worktree_preflight.py`); live self-check on this branch PASS.
+
 ## Directive-3 worktree state — **WAVE 1 MERGED INTO MAIN 2026-09-15** 
 
 Merge executed by Kimi interim per §38/§39/§40 (reviews on disk = independent Claude adversarial passes; all test suites re-verified; zero merge-caused regressions — proof in receipt). Full plan: `docs/ops/evidence/2026-09-15_directive3_wave1_merge_map.md` · execution receipt: `docs/ops/evidence/2026-09-15_directive3_wave1_merge/receipt.md`.
