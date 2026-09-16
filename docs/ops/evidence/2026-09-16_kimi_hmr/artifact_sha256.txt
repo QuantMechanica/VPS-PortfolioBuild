@@ -1,0 +1,23 @@
+# artifact sha256 (H-MR build, 2026-09-16)
+# ex5 (canonical build_check binary; NOT committed - EX5_COMMIT_GUARD)
+89d1107a00ef0365d2a50b7a2a5621c31cba60df9aab39afb131a70d2cf3a702 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/QM5_41476_cash-open-mean-reversion-h1.ex5
+
+# sources
+2ada50053c38997fedc09fd39726c47c14dd987c02c7cc5c7b6f7b77ca27f4bf *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/QM5_41476_cash-open-mean-reversion-h1.mq5
+01ab09b9b5f9277587676f82d559f73958b76d5a9f38213ec3fe338ec195e659 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/QM5_41476_CashOpenMR.mqh
+8c9a8abeadc14b2715faa1c5c4e570dadeb298de0128242065ec67d66b2d3773 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/SPEC.md
+6bfb45fbfd6ebd77bb158c528032df20343f643203734cf246cdf3267a1a1f73 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/docs/visualization_spec.md
+3d05c335f91844585acdd649dc356e3baa5a96c53a995f476a5db107fe12a020 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/docs/strategy_card.md
+
+# research artifact
+f722f2dff46419c6bf038854d3f13be9141f03c5f4c5ce059a89b3c3a5bb4b17 *strategy-seeds/sources/QM-RESEARCH-2026-0006/H_MR_card.md
+b4fc041ca076d3f5e0a7aae7fcfbed023c1046bd2fa808c0c6ef0f8a120cc0f9 *strategy-seeds/sources/QM-RESEARCH-2026-0006/preregistration.json
+0bbc3b63c4246419edb1233398ea1a8432c266a1cc3042420c4d6c785c549fe7 *strategy-seeds/sources/QM-RESEARCH-2026-0006/research.json
+63a2f3f4d609e2fcff8aa2397da48f0c89cae3e2a1416f7411c601576545f4f2 *strategy-seeds/sources/QM-RESEARCH-2026-0006/lineage.json
+1887b25e0fb0597f97a9a9ae9461333bc16d3b2b6e0a8bf96412cea55032bd19 *strategy-seeds/sources/QM-RESEARCH-2026-0006/source.md
+28a5786f46fbb5a06cb538761246de3f0016cb183e8ada62cb4bfc2a5b9d85ba *strategy-seeds/sources/QM-RESEARCH-2026-0006/mechanization_result.json
+872fe5c8d75f3955377ec6829cb9008501f2cf49f426e32c7a4f722186800cc8 *strategy-seeds/sources/QM-RESEARCH-2026-0006/h_mr_fire_count.json
+81d8546e5c77b0b4bd823278de21de4ff0aaaa5354479a68a7066e9a1d10fa80 *strategy-seeds/sources/QM-RESEARCH-2026-0006/h_mr_fire_count.py
+
+# card
+3d05c335f91844585acdd649dc356e3baa5a96c53a995f476a5db107fe12a020 *artifacts/cards_approved/QM5_41476_cash-open-mean-reversion-h1.md

@@ -1,0 +1,9 @@
+# setfile + ex5 sha256 (H-MR build, 2026-09-16)
+da9e9cd3719b4d1f9e0dace6d27456d0c843fe6d1683071d0bcd9ae8e6a6cd9f *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/sets/QM5_41476_cash-open-mean-reversion-h1_GDAXI.DWX_H1_backtest.set
+594c0537157cdaa3a0323cbb6e664533175e4287c811af779b99565bda23c168 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/sets/QM5_41476_cash-open-mean-reversion-h1_GDAXI.DWX_H1_live.set
+bf70d8368594237b31e7e2636f5af2d667794ab463c9dd26923476dbe370ff52 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/sets/QM5_41476_cash-open-mean-reversion-h1_NDX.DWX_H1_backtest.set
+8039a13c42367b9a8701492e372b62427a5f3de0e91d6ba8ae6c20786967c0ab *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/sets/QM5_41476_cash-open-mean-reversion-h1_NDX.DWX_H1_live.set
+fba40c6c19f4150b9afc0f716c4f52f09bb71694f787b95b634a9449278d90c4 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/sets/QM5_41476_cash-open-mean-reversion-h1_SP500.DWX_H1_backtest.set
+f1cee7754d083fbc4e876aeb01819683af42139a607f976a03a5daa2bd98587f *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/sets/QM5_41476_cash-open-mean-reversion-h1_SP500.DWX_H1_live.set
+
+89d1107a00ef0365d2a50b7a2a5621c31cba60df9aab39afb131a70d2cf3a702 *framework/EAs/QM5_41476_cash-open-mean-reversion-h1/QM5_41476_cash-open-mean-reversion-h1.ex5
