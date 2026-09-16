@@ -1,0 +1,50 @@
+;==========================================================
+; QM5 Set File
+; ea_id:        41476
+; ea_slug:      cash-open-mean-reversion-h1
+; ea_version:   v5.0
+; set_version:  s20260916-001
+; symbol:       NDX.DWX
+; timeframe:    H1
+; environment:  live
+; magic_slot:   0
+; risk_mode:    PERCENT
+; portfolio_weight: 1
+; build_hash:   961c43aec09ab7c257ea86b881afa2af1eecafd9f2ffc6d2e81038453c3569b1
+; author:       Development (Kimi interim build)
+; date:         2026-09-16
+;==========================================================
+; REGISTRY STATUS: identity/magic PENDING_ALLOCATION (allocation is
+; centralized after this build; see docs/ops/evidence/2026-09-16_kimi_hmr/).
+; magic_slot per approved card symbol order (slot = card symbol index);
+; magic = 41476*10000 + slot. Do NOT pipeline or deploy before allocation.
+qm_ea_id=41476
+qm_magic_slot_offset=0
+RISK_FIXED=0
+RISK_PERCENT=0.25
+PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\worktrees\kimi-hmr-20260916\artifacts\cards_approved\QM5_41476_cash-open-mean-reversion-h1.md
+strategy_symbol_slot0=NDX.DWX
+strategy_symbol_slot1=GDAXI.DWX
+strategy_symbol_slot2=SP500.DWX
+strategy_opening_range_bars=3
+strategy_ema_period=20
+strategy_breakout_buffer_atr=0.025
+strategy_atr_period=14
+strategy_atr_stop_mult=1.0
+strategy_min_target_r=0.5
+strategy_time_stop_bars=6
+strategy_risk_per_trade_pct=0.25
+strategy_daily_stop_pct=-1.0
+strategy_weekly_stop_pct=-2.0
+strategy_shock_atr_mult=3.0
+strategy_spread_median_mult=1.5
+strategy_session_start_hour_utc=13
+strategy_session_end_hour_utc=17
+strategy_flatten_hour_utc=20
+strategy_friday_cutoff_hour_utc=17
+strategy_max_positions_total=2
+strategy_news_blackout_minutes=60
+strategy_spread_min_days=5
+strategy_breakeven_at_one_atr=true
