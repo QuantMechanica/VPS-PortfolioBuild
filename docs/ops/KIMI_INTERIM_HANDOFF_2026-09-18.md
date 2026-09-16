@@ -141,6 +141,7 @@ Live AutoTrading / T_Live / DXZ v2 cutover (OWNER-only, Sun 2026-09-20), FTMO pu
 - **Latest three numbers:** ACTIVE=2 (both Q08 XAUUSD) · TRUE_CLAIMABLE=1 (RAM-heavy Q06) · BLOCKED_RECOVERABLE=606 (Q08_DSR staged cohort + RAM parked + artifact-binding).
 - **Buffer plan:** Q08 successors cascade on verdict → second-chance reviews (codex 09-19) → OWNER decisions D1 (19 rows) / D2 (2 Q02s) / D3 (3 pairs) → critic wave for 41475/6/7 (all prescreen-READY or critic-gated only).
 - **H-PY follow-up:** L3-reach design analysis running (agent-22) — classification whether L3 is rare-but-real, unreachable-by-design, or defective; any variant = NEW preregistered lineage (0008), never a silent edit.
+- **Deterministic repairs DONE** (agent-33, commits through `65637993eb`, pushed): ① news-runner spawn root-caused to Windows MAX_PATH (261-char artifact paths crashing the failure sidecar) — fixed with long-path helpers + fail-safe downgrade; wave-3 released, 2 rows running on T8/T9. ② Q09 sealed-plan STOP — holds proven CORRECT (10148 evidence lost 2026-08-31 + self-contradicting Q09 source; 11476 no Q07); OWNER package `30c00b0b95`. ③ **RAM-44GB calibrated: measured necessity** (NDX Q05 D1 finished at 39.5GB — the 09-14 lowering was under-calibrated); governed reclass NDX 12→44 / GDAXI 24→44 / WS30 12→24; 52 metal-pair rows released; 479 parked pending OWNER RAM decision. Full details in the report above.
 
 ## Recommended next actions for Fable
 
