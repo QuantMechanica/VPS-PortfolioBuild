@@ -1,0 +1,1886 @@
+{
+  "content": {
+    "append_only": true,
+    "apply_requires_plan_sha256_confirmation": true,
+    "counts": {
+      "excluded_rows": 16,
+      "q12_duplicate_rows": 57,
+      "q14_duplicate_rows": 2
+    },
+    "db_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+    "disposition": "SUPERSEDED_DUPLICATE_DECLARATION",
+    "excluded_from_disposition": [
+      {
+        "program_id": "DL089_QM5_20086_NDX_DWX_2019_2025",
+        "reason": "NO_COMPLETED_RECEIPT",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_NDX_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-08-30T09:41:47.163244+00:00",
+          "ea_id": "QM5_20086",
+          "id": "1165f546-375c-5705-bfcd-3040bbbbb46b",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery\\sets\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery_NDX.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-08-30T09:41:47.163244+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_10911_GDAXI_DWX_2019_2025",
+        "reason": "NO_COMPLETED_RECEIPT",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10911_GDAXI_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-08-31T02:22:31.834800+00:00",
+          "ea_id": "QM5_10911",
+          "id": "96239586-47c0-5fe2-8ef5-3d29910cc47c",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\sets\\QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "GDAXI.DWX",
+          "updated_at": "2026-08-31T02:22:31.834800+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.003678+00:00",
+          "ea_id": "QM5_41219",
+          "id": "282c2dcc-74a3-5647-920c-0cf6f5dadb88",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\sets\\QM5_41219_cum-rsi2-commodity-requal8_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.003678+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41221_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.195675+00:00",
+          "ea_id": "QM5_41221",
+          "id": "9fd5d60d-00c2-50d8-adf9-e9b5045279ef",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8\\sets\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.195675+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.485931+00:00",
+          "ea_id": "QM5_9641",
+          "id": "79ac3ab7-047f-5558-9c25-7ff1a21194fa",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9641_bandy-cci-extreme-fade-mr-index\\sets\\QM5_9641_bandy-cci-extreme-fade-mr-index_WS30.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "WS30.DWX",
+          "updated_at": "2026-09-09T12:33:30.485931+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.647853+00:00",
+          "ea_id": "QM5_20086",
+          "id": "fd69b65e-f6d6-57e4-aafc-b19c74754de4",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery\\sets\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery_EURUSD.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.647853+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_10911_GDAXI_DWX_2019_2025",
+        "reason": "NO_COMPLETED_RECEIPT",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10911_GDAXI_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.686955+00:00",
+          "ea_id": "QM5_10911",
+          "id": "5cf3ea75-2fe0-5420-97c6-650678c52b31",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\sets\\QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "GDAXI.DWX",
+          "updated_at": "2026-09-09T12:33:30.686955+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11294_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.818800+00:00",
+          "ea_id": "QM5_11294",
+          "id": "9a837695-789b-5c54-9aac-3cb848b51cd9",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11294_cs-ichi-cloud\\sets\\QM5_11294_cs-ichi-cloud_XAUUSD.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.818800+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_20086_NDX_DWX_2019_2025",
+        "reason": "NO_COMPLETED_RECEIPT",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_NDX_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.857900+00:00",
+          "ea_id": "QM5_20086",
+          "id": "ec354c39-60c9-58ed-a273-bb8d27a7c220",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery\\sets\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery_NDX.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-09-09T12:33:30.857900+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41219_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.127045+00:00",
+          "ea_id": "QM5_41219",
+          "id": "0f2a02f8-241d-5632-85a9-7d213cd38526",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\sets\\QM5_41219_cum-rsi2-commodity-requal8_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.127045+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_41221_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.324560+00:00",
+          "ea_id": "QM5_41221",
+          "id": "d01b1df7-db7f-57ef-bf8f-6237492da434",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8\\sets\\QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.324560+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_9641_WS30_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_9641_WS30_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.626344+00:00",
+          "ea_id": "QM5_9641",
+          "id": "9bdc273c-0f54-5d88-9fbb-04a844d922be",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_9641_bandy-cci-extreme-fade-mr-index\\sets\\QM5_9641_bandy-cci-extreme-fade-mr-index_WS30.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "WS30.DWX",
+          "updated_at": "2026-09-09T12:43:36.626344+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.766710+00:00",
+          "ea_id": "QM5_20086",
+          "id": "3242f645-d380-5a8c-9608-ebd668985927",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery\\sets\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery_EURUSD.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.766710+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_10911_GDAXI_DWX_2019_2025",
+        "reason": "NO_COMPLETED_RECEIPT",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10911_GDAXI_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.809822+00:00",
+          "ea_id": "QM5_10911",
+          "id": "897169ba-9b8f-53ef-8c43-3013f3c7f2e8",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10911_grimes-complex-pb\\sets\\QM5_10911_grimes-complex-pb_GDAXI.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "GDAXI.DWX",
+          "updated_at": "2026-09-09T12:43:36.809822+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+        "reason": "CENSUS_UNIVERSE_CHANGED_OR_LEDGER_MISMATCH",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11294_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.933143+00:00",
+          "ea_id": "QM5_11294",
+          "id": "b13c9389-5895-5fad-9903-87121fac84ea",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11294_cs-ichi-cloud\\sets\\QM5_11294_cs-ichi-cloud_XAUUSD.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.933143+00:00",
+          "verdict": null
+        }
+      },
+      {
+        "program_id": "DL089_QM5_20086_NDX_DWX_2019_2025",
+        "reason": "NO_COMPLETED_RECEIPT",
+        "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20086_NDX_DWX_2019_2025\\q12_selection_receipt.json",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.980266+00:00",
+          "ea_id": "QM5_20086",
+          "id": "4f380904-d339-5e38-8dad-7da4dbf9c254",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery\\sets\\QM5_20086_connors-multi-day-high-low-h4-r1-recovery_NDX.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-09-09T12:43:36.980266+00:00",
+          "verdict": null
+        }
+      }
+    ],
+    "generated_at_utc": "2026-09-16T23:50:49+00:00",
+    "q12_duplicates": [
+      {
+        "disposition_work_item_id": "b1628cf0-78c3-5415-9466-1e2c6af8cb14",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "a27d6d8d35fc2cfc96030265eadacaff620afbf5e3067e5b56065e29a14bef57",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8a0763c72fe92dbe931d54ba91a9890adf7615d0758c0b6c3de0e179c86b4346",
+          "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+          "receipt_sha256": "4286eb7f814f3a5b2568f50fd5a17edd2920c5e726048dd95419054a5223a688",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-08-29T14:17:18.365816+00:00",
+          "ea_id": "QM5_10706",
+          "id": "2dad5730-30ed-5ab1-ace1-d5db4ede60db",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-08-29T14:17:18.365816+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "3ba5dc70-f73f-5859-8120-20c57baf7805",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "0a0ddc9f833161e20a42b989216058f6052dcefd5bf48f44c9edc5c10a1e81ac",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11660_NDX_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "3058f08bf3d21aba32e2436b5a1f3e62b95479174291aafaa6a7a18c0794aa01",
+          "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11660_NDX_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "de5b6176-82b5-5f62-bb28-a8ac47a63fe7",
+          "receipt_sha256": "f9e337844181837567a6a718daed9ebaa619e991f65662038cec49b2d4c224e4",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-08-31T14:06:38.805480+00:00",
+          "ea_id": "QM5_11660",
+          "id": "5183df54-9e70-5625-ae23-092ff1b6e787",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11660_pp-wedge\\sets\\QM5_11660_pp-wedge_NDX.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-08-31T14:06:38.805480+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "31ae33cb-bd9c-5a5c-a5f8-9740c3f978cd",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "5e35c1126ef81102122d1780d82efa82a6a3e2cfbeb51582711a9ec348f40068",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "210f77e644e7e7826e65b5f4570a15f20608204c1837628eda5d85df0aaa4e36",
+          "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+          "receipt_sha256": "744e6fec163465b8ba5fb76acf4ba0d3c92ed4988c4cb28a4e3da35c3f312601",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-01T19:50:34.101102+00:00",
+          "ea_id": "QM5_11422",
+          "id": "f364ed13-9f09-5fa6-b7df-d414e8a13d77",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "USDCAD.DWX",
+          "updated_at": "2026-09-01T19:50:34.101102+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "fd3ec3db-f955-532a-8fbb-046caf761e98",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "3a16454d5659a8062964fe288e68ae0343b2c9450b9db03e2aa8d5667c078bf7",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13013_NDX_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "92b77d63d658c0dd000a456621be412d658e87e9c09f3dda8947256e0afa7f64",
+          "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13013_NDX_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "585dbab9-98ca-5962-9807-2a812cedd5e7",
+          "receipt_sha256": "b97d4df494bc3f3db4febdcc3dafbb01826d668b269c23f46de0adc273c66c3b",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-02T22:53:28.524055+00:00",
+          "ea_id": "QM5_13013",
+          "id": "f9ed7f92-f473-5a71-9933-e28bb74f6ec0",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13013_grimes-trendday-v2\\sets\\QM5_13013_grimes-trendday-v2_NDX.DWX_M15_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-09-02T22:53:28.524055+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "aab9dba5-692d-54bd-a6fa-9ed1eea2f343",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "f7728ee2dd84f6266f76901e40c025e77e4bd19341eb15aaa908dd2efb06ccb0",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "5fa723685708100857f2d68de0b28fffd21511881c51cb76d446e8f691012372",
+          "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c4bc189b-372d-54c9-be45-046ac77b245b",
+          "receipt_sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-03T01:43:21.454484+00:00",
+          "ea_id": "QM5_11421",
+          "id": "19761d0c-3877-587d-a5cd-a8e48291cdf7",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-03T01:43:21.454484+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "d47426b9-4fb9-543e-9e34-43b9994d6c63",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "c8896c93c06213212588c343d807c5b035ab1e55652a9bbebff7ea4980fc9224",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13213_USDJPY_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "3a7d0a4d6fa5a34103a9a33e31abb9bd5d4e25449d5ab1602e20e5afb5f31f6a",
+          "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13213_USDJPY_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "97908d93-3ff8-5528-9518-8968aea72342",
+          "receipt_sha256": "b5c7dbe556fa1d3bc5275f4163371857766f29ae82340d9253d7eee093d408eb",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-03T08:18:22.878604+00:00",
+          "ea_id": "QM5_13213",
+          "id": "ed127702-3a08-59fa-888a-c3a0a20a0803",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "USDJPY.DWX",
+          "updated_at": "2026-09-03T08:18:22.878604+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "81e26f1e-aa10-5718-ac15-db058b370034",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "b49f3b3b439136fce088520e554f07a0e2910e6e90e0e2ea7942d279b9e2c869",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "44d6d234c747cac29e55853913d9bbb108051c6b45bb7ddb5a14f656c2baf08d",
+          "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "5a6d1b1c-7c40-5414-abc8-b59421eabf82",
+          "receipt_sha256": "79f0401e2a15fa057075ca9082e33c00e005ab47242040fd1927f883fc814af7",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:29.933997+00:00",
+          "ea_id": "QM5_20048",
+          "id": "b9c513a5-cd6f-5368-a368-bcc33e55a867",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\sets\\QM5_20048_wti-preholiday_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:33:29.933997+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "73c8d9c8-d3fa-5618-8191-bd21c798aa99",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "a27d6d8d35fc2cfc96030265eadacaff620afbf5e3067e5b56065e29a14bef57",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8a0763c72fe92dbe931d54ba91a9890adf7615d0758c0b6c3de0e179c86b4346",
+          "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+          "receipt_sha256": "4286eb7f814f3a5b2568f50fd5a17edd2920c5e726048dd95419054a5223a688",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:29.970591+00:00",
+          "ea_id": "QM5_10706",
+          "id": "00f26e21-a0ad-5fcf-945f-9c7cd1711c7e",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-09-09T12:33:29.970591+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "c1cdcb4d-c69f-519d-9ebd-858ddaf4dab2",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "2192dd0005314c6cb92fe49ff3a570ebd64dd01b706b839d5b4cb3fee8865bfd",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "6b34891505a10b43ef87259938c862ae2094508bc73c8ddcea17e42bc2d56ade",
+          "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "40e69c26-1ddb-5728-99a1-02b08f83c284",
+          "receipt_sha256": "17cd45c58cfb47c34a753545f48f47532fbb23850ce3d215b764e9def04ea8fe",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.042779+00:00",
+          "ea_id": "QM5_10700",
+          "id": "2719865c-c0fe-5b37-a30d-c64872744010",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.042779+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "6665b8a9-a595-5dfd-a9aa-0aaa9fbad204",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "b39e278cc3ac23b74395f867a33aff8ff5090e5cf6d7ddf8783bba16d438593b",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8e9f37aa9707b009f99f7d6b775af169c92d0bf55ba6df1c3784cd05c29ffd2f",
+          "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "b764a145-feed-5f6b-a10d-6ad74656d508",
+          "receipt_sha256": "cc2b0d7b9c0a4926b1203811590cf9f99405cd4bdde54bee234ac001727f58e6",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.078873+00:00",
+          "ea_id": "QM5_11910",
+          "id": "7f1106ea-8004-5d20-85ed-3e62eed6a7ec",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\sets\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "NZDUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.078873+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "c2e468c2-ccc8-5646-b97c-a0d07b52526a",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "84ba7baf98bee214e41f003ae7fff997c46adc601a6dea2ced5688ec73aa691c",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "d3d157ae40b48573157c5530a050a42bf5ca0ed3a643a31dcb75d528c509ab89",
+          "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "9384656c-b5ac-555c-9c63-ded282ef7ca5",
+          "receipt_sha256": "0262435e2fc8e023f2ae605ed06166a54241b0129725f64c1f1389fc83e99587",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.120480+00:00",
+          "ea_id": "QM5_12710",
+          "id": "0d7c56f3-50f1-54a9-8d2c-80d53a1e44e5",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12710_commodity-tsmom-12m-atr\\sets\\QM5_12710_commodity-tsmom-12m-atr_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.120480+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "791ba5f1-0ed2-5dac-a6bb-d21dab4e9550",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "c8896c93c06213212588c343d807c5b035ab1e55652a9bbebff7ea4980fc9224",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13213_USDJPY_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "3a7d0a4d6fa5a34103a9a33e31abb9bd5d4e25449d5ab1602e20e5afb5f31f6a",
+          "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13213_USDJPY_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "97908d93-3ff8-5528-9518-8968aea72342",
+          "receipt_sha256": "b5c7dbe556fa1d3bc5275f4163371857766f29ae82340d9253d7eee093d408eb",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.157576+00:00",
+          "ea_id": "QM5_13213",
+          "id": "0e5eff83-75b8-5c59-99d0-609f5f2fb65c",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "USDJPY.DWX",
+          "updated_at": "2026-09-09T12:33:30.157576+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "c6ada5c5-cdb9-550d-8030-ba6f4a1d68f3",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "f7728ee2dd84f6266f76901e40c025e77e4bd19341eb15aaa908dd2efb06ccb0",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "5fa723685708100857f2d68de0b28fffd21511881c51cb76d446e8f691012372",
+          "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c4bc189b-372d-54c9-be45-046ac77b245b",
+          "receipt_sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.232772+00:00",
+          "ea_id": "QM5_11421",
+          "id": "3b924874-0284-5076-b655-ca2c9ce0a3f5",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.232772+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "b0ae1d9f-fa2c-57c0-8c64-4d3678881f73",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "3bff22aa2a316da0409271f0010fc19a35428d15571fadd4e984c18c31113da3",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8bcdfcc3e12f52b5ed7be11dc4c2a5ea01ea94d13861e4d4c239a4ff425be5c9",
+          "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+          "receipt_sha256": "11e182b0911b56d2d731d4879c2e8fcd7c0b0166dfa7f871f49350a6c24f4e55",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.273879+00:00",
+          "ea_id": "QM5_11708",
+          "id": "6f5efb20-da7e-50f0-9d33-10921981ce0b",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\sets\\QM5_11708_anon-market-squeeze-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.273879+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "3134e3ae-212b-527e-8e62-c5b641996686",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "43128c85140582950a9062fa8e26f2d996e5addf4e0c94662940bb5f24cb0fc4",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "a11e44a680f395816306dcf054067724a66f613a4d1285044c1be762e919c8cc",
+          "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "65b0f691-1d3a-5382-97d2-c58641cf89ea",
+          "receipt_sha256": "4428fd2f2bacd5002ec9438e890cadced8013ca6964a090a44e62584c9a35d8a",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.344564+00:00",
+          "ea_id": "QM5_21501",
+          "id": "c149d701-8271-5a92-902c-4e8089d4a67d",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21501_balke-gmt3-range-breakout-ppcensus\\sets\\QM5_21501_balke-gmt3-range-breakout-ppcensus_USDJPY.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "USDJPY.DWX",
+          "updated_at": "2026-09-09T12:33:30.344564+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "812b6269-1d03-582c-9a0a-97363ee4d97d",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "5e35c1126ef81102122d1780d82efa82a6a3e2cfbeb51582711a9ec348f40068",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "210f77e644e7e7826e65b5f4570a15f20608204c1837628eda5d85df0aaa4e36",
+          "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+          "receipt_sha256": "744e6fec163465b8ba5fb76acf4ba0d3c92ed4988c4cb28a4e3da35c3f312601",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.375644+00:00",
+          "ea_id": "QM5_11422",
+          "id": "b8a762a0-6ec2-545e-bb9e-b4c40156cb19",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "USDCAD.DWX",
+          "updated_at": "2026-09-09T12:33:30.375644+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "1fe28a1f-dfa0-568b-95c9-bcd4a02375b7",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "8d64996bfcf1ccad7475866af2482f212061ed55dd4a74425d6c6a026e176731",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "b178c7ff37805345fc97dc8b82110a3ce9fd5da4ccc6c3de2e6b67cd37b0613f",
+          "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "d8739ae2-1ce4-553a-9b59-1335e582614c",
+          "receipt_sha256": "b3966d118be4ad1c1790f5b16bad6e6935bcac0bce9dbe7fff88dd34826cef4d",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.418757+00:00",
+          "ea_id": "QM5_20266",
+          "id": "9972e2cc-3a11-529b-a7ae-b3de16831b41",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\sets\\QM5_20266_collins-66mom_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.418757+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "3d81ecd0-d0ab-5cc7-9d63-b88ffee92720",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "bb6462c696c66c3800dbf85f66695ab25e909506a0aa97a66d4271c73db397ca",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "a1ce00c628808f38ec3c32b916cd309be8289ebe28e87ac2c2736b92d993da00",
+          "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "5c1085ce-b76a-594d-973e-6080e27711b1",
+          "receipt_sha256": "c04cd5468b8796d7e3f38549cf112fb9ed1404b31938456b26bb88314c55a420",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.450840+00:00",
+          "ea_id": "QM5_12849",
+          "id": "19aab37f-e982-5878-a625-4874b0070064",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\sets\\QM5_12849_brent-tsmom12m_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.450840+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "13a86b3d-0cc3-581c-b1eb-bb073948b2af",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "ec15c5d9cc192abc0fdaf49af3bd4c34c473444fecff9b1c5d915e1edfa38f43",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "33333afbbc6cf256590e8d718ee0fba503196f4f8c9d36dc21b9a711d55f2118",
+          "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+          "receipt_sha256": "bf14aa8f2a8e01527ee59f12cd4f4f95f306469547e24835ca7f1f456b5fda8d",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.511999+00:00",
+          "ea_id": "QM5_12855",
+          "id": "7b41843f-cc2e-5d96-8fb7-fc89e1b1c42f",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12855_brent-nov-fade\\sets\\QM5_12855_brent-nov-fade_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.511999+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "ae6163d5-5656-5fc5-b710-013dc3942723",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "9dfbb03fb9a353ecce9e0a0b087259791601763be8ca8884202ec933db433b0f",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "96ce3e49022bd067321b8d1cef583af02058981cc4f5ea04b5a1f5a8757f3bf6",
+          "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "540eadc0-4a99-5f0f-b69b-1601de434ab6",
+          "receipt_sha256": "13266c8965f9efbb83f6f2d861a13076caff5cb16abf40a8c91aa6f92144c189",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.581681+00:00",
+          "ea_id": "QM5_21505",
+          "id": "47ce8c3d-a911-53d9-88f5-ef7ed0dbe19b",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\sets\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAGUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.581681+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "785454ab-ecb1-5a2a-ab70-55895d8c00db",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "55db8b4d8e1168c3e2ee8d6005e04119b551e8c9e3548bb61c35b6e1d74050d2",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "b19c7afba12f2fbcb7ea6cec497a5a9e9c5fcacf79afdac34442eda71b523b8e",
+          "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "559ec02f-af4e-5237-8467-df1683dcb8e8",
+          "receipt_sha256": "9d657f9197774e58453046b2fb98715576ecbe1718ef166ae35c5f782de46495",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.733577+00:00",
+          "ea_id": "QM5_10403",
+          "id": "1c220976-6e7b-5c20-b67c-c2782717dfcf",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.733577+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "5f0bf1fc-b4cf-59a8-8212-daa4e6337fb2",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "ef124af0e8d3a400555e53a111358d64bec82c9298c6525f5301564d70f25c98",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "d74eee65e372c92cd18ac0a4c0d2b6b380639a9d8fe3eb64f8edf2014c18e4a9",
+          "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "264c5715-dfea-503f-9c98-0315624dfffc",
+          "receipt_sha256": "f0099d952d6c848311e581aedee38f6ff204e9da46684372ddb40454c6573e8b",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.776690+00:00",
+          "ea_id": "QM5_21502",
+          "id": "bbc0e33b-aa64-5572-afae-d164a0a15466",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21502_xau-weekly-tsmom\\sets\\QM5_21502_xau-weekly-tsmom_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.776690+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "3911144a-f2d7-5507-ab9c-e3944f2ad7c2",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "f727ea30ddc0d5b2be04b7cdc998f8cc3c5aba01b48bb227b095257c5f9c090c",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "340d5d10e6bc0c1a97710a3baa9eb739fc2678da52f7ba4a018d3b8204c2f05e",
+          "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1c4e28c2-63b0-527d-8ebc-cee9529c89ef",
+          "receipt_sha256": "75740cebd45913cebabdb76df3cb1e2ae077fd847097d99e3b626ee71c36a0c2",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.900010+00:00",
+          "ea_id": "QM5_10513",
+          "id": "463e37e3-7cc6-5a5b-adc8-47af1adcecab",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest_ablation_04.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.900010+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "e2c906d9-0ddc-5974-b660-21cb46310a5c",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "64027e0caaa136fd4b2244f5b06685425e19f713edffb2b20d8107d8bc373e96",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "c86b9440f1c4dd1f7a9accc07e9c2f6f1ebfd7f3c1aa92d80b37e65e17dc923d",
+          "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "5a109261-f52c-5ed8-9dd3-9edec460697a",
+          "receipt_sha256": "c04a1962ea3801fca600ef465ab169a965cbe59a96713998de3954b4b8fa376e",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.939612+00:00",
+          "ea_id": "QM5_10145",
+          "id": "2f5ec71e-4048-5580-b358-59f030f2f509",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\sets\\QM5_10145_tsm-meanret_XAUUSD.DWX_D1_backtest_ablation_02.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.939612+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "2ecd4289-7b2a-5bb2-9c46-22e79f83ce68",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "9732400814d85b6e873df8197874d49030d9ba803931f3f9397465cf344816f8",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "887b842b29431402e705a3bedb91d46e40066af25d3c71fd6bfb6b2409040354",
+          "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "99e7e9db-d9a7-514c-b78d-c14e98ebec5d",
+          "receipt_sha256": "44dd7f699b56eadd990f7a191a5f1ac81b915f2dbf0995e0cec6bc6c67d42e28",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:30.984229+00:00",
+          "ea_id": "QM5_21507",
+          "id": "247315cb-8e32-5b01-a353-b81e9604352c",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21507_qs-kama-trend-xau\\sets\\QM5_21507_qs-kama-trend-xau_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:33:30.984229+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "69ef0b0e-c1d0-515c-883a-864a4dee7508",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "52f305d46933199e6103a8ede8b63580e8dc77aa25fb87c70916622ae681e423",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "0c950db4b6ff651020cb53edcc964263b99fa69fa68745f1e28334de3988d6d8",
+          "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "a5b90e08-cf49-51ac-be59-1d4926da2363",
+          "receipt_sha256": "72fdfb6f6cc85169e0758dc1ed49d3c954a494aa8a911fcce850c4fc0d42f491",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:31.021326+00:00",
+          "ea_id": "QM5_13054",
+          "id": "6697e79b-3d42-579c-8632-30d2614737fd",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\sets\\QM5_13054_brent-tom-mom_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:33:31.021326+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "3506c7df-b488-50db-b664-e4b501ff8877",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "ca2e7bd3ea7fe6ff2fd411c80ebc40000d44146a232a43fe7a6bbb22d20c9cf5",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "a32501b68df2de98ac21e2d80a8a5edfe7d77b19d5a306cff1daa885f71491b6",
+          "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c41e2606-3af1-5766-9bb7-18de8a763a18",
+          "receipt_sha256": "5db5bc0f7b6ab2a747389564550e382d6857a2e3778f8005b66c674202534661",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:31.056418+00:00",
+          "ea_id": "QM5_1537",
+          "id": "d880904f-64e6-5287-b5da-4d0d69e23dd5",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\sets\\QM5_1537_aa-vol-sma10_XAGUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAGUSD.DWX",
+          "updated_at": "2026-09-09T12:33:31.056418+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "34b3704b-35be-5d08-becd-185152a11938",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "d6101d0e6bc5e47d4decb0342c0cbeb9996c0d7bbb5419197e7a78527a1090a7",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "faa903d7a35ed0bfb778ad0392ebdb21745200508912f1b886dcac2db2109dec",
+          "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "d824e8cb-8397-5aa3-b6fa-fec9b0c375eb",
+          "receipt_sha256": "39033dd460433face1a4d6440878a1f864b85130660c2253c14c1449ca4435ee",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:31.099529+00:00",
+          "ea_id": "QM5_11881",
+          "id": "bb27e73e-0d12-5d2c-9682-c22890b4ead6",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11881_connors-rsi2-mean-reversion\\sets\\QM5_11881_connors-rsi2-mean-reversion_GBPUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-09-09T12:33:31.099529+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "23d11076-2725-5be3-8cf3-565aa0bd4a3d",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "5e35c1126ef81102122d1780d82efa82a6a3e2cfbeb51582711a9ec348f40068",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "210f77e644e7e7826e65b5f4570a15f20608204c1837628eda5d85df0aaa4e36",
+          "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+          "receipt_sha256": "744e6fec163465b8ba5fb76acf4ba0d3c92ed4988c4cb28a4e3da35c3f312601",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:31.513607+00:00",
+          "ea_id": "QM5_11422",
+          "id": "791879a6-55af-5dc9-b04d-d32a45024896",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "USDCAD.DWX",
+          "updated_at": "2026-09-09T12:33:31.513607+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "e18747f1-b993-5687-bae8-fa648e8d6538",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "f7728ee2dd84f6266f76901e40c025e77e4bd19341eb15aaa908dd2efb06ccb0",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "5fa723685708100857f2d68de0b28fffd21511881c51cb76d446e8f691012372",
+          "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c4bc189b-372d-54c9-be45-046ac77b245b",
+          "receipt_sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:34.301720+00:00",
+          "ea_id": "QM5_11421",
+          "id": "03392b1f-05a0-5fe1-807a-ea9bafa0a4bd",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:33:34.301720+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "8a6493ba-be78-58fe-88e3-4d2661643b69",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "a27d6d8d35fc2cfc96030265eadacaff620afbf5e3067e5b56065e29a14bef57",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8a0763c72fe92dbe931d54ba91a9890adf7615d0758c0b6c3de0e179c86b4346",
+          "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+          "receipt_sha256": "4286eb7f814f3a5b2568f50fd5a17edd2920c5e726048dd95419054a5223a688",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:33:35.710386+00:00",
+          "ea_id": "QM5_10706",
+          "id": "6d307198-f1ef-561c-82a7-3c15c3a82a8d",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-09-09T12:33:35.710386+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "a3ee9a7b-2a58-5ee7-af63-21e156babc42",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "b49f3b3b439136fce088520e554f07a0e2910e6e90e0e2ea7942d279b9e2c869",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "44d6d234c747cac29e55853913d9bbb108051c6b45bb7ddb5a14f656c2baf08d",
+          "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20048_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "5a6d1b1c-7c40-5414-abc8-b59421eabf82",
+          "receipt_sha256": "79f0401e2a15fa057075ca9082e33c00e005ab47242040fd1927f883fc814af7",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.061876+00:00",
+          "ea_id": "QM5_20048",
+          "id": "ede62c3c-9606-5db7-9928-7ed0444d4f28",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20048_wti-preholiday\\sets\\QM5_20048_wti-preholiday_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.061876+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "5542bdb1-6db0-5c1a-ae00-747b7cd5f3d8",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "a27d6d8d35fc2cfc96030265eadacaff620afbf5e3067e5b56065e29a14bef57",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8a0763c72fe92dbe931d54ba91a9890adf7615d0758c0b6c3de0e179c86b4346",
+          "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+          "receipt_sha256": "4286eb7f814f3a5b2568f50fd5a17edd2920c5e726048dd95419054a5223a688",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.091955+00:00",
+          "ea_id": "QM5_10706",
+          "id": "9ca7760d-7a93-53cf-8aa5-b84e1210b748",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.091955+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "45359d3c-a829-546d-ad1d-c1be89162e6b",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "2192dd0005314c6cb92fe49ff3a570ebd64dd01b706b839d5b4cb3fee8865bfd",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "6b34891505a10b43ef87259938c862ae2094508bc73c8ddcea17e42bc2d56ade",
+          "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10700_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "40e69c26-1ddb-5728-99a1-02b08f83c284",
+          "receipt_sha256": "17cd45c58cfb47c34a753545f48f47532fbb23850ce3d215b764e9def04ea8fe",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.162137+00:00",
+          "ea_id": "QM5_10700",
+          "id": "4f53328a-bf0a-5187-a60d-76f0963c9275",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.162137+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "f4140588-02cc-527c-9c8a-2314143b5b95",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "b39e278cc3ac23b74395f867a33aff8ff5090e5cf6d7ddf8783bba16d438593b",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8e9f37aa9707b009f99f7d6b775af169c92d0bf55ba6df1c3784cd05c29ffd2f",
+          "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11910_NZDUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "b764a145-feed-5f6b-a10d-6ad74656d508",
+          "receipt_sha256": "cc2b0d7b9c0a4926b1203811590cf9f99405cd4bdde54bee234ac001727f58e6",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.196227+00:00",
+          "ea_id": "QM5_11910",
+          "id": "1f953b4e-481b-5deb-a7f9-907c88b483d7",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11910_larry-williams-18ma-2outside-bars-d1\\sets\\QM5_11910_larry-williams-18ma-2outside-bars-d1_NZDUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "NZDUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.196227+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "fda20f34-d959-5b6c-89af-9a6f4649bf95",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "84ba7baf98bee214e41f003ae7fff997c46adc601a6dea2ced5688ec73aa691c",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "d3d157ae40b48573157c5530a050a42bf5ca0ed3a643a31dcb75d528c509ab89",
+          "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12710_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "9384656c-b5ac-555c-9c63-ded282ef7ca5",
+          "receipt_sha256": "0262435e2fc8e023f2ae605ed06166a54241b0129725f64c1f1389fc83e99587",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.233323+00:00",
+          "ea_id": "QM5_12710",
+          "id": "de6aff59-58c6-5ba6-9653-e34758e1ae74",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12710_commodity-tsmom-12m-atr\\sets\\QM5_12710_commodity-tsmom-12m-atr_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.233323+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "a1f78f4a-e8ea-5bbb-8da2-419dc672ff07",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "f7728ee2dd84f6266f76901e40c025e77e4bd19341eb15aaa908dd2efb06ccb0",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "5fa723685708100857f2d68de0b28fffd21511881c51cb76d446e8f691012372",
+          "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c4bc189b-372d-54c9-be45-046ac77b245b",
+          "receipt_sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.358648+00:00",
+          "ea_id": "QM5_11421",
+          "id": "b97b4204-2a55-5af6-8f0f-8dc19a6a4f50",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.358648+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "555fd810-6a07-5457-a0fb-ba637a770e69",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "3bff22aa2a316da0409271f0010fc19a35428d15571fadd4e984c18c31113da3",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8bcdfcc3e12f52b5ed7be11dc4c2a5ea01ea94d13861e4d4c239a4ff425be5c9",
+          "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11708_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "9102ff97-a450-5cd3-8e13-0f61144ffa5d",
+          "receipt_sha256": "11e182b0911b56d2d731d4879c2e8fcd7c0b0166dfa7f871f49350a6c24f4e55",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.394742+00:00",
+          "ea_id": "QM5_11708",
+          "id": "96671768-837b-54ce-90c1-786d649edd3a",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11708_anon-market-squeeze-d1\\sets\\QM5_11708_anon-market-squeeze-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.394742+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "b08464a0-b080-562f-abc2-68aa7b72e610",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "3a16454d5659a8062964fe288e68ae0343b2c9450b9db03e2aa8d5667c078bf7",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13013_NDX_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "92b77d63d658c0dd000a456621be412d658e87e9c09f3dda8947256e0afa7f64",
+          "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13013_NDX_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "585dbab9-98ca-5962-9807-2a812cedd5e7",
+          "receipt_sha256": "b97d4df494bc3f3db4febdcc3dafbb01826d668b269c23f46de0adc273c66c3b",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_13013_NDX_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.440862+00:00",
+          "ea_id": "QM5_13013",
+          "id": "73063ec5-3abe-5e11-8497-8df833e3ec4c",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13013_grimes-trendday-v2\\sets\\QM5_13013_grimes-trendday-v2_NDX.DWX_M15_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-09-09T12:43:36.440862+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "a3c422a7-cb66-5fee-968c-8ef949df001b",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "43128c85140582950a9062fa8e26f2d996e5addf4e0c94662940bb5f24cb0fc4",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "a11e44a680f395816306dcf054067724a66f613a4d1285044c1be762e919c8cc",
+          "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21501_USDJPY_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "65b0f691-1d3a-5382-97d2-c58641cf89ea",
+          "receipt_sha256": "4428fd2f2bacd5002ec9438e890cadced8013ca6964a090a44e62584c9a35d8a",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.483975+00:00",
+          "ea_id": "QM5_21501",
+          "id": "8c2cc8d1-0630-57a8-88df-8b09a142c740",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21501_balke-gmt3-range-breakout-ppcensus\\sets\\QM5_21501_balke-gmt3-range-breakout-ppcensus_USDJPY.DWX_H1_backtest.set",
+          "status": "pending",
+          "symbol": "USDJPY.DWX",
+          "updated_at": "2026-09-09T12:43:36.483975+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "1b1c8029-29f1-5365-935c-ed8f608e1447",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "5e35c1126ef81102122d1780d82efa82a6a3e2cfbeb51582711a9ec348f40068",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "210f77e644e7e7826e65b5f4570a15f20608204c1837628eda5d85df0aaa4e36",
+          "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+          "receipt_sha256": "744e6fec163465b8ba5fb76acf4ba0d3c92ed4988c4cb28a4e3da35c3f312601",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.517060+00:00",
+          "ea_id": "QM5_11422",
+          "id": "4dac983e-2432-510e-a3f5-8625d3b2fe01",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "USDCAD.DWX",
+          "updated_at": "2026-09-09T12:43:36.517060+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "84f7c2f7-71ee-53f5-8e7c-15fea682b53d",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "8d64996bfcf1ccad7475866af2482f212061ed55dd4a74425d6c6a026e176731",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "b178c7ff37805345fc97dc8b82110a3ce9fd5da4ccc6c3de2e6b67cd37b0613f",
+          "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_20266_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "d8739ae2-1ce4-553a-9b59-1335e582614c",
+          "receipt_sha256": "b3966d118be4ad1c1790f5b16bad6e6935bcac0bce9dbe7fff88dd34826cef4d",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.555159+00:00",
+          "ea_id": "QM5_20266",
+          "id": "36fb9510-f317-50e6-82cb-1b2c4cfb0f2d",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\sets\\QM5_20266_collins-66mom_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.555159+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "20919287-9589-58dd-95be-2fc109e44a86",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "bb6462c696c66c3800dbf85f66695ab25e909506a0aa97a66d4271c73db397ca",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "a1ce00c628808f38ec3c32b916cd309be8289ebe28e87ac2c2736b92d993da00",
+          "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12849_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "5c1085ce-b76a-594d-973e-6080e27711b1",
+          "receipt_sha256": "c04cd5468b8796d7e3f38549cf112fb9ed1404b31938456b26bb88314c55a420",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.591253+00:00",
+          "ea_id": "QM5_12849",
+          "id": "55bb0325-82fa-5551-a7c2-4d30b12f339d",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12849_brent-tsmom12m\\sets\\QM5_12849_brent-tsmom12m_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.591253+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "853e0d7f-3a0f-501a-83c6-c3478785f192",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "ec15c5d9cc192abc0fdaf49af3bd4c34c473444fecff9b1c5d915e1edfa38f43",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "33333afbbc6cf256590e8d718ee0fba503196f4f8c9d36dc21b9a711d55f2118",
+          "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_12855_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "a8b2dd82-ab11-5df9-a68b-f6da871d2995",
+          "receipt_sha256": "bf14aa8f2a8e01527ee59f12cd4f4f95f306469547e24835ca7f1f456b5fda8d",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.655420+00:00",
+          "ea_id": "QM5_12855",
+          "id": "bd8099d0-2707-5d51-8052-809bfdb8235b",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_12855_brent-nov-fade\\sets\\QM5_12855_brent-nov-fade_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.655420+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "f715a5a3-01f8-5c5e-9808-e24dd8d696e4",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "0a0ddc9f833161e20a42b989216058f6052dcefd5bf48f44c9edc5c10a1e81ac",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11660_NDX_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "3058f08bf3d21aba32e2436b5a1f3e62b95479174291aafaa6a7a18c0794aa01",
+          "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11660_NDX_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "de5b6176-82b5-5f62-bb28-a8ac47a63fe7",
+          "receipt_sha256": "f9e337844181837567a6a718daed9ebaa619e991f65662038cec49b2d4c224e4",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11660_NDX_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.688507+00:00",
+          "ea_id": "QM5_11660",
+          "id": "75105d17-5935-5a24-9193-a32bca1b5c5c",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11660_pp-wedge\\sets\\QM5_11660_pp-wedge_NDX.DWX_H4_backtest.set",
+          "status": "pending",
+          "symbol": "NDX.DWX",
+          "updated_at": "2026-09-09T12:43:36.688507+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "a27bb8b1-0bd0-5881-a76b-3afaed9cac10",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "9dfbb03fb9a353ecce9e0a0b087259791601763be8ca8884202ec933db433b0f",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "96ce3e49022bd067321b8d1cef583af02058981cc4f5ea04b5a1f5a8757f3bf6",
+          "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21505_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "540eadc0-4a99-5f0f-b69b-1601de434ab6",
+          "receipt_sha256": "13266c8965f9efbb83f6f2d861a13076caff5cb16abf40a8c91aa6f92144c189",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.725603+00:00",
+          "ea_id": "QM5_21505",
+          "id": "d1300053-2bcd-53f6-a342-058dd25f5500",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\sets\\QM5_21505_xag-weekly-lowvol-momentum_XAGUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAGUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.725603+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "8e31a41f-f6bd-5097-aca8-85c1b8178f08",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "55db8b4d8e1168c3e2ee8d6005e04119b551e8c9e3548bb61c35b6e1d74050d2",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "b19c7afba12f2fbcb7ea6cec497a5a9e9c5fcacf79afdac34442eda71b523b8e",
+          "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10403_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "559ec02f-af4e-5237-8467-df1683dcb8e8",
+          "receipt_sha256": "9d657f9197774e58453046b2fb98715576ecbe1718ef166ae35c5f782de46495",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.853937+00:00",
+          "ea_id": "QM5_10403",
+          "id": "f219cf51-9611-58cc-a968-132ab57f4813",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\sets\\QM5_10403_et-turtle20x_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.853937+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "a1903afa-141c-51c5-8881-1576c88fec50",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "ef124af0e8d3a400555e53a111358d64bec82c9298c6525f5301564d70f25c98",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "d74eee65e372c92cd18ac0a4c0d2b6b380639a9d8fe3eb64f8edf2014c18e4a9",
+          "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21502_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "264c5715-dfea-503f-9c98-0315624dfffc",
+          "receipt_sha256": "f0099d952d6c848311e581aedee38f6ff204e9da46684372ddb40454c6573e8b",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:36.899055+00:00",
+          "ea_id": "QM5_21502",
+          "id": "465ac7a9-91fb-585e-8a8c-26c18f0cd54a",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21502_xau-weekly-tsmom\\sets\\QM5_21502_xau-weekly-tsmom_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:36.899055+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "7251d342-dec6-5543-a446-e9888a571195",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "f727ea30ddc0d5b2be04b7cdc998f8cc3c5aba01b48bb227b095257c5f9c090c",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "340d5d10e6bc0c1a97710a3baa9eb739fc2678da52f7ba4a018d3b8204c2f05e",
+          "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10513_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1c4e28c2-63b0-527d-8ebc-cee9529c89ef",
+          "receipt_sha256": "75740cebd45913cebabdb76df3cb1e2ae077fd847097d99e3b626ee71c36a0c2",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:37.014355+00:00",
+          "ea_id": "QM5_10513",
+          "id": "039d7ca6-8308-5243-af30-ad6e18613a87",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10513_mql5-ichimoku\\sets\\QM5_10513_mql5-ichimoku_XAUUSD.DWX_D1_backtest_ablation_04.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:37.014355+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "51d2ea6e-31a2-523f-b846-977b53f04769",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "64027e0caaa136fd4b2244f5b06685425e19f713edffb2b20d8107d8bc373e96",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "c86b9440f1c4dd1f7a9accc07e9c2f6f1ebfd7f3c1aa92d80b37e65e17dc923d",
+          "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10145_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "5a109261-f52c-5ed8-9dd3-9edec460697a",
+          "receipt_sha256": "c04a1962ea3801fca600ef465ab169a965cbe59a96713998de3954b4b8fa376e",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:37.049446+00:00",
+          "ea_id": "QM5_10145",
+          "id": "cd29105f-4098-5f38-a4cd-6db3faeef650",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\sets\\QM5_10145_tsm-meanret_XAUUSD.DWX_D1_backtest_ablation_02.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:37.049446+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "fc6c6e9b-59eb-59fb-b5e0-888bd3ba14b2",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "9732400814d85b6e873df8197874d49030d9ba803931f3f9397465cf344816f8",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "887b842b29431402e705a3bedb91d46e40066af25d3c71fd6bfb6b2409040354",
+          "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_21507_XAUUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "99e7e9db-d9a7-514c-b78d-c14e98ebec5d",
+          "receipt_sha256": "44dd7f699b56eadd990f7a191a5f1ac81b915f2dbf0995e0cec6bc6c67d42e28",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:37.091555+00:00",
+          "ea_id": "QM5_21507",
+          "id": "9c29a061-2165-5300-a369-939efac3ec04",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_21507_qs-kama-trend-xau\\sets\\QM5_21507_qs-kama-trend-xau_XAUUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAUUSD.DWX",
+          "updated_at": "2026-09-09T12:43:37.091555+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "1383ba24-1dfc-5199-973a-defbcdcd5757",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "52f305d46933199e6103a8ede8b63580e8dc77aa25fb87c70916622ae681e423",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "0c950db4b6ff651020cb53edcc964263b99fa69fa68745f1e28334de3988d6d8",
+          "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_13054_XTIUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "a5b90e08-cf49-51ac-be59-1d4926da2363",
+          "receipt_sha256": "72fdfb6f6cc85169e0758dc1ed49d3c954a494aa8a911fcce850c4fc0d42f491",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:37.126647+00:00",
+          "ea_id": "QM5_13054",
+          "id": "082fb2d2-96ce-5953-845d-bee393478638",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\sets\\QM5_13054_brent-tom-mom_XTIUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XTIUSD.DWX",
+          "updated_at": "2026-09-09T12:43:37.126647+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "02625154-be35-5993-8ab0-315a6802b386",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "ca2e7bd3ea7fe6ff2fd411c80ebc40000d44146a232a43fe7a6bbb22d20c9cf5",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "a32501b68df2de98ac21e2d80a8a5edfe7d77b19d5a306cff1daa885f71491b6",
+          "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_1537_XAGUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c41e2606-3af1-5766-9bb7-18de8a763a18",
+          "receipt_sha256": "5db5bc0f7b6ab2a747389564550e382d6857a2e3778f8005b66c674202534661",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:37.159733+00:00",
+          "ea_id": "QM5_1537",
+          "id": "e55a7784-f8ae-558a-a445-349b862785f1",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1537_aa-vol-sma10\\sets\\QM5_1537_aa-vol-sma10_XAGUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "XAGUSD.DWX",
+          "updated_at": "2026-09-09T12:43:37.159733+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "b8ce00e4-96de-5c32-b64b-8bccd8bb43b9",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "d6101d0e6bc5e47d4decb0342c0cbeb9996c0d7bbb5419197e7a78527a1090a7",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "faa903d7a35ed0bfb778ad0392ebdb21745200508912f1b886dcac2db2109dec",
+          "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11881_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "d824e8cb-8397-5aa3-b6fa-fec9b0c375eb",
+          "receipt_sha256": "39033dd460433face1a4d6440878a1f864b85130660c2253c14c1449ca4435ee",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:37.203848+00:00",
+          "ea_id": "QM5_11881",
+          "id": "faf92b60-a2f1-5654-b49d-50086b20c2d2",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11881_connors-rsi2-mean-reversion\\sets\\QM5_11881_connors-rsi2-mean-reversion_GBPUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-09-09T12:43:37.203848+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "5de976b2-2d90-5d05-a7de-64f7c2958c65",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "5e35c1126ef81102122d1780d82efa82a6a3e2cfbeb51582711a9ec348f40068",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "210f77e644e7e7826e65b5f4570a15f20608204c1837628eda5d85df0aaa4e36",
+          "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11422_USDCAD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "f9e1f7fc-f92e-5399-9f7d-c7e83e940ce5",
+          "receipt_sha256": "744e6fec163465b8ba5fb76acf4ba0d3c92ed4988c4cb28a4e3da35c3f312601",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:37.585842+00:00",
+          "ea_id": "QM5_11422",
+          "id": "4602b9eb-4908-5609-be8d-2d97845851fc",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "USDCAD.DWX",
+          "updated_at": "2026-09-09T12:43:37.585842+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "a4134f6d-304d-53ad-aca1-d3bc9d3beca8",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "f7728ee2dd84f6266f76901e40c025e77e4bd19341eb15aaa908dd2efb06ccb0",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "5fa723685708100857f2d68de0b28fffd21511881c51cb76d446e8f691012372",
+          "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c4bc189b-372d-54c9-be45-046ac77b245b",
+          "receipt_sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:39.928939+00:00",
+          "ea_id": "QM5_11421",
+          "id": "0840d7a5-299f-5720-a0f9-9ca6e4c7c5ab",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-09-09T12:43:39.928939+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "34dd8f59-7b8f-5529-aa0c-b566b687eb8a",
+        "duplicate_receipt": {
+          "annual_cells_sha256": "a27d6d8d35fc2cfc96030265eadacaff620afbf5e3067e5b56065e29a14bef57",
+          "ledger_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\ledger.json",
+          "ledger_sha256": "8a0763c72fe92dbe931d54ba91a9890adf7615d0758c0b6c3de0e179c86b4346",
+          "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+          "receipt_sha256": "4286eb7f814f3a5b2568f50fd5a17edd2920c5e726048dd95419054a5223a688",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-09-09T12:43:41.101991+00:00",
+          "ea_id": "QM5_10706",
+          "id": "cb81c67c-801d-5e69-a8da-6cd881de3404",
+          "kind": "analytic",
+          "phase": "Q12",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-09-09T12:43:41.101991+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      }
+    ],
+    "q14_duplicates": [
+      {
+        "disposition_work_item_id": "63cc948a-6298-5ed4-89bf-98ae1ab0eb50",
+        "duplicate_receipt": {
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_10706_GBPUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "1a92b33e-e34f-532e-80b3-e0144f3b3755",
+          "receipt_sha256": "4286eb7f814f3a5b2568f50fd5a17edd2920c5e726048dd95419054a5223a688",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-08-29T08:10:44.470185+00:00",
+          "ea_id": "QM5_10706",
+          "id": "64604d7a-9bbe-561c-a70c-44667cdb2e12",
+          "kind": "analytic",
+          "phase": "Q14",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_q10_confirmation.set",
+          "status": "pending",
+          "symbol": "GBPUSD.DWX",
+          "updated_at": "2026-08-29T08:10:44.470185+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      },
+      {
+        "disposition_work_item_id": "f4eaf9c1-bfbb-5283-b879-0101205bf9c7",
+        "duplicate_receipt": {
+          "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\opt_census\\DL089_QM5_11421_EURUSD_DWX_2019_2025\\q12_selection_receipt.json",
+          "receipt_q12_work_item_id": "c4bc189b-372d-54c9-be45-046ac77b245b",
+          "receipt_sha256": "21d99280b1378ca09dea1c3826c685751dae062d81a854f6080498da923d1c99",
+          "verdict": "NO_FILTER_CHANGE"
+        },
+        "program_id": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+        "source_identity": {
+          "created_at": "2026-08-29T08:10:44.486306+00:00",
+          "ea_id": "QM5_11421",
+          "id": "f81a14df-14ef-5f15-b808-d19b8c13348c",
+          "kind": "analytic",
+          "phase": "Q14",
+          "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11421_ohlc-daily-squeeze-reversal-d1\\sets\\QM5_11421_ohlc-daily-squeeze-reversal-d1_EURUSD.DWX_D1_backtest.set",
+          "status": "pending",
+          "symbol": "EURUSD.DWX",
+          "updated_at": "2026-08-29T08:10:44.486306+00:00",
+          "verdict": null
+        },
+        "verdict": "SUPERSEDED_DUPLICATE_DECLARATION"
+      }
+    ],
+    "schema": "qm.dl089-zombie-declaration-disposition-plan/v1",
+    "scope": {
+      "q12_created_before": "2026-09-10T00:00:00+00:00",
+      "q12_expected_by_ticket": 73,
+      "q12_pending_before": 73,
+      "q14_expected_by_ticket": 2,
+      "q14_pending_before": 2
+    }
+  },
+  "content_sha256": "ec051a6a42b41d77c8bef18ebccdd7657bdac8a9c9c0cebb313f40feb9c60a39"
+}

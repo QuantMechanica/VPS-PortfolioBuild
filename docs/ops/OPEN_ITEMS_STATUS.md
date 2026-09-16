@@ -4925,6 +4925,12 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - PASS: CAL-05, CAL-06, CAL-09, and CAL-12 now carry thesis-specific `UNSOURCED` markers; the explicit raw-CSV versus bank-disposition rule explains CAL-05 folded into `PAPER_REFUTED` and CAL-06 retained as `UNDERPOWERED RESERVE`. Tally: 2 survivors, 1 reserve, 9 refuted, 3 data gaps across 15 IDs.
 - PASS: CAL-06 review draft records the approximately 1 trade/year/symbol ceiling below the Q02 floor of 5 trades/year and bounded widening options requiring preregistration/OWNER review. Docs-only; no card promotion, build, or state change. Evidence: `docs/ops/evidence/2026-09-17_calendar_seasonal_followup.md`.
 
+### 2026-09-17 — RESULT: DL-089 zombie-declaration guard and disposition plan
+
+- PASS: `dl089_matrix_service.py` now blocks only an already-adjudicated program whose completed receipt and annual census universe match exactly; changed or missing universes remain fail-closed and are not suppressed. Focused service tests: 19 passed.
+- PASS: read-only plan covers 57 safe Q12 duplicates and 2 Q14 duplicates with verdict `SUPERSEDED_DUPLICATE_DECLARATION`; 16 Q12 rows are explicitly excluded for missing receipts or changed/mismatched census universes. Source rows remain untouched. Plan SHA-256: `58fb570c9f4bb7667d3b099d224406066616fae1eb9b3bbb8416202c577e92da`.
+- APPLY PENDING explicit plan-SHA confirmation; no farm-state mutation was performed in this cycle. Evidence: `docs/ops/evidence/2026-09-13_dl089_zombie_declarations.md` and `docs/ops/evidence/2026-09-17_dl089_zombie_declaration_disposition_plan.json`.
+
 ### 2026-09-17 — RESULT: QM5_1627 / QM5_1628 governed identity precondition
 
 - PASS: exact-card orphan-identity recovery was added to the governed allocator, gated to explicit cards and exact active magic rows; focused allocator/resolver tests pass (23/23).

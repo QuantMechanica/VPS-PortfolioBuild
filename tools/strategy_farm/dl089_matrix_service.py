@@ -110,6 +110,74 @@ class MatrixServiceError(RuntimeError):
     """A DL-089 row cannot be safely serviced."""
 
 
+def _adjudicated_program_receipt(
+    *,
+    q12_row: Mapping[str, Any],
+    declaration: Mapping[str, Any],
+    artifact_root: Path,
+) -> dict[str, Any] | None:
+    """Return the prior adjudication only when the declared census is identical.
+
+    A completed receipt is not, by itself, permission to suppress a new
+    declaration: the annual-cell universe is the re-declaration boundary.
+    Missing, malformed, or changed ledgers fail open to the normal service
+    path, while an exact prior universe is treated as an already-adjudicated
+    duplicate.  The helper is read-only and deliberately does not inspect or
+    mutate the farm database.
+    """
+
+    program_id = str(declaration.get("program_id") or "")
+    if not program_id:
+        return None
+    program_dir = artifact_root / program_id
+    receipt_path = program_dir / "q12_selection_receipt.json"
+    ledger_path = program_dir / "ledger.json"
+    if not receipt_path.is_file() or not ledger_path.is_file():
+        return None
+    try:
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8-sig"))
+        ledger = json.loads(ledger_path.read_text(encoding="utf-8-sig"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    if receipt.get("schema") != "qm.dl089-q12-selection-receipt/v1":
+        return None
+    receipt_q12_id = str(receipt.get("q12_work_item_id") or "")
+    try:
+        row_id = q12_row["id"]
+    except (KeyError, IndexError):
+        row_id = None
+    if not receipt_q12_id or receipt_q12_id == str(row_id or ""):
+        return None
+    annual_cells = declaration.get("annual_cells")
+    ledger_cells = ledger.get("cells")
+    if not isinstance(annual_cells, list) or not isinstance(ledger_cells, list):
+        return None
+    ledger_annual_cells = [
+        {key: value for key, value in cell.items() if key != "setfile_path"}
+        for cell in ledger_cells
+        if isinstance(cell, Mapping)
+    ]
+    observed_annual_sha = _sha256_bytes(_canonical_bytes(ledger_annual_cells))
+    declared_annual_sha = str(declaration.get("annual_cells_sha256") or "")
+    computed_declared_sha = _sha256_bytes(_canonical_bytes(annual_cells))
+    if (
+        not declared_annual_sha
+        or computed_declared_sha != declared_annual_sha
+        or observed_annual_sha != declared_annual_sha
+    ):
+        return None
+    return {
+        "program_id": program_id,
+        "receipt_path": str(receipt_path.resolve()),
+        "receipt_sha256": _sha256_file(receipt_path),
+        "receipt_q12_work_item_id": receipt_q12_id,
+        "ledger_path": str(ledger_path.resolve()),
+        "ledger_sha256": _sha256_file(ledger_path),
+        "annual_cells_sha256": declared_annual_sha,
+        "verdict": receipt.get("verdict"),
+    }
+
+
 def _measurement_source_base_setfile(
     ea_dir: Path, label: str, symbol: str, timeframe: str
 ) -> Path:
@@ -1506,6 +1574,15 @@ def service_pending(
                 # guard; until then release_on_restart keeps old residents out.
                 _ensure_rollout_hold(conn, str(row["id"]), apply=True)
             declaration = payload["pattern_filter_sweep"]
+            prior_receipt = _adjudicated_program_receipt(
+                q12_row=row, declaration=declaration, artifact_root=artifact_root
+            )
+            if prior_receipt is not None:
+                raise MatrixServiceError(
+                    "DL089_DUPLICATE_ADJUDICATED_PROGRAM: "
+                    f"program={prior_receipt['program_id']} "
+                    f"receipt_q12={prior_receipt['receipt_q12_work_item_id']}"
+                )
             if payload.get("legacy_census_recovery"):
                 try:
                     from tools.strategy_farm.dl089_legacy_adoption import authenticate

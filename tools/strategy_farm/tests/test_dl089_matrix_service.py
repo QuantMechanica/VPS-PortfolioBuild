@@ -26,6 +26,63 @@ def _sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def test_adjudicated_program_receipt_requires_identical_annual_universe(
+    tmp_path: Path,
+) -> None:
+    artifact_root = tmp_path / "opt_census"
+    program_id = "DL089_QM5_10001_EURUSD_DWX_2019_2025"
+    program_dir = artifact_root / program_id
+    program_dir.mkdir(parents=True)
+    annual_cells = [
+        {"cell_key": f"{program_id}:2019:baseline", "year": 2019},
+        {"cell_key": f"{program_id}:2020:baseline", "year": 2020},
+    ]
+    ledger_cells = [dict(cell, setfile_path="fixture.set") for cell in annual_cells]
+    ledger = {"cells": ledger_cells, "q12_declaration_sha256": "old-declaration"}
+    (program_dir / "ledger.json").write_text(
+        json.dumps(ledger, sort_keys=True), encoding="utf-8"
+    )
+    (program_dir / "q12_selection_receipt.json").write_text(
+        json.dumps(
+            {
+                "schema": "qm.dl089-q12-selection-receipt/v1",
+                "q12_work_item_id": "prior-q12",
+                "verdict": "NO_FILTER_CHANGE",
+            }
+        ),
+        encoding="utf-8",
+    )
+    declaration = {
+        "program_id": program_id,
+        "annual_cells": annual_cells,
+        "annual_cells_sha256": service._sha256_bytes(
+            service._canonical_bytes(annual_cells)
+        ),
+    }
+    row = {"id": "new-q12"}
+
+    prior = service._adjudicated_program_receipt(
+        q12_row=row, declaration=declaration, artifact_root=artifact_root
+    )
+    assert prior is not None
+    assert prior["receipt_q12_work_item_id"] == "prior-q12"
+
+    changed_cells = annual_cells + [{"year": 2021}]
+    changed = {
+        **declaration,
+        "annual_cells": changed_cells,
+        "annual_cells_sha256": service._sha256_bytes(
+            service._canonical_bytes(changed_cells)
+        ),
+    }
+    assert (
+        service._adjudicated_program_receipt(
+            q12_row=row, declaration=changed, artifact_root=artifact_root
+        )
+        is None
+    )
+
+
 def _sibling(repo: Path) -> dict[str, Path]:
     label = "QM5_41161_tv-mon-ls-opt"
     ea_dir = repo / "framework" / "EAs" / label
