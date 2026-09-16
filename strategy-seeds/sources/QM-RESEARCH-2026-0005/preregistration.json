@@ -1,0 +1,131 @@
+{
+  "created_at": "2026-09-16T04:54:10+00:00",
+  "discovery_sample": {
+    "campaign": "deterministic universe map of the farm's exercised universe (14,939 ea_id x symbol pairs; directive sec19/sec47 white-space projector)",
+    "instruments": [
+      "EURUSD",
+      "GBPUSD",
+      "USDJPY"
+    ],
+    "period": "farm work_items at Q02+ through 2026-09-16"
+  },
+  "expected_behaviour": "Bounded by one entry per symbol per session window (2 windows/day) and the max_trades_per_day cap: roughly 18-28 trades/month/symbol, about 55-85 trades/month across the three FX symbols, with at least 15 active days/month. Zero overnight exposure (swap ~ 0, no gap-through-stop); daily circuit breaker -1.0% and weekly -2.0% stop trading; session-flat by london_flat_min_utc / ny_flat_min_utc.",
+  "failure_criteria": "Killed if: OOS holdout net profit factor < 1.20 after costs or expectancy < +0.10R/trade; Monte-Carlo P(hit -5% daily limit within 60d) > 2% or simulated worst-day p95 > 2.5% of equity at 0.25% risk; realized swap/rollover cost > 10% of gross P&L; more than half of the +/-1-step parameter neighbourhood shows negative expectancy; any single month has < 10 active days; the per-day trade cap must be raised above 6 to clear the activity floor; or session-flat FX mean reversion does not reduce worst-day loss or breach probability relative to the FX swing baseline out of sample.",
+  "holdout_logic": "Discovery consumed only the deterministic universe map projection. 2021-2024 is a frozen holdout: no metric, parameter selection, or kill decision may read it before the preregistered validation pass; any post-observation modification mints a new lineage version with a parent link (directive sec16 R-B).",
+  "hypothesis": "Session-flat FX session mean reversion (H-FXMR): major FX pairs (EURUSD/GBPUSD/USDJPY) exhibit short-horizon overextension-reversion during the London (07-11 UTC) and New York (12-16 UTC) session windows. Entering on the M15 close back through a short EMA after an N-bar stretch (>= stretch_bars consecutive same-direction closes or close-vs-EMA distance > stretch_atr_mult x ATR), in the reversion direction, with the stop at the stretch extreme plus an ATR buffer, a fixed 1.0-1.5R target, a bounded time stop, a per-day trade cap and a mandatory session-flat flatten, yields positive out-of-sample expectancy while reducing worst-day loss and breach probability relative to the farm's FX swing baseline, with zero overnight exposure (swap ~ 0).",
+  "known_risks": "White-space motivation is not a pass record (universe map covers the exercised universe only; FX session rows there are nearly empty); FX news flow (ECB/BoE/BoJ/Fed) can gap stops inside a window; M15 mean reversion is regime-sensitive on trending macro days; .DWX modeled spreads near zero make the spread-median filter data-sensitive; news blackout depends on the MT5 native calendar being present and fresh; UTC/broker session mapping drifts across DST unless anchored via QM_DSTAware; high density sits near the scalp class boundary and is capped by max_trades_per_day.",
+  "mechanical_spec_sha256": "9d1c56c2a18703305690c66926c255fd69450c8035667b54051b4f60e84f8583",
+  "parameter_count": 24,
+  "parameter_ranges": {
+    "atr_period": [
+      10,
+      20
+    ],
+    "daily_stop_pct": [
+      -1.0,
+      -1.0
+    ],
+    "ema_period": [
+      10,
+      20
+    ],
+    "friday_cutoff_min_utc": [
+      780,
+      900
+    ],
+    "london_end_hour_utc": [
+      10,
+      12
+    ],
+    "london_flat_min_utc": [
+      660,
+      720
+    ],
+    "london_start_hour_utc": [
+      7,
+      8
+    ],
+    "max_positions_total": [
+      2,
+      4
+    ],
+    "max_stop_atr": [
+      1.5,
+      2.5
+    ],
+    "max_trades_per_day": [
+      2,
+      6
+    ],
+    "news_blackout_minutes": [
+      0,
+      120
+    ],
+    "ny_end_hour_utc": [
+      15,
+      16
+    ],
+    "ny_flat_min_utc": [
+      960,
+      1020
+    ],
+    "ny_start_hour_utc": [
+      12,
+      13
+    ],
+    "risk_per_trade_pct": [
+      0.2,
+      0.5
+    ],
+    "shock_atr_mult": [
+      1.5,
+      2.5
+    ],
+    "skip_first_minutes": [
+      0,
+      30
+    ],
+    "spread_median_mult": [
+      1.25,
+      1.75
+    ],
+    "stop_buffer_atr": [
+      0.1,
+      0.5
+    ],
+    "stretch_atr_mult": [
+      0.5,
+      1.5
+    ],
+    "stretch_bars": [
+      2,
+      4
+    ],
+    "target_r": [
+      1.0,
+      1.5
+    ],
+    "time_stop_bars": [
+      8,
+      16
+    ],
+    "weekly_stop_pct": [
+      -2.0,
+      -2.0
+    ]
+  },
+  "parent_version": null,
+  "record_sha256": "c408f534bc8825783d44487dd51def684227955988b680fbd4228d4578027475",
+  "research_id": "QM-RESEARCH-2026-0005",
+  "schema": "qm.research-preregistration/v1",
+  "success_criteria": "OOS holdout net profit factor >= 1.20 after costs AND expectancy >= +0.10R/trade; Monte-Carlo P(hit -5% daily limit within 60d) <= 2% and simulated worst-day p95 <= 2.5% of equity at 0.25% risk; realized swap/rollover cost <= 10% of gross P&L; more than half of the +/-1-step parameter neighbourhood shows non-negative expectancy; every month has >= 10 active days; edge must not depend on a single symbol or a single session window.",
+  "validation_sample": {
+    "instruments": [
+      "EURUSD",
+      "GBPUSD",
+      "USDJPY"
+    ],
+    "period": "2021-2024 held-out; never touched during discovery"
+  },
+  "version": 1
+}

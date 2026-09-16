@@ -1,0 +1,63 @@
+{
+  "author": "Kimi",
+  "candidate_edge": "H-FXMR: short-duration FX session mean reversion on EURUSD/GBPUSD/USDJPY, M15, session-flat, stretch-extreme stopped, daily-breaker-bounded, capped density.",
+  "computed_outputs": [
+    {
+      "claim_ref": "FXMR_whitespace",
+      "description": "deterministic universe map of all 14,939 exercised ea_id x symbol pairs (mechanism family x holding class x session x symbol class x style x frequency x FTMO profile); FX mean-reversion coverage and high-density FTMO-fit counts",
+      "file": "universe_map_result.json",
+      "sha256": "7f36343a2c3d80a3265cfa9e3ee5dc0235651b4a71a0c057ff777c50d462c118"
+    }
+  ],
+  "confidence": "medium-low (mechanically sound canonical density engine for a verified white-space cell; no farm Q10 pass record behind this specific FX cell; pipeline Q00-Q17 remains the judge)",
+  "confounders": [
+    "universe map covers the exercised universe only; unfarmed FX intraday rows are motivation, not proof",
+    "session-unspecified rows dominate the map (14,285 of 14,939 pairs), so white-space reads are upper bounds",
+    "multiple testing across the QM-RESEARCH-2026-0002 candidate series",
+    "FX news flow (ECB/BoE/BoJ/Fed speakers) can gap stops inside a session window",
+    "M15 mean-reversion edge is regime-sensitive around trending macro days"
+  ],
+  "created_utc": "2026-09-16T06:55:00+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "critic_receipt_status": "PENDING (non-Kimi critic gated: claude disabled until 2026-09-17, codex on hold until 2026-09-19, agy quota-dead; review_status REVIEW_PENDING)",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "kimi-code/kimi-for-coding",
+  "observations": "OWNER-delegated second FTMO-gap candidate (successor to QM-RESEARCH-2026-0002 / QM5_41475 H-CW). The deterministic universe map of the farm's exercised universe shows the high-density FTMO-fit class at 128 pairs (0.86% of 14,939), zero FTMO incumbents in every FX cell, and session-specified FX intraday/scalp mean-reversion coverage of 8 pairs (also 0 FTMO incumbents): the FTMO book has no high-density, short-holding, low-swap FX sleeve. FX intraday mean reversion in the liquid London/New York windows is the canonical density engine for that cell. No offline statistical instrument was used for this candidate; the map is a deterministic projector and the candidate is mechanized directly from the structural cause.",
+  "originating_task_id": "owner-delegation-h-fxmr-20260916",
+  "proposed_mechanism": "Session-flat FX mean reversion: during the London (07-11 UTC) and New York (12-16 UTC) windows, major FX pairs exhibit short-horizon overextension-reversion - a run of consecutive same-direction M15 closes or an EMA stretch beyond k x ATR is resolved by a close back through a short EMA. Entering on the reclaim, stopping beyond the stretch extreme, targeting a fixed 1.0-1.5R, time-stopping within 8-16 bars and flattening before each session close yields positive out-of-sample expectancy with zero overnight exposure (swap ~ 0).",
+  "quantitative_claims": [
+    {
+      "claim": "The farm's exercised universe is 14,939 ea_id x symbol pairs; the whole high-density FTMO-fit class is 128 pairs = 0.86% of the universe (directive_answers.high_density_ftmo_systems).",
+      "computed_output_ref": "FXMR_whitespace",
+      "value": 0.86
+    },
+    {
+      "claim": "Every FX cell of the universe map carries 0 FTMO incumbents (totals.ftmo_incumbent = 8, all outside FX) - the FTMO book holds no FX sleeve of any density.",
+      "computed_output_ref": "FXMR_whitespace",
+      "value": 0
+    },
+    {
+      "claim": "Session-specified FX intraday/scalp mean-reversion coverage is 8 pairs of 531 FX mean-reversion pairs (london fx_major 5, asian fx_major 2, london fx_jpy 1, ny 0) - the session-windowed FX mean-reversion cell the candidate targets is effectively empty.",
+      "computed_output_ref": "FXMR_whitespace",
+      "value": 8
+    }
+  ],
+  "related_strategies": [
+    "QM5_41475 cash-window-index-continuation-h1 (H-CW sibling; index-intraday continuation)",
+    "QM-RESEARCH-2026-0002 (parent FTMO-gap series)"
+  ],
+  "research_id": "QM-RESEARCH-2026-0005",
+  "research_question": "What mechanical edge fills the FTMO book's high-density, short-holding, low-swap FX white space? (OWNER master directive 2026-09-15 sec19/sec47; interim OWNER_DIRECT_SESSION_DELEGATION to Kimi 2026-09-16)",
+  "research_trial_count": 1,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "fx-session-mean-reversion",
+  "source_datasets": [
+    {
+      "dataset_id": null,
+      "description": "deterministic read-only projection of farm_state.sqlite (work_items at Q02+); universe map schema qm.strategy-universe-map/v1, inputs_sha256 embedded",
+      "path": "universe_map_result.json",
+      "sha256": "7f36343a2c3d80a3265cfa9e3ee5dc0235651b4a71a0c057ff777c50d462c118"
+    }
+  ]
+}

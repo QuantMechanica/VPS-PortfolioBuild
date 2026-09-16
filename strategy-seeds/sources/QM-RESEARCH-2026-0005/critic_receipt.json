@@ -1,0 +1,25 @@
+{
+  "chain_id": "",
+  "critic_fallback_used": false,
+  "critic_seat_final": "",
+  "critic_verdict": "",
+  "finding_counts": {},
+  "generated_at_utc": "",
+  "plan": {
+    "creator": {
+      "model": "",
+      "vendor": ""
+    },
+    "critic": {
+      "model": "",
+      "vendor": ""
+    }
+  },
+  "receipt_path": "",
+  "repo_write": false,
+  "schema": "qm.agent-chain.receipt.v1",
+  "scope_drift": false,
+  "stages": [],
+  "status": "PENDING",
+  "status_note": "Placeholder scaffold only (research_source.mint). A non-Kimi cross-vendor critic run is required before this source may leave draft/review-pending: claude disabled until 2026-09-17, codex on hold until 2026-09-19, agy quota-dead (OWNER_DIRECT_SESSION_DELEGATION to Kimi 2026-09-16, review_status REVIEW_PENDING). research_source.verify correctly fails closed on the empty required fields until the real receipt replaces this file."
+}
