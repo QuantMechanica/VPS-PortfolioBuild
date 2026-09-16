@@ -1,0 +1,10 @@
+FRESH-ENQUEUE PREFLIGHT (read-only mirror of enqueue_cascade_backtest_for_ea gates)
+7bc8b34e QM5_1159 NDX.DWX Q07=c10e8ca8(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+d4aebc12 QM5_10804 GDAXI.DWX Q07=4a4f3fec(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+383c45b0 QM5_10661 GDAXI.DWX Q07=78cd0453(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+20c533da QM5_10211 NDX.DWX Q07=dc60a354(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+a937b9bc QM5_12958 GDAXI.DWX Q07=63c2be07(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+15fed5d8 QM5_9123 NDX.DWX Q07=9834b27e(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+aa0fa828 QM5_10291 NDX.DWX Q07=dfad1213(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+94d46fe7 QM5_10267 NDX.DWX Q07=68d632bd(done/PASS) setfile_exists=True artifact_failure=None bindings_ok=True
+ALL PREFLIGHT GATES PASS

@@ -1,0 +1,66 @@
+{
+  "7bc8b34e": {
+    "id": "7bc8b34e-afe9-4d30-b90d-2e70e2f94ef5",
+    "ea_id": "QM5_1159",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  },
+  "d4aebc12": {
+    "id": "d4aebc12-d2a7-4145-912c-8bc7bd5d363b",
+    "ea_id": "QM5_10804",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  },
+  "383c45b0": {
+    "id": "383c45b0-5452-4b43-9397-28273202f946",
+    "ea_id": "QM5_10661",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  },
+  "20c533da": {
+    "id": "20c533da-a745-4dc0-978d-c3dc74e45689",
+    "ea_id": "QM5_10211",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  },
+  "a937b9bc": {
+    "id": "a937b9bc-2590-4f7c-b799-5e6b1f75c78f",
+    "ea_id": "QM5_12958",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  },
+  "15fed5d8": {
+    "id": "15fed5d8-3c9c-4da2-abe1-e943f2156236",
+    "ea_id": "QM5_9123",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  },
+  "aa0fa828": {
+    "id": "aa0fa828-5609-4bf6-8e76-bfe813896c10",
+    "ea_id": "QM5_10291",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  },
+  "94d46fe7": {
+    "id": "94d46fe7-3298-43a6-9663-632d45ca7896",
+    "ea_id": "QM5_10267",
+    "precheck": {
+      "claimable": false,
+      "reason": "SINGLE_CONFIGURATION_UNAVAILABLE:BUILD_IDENTITY_MISMATCH:mq5"
+    }
+  }
+}

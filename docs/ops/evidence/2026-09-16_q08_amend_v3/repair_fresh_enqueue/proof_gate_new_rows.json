@@ -1,0 +1,203 @@
+{
+  "7bc8b34e": {
+    "ea_id": "QM5_1159",
+    "symbol": "NDX.DWX",
+    "new_id": "61ddcbdd-b632-4115-957d-1f0dceb67a03",
+    "new_status": "done",
+    "new_verdict": "FAIL_HARD",
+    "q07_id": "c10e8ca8-5173-4b82-877e-f9837d3f7875",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 15,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "d4aebc12": {
+    "ea_id": "QM5_10804",
+    "symbol": "GDAXI.DWX",
+    "new_id": "333f014b-38da-4ae0-8d5e-ccc1944569ac",
+    "new_status": "active",
+    "new_verdict": null,
+    "q07_id": "4a4f3fec-1b2c-4cdd-904a-dcde59b009e2",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 44,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "383c45b0": {
+    "ea_id": "QM5_10661",
+    "symbol": "GDAXI.DWX",
+    "new_id": "8d04ca70-d8fa-4c8e-bc89-25f334fe8df4",
+    "new_status": "pending",
+    "new_verdict": null,
+    "q07_id": "78cd0453-e907-456b-a883-0c86834e08c3",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 46,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "20c533da": {
+    "ea_id": "QM5_10211",
+    "symbol": "NDX.DWX",
+    "new_id": "1d575bfc-6583-48fb-bc78-c9884c91674d",
+    "new_status": "pending",
+    "new_verdict": null,
+    "q07_id": "dc60a354-a577-4534-9525-532d274dd50f",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 17,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "a937b9bc": {
+    "ea_id": "QM5_12958",
+    "symbol": "GDAXI.DWX",
+    "new_id": "d5a17dbf-3b54-4d4c-a455-0ba05c211894",
+    "new_status": "pending",
+    "new_verdict": null,
+    "q07_id": "63c2be07-4bc3-4415-8c44-f158a274a83d",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 24,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "15fed5d8": {
+    "ea_id": "QM5_9123",
+    "symbol": "NDX.DWX",
+    "new_id": "35ca4b36-7ebf-4d07-9ac5-9a1d3527be6d",
+    "new_status": "pending",
+    "new_verdict": null,
+    "q07_id": "9834b27e-f015-451b-81b5-f0745536c16b",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 75,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "aa0fa828": {
+    "ea_id": "QM5_10291",
+    "symbol": "NDX.DWX",
+    "new_id": "e8377ff0-71ae-495a-a5f2-8ca5d0f16800",
+    "new_status": "pending",
+    "new_verdict": null,
+    "q07_id": "dfad1213-a043-4512-bfa9-bb04ccc9e10b",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 455,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "94d46fe7": {
+    "ea_id": "QM5_10267",
+    "symbol": "NDX.DWX",
+    "new_id": "93ac0ce2-771e-4874-b1bf-59c226333423",
+    "new_status": "pending",
+    "new_verdict": null,
+    "q07_id": "68d632bd-e671-4a46-81ac-1900385702e3",
+    "a_card_hash_ok": true,
+    "b_declaration_ok": true,
+    "b_decl_err": [],
+    "c_precheck": {
+      "claimable": true,
+      "reason": null
+    },
+    "identity_bound_to_current": true,
+    "lineage_ok": true,
+    "d_factory_search_clean": true,
+    "d_work_items_examined": 65,
+    "old_row": {
+      "status": "pending",
+      "verdict": null,
+      "disposition": "SUPERSEDED_REPAIR"
+    }
+  },
+  "_summary": {
+    "a_card_hashes_PASS": true,
+    "b_declaration_PASS": true,
+    "c_precheck_claimable_PASS": true,
+    "d_factory_search_clean_PASS": true,
+    "identity_bound_PASS": true,
+    "lineage_PASS": true,
+    "checked_at_utc": "2026-09-16T07:11:01.546412+00:00"
+  }
+}

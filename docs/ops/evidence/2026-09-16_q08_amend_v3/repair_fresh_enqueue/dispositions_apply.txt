@@ -1,0 +1,9 @@
+APPLY A 7bc8b34e QM5_1159 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A d4aebc12 QM5_10804 GDAXI.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A 383c45b0 QM5_10661 GDAXI.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A 20c533da QM5_10211 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A a937b9bc QM5_12958 GDAXI.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A 15fed5d8 QM5_9123 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A aa0fa828 QM5_10291 NDX.DWX pending None | superseded already: False | hold: False | release: False
+APPLY A 94d46fe7 QM5_10267 NDX.DWX pending None | superseded already: False | hold: False | release: False
+applied 8 dispositions; receipt C:\QM\repo\docs\ops\evidence\2026-09-16_q08_amend_v3\repair_fresh_enqueue\dispositions_receipt.json

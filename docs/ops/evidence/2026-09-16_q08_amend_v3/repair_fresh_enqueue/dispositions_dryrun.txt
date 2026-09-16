@@ -1,0 +1,9 @@
+PLAN  A 7bc8b34e QM5_1159 NDX.DWX pending None | superseded already: False | hold: False | release: False
+PLAN  A d4aebc12 QM5_10804 GDAXI.DWX pending None | superseded already: False | hold: False | release: False
+PLAN  A 383c45b0 QM5_10661 GDAXI.DWX pending None | superseded already: False | hold: False | release: False
+PLAN  A 20c533da QM5_10211 NDX.DWX pending None | superseded already: False | hold: False | release: False
+PLAN  A a937b9bc QM5_12958 GDAXI.DWX pending None | superseded already: False | hold: False | release: False
+PLAN  A 15fed5d8 QM5_9123 NDX.DWX pending None | superseded already: False | hold: False | release: False
+PLAN  A aa0fa828 QM5_10291 NDX.DWX pending None | superseded already: False | hold: False | release: False
+PLAN  A 94d46fe7 QM5_10267 NDX.DWX pending None | superseded already: False | hold: False | release: False
+dry-run: 8 dispositions would be written

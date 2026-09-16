@@ -1,0 +1,107 @@
+{
+  "captured_at_utc": "2026-09-16T07:22:41.795133+00:00",
+  "farm_q08_context": {
+    "note": "~2 concurrent Q08 slots, 59 pending Q08 farm-wide; 6 remaining rows queued (claimable, not refused)"
+  },
+  "claims_with_terminal_attributed": 2,
+  "rows": {
+    "7bc8b34e": {
+      "old_prefix": "7bc8b34e",
+      "new_id": "61ddcbdd-b632-4115-957d-1f0dceb67a03",
+      "ea_id": "QM5_1159",
+      "symbol": "NDX.DWX",
+      "q07_id": "c10e8ca8-5173-4b82-877e-f9837d3f7875",
+      "status": "done",
+      "verdict": "FAIL_HARD",
+      "terminal": "T2",
+      "pid": null,
+      "claim_capture": "run-summary(complete)",
+      "pid_source": "completed before poll; MT5 T2 process ended; terminal=T2 from run summary.json"
+    },
+    "d4aebc12": {
+      "old_prefix": "d4aebc12",
+      "new_id": "333f014b-38da-4ae0-8d5e-ccc1944569ac",
+      "ea_id": "QM5_10804",
+      "symbol": "GDAXI.DWX",
+      "q07_id": "4a4f3fec-1b2c-4cdd-904a-dcde59b009e2",
+      "status": "active",
+      "verdict": null,
+      "terminal": "T10",
+      "pid": 20372,
+      "claim_capture": "live",
+      "pid_source": "mt5-slots T10 process command_line: D:\\QM\\mt5\\T10\terminal64.exe /config ...\\pipeline\\QM5_10804\u008260916_072200\\...\tester.ini"
+    },
+    "383c45b0": {
+      "old_prefix": "383c45b0",
+      "new_id": "8d04ca70-d8fa-4c8e-bc89-25f334fe8df4",
+      "ea_id": "QM5_10661",
+      "symbol": "GDAXI.DWX",
+      "q07_id": "78cd0453-e907-456b-a883-0c86834e08c3",
+      "status": "pending",
+      "verdict": null,
+      "terminal": null,
+      "pid": null,
+      "claim_capture": "pending-claimable(queued)"
+    },
+    "20c533da": {
+      "old_prefix": "20c533da",
+      "new_id": "1d575bfc-6583-48fb-bc78-c9884c91674d",
+      "ea_id": "QM5_10211",
+      "symbol": "NDX.DWX",
+      "q07_id": "dc60a354-a577-4534-9525-532d274dd50f",
+      "status": "pending",
+      "verdict": null,
+      "terminal": null,
+      "pid": null,
+      "claim_capture": "pending-claimable(queued)"
+    },
+    "a937b9bc": {
+      "old_prefix": "a937b9bc",
+      "new_id": "d5a17dbf-3b54-4d4c-a455-0ba05c211894",
+      "ea_id": "QM5_12958",
+      "symbol": "GDAXI.DWX",
+      "q07_id": "63c2be07-4bc3-4415-8c44-f158a274a83d",
+      "status": "pending",
+      "verdict": null,
+      "terminal": null,
+      "pid": null,
+      "claim_capture": "pending-claimable(queued)"
+    },
+    "15fed5d8": {
+      "old_prefix": "15fed5d8",
+      "new_id": "35ca4b36-7ebf-4d07-9ac5-9a1d3527be6d",
+      "ea_id": "QM5_9123",
+      "symbol": "NDX.DWX",
+      "q07_id": "9834b27e-f015-451b-81b5-f0745536c16b",
+      "status": "pending",
+      "verdict": null,
+      "terminal": null,
+      "pid": null,
+      "claim_capture": "pending-claimable(queued)"
+    },
+    "aa0fa828": {
+      "old_prefix": "aa0fa828",
+      "new_id": "e8377ff0-71ae-495a-a5f2-8ca5d0f16800",
+      "ea_id": "QM5_10291",
+      "symbol": "NDX.DWX",
+      "q07_id": "dfad1213-a043-4512-bfa9-bb04ccc9e10b",
+      "status": "pending",
+      "verdict": null,
+      "terminal": null,
+      "pid": null,
+      "claim_capture": "pending-claimable(queued)"
+    },
+    "94d46fe7": {
+      "old_prefix": "94d46fe7",
+      "new_id": "93ac0ce2-771e-4874-b1bf-59c226333423",
+      "ea_id": "QM5_10267",
+      "symbol": "NDX.DWX",
+      "q07_id": "68d632bd-e671-4a46-81ac-1900385702e3",
+      "status": "pending",
+      "verdict": null,
+      "terminal": null,
+      "pid": null,
+      "claim_capture": "pending-claimable(queued)"
+    }
+  }
+}

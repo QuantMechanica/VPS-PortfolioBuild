@@ -1,0 +1,35 @@
+{
+  "all_unchanged": true,
+  "rows": {
+    "QM5_10145": {
+      "label": "QM5_10145_tsm-meanret",
+      "baseline_sha": "14e394fbfa44316046a05c6b3bc083c688f9ade8be024e924dc7de2249f6e5c6",
+      "live_sha": "14e394fbfa44316046a05c6b3bc083c688f9ade8be024e924dc7de2249f6e5c6",
+      "unchanged": true
+    },
+    "QM5_12350": {
+      "label": "QM5_12350_spec-ema20-40",
+      "baseline_sha": "6c11196b6280c6036bbba57aa0bb926f3ca462e36dc6d3be8acaa1a247be059a",
+      "live_sha": "6c11196b6280c6036bbba57aa0bb926f3ca462e36dc6d3be8acaa1a247be059a",
+      "unchanged": true
+    },
+    "QM5_12361": {
+      "label": "QM5_12361_tmom-ibs",
+      "baseline_sha": "d936e4291a7a021afcb45b34bd6a2b81356f8a71b3798263c29d0ef5815a6912",
+      "live_sha": "d936e4291a7a021afcb45b34bd6a2b81356f8a71b3798263c29d0ef5815a6912",
+      "unchanged": true
+    },
+    "QM5_1551": {
+      "label": "QM5_1551_demark-td-range-projection-h4",
+      "baseline_sha": "af7a55c6659982d27e437f1c7c7c6dcd9f9663ec9847035fde13955206a73d11",
+      "live_sha": "af7a55c6659982d27e437f1c7c7c6dcd9f9663ec9847035fde13955206a73d11",
+      "unchanged": true
+    },
+    "QM5_12484": {
+      "label": "QM5_12484_shv-ma-cross",
+      "baseline_sha": "8a6f0afb19b2262c1ba7465f20c3d392dbeda4e93137f3c0a86a276b8e7a62e7",
+      "live_sha": "8a6f0afb19b2262c1ba7465f20c3d392dbeda4e93137f3c0a86a276b8e7a62e7",
+      "unchanged": true
+    }
+  }
+}

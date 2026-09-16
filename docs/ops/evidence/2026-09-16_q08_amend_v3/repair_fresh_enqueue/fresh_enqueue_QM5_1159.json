@@ -1,0 +1,19 @@
+{
+  "created": [
+    {
+      "id": "61ddcbdd-b632-4115-957d-1f0dceb67a03",
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_1159_qp-spy-overnight-ma20\\sets\\QM5_1159_qp-spy-overnight-ma20_NDX.DWX_D1_backtest.set",
+      "symbol": "NDX.DWX"
+    }
+  ],
+  "ea_id": "QM5_1159",
+  "enqueued": true,
+  "next_action_hint": "Pump/dispatch-tick will claim pending work_items.",
+  "phase": "Q08",
+  "previous_phase": "Q07",
+  "requeued": [],
+  "skipped": [],
+  "skipped_cache_history_count": 0,
+  "skipped_count": 0,
+  "skipped_missing_setfiles_count": 0
+}
