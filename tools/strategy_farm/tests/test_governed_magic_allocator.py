@@ -298,6 +298,75 @@ def test_missing_exact_identity_and_magic_are_allocated_in_one_governed_write(
     assert magic_after[-1]["magic"] == "60000"
 
 
+def test_explicit_orphan_identity_recovery_adds_only_identity_row(
+    tmp_path: Path,
+) -> None:
+    repo = _fixture_repo(tmp_path)
+    item = _candidate(repo, 6, "orphan-recovery", "exact_card", ("EURUSD.DWX",))
+    item = allocator.Candidate(
+        item.ea_id,
+        item.slug,
+        item.stage,
+        item.directory,
+        item.card,
+        item.symbols,
+        item.symbol_policy,
+        "source-orphan-recovery",
+    )
+    _, identity_rows = allocator._read_csv(repo / allocator.EA_ID_REGISTRY)
+    magic = {
+        "ea_id": "6",
+        "ea_slug": "orphan-recovery",
+        "symbol_slot": "0",
+        "symbol": "EURUSD.DWX",
+        "magic": "60000",
+        "reserved_at": "x",
+        "reserved_by": "Gemini",
+        "status": "active",
+    }
+    _write_csv(repo / allocator.MAGIC_REGISTRY, allocator.MAGIC_FIELDS, [magic])
+    plan = allocator.build_plan(
+        repo,
+        [item],
+        allocator._active_ea_registry(repo / allocator.EA_ID_REGISTRY),
+        [magic],
+        max_eas=1,
+        ea_registry_rows=identity_rows,
+        recover_orphan_identities=True,
+    )
+
+    assert plan["identity_only_ids"] == [6]
+    assert plan["decisions"][0]["action"] == "allocate_identity_only"
+
+    def regenerate(_: Path) -> None:
+        _resolver(repo / allocator.MAGIC_RESOLVER, [(6, 0, "EURUSD.DWX", 60000)])
+
+    result = allocator.apply_plan(
+        repo,
+        plan,
+        allocator.MAGIC_FIELDS,
+        [magic],
+        regenerate=regenerate,
+    )
+
+    assert result["identity_ids_added"] == ["QM5_6"]
+    assert result["allocated_rows"] == 0
+    _, identities_after = allocator._read_csv(repo / allocator.EA_ID_REGISTRY)
+    assert any(
+        row["ea_id"] == "6"
+        and row["slug"] == "orphan-recovery"
+        and row["strategy_id"] == "source-orphan-recovery"
+        and row["status"] == "active"
+        for row in identities_after
+    )
+    _, magic_after = allocator._read_csv(repo / allocator.MAGIC_REGISTRY)
+    assert magic_after == [magic]
+
+
+def test_orphan_identity_recovery_requires_exact_card_mode() -> None:
+    assert allocator.main(["--recover-orphan-identities", "--dry-run"]) == 2
+
+
 def test_ambiguous_identity_is_never_selected_for_allocation(tmp_path: Path) -> None:
     repo = _fixture_repo(tmp_path)
     fields, rows = allocator._read_csv(repo / allocator.EA_ID_REGISTRY)

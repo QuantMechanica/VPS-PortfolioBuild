@@ -424,6 +424,7 @@ def build_plan(
     max_eas: int,
     refuse_retired_reallocation: bool = True,
     ea_registry_rows: Sequence[dict[str, str]] | None = None,
+    recover_orphan_identities: bool = False,
 ) -> dict:
     by_ea: dict[int, list[dict[str, str]]] = {}
     retired_rows: list[dict[str, str]] = []
@@ -447,6 +448,7 @@ def build_plan(
     decisions: list[dict] = []
     planned: list[Candidate] = []
     planned_identity_ids: set[int] = set()
+    identity_only_ids: set[int] = set()
     eligible = 0
     allocated_before = 0
     for item in candidates:
@@ -499,11 +501,36 @@ def build_plan(
         if issue:
             decision.update(action="skip", reason=issue)
         elif reserve_identity and existing:
-            decision.update(
-                action="skip",
-                reason="orphan_magic_rows_without_ea_identity",
-                existing_rows=len(existing),
+            orphan_contract_ok = (
+                not retired
+                and not other_status
+                and _magic_row_contract_issue(item, active) is None
             )
+            if recover_orphan_identities and orphan_contract_ok:
+                eligible += 1
+                if max_eas and len(planned) >= max_eas:
+                    decision.update(action="defer", reason="batch_cap")
+                else:
+                    planned.append(item)
+                    planned_identity_ids.add(item.ea_id)
+                    identity_only_ids.add(item.ea_id)
+                    decision.update(
+                        action="allocate_identity_only",
+                        reason="orphan_magic_identity_recovery",
+                        existing_rows=len(active),
+                        rows=0,
+                        reserve_identity=True,
+                        identity_only=True,
+                        retired_rows_to_delete=0,
+                        create_directory=not item.directory.is_dir(),
+                        copy_card=not (item.directory / "docs/strategy_card.md").is_file(),
+                    )
+            else:
+                decision.update(
+                    action="skip",
+                    reason="orphan_magic_rows_without_ea_identity",
+                    existing_rows=len(existing),
+                )
         elif retired and refuse_retired_reallocation:
             decision.update(
                 action="skip",
@@ -556,6 +583,7 @@ def build_plan(
         "allocated_before": allocated_before,
         "planned": planned,
         "planned_identity_ids": sorted(planned_identity_ids),
+        "identity_only_ids": sorted(identity_only_ids),
         "decisions": decisions,
         "retired_rows_found": retired_rows,
     }
@@ -800,7 +828,7 @@ def build_verification_blocks(
         action = str(decision.get("action") or "")
         if identity_exact and magic_exact and resolver_exact:
             status = "PASS"
-        elif action == "allocate":
+        elif action in {"allocate", "allocate_identity_only"}:
             status = "PENDING_ALLOCATION"  # dry-run proposal; no rows written.
         else:
             status = "REFUSED"
@@ -868,6 +896,7 @@ def apply_plan(
     new_identity_rows: list[dict[str, str]] = []
     new_rows: list[dict[str, str]] = []
     planned_identity_ids = set(plan.get("planned_identity_ids") or [])
+    identity_only_ids = set(plan.get("identity_only_ids") or [])
     try:
         # Ordering invariant: directory and durable card exist before any row is written.
         for item in planned:
@@ -894,19 +923,20 @@ def apply_plan(
                         "retired_evidence": "",
                     }
                 )
-            for slot, symbol in enumerate(item.symbols):
-                new_rows.append(
-                    {
-                        "ea_id": str(item.ea_id),
-                        "ea_slug": item.slug,
-                        "symbol_slot": str(slot),
-                        "symbol": symbol,
-                        "magic": str(item.ea_id * 10_000 + slot),
-                        "reserved_at": now,
-                        "reserved_by": "Codex governed allocator",
-                        "status": "active",
-                    }
-                )
+            if item.ea_id not in identity_only_ids:
+                for slot, symbol in enumerate(item.symbols):
+                    new_rows.append(
+                        {
+                            "ea_id": str(item.ea_id),
+                            "ea_slug": item.slug,
+                            "symbol_slot": str(slot),
+                            "symbol": symbol,
+                            "magic": str(item.ea_id * 10_000 + slot),
+                            "reserved_at": now,
+                            "reserved_by": "Codex governed allocator",
+                            "status": "active",
+                        }
+                    )
 
         # Both CSV writes happen only after every directory/card-of-record is durable.
         _write_registry(identity_path, identity_fields, identity_rows + new_identity_rows)
@@ -1001,7 +1031,11 @@ def _public_report(plan: dict, *, dry_run: bool, result: dict | None = None) -> 
         "stage_order": plan["stage_order"],
         "batch_cap": plan["batch_cap"],
         "planned_eas": len(planned),
-        "planned_rows": sum(len(item.symbols) for item in planned),
+        "planned_rows": sum(
+            len(item.symbols)
+            for item in planned
+            if item.ea_id not in set(plan.get("identity_only_ids") or [])
+        ),
         "planned_identity_rows": len(plan.get("planned_identity_ids") or []),
         "progress": {
             "allocated": allocated_after,
@@ -1040,6 +1074,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument(
+        "--recover-orphan-identities",
+        action="store_true",
+        help="For explicit cards only, add a missing identity row when exact active magic rows already exist",
+    )
+    parser.add_argument(
         "--card",
         type=Path,
         action="append",
@@ -1061,6 +1100,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             exact_card_mode = bool(args.card)
             if exact_card_mode and args.scope != "all":
                 raise AllocationError("exact_card_mode_does_not_accept_scope")
+            if args.recover_orphan_identities and not exact_card_mode:
+                raise AllocationError("orphan_identity_recovery_requires_exact_cards")
             discovery_findings: list[dict[str, object]] = []
             if exact_card_mode:
                 candidates = [candidate_from_card(repo, card) for card in args.card]
@@ -1110,6 +1151,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 max_eas=args.max_eas,
                 refuse_retired_reallocation=True,
                 ea_registry_rows=ea_rows,
+                recover_orphan_identities=args.recover_orphan_identities,
             )
             if exact_card_mode:
                 plan["stage_order"] = ["exact_card"]

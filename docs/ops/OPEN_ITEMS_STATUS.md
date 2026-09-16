@@ -4914,3 +4914,9 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - I Knowledge completeness: generated Strategy Wiki (5265 nodes, STRATEGY_WIKI_SYNC GREEN, hourly task), lineage map (768 edges), old-rules sweep, documentation completeness matrix, universe map + research ROI, orchestration health, final audit `docs/ops/QUANTMECHANICA_COMPLETENESS_AND_GAP_AUDIT_2026-09-15.md` (verdict PARTIALLY → trending YES; top-5 gaps listed there).
 - Factory today: three head-of-line drain stalls from un-held 44 GB rows; sweep parked 375 rows (evidence `…/factory/`); new watch ALERT "CENSUS STALL in drain" active.
 - Open: agy OAuth re-login (OWNER); 16 candidate CLOSE dispositions pending weekly review; live per-EA PnL attribution feed; H-CW mechanization to Q00; tree-independent static tests.
+
+### 2026-09-17 — RESULT: QM5_1627 / QM5_1628 governed identity precondition
+
+- PASS: exact-card orphan-identity recovery was added to the governed allocator, gated to explicit cards and exact active magic rows; focused allocator/resolver tests pass (23/23).
+- PASS: active identity rows now exist for QM5_1627 `hopwood-bermaui-cci-h4` and QM5_1628 `carney-5-0-pattern-h4`; the existing four magic rows and resolver tuples per EA were preserved unchanged. Dry-run/apply receipts: `docs/ops/evidence/2026-09-17_qm5_1627_1628_governed_magic_precondition_dry_run.json` and `docs/ops/evidence/2026-09-17_qm5_1627_1628_governed_magic_precondition_apply.json`.
+- PASS: rework rows `6ec40513-d44b-4b71-babc-91c725bce7fb` (QM5_1627) and `3c46e814-d8b2-429c-9a15-d7660a3376d1` (QM5_1628) re-queued to TODO through the canonical router; no build or pipeline phase was run.
