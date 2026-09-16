@@ -1,0 +1,137 @@
+{
+  "activation_held_count": 0,
+  "batch_form": true,
+  "build_task_id": null,
+  "candidate_classification": [
+    {
+      "active_magic_row_count": 4,
+      "bound_setfile_hashes": [],
+      "build_task_binding": {
+        "authorized": false,
+        "build_task_id": null,
+        "contract_version": "qm.compile-ea-build-task-binding/v1",
+        "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+        "requested": false
+      },
+      "build_task_binding_authorized": false,
+      "current_compile_ok_work_item_ids": [],
+      "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd",
+      "ea_id": "QM5_11731",
+      "ea_label": "QM5_11731_tc-m5-s20-ema3-bb-macd",
+      "eligible": false,
+      "force_rebuild_authorized": false,
+      "force_rebuild_waived_reasons": [],
+      "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\QM5_11731_tc-m5-s20-ema3-bb-macd.mq5",
+      "mq5_sha256": "2d0df70fe8f35f266f82435ce0937b4521e5913e43c2f04de0729b2131ab058b",
+      "numeric_ea_id": "11731",
+      "reason": "EX5_ALREADY_PRESENT",
+      "reasons": [
+        "EX5_ALREADY_PRESENT",
+        "BUILD_TASK_EXISTS"
+      ],
+      "sanctioned_predecessor_ids": [],
+      "sibling_rebind_authorized": false,
+      "sibling_rebind_contract_version": null,
+      "sibling_rebind_current_setfile_path": null,
+      "sibling_rebind_current_setfile_sha256": null,
+      "sibling_rebind_findings": [],
+      "sibling_rebind_historical_setfiles": [],
+      "source_repair_artifact_bindings": [],
+      "source_repair_authority": null,
+      "source_repair_authorized": false,
+      "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+      "source_repair_predecessor_work_item_ids": [],
+      "source_repair_stale_open_work_item_ids": [],
+      "source_repair_superseded_predecessor_work_item_ids": [],
+      "source_repair_waived_reasons": [],
+      "symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": {
+        "candidates": [
+          "M5"
+        ],
+        "source": "existing_setfiles",
+        "timeframe": "M5"
+      },
+      "unsupported_symbols": []
+    }
+  ],
+  "eligible_count": 0,
+  "enqueued": [],
+  "enqueued_count": 0,
+  "idempotent_open": [],
+  "idempotent_open_count": 0,
+  "input_metadata": {
+    "from_file": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\1\\enq11731.txt",
+    "from_file_sha256": "62341b05364977349e07989a321c466083a4553f96801484917ebfc87485a103",
+    "requested_count": 1
+  },
+  "mode": "dry_run",
+  "no_gate_verdict": true,
+  "ok": false,
+  "refused": [
+    {
+      "active_magic_row_count": 4,
+      "bound_setfile_hashes": [],
+      "build_task_binding": {
+        "authorized": false,
+        "build_task_id": null,
+        "contract_version": "qm.compile-ea-build-task-binding/v1",
+        "reason": "BUILD_TASK_BINDING_NOT_REQUESTED",
+        "requested": false
+      },
+      "build_task_binding_authorized": false,
+      "current_compile_ok_work_item_ids": [],
+      "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd",
+      "ea_id": "QM5_11731",
+      "ea_label": "QM5_11731_tc-m5-s20-ema3-bb-macd",
+      "eligible": false,
+      "force_rebuild_authorized": false,
+      "force_rebuild_waived_reasons": [],
+      "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\QM5_11731_tc-m5-s20-ema3-bb-macd.mq5",
+      "mq5_sha256": "2d0df70fe8f35f266f82435ce0937b4521e5913e43c2f04de0729b2131ab058b",
+      "numeric_ea_id": "11731",
+      "reason": "EX5_ALREADY_PRESENT",
+      "reasons": [
+        "EX5_ALREADY_PRESENT",
+        "BUILD_TASK_EXISTS"
+      ],
+      "sanctioned_predecessor_ids": [],
+      "sibling_rebind_authorized": false,
+      "sibling_rebind_contract_version": null,
+      "sibling_rebind_current_setfile_path": null,
+      "sibling_rebind_current_setfile_sha256": null,
+      "sibling_rebind_findings": [],
+      "sibling_rebind_historical_setfiles": [],
+      "source_repair_artifact_bindings": [],
+      "source_repair_authority": null,
+      "source_repair_authorized": false,
+      "source_repair_contract_version": "qm.compile-ea-source-repair/v1",
+      "source_repair_predecessor_work_item_ids": [],
+      "source_repair_stale_open_work_item_ids": [],
+      "source_repair_superseded_predecessor_work_item_ids": [],
+      "source_repair_waived_reasons": [],
+      "symbols": [
+        "EURUSD.DWX",
+        "GBPUSD.DWX",
+        "USDCHF.DWX",
+        "USDJPY.DWX"
+      ],
+      "timeframe": {
+        "candidates": [
+          "M5"
+        ],
+        "source": "existing_setfiles",
+        "timeframe": "M5"
+      },
+      "unsupported_symbols": []
+    }
+  ],
+  "refused_count": 1,
+  "requested_count": 1,
+  "source_repair_authority": null
+}

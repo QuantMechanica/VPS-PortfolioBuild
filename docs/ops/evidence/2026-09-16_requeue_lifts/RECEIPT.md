@@ -26,10 +26,28 @@ Operator: `kimi-interim` · Date (UTC): 2026-09-16 · Repo: `C:\QM\repo`
 - Unblock options documented in `QM5_11731_receipt.md` (compile→intake canary, or OWNER-
   ratified scoped enqueue). Pilot verification (a–e) and fanout were therefore not reached.
 
+## D2B continuation — QM5_11731 — STOP at step 1 (2026-09-16, 06:54Z)
+
+- Provider mandate resolved: deterministic local MetaEditor compile is the COMPILE_EA
+  provider; codex is **not** mandated (build_check.ps1 → compile_one.ps1; the codex lane
+  is authoring-only and already done for this EA).
+- The authorized path `enqueue-compile → COMPILE_EA claim → intake-first-q02` is blocked
+  at step 1: the candidate guards refuse `EX5_ALREADY_PRESENT` + `BUILD_TASK_EXISTS`, and
+  no legitimate waiver exists for QM5_11731 (not in any force-rebuild allowlist; no
+  source-repair registration; build task `1a17f439-…` is `done` so `--build-task-id`
+  binding refuses it as not open).
+- No state change: exclusion file still at D2A after-hash `3f092f0a…f3f3` with the
+  `QM5_11731` line intact; zero work items; no DB writes; no terminal touched.
+- Detail: `QM5_11731_D2B_continuation_RECEIPT.md` + `d2b_continuation_enqueue_compile_dry_run.json`.
+  Unblock requires an OWNER-ratified force-rebuild/source-repair authority or a scoped
+  single-symbol enqueue variant (the option-(b) code+decision change).
+
 ## Files
 
 - `QM5_11561_receipt.md` — D2A detail
 - `QM5_11731_receipt.md` — D2B STOP detail with code references
+- `QM5_11731_D2B_continuation_RECEIPT.md` — D2B continuation STOP (provider mandate + guard refusal)
 - `d2a_lift_hashes.json` — machine-readable lift record
 - `d2a_enqueue_result.json` — raw enqueue output
+- `d2b_continuation_enqueue_compile_dry_run.json` — machine-readable enqueue-compile refusal
 - `requeue_excluded_eas.txt.before_D2A_lift` — backup of prior exclusion-file bytes
