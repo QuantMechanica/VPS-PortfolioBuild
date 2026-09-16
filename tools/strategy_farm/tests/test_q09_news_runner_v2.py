@@ -841,6 +841,82 @@ class Q09NewsRunnerV2Tests(unittest.TestCase):
             )
         )
 
+    @unittest.skipIf(os.name != "nt", "Win32 MAX_PATH semantics are Windows-only")
+    def test_failure_snapshot_reaches_artifacts_beyond_max_path(self) -> None:
+        # 2026-09-07..10 NEWS_RUNNER_SPAWN_SILENT_ABORT cohort: scoped-plan
+        # evidence trees push tester artifacts past MAX_PATH, the old rglob-based
+        # enumeration crashed with WinError 3, the exception escaped the executor,
+        # and the worker held the rows.  The snapshot must now reach deep files.
+        plan = self.build(output="failure-beyond-max-path")
+        spec = plan["cells"][0]
+        cell_dir = Path(spec["receipt_path"]).parent
+        relative = Path("runs") / "selection" / "QM5_1" / "20990101_000000"
+        while len(str(cell_dir / relative / "raw" / "tester.log")) <= 260:
+            relative /= "pre_run_logger_archive"
+        source = cell_dir / relative / "raw" / "tester.log"
+        runner._long_path(source.parent, always=True).mkdir(parents=True)
+        runner._long_path(source).write_text("beyond-max-path evidence\n", encoding="utf-8")
+        self.assertGreater(len(str(source)), 260)
+
+        failure_path = runner._write_cell_failure(
+            spec,
+            work_item_id="q09-news-1",
+            exc=runner.RunnerError("beyond-max-path fixture"),
+        )
+        payload = json.loads(failure_path.read_text(encoding="utf-8"))
+        self.assertEqual(payload["schema_version"], runner.CELL_FAILURE_SCHEMA)
+        artifact = next(
+            row
+            for row in payload["artifacts"]
+            if row["source_relative_path"] == (relative / "raw" / "tester.log").as_posix()
+        )
+        self.assertEqual(
+            runner._long_path(Path(artifact["path"])).read_text(encoding="utf-8"),
+            "beyond-max-path evidence\n",
+        )
+        self.assertIsNotNone(
+            runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=failure_path,
+                expected_failure_sha256=contract.sha256_file(failure_path),
+            )
+        )
+
+    def test_failure_sidecar_survives_unaddressable_snapshot_tree(self) -> None:
+        # The artifact snapshot is auxiliary diagnostics; a snapshot environment
+        # failure must downgrade the sidecar to v1 (no snapshot required), never
+        # crash the executor and lose the failed-cell record.
+        plan = self.build(output="failure-snapshot-unaddressable")
+        spec = plan["cells"][0]
+
+        def _unaddressable(cell_dir: Path, *, occurrence: int):
+            raise OSError("simulated unaddressable evidence tree")
+
+        original = runner._snapshot_failure_artifacts
+        runner._snapshot_failure_artifacts = _unaddressable
+        try:
+            failure_path = runner._write_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                exc=runner.RunnerError("snapshot refused"),
+            )
+        finally:
+            runner._snapshot_failure_artifacts = original
+
+        payload = json.loads(failure_path.read_text(encoding="utf-8"))
+        self.assertEqual(payload["schema_version"], runner.CELL_FAILURE_SCHEMA_V1)
+        self.assertEqual(payload["artifacts"], [])
+        self.assertIn("artifact_snapshot_error", payload)
+        self.assertIsNotNone(
+            runner._authenticated_cell_failure(
+                spec,
+                work_item_id="q09-news-1",
+                failure_path=failure_path,
+                expected_failure_sha256=contract.sha256_file(failure_path),
+            )
+        )
+
     def test_failure_retry_skips_orphaned_temporary_attempt(self) -> None:
         plan = self.build(output="failure-orphaned-temporary-attempt")
         spec = plan["cells"][0]

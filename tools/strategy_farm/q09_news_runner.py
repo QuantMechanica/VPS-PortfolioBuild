@@ -2014,26 +2014,66 @@ def _next_cell_failure_occurrence(
     return highest + 1
 
 
+def _long_path(path: Path, *, always: bool = False) -> Path:
+    """Return a ``\\\\?\\``-prefixed absolute path at/over the legacy limit.
+
+    Scoped-plan evidence trees (``scoped_q09_pass_anchor/<sha>/q09_contract_v3``)
+    push tester artifacts past the 260-character Win32 MAX_PATH boundary, where
+    plain-path file APIs (scandir/stat/copy) fail with WinError 3/206.  The
+    extended prefix keeps the identical bytes addressable; no path semantics
+    change.  A 2026-09-07..10 silent-abort cohort traced to exactly this:
+    ``_snapshot_failure_artifacts`` crashed inside ``rglob`` on those trees, the
+    exception escaped ``execute_run_plan``, and the worker (correctly) held the
+    rows as NEWS_RUNNER_SPAWN_SILENT_ABORT.  ``always=True`` prefixes every
+    absolute path on Windows so a walk rooted below the limit still reaches
+    children beyond it (the prefix is inherited by every yielded descendant).
+    """
+
+    text = str(path)
+    if os.name != "nt" or text.startswith(("\\\\?\\", "\\\\.\\")):
+        return path
+    if always or len(text) > 259:
+        return Path("\\\\?\\" + text)
+    return path
+
+
+def _plain_path(path: Path) -> Path:
+    """Inverse of :func:`_long_path` for paths returned by an extended-prefix walk."""
+
+    text = str(path)
+    if text.startswith("\\\\?\\") and not text.startswith("\\\\?\\UNC\\"):
+        return Path(text[4:])
+    return path
+
+
 def _failure_artifact_sources(cell_dir: Path) -> list[tuple[Path, Path]]:
     sources: list[tuple[Path, Path]] = []
     resolved_cell_dir = cell_dir.resolve()
-    for path in sorted(cell_dir.rglob("*")):
-        if not path.is_file():
-            continue
-        relative_path = path.relative_to(cell_dir)
-        if (
-            relative_path.parts[0] == CELL_FAILURE_ATTEMPT_DIR
-            or path.name == "cell_receipt.json"
-            or CELL_FAILURE_SIDECAR_RE.fullmatch(path.name)
-        ):
-            continue
-        try:
-            path.resolve().relative_to(resolved_cell_dir)
-        except ValueError as exc:
-            raise RunnerError(
-                f"cell failure source artifact escapes its cell directory: {path}"
-            ) from exc
-        sources.append((path, relative_path))
+    for root, dirnames, filenames in os.walk(
+        _long_path(resolved_cell_dir, always=True)
+    ):
+        # Prune prior failure attempts in place; the filter below is retained
+        # as defense for entries that slip through a non-topdown walk.
+        if CELL_FAILURE_ATTEMPT_DIR in dirnames:
+            dirnames.remove(CELL_FAILURE_ATTEMPT_DIR)
+        root_path = _plain_path(Path(root))
+        for name in filenames:
+            path = root_path / name
+            relative_path = path.relative_to(resolved_cell_dir)
+            if (
+                relative_path.parts[0] == CELL_FAILURE_ATTEMPT_DIR
+                or path.name == "cell_receipt.json"
+                or CELL_FAILURE_SIDECAR_RE.fullmatch(path.name)
+            ):
+                continue
+            try:
+                path.resolve().relative_to(resolved_cell_dir)
+            except ValueError as exc:
+                raise RunnerError(
+                    f"cell failure source artifact escapes its cell directory: {path}"
+                ) from exc
+            sources.append((path, relative_path))
+    sources.sort(key=lambda pair: pair[1].as_posix())
     return sources
 
 
@@ -2054,7 +2094,7 @@ def _snapshot_failure_artifacts(
         raise RunnerError(
             f"cell failure attempt snapshot already exists: {snapshot_root}"
         )
-    temporary_root.mkdir(parents=True)
+    _long_path(temporary_root, always=True).mkdir(parents=True)
     sources = _failure_artifact_sources(cell_dir)
     copied: list[tuple[Path, Path, str]] = []
     for index, (source_path, source_relative_path) in enumerate(sources, 1):
@@ -2062,33 +2102,55 @@ def _snapshot_failure_artifacts(
             source_relative_path, index
         )
         destination = temporary_root / snapshot_name
-        before = source_path.stat()
-        shutil.copyfile(source_path, destination)
-        after = source_path.stat()
+        source_io = _long_path(source_path)
+        destination_io = _long_path(destination)
+        before = source_io.stat()
+        shutil.copyfile(source_io, destination_io)
+        after = source_io.stat()
         if (
             before.st_size != after.st_size
             or before.st_mtime_ns != after.st_mtime_ns
-            or destination.stat().st_size != after.st_size
+            or destination_io.stat().st_size != after.st_size
         ):
             raise RunnerError(
                 f"cell failure source artifact changed during snapshot: {source_path}"
             )
         copied.append((source_path, source_relative_path, snapshot_name))
-    temporary_root.replace(snapshot_root)
+    _long_path(temporary_root, always=True).replace(
+        _long_path(snapshot_root, always=True)
+    )
 
     artifacts: list[dict[str, Any]] = []
     for source_path, source_relative_path, snapshot_name in copied:
         path = snapshot_root / snapshot_name
+        path_io = _long_path(path)
         artifacts.append(
             {
                 "path": str(path.resolve()),
                 "relative_path": path.relative_to(cell_dir).as_posix(),
                 "source_relative_path": source_relative_path.as_posix(),
-                "size_bytes": path.stat().st_size,
-                "sha256": contract.sha256_file(path),
+                "size_bytes": path_io.stat().st_size,
+                "sha256": contract.sha256_file(path_io),
             }
         )
     return snapshot_root, artifacts
+
+
+def _discard_failed_failure_attempt(cell_dir: Path, occurrence: int) -> None:
+    """Best-effort removal of an orphaned in-flight attempt snapshot directory."""
+
+    for candidate in (
+        _failure_attempt_root(cell_dir, occurrence),
+        _failure_attempt_root(cell_dir, occurrence).with_name(
+            f"attempt_{occurrence:04d}.tmp"
+        ),
+    ):
+        try:
+            shutil.rmtree(_long_path(candidate), ignore_errors=True)
+        except OSError:
+            # The orphan only consumes one occurrence number; never let cleanup
+            # mask the original cell failure being recorded.
+            pass
 
 
 def _write_cell_failure(
@@ -2103,20 +2165,45 @@ def _write_cell_failure(
         base_path, expected_identity=identity
     )
     path = _cell_failure_occurrence_path(base_path, occurrence)
-    snapshot_root, artifacts = _snapshot_failure_artifacts(
-        base_path.parent, occurrence=occurrence
-    )
-    payload = {
-        **identity,
-        "failure_occurrence": occurrence,
-        "error_type": type(exc).__name__,
-        "error": str(exc),
-        "artifact_snapshot_relative_path": snapshot_root.relative_to(
-            base_path.parent
-        ).as_posix(),
-        "artifact_snapshot_layout": CELL_FAILURE_SNAPSHOT_LAYOUT,
-        "artifacts": artifacts,
-    }
+    snapshot_root: Path | None
+    artifacts: list[dict[str, Any]]
+    payload: dict[str, Any]
+    try:
+        snapshot_root, artifacts = _snapshot_failure_artifacts(
+            base_path.parent, occurrence=occurrence
+        )
+    except Exception as snapshot_exc:  # noqa: BLE001 - auxiliary evidence must never lose the failure record
+        # The sidecar is the durable accounting of a failed cell; the artifact
+        # snapshot is auxiliary diagnostics.  A snapshot environment failure
+        # (e.g. an unaddressable path) downgrades the sidecar to the v1 schema,
+        # which authenticates without a snapshot, instead of crashing the whole
+        # executor process and losing the failure entirely.
+        _discard_failed_failure_attempt(base_path.parent, occurrence)
+        snapshot_root = None
+        artifacts = []
+        payload = {
+            **identity,
+            "schema_version": CELL_FAILURE_SCHEMA_V1,
+            "failure_occurrence": occurrence,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "artifacts": [],
+            "artifact_snapshot_error": (
+                f"{type(snapshot_exc).__name__}: {snapshot_exc}"
+            )[:400],
+        }
+    else:
+        payload = {
+            **identity,
+            "failure_occurrence": occurrence,
+            "error_type": type(exc).__name__,
+            "error": str(exc),
+            "artifact_snapshot_relative_path": snapshot_root.relative_to(
+                base_path.parent
+            ).as_posix(),
+            "artifact_snapshot_layout": CELL_FAILURE_SNAPSHOT_LAYOUT,
+            "artifacts": artifacts,
+        }
     data = contract.canonical_json_bytes(payload)
     _write_immutable(path, data)
     return path
@@ -2169,7 +2256,7 @@ def _authenticated_cell_failure(
                 f"cell failure artifact snapshot path is contradictory: {path}"
             )
         snapshot_root = (path.parent / expected_snapshot_relative).resolve()
-        if not snapshot_root.is_dir():
+        if not _long_path(snapshot_root, always=True).is_dir():
             raise RunnerError(
                 f"cell failure artifact snapshot is missing: {snapshot_root}"
             )
@@ -2236,8 +2323,12 @@ def _authenticated_cell_failure(
                 raise RunnerError(
                     f"cell failure artifact/source paths disagree: {path}"
                 )
-        _verify_hash(artifact_path, str(artifact.get("sha256") or ""), "cell failure artifact")
-        if artifact.get("size_bytes") != artifact_path.stat().st_size:
+        _verify_hash(
+            _long_path(artifact_path),
+            str(artifact.get("sha256") or ""),
+            "cell failure artifact",
+        )
+        if artifact.get("size_bytes") != _long_path(artifact_path).stat().st_size:
             raise RunnerError(f"cell failure artifact size mismatch: {artifact_path}")
     return {
         "run_identity_sha256": spec["run_identity_sha256"],
