@@ -41,7 +41,11 @@ if str(_REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT))
 
 import farmctl
-from artifact_identity import identity_update_clause, prepare_completion
+from artifact_identity import (
+    VerdictTaxonomyContractError,
+    identity_update_clause,
+    prepare_completion,
+)
 import custom_history_contract
 import custom_history_copy_on_claim
 import custom_history_gate
@@ -9475,10 +9479,15 @@ def _finish_work_item(
                     payload["verdict_reason"] = f"P2_PRESCREEN_{reason}"
                     reason = payload["verdict_reason"]
                 taxonomy = str(payload.get("verdict_taxonomy") or "unknown")
-                verdict, taxonomy, identity, missing_identity = prepare_completion(
-                    phase=str(item["phase"]), kind=str(item["kind"]), payload=payload,
-                    summary=summary, verdict=verdict, taxonomy=taxonomy,
-                )
+                try:
+                    verdict, taxonomy, identity, missing_identity = prepare_completion(
+                        phase=str(item["phase"]), kind=str(item["kind"]), payload=payload,
+                        summary=summary, verdict=verdict, taxonomy=taxonomy,
+                    )
+                except VerdictTaxonomyContractError as exc:
+                    return _finish_verdict_taxonomy_contract_error(
+                        conn, item, payload, exc, now
+                    )
                 payload["verdict_taxonomy"] = taxonomy
                 identity_sql, identity_values = identity_update_clause(
                     conn, identity, taxonomy
@@ -9721,6 +9730,80 @@ def _finish_work_item(
         if not _is_sqlite_locked(exc):
             raise
         return {"finished": False, "reason": "sqlite_locked_finish_deferred"}
+
+
+VERDICT_TAXONOMY_CONTRACT_HOLD_CODE = "VERDICT_TAXONOMY_CONTRACT"
+
+
+def _finish_verdict_taxonomy_contract_error(
+    conn: sqlite3.Connection,
+    item: sqlite3.Row,
+    payload: dict[str, Any],
+    error: VerdictTaxonomyContractError,
+    now: str,
+) -> dict[str, Any]:
+    """Land a taxonomy contract defect without taking down the worker daemon."""
+
+    offending_taxonomy = str(payload.get("verdict_taxonomy") or "unknown")
+    payload["verdict_reason"] = "verdict_taxonomy_contract"
+    payload["verdict_taxonomy"] = "infra"
+    payload["offending_verdict_taxonomy"] = offending_taxonomy
+    payload["verdict_taxonomy_contract_error"] = str(error)
+    evidence_path = farmctl._evidence_unavailable_sentinel(
+        "verdict_taxonomy_contract"
+    )
+    cursor = conn.execute(
+        """
+        UPDATE work_items
+        SET status='failed', verdict='INFRA_FAIL', verdict_taxonomy='infra',
+            evidence_path=?, claimed_by=NULL, payload_json=?, updated_at=?
+        WHERE id=? AND status='active'
+        """,
+        (evidence_path, json.dumps(payload, sort_keys=True), now, item["id"]),
+    )
+    if cursor.rowcount != 1:
+        return {"finished": False, "reason": "taxonomy_contract_claim_changed"}
+    conn.execute(
+        """
+        INSERT INTO work_item_holds(
+            work_item_id,hold_code,reason,active,release_on_restart,created_at,updated_at
+        ) VALUES(?,?,?,1,0,?,?)
+        ON CONFLICT(work_item_id) DO UPDATE SET
+            hold_code=excluded.hold_code, reason=excluded.reason, active=1,
+            release_on_restart=0, updated_at=excluded.updated_at,
+            released_at=NULL, release_note=NULL
+        WHERE work_item_holds.active=0
+           OR work_item_holds.hold_code=excluded.hold_code
+        """,
+        (
+            item["id"],
+            VERDICT_TAXONOMY_CONTRACT_HOLD_CODE,
+            "Canonical verdict taxonomy contract rejected the worker completion; operator review required.",
+            now,
+            now,
+        ),
+    )
+    farmctl.event(
+        conn,
+        "work_item",
+        item["id"],
+        "verdict_taxonomy_contract",
+        {
+            "hold_code": VERDICT_TAXONOMY_CONTRACT_HOLD_CODE,
+            "offending_verdict_taxonomy": offending_taxonomy,
+            "error": str(error),
+        },
+    )
+    conn.commit()
+    return {
+        "finished": True,
+        "status": "failed",
+        "verdict": "INFRA_FAIL",
+        "reason": payload["verdict_reason"],
+        "hold_code": VERDICT_TAXONOMY_CONTRACT_HOLD_CODE,
+        "offending_verdict_taxonomy": offending_taxonomy,
+        "aggregate": None,
+    }
 
 
 def _recover_completed_claim_for_terminal(
