@@ -815,3 +815,53 @@ def test_candidate_pool_shown_as_diagnostic_not_a_goal():
     contract = _with_book_evolution(make_contract(n_decisions=1))
     html = r.render(contract)
     assert "Diagnostik, KEIN Ziel" in html or "Diagnostik, kein Ziel" in html
+
+
+# ---------------------------------------------------------------------------
+# factory population cell (OWNER multi-count format) — dashboard labels only
+# ---------------------------------------------------------------------------
+def _population_doc():
+    return {
+        "schema": "qm.factory-population/v1",
+        "four_counts": {
+            "OPEN_PIPELINE_ROWS": 2206,
+            "TRUE_CLAIMABLE_WORK": 7,
+            "RESOURCE_FEASIBLE_RUNNABLE_WORK": 6,
+            "ACTIVE_ECONOMIC_BACKTESTS": 2,
+        },
+        "parked_split": {
+            "RECOVERABLE_WITHOUT_OWNER": 12,
+            "RECOVERABLE_WITH_EXISTING_AUTHORITY": 3,
+            "REQUIRES_NEW_OWNER_DECISION": 4,
+            "RESOURCE_BLOCKED": 5,
+            "INTENTIONALLY_INERT": 2,
+            "ECONOMICALLY_TERMINAL": 0,
+        },
+        "forecast": {"FORECAST_RUNNABLE_HOURS": 3.5},
+        "health": {"classification": "IDLE_RESOURCE_GATED",
+                   "FACTORY_BUFFER_LOW": "AMBER"},
+    }
+
+
+def test_population_cell_renders_when_readmodel_present(monkeypatch):
+    monkeypatch.setattr(r, "load_factory_population",
+                        lambda *a, **k: _population_doc())
+    html = r.render(make_contract())
+    assert "Fabrik-Population" in html
+    assert "OPEN_PIPELINE_ROWS" in html          # old metric explicitly named
+    assert r._int(7) in html                     # TRUE_CLAIMABLE main number
+    assert r._int(6) in html                     # resource-feasible
+    assert "BUFFER AMBER" in html
+    # parked split line in the Queue section
+    assert "Factory Population:" in html
+    assert "TRUE_CLAIMABLE" in html and "RESOURCE_FEASIBLE" in html
+
+
+def test_population_cell_absent_gracefully(monkeypatch):
+    monkeypatch.setattr(r, "load_factory_population", lambda *a, **k: None)
+    html = r.render(make_contract())
+    assert "Fabrik-Population" not in html
+    assert "Factory Population:" not in html
+    # the queue cell still names its metric explicitly
+    assert "OPEN_PIPELINE_ROWS" in html
+    assert "</html>" in html

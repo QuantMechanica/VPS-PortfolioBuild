@@ -81,6 +81,20 @@ def load_owner_todos_contract() -> dict:
 # alias so pre-approval links keep working. Legacy layout: cockpit_advanced.html.
 OUTPUT_PATH = Path(r"D:\QM\strategy_farm\dashboards\cockpit.html")
 ALIAS_PATH = Path(r"D:\QM\strategy_farm\dashboards\cockpit_v2.html")
+# Factory population read-model (tools/strategy_farm/factory_population.py):
+# the multi-count truth behind the Queue cell. Read fail-soft at render time;
+# when absent the cockpit renders exactly as before.
+FACTORY_POPULATION_PATH = Path(r"D:\QM\reports\state\factory_population.json")
+
+
+def load_factory_population(path: Path | None = None) -> dict | None:
+    """Best-effort read of factory_population.json; None when unavailable."""
+    path = Path(path or FACTORY_POPULATION_PATH)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (OSError, ValueError, UnicodeDecodeError):
+        return None
+    return data if isinstance(data, dict) else None
 
 
 # ---------------------------------------------------------------------------
@@ -191,6 +205,41 @@ def map_factory_light(factory_state: str | None) -> dict[str, str]:
     return {"level": "unknown", "color": "var(--text-3)", "label": s or "UNKNOWN"}
 
 
+def _render_population_cell(pop: dict | None) -> str:
+    """FACTORY POPULATION cell: the multi-count truth (OWNER format).
+
+    Source: factory_population.json (qm.factory-population/v1). Rendered only
+    when the read-model exists; labels, never gate/verdict semantics.
+    """
+    if not pop:
+        return ""
+    fc = pop.get("four_counts") or {}
+    split = pop.get("parked_split") or {}
+    health = pop.get("health") or {}
+    forecast = (pop.get("forecast") or {}).get("FORECAST_RUNNABLE_HOURS")
+    buff = health.get("FACTORY_BUFFER_LOW")
+    buff_cls = "mc-badge-warn" if buff == "AMBER" else "mc-badge-ok"
+    sub = (
+        f'OPEN_PIPELINE_ROWS {_int(fc.get("OPEN_PIPELINE_ROWS"))}'
+        f' · parked: {_int(split.get("RECOVERABLE_WITHOUT_OWNER"))}'
+        f'+{_int(split.get("RECOVERABLE_WITH_EXISTING_AUTHORITY"))} rec'
+        f' · {_int(split.get("REQUIRES_NEW_OWNER_DECISION"))} owner'
+        f' · {_int(split.get("RESOURCE_BLOCKED"))} res'
+        f' · {_int(split.get("INTENTIONALLY_INERT"))} inert'
+        f' · {_int(split.get("ECONOMICALLY_TERMINAL"))} term'
+    )
+    return f'''
+      <div class="mc-cell" title="factory_population.json — jede OPEN/Parked-Zeile exakt einmal klassifiziert">
+        <div class="mc-cell-label">Fabrik-Population</div>
+        <div class="mc-cell-main mc-num">{_int(fc.get("TRUE_CLAIMABLE_WORK"))}
+          <span class="mc-cell-slash" title="RESOURCE_FEASIBLE_RUNNABLE_WORK">/{_int(fc.get("RESOURCE_FEASIBLE_RUNNABLE_WORK"))}</span></div>
+        <div class="mc-cell-sub">claimable / resource-feasible · {_int(fc.get("ACTIVE_ECONOMIC_BACKTESTS"))} active · forecast {_de(forecast, 1)}h</div>
+        <div class="mc-cell-sub mc-clip">{e(sub)}</div>
+        <div class="mc-cell-sub">health {e(str(health.get("classification") or "—"))}
+          · <span class="{buff_cls}">BUFFER {e(str(buff or "—"))}</span></div>
+      </div>'''
+
+
 # ---------------------------------------------------------------------------
 # queue arithmetic (spec test 7 — displayed subsets add to the totals)
 # ---------------------------------------------------------------------------
@@ -278,14 +327,20 @@ def _render_control_strip(contract: dict) -> str:
         <div class="mc-cell-sub">oldest: {e(oldest_name)} · {_reltime_from_seconds(oldest)} · {e(oldest_stale)}</div>
       </div>'''
 
-    # Queue cell
+    # Queue cell. The main number is pending_executable — the raw OPEN_PIPELINE
+    # census, most of which is typically held/superseded/resource-blocked (see
+    # the Fabrik-Population cell for the runnable truth). The label carries the
+    # explicit metric name so the number cannot be misread as "runnable".
     queue_cell = f'''
       <div class="mc-cell">
-        <div class="mc-cell-label">Queue</div>
+        <div class="mc-cell-label">Queue · <span title="pending rows in MT5-tester phases; NOT the runnable population">OPEN_PIPELINE_ROWS</span></div>
         <div class="mc-cell-main mc-num">{_int(br['pending_executable'])}</div>
         <div class="mc-cell-sub">+{_int(br['pending_parked'])} parked · {_int(br['active'])} active
           · <span title="pending_total + active">Σ {_int(br['queue_total'])}</span></div>
       </div>'''
+
+    # Factory population multi-count cell (fail-soft read of the read-model).
+    population_cell = _render_population_cell(load_factory_population())
 
     # Terminals cell
     tc = (contract.get("terminals", {}) or {}).get("counts", {})
@@ -341,6 +396,7 @@ def _render_control_strip(contract: dict) -> str:
     {factory_cell}
     {fresh_cell}
     {queue_cell}
+    {population_cell}
     {terminals_cell}
     {eta_cell}
     {owner_cell}
@@ -1553,13 +1609,34 @@ def _render_queue(contract: dict) -> str:
         eta_line = "keine 24 h-Durchsatzmessung (rate=0)"
 
     badge = _stale_badge(q.get("meta", {}))
+    # FACTORY POPULATION line (OWNER format): the four counts + parked split,
+    # from the read-model. Labels only — no gate/verdict semantics.
+    pop_line = ""
+    pop = load_factory_population()
+    if pop:
+        fc = pop.get("four_counts") or {}
+        split = pop.get("parked_split") or {}
+        pop_line = (
+            '<div class="mc-foot-line"><b>Factory Population:</b> '
+            f'OPEN_PIPELINE_ROWS {_int(fc.get("OPEN_PIPELINE_ROWS"))}'
+            f' · TRUE_CLAIMABLE {_int(fc.get("TRUE_CLAIMABLE_WORK"))}'
+            f' · RESOURCE_FEASIBLE {_int(fc.get("RESOURCE_FEASIBLE_RUNNABLE_WORK"))}'
+            f' · ACTIVE {_int(fc.get("ACTIVE_ECONOMIC_BACKTESTS"))}'
+            f' · parked rec {_int(split.get("RECOVERABLE_WITHOUT_OWNER"))}'
+            f'+{_int(split.get("RECOVERABLE_WITH_EXISTING_AUTHORITY"))}'
+            f' / owner {_int(split.get("REQUIRES_NEW_OWNER_DECISION"))}'
+            f' / res {_int(split.get("RESOURCE_BLOCKED"))}'
+            f' / inert {_int(split.get("INTENTIONALLY_INERT"))}'
+            f' / term {_int(split.get("ECONOMICALLY_TERMINAL"))}'
+            "</div>"
+        )
     return f'''
   <section class="mc-section">
     <div class="mc-h2"><span>Queue &amp; Engpass</span>
       <span class="mc-h2-aux">Σ {_int(br['pending_total'])} pending = {_int(br['pending_executable'])} executable + {_int(br['pending_parked'])} parked {badge}</span></div>
     <div class="mc-queue-grid">
       <div>
-        <div class="mc-sublabel">Executable (terminal-drainable)</div>
+        <div class="mc-sublabel">Executable (terminal-drainable) — OPEN_PIPELINE_ROWS, not the runnable population</div>
         <table class="mc-table">
           <thead><tr><th>Gate</th><th class="mc-num">Pending</th><th>ältester Eintrag</th></tr></thead>
           <tbody>{ex_rows}</tbody>
@@ -1574,6 +1651,7 @@ def _render_queue(contract: dict) -> str:
       </div>
     </div>
     {bottleneck}
+    {pop_line}
     <div class="mc-foot">
       <div class="mc-foot-line"><b>Clear-ETA:</b> {eta_line} · Durchsatz {_de(tph, 2)}/h (24 h)</div>
       <div class="mc-foot-line mc-dim">{e(basis)}</div>
