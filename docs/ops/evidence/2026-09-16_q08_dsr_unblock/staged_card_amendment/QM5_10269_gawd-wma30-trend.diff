@@ -1,0 +1,46 @@
+--- a/QM5_10269_gawd-wma30-trend.md
++++ b/QM5_10269_gawd-wma30-trend.md
+@@ -85,3 +85,43 @@
+ 
+ ## Lessons learned (during the pipeline run)
+ - TBD
++
++## Approved Amendment (2026-09-14) — DSR Single Configuration
++
++- Authority: `OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914`, OWNER receipt `3415f6c0…` (YES: "ABC & D freigegeben zur Umsetzung").
++- This EA was never part of a sealed factory search (no DL-089 ledger); it carries exactly one configuration: the card defaults overlaid by the set file below. No optimisation search took place, research_trial_count is 0.
++- This declaration locks the exact NDX.DWX/D1 configuration used by Q08 (set file `QM5_10269_gawd-wma30-trend_NDX.DWX_D1_backtest.set`). It changes no strategy mechanics, threshold, or stored verdict.
++
++```qm-dsr-single-configuration
++{
++  "complete": true,
++  "ea_id": "QM5_10269",
++  "locked_parameters": {
++    "PORTFOLIO_WEIGHT": "1",
++    "RISK_FIXED": "1000",
++    "RISK_PERCENT": "0",
++    "qm_ea_id": "10269",
++    "qm_friday_close_enabled": "true",
++    "qm_friday_close_hour_broker": "21",
++    "qm_magic_slot_offset": "0",
++    "qm_news_compliance": "QM_NEWS_COMPLIANCE_DXZ",
++    "qm_news_min_impact": "high",
++    "qm_news_mode_legacy": "QM_NEWS_OFF",
++    "qm_news_stale_max_hours": "336",
++    "qm_news_temporal": "QM_NEWS_TEMPORAL_PRE30_POST30",
++    "qm_rng_seed": "42",
++    "qm_stress_reject_probability": "0.0",
++    "strategy_atr_period": "14",
++    "strategy_atr_sl_mult": "3.0",
++    "strategy_min_atr_spread_mult": "3.0",
++    "strategy_timeframe": "16408",
++    "strategy_wma_period": "30"
++  },
++  "no_optimization_search": true,
++  "research_trial_count": 0,
++  "schema": "qm.dsr-single-configuration-declaration/v1",
++  "spec_sha256": "8ed288af94e4cde2f4a281c7e73a97d35fbbffae81a61f17ab3bab5ffd289154",
++  "symbol": "NDX.DWX",
++  "timeframe": "D1"
++}
++```

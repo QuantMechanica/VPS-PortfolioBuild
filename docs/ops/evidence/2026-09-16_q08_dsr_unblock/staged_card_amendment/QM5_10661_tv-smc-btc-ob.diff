@@ -1,0 +1,63 @@
+--- a/QM5_10661_tv-smc-btc-ob.md
++++ b/QM5_10661_tv-smc-btc-ob.md
+@@ -92,3 +92,60 @@
+ 
+ ## Lessons Learned (wahrend Pipeline-Lauf)
+ - TBD
++
++## Approved Amendment (2026-09-14) — DSR Single Configuration
++
++- Authority: `OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914`, OWNER receipt `3415f6c0…` (YES: "ABC & D freigegeben zur Umsetzung").
++- This EA was never part of a sealed factory search (no DL-089 ledger); it carries exactly one configuration: the card defaults overlaid by the set file below. No optimisation search took place, research_trial_count is 0.
++- This declaration locks the exact GDAXI.DWX/H1 configuration used by Q08 (set file `QM5_10661_tv-smc-btc-ob_GDAXI.DWX_H1_backtest.set`). It changes no strategy mechanics, threshold, or stored verdict.
++
++```qm-dsr-single-configuration
++{
++  "complete": true,
++  "ea_id": "QM5_10661",
++  "locked_parameters": {
++    "PORTFOLIO_WEIGHT": "1",
++    "RISK_FIXED": "1000",
++    "RISK_PERCENT": "0",
++    "qm_ea_id": "10661",
++    "qm_filter_news_enabled": "1",
++    "qm_filter_news_mode": "3",
++    "qm_filter_regime_bear_return_pct": "2.0",
++    "qm_filter_regime_bull_return_pct": "2.0",
++    "qm_filter_regime_enabled": "0",
++    "qm_filter_regime_lookback_bars": "100",
++    "qm_filter_volatility_atr_period": "14",
++    "qm_filter_volatility_compression_ratio": "0.75",
++    "qm_filter_volatility_enabled": "0",
++    "qm_filter_volatility_expansion_ratio": "1.25",
++    "qm_filter_volatility_lookback_bars": "50",
++    "qm_friday_close_enabled": "true",
++    "qm_friday_close_hour_broker": "21",
++    "qm_magic_slot_offset": "1",
++    "qm_news_compliance": "QM_NEWS_COMPLIANCE_DXZ",
++    "qm_news_min_impact": "high",
++    "qm_news_mode_legacy": "QM_NEWS_OFF",
++    "qm_news_stale_max_hours": "336",
++    "qm_news_temporal": "QM_NEWS_TEMPORAL_PRE30_POST30",
++    "qm_rng_seed": "42",
++    "qm_stress_reject_probability": "0.0",
++    "strategy_confirmation_tf": "PERIOD_H1",
++    "strategy_direction_tf": "PERIOD_H4",
++    "strategy_fvg_lookback": "24",
++    "strategy_max_spread_points": "0",
++    "strategy_ob_lookback": "24",
++    "strategy_rr": "2.0",
++    "strategy_selective_mode": "false",
++    "strategy_sl_buffer_pct": "0.3",
++    "strategy_structure_lookback": "48",
++    "strategy_sweep_memory_bars": "12",
++    "strategy_swing_strength": "2"
++  },
++  "no_optimization_search": true,
++  "research_trial_count": 0,
++  "schema": "qm.dsr-single-configuration-declaration/v1",
++  "spec_sha256": "aac3f0547022da2129c8a07d929f2c35a4935c7d95c86f509343e9fbfe3bca86",
++  "symbol": "GDAXI.DWX",
++  "timeframe": "H1"
++}
++```

@@ -1,0 +1,60 @@
+{
+  "detail": "factory mutation lock is busy: D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock (stale_reap=unreadable)",
+  "reason": "factory_mutation_lock_busy",
+  "released": false,
+  "work_item_id": "d02a1128-c6ee-4e4e-ad82-755937a06421"
+}
+{
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789537511347832400,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 4152992
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_hold_release_20260916T054940Z_ce869704.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_hold_release_20260916T054940Z_ce869704.sqlite.identity.json",
+    "sha256": "ab78cbc1a4f1b55f6101d5c663ba2ce941ecda9c1b2a53cf973e9889b1f972f9"
+  },
+  "dry_run": false,
+  "factory_mutation_lock_release": "released",
+  "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+  "ledger_seq": 4343,
+  "ledger_written": true,
+  "release_note": "DSR input repair complete (card amended under OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914); claim-time-independent precheck claimable and full in-memory assemble verified 2026-09-16; workers carry 25df518e7e. Evidence: docs/ops/evidence/2026-09-16_q08_dsr_unblock/verification_20260916.md",
+  "released": true,
+  "released_at": "2026-09-16T05:51:42+00:00",
+  "work_item_id": "d02a1128-c6ee-4e4e-ad82-755937a06421",
+  "work_items_untouched": true
+}
+{
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789537511347832400,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1266081792,
+      "source_wal_size": 4152992
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_hold_release_20260916T054940Z_ce869704.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_hold_release_20260916T054940Z_ce869704.sqlite.identity.json",
+    "sha256": "ab78cbc1a4f1b55f6101d5c663ba2ce941ecda9c1b2a53cf973e9889b1f972f9"
+  },
+  "dry_run": false,
+  "factory_mutation_lock_release": "released",
+  "hold_code": "Q08_DSR_CONTEXT_UNAVAILABLE",
+  "ledger_seq": 4344,
+  "ledger_written": true,
+  "release_note": "DSR input repair complete (card amended under OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914); claim-time-independent precheck claimable and full in-memory assemble verified 2026-09-16; workers carry 25df518e7e. Evidence: docs/ops/evidence/2026-09-16_q08_dsr_unblock/verification_20260916.md",
+  "released": true,
+  "released_at": "2026-09-16T05:52:03+00:00",
+  "work_item_id": "a6f023c9-4c33-46b3-8d15-e98ac001e909",
+  "work_items_untouched": true
+}
