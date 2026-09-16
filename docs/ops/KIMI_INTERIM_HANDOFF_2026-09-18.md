@@ -249,7 +249,7 @@ Critic gate (all four): non-Kimi `critic_receipt.json` (schema `qm.agent-chain.r
 # KNOWN DEFECTS / FOLLOW-UPS
 
 1. **ba6-2 benchmark incomplete** — severity low; impact: AI-routing benchmark evidence gap (scorecard holds at 6 runs/4 cells); owner: Kimi/codex; blocks profit: no; disposition: finish benchmark in worktree `wf_717b9d36-ba6-2` (checkpoint `8d203c053e`).
-2. **H-MR setfile `build_hash` drift (DRIFT-1)** — severity medium; impact: `enqueue-compile QM5_41476` refuses (`BOUND_SETFILE_HASH_EXISTS`) while the 6 committed branch setfiles carry real stamps; owner: Fable/critic-wave operator; blocks profit: no (pre-pipeline); disposition: reset the 6 setfiles' `; build_hash:` to `pending` on `agents/kimi-hmr-20260916` and re-commit before merge/enqueue (agent-38 `VERIFY.md` + `verify_raw.json` document it).
+2. ~~H-MR setfile `build_hash` drift (DRIFT-1)~~ **RESOLVED** (`c7e0039bc3` on `agents/kimi-hmr-20260916`; agent-38 `VERIFY.md` documented the original drift). Closed.
 2. **strategy_wiki_sync build/lint second-chance asymmetry** — severity medium; impact: wiki health stuck AMBER (D1 proof (e) non-GREEN); owner: Kimi (interim) → Fable; blocks profit: no; disposition: align build vs lint paths for second-chance cards, then re-lint.
 3. **RAM-479** — see OPEN DECISIONS #2; owner: OWNER/Fable (analysis landed `c389c4b2bf`; disposition only); blocks profit: indirectly (42.35 h unlock parked).
 4. **Q09 sealed-plan cases (10148/11476)** — see OPEN DECISIONS #3; owner: OWNER/Fable; blocks profit: no (4.08 h); disposition: decide remeasure-vs-retire / no-Q07 path.
