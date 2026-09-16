@@ -1,5 +1,6 @@
 """Governed card amendment: append the ``qm-dsr-single-configuration`` declaration (class A of
-OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914; OWNER 2026-09-14 "ABC & D freigegeben zur Umsetzung").
+OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916; parent OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914;
+OWNER 2026-09-16 staged-cohort approval under Kimi's interim delegation).
 
 For every class-A Q08 row the EA has an APPROVED card, was never censused (no sealed DL-089 search
 ledger) and carries exactly one configuration: the card defaults overlaid by the row's set file.  The
@@ -35,10 +36,10 @@ import dsr_single_configuration as single  # noqa: E402
 DB_RO = "file:D:/QM/strategy_farm/state/farm_state.sqlite?mode=ro"
 CARDS_D = Path("D:/QM/strategy_farm/artifacts/cards_approved")
 CARDS_C = REPO / "artifacts" / "cards_approved"
-EVID = REPO / "docs" / "ops" / "evidence" / "2026-09-14_q08_context_repair"
+EVID = REPO / "docs" / "ops" / "evidence" / "2026-09-16_q08_amend_v3"
 JOURNAL = EVID / "card_amend_journal.jsonl"
-DECISION_ID = "OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914"
-RECEIPT_ID = "3415f6c0"
+DECISION_ID = "OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916"
+RECEIPT_ID = "d59b2277"
 
 
 def sha(path: Path) -> str:
@@ -81,8 +82,8 @@ def build_block(info: dict) -> dict:
 
 def amendment_text(block: dict, info: dict) -> str:
     return (
-        "\n\n## Approved Amendment (2026-09-14) — DSR Single Configuration\n\n"
-        f"- Authority: `{DECISION_ID}`, OWNER receipt `{RECEIPT_ID}…` (YES: \"ABC & D freigegeben zur Umsetzung\").\n"
+        "\n\n## Approved Amendment (2026-09-16) — DSR Single Configuration\n\n"
+        f"- Authority: `{DECISION_ID}`, OWNER receipt `{RECEIPT_ID}…` (staged-cohort approval; parent decision `OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914`).\n"
         "- This EA was never part of a sealed factory search (no DL-089 ledger); it carries exactly one configuration: the card defaults overlaid by the set file below. No optimisation search took place, research_trial_count is 0.\n"
         f"- This declaration locks the exact {info['symbol']}/{info['timeframe']} configuration used by Q08 (set file `{info['setfile'].name}`). It changes no strategy mechanics, threshold, or stored verdict.\n\n"
         "```qm-dsr-single-configuration\n" + json.dumps(block, indent=2, sort_keys=True) + "\n```\n"
