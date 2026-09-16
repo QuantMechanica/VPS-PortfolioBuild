@@ -1,0 +1,120 @@
+{
+  "active_opt_census_cells": 0,
+  "applied": false,
+  "capacity_waits": [],
+  "cell_slots_configured": 6,
+  "cell_slots_effective": 6,
+  "deferred": [
+    {
+      "ea_id": "QM5_10911",
+      "machine_reason": "expected one approved _opt sibling for QM5_10911/GDAXI.DWX, found 0",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "96239586-47c0-5fe2-8ef5-3d29910cc47c"
+    }
+  ],
+  "lanes_per_program_configured": 2,
+  "lanes_per_program_effective": 2,
+  "maintained": [],
+  "materialized": [],
+  "matrix_runner_revision": "dl089-matrix-runner-v2",
+  "pair_mode": "BOUNDED_PROGRAMS",
+  "priority_window_cap": 8,
+  "program_slots": 8,
+  "program_slots_configured": 8,
+  "program_slots_effective": 8,
+  "q02_prerequisites": [],
+  "recoveries": [],
+  "schema": "qm.dl089-matrix-service/v1",
+  "slot_owners": [],
+  "worker_count": 10
+}
+{
+  "active_opt_census_cells": 0,
+  "applied": false,
+  "capacity_waits": [],
+  "cell_slots_configured": 6,
+  "cell_slots_effective": 6,
+  "deferred": [
+    {
+      "ea_id": "QM5_10911",
+      "machine_reason": "expected one approved _opt sibling for QM5_10911/GDAXI.DWX, found 0",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "5cf3ea75-2fe0-5420-97c6-650678c52b31"
+    }
+  ],
+  "lanes_per_program_configured": 2,
+  "lanes_per_program_effective": 2,
+  "maintained": [],
+  "materialized": [],
+  "matrix_runner_revision": "dl089-matrix-runner-v2",
+  "pair_mode": "BOUNDED_PROGRAMS",
+  "priority_window_cap": 8,
+  "program_slots": 8,
+  "program_slots_configured": 8,
+  "program_slots_effective": 8,
+  "q02_prerequisites": [],
+  "recoveries": [],
+  "schema": "qm.dl089-matrix-service/v1",
+  "slot_owners": [],
+  "worker_count": 10
+}
+{
+  "active_opt_census_cells": 0,
+  "applied": false,
+  "capacity_waits": [],
+  "cell_slots_configured": 6,
+  "cell_slots_effective": 6,
+  "deferred": [
+    {
+      "ea_id": "QM5_10911",
+      "machine_reason": "expected one approved _opt sibling for QM5_10911/GDAXI.DWX, found 0",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "897169ba-9b8f-53ef-8c43-3013f3c7f2e8"
+    }
+  ],
+  "lanes_per_program_configured": 2,
+  "lanes_per_program_effective": 2,
+  "maintained": [],
+  "materialized": [],
+  "matrix_runner_revision": "dl089-matrix-runner-v2",
+  "pair_mode": "BOUNDED_PROGRAMS",
+  "priority_window_cap": 8,
+  "program_slots": 8,
+  "program_slots_configured": 8,
+  "program_slots_effective": 8,
+  "q02_prerequisites": [],
+  "recoveries": [],
+  "schema": "qm.dl089-matrix-service/v1",
+  "slot_owners": [],
+  "worker_count": 10
+}
+{
+  "active_opt_census_cells": 0,
+  "applied": false,
+  "capacity_waits": [],
+  "cell_slots_configured": 6,
+  "cell_slots_effective": 6,
+  "deferred": [
+    {
+      "ea_id": "QM5_10911",
+      "machine_reason": "expected one approved _opt sibling for QM5_10911/GDAXI.DWX, found 0",
+      "symbol": "GDAXI.DWX",
+      "work_item_id": "779da760-42c2-50ed-80c3-263ef3366edb"
+    }
+  ],
+  "lanes_per_program_configured": 2,
+  "lanes_per_program_effective": 2,
+  "maintained": [],
+  "materialized": [],
+  "matrix_runner_revision": "dl089-matrix-runner-v2",
+  "pair_mode": "BOUNDED_PROGRAMS",
+  "priority_window_cap": 8,
+  "program_slots": 8,
+  "program_slots_configured": 8,
+  "program_slots_effective": 8,
+  "q02_prerequisites": [],
+  "recoveries": [],
+  "schema": "qm.dl089-matrix-service/v1",
+  "slot_owners": [],
+  "worker_count": 10
+}

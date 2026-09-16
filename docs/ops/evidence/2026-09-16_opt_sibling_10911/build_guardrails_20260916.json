@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-09-16T05:11:37.152714Z",
+  "results": [
+    {
+      "checked_at": "2026-09-16T05:11:37.152714Z",
+      "entry_grace_margin_minutes": 5.0,
+      "files_checked": 1,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "docs\\ops\\evidence\\2026-09-16_opt_sibling_10911\\staged\\QM5_41478_grimes-complex-pb-opt.mq5",
+      "session_offset_registry_path": "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-09-16T05:11:37.152714Z",
+      "entry_grace_margin_minutes": 5.0,
+      "files_checked": 1,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "docs\\ops\\evidence\\2026-09-16_opt_sibling_10911\\staged\\QM5_41478_grimes-complex-pb-opt_GDAXI.DWX_H1_backtest.set",
+      "session_offset_registry_path": "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv",
+      "verdict": "PASS"
+    }
+  ],
+  "verdict": "PASS"
+}
