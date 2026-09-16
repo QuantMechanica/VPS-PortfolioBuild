@@ -1,0 +1,35 @@
+{
+  "ea_id": "QM5_11561",
+  "enqueued": true,
+  "expected_report_glob": "D:\\QM\\reports\\pipeline\\QM5_11561*\\Q02\\report.csv",
+  "next_action_hint": "python tools/strategy_farm/farmctl.py dispatch-tick",
+  "phase": "Q02",
+  "task_id": "3262b0b1-86f4-4edb-aed8-30bb2ba77584",
+  "work_items_created": [
+    {
+      "id": "132aca67-b907-4d34-a232-cf972de4fb32",
+      "payload": {
+        "custom_history_archive_admission": {
+          "activation_sha256": "61c8c72ccb0cb8038ae6ece7b89aa68f602b1637d8bc6b6c866f38492139134e",
+          "manifest_path": "D:\\QM\\strategy_farm\\artifacts\\ops\\custom_history_custom_history_variant_a_20260809\\archive_manifest_owner_approved.json",
+          "manifest_sha256": "fe0dd0fdd90dc26b806044c82fd0d7c35af889a96cbd4d79dece9cfdac3aab06",
+          "selected_archive_rows": 108,
+          "selected_symbols": [
+            "USDJPY.DWX"
+          ],
+          "status": "ACTIVE"
+        },
+        "from_year": 2017,
+        "history_first_year": 2017,
+        "history_last_year": 2026,
+        "priority_track": true,
+        "requested_from_year": 2017,
+        "requested_to_year": 2022,
+        "to_year": 2022
+      },
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11561_singh-good-morning-asia-d1-usdjpy\\sets\\QM5_11561_singh-good-morning-asia-d1-usdjpy_USDJPY.DWX_D1_backtest.set",
+      "symbol": "USDJPY.DWX"
+    }
+  ],
+  "work_items_skipped": []
+}

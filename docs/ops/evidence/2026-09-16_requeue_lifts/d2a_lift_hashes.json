@@ -1,0 +1,9 @@
+{
+  "file": "D:\\QM\\strategy_farm\\state\\requeue_excluded_eas.txt",
+  "before_sha256": "c08d677edacd3a4db7c5cb6cab868cc05ebe05a0648edf5d7d55dadaf8baf84a",
+  "after_sha256": "3f092f0a5029f483da2d25086245ecb53ebe1be79c28245b0451d93b6c45f3f3",
+  "removed_line": "QM5_11561",
+  "bytes_before": 2179,
+  "bytes_after": 2169,
+  "utc": "2026-09-16T06:28:10.106969+00:00"
+}
