@@ -1,0 +1,8 @@
+d9528f7ec3fafba47d49796f2db17057e5e887bd092b2efedbd922ff50918898 *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/QM5_41477_fx-session-mean-reversion-m15.mq5
+970a40e92e9f5bf768a60a5187538a3ff4b5c1544cee7218cf207305bd14cf4e *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/QM5_41477_FxSessionMrCore.mqh
+ef9a486f6137f9f4ba3e1cb940e63e62f511834c5e46cd3e4dd545dd21effe5b *strategy-seeds/sources/QM-RESEARCH-2026-0005/preregistration.json
+9d1c56c2a18703305690c66926c255fd69450c8035667b54051b4f60e84f8583 *strategy-seeds/sources/QM-RESEARCH-2026-0005/H_FXMR_card.md
+ba89005b9ed4c93f46681a7504dec9adde3b4abd2bde944f7e2a7048a10b7f8c *strategy-seeds/sources/QM-RESEARCH-2026-0005/source.md
+2fec2a3736dcb21f0d8b7096a7ae126163bcf4df3ed2cde8ea618c6ffe349b56 *strategy-seeds/sources/QM-RESEARCH-2026-0005/research.json
+e783451df985b0582b305f2b29e692df55bc65db92eb0e5f3afa20297bab53f1 *strategy-seeds/sources/QM-RESEARCH-2026-0005/lineage.json
+4cc607f356db9da571cbd294483c3ebef37e53ccf5be66991e79cd32cdacb2ae *artifacts/cards_approved/QM5_41477_fx-session-mean-reversion-m15.md

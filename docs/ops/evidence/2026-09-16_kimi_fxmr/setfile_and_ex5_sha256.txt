@@ -1,0 +1,7 @@
+c33b39b0badae877b242636eebd70f9aee47dd7cf7b1c3c91ac37ba86263693e *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/sets/QM5_41477_fx-session-mean-reversion-m15_EURUSD.DWX_M15_backtest.set
+135d902fa4e1f831158b4cafa6bd283e756187b5d8d70eefbe6cf863273b5443 *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/sets/QM5_41477_fx-session-mean-reversion-m15_EURUSD.DWX_M15_live.set
+c87d243f6e475d32cbcf9d3f11b9d4ec541b56dda32124e9aeb5f4ce882ad2f5 *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/sets/QM5_41477_fx-session-mean-reversion-m15_GBPUSD.DWX_M15_backtest.set
+52b0301647342f3153fa98261ceb2f27979315cd9c9cbee93d8ca1a817da5862 *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/sets/QM5_41477_fx-session-mean-reversion-m15_GBPUSD.DWX_M15_live.set
+925b37f3e11afd517370b1bff162a1b2797398951f33e730f8f9afdbb2fe1ead *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/sets/QM5_41477_fx-session-mean-reversion-m15_USDJPY.DWX_M15_backtest.set
+5a0089c9fbdd6635710d0ca04b8f186e2b216667483d26e7e8ef468109ab2476 *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/sets/QM5_41477_fx-session-mean-reversion-m15_USDJPY.DWX_M15_live.set
+4e07143ac4e07ed644ba7865a7b1d8a7b262f16696386bb2f7e1248117c1219b *framework/EAs/QM5_41477_fx-session-mean-reversion-m15/QM5_41477_fx-session-mean-reversion-m15.ex5
