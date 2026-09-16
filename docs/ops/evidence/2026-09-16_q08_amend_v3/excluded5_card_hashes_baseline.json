@@ -1,0 +1,37 @@
+{
+ "QM5_10145": {
+  "row": "bdba95f1-9aed-4f2b-af7e-c0cf60407aa5",
+  "label": "QM5_10145_tsm-meanret",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10145_tsm-meanret.md",
+  "sha256": "14e394fbfa44316046a05c6b3bc083c688f9ade8be024e924dc7de2249f6e5c6",
+  "card_exists": true
+ },
+ "QM5_12350": {
+  "row": "0031f42d-65be-4c1d-ae45-bbaa67c071ca",
+  "label": "QM5_12350_spec-ema20-40",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12350_spec-ema20-40.md",
+  "sha256": "6c11196b6280c6036bbba57aa0bb926f3ca462e36dc6d3be8acaa1a247be059a",
+  "card_exists": true
+ },
+ "QM5_12361": {
+  "row": "2276786b-2a89-4f28-a2ed-ac5dd1b857cb",
+  "label": "QM5_12361_tmom-ibs",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12361_tmom-ibs.md",
+  "sha256": "d936e4291a7a021afcb45b34bd6a2b81356f8a71b3798263c29d0ef5815a6912",
+  "card_exists": true
+ },
+ "QM5_1551": {
+  "row": "3b320089-5553-486e-b824-5c7d1405886d",
+  "label": "QM5_1551_demark-td-range-projection-h4",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1551_demark-td-range-projection-h4.md",
+  "sha256": "af7a55c6659982d27e437f1c7c7c6dcd9f9663ec9847035fde13955206a73d11",
+  "card_exists": true
+ },
+ "QM5_12484": {
+  "row": "dfb2f622-b7c0-4da3-a8ac-17825dde0cf9",
+  "label": "QM5_12484_shv-ma-cross",
+  "card": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12484_shv-ma-cross.md",
+  "sha256": "8a6f0afb19b2262c1ba7465f20c3d392dbeda4e93137f3c0a86a276b8e7a62e7",
+  "card_exists": true
+ }
+}

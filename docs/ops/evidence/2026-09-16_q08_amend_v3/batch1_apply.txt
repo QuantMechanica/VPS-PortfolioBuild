@@ -1,0 +1,9 @@
+APPLY  7bc8b34e QM5_1159_qp-spy-overnight-ma20 NDX.DWX D1 params=29 set=QM5_1159_qp-spy-overnight-ma20_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  d4aebc12 QM5_10804_tv-st-long GDAXI.DWX H1 params=33 set=QM5_10804_tv-st-long_GDAXI.DWX_H1_backtest_ablation_00.set mirrorC=False
+APPLY  383c45b0 QM5_10661_tv-smc-btc-ob GDAXI.DWX H1 params=36 set=QM5_10661_tv-smc-btc-ob_GDAXI.DWX_H1_backtest.set mirrorC=False
+APPLY  20c533da QM5_10211_tv-williams-r-spy NDX.DWX D1 params=31 set=QM5_10211_tv-williams-r-spy_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  a937b9bc QM5_12958_nnfx-hma-wae-swing GDAXI.DWX D1 params=27 set=QM5_12958_nnfx-hma-wae-swing_GDAXI.DWX_D1_backtest.set mirrorC=False
+APPLY  15fed5d8 QM5_9123_aa-tes01325-cross NDX.DWX D1 params=31 set=QM5_9123_aa-tes01325-cross_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  aa0fa828 QM5_10291_cinar-alligator NDX.DWX D1 params=30 set=QM5_10291_cinar-alligator_NDX.DWX_D1_backtest.set mirrorC=False
+APPLY  94d46fe7 QM5_10267_gawd-sma25-trend NDX.DWX D1 params=30 set=QM5_10267_gawd-sma25-trend_NDX.DWX_D1_backtest.set mirrorC=False
+ok 8 skipped 0 failed 0 mode apply
