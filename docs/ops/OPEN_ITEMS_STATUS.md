@@ -4915,6 +4915,11 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - Factory today: three head-of-line drain stalls from un-held 44 GB rows; sweep parked 375 rows (evidence `…/factory/`); new watch ALERT "CENSUS STALL in drain" active.
 - Open: agy OAuth re-login (OWNER); 16 candidate CLOSE dispositions pending weekly review; live per-EA PnL attribution feed; H-CW mechanization to Q00; tree-independent static tests.
 
+### 2026-09-17 — RESULT: state DB growth and backup retention rework
+
+- PASS: rework evidence corrected to the actual focused-test result, **19 passed**, and records commit `7d1e16253d` as resolving the `news_calendar_taint` full-copy/mutation-lock churn via read-only preflight before governed backup. Default-OFF retention, open-receipt protection, live DB/WAL safety, and quiet-window VACUUM boundaries remain unchanged.
+- Evidence: `docs/ops/evidence/2026-09-13_state_db_growth_and_retention.md`; verification `python -m pytest -q tools/strategy_farm/tests/test_continuous_retention_runner.py tools/strategy_farm/tests/test_hourly_db_backup.py`.
+
 ### 2026-09-17 — RESULT: QM5_1627 / QM5_1628 governed identity precondition
 
 - PASS: exact-card orphan-identity recovery was added to the governed allocator, gated to explicit cards and exact active magic rows; focused allocator/resolver tests pass (23/23).

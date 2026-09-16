@@ -119,6 +119,15 @@ Focused verification:
 python -m pytest -q tools/strategy_farm/tests/test_continuous_retention_runner.py tools/strategy_farm/tests/test_hourly_db_backup.py
 ```
 
-Result: **18 passed**. Tests include open-receipt protection, cap ordering,
+Result: **19 passed**. Tests include open-receipt protection, cap ordering,
 hourly newest-eight isolation, append-before-delete/hash verification, exact
 row-count deletion, post-VACUUM integrity, and Default-OFF behavior.
+
+## Rework closure
+
+The previously reported `news_calendar_taint` backup churn is resolved by
+commit `7d1e16253d`: `news_calendar_taint.sweep` performs a read-only
+preflight and takes the governed backup plus mutation lock only when a row
+actually needs `HOLD` or `RELEASE`. This closes the required rework item; the
+optional live-DB `PRAGMA data_version` backup-reuse enhancement is not part of
+this task’s acceptance and was not introduced here.
