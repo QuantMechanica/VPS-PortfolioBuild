@@ -1,0 +1,29 @@
+{
+  "schema": "qm.q09-pass-anchor-binder/v1",
+  "mode": "plan",
+  "counts": {
+    "total": 2,
+    "ready": 0,
+    "held": 2,
+    "applied": 0
+  },
+  "findings": [
+    {
+      "work_item_id": "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+      "ea_id": "QM5_11476",
+      "symbol": "USDJPY.DWX",
+      "prior_reason_code": "Q09_AUTOSEAL_BIND_PLAN_FAILED",
+      "action": "HOLD",
+      "reason": "no exact completed Q09 PASS source"
+    },
+    {
+      "work_item_id": "8b233bbf-4ed6-4c27-a3d2-5e940c9248ab",
+      "ea_id": "QM5_10148",
+      "symbol": "EURNZD.DWX",
+      "prior_reason_code": "Q09_AUTOSEAL_BIND_PLAN_FAILED",
+      "action": "HOLD",
+      "reason": "Q09 PASS aggregate/summary contradiction"
+    }
+  ],
+  "applied": []
+}

@@ -1,0 +1,51 @@
+{
+  "schema": "qm.det-repairs-owner-package/v1",
+  "generated_at_utc": "2026-09-16T00:00:00+00:00",
+  "task_id": "det-repairs",
+  "item": "q09_sealed_plan_derivation",
+  "decision": "STOP - evidence-semantic, fail-closed holds are correct, no deterministic derivation gap",
+  "rows": [
+    {
+      "work_item_id": "8b233bbf-4ed6-4c27-a3d2-5e940c9248ab",
+      "ea_id": "QM5_10148",
+      "symbol": "EURNZD.DWX",
+      "hold_code": "Q09_AWAITING_SEALED_PLAN",
+      "autoseal_failure": "bound Q07 seed-stability evidence is missing",
+      "anchor_binder_failure": "Q09 PASS aggregate/summary contradiction",
+      "facts": [
+        "identity-bound Q07 fallback resolves correctly (bad1b2f7 PASS, exact setfile identity); derivation logic is not defective",
+        "Q07 evidence file lost in 2026-08-31 evidence-loss incident (empty directory skeleton remains)",
+        "Q09 PASS source 6ee9adbe contradicts itself: aggregate verdict=PASS vs immutable run summary result=FAIL MIN_TRADES_NOT_MET (29<30), recency_gate STALE_WINDOW deployment_blocker"
+      ],
+      "owner_options": [
+        "Q07 re-measurement + readjudication-lane resolution of the aggregate/summary contradiction",
+        "retire/disposition the row"
+      ]
+    },
+    {
+      "work_item_id": "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+      "ea_id": "QM5_11476",
+      "symbol": "USDJPY.DWX",
+      "hold_code": "Q09_AWAITING_SEALED_PLAN",
+      "autoseal_failure": "Q08 dependency has no Q07 lineage and no identity-bound Q07 predecessor could be authenticated",
+      "anchor_binder_failure": "no exact completed Q09 PASS source",
+      "facts": [
+        "no Q07 work item exists for the EA at all; nothing to authenticate",
+        "only Q09 rows are done FAIL (fae2b8eb, 2a7e17b7); Q08_INPUT 43c9d9d7 is FAIL_SOFT with empty lineage payload"
+      ],
+      "owner_options": [
+        "re-run Q09 after addressing Q09 FAIL verdicts (economic)",
+        "retire/disposition the row"
+      ]
+    }
+  ],
+  "also_routed_here": [
+    {
+      "work_item_id": "d712832c-b41b-471c-a986-79f7f17f8dfb",
+      "ea_id": "QM5_11422",
+      "reason": "plan source-vintage hash mismatch at load; sealed-plan re-derivation lane"
+    }
+  ],
+  "runnable_hours_unlocked": 0.0,
+  "expected_unlock_hours": 4.08
+}
