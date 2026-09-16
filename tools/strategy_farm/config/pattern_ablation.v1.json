@@ -1,0 +1,391 @@
+{
+  "schema": "qm.pattern-ablation/v1",
+  "programme_id": "PATTERN_ABLATION_2026-09-16",
+  "generated_at_utc": "2026-09-16T00:00:00+00:00",
+  "authority": "OWNER directive 3 §29 / interim §9 (2026-09-16) — PATTERN_FILTER programme, RESEARCH+SPECIFICATION slice",
+  "status": "DESIGN_ONLY_NOT_COMMISSIONED",
+  "commissioned_by": "Fable (OWNER seat) via a signed commission artifact at decisions/ before any enqueue",
+  "design_doc": "docs/research/PATTERN_ABLATION_PROGRAMME_2026-09-16.md",
+  "evidence_receipt": "docs/ops/evidence/2026-09-16_pattern_ablation/receipt.md",
+  "catalog_source": "docs/research/PATTERN_FILTER_CATALOG.md (77 predicates; census fields cited per trial are DESCRIPTIVE, not verdicts)",
+  "boundaries": {
+    "db_writes": false,
+    "enqueue": false,
+    "gate_contract_edits": false,
+    "economic_validation": false,
+    "commits": false,
+    "new_files_only": true
+  },
+  "q12_contract": {
+    "gate": "Q12",
+    "gate_contract_version": "v4",
+    "selection_contract": "DL-089 (ROT, unchanged by this programme)",
+    "phase": "OPT_CENSUS",
+    "semantics": "BLACKLIST_v1 (QM_PatternProfileMode: a firing predicate BLOCKS its side; whitelist is a physically different experiment, OWNER E0-3)",
+    "years": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "walk_forward_windows": [
+      {"step": 1, "select_years": [2019, 2020, 2021], "test_year": 2022},
+      {"step": 2, "select_years": [2019, 2020, 2021, 2022], "test_year": 2023},
+      {"step": 3, "select_years": [2019, 2020, 2021, 2022, 2023], "test_year": 2024},
+      {"step": 4, "select_years": [2019, 2020, 2021, 2022, 2023, 2024], "test_year": 2025}
+    ],
+    "activity_floor_trade_days_per_year": 10,
+    "relative_improvement_min": 0.05,
+    "selection_year_quorum": "2/3",
+    "filter_cap_per_direction": 3,
+    "filter_cap_note": "cap=3 is a SELECTION parameter (not a Hard Rule); this programme tests exactly 1 filter per base, never combinations, never a stack",
+    "adoption_rule": "The ablation is a mechanistic candidate screen ONLY. Q12's sealed DL-089 rule (full-matrix census, consistency >=2/3 years >=+5% return_to_maxdd vs same-year baseline, activity floor, WF stability) remains the sole authority that decides which filters an EA runs. A positive ablation read-out obliges a full census program before any adoption; a negative read-out ends the hypothesis. No gate contract is edited.",
+    "implementation_note": "opt_census.enqueue() pins planned_trials==1085, so inside today's lane each trial executes as its own full DL-089 census program (155 arms x 7 years, declared_trial_count=154 per program); the ablation read-out is restricted to the pre-registered single predicate per direction. A reduced 3-arm plan would need a code change decision by Fable (see open questions in the design doc)."
+  },
+  "multiple_testing_control": {
+    "fdr_method": "benjamini-hochberg",
+    "fdr_scope": "WITHIN each pre-registered family, at programme level over the 11 base hypotheses (per-direction arms are repeated measurement, not additional hypotheses)",
+    "pre_registered_families": [
+      "pattern_filter.price-action",
+      "pattern_filter.trend",
+      "pattern_filter.volatility",
+      "pattern_filter.news",
+      "pattern_filter.session",
+      "pattern_filter.regime",
+      "pattern_filter.time"
+    ],
+    "trial_counting": "1 hypothesis = (base, predicate) across BOTH directions = 2 declared direction-trials; calendar years are repeated measurement (DL-089 §5), never trials",
+    "declared_trial_count_total": 22,
+    "declared_before_measurement": true,
+    "q16_deflation": "The 22 declared direction-trials are logged in search_history_ledger (families pattern_filter.*) BEFORE any enqueue and feed Q16 DSR/PBO deflation of any configuration that adopts a filter; per-program census deflation stays declared_trial_count=154. NEVER silently."
+  },
+  "trial_template": {
+    "filters_per_trial": 1,
+    "combinations": [],
+    "combinations_rule": "Explicitly none. No stacks, no pairs, no power-set. One predicate per base, one base+predicate trial each.",
+    "arms": ["baseline", "buy_{predicate_id}", "sell_{predicate_id}"],
+    "null_control": "baseline (NO_FILTER) arm is mandatory in every year and is the control every overlay is measured against (same program, same year)",
+    "direction_policy": "BOTH",
+    "measurements": [
+      "trade count / trade reduction vs same-(base,year) baseline",
+      "per-trade expectancy and expectancy delta vs base",
+      "max drawdown and drawdown delta vs base",
+      "return_to_maxdd (sealed DL-089 success measure)",
+      "regime-conditional effect (trend / range / high-vol buckets)",
+      "portfolio marginal effect (correlation & tail contribution to the DXZ/FTMO book)"
+    ],
+    "kill_criteria": {
+      "expectancy_drop_max_pct": 5.0,
+      "expectancy_drop_rule": "kill if relative per-trade expectancy drops >5% vs base in >=2/3 of the 7 measured years (any single year >10% is an immediate kill)",
+      "trade_reduction_max_pct_without_pf_gain": 20.0,
+      "trade_reduction_rule": "kill if trade reduction exceeds 20% in any year without a >=+5% relative return_to_maxdd gain in that same year",
+      "activity_floor_breach_inadmissible": true,
+      "wf_subset_stability_failure_inadmissible": true,
+      "positive_readout_rule": "a passing read-out only promotes the predicate to a full DL-089 census program; the sealed selection rule decides adoption"
+    }
+  },
+  "trials": [
+    {
+      "trial_id": "ABL-001",
+      "priority_rank": 1,
+      "base": {
+        "ea_id": "QM5_13213",
+        "slug": "balke-gmt3-range-breakout",
+        "symbol": "USDJPY.DWX",
+        "timeframe": "H1",
+        "venue": "dxz+ftmo",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Live DXZ sleeve (0.0431% risk); dense intraday session breakout; DL-089 pilot family (original census subject); FTMO-shape priority",
+        "entry_logic": "H1 stop breakout of the completed 03:00-06:00 GMT+3 range, both sides, evening resolution 18:00 GMT+3, ATR range filter 0.4x-2.5x"
+      },
+      "predicate": {
+        "predicate_id": 44,
+        "name": "Wide Range Bar",
+        "category": "volatility",
+        "subfamily": "wide-range",
+        "unger_related": true,
+        "census": {"improved_cells": 88, "cells_with_baseline": 235, "mean_trade_reduction_pct": -6.23}
+      },
+      "hypothesis_mechanism": "Blacklist entries whose 06:00 GMT+3 order-placement bar (the completed final range bar) is a wide-range bar: an expanded final range bar means the breakout is already underway (chase location) or the range formed on news displacement; Balke's edge is quiet-range resolution, so WRB-triggered entries have degraded follow-through.",
+      "expected_trade_reduction_band_pct": [2, 12],
+      "family": "pattern_filter.volatility",
+      "activation_precondition": "base setfile exposes opt_pp_buy1..3/opt_pp_sell1..3 and passes opt_census.validate_base_setfile; census EA owns a done/PASS Q02 row"
+    },
+    {
+      "trial_id": "ABL-002",
+      "priority_rank": 2,
+      "base": {
+        "ea_id": "QM5_13013",
+        "slug": "grimes-trendday-v2",
+        "symbol": "NDX.DWX",
+        "timeframe": "M15",
+        "venue": "dxz+ftmo",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Live DXZ sleeve (0.379% risk); session-flat M15 index intraday (16:30-22:45, hard session close) — closest qualified analogue of the H-CW FTMO profile",
+        "entry_logic": "M15 close above first-4-bar opening range AND prior D1 high after a compressed D1 setup (<=0.65x ATR20), 3R target, trail, session-flat exit"
+      },
+      "predicate": {
+        "predicate_id": 84,
+        "name": "Trend Exhaustion",
+        "category": "regime",
+        "subfamily": "exhaustion",
+        "unger_related": false,
+        "census": {"improved_cells": 89, "cells_with_baseline": 247, "mean_trade_reduction_pct": -7.47}
+      },
+      "hypothesis_mechanism": "Blacklist M15 breakout entries when the deterministic exhaustion regime fires on the signal bar: a trend-day breakout attempted into an exhaustion-flagged tape is a failed-breakout candidate (the compressed D1 is a terminal coil, not a trend-day base).",
+      "expected_trade_reduction_band_pct": [3, 13],
+      "family": "pattern_filter.regime",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-003",
+      "priority_rank": 3,
+      "base": {
+        "ea_id": "QM5_10706",
+        "slug": "tv-mon-ls",
+        "symbol": "GBPUSD.DWX",
+        "timeframe": "H1",
+        "venue": "dxz+ftmo",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Live DXZ sleeve (0.053% risk); intraday H1 week-open fade; DL-089 census near-miss program (BUY-hour 52 failed 2/4-vs-3 stability — motivates a shape-based, not hour-based, second look)",
+        "entry_logic": "Fade failed breaks of the prior Monday range: H1 close back inside the Monday box after a wick sweep beyond it; stop beyond sweep extreme; weekly force-flat Friday"
+      },
+      "predicate": {
+        "predicate_id": 18,
+        "name": "Spinning Top",
+        "category": "price-action",
+        "subfamily": "single-bar-indecision",
+        "unger_related": true,
+        "census": {"improved_cells": 74, "cells_with_baseline": 238, "mean_trade_reduction_pct": -9.44}
+      },
+      "hypothesis_mechanism": "Blacklist sweep-fade entries whose close-back-inside bar is a spinning top: an indecision-body close back inside the box carries no rejection conviction; the WolfWeb fade is only valid when the rejection bar is decisive.",
+      "expected_trade_reduction_band_pct": [4, 15],
+      "family": "pattern_filter.price-action",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-004",
+      "priority_rank": 4,
+      "base": {
+        "ea_id": "QM5_10700",
+        "slug": "tv-liq-break",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "H1",
+        "venue": "dxz+ftmo",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "DXZ v2 new sleeve (0.089% burn-in risk); H1 intraday contraction-liquidity breakout on gold; DL-089 census program with wf_unstable=true (no reproducible filter found yet — fresh causal thesis needed)",
+        "entry_logic": "H1 close through the prior liquidity high/low after a confirmed pivot contraction (two lower highs + two higher lows); ATR stop, fixed 2R target"
+      },
+      "predicate": {
+        "predicate_id": 83,
+        "name": "Regime Transition",
+        "category": "regime",
+        "subfamily": "transition",
+        "unger_related": false,
+        "census": {"improved_cells": 49, "cells_with_baseline": 249, "mean_trade_reduction_pct": -9.71}
+      },
+      "hypothesis_mechanism": "Blacklist liquidity-break entries fired while the regime classifier flags a transition bar: contraction breaks triggered in trend birth/death chop are noise breakouts, not orderly continuation.",
+      "expected_trade_reduction_band_pct": [4, 15],
+      "family": "pattern_filter.regime",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-005",
+      "priority_rank": 5,
+      "base": {
+        "ea_id": "QM5_11660",
+        "slug": "pp-wedge",
+        "symbol": "NDX.DWX",
+        "timeframe": "H4",
+        "venue": "dxz",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Qualified NDX sleeve (PRE60 news temporal, CONFIG_LOCKED); H4 trend-continuation family with clean regime-conditional hypothesis",
+        "entry_logic": "H4 wedge-continuation entries (both envelope trends rising for long / falling for short) with structural invalidation exits and ATR emergency stop"
+      },
+      "predicate": {
+        "predicate_id": 79,
+        "name": "Ranging",
+        "category": "regime",
+        "subfamily": "trend-strength",
+        "unger_related": false,
+        "census": {"improved_cells": 96, "cells_with_baseline": 220, "mean_trade_reduction_pct": 3.62}
+      },
+      "hypothesis_mechanism": "Blacklist continuation entries when the deterministic trend-strength classifier says ranging: a wedge-continuation signal in a ranging tape is a coin flip; the strategy's edge requires a trending regime. (Census trade-reduction for 79 is a small positive = descriptive anomaly under blacklist semantics; expected reduction here is low because the predicate fires rarely on H4.)",
+      "expected_trade_reduction_band_pct": [0, 8],
+      "family": "pattern_filter.regime",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-006",
+      "priority_rank": 6,
+      "base": {
+        "ea_id": "QM5_10513",
+        "slug": "mql5-ichimoku",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1",
+        "venue": "dxz",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Live DXZ sleeve (0.305% risk); D1 cloud-cross trend system; replicates the ABL-005 ranging-blacklist mechanism on a different strategy class and symbol (regime-family replication)",
+        "entry_logic": "D1 Tenkan/Kijun cross with cloud-side confirmation; opposite-signal or ATR-stop/1.5R/framework exits"
+      },
+      "predicate": {
+        "predicate_id": 79,
+        "name": "Ranging",
+        "category": "regime",
+        "subfamily": "trend-strength",
+        "unger_related": false,
+        "census": {"improved_cells": 96, "cells_with_baseline": 220, "mean_trade_reduction_pct": 3.62}
+      },
+      "hypothesis_mechanism": "Blacklist Tenkan/Kijun cross entries while the trend-strength classifier says ranging: crosses in a ranging tape are whipsaw fuel and cloud-side confirmation does not rescue direction in chop.",
+      "expected_trade_reduction_band_pct": [0, 8],
+      "family": "pattern_filter.regime",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-007",
+      "priority_rank": 7,
+      "base": {
+        "ea_id": "QM5_11881",
+        "slug": "connors-rsi2-mean-reversion",
+        "symbol": "GBPUSD.DWX",
+        "timeframe": "D1",
+        "venue": "dxz+ftmo",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Qualified GBPUSD sleeve; Connors RSI(2) pullback family (the farm's best-replicated MR class); MR entries are the class where vol-state blacklists have the clearest mechanism",
+        "entry_logic": "D1 RSI(2) pullback fade: buy close>SMA200 with RSI(2)<10 after a down close; mirror short; RSI(2) mid-line exits; 2xATR hard stop"
+      },
+      "predicate": {
+        "predicate_id": 60,
+        "name": "Vol Expansion",
+        "category": "volatility",
+        "subfamily": "vol-state",
+        "unger_related": false,
+        "census": {"improved_cells": 80, "cells_with_baseline": 235, "mean_trade_reduction_pct": -5.15}
+      },
+      "hypothesis_mechanism": "Blacklist RSI(2) fade entries fired during volatility expansion: dips that keep expanding are knife acceleration, not exhaustion; the MR edge lives in quiet tapes.",
+      "expected_trade_reduction_band_pct": [2, 11],
+      "family": "pattern_filter.volatility",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-008",
+      "priority_rank": 8,
+      "base": {
+        "ea_id": "QM5_41219",
+        "slug": "cum-rsi2-commodity-requal8",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1",
+        "venue": "dxz",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Qualified requal8 port of the live 12567 cum-rsi2-commodity sleeve (0.7465% live risk — the heaviest commodity sleeve); long-only gold dip-buying with a statistical-overextension failure mode",
+        "entry_logic": "D1 long when close>SMA200 and RSI(2)[1]+RSI(2)[2]<35; 2.5xATR stop; RSI(2)>65 or 5-bar time stop exit; news blackout on entries"
+      },
+      "predicate": {
+        "predicate_id": 88,
+        "name": "Zscore High",
+        "category": "regime",
+        "subfamily": "statistical-zscore",
+        "unger_related": false,
+        "census": {"improved_cells": 50, "cells_with_baseline": 253, "mean_trade_reduction_pct": -10.89}
+      },
+      "hypothesis_mechanism": "Blacklist long entries when the D1 close sits at a high statistical z-score vs its recent window: a cum-RSI2 dip signal firing while price is still statistically extended is an early-knife long in an overbought market, not a discounted entry.",
+      "expected_trade_reduction_band_pct": [5, 17],
+      "family": "pattern_filter.regime",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned (requal8 row); NOTE q10_news_verdict carries REVIEW_REQUIRED flag in candidate_universe.csv — commission only after that flag is dispositioned"
+    },
+    {
+      "trial_id": "ABL-009",
+      "priority_rank": 9,
+      "base": {
+        "ea_id": "QM5_11422",
+        "slug": "williams-18ma-outside-bar-entry-d1",
+        "symbol": "USDCAD.DWX",
+        "timeframe": "D1",
+        "venue": "dxz",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "Qualified USDCAD sleeve; D1 two-bar MA-breakout family (setup already excludes inside bars, so the pattern gate at the trigger bar is a non-redundant shape layer); DL-089 repair priority 3 (490 unmeasured B2/B5 cells)",
+        "entry_logic": "D1 stop-order breakout above/below the two-bar extreme when both lows/highs sit on one side of SMA(18) and neither setup bar is an inside bar; stop beyond opposite extreme capped at 80 pips; 2R target"
+      },
+      "predicate": {
+        "predicate_id": 3,
+        "name": "Doji",
+        "category": "price-action",
+        "subfamily": "single-bar-indecision",
+        "unger_related": true,
+        "census": {"improved_cells": 80, "cells_with_baseline": 232, "mean_trade_reduction_pct": -8.26}
+      },
+      "hypothesis_mechanism": "Blacklist stop-breakout entries on a doji trigger bar: a directionless decision bar (open ~= close) at the close-through-trigger means the setup had no follow-through conviction; doji-triggered breaks are the classic failed-breakout population.",
+      "expected_trade_reduction_band_pct": [3, 14],
+      "family": "pattern_filter.price-action",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-010",
+      "priority_rank": 10,
+      "base": {
+        "ea_id": "QM5_9641",
+        "slug": "bandy-cci-extreme-fade-mr-index",
+        "symbol": "WS30.DWX",
+        "timeframe": "D1",
+        "venue": "dxz+ftmo",
+        "pipeline_status": "QUALIFIED_Q02_Q14",
+        "value_basis": "DXZ v2 new sleeve (0.373% risk, PRE60_POST60 news temporal); long-only index MR fade — the D1 index representative that complements the M15/H1 intraday FTMO priority picks",
+        "entry_logic": "D1 long-only CCI(20) extreme fade with SMA(200) regime filter on US equity indices; next-session-open entries"
+      },
+      "predicate": {
+        "predicate_id": 100,
+        "name": "Quarter End",
+        "category": "time",
+        "subfamily": "calendar",
+        "unger_related": false,
+        "census": {"improved_cells": 56, "cells_with_baseline": 235, "mean_trade_reduction_pct": -10.52}
+      },
+      "hypothesis_mechanism": "Blacklist CCI-extreme fades entered at quarter-end: quarter-end index rebalancing flows manufacture CCI extremes that persist (flow-driven distortion), breaking the statistical-fade premise exactly on the calendar days the predicate flags.",
+      "expected_trade_reduction_band_pct": [4, 16],
+      "family": "pattern_filter.time",
+      "activation_precondition": "base setfile exposes opt_pp inputs and passes validate_base_setfile; Q02 PASS row owned"
+    },
+    {
+      "trial_id": "ABL-011",
+      "priority_rank": 11,
+      "base": {
+        "ea_id": "QM5_41475",
+        "slug": "cash-window-index-continuation-h1",
+        "symbol": "NDX.DWX",
+        "timeframe": "H1",
+        "venue": "ftmo",
+        "pipeline_status": "CONDITIONAL_G0",
+        "value_basis": "FTMO-gap priority #1: session-flat H-CW class (the only deeply-validated FTMO-shaped pocket, CAMP-2026-0001); NDX is the lead symbol (GDAXI/SP500 are expansion slots after the lead read-out)",
+        "entry_logic": "H1 cash-session opening-range continuation (13:00-17:00 UTC window), EMA filter, one entry/day, ATR stop, session-flat by 20:00 UTC, shock/spread/news filters, daily/weekly circuit breakers"
+      },
+      "predicate": {
+        "predicate_id": 98,
+        "name": "Volume Climax",
+        "category": "volatility",
+        "subfamily": "volume-climax",
+        "unger_related": false,
+        "census": {"improved_cells": 33, "cells_with_baseline": 255, "mean_trade_reduction_pct": -11.21}
+      },
+      "hypothesis_mechanism": "Blacklist cash-window continuation entries whose H1 signal bar is a tick-count climax bar: climax-shaped signal bars mark event-driven displacement that mean-reverts within the session; this complements the card's first-session-bar range shock filter with a per-signal-bar tape-shape gate (DWX tick-count proxy, not traded volume).",
+      "expected_trade_reduction_band_pct": [5, 17],
+      "family": "pattern_filter.volatility",
+      "activation_precondition": "CONDITIONAL: base does not exist in the pipeline yet (G0 card APPROVED 2026-09-15, build-only). Trial activates per symbol only after the H-CW base owns a done/PASS Q02 row (opt_census._q02_pass) and a hash-bound build; hypothesis is pre-registered NOW to keep the causal thesis ahead of the data."
+    }
+  ],
+  "explicit_non_selections": [
+    {"ea_id": "QM5_21501", "slug": "balke-gmt3-range-breakout-ppcensus", "reason": "Instrumented derivative of ABL-001 base, not an independent family (2026-09-09 repair writeup: 'keine unabhängige Diversifikation'); its open census cells and 33/34 re-measurement belong to the separate Balke recovery lineage, not new ablation trials"},
+    {"ea_id": "QM5_11421", "slug": "ohlc-daily-squeeze-reversal-d1", "reason": "Mechanically duplicated by QM5_41221 (requal8); one squeeze-reversal representative is enough and the family is better covered by ABL-009's outside-bar cousin"},
+    {"ea_id": "QM5_41221", "slug": "ohlc-daily-squeeze-reversal-d1-requal8", "reason": "Mutual duplicate of QM5_11421; same mechanism, same symbol"},
+    {"ea_id": "QM5_10145", "slug": "tsm-meanret", "reason": "D1 rolling-mean trend; MR/trend hypotheses already covered by ABL-005/006/007 with stronger mechanisms"},
+    {"ea_id": "QM5_11910", "slug": "larry-williams-18ma-2outside-bars-d1", "reason": "Same Larry-Williams 18MA two-bar breakout family as ABL-009 (mechanism and census story identical); family represented once"},
+    {"ea_id": "QM5_1537", "slug": "aa-vol-sma10", "reason": "D1 monthly volatility-ranked sleeve with calendar-driven symbol rotation; the close-cross-SMA entry has no shape-layer mechanism and the volatility family already carries 3 trials"},
+    {"ea_id": "QM5_10403", "slug": "et-turtle20x", "reason": "D1 Donchian trend breakout already represented by ABL-001/ABL-002 intraday breakouts with cleaner shape-layer mechanisms"},
+    {"ea_id": "QM5_12710", "slug": "commodity-tsmom-12m-atr", "reason": "12-month structural TSMOM: entries are monthly calendar-driven; entry-bar shape predicates have no mechanism"},
+    {"ea_id": "QM5_12849", "slug": "brent-tsmom12m", "reason": "Same structural calendar-driven class as 12710"},
+    {"ea_id": "QM5_12855", "slug": "brent-nov-fade", "reason": "Month-of-year calendar sleeve: a time predicate on a calendar strategy is tautological; the ONE time-family slot goes to ABL-010 where calendar distortion is the honest mechanism"},
+    {"ea_id": "QM5_13054", "slug": "brent-tom-mom", "reason": "Turn-of-month structural sleeve; calendar-driven entries, no shape mechanism"},
+    {"ea_id": "QM5_20048", "slug": "wti-preholiday", "reason": "Pre-holiday calendar sleeve; same tautology class as 12855"},
+    {"ea_id": "QM5_20266", "slug": "collins-66mom", "reason": "Daily structural momentum; low-frequency class without an entry-bar shape mechanism"},
+    {"ea_id": "QM5_21505", "slug": "xag-weekly-lowvol-momentum", "reason": "Weekly volume-rank continuation already carries an internal tape filter; marginal pattern layer is not the highest-value use of a slot"},
+    {"ea_id": "QM5_21507", "slug": "qs-kama-trend-xau", "reason": "KAMA adaptive trend; trend-family regime hypothesis already replicated (ABL-005/006) and exhaustion covered (ABL-002)"},
+    {"ea_id": "QM5_11708", "slug": "anon-market-squeeze-d1", "reason": "Short-only single-direction squeeze; the DL-089 near-miss on this program was an hour-filter phenomenon, and this programme tests pattern predicates only"},
+    {"ea_id": "QM5_10911", "slug": "grimes-complex-pb", "reason": "FRONTIER (blocked at Q12): not in the qualified pool; the ablation programme never runs below the Q02->Q14 chain"},
+    {"ea_id": "QM5_11294", "slug": "cs-ichi-cloud", "reason": "FRONTIER (blocked at Q12): not qualified"},
+    {"ea_id": "QM5_1354", "slug": "woodie-cci-dual-h1", "reason": "FRONTIER (blocked at Q10): not qualified"}
+  ]
+}
