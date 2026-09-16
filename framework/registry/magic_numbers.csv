@@ -18498,3 +18498,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41475,cash-window-index-continuation-h1,0,NDX.DWX,414750000,2026-09-15,Codex governed allocator,active
 41475,cash-window-index-continuation-h1,1,GDAXI.DWX,414750001,2026-09-15,Codex governed allocator,active
 41475,cash-window-index-continuation-h1,2,SP500.DWX,414750002,2026-09-15,Codex governed allocator,active
+41477,fx-session-mean-reversion-m15,0,EURUSD.DWX,414770000,2026-09-16,Codex governed allocator,active
+41477,fx-session-mean-reversion-m15,1,GBPUSD.DWX,414770001,2026-09-16,Codex governed allocator,active
+41477,fx-session-mean-reversion-m15,2,USDJPY.DWX,414770002,2026-09-16,Codex governed allocator,active

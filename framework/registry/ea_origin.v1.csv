@@ -4447,6 +4447,7 @@ QM5_41471,edgelab-audusd-eurjpy-cointegration-symfix,internal_discovery,slug:int
 QM5_41472,eurgbp-audjpy-symfix,external_source,slug:default_external,0
 QM5_41473,brent-tom-mom-symfix,external_source,slug:default_external,0
 QM5_41474,xag-weekly-lowvol-momentum-symfix,external_source,slug:default_external,0
+QM5_41475,cash-window-index-continuation-h1,internal_discovery,card:internal_marker,1
 QM5_9001,chan-at-roll-arb-etf,external_source,slug:default_external,0
 QM5_9002,chan-at-vx-es-roll-mom,external_source,slug:default_external,0
 QM5_9003,chan-at-spy-arb,external_source,slug:default_external,0
