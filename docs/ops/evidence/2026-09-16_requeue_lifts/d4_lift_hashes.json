@@ -1,0 +1,13 @@
+{
+  "schema": "qm.requeue-lift/v1",
+  "decision": "OWNER-DEC-REQUEUE-LIFT-20260916-D4",
+  "ea": "QM5_11731",
+  "file": "D:\\QM\\strategy_farm\\state\\requeue_excluded_eas.txt",
+  "before_sha256": "3f092f0a5029f483da2d25086245ecb53ebe1be79c28245b0451d93b6c45f3f3",
+  "after_sha256": "a614bfc2bf587eb8b2a3b2b059b59a9a33af3ea3b472b41e582f3c6c2d68682a",
+  "removed_line": "QM5_11731",
+  "backup": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-16_requeue_lifts\\requeue_excluded_eas.txt.before_D4_lift",
+  "backup_sha256": "3f092f0a5029f483da2d25086245ecb53ebe1be79c28245b0451d93b6c45f3f3",
+  "precondition": "COMPILE_EA 528c42c5-bd83-46d1-ab2c-954cb1669c0b done/COMPILE_OK, ex5_sha256 6e6fbf4468cf74c85f14e2b33c0b1676c78500929f153ddbb176b9bb692a2849",
+  "lifted_at_utc": "2026-09-16T12:00:03+00:00"
+}

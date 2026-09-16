@@ -1,0 +1,89 @@
+{
+  "applied": true,
+  "backup": {
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_first_q02_intake_20260916T121048Z_755e6548.sqlite",
+    "sha256": "d498078602a2741d53086f1050e5feb610b64cc84c65955333d82041da8616a7"
+  },
+  "canary": {
+    "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_EURUSD.DWX_M5_backtest.set",
+    "setfile_sha256": "6416d1b328f4914e2bdb7e5ed64ea0876ecbe5106511ff9d25aac4d6a7cebafb",
+    "symbol": "EURUSD.DWX",
+    "timeframe": "M5"
+  },
+  "compile_evidence_path": "D:\\QM\\reports\\work_items\\528c42c5-bd83-46d1-ab2c-954cb1669c0b\\QM5_11731\\COMPILE_EA\\compile_evidence.json",
+  "compile_work_item_id": "528c42c5-bd83-46d1-ab2c-954cb1669c0b",
+  "deferred": [
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_GBPUSD.DWX_M5_backtest.set",
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "M5"
+    },
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_USDCHF.DWX_M5_backtest.set",
+      "symbol": "USDCHF.DWX",
+      "timeframe": "M5"
+    },
+    {
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_USDJPY.DWX_M5_backtest.set",
+      "symbol": "USDJPY.DWX",
+      "timeframe": "M5"
+    }
+  ],
+  "dry_run": false,
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd",
+  "ea_id": "QM5_11731",
+  "eligible": true,
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\QM5_11731_tc-m5-s20-ema3-bb-macd.ex5",
+  "ex5_sha256": "6e6fbf4468cf74c85f14e2b33c0b1676c78500929f153ddbb176b9bb692a2849",
+  "magic": {
+    "active_row_count": 4,
+    "issues": [],
+    "ok": true,
+    "registry_path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+    "target_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDCHF.DWX",
+      "USDJPY.DWX"
+    ]
+  },
+  "priority_boost": false,
+  "reason": "ELIGIBLE",
+  "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\receipts\\first_q02_intake\\528c42c5-bd83-46d1-ab2c-954cb1669c0b_55d28c4a-75fd-4084-9444-18666b364dc5.json",
+  "receipt_sha256": "83565c5c4a8f5d9b9a099ced3c3d274a70194ef5456c5c56463e21c133c70af8",
+  "schema": "qm.first-q02-intake/v1",
+  "setfile_checks": [
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_EURUSD.DWX_M5_backtest.set",
+      "sha256": "6416d1b328f4914e2bdb7e5ed64ea0876ecbe5106511ff9d25aac4d6a7cebafb"
+    },
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_GBPUSD.DWX_M5_backtest.set",
+      "sha256": "cdfaa3348f873fe61c33ee78dacba51477b6a730c66f186c52d4efa4654b052f"
+    },
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_USDCHF.DWX_M5_backtest.set",
+      "sha256": "f9fff2465e48ec0e0b81834eb0379babfef4e38ad695f1d7f9e4fab81010a3c9"
+    },
+    {
+      "risk_fixed": 1000.0,
+      "risk_percent": 0.0,
+      "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11731_tc-m5-s20-ema3-bb-macd\\sets\\QM5_11731_tc-m5-s20-ema3-bb-macd_USDJPY.DWX_M5_backtest.set",
+      "sha256": "0395fa10bf9982842da490b39619d2127eede94a26083c14d785022a65a5b05b"
+    }
+  ],
+  "target_symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX"
+  ],
+  "work_item_id": "55d28c4a-75fd-4084-9444-18666b364dc5",
+  "would_enqueue": false
+}

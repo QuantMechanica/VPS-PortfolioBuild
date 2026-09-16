@@ -1,0 +1,42 @@
+{
+  "activation_held_count": 1,
+  "batch_form": false,
+  "build_task_id": null,
+  "candidate_classification": null,
+  "eligible_count": 1,
+  "enqueued": [
+    {
+      "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+      "compiled": false,
+      "ea_id": "QM5_11731",
+      "ea_label": "QM5_11731_tc-m5-s20-ema3-bb-macd",
+      "failed": false,
+      "failure_classes": [],
+      "status": "pending",
+      "symbol_count": 4,
+      "timeframe": {
+        "candidates": [
+          "M5"
+        ],
+        "source": "existing_setfiles",
+        "timeframe": "M5"
+      },
+      "work_item_id": "528c42c5-bd83-46d1-ab2c-954cb1669c0b"
+    }
+  ],
+  "enqueued_count": 1,
+  "idempotent_open": [],
+  "idempotent_open_count": 0,
+  "input_metadata": {
+    "from_file": null,
+    "from_file_sha256": null,
+    "requested_count": 1
+  },
+  "mode": "apply",
+  "no_gate_verdict": true,
+  "ok": true,
+  "refused": [],
+  "refused_count": 0,
+  "requested_count": 1,
+  "source_repair_authority": null
+}
