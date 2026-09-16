@@ -1,0 +1,87 @@
+{
+ "calendar_coverage_note": "both calendars verified EMPTY for every currency for 2025-05-01T00:00:00Z..2026-06-30T23:59:59Z (shared upstream gap; backfill is the separate human-gated registry-repair/refresh program)",
+ "currency_exposure": [
+  "EUR"
+ ],
+ "currency_source": "GDAXI.DWX:owner_override",
+ "delta": {
+  "added_count": 0,
+  "added_events": [],
+  "changed_impact_classifications": [],
+  "changed_impact_count": 0,
+  "is_empty": true,
+  "removed_count": 0,
+  "removed_events": [],
+  "time_shifted_count": 0,
+  "time_shifted_events": []
+ },
+ "delta_validation_reason": "relevant in-window event sets identical between tainted bundle and live clean calendar; any sealed verdict reproduces via the same gate logic; a pending measurement would observe an identical calendar",
+ "delta_validation_status": "UNCHANGED_EQUIVALENT",
+ "ea_id": "QM5_13301",
+ "hold_created_at": "2026-09-04T21:36:18+00:00",
+ "new_calendar": {
+  "bundle_id": "news-calendar-9342e8f0f3568bba78994cd2d0f057cac8f1100620076a3fe9bab57c454b6313",
+  "manifest_declared_sha256": "6d7d64b60bb72278e6c65cfb1e738b84a1d9fc5cf11488b573cc136cc1356320",
+  "manifest_file_sha256": "bcf37b37a99932bcc0496998b1757ce17267d9bb5150b324c731efd30aab51a6",
+  "primary_file": {
+   "path": "D:\\QM\\data\\news_calendar\\news_calendar_2015_2025.csv",
+   "sha256": "c48ad8b4bf667001ef7204d37f5420504f853ac25aa6f0a70152b3d743a1c134"
+  },
+  "secondary_file": {
+   "path": "D:\\QM\\data\\news_calendar\\forex_factory_calendar_clean.csv",
+   "sha256": "e15b6fe1f80f2f6a82a612f16ef7aaf6b9cc450d3eba1c3a94690ceee2f3b935"
+  }
+ },
+ "old_calendar": {
+  "bundle_id": "q09cal-20150101-20260809-0bb19b5bb9790b76",
+  "content_sha256": "86b2c0b595fd6011a2fe64b7da07f933e755294136a16f584d75389b66c56ce1",
+  "manifest_sha256": "b204d1ab9fe40fe32afc254ae4284ed6c1df112829df07483912e5ed54527461"
+ },
+ "option_b_hold_release_eligible": true,
+ "original_evidence_window": {
+  "from_utc": "2026-01-01T00:00:00Z",
+  "source": "payload.window_from_utc/window_to_utc",
+  "to_utc": "2026-04-06T23:59:59Z"
+ },
+ "original_overlap_result": {
+  "reason": "diagnostic_non_admission backfill never executed",
+  "status": "NOT_MEASURED"
+ },
+ "original_q09_verdict": {
+  "status": "never ran (pending diagnostic backfill)",
+  "verdict": null
+ },
+ "phase": "Q09_NEWS",
+ "recomputed_overlap_result": {
+  "calendar_delta_nonempty": false,
+  "calendar_delta_summary": {
+   "added": 0,
+   "changed_impact": 0,
+   "removed": 0,
+   "time_shifted": 0
+  },
+  "reason": "the calendar is not an input to the gate verdict logic (q09_news_contract.adjudicate / q10_confirmation._decide_verdict consume sealed backtest metrics only); a calendar delta cannot be turned into a new verdict without new MT5 measurement",
+  "status": "DETERMINISTIC_RECOMPUTE_UNAVAILABLE"
+ },
+ "recomputed_verdict": null,
+ "record_sha256": "f340e03817913d4263a020253c046ed4282acc3463f28bd7093e9731f589c15d",
+ "relevant_new_event_set": {
+  "high_impact_total": 0,
+  "per_currency": {},
+  "total": 0
+ },
+ "relevant_old_event_set": {
+  "high_impact_total": 0,
+  "per_currency": {},
+  "total": 0
+ },
+ "row_class": "diagnostic_backfill",
+ "schema": "qm.e1c-optionb-row-delta/v1",
+ "symbol": "GDAXI.DWX",
+ "symbols_considered": [
+  "GDAXI.DWX"
+ ],
+ "timeframe": "M5",
+ "verdict_reproduction": null,
+ "work_item_id": "1ab6156f-dfc1-5e03-aae7-db461d025b5c"
+}

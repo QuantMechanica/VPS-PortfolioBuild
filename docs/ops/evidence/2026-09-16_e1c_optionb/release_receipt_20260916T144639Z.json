@@ -1,0 +1,1195 @@
+{
+ "schema": "qm.e1c-optionb-release-receipt/v1",
+ "at_utc": "2026-09-16T14:46:39+00:00",
+ "actor": "kimi-interim-e1c-optionb",
+ "decision_id": "OWNER-E1C-OPTIONB-20260916",
+ "mode": "dry-run",
+ "pin_manifest": "D:\\QM\\data\\news_calendar\\q09_bundles\\q09cal-20150101-20260809-0bb19b5bb9790b76\\manifest.json",
+ "summary_sha256": "f61c5e8eb12d9e79fb7dea4b50ada9cd0305957603b2f18386ee0991acf50dde",
+ "rows": [
+  {
+   "work_item_id": "004eda49-6ba3-5a9d-8979-cfc7517948e2",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "03279258-a3d1-5137-ae8e-8e937e6c909f",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "033e7bc3-715e-5c71-b368-c00ea2594598",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "038fa259-6529-5d46-a46b-12206e1653ce",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "055cdabb-da68-5328-80b8-9012f291d466",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "06b9c0f8-f6c1-47f8-a40d-2dc94893db7c",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "0a7e5814-1e2b-5b31-a2a1-8cf9571b9f74",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "0d112806-ee2a-5d0a-9382-33a353cf8efe",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "0f7f63e4-9244-4c60-8610-ea068c5fc64e",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "10449264-8fa1-47f5-a3d7-adb28cee934d",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "120d68ff-bf61-4b16-abf8-1867aee53bb3",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "15d41b29-d3ac-5774-804f-f3f3981696e9",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "15e7deca-13e8-4760-9e8e-5918040f948d",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "194393b6-be3f-5ce7-9b67-98d326d2928e",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "1ab6156f-dfc1-5e03-aae7-db461d025b5c",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "1d9a2d26-4407-4554-acbb-4e4c258f0b04",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "1ffcb576-bf27-5063-a384-685355910c3a",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "20127f25-36d0-54ac-ad55-567dbbee9b49",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "24acc5d4-3e34-526e-a7a8-12640a2e759f",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "2641d5cf-6e1c-43d1-92b2-05c9d6f54d82",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "2cc205e5-014e-5355-ac9d-2d2e54c2f812",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "32bc6df5-edb1-5637-a482-a13843e3cc72",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "33b3bb40-f4e9-5bc4-a873-5e6a04069ca3",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "347f53a7-2b24-591a-b4c6-b4a6efde4420",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "421b36a2-c904-59c5-b747-cabe8da1909b",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "42c8debd-ca2a-4618-8aaf-b9c3ee379f61",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "44a48aa1-6dfb-53cc-a97f-dcdb8fd3cd86",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "55a08a4c-86a5-57a5-9f5f-380a560fa49c",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "58ae0036-5bc4-4711-8bfa-eb3465af298b",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "5b2336e2-b279-4373-b4ef-8457dd2fb4ac",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "5e308792-a65e-5b7a-a608-78381c18201e",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "60ce66e6-8c40-493a-aa8f-40c8714a3e85",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "6607ae07-b581-586f-9374-ec2673ad42b8",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "691e21c2-6f38-5911-b5e6-bd767131c461",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "70171429-8d84-49bd-8082-7034c924dbf4",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "72992810-aaf1-4fa8-9c12-c778bda0ae87",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "7459c6d4-d6be-5606-8ed4-aeb72f0be504",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "78d6e7f9-4355-59a8-8d37-9bb317ca86d8",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "7db96266-f85e-55a7-b299-31b94028ae7b",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "83826f05-3d85-4cac-8177-e3f7cd25c7e8",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "84608819-5253-4df0-871c-6eb4750c3435",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "86cccb8a-2d49-4539-a4a0-c45f530dc6ba",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "890a117c-e5be-5e03-bcae-027ede31f478",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "896259f9-eb2a-52ba-ad93-5d152eaf990b",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "8eea2250-4958-5f1c-9a6b-0670091dcc17",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "9202acef-e841-5fea-a695-a95437ceb807",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "92efae73-ade2-550b-a8d0-5268718db42c",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "95d49279-e099-5589-a112-750fe5d534b8",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "9a85fb74-4c31-4a74-8e8c-c332cf1b802e",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "9b69d492-82df-4703-9350-fea30afac98f",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "9d3f470e-5071-4398-86c7-7de4be979c3d",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "9de7b79c-ed84-5ebe-a4dc-4670e86b4976",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "9f691044-d481-4f69-8823-267d80fff89d",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "a61f1a02-f630-5f1f-a9d7-ef1af84627f8",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "a6e2cc8b-7b7b-4e64-9764-4cf39046dd1c",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "a800efb5-e0db-5f99-b982-9b2bf49108b5",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "a8e36fba-36e7-419a-9d2b-5b3116cbdde2",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "aece4bcc-62aa-4f8e-937e-5f81c071a4d0",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "af09850e-2c55-59dc-9744-19716b3c4e2d",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "b6804b25-3748-5d4f-83da-e125ce347ff8",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "b685a457-d784-55a5-b037-5e76803e63fd",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "b6bdac29-b608-4016-9394-2be6f34cc9a3",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "b8bedf49-a8c7-5373-b2e5-950d5367cb74",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "bb02b701-0d7c-4de7-82b2-87d917f8dd1b",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "bd840961-23a1-4fea-99ce-2e285c0d1914",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "bfd0e872-b4dc-5e2b-8948-8ebe18d14251",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "ca876575-d5ae-56b9-ba3b-5b5e9f6f7320",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "cb479ecb-e6ce-5b9b-a545-006255ae1873",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "cec67ad5-2ca5-4d84-b347-a0c370415329",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "d1729472-6047-5906-a8e6-1b51d8845d30",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "d3312a9e-038a-4ab8-b392-0dbdfa2728e0",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "d6532bee-4c7b-560c-b4b8-add78fe6f364",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "d6601d01-e9fa-5996-b73e-d52da5e9f78a",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "d81d9ea8-b802-4c38-8fc9-8bdbab6ef75c",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "d8a69e4f-e049-5404-8a57-711d89416af7",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "d9541e3a-9afc-594d-881e-dc2b13a5f95d",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "dbd984be-792d-4759-a5ac-bfd75b423917",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "de236098-a727-51f3-a82a-71beeb88c127",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "e0cbdd1a-1cfe-4bbe-8ebe-a4b4c26d151f",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "e28e7451-edfe-5133-9806-30de419a5438",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "e40e9e82-9ab8-4b03-95bd-70897c2d1489",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "e4fabf66-d902-45bf-9ffd-12e3289d172c",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "e8ec3223-886a-400b-ba1b-096a82cebd9f",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "f3f1cedc-c0d6-4485-917c-7f3b98957453",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "f67de388-706f-5c01-9d51-b2274bbb4dd8",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "f8f75276-2256-5e06-a58b-2756e5c1ebe0",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "fb127697-b89e-4d52-9bd5-0d92d95e9125",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "fd42b085-e29f-502a-a77f-2820084d8e01",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  },
+  {
+   "work_item_id": "ffd9ef4d-0946-5671-93c0-d9047ebd3270",
+   "released": false,
+   "dry_run": true,
+   "checks": {
+    "record_sha256_match": true,
+    "record_status": "UNCHANGED_EQUIVALENT",
+    "hold_active_taint": true,
+    "row_pending_news": true,
+    "marker_absent": true
+   },
+   "would_release": true
+  }
+ ],
+ "released_count": 0
+}

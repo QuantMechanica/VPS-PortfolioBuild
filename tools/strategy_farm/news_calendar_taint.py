@@ -6,6 +6,7 @@ Only this module's own physical holds may be released. Other holds survive.
 from __future__ import annotations
 import argparse
 import datetime as dt
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -24,6 +25,18 @@ CONFIG = Path(__file__).resolve().parent / 'config/news_calendar_taint.v1.json'
 HOLD = 'NEWS_CALENDAR_TAINTED'
 PHASES = {'Q09_NEWS', 'Q10_NEWS'}
 HEX = re.compile(r'^[0-9a-f]{64}$')
+E1C_MARKER_KEY = 'e1c_optionb_release'
+E1C_MARKER_SCHEMA = 'qm.e1c-optionb-release-marker/v1'
+E1C_DECISION_ID = 'OWNER-E1C-OPTIONB-20260916'
+E1C_RECORD_SCHEMA = 'qm.e1c-optionb-row-delta/v1'
+
+
+def _record_digest(record: dict) -> str:
+    """Canonical self-hash of a delta record (the record_sha256 field excluded)."""
+    material = {k: v for k, v in record.items() if k != 'record_sha256'}
+    canonical = (json.dumps(material, sort_keys=True, separators=(',', ':'),
+                            allow_nan=False) + '\n').encode()
+    return hashlib.sha256(canonical).hexdigest()
 
 
 def _strict(path):
@@ -97,6 +110,45 @@ def _scoped_marker_allows(item, activation=None):
         return False
 
 
+def _e1c_marker_allows(item, pinned):
+    """OWNER E1-C Option B per-row release marker (decision OWNER-E1C-OPTIONB-20260916).
+
+    Authenticated row-level counter-path, mirroring the scoped-B marker
+    invariants: an append-only payload marker hash-bound to a per-row delta
+    record that certifies UNCHANGED_EQUIVALENT. The record file is re-read and
+    re-hashed on EVERY decision (sweep and claim), so a tampered, deleted, or
+    wrong-status record fails closed and the hold re-arms. It never raises.
+    """
+    try:
+        if item.get('phase') not in PHASES or item.get('status') != 'pending':
+            return False
+        payload = json.loads(item.get('payload_json') or '{}')
+        if not isinstance(payload, dict):
+            return False
+        marker = payload.get(E1C_MARKER_KEY)
+        if not isinstance(marker, dict) or marker.get('schema') != E1C_MARKER_SCHEMA:
+            return False
+        if marker.get('work_item_id') != item['id']:
+            return False
+        if marker.get('tainted_sha256') != pinned:
+            return False
+        record_raw = Path(str(marker.get('record_path') or '')).read_bytes()
+        record = json.loads(record_raw.decode('utf-8-sig'))
+        if _record_digest(record) != marker.get('record_sha256'):
+            return False
+        return (
+            isinstance(record, dict)
+            and record.get('schema') == E1C_RECORD_SCHEMA
+            and record.get('work_item_id') == item['id']
+            and record.get('record_sha256') == marker.get('record_sha256')
+            and record.get('delta_validation_status') == 'UNCHANGED_EQUIVALENT'
+            and record.get('option_b_hold_release_eligible') is True
+            and (record.get('old_calendar') or {}).get('content_sha256') == pinned
+        )
+    except (OSError, ValueError, TypeError, AttributeError):
+        return False
+
+
 def decision(item, policy, pin_manifest, *, scoped_activation=None):
     if item['phase'] not in PHASES or item['status'] != 'pending':
         return None
@@ -111,7 +163,7 @@ def decision(item, policy, pin_manifest, *, scoped_activation=None):
         pinned = _content_sha(pin_manifest)
         if pinned in taints:
             # B is an authenticated row-level counter-path, never a global untaint.
-            if _scoped_marker_allows(item, scoped_activation):
+            if _scoped_marker_allows(item, scoped_activation) or _e1c_marker_allows(item, pinned):
                 return None
             return f'PINNED_CALENDAR_TAINTED:{pinned}; diagnostic={taints[pinned]}'
     except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
@@ -233,6 +285,102 @@ def release_scoped_item(conn, item_id, pin_manifest, *, config_path=None, adjudi
               'footnote': marker['footnote']}
     conn.execute('INSERT INTO events(ts,entity_type,entity_id,event,detail_json) VALUES(?,?,?,?,?)',
                  (now, 'work_item', item_id, 'news_calendar_scoped_b_release',
+                  json.dumps(detail, sort_keys=True)))
+    return marker
+
+
+def release_e1c_item(conn, item_id, pin_manifest, *, record_path, record_sha256,
+                     released_by, adjudicated_at=None):
+    """Stamp and release exactly one OWNER E1-C Option-B UNCHANGED_EQUIVALENT row.
+
+    The caller owns the write transaction. This path never changes status,
+    verdict, evidence, or any hold other than this module's active taint hold.
+    The append-only marker is hash-bound to the per-row delta record; the
+    guard re-verifies record bytes on every sweep/claim, so later tampering
+    re-arms the hold (fail closed).
+    """
+    if not conn.in_transaction:
+        raise ValueError('transaction required for E1-C hold release')
+    policy = load_policy(CONFIG)
+    if policy.get('error') or not policy.get('enabled'):
+        raise ValueError('valid activated taint policy required')
+    try:
+        pinned = _content_sha(pin_manifest)
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+        raise ValueError(f'calendar pin unavailable: {exc}') from exc
+    tainted = {entry['sha256'] for entry in policy['tainted']}
+    if pinned not in tainted:
+        raise ValueError('E1-C release is only valid for the declared tainted pin')
+    record_file = Path(str(record_path))
+    try:
+        record_raw = record_file.read_bytes()
+    except OSError as exc:
+        raise ValueError(f'delta record unavailable: {exc}') from exc
+    try:
+        record = json.loads(record_raw.decode('utf-8-sig'))
+    except (UnicodeError, ValueError) as exc:
+        raise ValueError(f'delta record invalid: {exc}') from exc
+    if not (
+        isinstance(record, dict)
+        and record.get('schema') == E1C_RECORD_SCHEMA
+        and record.get('work_item_id') == str(item_id)
+        and record.get('record_sha256') == record_sha256
+        and _record_digest(record) == record_sha256
+        and record.get('delta_validation_status') == 'UNCHANGED_EQUIVALENT'
+        and record.get('option_b_hold_release_eligible') is True
+        and (record.get('old_calendar') or {}).get('content_sha256') == pinned
+    ):
+        raise ValueError('delta record does not certify this row as UNCHANGED_EQUIVALENT')
+    row = conn.execute(
+        'SELECT id,phase,status,ea_id,symbol,setfile_path,payload_json FROM work_items WHERE id=?',
+        (str(item_id),),
+    ).fetchone()
+    if row is None:
+        raise ValueError('work item not found')
+    item = dict(row)
+    if item['phase'] not in PHASES or item['status'] != 'pending':
+        raise ValueError('E1-C release requires a pending Q09_NEWS/Q10_NEWS row')
+    hold = conn.execute(
+        'SELECT * FROM work_item_holds WHERE work_item_id=? AND active=1', (str(item_id),)
+    ).fetchone()
+    if hold is None or hold['hold_code'] != HOLD:
+        raise ValueError('active NEWS_CALENDAR_TAINTED hold required')
+    try:
+        payload = json.loads(item.get('payload_json') or '{}')
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'payload JSON invalid: {exc}') from exc
+    if not isinstance(payload, dict):
+        raise ValueError('payload JSON must be an object')
+    if E1C_MARKER_KEY in payload:
+        raise ValueError('append-only marker already exists')
+    now = adjudicated_at or dt.datetime.now(dt.timezone.utc).isoformat()
+    marker = {
+        'schema': E1C_MARKER_SCHEMA,
+        'decision_id': E1C_DECISION_ID,
+        'work_item_id': str(item_id),
+        'record_path': str(record_file),
+        'record_sha256': record_sha256,
+        'tainted_sha256': pinned,
+        'released_by': str(released_by),
+        'adjudicated_at': now,
+    }
+    payload[E1C_MARKER_KEY] = marker
+    conn.execute('UPDATE work_items SET payload_json=? WHERE id=?',
+                 (json.dumps(payload, sort_keys=True, separators=(',', ':')), str(item_id)))
+    note = (f"OWNER E1-C Option B row-by-row release; decision={E1C_DECISION_ID}; "
+            f"record_sha256={record_sha256}")
+    changed = conn.execute(
+        '''UPDATE work_item_holds SET active=0,updated_at=?,released_at=?,release_note=?
+           WHERE work_item_id=? AND hold_code=? AND active=1''',
+        (now, now, note, str(item_id), HOLD),
+    ).rowcount
+    if changed != 1:
+        raise ValueError('E1-C hold release race')
+    detail = {'work_item_id': str(item_id), 'decision_id': E1C_DECISION_ID,
+              'record_sha256': record_sha256, 'tainted_sha256': pinned,
+              'released_by': str(released_by)}
+    conn.execute('INSERT INTO events(ts,entity_type,entity_id,event,detail_json) VALUES(?,?,?,?,?)',
+                 (now, 'work_item', str(item_id), 'news_calendar_e1c_optionb_release',
                   json.dumps(detail, sort_keys=True)))
     return marker
 
