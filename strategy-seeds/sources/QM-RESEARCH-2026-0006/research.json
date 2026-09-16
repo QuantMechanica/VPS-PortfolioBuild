@@ -1,0 +1,59 @@
+{
+  "author": "Kimi",
+  "candidate_edge": "H-MR: cash-open index mean reversion on NDX/GDAXI/SP500, H1, session-flat, midpoint-target, daily-breaker-bounded; failed-breakout complement to QM5_41475 H-CW.",
+  "computed_outputs": [
+    {
+      "claim_ref": "MECHANIZE_gate",
+      "description": "deterministic static mechanization check over H_MR_card.md (sections, bounded parameters, no runtime model/feed)",
+      "file": "mechanization_result.json"
+    },
+    {
+      "claim_ref": "pilot_fire_count",
+      "description": "deterministic fire count + midpoint-target outcome shape of the exact preregistered rules on a Dukascopy USATECHIDXUSD tick feed (NDX-class proxy), 2018-2020 in-sample; motivation only, not proof",
+      "file": "h_mr_fire_count.json"
+    }
+  ],
+  "confidence": "low-medium (research hypothesis; pilot is feasibility-level and BELOW the preregistered success bar on the proxy feed; pipeline Q00-Q17 remains the judge)",
+  "confounders": [
+    "pilot rests on ONE NDX-class proxy feed, not farm .DWX data",
+    "GDAXI/SP500 density is structural inference, not measured",
+    "cash-open bar is naturally wide, so the shock floor is feed-sensitive",
+    "sub-1R midpoint targets make expectancy hit-rate dependent",
+    "H-MR/H-CW same-window correlation unproven",
+    "no costs (spread/slippage) in the pilot fills"
+  ],
+  "created_utc": "2026-09-16T05:05:00+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "kimi-code/kimi-for-coding",
+  "observations": "The exact preregistered rules fire 2.9 trades/month (82 taken trades over 28 months, 132 active days, 489 evaluated session days of which 154 shock-skipped at 3.0x) on the NDX-class proxy feed; raw outcome PF(R) 1.12 at +0.02R/trade with a 30% midpoint-target hit rate and 54% session-flat exits. This is feasibility-level motivation ONLY - below the preregistered success bar (PF >= 1.20, expectancy >= +0.10R) - so the edge claim is deliberately left to the governed Q00-Q17 pipeline on farm .DWX data. Mechanization gate PASS (mechanization_result.json).",
+  "originating_task_id": "OWNER-DELEGATION-HMR-20260916",
+  "proposed_mechanism": "Cash-open mean reversion, session-flat: at the equity-index cash open the first impulse frequently over-extends (inventory imbalance / stop runs) and, when the breakout fails on the same H1 bar, price reverts toward the opening-range midpoint within the session. Trade only that failed side, flat before rollover, with a hard daily loss breaker - complementing H-CW's continuation side of the same opening range.",
+  "quantitative_claims": [
+    {
+      "claim": "The mechanized H-MR spec passes the deterministic MECHANIZE gate (all required sections, 18 bounded parameters, no runtime model, no external feed).",
+      "computed_output_ref": "MECHANIZE_gate"
+    },
+    {
+      "claim": "On the NDX-class proxy feed (2018-2020 in-sample) the exact rules fire ~2.9 trades/month with ~4.7 active days/month, 135 gross signals and 82 taken trades; raw PF(R) 1.12 at +0.02R/trade, 30% midpoint-target hit rate, 54% session-flat exits, 154 of 647 session days shock-skipped at 3.0x.",
+      "computed_output_ref": "pilot_fire_count"
+    }
+  ],
+  "related_strategies": [
+    "QM5_41475 cash-window-index-continuation-h1 (H-CW continuation sibling, same session shell)",
+    "QM-RESEARCH-2026-0002 (parent campaign context)"
+  ],
+  "research_id": "QM-RESEARCH-2026-0006",
+  "research_question": "Does the failed-breakout side of the index cash-open (reversion toward the opening-range midpoint) yield a second, complementary FTMO-shaped candidate beside H-CW continuation? (OWNER interim delegation 2026-09-15)",
+  "research_trial_count": 1,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "cash-open-mean-reversion",
+  "source_datasets": [
+    {
+      "dataset_id": null,
+      "description": "Dukascopy USATECHIDXUSD tick feed (NDX-class index CFD proxy), 2018-2020, read-only; NOT farm .DWX data",
+      "path": "h_mr_fire_count.json"
+    }
+  ]
+}

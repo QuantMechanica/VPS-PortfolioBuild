@@ -1,0 +1,44 @@
+{
+  "discovery_sample": {
+    "dataset_ids": [],
+    "instruments": [
+      "NDX (USATECHIDXUSD proxy)",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2018-2020 in-sample (pilot fire count over Dukascopy USATECHIDXUSD ticks); H-CW campaign context (QM-RESEARCH-2026-0002)"
+  },
+  "mechanization": {
+    "codex_implementable": true,
+    "spec_section": "H_MR_card.md"
+  },
+  "parent_version_id": null,
+  "preregistration": {
+    "failure_criteria": "Killed if: OOS holdout net profit factor < 1.20 after costs or expectancy < +0.10R/trade; Monte-Carlo P(hit -5% daily limit within 60d) > 2% or simulated worst-day p95 > 2.5% of equity at 0.25% risk; realized swap/rollover cost > 10% of gross P&L; more than half of the +/-1-step parameter neighbourhood shows negative expectancy; any single month has < 3 active days on a traded symbol; or session-flat cash-open mean reversion does not reduce worst-day loss or breach probability relative to the swing baseline out of sample.",
+    "frozen_at_utc": "2026-09-16T05:03:07+00:00",
+    "param_count": 18,
+    "param_ranges_sha256": "41f02b63f22f2bb13fb3f85cf66c8bd509c8ce43d0b56bbef7884ca9e75dacf6",
+    "success_criteria": "OOS holdout net profit factor >= 1.20 after costs AND expectancy >= +0.10R/trade; Monte-Carlo P(hit -5% daily limit within 60d) <= 2% and simulated worst-day p95 <= 2.5% of equity at 0.25% risk; realized swap/rollover cost <= 10% of gross P&L; more than half of the +/-1-step parameter neighbourhood shows non-negative expectancy; every month has >= 3 active days on a traded symbol; edge must not depend on a single symbol or single period."
+  },
+  "research_id": "QM-RESEARCH-2026-0006",
+  "schema": "qm.research-lineage/v1",
+  "validation_sample": {
+    "dataset_ids": [],
+    "instruments": [
+      "NDX",
+      "GDAXI",
+      "SP500"
+    ],
+    "period": "2021-2024 held-out; never touched during discovery"
+  },
+  "version": 1,
+  "versions": [
+    {
+      "created_at": "2026-09-16T05:03:07+00:00",
+      "mechanical_spec_sha256": "f722f2dff46419c6bf038854d3f13be9141f03c5f4c5ce059a89b3c3a5bb4b17",
+      "parent_version": null,
+      "record_sha256": "8129b0fc617229c40f7898c64a79072ff93019eb08fc7fa7faef69987b140d2d",
+      "version": 1
+    }
+  ]
+}
