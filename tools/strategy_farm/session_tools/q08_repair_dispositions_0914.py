@@ -1,18 +1,19 @@
-"""Append-only dispositions for OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914 (classes A and D).
+"""Append-only dispositions for OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916 (batch-1 build-identity repair).
 
 Mirrors apply_q09_retire2_dispositions.py: online SQLite backup, FactoryMutationLock, one
 ``kind='disposition'`` row per target (status failed, verdict SUPERSEDED_<why>), one
 ``work_item_supersedes`` edge (target -> disposition row, or -> the named successor), and the
 release of the target's active hold when one is named.  Original rows are never edited.
 
-Targets (plan below, frozen in this file):
-  D  19c9df13 QM5_11167 old identity, INVALID -> superseded by 89ea5894 (same identity, FAIL_SOFT)
-  D  737a2134 QM5_11167 old identity, pending held -> superseded (identity rebuilt per
-     OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT); hold Q08_DSR_CONTEXT_UNAVAILABLE released
-  A  ten pending Q08 rows whose recorded build identity is stale or whose payload carries no
-     timeframe (single.validate: BUILD_IDENTITY_MISMATCH / SINGLE_CONFIG_CANDIDATE_MISMATCH):
-     superseded by the disposition row; a fresh Q08 from the Q07 predecessor follows
-     (q08_repair_fresh_enqueue_0914 step); holds Q08_DSR_CONTEXT_UNAVAILABLE released.
+Targets (plan below, frozen in this file) — the 8 batch-1 rows of OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916
+whose cards were amended (valid single-configuration declaration) but whose staged Q08 rows carry
+NULL build identity (mq5/ex5/setfile_sha256 columns + no payload artifact_identity), an enqueue-time
+defect of the 2026-09-15/16 parked cohort (claimability_precheck: BUILD_IDENTITY_MISMATCH:<role>):
+  A  7bc8b34e QM5_1159, d4aebc12 QM5_10804, 383c45b0 QM5_10661, 20c533da QM5_10211,
+     a937b9bc QM5_12958, 15fed5d8 QM5_9123, aa0fa828 QM5_10291, 94d46fe7 QM5_10267
+     -> superseded by the disposition row; a fresh Q08 from the Q07 predecessor with the
+        current-build binding follows (farmctl enqueue-backtest --phase Q08 --from-work-item-id
+        <Q07> --expected-current-ex5-sha256 <current ex5 sha>); no holds exist on these rows.
 Default = dry-run (prints the plan); --apply executes; receipt JSON under the evidence dir.
 """
 from __future__ import annotations
@@ -35,22 +36,23 @@ from factory_mutation_lock import FactoryMutationLock  # noqa: E402
 DB = Path("D:/QM/strategy_farm/state/farm_state.sqlite")
 BACKUP_DIR = Path("D:/QM/strategy_farm/state/backups")
 LOCK = Path("D:/QM/strategy_farm/state/FACTORY_MUTATION.lock")
-EVID = REPO / "docs" / "ops" / "evidence" / "2026-09-14_q08_context_repair"
+EVID = REPO / "docs" / "ops" / "evidence" / "2026-09-16_q08_amend_v3" / "repair_fresh_enqueue"
 RECEIPT = EVID / "dispositions_receipt.json"
-DECISION_ID = "OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914"
-OWNER_RECEIPT = "3415f6c0"
-TASK_ID = "3ec11996"
+DECISION_ID = "OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916"
+OWNER_RECEIPT = "d59b2277"
+TASK_ID = "c4f2a8e1"
 HOLD = "Q08_DSR_CONTEXT_UNAVAILABLE"
 
+_REASON_V3 = (
+    "staged Q08 row carries NULL build identity (mq5/ex5/setfile_sha256 columns + no payload "
+    "artifact_identity), an enqueue-time defect of the 2026-09-15/16 parked cohort; the card's "
+    "single-configuration declaration was amended under OWNER-DEC-Q08-CONTEXT-REPAIR-V3-20260916; "
+    "a fresh Q08 from the Q07 predecessor with the current-build binding follows"
+)
 PLAN = [
-    {"prefix": "19c9df13", "cls": "D", "verdict": "SUPERSEDED_IDENTITY", "successor_prefix": "89ea5894", "release_hold": False,
-     "reason": "QM5_11167 old identity; same-identity Q08 89ea5894 (FAIL_SOFT) already stands; identity rebuilt per OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT"},
-    {"prefix": "737a2134", "cls": "D", "verdict": "SUPERSEDED_IDENTITY", "successor_prefix": None, "release_hold": True,
-     "reason": "QM5_11167 old identity pending Q08; identity rebuilt per OWNER-DEC-Q09-LEGACY-CALENDAR-INPUT; no rerun of the old identity"},
-] + [
-    {"prefix": p, "cls": "A", "verdict": "SUPERSEDED_REPAIR", "successor_prefix": None, "release_hold": True,
-     "reason": "stale build identity or missing timeframe on the pending Q08 row; a fresh Q08 from the Q07 predecessor with the declared single configuration follows"}
-    for p in ("b68d05cd", "ffbc4cab", "15f2ecb0", "2b5e5be0", "334ca1c5", "e8e0372e", "2e2be584", "080a08f6", "6caa65b7", "010fd451")
+    {"prefix": p, "cls": "A", "verdict": "SUPERSEDED_REPAIR", "successor_prefix": None, "release_hold": False,
+     "reason": _REASON_V3}
+    for p in ("7bc8b34e", "d4aebc12", "383c45b0", "20c533da", "a937b9bc", "15fed5d8", "aa0fa828", "94d46fe7")
 ]
 
 
