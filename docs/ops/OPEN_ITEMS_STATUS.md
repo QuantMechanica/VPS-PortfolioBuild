@@ -4243,6 +4243,16 @@ database mutation was performed. A fresh OWNER-scoped task is required against
 the current row IDs. Evidence:
 `docs/ops/evidence/2026-09-17_q09_requalify_recheck.md`.
 
+## 2026-09-17 — RESULT: Q04 stranded-infrastructure requeue already staged
+
+Router task `e685432a` was rechecked read-only. The exact 21-EA cohort already
+has 84 Q04 successor rows from the recovery wave; current totals are 146 done,
+11 failed, 6 pending, and 0 active. All 21 registry entries are active and
+current canonical EX5 hashes match the latest non-INFRA Q04 bindings. The 14
+attempt-count 50/99 rows remain deliberate poison sentinels under the
+fail-closed retry rule. No duplicate requeue or row mutation was performed.
+Evidence: `docs/ops/evidence/2026-09-17_q04_stranded_infra_requeue_recheck.md`.
+
 RESULT: REVIEW — exact before/live probes attribute 422,817,792 of the
 449,314,816-byte DB increase to free-list pages; live growth is led by 92,926
 events, including 91,864 repeated routing-wait events. The existing retention
