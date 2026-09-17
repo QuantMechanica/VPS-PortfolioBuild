@@ -1,0 +1,39 @@
+{
+  "blocker": "TARGET_WORKTREES_HAVE_UNCOMMITTED_UNRELATED_REWORK",
+  "branch_state": {
+    "rework-slot-1": {
+      "dirty_path_count": 19,
+      "head": "480199f343998b853a8b641a1aa484596bd5d0d9",
+      "status_sha256": "3bcf0909125547f51490370f58b5ef0eccab8f0cd5a9283b8d3907bf470be82b"
+    },
+    "rework-slot-2": {
+      "dirty_path_count": 4,
+      "head": "6aa501328fb7484865fcd8962e5aa50558dd30c5",
+      "status_sha256": "29b5ad0388bc7902a0276822b2581934a8a61c5becf755c2b831925e48cccb78"
+    },
+    "rework-slot-4": {
+      "dirty_path_count": 2,
+      "head": "1047b1f67810c4afa15f9835bd18da0dc690c264",
+      "status_sha256": "b31796d18dad40039d11b8894704ab1e986c797c79c60d28740fec62a47b75cc"
+    },
+    "rework-slot-6": {
+      "dirty_path_count": 6,
+      "head": "a5b6f9eb3e70d3e7157cee19410159a7769ab8d1",
+      "status_sha256": "b5517fc3015efa5051023016ff5365a5de1e2c0738c13adedfc5a9ac9a6872c0"
+    },
+    "rework-slot-11": {
+      "dirty_path_count": 2,
+      "head": "9a55c17f9e02a69b45214fd9703bae08aa923d90",
+      "status_sha256": "700fac29e943bb9255eb1899eecbf1f219662cbbc574cdcc5be99b7ada5d8e0e"
+    },
+    "rework-slot-12": {
+      "dirty_path_count": 6,
+      "head": "cf035c4e5cea7606e6e4eb7bd859b402470546bf",
+      "status_sha256": "c3050570fbd52b4e555ec44389604cfcc85afce22e687e82dc185ae29cc19440"
+    }
+  },
+  "existing_evidence": "docs/ops/evidence/2026-08-24_slot_branch_ex5_audit_and_deferral.md",
+  "required_safe_precondition": "ALL_TARGET_WORKTREES_CLEAN_AND_IDLE",
+  "schema": "qm.orchestration-blocker-state/v1",
+  "task_id": "b4fe23af-4f60-42d1-bf00-a9ff3185fad6"
+}
