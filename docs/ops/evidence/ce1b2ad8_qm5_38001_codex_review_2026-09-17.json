@@ -1,0 +1,20 @@
+{
+  "review_task_id": "ce1b2ad8-e99a-49b3-96d1-581726dc3bdf",
+  "build_task_id": "33322516-1797-4d97-8a74-eb4fd7385953",
+  "ea_id": "QM5_38001",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "PASS",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The build result claims compile_succeeded=true and references QM5_38001_codetrading-vwap-bollinger-rsi-scalper.ex5, but that EX5 is absent from the canonical EA directory after the governed ROT remediation removed the ad-hoc binary.",
+    "Governed COMPILE_EA work item 960f030f-5632-4e6c-a3e8-9dc39dfb0bde is failed/COMPILE_FAIL with CANDIDATE_RECHECK_REFUSED:SOURCE_REPAIR_AUTHORITY_INVALID;BOUND_SETFILE_HASH_EXISTS, so no governed binary exists for the current mq5 sha256=f7e8f55896b3e90ae9775a559829f4f2bc14c901b2ae9cae237289ff993e8e9f."
+  ],
+  "reviewed_at": "2026-09-17T04:39:47Z"
+}

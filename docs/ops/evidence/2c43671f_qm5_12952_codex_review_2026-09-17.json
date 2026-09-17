@@ -1,0 +1,21 @@
+{
+  "review_task_id": "2c43671f-aabb-4ca5-8cf8-857505375ce2",
+  "build_task_id": "83f3bde2-3bfe-44cf-998d-ca623626a6d5",
+  "ea_id": "QM5_12952",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The source build result binds mq5_sha256=f891223db2dc839f5f64a1645735afb884d9e757f05116c28e3ce3c69b40cce0 and GER40.DWX artifacts, but the reviewed source is sha256=9134487ecbe7eb2635181e5c55776f8c046983be5ec966720ebf82f01fbc2bbd with canonical GDAXI.DWX artifacts; the result does not prove the current delivery.",
+    "The only governed COMPILE_EA row, 6c8a40b2-5518-477e-8264-303e8e2fc719, is failed/COMPILE_FAIL with build_check.result=FAIL (EA_SYMBOL_NOT_IN_CARD_UNIVERSE), and its recorded ex5_sha256=74a50986f7da11842c66dc54169c84b8a6514600c84e13ada342d0a0208e6b19 differs from the current EX5 sha256=516597a261863fa8db4879431c09306ab6b1fd62010493c6ce41d79b98178f56; no governed COMPILE_OK receipt binds the current binary.",
+    "Advisory: the active news gate returns before Friday close and open-position management in OnTick; every entry has a server-side SL, so this is not a hard forbidden-grep failure under the review contract, but the canonical ordering should be restored during rework."
+  ],
+  "reviewed_at": "2026-09-17T04:39:47Z"
+}

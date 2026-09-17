@@ -1,0 +1,17 @@
+{
+  "review_task_id": "fb52c402-7c79-4bf8-bcf2-aed1536117da",
+  "build_task_id": "5d5cc9f6-e096-44a3-af78-99abc2d9e7ed",
+  "ea_id": "QM5_41002",
+  "reviewer": "codex",
+  "verdict": "PASS",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "PASS",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [],
+  "reviewed_at": "2026-09-17T04:39:47Z"
+}
