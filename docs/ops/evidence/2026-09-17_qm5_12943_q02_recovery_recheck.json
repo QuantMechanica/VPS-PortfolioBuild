@@ -1,0 +1,62 @@
+{
+  "artifact_bindings": {
+    "canonical_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "canonical_mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "canonical_setfile_sha256": "8e1604e168b117a130a92285d3892352151c85a5c49965e71a9345fadd726586",
+    "compile_evidence_sha256": "4f318596fd8484c89072aa17a4ebbaae775e545ff85e6ddcf13b75eb29644465",
+    "compile_pass_ex5_sha256": "057b990df7f21e464d2b476a57535e4dffe7a0bd2ca7c1a9c0b590932ad298c6"
+  },
+  "branch": "agents/board-advisor",
+  "compile": {
+    "build_check_result": "PASS",
+    "compile_result": "PASS",
+    "errors": 0,
+    "evidence_path": "D:/QM/reports/work_items/7017bc20-56bc-45a4-be48-22ddff35b63f/QM5_12943/COMPILE_EA/compile_evidence.json",
+    "verdict": "COMPILE_OK",
+    "warnings": 0,
+    "work_item_id": "7017bc20-56bc-45a4-be48-22ddff35b63f"
+  },
+  "ea_id": "QM5_12943",
+  "ea_label": "QM5_12943_robopip-hlhb-trend-catcher-h1",
+  "head": "a4323656603ab9ac71ad22c98a04a4819137d351",
+  "lineage": {
+    "compile_gate_failure_work_item_id": "f322d7b0-173a-4fb8-9784-8d52dbdfef19",
+    "original_worker_crash_work_item_id": "2b04b129-89e8-4489-8653-5dac22f8439a",
+    "registry_scope_repair_artifact": "docs/ops/evidence/2026-09-10_qm5_12943_magic_scope_repair.json"
+  },
+  "outcome": {
+    "historical_rows_preserved": true,
+    "q02_successor_enqueued": false,
+    "reason": "current_ex5_has_no_pass_bound_compile_record",
+    "required_action": "Publish the exact COMPILE_OK-bound EX5 through the governed COMPILE_EA artifact flow, then rerun requalify-q02 dry-run and apply only if eligible.",
+    "state": "REVIEW"
+  },
+  "requalify_dry_run": {
+    "applied": false,
+    "command": "python tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id f322d7b0-173a-4fb8-9784-8d52dbdfef19 --expected-current-ex5-sha256 95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2 --reason <task-bound-recovery-reason> --dry-run",
+    "current_ex5_sha256": "95ba06400a66dfa39e31dd09855beb3f4c64f8ee4d2573d5f6476c63234155b2",
+    "current_mq5_sha256": "6ebb42799e23755d3c31c1de56dca0c9c4023e60ccd4519cd9256f34c239161a",
+    "current_setfile_sha256": "8e1604e168b117a130a92285d3892352151c85a5c49965e71a9345fadd726586",
+    "eligible": false,
+    "exit_code": 1,
+    "parameter_change_count": 0,
+    "reason": "current_ex5_has_no_pass_bound_compile_record",
+    "would_enqueue": false
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000,
+    "RISK_PERCENT": 0,
+    "magic": 129430006,
+    "symbol": "EURUSD.DWX",
+    "symbol_slot": 6,
+    "timeframe": "H1"
+  },
+  "safety": {
+    "autotrading_toggled": false,
+    "manual_terminal_launch": false,
+    "pipeline_verdict_created": false,
+    "t_live_touched": false
+  },
+  "schema": "qm.q02-infra-recovery-recheck/v1",
+  "task_id": "7db9abd6-3aa1-4a8c-ad29-7b395818d805"
+}
