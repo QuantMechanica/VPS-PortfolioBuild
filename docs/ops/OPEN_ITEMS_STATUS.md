@@ -4232,6 +4232,17 @@ caps, thresholds, and verdict logic are unchanged. Focused tests: 21 passed.
 Evidence: `docs/ops/evidence/2026-09-13_census_first_lane_aware.md`.
 ## 2026-09-13 — Q state DB growth/retention RESULT (f5d30fc9)
 
+## 2026-09-17 — RESULT: Q09 pre-interface requalification scope changed
+
+Router task `635ad39b` was rechecked read-only. The eight original EAs no
+longer have the task's eight active Q09 sealed-plan holds: several now have
+terminal Q09 dispositions, while the remaining rows are pending without that
+hold. The live database has two matching holds only for QM5_11476 and
+QM5_10148, outside this task. No rebuild, requeue, bind, hold release, or
+database mutation was performed. A fresh OWNER-scoped task is required against
+the current row IDs. Evidence:
+`docs/ops/evidence/2026-09-17_q09_requalify_recheck.md`.
+
 RESULT: REVIEW — exact before/live probes attribute 422,817,792 of the
 449,314,816-byte DB increase to free-list pages; live growth is led by 92,926
 events, including 91,864 repeated routing-wait events. The existing retention
