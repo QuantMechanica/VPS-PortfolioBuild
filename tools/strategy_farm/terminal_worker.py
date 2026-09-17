@@ -5369,6 +5369,7 @@ def _opt_census_cells_claimable_in_txn(
     limits: tuple[int, int, int] | None = None,
     allowlist: frozenset[str] | None = None,
     lane_aware: bool | None = None,
+    lane_preflight_refusals_by_program: Mapping[str, int] | None = None,
 ) -> bool:
     """Cheap in-transaction EXISTS: is any OPT_CENSUS cell claimable now?
 
@@ -5424,6 +5425,7 @@ def _opt_census_cells_claimable_in_txn(
             if allowlist is None
             else allowlist
         )
+        preflight_refusals = lane_preflight_refusals_by_program or {}
         for row in rows:
             payload = _json_loads(row["payload_json"])
             program, arm = dl089_scheduling.lane_id(
@@ -5432,6 +5434,11 @@ def _opt_census_cells_claimable_in_txn(
             if (
                 program not in active_census["programs"]
                 and len(active_census["programs"]) >= k_eff
+            ):
+                continue
+            if (
+                int(preflight_refusals.get(program, 0))
+                >= DL089_PREFLIGHT_REFUSALS_PER_PROGRAM
             ):
                 continue
             lane_limit = l_eff if program in allowed else min(1, l_eff)
@@ -6433,6 +6440,9 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                                         limits=(opt_k_eff, opt_l_eff, opt_g_eff),
                                         allowlist=opt_allowlist,
                                         lane_aware=census_first_lane_aware,
+                                        lane_preflight_refusals_by_program=(
+                                            lane_preflight_refusals_by_program
+                                        ),
                                     )
                                 )
                             if _census_first_defers_heavy_candidate(

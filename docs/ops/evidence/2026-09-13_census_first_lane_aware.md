@@ -30,4 +30,17 @@ The switch is Default-OFF. No deferral band, RAM reservation, K/L/G cap,
 allow-list value, verdict, or pipeline phase changed. Activation remains an
 operator action through the separately governed staggered reload.
 
-RESULT task=c07b8653 default_off=true legacy_defer=true lane_aware_defer=false tests=20 verdict=IMPLEMENTATION_PASS
+## Follow-up: transaction-local preflight suppression
+
+The lane-aware predicate now also receives the transaction-local
+`lane_preflight_refusals_by_program` counter from `claim_atomic`. A program at
+`DL089_PREFLIGHT_REFUSALS_PER_PROGRAM` is treated as suppressed, matching the
+claim scan's `PROGRAM_PREFLIGHT_SUPPRESSED` rule. Thus, when every
+lane-eligible pending program is suppressed, the predicate returns false and
+cannot keep deferring an unrelated heavy candidate forever. The default-off
+legacy path and all caps, thresholds, and verdict logic are unchanged.
+
+Verification: `21 passed` in
+`tools/strategy_farm/tests/test_terminal_worker_census_first_ram_priority.py`.
+
+RESULT task=c07b8653 follow_up=preflight_suppression default_off=true tests=21 verdict=IMPLEMENTATION_PASS

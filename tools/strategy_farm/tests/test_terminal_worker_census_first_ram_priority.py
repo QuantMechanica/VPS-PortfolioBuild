@@ -13,6 +13,7 @@ It only defers: no verdict, cap, budget, or census floor changes.
 import json
 import sqlite3
 import sys
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -304,6 +305,65 @@ def test_lane_aware_exists_ignores_500_cells_when_all_program_lanes_full(
             active_census=snapshot,
             limits=limits,
             allowlist=frozenset(),
+        ) is True
+        conn.commit()
+
+
+def test_lane_aware_exists_ignores_preflight_suppressed_programs(
+    tmp_path, monkeypatch
+):
+    root = tmp_path / "farm"
+    root.mkdir()
+    farmctl.init_db(root)
+    now = farmctl.utc_now()
+    payload = json.dumps({"program_id": "p0", "arm": "arm-0"})
+    monkeypatch.setenv("DL089_PROGRAM_SLOTS", "3")
+    monkeypatch.setenv("DL089_LANES_PER_PROGRAM", "1")
+    monkeypatch.setenv("DL089_CELL_SLOTS", "3")
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:
+        conn.row_factory = sqlite3.Row
+        for index, program in enumerate(("p0", "p1")):
+            conn.execute(
+                "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,"
+                "status,payload_json,created_at,updated_at) VALUES(?,?,?,?,?,'x.set',"
+                "'active',?,?,?)",
+                (f"active-{program}", "backtest", "OPT_CENSUS", f"QM5_{program}",
+                 "EURUSD.DWX", json.dumps({"program_id": program, "arm": f"a{index}"}),
+                 now, now),
+            )
+        for index, program in enumerate(("p0", "p1", "p2")):
+            conn.execute(
+                "INSERT INTO work_items(id,kind,phase,ea_id,symbol,setfile_path,"
+                "status,payload_json,created_at,updated_at) VALUES(?,?,?,?,?,'x.set',"
+                "'pending',?,?,?)",
+                (f"pending-cell-{program}", "backtest", "OPT_CENSUS", f"QM5_{program}",
+                 "EURUSD.DWX", json.dumps({"program_id": program, "arm": f"p{index}"}),
+                 now, now),
+            )
+        active_rows = [
+            dict(row)
+            for row in conn.execute(
+                "SELECT id,phase,ea_id,symbol,payload_json FROM work_items "
+                "WHERE status='active'"
+            )
+        ]
+        snapshot = tw.dl089_scheduling.active_census_snapshot(active_rows)
+        monkeypatch.setenv("QM_CENSUS_FIRST_LANE_AWARE", "1")
+        limits = tw.dl089_scheduling.effective_limits(3)
+        suppressed = Counter({"p0": 1, "p1": 1, "p2": 1})
+        assert tw._opt_census_cells_claimable_in_txn(
+            conn,
+            active_census=snapshot,
+            limits=limits,
+            allowlist=frozenset(),
+            lane_preflight_refusals_by_program=suppressed,
+        ) is False
+        assert tw._opt_census_cells_claimable_in_txn(
+            conn,
+            active_census=snapshot,
+            limits=limits,
+            allowlist=frozenset(),
+            lane_preflight_refusals_by_program=Counter(),
         ) is True
         conn.commit()
 

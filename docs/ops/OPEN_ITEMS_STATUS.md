@@ -4220,6 +4220,16 @@ Focused tests: 20 passed. Evidence:
 `docs/ops/evidence/2026-09-13_census_first_lane_aware.md`.
 
 RESULT task=c07b8653 default_off=true tests=20 verdict=IMPLEMENTATION_PASS
+
+## 2026-09-17 — RESULT: CENSUS-FIRST preflight suppression follow-up
+
+The transaction-local lane-aware claimability predicate now models
+`PROGRAM_PREFLIGHT_SUPPRESSED` using the existing
+`DL089_PREFLIGHT_REFUSALS_PER_PROGRAM` counter passed by `claim_atomic`.
+When all lane-eligible programs are suppressed it returns false, preventing
+an unrelated heavy row from being deferred indefinitely. Default-OFF behavior,
+caps, thresholds, and verdict logic are unchanged. Focused tests: 21 passed.
+Evidence: `docs/ops/evidence/2026-09-13_census_first_lane_aware.md`.
 ## 2026-09-13 — Q state DB growth/retention RESULT (f5d30fc9)
 
 RESULT: REVIEW — exact before/live probes attribute 422,817,792 of the
