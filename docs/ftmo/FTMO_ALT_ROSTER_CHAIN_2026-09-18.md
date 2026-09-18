@@ -246,3 +246,25 @@ AutoTrading remain OWNER-only (ROT); this document proposes nothing beyond the m
 *Generated 2026-09-18 by the quantitative-engineer seat. Read-only on the repo and the farm DB; the only
 files created are this document and the contents of
 `D:\QM\reports\book_evolution\2026-W38\ftmo\fable_alt_rosters_20260918\`.*
+
+---
+
+## Addendum 2026-09-18 ~01:20Z — cross-vendor critique and Fable resolution (disagreement protocol, directive §25)
+
+Antigravity (`agy -p`, read-only) reviewed this document and returned **REJECT** for an immediate demo recomposition:
+`D:/QM/reports/ai_exchange/20260918_alt_roster_critique_agy/agy_critique.md`. Disputed propositions and Fable's disposition:
+
+| # | Critic finding | Fable disposition |
+|---|---|---|
+| 1 | Selection bias / winner's curse — top-8-by-drift selected and evaluated on the same 24 streams; no holdout | **Accepted as unresolved.** Deterministic test commissioned: select on ≤2022-12-31, evaluate the full chain on 2023-01-01..end (`FTMO_ALT_ROSTER_HOLDOUT_2026-09-18.md`). No recomposition until it lands. |
+| 2 | Operational infeasibility (venue symbols, magics, presets, news capability) | **Accepted.** Package preparation running under `docs/ops/evidence/2026-09-18_ftmo_demo_recompose_R2/`; venue gaps are blockers by construction. |
+| 3 | Unmodelled financing drag — 4 of 8 sleeves are gold/oil held overnight, swap hard-coded 0 | **Accepted as a modelling gap.** Requires FTMO venue swap rates from the demo Market Watch; to be added as a cost scenario before any decision. |
+| 4 | Breach monoculture moves to 13213 USDJPY (53–60 %) | **Partly accepted.** Concentration is transferred, not removed; the holdout run includes a 13213-half-risk variant and leave-one-out. |
+| 5 | 2.0 % book risk is the rational choice under probability-over-speed | **Accepted in principle** (KPI contract §2, directive §56): if recomposition proceeds, the 2.0 % variant is the default candidate. |
+| 6 | Window asymmetry (demo_8 streams end 2024-12, R2 through 2025-12); chain never evaluated on a common window | **Accepted.** Common-window chain evaluation is part of the holdout run. |
+| 7 | ENB 7.52 was volatility-normalised; USD ENB (3.42 / 4.99) is the FTMO-relevant figure | **Accepted**; the USD-ENB figure is the one to carry forward. |
+
+**Resolution:** the recommendation of this document is downgraded from RECOMPOSE to **RECOMPOSE-CANDIDATE PENDING HOLDOUT**.
+The current demo cycle continues unchanged (KEEP is a legitimate weekly decision). Decision owner: Fable. Evidence pending:
+holdout/common-window/leave-one-out run (deterministic, 0 factory hours), FTMO venue swap scenario, deployment package
+feasibility.
