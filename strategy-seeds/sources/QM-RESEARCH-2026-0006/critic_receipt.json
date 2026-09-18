@@ -1,23 +1,41 @@
 {
-  "chain_id": "",
-  "critic_fallback_used": false,
-  "critic_seat_final": "",
-  "critic_verdict": "",
-  "finding_counts": {},
-  "generated_at_utc": "",
+  "schema": "qm.agent-chain.receipt.v1",
+  "chain_id": "CRITIC-HMR-20260918-001",
   "plan": {
     "creator": {
-      "model": "",
-      "vendor": ""
+      "vendor": "kimi",
+      "model": "kimi-code/kimi-for-coding"
     },
     "critic": {
-      "model": "",
-      "vendor": ""
+      "vendor": "claude",
+      "model": "claude-fable-5-1 (Fable orchestrator seat; three parallel read-only Claude audit agents + Fable verification of every blocking finding)"
     }
   },
-  "receipt_path": "",
+  "critic_verdict": "ACCEPT_WITH_FIXES -> required fixes applied and compiled 0 errors/0 warnings (commit e149aaa872 on the EA branch, merged to agents/board-advisor 2026-09-18) -> APPROVE for Q00/deterministic pipeline; deferred major/minor findings tracked in docs/ops/evidence/2026-09-18_ftmo_candidate_critic_wave/RECEIPT.md",
+  "critic_seat_final": {
+    "vendor": "claude",
+    "model": "claude-fable-5-1"
+  },
+  "critic_fallback_used": false,
+  "cross_vendor": true,
+  "generated_at_utc": "2026-09-18T00:30:41Z",
   "repo_write": false,
-  "schema": "qm.agent-chain.receipt.v1",
   "scope_drift": false,
-  "stages": []
+  "finding_counts": {
+    "blocking": 2,
+    "major": 3,
+    "minor": 5
+  },
+  "receipt_path": "D:\\QM\research\\campaigns\\CAMP-2026-0001-ftmo-gap\\critique_41476_hmr_fable_20260918.md",
+  "stages": [
+    {
+      "role": "critic",
+      "note": "Independent non-Kimi critique per directive sec32 checklist (40 items); Fable personally verified the blocking findings against source (news blackout read the backtest archive in live; H1 entry window tested the forming bar) before authoring fixes."
+    },
+    {
+      "role": "fix",
+      "note": "Smallest justified fixes applied by Fable (creator-side edits are the ONLY repo writes and were made outside the critic role): live news via QM_NewsLiveInWindow fail-closed; signal-bar entry window (H1 EAs); SPEC/header status. Commit e149aaa872. Cross-vendor diff review requested from Antigravity (D:/QM/reports/ai_exchange/20260918_critic_fix_diff_review_agy/)."
+    }
+  ],
+  "authority": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917"
 }

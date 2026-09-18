@@ -5,7 +5,7 @@ type: strategy
 source_id: QM-RESEARCH-2026-0006
 source_type: internal_research
 preregistration_sha256: 8129b0fc617229c40f7898c64a79072ff93019eb08fc7fa7faef69987b140d2d
-source_hash: 1887b25e0fb0597f97a9a9ae9461333bc16d3b2b6e0a8bf96412cea55032bd19
+source_hash: bafb38da8bfbce3b25a4b4355703eb98253d2548792c9fd7b780e10d28caf8b2
 research_trial_count: 1
 concepts:
   - "[[concepts/session-flat-intraday]]"
@@ -19,13 +19,14 @@ expected_trade_frequency: "At most one entry per symbol per day: roughly 2-5 tra
 expected_trades_per_year_per_symbol: 35
 g0_status: APPROVED
 review_status: REVIEW_PENDING
-g0_approval_reasoning: "OWNER_DIRECT_SESSION_DELEGATION to Kimi, 2026-09-15/16 (interim strategy-engineering build of the fully mechanized QM-RESEARCH-2026-0006 H-MR card). Independent non-Kimi critique pending: claude disabled until 2026-09-17, codex on hold until 2026-09-19, agy quota-dead. Build-only authorization; no pipeline phase, no gate verdict, no live use."
+g0_approval_reasoning: "source_hash rebind after non-Kimi critic seal 2026-09-18 (Fable critic wave, OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917); mechanics unchanged; R-gate frontmatter re-synced to the card body"
 r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
-last_updated: 2026-09-16
+last_updated: 2026-09-18
+card_sha256: 9f91cbc6663a029be8d700aee00bd98a22436a73b128d57caa3abfa9fc8de800
 ---
 
 # H-MR: Cash-open index mean reversion (session-flat, H1)
@@ -45,7 +46,7 @@ During the cash-session window a single H1 bar pierces the opening-range extreme
 ## Persistence
 The effect rests on recurring opening-auction mechanics (daily inventory reset, cash-open stop runs) rather than a one-off regime, so it is expected to persist; it is defended by hard session-flat exits and a daily loss breaker rather than by a fragile parameter. It complements H-CW by construction: H-MR is exposed exactly on session days where the opening-range breakout fails, so the pair diversifies the same window across breakout outcomes.
 
-**Differentiation from QM5_10140 (tv-london-session-break):** 10140 is a London-session *continuation* system — it enters on a confirmed break of the Asian range in the breakout direction and holds with the move. H-MR is the opposite conditioning on the same opening-range reference: it requires a *failed* break (a pierce of the range extreme that closes back inside within the same H1 bar) and enters in the reversion direction toward the range midpoint, with a mandatory same-session flat. The two can trade the same symbol on the same day with opposite positions only in the rare simultaneous-fill case, which the one-entry-per-day and session-flat guards bound; their return streams are conditioned on disjoint outcome classes of the opening auction (continuation vs failure), not on shared signal logic.
+**Distinct from QM5_10140 (tv-london-session-break) — evidence-based delta, not a duplicate fingerprint:** 10140 is a London-session *continuation* system — it enters on a confirmed break of the Asian range in the breakout direction and holds with the move. H-MR is the opposite conditioning on the same opening-range reference: it requires a *failed* break (a pierce of the range extreme that closes back inside within the same H1 bar) and enters in the reversion direction toward the range midpoint, with a mandatory same-session flat. The two can trade the same symbol on the same day with opposite positions only in the rare simultaneous-fill case, which the one-entry-per-day and session-flat guards bound; their return streams are conditioned on disjoint outcome classes of the opening auction (continuation vs failure), not on shared signal logic.
 
 ## Mechanics
 
@@ -99,6 +100,7 @@ Native MT5 price series, one EMA, one ATR, the instrument spread, and the live M
 H1 for signals (an M15 execution variant, mirroring the H-CW card, is allowed); no D1 or higher signals.
 
 ## Symbols
+Target symbols: NDX.DWX, GDAXI.DWX, SP500.DWX (factory custom-symbol names; live charts use the bare broker names via the slot inputs).
 NDX, GDAXI, SP500 index CFDs (symbols are inputs, never code literals; one input per symbol slot). No FX, no metals, no energy.
 
 ## Parameter ranges

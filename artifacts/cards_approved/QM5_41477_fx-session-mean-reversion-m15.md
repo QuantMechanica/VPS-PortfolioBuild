@@ -5,7 +5,7 @@ type: strategy
 source_id: QM-RESEARCH-2026-0005
 source_type: internal_research
 source_artifact: QM-RESEARCH://2026-0005
-source_hash: ba89005b9ed4c93f46681a7504dec9adde3b4abd2bde944f7e2a7048a10b7f8c
+source_hash: 54880eade58fb129e7c783862d86fe69db190d5b4315094c213304965a7f9934
 source_author: Kimi
 source_model: kimi-code/kimi-for-coding
 research_trial_count: 1
@@ -22,13 +22,14 @@ expected_trade_frequency: "Bounded by one entry per symbol per session window (2
 expected_trades_per_year_per_symbol: 280
 g0_status: APPROVED
 review_status: REVIEW_PENDING
-g0_approval_reasoning: "OWNER_DIRECT_SESSION_DELEGATION to Kimi, 2026-09-16 (interim strategy-engineering build of the fully mechanized QM-RESEARCH-2026-0004 H-FXMR card, sibling of QM5_41475 H-CW). Independent non-Kimi critique pending: claude disabled until 2026-09-17, codex on hold until 2026-09-19, agy quota-dead. Build-only authorization; no pipeline phase, no gate verdict, no live use."
+g0_approval_reasoning: "source_hash rebind after non-Kimi critic seal 2026-09-18 (Fable critic wave, OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917); mechanics unchanged; R-gate frontmatter re-synced to the card body"
 r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
-last_updated: 2026-09-16
+last_updated: 2026-09-18
+card_sha256: 2abe3d4e718392ce286195bba7f3145d4a48a6996677db7c65dd4aad4aa41b82
 ---
 
 # H-FXMR: FX session mean reversion (session-flat, M15)
@@ -102,6 +103,7 @@ Native MT5 price series, one EMA, one ATR, the instrument spread, and the live M
 M15 for signals and execution; no D1 or higher signals.
 
 ## Symbols
+Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX (factory custom-symbol names; live charts use the bare broker names via the slot inputs).
 EURUSD, GBPUSD, USDJPY FX majors (symbols are inputs, never code literals; one input per symbol slot, `.DWX` in research/backtest). No indices, metals, energy.
 
 ## Parameter ranges

@@ -1,0 +1,206 @@
+{
+ "generated_utc": "2026-09-18T00:14:05.157892+00:00",
+ "hold_code": "RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+ "rows": [
+  {
+   "id": "f3132f22-11a8-48e4-8b11-39b4fcfc4e59",
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "84608819-5253-4df0-871c-6eb4750c3435",
+   "ea_id": "QM5_12831",
+   "symbol": "QM5_12831_XTI_AUDUSD_BRK_D1",
+   "phase": "Q10_NEWS",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "06b9c0f8-f6c1-47f8-a40d-2dc94893db7c",
+   "ea_id": "QM5_11147",
+   "symbol": "SP500.DWX",
+   "phase": "Q10_NEWS",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "86cccb8a-2d49-4539-a4a0-c45f530dc6ba",
+   "ea_id": "QM5_13059",
+   "symbol": "QM5_13059_XTI_AUDJPY_RSPREAD_D1",
+   "phase": "Q10_NEWS",
+   "ram_class": "heavy_or_unknown_multisymbol",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dbd984be-792d-4759-a5ac-bfd75b423917",
+   "ea_id": "QM5_1355",
+   "symbol": "NDX.DWX",
+   "phase": "Q10_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "e4fabf66-d902-45bf-9ffd-12e3289d172c",
+   "ea_id": "QM5_11294",
+   "symbol": "NDX.DWX",
+   "phase": "Q10_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "564c7e0e-9f1f-446b-918a-1a2cb9d1ab0f",
+   "ea_id": "QM5_9973",
+   "symbol": "NDX.DWX",
+   "phase": "Q10_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "bdba95f1-9aed-4f2b-af7e-c0cf60407aa5",
+   "ea_id": "QM5_10145",
+   "symbol": "NDX.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "2276786b-2a89-4f28-a2ed-ac5dd1b857cb",
+   "ea_id": "QM5_12361",
+   "symbol": "NDX.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0031f42d-65be-4c1d-ae45-bbaa67c071ca",
+   "ea_id": "QM5_12350",
+   "symbol": "NDX.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "3b320089-5553-486e-b824-5c7d1405886d",
+   "ea_id": "QM5_1551",
+   "symbol": "NDX.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "dfb2f622-b7c0-4da3-a8ac-17825dde0cf9",
+   "ea_id": "QM5_12484",
+   "symbol": "NDX.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "74718ef2-2e3c-4432-8f3b-07115b6ba632",
+   "ea_id": "QM5_10815",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q08",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "b1b6b021-3384-4d1a-8728-f4c943b31d18",
+   "ea_id": "QM5_1077",
+   "symbol": "NDX.DWX",
+   "phase": "Q06",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "1ab6156f-dfc1-5e03-aae7-db461d025b5c",
+   "ea_id": "QM5_13301",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "0d112806-ee2a-5d0a-9382-33a353cf8efe",
+   "ea_id": "QM5_10911",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "033e7bc3-715e-5c71-b368-c00ea2594598",
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "f8f75276-2256-5e06-a58b-2756e5c1ebe0",
+   "ea_id": "QM5_10440",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "a800efb5-e0db-5f99-b982-9b2bf49108b5",
+   "ea_id": "QM5_11132",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "fe1b3e6b-eaf5-5d3b-9a3c-7f49d07c5360",
+   "ea_id": "QM5_13128",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "6607ae07-b581-586f-9374-ec2673ad42b8",
+   "ea_id": "QM5_13013",
+   "symbol": "NDX.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa",
+   "ea_id": "QM5_10142",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "5e308792-a65e-5b7a-a608-78381c18201e",
+   "ea_id": "QM5_11294",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "9de7b79c-ed84-5ebe-a4dc-4670e86b4976",
+   "ea_id": "QM5_11881",
+   "symbol": "SP500.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  },
+  {
+   "id": "421b36a2-c904-59c5-b747-cabe8da1909b",
+   "ea_id": "QM5_13036",
+   "symbol": "GDAXI.DWX",
+   "phase": "Q09_NEWS",
+   "ram_class": "single_index_tick",
+   "reservation_gb": 44.0
+  }
+ ]
+}
