@@ -154,7 +154,7 @@ void QM41475_RefreshChartPanel()
    snapshot.reason = "Session breakout evaluated on the next H1 bar";
 
    const datetime now = TimeCurrent();
-   const datetime bar = iTime(_Symbol, PERIOD_H1, 0);
+   const datetime bar = iTime(_Symbol, PERIOD_H1, 0); // perf-allowed: 5s timer-gated panel countdown reads the forming H1 bar time only (structural, no indicator math); reviewer sign-off Fable 2026-09-18
    const datetime next = bar + PeriodSeconds(PERIOD_H1);
    snapshot.next_event = (bar > 0 && next > now)
       ? "Next H1 evaluation in " + QM_PanelDuration((long)(next - now)) + " | " + QM_PanelDateTime(next) + " BT"
