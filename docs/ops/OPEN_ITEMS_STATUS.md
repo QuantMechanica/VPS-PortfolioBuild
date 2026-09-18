@@ -1,5 +1,11 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 2026-09-18 ~02:45Z — FTMO-Buch v3 entschieden, H-FXMR retired:**
+> - Alternative Roster über die volle First-Passage-Kette v2 + temporaler Holdout (Selektion ≤2022, Test 2023+) + Venue-Financing + Deployability-Klassifikation: **D2f** (8 Klasse-A-Sleeves, Buch 2,34 %) schlägt demo_8 auf beiden Achsen mit Financing (LCB 0.88 vs 0.53; OOS 0.98 vs 0.32). Fable-Entscheidung: Demo-Buch v3 = D2f (`docs/ftmo/FTMO_ALT_ROSTER_*_2026-09-18.md`). Deployment nach Governor-Binding-Hash-Fix (Ticket a5cf99d0, Agent) → Paket → `demo_install --package` (roster-getriebene Tools gemerged `a6e3dcbb81`) → Chart-Profil mit Backup → neuer 14-Tage-Zyklus.
+> - **Befund:** 8 von 24 gemessenen Q14-Sleeves handeln auf FTMO-Symbolnamen nie (exakter `.DWX`-Gate); die laufende Demo ist faktisch 6/8 (20048, 13054 ohne Order seit 09-11) → Ticket d33ec32e.
+> - **H-FXMR QM5_41477 RETIRED** (Q02 EURUSD PF 0,79, −0,106R, t=−3,71 unter Kill-Floor; `docs/research/HFXMR_41477_Q02_POSTMORTEM_2026-09-18.md`); Prescreen-v2-Ticket 7a5c6c40. H-CW/H-MR Q02-Kanarien auf SP500 (Exclusive-Lane) pending.
+> - Review-Backlog 37/38 geschlossen (`D:/QM/reports/ai_exchange/20260918_review_triage/`); Census 42a437a4 RECYCLE (agy-Review); Incident: kurzer Test-Schreibzugriff auf das FTMO-Demo-Terminal, byte-verifiziert revertiert (`…/2026-09-18_ftmo_demo_recompose_R2/INCIDENT_terminal_contact_20260918.md`).
+
 > **RESULT 2026-09-18 — Fable Wiederaufnahme unter OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917 (Stand ~00:45Z):**
 > - Autorität verankert: `decisions/2026-09-17_owner_fable_full_executive_authority.md` + verbatim Evidence; CLAUDE.md und Vault (START_HERE, Hard Rules, Stehende Vollmacht Annex 2026-09-17, Entscheidungsregister 09, Kimi/AI-Routing) annotiert. Einziges OWNER-Gate: Kauf einer bezahlten FTMO-Challenge.
 > - KPI-Kontrakt `docs/ftmo/FTMO_KPI_CONTRACT.md` (FTMO_NET_CASH_REALIZED = 0; Steuer-KPI definiert). Regel-Snapshot `docs/ftmo/FTMO_RULES_SNAPSHOT_2026-09-18.md` (Live-Refetch OK; Fee-Betrag GAP).

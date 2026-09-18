@@ -1,0 +1,168 @@
+{
+ "schema": "qm.ftmo-demo-roster/v1-draft",
+ "label": "D2f",
+ "book_risk_pct": 2.34375,
+ "source": "docs/ftmo/FTMO_ALT_ROSTER_DEPLOYABLE_2026-09-18.md",
+ "sleeves": [
+  {
+   "ea_id": 13213,
+   "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+   "dxz_symbol": "USDJPY.DWX",
+   "ftmo_symbol": "USDJPY",
+   "timeframe": [
+    "H1"
+   ],
+   "slot": [
+    0
+   ],
+   "magic": [
+    "132130000"
+   ],
+   "risk_percent": 0.15625,
+   "ex5": [
+    "QM5_13213_balke-gmt3-range-breakout.ex5"
+   ],
+   "n_dirs": 1
+  },
+  {
+   "ea_id": 10706,
+   "ea_label": "QM5_10706_tv-mon-ls",
+   "dxz_symbol": "GBPUSD.DWX",
+   "ftmo_symbol": "GBPUSD",
+   "timeframe": [
+    "H1"
+   ],
+   "slot": [
+    1
+   ],
+   "magic": [
+    "107060001"
+   ],
+   "risk_percent": 0.3125,
+   "ex5": [
+    "QM5_10706_tv-mon-ls.ex5"
+   ],
+   "n_dirs": 1
+  },
+  {
+   "ea_id": 10700,
+   "ea_label": "QM5_10700_tv-liq-break",
+   "dxz_symbol": "XAUUSD.DWX",
+   "ftmo_symbol": "XAUUSD",
+   "timeframe": [
+    "H1"
+   ],
+   "slot": [
+    3
+   ],
+   "magic": [
+    "107000003"
+   ],
+   "risk_percent": 0.3125,
+   "ex5": [
+    "QM5_10700_tv-liq-break.ex5"
+   ],
+   "n_dirs": 1
+  },
+  {
+   "ea_id": 11422,
+   "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+   "dxz_symbol": "USDCAD.DWX",
+   "ftmo_symbol": "USDCAD",
+   "timeframe": [
+    "D1"
+   ],
+   "slot": [
+    4
+   ],
+   "magic": [
+    "114220004"
+   ],
+   "risk_percent": 0.3125,
+   "ex5": [
+    "QM5_11422_williams-18ma-outside-bar-entry-d1.ex5"
+   ],
+   "n_dirs": 1
+  },
+  {
+   "ea_id": 10403,
+   "ea_label": "QM5_10403_et-turtle20x",
+   "dxz_symbol": "XAUUSD.DWX",
+   "ftmo_symbol": "XAUUSD",
+   "timeframe": [
+    "D1"
+   ],
+   "slot": [
+    2
+   ],
+   "magic": [
+    "104030002"
+   ],
+   "risk_percent": 0.3125,
+   "ex5": [
+    "QM5_10403_et-turtle20x.ex5"
+   ],
+   "n_dirs": 1
+  },
+  {
+   "ea_id": 21505,
+   "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+   "dxz_symbol": "XAGUSD.DWX",
+   "ftmo_symbol": "XAGUSD",
+   "timeframe": [
+    "D1"
+   ],
+   "slot": [
+    0
+   ],
+   "magic": [
+    "215050000"
+   ],
+   "risk_percent": 0.3125,
+   "ex5": [
+    "QM5_21505_xag-weekly-lowvol-momentum.ex5"
+   ],
+   "n_dirs": 1
+  },
+  {
+   "ea_id": 41219,
+   "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+   "dxz_symbol": "XAUUSD.DWX",
+   "ftmo_symbol": "XAUUSD",
+   "timeframe": [
+    "D1"
+   ],
+   "slot": [
+    0
+   ],
+   "magic": [
+    "412190000"
+   ],
+   "risk_percent": 0.3125,
+   "ex5": [
+    "QM5_41219_cum-rsi2-commodity-requal8.ex5"
+   ],
+   "n_dirs": 1
+  },
+  {
+   "ea_id": 13054,
+   "ea_label": "QM5_13054_brent-tom-mom",
+   "dxz_symbol": "XTIUSD.DWX",
+   "ftmo_symbol": "USOIL.cash",
+   "timeframe": [
+    "D1"
+   ],
+   "slot": [
+    0
+   ],
+   "magic": [
+    "130540000"
+   ],
+   "risk_percent": 0.3125,
+   "ex5": [
+    "QM5_13054_brent-tom-mom.ex5"
+   ],
+   "n_dirs": 1
+  }
+ ]
+}
