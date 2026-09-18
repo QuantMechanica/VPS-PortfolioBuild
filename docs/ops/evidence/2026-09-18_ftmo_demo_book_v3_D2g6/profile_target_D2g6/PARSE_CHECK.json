@@ -1,0 +1,1228 @@
+{
+  "schema": "qm.ftmo-demo-chart-profile-parse-check/v1",
+  "profile_dir": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2g6\\profile_target_D2g6",
+  "experts_dir": "C:\\Users\\Administrator\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\Experts\\QM_FTMO",
+  "experts_dir_note": "temp dir laid out as MQL5\\Experts\\QM_FTMO holding the package bin/*.ex5; after RUNBOOK step 4 the live equivalent is ...\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO",
+  "call": "tools.strategy_farm.ftmo.demo_cycle.parse_chart_profile(profile_dir, experts_dir)",
+  "sleeve_count": 6,
+  "magics": [
+    104030002,
+    107000003,
+    107060001,
+    114220004,
+    132130000,
+    412190000
+  ],
+  "total_book_risk_pct": 1.71875,
+  "roster_hash": "5432d3db11b02c64a3c5357d94d9f59b425c270e600b87ad65ddf42310771e53",
+  "incumbent_roster_hash": "6c5383d8777728ba17abd1a836858b9db87c306d2931445ac642762075ac9bf2",
+  "sleeves": [
+    {
+      "ea_id": 10706,
+      "ea_name": "QM5_10706_tv-mon-ls",
+      "symbol": "GBPUSD",
+      "slot": 1,
+      "magic": 107060001,
+      "risk_pct": 0.3125,
+      "ex5_sha": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+      "chart": "chart02.chr"
+    },
+    {
+      "ea_id": 11422,
+      "ea_name": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "symbol": "USDCAD",
+      "slot": 4,
+      "magic": 114220004,
+      "risk_pct": 0.3125,
+      "ex5_sha": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "chart": "chart03.chr"
+    },
+    {
+      "ea_id": 13213,
+      "ea_name": "QM5_13213_balke-gmt3-range-breakout",
+      "symbol": "USDJPY",
+      "slot": 0,
+      "magic": 132130000,
+      "risk_pct": 0.15625,
+      "ex5_sha": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0",
+      "chart": "chart04.chr"
+    },
+    {
+      "ea_id": 10700,
+      "ea_name": "QM5_10700_tv-liq-break",
+      "symbol": "XAUUSD",
+      "slot": 3,
+      "magic": 107000003,
+      "risk_pct": 0.3125,
+      "ex5_sha": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+      "chart": "chart05.chr"
+    },
+    {
+      "ea_id": 10403,
+      "ea_name": "QM5_10403_et-turtle20x",
+      "symbol": "XAUUSD",
+      "slot": 2,
+      "magic": 104030002,
+      "risk_pct": 0.3125,
+      "ex5_sha": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+      "chart": "chart06.chr"
+    },
+    {
+      "ea_id": 41219,
+      "ea_name": "QM5_41219_cum-rsi2-commodity-requal8",
+      "symbol": "XAUUSD",
+      "slot": 0,
+      "magic": 412190000,
+      "risk_pct": 0.3125,
+      "ex5_sha": "e9670141e89249aff7df44a10a2402e2103aa4cecf8d0a35a8cd6d6babedf108",
+      "chart": "chart07.chr"
+    }
+  ],
+  "preset_input_cross_check": [
+    {
+      "chart": "chart02.chr",
+      "preset": "QM5_10706_GBPUSD_H1_live_trial.set",
+      "preset_sha256": "31c37ec30421a51d7938ebfe911ef13e6615c678d0727ded9def09cb5cd1d140",
+      "preset_sha256_matches_PACKAGE_section_4": true,
+      "all_keys_match": true,
+      "keys": [
+        {
+          "key": "qm_magic_slot_offset",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_FIXED",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_PERCENT",
+          "preset": "0.3125",
+          "chart": "0.3125",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "PORTFOLIO_WEIGHT",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_filter_news_enabled",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_news_mode",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_enabled",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_lookback_bars",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_bull_return_pct",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_bear_return_pct",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_enabled",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_atr_period",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_lookback_bars",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_compression_ratio",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_expansion_ratio",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "MondayBoxShiftHours",
+          "preset": "7",
+          "chart": "7",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "LiqPct",
+          "preset": "0.0002",
+          "chart": "0.0002",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "MaxWickPct",
+          "preset": "0.0025",
+          "chart": "0.0025",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "SlPct",
+          "preset": "0.0002",
+          "chart": "0.0002",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RrTarget",
+          "preset": "3.5",
+          "chart": "3.5",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "MondayRangeTpPct",
+          "preset": "1.30",
+          "chart": "1.30",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "BeTriggerR",
+          "preset": "1.5",
+          "chart": "1.5",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "BeBars",
+          "preset": "24",
+          "chart": "24",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "BeLockFrac",
+          "preset": "0.1",
+          "chart": "0.1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "EntryMode",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "FridayExitHourBroker",
+          "preset": "18",
+          "chart": "18",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "FridayExitMinuteBroker",
+          "preset": "30",
+          "chart": "30",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_spread_atr_mult",
+          "preset": "0.1887",
+          "chart": "0.1887",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_temporal",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_compliance",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_stale_max_hours",
+          "preset": "336",
+          "chart": "336",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_enabled",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_hour_broker",
+          "preset": "21",
+          "chart": "21",
+          "occurrences": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "chart": "chart03.chr",
+      "preset": "QM5_11422_USDCAD_D1_live_trial.set",
+      "preset_sha256": "215615b5da7ae2f49dd3d9dae7e85cbdff522940f69892d04cdf3c0f61378ea5",
+      "preset_sha256_matches_PACKAGE_section_4": true,
+      "all_keys_match": true,
+      "keys": [
+        {
+          "key": "qm_ea_id",
+          "preset": "11422",
+          "chart": "11422",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_magic_slot_offset",
+          "preset": "4",
+          "chart": "4",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_FIXED",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_PERCENT",
+          "preset": "0.3125",
+          "chart": "0.3125",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "PORTFOLIO_WEIGHT",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_ma_period",
+          "preset": "18",
+          "chart": "18",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_period",
+          "preset": "14",
+          "chart": "14",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_tp_r_multiple",
+          "preset": "2.0",
+          "chart": "2.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_entry_offset_pips",
+          "preset": "1.0",
+          "chart": "1.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_max_stop_pips",
+          "preset": "80.0",
+          "chart": "80.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_spread_cap_pips",
+          "preset": "25.0",
+          "chart": "25.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_pending_expiry_days",
+          "preset": "7",
+          "chart": "7",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_temporal",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_compliance",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_stale_max_hours",
+          "preset": "336",
+          "chart": "336",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_enabled",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_hour_broker",
+          "preset": "21",
+          "chart": "21",
+          "occurrences": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "chart": "chart04.chr",
+      "preset": "QM5_13213_USDJPY_H1_live_trial.set",
+      "preset_sha256": "19c771ff8224dcffa5e86df0814f5c51ecac8b2d7f5d898d1ee2e855c849a777",
+      "preset_sha256_matches_PACKAGE_section_4": true,
+      "all_keys_match": true,
+      "keys": [
+        {
+          "key": "qm_ea_id",
+          "preset": "13213",
+          "chart": "13213",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_magic_slot_offset",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_FIXED",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_PERCENT",
+          "preset": "0.15625",
+          "chart": "0.15625",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "PORTFOLIO_WEIGHT",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_range_start_hour",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_range_end_hour",
+          "preset": "6",
+          "chart": "6",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_exit_hour",
+          "preset": "18",
+          "chart": "18",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_period",
+          "preset": "14",
+          "chart": "14",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_min_range_atr_mult",
+          "preset": "0.4",
+          "chart": "0.4",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_max_range_atr_mult",
+          "preset": "2.5",
+          "chart": "2.5",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_trail_trigger_r",
+          "preset": "1.0",
+          "chart": "1.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_range_scan_bars",
+          "preset": "36",
+          "chart": "36",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_temporal",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_compliance",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_stale_max_hours",
+          "preset": "336",
+          "chart": "336",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_enabled",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_hour_broker",
+          "preset": "21",
+          "chart": "21",
+          "occurrences": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "chart": "chart05.chr",
+      "preset": "QM5_10700_XAUUSD_H1_live_trial.set",
+      "preset_sha256": "6e319d98e5ea7b6790b8c05a7cf2d3b24cb184c070576f20d906fcb0dcd69dd7",
+      "preset_sha256_matches_PACKAGE_section_4": true,
+      "all_keys_match": true,
+      "keys": [
+        {
+          "key": "qm_ea_id",
+          "preset": "10700",
+          "chart": "10700",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_magic_slot_offset",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_FIXED",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_PERCENT",
+          "preset": "0.3125",
+          "chart": "0.3125",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "PORTFOLIO_WEIGHT",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_contraction_lookback",
+          "preset": "10",
+          "chart": "10",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_liquidity_length",
+          "preset": "20",
+          "chart": "20",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_period",
+          "preset": "20",
+          "chart": "20",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_sl_mult",
+          "preset": "3.0",
+          "chart": "3.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_target_rr",
+          "preset": "2.0",
+          "chart": "2.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_use_fixed_pct_stop",
+          "preset": "false",
+          "chart": "false",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_fixed_stop_pct",
+          "preset": "0.01",
+          "chart": "0.01",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_allow_long",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_allow_short",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_max_spread_points",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_temporal",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_compliance",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_stale_max_hours",
+          "preset": "336",
+          "chart": "336",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_enabled",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_hour_broker",
+          "preset": "21",
+          "chart": "21",
+          "occurrences": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "chart": "chart06.chr",
+      "preset": "QM5_10403_XAUUSD_D1_live_trial.set",
+      "preset_sha256": "9d8414ce65912a6b75228717d9cf24cdd8329d2f31a8171851242e051132b1ef",
+      "preset_sha256_matches_PACKAGE_section_4": true,
+      "all_keys_match": true,
+      "keys": [
+        {
+          "key": "qm_magic_slot_offset",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_FIXED",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_PERCENT",
+          "preset": "0.3125",
+          "chart": "0.3125",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "PORTFOLIO_WEIGHT",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_filter_news_enabled",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_news_mode",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_enabled",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_lookback_bars",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_bull_return_pct",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_regime_bear_return_pct",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_enabled",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_atr_period",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_lookback_bars",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_compression_ratio",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "qm_filter_volatility_expansion_ratio",
+          "status": "SKIPPED_BY_VERIFIER"
+        },
+        {
+          "key": "strategy_tf",
+          "preset": "16408",
+          "chart": "16408",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_entry_channel",
+          "preset": "20",
+          "chart": "20",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_exit_channel",
+          "preset": "10",
+          "chart": "10",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_period",
+          "preset": "20",
+          "chart": "20",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_stop_mult",
+          "preset": "2.0",
+          "chart": "2.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_regime_filter",
+          "preset": "false",
+          "chart": "false",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_regime_window",
+          "preset": "100",
+          "chart": "100",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_regime_percentile",
+          "preset": "50.0",
+          "chart": "50.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_max_spread_points",
+          "preset": "0.0",
+          "chart": "0.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_pending_expiry_bars",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_temporal",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_compliance",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_stale_max_hours",
+          "preset": "336",
+          "chart": "336",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_enabled",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_hour_broker",
+          "preset": "21",
+          "chart": "21",
+          "occurrences": 1,
+          "pass": true
+        }
+      ]
+    },
+    {
+      "chart": "chart07.chr",
+      "preset": "QM5_41219_XAUUSD_D1_live_trial.set",
+      "preset_sha256": "ba8ffd63db87de12495a7536ff8f8fef4e9447a9795c76d82ef2416f08d5f128",
+      "preset_sha256_matches_PACKAGE_section_4": true,
+      "all_keys_match": true,
+      "keys": [
+        {
+          "key": "qm_ea_id",
+          "preset": "41219",
+          "chart": "41219",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_magic_slot_offset",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_FIXED",
+          "preset": "0",
+          "chart": "0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "RISK_PERCENT",
+          "preset": "0.3125",
+          "chart": "0.3125",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "PORTFOLIO_WEIGHT",
+          "preset": "1",
+          "chart": "1",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_rsi_period",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_cum_window",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_cum_rsi_entry",
+          "preset": "35.0",
+          "chart": "35.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_rsi_exit",
+          "preset": "65.0",
+          "chart": "65.0",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_sma_period",
+          "preset": "200",
+          "chart": "200",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_period",
+          "preset": "14",
+          "chart": "14",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_atr_sl_mult",
+          "preset": "2.5",
+          "chart": "2.5",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_max_hold_bars",
+          "preset": "5",
+          "chart": "5",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "strategy_max_spread_points",
+          "preset": "300",
+          "chart": "300",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_temporal",
+          "preset": "3",
+          "chart": "3",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_compliance",
+          "preset": "2",
+          "chart": "2",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_news_stale_max_hours",
+          "preset": "336",
+          "chart": "336",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_enabled",
+          "preset": "true",
+          "chart": "true",
+          "occurrences": 1,
+          "pass": true
+        },
+        {
+          "key": "qm_friday_close_hour_broker",
+          "preset": "21",
+          "chart": "21",
+          "occurrences": 1,
+          "pass": true
+        }
+      ]
+    }
+  ],
+  "governor_chart_inputs": [
+    {
+      "key": "qm_ea_id",
+      "expected": "13206",
+      "chart": "13206",
+      "pass": true
+    },
+    {
+      "key": "signed_policy_id",
+      "expected": "FTMO_2S_P1_100K_V2",
+      "chart": "FTMO_2S_P1_100K_V2",
+      "pass": true
+    },
+    {
+      "key": "expected_account_login",
+      "expected": "1514536732",
+      "chart": "1514536732",
+      "pass": true
+    },
+    {
+      "key": "expected_account_server",
+      "expected": "FTMO-Demo",
+      "chart": "FTMO-Demo",
+      "pass": true
+    },
+    {
+      "key": "challenge_id",
+      "expected": "M13_D2G6_20260918_1514536732",
+      "chart": "M13_D2G6_20260918_1514536732",
+      "pass": true
+    },
+    {
+      "key": "challenge_start_utc",
+      "expected": "2026.09.18 06:17:00",
+      "chart": "2026.09.18 06:17:00",
+      "pass": true
+    },
+    {
+      "key": "allowed_magics_csv",
+      "expected": "104030002,107000003,107060001,114220004,132130000,412190000",
+      "chart": "104030002,107000003,107060001,114220004,132130000,412190000",
+      "pass": true
+    },
+    {
+      "key": "governed_ea_ids_csv",
+      "expected": "10403,10700,10706,11422,13213,41219",
+      "chart": "10403,10700,10706,11422,13213,41219",
+      "pass": true
+    },
+    {
+      "key": "governed_symbols_csv",
+      "expected": "GBPUSD,USDCAD,USDJPY,XAUUSD",
+      "chart": "GBPUSD,USDCAD,USDJPY,XAUUSD",
+      "pass": true
+    },
+    {
+      "key": "governor_dry_run",
+      "expected": "false",
+      "chart": "false",
+      "pass": true
+    },
+    {
+      "key": "challenge_state_bootstrap",
+      "expected": "false",
+      "chart": "false",
+      "pass": true
+    }
+  ],
+  "collector_chart_inputs": [
+    {
+      "key": "InpTimerSeconds",
+      "expected": "1",
+      "chart": "1",
+      "pass": true
+    },
+    {
+      "key": "InpOutputDir",
+      "expected": "QM\\ftmo_trial\\FTMO_DEMO_BOOK_V3_D2G6_20260918",
+      "chart": "QM\\ftmo_trial\\FTMO_DEMO_BOOK_V3_D2G6_20260918",
+      "pass": true
+    },
+    {
+      "key": "InpExpectedLogin",
+      "expected": "1514536732",
+      "chart": "1514536732",
+      "pass": true
+    },
+    {
+      "key": "InpExpectedServer",
+      "expected": "FTMO-Demo",
+      "chart": "FTMO-Demo",
+      "pass": true
+    },
+    {
+      "key": "InpTrialId",
+      "expected": "M13_D2G6_20260918_1514536732",
+      "chart": "M13_D2G6_20260918_1514536732",
+      "pass": true
+    }
+  ],
+  "checks": [
+    {
+      "check": "sleeve_count == 6",
+      "pass": true,
+      "detail": "observed 6"
+    },
+    {
+      "check": "magics == D2g6 six",
+      "pass": true,
+      "detail": "[104030002, 107000003, 107060001, 114220004, 132130000, 412190000]"
+    },
+    {
+      "check": "risk_pct sum == 1.71875",
+      "pass": true,
+      "detail": "1.71875"
+    },
+    {
+      "check": "13213 risk_pct == 0.15625",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "no ex5_sha UNKNOWN",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "ex5_sha 10706 == PACKAGE.md section 3",
+      "pass": true,
+      "detail": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb"
+    },
+    {
+      "check": "ex5_sha 11422 == PACKAGE.md section 3",
+      "pass": true,
+      "detail": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66"
+    },
+    {
+      "check": "ex5_sha 13213 == PACKAGE.md section 3",
+      "pass": true,
+      "detail": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0"
+    },
+    {
+      "check": "ex5_sha 10700 == PACKAGE.md section 3",
+      "pass": true,
+      "detail": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be"
+    },
+    {
+      "check": "ex5_sha 10403 == PACKAGE.md section 3",
+      "pass": true,
+      "detail": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3"
+    },
+    {
+      "check": "ex5_sha 41219 == PACKAGE.md section 3",
+      "pass": true,
+      "detail": "e9670141e89249aff7df44a10a2402e2103aa4cecf8d0a35a8cd6d6babedf108"
+    },
+    {
+      "check": "roster_hash != incumbent",
+      "pass": true,
+      "detail": "5432d3db11b02c64a3c5357d94d9f59b425c270e600b87ad65ddf42310771e53"
+    },
+    {
+      "check": "every preset key reproduced verbatim in its chart <expert> block",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "governor chart01 inputs",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "collector chart08 inputs == package collector preset",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "collector preset matches PACKAGE section 5",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "chart09 blank (no expert block), EURUSD D1",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "exact file set = chart01..chart09 + order.wnd",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "every .chr is UTF-16 LE with BOM",
+      "pass": true,
+      "detail": ""
+    }
+  ],
+  "all_pass": true
+}
