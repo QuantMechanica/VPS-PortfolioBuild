@@ -1,23 +1,15 @@
 {
-  "schema": "qm.ftmo-demo-v2-admission-census/v3-merged",
-  "purpose": "READ-ONLY admission census for FTMO demo book v2 burn-in (BOOK_SPRINT F4 / ticket 42a437a4) \u2014 canonical RECYCLE merge",
-  "generated_by": "tools/strategy_farm/ftmo_demo_v2_census.py",
-  "merge_of": {
-    "base": "docs/ops/evidence/2026-09-15_ftmo_demo_v2_census/slot1_census_v2/ftmo_demo_v2_census_slot1.py (1 ADMIT / 16 ADMIT_CONDITIONAL / 11 EXCLUDE)",
-    "corrections_applied": [
-      "i",
-      "ii",
-      "iii",
-      "iv",
-      "v"
-    ],
-    "review_closed_at": "2026-09-15T10:30:41+00:00",
-    "superseded": [
-      "9a06adf9bd (v1, 24 ADMIT/4 EXCLUDE)",
-      "f66a996f32 (slot-3 second opinion, +2 ADMIT)"
-    ]
-  },
+  "schema": "qm.ftmo-demo-v2-admission-census/v2-slot1",
+  "purpose": "READ-ONLY admission census for FTMO demo book v2 burn-in (BOOK_SPRINT F4 / ticket 42a437a4)",
+  "generated_by": "docs/ops/evidence/2026-09-15_ftmo_demo_v2_census/slot1_census_v2/ftmo_demo_v2_census_slot1.py",
+  "rework_of": "critique receipt critique_42a437a4_20260915T085204Z (F1..F11)",
+  "session_collision_note": "Slot-1 of a 3-session claude orchestration fan-out. A sibling session reworked the same ticket concurrently and owns tools/strategy_farm/ftmo_demo_v2_census.py + ../roster_ftmo_demo_v2.json. See ../slot1_census_v2/COLLISION.md. Neither side is committed.",
   "due_utc_binding": "2026-09-16T18:00:00Z",
+  "due_date_sources": {
+    "ticket_42a437a4_title": "Wed 2026-09-16 18:00Z (BINDING)",
+    "docs/ops/BOOK_SPRINT_2026-09-20.md F4": "Fri 2026-09-18 (downstream schedule)",
+    "v1_README": "Wed 2026-09-17 18:00Z (incorrect, superseded)"
+  },
   "ftmo_account": 1514536732,
   "ftmo_server": "FTMO-Demo",
   "no_rebuild": true,
@@ -37,7 +29,7 @@
     "cost_snapshot_native_capture": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-14_ftmo_book_v2\\ftmo_book_symbol_cost_snapshot_v2.json",
     "magic_registry": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
     "governor_manifest": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-06_ftmo_demo_governor_manifest.md",
-    "ftmo_symbol_probe": "ftmo_symbol_probe.json (written by this script)",
+    "ftmo_symbol_probe": "ftmo_symbol_probe_slot1.json (written by this script)",
     "fixes": {
       "magic_resolver": {
         "commit": "4fb47bd3b5d744aeb544225414b4002c01e77a0c",
@@ -124,16 +116,21 @@
   },
   "counts": {
     "sleeves": 28,
-    "admit": 16,
-    "exclude": 12
+    "admit": 1,
+    "admit_conditional": 16,
+    "exclude": 11
   },
   "governor_input_deltas_PROPOSAL_ONLY": {
-    "note": "PROPOSAL ONLY - not applied anywhere. Policy FTMO_2S_P1_100K_V2 unchanged. Both CSVs derive from the SAME row set (governor's 8 live magics UNION the ADMIT roster rows) per (iv), so magic coverage and symbol coverage cannot drift apart.",
-    "derived_from": "governor_live_magics UNION ADMIT",
-    "allowed_magics_csv": "15370001,15560004,15670007,104030002,105130003,107000003,107060001,109390001,111650000,111650002,114210000,114210003,114220004,117080000,119100006,125670003,129890003,130540000,132130000,200480000,215050000,414700000",
-    "new_magics_to_add_csv": "15560004,15670007,104030002,105130003,107000003,109390001,111650000,111650002,114210003,117080000,125670003,129890003,132130000,414700000",
+    "note": "PROPOSAL ONLY - not applied anywhere. Policy FTMO_2S_P1_100K_V2 unchanged. Both CSVs derive from the SAME row set (governor's 8 live magics UNION the deployable roster rows), so magic coverage and symbol coverage cannot drift apart (F4).",
+    "derived_from": "governor_live_magics UNION (ADMIT + ADMIT_CONDITIONAL)",
+    "allowed_magics_csv": "15370001,15560004,15670007,104030002,105130003,107000003,107060001,109190001,109390001,111650000,111650002,114210000,114210003,114220004,117080000,119100006,125670003,129890003,130540000,132130000,200480000,215050000,414700000",
+    "new_magics_to_add_csv": "15560004,15670007,104030002,105130003,107000003,109190001,109390001,111650000,111650002,114210003,117080000,125670003,129890003,132130000,414700000",
     "governed_symbols_csv": "AUDCAD,AUDUSD,EURUSD,GBPUSD,NZDUSD,USDCAD,USDJPY,USOIL.cash,XAGUSD,XAUUSD"
   },
+  "deploy_preconditions": [
+    "blocked_on_resolver_rebuild",
+    "detach_required"
+  ],
   "roster": [
     {
       "ea_id": 1537,
@@ -153,7 +150,6 @@
       "binary_sha256": "142a019e773a493def0640722efb9d591d094650b35a69d5de39f6af3a048106",
       "binary_mtime_utc": "2026-08-16T09:58:33+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "XAGUSD.DWX",
       "registry_symbol_canonical": "XAGUSD",
       "ftmo_symbol_canonical": "XAGUSD",
@@ -202,7 +198,6 @@
       "magic_held_by_other_binary": true,
       "magic_registry_ea_id": 1537,
       "magic_collision": true,
-      "magic_collision_resolution": "resolved_by_profile_replacement",
       "risk_percent": 0.0769,
       "risk_percent_field": "burn_in_risk_percent",
       "risk_percent_profile": 0.0769,
@@ -210,9 +205,9 @@
       "is_new_sleeve": true,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'XAGUSD' is a bare base-name match to registry symbol XAGUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking",
-        "magic 15370001 is currently live on the RUNNING FTMO demo (AutoTrading ON) under chart chart08 with a different sha256 (16d66a0f7b86... vs this roster's 142a019e773a...); resolved by the deployment plan (v1 profile detached before the v2 profile loads), per correction (iii) \u2014 not a blocker"
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-08-16T09:58:33+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAGUSD.DWX, the FTMO chart would be XAGUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)",
+        "detach_required: magic 15370001 is live on the RUNNING demo (AutoTrading ON) under chart chart08 with sha 16d66a0f7b86..., the roster binds 142a019e773a... - two identities on one magic. The deploy plan must detach that chart first."
       ],
       "reason": "blocking .DWX trading-logic literal XAGUSD.DWX at framework/EAs/QM5_1537_aa-vol-sma10/QM5_1537_MonthlySleeveCalendar.mqh:312 (severity WARN) - governing input strategy_calendar_symbol was added by dcaeca68f58324c1d083c99c031aa1992469c5dc at 2026-09-06T20:03:01+00:00; the bound binary (mtime 2026-08-16T09:58:33+00:00) predates it, so the literal is NOT neutralised in this artifact"
     },
@@ -234,7 +229,6 @@
       "binary_sha256": "9371a8a03008e2fd8a3fc9dbec75586f7ade71ea857e9ff8f9c3fd0fd95cb3cb",
       "binary_mtime_utc": "2026-07-13T04:47:49+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "XAUUSD.DWX",
       "registry_symbol_canonical": "XAUUSD",
       "ftmo_symbol_canonical": "XAUUSD",
@@ -268,18 +262,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 1556,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.54073466,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.540735,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:47:49+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:47:49+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 1567,
@@ -298,7 +291,6 @@
       "binary_sha256": "71c2f84b3e694210176e928fcaf688eff3f59c7efacdb275511e474c35a9e45c",
       "binary_mtime_utc": "2026-07-15T11:45:25+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "EURUSD.DWX",
       "registry_symbol_canonical": "EURUSD",
       "ftmo_symbol_canonical": "EURUSD",
@@ -332,18 +324,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 1567,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.18478285,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.184783,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-15T11:45:25+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-15T11:45:25+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 9641,
@@ -359,7 +350,6 @@
       "binary_sha256": "21eda8527f66dd25bddd9ea6f50f727d5d7e58cc33f44725eb2fbfcccec40a21",
       "binary_mtime_utc": "2026-08-11T01:42:55+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "WS30.DWX",
       "registry_symbol_canonical": "WS30",
       "ftmo_symbol_canonical": "US30",
@@ -393,7 +383,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 9641,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.0104,
       "risk_percent_field": "burn_in_risk_percent",
       "risk_percent_profile": 0.0104,
@@ -401,7 +390,9 @@
       "is_new_sleeve": true,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-08-11T01:42:55+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says WS30.DWX, the FTMO chart would be US30.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "FTMO name 'US30.cash' comes only from the FTMO_TRIAL alias venue bound to account 1513845506, not the census target 1514536732; no ticks dir, history dir or log line corroborates it on this account (registry matching=EXACT_CASE_SENSITIVE_VENUE_ACCOUNT_SERVER_RAW_SYMBOL, cross_venue_pooling=False); magic resolver fails closed on this account even after a rebuild: registry symbol WS30.DWX canonicalises to 'WS30', FTMO chart symbol US30.cash to 'US30' (QM_MagicSymbolCanonical, QM_MagicResolver.mqh:134) - needs a registry re-symbol, not a recompile"
     },
     {
@@ -422,7 +413,6 @@
       "binary_sha256": "b6c194d928b678cb31646dc81216c6d9f3215727354aeecdbb61bbcca99ef2b6",
       "binary_mtime_utc": "2026-07-13T04:46:21+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "XAUUSD.DWX",
       "registry_symbol_canonical": "XAUUSD",
       "ftmo_symbol_canonical": "XAUUSD",
@@ -456,18 +446,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 10403,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.21791641,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.217916,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:46:21+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:46:21+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 10440,
@@ -487,7 +476,6 @@
       "binary_sha256": "b71d302997ecdb661f1627e12b9e5e766e9679c780461b82fa018db7f2078a6a",
       "binary_mtime_utc": "2026-06-28T07:10:53+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "NDX.DWX",
       "registry_symbol_canonical": "NDX",
       "ftmo_symbol_canonical": "US100",
@@ -521,7 +509,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 10440,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.05843354,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.058434,
@@ -529,7 +516,9 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-06-28T07:10:53+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says NDX.DWX, the FTMO chart would be US100.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "magic resolver fails closed on this account even after a rebuild: registry symbol NDX.DWX canonicalises to 'NDX', FTMO chart symbol US100.cash to 'US100' (QM_MagicSymbolCanonical, QM_MagicResolver.mqh:134) - needs a registry re-symbol, not a recompile"
     },
     {
@@ -550,7 +539,6 @@
       "binary_sha256": "04b62af28c6466e01741aacaa915d9a68714cd7c23288ae277615ae068d63898",
       "binary_mtime_utc": "2026-07-13T04:46:37+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "XAUUSD.DWX",
       "registry_symbol_canonical": "XAUUSD",
       "ftmo_symbol_canonical": "XAUUSD",
@@ -584,18 +572,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 10513,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.29873096,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.298731,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:46:37+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:46:37+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 10700,
@@ -615,7 +602,6 @@
       "binary_sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
       "binary_mtime_utc": "2026-09-03T03:52:52+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "XAUUSD.DWX",
       "registry_symbol_canonical": "XAUUSD",
       "ftmo_symbol_canonical": "XAUUSD",
@@ -649,18 +635,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 10700,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.013,
       "risk_percent_field": "burn_in_risk_percent",
       "risk_percent_profile": 0.013,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": true,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-09-03T03:52:52+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-09-03T03:52:52+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 10706,
@@ -679,7 +664,6 @@
       "binary_sha256": "01e34b2059de6ed505d445ce9fcbac7da0eb10d51e5cbcbbd18d38a968916078",
       "binary_mtime_utc": "2026-07-13T04:46:46+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "GBPUSD.DWX",
       "registry_symbol_canonical": "GBPUSD",
       "ftmo_symbol_canonical": "GBPUSD",
@@ -713,19 +697,18 @@
       "magic_held_by_other_binary": true,
       "magic_registry_ea_id": 10706,
       "magic_collision": true,
-      "magic_collision_resolution": "resolved_by_profile_replacement",
       "risk_percent": 0.05267566,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.052676,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'GBPUSD' is a bare base-name match to registry symbol GBPUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking",
-        "magic 107060001 is currently live on the RUNNING FTMO demo (AutoTrading ON) under chart chart02 with a different sha256 (6f290d49defd... vs this roster's 01e34b2059de...); resolved by the deployment plan (v1 profile detached before the v2 profile loads), per correction (iii) \u2014 not a blocker"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:46:46+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says GBPUSD.DWX, the FTMO chart would be GBPUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)",
+        "detach_required: magic 107060001 is live on the RUNNING demo (AutoTrading ON) under chart chart02 with sha 6f290d49defd..., the roster binds 01e34b2059de... - two identities on one magic. The deploy plan must detach that chart first."
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'GBPUSD' is a bare base-name match to registry symbol GBPUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking; magic 107060001 is currently live on the RUNNING FTMO demo (AutoTrading ON) under chart chart02 with a different sha256 (6f290d49defd... vs this roster's 01e34b2059de...); resolved by the deployment plan (v1 profile detached before the v2 profile loads), per correction (iii) \u2014 not a blocker"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:46:46+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says GBPUSD.DWX, the FTMO chart would be GBPUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves); detach_required: magic 107060001 is live on the RUNNING demo (AutoTrading ON) under chart chart02 with sha 6f290d49defd..., the roster binds 01e34b2059de... - two identities on one magic. The deploy plan must detach that chart first."
     },
     {
       "ea_id": 10911,
@@ -745,7 +728,6 @@
       "binary_sha256": "a815c73da991736d25a02c027bbcfb23f68615adb66b7325cc2efcdc52344158",
       "binary_mtime_utc": "2026-07-31T17:09:55+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "GDAXI.DWX",
       "registry_symbol_canonical": "GDAXI",
       "ftmo_symbol_canonical": "GER40",
@@ -779,7 +761,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 10911,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.12598815,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.125988,
@@ -787,7 +768,9 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:09:55+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says GDAXI.DWX, the FTMO chart would be GER40.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "magic resolver fails closed on this account even after a rebuild: registry symbol GDAXI.DWX canonicalises to 'GDAXI', FTMO chart symbol GER40.cash to 'GER40' (QM_MagicSymbolCanonical, QM_MagicResolver.mqh:134) - needs a registry re-symbol, not a recompile"
     },
     {
@@ -808,7 +791,6 @@
       "binary_sha256": "57e0db8401616a5fb10c68557c24e8b7a7e98254cb8ddf57245fc178aa3a4691",
       "binary_mtime_utc": "2026-07-31T17:10:26+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "XTIUSD.DWX",
       "registry_symbol_canonical": "XTIUSD",
       "ftmo_symbol_canonical": "XTIUSD",
@@ -842,16 +824,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 10919,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.85776945,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.857769,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "EXCLUDE",
+      "decision": "ADMIT_CONDITIONAL",
       "admit_now": false,
-      "deploy_notes": [],
-      "reason": "needs the magic-resolver rebuild (bound binary mtime 2026-07-31T17:10:26+00:00 predates 4fb47bd3b5, 2026-09-06T19:56:06+00:00) because FTMO chart symbol 'USOIL.cash' differs from the registry base name 'XTIUSD.DWX' (bare-name exemption, correction i, does not apply); per correction (ii) no artifact-only-rebuild precondition is admitted for this book"
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:10:26+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XTIUSD.DWX, the FTMO chart would be USOIL.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:10:26+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XTIUSD.DWX, the FTMO chart would be USOIL.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 10939,
@@ -870,7 +853,6 @@
       "binary_sha256": "308604a3546c44fc8bfb40ecff36801e5479bf33887847b8b6e5650943312aac",
       "binary_mtime_utc": "2026-07-31T17:10:57+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "GBPUSD.DWX",
       "registry_symbol_canonical": "GBPUSD",
       "ftmo_symbol_canonical": "GBPUSD",
@@ -904,18 +886,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 10939,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.19579142,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.195791,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'GBPUSD' is a bare base-name match to registry symbol GBPUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:10:57+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says GBPUSD.DWX, the FTMO chart would be GBPUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'GBPUSD' is a bare base-name match to registry symbol GBPUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:10:57+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says GBPUSD.DWX, the FTMO chart would be GBPUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 11132,
@@ -931,7 +912,6 @@
       "binary_sha256": "25b68c44d9724d9915298ad6b632e9c4db77133526e8c441fa82adc2a0474152",
       "binary_mtime_utc": "2026-07-31T17:11:28+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "SP500.DWX",
       "registry_symbol_canonical": "SP500",
       "ftmo_symbol_canonical": "",
@@ -965,7 +945,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 11132,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.42718855,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.427189,
@@ -973,7 +952,9 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:11:28+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says SP500.DWX, the FTMO chart would be UNVERIFIED. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "no FTMO symbol name from any read source (alias registry, native capture, ticks/history dir, terminal logs)"
     },
     {
@@ -992,7 +973,6 @@
       "binary_sha256": "8f6d33a3dfb05f7f9167c96d7a7069cb11d8c05f7137be008530d9e12df941e4",
       "binary_mtime_utc": "2026-07-17T14:30:45+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "AUDCAD.DWX",
       "registry_symbol_canonical": "AUDCAD",
       "ftmo_symbol_canonical": "AUDCAD",
@@ -1026,18 +1006,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 11165,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.5082448,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.508245,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'AUDCAD' is a bare base-name match to registry symbol AUDCAD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-17T14:30:45+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says AUDCAD.DWX, the FTMO chart would be AUDCAD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'AUDCAD' is a bare base-name match to registry symbol AUDCAD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-17T14:30:45+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says AUDCAD.DWX, the FTMO chart would be AUDCAD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 11165,
@@ -1056,7 +1035,6 @@
       "binary_sha256": "8f6d33a3dfb05f7f9167c96d7a7069cb11d8c05f7137be008530d9e12df941e4",
       "binary_mtime_utc": "2026-07-17T14:30:45+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "EURUSD.DWX",
       "registry_symbol_canonical": "EURUSD",
       "ftmo_symbol_canonical": "EURUSD",
@@ -1090,18 +1068,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 11165,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.40967362,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.409674,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-17T14:30:45+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-17T14:30:45+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 11421,
@@ -1119,7 +1096,6 @@
       "binary_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7",
       "binary_mtime_utc": "2026-07-31T17:11:58+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "AUDUSD.DWX",
       "registry_symbol_canonical": "AUDUSD",
       "ftmo_symbol_canonical": "AUDUSD",
@@ -1153,18 +1129,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 11421,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.32134476,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.321345,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'AUDUSD' is a bare base-name match to registry symbol AUDUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:11:58+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says AUDUSD.DWX, the FTMO chart would be AUDUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'AUDUSD' is a bare base-name match to registry symbol AUDUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:11:58+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says AUDUSD.DWX, the FTMO chart would be AUDUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 11421,
@@ -1183,7 +1158,6 @@
       "binary_sha256": "0f7c8ff9ad91c43f275aacbfb366f06f17aeda0f1d567c83936af7d8dca69ca7",
       "binary_mtime_utc": "2026-07-31T17:11:58+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "EURUSD.DWX",
       "registry_symbol_canonical": "EURUSD",
       "ftmo_symbol_canonical": "EURUSD",
@@ -1217,19 +1191,18 @@
       "magic_held_by_other_binary": true,
       "magic_registry_ea_id": 11421,
       "magic_collision": true,
-      "magic_collision_resolution": "resolved_by_profile_replacement",
       "risk_percent": 0.32469368,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.324694,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking",
-        "magic 114210000 is currently live on the RUNNING FTMO demo (AutoTrading ON) under chart chart03 with a different sha256 (4ff02978ae5d... vs this roster's 0f7c8ff9ad91...); resolved by the deployment plan (v1 profile detached before the v2 profile loads), per correction (iii) \u2014 not a blocker"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:11:58+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)",
+        "detach_required: magic 114210000 is live on the RUNNING demo (AutoTrading ON) under chart chart03 with sha 4ff02978ae5d..., the roster binds 0f7c8ff9ad91... - two identities on one magic. The deploy plan must detach that chart first."
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking; magic 114210000 is currently live on the RUNNING FTMO demo (AutoTrading ON) under chart chart03 with a different sha256 (4ff02978ae5d... vs this roster's 0f7c8ff9ad91...); resolved by the deployment plan (v1 profile detached before the v2 profile loads), per correction (iii) \u2014 not a blocker"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:11:58+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves); detach_required: magic 114210000 is live on the RUNNING demo (AutoTrading ON) under chart chart03 with sha 4ff02978ae5d..., the roster binds 0f7c8ff9ad91... - two identities on one magic. The deploy plan must detach that chart first."
     },
     {
       "ea_id": 11708,
@@ -1248,7 +1221,6 @@
       "binary_sha256": "de06fb032c9b47ef0b50c6f36b257a1462b2f5259a482c294dfcfa0f9763a38d",
       "binary_mtime_utc": "2026-07-13T04:47:25+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "EURUSD.DWX",
       "registry_symbol_canonical": "EURUSD",
       "ftmo_symbol_canonical": "EURUSD",
@@ -1282,18 +1254,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 11708,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.54489332,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.544893,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:47:25+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'EURUSD' is a bare base-name match to registry symbol EURUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:47:25+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURUSD.DWX, the FTMO chart would be EURUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 12567,
@@ -1313,7 +1284,6 @@
       "binary_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9",
       "binary_mtime_utc": "2026-07-31T17:12:52+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "XAUUSD.DWX",
       "registry_symbol_canonical": "XAUUSD",
       "ftmo_symbol_canonical": "XAUUSD",
@@ -1347,18 +1317,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 12567,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.78483444,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.784834,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:12:52+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:12:52+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 12567,
@@ -1374,7 +1343,6 @@
       "binary_sha256": "5d5be334288e76a582349dac8351a95700222b91bbd28e1921e9d4aa6e3b10f9",
       "binary_mtime_utc": "2026-07-31T17:12:52+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "XNGUSD.DWX",
       "registry_symbol_canonical": "XNGUSD",
       "ftmo_symbol_canonical": "",
@@ -1408,7 +1376,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 12567,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.9576978,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.957698,
@@ -1416,7 +1383,9 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:12:52+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XNGUSD.DWX, the FTMO chart would be UNVERIFIED. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "no FTMO symbol name from any read source (alias registry, native capture, ticks/history dir, terminal logs)"
     },
     {
@@ -1435,7 +1404,6 @@
       "binary_sha256": "2c470706016952a809fb0059e532f8e27445c5ccc37cd6f14fb00a91b2235e3b",
       "binary_mtime_utc": "2026-07-13T04:47:35+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "AUDUSD.DWX",
       "registry_symbol_canonical": "AUDUSD",
       "ftmo_symbol_canonical": "AUDUSD",
@@ -1469,7 +1437,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 12778,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.43928145,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.439281,
@@ -1477,8 +1444,10 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
-      "reason": "dark no-op in v2 (NOT_EQUIVALENT rebuild, multi-symbol cointegration/pair) per BOOK_SPRINT_2026-09-20.md D7; needs the magic-resolver rebuild (bound binary mtime 2026-07-13T04:47:35+00:00 predates 4fb47bd3b5, 2026-09-06T19:56:06+00:00) because FTMO chart symbol 'AUDUSD' differs from the registry base name 'AUDUSD.DWX' (bare-name exemption, correction i, does not apply); per correction (ii) no artifact-only-rebuild precondition is admitted for this book"
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:47:35+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says AUDUSD.DWX, the FTMO chart would be AUDUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
+      "reason": "dark no-op in v2 (NOT_EQUIVALENT rebuild, multi-symbol cointegration/pair) per BOOK_SPRINT_2026-09-20.md D7"
     },
     {
       "ea_id": 41470,
@@ -1497,7 +1466,6 @@
       "binary_sha256": "ef34638d26eb4e8ddc839e0790457ee898e5a7aedfcd5774eb733c69608e2cf2",
       "binary_mtime_utc": "2026-09-13T17:39:11+00:00",
       "resolver_fix_present": true,
-      "bare_name_match": false,
       "registry_symbol": "USDJPY.DWX",
       "registry_symbol_canonical": "USDJPY",
       "ftmo_symbol_canonical": "USDJPY",
@@ -1531,7 +1499,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 41470,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.59043711,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.590437,
@@ -1539,7 +1506,7 @@
       "is_new_sleeve": false,
       "decision": "ADMIT",
       "admit_now": true,
-      "deploy_notes": [],
+      "conditions": [],
       "reason": "all checks passed"
     },
     {
@@ -1560,7 +1527,6 @@
       "binary_sha256": "7f2c298f4a8b4395480e47f20f9cefb8d5c53083bd63f7ea9ef1db067f52c4d2",
       "binary_mtime_utc": "2026-07-31T17:13:30+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "XAUUSD.DWX",
       "registry_symbol_canonical": "XAUUSD",
       "ftmo_symbol_canonical": "XAUUSD",
@@ -1594,18 +1560,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 12989,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.2274733,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.227473,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:13:30+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'XAUUSD' is a bare base-name match to registry symbol XAUUSD.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-31T17:13:30+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says XAUUSD.DWX, the FTMO chart would be XAUUSD. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 13013,
@@ -1625,7 +1590,6 @@
       "binary_sha256": "bf2cc2ecaff8ae556c06986aac8b6fb5e55d828d5ef5f6c81d8a4fc48bd44c41",
       "binary_mtime_utc": "2026-08-02T22:28:40+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "NDX.DWX",
       "registry_symbol_canonical": "NDX",
       "ftmo_symbol_canonical": "US100",
@@ -1659,7 +1623,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 13013,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.0105,
       "risk_percent_field": "burn_in_risk_percent",
       "risk_percent_profile": 0.0105,
@@ -1667,7 +1630,9 @@
       "is_new_sleeve": true,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-08-02T22:28:40+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says NDX.DWX, the FTMO chart would be US100.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "magic resolver fails closed on this account even after a rebuild: registry symbol NDX.DWX canonicalises to 'NDX', FTMO chart symbol US100.cash to 'US100' (QM_MagicSymbolCanonical, QM_MagicResolver.mqh:134) - needs a registry re-symbol, not a recompile"
     },
     {
@@ -1684,7 +1649,6 @@
       "binary_sha256": "adfa1ba617a845088381f4160e31047da6d4068451911060e0e54481d9712752",
       "binary_mtime_utc": "2026-07-14T13:21:18+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "EURGBP.DWX",
       "registry_symbol_canonical": "EURGBP",
       "ftmo_symbol_canonical": "",
@@ -1718,7 +1682,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 13117,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.40998776,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.409988,
@@ -1726,7 +1689,9 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-14T13:21:18+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says EURGBP.DWX, the FTMO chart would be UNVERIFIED. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "no FTMO symbol name from any read source (alias registry, native capture, ticks/history dir, terminal logs); dark no-op in v2 (NOT_EQUIVALENT rebuild, multi-symbol cointegration/pair) per BOOK_SPRINT_2026-09-20.md D7"
     },
     {
@@ -1747,7 +1712,6 @@
       "binary_sha256": "364867a9fe8d58478ade5526aad19deb377a35b313cfdac29763bb2eb82d273b",
       "binary_mtime_utc": "2026-07-13T04:47:54+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "NDX.DWX",
       "registry_symbol_canonical": "NDX",
       "ftmo_symbol_canonical": "US100",
@@ -1781,7 +1745,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 13128,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 1.10281798,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 1.102818,
@@ -1789,7 +1752,9 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-13T04:47:54+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says NDX.DWX, the FTMO chart would be US100.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "magic resolver fails closed on this account even after a rebuild: registry symbol NDX.DWX canonicalises to 'NDX', FTMO chart symbol US100.cash to 'US100' (QM_MagicSymbolCanonical, QM_MagicResolver.mqh:134) - needs a registry re-symbol, not a recompile"
     },
     {
@@ -1809,7 +1774,6 @@
       "binary_sha256": "321b1dca0064686100ee85d0ba614b0bcf0cd3096ca1bf9d5380ddade8a9ad4a",
       "binary_mtime_utc": "2026-07-14T12:49:23+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": true,
       "registry_symbol": "USDJPY.DWX",
       "registry_symbol_canonical": "USDJPY",
       "ftmo_symbol_canonical": "USDJPY",
@@ -1843,18 +1807,17 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 13213,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.04430563,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.044306,
       "risk_percent_matches_profile": true,
       "is_new_sleeve": false,
-      "decision": "ADMIT",
-      "admit_now": true,
-      "deploy_notes": [
-        "resolver_fix_present=False but FTMO symbol 'USDJPY' is a bare base-name match to registry symbol USDJPY.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "decision": "ADMIT_CONDITIONAL",
+      "admit_now": false,
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-14T12:49:23+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says USDJPY.DWX, the FTMO chart would be USDJPY. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
       ],
-      "reason": "resolver_fix_present=False but FTMO symbol 'USDJPY' is a bare base-name match to registry symbol USDJPY.DWX; correction (i) (T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built 2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
+      "reason": "blocked_on_resolver_rebuild: bound binary mtime 2026-07-14T12:49:23+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says USDJPY.DWX, the FTMO chart would be USDJPY. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
     },
     {
       "ea_id": 13301,
@@ -1874,7 +1837,6 @@
       "binary_sha256": "d7f10a684bdb007d9cb5b55e894a8e3b26192e38d3015e80550b9fa317e26483",
       "binary_mtime_utc": "2026-07-16T05:02:28+00:00",
       "resolver_fix_present": false,
-      "bare_name_match": false,
       "registry_symbol": "GDAXI.DWX",
       "registry_symbol_canonical": "GDAXI",
       "ftmo_symbol_canonical": "GER40",
@@ -1908,7 +1870,6 @@
       "magic_held_by_other_binary": false,
       "magic_registry_ea_id": 13301,
       "magic_collision": false,
-      "magic_collision_resolution": null,
       "risk_percent": 0.06479935,
       "risk_percent_field": "weight_risk_percent",
       "risk_percent_profile": 0.064799,
@@ -1916,7 +1877,9 @@
       "is_new_sleeve": false,
       "decision": "EXCLUDE",
       "admit_now": false,
-      "deploy_notes": [],
+      "conditions": [
+        "blocked_on_resolver_rebuild: bound binary mtime 2026-07-16T05:02:28+00:00 predates 4fb47bd3b5 (2026-09-06T19:56:06+00:00), so it cannot contain the base-name tolerance; registry says GDAXI.DWX, the FTMO chart would be GER40.cash. Observed without it: EA_MAGIC_RESOLUTION_FAILED -> FRAMEWORK_INIT_FAILED (FTMO demo Experts log 20260906.log, 3 sleeves)"
+      ],
       "reason": "magic resolver fails closed on this account even after a rebuild: registry symbol GDAXI.DWX canonicalises to 'GDAXI', FTMO chart symbol GER40.cash to 'GER40' (QM_MagicSymbolCanonical, QM_MagicResolver.mqh:134) - needs a registry re-symbol, not a recompile"
     }
   ]

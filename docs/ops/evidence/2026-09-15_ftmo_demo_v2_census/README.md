@@ -1,12 +1,16 @@
-# FTMO demo book v2 — admission census (READ-ONLY)
+# FTMO demo book v2 — admission census (READ-ONLY, canonical merge)
 
 Book sprint `docs/ops/BOOK_SPRINT_2026-09-20.md` item **F4** (decision **F3**: FTMO demo
 book v2 = the DXZ v2 roster on FTMO broker symbol names, same sha-bound binaries, no
-rebuild, no qualification claim), Sonnet ticket **42a437a4** (due Wed 2026-09-17 18:00Z).
+rebuild, no qualification claim), ticket **42a437a4** (binding due Wed 2026-09-16 18:00Z).
 
-This census is the prerequisite step before a profile/copy plan gets built. It decides
-**ADMIT / EXCLUDE per sleeve** for a *burn-in* deployment on the FTMO **demo** terminal
-(account **1514536732**, server `FTMO-Demo`).
+**Status: this is the orchestrator-directed RECYCLE merge that closes ticket 42a437a4.**
+Base = `slot1_census_v2/ftmo_demo_v2_census_slot1.py` (1 ADMIT / 16 ADMIT_CONDITIONAL /
+11 EXCLUDE), with corrections (i)–(v) from the review verdict recorded
+2026-09-15T10:30:41Z applied. This supersedes the v1 census (commit `9a06adf9bd`, 24
+ADMIT / 4 EXCLUDE) and the concurrent "slot-3 second opinion" (commit `f66a996f32`, +2
+ADMIT) — both artifacts of the same 3-session `run_agent_orchestration_task.py
+--max-sessions 3` fan-out collision recorded in `slot1_census_v2/COLLISION.md`.
 
 ## Hard-limit compliance (all honoured)
 
@@ -19,175 +23,212 @@ change. The only files written are in this evidence dir plus the re-runnable too
 
 ## Result
 
-| | count |
-|---|---|
-| Roster sleeves (28-sleeve DXZ v2, 12969→41470 substitution applied) | **28** |
-| **ADMIT** | **24** |
-| **EXCLUDE** | **4** |
+| | v1 (superseded) | slot-1 base | **this merge** |
+|---|---:|---:|---:|
+| sleeves | 28 | 28 | **28** |
+| ADMIT | 24 | 1 | **16** |
+| ADMIT_CONDITIONAL | — | 16 | **0 (tier eliminated, see below)** |
+| EXCLUDE | 4 | 11 | **12** |
+
+The ADMIT_CONDITIONAL tier is **eliminated by correction (ii)**: every row that used to
+carry a "needs an artifact-only rebuild" condition either clears to ADMIT under
+correction (i) (bare base-name match) or moves to EXCLUDE (a rebuild is not admitted as
+a precondition for this book). `decision` is now strictly binary.
+
+## Corrections applied to the slot-1 base (orchestrator merge verdict, verbatim numbering)
+
+* **(i)** `resolver_fix_present=False` alone is **not** a blocker for `chart-symbol-only*`
+  EAs whose FTMO symbol equals the DXZ registry base name (bare FX pairs, XAUUSD, XAGUSD)
+  — the same pre-fix (July-built) binaries already initialize fully on T_Live today with a
+  bare broker symbol. Spot-checked against three T_Live per-EA logs
+  (`C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/QM5_<ea>_ea-<ea>.log`): QM5_1556 (XAUUSD,
+  built 2026-07-13), QM5_10706 (GBPUSD, built 2026-07-13), QM5_1567 (EURUSD, built
+  2026-07-19) all show `SYMBOL_GUARD_INIT` with a bare `symbol` field followed by
+  `NEWS_CALENDAR_LOADED` / `KILL_SWITCH_INIT` / `CHART_UI_INIT` — i.e. `OnInit` completed,
+  no `FRAMEWORK_INIT_FAILED`. Encoded as `bare_name_match` in the census.
+* **(ii)** No "artifact-only rebuild" precondition is admitted for this book (identity
+  rule). A row that would need a rebuild to attach — either because it is a non-bare
+  name match still blocked on the magic-resolver fix (`10919`/USOIL.cash), or because
+  `registry_snapshot_stale` (magic reserved after the bound binary was built — did not
+  fire on this roster), or because the canonical-symbol mismatch itself can only be
+  closed by a registry re-symbol (the six index sleeves + USOIL if it weren't already
+  alias-resolved) — is **EXCLUDE**, not ADMIT_CONDITIONAL.
+* **(iii)** A magic collision against a *currently-running* FTMO demo chart
+  (`magic_held_by_other_binary`) is resolved by the deployment plan itself: **the v1
+  profile is detached before the v2 profile loads.** It is recorded as
+  `magic_collision_resolution=resolved_by_profile_replacement` and does **not** gate the
+  decision. Affects 2 ADMIT rows: `QM5_10706`/GBPUSD (magic `107060001`) and
+  `QM5_11421`/EURUSD (magic `114210000`). A *registry* cross-registration
+  (`reg_collision`, a different EA owns the magic in `magic_numbers.csv`) is a distinct,
+  still-excluding problem — none present in this roster.
+* **(iv)** Governor input deltas below are re-derived from the governor's 8 live magics
+  **UNION the resulting 16-row ADMIT set** (no ADMIT_CONDITIONAL tier to fold in).
+* **(v)** Every EXCLUDE reason remains bound to a file:line, registry lookup, or a probed
+  terminal source (unchanged from the slot-1 base).
 
 ## Files
 
-- `roster_ftmo_demo_v2.json` — one row per sleeve (schema below).
+- `roster_ftmo_demo_v2.json` — one row per sleeve (schema `qm.ftmo-demo-v2-admission-census/v3-merged`).
+- `ftmo_symbol_probe.json` — read-only FTMO terminal symbol-inventory probe (ticks, history, symbol-DB scan, terminal+Expert log scan), re-generated on every run.
 - `README.md` — this file.
-- `tools/strategy_farm/ftmo_demo_v2_census.py` — reproduces the census end to end
-  (read-only). Re-run: `python -X utf8 tools/strategy_farm/ftmo_demo_v2_census.py`.
+- `tools/strategy_farm/ftmo_demo_v2_census.py` — reproduces the census end to end (read-only). Re-run: `python -X utf8 tools/strategy_farm/ftmo_demo_v2_census.py`.
+- `slot1_census_v2/` — the merge base (slot-1's independent rework); preserved for the record, not re-run.
+- `slot3_reconciliation/` — the concurrent sibling's "second opinion"; preserved for the record, **not** the merge base per the orchestrator verdict.
+- `ticket_payload.json` — the ticket payload.
 
-## roster_ftmo_demo_v2.json schema (per row)
+## Full roster (28 sleeves)
 
-| field | meaning |
-|---|---|
-| `ea_id`, `ea_label` | EA identity / expert name of the binary that would be deployed |
-| `replaces_ea_id` | set to `12969` on the 41470 row (the OWNER-approved substitution) |
-| `dxz_symbol` | DXZ logical `.DWX` symbol from the profile manifest |
-| `ftmo_symbol` | resolved FTMO raw symbol, or `UNVERIFIED` |
-| `symbol_source` | `alias_registry_FTMO_TRIAL` / `native_capture_2026-09-06` / `ftmo_ticks_dir_1514536732` / `unverified` |
-| `binary_path`, `binary_location` | resolved deployable `.ex5` (`T_Live` / `deploy_staging` / `repair_v2`) |
-| `binary_sha256` | sha256 of that exact binary (identity binding — no rebuild) |
-| `symbol_handling_class` | `chart-symbol-only` / `symbol-input-slot` / `…+multi-symbol` / `…+non-chart-reads` |
-| `symbol_handling_detail` | raw inventory-tool output incl. any `trading_logic_literals` (file:line) |
-| `news_compliance_capability` | `FTMO_MODE2_SELECTABLE` (has `qm_news_compliance` enum input; FTMO=2 selectable) / `NO_NEWS_INPUT` / `LEGACY_ONLY_MODE1` |
-| `slot`, `magic` | slot from the DXZ preset; `magic = ea_id*10000 + slot` |
-| `magic_formula_ok` | magic equals the formula |
-| `magic_in_governor_allowed` | magic already in the FTMO governor's 8-magic set (same sleeve) |
-| `magic_registry_ea_id` | ea_id the magic maps to in `magic_numbers.csv` |
-| `magic_collision` | `true` only if the magic maps to a **different** ea (none do) |
-| `risk_percent`, `risk_percent_field` | weight (existing) / burn-in (new); field documents which |
-| `risk_percent_profile` | the value the DXZ v2 profile materialises (cross-check; matches all 28) |
-| `decision`, `reason` | ADMIT / EXCLUDE + evidence-bound reason |
+| ea_id | dxz_symbol | ftmo_symbol | symbol_source | handling_class | slot | magic | coll. | risk % | decision |
+|---:|---|---|---|---|---:|---:|:--:|---:|---|
+| 41470 | USDJPY.DWX | USDJPY | alias(x-acct) | symbol-input-slot | 0 | 414700000 | n | 0.5904 | **ADMIT** |
+| 1556 | XAUUSD.DWX | XAUUSD | alias(x-acct) | chart-symbol-only+non-chart-reads | 4 | 15560004 | n | 0.5407 | **ADMIT** |
+| 1567 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | 7 | 15670007 | n | 0.1848 | **ADMIT** |
+| 10403 | XAUUSD.DWX | XAUUSD | alias(x-acct) | chart-symbol-only | 2 | 104030002 | n | 0.2179 | **ADMIT** |
+| 10513 | XAUUSD.DWX | XAUUSD | alias(x-acct) | chart-symbol-only | 3 | 105130003 | n | 0.2987 | **ADMIT** |
+| 10700 | XAUUSD.DWX | XAUUSD | alias(x-acct) | chart-symbol-only | 3 | 107000003 | n | 0.0130 | **ADMIT** |
+| 10706 | GBPUSD.DWX | GBPUSD | alias(x-acct) | chart-symbol-only | 1 | 107060001 | **YES→resolved** | 0.0527 | **ADMIT** |
+| 10939 | GBPUSD.DWX | GBPUSD | alias(x-acct) | chart-symbol-only | 1 | 109390001 | n | 0.1958 | **ADMIT** |
+| 11165 | AUDCAD.DWX | AUDCAD | ftmo-ticks-dir | chart-symbol-only | 2 | 111650002 | n | 0.5082 | **ADMIT** |
+| 11165 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | 0 | 111650000 | n | 0.4097 | **ADMIT** |
+| 11421 | AUDUSD.DWX | AUDUSD | ftmo-ticks-dir | chart-symbol-only | 3 | 114210003 | n | 0.3213 | **ADMIT** |
+| 11421 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | 0 | 114210000 | **YES→resolved** | 0.3247 | **ADMIT** |
+| 11708 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | 0 | 117080000 | n | 0.5449 | **ADMIT** |
+| 12567 | XAUUSD.DWX | XAUUSD | alias(x-acct) | chart-symbol-only | 3 | 125670003 | n | 0.7848 | **ADMIT** |
+| 12989 | XAUUSD.DWX | XAUUSD | alias(x-acct) | chart-symbol-only | 3 | 129890003 | n | 0.2275 | **ADMIT** |
+| 13213 | USDJPY.DWX | USDJPY | alias(x-acct) | chart-symbol-only | 0 | 132130000 | n | 0.0443 | **ADMIT** |
+| 1537 | XAGUSD.DWX | XAGUSD | native-2026-09-06 | chart-symbol-only | 1 | 15370001 | YES | 0.0769 | **EXCLUDE** |
+| 9641 | WS30.DWX | US30.cash | alias(x-acct), **no on-account corroboration** | chart-symbol-only | 2 | 96410002 | n | 0.0104 | **EXCLUDE** |
+| 10440 | NDX.DWX | US100.cash | alias(x-acct) | chart-symbol-only | 3 | 104400003 | n | 0.0584 | **EXCLUDE** |
+| 10911 | GDAXI.DWX | GER40.cash | alias(x-acct) | chart-symbol-only | 3 | 109110003 | n | 0.1260 | **EXCLUDE** |
+| 10919 | XTIUSD.DWX | USOIL.cash | alias(x-acct) | chart-symbol-only | 1 | 109190001 | n | 0.8578 | **EXCLUDE** |
+| 11132 | SP500.DWX | UNVERIFIED | unverified | chart-symbol-only | 0 | 111320000 | n | 0.4272 | **EXCLUDE** |
+| 12567 | XNGUSD.DWX | UNVERIFIED | unverified | chart-symbol-only | 2 | 125670002 | n | 0.9577 | **EXCLUDE** |
+| 12778 | AUDUSD.DWX | AUDUSD | ftmo-ticks-dir | symbol-input-slot+multi-symbol | 0 | 127780000 | n | 0.4393 | **EXCLUDE** |
+| 13013 | NDX.DWX | US100.cash | alias(x-acct) | chart-symbol-only | 0 | 130130000 | n | 0.0105 | **EXCLUDE** |
+| 13117 | EURGBP.DWX | UNVERIFIED | unverified | symbol-input-slot+multi-symbol | 0 | 131170000 | n | 0.4100 | **EXCLUDE** |
+| 13128 | NDX.DWX | US100.cash | alias(x-acct) | chart-symbol-only | 0 | 131280000 | n | 1.1028 | **EXCLUDE** |
+| 13301 | GDAXI.DWX | GER40.cash | alias(x-acct) | chart-symbol-only | 10 | 133010010 | n | 0.0648 | **EXCLUDE** |
 
-## Full roster
-
-| ea_id | dxz_symbol | ftmo_symbol | symbol_source | handling_class | news | slot | magic | coll | risk% | decision |
-|---|---|---|---|---|---|---|---|---|---|---|
-| 1537 | XAGUSD.DWX | XAGUSD | native-2026-09-06 | chart-symbol-only | mode2 | 1 | 15370001 | n | 0.0769 | ADMIT |
-| 1556 | XAUUSD.DWX | XAUUSD | alias-FTMO-TRIAL | chart-symbol-only+non-chart-reads | mode2 | 4 | 15560004 | n | 0.540735 | ADMIT |
-| 1567 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | **NO_NEWS_INPUT** | 7 | 15670007 | n | 0.184783 | ADMIT |
-| 9641 | WS30.DWX | US30.cash | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 2 | 96410002 | n | 0.0104 | ADMIT |
-| 10403 | XAUUSD.DWX | XAUUSD | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 2 | 104030002 | n | 0.217916 | ADMIT |
-| 10440 | NDX.DWX | US100.cash | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 3 | 104400003 | n | 0.058434 | ADMIT |
-| 10513 | XAUUSD.DWX | XAUUSD | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 3 | 105130003 | n | 0.298731 | ADMIT |
-| 10700 | XAUUSD.DWX | XAUUSD | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 3 | 107000003 | n | 0.013 | ADMIT |
-| 10706 | GBPUSD.DWX | GBPUSD | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 1 | 107060001 | n | 0.052676 | ADMIT |
-| 10911 | GDAXI.DWX | GER40.cash | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 3 | 109110003 | n | 0.125988 | ADMIT |
-| 10919 | XTIUSD.DWX | USOIL.cash | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 1 | 109190001 | n | 0.857769 | ADMIT |
-| 10939 | GBPUSD.DWX | GBPUSD | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 1 | 109390001 | n | 0.195791 | ADMIT |
-| **11132** | **SP500.DWX** | **UNVERIFIED** | **unverified** | chart-symbol-only | mode2 | 0 | 111320000 | n | 0.427189 | **EXCLUDE** |
-| 11165 | AUDCAD.DWX | AUDCAD | ftmo-ticks-dir | chart-symbol-only | mode2 | 2 | 111650002 | n | 0.508245 | ADMIT |
-| 11165 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | mode2 | 0 | 111650000 | n | 0.409674 | ADMIT |
-| 11421 | AUDUSD.DWX | AUDUSD | ftmo-ticks-dir | chart-symbol-only | mode2 | 3 | 114210003 | n | 0.321345 | ADMIT |
-| 11421 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | mode2 | 0 | 114210000 | n | 0.324694 | ADMIT |
-| 11708 | EURUSD.DWX | EURUSD | native-2026-09-06 | chart-symbol-only | mode2 | 0 | 117080000 | n | 0.544893 | ADMIT |
-| 12567 | XAUUSD.DWX | XAUUSD | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 3 | 125670003 | n | 0.784834 | ADMIT |
-| **12567** | **XNGUSD.DWX** | **UNVERIFIED** | **unverified** | chart-symbol-only | mode2 | 2 | 125670002 | n | 0.957698 | **EXCLUDE** |
-| **12778** | **AUDUSD.DWX** | AUDUSD | ftmo-ticks-dir | symbol-input-slot+multi-symbol | mode2 | 0 | 127780000 | n | 0.439281 | **EXCLUDE** |
-| 41470 | USDJPY.DWX | USDJPY | alias-FTMO-TRIAL | symbol-input-slot | mode2 | 0 | 414700000 | n | 0.590437 | ADMIT |
-| 12989 | XAUUSD.DWX | XAUUSD | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 3 | 129890003 | n | 0.227473 | ADMIT |
-| 13013 | NDX.DWX | US100.cash | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 0 | 130130000 | n | 0.0105 | ADMIT |
-| **13117** | **EURGBP.DWX** | **UNVERIFIED** | **unverified** | symbol-input-slot+multi-symbol | mode2 | 0 | 131170000 | n | 0.409988 | **EXCLUDE** |
-| 13128 | NDX.DWX | US100.cash | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 0 | 131280000 | n | 1.102818 | ADMIT |
-| 13213 | USDJPY.DWX | USDJPY | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 0 | 132130000 | n | 0.044306 | ADMIT |
-| 13301 | GDAXI.DWX | GER40.cash | alias-FTMO-TRIAL | chart-symbol-only | mode2 | 10 | 133010010 | n | 0.064799 | ADMIT |
-
-`risk%` provenance: 24 existing sleeves use `weight_risk_percent`, 4 new sleeves
-(1537, 9641, 10700, 13013) use `burn_in_risk_percent`, from
-`analytic_preview_manifest_28_r11.json`. Every value equals the value the DXZ v2 profile
-materialises as chart `risk_percent` (0 mismatches).
+Regenerate this table from `roster_ftmo_demo_v2.json` at any time.
 
 ## EXCLUDE reasons (each bound to evidence)
 
-**Reason A — "no verified FTMO symbol name" (3 sleeves: 11132/SP500, 12567/XNGUSD, 13117/EURGBP)**
+**A — blocking `.DWX` trading-logic literal (1 sleeve: 1537/XAGUSD).** `QM5_1537`'s
+`strategy_calendar_symbol` exemption (`QM5_1537_MonthlySleeveCalendar.mqh:312`) depends on
+an input added by `dcaeca68f5` (2026-09-06 20:03:01Z); the bound binary
+(`deploy_staging`, sha `142a019e773a…`) was built **2026-08-16**, before that input
+existed, so the exemption is refused and the literal (`XAGUSD.DWX`) blocks. Per
+correction (ii), fixing this needs a rebuild — EXCLUDE for this book. (The v1 census
+admitted this row on a prose reading of the same literal; superseded.)
 
-The FTMO raw symbol name could not be verified against any read-only source:
-- Alias registry `framework/registry/execution_symbol_aliases_v1.json` FTMO_TRIAL venue
-  (lines 52–86) lists only GBPUSD, GER40.cash, US100.cash, US30.cash, USDJPY, USOIL.cash,
-  XAUUSD — **no** SP500/US500, XNGUSD/NGAS, or EURGBP.
-- Native FTMO capture 2026-09-06 `symbols_covered_native`
-  (`docs/ops/evidence/2026-09-14_ftmo_book_v2/ftmo_book_symbol_cost_snapshot_v2.json:16`):
-  XAUUSD, GER40.cash, GBPUSD, EURUSD, USDCAD, NZDUSD, USOIL.cash, XAGUSD — none of the three.
-- FTMO terminal ticks dir
-  `…/81A933A9AFC5DE3C23B15CAB19C63850/bases/FTMO-Demo/ticks/` (live listing captured in
-  `roster_ftmo_demo_v2.json → sources.ftmo_ticks_dir_symbols`): 27 symbol dirs present
-  (AUDCAD, AUDUSD, EURUSD, GER40.cash, US100.cash, USOIL.cash, XAGUSD, XAUUSD, …) — **no**
-  US500.cash, NGAS/XNGUSD, or EURGBP dir.
-- The encrypted `symbols-1514536732.dat` is not human-readable (verified: only random
-  tokens on a binary scan), so it cannot supply a name either.
+**B — needs a rebuild for the resolver fix, and the FTMO name is not a bare match
+(1 sleeve: 10919/USOIL.cash).** `QM5_10919` resolves `XTIUSD.DWX` → `USOIL.cash` only via
+the explicit code alias in `QM_MagicSymbolCanonical` (`QM_MagicResolver.mqh:134`), which
+requires the same suffix-tolerant compare added by `4fb47bd3b5` (2026-09-06). The bound
+binary (`deploy_staging`, built 2026-08-11) predates it. Correction (i)'s bare-name
+exemption does not apply (the FTMO name differs from the DXZ base name) — EXCLUDE per
+correction (ii).
 
-Per the census brief, no verified name ⇒ `symbol_source: unverified` ⇒ EXCLUDE. These are
-*not guessed* (US500.cash / NGAS.cash would be plausible but unverified on this account).
+**C — canonical symbol mismatch, unresolvable without a registry re-symbol (5 index
+sleeves: 10440/NDX, 10911/GDAXI, 13013/NDX, 13128/NDX, 13301/GDAXI, all → `*.cash`).**
+`QM_MagicSymbolCanonical` canonicalises to the text before the first `.`; there is no
+`NDX→US100`, `GDAXI→GER40`, or `WS30→US30` alias (only `USOIL→XTIUSD` exists). These fail
+closed **even after a rebuild** — a registry re-symbol question, ROT-class, out of scope
+for this census. Same reason additionally applies to **9641/WS30→US30.cash**.
 
-**Reason B — "dark no-op in v2 (NOT_EQUIVALENT rebuild, multi-symbol cointegration/pair)"
-(2 sleeves: 12778, 13117)**
+**D — no verified FTMO symbol name on the census target account (3 sleeves: 11132/SP500,
+12567/XNGUSD, 13117/EURGBP).** Checked against: the `FTMO_TRIAL` alias venue
+(`framework/registry/execution_symbol_aliases_v1.json`, bound to account 1513845506, not
+this census's 1514536732), the 2026-09-06 native capture
+(`docs/ops/evidence/2026-09-14_ftmo_book_v2/ftmo_book_symbol_cost_snapshot_v2.json`), the
+live FTMO ticks/history dirs, and all terminal + Experts logs (`ftmo_symbol_probe.json`).
+None of the three names appear in any source.
 
-`docs/ops/BOOK_SPRINT_2026-09-20.md:39` (item D7): *"12778/13117 (NOT_EQUIVALENT rebuilds)
-stay dark no-ops in v2; own chains continue … accepted"*. Corroborated by the symbol-handling
-class: both are `symbol-input-slot+multi-symbol` cointegration/pair EAs (inventory tool:
-4 `symbol_input_default` + non-chart market-data access each). Their second leg is not
-verified on FTMO (12778 needs EURJPY; 13117 needs AUDJPY + the unverified EURGBP primary —
-EURJPY has no ticks dir). 13117 therefore hits **both** Reason A and Reason B; 12778's
-primary AUDUSD *is* verified but it is excluded on the D7 dark-no-op decision.
+**E — cross-account alias only, zero on-account corroboration (1 sleeve: 9641/WS30, also
+under reason C).** `US30.cash` appears only in the cross-account `FTMO_TRIAL` alias table
+(bound to account 1513845506); the registry's own matching rule is
+`EXACT_CASE_SENSITIVE_VENUE_ACCOUNT_SERVER_RAW_SYMBOL` with
+`cross_venue_pooling_for_qualification=false`, and no ticks dir, history dir, or log line
+corroborates it on 1514536732.
 
-The claim "12778 and 13117 are dark no-ops" from the brief is **confirmed**, not assumed.
+**F — dark no-op in v2 (2 sleeves: 12778, 13117), per `BOOK_SPRINT_2026-09-20.md` D7.**
+Both are `symbol-input-slot+multi-symbol` cointegration/pair EAs whose second leg is not
+FTMO-verified (12778 needs EURJPY; 13117 needs AUDJPY + the already-unverified EURGBP
+primary).
 
-## Symbol resolution summary
+## Magic collisions — resolved by the deployment plan, not excluded (correction iii)
 
-17 sleeves resolve via the alias registry (authoritative), 5 via the native 2026-09-06
-capture (EURUSD ×4, XAGUSD), 3 via the FTMO ticks dir (AUDCAD, AUDUSD ×2 incl. the
-excluded 12778), 3 unverified. `WS30.DWX → US30.cash` rests **only** on the alias registry
-(no US30.cash ticks dir yet) — it is authoritative but will only actually receive data once
-the OWNER adds US30.cash to the FTMO Market Watch, same pattern as the DXZ ceremony D3.
+Two ADMIT rows reuse a magic currently held by a *different* sha256 on the RUNNING FTMO
+demo (AutoTrading ON by OWNER):
 
-## Magic-number analysis
+| magic | roster binds (sha256[:12]) | live on demo today (sha256[:12]) | chart |
+|---:|---|---|---|
+| 107060001 | QM5_10706 `01e34b2059de` | `6f290d49defd` | chart02 |
+| 114210000 | QM5_11421 `0f7c8ff9ad91` | `4ff02978ae5d` | chart03 |
 
-All 28 magics satisfy `magic = ea_id*10000 + slot` and each maps in
-`framework/registry/magic_numbers.csv` to its own sleeve. **No collision** (`magic_collision`
-is `false` for all 28). Three ADMIT magics already sit in the FTMO governor's 8-magic set —
-**15370001** (1537/XAGUSD), **107060001** (10706/GBPUSD), **114210000** (11421/EURUSD) — but
-each is the *same* sleeve, so these are consistency, not collisions (`magic_in_governor_allowed`
-flags them for the profile builder). The other 5 governor magics (114220004, 119100006,
-130540000, 200480000, 215050000) belong to non-roster EAs already on the demo and are left
-untouched.
+`magic_collision_resolution=resolved_by_profile_replacement` in the JSON: the v2 profile
+replaces the v1 profile wholesale (v1 detached first), so these are not two identities
+racing for one magic in practice. The deploy/copy plan must still sequence the detach
+before the v2 profile loads — that is a deploy-plan step, not a census gate.
 
-## News-compliance capability (record only — never an exclude reason)
+## Governor input deltas — PROPOSAL ONLY (correction iv, do not apply)
 
-27 of 28 binaries declare `input QM_NewsComplianceProfile qm_news_compliance`
-(`QM_NewsFilter.mqh:38-41`: NONE=0, DXZ=1, **FTMO=2**, 5ERS=3), so FTMO mode 2 is selectable
-at deploy time via the set file / profile input. **Exception: 1567
-(demark-td-reverse-sequential-h4) has NO news-compliance input at all** (`NO_NEWS_INPUT`;
-older framework, no `qm_news_mode_legacy` either). 1567 is still ADMIT on symbol/magic/risk
-grounds, but the profile/copy plan should record that 1567 cannot enforce the FTMO news
-blackout in-EA and rely on the account governor / OWNER awareness for it.
+Not applied anywhere. Policy `FTMO_2S_P1_100K_V2` and its thresholds are untouched. Both
+CSVs derive from the **same** row set — the governor's 8 live magics UNION the 16-row
+ADMIT set:
 
-## GOVERNOR INPUT DELTAS — PROPOSAL ONLY (do not apply)
+```
+allowed_magics_csv    = 15370001,15560004,15670007,104030002,105130003,107000003,
+                        107060001,109390001,111650000,111650002,114210000,114210003,
+                        114220004,117080000,119100006,125670003,129890003,130540000,
+                        132130000,200480000,215050000,414700000
+new_magics_to_add_csv = 15560004,15670007,104030002,105130003,107000003,109390001,
+                        111650000,111650002,114210003,117080000,125670003,129890003,
+                        132130000,414700000
+governed_symbols_csv  = AUDCAD,AUDUSD,EURUSD,GBPUSD,NZDUSD,USDCAD,USDJPY,USOIL.cash,
+                        XAGUSD,XAUUSD
+```
 
-These are the chart01 governor input values the FTMO demo book v2 would need. **Not applied
-anywhere. Policy `FTMO_2S_P1_100K_V2` / M13 unchanged.** The governor EA QM5_13206 and its
-presets are untouched by this census.
+(`15370001` stays in the governor's existing set — it is one of the 8 live magics — even
+though `QM5_1537` itself is EXCLUDE here; that magic is currently held by a different
+live sleeve on the demo, unaffected by this census.)
 
-- **`allowed_magics_csv`** (existing 8 ∪ 24 ADMIT magics):
-  `15370001,15560004,15670007,96410002,104030002,104400003,105130003,107000003,107060001,109110003,109190001,109390001,111650000,111650002,114210000,114210003,114220004,117080000,119100006,125670003,129890003,130130000,130540000,131280000,132130000,133010010,200480000,215050000,414700000`
-- **New magics to add** (21; the 3 governor overlaps 15370001/107060001/114210000 already present):
-  `15560004,15670007,96410002,104030002,104400003,105130003,107000003,109110003,109190001,109390001,111650000,111650002,114210003,117080000,125670003,129890003,130130000,131280000,132130000,133010010,414700000`
-- **`governed_symbols_csv`** (distinct FTMO raw symbols across the 24 ADMIT sleeves):
-  `AUDCAD,AUDUSD,EURUSD,GBPUSD,GER40.cash,US100.cash,US30.cash,USDJPY,USOIL.cash,XAGUSD,XAUUSD`
+## Other checks
 
-Whether the 5 pre-existing non-roster governed symbols/magics stay or are pruned is an
-OWNER call for the profile/copy plan (F4), out of scope for this census.
+* **magic formula** `ea_id*10000+slot`: 28/28 rows satisfy it; the only reported registry
+  cross-registration in `magic_numbers.csv` would be flagged as `reg_collision` — none
+  present.
+* **RISK_PERCENT (e)**: re-derived for all 28 rows from the analytic manifest
+  (`weight_risk_percent` for existing sleeves, `burn_in_risk_percent` for new ones) and
+  reconciled against the profile manifest's chart `risk_percent`: 0 mismatches
+  (tolerance 5e-5).
+* **News capability (c)**: recorded, never an exclude reason (demo burn-in). 27/28
+  sources declare `input QM_NewsComplianceProfile qm_news_compliance` (FTMO mode 2
+  selectable); `QM5_1567` has no news input at all — admitted here on symbol/magic/risk
+  grounds, but the deploy/copy plan should record that 1567 cannot enforce the FTMO news
+  blackout in-EA.
+* **`symbol_handling_class`** is a source-file scan heuristic
+  (`tools/strategy_farm/ea_symbol_literal_inventory.py` over the tip `.mq5`/`.mqh`), not
+  a property read out of the binary — recorded as such per row in
+  `symbol_handling_detail`.
+
+## Open items carried forward from the slot-1 base (unaffected by this merge)
+
+1. Index sleeves (reason C) need a registry re-symbol or an alias-aware resolver to be
+   deployable on FTMO at all — this is FX + metals + oil territory as things stand,
+   unless OWNER opens a registry re-symbol (ROT-class) for GDAXI/NDX/WS30.
+2. `QM5_1537`'s DXZ preset value for `strategy_calendar_symbol` is not recorded anywhere
+   this census can read.
+3. Is `governed_symbols_csv` a coverage gate for governed flattening? If yes, any pruning
+   asymmetry vs `allowed_magics_csv` is live-account exposure, not a formatting nit.
 
 ## Blockers / caveats
 
-1. **3 unverified symbols** (SP500, XNGUSD, EURGBP): to admit later, capture the real FTMO
-   name read-only (Market Watch add + native `SymbolInfo` read, or a fill receipt) — do not
-   guess US500.cash/NGAS.cash.
-2. **US30.cash** verified only by alias registry, not by terminal data yet — will need
-   Market Watch add before it trades (same as the DXZ D3 XAGUSD/WS30 pattern).
-3. **1567** has no in-EA news filter (see above).
-4. **News-capability + symbol-handling class are source-derived** (the sha-bound binary's
+1. **3 unverified symbols** (SP500, XNGUSD, EURGBP): to admit later, capture the real
+   FTMO name read-only (Market Watch add + native `SymbolInfo` read, or a fill receipt) —
+   do not guess `US500.cash`/`NGAS.cash`.
+2. **News-capability + symbol-handling class are source-derived** (the sha-bound binary's
    build provenance is its identity; current tip source is the reference). No binary was
-   recompiled to confirm the wired input.
-5. **1537** carries a `trading_logic_literal` `"XAGUSD.DWX"` at
-   `framework/EAs/QM5_1537_aa-vol-sma10/QM5_1537_MonthlySleeveCalendar.mqh:312`, but it is a
-   calendar-bundle SHA guard keyed on the EA's **host-symbol input** (`QM1537_HostSymbol()`),
-   documented at `QM5_1537_aa-vol-sma10.mq5:57-61` as the OWNER "symbols are inputs" pattern
-   (set the input to `XAGUSD.DWX` on FTMO where the chart symbol is plain `XAGUSD`). It is
-   **not** a blocking chart-symbol literal — 1537 stays ADMIT. Recorded in
-   `symbol_handling_detail.trading_logic_literals`.
+   recompiled to confirm a wired input.
+3. This census decides admission only; it does not build the profile/copy plan or touch
+   the governor. Both are separate, later steps per `BOOK_SPRINT_2026-09-20.md` F4.

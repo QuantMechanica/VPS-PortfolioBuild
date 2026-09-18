@@ -1,85 +1,80 @@
-"""FTMO demo book v2 admission census (READ-ONLY, re-runnable) — canonical merge.
+"""FTMO demo book v2 admission census (READ-ONLY, re-runnable) — slot-1 v2 rework.
 
-Ticket 42a437a4 (book sprint F4). This file is the orchestrator-directed RECYCLE
-merge closing the ticket, per `review_close_verdict` recorded 2026-09-15T10:30:41Z:
+WHY THIS FILE LIVES HERE AND NOT IN tools/strategy_farm/
+--------------------------------------------------------
+Two headless Claude orchestration sessions (slots 1 and 3 of the same
+`run_agent_orchestration_task.py --agent claude --max-sessions 3` fan-out) were
+both handed ticket 42a437a4 by the generic session prompt and both reworked
+`tools/strategy_farm/ftmo_demo_v2_census.py` at the same time. The sibling
+session's version landed on the shared tool path at 2026-09-15 11:59 local and
+its JSON landed on the shared artifact name at 12:00.
 
-  "RECYCLE -> merge instruction. Two sessions worked this ticket (COLLISION.md,
-  --max-sessions 3 race, ticketed separately). Base = slot-1 v2 (1 ADMIT / 16
-  ADMIT_CONDITIONAL / 11 EXCLUDE), because it closes the three blocking findings
-  in code."
+Rather than overwrite the sibling (the mirror image of the same defect), this
+slot-1 version is preserved intact under the evidence dir and writes ONLY into
+`slot1_census_v2/`, so neither session's artifact can clobber the other's.
+See `COLLISION.md` next to this file. Nothing here is committed.
 
-History
+Purpose
 -------
-* commit 9a06adf9bd — v1 census, 24 ADMIT / 4 EXCLUDE. Never implemented its own
-  .DWX-literal rule, never checked binary vintage against the two documented
-  FTMO-compatibility fixes, and treated a cross-account alias table as
-  authoritative for the census target account. Superseded.
-* commit f66a996f32 — a concurrent sibling session's "slot-3 second opinion"
-  (+2 ADMIT via a terminal attach map), landed during the same 3-session fan-out
-  collision described in `../docs/ops/evidence/2026-09-15_ftmo_demo_v2_census/
-  slot1_census_v2/COLLISION.md`. Not the merge base (orchestrator directive);
-  preserved as `slot3_reconciliation/` for the record.
-* `slot1_census_v2/ftmo_demo_v2_census_slot1.py` — the merge BASE. Implements
-  F1..F11 from critique receipt critique_42a437a4_20260915T085204Z: per-row
-  binary-vintage predicate, a coded (not prose) .DWX-literal exemption rule,
-  per-account symbol corroboration (not cross-account alias alone), a live
-  FTMO symbol-inventory probe, and governor-manifest-derived (not hardcoded)
-  magic set. Result: 1 ADMIT / 16 ADMIT_CONDITIONAL / 11 EXCLUDE — the headline
-  being that only QM5_41470 (a post-fix binary) attaches as-is; every other
-  sleeve carried a *named* precondition.
+Book sprint BOOK_SPRINT_2026-09-20.md item F4 / ticket 42a437a4. Decide
+ADMIT / ADMIT_CONDITIONAL / EXCLUDE per DXZ v2 roster sleeve for a *burn-in*
+deployment on the FTMO **demo** terminal (account 1514536732), reusing the exact
+same sha256-identified DXZ binaries. No rebuild, no qualification claim, no gate
+change.
 
-Corrections applied here (orchestrator merge instruction, verbatim numbering)
-------------------------------------------------------------------------------
-(i)   "'resolver fix NO' alone is NOT a blocker for chart-symbol-only EAs whose
-      FTMO name equals the DXZ base name (bare FX, XAUUSD, XAGUSD): the same
-      July binaries resolve bare names on Darwinex live today (T_Live INIT_OK
-      evidence in C:/QM/mt5/T_Live/MT5_Base/MQL5/Files/QM/QM5_<ea>_ea-<ea>.log,
-      symbol field bare) -> ADMIT; keep [a conditional class] only where the
-      FTMO name differs (.cash indices/oil) or the class needs slot inputs."
-      Spot-checked against QM5_1556, QM5_10706, QM5_1567 T_Live per-EA logs
-      (pre-fix binaries, built 2026-07-13..19): SYMBOL_GUARD_INIT with a bare
-      symbol field, followed by NEWS_CALENDAR_LOADED / KILL_SWITCH_INIT /
-      CHART_UI_INIT — i.e. OnInit completed, no FRAMEWORK_INIT_FAILED. Encoded
-      as `bare_match` below: exempts `blocked_on_resolver_rebuild` only for
-      `chart-symbol-only*` classes whose FTMO symbol carries no suffix and
-      canonicalises identically to the registry symbol.
-(ii)  "NO 'artifact-only rebuild' precondition anywhere (identity rule, F3
-      decision): a row that would need a rebuild is EXCLUDE for this book."
-      `blocked_on_resolver_rebuild` (non-bare rows) and `registry_snapshot_stale`
-      are no longer conditions that yield ADMIT_CONDITIONAL — both now append an
-      EXCLUDE reason. Net effect: the ADMIT_CONDITIONAL tier is unreachable
-      (every row that used to land there either clears via (i) or excludes via
-      (ii)), so `decision` is binary ADMIT/EXCLUDE. `admit_now` is kept as a
-      field for schema stability but is now always equal to `decision=="ADMIT"`.
-(iii) "magic collisions with the running v1 demo sleeves are resolved by the
-      deployment plan 'v1 profile detached, v2 profile replaces it' - state
-      that explicitly ... mark collision=resolved_by_profile_replacement, not
-      EXCLUDE." `magic_held_by_other_binary` (a live-chart collision) no longer
-      produces a `detach_required` condition; it is recorded as
-      `magic_collision_resolution=resolved_by_profile_replacement` and does not
-      gate the decision. A registry cross-registration (`reg_collision`, a
-      DIFFERENT class of problem — the magic belongs to a different EA in
-      `magic_numbers.csv`) is unaffected by this correction and still excludes.
-(iv)  Governor input deltas (`allowed_magics_csv`, `governed_symbols_csv`) are
-      now derived from the ADMIT set only (no ADMIT_CONDITIONAL tier survives),
-      explicitly a PROPOSAL — nothing is applied to the governor.
-(v)   Every EXCLUDE reason remains bound to a file:line, tool output, or logged
-      event (unchanged from the slot-1 base).
+Binding due date: **Wed 2026-09-16 18:00Z** (ticket 42a437a4 title). The sprint
+file F4 line says Fri 2026-09-18; the ticket date is the binding one and the
+sprint file is the looser downstream schedule (the v1 README said 09-17, which
+was wrong and is corrected here). [F8]
 
 Hard limits honoured by this script
-------------------------------------
-Read-only. Never starts terminal64.exe, never writes into any FTMO / T_Live data
-dir, never recompiles an EA, never attaches a chart, never touches a governor
-policy. The only artifacts it writes are the census JSON and the FTMO
-symbol-source probe JSON (--out-dir; defaults to the canonical evidence dir).
+-----------------------------------
+* Read-only. It never starts terminal64.exe, never writes into any FTMO /
+  T_Live data dir, never recompiles an EA, never attaches a chart, never
+  touches a governor policy. Reads of the FTMO data dir are opens for read only.
+* The only artifacts it writes are the census JSON and the FTMO symbol-source
+  probe JSON under this directory.
+
+v2 rework (critique receipt critique_42a437a4_20260915T085204Z, F1..F11)
+------------------------------------------------------------------------
+F1/F7  Per-row binary-vintage predicate against the two documented FTMO
+       compatibility fixes (4fb47bd3b5 magic-resolver base-name tolerance,
+       dcaeca68f5 QM5_1537 strategy_calendar_symbol input). A binary whose
+       mtime predates the fix cannot contain it -> ADMIT_CONDITIONAL
+       (blocked_on_resolver_rebuild). No prose exemption.
+F2     A governor magic already held on the RUNNING demo (AutoTrading ON) by a
+       binary with a DIFFERENT sha256 counts as magic_collision=true unless the
+       deploy plan detaches that chart first. The detach is emitted as an
+       explicit deploy precondition, never assumed.
+F3     The brief's rule ".DWX literal = EXCLUDE" is implemented here: every
+       trading_logic_literal with severity FAIL excludes; severity WARN excludes
+       unless the (ea_label, path) is on LITERAL_INPUT_EXEMPTIONS *and* the
+       bound binary postdates the commit that added the governing input.
+F4     allowed_magics_csv and governed_symbols_csv are derived from the SAME
+       row set, so magic coverage and symbol coverage cannot drift apart.
+F5     The FTMO_TRIAL alias venue is bound to account 1513845506, not to the
+       census target 1514536732, and the registry's own matching rule is
+       EXACT_CASE_SENSITIVE_VENUE_ACCOUNT_SERVER_RAW_SYMBOL with
+       cross_venue_pooling_for_qualification=false. Alias hits are therefore
+       recorded as cross-account and must be corroborated on THIS account
+       (ticks/history dir or terminal log) before they count as verified.
+F6     The FTMO symbol inventory is probed for real: bases/FTMO-Demo/symbols/
+       (symbols.raw does not exist on this build; symbols-<login>.dat is not
+       plaintext — the printable-token scan is written to the probe JSON), the
+       ticks and history dirs, and all terminal + Experts logs.
+F10    The 8 currently-governed magics are PARSED from the governor manifest
+       table instead of hardcoded behind a pointer that does not contain them.
+F11    symbol_handling_class is a source-file scan heuristic over the tip .mq5,
+       not a property read out of the bound .ex5. Recorded as such per row.
 
 What it determines per sleeve (a..e of the census brief)
-----------------------------------------------------------
+--------------------------------------------------------
 (a) FTMO symbol name + provenance and per-account corroboration.
 (b) EA symbol-handling class + blocking .DWX literal decision.
 (c) News-compliance capability. Recorded, never an exclude reason (demo burn-in).
 (d) magic = ea_id*10000+slot; collision vs the governor's live magics and the
-    registry; resolver preconditions folded into ADMIT/EXCLUDE per (i)/(ii).
+    registry; plus the resolver preconditions that decide whether the magic can
+    resolve at all on a broker-named chart.
 (e) RISK_PERCENT re-derived for EVERY row and reconciled against the profile.
 """
 
@@ -124,8 +119,6 @@ TLIVE_EAS = Path("C:/QM/mt5/T_Live/MT5_Base/MQL5/Experts/Live EAs")
 DEPLOY_EAS = Path("C:/QM/deploy/DXZ_V2_20260913/eas")
 REPAIR_EAS = Path("C:/QM/deploy/DXZ_V2_20260913/repair_v2/eas")
 
-DEFAULT_OUT_DIR = REPO / "docs/ops/evidence/2026-09-15_ftmo_demo_v2_census"
-
 # --- F1/F7: the two documented FTMO-compatibility fixes -----------------------
 # A binary compiled before a fix cannot contain it. Commit timestamps are the
 # authoring times reported by `git log --date=iso`, normalised to UTC.
@@ -163,12 +156,6 @@ LITERAL_INPUT_EXEMPTIONS = {
 # Sleeves flagged dark no-ops in v2 (NOT_EQUIVALENT rebuilds) —
 # BOOK_SPRINT_2026-09-20.md item D7.
 DARK_NOOP_EA_IDS = {12778, 13117}
-
-# (i): the bare-name resolver-fix exemption applies only within this class
-# family — a slot-input EA still needs its slot wired regardless of the
-# resolver fix, so it is not exempted here (none happen to need it: the sole
-# symbol-input-slot row, QM5_41470, already carries the post-fix binary).
-CHART_SYMBOL_ONLY_FAMILY_PREFIX = "chart-symbol-only"
 
 
 # ---------------------------------------------------------------------------
@@ -577,17 +564,6 @@ def build_census(probe: dict) -> dict:
         )
         magic_collision = bool(reg_collision or magic_held_by_other_binary)
 
-        # (i): bare-name resolver-fix exemption. Restricted to the
-        # chart-symbol-only class family (a slot-input EA needs its slot wired
-        # regardless of the resolver fix) and to an FTMO symbol carrying no
-        # suffix that canonicalises identically to the registry symbol.
-        bare_match = bool(
-            handling["class"].startswith(CHART_SYMBOL_ONLY_FAMILY_PREFIX)
-            and sym["ftmo_symbol"] != "UNVERIFIED"
-            and "." not in sym["ftmo_symbol"]
-            and canonical_match
-        )
-
         # --- (e) risk, re-derived for EVERY row -----------------------------
         lookup_id = replaced if replaced else ea_id
         akey = analytic_by_key.get((lookup_id, dwx_symbol))
@@ -600,9 +576,9 @@ def build_census(probe: dict) -> dict:
             risk_field = "profile_manifest.risk_percent (analytic row not found)"
         risk_matches_profile = abs(risk - risk_profile) < 5e-5
 
-        # --- decision (binary ADMIT/EXCLUDE per corrections i/ii/iii) -------
+        # --- decision -------------------------------------------------------
         exclude_reasons: list[str] = []
-        deploy_notes: list[str] = []
+        conditions: list[str] = []
 
         if sym["symbol_source"] == "unverified":
             exclude_reasons.append(
@@ -643,54 +619,38 @@ def build_census(probe: dict) -> dict:
                 f"QM_MagicResolver.mqh:134) - needs a registry re-symbol, not a recompile"
             )
 
-        # (i)+(ii): a non-bare-match row that needs the resolver fix to
-        # canonically match needs a rebuild to get there -> EXCLUDE (not
-        # ADMIT_CONDITIONAL) per correction (ii). Bare matches are exempted by
-        # (i) regardless of resolver_fix_present.
-        if not resolver_fix_present and canonical_match and not bare_match:
-            exclude_reasons.append(
-                f"needs the magic-resolver rebuild (bound binary mtime {bin_mtime} predates "
-                f"{FIX_MAGIC_RESOLVER['commit'][:10]}, {FIX_MAGIC_RESOLVER['utc']}) because "
-                f"FTMO chart symbol '{sym['ftmo_symbol']}' differs from the registry base name "
-                f"'{registry_symbol}' (bare-name exemption, correction i, does not apply); "
-                f"per correction (ii) no artifact-only-rebuild precondition is admitted for "
-                f"this book"
+        # Conditions are always computed, even for EXCLUDE rows: an excluded row
+        # that ALSO carries a stale binary must not hide that fact behind the
+        # first exclude reason (F1 wanted 1537's pre-fix binary named explicitly).
+        if not resolver_fix_present:
+            conditions.append(
+                f"blocked_on_resolver_rebuild: bound binary mtime {bin_mtime} predates "
+                f"{FIX_MAGIC_RESOLVER['commit'][:10]} ({FIX_MAGIC_RESOLVER['utc']}), so it "
+                f"cannot contain the base-name tolerance; registry says {registry_symbol}, "
+                f"the FTMO chart would be {sym['ftmo_symbol']}. Observed without it: "
+                f"{FIX_MAGIC_RESOLVER['observed_failure_without_it']}"
             )
-        elif bare_match and not resolver_fix_present:
-            deploy_notes.append(
-                f"resolver_fix_present=False but FTMO symbol '{sym['ftmo_symbol']}' is a bare "
-                f"base-name match to registry symbol {registry_symbol}; correction (i) "
-                f"(T_Live INIT_OK evidence, bare symbol field, pre-fix binaries built "
-                f"2026-07-13..19 for QM5_1556/QM5_10706/QM5_1567) treats this as non-blocking"
-            )
-
-        # (ii): a stale registry snapshot is also only fixable by a rebuild.
         if not registry_snapshot_covers_magic:
-            exclude_reasons.append(
+            conditions.append(
                 f"registry_snapshot_stale: magic {magic} was reserved {reserved_at}, the "
                 f"bound binary was built {bin_mtime}; the resolver table is compiled into "
-                f"the .ex5 (EA_MAGIC_NOT_REGISTERED risk) and fixing it needs a rebuild, "
-                f"which correction (ii) excludes for this book"
+                f"the .ex5, so this magic may not be in that binary's table "
+                f"(EA_MAGIC_NOT_REGISTERED)"
             )
-
-        # (iii): a live-chart magic collision is resolved by the deployment
-        # plan (v1 profile detached before v2 profile loads) — annotate, do
-        # not gate. A registry cross-registration (reg_collision, handled
-        # above) is a different, still-excluding problem.
-        magic_collision_resolution = None
         if magic_held_by_other_binary:
-            magic_collision_resolution = "resolved_by_profile_replacement"
-            deploy_notes.append(
-                f"magic {magic} is currently live on the RUNNING FTMO demo (AutoTrading ON) "
-                f"under chart {gov_row['deployed_chart']} with a different sha256 "
-                f"({gov_running_sha[:12]}... vs this roster's {bin_sha[:12]}...); resolved by "
-                f"the deployment plan (v1 profile detached before the v2 profile loads), per "
-                f"correction (iii) — not a blocker"
+            conditions.append(
+                f"detach_required: magic {magic} is live on the RUNNING demo "
+                f"(AutoTrading ON) under chart {gov_row['deployed_chart']} with sha "
+                f"{gov_running_sha[:12]}..., the roster binds {bin_sha[:12]}... - two "
+                f"identities on one magic. The deploy plan must detach that chart first."
             )
-        elif reg_collision:
-            magic_collision_resolution = "registry_conflict_unresolved"
 
-        decision = "EXCLUDE" if exclude_reasons else "ADMIT"
+        if exclude_reasons:
+            decision = "EXCLUDE"
+        elif conditions:
+            decision = "ADMIT_CONDITIONAL"
+        else:
+            decision = "ADMIT"
 
         rows.append({
             "ea_id": ea_id,
@@ -706,7 +666,6 @@ def build_census(probe: dict) -> dict:
             "binary_sha256": bin_sha,
             "binary_mtime_utc": bin_mtime,
             "resolver_fix_present": resolver_fix_present,
-            "bare_name_match": bare_match,
             "registry_symbol": registry_symbol,
             "registry_symbol_canonical": reg_canon,
             "ftmo_symbol_canonical": ftmo_canon,
@@ -726,7 +685,6 @@ def build_census(probe: dict) -> dict:
             "magic_held_by_other_binary": magic_held_by_other_binary,
             "magic_registry_ea_id": (int(reg_row["ea_id"]) if reg_row else None),
             "magic_collision": magic_collision,
-            "magic_collision_resolution": magic_collision_resolution,
             "risk_percent": risk,
             "risk_percent_field": risk_field,
             "risk_percent_profile": risk_profile,
@@ -734,38 +692,43 @@ def build_census(probe: dict) -> dict:
             "is_new_sleeve": is_new,
             "decision": decision,
             "admit_now": decision == "ADMIT",
-            "deploy_notes": deploy_notes,
-            "reason": "; ".join(exclude_reasons) or ("; ".join(deploy_notes) or "all checks passed"),
+            "conditions": conditions,
+            "reason": "; ".join(exclude_reasons or conditions) or "all checks passed",
         })
 
     admit = [r for r in rows if r["decision"] == "ADMIT"]
+    cond = [r for r in rows if r["decision"] == "ADMIT_CONDITIONAL"]
     exclude = [r for r in rows if r["decision"] == "EXCLUDE"]
 
-    # F4/(iv): governor CSVs derive from the governor's live magics UNION the
-    # resulting ADMIT set (no ADMIT_CONDITIONAL tier survives the merge).
+    # F4: BOTH governor CSVs derive from the same row set. `deployable` is what
+    # the governor would have to allow for the burn-in to run at all.
+    deployable = admit + cond
     gov_magics = set(gov["magics"])
-    union_magics = sorted(gov_magics | {r["magic"] for r in admit})
+    union_magics = sorted(gov_magics | {r["magic"] for r in deployable})
     union_symbols = sorted(
         {info["native_chart"].split()[0] for info in gov["magics"].values()}
-        | {r["ftmo_symbol"] for r in admit if r["ftmo_symbol"] != "UNVERIFIED"}
+        | {r["ftmo_symbol"] for r in deployable if r["ftmo_symbol"] != "UNVERIFIED"}
     )
     new_magics = sorted(m for m in union_magics if m not in gov_magics)
 
     return {
-        "schema": "qm.ftmo-demo-v2-admission-census/v3-merged",
+        "schema": "qm.ftmo-demo-v2-admission-census/v2-slot1",
         "purpose": "READ-ONLY admission census for FTMO demo book v2 burn-in "
-                   "(BOOK_SPRINT F4 / ticket 42a437a4) — canonical RECYCLE merge",
-        "generated_by": "tools/strategy_farm/ftmo_demo_v2_census.py",
-        "merge_of": {
-            "base": "docs/ops/evidence/2026-09-15_ftmo_demo_v2_census/slot1_census_v2/"
-                    "ftmo_demo_v2_census_slot1.py (1 ADMIT / 16 ADMIT_CONDITIONAL / "
-                    "11 EXCLUDE)",
-            "corrections_applied": ["i", "ii", "iii", "iv", "v"],
-            "review_closed_at": "2026-09-15T10:30:41+00:00",
-            "superseded": ["9a06adf9bd (v1, 24 ADMIT/4 EXCLUDE)",
-                           "f66a996f32 (slot-3 second opinion, +2 ADMIT)"],
-        },
+                   "(BOOK_SPRINT F4 / ticket 42a437a4)",
+        "generated_by": "docs/ops/evidence/2026-09-15_ftmo_demo_v2_census/slot1_census_v2/"
+                        "ftmo_demo_v2_census_slot1.py",
+        "rework_of": "critique receipt critique_42a437a4_20260915T085204Z (F1..F11)",
+        "session_collision_note": "Slot-1 of a 3-session claude orchestration fan-out. A "
+                                  "sibling session reworked the same ticket concurrently and "
+                                  "owns tools/strategy_farm/ftmo_demo_v2_census.py + "
+                                  "../roster_ftmo_demo_v2.json. See ../slot1_census_v2/"
+                                  "COLLISION.md. Neither side is committed.",
         "due_utc_binding": "2026-09-16T18:00:00Z",
+        "due_date_sources": {
+            "ticket_42a437a4_title": "Wed 2026-09-16 18:00Z (BINDING)",
+            "docs/ops/BOOK_SPRINT_2026-09-20.md F4": "Fri 2026-09-18 (downstream schedule)",
+            "v1_README": "Wed 2026-09-17 18:00Z (incorrect, superseded)",
+        },
         "ftmo_account": FTMO_ACCOUNT,
         "ftmo_server": FTMO_SERVER,
         "no_rebuild": True,
@@ -778,7 +741,7 @@ def build_census(probe: dict) -> dict:
             "cost_snapshot_native_capture": str(COST_SNAPSHOT),
             "magic_registry": str(MAGIC_REGISTRY),
             "governor_manifest": str(GOVERNOR_MANIFEST),
-            "ftmo_symbol_probe": "ftmo_symbol_probe.json (written by this script)",
+            "ftmo_symbol_probe": "ftmo_symbol_probe_slot1.json (written by this script)",
             "fixes": {
                 "magic_resolver": FIX_MAGIC_RESOLVER,
                 "qm5_1537_calendar_input": FIX_1537_CALENDAR_INPUT,
@@ -791,44 +754,57 @@ def build_census(probe: dict) -> dict:
         "counts": {
             "sleeves": len(rows),
             "admit": len(admit),
+            "admit_conditional": len(cond),
             "exclude": len(exclude),
         },
         "governor_input_deltas_PROPOSAL_ONLY": {
             "note": "PROPOSAL ONLY - not applied anywhere. Policy FTMO_2S_P1_100K_V2 "
                     "unchanged. Both CSVs derive from the SAME row set "
-                    "(governor's 8 live magics UNION the ADMIT roster rows) per (iv), so "
-                    "magic coverage and symbol coverage cannot drift apart.",
-            "derived_from": "governor_live_magics UNION ADMIT",
+                    "(governor's 8 live magics UNION the deployable roster rows), so "
+                    "magic coverage and symbol coverage cannot drift apart (F4).",
+            "derived_from": "governor_live_magics UNION (ADMIT + ADMIT_CONDITIONAL)",
             "allowed_magics_csv": ",".join(str(m) for m in union_magics),
             "new_magics_to_add_csv": ",".join(str(m) for m in new_magics),
             "governed_symbols_csv": ",".join(union_symbols),
         },
+        "deploy_preconditions": sorted({
+            c.split(":")[0] for r in rows for c in r["conditions"]
+        }),
         "roster": rows,
     }
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="FTMO demo book v2 admission census (read-only)")
-    ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
+    ap.add_argument(
+        "--out-dir",
+        type=Path,
+        default=Path(__file__).resolve().parent,
+        help="defaults to this script's own directory so it never clobbers the "
+             "sibling session's shared artifacts",
+    )
     args = ap.parse_args()
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     probe = ftmo_symbol_probe()
-    (args.out_dir / "ftmo_symbol_probe.json").write_text(
+    (args.out_dir / "ftmo_symbol_probe_slot1.json").write_text(
         json.dumps(probe, indent=2) + "\n", encoding="utf-8"
     )
     census = build_census(probe)
-    (args.out_dir / "roster_ftmo_demo_v2.json").write_text(
+    (args.out_dir / "roster_ftmo_demo_v2_slot1.json").write_text(
         json.dumps(census, indent=2) + "\n", encoding="utf-8"
     )
 
     c = census["counts"]
-    print(f"wrote {args.out_dir / 'roster_ftmo_demo_v2.json'}")
-    print(f"wrote {args.out_dir / 'ftmo_symbol_probe.json'}")
-    print(f"sleeves={c['sleeves']} ADMIT={c['admit']} EXCLUDE={c['exclude']}")
+    print(f"wrote {args.out_dir / 'roster_ftmo_demo_v2_slot1.json'}")
+    print(f"wrote {args.out_dir / 'ftmo_symbol_probe_slot1.json'}")
+    print(
+        f"sleeves={c['sleeves']} ADMIT={c['admit']} "
+        f"ADMIT_CONDITIONAL={c['admit_conditional']} EXCLUDE={c['exclude']}"
+    )
     for r in census["roster"]:
         if r["decision"] != "ADMIT":
-            print(f"  {r['decision']:<10} {r['ea_id']:>6} {r['dxz_symbol']:<12} "
+            print(f"  {r['decision']:<18} {r['ea_id']:>6} {r['dxz_symbol']:<12} "
                   f"-> {r['reason'][:150]}")
     return 0
 

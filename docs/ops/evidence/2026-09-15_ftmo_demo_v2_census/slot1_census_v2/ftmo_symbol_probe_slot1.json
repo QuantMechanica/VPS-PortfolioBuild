@@ -1,0 +1,85 @@
+{
+  "account": 1514536732,
+  "server": "FTMO-Demo",
+  "ticks_dir": {
+    "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\bases\\FTMO-Demo\\ticks",
+    "symbols": [
+      "AUDCAD",
+      "AUDCHF",
+      "AUDJPY",
+      "AUDNZD",
+      "AUDUSD",
+      "EURUSD",
+      "GBPUSD",
+      "GER40.cash",
+      "NZDUSD",
+      "US100.cash",
+      "USDCAD",
+      "USDCHF",
+      "USDCNH",
+      "USDCZK",
+      "USDHKD",
+      "USDHUF",
+      "USDILS",
+      "USDJPY",
+      "USDMXN",
+      "USDNOK",
+      "USDPLN",
+      "USDSEK",
+      "USDSGD",
+      "USDZAR",
+      "USOIL.cash",
+      "XAGUSD",
+      "XAUUSD"
+    ]
+  },
+  "history_dir": {
+    "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\bases\\FTMO-Demo\\history",
+    "symbols": [
+      "EURUSD",
+      "GBPUSD",
+      "GER40.cash",
+      "NZDUSD",
+      "US100.cash",
+      "USDCAD",
+      "USDCHF",
+      "USDJPY",
+      "USOIL.cash",
+      "XAGUSD",
+      "XAUUSD"
+    ]
+  },
+  "symbols_dir": {
+    "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\bases\\FTMO-Demo\\symbols",
+    "files": [
+      "selected-1513845506.dat",
+      "selected-1514165262.dat",
+      "selected-1514536732.dat",
+      "symbols-1513845506.dat",
+      "symbols-1514165262.dat",
+      "symbols-1514536732.dat"
+    ],
+    "symbols_raw_exists": false,
+    "account_symbol_db": {
+      "path": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\bases\\FTMO-Demo\\symbols\\symbols-1514536732.dat",
+      "exists": true,
+      "plaintext_symbol_names": false,
+      "bytes": 86016,
+      "printable_tokens": 1077,
+      "probe_name_hits": [],
+      "note": "no probe name occurs as a printable token -> the file is not plaintext on this build; absence here is NOT evidence that a symbol is missing from the broker's list"
+    }
+  },
+  "logs": {
+    "files_scanned": 75,
+    "encoding": "utf-16-le",
+    "probe_name_occurrences": {
+      "GER40.cash": 137,
+      "US100.cash": 342,
+      "USOIL.cash": 100,
+      "XAGUSD": 48,
+      "XAGUSD.DWX": 1,
+      "XAUUSD": 776
+    }
+  }
+}

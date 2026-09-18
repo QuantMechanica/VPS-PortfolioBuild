@@ -4,6 +4,10 @@ Ticket `42a437a4-9674-47ce-9ca9-80eba8a2bc91` (book sprint F4, due Wed 2026-09-1
 
 **Status: NOT a replacement for the committed census. Reconciliation input only.**
 
+**Superseded 2026-09-18** by the orchestrator-directed RECYCLE merge in `../README.md` /
+`../roster_ftmo_demo_v2.json` (base = `../slot1_census_v2/`, not this directory — see the
+review verdict quoted there). This directory is preserved for the record only.
+
 ## Why this directory exists
 
 The headless launcher `run_agent_orchestration_task.py --agent claude --max-sessions 3`
