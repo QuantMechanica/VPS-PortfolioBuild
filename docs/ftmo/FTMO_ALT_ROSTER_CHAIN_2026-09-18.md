@@ -268,3 +268,18 @@ Antigravity (`agy -p`, read-only) reviewed this document and returned **REJECT**
 The current demo cycle continues unchanged (KEEP is a legitimate weekly decision). Decision owner: Fable. Evidence pending:
 holdout/common-window/leave-one-out run (deterministic, 0 factory hours), FTMO venue swap scenario, deployment package
 feasibility.
+
+## Addendum 2 (2026-09-18 ~01:35Z) — holdout resolution
+
+`docs/ftmo/FTMO_ALT_ROSTER_HOLDOUT_2026-09-18.md` (evidence `…/fable_alt_rosters_20260918/holdout/`): selecting the roster on
+data ≤2022-12-31 reproduces 7/8 of R2_capped; out-of-sample (2023+) it beats demo_8 on both axes (LCB 0.9716 vs 0.4480,
+median 234 vs 828 bd; common window 0.9320 vs 0.3852 / 276 vs 826.5). Winner's-curse penalty 0.002–0.020 LCB. Leave-one-out:
+all 8 variants keep the verdict. Breach concentration on 13213 USDJPY confirmed (53.5 %); uniform 2.0 % worsens it; halving
+13213 to 0.15625 % (book ≈2.34 %) gives LCB 0.9293 / 344 bd / P1 breach 0.0086 and reproduces OOS.
+
+**Fable decision (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917):** statistical objections resolved; recomposition
+**approved in principle** as `R2_capped_13213half` (~2.34 % book), uniform 2.0 % as conservative fallback, 2.5 % rejected.
+**Still blocking deployment:** (a) venue feasibility (symbol mapping, magics, presets, chart plan — package
+`docs/ops/evidence/2026-09-18_ftmo_demo_recompose_R2/`), (b) swap/weekend financing scenario for the four overnight
+gold/oil sleeves (10700, 10145, 20266, 12710) with FTMO venue rates, (c) a current Q08 PASS / evidence path per sleeve.
+The demo cycle stays unchanged until (a)–(c) are closed; the switch, when made, starts a new representative cycle.
