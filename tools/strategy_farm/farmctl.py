@@ -34993,6 +34993,13 @@ Q02_CANARY_FANOUT_POLICY = "qm-q02-canary-fanout/v1"
 Q02_STAGE1_MAX_SYMBOLS = 1
 FIRST_Q02_INTAKE_SCHEMA = "qm.first-q02-intake/v1"
 FIRST_Q02_INTAKE_RECEIPT_SCHEMA = "qm.first-q02-intake-receipt/v1"
+FIRST_Q02_SUPERSEDE_SCHEMA = "qm.first-q02-intake-supersede/v1"
+FIRST_Q02_SUPERSEDE_RECEIPT_SCHEMA = "qm.first-q02-intake-supersede-receipt/v1"
+# Hold code stamped on a predecessor Q02 row parked by the supersede-and-replan
+# flow below. Distinct from every other hold_code in work_item_holds so a
+# release-hold operator action can target exactly this class.
+Q02_SUPERSEDED_CANARY_RAM_CLASS_HOLD_CODE = "SUPERSEDED_CANARY_RAM_CLASS"
+Q02_SUPERSEDE_SOURCE_ENCODING = "farmctl.intake-first-q02-supersede-pending-canary/v1"
 Q02_READ_PHASES = tuple(
     row.phase
     for row in advancement_table().values()
@@ -35678,6 +35685,7 @@ def _plan_first_q02_intake(
     compile_work_item_id: str,
     *,
     repo_root: Path,
+    exclude_work_item_ids: frozenset[str] = frozenset(),
 ) -> dict[str, Any]:
     row = conn.execute("SELECT * FROM work_items WHERE id=?", (compile_work_item_id,)).fetchone()
     if row is None:
@@ -35815,15 +35823,19 @@ def _plan_first_q02_intake(
             review_entry_gate=review_block,
         )
     q02_placeholders = ",".join("?" for _ in Q02_READ_PHASES)
-    existing = conn.execute(
-        f"SELECT id,phase,status,verdict FROM work_items WHERE ea_id=? "
-        f"AND phase IN ({q02_placeholders}) ORDER BY created_at,id",
-        (ea_id, *Q02_READ_PHASES),
-    ).fetchall()
+    existing = [
+        dict(value)
+        for value in conn.execute(
+            f"SELECT id,phase,status,verdict,symbol,claimed_by FROM work_items WHERE ea_id=? "
+            f"AND phase IN ({q02_placeholders}) ORDER BY created_at,id",
+            (ea_id, *Q02_READ_PHASES),
+        ).fetchall()
+        if str(value["id"]) not in exclude_work_item_ids
+    ]
     if existing:
         return _first_q02_refusal(
             "existing_q02_row", compile_work_item_id, ea_id=ea_id,
-            existing_q02_rows=[dict(value) for value in existing],
+            existing_q02_rows=existing,
         )
     basket_manifest = setfile_plan["basket_manifest"]
     archive = custom_history_archive_admission(
@@ -36029,6 +36041,388 @@ def intake_first_q02(
             **{key: value for key, value in locked_plan.items() if not key.startswith("_")},
             "dry_run": False, "applied": True, "would_enqueue": False,
             "priority_boost": False, "work_item_id": work_item_id,
+            "receipt_path": str(receipt_path),
+            "receipt_sha256": _sha256_file(receipt_path),
+            "backup": {"path": str(backup_path), "sha256": backup_sha},
+        }
+    finally:
+        lock.__exit__(None, None, None)
+
+
+def _q02_canary_exclusive_ram_threshold_gb() -> float:
+    """RAM-GB floor above which a Q02 canary counts as 'exclusive class'.
+
+    Reads the same single_index_tick monster-class constant terminal_worker
+    uses to admit the 44GB fail-safe reservation, so this threshold can never
+    silently drift from the live admission lane.
+    """
+    try:
+        import terminal_worker as _terminal_worker  # type: ignore
+    except ModuleNotFoundError:
+        from tools.strategy_farm import terminal_worker as _terminal_worker  # type: ignore
+    return float(_terminal_worker.SINGLE_INDEX_TICK_COMMIT_RESERVATION_GB)
+
+
+def _q02_supersede_row_diagnostics(
+    row: dict[str, Any], ea_id: str, threshold_gb: float,
+) -> dict[str, Any]:
+    """Per-row eligibility facts for the supersede-pending-canary gate.
+
+    Eligible only when the row is a fresh, untouched pending claim (no verdict,
+    no claim) whose bound symbol currently reserves at/above the exclusive
+    threshold -- the exact 'unwinnable RAM class' condition this tool exists
+    to unblock. Never eligible once a verdict or a claim exists: those rows are
+    evidence, not a stuck plan, and are out of scope for supersede.
+    """
+    status = str(row.get("status") or "").strip().lower()
+    verdict = row.get("verdict")
+    claimed_by = row.get("claimed_by")
+    symbol = str(row.get("symbol") or "")
+    ram_gb = _q02_canary_ram_reservation_gb(symbol, ea_id) if symbol else 0.0
+    eligible = (
+        status == "pending"
+        and not verdict
+        and not claimed_by
+        and ram_gb >= threshold_gb
+    )
+    return {
+        "work_item_id": str(row.get("id") or ""),
+        "phase": str(row.get("phase") or ""),
+        "symbol": symbol,
+        "status": status,
+        "verdict": verdict,
+        "claimed_by": claimed_by,
+        "ram_reservation_gb": ram_gb,
+        "supersede_eligible": eligible,
+    }
+
+
+def intake_first_q02_supersede_pending_canary(
+    root: Path,
+    compile_work_item_id: str,
+    *,
+    apply: bool = False,
+    repo_root: Path | None = None,
+) -> dict[str, Any]:
+    """Governed supersede-and-replan for a Q02 canary stuck in the exclusive RAM class.
+
+    Handles exactly one blocker: ``intake_first_q02`` refusing with
+    ``existing_q02_row`` because every existing pending Q02 row for this EA
+    reserves RAM at/above the exclusive threshold (currently the 44GB
+    single_index_tick class) and is therefore effectively unwinnable on a
+    fleet that never frees that much RAM. Any other refusal reason is returned
+    unchanged -- this tool does not touch a row that already has a verdict or
+    a claim, and it never widens eligibility beyond the one blocker it exists
+    to unstick.
+
+    Dry-run (default) previews without writing. Apply parks each eligible
+    predecessor with a durable ``SUPERSEDED_CANARY_RAM_CLASS`` hold plus a
+    ``work_item_supersedes`` edge to the new canary, and appends exactly one
+    successor Q02 row for the cheapest-RAM symbol in the same target-symbol
+    universe (``_q02_canary_symbol_rank``, live-resolver-driven). Append-only:
+    predecessor rows and any verdict are never modified.
+
+    Refuses (does not apply) when the RAM-ranked replan is ALSO at/above the
+    exclusive threshold -- e.g. an EA whose entire target-symbol universe is
+    index-class has no cheaper canary to escape to, and parking the old row
+    for an equally unwinnable new one would be pure churn with no benefit.
+    """
+    code_root = Path(repo_root or CANONICAL_REPO_ROOT).resolve()
+    if not db_path(root).is_file():
+        return _first_q02_refusal(
+            "farm_database_missing", compile_work_item_id, database=str(db_path(root))
+        )
+    threshold_gb = _q02_canary_exclusive_ram_threshold_gb()
+    with connect(root) as conn:
+        base_plan = _plan_first_q02_intake(conn, root, compile_work_item_id, repo_root=code_root)
+    if base_plan.get("reason") != "existing_q02_row":
+        public_base = {key: value for key, value in base_plan.items() if not key.startswith("_")}
+        public_base.update({
+            "dry_run": not apply, "applied": False, "supersede_pending_canary": True,
+        })
+        return public_base
+
+    ea_id = str(base_plan["ea_id"])
+    existing_rows = list(base_plan.get("existing_q02_rows") or [])
+    diagnostics = [
+        _q02_supersede_row_diagnostics(row, ea_id, threshold_gb) for row in existing_rows
+    ]
+    if not diagnostics or not all(item["supersede_eligible"] for item in diagnostics):
+        return {
+            "schema": FIRST_Q02_SUPERSEDE_SCHEMA,
+            "eligible": False, "would_enqueue": False, "applied": False,
+            "dry_run": not apply, "supersede_pending_canary": True,
+            "reason": "existing_q02_row_not_supersede_eligible",
+            "compile_work_item_id": str(compile_work_item_id),
+            "ea_id": ea_id, "predecessors": diagnostics,
+            "ram_class_threshold_gb": threshold_gb,
+        }
+
+    exclude_ids = frozenset(item["work_item_id"] for item in diagnostics)
+    with connect(root) as conn:
+        replan = _plan_first_q02_intake(
+            conn, root, compile_work_item_id, repo_root=code_root,
+            exclude_work_item_ids=exclude_ids,
+        )
+    if not replan.get("eligible"):
+        public_replan = {key: value for key, value in replan.items() if not key.startswith("_")}
+        public_replan.update({
+            "dry_run": not apply, "applied": False, "supersede_pending_canary": True,
+            "predecessors": diagnostics, "ram_class_threshold_gb": threshold_gb,
+        })
+        return public_replan
+
+    replan_symbol = str(replan["canary"]["symbol"])
+    replan_ram_gb = _q02_canary_ram_reservation_gb(replan_symbol, ea_id)
+    if replan_ram_gb >= threshold_gb:
+        return {
+            "schema": FIRST_Q02_SUPERSEDE_SCHEMA,
+            "eligible": False, "would_enqueue": False, "applied": False,
+            "dry_run": not apply, "supersede_pending_canary": True,
+            "reason": "replan_canary_also_exclusive_class",
+            "compile_work_item_id": str(compile_work_item_id),
+            "ea_id": ea_id, "predecessors": diagnostics,
+            "replan_symbol": replan_symbol, "replan_ram_reservation_gb": replan_ram_gb,
+            "ram_class_threshold_gb": threshold_gb,
+        }
+
+    public_plan = {key: value for key, value in replan.items() if not key.startswith("_")}
+    public_plan.update({
+        "dry_run": not apply, "applied": False, "supersede_pending_canary": True,
+        "predecessors": diagnostics, "ram_class_threshold_gb": threshold_gb,
+    })
+    if not apply:
+        return public_plan
+    if factory_is_off(root):
+        return {
+            **public_plan, "eligible": False, "would_enqueue": False,
+            "reason": "factory_off", "factory_off_flag": str(factory_off_flag_path(root)),
+        }
+
+    backup_path, backup_sha = _governed_state_backup(root, "first_q02_intake_supersede")
+    lock = FactoryMutationLock(
+        path_for_factory_flag(factory_off_flag_path(root)),
+        owner=f"intake_first_q02_supersede:{compile_work_item_id}",
+    )
+    try:
+        lock.__enter__()
+    except RuntimeError as exc:
+        return {
+            **public_plan, "eligible": False, "would_enqueue": False,
+            "reason": "factory_mutation_lock_busy", "detail": str(exc),
+            "backup": {"path": str(backup_path), "sha256": backup_sha},
+        }
+
+    new_work_item_id = str(uuid.uuid4())
+    now = utc_now()
+    try:
+        if factory_is_off(root):
+            return {
+                **public_plan, "eligible": False, "would_enqueue": False,
+                "reason": "factory_off_after_lock",
+                "backup": {"path": str(backup_path), "sha256": backup_sha},
+            }
+        conn = connect_short_under_mutation_lock(root)
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            id_placeholders = ",".join("?" for _ in exclude_ids)
+            recheck_rows = [
+                dict(value)
+                for value in conn.execute(
+                    "SELECT id,phase,status,verdict,symbol,claimed_by FROM work_items "
+                    f"WHERE id IN ({id_placeholders})",
+                    tuple(exclude_ids),
+                ).fetchall()
+            ]
+            recheck_diag = [
+                _q02_supersede_row_diagnostics(row, ea_id, threshold_gb) for row in recheck_rows
+            ]
+            if len(recheck_diag) != len(diagnostics) or not all(
+                item["supersede_eligible"] for item in recheck_diag
+            ):
+                conn.rollback()
+                return {
+                    **public_plan, "dry_run": False, "applied": False,
+                    "eligible": False, "would_enqueue": False,
+                    "reason": "predecessor_state_changed_under_lock",
+                    "predecessors": recheck_diag,
+                    "backup": {"path": str(backup_path), "sha256": backup_sha},
+                }
+            locked_replan = _plan_first_q02_intake(
+                conn, root, compile_work_item_id, repo_root=code_root,
+                exclude_work_item_ids=exclude_ids,
+            )
+            if not locked_replan.get("eligible"):
+                conn.rollback()
+                result = {
+                    key: value for key, value in locked_replan.items()
+                    if not key.startswith("_")
+                }
+                return {
+                    **result, "dry_run": False, "applied": False,
+                    "supersede_pending_canary": True, "predecessors": recheck_diag,
+                    "rechecked_under_lock": True,
+                    "backup": {"path": str(backup_path), "sha256": backup_sha},
+                }
+            locked_symbol = str(locked_replan["canary"]["symbol"])
+            locked_ram_gb = _q02_canary_ram_reservation_gb(locked_symbol, ea_id)
+            if locked_ram_gb >= threshold_gb:
+                conn.rollback()
+                return {
+                    **public_plan, "dry_run": False, "applied": False,
+                    "eligible": False, "would_enqueue": False,
+                    "reason": "replan_canary_also_exclusive_class",
+                    "replan_symbol": locked_symbol,
+                    "replan_ram_reservation_gb": locked_ram_gb,
+                    "predecessors": recheck_diag,
+                    "backup": {"path": str(backup_path), "sha256": backup_sha},
+                }
+            setfile_path, symbol, timeframe, payload_extra = locked_replan["_stage1"][0]
+            payload = {
+                "host_symbol": symbol,
+                "host_timeframe": timeframe,
+                "enqueued_by": "farmctl.intake-first-q02-supersede-pending-canary",
+                "enqueued_at_utc": now,
+                "first_q02_intake": True,
+                "first_q02_intake_schema": FIRST_Q02_INTAKE_SCHEMA,
+                "compile_work_item_id": str(compile_work_item_id),
+                "compile_evidence_path": locked_replan["compile_evidence_path"],
+                "expected_ex5_sha256": locked_replan["ex5_sha256"],
+                "expected_setfile_sha256": locked_replan["canary"]["setfile_sha256"],
+                "risk_fixed": next(
+                    check["risk_fixed"] for check in locked_replan["setfile_checks"]
+                    if check["setfile_path"] == str(setfile_path)
+                ),
+                "risk_percent": 0.0,
+                "q02_cohort_size": len(locked_replan["_stage1"]) + len(locked_replan["_deferred"]),
+                "q02_fanout_policy": Q02_CANARY_FANOUT_POLICY,
+                "q02_fanout_canary": bool(locked_replan["_deferred"]),
+                "q02_fanout_canary_index": 1 if locked_replan["_deferred"] else None,
+                "compile_candidate_recheck": {
+                    "eligible": True,
+                    "reason": locked_replan["_candidate_recheck"].get("reason"),
+                    "symbols": locked_replan["target_symbols"],
+                },
+                "q02_supersedes_pending_canary": True,
+                "q02_supersedes_predecessor_ids": sorted(exclude_ids),
+                "q02_supersede_ram_class_threshold_gb": threshold_gb,
+            }
+            payload.update(payload_extra)
+            _stamp_custom_history_archive_admission(payload, locked_replan["_archive"])
+            _apply_q02_multisymbol_timeout_min(
+                payload, phase="Q02", ea_id=locked_replan["ea_id"], symbol=symbol
+            )
+            conn.execute(
+                "INSERT INTO work_items (id,kind,phase,ea_id,symbol,setfile_path,status,"
+                "attempt_count,payload_json,created_at,updated_at,gate_contract_version,"
+                "ex5_sha256,setfile_sha256) VALUES "
+                "(?,'backtest','Q02',?,?,?,'pending',0,?,?,?,?,?,?)",
+                (
+                    new_work_item_id, locked_replan["ea_id"], symbol, str(setfile_path),
+                    json.dumps(payload, sort_keys=True), now, now,
+                    ACTIVE_GATE_CONTRACT_VERSION, locked_replan["ex5_sha256"],
+                    locked_replan["canary"]["setfile_sha256"],
+                ),
+            )
+            hold_reason = (
+                f"superseded_canary_ram_class: ram_reservation_gb>={threshold_gb} "
+                f"(exclusive threshold); successor={new_work_item_id}; "
+                f"replan_symbol={symbol} replan_ram_reservation_gb={locked_ram_gb}"
+            )
+            for predecessor_id in sorted(exclude_ids):
+                hold_cursor = conn.execute(
+                    """
+                    INSERT INTO work_item_holds(
+                      work_item_id,hold_code,reason,active,release_on_restart,
+                      created_at,updated_at
+                    ) VALUES(?,?,?,1,0,?,?)
+                    ON CONFLICT(work_item_id) DO UPDATE SET
+                      hold_code=excluded.hold_code,reason=excluded.reason,active=1,
+                      release_on_restart=0,updated_at=excluded.updated_at,
+                      released_at=NULL,release_note=NULL
+                    WHERE work_item_holds.active=0
+                    """,
+                    (
+                        predecessor_id, Q02_SUPERSEDED_CANARY_RAM_CLASS_HOLD_CODE,
+                        hold_reason, now, now,
+                    ),
+                )
+                if hold_cursor.rowcount != 1:
+                    conn.rollback()
+                    raise RuntimeError(
+                        f"first_q02_intake_supersede_hold_conflict:{predecessor_id}"
+                    )
+                conn.execute(
+                    """
+                    INSERT INTO work_item_supersedes
+                      (work_item_id,superseded_by_work_item_id,reason,source_encoding,
+                       evidence_path,recorded_by,recorded_at)
+                    VALUES (?,?,?,?,?,?,?)
+                    """,
+                    (
+                        predecessor_id, new_work_item_id, hold_reason,
+                        Q02_SUPERSEDE_SOURCE_ENCODING, "",
+                        "farmctl.intake-first-q02-supersede-pending-canary", now,
+                    ),
+                )
+                event(conn, "work_item", predecessor_id, "first_q02_canary_superseded_ram_class", {
+                    "successor_work_item_id": new_work_item_id,
+                    "ea_id": ea_id, "hold_code": Q02_SUPERSEDED_CANARY_RAM_CLASS_HOLD_CODE,
+                    "backup_path": str(backup_path), "backup_sha256": backup_sha,
+                })
+            event(conn, "work_item", new_work_item_id, "first_q02_intake_supersede_appended", {
+                "compile_work_item_id": str(compile_work_item_id),
+                "ea_id": locked_replan["ea_id"], "symbol": symbol,
+                "superseded_work_item_ids": sorted(exclude_ids),
+                "backup_path": str(backup_path), "backup_sha256": backup_sha,
+            })
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        if locked_replan["_deferred"]:
+            _record_q02_deferral(
+                locked_replan["ea_id"], locked_replan["_deferred"],
+                "farmctl.intake-first-q02-supersede-pending-canary",
+                cohort_size=len(locked_replan["_stage1"]) + len(locked_replan["_deferred"]),
+                canary_symbols=[symbol],
+                state_file=root / "state" / "q02_deferred_symbols.json",
+            )
+        receipt = {
+            "schema": FIRST_Q02_SUPERSEDE_RECEIPT_SCHEMA,
+            "recorded_at": now,
+            "compile_work_item_id": str(compile_work_item_id),
+            "work_item_id": new_work_item_id,
+            "ea_id": locked_replan["ea_id"], "phase": "Q02",
+            "symbol": symbol, "timeframe": timeframe,
+            "setfile_path": str(setfile_path),
+            "setfile_sha256": locked_replan["canary"]["setfile_sha256"],
+            "ex5_sha256": locked_replan["ex5_sha256"],
+            "compile_evidence_path": locked_replan["compile_evidence_path"],
+            "ram_reservation_gb": locked_ram_gb,
+            "ram_class_threshold_gb": threshold_gb,
+            "predecessors": recheck_diag,
+            "hold_code": Q02_SUPERSEDED_CANARY_RAM_CLASS_HOLD_CODE,
+            "deferred_symbols": [item[1] for item in locked_replan["_deferred"]],
+            "backup": {"path": str(backup_path), "sha256": backup_sha},
+        }
+        receipt_path = (
+            root / "artifacts" / "receipts" / "first_q02_intake_supersede"
+            / f"{compile_work_item_id}_{new_work_item_id}.json"
+        )
+        if receipt_path.exists():
+            raise RuntimeError(f"first_q02_intake_supersede_receipt_exists:{receipt_path}")
+        _write_json_atomic(receipt_path, receipt)
+        return {
+            **{key: value for key, value in locked_replan.items() if not key.startswith("_")},
+            "dry_run": False, "applied": True, "would_enqueue": False,
+            "supersede_pending_canary": True,
+            "work_item_id": new_work_item_id,
+            "predecessors": recheck_diag,
+            "ram_class_threshold_gb": threshold_gb,
             "receipt_path": str(receipt_path),
             "receipt_sha256": _sha256_file(receipt_path),
             "backup": {"path": str(backup_path), "sha256": backup_sha},
@@ -38330,6 +38724,17 @@ def build_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Append exactly one Q02 canary and its receipt; default is read-only",
     )
+    first_q02.add_argument(
+        "--supersede-pending-canary",
+        action="store_true",
+        help=(
+            "Only when every existing pending Q02 row for this EA is unclaimed, "
+            "verdict-free, and reserves RAM at/above the exclusive threshold: park "
+            "each with a durable SUPERSEDED_CANARY_RAM_CLASS hold + a "
+            "work_item_supersedes edge, then append the RAM-ranked replan canary. "
+            "Refuses if the replan is also exclusive-class (no cheaper escape)."
+        ),
+    )
     bind_q09 = sub.add_parser(
         "bind-q09-plan",
         help="Hash-bind a sealed Q09_NEWS plan to one exact pending work item",
@@ -39045,11 +39450,18 @@ def main(argv: list[str] | None = None) -> int:
         if not requalify_result.get("ok", False):
             return 2
     elif args.command == "intake-first-q02":
-        print_json(intake_first_q02(
-            root,
-            args.compile_work_item_id,
-            apply=args.apply,
-        ))
+        if getattr(args, "supersede_pending_canary", False):
+            print_json(intake_first_q02_supersede_pending_canary(
+                root,
+                args.compile_work_item_id,
+                apply=args.apply,
+            ))
+        else:
+            print_json(intake_first_q02(
+                root,
+                args.compile_work_item_id,
+                apply=args.apply,
+            ))
     elif args.command == "requeue-false-invalid-setfile":
         print_json(enqueue_false_invalid_setfile_requeue(
             root,
