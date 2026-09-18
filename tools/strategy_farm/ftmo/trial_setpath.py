@@ -11,6 +11,8 @@ from pathlib import Path
 import re
 import sqlite3
 
+from .binding_hash import content_sha256
+
 REPO_ROOT = Path(__file__).resolve().parents[3]
 TRIAL_ROOT = Path('D:/QM/strategy_farm/artifacts/ftmo_trial_sets_review')
 DATABASE = Path('D:/QM/strategy_farm/state/farm_state.sqlite')
@@ -30,6 +32,17 @@ class Refusal(ValueError):
 
 def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def pin(data: bytes) -> str:
+    """Line-ending-invariant digest used for every file pinned by the binding.
+
+    Pins must identify content, not a clone: git stores these files with LF
+    and core.autocrlf smudges them to CRLF per worktree, so a raw-byte pin
+    refuses in one clone and verifies in another (ticket a5cf99d0). See
+    binding_hash.py.
+    """
+    return content_sha256(data)
 
 
 def values(text: str) -> dict[str, str]:
@@ -106,13 +119,13 @@ def load_binding(path: Path = BINDING) -> tuple[dict, dict, Path, bytes]:
     if account.get('variant') != 'STANDARD_2STEP_100K_FREE_TRIAL' or account.get('login') != 1514536732 or account.get('server') != 'FTMO-Demo' or account.get('observed_leverage') != '1:100':
         raise Refusal('wrong_standard_demo_account')
     terms = _repo_file(account.get('terms_evidence_path', ''))
-    if sha(terms.read_bytes()) != account.get('terms_evidence_sha256'):
+    if pin(terms.read_bytes()) != account.get('terms_evidence_sha256'):
         raise Refusal('account_terms_evidence_hash_drift')
 
     contract = binding.get('rulepack', {})
     rulepack_path = _repo_file(contract.get('path', ''))
     rule_bytes = rulepack_path.read_bytes()
-    if sha(rule_bytes) != contract.get('file_sha256'):
+    if pin(rule_bytes) != contract.get('file_sha256'):
         raise Refusal('rulepack_file_hash_drift')
     rule = json.loads(rule_bytes)
     canonical = json.dumps(rule, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode('utf-8')
@@ -177,7 +190,7 @@ def load_binding(path: Path = BINDING) -> tuple[dict, dict, Path, bytes]:
     }
     for role in ('bootstrap', 'active'):
         preset = _repo_file(governor[f'{role}_preset_path'])
-        if sha(preset.read_bytes()) != governor[f'{role}_preset_sha256']:
+        if pin(preset.read_bytes()) != governor[f'{role}_preset_sha256']:
             raise Refusal(f'{role}_preset_hash_drift')
         actual = _preset_values(decode(preset.read_bytes()))
         if any(actual.get(key) != value for key, value in expected_preset.items()):

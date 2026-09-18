@@ -1,0 +1,127 @@
+{
+  "schema": "qm.ftmo-m13-binding-repin-receipt/v1",
+  "generated_at_utc": "2026-09-18T02:00:24Z",
+  "ticket": "a5cf99d0",
+  "baseline_commit": "e1d42acafb63092ef289aedaed2e3cad37458a45",
+  "binding": "tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json",
+  "pin_basis_before": "sha256(raw on-disk bytes) - not portable across working trees",
+  "pin_basis_after": "sha256(LF-normalized bytes) - tools/strategy_farm/ftmo/binding_hash.py",
+  "content_drift_found": false,
+  "content_drift_files": [],
+  "claim": "For every pinned file the LINE-ENDING-NORMALIZED content is byte-identical to the content the previous pin described AND to the committed git blob. No rule content, threshold, limit, flag or identifier changed; only the CR/LF spelling of line breaks.",
+  "files": [
+    {
+      "pin": "account_terms_evidence",
+      "path": "docs/ops/evidence/2026-09-06_ftmo_demo_account_terms.md",
+      "old_pin": "6d6c7bdd43b690db44d1fac8e64fcb515c2db0d79ae6f12de00e7f5bbcb2e753",
+      "new_pin": "6d6c7bdd43b690db44d1fac8e64fcb515c2db0d79ae6f12de00e7f5bbcb2e753",
+      "old_pin_basis": "git_blob_bytes",
+      "pin_value_changed": false,
+      "worktree_raw_sha256": "3b1d605ab0a45f0c2115ca14c17701788f47610ce936bd4b59b8b27b4bc39964",
+      "git_blob_raw_sha256": "6d6c7bdd43b690db44d1fac8e64fcb515c2db0d79ae6f12de00e7f5bbcb2e753",
+      "normalized_sha256": "6d6c7bdd43b690db44d1fac8e64fcb515c2db0d79ae6f12de00e7f5bbcb2e753",
+      "worktree_crlf_line_count": 13,
+      "git_blob_crlf_line_count": 0,
+      "normalized_content_identical_to_previously_pinned": true,
+      "normalized_content_identical_to_git_blob": true
+    },
+    {
+      "pin": "rulepack_file",
+      "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
+      "old_pin": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "new_pin": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "old_pin_basis": "worktree_raw_bytes",
+      "pin_value_changed": false,
+      "worktree_raw_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "git_blob_raw_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "normalized_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "worktree_crlf_line_count": 0,
+      "git_blob_crlf_line_count": 0,
+      "normalized_content_identical_to_previously_pinned": true,
+      "normalized_content_identical_to_git_blob": true
+    },
+    {
+      "pin": "evaluator_rulepack_file",
+      "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
+      "old_pin": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "new_pin": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "old_pin_basis": "worktree_raw_bytes",
+      "pin_value_changed": false,
+      "worktree_raw_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "git_blob_raw_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "normalized_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
+      "worktree_crlf_line_count": 0,
+      "git_blob_crlf_line_count": 0,
+      "normalized_content_identical_to_previously_pinned": true,
+      "normalized_content_identical_to_git_blob": true
+    },
+    {
+      "pin": "governor_bootstrap_preset",
+      "path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set",
+      "old_pin": "c189004f19e89fd83dd563cfd9334bc5b60c67cb9302b65217ad3ebbb7fb40f2",
+      "new_pin": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
+      "old_pin_basis": "worktree_raw_bytes",
+      "pin_value_changed": true,
+      "worktree_raw_sha256": "c189004f19e89fd83dd563cfd9334bc5b60c67cb9302b65217ad3ebbb7fb40f2",
+      "git_blob_raw_sha256": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
+      "normalized_sha256": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
+      "worktree_crlf_line_count": 27,
+      "git_blob_crlf_line_count": 0,
+      "normalized_content_identical_to_previously_pinned": true,
+      "normalized_content_identical_to_git_blob": true
+    },
+    {
+      "pin": "governor_active_preset",
+      "path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
+      "old_pin": "8537309436144497e42ccdee94426eeb5d7bad95f3568f92ba01bf532dedb061",
+      "new_pin": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361",
+      "old_pin_basis": "worktree_raw_bytes",
+      "pin_value_changed": true,
+      "worktree_raw_sha256": "8537309436144497e42ccdee94426eeb5d7bad95f3568f92ba01bf532dedb061",
+      "git_blob_raw_sha256": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361",
+      "normalized_sha256": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361",
+      "worktree_crlf_line_count": 27,
+      "git_blob_crlf_line_count": 0,
+      "normalized_content_identical_to_previously_pinned": true,
+      "normalized_content_identical_to_git_blob": true
+    }
+  ],
+  "pins_changed": [
+    "governor_bootstrap_preset",
+    "governor_active_preset"
+  ],
+  "pins_unchanged": [
+    "account_terms_evidence",
+    "rulepack_file",
+    "evaluator_rulepack_file"
+  ],
+  "gitattributes_added": [
+    "docs/ops/evidence/2026-09-06_ftmo_demo_account_terms.md -text",
+    "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set -text",
+    "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set -text"
+  ],
+  "gitattributes_already_present": [
+    "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json text eol=lf",
+    "tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json text eol=lf"
+  ],
+  "remaining_blockers_not_fixed_here": [
+    {
+      "id": "as_of_label_conflict",
+      "refusal": "trial_setpath.load_binding -> Refusal('wrong_rulepack')",
+      "detail": "Commit 992c59d1af bumped FTMO_2S_100K_STANDARD_V2.json's own as_of to 2026-09-15 and the follow-up re-pin commits (aabacec330, 769cf3f0e5, 6794e1b8fb) updated file_sha256 and canonical_sha256 to that file but left binding.rulepack.as_of at 2026-09-04. load_binding requires binding.as_of == rulepack.as_of (2026-09-15), while ftmo_book3_standalone_evaluator.py:840 hard-codes contract.as_of == '2026-09-04'. The two modules are currently unsatisfiable together.",
+      "why_not_fixed": "Choosing the binding rule-snapshot date touches gate/contract criteria (ROT under the Stehende Vollmacht) and is not a line-ending repair. The hash pins already identify the 2026-09-15 rulepack unambiguously, so the likely intent is 2026-09-15 on both sides, but that is an OWNER/ticket call.",
+      "blocks": [
+        "tools/strategy_farm/tests/test_ftmo_trial_setpath.py::test_m13_binding_is_standard_hash_bound_and_governor_coherent",
+        "tools/strategy_farm/tests/test_ftmo_trial_setpath.py::test_generated_manifest_names_standard_profile_and_internal_overlay"
+      ]
+    }
+  ],
+  "fixed_here_beyond_line_endings": [
+    {
+      "id": "evaluator_block_annotation",
+      "refusal_before": "trial_setpath.load_binding -> Refusal('evaluator_binding_mismatch')",
+      "detail": "Commit 6794e1b8fb added a prose key 'rulepack_file_sha256_note' inside binding.evaluator, which load_binding compares by exact 5-key dict equality, so the binding refused unconditionally. The prose was moved verbatim to a top-level 'notes' list; no pin, path, criterion or rule value changed."
+    }
+  ],
+  "remediation_for_existing_working_trees": "git checkout HEAD -- <the three newly -text files> once this lands, so their working-tree bytes match the LF blob."
+}

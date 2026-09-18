@@ -58,7 +58,7 @@ def test_m13_binding_is_standard_hash_bound_and_governor_coherent():
     assert binding['binding_id'] == 'FTMO_M13_STANDARD_DEMO_V1'
     assert binding['account']['observed_leverage'] == '1:100'
     assert rule['rulepack_id'] == 'FTMO_2S_100K_STANDARD_V2'
-    assert binding['rulepack']['file_sha256'] == s.sha(raw)
+    assert binding['rulepack']['file_sha256'] == s.pin(raw)  # LF-normalized; ticket a5cf99d0
     assert rulepack == s.RULEPACK
     assert binding['qm_demo_overlay']['news_stale_max_hours'] == 336
     assert binding['authority_boundary']['attachment_authorized'] is False

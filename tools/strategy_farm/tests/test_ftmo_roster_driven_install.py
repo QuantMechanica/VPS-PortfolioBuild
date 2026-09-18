@@ -54,6 +54,16 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _pin(data: bytes) -> str:
+    """The binding's pin basis: sha256 of the LINE-ENDING-NORMALIZED bytes.
+
+    Ticket a5cf99d0 (2026-09-18): raw-byte pins are not portable, because
+    core.autocrlf gives one committed content two different digests. These
+    CRLF fixtures must therefore be pinned the way the real binding is.
+    """
+    return hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest()
+
+
 def _row(**over) -> dict:
     row = {
         "ea_id": 13213, "ea_label": "QM5_13213_balke-gmt3-range-breakout",
@@ -486,8 +496,8 @@ def _gov_fixture(tmp_path: Path):
         "ea_id": 13206, "policy_id": "FTMO_2S_P1_100K_V2",
         "bootstrap_preset_path": str(paths["bootstrap"].relative_to(tmp_path)),
         "active_preset_path": str(paths["active"].relative_to(tmp_path)),
-        "bootstrap_preset_sha256": _sha(GOV_PRESET.encode("utf-8")),
-        "active_preset_sha256": _sha(GOV_PRESET.encode("utf-8")),
+        "bootstrap_preset_sha256": _pin(GOV_PRESET.encode("utf-8")),
+        "active_preset_sha256": _pin(GOV_PRESET.encode("utf-8")),
     }}, indent=2), encoding="utf-8")
     return binding, paths
 
@@ -515,7 +525,10 @@ def test_rebind_derives_csvs_and_repins_shas_atomically(tmp_path, monkeypatch):
     new_binding = json.loads(binding.read_text(encoding="utf-8"))
     for role in ("bootstrap", "active"):
         raw = paths[role].read_bytes()
-        assert new_binding["governor"][f"{role}_preset_sha256"] == _sha(raw)
+        assert new_binding["governor"][f"{role}_preset_sha256"] == _pin(raw)
+        # ... and that re-pin is line-ending-invariant: the identical content
+        # written with LF carries the same pin (ticket a5cf99d0).
+        assert _pin(raw.replace(b"\r\n", b"\n")) == _pin(raw)
         text = raw.decode("utf-8")
         assert "\r\n" in text  # CRLF preserved
         assert "allowed_magics_csv=116600004,132130000" in text
@@ -612,8 +625,8 @@ def test_rebind_refuses_preset_missing_a_governed_key(tmp_path, monkeypatch):
         "ea_id": 13206,
         "bootstrap_preset_path": "gov_sets/gov_bootstrap.set",
         "active_preset_path": "gov_sets/gov_active.set",
-        "bootstrap_preset_sha256": _sha(stripped.encode("utf-8")),
-        "active_preset_sha256": _sha(stripped.encode("utf-8")),
+        "bootstrap_preset_sha256": _pin(stripped.encode("utf-8")),
+        "active_preset_sha256": _pin(stripped.encode("utf-8")),
     }}), encoding="utf-8")
     registry = _registry(tmp_path, [(13213, 0, "USDJPY.DWX", 132130000, "active")])
     with pytest.raises(governor_rebind.Refusal, match="governor_key_missing:governed_symbols_csv"):
