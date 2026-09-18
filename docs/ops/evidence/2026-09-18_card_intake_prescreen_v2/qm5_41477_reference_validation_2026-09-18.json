@@ -1,0 +1,41 @@
+{
+  "card_path": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41477_fx-session-mean-reversion-m15.md",
+  "checks": [
+    {
+      "check_id": "pilot_fire_count_evidence",
+      "data": {},
+      "detail": "frequency claim present but no measured_fire_count_per_window field: a card may never state an expected frequency derived from its own caps (postmortem sec 5.1) -- caps are upper bounds, only a measurement is an expectation",
+      "status": "MISSING_EVIDENCE"
+    },
+    {
+      "check_id": "cost_to_target_floor",
+      "data": {},
+      "detail": "card lacks cost_floor_min_stop_units / cost_floor_unit_value_per_lot (mandatory field, postmortem sec 5.2): commission_R = round_turn_cost_per_lot / (min_stop_units * unit_value_per_lot) must be computed and bounded below 0.03 at the card's own minimum plausible stop before build",
+      "status": "MISSING_EVIDENCE"
+    },
+    {
+      "check_id": "no_op_filter_lint",
+      "data": {
+        "findings": [
+          {
+            "detail": "max_trades_per_day min=2 >= structural window ceiling 2 (london, ny x one entry/window): the cap is a no-op across its whole preregistered range",
+            "rule": "trade_cap_vs_window_count",
+            "status": "FAIL"
+          }
+        ]
+      },
+      "detail": "max_trades_per_day min=2 >= structural window ceiling 2 (london, ny x one entry/window): the cap is a no-op across its whole preregistered range",
+      "status": "FAIL"
+    },
+    {
+      "check_id": "skip_reason_logging",
+      "data": {
+        "source_dir": "framework\\EAs\\QM5_41477_fx-session-mean-reversion-m15"
+      },
+      "detail": "no STRATEGY_ENTRY_REJECTED{reason,session,branch} event found in QM5_41477_fx-session-mean-reversion-m15 -- the EA can only log what it did, never what it rejected and why (postmortem sec 5.4: this is what made the QM5_41477 density shortfall unrecoverable guesswork). Framework-level QM_ENTRY_REJECTED_* events (QM_Entry.mqh) cover order-submission rejects only, not application-level 'no signal fired' evaluation -- a distinct event is required.",
+      "status": "FAIL"
+    }
+  ],
+  "contract_version": "qm.card-intake-prescreen-g0-economics/v2",
+  "note": "read-only validation against canonical C:/QM/repo (the postmortem's own card + built EA); root passed explicitly for the skip_reason_logging check since this worktree predates the EA's build commit"
+}
