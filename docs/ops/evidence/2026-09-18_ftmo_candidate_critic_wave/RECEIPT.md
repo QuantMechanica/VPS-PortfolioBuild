@@ -101,3 +101,15 @@ but harmless; signal-bar window leaves no dead bar (defaults: signal bars 16/17 
 Friday entry because the earliest entry evaluation is at 17:00 — moved to the closed signal bar's hour/day, matching
 the preregistered pilot ("Friday only the hour-16 bar may signal"). Recompiled 0/0; see the follow-up commits on the
 H-CW/H-MR branches.
+
+## Disposition update 2026-09-18 ~02:05Z — QM5_41477 H-FXMR: RETIRE (lineage v1)
+
+First Q02 canary (EURUSD.DWX, 2018-07-02..2022-12-31, row `b3977583`): setup/frequency gate PASS, economics net −32,444 USD,
+PF 0.79, 307 trades (≈5.7/month vs card 18–28), max DD 35.4 %. Post-mortem `docs/research/HFXMR_41477_Q02_POSTMORTEM_2026-09-18.md`:
+expectancy −0.1057R (se 0.055), t = −3.71 below the card's own +0.10R kill floor; 52/54 months breach the ≥10-active-days kill;
+zero-commission P&L still negative (thesis, not cost); no preregistered setting reaches the loss. **Fable decision: REJECT /
+RETIRE the H-FXMR hypothesis as specified** (directive §33 — do not polish a dead hypothesis). The automatic Q04 row is left
+to complete as evidence; no fan-out, no RISK_FIXED=250 rerun. Durable lessons → prescreen ticket (pilot fire-count on `.DWX`
+before build; cost-to-target floor; no-op-filter lint; `ENTRY_REJECTED` reason logging). The remaining candidates' density
+claims (H-CW 18–22/month, H-MR 2–5/month) rest on the same unmeasured pilot basis and are treated as unverified until their
+SP500 canaries report.
