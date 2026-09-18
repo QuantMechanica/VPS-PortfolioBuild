@@ -494,8 +494,12 @@ bool HmrEntrySignal(QM_EntryRequest &req)
       sig.hour > strategy_session_end_hour_utc)
       return false;
 
-   // Friday cutoff for NEW entries.
-   if(utc.day_of_week == 5 && utc.hour >= strategy_friday_cutoff_hour_utc)
+   // Friday cutoff for NEW entries — evaluated on the closed SIGNAL bar like
+   // the entry window (prereg pilot: on Friday only signal bars before the
+   // cutoff hour may fire). Testing the forming bar blocked every Friday entry
+   // because the earliest entry evaluation is at the cutoff hour itself.
+   // Fix 2026-09-18 (Antigravity cross-vendor review of the critic-fix diff).
+   if(sig.day_of_week == 5 && sig.hour >= strategy_friday_cutoff_hour_utc)
       return false;
 
    // Flatten proximity: no fresh entry right at the mandatory-flat boundary.
