@@ -150,3 +150,130 @@ def test_reproducible_from_frozen_inputs():
     l_a = dc.build_demo_cycle(_obs(roster), None, T0)
     l_b = dc.build_demo_cycle(_obs(roster), None, T0)
     assert l_a == l_b
+
+
+def _write_journal(path, lines):
+    text = "\n".join(lines) + "\n"
+    path.write_text(text, encoding="utf-16")
+
+
+def test_unambiguous_symbol_ea_ids_skips_shared_symbols():
+    roster = _roster(
+        (100, "EURUSD", 0.3, "sha1"),
+        (200, "EURUSD", 0.3, "sha2"),
+        (300, "GBPUSD", 0.3, "sha3"),
+    )
+    assert dc._unambiguous_symbol_ea_ids(roster) == {"GBPUSD": 300}
+
+
+def test_observe_journal_placements_counts_trades_lines_for_unambiguous_symbol(tmp_path):
+    roster = _roster((21505, "XAGUSD", 0.3, "sha1"))
+    journal_dir = tmp_path / "Logs"
+    journal_dir.mkdir()
+    _write_journal(journal_dir / "20260918.log", [
+        "EL\t0\t00:05:00.203\tTrades\t'1514536732': market buy 0.01 XAGUSD sl: 59.216",
+        "JG\t0\t00:05:00.247\tTrades\t'1514536732': accepted market buy 0.01 XAGUSD sl: 59.216",
+        "AB\t0\t00:05:00.500\tNetwork\t'1514536732': scanning network for access points",
+    ])
+
+    counts = dc.observe_journal_placements(journal_dir, roster)
+
+    assert counts == {21505: 2}
+
+
+def test_observe_journal_placements_skips_ambiguous_shared_symbol(tmp_path):
+    """The journal has no magic number, so a symbol shared by two sleeves
+    (matching QM5_1537 and QM5_21505 both trading XAGUSD on the live demo
+    chart profile today) must not be attributed to either one."""
+    roster = _roster((1537, "XAGUSD", 0.3, "shaA"), (21505, "XAGUSD", 0.3, "shaB"))
+    journal_dir = tmp_path / "Logs"
+    journal_dir.mkdir()
+    _write_journal(journal_dir / "20260918.log", [
+        "EL\t0\t00:05:00.203\tTrades\t'1514536732': market buy 0.01 XAGUSD sl: 59.216",
+    ])
+
+    counts = dc.observe_journal_placements(journal_dir, roster)
+
+    assert counts == {}
+
+
+def test_observe_journal_placements_missing_dir_is_evidence_missing(tmp_path):
+    roster = _roster((21505, "XAGUSD", 0.3, "sha1"))
+    counts = dc.observe_journal_placements(tmp_path / "does_not_exist", roster)
+    assert counts == {}
+
+
+def test_observe_placements_promotes_zero_when_journal_shows_real_fills(tmp_path):
+    """Router ops_issue 57bfd3af (2026-09-18, GAPS G7): reproduces the exact
+    QM5_21505 case -- its own EA log has zero TM_OPEN/ENTRY_ACCEPTED lines
+    (an untracked alias rebuild that doesn't log its own fills) but the
+    terminal's native journal proves it placed real orders. attached_dark
+    must not be able to fire on that false negative."""
+    files_dir = tmp_path / "Files" / "QM"
+    files_dir.mkdir(parents=True)
+    (files_dir / "QM5_21505_ea-21505.log").write_text(
+        '{"event":"INIT_OK"}\n{"event":"FRIDAY_CLOSE"}\n', encoding="utf-8"
+    )
+    journal_dir = tmp_path / "Logs"
+    journal_dir.mkdir()
+    _write_journal(journal_dir / "20260918.log", [
+        "EL\t0\t00:05:00.203\tTrades\t'1514536732': market buy 0.01 XAGUSD sl: 59.216",
+    ])
+    roster = _roster((21505, "XAGUSD", 0.3, "sha1"))
+
+    counts = dc.observe_placements(files_dir, journal_dir=journal_dir, roster=roster)
+
+    assert counts == {21505: 1}
+
+
+def test_observe_placements_never_lowers_a_count_the_ea_log_already_proved(tmp_path):
+    files_dir = tmp_path / "Files" / "QM"
+    files_dir.mkdir(parents=True)
+    (files_dir / "QM5_1537_ea-1537.log").write_text(
+        "\n".join(['{"event":"TM_OPEN"}'] * 4), encoding="utf-8"
+    )
+    journal_dir = tmp_path / "Logs"
+    journal_dir.mkdir()
+    _write_journal(journal_dir / "20260918.log", [
+        "EL\t0\t00:05:00.203\tTrades\t'1514536732': market buy 0.01 XAGUSD sl: 59.216",
+    ])
+    roster = _roster((1537, "XAGUSD", 0.3, "sha1"))
+
+    counts = dc.observe_placements(files_dir, journal_dir=journal_dir, roster=roster)
+
+    assert counts == {1537: 4}
+
+
+def test_observe_placements_without_journal_args_is_unchanged(tmp_path):
+    files_dir = tmp_path / "Files" / "QM"
+    files_dir.mkdir(parents=True)
+    (files_dir / "QM5_13054_ea-13054.log").write_text(
+        '{"event":"INIT_OK"}\n', encoding="utf-8"
+    )
+
+    assert dc.observe_placements(files_dir) == {13054: 0}
+
+
+def test_attached_dark_fires_once_journal_corroborated_evidence_still_shows_zero(tmp_path):
+    """QM5_13054 is genuinely dark (host symbol gate refuses before any order):
+    neither its own EA log nor the terminal journal for its unique symbol shows
+    a placement, so attached_dark must still fire once enough trading days
+    elapse. This proves the journal cross-check does not block a real dark
+    determination -- it only prevents a false one."""
+    files_dir = tmp_path / "Files" / "QM"
+    files_dir.mkdir(parents=True)
+    (files_dir / "QM5_13054_ea-13054.log").write_text(
+        '{"event":"INIT_OK"}\n', encoding="utf-8"
+    )
+    journal_dir = tmp_path / "Logs"
+    journal_dir.mkdir()
+    _write_journal(journal_dir / "20260918.log", [
+        "EL\t0\t00:05:00.203\tTrades\t'1514536732': market buy 0.01 XAGUSD sl: 59.216",
+    ])
+    roster = _roster((13054, "USOIL.cash", 0.3, "sha1"))
+
+    counts = dc.observe_placements(files_dir, journal_dir=journal_dir, roster=roster)
+    annotated = dc.flag_attached_dark(roster, counts, trading_days=5)
+
+    assert counts == {13054: 0}
+    assert annotated[0]["attached_dark"] is True

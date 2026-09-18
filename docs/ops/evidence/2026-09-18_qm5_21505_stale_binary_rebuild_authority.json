@@ -1,0 +1,65 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_ops_issue:57bfd3af-c659-40c8-819c-9f40b85f194d:QM5_21505",
+  "created_at_local": "2026-09-18T06:30:00+02:00",
+  "ea_id": "QM5_21505",
+  "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+  "mission_priority": 70,
+  "scope": "one append-only governed COMPILE_EA successor for the current reviewed source after the strategy_host_symbol rollout; no strategy change, economic verdict, pipeline-gate, live, portfolio-gate, or cross-EA authority",
+  "diagnosis": {
+    "router_task_id": "57bfd3af-c659-40c8-819c-9f40b85f194d",
+    "source_rework_commit": "9359ecaf2b4a69eeefe7cb6c8d7d26cd0b9348f6",
+    "source_rework_summary": "commit 9359ecaf2b (2026-09-13, Hard Rule OWNER 2026-09-06 symbol-input rollout) replaced the hard-literal `_Symbol == \"XAGUSD.DWX\"` gate with `QM_MagicSymbolCanonical(_Symbol) == QM_MagicSymbolCanonical(strategy_host_symbol)` and added the `strategy_host_symbol` input to both the .mq5 and the canonical backtest .set, but did not rebuild the .ex5",
+    "mq5_last_write_commit_utc": "2026-09-13T16:33:42Z",
+    "ex5_last_write_commit_utc": "2026-08-17T18:38:06Z",
+    "ex5_last_write_commit": "e550961321e8badd620c21ec13136481f1e1feff",
+    "stale_ex5_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+    "live_terminal_binary_sha256_prefix": "81386c2dcd80e58d",
+    "live_terminal_binary_sha256_source": "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2f/PACKAGE.md section 3 (16-char prefix only; full digest not reproduced by this authority since it was not independently recomputed)",
+    "live_terminal_binary_provenance": "untracked 2026-09-06 alias rebuild (_pre_codex_alias_20260906_2047Z), not present in repo history at any commit",
+    "governed_compile_status_before_repair": "NOT_ENQUEUED",
+    "evidence_source": "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2f/{PACKAGE.md,GAPS.md} sections 3-4 and G1-G2"
+  },
+  "repair": {
+    "current_mq5_sha256": "86bfc8cd71a8c68b51c1588f90c6789407df97e72acbea7fec209315b1a3fd5e",
+    "strategy_mechanics_changed": false,
+    "action": "replace the stale pre-strategy_host_symbol binary with a strict governed compile of the already-committed current source; no source edit is required by this authority",
+    "host_timeframe": "D1",
+    "instrument_scope": ["XAGUSD.DWX"]
+  },
+  "new_identity_consequence": {
+    "rebuilt_ex5_is_new_identity": true,
+    "doctrine": "2026-08-17 stale-EX5-voids-healthy-backtests doctrine (build-date is a predicate of EA identity)",
+    "requires_q02_re_entry": true,
+    "invalidated_evidence": [
+      "Q10_NEWS CONFIG_LOCKED seal for QM5_21505/XAGUSD.DWX (baseline_setfile_sha256 a345970c4c597963...) — bound to the pre-9359ecaf2b setfile content and the pre-e550961321-successor ex5 identity; must not be reused after this rebuild",
+      "any Q02-Q09 chain evidence for QM5_21505/XAGUSD.DWX recorded against ex5_sha256 395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1"
+    ],
+    "evidence_that_stays_valid": [
+      "the magic registry row (215050000, active, ea_id 21505, slot 0) — unaffected, keyed by ea_id/slot not by ex5 identity",
+      "the .mq5 source review and the strategy_host_symbol input contract from commit 9359ecaf2b — unaffected, this authority compiles that exact source unchanged"
+    ],
+    "not_performed_by_this_authority": "Q02 re-enqueue and Q10_NEWS re-seal are separate governed actions outside this compile-only scope; this receipt only authorizes the COMPILE_EA successor"
+  },
+  "validation": {
+    "framework_input_pin_audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_21505_xag-weekly-lowvol-momentum/QM5_21505_xag-weekly-lowvol-momentum.mq5",
+    "fixed_risk_setfile_contract": {
+      "RISK_FIXED_required_positive": true,
+      "RISK_PERCENT_required_zero": true
+    }
+  },
+  "coordination": {
+    "router_task_id": "57bfd3af-c659-40c8-819c-9f40b85f194d",
+    "claimed_by": "claude",
+    "branch": "agents/board-advisor",
+    "owner_authority_cited": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917"
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "terminal_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false,
+    "compile_deferred_reason": "four terminal64.exe processes were live at authorship time (active T1-T10 backtests); ad-hoc compile is refused per LIVE_FACTORY_AD_HOC_COMPILE_REFUSED, so this authority only enqueues an append-only, held COMPILE_EA row for the resident worker"
+  }
+}

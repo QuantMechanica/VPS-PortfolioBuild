@@ -99,9 +99,25 @@ PRAGUE_TZ = ZoneInfo("Europe/Prague")
 # inert: if present it is reported as an ignored no-op (see main()).
 LEGACY_ARM_FLAG = Path(r"D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag")
 
-# M13 sealed eight-sleeve roster.  These are RUNNING-only expectations; PARKED
-# requires a flat account and does not require any EA log activity.
-EXPECTED_MAGICS = {
+# RUNNING-only expectations; PARKED requires a flat account and does not
+# require any EA log activity.
+#
+# Roster-driven (GAPS G3, router ops_issue 57bfd3af, 2026-09-18): the magic
+# set used to be a hardcoded literal bound to the incumbent M13 roster, so
+# every book recomposition silently broke this check by construction (it kept
+# comparing `magics_seen` against a stale set with no overlap). Derive it
+# instead from the active demo package roster.json via the same validated
+# loader trial_setpath/demo_install already use, so a future recomposition
+# needs only a roster.json swap, not a code edit. REPO_ROOT_EXPECTED_MAGICS is
+# a hardcoded fallback used only if the roster cannot be loaded, so a missing
+# or malformed package degrades to a WARN (visible, non-fatal) rather than
+# crashing this observer or silently checking against nothing.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+EXPECTED_ROSTER_PATH = (
+    REPO_ROOT / "docs" / "ops" / "evidence"
+    / "2026-09-18_ftmo_demo_book_v3_D2g6" / "roster.json"
+)
+REPO_ROOT_EXPECTED_MAGICS_FALLBACK = frozenset({
     107060001,
     114210000,
     114220004,
@@ -110,7 +126,37 @@ EXPECTED_MAGICS = {
     15370001,
     200480000,
     215050000,
-}
+})
+
+
+def load_expected_magics(
+    path: Path = EXPECTED_ROSTER_PATH,
+) -> tuple[frozenset[int], str, str | None]:
+    """Return (magics, source, load_error) for the active demo package roster.
+
+    Fails closed to the historical incumbent set with a reported error rather
+    than raising, so a missing/malformed roster degrades this observer to a
+    WARN instead of crashing it or silently comparing against nothing.
+    """
+    try:
+        from ftmo import trial_setpath
+    except ModuleNotFoundError:
+        from tools.strategy_farm.ftmo import trial_setpath
+    try:
+        roster = trial_setpath.load_roster(path)
+    except (OSError, ValueError) as exc:
+        return (
+            REPO_ROOT_EXPECTED_MAGICS_FALLBACK,
+            "hardcoded_fallback",
+            f"{type(exc).__name__}:{exc}",
+        )
+    magics = frozenset(int(row["magic"]) for row in roster["candidates"])
+    return magics, str(path.relative_to(REPO_ROOT)).replace("\\", "/"), None
+
+
+EXPECTED_MAGICS, EXPECTED_MAGICS_SOURCE, EXPECTED_MAGICS_LOAD_ERROR = (
+    load_expected_magics()
+)
 SERVER_REQUEST_EVENTS = {"TM_OPEN", "TM_CLOSE", "TM_MODIFY", "TM_REMOVE_PENDING"}
 
 
@@ -944,6 +990,11 @@ def main() -> int:
     if jrn:
         warns.extend(jrn)
 
+    if EXPECTED_MAGICS_LOAD_ERROR:
+        warns.append(
+            f"expected_magics_roster_load_failed:{EXPECTED_MAGICS_LOAD_ERROR}"
+        )
+
     eas = scan_ea_logs()
     if eas["magics_missing"]:
         # magics only appear in logs once each EA has logged (post-attach/tick);
@@ -1036,6 +1087,8 @@ def main() -> int:
         "qualified_pairs_probe_reason": owner_review["reason"],
         "magics_seen": eas["magics_seen"],
         "expected_magics": len(EXPECTED_MAGICS),
+        "expected_magics_source": EXPECTED_MAGICS_SOURCE,
+        "expected_magics_load_error": EXPECTED_MAGICS_LOAD_ERROR,
         "equity": equity or None,
         "day_pnl": day_pnl if equity_source else None,
         "equity_source": equity_source,

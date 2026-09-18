@@ -51,6 +51,73 @@ DARK_AFTER_TRADING_DAYS = 5
 _PLACEMENT_MARKERS = ("TM_OPEN", "ENTRY_ACCEPTED")
 _EA_LOG_RE = re.compile(r"QM5?_(\d+)_.*\.log$", re.IGNORECASE)
 
+# Router ops_issue 57bfd3af (2026-09-18, GAPS G7): an EA's own structured log
+# is not the only placement evidence, and it can undercount. QM5_21505's
+# terminal binary is an untracked 2026-09-06 alias rebuild (docs/ops/evidence/
+# 2026-09-18_ftmo_demo_book_v3_D2f/PACKAGE.md section 3); it places real
+# XAGUSD orders (confirmed in the terminal's own Logs/*.log 'Trades' journal
+# on 2026-09-10, 09-11 and 09-18) but its QM5_21505_ea-21505.log never emits a
+# TM_OPEN/ENTRY_ACCEPTED line for them, so observe_placements previously
+# reported it as 0 -- indistinguishable from a genuinely dark sleeve like
+# QM5_13054. The terminal's native journal is the platform's own record of
+# executions, independent of whatever the EA chooses to log, so cross-check
+# against it before ever counting a sleeve as having zero placements.
+#
+# The journal's 'Trades' lines carry no magic number, only a symbol, so a
+# symbol shared by more than one active ea_id cannot be attributed to any one
+# of them from this source alone; those symbols are skipped rather than
+# guessed at (see _unambiguous_symbol_ea_ids below).
+_JOURNAL_DIR_NAME = "Logs"
+_JOURNAL_TRADE_CATEGORY = "\tTrades\t"
+_JOURNAL_PLACEMENT_KEYWORDS = ("buy", "sell")
+
+
+def _unambiguous_symbol_ea_ids(roster: list[dict[str, Any]]) -> dict[str, int]:
+    """Map symbol -> ea_id for symbols traded by exactly one roster row."""
+    by_symbol: dict[str, list[int]] = {}
+    for row in roster:
+        ea_id = row.get("ea_id")
+        symbol = row.get("symbol")
+        if ea_id is None or not symbol:
+            continue
+        by_symbol.setdefault(str(symbol), []).append(int(ea_id))
+    return {
+        symbol: ea_ids[0] for symbol, ea_ids in by_symbol.items() if len(ea_ids) == 1
+    }
+
+
+def observe_journal_placements(
+    journal_dir: Path, roster: list[dict[str, Any]]
+) -> dict[int, int]:
+    """Count terminal-journal 'Trades' placement lines per ea_id.
+
+    Read-only and tolerant, matching observe_placements: an unreadable or
+    absent journal directory contributes nothing. Corroborating evidence
+    only -- see the module note above for why ambiguous symbols are skipped.
+    """
+    counts: dict[int, int] = {}
+    journal_dir = Path(journal_dir)
+    if not journal_dir.is_dir():
+        return counts
+    unambiguous = _unambiguous_symbol_ea_ids(roster)
+    if not unambiguous:
+        return counts
+    for log in sorted(journal_dir.glob("*.log")):
+        try:
+            text = log.read_text(encoding="utf-16", errors="ignore")
+        except (OSError, UnicodeError):
+            continue
+        for line in text.splitlines():
+            if _JOURNAL_TRADE_CATEGORY not in line:
+                continue
+            lowered = line.lower()
+            if not any(keyword in lowered for keyword in _JOURNAL_PLACEMENT_KEYWORDS):
+                continue
+            for symbol, ea_id in unambiguous.items():
+                if symbol in line:
+                    counts[ea_id] = counts.get(ea_id, 0) + 1
+    return counts
+
 
 def _trading_days_between(start: dt.datetime, end: dt.datetime) -> int:
     """Whole Mon-Fri days elapsed. Deterministic, calendar-free, no holidays."""
@@ -66,29 +133,43 @@ def _trading_days_between(start: dt.datetime, end: dt.datetime) -> int:
     return days
 
 
-def observe_placements(files_dir: Path) -> dict[int, int]:
+def observe_placements(
+    files_dir: Path,
+    *,
+    journal_dir: Path | None = None,
+    roster: list[dict[str, Any]] | None = None,
+) -> dict[int, int]:
     """Count observed order placements per ea_id from the terminal's EA logs.
 
     Read-only and tolerant: an unreadable or absent log contributes nothing and
     the sleeve is then reported with placements_source EVIDENCE_MISSING rather
     than being called dark on no evidence.
+
+    When `journal_dir` and `roster` are both given, this also cross-checks the
+    terminal's own native journal (see observe_journal_placements) and takes
+    the max of the two counts per ea_id. This exists because an EA's own log
+    can undercount real fills (an untracked/alias binary that trades without
+    emitting TM_OPEN/ENTRY_ACCEPTED into its own log); it never reduces a
+    count the EA's own log already proved.
     """
     counts: dict[int, int] = {}
     files_dir = Path(files_dir)
-    if not files_dir.is_dir():
-        return counts
-    for log in sorted(files_dir.glob("QM*_ea-*.log")):
-        match = _EA_ID_RE.search(log.name)
-        if not match:
-            continue
-        ea_id = int(match.group(1))
-        try:
-            text = log.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        counts[ea_id] = counts.get(ea_id, 0) + sum(
-            1 for line in text.splitlines() if any(m in line for m in _PLACEMENT_MARKERS)
-        )
+    if files_dir.is_dir():
+        for log in sorted(files_dir.glob("QM*_ea-*.log")):
+            match = _EA_ID_RE.search(log.name)
+            if not match:
+                continue
+            ea_id = int(match.group(1))
+            try:
+                text = log.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
+            counts[ea_id] = counts.get(ea_id, 0) + sum(
+                1 for line in text.splitlines() if any(m in line for m in _PLACEMENT_MARKERS)
+            )
+    if journal_dir is not None and roster:
+        for ea_id, journal_count in observe_journal_placements(journal_dir, roster).items():
+            counts[ea_id] = max(counts.get(ea_id, 0), journal_count)
     return counts
 
 
@@ -245,7 +326,8 @@ def observe_demo_terminal(terminal_dir: Path = DEFAULT_TERMINAL) -> dict[str, An
             except (OSError, json.JSONDecodeError, ValueError, TypeError):
                 roster = []
     files_dir = terminal_dir / "MQL5" / "Files" / "QM"
-    placements = observe_placements(files_dir)
+    journal_dir = terminal_dir / _JOURNAL_DIR_NAME
+    placements = observe_placements(files_dir, journal_dir=journal_dir, roster=roster)
     return {
         "roster": roster,
         "roster_source": source,

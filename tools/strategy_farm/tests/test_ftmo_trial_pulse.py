@@ -383,7 +383,8 @@ def test_kill_switch_runtime_proof_gaps_warn_on_prague_trading_day() -> None:
         eas, datetime(2026, 9, 7, 8, 0, tzinfo=timezone.utc)
     )
 
-    assert warns == ["ks_day_anchor_missing:0/8", "ks_book_tag_missing:0/8"]
+    n = len(ftmo_trial_pulse.EXPECTED_MAGICS)
+    assert warns == [f"ks_day_anchor_missing:0/{n}", f"ks_book_tag_missing:0/{n}"]
 
 
 def test_scan_ea_logs_ignores_pre_activation_errors(monkeypatch, tmp_path: Path) -> None:
@@ -452,3 +453,41 @@ def test_pulse_declares_observer_role_and_governor_authority() -> None:
     src = (ROOT / "tools" / "strategy_farm" / "ftmo_trial_pulse.py").read_text(encoding="utf-8")
     assert '"role": "observer_only"' in src
     assert "governor_QM5_13206" in src
+
+
+def test_load_expected_magics_reads_the_active_package_roster() -> None:
+    """Router ops_issue 57bfd3af (2026-09-18, GAPS G3): EXPECTED_MAGICS must
+    track roster.json, not a hardcoded literal that goes stale on every book
+    recomposition."""
+    magics, source, error = ftmo_trial_pulse.load_expected_magics()
+
+    assert error is None
+    assert source == "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2g6/roster.json"
+    assert magics == frozenset({
+        104030002, 107000003, 107060001, 114220004, 132130000, 412190000,
+    })
+    # The module-level constants computed at import time must agree.
+    assert ftmo_trial_pulse.EXPECTED_MAGICS == magics
+    assert ftmo_trial_pulse.EXPECTED_MAGICS_SOURCE == source
+    assert ftmo_trial_pulse.EXPECTED_MAGICS_LOAD_ERROR is None
+
+
+def test_load_expected_magics_falls_back_on_missing_roster(tmp_path: Path) -> None:
+    magics, source, error = ftmo_trial_pulse.load_expected_magics(
+        tmp_path / "does_not_exist.json"
+    )
+
+    assert magics == ftmo_trial_pulse.REPO_ROOT_EXPECTED_MAGICS_FALLBACK
+    assert source == "hardcoded_fallback"
+    assert error is not None and "FileNotFoundError" in error
+
+
+def test_load_expected_magics_falls_back_on_malformed_roster(tmp_path: Path) -> None:
+    bad_roster = tmp_path / "roster.json"
+    bad_roster.write_text(json.dumps({"schema": "wrong"}), encoding="utf-8")
+
+    magics, source, error = ftmo_trial_pulse.load_expected_magics(bad_roster)
+
+    assert magics == ftmo_trial_pulse.REPO_ROOT_EXPECTED_MAGICS_FALLBACK
+    assert source == "hardcoded_fallback"
+    assert error is not None and "invalid_roster_schema" in error

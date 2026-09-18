@@ -3286,6 +3286,53 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_9354_REVIEW_REWORK_AUTHORITY] = {
     "evidence_sha256": "de5c86b5c945c3ee61dae0963fb76197551546a175406d9ac8c593dd5468f555",
 }
 
+# Router ops_issue 57bfd3af (2026-09-18): commit 9359ecaf2b replaced the hard
+# `.DWX` symbol-literal gate in QM5_21505 and QM5_13054 with a
+# strategy_host_symbol comparison but never rebuilt either .ex5, so both still
+# carry the pre-rollout hard gate (13054 has been silently dark on the FTMO
+# demo since 2026-09-06; 21505 only trades via an untracked 2026-09-06 alias
+# rebuild). Bind one governed rebuild each to the already-committed, already-
+# correct current source. The rebuilt .ex5 is a new identity: it requires
+# Q02 re-entry per the 2026-08-17 stale-EX5 doctrine, and voids the current
+# Q10_NEWS seals for both (evidence_path receipts detail exactly which prior
+# evidence is invalidated). This grants no strategy, backtest verdict,
+# pipeline-gate, live, portfolio-gate, or cross-EA authority.
+QM5_21505_STALE_BINARY_REBUILD_AUTHORITY = (
+    "router_ops_issue:57bfd3af-c659-40c8-819c-9f40b85f194d:QM5_21505"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_21505_STALE_BINARY_REBUILD_AUTHORITY] = {
+    "ea_id": "21505",
+    "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+    "source_sha256": "86bfc8cd71a8c68b51c1588f90c6789407df97e72acbea7fec209315b1a3fd5e",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-18_qm5_21505_stale_binary_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "830e3200030f80aeca6461efcfed8b624342b09482bbfb81b4b392ab83f24b1b"
+    ),
+}
+
+QM5_13054_STALE_BINARY_REBUILD_AUTHORITY = (
+    "router_ops_issue:57bfd3af-c659-40c8-819c-9f40b85f194d:QM5_13054"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_13054_STALE_BINARY_REBUILD_AUTHORITY] = {
+    "ea_id": "13054",
+    "ea_label": "QM5_13054_brent-tom-mom",
+    "source_sha256": "3f5d0ba1c1b779127eebc929657159ca835004d00a758a6737bdd8d2cd5133bc",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-18_qm5_13054_stale_binary_rebuild_authority.json"
+    ),
+    "evidence_sha256": (
+        "686dca8a9bd65283d5c7e9cc5703973b31d517702471e380baaf47884113b542"
+    ),
+}
+
 
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})

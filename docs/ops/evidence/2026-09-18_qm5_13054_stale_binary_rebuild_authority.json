@@ -1,0 +1,65 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "router_ops_issue:57bfd3af-c659-40c8-819c-9f40b85f194d:QM5_13054",
+  "created_at_local": "2026-09-18T06:30:00+02:00",
+  "ea_id": "QM5_13054",
+  "ea_label": "QM5_13054_brent-tom-mom",
+  "mission_priority": 70,
+  "scope": "one append-only governed COMPILE_EA successor for the current reviewed source after the strategy_host_symbol rollout; no strategy change, economic verdict, pipeline-gate, live, portfolio-gate, or cross-EA authority",
+  "diagnosis": {
+    "router_task_id": "57bfd3af-c659-40c8-819c-9f40b85f194d",
+    "source_rework_commit": "9359ecaf2b4a69eeefe7cb6c8d7d26cd0b9348f6",
+    "source_rework_summary": "commit 9359ecaf2b (2026-09-13, Hard Rule OWNER 2026-09-06 symbol-input rollout) replaced the hard-literal `_Symbol == \"XTIUSD.DWX\"` gate with `QM_MagicSymbolCanonical(_Symbol) == QM_MagicSymbolCanonical(strategy_host_symbol)` and added the `strategy_host_symbol` input to both the .mq5 and the canonical backtest .set, but did not rebuild the .ex5",
+    "mq5_last_write_commit_utc": "2026-09-13T17:16:16Z",
+    "ex5_last_write_commit_utc": "2026-08-12T17:54:12Z",
+    "ex5_last_write_commit": "d15464ec867a3f9894a8db0a18735edb63abaa7e",
+    "stale_ex5_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+    "live_terminal_binary_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+    "live_terminal_binary_provenance": "matches the sealed stale binary exactly (no untracked alias rebuild for this EA); the demo chart runs USOIL.cash while the compiled gate still hard-checks XTIUSD.DWX, so the EA has been silently dark since 2026-09-06",
+    "governed_compile_status_before_repair": "NOT_ENQUEUED",
+    "evidence_source": "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2f/{PACKAGE.md,GAPS.md} sections 3-4 and G1-G2"
+  },
+  "repair": {
+    "current_mq5_sha256": "3f5d0ba1c1b779127eebc929657159ca835004d00a758a6737bdd8d2cd5133bc",
+    "strategy_mechanics_changed": false,
+    "action": "replace the stale pre-strategy_host_symbol binary with a strict governed compile of the already-committed current source; no source edit is required by this authority",
+    "host_timeframe": "D1",
+    "instrument_scope": ["XTIUSD.DWX"]
+  },
+  "new_identity_consequence": {
+    "rebuilt_ex5_is_new_identity": true,
+    "doctrine": "2026-08-17 stale-EX5-voids-healthy-backtests doctrine (build-date is a predicate of EA identity)",
+    "requires_q02_re_entry": true,
+    "invalidated_evidence": [
+      "Q10_NEWS CONFIG_LOCKED seal for QM5_13054/XTIUSD.DWX (baseline_setfile_sha256 d834b193a77b1d10...) — bound to the pre-9359ecaf2b setfile content and the pre-d15464ec86-successor ex5 identity; must not be reused after this rebuild",
+      "any Q02-Q09 chain evidence for QM5_13054/XTIUSD.DWX recorded against ex5_sha256 2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+      "the demo book's prior accounting of 13054 as a contributing sleeve since 2026-09-06 — it has been dark (host gate never opened) for the entire period; any financing/PnL attribution to it is void"
+    ],
+    "evidence_that_stays_valid": [
+      "the magic registry row (130540000, active, ea_id 13054, slot 0) — unaffected, keyed by ea_id/slot not by ex5 identity",
+      "the .mq5 source review and the strategy_host_symbol input contract from commit 9359ecaf2b — unaffected, this authority compiles that exact source unchanged"
+    ],
+    "not_performed_by_this_authority": "Q02 re-enqueue and Q10_NEWS re-seal are separate governed actions outside this compile-only scope; this receipt only authorizes the COMPILE_EA successor"
+  },
+  "validation": {
+    "framework_input_pin_audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_13054_brent-tom-mom/QM5_13054_brent-tom-mom.mq5",
+    "fixed_risk_setfile_contract": {
+      "RISK_FIXED_required_positive": true,
+      "RISK_PERCENT_required_zero": true
+    }
+  },
+  "coordination": {
+    "router_task_id": "57bfd3af-c659-40c8-819c-9f40b85f194d",
+    "claimed_by": "claude",
+    "branch": "agents/board-advisor",
+    "owner_authority_cited": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917"
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "terminal_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false,
+    "compile_deferred_reason": "four terminal64.exe processes were live at authorship time (active T1-T10 backtests); ad-hoc compile is refused per LIVE_FACTORY_AD_HOC_COMPILE_REFUSED, so this authority only enqueues an append-only, held COMPILE_EA row for the resident worker"
+  }
+}
