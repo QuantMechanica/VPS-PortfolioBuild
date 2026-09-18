@@ -11,8 +11,9 @@ journal + backtest-stream fixtures exercising each alarm class:
 
 import json
 import math
+import os
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -241,6 +242,58 @@ def test_end_to_end_alarm_classes(tmp_path):
     assert set(out["summary"]["silent"]) == {"9003|USDJPY"}
     assert set(out["summary"]["warmup_empty"]) == {"9004|AUDUSD"}
     assert out["verdict"] == "ALARM"
+
+
+def test_ks_state_file_mtime_reads_stat(tmp_path):
+    halt_dir = tmp_path / "halt"
+    halt_dir.mkdir()
+    state_path = halt_dir / "ks_state_1567_15670007.state"
+    state_path.write_text("day_key=1\n", encoding="utf-8")
+    ts = datetime(2026, 9, 17, 23, 4, 0, tzinfo=timezone.utc)
+    os.utime(state_path, (ts.timestamp(), ts.timestamp()))
+
+    got = m.ks_state_file_mtime(tmp_path, 1567, 15670007)
+    assert got is not None
+    assert abs((got - ts).total_seconds()) < 1
+
+    assert m.ks_state_file_mtime(tmp_path, 1567, None) is None  # no magic -> no signal
+    assert m.ks_state_file_mtime(tmp_path, 9999, 90000000) is None  # no file -> no signal
+
+
+def test_ks_state_mtime_prevents_false_alarm_silent_after_reboot(tmp_path):
+    """OWNER 2026-09-17 (1567/EURUSD): a VPS reboot orphans the per-EA JSONL
+    logger's file handle so it never appends again, while the EA keeps trading
+    (QM_KillSwitchCheck runs every OnTick and refreshes ks_state once per broker
+    day). The stale log alone must not raise ALARM_SILENT once a fresher
+    ks_state mtime proves the sleeve is alive."""
+    pulse_path, ea_dir, journal_dir, stream_root = _build_env(tmp_path)
+
+    # 9003 (SILENT fixture): log last line is 2026-09-08, which alone is stale
+    # enough (NOW=2026-09-13) to trip ALARM_SILENT -- confirmed by the sibling
+    # test_end_to_end_alarm_classes. Give it a fresh ks_state file instead.
+    halt_dir = ea_dir / "halt"
+    halt_dir.mkdir(parents=True, exist_ok=True)
+    state_path = halt_dir / "ks_state_9003_90030000.state"
+    state_path.write_text("day_key=1\n", encoding="utf-8")
+    fresh = NOW - timedelta(hours=2)
+    os.utime(state_path, (fresh.timestamp(), fresh.timestamp()))
+
+    out = m.run(pulse_path, ea_dir, journal_dir, [stream_root], now=NOW)
+    row = _by_key(out)["9003|USDJPY"]
+
+    assert "ALARM_SILENT" not in row["alarm_codes"]
+    assert row["heartbeat"]["liveness_source"] == "ks_state_mtime"
+    assert row["heartbeat"]["age_trading_days"] == 0
+    assert "9003|USDJPY" not in out["summary"]["silent"]
+
+
+def test_eval_heartbeat_still_alarms_when_both_signals_stale():
+    ea = {"exists": True, "last_line_ts": "2026-09-01T06:00:00Z", "first_init_ok": "2026-09-01T06:00:00Z"}
+    stale_ks = datetime(2026, 9, 2, 6, 0, 0, tzinfo=timezone.utc)
+    row = m.eval_heartbeat(ea, NOW, "RUNNING", ks_state_mtime=stale_ks)
+    assert row["liveness_source"] == "ks_state_mtime"  # ks_state is the newer of the two
+    assert "ALARM_SILENT" in row["codes"]
+    assert row["verdict"] == "ALARM"
 
 
 def test_performance_pairs_journal_exit_and_flags_drift(tmp_path):

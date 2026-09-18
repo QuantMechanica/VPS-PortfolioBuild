@@ -671,31 +671,65 @@ def eval_performance(live_r: list[float], backtest_r: list[float]) -> dict[str, 
     return row
 
 
-def eval_heartbeat(ea: dict[str, Any], now: datetime, terminal_state: str | None) -> dict[str, Any]:
+def ks_state_file_mtime(ea_log_dir: Path, ea_id: int, magic: Any) -> datetime | None:
+    """mtime of QM\\halt\\ks_state_<ea_id>_<magic>.state, an independent liveness
+    signal that survives a stale per-EA JSONL logger.  QM_KillSwitchCheck runs on
+    every OnTick (QM_KillSwitch.mqh:622-635) and rewrites this file once per
+    broker-day boundary via QM_KillSwitchRefreshBrokerDay (:258-276), so its mtime
+    proves the EA is still ticking even when the JSONL logger stopped appending
+    after a terminal restart (OWNER 2026-09-17: 1567/EURUSD false ALARM_SILENT --
+    log last written 2026-09-11 VPS reboot, ks_state updated 2026-09-17).
+    Returns None if the sleeve has no magic or the file cannot be stat'ed."""
+    if magic is None:
+        return None
+    try:
+        magic_int = int(magic)
+    except (TypeError, ValueError):
+        return None
+    path = ea_log_dir / "halt" / f"ks_state_{ea_id}_{magic_int}.state"
+    try:
+        mtime = path.stat().st_mtime
+    except OSError:
+        return None
+    return datetime.fromtimestamp(mtime, timezone.utc)
+
+
+def eval_heartbeat(ea: dict[str, Any], now: datetime, terminal_state: str | None,
+                   ks_state_mtime: datetime | None = None) -> dict[str, Any]:
     row: dict[str, Any] = {
         "first_init_ok": ea.get("first_init_ok"),
         "last_init_ok": ea.get("last_init_ok"),
         "last_equity_snapshot": ea.get("last_equity_snapshot"),
         "last_log_line": ea.get("last_line_ts"),
+        "ks_state_mtime_utc": iso_utc(ks_state_mtime) if ks_state_mtime else None,
+        "liveness_source": None,
         "terminal_state": terminal_state,
         "age_trading_days": None, "verdict": "OK", "codes": [],
     }
+    codes: list[str] = []
     if not ea.get("exists"):
-        row["verdict"] = "WARN"
-        row["codes"] = ["WARN_NO_EA_LOG"]
-        return row
-    last = parse_iso(ea.get("last_line_ts")) or parse_iso(ea.get("last_init_ok"))
+        codes.append("WARN_NO_EA_LOG")
+
+    log_last = parse_iso(ea.get("last_line_ts")) or parse_iso(ea.get("last_init_ok"))
+    if ks_state_mtime is not None and (log_last is None or ks_state_mtime > log_last):
+        last, row["liveness_source"] = ks_state_mtime, "ks_state_mtime"
+    elif log_last is not None:
+        last, row["liveness_source"] = log_last, "ea_log"
+    else:
+        last = None
+
     if last is None:
-        row["verdict"] = "ALARM"
-        row["codes"] = ["ALARM_SILENT"]
-        return row
-    age_td = trading_days_between(last.date(), now.date())
-    age_td = max(age_td - 1, 0)  # same-day = 0 trading days old
-    row["age_trading_days"] = age_td
-    running = str(terminal_state or "").upper() == "RUNNING"
-    if running and age_td > HEARTBEAT_SILENT_TRADING_DAYS:
-        row["codes"] = ["ALARM_SILENT"]
-        row["verdict"] = "ALARM"
+        codes.append("ALARM_SILENT")
+    else:
+        age_td = trading_days_between(last.date(), now.date())
+        age_td = max(age_td - 1, 0)  # same-day = 0 trading days old
+        row["age_trading_days"] = age_td
+        running = str(terminal_state or "").upper() == "RUNNING"
+        if running and age_td > HEARTBEAT_SILENT_TRADING_DAYS:
+            codes.append("ALARM_SILENT")
+
+    row["codes"] = list(dict.fromkeys(codes))
+    row["verdict"] = _severity_of(row["codes"])
     return row
 
 
@@ -783,7 +817,8 @@ def evaluate_sleeve(sleeve: dict[str, Any], ea_log_dir: Path, deals: list[dict[s
     performance["round_trips_paired"] = paired
     performance["entries_seen"] = n_entries
 
-    heartbeat = eval_heartbeat(ea, now, terminal_state)
+    ks_ts = ks_state_file_mtime(ea_log_dir, ea_id, sleeve.get("magic"))
+    heartbeat = eval_heartbeat(ea, now, terminal_state, ks_ts)
     symbol_check = eval_symbol(ea, symbol_norm)
 
     codes: list[str] = []
@@ -873,13 +908,21 @@ def _alarm_detail(code: str, row: dict[str, Any]) -> str:
     if code == "ALARM_WARMUP_EMPTY":
         return f"BASKET_WARMUP loaded=0 x{row.get('symbol_check', {}).get('warmup_empty_events')}"
     if code == "ALARM_SILENT":
-        return f"last_log_line={row.get('heartbeat', {}).get('last_log_line')} age_trading_days={row.get('heartbeat', {}).get('age_trading_days')}"
+        hb = row.get("heartbeat", {})
+        return (f"last_log_line={hb.get('last_log_line')} ks_state_mtime={hb.get('ks_state_mtime_utc')} "
+                f"liveness_source={hb.get('liveness_source')} age_trading_days={hb.get('age_trading_days')}")
     if code == "ALARM_SYMBOL_MISMATCH":
         return f"manifest={row.get('symbol')} log_symbols={row.get('symbol_check', {}).get('log_symbols')} dwx_literal={row.get('symbol_check', {}).get('dwx_literal_seen')}"
     if code == "WARN_PERF":
         p = row.get("performance", {})
         return f"n_live={p.get('n_live')} mean_pct={p.get('mean_percentile')} mw_p={p.get('mw_p')}"
     return code
+
+
+def _heartbeat_display(hb: dict[str, Any]) -> str:
+    if hb.get("liveness_source") == "ks_state_mtime":
+        return f"{(hb.get('ks_state_mtime_utc') or '-')[:10]}*"
+    return (hb.get("last_log_line") or "-")[:10]
 
 
 def render_markdown(out: dict[str, Any]) -> str:
@@ -904,10 +947,11 @@ def render_markdown(out: dict[str, Any]) -> str:
             f"| {r['key']} | {r.get('days_live_trading')} | "
             f"{lam if lam is not None else '-'} | {a.get('expected')} | {a.get('observed_entries')} | "
             f"{a.get('placements')} | {a.get('p_low')} | {act_v} | {perf} | "
-            f"{(hb.get('last_log_line') or '-')[:10]} ({hb.get('age_trading_days')}td) | "
+            f"{_heartbeat_display(hb)} ({hb.get('age_trading_days')}td) | "
             f"**{r['verdict']}** | {', '.join(r['alarm_codes']) or '-'} |"
         )
-    lines += ["", "## Alarms", ""]
+    lines += ["", "_* heartbeat timestamp is the ks_state file's mtime (newer than the JSONL logger's last line)._", ""]
+    lines += ["## Alarms", ""]
     if out["alarms"]:
         for al in out["alarms"]:
             lines.append(f"- **{al['severity']} {al['metric']}** `{al['value']}` - {al['detail']}")
