@@ -1,0 +1,16 @@
+{
+  "schema": "qm.ftmo-demo-install-authority/v1",
+  "decision_id": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+  "receipt_path": "C:\\QM\\repo\\docs\\ftmo\\FTMO_ALT_ROSTER_CHAIN_2026-09-18.md",
+  "cycle_id": "FTMO_DEMO_BOOK_V3_D2F_20260918",
+  "label": "D2f",
+  "sets_manifest_schema": "qm.ftmo-trial-setpath/v2",
+  "collector": {
+    "binary_path": "bin/QM_FTMO_TrialTelemetry.ex5",
+    "preset_path": "collector/QM_FTMO_TrialTelemetry_1514536732.set",
+    "binary_sha256": "411638a1ae177326070c19b28c849fda36594592279303ce7d96f36bfa458258",
+    "preset_sha256": "3b01a12b76f55dc1f529bf1058e9a018712ad02816d6dd1adf40654c5d5bf5be",
+    "trial_id": "M13_D2F_20260918_1514536732",
+    "provenance": "copied verbatim from docs/ops/evidence/2026-09-06_ftmo_demo_install (compile_probe/MQL5 + collector/); binary sha equals demo_install.EXPECTED_COLLECTOR_SHA"
+  }
+}

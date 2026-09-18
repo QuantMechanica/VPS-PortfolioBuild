@@ -1,0 +1,41 @@
+{
+  "schema": "qm.ftmo-governor-rebind/v1",
+  "generated_at_utc": "2026-09-18T03:34:37Z",
+  "applied": false,
+  "roster_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2f\\roster.json",
+  "roster_sha256": "0b9ccb0d9c51286bb1cf778a3631b7688bb17e9ea7c81db409646f4a1cd94cc9",
+  "roster_label": "D2f",
+  "sleeve_count": 8,
+  "updates": {
+    "allowed_magics_csv": "104030002,107000003,107060001,114220004,130540000,132130000,215050000,412190000",
+    "governed_ea_ids_csv": "10403,10700,10706,11422,13054,13213,21505,41219",
+    "governed_symbols_csv": "GBPUSD,USDCAD,USDJPY,USOIL.cash,XAGUSD,XAUUSD",
+    "challenge_id": "M13_D2F_20260918_1514536732",
+    "challenge_start_utc": "2026.09.18 06:17:00"
+  },
+  "magic_registry": {
+    "path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+    "sha256": "6671944eb975e09b303fb4afd1cb40dc6e6b50d8111af48fbced020050851381"
+  },
+  "presets": {
+    "bootstrap": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13206_ftmo-account-governor\\sets\\QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set",
+      "sha256_before": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
+      "sha256_after": "ef6e212e20ffea5e521011a560605dabcd3abe4e1957a835b89b78dcef31f540"
+    },
+    "active": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13206_ftmo-account-governor\\sets\\QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
+      "sha256_before": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361",
+      "sha256_after": "a50ddf787b955e18c3eb541a0d114f6823f10a396fbc72d14d5d9e39840a2c86"
+    }
+  },
+  "binding": {
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\ftmo_m13_standard_demo.v1.json",
+    "sha256_before": "52d9e27d229c6f1cda7dc31f11211b428579de84bf940cfe474f7e6a29f08383",
+    "sha256_after": "e4f4aba2d0ee9f6c0ed046b4055da6ab13f1062fddd48d179b64a02677850d01"
+  },
+  "autotrading_changed": false,
+  "charts_changed": false,
+  "terminal_written": false,
+  "invocation": "python -m tools.strategy_farm.ftmo.governor_rebind --roster docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2f/roster.json --challenge-id M13_D2F_20260918_1514536732 --challenge-start-utc '2026.09.18 06:17:00' --dry-run"
+}

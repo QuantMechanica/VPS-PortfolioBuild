@@ -1,0 +1,150 @@
+{
+  "schema": "qm.ftmo-demo-cycle/v1",
+  "generated_at_utc": "2026-09-18T03:32:56Z",
+  "account": {
+    "type": "Standard",
+    "size_usd": 100000,
+    "product": "2-Step"
+  },
+  "roster_source": "chart_profile",
+  "roster_hash": "6c5383d8777728ba17abd1a836858b9db87c306d2931445ac642762075ac9bf2",
+  "roster": [
+    {
+      "ea_id": 10706,
+      "ea_name": "QM5_10706_tv-mon-ls",
+      "symbol": "GBPUSD",
+      "slot": 1,
+      "magic": 107060001,
+      "risk_pct": 0.3125,
+      "ex5_sha": "6f290d49defdfe1ec2d4dad93e419a577c703a53ac91de68e7bbfb22984c6bed",
+      "chart": "chart02.chr",
+      "placements_observed": 12,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    },
+    {
+      "ea_id": 11421,
+      "ea_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+      "symbol": "EURUSD",
+      "slot": 0,
+      "magic": 114210000,
+      "risk_pct": 0.3125,
+      "ex5_sha": "4ff02978ae5d205355f81850fdbad1dac5daf8a8cb4313eaae08c616b1940e0a",
+      "chart": "chart03.chr",
+      "placements_observed": 8,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    },
+    {
+      "ea_id": 11422,
+      "ea_name": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "symbol": "USDCAD",
+      "slot": 4,
+      "magic": 114220004,
+      "risk_pct": 0.3125,
+      "ex5_sha": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+      "chart": "chart04.chr",
+      "placements_observed": 4,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    },
+    {
+      "ea_id": 11910,
+      "ea_name": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+      "symbol": "NZDUSD",
+      "slot": 6,
+      "magic": 119100006,
+      "risk_pct": 0.3125,
+      "ex5_sha": "ae53f3bcca175e8cddabeee7ebfbe2ecd28cdeab83b5d57dbcc202612c31394d",
+      "chart": "chart05.chr",
+      "placements_observed": 0,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    },
+    {
+      "ea_id": 13054,
+      "ea_name": "QM5_13054_brent-tom-mom",
+      "symbol": "USOIL.cash",
+      "slot": 0,
+      "magic": 130540000,
+      "risk_pct": 0.3125,
+      "ex5_sha": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+      "chart": "chart06.chr",
+      "placements_observed": 0,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    },
+    {
+      "ea_id": 20048,
+      "ea_name": "QM5_20048_wti-preholiday",
+      "symbol": "USOIL.cash",
+      "slot": 0,
+      "magic": 200480000,
+      "risk_pct": 0.3125,
+      "ex5_sha": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+      "chart": "chart07.chr",
+      "placements_observed": 0,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    },
+    {
+      "ea_id": 1537,
+      "ea_name": "QM5_1537_aa-vol-sma10",
+      "symbol": "XAGUSD",
+      "slot": 1,
+      "magic": 15370001,
+      "risk_pct": 0.3125,
+      "ex5_sha": "16d66a0f7b86f6f8c9240280712d32914a9a3bbb004baa1ea1a242cb4e9ff5eb",
+      "chart": "chart08.chr",
+      "placements_observed": 4,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    },
+    {
+      "ea_id": 21505,
+      "ea_name": "QM5_21505_xag-weekly-lowvol-momentum",
+      "symbol": "XAGUSD",
+      "slot": 0,
+      "magic": 215050000,
+      "risk_pct": 0.3125,
+      "ex5_sha": "81386c2dcd80e58d2840fc6941ca066eb276a4650c2bde07da2cb971cad0b24d",
+      "chart": "chart09.chr",
+      "placements_observed": 0,
+      "trading_days_observed": 3,
+      "attached_dark": false
+    }
+  ],
+  "sleeve_count": 8,
+  "total_book_risk_pct": 2.5,
+  "placements_source": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM",
+  "trading_days_observed": 3,
+  "dark_after_trading_days": 5,
+  "attached_dark_magics": [],
+  "attached_dark_count": 0,
+  "attached_dark_risk_pct": 0,
+  "realised_book_risk_pct": 2.5,
+  "product": "FTMO Challenge 2-Step / USD 100000 / Standard",
+  "compliance": {
+    "rulepack": "FTMO_2S_100K_STANDARD_V2"
+  },
+  "cycle_start_utc": "2026-09-15T14:12:11Z",
+  "cycle_start_provenance": "first_observation_of_current_roster_hash",
+  "validation_days": 2.556,
+  "validation_min_days": 14,
+  "state": "RUNNING",
+  "representative": false,
+  "is_new_cycle_this_observation": false,
+  "latest_change_assessment": {
+    "changes": [],
+    "material": false,
+    "representative_breaking": false,
+    "resets_cycle": false
+  },
+  "material_changes": [],
+  "roster_history": [
+    {
+      "roster_hash": "6c5383d8777728ba17abd1a836858b9db87c306d2931445ac642762075ac9bf2",
+      "first_seen_utc": "2026-09-15T14:12:11Z"
+    }
+  ]
+}

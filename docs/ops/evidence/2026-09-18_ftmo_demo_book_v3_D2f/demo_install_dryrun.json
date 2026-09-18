@@ -1,0 +1,209 @@
+{
+  "schema": "qm.ftmo-demo-install-plan-attempt/v1",
+  "mode": "DRY_RUN",
+  "package": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2f",
+  "invocation": "python -m tools.strategy_farm.ftmo.demo_install --package docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2f --dry-run",
+  "result": "REFUSED",
+  "refusals": [
+    {
+      "stage": "load_package",
+      "type": "Refusal",
+      "message": "package_sets_manifest_missing"
+    },
+    {
+      "stage": "require_target",
+      "type": "Refusal",
+      "message": "autotrading_must_be_disabled"
+    }
+  ],
+  "projected_plan": {
+    "note": "PROJECTED, not produced by demo_install.plan() \u2014 the tool refused before planning. Expert rows are byte-exact (repo binaries hashed now); preset rows are placeholders until the Q10 seal drift is cleared.",
+    "target": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850",
+    "backup_dir": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\_pre_FTMO_DEMO_BOOK_V3_D2F_20260918",
+    "telemetry_dirs": [
+      "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Files\\QM\\ftmo_trial\\FTMO_DEMO_BOOK_V3_D2F_20260918",
+      "D:\\QM\\reports\\ftmo_trial\\FTMO_DEMO_BOOK_V3_D2F_20260918"
+    ],
+    "copy_count_expected": 18,
+    "copies": [
+      {
+        "kind": "expert",
+        "ea_id": 13213,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\QM5_13213_balke-gmt3-range-breakout.ex5",
+        "source_sha256": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13213_balke-gmt3-range-breakout.ex5",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "preset",
+        "ea_id": 13213,
+        "source": "sets/QM5_13213_USDJPY_H1_live_trial.set",
+        "source_sha256": "PENDING_TOOL_RUN",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_13213_USDJPY_H1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "expert",
+        "ea_id": 10706,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+        "source_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10706_tv-mon-ls.ex5",
+        "destination_sha256_before": "6f290d49defdfe1ec2d4dad93e419a577c703a53ac91de68e7bbfb22984c6bed",
+        "action": "REPLACE",
+        "backup_to": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\_pre_FTMO_DEMO_BOOK_V3_D2F_20260918\\QM5_10706_tv-mon-ls.ex5"
+      },
+      {
+        "kind": "preset",
+        "ea_id": 10706,
+        "source": "sets/QM5_10706_GBPUSD_H1_live_trial.set",
+        "source_sha256": "PENDING_TOOL_RUN",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10706_GBPUSD_H1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "expert",
+        "ea_id": 10700,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.ex5",
+        "source_sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10700_tv-liq-break.ex5",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "preset",
+        "ea_id": 10700,
+        "source": "sets/QM5_10700_XAUUSD_H1_live_trial.set",
+        "source_sha256": "PENDING_TOOL_RUN",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10700_XAUUSD_H1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "expert",
+        "ea_id": 11422,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+        "source_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+        "destination_sha256_before": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "action": "SKIP_IDENTICAL",
+        "backup_to": null
+      },
+      {
+        "kind": "preset",
+        "ea_id": 11422,
+        "source": "sets/QM5_11422_USDCAD_D1_live_trial.set",
+        "source_sha256": "PENDING_TOOL_RUN",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_11422_USDCAD_D1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "expert",
+        "ea_id": 10403,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_10403_et-turtle20x\\QM5_10403_et-turtle20x.ex5",
+        "source_sha256": "f927f07f46579bbb9a1bdcfdb7caa9b246e9d7555935fbb878f7fc01afbf7ab3",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_10403_et-turtle20x.ex5",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "preset",
+        "ea_id": 10403,
+        "source": "sets/QM5_10403_XAUUSD_D1_live_trial.set",
+        "source_sha256": "PENDING_TOOL_RUN",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_10403_XAUUSD_D1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "expert",
+        "ea_id": 21505,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_21505_xag-weekly-lowvol-momentum\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+        "source_sha256": "395c4747832acbcdf8a68d8598e53abe5786bdc6c538767c400884cd82b2aea1",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_21505_xag-weekly-lowvol-momentum.ex5",
+        "destination_sha256_before": "81386c2dcd80e58d2840fc6941ca066eb276a4650c2bde07da2cb971cad0b24d",
+        "action": "REPLACE",
+        "backup_to": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\_pre_FTMO_DEMO_BOOK_V3_D2F_20260918\\QM5_21505_xag-weekly-lowvol-momentum.ex5"
+      },
+      {
+        "kind": "preset",
+        "ea_id": 21505,
+        "source": "sets/QM5_21505_XAGUSD_D1_live_trial.set",
+        "source_sha256": "UNAVAILABLE_BLOCKED_BY_Q10_SEAL_DRIFT",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_21505_XAGUSD_D1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "expert",
+        "ea_id": 41219,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_41219_cum-rsi2-commodity-requal8\\QM5_41219_cum-rsi2-commodity-requal8.ex5",
+        "source_sha256": "e9670141e89249aff7df44a10a2402e2103aa4cecf8d0a35a8cd6d6babedf108",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_41219_cum-rsi2-commodity-requal8.ex5",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "preset",
+        "ea_id": 41219,
+        "source": "sets/QM5_41219_XAUUSD_D1_live_trial.set",
+        "source_sha256": "PENDING_TOOL_RUN",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_41219_XAUUSD_D1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "expert",
+        "ea_id": 13054,
+        "source": "C:\\QM\\repo\\framework\\EAs\\QM5_13054_brent-tom-mom\\QM5_13054_brent-tom-mom.ex5",
+        "source_sha256": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM5_13054_brent-tom-mom.ex5",
+        "destination_sha256_before": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+        "action": "SKIP_IDENTICAL",
+        "backup_to": null
+      },
+      {
+        "kind": "preset",
+        "ea_id": 13054,
+        "source": "sets/QM5_13054_USOIL.cash_D1_live_trial.set",
+        "source_sha256": "UNAVAILABLE_BLOCKED_BY_Q10_SEAL_DRIFT",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM5_13054_USOIL.cash_D1_live_trial.set",
+        "destination_sha256_before": null,
+        "action": "CREATE",
+        "backup_to": null
+      },
+      {
+        "kind": "collector_binary",
+        "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2f\\bin\\QM_FTMO_TrialTelemetry.ex5",
+        "source_sha256": "411638a1ae177326070c19b28c849fda36594592279303ce7d96f36bfa458258",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\QM_FTMO_TrialTelemetry.ex5",
+        "destination_sha256_before": "411638a1ae177326070c19b28c849fda36594592279303ce7d96f36bfa458258",
+        "action": "SKIP_IDENTICAL",
+        "backup_to": null
+      },
+      {
+        "kind": "collector_preset",
+        "source": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2f\\collector\\QM_FTMO_TrialTelemetry_1514536732.set",
+        "source_sha256": "3b01a12b76f55dc1f529bf1058e9a018712ad02816d6dd1adf40654c5d5bf5be",
+        "destination": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Profiles\\Presets\\QM_FTMO_M13\\QM_FTMO_TrialTelemetry_1514536732.set",
+        "destination_sha256_before": "f4da1592b9e8d5ea468512f9f4581b834bc1508f33bd424eab94c43dd309bdd6",
+        "action": "REPLACE",
+        "backup_to": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850\\MQL5\\Experts\\QM_FTMO\\_pre_FTMO_DEMO_BOOK_V3_D2F_20260918\\QM_FTMO_TrialTelemetry_1514536732.set"
+      }
+    ]
+  }
+}

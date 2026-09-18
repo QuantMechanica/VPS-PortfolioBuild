@@ -1,0 +1,92 @@
+{
+  "schema": "qm.ftmo-demo-roster/v1",
+  "label": "D2f",
+  "cycle_id": "FTMO_DEMO_BOOK_V3_D2F_20260918",
+  "decision_id": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+  "risk_authority": "FABLE_DECISION_D2F_2026-09-18_CHAIN_ADDENDUM_3",
+  "book_risk_percent": 2.34375,
+  "source": "docs/ftmo/FTMO_ALT_ROSTER_DEPLOYABLE_2026-09-18.md",
+  "receipt_path": "docs/ftmo/FTMO_ALT_ROSTER_CHAIN_2026-09-18.md",
+  "candidates": [
+    {
+      "ea_id": 13213,
+      "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+      "dxz_symbol": "USDJPY",
+      "ftmo_symbol": "USDJPY",
+      "timeframe": "H1",
+      "slot": 0,
+      "magic": 132130000,
+      "risk_percent": 0.15625
+    },
+    {
+      "ea_id": 10706,
+      "ea_label": "QM5_10706_tv-mon-ls",
+      "dxz_symbol": "GBPUSD",
+      "ftmo_symbol": "GBPUSD",
+      "timeframe": "H1",
+      "slot": 1,
+      "magic": 107060001,
+      "risk_percent": 0.3125
+    },
+    {
+      "ea_id": 10700,
+      "ea_label": "QM5_10700_tv-liq-break",
+      "dxz_symbol": "XAUUSD",
+      "ftmo_symbol": "XAUUSD",
+      "timeframe": "H1",
+      "slot": 3,
+      "magic": 107000003,
+      "risk_percent": 0.3125
+    },
+    {
+      "ea_id": 11422,
+      "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "dxz_symbol": "USDCAD",
+      "ftmo_symbol": "USDCAD",
+      "timeframe": "D1",
+      "slot": 4,
+      "magic": 114220004,
+      "risk_percent": 0.3125
+    },
+    {
+      "ea_id": 10403,
+      "ea_label": "QM5_10403_et-turtle20x",
+      "dxz_symbol": "XAUUSD",
+      "ftmo_symbol": "XAUUSD",
+      "timeframe": "D1",
+      "slot": 2,
+      "magic": 104030002,
+      "risk_percent": 0.3125
+    },
+    {
+      "ea_id": 21505,
+      "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+      "dxz_symbol": "XAGUSD",
+      "ftmo_symbol": "XAGUSD",
+      "timeframe": "D1",
+      "slot": 0,
+      "magic": 215050000,
+      "risk_percent": 0.3125
+    },
+    {
+      "ea_id": 41219,
+      "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "dxz_symbol": "XAUUSD",
+      "ftmo_symbol": "XAUUSD",
+      "timeframe": "D1",
+      "slot": 0,
+      "magic": 412190000,
+      "risk_percent": 0.3125
+    },
+    {
+      "ea_id": 13054,
+      "ea_label": "QM5_13054_brent-tom-mom",
+      "dxz_symbol": "XTIUSD",
+      "ftmo_symbol": "USOIL.cash",
+      "timeframe": "D1",
+      "slot": 0,
+      "magic": 130540000,
+      "risk_percent": 0.3125
+    }
+  ]
+}
