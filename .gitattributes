@@ -351,3 +351,9 @@ strategy-seeds/sources/QM-RESEARCH-*/** -text
 # Official FTMO rules snapshots are raw-byte hash contracts (target_rulepacks.py verifies
 # sha256(read_bytes) against official_sources.snapshot_sha256); never re-smudge them.
 docs/ops/evidence/*_ftmo_official_rules_snapshot.json -text
+
+# Compile-fail repair authority evidence is a raw-byte contract: the registry
+# tools/strategy_farm/config/compile_fail_repair_authorities.v1.json binds
+# evidence_sha256 to the on-disk bytes, so a checkout must never re-smudge the
+# line endings (autocrlf would otherwise invalidate the binding per worktree).
+docs/ops/evidence/2026-09-18_compile_fail_repair_authority/*.json -text

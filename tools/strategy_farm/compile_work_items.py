@@ -2206,6 +2206,202 @@ def _qm5_41478_compile_fail_repair_authorized(
     )
 
 
+# Generic, evidence-bound compile-fail repair authorities (2026-09-18).
+# One JSON registry replaces the per-EA hard-coded blocks above; the strictness
+# is identical. An entry authorizes exactly one append-only COMPILE_EA successor
+# for exactly one (ea_id, repaired source hash) pair and is refused unless the
+# bound predecessor row is still the exact failed row it names, with the exact
+# rejected source hash and the exact build_check failure classes, and unless the
+# on-disk evidence file still hashes to the registered sha256. No bespoke
+# authority above is affected; nothing here grants gate, backtest or live
+# authority.
+COMPILE_FAIL_REPAIR_REGISTRY_SCHEMA = "qm.compile-fail-repair-authority/v1"
+COMPILE_FAIL_REPAIR_REGISTRY_PATH = (
+    Path(__file__).resolve().parent
+    / "config"
+    / "compile_fail_repair_authorities.v1.json"
+)
+COMPILE_FAIL_REPAIR_AUTHORITY_RE = re.compile(
+    r"^compile_fail_repair:\d{8}:(QM5_\d+_[A-Za-z0-9._-]+):[0-9a-f]{8}$"
+)
+_COMPILE_FAIL_REPAIR_STRING_FIELDS = (
+    "authority",
+    "ea_id",
+    "ea_label",
+    "predecessor_work_item_id",
+    "rejected_mq5_sha256",
+    "repaired_mq5_sha256",
+    "evidence_path",
+    "evidence_sha256",
+    "granted_by",
+    "granted_at_utc",
+    "scope",
+)
+COMPILE_FAIL_REPAIR_SCOPE = (
+    "append-only COMPILE_EA successor; "
+    "no strategy/backtest/live/gate authority"
+)
+_COMPILE_FAIL_REPAIR_CACHE: dict[str, dict[str, dict[str, Any]]] = {}
+
+
+def load_compile_fail_repair_authorities(
+    path: Path | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Load and validate the compile-fail repair registry, keyed by authority.
+
+    Fails closed: a missing, malformed or schema-mismatched registry yields an
+    empty mapping rather than a permissive one.
+    """
+
+    registry_path = Path(path) if path is not None else COMPILE_FAIL_REPAIR_REGISTRY_PATH
+    cache_key = str(registry_path)
+    try:
+        stamp = registry_path.stat().st_mtime_ns
+    except OSError:
+        _COMPILE_FAIL_REPAIR_CACHE.pop(cache_key, None)
+        return {}
+    cached = _COMPILE_FAIL_REPAIR_CACHE.get(cache_key)
+    if cached is not None and cached.get("_stamp") == stamp:
+        return cached["entries"]  # type: ignore[return-value]
+    try:
+        document = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    entries: dict[str, dict[str, Any]] = {}
+    if (
+        isinstance(document, dict)
+        and document.get("schema") == COMPILE_FAIL_REPAIR_REGISTRY_SCHEMA
+        and isinstance(document.get("authorities"), list)
+    ):
+        for raw in document["authorities"]:
+            entry = _validated_compile_fail_repair_entry(raw)
+            if entry is None or entry["authority"] in entries:
+                # A malformed or duplicated entry invalidates the whole file:
+                # partial acceptance would silently authorize a subset.
+                entries = {}
+                break
+            entries[entry["authority"]] = entry
+    _COMPILE_FAIL_REPAIR_CACHE[cache_key] = {"_stamp": stamp, "entries": entries}
+    return entries
+
+
+def _validated_compile_fail_repair_entry(raw: Any) -> dict[str, Any] | None:
+    if not isinstance(raw, dict):
+        return None
+    values: dict[str, Any] = {}
+    for field in _COMPILE_FAIL_REPAIR_STRING_FIELDS:
+        value = raw.get(field)
+        if not isinstance(value, str) or not value.strip():
+            return None
+        values[field] = value.strip()
+    match = COMPILE_FAIL_REPAIR_AUTHORITY_RE.fullmatch(values["authority"])
+    if not match or match.group(1) != values["ea_label"]:
+        return None
+    if not re.fullmatch(r"\d+", values["ea_id"]):
+        return None
+    if not values["ea_label"].startswith(f"QM5_{values['ea_id']}_"):
+        return None
+    for field in ("rejected_mq5_sha256", "repaired_mq5_sha256", "evidence_sha256"):
+        if not re.fullmatch(r"[0-9a-f]{64}", values[field]):
+            return None
+    if values["rejected_mq5_sha256"] == values["repaired_mq5_sha256"]:
+        return None
+    if values["scope"] != COMPILE_FAIL_REPAIR_SCOPE:
+        return None
+    if Path(values["evidence_path"]).is_absolute() or ".." in Path(
+        values["evidence_path"]
+    ).parts:
+        return None
+    failure_classes = raw.get("expected_failure_classes")
+    if (
+        not isinstance(failure_classes, list)
+        or not failure_classes
+        or any(
+            not isinstance(item, str) or not item.strip() for item in failure_classes
+        )
+    ):
+        return None
+    values["expected_failure_classes"] = [str(item) for item in failure_classes]
+    return values
+
+
+def _compile_fail_repair_artifact_bindings(
+    authority: str | None,
+) -> list[dict[str, str]]:
+    entry = load_compile_fail_repair_authorities().get(authority or "")
+    if not entry:
+        return []
+    return [{"path": entry["evidence_path"], "sha256": entry["evidence_sha256"]}]
+
+
+def _compile_fail_repair_predecessor_matches(
+    row: dict[str, Any] | None, entry: dict[str, Any]
+) -> bool:
+    """The bound predecessor must still be the exact failed compile row."""
+
+    if not row:
+        return False
+    payload = _json_object(row.get("payload_json"))
+    compile_result = payload.get("compile_result")
+    return bool(
+        row.get("phase") == COMPILE_EA_PHASE
+        and row.get("status") == "failed"
+        and row.get("verdict") == "COMPILE_FAIL"
+        and payload.get("ea_label") == entry["ea_label"]
+        and str(payload.get("mq5_sha256") or "").lower()
+        == entry["rejected_mq5_sha256"]
+        and isinstance(compile_result, dict)
+        and compile_result.get("failure_classes")
+        == entry["expected_failure_classes"]
+    )
+
+
+def _generic_compile_fail_repair_authorized(
+    ea_label: str,
+    authority: str | None,
+    *,
+    ea_id: str | None,
+    source_sha: str | None,
+    inventory: dict[str, Any] | None,
+    repo_root: Path | None = None,
+    registry_path: Path | None = None,
+) -> bool:
+    """Registry-driven twin of the per-EA compile-fail repair authorities."""
+
+    entry = load_compile_fail_repair_authorities(registry_path).get(authority or "")
+    if (
+        entry is None
+        or ea_label != entry["ea_label"]
+        or str(ea_id or "") != entry["ea_id"]
+        or str(source_sha or "").lower() != entry["repaired_mq5_sha256"]
+        or inventory is None
+    ):
+        return False
+    predecessor = next(
+        (
+            row
+            for row in inventory.get("work_rows", {}).get(ea_id, [])
+            if str(row.get("id")) == entry["predecessor_work_item_id"]
+        ),
+        None,
+    )
+    if not _compile_fail_repair_predecessor_matches(predecessor, entry):
+        return False
+    root = (
+        Path(repo_root)
+        if repo_root is not None
+        else Path(__file__).resolve().parents[2]
+    )
+    evidence = root / Path(entry["evidence_path"])
+    try:
+        return bool(
+            evidence.is_file()
+            and sha256_file(evidence).lower() == entry["evidence_sha256"]
+        )
+    except OSError:
+        return False
+
+
 # CEO source selections, router task 74b400f5 (2026-09-05).
 # Exact per-EA registrations; no authority-file loading or cross-EA fallback.
 BACKLOG_SOURCE_REPAIR_EVIDENCE = "docs/ops/evidence/2026-09-05_compile_backlog_source_repair.md"
@@ -3211,6 +3407,15 @@ def _source_repair_authorized(
             ea_label, authority, repo_root=repo_root, ea_id=ea_id,
             source_sha=source_sha, inventory=inventory,
             current_work_item_id=current_work_item_id,
+        )
+    if authority in load_compile_fail_repair_authorities():
+        return _generic_compile_fail_repair_authorized(
+            ea_label,
+            authority,
+            ea_id=ea_id,
+            source_sha=source_sha,
+            inventory=inventory,
+            repo_root=repo_root,
         )
     if authority == QM5_10717_BASKET_INCLUDE_REPAIR_AUTHORITY:
         return _qm5_10717_basket_include_repair_authorized(
@@ -4567,6 +4772,15 @@ def classify_candidate(
     backlog_binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(source_repair_authority or "") if repair_authorized else None
     if backlog_binding:
         source_repair_predecessor_ids = set(backlog_binding["predecessors"])
+    compile_fail_binding = (
+        load_compile_fail_repair_authorities().get(source_repair_authority or "")
+        if repair_authorized
+        else None
+    )
+    if compile_fail_binding:
+        source_repair_predecessor_ids = {
+            compile_fail_binding["predecessor_work_item_id"]
+        }
     if (
         repair_authorized
         and source_repair_authority
@@ -4654,6 +4868,8 @@ def classify_candidate(
         "sibling_rebind_findings": sibling_rebind_findings,
         "source_repair_artifact_bindings": (
             _backlog_source_repair_artifact_bindings(source_repair_authority) if backlog_binding else
+            _compile_fail_repair_artifact_bindings(source_repair_authority)
+            if compile_fail_binding else
             _hma_cata_requal_artifact_bindings()
             if repair_authorized
             and source_repair_authority == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
@@ -4940,6 +5156,30 @@ def _sanctioned_compile_predecessor_ids(
     source_sha = str(payload.get("mq5_sha256") or "").lower()
     if not _BOUND_HASH_RE.fullmatch(source_sha):
         return set()
+
+    compile_fail_entry = load_compile_fail_repair_authorities().get(
+        str(payload.get("compile_source_repair_authority") or "")
+    )
+    if compile_fail_entry is not None:
+        predecessor_id = compile_fail_entry["predecessor_work_item_id"]
+        if (
+            predecessor_id in seen
+            or payload.get("append_only_source_repair") is not True
+            or payload.get("compile_source_repair_contract_version")
+            != SOURCE_REPAIR_CONTRACT_VERSION
+            or payload.get("ea_label") != compile_fail_entry["ea_label"]
+            or str(ea_id) != compile_fail_entry["ea_id"]
+            or source_sha != compile_fail_entry["repaired_mq5_sha256"]
+            or predecessor_id
+            not in (payload.get("source_repair_predecessor_work_item_ids") or [])
+        ):
+            return set()
+        predecessor = _work_row_by_id(inventory, ea_id, predecessor_id)
+        if not _compile_fail_repair_predecessor_matches(
+            predecessor, compile_fail_entry
+        ):
+            return set()
+        return {predecessor_id}
 
     if (
         payload.get("recheck_successor_contract_version")
