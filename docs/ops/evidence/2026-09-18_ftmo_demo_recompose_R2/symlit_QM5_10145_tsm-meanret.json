@@ -1,0 +1,23 @@
+{
+  "schema": "qm.ea-symbol-literal-inventory/v1",
+  "baseline_commit": "bb584c73239c5bd9f7ba98d2bf5863bafa8cfe48",
+  "ea_label": "QM5_10145_tsm-meanret",
+  "summary": {
+    "mql_sources_scanned": 1,
+    "symbol_literal_sources": 0,
+    "symbol_literal_occurrences": 0,
+    "literal_class_counts": {},
+    "literal_severity_counts": {},
+    "non_chart_market_data_sources": 0,
+    "non_chart_market_data_calls": 0,
+    "symbolselect_or_copyrates_sources": 0,
+    "api_source_counts": {
+      "CopyRates": 0,
+      "SymbolSelect": 0
+    },
+    "priority_candidate_sources": 0
+  },
+  "findings": [],
+  "priority_candidates": [],
+  "multi_symbol_sources": []
+}

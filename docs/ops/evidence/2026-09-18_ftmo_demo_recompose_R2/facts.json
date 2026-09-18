@@ -1,0 +1,986 @@
+{
+  "schema": "qm.ftmo-demo-recompose-facts/v1",
+  "roster_label": "R2_capped",
+  "risk_percent_per_sleeve": 0.3125,
+  "book_risk_percent": 2.5,
+  "account": {
+    "login": 1514536732,
+    "server": "FTMO-Demo",
+    "variant": "STANDARD_2STEP_100K_FREE_TRIAL",
+    "governor_ea": 13206,
+    "terminal": "C:\\Users\\Administrator\\AppData\\Roaming\\MetaQuotes\\Terminal\\81A933A9AFC5DE3C23B15CAB19C63850"
+  },
+  "alias_registry_account_id": "1513845506",
+  "current_profile": {
+    "roster_hash": "6c5383d8777728ba17abd1a836858b9db87c306d2931445ac642762075ac9bf2",
+    "sleeves": [
+      {
+        "ea_id": 10706,
+        "ea_name": "QM5_10706_tv-mon-ls",
+        "symbol": "GBPUSD",
+        "slot": 1,
+        "magic": 107060001,
+        "risk_pct": 0.3125,
+        "ex5_sha": "6f290d49defdfe1ec2d4dad93e419a577c703a53ac91de68e7bbfb22984c6bed",
+        "chart": "chart02.chr"
+      },
+      {
+        "ea_id": 11421,
+        "ea_name": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "symbol": "EURUSD",
+        "slot": 0,
+        "magic": 114210000,
+        "risk_pct": 0.3125,
+        "ex5_sha": "4ff02978ae5d205355f81850fdbad1dac5daf8a8cb4313eaae08c616b1940e0a",
+        "chart": "chart03.chr"
+      },
+      {
+        "ea_id": 11422,
+        "ea_name": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "symbol": "USDCAD",
+        "slot": 4,
+        "magic": 114220004,
+        "risk_pct": 0.3125,
+        "ex5_sha": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "chart": "chart04.chr"
+      },
+      {
+        "ea_id": 11910,
+        "ea_name": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+        "symbol": "NZDUSD",
+        "slot": 6,
+        "magic": 119100006,
+        "risk_pct": 0.3125,
+        "ex5_sha": "ae53f3bcca175e8cddabeee7ebfbe2ecd28cdeab83b5d57dbcc202612c31394d",
+        "chart": "chart05.chr"
+      },
+      {
+        "ea_id": 13054,
+        "ea_name": "QM5_13054_brent-tom-mom",
+        "symbol": "USOIL.cash",
+        "slot": 0,
+        "magic": 130540000,
+        "risk_pct": 0.3125,
+        "ex5_sha": "2e65488fccdbd985f78318861a223a305d820a4fce3d2ebdcafae6ce956fd96d",
+        "chart": "chart06.chr"
+      },
+      {
+        "ea_id": 20048,
+        "ea_name": "QM5_20048_wti-preholiday",
+        "symbol": "USOIL.cash",
+        "slot": 0,
+        "magic": 200480000,
+        "risk_pct": 0.3125,
+        "ex5_sha": "1312391ad7e654812244e48a6df92d5bd323dba7d32ddae60c54adc464527f00",
+        "chart": "chart07.chr"
+      },
+      {
+        "ea_id": 1537,
+        "ea_name": "QM5_1537_aa-vol-sma10",
+        "symbol": "XAGUSD",
+        "slot": 1,
+        "magic": 15370001,
+        "risk_pct": 0.3125,
+        "ex5_sha": "16d66a0f7b86f6f8c9240280712d32914a9a3bbb004baa1ea1a242cb4e9ff5eb",
+        "chart": "chart08.chr"
+      },
+      {
+        "ea_id": 21505,
+        "ea_name": "QM5_21505_xag-weekly-lowvol-momentum",
+        "symbol": "XAGUSD",
+        "slot": 0,
+        "magic": 215050000,
+        "risk_pct": 0.3125,
+        "ex5_sha": "81386c2dcd80e58d2840fc6941ca066eb276a4650c2bde07da2cb971cad0b24d",
+        "chart": "chart09.chr"
+      }
+    ],
+    "charts": [
+      {
+        "chart": "chart01.chr",
+        "symbol": "EURUSD",
+        "period": null,
+        "expert": "QM5_13206_ftmo-account-governor",
+        "slot_offset": null,
+        "risk_pct": null,
+        "sha256": "0f3c448ec41d171dbb01dc43d7dbaf51ed164389b58d800753dba0ef2acd670d",
+        "bytes": 6678
+      },
+      {
+        "chart": "chart02.chr",
+        "symbol": "GBPUSD",
+        "period": null,
+        "expert": "QM5_10706_tv-mon-ls",
+        "slot_offset": "1",
+        "risk_pct": "0.3125",
+        "sha256": "2d88aa6f2e7317717793cc9117e7024394bceec59a9bcd51388e58359a3d624e",
+        "bytes": 6242
+      },
+      {
+        "chart": "chart03.chr",
+        "symbol": "EURUSD",
+        "period": null,
+        "expert": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "slot_offset": "0",
+        "risk_pct": "0.3125",
+        "sha256": "8df0af0b936b123a9d0891c110ca79ebadddeebf5f8c1f6d28d686f19ad47074",
+        "bytes": 6872
+      },
+      {
+        "chart": "chart04.chr",
+        "symbol": "USDCAD",
+        "period": null,
+        "expert": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "slot_offset": "4",
+        "risk_pct": "0.3125",
+        "sha256": "55235430af9233297d28a1d50f5ebb0925eb757efc56227f973ec50915fa5700",
+        "bytes": 4694
+      },
+      {
+        "chart": "chart05.chr",
+        "symbol": "NZDUSD",
+        "period": null,
+        "expert": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+        "slot_offset": "6",
+        "risk_pct": "0.3125",
+        "sha256": "c6fb08c3b72740f625c9ca683edbe59de77894dcad29bc093b019f2be966921f",
+        "bytes": 4878
+      },
+      {
+        "chart": "chart06.chr",
+        "symbol": "USOIL.cash",
+        "period": null,
+        "expert": "QM5_13054_brent-tom-mom",
+        "slot_offset": "0",
+        "risk_pct": "0.3125",
+        "sha256": "d03c4b25f1e42a440a099a1b48c796d7860ec13951466af6d8af7668239bdc04",
+        "bytes": 4772
+      },
+      {
+        "chart": "chart07.chr",
+        "symbol": "USOIL.cash",
+        "period": null,
+        "expert": "QM5_20048_wti-preholiday",
+        "slot_offset": "0",
+        "risk_pct": "0.3125",
+        "sha256": "61d848a8c122cda7e252f7e3835e27893237ee4c83de04d6f1d2a3945db70fb4",
+        "bytes": 4488
+      },
+      {
+        "chart": "chart08.chr",
+        "symbol": "XAGUSD",
+        "period": null,
+        "expert": "QM5_1537_aa-vol-sma10",
+        "slot_offset": "1",
+        "risk_pct": "0.3125",
+        "sha256": "f6256e5f3ba6f6124e33da4898e33a2adaca3c5eff6bfb78902ec1fa57b15abf",
+        "bytes": 7190
+      },
+      {
+        "chart": "chart09.chr",
+        "symbol": "XAGUSD",
+        "period": null,
+        "expert": "QM5_21505_xag-weekly-lowvol-momentum",
+        "slot_offset": "0",
+        "risk_pct": "0.3125",
+        "sha256": "f37f34db6dc12e07d377042f9462aa8bfa9266e6c8ca52d7c036bdbf7a687d63",
+        "bytes": 6164
+      },
+      {
+        "chart": "chart10.chr",
+        "symbol": "EURUSD",
+        "period": null,
+        "expert": "QM_FTMO_TrialTelemetry",
+        "slot_offset": null,
+        "risk_pct": null,
+        "sha256": "942de2ceb99b8783ed67a609c06d0c7fae0dadb70aad15557a1bce3cc1c6abe9",
+        "bytes": 4628
+      },
+      {
+        "chart": "chart11.chr",
+        "symbol": "EURUSD",
+        "period": null,
+        "expert": null,
+        "slot_offset": null,
+        "risk_pct": null,
+        "sha256": "a979e58410f1db7713a2ab7c407cdac7028772c729c2abc321df0ecf6230762b",
+        "bytes": 4036
+      }
+    ]
+  },
+  "target_sleeves": [
+    {
+      "ea_id": 13213,
+      "factory_symbol": "USDJPY.DWX",
+      "base_symbol": "USDJPY",
+      "seal": {
+        "work_item_id": "6771f953-a639-4073-984e-bbfdf2cdb3fb",
+        "updated_at": "2026-09-04T01:59:55+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\177f73c4-f952-442a-ad4a-6805abe83155\\QM5_13213\\Q10_NEWS\\6771f953-a639-4073-984e-bbfdf2cdb3fb\\aggregate.json",
+        "seal_sha256": "70e2505e2fe61bc82f89740ca6342ca907ce0f94a35ad0d38573cce08d820eab",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+        "source_exists": true,
+        "source_sha256_actual": "0eba1def3309b7ff94fd86fdeb1f71e91bb5ee3c789156fc6df8a6dd8a009c79",
+        "source_sha256_seal": "0eba1def3309b7ff94fd86fdeb1f71e91bb5ee3c789156fc6df8a6dd8a009c79",
+        "source_sha256_db": null,
+        "seal_ex5_sha256": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0",
+        "timeframe": "H1",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "4464967eb07b6ee32db9bd6f5df0c424f9903f14da6603e87802e58975a97330"
+          ],
+          "temporal_mode": "SKIP_DAY",
+          "temporal_mode_id": 5
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\QM5_13213_balke-gmt3-range-breakout.ex5",
+          "sha256": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0",
+          "bytes": 403128
+        }
+      ],
+      "q08": {
+        "work_item_id": "048643ac-a569-45f6-9d5d-c559c5a9c060",
+        "phase": "Q08",
+        "verdict": "PASS",
+        "ex5_sha256": "8c99dea16fbf758a4b2da9f49a26db26bfe7fed3589f2066be5120314106a8f0",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_13213_balke-gmt3-range-breakout\\sets\\QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+        "setfile_sha256": "0eba1def3309b7ff94fd86fdeb1f71e91bb5ee3c789156fc6df8a6dd8a009c79",
+        "updated_at": "2026-09-02T20:18:09+00:00"
+      },
+      "w38_stream": {
+        "key": "13213:USDJPY.DWX",
+        "sha256": "d2d7b9f14aa05743fc8ff4f45c15bdb4c6000fe6541971cd455d09da9d867773",
+        "size_bytes": 668612,
+        "source_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+        "exists": true,
+        "trades": 1596,
+        "magics": [
+          132130000
+        ],
+        "sha256": "d2d7b9f14aa05743fc8ff4f45c15bdb4c6000fe6541971cd455d09da9d867773"
+      },
+      "magic_registry": {
+        "symbol_slot": 0,
+        "magic": 132130000,
+        "status": "active",
+        "ea_slug": "balke-gmt3-range-breakout"
+      },
+      "roster_v2b": {
+        "already_live": true,
+        "backtest_risk_fixed": 1000.0,
+        "backtest_risk_percent": 0.0,
+        "backtest_setfile": "framework/EAs/QM5_13213_balke-gmt3-range-breakout/sets/QM5_13213_balke-gmt3-range-breakout_USDJPY.DWX_H1_backtest.set",
+        "ea_id": 13213,
+        "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+        "live_deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\02_USDJPY_H1_QM5_13213_balke-gmt3-range-breakout.set",
+        "live_magic_number": 132130000,
+        "live_risk_percent": 0.0431,
+        "magic_number": 132130000,
+        "magic_slot": 0,
+        "magic_slot_status": "REGISTERED_ACTIVE",
+        "proposed_slot": null,
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\f93671e1-1493-5530-94f8-7ce5ffca3864\\receipt.json",
+        "q14_terminal_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "f93671e1-1493-5530-94f8-7ce5ffca3864",
+        "stream_file": "13213_USDJPY_DWX.jsonl",
+        "symbol": "USDJPY.DWX"
+      },
+      "venue": {
+        "venue_symbol": "USDJPY",
+        "from_alias_registry": true,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 0,
+        "evidence": [
+          "execution_symbol_aliases_v1.json FTMO_TRIAL (account 1513845506)",
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history"
+        ],
+        "verified": true
+      }
+    },
+    {
+      "ea_id": 10706,
+      "factory_symbol": "GBPUSD.DWX",
+      "base_symbol": "GBPUSD",
+      "seal": {
+        "work_item_id": "9c7db9b2-c594-4b50-8006-f891f7b5c44b",
+        "updated_at": "2026-09-04T06:36:31+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\9c7db9b2-c594-4b50-8006-f891f7b5c44b\\QM5_10706\\Q10_NEWS\\GBPUSD_DWX\\aggregate.json",
+        "seal_sha256": "a619968d0608c1ed9bda70f263f95c12db5671c1cf96bd9939409559bcdf2bac",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+        "source_exists": true,
+        "source_sha256_actual": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+        "source_sha256_seal": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+        "source_sha256_db": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+        "seal_ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+        "timeframe": "H1",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "f5a11e2d1830db46258586ea2828b1bda9bd985661afa975fcb1c954d9aae6c6"
+          ],
+          "temporal_mode": "OFF",
+          "temporal_mode_id": 0
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\QM5_10706_tv-mon-ls.ex5",
+          "sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+          "bytes": 397282
+        }
+      ],
+      "q08": {
+        "work_item_id": "a2e1aba6-45ea-4dcf-af98-1f679ebeb64f",
+        "phase": "Q08",
+        "verdict": "PASS",
+        "ex5_sha256": "eaffda6f03c8b422896c0e9ab5ea0f3c7100f8546592353ed661f19d056b78cb",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10706_tv-mon-ls\\sets\\QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest_ablation_02.set",
+        "setfile_sha256": "056f2c12c1be81119e6ff86e7d2e3521905cacf938cffea19ff910e79752fb49",
+        "updated_at": "2026-09-04T05:23:30+00:00"
+      },
+      "w38_stream": {
+        "key": "10706:GBPUSD.DWX",
+        "sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+        "size_bytes": 149557,
+        "source_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "exists": true,
+        "trades": 360,
+        "magics": [
+          107060001
+        ],
+        "sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7"
+      },
+      "magic_registry": {
+        "symbol_slot": 1,
+        "magic": 107060001,
+        "status": "active",
+        "ea_slug": "tv-mon-ls"
+      },
+      "roster_v2b": {
+        "already_live": true,
+        "backtest_risk_fixed": 1000.0,
+        "backtest_risk_percent": 0.0,
+        "backtest_setfile": "framework/EAs/QM5_10706_tv-mon-ls/sets/QM5_10706_tv-mon-ls_GBPUSD.DWX_H1_backtest.set",
+        "ea_id": 10706,
+        "ea_label": "QM5_10706_tv-mon-ls",
+        "live_deployed_preset": "C:\\QM\\mt5\\T_Live\\MT5_Base\\MQL5\\Presets\\11_GBPUSD_H1_QM5_10706_tv-mon-ls.set",
+        "live_magic_number": 107060001,
+        "live_risk_percent": 0.053,
+        "magic_number": 107060001,
+        "magic_slot": 1,
+        "magic_slot_status": "REGISTERED_ACTIVE",
+        "proposed_slot": null,
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\08dc2c73-8fe7-581c-b0e9-66b6ae76a6d0\\receipt.json",
+        "q14_terminal_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "08dc2c73-8fe7-581c-b0e9-66b6ae76a6d0",
+        "stream_file": "10706_GBPUSD_DWX.jsonl",
+        "symbol": "GBPUSD.DWX"
+      },
+      "venue": {
+        "venue_symbol": "GBPUSD",
+        "from_alias_registry": true,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 0,
+        "evidence": [
+          "execution_symbol_aliases_v1.json FTMO_TRIAL (account 1513845506)",
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history",
+          "currently attached chart chart02.chr"
+        ],
+        "verified": true
+      }
+    },
+    {
+      "ea_id": 10700,
+      "factory_symbol": "XAUUSD.DWX",
+      "base_symbol": "XAUUSD",
+      "seal": {
+        "work_item_id": "4066a5fb-7dee-4664-ad92-176a349ab1f9",
+        "updated_at": "2026-09-13T16:44:55+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\fe33550e-2de4-4886-9b10-e7ea48a382d7\\QM5_10700\\Q10_NEWS\\4066a5fb-7dee-4664-ad92-176a349ab1f9\\aggregate.json",
+        "seal_sha256": "eadf43e46c7e211ece0d06934e36a92723640ab851be719be9ada40764cbe51e",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+        "source_exists": true,
+        "source_sha256_actual": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997",
+        "source_sha256_seal": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997",
+        "source_sha256_db": null,
+        "seal_ex5_sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+        "timeframe": "H1",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "49231f1d319b11389f04132270235e16f252401b30e4ee7c4d59c0a263b17ebd"
+          ],
+          "temporal_mode": "OFF",
+          "temporal_mode_id": 0
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\QM5_10700_tv-liq-break.ex5",
+          "sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+          "bytes": 425838
+        }
+      ],
+      "q08": {
+        "work_item_id": "ce371d25-12b0-44b8-9d55-0854c9adcdd8",
+        "phase": "Q08",
+        "verdict": "PASS",
+        "ex5_sha256": "5fbf2ba0048250041296deda0008ff6757f56dce27e39efead69f45838e5e6be",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10700_tv-liq-break\\sets\\QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+        "setfile_sha256": "a684dad25b6c2f1597a0456c0c3fd89135826afa7f3a5be446af76b5ec68a997",
+        "updated_at": "2026-09-03T09:33:36+00:00"
+      },
+      "w38_stream": {
+        "key": "10700:XAUUSD.DWX",
+        "sha256": "f8b1b3d00f162de8f7780e27b0ad5df184cc600f6f08dbd97e0fd7e637891632",
+        "size_bytes": 155024,
+        "source_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl",
+        "exists": true,
+        "trades": 373,
+        "magics": [
+          107000003
+        ],
+        "sha256": "f8b1b3d00f162de8f7780e27b0ad5df184cc600f6f08dbd97e0fd7e637891632"
+      },
+      "magic_registry": {
+        "symbol_slot": 3,
+        "magic": 107000003,
+        "status": "active",
+        "ea_slug": "tv-liq-break"
+      },
+      "roster_v2b": {
+        "already_live": false,
+        "backtest_risk_fixed": 1000.0,
+        "backtest_risk_percent": 0.0,
+        "backtest_setfile": "framework/EAs/QM5_10700_tv-liq-break/sets/QM5_10700_tv-liq-break_XAUUSD.DWX_H1_backtest.set",
+        "ea_id": 10700,
+        "ea_label": "QM5_10700_tv-liq-break",
+        "live_deployed_preset": null,
+        "live_magic_number": null,
+        "live_risk_percent": null,
+        "magic_number": 107000003,
+        "magic_slot": 3,
+        "magic_slot_status": "REGISTERED_ACTIVE",
+        "proposed_slot": 3,
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\055f166e-7c08-5c72-ae60-01a54e15d9f1\\receipt.json",
+        "q14_terminal_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "055f166e-7c08-5c72-ae60-01a54e15d9f1",
+        "stream_file": "10700_XAUUSD_DWX.jsonl",
+        "symbol": "XAUUSD.DWX"
+      },
+      "venue": {
+        "venue_symbol": "XAUUSD",
+        "from_alias_registry": true,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 776,
+        "evidence": [
+          "execution_symbol_aliases_v1.json FTMO_TRIAL (account 1513845506)",
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history",
+          "terminal logs x776"
+        ],
+        "verified": true
+      }
+    },
+    {
+      "ea_id": 11660,
+      "factory_symbol": "NDX.DWX",
+      "base_symbol": "NDX",
+      "seal": {
+        "work_item_id": "f489a2c9-a354-4ee0-80a3-44227a2a7931",
+        "updated_at": "2026-09-04T02:00:32+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\ce9d7a9e-2494-4eec-ac36-06e21084ba92\\QM5_11660\\Q10_NEWS\\f489a2c9-a354-4ee0-80a3-44227a2a7931\\aggregate.json",
+        "seal_sha256": "616b483c796e45cf0c540aff6c4891afd057dbd589c94d3393467f6c764946df",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_11660_pp-wedge\\sets\\QM5_11660_pp-wedge_NDX.DWX_H4_backtest.set",
+        "source_exists": true,
+        "source_sha256_actual": "89385a95425cb869931bc17c49e538f62972a0dc9f5fcd461fbfe5f1055a2a2e",
+        "source_sha256_seal": "89385a95425cb869931bc17c49e538f62972a0dc9f5fcd461fbfe5f1055a2a2e",
+        "source_sha256_db": null,
+        "seal_ex5_sha256": "5db350ac57411c2b6d81987db4e2f5ec8598eabb05c058f2df6da2dcfe70610e",
+        "timeframe": "H4",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "931f24f8826c93c11fc1448aa21d4d8d3fddab0020cd05b70a392d0cce1f8c20"
+          ],
+          "temporal_mode": "PRE60",
+          "temporal_mode_id": 2
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11660_pp-wedge\\QM5_11660_pp-wedge.ex5",
+          "sha256": "5db350ac57411c2b6d81987db4e2f5ec8598eabb05c058f2df6da2dcfe70610e",
+          "bytes": 370352
+        }
+      ],
+      "q08": null,
+      "w38_stream": {
+        "key": "11660:NDX.DWX",
+        "sha256": "a3f6200fb88377fc80edf8b9ef6e054ce0222e4aad28b6cad1efba6f80bbaf21",
+        "size_bytes": 586266,
+        "source_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\11660_NDX_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11660_NDX_DWX.jsonl",
+        "exists": true,
+        "trades": 1410,
+        "magics": [
+          116600004
+        ],
+        "sha256": "a3f6200fb88377fc80edf8b9ef6e054ce0222e4aad28b6cad1efba6f80bbaf21"
+      },
+      "magic_registry": {
+        "symbol_slot": 4,
+        "magic": 116600004,
+        "status": "active",
+        "ea_slug": "pp-wedge"
+      },
+      "roster_v2b": {
+        "already_live": false,
+        "backtest_risk_fixed": 1000.0,
+        "backtest_risk_percent": 0.0,
+        "backtest_setfile": null,
+        "ea_id": 11660,
+        "ea_label": "QM5_11660",
+        "live_deployed_preset": null,
+        "live_magic_number": null,
+        "live_risk_percent": null,
+        "magic_number": null,
+        "magic_slot": null,
+        "magic_slot_status": "active_registry_row",
+        "proposed_slot": null,
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\96b26421-95d0-568e-a73f-d261c929bc25\\receipt.json",
+        "q14_terminal_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "96b26421-95d0-568e-a73f-d261c929bc25",
+        "stream_file": "11660_NDX_DWX.jsonl",
+        "symbol": "NDX.DWX"
+      },
+      "venue": {
+        "venue_symbol": "US100.cash",
+        "from_alias_registry": true,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 342,
+        "evidence": [
+          "execution_symbol_aliases_v1.json FTMO_TRIAL (account 1513845506)",
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history",
+          "terminal logs x342"
+        ],
+        "verified": true
+      }
+    },
+    {
+      "ea_id": 11422,
+      "factory_symbol": "USDCAD.DWX",
+      "base_symbol": "USDCAD",
+      "seal": {
+        "work_item_id": "74fec478-4823-4d84-a9a1-41319407197d",
+        "updated_at": "2026-09-04T02:01:36+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\21eb42e1-5107-4033-b9f6-a97c1edc15d1\\QM5_11422\\Q10_NEWS\\74fec478-4823-4d84-a9a1-41319407197d\\aggregate.json",
+        "seal_sha256": "0ea766456a304004b92fa3da40524138db2765b4fec13c62128cb49b0aefee09",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+        "source_exists": true,
+        "source_sha256_actual": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+        "source_sha256_seal": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+        "source_sha256_db": null,
+        "seal_ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "timeframe": "D1",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "13fb226e11e10f81279ce9e70a02dedfaba0f6dc35fef1a5efa14677385f47ea"
+          ],
+          "temporal_mode": "OFF",
+          "temporal_mode_id": 0
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\QM5_11422_williams-18ma-outside-bar-entry-d1.ex5",
+          "sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+          "bytes": 367794
+        }
+      ],
+      "q08": {
+        "work_item_id": "2bd0f95c-6c62-4a53-92cf-04f0d39fbb48",
+        "phase": "Q08",
+        "verdict": "PASS",
+        "ex5_sha256": "2b98e9e902313148be78d88513fcbda2476150b1a7605eb15a50b2cca6b32d66",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11422_williams-18ma-outside-bar-entry-d1\\sets\\QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+        "setfile_sha256": "715bce2fb8762cef12dcdff86eb6c144069b6d5a487d5e39fcaa1de71248a5ff",
+        "updated_at": "2026-09-04T06:23:15+00:00"
+      },
+      "w38_stream": {
+        "key": "11422:USDCAD.DWX",
+        "sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+        "size_bytes": 80441,
+        "source_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "exists": true,
+        "trades": 195,
+        "magics": [
+          114220004
+        ],
+        "sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198"
+      },
+      "magic_registry": {
+        "symbol_slot": 4,
+        "magic": 114220004,
+        "status": "active",
+        "ea_slug": "williams-18ma-outside-bar-entry-d1"
+      },
+      "roster_v2b": {
+        "already_live": false,
+        "backtest_risk_fixed": 1000.0,
+        "backtest_risk_percent": 0.0,
+        "backtest_setfile": "framework/EAs/QM5_11422_williams-18ma-outside-bar-entry-d1/sets/QM5_11422_williams-18ma-outside-bar-entry-d1_USDCAD.DWX_D1_backtest.set",
+        "ea_id": 11422,
+        "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "live_deployed_preset": null,
+        "live_magic_number": null,
+        "live_risk_percent": null,
+        "magic_number": 114220004,
+        "magic_slot": 4,
+        "magic_slot_status": "REGISTERED_ACTIVE",
+        "proposed_slot": 4,
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\46e13fdd-f126-5525-8bc0-c194ca7aad92\\receipt.json",
+        "q14_terminal_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "46e13fdd-f126-5525-8bc0-c194ca7aad92",
+        "stream_file": "11422_USDCAD_DWX.jsonl",
+        "symbol": "USDCAD.DWX"
+      },
+      "venue": {
+        "venue_symbol": "USDCAD",
+        "from_alias_registry": false,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 0,
+        "evidence": [
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history",
+          "currently attached chart chart04.chr"
+        ],
+        "verified": true
+      }
+    },
+    {
+      "ea_id": 10145,
+      "factory_symbol": "XAUUSD.DWX",
+      "base_symbol": "XAUUSD",
+      "seal": {
+        "work_item_id": "13e9d6f1-1533-4d38-a885-205cd5d69217",
+        "updated_at": "2026-09-04T02:00:50+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\c279f5bb-f731-409f-bef0-5e2aae6cdfae\\QM5_10145\\Q10_NEWS\\13e9d6f1-1533-4d38-a885-205cd5d69217\\aggregate.json",
+        "seal_sha256": "ac6331cb771b8b3ce8f4e6248c2c8a277e02a5856231bc5162b586078636f405",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\sets\\QM5_10145_tsm-meanret_XAUUSD.DWX_D1_backtest_ablation_02.set",
+        "source_exists": true,
+        "source_sha256_actual": "9a8b6573cec9991f167aa0710e6977c16800150568cdb491e184c1d41f1ccb35",
+        "source_sha256_seal": "9a8b6573cec9991f167aa0710e6977c16800150568cdb491e184c1d41f1ccb35",
+        "source_sha256_db": null,
+        "seal_ex5_sha256": "c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86",
+        "timeframe": "D1",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "b87936084ce3a2968a86b4f0527dd17fc50c865ba8b8503c0f056007e34d98d3"
+          ],
+          "temporal_mode": "OFF",
+          "temporal_mode_id": 0
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\QM5_10145_tsm-meanret.ex5",
+          "sha256": "c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86",
+          "bytes": 363274
+        }
+      ],
+      "q08": {
+        "work_item_id": "48778bc7-e7e0-499a-8266-4c0c1c50e8a5",
+        "phase": "Q08",
+        "verdict": "PASS",
+        "ex5_sha256": "c3f5476eff34ce65b25acf8bd967b5d0b349ce8e05bd492f82316f899a38db86",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10145_tsm-meanret\\sets\\QM5_10145_tsm-meanret_XAUUSD.DWX_D1_backtest_ablation_02.set",
+        "setfile_sha256": "9a8b6573cec9991f167aa0710e6977c16800150568cdb491e184c1d41f1ccb35",
+        "updated_at": "2026-08-26T00:55:28+00:00"
+      },
+      "w38_stream": {
+        "key": "10145:XAUUSD.DWX",
+        "sha256": "c253fe5abb0b2c92dff866797b27bcfdfd272635659b1d784c1512ddcfd9bbf4",
+        "size_bytes": 126161,
+        "source_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\10145_XAUUSD_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10145_XAUUSD_DWX.jsonl",
+        "exists": true,
+        "trades": 306,
+        "magics": [
+          101450034
+        ],
+        "sha256": "c253fe5abb0b2c92dff866797b27bcfdfd272635659b1d784c1512ddcfd9bbf4"
+      },
+      "magic_registry": {
+        "symbol_slot": 34,
+        "magic": 101450034,
+        "status": "active",
+        "ea_slug": "tsm-meanret"
+      },
+      "roster_v2b": {
+        "already_live": false,
+        "backtest_risk_fixed": 1000.0,
+        "backtest_risk_percent": 0.0,
+        "backtest_setfile": null,
+        "ea_id": 10145,
+        "ea_label": "QM5_10145",
+        "live_deployed_preset": null,
+        "live_magic_number": null,
+        "live_risk_percent": null,
+        "magic_number": null,
+        "magic_slot": null,
+        "magic_slot_status": "active_registry_row",
+        "proposed_slot": null,
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\aa0dc3ca-e736-52b4-9c63-4bd7df9e56f3\\receipt.json",
+        "q14_terminal_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "aa0dc3ca-e736-52b4-9c63-4bd7df9e56f3",
+        "stream_file": "10145_XAUUSD_DWX.jsonl",
+        "symbol": "XAUUSD.DWX"
+      },
+      "venue": {
+        "venue_symbol": "XAUUSD",
+        "from_alias_registry": true,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 776,
+        "evidence": [
+          "execution_symbol_aliases_v1.json FTMO_TRIAL (account 1513845506)",
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history",
+          "terminal logs x776"
+        ],
+        "verified": true
+      }
+    },
+    {
+      "ea_id": 20266,
+      "factory_symbol": "XTIUSD.DWX",
+      "base_symbol": "XTIUSD",
+      "seal": {
+        "work_item_id": "f7b49d75-61ec-42eb-92e7-a3b029bb5df8",
+        "updated_at": "2026-09-04T02:00:30+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\42e4b18c-4f1b-4c3f-8129-1265fa42dd7b\\QM5_20266\\Q10_NEWS\\f7b49d75-61ec-42eb-92e7-a3b029bb5df8\\aggregate.json",
+        "seal_sha256": "5f983383a3e51321f86aef8654ee5acce3174f1797bbc57ef7bcf2d98a97682e",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\sets\\QM5_20266_collins-66mom_XTIUSD.DWX_D1_backtest.set",
+        "source_exists": true,
+        "source_sha256_actual": "1e5db116a559198cf26b27c099728b636e3fce05b5cbf899a1fffafbcbe3f6e9",
+        "source_sha256_seal": "1e5db116a559198cf26b27c099728b636e3fce05b5cbf899a1fffafbcbe3f6e9",
+        "source_sha256_db": null,
+        "seal_ex5_sha256": "8760402ac1ba34d9631b125989d13e63a737a0a305f6b3d6b00f3d1b6e128fed",
+        "timeframe": "D1",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "24dd7bd6cbf97ecc62c8a1138bebc36f0df255ef39d2e10bff0b75c03675db45"
+          ],
+          "temporal_mode": "OFF",
+          "temporal_mode_id": 0
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\QM5_20266_collins-66mom.ex5",
+          "sha256": "8760402ac1ba34d9631b125989d13e63a737a0a305f6b3d6b00f3d1b6e128fed",
+          "bytes": 372464
+        }
+      ],
+      "q08": {
+        "work_item_id": "87731bac-29cc-4846-ac26-b348b13af59b",
+        "phase": "Q08",
+        "verdict": "PASS",
+        "ex5_sha256": "8760402ac1ba34d9631b125989d13e63a737a0a305f6b3d6b00f3d1b6e128fed",
+        "setfile_path": "C:\\QM\\repo\\framework\\EAs\\QM5_20266_collins-66mom\\sets\\QM5_20266_collins-66mom_XTIUSD.DWX_D1_backtest.set",
+        "setfile_sha256": null,
+        "updated_at": "2026-08-08T20:27:07+00:00"
+      },
+      "w38_stream": {
+        "key": "20266:XTIUSD.DWX",
+        "sha256": "c70651f78c4a5cd9aec42dda4207e14d206575134ccebb058b2e3e1e42f180d3",
+        "size_bytes": 176778,
+        "source_path": "D:\\QM\\reports\\portfolio\\sleeve_streams\\QM\\q08_trades\\20266_XTIUSD_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\20266_XTIUSD_DWX.jsonl",
+        "exists": true,
+        "trades": 432,
+        "magics": [
+          202660000
+        ],
+        "sha256": "c70651f78c4a5cd9aec42dda4207e14d206575134ccebb058b2e3e1e42f180d3"
+      },
+      "magic_registry": {
+        "symbol_slot": 0,
+        "magic": 202660000,
+        "status": "active",
+        "ea_slug": "collins-66mom"
+      },
+      "roster_v2b": null,
+      "venue": {
+        "venue_symbol": "USOIL.cash",
+        "from_alias_registry": true,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 100,
+        "evidence": [
+          "execution_symbol_aliases_v1.json FTMO_TRIAL (account 1513845506)",
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history",
+          "terminal logs x100",
+          "currently attached chart chart06.chr,chart07.chr"
+        ],
+        "verified": true
+      }
+    },
+    {
+      "ea_id": 12710,
+      "factory_symbol": "XTIUSD.DWX",
+      "base_symbol": "XTIUSD",
+      "seal": {
+        "work_item_id": "2615606f-2e3b-4c24-91bc-a94dc02cb098",
+        "updated_at": "2026-09-04T01:59:52+00:00",
+        "seal_path": "D:\\QM\\reports\\work_items\\9a2e9380-aeab-4096-b1cb-c07fbdc30752\\QM5_12710\\Q10_NEWS\\2615606f-2e3b-4c24-91bc-a94dc02cb098\\aggregate.json",
+        "seal_sha256": "d3243710f2e3fce3276e52646b52ec7053983c2afda0c87a0fd66024c47b1ab5",
+        "seal_schema": "q09-news-adjudication/v3",
+        "verdict": "CONFIG_LOCKED",
+        "source_setfile": "C:\\QM\\repo\\framework\\EAs\\QM5_12710_commodity-tsmom-12m-atr\\sets\\QM5_12710_commodity-tsmom-12m-atr_XTIUSD.DWX_D1_backtest.set",
+        "source_exists": true,
+        "source_sha256_actual": "e3ccc3412fd892ee68b93392c10165bdceae1204c8b1d0d4ad33b706d5275c65",
+        "source_sha256_seal": "e3ccc3412fd892ee68b93392c10165bdceae1204c8b1d0d4ad33b706d5275c65",
+        "source_sha256_db": null,
+        "seal_ex5_sha256": "11474d4cffcce6867d2907005fc6256f59f88f126759dcfb11f880765a36b95b",
+        "timeframe": "D1",
+        "chosen_news_config": {
+          "compliance_mode": "DXZ",
+          "setfile_sha256s": [
+            "14feaab591b41beb38d167b9de40490bb74963457a15900df5c1560c67253acb"
+          ],
+          "temporal_mode": "OFF",
+          "temporal_mode_id": 0
+        },
+        "status": "OK"
+      },
+      "binaries": [
+        {
+          "path": "C:\\QM\\repo\\framework\\EAs\\QM5_12710_commodity-tsmom-12m-atr\\QM5_12710_commodity-tsmom-12m-atr.ex5",
+          "sha256": "11474d4cffcce6867d2907005fc6256f59f88f126759dcfb11f880765a36b95b",
+          "bytes": 426676
+        }
+      ],
+      "q08": null,
+      "w38_stream": {
+        "key": "12710:XTIUSD.DWX",
+        "sha256": "c09e9ea0bdeb4d888300bf4fe5afa6d84dd097aba864472415facc643d7e8dcd",
+        "size_bytes": 33523,
+        "source_path": "D:\\QM\\reports\\portfolio\\dxz_v2_20260913\\streams_v2b\\QM\\q08_trades\\12710_XTIUSD_DWX.jsonl",
+        "status": "PRESENT"
+      },
+      "stream_observed": {
+        "path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\12710_XTIUSD_DWX.jsonl",
+        "exists": true,
+        "trades": 82,
+        "magics": [
+          127100000
+        ],
+        "sha256": "c09e9ea0bdeb4d888300bf4fe5afa6d84dd097aba864472415facc643d7e8dcd"
+      },
+      "magic_registry": {
+        "symbol_slot": 0,
+        "magic": 127100000,
+        "status": "active",
+        "ea_slug": "commodity-tsmom-12m-atr"
+      },
+      "roster_v2b": {
+        "already_live": false,
+        "backtest_risk_fixed": 1000.0,
+        "backtest_risk_percent": 0.0,
+        "backtest_setfile": "framework/EAs/QM5_12710_commodity-tsmom-12m-atr/sets/QM5_12710_commodity-tsmom-12m-atr_XTIUSD.DWX_D1_backtest.set",
+        "ea_id": 12710,
+        "ea_label": "QM5_12710_commodity-tsmom-12m-atr",
+        "live_deployed_preset": null,
+        "live_magic_number": null,
+        "live_risk_percent": null,
+        "magic_number": 127100000,
+        "magic_slot": 0,
+        "magic_slot_status": "REGISTERED_ACTIVE",
+        "proposed_slot": 0,
+        "q14_evidence_path": "D:\\QM\\reports\\optimization_fork\\ccd029ae-dee1-5c81-b5b6-e0ecf73c4058\\receipt.json",
+        "q14_terminal_verdict": "KEEP_INCUMBENT",
+        "q14_work_item_id": "ccd029ae-dee1-5c81-b5b6-e0ecf73c4058",
+        "stream_file": "12710_XTIUSD_DWX.jsonl",
+        "symbol": "XTIUSD.DWX"
+      },
+      "venue": {
+        "venue_symbol": "USOIL.cash",
+        "from_alias_registry": true,
+        "in_ticks": true,
+        "in_history": true,
+        "log_hits": 100,
+        "evidence": [
+          "execution_symbol_aliases_v1.json FTMO_TRIAL (account 1513845506)",
+          "bases/FTMO-Demo/ticks",
+          "bases/FTMO-Demo/history",
+          "terminal logs x100",
+          "currently attached chart chart06.chr,chart07.chr"
+        ],
+        "verified": true
+      }
+    }
+  ]
+}

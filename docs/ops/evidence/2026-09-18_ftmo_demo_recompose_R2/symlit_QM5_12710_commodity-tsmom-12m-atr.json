@@ -1,0 +1,36 @@
+{
+  "schema": "qm.ea-symbol-literal-inventory/v1",
+  "baseline_commit": "bb584c73239c5bd9f7ba98d2bf5863bafa8cfe48",
+  "ea_label": "QM5_12710_commodity-tsmom-12m-atr",
+  "summary": {
+    "mql_sources_scanned": 1,
+    "symbol_literal_sources": 1,
+    "symbol_literal_occurrences": 1,
+    "literal_class_counts": {
+      "trading_logic_literal": 1
+    },
+    "literal_severity_counts": {
+      "WARN": 1
+    },
+    "non_chart_market_data_sources": 0,
+    "non_chart_market_data_calls": 0,
+    "symbolselect_or_copyrates_sources": 0,
+    "api_source_counts": {
+      "CopyRates": 0,
+      "SymbolSelect": 0
+    },
+    "priority_candidate_sources": 0
+  },
+  "findings": [
+    {
+      "path": "framework/EAs/QM5_12710_commodity-tsmom-12m-atr/QM5_12710_commodity-tsmom-12m-atr.mq5",
+      "line": 56,
+      "symbol": "XTIUSD.DWX",
+      "classification": "trading_logic_literal",
+      "severity": "WARN",
+      "existed_at_cutover": true
+    }
+  ],
+  "priority_candidates": [],
+  "multi_symbol_sources": []
+}
