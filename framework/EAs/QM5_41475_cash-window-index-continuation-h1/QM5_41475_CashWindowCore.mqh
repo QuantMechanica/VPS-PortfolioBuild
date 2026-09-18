@@ -361,6 +361,23 @@ bool HcwNewsBlackoutBlocks(const datetime broker_now)
    g_hcw_news_cache_bucket = bucket;
    g_hcw_news_cache_blocked = false;
 
+   // LIVE / real-time: the native MT5 economic calendar is the ONLY source
+   // (Hard Rule: a live EA never reads the factory backtest archive). The
+   // framework helper fails closed when the calendar is unreachable or
+   // unpopulated (out_ok=false -> block). Impact threshold follows the
+   // framework input qm_news_min_impact (default "high", card semantics).
+   // Fix 2026-09-18 (Fable critic, blocking finding B-NEWS).
+   if(MQLInfoInteger(MQL_TESTER) == 0 && MQLInfoInteger(MQL_OPTIMIZATION) == 0)
+     {
+      bool calendar_ok = false;
+      const bool in_window = QM_NewsLiveInWindow(_Symbol, TimeTradeServer(),
+                                                 strategy_news_blackout_minutes, 0,
+                                                 calendar_ok);
+      g_hcw_news_cache_blocked = (!calendar_ok) || in_window;
+      return g_hcw_news_cache_blocked;
+     }
+
+   // Strategy Tester: deterministic factory archive (gate-validated path).
    if(!QM_NewsIsLoaded() &&
       !QM_NewsInit("D:\\QM\\data\\news_calendar",
                    qm_news_stale_max_hours,
@@ -458,10 +475,17 @@ bool HcwEntrySignal(QM_EntryRequest &req)
    MqlDateTime utc;
    HcwUtcStruct(now, utc);
 
-   // Entry window: UTC hour within [start, end] inclusive, and strictly after
-   // the breakout window bars (a window bar cannot break its own reference).
-   if(utc.hour < strategy_session_start_hour_utc + strategy_breakout_window_bars ||
-      utc.hour > strategy_session_end_hour_utc)
+   // Entry window is evaluated on the CLOSED signal bar (shift 1): its UTC
+   // hour must lie within [start + N, end] inclusive, i.e. strictly after the
+   // breakout window bars (a range bar cannot fail against its own reference).
+   // Fix 2026-09-18 (Fable critic, blocking finding B-WINDOW): the forming
+   // bar's hour was tested before, which made the last breakout window bar dead
+   // and silently dropped the session_end signal bar (binary != prereg pilot).
+   // `now` keeps governing the Friday cutoff and the flatten proximity below.
+   MqlDateTime sig;
+   HcwUtcStruct(iTime(_Symbol, PERIOD_H1, 1), sig);
+   if(sig.hour < strategy_session_start_hour_utc + strategy_breakout_window_bars ||
+      sig.hour > strategy_session_end_hour_utc)
       return false;
 
    // Friday cutoff for NEW entries.

@@ -15,14 +15,11 @@
 // below delegate to it). Everything else is framework wiring and MUST stay
 // intact.
 //
-// REGISTRY STATUS: identity/magic PENDING_ALLOCATION — the governed allocator
-// accepted this card (dry-run action=allocate, 3 rows) but its apply step
-// refused on an environmental guard (two unrelated EA dirs, QM5_11924 /
-// QM5_11941, exist only as uncommitted content in the canonical worktree, so
-// the resolver regeneration would drop their active rows from a clean
-// worktree). No registry rows for ea_id 41475 exist; do NOT pipeline or
-// deploy before allocation completes. See
-// docs/ops/evidence/2026-09-15_kimi_hcw/magic_allocation_report.json.
+// REGISTRY STATUS: ALLOCATED — governed allocator wrote active
+// ea_id_registry.csv / magic_numbers.csv rows (magic = ea_id*10000 + slot,
+// slots per approved-card symbol order) and QM_MagicResolver.mqh carries the
+// tuples; the earlier PENDING_ALLOCATION note is historical (see the build
+// receipt under docs/ops/evidence/). Updated 2026-09-18 (Fable critic pass).
 //
 // Session hours are inputs in UTC (card semantics); broker time is mapped to
 // UTC through the shared QM_DSTAware include — no hand-rolled DST. Symbols

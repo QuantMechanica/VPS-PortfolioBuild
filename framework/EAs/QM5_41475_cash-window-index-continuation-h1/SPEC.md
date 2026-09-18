@@ -5,8 +5,8 @@
 **Source:** `QM-RESEARCH-2026-0002` (internal research; preregistration `cd661891447f6bb2ef2465607f7df40138e6a9de0879d0242b5dc7c35554322e`)
 **Author of this spec:** Kimi (interim strategy-engineering delegation)
 **Last revised:** 2026-09-15
-**STATUS: REVIEW_PENDING** — independent non-Kimi critique pending (claude disabled until 2026-09-17, codex on hold until 2026-09-19, agy quota-dead).
-**REGISTRY STATUS: PENDING_ALLOCATION** — the governed magic allocator accepted this card (`action: allocate`, 3 rows, dry-run evidence) but its apply step fail-closed on an environmental guard: active magic rows for QM5_11924 / QM5_11941 reference EA directories that exist only as uncommitted content in the canonical worktree, so resolver regeneration from any clean worktree of `da1b4b4e0c` would drop them. No `ea_id_registry.csv` / `magic_numbers.csv` rows exist for 41475 and `QM_MagicResolver.mqh` has no 41475 tuples. **Do not pipeline, backtest, or deploy until the allocation is completed** (see `docs/ops/evidence/2026-09-15_kimi_hcw/magic_allocation_report.json`). Planned magic values: slot 0 NDX.DWX = 414750000, slot 1 GDAXI.DWX = 414750001, slot 2 SP500.DWX = 414750002.
+**STATUS: CRITIC_FIXES_APPLIED (2026-09-18)** — independent non-Kimi critique by Fable (Claude, fable-5.1) with verdict ACCEPT_WITH_FIXES; the blocking fixes (live news blackout via native MT5 calendar; entry window on the closed signal bar where applicable) are applied and compiled 0/0; deferred findings are listed in `docs/ops/evidence/2026-09-18_ftmo_candidate_critic_wave/RECEIPT.md`. Ready for seal → prescreen → enqueue-compile.
+**REGISTRY STATUS: ALLOCATED** — active `ea_id_registry.csv` / `magic_numbers.csv` rows exist and `QM_MagicResolver.mqh` carries the tuples (magic = ea_id*10000 + slot, slots per approved-card symbol order). The earlier PENDING_ALLOCATION paragraph is historical (see the build receipt).
 
 ---
 
