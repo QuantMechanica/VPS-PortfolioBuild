@@ -1,0 +1,43 @@
+{
+  "schema": "qm.card-universe-canonicalization-evidence/v1",
+  "task_id": "55fb40e6-2d5c-4b8e-bb49-9b05302cfc28",
+  "ea_id": "QM5_12947",
+  "ea_label": "QM5_12947_mql5-ha-ema-trend-card",
+  "scope": "card-document correction only (D: runtime approved-card copy); no .mq5/.ex5 change",
+  "root_cause": {
+    "classification": "CARD_NON_CANONICAL_SYMBOL_LITERAL",
+    "finding": "The approved card at D:/QM/strategy_farm/artifacts/cards_approved/QM5_12947_mql5-ha-ema-trend-card.md declared target_symbols [EURUSD.DWX, GBPUSD.DWX, GER40.DWX]. GER40.DWX has zero rows in framework/registry/dwx_symbol_matrix.csv; the canonical DAX custom symbol is GDAXI.DWX (execution_symbol_aliases_v1.json maps both raw 'GDAXI' and raw 'GER40.cash' to logical_symbol GDAXI.DWX). The build_check EA_SYMBOL_NOT_IN_CARD_UNIVERSE check compares the card's declared target_symbols against the actual magic_registry/setfile universe, so a card still saying GER40.DWX is out of sync with the built artifact even when the build itself is fine.",
+    "evidence": [
+      "framework/registry/dwx_symbol_matrix.csv: no GER40 row; GDAXI.DWX present (indices, Custom/Indices/Index DAX/GDAXI.DWX)",
+      "framework/registry/execution_symbol_aliases_v1.json: GDAXI and GER40.cash both alias to logical_symbol GDAXI.DWX",
+      "framework/registry/magic_numbers.csv:17651-17653 -> EA 12947 active magics: slot0 EURUSD.DWX/129470000, slot1 GBPUSD.DWX/129470001, slot2 GDAXI.DWX/129470002 (allocated 2026-08-22, Codex)"
+    ]
+  },
+  "build_state_before_and_after": {
+    "note": "Compile/build_check state for this EA was PASS both before and after the card edit; the card text was the only inconsistency. compile-status shows verdict COMPILE_OK, failure_classes=[], from a prior run (work_item 5d074dcd-7192-4460-9731-06f1aeeba472, completed_at 2026-09-07T03:40:02Z) whose candidate_recheck.symbols already matched [EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX]. The card had regressed to the GER40.DWX literal after that successful compile (mechanism not determined from available evidence); this task restores the card to match the already-passing build so the approved-card record is not evidence-inconsistent with the compiled artifact.",
+    "compile_work_item_id": "5d074dcd-7192-4460-9731-06f1aeeba472",
+    "compile_status": "done",
+    "compile_verdict": "COMPILE_OK",
+    "ex5_sha256": "6818157a429d98e15b5a1edb019c8d138f4784f329d560d20c3fb35468f715d2",
+    "action_taken": "none (compile already correct and current; no new COMPILE_EA enqueued to avoid an unnecessary recompile of an already-passing artifact)"
+  },
+  "card_fix": {
+    "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12947_mql5-ha-ema-trend-card.md",
+    "changes": [
+      "frontmatter target_symbols: [EURUSD.DWX, GBPUSD.DWX, GER40.DWX] -> [EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX]",
+      "frontmatter r3_reasoning: 'GER40.DWX' -> 'GDAXI.DWX'",
+      "body '## Target Symbols / Period' bullet: 'GER40.DWX' -> 'GDAXI.DWX'"
+    ],
+    "verified_by": "tools/strategy_farm/farmctl.py parse_card_frontmatter() re-parsed post-edit: target_symbols=[EURUSD.DWX, GBPUSD.DWX, GDAXI.DWX], g0_status=APPROVED"
+  },
+  "magic_allocator_recheck": {
+    "command": "python tools/strategy_farm/farmctl.py magic-allocation-inventory",
+    "result": "read-only; no finding row for ea_id QM5_12947 in the 1960-row output (no CARD_AMENDMENT_REQUIRED / card_target_symbols_missing_or_invalid classification) -- registry and card are consistent post-fix"
+  },
+  "safety": {
+    "strategy_mechanics_changed": false,
+    "risk_fixed_required_positive": "unaffected (not touched)",
+    "t_live_untouched": true,
+    "autotrading_untouched": true
+  }
+}
