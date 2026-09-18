@@ -1,0 +1,1074 @@
+{
+ "schema": "qm.ftmo-official-rules-snapshot/v1",
+ "retrieved_at_utc": "2026-09-18T02:37:46Z",
+ "retrieval_method": "Direct HTTPS GET of each official FTMO page from the QuantMechanica VPS on 2026-09-18 between 02:37:46Z and 02:38:57Z, using Python urllib with User-Agent 'Mozilla/5.0'. No credentials, no cookies and no session: every page is the anonymous public rendering. For every request the status line, Content-Type, final URL after redirects, response length, Last-Modified header and the SHA-256 of the exact response bytes were recorded, and the body was retained in-repository under docs/ops/evidence/ftmo_fetch_20260918/. Claim wordings were then machine-checked as literal substrings of those retained bodies by docs/ops/evidence/2026-09-18_ftmo_rules_repin/build_snapshot.py, which aborts rather than emit a quote it cannot locate.",
+ "profile": "FTMO Challenge 2-Step / USD 100000 / Standard",
+ "freshness_max_age_days": 7,
+ "profile_label_note": "This snapshot is labelled Standard, not Swing. The account the M13 binding targets (login 1514536732 on FTMO-Demo) is a STANDARD_2STEP_100K_FREE_TRIAL account, so Standard is the correct profile label for the rules that govern it; the 2026-09-04 Swing label was the stale one. The rule facts themselves are product-level (FTMO Challenge: 2-Step, USD 100000) and are identical for both account types during the Evaluation Process: the 2026-09-18 news and weekend pages state explicitly that the restrictions 'do not apply during the Evaluation Process' 'regardless of the account type (Standard account or Swing)'. The only account-type-scoped rows are the two swing_*_leverage claims, which are Swing-scoped by key name, carry their 2026-09-02 values unchanged, and are this snapshot's only CARRIED_OVER rows.",
+ "raw_response_note": "This is the normalized, hash-bound rules identity. Every response observation is a real 2026-09-18 measurement and every raw body is retained in-repository. The Last-Modified header returned by ftmo.com equals the request time for every page, so it is a dynamic-response artefact and NOT a content vintage; last_modified_is_content_vintage is false on every source record for that reason.",
+ "vintage_binding_note": "The rulepack's official_sources rows bind the snapshot vintage retrieved_at_utc 2026-09-18T02:37:46Z (retrieved_on 2026-09-18), which is the fetch-run timestamp and the exact per-source observation for all seven expected sources. The two non-expected corroborating bodies were observed later in the same run (ftmo_scaling_plan_official at 2026-09-18T02:37:48Z, cand_comparison_table at 2026-09-18T02:38:57Z) and are recorded with their own timestamps.",
+ "sources": [
+  {
+   "source_id": "ftmo_trading_objectives_official",
+   "title": "FTMO Trading Objectives",
+   "url": "https://ftmo.com/en/trading-objectives/",
+   "final_url": "https://ftmo.com/en/trading-objectives/",
+   "http_status": 200,
+   "content_type": "text/html; charset=UTF-8",
+   "retrieved_at_utc": "2026-09-18T02:37:46Z",
+   "response_bytes": 287644,
+   "response_sha256_observation": "c9cba53c83c62d6986b647978c0fb595504d66e6e1b97d5e45eab7372192679f",
+   "last_modified_header_observation": "Fri, 18 Sep 2026 02:37:46 GMT",
+   "last_modified_is_content_vintage": false,
+   "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html"
+  },
+  {
+   "source_id": "ftmo_economic_terms_official",
+   "title": "FTMO 2-Step economics, Swing leverage, and Scaling Plan",
+   "url": "https://ftmo.com/en/2-step-challenge/",
+   "final_url": "https://ftmo.com/en/2-step-challenge/",
+   "http_status": 200,
+   "content_type": "text/html; charset=UTF-8",
+   "retrieved_at_utc": "2026-09-18T02:37:46Z",
+   "response_bytes": 306457,
+   "response_sha256_observation": "81b938784fb93c505eee8b4f002f9caa876b48bd2448e9223086e0b6ebb2e3e0",
+   "last_modified_header_observation": "Fri, 18 Sep 2026 02:37:46 GMT",
+   "last_modified_is_content_vintage": false,
+   "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_economic_terms_official.html",
+   "component_sources": [
+    {
+     "url": "https://ftmo.com/en/2-step-challenge/",
+     "fetched_2026_09_18": true,
+     "http_status": 200,
+     "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_2_step_challenge_official.html",
+     "fact_keys": [
+      "usd_100000_2_step_list_price_usd",
+      "evaluation_fee_refund_percent_with_first_reward",
+      "base_reward_split_percent",
+      "maximum_reward_split_percent"
+     ]
+    },
+    {
+     "url": "https://ftmo.com/en/scaling-plan/",
+     "final_url": "https://ftmo.com/en/reward-growth-and-scaling-plan/",
+     "fetched_2026_09_18": true,
+     "http_status": 200,
+     "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_scaling_plan_official.html",
+     "response_sha256_observation": "878572fa1d766279992da2790562d1dba60bd148eb1fe2333dec70ca166a9e2d",
+     "fact_keys": [
+      "account_balance_increase_percent",
+      "minimum_months_between_scaleups",
+      "scaled_reward_split_percent"
+     ]
+    },
+    {
+     "url": "https://ftmo.com/en/trading-symbols/",
+     "fetched_2026_09_18": true,
+     "http_status": 404,
+     "http_error": "HTTP Error 404: Not Found",
+     "raw_body_path": null,
+     "fact_keys": [
+      "swing_fx_leverage",
+      "swing_metals_and_oil_leverage"
+     ],
+     "note": "Still a dead URL on 2026-09-18, exactly as on 2026-09-04. Eight further candidate replacements were probed and none states a leverage figure; no replacement source was invented. Both fact keys remain CARRIED_OVER."
+    }
+   ]
+  },
+  {
+   "source_id": "ftmo_2_step_challenge_official",
+   "title": "FTMO Challenge: 2-Step",
+   "url": "https://ftmo.com/en/2-step-challenge/",
+   "final_url": "https://ftmo.com/en/2-step-challenge/",
+   "http_status": 200,
+   "content_type": "text/html; charset=UTF-8",
+   "retrieved_at_utc": "2026-09-18T02:37:46Z",
+   "response_bytes": 306457,
+   "response_sha256_observation": "3232d051a99167466aab7643c64a3b9ece005ac61285af4e9a29c68492976ea9",
+   "last_modified_header_observation": "Fri, 18 Sep 2026 02:37:46 GMT",
+   "last_modified_is_content_vintage": false,
+   "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_2_step_challenge_official.html",
+   "note": "Required by the evaluator's source-id set. It resolves to the same URL as ftmo_economic_terms_official and carries no directly attributed claim in claim_provenance; the economic claims attributed to ftmo_economic_terms_official were confirmed in this body as well. The two independent GETs of that URL in the 2026-09-18 run returned bodies of identical length (306457) but different SHA-256, i.e. the page emits per-response varying bytes. The same behaviour was recorded on 2026-09-04."
+  },
+  {
+   "source_id": "ftmo_news_official",
+   "title": "Can I trade news?",
+   "url": "https://ftmo.com/faq/can-i-trade-news/",
+   "final_url": "https://ftmo.com/faq/can-i-trade-news/",
+   "http_status": 200,
+   "content_type": "text/html; charset=UTF-8",
+   "retrieved_at_utc": "2026-09-18T02:37:46Z",
+   "response_bytes": 315341,
+   "response_sha256_observation": "06f7ba730cd9a87715502ba1f58ad1f17dff16d3d26b2d2a94737a5fd1829413",
+   "last_modified_header_observation": "Fri, 18 Sep 2026 02:37:46 GMT",
+   "last_modified_is_content_vintage": false,
+   "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_news_official.html"
+  },
+  {
+   "source_id": "ftmo_weekend_official",
+   "title": "Do I have to close my positions overnight or before the weekend?",
+   "url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
+   "final_url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
+   "http_status": 200,
+   "content_type": "text/html; charset=UTF-8",
+   "retrieved_at_utc": "2026-09-18T02:37:46Z",
+   "response_bytes": 310306,
+   "response_sha256_observation": "6858f418ce6bf269f0d5c6825fbadb9e0cd9fbebf946b72178a24e70e25f87b0",
+   "last_modified_header_observation": "Fri, 18 Sep 2026 02:37:46 GMT",
+   "last_modified_is_content_vintage": false,
+   "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_weekend_official.html"
+  },
+  {
+   "source_id": "ftmo_ea_official",
+   "title": "Which instruments can I trade and what strategies am I allowed to use?",
+   "url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+   "final_url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+   "http_status": 200,
+   "content_type": "text/html; charset=UTF-8",
+   "retrieved_at_utc": "2026-09-18T02:37:46Z",
+   "response_bytes": 311481,
+   "response_sha256_observation": "b1ccbebab4e3a14dcbfe58c36d4ea1350caaa547dc6592530c0244fae19fef4d",
+   "last_modified_header_observation": "Fri, 18 Sep 2026 02:37:46 GMT",
+   "last_modified_is_content_vintage": false,
+   "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html"
+  },
+  {
+   "source_id": "ftmo_forbidden_practices_official",
+   "title": "Forbidden Trading Practices",
+   "url": "https://ftmo.com/en/forbidden-trading-practices/",
+   "final_url": "https://ftmo.com/en/forbidden-trading-practices/",
+   "http_status": 200,
+   "content_type": "text/html; charset=UTF-8",
+   "retrieved_at_utc": "2026-09-18T02:37:46Z",
+   "response_bytes": 237921,
+   "response_sha256_observation": "858149fa20db6be063f42972f4d81c8118124decc538118b4e8a542031e4ca09",
+   "last_modified_header_observation": "Fri, 18 Sep 2026 02:37:46 GMT",
+   "last_modified_is_content_vintage": false,
+   "raw_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_forbidden_practices_official.html"
+  }
+ ],
+ "retained_raw_bodies": [
+  {
+   "source_id": "cand_account_specs_faq",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/cand_account_specs_faq.html",
+   "bytes": 308642,
+   "sha256": "519bcf132c3c4e8c6570efffc269bbfdef73718f4df80be21cc6e40890176b20"
+  },
+  {
+   "source_id": "cand_comparison_table",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+   "bytes": 252213,
+   "sha256": "1d8e3ba21759f90bfdacf99c12981c9ead2ee8c6aa5937270566523de3d24108"
+  },
+  {
+   "source_id": "cand_symbols",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/cand_symbols.html",
+   "bytes": 235039,
+   "sha256": "ee4f542fb8a7bcc409ea505a096aecfcc67282b487dc9bccb09a0b60bef6dbe2"
+  },
+  {
+   "source_id": "ftmo_2_step_challenge_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_2_step_challenge_official.html",
+   "bytes": 306457,
+   "sha256": "3232d051a99167466aab7643c64a3b9ece005ac61285af4e9a29c68492976ea9"
+  },
+  {
+   "source_id": "ftmo_ea_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+   "bytes": 311481,
+   "sha256": "b1ccbebab4e3a14dcbfe58c36d4ea1350caaa547dc6592530c0244fae19fef4d"
+  },
+  {
+   "source_id": "ftmo_economic_terms_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_economic_terms_official.html",
+   "bytes": 306457,
+   "sha256": "81b938784fb93c505eee8b4f002f9caa876b48bd2448e9223086e0b6ebb2e3e0"
+  },
+  {
+   "source_id": "ftmo_forbidden_practices_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_forbidden_practices_official.html",
+   "bytes": 237921,
+   "sha256": "858149fa20db6be063f42972f4d81c8118124decc538118b4e8a542031e4ca09"
+  },
+  {
+   "source_id": "ftmo_news_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_news_official.html",
+   "bytes": 315341,
+   "sha256": "06f7ba730cd9a87715502ba1f58ad1f17dff16d3d26b2d2a94737a5fd1829413"
+  },
+  {
+   "source_id": "ftmo_scaling_plan_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_scaling_plan_official.html",
+   "bytes": 273087,
+   "sha256": "878572fa1d766279992da2790562d1dba60bd148eb1fe2333dec70ca166a9e2d"
+  },
+  {
+   "source_id": "ftmo_trading_objectives_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "bytes": 287644,
+   "sha256": "c9cba53c83c62d6986b647978c0fb595504d66e6e1b97d5e45eab7372192679f"
+  },
+  {
+   "source_id": "ftmo_weekend_official",
+   "path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_weekend_official.html",
+   "bytes": 310306,
+   "sha256": "6858f418ce6bf269f0d5c6825fbadb9e0cd9fbebf946b72178a24e70e25f87b0"
+  }
+ ],
+ "normalized_claims": {
+  "phase1_profit_target_percent": "10",
+  "verification_profit_target_percent": "5",
+  "profit_target_operator": "STRICTLY_GREATER_THAN_TARGET_WHILE_FLAT",
+  "maximum_daily_loss_percent_of_initial": "5",
+  "maximum_daily_loss_reset_timezone": "Europe/Prague",
+  "maximum_daily_loss_reset_local_time": "00:00:00",
+  "maximum_daily_loss_basis": "MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_CAPITAL_AMOUNT",
+  "maximum_daily_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+  "maximum_loss_percent_of_initial": "10",
+  "maximum_loss_model": "STATIC_INITIAL_CAPITAL",
+  "maximum_loss_breach_operator": "EQUITY_STRICTLY_BELOW_LIMIT",
+  "minimum_trading_days_per_phase": 4,
+  "trading_day_qualifier": "AT_LEAST_ONE_POSITION_OPENED_DURING_PRAGUE_LOCAL_DAY",
+  "maximum_trading_period_days": null,
+  "swing_news_restriction_during_evaluation": false,
+  "swing_overnight_or_weekend_restriction": false,
+  "expert_advisors_allowed_subject_to_rules": true,
+  "simultaneous_order_limit": 200,
+  "position_limit_per_day": 2000,
+  "hyperactive_server_request_threshold_per_day": 2000,
+  "real_market_replicability_required": true,
+  "usd_100000_2_step_list_price_usd": 540,
+  "evaluation_fee_refund_percent_with_first_reward": 100,
+  "base_reward_split_percent": 80,
+  "maximum_reward_split_percent": 90,
+  "swing_fx_leverage": "1:30",
+  "swing_metals_and_oil_leverage": "1:15",
+  "account_balance_increase_percent": 25,
+  "minimum_months_between_scaleups": 4,
+  "scaled_reward_split_percent": 90
+ },
+ "claim_provenance": {
+  "phase1_profit_target_percent": [
+   "ftmo_trading_objectives_official"
+  ],
+  "verification_profit_target_percent": [
+   "ftmo_trading_objectives_official"
+  ],
+  "profit_target_operator": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_daily_loss_percent_of_initial": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_daily_loss_reset_timezone": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_daily_loss_reset_local_time": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_daily_loss_basis": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_daily_loss_breach_operator": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_loss_percent_of_initial": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_loss_model": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_loss_breach_operator": [
+   "ftmo_trading_objectives_official"
+  ],
+  "minimum_trading_days_per_phase": [
+   "ftmo_trading_objectives_official"
+  ],
+  "trading_day_qualifier": [
+   "ftmo_trading_objectives_official"
+  ],
+  "maximum_trading_period_days": [
+   "ftmo_trading_objectives_official"
+  ],
+  "swing_news_restriction_during_evaluation": [
+   "ftmo_news_official"
+  ],
+  "swing_overnight_or_weekend_restriction": [
+   "ftmo_weekend_official"
+  ],
+  "expert_advisors_allowed_subject_to_rules": [
+   "ftmo_ea_official"
+  ],
+  "simultaneous_order_limit": [
+   "ftmo_ea_official"
+  ],
+  "position_limit_per_day": [
+   "ftmo_ea_official"
+  ],
+  "hyperactive_server_request_threshold_per_day": [
+   "ftmo_ea_official",
+   "ftmo_forbidden_practices_official"
+  ],
+  "real_market_replicability_required": [
+   "ftmo_ea_official",
+   "ftmo_forbidden_practices_official"
+  ],
+  "usd_100000_2_step_list_price_usd": [
+   "ftmo_economic_terms_official"
+  ],
+  "evaluation_fee_refund_percent_with_first_reward": [
+   "ftmo_economic_terms_official"
+  ],
+  "base_reward_split_percent": [
+   "ftmo_economic_terms_official"
+  ],
+  "maximum_reward_split_percent": [
+   "ftmo_economic_terms_official"
+  ],
+  "swing_fx_leverage": [
+   "ftmo_economic_terms_official"
+  ],
+  "swing_metals_and_oil_leverage": [
+   "ftmo_economic_terms_official"
+  ],
+  "account_balance_increase_percent": [
+   "ftmo_economic_terms_official"
+  ],
+  "minimum_months_between_scaleups": [
+   "ftmo_economic_terms_official"
+  ],
+  "scaled_reward_split_percent": [
+   "ftmo_economic_terms_official"
+  ]
+ },
+ "claim_reconfirmation_2026_09_18": {
+  "phase1_profit_target_percent": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "The Profit Target is calculated as a percentage of your Initial Simulated Capital: 10% for the FTMO Challenge 5% for the Verification",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_trading_objectives_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+     "quote": "FTMO Challenge: Profit Target = $10,000 Balance required for passing = $110,000",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "2-Step tab of the Trading Objectives page."
+  },
+  "verification_profit_target_percent": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "5% for the Verification",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_trading_objectives_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+     "quote": "Verification: Profit Target = $5,000 Balance required for passing = $105,000",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "2-Step tab of the Trading Objectives page."
+  },
+  "profit_target_operator": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "You will meet this objective once your account balance exceeds the Initial Simulated Capital by the required Profit Target with all positions closed.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "STRICTLY_GREATER_THAN_TARGET_WHILE_FLAT normalizes 'exceeds' (strict) together with 'with all positions closed' (flat)."
+  },
+  "maximum_daily_loss_percent_of_initial": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "the Maximum Daily Loss Amount , which is 5% of the Initial Simulated Capital.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "cand_comparison_table",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+     "quote": "Max Daily Loss 5%",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "2-Step tab. The 1-Step tab of the same page states 3% for that other product; it is out of scope for this profile."
+  },
+  "maximum_daily_loss_reset_timezone": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "The Maximum Daily Loss Limit is recalculated daily at 00:00 CE(S)T",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "CE(S)T is the provider wording. Europe/Prague is the IANA zone that realizes CET/CEST and is FTMO's registered seat (Purkynova 2121/3, 110 00 Prague, Czech Republic, per the page footer)."
+  },
+  "maximum_daily_loss_reset_local_time": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "recalculated daily at 00:00 CE(S)T",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "00:00 CE(S)T normalizes to a local reset time of 00:00:00."
+  },
+  "maximum_daily_loss_basis": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "the account balance recorded at 00:00 CE(S)T of the current day and the Maximum Daily Loss Amount , which is 5% of the Initial Simulated Capital.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_trading_objectives_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+     "quote": "On the first day of trading, the account balance used for this calculation is the Initial Simulated Capital.",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "Midnight balance minus a fixed amount, where the amount is fixed to the INITIAL capital and not to the midnight balance."
+  },
+  "maximum_daily_loss_breach_operator": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "below which your account equity (i.e., Balance + Open Positions P/L ± Swaps – Commissions) cannot drop. If the equity drops below this limit, the rule is considered violated.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "Breach requires equity strictly below the limit; equity exactly at the limit is not a breach."
+  },
+  "maximum_loss_percent_of_initial": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "the Maximum Loss Amount , which is 10% of the Initial Simulated Capital.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "cand_comparison_table",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+     "quote": "Max Loss 10%",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "2-Step tab."
+  },
+  "maximum_loss_model": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "The Maximum Loss rule establishes a static limit (the Maximum Loss Limit )",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_trading_objectives_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+     "quote": "The Maximum Loss Limit is calculated as the difference between: the Initial Simulated Capital and the Maximum Loss Amount",
+     "quote_is_literal_substring_of_retained_body": true
+    },
+    {
+     "source_id": "cand_comparison_table",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+     "quote": "Max Loss type Static",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "2-Step is static on the initial capital. The 1-Step product on the same page is end-of-day trailing; that is a different product, not a change to the 2-Step rule."
+  },
+  "maximum_loss_breach_operator": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "The Maximum Loss rule establishes a static limit (the Maximum Loss Limit ) below which your account equity (i.e., Balance + Open Positions P/L ± Swaps – Commissions) cannot drop. If the equity drops below this limit, the rule is considered violated.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "Same strict-below operator as the daily rule."
+  },
+  "minimum_trading_days_per_phase": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "The Minimum Trading Days rule requires the trader to achieve at least 4 Trading Days.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "cand_comparison_table",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+     "quote": "Min Trading Days 4 days",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "Applies to both 2-Step phases; there is no such rule on the subsequent FTMO Account."
+  },
+  "trading_day_qualifier": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "A Trading Day is defined as any day – measured from 00:00:00 to 23:59:59 CE(S)T – during which at least one position is opened .",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "Entry-day counting basis, which is what the QM Aktivitaetskriterium (OWNER 2026-08-20, OQ-18) adopted."
+  },
+  "maximum_trading_period_days": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_trading_objectives_official",
+   "confirmed_in_url": "https://ftmo.com/en/trading-objectives/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_trading_objectives_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "No time limit",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_trading_objectives_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_2_step_challenge_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_2_step_challenge_official.html",
+     "quote": "Trading Period Unlimited",
+     "quote_is_literal_substring_of_retained_body": true
+    },
+    {
+     "source_id": "cand_comparison_table",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+     "quote": "Trading Period Unlimited",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "null encodes 'no maximum trading period'. The quote is from the page's 'Start Your FTMO Challenge Today' block rather than the rule list; the 2-Step product page and the comparison table corroborate it in their objectives tables."
+  },
+  "swing_news_restriction_during_evaluation": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_news_official",
+   "confirmed_in_url": "https://ftmo.com/faq/can-i-trade-news/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_news_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "While trading during the Evaluation Process, the restriction does not apply regardless of the account type (Standard account or Swing). You may trade freely during all macroeconomic news releases, provided you do not engage in any Forbidden Trading Practices .",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": false,
+   "declared_provenance_source_ids": [
+    "ftmo_news_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_news_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_news_official.html",
+     "quote": "For Standard accounts, these restrictions apply only once you start trading on an FTMO Account . They do not apply during the Evaluation Process .",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "The claim key is Swing-named for v1-contract continuity. The 2026-09-18 wording states the same false value for the STANDARD account type during the Evaluation Process, which is the profile this snapshot is labelled for."
+  },
+  "swing_overnight_or_weekend_restriction": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_weekend_official",
+   "confirmed_in_url": "https://ftmo.com/en/faq/do-i-have-to-close-my-positions-overnight-or-before-the-weekend/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_weekend_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "While trading during the Evaluation Process, the restriction does not apply regardless of the account type (Standard account or Swing). You are allowed to keep your positions open overnight and over the weekend.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_weekend_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_weekend_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_weekend_official.html",
+     "quote": "For Standard accounts, these restrictions apply only once you start trading on an FTMO Account . They do not apply during the Evaluation Process .",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "Same Swing-named key, same false value for Standard during the Evaluation Process."
+  },
+  "expert_advisors_allowed_subject_to_rules": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_ea_official",
+   "confirmed_in_url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "whether it’s discretionary trading, algorithmic trading, EAs, etc.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_ea_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_ea_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+     "quote": "If you intend to use trading robots (Expert Advisors – EAs), keep in mind that if you use an EA from a third party",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "Allowed subject to the legitimacy, real-market and forbidden-practices conditions quoted on the same page; hence 'subject_to_rules'."
+  },
+  "simultaneous_order_limit": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_ea_official",
+   "confirmed_in_url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "platform servers have 200 orders at a time and 2000 max positions per day limitation",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_ea_official"
+   ],
+   "confirmed_on_declared_provenance_page": true
+  },
+  "position_limit_per_day": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_ea_official",
+   "confirmed_in_url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "platform servers have 200 orders at a time and 2000 max positions per day limitation",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_ea_official"
+   ],
+   "confirmed_on_declared_provenance_page": true
+  },
+  "hyperactive_server_request_threshold_per_day": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_ea_official",
+   "confirmed_in_url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "just as the limited acceptance of the server messages (orders and order modifications such as updates of TP/ SL and updates of limit orders). If your EA causes hyperactivity to a platform server, we might alert you and ask you to adjust the EA logic or parameters of your strategy.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_ea_official",
+    "ftmo_forbidden_practices_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "The 2000/day figure is the threshold quoted in the immediately preceding clause of the same sentence; the hyperactivity consequence is this quote."
+  },
+  "real_market_replicability_required": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_ea_official",
+   "confirmed_in_url": "https://ftmo.com/en/faq/which-instruments-can-i-trade-and-what-strategies-am-i-allowed-to-use/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "your trading style should be replicable on live accounts to generate the same results as on your FTMO Account",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_ea_official",
+    "ftmo_forbidden_practices_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_ea_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_ea_official.html",
+     "quote": "conforms to the real market conditions",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "The second declared provenance source, the Forbidden Trading Practices page, was fetched at HTTP 200 in the same run and is retained."
+  },
+  "usd_100000_2_step_list_price_usd": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_economic_terms_official",
+   "confirmed_in_url": "https://ftmo.com/en/2-step-challenge/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_economic_terms_official.html",
+   "match_basis": "LITERAL_VALUE_IN_EMBEDDED_PAGE_CONFIGURATION_JSON",
+   "evidence_quote": "\"price\":\"540\"",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": false,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "Literal value inside the embedded page-configuration JSON of https://ftmo.com/en/2-step-challenge/ (the 2-Step price ladder). Verified as a literal substring of the retained RAW body, not of the rendered text."
+  },
+  "evaluation_fee_refund_percent_with_first_reward": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_economic_terms_official",
+   "confirmed_in_url": "https://ftmo.com/en/2-step-challenge/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_economic_terms_official.html",
+   "match_basis": "LITERAL_VALUE_IN_EMBEDDED_PAGE_CONFIGURATION_JSON",
+   "evidence_quote": "reimbursed with your first Reward",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": false,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "cand_comparison_table",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+     "quote": "Refund Yes 100%",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "Verified as a literal substring of the retained raw body."
+  },
+  "base_reward_split_percent": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_economic_terms_official",
+   "confirmed_in_url": "https://ftmo.com/en/2-step-challenge/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_economic_terms_official.html",
+   "match_basis": "LITERAL_VALUE_IN_EMBEDDED_PAGE_CONFIGURATION_JSON",
+   "evidence_quote": "80% of your simulated profits",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": false,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "note": "Verified as a literal substring of the retained raw body (embedded page configuration)."
+  },
+  "maximum_reward_split_percent": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_economic_terms_official",
+   "confirmed_in_url": "https://ftmo.com/en/2-step-challenge/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_economic_terms_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "Up to 90%",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ],
+   "confirmed_on_declared_provenance_page": true,
+   "corroborating_quotes": [
+    {
+     "source_id": "cand_comparison_table",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/cand_comparison_table.html",
+     "quote": "Rewards Up to 90%",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ]
+  },
+  "swing_fx_leverage": {
+   "status": "CARRIED_OVER",
+   "note": "NOT re-confirmed on 2026-09-18, and not re-confirmed on 2026-09-04 either. Nine candidate official URLs were probed on 2026-09-18 (see dead_or_leverage_silent_sources_2026_09_18): six returned HTTP 404 and three returned HTTP 200 with no leverage figure anywhere in the served body. The literal token '1:30' is absent from every retained 2026-09-18 body. The value is carried over unchanged from the 2026-09-04 snapshot, which carried it over unchanged from the 2026-09-02 economic-terms snapshot. No replacement source was invented.",
+   "unverified_since": "2026-09-02",
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ]
+  },
+  "swing_metals_and_oil_leverage": {
+   "status": "CARRIED_OVER",
+   "note": "NOT re-confirmed on 2026-09-18, and not re-confirmed on 2026-09-04 either. Nine candidate official URLs were probed on 2026-09-18 (see dead_or_leverage_silent_sources_2026_09_18): six returned HTTP 404 and three returned HTTP 200 with no leverage figure anywhere in the served body. The literal token '1:15' is absent from every retained 2026-09-18 body. The value is carried over unchanged from the 2026-09-04 snapshot, which carried it over unchanged from the 2026-09-02 economic-terms snapshot. No replacement source was invented.",
+   "unverified_since": "2026-09-02",
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ]
+  },
+  "account_balance_increase_percent": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_scaling_plan_official",
+   "confirmed_in_url": "https://ftmo.com/en/scaling-plan/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_scaling_plan_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "Enjoy account size growth of 25% every 4 months",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ],
+   "confirmed_on_declared_provenance_page": false,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_scaling_plan_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_scaling_plan_official.html",
+     "quote": "Get a 25% boost to your FTMO Account balance every 4 months.",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "Component source https://ftmo.com/en/scaling-plan/, which redirects to /en/reward-growth-and-scaling-plan/.",
+   "cross_source_note": "The hash-pinned claim_provenance names ftmo_economic_terms_official; the quote was machine-checked as ABSENT from that retained body and PRESENT in the retained ftmo_scaling_plan_official body, which the ftmo_economic_terms_official source record declares as a component source."
+  },
+  "minimum_months_between_scaleups": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_scaling_plan_official",
+   "confirmed_in_url": "https://ftmo.com/en/scaling-plan/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_scaling_plan_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "Get a 25% boost to your FTMO Account balance every 4 months.",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ],
+   "confirmed_on_declared_provenance_page": false,
+   "corroborating_quotes": [
+    {
+     "source_id": "ftmo_scaling_plan_official",
+     "body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_scaling_plan_official.html",
+     "quote": "Minimum of 4 months trading as an FTMO Trader",
+     "quote_is_literal_substring_of_retained_body": true
+    }
+   ],
+   "note": "Component source; see account_balance_increase_percent.",
+   "cross_source_note": "The hash-pinned claim_provenance names ftmo_economic_terms_official; the quote was machine-checked as ABSENT from that retained body and PRESENT in the retained ftmo_scaling_plan_official body, which the ftmo_economic_terms_official source record declares as a component source."
+  },
+  "scaled_reward_split_percent": {
+   "status": "RE_CONFIRMED",
+   "confirmed_in_source_id": "ftmo_scaling_plan_official",
+   "confirmed_in_url": "https://ftmo.com/en/scaling-plan/",
+   "confirmed_in_body_path": "docs/ops/evidence/ftmo_fetch_20260918/ftmo_scaling_plan_official.html",
+   "match_basis": "LITERAL_VALUE_IN_RENDERED_PAGE_TEXT",
+   "evidence_quote": "Get a 90% share of your simulated profits",
+   "quote_form": "LITERAL_SUBSTRING_OF_RETAINED_BODY",
+   "quote_is_literal_substring_of_whitespace_normalized_rendered_text": true,
+   "quote_is_literal_substring_of_raw_body": true,
+   "declared_provenance_source_ids": [
+    "ftmo_economic_terms_official"
+   ],
+   "confirmed_on_declared_provenance_page": false,
+   "note": "Component source; see account_balance_increase_percent.",
+   "cross_source_note": "The hash-pinned claim_provenance names ftmo_economic_terms_official; the quote was machine-checked as ABSENT from that retained body and PRESENT in the retained ftmo_scaling_plan_official body, which the ftmo_economic_terms_official source record declares as a component source."
+  }
+ },
+ "claim_reconfirmation_summary": {
+  "total_claims": 30,
+  "re_confirmed": 28,
+  "carried_over": 2,
+  "carried_over_claims": [
+   "swing_fx_leverage",
+   "swing_metals_and_oil_leverage"
+  ],
+  "method": "Each claim value and its surrounding rule wording were searched for in the retained 2026-09-18 bodies. RE_CONFIRMED means the quoted text was found as a literal substring of the retained body: either of the whitespace-normalized rendered text, or of the raw body for values that live in embedded page-configuration JSON. The build script raises rather than emit an unverified quote.",
+  "value_changes_vs_2026_09_04": 0,
+  "value_changes_note": "All 30 claim values are identical to the 2026-09-04 snapshot. No numeric or boolean rule fact changed. See docs/ops/evidence/2026-09-18_ftmo_rules_repin/RECEIPT.md."
+ },
+ "dead_or_leverage_silent_sources_2026_09_18": [
+  {
+   "url": "https://ftmo.com/en/trading-symbols/",
+   "http_status": 404,
+   "observation": "HTTP Error 404: Not Found",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/account-specifications/",
+   "http_status": 404,
+   "observation": "HTTP Error 404: Not Found",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/faq/what-is-the-leverage-on-ftmo-accounts/",
+   "http_status": 404,
+   "observation": "HTTP Error 404: Not Found",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/leverage/",
+   "http_status": 404,
+   "observation": "HTTP Error 404: Not Found",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/faq/what-is-a-swing-ftmo-challenge/",
+   "http_status": 404,
+   "observation": "HTTP Error 404: Not Found",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/trading-conditions/",
+   "http_status": 404,
+   "observation": "HTTP Error 404: Not Found",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/symbols/",
+   "http_status": 200,
+   "observation": "HTTP 200 but no leverage figure anywhere in the body",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/comparison-table/",
+   "http_status": 200,
+   "observation": "HTTP 200 but no leverage figure anywhere in the body",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  },
+  {
+   "url": "https://ftmo.com/en/faq/what-are-the-account-specifications/",
+   "http_status": 200,
+   "observation": "HTTP 200 but the answer body is client-rendered; no leverage figure in the served HTML",
+   "affected_claims": [
+    "swing_fx_leverage",
+    "swing_metals_and_oil_leverage"
+   ]
+  }
+ ],
+ "standard_profile_evaluation_conditions_2026_09_18": {
+  "news_restriction_during_evaluation": false,
+  "overnight_or_weekend_restriction_during_evaluation": false,
+  "news_restriction_on_ftmo_account_standard": true,
+  "overnight_or_weekend_restriction_on_ftmo_account_standard": true,
+  "news_window_minutes_before_and_after": 2,
+  "evidence_quotes": {
+   "evaluation_news": "While trading during the Evaluation Process, the restriction does not apply regardless of the account type (Standard account or Swing). You may trade freely during all macroeconomic news releases, provided you do not engage in any Forbidden Trading Practices .",
+   "ftmo_account_news": "On the targeted instruments, it is not permitted to open or close any trades, including the execution of pending orders (such as Stop Loss or Take Profit), within a time window starting 2 minutes before and ending 2 minutes after the release of selected news announcements.",
+   "evaluation_weekend": "While trading during the Evaluation Process, the restriction does not apply regardless of the account type (Standard account or Swing). You are allowed to keep your positions open overnight and over the weekend.",
+   "ftmo_account_weekend": "Once you become an FTMO Trader and start trading on an FTMO Account, you are required to close your positions shortly before the markets close for the weekend or if the rollover (market break) lasts longer than 2 hours. An exception applies only to Swing accounts."
+  },
+  "note": "These four booleans are the Standard-profile rows the FTMO_2S_100K_STANDARD_V2 rulepack asserts in ftmo_standard_news and ftmo_standard_weekend. In the 2026-09-15 snapshot they were CARRIED_OVER from that same rulepack, which made them self-certifying. Here they are fetched evidence: each quote above is a literal substring of the retained ftmo_news_official / ftmo_weekend_official body. The circular-provenance defect recorded in section 4 of docs/ops/evidence/2026-09-18_ftmo_vintage_align/RULE_FACTS_DIFF.md is closed by this snapshot. This block is descriptive evidence; it is not part of the hash-pinned normalized_claims contract."
+ },
+ "supersedes": [
+  {
+   "path": "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json",
+   "sha256": "c199b8f5f528cce5a93f4751f63394de63e5fe832483ac9c4b9d0314732d2905",
+   "reason": "The previous evaluator-pinned snapshot. Same v1 schema and the same 30 claims with identical values; superseded on vintage only (it was 14 days old and long past its own 7-day freshness window) and on profile label (Swing -> Standard, to match the account the binding targets)."
+  },
+  {
+   "path": "docs/ops/evidence/2026-09-15_ftmo_official_rules_snapshot.json",
+   "sha256": "5e25827b589125e7b77cd379453a234649f35983cf5a443ec6a70b77103a2a8c",
+   "reason": "A v2-schema artifact the evaluator could not bind: it drops nine claims the evaluator consumes, carries only five of the seven required source ids, has no claim_provenance at all, and its trading-conditions source returned HTTP 404. Its news / overnight / weekend rows were CARRIED_OVER from the rulepack they were meant to certify. This snapshot re-fetches every one of them."
+  }
+ ],
+ "scope_limit": "Research and Free-Trial/shadow gates only. This snapshot is not a purchase, deployment, T_Live, or AutoTrading authorization, and it must be refreshed before any paid Challenge decision if older than seven days (its freshness window closes 2026-09-25T02:37:46Z). The two CARRIED_OVER leverage claims are additionally unverified as of 2026-09-18 and must not be relied on for sizing without a live official source."
+}

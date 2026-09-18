@@ -164,7 +164,7 @@ DEFAULT_RULEPACK_PATH = (
     REPO_ROOT / "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json"
 )
 DEFAULT_RULEPACK_SHA256 = (
-    "298ef1285eca49ea7f010ebc0a9353b5a821fccb40a025be129f5ca5314fd992"
+    "0b4b449847ba58f07559547bca4e10ed1b606f639eef33fd194cdde74f64ca4b"
 )
 M13_STANDARD_BINDING_PATH = (
     REPO_ROOT / "tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json"
@@ -190,10 +190,10 @@ EXPECTED_BOOK: dict[str, tuple[int, str, str]] = {
 }
 
 OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json"
+    "docs/ops/evidence/2026-09-18_ftmo_official_rules_snapshot.json"
 )
 OFFICIAL_RULE_SNAPSHOT_SHA256 = (
-    "c199b8f5f528cce5a93f4751f63394de63e5fe832483ac9c4b9d0314732d2905"
+    "41624932e16d96d36543a076ad4199cd0c3cba3695c15567235746e99e464785"
 )
 EXPECTED_OFFICIAL_SOURCE_IDS = frozenset(
     {
@@ -837,7 +837,7 @@ def resolve_m13_standard_rulepack(
         != contract.get("canonical_sha256")
         or contract.get("id") != "FTMO_2S_100K_STANDARD_V2"
         or contract.get("profile_version") != 2
-        or contract.get("as_of") != "2026-09-04"
+        or contract.get("as_of") != "2026-09-18"
     ):
         raise StandaloneEvaluationError("m13_demo_binding:evaluator_rulepack_invalid")
     if (
@@ -1399,9 +1399,18 @@ def _validate_official_rule_sources(
                 f"rulepack:official_source_binding_invalid:{source_id}"
             )
 
+    # RECEIPT (2026-09-18, docs/ops/evidence/2026-09-18_ftmo_rules_repin/RECEIPT.md):
+    # the profile label was "... / Swing" until this re-pin.  That was wrong for the
+    # account this evaluator is bound to: the M13 demo account (login 1514536732,
+    # FTMO-Demo) is a STANDARD_2STEP_100K_FREE_TRIAL account, and the Standard
+    # rulepack is the one the binding selects.  The 2026-09-18 pages state the rule
+    # facts are identical for both account types during the Evaluation Process
+    # ("regardless of the account type (Standard account or Swing)"), so this is a
+    # label correction, not a rule change: all 30 normalized_claims values are
+    # unchanged from 2026-09-04.  The check itself stays exact equality.
     if (
         snapshot.get("schema") != "qm.ftmo-official-rules-snapshot/v1"
-        or snapshot.get("profile") != "FTMO Challenge 2-Step / USD 100000 / Swing"
+        or snapshot.get("profile") != "FTMO Challenge 2-Step / USD 100000 / Standard"
         or snapshot.get("freshness_max_age_days") != 7
     ):
         raise StandaloneEvaluationError("rule_snapshot:envelope_invalid")
@@ -1414,7 +1423,7 @@ def _validate_official_rule_sources(
         raise StandaloneEvaluationError("rule_snapshot:stale")
     if any(
         row.get("retrieved_at_utc") != snapshot.get("retrieved_at_utc")
-        or row.get("retrieved_on") != "2026-09-04"
+        or row.get("retrieved_on") != "2026-09-18"
         for row in by_id.values()
     ):
         raise StandaloneEvaluationError("rulepack:official_source_vintage_invalid")
@@ -1510,9 +1519,10 @@ def _official_rules(rulepack: Mapping[str, Any]) -> dict[str, Any]:
             if is_standard
             else "FTMO Challenge 2-Step / USD 100000 / Swing"
         ),
-        # The Standard rulepack was rebound to the 2026-09-15 official-rules snapshot
-        # (OWNER-DEC-CBE-20260915 s63, commit 992c59d1af); the Swing rulepack is unchanged.
-        "as_of": "2026-09-15" if is_standard else "2026-09-04",
+        # Both rulepacks were rebound to the 2026-09-18 official-rules snapshot
+        # (docs/ops/evidence/2026-09-18_ftmo_rules_repin/RECEIPT.md), a real re-fetch of
+        # all seven official sources at HTTP 200 with zero rule-fact changes.
+        "as_of": "2026-09-18",
         "lifecycle_status": "RESEARCH_CONTRACT_ONLY",
         "canonicalization": {
             "algorithm": "QM_CANONICAL_JSON_V1",
