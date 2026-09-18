@@ -9,7 +9,8 @@ Checks:
      broker-confirmed activity match the baked RUNNING/PARKED/MAINTENANCE state.
      PARKED requires the new account to remain flat.
   2. Today's journal: disconnects / errors.
-  3. QM EA logs: all 8 expected magics seen, ERROR-level events.
+  3. QM EA logs: every magic of the ACTIVE package roster seen (roster-driven
+     since 2026-09-18, GAPS G2), ERROR-level events.
   4. Latest EQUITY_SNAPSHOT: equity + day_pnl vs FTMO limits
      (daily 5% / total 10% of 100k) with early-warning margins.
 
@@ -99,9 +100,46 @@ PRAGUE_TZ = ZoneInfo("Europe/Prague")
 # inert: if present it is reported as an ignored no-op (see main()).
 LEGACY_ARM_FLAG = Path(r"D:\QM\reports\state\FTMO_DD_FLOOR_ARMED.flag")
 
-# M13 sealed eight-sleeve roster.  These are RUNNING-only expectations; PARKED
-# requires a flat account and does not require any EA log activity.
-EXPECTED_MAGICS = {
+# RUNNING-only expectations; PARKED requires a flat account and does not
+# require any EA log activity.
+#
+# ROSTER-DRIVEN since 2026-09-18 (GAPS G2 of the demo book v3 package, router
+# ops_issue 57bfd3af item 2, decision OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917).
+# This set used to be a hardcoded literal bound to the incumbent M13 eight-sleeve
+# roster, so every book recomposition silently broke the check by construction:
+# `magics_seen` kept being compared against a set the attached book no longer
+# contains (D2g6 shares exactly two magics with the incumbent eight), while
+# `magics_missing` warned forever about sleeves that can never appear again.
+#
+# Resolution order, most authoritative first:
+#   1. the governor binding `tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json`
+#      if it carries a roster pointer -- `governor_rebind` owns that file and is
+#      the tool that rebinds the book, so a pointer written there is by
+#      definition the active roster;
+#   2. FTMO_ACTIVE_ROSTER, the explicit package roster constant, used while the
+#      binding schema has no roster pointer (it has none today);
+#   3. INCUMBENT_EXPECTED_MAGICS_FALLBACK -- the historical eight -- used ONLY
+#      when no roster resolves at all, together with a reported load error so
+#      the degradation is a visible WARN rather than a silent empty check.
+# This observer never writes; a bad roster must not crash it.
+REPO_ROOT = Path(__file__).resolve().parents[2]
+FTMO_BINDING_PATH = (
+    REPO_ROOT / "tools" / "strategy_farm" / "config" / "ftmo_m13_standard_demo.v1.json"
+)
+FTMO_ACTIVE_ROSTER = (
+    REPO_ROOT / "docs" / "ops" / "evidence"
+    / "2026-09-18_ftmo_demo_book_v3_D2g6" / "roster.json"
+)
+# Key paths `governor_rebind` may record the active roster under. Checked in
+# order; the first string value wins. None exists today -- this is the seam that
+# makes the next recomposition a data change instead of a code edit.
+BINDING_ROSTER_POINTER_KEYS: tuple[tuple[str, ...], ...] = (
+    ("roster", "path"),
+    ("roster_path",),
+    ("governor", "roster_path"),
+    ("book", "roster_path"),
+)
+INCUMBENT_EXPECTED_MAGICS_FALLBACK = frozenset({
     107060001,
     114210000,
     114220004,
@@ -110,7 +148,106 @@ EXPECTED_MAGICS = {
     15370001,
     200480000,
     215050000,
-}
+})
+
+
+def _repo_relative(path: Path) -> str:
+    """Stable, slash-normalized label for a path inside the repo."""
+    try:
+        return str(Path(path).resolve().relative_to(REPO_ROOT)).replace("\\", "/")
+    except ValueError:
+        return str(path).replace("\\", "/")
+
+
+def _binding_roster_pointer(binding: object) -> str | None:
+    """First non-empty string found at any BINDING_ROSTER_POINTER_KEYS path."""
+    for key_path in BINDING_ROSTER_POINTER_KEYS:
+        node: object = binding
+        for key in key_path:
+            node = node.get(key) if isinstance(node, dict) else None
+            if node is None:
+                break
+        if isinstance(node, str) and node.strip():
+            return node.strip()
+    return None
+
+
+def resolve_active_roster_path(
+    *,
+    binding_path: Path = FTMO_BINDING_PATH,
+    default_roster: Path | None = FTMO_ACTIVE_ROSTER,
+) -> tuple[Path | None, str, str | None]:
+    """Return (roster_path, resolution, binding_error).
+
+    `resolution` is "binding" when the governor binding names the roster,
+    "constant" when the FTMO_ACTIVE_ROSTER default is used, "none" when neither
+    resolves. `binding_error` is non-None only when the binding itself could not
+    be read -- that is reported even when the constant still resolves, because a
+    corrupt binding is worth seeing.
+    """
+    binding_error: str | None = None
+    binding: object = None
+    try:
+        binding = json.loads(Path(binding_path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        binding_error = f"binding_unreadable:{type(exc).__name__}:{exc}"
+
+    pointer = _binding_roster_pointer(binding)
+    if pointer is not None:
+        roster_path = Path(pointer)
+        if not roster_path.is_absolute():
+            roster_path = REPO_ROOT / roster_path
+        return roster_path, "binding", binding_error
+    if default_roster is None:
+        return None, "none", binding_error
+    return Path(default_roster), "constant", binding_error
+
+
+def load_expected_magics(
+    *,
+    binding_path: Path = FTMO_BINDING_PATH,
+    default_roster: Path | None = FTMO_ACTIVE_ROSTER,
+) -> tuple[frozenset[int], str, str | None]:
+    """Return (magics, source, load_error) for the active demo-book roster.
+
+    Fails closed to the historical incumbent set WITH a reported error rather
+    than raising, so a missing/malformed roster degrades this read-only observer
+    to a WARN instead of crashing it or silently comparing against nothing.
+    """
+    roster_path, resolution, binding_error = resolve_active_roster_path(
+        binding_path=binding_path, default_roster=default_roster
+    )
+    if roster_path is None:
+        return (
+            INCUMBENT_EXPECTED_MAGICS_FALLBACK,
+            "incumbent_fallback",
+            binding_error or "no_active_roster_resolved",
+        )
+    try:
+        try:
+            from ftmo import trial_setpath
+        except ModuleNotFoundError:
+            from tools.strategy_farm.ftmo import trial_setpath
+        roster = trial_setpath.load_roster(roster_path)
+        magics = frozenset(int(row["magic"]) for row in roster["candidates"])
+    except (ImportError, OSError, ValueError, KeyError, TypeError) as exc:
+        return (
+            INCUMBENT_EXPECTED_MAGICS_FALLBACK,
+            "incumbent_fallback",
+            f"roster_unusable:{_repo_relative(roster_path)}:{type(exc).__name__}:{exc}",
+        )
+    if not magics:
+        return (
+            INCUMBENT_EXPECTED_MAGICS_FALLBACK,
+            "incumbent_fallback",
+            f"roster_has_no_magics:{_repo_relative(roster_path)}",
+        )
+    return magics, f"{resolution}:{_repo_relative(roster_path)}", binding_error
+
+
+EXPECTED_MAGICS, EXPECTED_MAGICS_SOURCE, EXPECTED_MAGICS_LOAD_ERROR = (
+    load_expected_magics()
+)
 SERVER_REQUEST_EVENTS = {"TM_OPEN", "TM_CLOSE", "TM_MODIFY", "TM_REMOVE_PENDING"}
 
 
@@ -944,6 +1081,11 @@ def main() -> int:
     if jrn:
         warns.extend(jrn)
 
+    if EXPECTED_MAGICS_LOAD_ERROR:
+        warns.append(
+            f"expected_magics_roster_load_failed:{EXPECTED_MAGICS_LOAD_ERROR}"
+        )
+
     eas = scan_ea_logs()
     if eas["magics_missing"]:
         # magics only appear in logs once each EA has logged (post-attach/tick);
@@ -1036,6 +1178,8 @@ def main() -> int:
         "qualified_pairs_probe_reason": owner_review["reason"],
         "magics_seen": eas["magics_seen"],
         "expected_magics": len(EXPECTED_MAGICS),
+        "expected_magics_source": EXPECTED_MAGICS_SOURCE,
+        "expected_magics_load_error": EXPECTED_MAGICS_LOAD_ERROR,
         "equity": equity or None,
         "day_pnl": day_pnl if equity_source else None,
         "equity_source": equity_source,

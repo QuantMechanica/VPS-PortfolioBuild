@@ -383,7 +383,10 @@ def test_kill_switch_runtime_proof_gaps_warn_on_prague_trading_day() -> None:
         eas, datetime(2026, 9, 7, 8, 0, tzinfo=timezone.utc)
     )
 
-    assert warns == ["ks_day_anchor_missing:0/8", "ks_book_tag_missing:0/8"]
+    # Denominator is the ACTIVE roster size, not a literal eight: EXPECTED_MAGICS
+    # became roster-driven on 2026-09-18 (GAPS G2), and D2g6 is a six-sleeve book.
+    n = len(ftmo_trial_pulse.EXPECTED_MAGICS)
+    assert warns == [f"ks_day_anchor_missing:0/{n}", f"ks_book_tag_missing:0/{n}"]
 
 
 def test_scan_ea_logs_ignores_pre_activation_errors(monkeypatch, tmp_path: Path) -> None:
@@ -452,3 +455,150 @@ def test_pulse_declares_observer_role_and_governor_authority() -> None:
     src = (ROOT / "tools" / "strategy_farm" / "ftmo_trial_pulse.py").read_text(encoding="utf-8")
     assert '"role": "observer_only"' in src
     assert "governor_QM5_13206" in src
+
+
+# --------------------------------------------------------------------------
+# EXPECTED_MAGICS is roster-driven (GAPS G2, router ops_issue 57bfd3af item 2).
+# Binding pointer first, explicit package roster constant second, incumbent
+# eight only as a reported fallback.
+# --------------------------------------------------------------------------
+
+D2G6_MAGICS = frozenset({104030002, 107000003, 107060001, 114220004, 132130000, 412190000})
+PACKAGE_ROSTER = (
+    ROOT / "docs" / "ops" / "evidence"
+    / "2026-09-18_ftmo_demo_book_v3_D2g6" / "roster.json"
+)
+
+
+def _write_roster(path: Path, magics) -> Path:
+    """A minimal valid qm.ftmo-demo-roster/v1 with the given magics."""
+    candidates = []
+    for magic in sorted(magics):
+        ea_id, slot = divmod(int(magic), 10000)
+        candidates.append({
+            "ea_id": ea_id,
+            "ea_label": f"QM5_{ea_id}_probe",
+            "dxz_symbol": "EURUSD",
+            "ftmo_symbol": "EURUSD",
+            "timeframe": "H1",
+            "slot": slot,
+            "magic": int(magic),
+            "risk_percent": 0.25,
+        })
+    path.write_text(json.dumps({
+        "schema": "qm.ftmo-demo-roster/v1",
+        "label": "PROBE",
+        "candidates": candidates,
+    }), encoding="utf-8")
+    return path
+
+
+def test_module_level_expected_magics_is_the_active_d2g6_book() -> None:
+    """The shipped default must already be the attached book, not the incumbent."""
+    assert ftmo_trial_pulse.EXPECTED_MAGICS == D2G6_MAGICS
+    assert ftmo_trial_pulse.EXPECTED_MAGICS_LOAD_ERROR is None
+    assert ftmo_trial_pulse.EXPECTED_MAGICS_SOURCE.startswith("constant:")
+    assert ftmo_trial_pulse.EXPECTED_MAGICS_SOURCE.endswith(
+        "2026-09-18_ftmo_demo_book_v3_D2g6/roster.json"
+    )
+
+
+def test_roster_constant_points_at_a_real_package_roster() -> None:
+    assert ftmo_trial_pulse.FTMO_ACTIVE_ROSTER == PACKAGE_ROSTER
+    assert PACKAGE_ROSTER.is_file()
+
+
+def test_binding_roster_pointer_wins_over_the_constant(tmp_path) -> None:
+    """Path 1: governor_rebind records the roster in the binding -> that wins."""
+    roster = _write_roster(tmp_path / "bound.json", {123450000, 123450001})
+    binding = tmp_path / "binding.json"
+    binding.write_text(json.dumps({
+        "binding_id": "FTMO_M13_STANDARD_DEMO_V1",
+        "roster": {"path": str(roster)},
+    }), encoding="utf-8")
+
+    path, resolution, err = ftmo_trial_pulse.resolve_active_roster_path(
+        binding_path=binding, default_roster=PACKAGE_ROSTER
+    )
+    assert (path, resolution, err) == (roster, "binding", None)
+
+    magics, source, load_error = ftmo_trial_pulse.load_expected_magics(
+        binding_path=binding, default_roster=PACKAGE_ROSTER
+    )
+    assert magics == frozenset({123450000, 123450001})
+    assert source.startswith("binding:")
+    assert load_error is None
+
+
+def test_relative_binding_pointer_resolves_against_the_repo(tmp_path) -> None:
+    binding = tmp_path / "binding.json"
+    binding.write_text(json.dumps({
+        "roster_path": "docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2g6/roster.json",
+    }), encoding="utf-8")
+
+    magics, source, load_error = ftmo_trial_pulse.load_expected_magics(
+        binding_path=binding, default_roster=None
+    )
+    assert magics == D2G6_MAGICS
+    assert source.startswith("binding:")
+    assert load_error is None
+
+
+def test_constant_is_used_while_the_binding_has_no_roster_pointer(tmp_path) -> None:
+    """Path 2: today's binding carries no roster key -> the constant resolves."""
+    roster = _write_roster(tmp_path / "active.json", {987650003})
+    binding = tmp_path / "binding.json"
+    binding.write_text(json.dumps({"binding_id": "FTMO_M13_STANDARD_DEMO_V1"}), encoding="utf-8")
+
+    magics, source, load_error = ftmo_trial_pulse.load_expected_magics(
+        binding_path=binding, default_roster=roster
+    )
+    assert magics == frozenset({987650003})
+    assert source == f"constant:{source.split(':', 1)[1]}"
+    assert load_error is None
+
+
+def test_production_binding_still_has_no_roster_pointer_so_the_constant_rules() -> None:
+    path, resolution, err = ftmo_trial_pulse.resolve_active_roster_path()
+    assert resolution == "constant"
+    assert path == PACKAGE_ROSTER
+    assert err is None
+
+
+def test_incumbent_set_is_only_a_reported_fallback(tmp_path) -> None:
+    """Path 3: nothing resolves -> incumbent eight WITH a visible load error."""
+    magics, source, load_error = ftmo_trial_pulse.load_expected_magics(
+        binding_path=tmp_path / "absent.json", default_roster=tmp_path / "absent-roster.json"
+    )
+    assert magics == ftmo_trial_pulse.INCUMBENT_EXPECTED_MAGICS_FALLBACK
+    assert len(magics) == 8
+    assert source == "incumbent_fallback"
+    assert load_error and "roster_unusable" in load_error
+
+    magics, source, load_error = ftmo_trial_pulse.load_expected_magics(
+        binding_path=tmp_path / "absent.json", default_roster=None
+    )
+    assert magics == ftmo_trial_pulse.INCUMBENT_EXPECTED_MAGICS_FALLBACK
+    assert source == "incumbent_fallback"
+    assert load_error and "binding_unreadable" in load_error
+
+
+def test_malformed_roster_degrades_to_a_warn_and_never_raises(tmp_path) -> None:
+    bad = tmp_path / "bad.json"
+    bad.write_text('{"schema": "not-a-roster"}', encoding="utf-8")
+    magics, source, load_error = ftmo_trial_pulse.load_expected_magics(
+        binding_path=tmp_path / "absent.json", default_roster=bad
+    )
+    assert magics == ftmo_trial_pulse.INCUMBENT_EXPECTED_MAGICS_FALLBACK
+    assert source == "incumbent_fallback"
+    assert "invalid_roster_schema" in load_error
+
+
+def test_load_error_is_surfaced_as_a_warn_and_in_the_state_json() -> None:
+    src = (ROOT / "tools" / "strategy_farm" / "ftmo_trial_pulse.py").read_text(encoding="utf-8")
+    assert 'warns.append(' in src
+    assert "expected_magics_roster_load_failed:" in src
+    assert '"expected_magics_source": EXPECTED_MAGICS_SOURCE' in src
+    assert '"expected_magics_load_error": EXPECTED_MAGICS_LOAD_ERROR' in src
+    # No hardcoded book literal outside the declared fallback.
+    assert src.count("215050000") == 1

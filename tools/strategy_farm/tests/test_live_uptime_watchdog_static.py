@@ -205,12 +205,21 @@ def test_ftmo_recovery_verifies_approved_profile_presets_and_binaries_before_lau
 
     assert "verify_ftmo_demo_instrumentation_contract.ps1" in launcher
     assert launcher.index("& powershell.exe") < launcher.index("[IO.File]::ReadAllText($common")
-    assert contract.count("binary_sha=") == 5
-    assert contract.count("preset_sha=") == 5
+    # One SHA-pinned leg per sleeve of the ATTACHED book. This was 5 under the
+    # 2026-08-06 AccountMonitor contract, 8 under the 2026-09-06 M13 book, and
+    # is 6 under demo book v3 / roster D2g6 (re-pin 2026-09-18, GAPS G1). The
+    # exact count belongs to test_ftmo_demo_instrumentation_repin.py, which
+    # derives it from roster.json; here we only require legs to exist and the
+    # two hash families to stay in lockstep.
+    assert contract.count("binary_sha=") == contract.count("preset_sha=") >= 1
     assert "Assert-ExactProfileFiles" in contract
     assert "expected exactly one expert" in shared_contract
     assert "Assert-BlankChartContract" in contract
-    assert "QM_AccountMonitor" in contract
+    # QM_AccountMonitor was superseded by the account governor QM5_13206 at the
+    # 2026-09-06 cutover; the governor is the money-control authority the
+    # launcher must find pinned.
+    assert "QM5_13206_ftmo-account-governor" in contract
+    assert "Assert-GovernorContract" in contract
     assert "terminal binary hash mismatch" in contract
     assert "FTMO account mismatch" in contract
 

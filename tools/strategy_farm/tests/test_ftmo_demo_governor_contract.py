@@ -44,8 +44,20 @@ def test_install_presets_bind_exact_account_policy_and_sleeves():
         assert item["qm_friday_close_hour_broker"] == "21"
         assert item["qm_friday_flat_lead_minutes"] == "5"
         assert item["governor_dry_run"] == "false"
-        assert len(item["allowed_magics_csv"].split(",")) == 8
-        assert len(item["governed_ea_ids_csv"].split(",")) == 8
+        # Roster-driven since the demo book v3 (D2g6) cutover: `governor_rebind`
+        # rewrites these CSVs from the active roster, so the sleeve COUNT is a
+        # book property, not a contract constant (it was 8 under the 2026-09-06
+        # M13 book, 6 under D2g6). What the contract fixes is the shape: both
+        # presets agree, every magic obeys ea_id*10000+slot, and every governed
+        # ea_id has at least one magic.
+        magics = [int(m) for m in item["allowed_magics_csv"].split(",")]
+        ea_ids = [int(e) for e in item["governed_ea_ids_csv"].split(",")]
+        assert magics and ea_ids
+        assert magics == sorted(magics) and len(set(magics)) == len(magics)
+        assert ea_ids == sorted(ea_ids) and len(set(ea_ids)) == len(ea_ids)
+        assert {m // 10000 for m in magics} == set(ea_ids)
+    assert values[0]["allowed_magics_csv"] == values[1]["allowed_magics_csv"]
+    assert values[0]["governed_ea_ids_csv"] == values[1]["governed_ea_ids_csv"]
     assert values[0]["challenge_state_bootstrap"] == "true"
     assert values[1]["challenge_state_bootstrap"] == "false"
 
