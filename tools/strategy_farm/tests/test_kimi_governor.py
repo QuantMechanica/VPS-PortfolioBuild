@@ -110,6 +110,29 @@ def test_state_exhausted_on_cli_missing_last(gov: dict) -> None:
     assert info["state"] == "EXHAUSTED"
 
 
+def test_state_exhausted_on_quota_exhausted_last(gov: dict) -> None:
+    # Evidence 2026-09-18 (task d797e68f): a single CLI-reported 403 weekly-cap is
+    # unambiguous - unlike rate_limited/auth_expired it does not need a second
+    # occurrence (mirrors the existing cli_missing single-shot rule).
+    rows = _rows(1, when=NOW - dt.timedelta(minutes=5)) \
+        + [{"ts_utc": NOW.isoformat().replace("+00:00", "Z"), "status": "quota_exhausted"}]
+    info = kg.compute_state(rows, gov, now=NOW)
+    assert info["state"] == "EXHAUSTED"
+    assert any("quota_exhausted" in r for r in info["reasons"])
+
+
+def test_quota_exhausted_escalates_even_when_real_telemetry_says_normal(gov: dict) -> None:
+    # The exact live mismatch (2026-09-18): the managed-usage-endpoint fetch is fresh
+    # and 'ok' with near-zero used ratios (mode == real, usage_source ==
+    # managed_usage_endpoint), yet the CLI itself already hard-blocked on the weekly
+    # cap. The quota_exhausted signal must escalate regardless of what the fetcher says.
+    rows = _rows(1, when=NOW - dt.timedelta(minutes=5)) \
+        + [{"ts_utc": NOW.isoformat().replace("+00:00", "Z"), "status": "quota_exhausted"}]
+    info = kg.compute_state(rows, gov, now=NOW, quota_state=_quota(r5h=0.0, r7d=1.1e-05))
+    assert info["usage_source"] == "managed_usage_endpoint"
+    assert info["state"] == "EXHAUSTED"
+
+
 def test_state_conserve_near_period_end(gov: dict) -> None:
     near = dt.datetime(2026, 10, 14, 12, 0, tzinfo=dt.timezone.utc)  # end is 2026-10-15
     info = kg.compute_state(_rows(1, when=near), gov, now=near)

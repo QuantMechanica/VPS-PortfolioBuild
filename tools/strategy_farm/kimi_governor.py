@@ -20,8 +20,11 @@ States (NORMAL / CONSERVE / EXHAUSTED):
                research_strategy/summary work falls back to cheaper lanes so a
                fixed one-month budget is not drained on low-value volume.
   EXHAUSTED  - a call cap is hit (100%), OR two consecutive rate_limited /
-               auth_expired statuses, OR a cli_missing status, OR the
-               subscription period has ended. No capabilities allowed.
+               auth_expired / quota_exhausted statuses, OR the last status is
+               cli_missing or quota_exhausted (single occurrence - a CLI-reported
+               hard weekly/monthly cap is unambiguous, directive 2026-09-18 task
+               d797e68f), OR the subscription period has ended. No capabilities
+               allowed.
 
 Flag (honored by both router and chain planes):
   D:/QM/strategy_farm/KIMI_LOW_QUOTA.flag  (written on CONSERVE **and** EXHAUSTED)
@@ -101,7 +104,7 @@ def governor_config(cfg: dict[str, Any] | None = None) -> dict[str, Any]:
     gov["_guard_user_specified"] = guard_user_specified
     gov.setdefault("conserve_pct", 70)
     gov.setdefault("consecutive_fail_threshold", 2)
-    gov.setdefault("consecutive_fail_statuses", ["rate_limited", "auth_expired"])
+    gov.setdefault("consecutive_fail_statuses", ["rate_limited", "auth_expired", "quota_exhausted"])
     gov.setdefault(
         "conserve_allowed_capabilities",
         ["edge_discovery", "hypothesis_authoring", "cross_experiment_analysis", "research_critic"],
@@ -300,6 +303,13 @@ def compute_state(
             break
     last_statuses = [s for _ts, s in dated[-5:]]
     saw_cli_missing = bool(dated) and dated[-1][1] == "cli_missing"
+    # A CLI-reported hard weekly/monthly cap (403 quota_exhausted, directive 2026-09-18
+    # task d797e68f) is an unambiguous, provider-worded signal - unlike rate_limited it
+    # never needs a second occurrence to be trusted. Checked on the raw ledger tail so
+    # it fires regardless of mode (real/fallback/legacy): the managed-usage-endpoint
+    # ratio can read near-zero (schema drift / wrong field - evidence 2026-09-18) while
+    # the CLI itself is already hard-blocked; this must not wait on that telemetry.
+    saw_quota_exhausted = bool(dated) and dated[-1][1] == "quota_exhausted"
 
     day_pct = (calls_day / cap_day * 100.0) if cap_day else 0.0
     week_pct = (calls_week / cap_week * 100.0) if cap_week else 0.0
@@ -349,6 +359,10 @@ def compute_state(
     if saw_cli_missing:
         state = _escalate(state, "EXHAUSTED")
         reasons.append("last status cli_missing")
+    if saw_quota_exhausted:
+        state = _escalate(state, "EXHAUSTED")
+        reasons.append("last status quota_exhausted (CLI reported a hard weekly/monthly "
+                       "usage-limit 403; independent of the quota-fetcher telemetry)")
     if period_ended:
         state = _escalate(state, "EXHAUSTED")
         reasons.append(f"subscription period ended {period_end.isoformat()}")

@@ -114,6 +114,19 @@ def test_classify_error_table(cfg: dict) -> None:
     assert ka.classify_error(1, "some other failure", "", cfg) == "error"
 
 
+def test_classify_error_weekly_cap_is_quota_exhausted_not_rate_limited(cfg: dict) -> None:
+    # Live evidence 2026-09-18 (task d797e68f, research.log): the real CLI 403 message.
+    # This must NOT fall into rate_limited (which is retried) - a weekly cap will not
+    # clear in the 20-60s backoff window.
+    msg = ("error: failed to run prompt: provider.auth_error: 403 You've reached your "
+          "weekly (7-day) usage limit. Your quota will reset when the current 7-day "
+          "window ends. To continue now, purchase extra usage or upgrade your plan: "
+          "https://www.kimi.com/membership/subscription?tab=quota")
+    assert ka.classify_error(1, msg, "", cfg) == "quota_exhausted"
+    assert ka.classify_error(1, "You've reached your monthly usage limit.", "", cfg) == "quota_exhausted"
+    assert "quota_exhausted" not in cfg.get("retry", {}).get("retry_statuses", [])
+
+
 # --- argv construction per role --------------------------------------------------
 
 def test_build_argv_creator_has_noshell_research_agent_file(cfg: dict, tmp_path: Path) -> None:
@@ -313,6 +326,15 @@ def test_run_kimi_auth_expired_is_not_retried(cfg: dict, tmp_path: Path, monkeyp
     res = ka.run_kimi("x", role="creator", capability="research", task_id="t", cwd=tmp_path,
                       add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
     assert res["status"] == "auth_expired" and res["retries"] == 0
+
+
+def test_run_kimi_quota_exhausted_is_not_retried(cfg: dict, tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setattr(ka, "_spawn_once", _fake_spawn(
+        "", rc=1, stderr="403 You've reached your weekly (7-day) usage limit."))
+    monkeypatch.setattr(ka, "_repo_porcelain_hash", lambda root: "x")
+    res = ka.run_kimi("x", role="creator", capability="research", task_id="t", cwd=tmp_path,
+                      add_dirs=[], out_dir=tmp_path / "o", config=cfg, environ={})
+    assert res["status"] == "quota_exhausted" and res["retries"] == 0
 
 
 def test_malformed_output_when_rc0_but_unparseable(cfg: dict, tmp_path: Path, monkeypatch) -> None:

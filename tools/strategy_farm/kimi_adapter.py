@@ -62,6 +62,13 @@ STATUS_OK = "ok"
 STATUS_TIMEOUT = "timeout"
 STATUS_AUTH_EXPIRED = "auth_expired"
 STATUS_RATE_LIMITED = "rate_limited"
+# A hard subscription-period cap (weekly/monthly), distinct from a transient
+# rate_limited: retrying in 20-60s is pointless (evidence 2026-09-18, task
+# d797e68f - the quota fetcher's rolling_7d read 1.1e-05 while the CLI returned
+# "403 ... reached your weekly (7-day) usage limit" two minutes earlier). Never
+# added to retry_statuses; kimi_governor treats it as an immediate, fetcher-
+# independent EXHAUSTED signal (see kimi_governor.compute_state).
+STATUS_QUOTA_EXHAUSTED = "quota_exhausted"
 STATUS_MALFORMED = "malformed_output"
 STATUS_SCHEMA_MISMATCH = "schema_mismatch"  # valid JSONL, no recognizable assistant content
 STATUS_CLI_MISSING = "cli_missing"

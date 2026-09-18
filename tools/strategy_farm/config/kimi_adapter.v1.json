@@ -74,8 +74,9 @@
 
   "prompt_pointer_template": "Read the file '{prompt_path}' and execute its instructions exactly; write your complete answer to '{answer_path}' and also print it; then exit.",
 
-  "_error_class_doc": "Applied to (stderr + stdout), lowercased, after a non-zero exit or an empty/unparseable success. First matching class wins. timeout is set by the watchdog, cli_missing / auth_expired(missing credential) by pre-flight checks, malformed_output by the parser. Tunable without code changes; the CLI auto-updates.",
+  "_error_class_doc": "Applied to (stderr + stdout), lowercased, after a non-zero exit or an empty/unparseable success. First matching class wins. timeout is set by the watchdog, cli_missing / auth_expired(missing credential) by pre-flight checks, malformed_output by the parser. Tunable without code changes; the CLI auto-updates. quota_exhausted (2026-09-18, task d797e68f) is checked before rate_limited: a hard weekly/monthly subscription-period cap (403 'reached your weekly (7-day) usage limit' / 'reached your monthly usage limit') is not a transient rate limit - retrying in 20-60s cannot help - so it gets its own class, excluded from retry_statuses, and escalates the governor to EXHAUSTED immediately (independent of the quota-fetcher telemetry).",
   "error_class_patterns": [
+    { "status": "quota_exhausted", "patterns": ["weekly (7-day) usage limit", "weekly usage limit", "monthly usage limit", "reached your weekly", "reached your monthly", "purchase extra usage"] },
     { "status": "auth_expired", "patterns": ["no model configured", "/login", "sign in", "unauthenticated", "401", "token expired", "not authenticated", "credential"] },
     { "status": "rate_limited", "patterns": ["rate limit", "429", "too many requests", "quota exceeded", "overloaded", "capacity"] }
   ],
@@ -97,7 +98,7 @@
     "caps": { "day": 120, "week": 600 },
     "conserve_pct": 70,
     "consecutive_fail_threshold": 2,
-    "consecutive_fail_statuses": ["rate_limited", "auth_expired"],
+    "consecutive_fail_statuses": ["rate_limited", "auth_expired", "quota_exhausted"],
     "conserve_allowed_capabilities": ["edge_discovery", "hypothesis_authoring", "cross_experiment_analysis", "research_critic"],
     "subscription_period": { "start": "2026-09-15", "end": "2026-10-15" },
     "period_conserve_days_before_end": 3
