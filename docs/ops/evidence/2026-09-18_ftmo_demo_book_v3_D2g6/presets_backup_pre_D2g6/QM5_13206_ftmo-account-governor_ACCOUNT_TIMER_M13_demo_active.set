@@ -1,0 +1,27 @@
+qm_ea_id=13206||13206||1||999999||N
+signed_policy_id=FTMO_2S_P1_100K_V2
+qm_news_temporal=3||3||0||6||N
+qm_news_compliance=2||2||0||3||N
+qm_news_stale_max_hours=336||336||1||336||N
+qm_news_min_impact=high
+governed_symbols_csv=GBPUSD,EURUSD,USDCAD,NZDUSD,USOIL.cash,XAGUSD
+qm_friday_close_enabled=true||false||0||true||N
+qm_friday_close_hour_broker=21||21||1||23||N
+qm_friday_flat_lead_minutes=5||5||1||60||N
+strategy_no_trade_controller=true||false||0||true||N
+expected_account_login=1514536732||1514536732||1||1514536732||N
+expected_account_server=FTMO-Demo
+challenge_id=M13_20260906_1514536732
+challenge_start_utc=2026.09.06 06:17:00
+allowed_magics_csv=107060001,114210000,114220004,119100006,130540000,15370001,200480000,215050000
+governed_ea_ids_csv=10706,11421,11422,11910,13054,1537,20048,21505
+governor_dry_run=false||false||0||true||N
+challenge_state_bootstrap=false||false||0||true||N
+bootstrap_no_prior_breach_confirmed=false||false||0||true||N
+bootstrap_prague_day_key=0||0||1||0||N
+bootstrap_midnight_balance=0.0||0.0||0.1||0.0||N
+bootstrap_trading_days=0||0||1||4||N
+bootstrap_last_trade_day_key=0||0||1||0||N
+governor_timer_ms=200||200||1||1000||N
+close_deviation_points=50||50||1||500||N
+

@@ -48,9 +48,9 @@
     "ea_id": 13206,
     "policy_id": "FTMO_2S_P1_100K_V2",
     "bootstrap_preset_path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set",
-    "bootstrap_preset_sha256": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
+    "bootstrap_preset_sha256": "e2640e6e8b28bb9248dba911f1e45d45c1d04f34b0f72b063024e7c7c95da565",
     "active_preset_path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
-    "active_preset_sha256": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361"
+    "active_preset_sha256": "f1b277a6bf46ce6fa634e3e3a264f0ccbe667e5013417f6cf5c36f5a3d8fa5c6"
   },
   "authority_boundary": {
     "install_authorized": false,

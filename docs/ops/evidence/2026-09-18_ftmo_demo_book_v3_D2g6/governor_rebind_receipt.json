@@ -1,0 +1,40 @@
+{
+  "schema": "qm.ftmo-governor-rebind/v1",
+  "generated_at_utc": "2026-09-18T04:18:21Z",
+  "applied": true,
+  "roster_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-18_ftmo_demo_book_v3_D2g6\\roster.json",
+  "roster_sha256": "53a1387081ab6b6267afc785a242a8fbe1c9a338fcc71910493fe5b67b9a690b",
+  "roster_label": "D2g6",
+  "sleeve_count": 6,
+  "updates": {
+    "allowed_magics_csv": "104030002,107000003,107060001,114220004,132130000,412190000",
+    "governed_ea_ids_csv": "10403,10700,10706,11422,13213,41219",
+    "governed_symbols_csv": "GBPUSD,USDCAD,USDJPY,XAUUSD",
+    "challenge_id": "M13_D2G6_20260918_1514536732",
+    "challenge_start_utc": "2026.09.18 06:17:00"
+  },
+  "magic_registry": {
+    "path": "C:\\QM\\repo\\framework\\registry\\magic_numbers.csv",
+    "sha256": "6671944eb975e09b303fb4afd1cb40dc6e6b50d8111af48fbced020050851381"
+  },
+  "presets": {
+    "bootstrap": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13206_ftmo-account-governor\\sets\\QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set",
+      "sha256_before": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
+      "sha256_after": "e2640e6e8b28bb9248dba911f1e45d45c1d04f34b0f72b063024e7c7c95da565"
+    },
+    "active": {
+      "path": "C:\\QM\\repo\\framework\\EAs\\QM5_13206_ftmo-account-governor\\sets\\QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
+      "sha256_before": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361",
+      "sha256_after": "f1b277a6bf46ce6fa634e3e3a264f0ccbe667e5013417f6cf5c36f5a3d8fa5c6"
+    }
+  },
+  "binding": {
+    "path": "C:\\QM\\repo\\tools\\strategy_farm\\config\\ftmo_m13_standard_demo.v1.json",
+    "sha256_before": "52d9e27d229c6f1cda7dc31f11211b428579de84bf940cfe474f7e6a29f08383",
+    "sha256_after": "0ed0df9f28077dc2c526e708cd6008672fcffdeec1e20abd32e5f15a27cf79ba"
+  },
+  "autotrading_changed": false,
+  "charts_changed": false,
+  "terminal_written": false
+}
