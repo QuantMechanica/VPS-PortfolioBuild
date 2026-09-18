@@ -15,13 +15,11 @@
 // below delegate to it). Everything else is framework wiring and MUST stay
 // intact.
 //
-// REGISTRY STATUS: identity/magic PENDING_ALLOCATION — NO ea_id_registry.csv
-// or magic_numbers.csv rows exist for 41476 and QM_MagicResolver.mqh has no
-// 41476 tuples. Planned magic values by convention (ea_id*10000 + slot,
-// slots per approved-card symbol order): slot 0 NDX.DWX = 414760000,
-// slot 1 GDAXI.DWX = 414760001, slot 2 SP500.DWX = 414760002. Allocation is
-// centralized after this build; do NOT pipeline, backtest, or deploy before
-// it completes. See docs/ops/evidence/2026-09-16_kimi_hmr/RECEIPT.md.
+// REGISTRY STATUS: ALLOCATED — governed allocator wrote active
+// ea_id_registry.csv / magic_numbers.csv rows (magic = ea_id*10000 + slot,
+// slots per approved-card symbol order) and QM_MagicResolver.mqh carries the
+// tuples; the earlier PENDING_ALLOCATION note is historical (see the build
+// receipt under docs/ops/evidence/). Updated 2026-09-18 (Fable critic pass).
 //
 // Session hours are inputs in UTC (card semantics); broker time is mapped to
 // UTC through the shared QM_DSTAware include — no hand-rolled DST. Symbols
