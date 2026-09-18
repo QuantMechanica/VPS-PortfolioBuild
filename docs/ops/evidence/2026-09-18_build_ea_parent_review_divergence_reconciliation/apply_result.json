@@ -1,0 +1,19 @@
+{
+  "applied": [
+    {
+      "build_ea_id": "4b97cf9e-7a3c-452d-bc44-964a5a85555b",
+      "review_ea_id": "da921b20-b31f-4530-aa87-15a05d4c818a"
+    },
+    {
+      "build_ea_id": "e48c6a6c-1935-4945-9e47-e420f9fb15df",
+      "review_ea_id": "33203a5c-13c9-4db5-b553-2cc23519125f"
+    },
+    {
+      "build_ea_id": "2d3a6323-d804-427f-8387-ca78687a78b1",
+      "review_ea_id": "c734242f-6787-4bda-a735-05758753a9f0"
+    }
+  ],
+  "mode": "apply",
+  "schema": "qm.build-ea-parent-review-divergence-reconciliation/v1",
+  "skipped": []
+}
