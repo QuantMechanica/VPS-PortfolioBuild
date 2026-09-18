@@ -70,6 +70,24 @@ Reproducibility.  The full run is reproducible from a frozen input manifest
 length, horizon and path count.  The same manifest + seed reproduce the same
 read-model byte-for-byte (numbers are rounded deterministically).
 
+Chain (schema v2, KPI contract section 2)
+----------------------------------------
+Since engine 2.0.0 the same sampler is chained over the whole path to the first
+net cash payout, pathwise (a path either survives every stage or it does not):
+
+    Phase 1 (+10 %)  ->  Verification (+5 %)  ->  funded account  ->  first reward
+
+Every stage restarts on a FRESH 100k account (fresh Daily-Loss anchor, fresh
+static 90k Max-Loss floor) and draws its OWN independent bootstrap blocks, so the
+continuation is never the same resampled path replayed twice.  The funded stage
+carries no profit target: it must survive to the first reward-eligible day (>= 14
+calendar days after the first placed trade, mapped to business days, with net
+closed profit > 0 and the book flat) plus the payout request/processing lag, all
+without a Daily-Loss or Max-Loss breach.  The net-positive condition applies the
+bound reward split and fee refund against the paid evaluation fee.  Uncertainty
+is a batch bootstrap over the path set (default 20 batches x 500 paths); the
+reported control value ``P_FIRST_NET_FTMO_PAYOUT_LCB`` is the 5th percentile.
+
 Read-only and OWNER-safe.  This module reads streams and writes one read-model
 (``D:/QM/reports/state/ftmo_first_passage.json``).  It never starts MT5, trades,
 touches T_Live/AutoTrading, writes the farm DB, or acts on a paid Challenge - the
@@ -95,8 +113,10 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contract
 
-SCHEMA = "qm.ftmo-first-passage/v1"
-MANIFEST_SCHEMA = "qm.ftmo-first-passage-manifest/v1"
+SCHEMA = "qm.ftmo-first-passage/v2"
+MANIFEST_SCHEMA = "qm.ftmo-first-passage-manifest/v2"
+ENGINE_VERSION = "2.0.0"
+KPI_CONTRACT_VERSION = "v1"  # docs/ftmo/FTMO_KPI_CONTRACT.md
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = Path(r"D:\QM\reports\state\ftmo_first_passage.json")
 DEFAULT_MANIFEST_OUT = Path(r"D:\QM\reports\state\ftmo_first_passage_manifest.json")
@@ -153,6 +173,21 @@ _SYMBOL_ALIASES = {
 # convenience mapped to business days via the 5/7 trading-week ratio.
 _NAMED_CALENDAR_HORIZONS = (30, 60, 90, 180, 252)
 
+# Funded-stage payout rule (FTMO_RULES_SNAPSHOT_2026-09-18): the first reward can
+# be requested on the 14th or any following day after the FIRST PLACED TRADE on
+# the FTMO Account, with every position and pending order closed; review plus
+# payment then take ~1-2 + 1-2 business days, modelled as 4 business days during
+# which the account must still not breach.
+FUNDED_ELIGIBILITY_CALENDAR_DAYS = 14
+PAYOUT_PROCESSING_BUSINESS_DAYS = 4
+# Business-day horizon for the funded stage: first trade + eligibility + processing
+# with generous slack for paths that are not yet in net profit at day 14.
+DEFAULT_FUNDED_HORIZON = 120
+# Credible interval: 20 batches x 500 paths of the default 10,000-path set.
+DEFAULT_N_BATCHES = 20
+# Fallback evaluation fee when the bound rulepack carries none (USD 100k 2-Step).
+DEFAULT_FEE_USD = 540.0
+
 
 def resolve_dwx_symbol(ftmo_symbol: str) -> str:
     """FTMO/broker symbol -> factory .DWX symbol (documented, never a guess)."""
@@ -179,6 +214,7 @@ def load_rules(rulepack_path: Path | str = DEFAULT_RULEPACK_PATH) -> dict[str, A
         "canonical_sha256": contract.canonical_sha256,
         "initial_equity": float(contract.initial_equity),
         "target_fraction": float(contract.phase1_target_fraction),
+        "phase2_target_fraction": float(contract.phase2_target_fraction),
         "daily_loss_fraction": float(contract.maximum_daily_loss_fraction),
         "total_loss_fraction": float(contract.maximum_total_loss_fraction),
         "min_trading_days": int(contract.minimum_trading_days),
@@ -187,6 +223,67 @@ def load_rules(rulepack_path: Path | str = DEFAULT_RULEPACK_PATH) -> dict[str, A
         "target_operator": contract.target_operator,
         "maximum_loss_model": contract.maximum_loss_model,
     }
+
+
+def load_economics(rulepack_path: Path | str = DEFAULT_RULEPACK_PATH, *,
+                   fee_usd: float | None = None) -> dict[str, Any]:
+    """Project the payout economics (fee, refund, reward split) from the rulepack.
+
+    The fee is taken from the bound rulepack when it carries one; an explicit
+    ``fee_usd`` overrides it (the live order-page amount is a documented GAP in
+    ``docs/ftmo/FTMO_RULES_SNAPSHOT_2026-09-18.md``); otherwise the conservative
+    default is used and flagged as ``ASSUMED_DEFAULT`` - never silently invented.
+    """
+    pack = _load_json(Path(rulepack_path))
+    rules = {}
+    if isinstance(pack, dict):
+        rules = {str(r.get("rule_id")): (r.get("parameters") or {})
+                 for r in pack.get("official_rules") or []}
+
+    def _num(rule_id: str, key: str) -> float | None:
+        try:
+            return float(rules.get(rule_id, {})[key])
+        except (KeyError, TypeError, ValueError):
+            return None
+
+    pack_fee = _num("ftmo_2s_evaluation_fee", "list_fee_usd")
+    if fee_usd is not None:
+        fee, source = float(fee_usd), "CLI_OVERRIDE"
+    elif pack_fee is not None:
+        fee, source = pack_fee, "RULEPACK_LIST_FEE"
+    else:
+        fee, source = DEFAULT_FEE_USD, "ASSUMED_DEFAULT"
+    split = _num("ftmo_2s_reward_split", "base_percent")
+    refund = _num("ftmo_2s_fee_refund", "refund_percent")
+    return {
+        "fee_usd": round(fee, 2),
+        "fee_source": source,
+        "fee_note": ("list fee from the bound rulepack; the live order-page amount "
+                     "(promotions included) is a documented GAP and must be recorded "
+                     "at purchase time"),
+        "reward_split_percent": split if split is not None else 80.0,
+        "reward_split_source": "RULEPACK" if split is not None else "ASSUMED_DEFAULT",
+        "fee_refund_percent": refund if refund is not None else 100.0,
+        "fee_refund_source": "RULEPACK" if refund is not None else "ASSUMED_DEFAULT",
+    }
+
+
+def net_cash_from_profit(profit_usd: np.ndarray, economics: Mapping[str, Any]) -> np.ndarray:
+    """First-reward net cash: split x funded net profit + fee refund - paid fee."""
+    fee = float(economics["fee_usd"])
+    split = float(economics["reward_split_percent"]) / 100.0
+    refund = fee * float(economics["fee_refund_percent"]) / 100.0
+    return split * np.maximum(profit_usd, 0.0) + refund - fee
+
+
+def min_profit_for_net_positive(economics: Mapping[str, Any]) -> float:
+    """Funded net profit at which the first reward strictly covers the fees."""
+    fee = float(economics["fee_usd"])
+    split = float(economics["reward_split_percent"]) / 100.0
+    refund = fee * float(economics["fee_refund_percent"]) / 100.0
+    if split <= 0.0:
+        return float("inf")
+    return max(0.0, (fee - refund) / split)
 
 
 # --------------------------------------------------------------------------- #
@@ -415,6 +512,141 @@ def _first_true_day(mask: np.ndarray, sentinel: int) -> np.ndarray:
     return day.min(axis=1)
 
 
+def _cost_adjusted(grid: Mapping[str, Any], cost_mult: float,
+                   slippage_usd_per_lot: float) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Book daily (net, low, opened) after the scenario extra cost/slippage.
+
+    float32 keeps peak memory modest (MT5 workers need headroom); PnL magnitudes
+    (~1e4) are well inside float32 precision for probability estimation.
+    """
+    extra_cost = (cost_mult - 1.0) * grid["commission"] + slippage_usd_per_lot * grid["lots"]
+    net = (grid["net"] - extra_cost).astype(np.float32)
+    low = (grid["low"] - extra_cost).astype(np.float32)
+    return net, low, grid["opened"]
+
+
+def _phase_walk(net: np.ndarray, low: np.ndarray, opened: np.ndarray, idx: np.ndarray, *,
+                target: float, daily_cap: float, total_cap: float,
+                min_days: int) -> dict[str, Any]:
+    """First-passage walk for ONE evaluation phase on a fresh account anchor.
+
+    Every returned array is a per-path 0-based day index into the path (``sentinel``
+    when the event never happens): pass day, daily-loss breach, max-loss breach,
+    the day the target alone was first reached, and the day the minimum-trading-day
+    requirement was first satisfied (the last two show which of the two pass
+    conditions was binding - a path that reaches the target before its 4th trading
+    day must keep trading and can still breach).
+    """
+    n_paths, horizon = idx.shape
+    sentinel = horizon + 1
+
+    net_p = net[idx]
+    low_p = low[idx]
+    cum_close = np.cumsum(net_p, axis=1)               # end-of-day cumulative
+    equity_low = cum_close - net_p + low_p             # intraday trough (cum before today + today low)
+
+    daily_breach_day = _first_true_day(low_p < -daily_cap, sentinel)
+    del low_p
+    total_breach_day = _first_true_day(equity_low < -total_cap, sentinel)
+    del equity_low
+    trading_days = np.cumsum(opened[idx].astype(np.int32), axis=1)
+    target_only_day = _first_true_day(cum_close > target, sentinel)
+    min_days_day = _first_true_day(trading_days >= min_days, sentinel)
+    pass_mask = (cum_close > target) & (trading_days >= min_days)
+    del cum_close, trading_days, net_p
+    pass_day = _first_true_day(pass_mask, sentinel)
+    del pass_mask
+    return {
+        "pass_day": pass_day,
+        "daily_breach_day": daily_breach_day,
+        "total_breach_day": total_breach_day,
+        "target_only_day": target_only_day,
+        "min_days_day": min_days_day,
+        "sentinel": sentinel,
+        "horizon": horizon,
+        "n_paths": n_paths,
+    }
+
+
+def _resolve_phase(walk: Mapping[str, Any]) -> dict[str, np.ndarray]:
+    """Resolve a phase walk into pass / breach / censored masks.
+
+    Breaches are tested BEFORE the target on the same day (conservative).
+    """
+    horizon = walk["horizon"]
+    pass_day = walk["pass_day"]
+    daily_breach_day = walk["daily_breach_day"]
+    total_breach_day = walk["total_breach_day"]
+    breach_day = np.minimum(daily_breach_day, total_breach_day)
+    passed = pass_day < breach_day
+    breached = breach_day <= np.minimum(pass_day, horizon - 1)
+    censored = ~passed & ~breached
+    is_daily = breached & (daily_breach_day <= total_breach_day)
+    is_total = breached & ~is_daily
+    return {"passed": passed, "breached": breached, "censored": censored,
+            "is_daily": is_daily, "is_total": is_total, "breach_day": breach_day}
+
+
+def _funded_walk(net: np.ndarray, low: np.ndarray, opened: np.ndarray, idx: np.ndarray, *,
+                 daily_cap: float, total_cap: float, eligibility_business_days: int,
+                 processing_business_days: int) -> dict[str, Any]:
+    """Funded-stage walk: survive to the first reward payout; no profit target.
+
+    Reward eligibility = the first business day at or after ``eligibility_business_days``
+    following the first PLACED trade on which net closed profit is strictly positive
+    (positions flat, so the day-end closed balance is the tested quantity).  The payout
+    then needs ``processing_business_days`` more, during which the account must still
+    not breach Daily Loss or Maximum Loss.
+    """
+    n_paths, horizon = idx.shape
+    sentinel = horizon + 1
+
+    net_p = net[idx]
+    low_p = low[idx]
+    cum_close = np.cumsum(net_p, axis=1)
+    equity_low = cum_close - net_p + low_p
+    daily_breach_day = _first_true_day(low_p < -daily_cap, sentinel)
+    del low_p
+    total_breach_day = _first_true_day(equity_low < -total_cap, sentinel)
+    del equity_low, net_p
+
+    first_trade_day = _first_true_day(opened[idx], sentinel)
+    cols = np.arange(horizon)[None, :]
+    eligible = (cols >= (first_trade_day[:, None] + eligibility_business_days)) & (cum_close > 0.0)
+    reward_day = _first_true_day(eligible, sentinel)
+    del eligible
+    payout_day = reward_day + processing_business_days
+
+    reached = payout_day <= (horizon - 1)
+    safe_reward = np.minimum(reward_day, horizon - 1)
+    profit = cum_close[np.arange(n_paths), safe_reward].astype(np.float64)
+    profit = np.where(reached, profit, 0.0)
+    del cum_close
+
+    breach_day = np.minimum(daily_breach_day, total_breach_day)
+    survived = reached & (breach_day > payout_day)
+    breached = breach_day <= np.minimum(payout_day, horizon - 1)
+    is_daily = breached & (daily_breach_day <= total_breach_day)
+    is_total = breached & ~is_daily
+    return {
+        "first_trade_day": first_trade_day,
+        "reward_day": reward_day,
+        "payout_day": payout_day,
+        "profit_at_reward": profit,
+        "daily_breach_day": daily_breach_day,
+        "total_breach_day": total_breach_day,
+        "breach_day": breach_day,
+        "survived": survived,
+        "breached": breached,
+        "is_daily": is_daily,
+        "is_total": is_total,
+        "censored": ~survived & ~breached,
+        "sentinel": sentinel,
+        "horizon": horizon,
+        "n_paths": n_paths,
+    }
+
+
 def simulate(grid: Mapping[str, Any], rules: Mapping[str, Any], *,
              idx: np.ndarray, cost_mult: float = 1.0, slippage_usd_per_lot: float = 0.0,
              attribute: bool = True) -> dict[str, Any]:
@@ -429,39 +661,19 @@ def simulate(grid: Mapping[str, Any], rules: Mapping[str, Any], *,
     total_cap = rules["total_loss_fraction"] * initial
     min_days = rules["min_trading_days"]
 
-    extra_cost = (cost_mult - 1.0) * grid["commission"] + slippage_usd_per_lot * grid["lots"]
-    net = (grid["net"] - extra_cost).astype(np.float32)
-    low = (grid["low"] - extra_cost).astype(np.float32)
-    opened = grid["opened"]
-
-    # float32 keeps peak memory modest (MT5 workers need headroom); PnL magnitudes
-    # (~1e4) are well inside float32 precision for probability estimation.
-    net_p = net[idx]
-    low_p = low[idx]
-
+    net, low, opened = _cost_adjusted(grid, cost_mult, slippage_usd_per_lot)
+    walk = _phase_walk(net, low, opened, idx, target=target, daily_cap=daily_cap,
+                       total_cap=total_cap, min_days=min_days)
+    outcome = _resolve_phase(walk)
     n_paths, horizon = idx.shape
-    sentinel = horizon + 1
-
-    cum_close = np.cumsum(net_p, axis=1)               # end-of-day cumulative
-    equity_low = cum_close - net_p + low_p             # intraday equity trough (cum before today + today's low)
-
-    daily_breach_day = _first_true_day(low_p < -daily_cap, sentinel)
-    del low_p
-    total_breach_day = _first_true_day(equity_low < -total_cap, sentinel)
-    del equity_low
-    trading_days = np.cumsum(opened[idx].astype(np.int32), axis=1)
-    pass_mask = (cum_close > target) & (trading_days >= min_days)
-    del cum_close, trading_days, net_p
-    pass_day = _first_true_day(pass_mask, sentinel)
-    del pass_mask
-
-    breach_day = np.minimum(daily_breach_day, total_breach_day)
-    # breaches tested before target on the same day (conservative)
-    passed = pass_day < breach_day
-    breached = breach_day <= np.minimum(pass_day, horizon - 1)
-    censored = ~passed & ~breached
-    is_daily = breached & (daily_breach_day <= total_breach_day)
-    is_total = breached & ~is_daily
+    pass_day = walk["pass_day"]
+    daily_breach_day = walk["daily_breach_day"]
+    total_breach_day = walk["total_breach_day"]
+    passed = outcome["passed"]
+    breached = outcome["breached"]
+    censored = outcome["censored"]
+    is_daily = outcome["is_daily"]
+    is_total = outcome["is_total"]
 
     n = float(n_paths)
     n_resolved = int(passed.sum() + breached.sum())
@@ -571,6 +783,280 @@ def _attribute_breaches(grid: Mapping[str, Any], idx: np.ndarray,
         for k, v in sorted(weekday_counts.items(), key=lambda kv: -kv[1])
     }
     return modes
+
+
+# --------------------------------------------------------------------------- #
+# Chain simulation (v2): Phase 1 -> Verification -> funded -> first net payout
+# --------------------------------------------------------------------------- #
+def _stage_index_matrix(seed: int, stage: int, n_grid: int, n_paths: int,
+                        horizon: int, block_len: int) -> np.ndarray:
+    """Independent, reproducible bootstrap draws for one chain stage.
+
+    Each stage gets its own seed stream so the continuation is NOT the same
+    resampled path replayed on a second account, while the whole chain stays
+    reproducible from (seed, stage).
+    """
+    rng = np.random.default_rng([int(seed), int(stage)])
+    return _bootstrap_index_matrix(rng, n_grid, n_paths, horizon, block_len)
+
+
+def _share(mask: np.ndarray, denom: np.ndarray | None = None) -> float | None:
+    """Share of True in ``mask`` (optionally within ``denom``); None if no base."""
+    if denom is None:
+        base = float(mask.shape[0])
+        num = float(mask.sum())
+    else:
+        base = float(denom.sum())
+        num = float((mask & denom).sum())
+    if base <= 0.0:
+        return None
+    return round(num / base, 4)
+
+
+def _batch_ci(num: np.ndarray, denom: np.ndarray | None, n_batches: int) -> dict[str, Any]:
+    """90% credible interval from equal-size contiguous batches of the path set."""
+    n = int(num.shape[0])
+    size = n // max(1, int(n_batches))
+    out: dict[str, Any] = {"n_batches": 0, "batch_size": size, "p05": None,
+                           "p50": None, "p95": None}
+    if size <= 0:
+        return out
+    values: list[float] = []
+    for b in range(int(n_batches)):
+        sl = slice(b * size, (b + 1) * size)
+        if denom is None:
+            base = float(size)
+            hits = float(num[sl].sum())
+        else:
+            base = float(denom[sl].sum())
+            hits = float((num[sl] & denom[sl]).sum())
+        if base <= 0.0:
+            continue  # empty conditioning set in this batch: no estimate, never a 0
+        values.append(hits / base)
+    if not values:
+        return out
+    arr = np.asarray(values, dtype=float)
+    out.update({
+        "n_batches": len(values),
+        "p05": round(float(np.percentile(arr, 5)), 4),
+        "p50": round(float(np.percentile(arr, 50)), 4),
+        "p95": round(float(np.percentile(arr, 95)), 4),
+    })
+    return out
+
+
+def _time_dist(days: np.ndarray) -> dict[str, Any]:
+    """p10/p50/p90 business-day distribution over the selected paths."""
+    days = np.asarray(days, dtype=float)
+    if days.size == 0:
+        return {"p10": None, "p50": None, "p90": None, "mean": None, "n": 0}
+    return {
+        "p10": round(float(np.percentile(days, 10)), 1),
+        "p50": round(float(np.percentile(days, 50)), 1),
+        "p90": round(float(np.percentile(days, 90)), 1),
+        "mean": round(float(days.mean()), 1),
+        "n": int(days.size),
+    }
+
+
+def _phase_stage_report(walk: Mapping[str, Any], outcome: Mapping[str, np.ndarray],
+                        grid: Mapping[str, Any], idx: np.ndarray, *,
+                        reached: np.ndarray | None, attribute: bool) -> dict[str, Any]:
+    """Per-stage breach / pass / min-trading-day report for one evaluation phase."""
+    passed = outcome["passed"]
+    report: dict[str, Any] = {
+        "p_pass": _share(passed),
+        "p_daily_loss_breach": _share(outcome["is_daily"]),
+        "p_max_loss_breach": _share(outcome["is_total"]),
+        "p_censored": _share(outcome["censored"]),
+    }
+    if reached is not None:
+        report["conditional_on_reaching_stage"] = {
+            "n_paths_reaching": int(reached.sum()),
+            "p_pass": _share(passed, reached),
+            "p_daily_loss_breach": _share(outcome["is_daily"], reached),
+            "p_max_loss_breach": _share(outcome["is_total"], reached),
+            "p_censored": _share(outcome["censored"], reached),
+        }
+    # Minimum-trading-day rule: a path that reaches the target before its 4th
+    # trading day has to keep trading and can still breach in the meantime.
+    target_first = walk["target_only_day"] < walk["min_days_day"]
+    reached_target = walk["target_only_day"] <= (walk["horizon"] - 1)
+    report["min_trading_days"] = {
+        "required": None,  # filled by the caller from the rulepack
+        "p_target_before_min_days": _share(target_first & reached_target),
+        "p_pass_delayed_by_min_days": _share(passed & target_first),
+        "p_breached_after_target_before_min_days": _share(
+            outcome["breached"] & target_first & reached_target),
+    }
+    if attribute:
+        report["conditional_failure_modes"] = _attribute_breaches(
+            grid, idx, outcome["is_daily"], outcome["is_total"],
+            walk["daily_breach_day"], walk["total_breach_day"])
+    return report
+
+
+def simulate_chain(grid: Mapping[str, Any], rules: Mapping[str, Any],
+                   economics: Mapping[str, Any], *, seed: int, n_paths: int,
+                   block_len: int, horizon: int,
+                   funded_horizon: int = DEFAULT_FUNDED_HORIZON,
+                   n_batches: int = DEFAULT_N_BATCHES, cost_mult: float = 1.0,
+                   slippage_usd_per_lot: float = 0.0,
+                   phase1_idx: np.ndarray | None = None,
+                   detail: bool = True) -> dict[str, Any]:
+    """Pathwise Phase 1 -> Verification -> funded -> first net payout chain.
+
+    Every path is carried through all three stages, so the end-to-end probability
+    is a PATHWISE product (a path passes everything or it fails somewhere), not a
+    product of independently reported marginals - both are reported.
+    """
+    initial = rules["initial_equity"]
+    daily_cap = rules["daily_loss_fraction"] * initial
+    total_cap = rules["total_loss_fraction"] * initial
+    min_days = int(rules["min_trading_days"])
+    p1_target = rules["target_fraction"] * initial
+    p2_target = rules["phase2_target_fraction"] * initial
+    n_grid = int(grid["business_days"])
+    elig_bd = calendar_to_business_days(FUNDED_ELIGIBILITY_CALENDAR_DAYS)
+
+    net, low, opened = _cost_adjusted(grid, cost_mult, slippage_usd_per_lot)
+
+    # --- stage 1: Challenge (+10 %), fresh 100k anchor ---------------------- #
+    idx1 = phase1_idx if phase1_idx is not None else _stage_index_matrix(
+        seed, 1, n_grid, n_paths, horizon, block_len)
+    w1 = _phase_walk(net, low, opened, idx1, target=p1_target, daily_cap=daily_cap,
+                     total_cap=total_cap, min_days=min_days)
+    o1 = _resolve_phase(w1)
+    stage1 = _phase_stage_report(w1, o1, grid, idx1, reached=None, attribute=detail)
+    stage1["min_trading_days"]["required"] = min_days
+    if phase1_idx is None:
+        del idx1
+
+    # --- stage 2: Verification (+5 %), fresh 100k account, independent draws - #
+    idx2 = _stage_index_matrix(seed, 2, n_grid, n_paths, horizon, block_len)
+    w2 = _phase_walk(net, low, opened, idx2, target=p2_target, daily_cap=daily_cap,
+                     total_cap=total_cap, min_days=min_days)
+    o2 = _resolve_phase(w2)
+    stage2 = _phase_stage_report(w2, o2, grid, idx2, reached=o1["passed"], attribute=detail)
+    stage2["min_trading_days"]["required"] = min_days
+    del idx2
+
+    # --- stage 3: funded account, survive to the first reward payout -------- #
+    idx3 = _stage_index_matrix(seed, 3, n_grid, n_paths, funded_horizon, block_len)
+    w3 = _funded_walk(net, low, opened, idx3, daily_cap=daily_cap, total_cap=total_cap,
+                      eligibility_business_days=elig_bd,
+                      processing_business_days=PAYOUT_PROCESSING_BUSINESS_DAYS)
+    reached_funded = o1["passed"] & o2["passed"]
+    stage3: dict[str, Any] = {
+        "p_survive_to_first_reward": _share(w3["survived"]),
+        "p_daily_loss_breach": _share(w3["is_daily"]),
+        "p_max_loss_breach": _share(w3["is_total"]),
+        "p_censored": _share(w3["censored"]),
+        "conditional_on_reaching_stage": {
+            "n_paths_reaching": int(reached_funded.sum()),
+            "p_survive_to_first_reward": _share(w3["survived"], reached_funded),
+            "p_daily_loss_breach": _share(w3["is_daily"], reached_funded),
+            "p_max_loss_breach": _share(w3["is_total"], reached_funded),
+            "p_censored": _share(w3["censored"], reached_funded),
+        },
+        "reward_eligibility": {
+            "calendar_days_after_first_trade": FUNDED_ELIGIBILITY_CALENDAR_DAYS,
+            "eligibility_business_days": elig_bd,
+            "processing_business_days": PAYOUT_PROCESSING_BUSINESS_DAYS,
+            "horizon_business_days": funded_horizon,
+            "rule": "first business day at/after the eligibility lag with net closed "
+                    "profit > 0 and the book flat; payout after the processing lag, "
+                    "no breach in between",
+        },
+    }
+    if detail:
+        stage3["conditional_failure_modes"] = _attribute_breaches(
+            grid, idx3, w3["is_daily"], w3["is_total"],
+            w3["daily_breach_day"], w3["total_breach_day"])
+    del idx3
+
+    # --- chain combination (pathwise) --------------------------------------- #
+    end_to_end = reached_funded & w3["survived"]
+    net_cash = net_cash_from_profit(w3["profit_at_reward"], economics)
+    net_positive = end_to_end & (net_cash > 0.0)
+
+    p_challenge = _share(o1["passed"])
+    p_verif_given = _share(o2["passed"], o1["passed"])
+    p_funded_given = _share(w3["survived"], reached_funded)
+    p_pathwise = _share(end_to_end)
+    p_net = _share(net_positive)
+    marginals = {
+        "phase1": _share(o1["passed"]),
+        "verification": _share(o2["passed"]),
+        "funded_survival": _share(w3["survived"]),
+    }
+    product_of_marginals = None
+    if all(v is not None for v in marginals.values()):
+        product_of_marginals = round(
+            marginals["phase1"] * marginals["verification"] * marginals["funded_survival"], 4)
+
+    intervals = {
+        "P_CHALLENGE_PASS": _batch_ci(o1["passed"], None, n_batches),
+        "P_VERIFICATION_PASS_GIVEN_CHALLENGE": _batch_ci(o2["passed"], o1["passed"], n_batches),
+        "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": _batch_ci(w3["survived"], reached_funded, n_batches),
+        "P_END_TO_END_FIRST_PAYOUT": _batch_ci(end_to_end, None, n_batches),
+        "P_FIRST_NET_FTMO_PAYOUT": _batch_ci(net_positive, None, n_batches),
+    }
+
+    days_p1 = (w1["pass_day"] + 1)[o1["passed"]].astype(float)
+    days_p2 = (w2["pass_day"] + 1)[o2["passed"] & o1["passed"]].astype(float)
+    days_payout = (w3["payout_day"] + 1)[end_to_end].astype(float)
+    days_total = (w1["pass_day"] + w2["pass_day"] + w3["payout_day"] + 3)[end_to_end].astype(float)
+
+    profit_paid = w3["profit_at_reward"][net_positive]
+    cash_paid = net_cash[net_positive]
+
+    return {
+        "kpi_contract_version": KPI_CONTRACT_VERSION,
+        "engine_version": ENGINE_VERSION,
+        "cost_mult": round(float(cost_mult), 4),
+        "slippage_usd_per_lot": round(float(slippage_usd_per_lot), 4),
+        "n_paths": int(n_paths),
+        "probabilities": {
+            "P_CHALLENGE_PASS": p_challenge,
+            "P_VERIFICATION_PASS_GIVEN_CHALLENGE": p_verif_given,
+            "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": p_funded_given,
+            "P_END_TO_END_FIRST_PAYOUT": p_pathwise,
+            "P_END_TO_END_FIRST_PAYOUT_PRODUCT_OF_MARGINALS": product_of_marginals,
+            "P_FIRST_NET_FTMO_PAYOUT": p_net,
+            "P_FIRST_NET_FTMO_PAYOUT_LCB": intervals["P_FIRST_NET_FTMO_PAYOUT"]["p05"],
+        },
+        "marginals_unconditional": marginals,
+        "credible_intervals_90pct": intervals,
+        "stages": {"phase1": stage1, "verification": stage2, "funded": stage3},
+        "time_business_days": {
+            "phase1_target": _time_dist(days_p1),
+            "verification_target": _time_dist(days_p2),
+            "first_payout": _time_dist(days_payout),
+            "end_to_end": _time_dist(days_total),
+        },
+        "net_condition": {
+            "fee_usd": economics["fee_usd"],
+            "fee_source": economics["fee_source"],
+            "reward_split_percent": economics["reward_split_percent"],
+            "fee_refund_percent": economics["fee_refund_percent"],
+            "min_funded_profit_usd_for_net_positive": round(
+                min_profit_for_net_positive(economics), 2),
+            "formula": "net_cash = split x funded_net_profit_at_payout + fee_refund - fee",
+            "funded_profit_at_payout_usd": _time_dist(profit_paid) if profit_paid.size else
+                {"p10": None, "p50": None, "p90": None, "mean": None, "n": 0},
+            "net_cash_usd": _time_dist(cash_paid) if cash_paid.size else
+                {"p10": None, "p50": None, "p90": None, "mean": None, "n": 0},
+        },
+        "method": (
+            "Pathwise chain over the SAME block-bootstrap sampler: Phase 1 (+10 %), "
+            "Verification (+5 %) and the funded account each start on a fresh 100k "
+            "balance anchor with a fresh static 90k Max-Loss floor and draw their own "
+            "independent blocks. The funded stage has no profit target: it must reach "
+            "the first reward-eligible day and survive the payout processing lag. "
+            "End-to-end is counted per path, never as a product of marginals."
+        ),
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -742,9 +1228,21 @@ def _roster_rows(sleeves: Sequence[SleeveInput]) -> list[dict[str, Any]]:
 def _manifest(sleeves: Sequence[SleeveInput], rules: Mapping[str, Any], *,
               seed: int, n_paths: int, block_len: int, horizon: int,
               sensitivity: Sequence[tuple[float, float]], roster_label: str,
-              roster_source: str, extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
+              roster_source: str, economics: Mapping[str, Any] | None = None,
+              chain: bool = True, funded_horizon: int = DEFAULT_FUNDED_HORIZON,
+              n_batches: int = DEFAULT_N_BATCHES,
+              extra: Mapping[str, Any] | None = None) -> dict[str, Any]:
     manifest = {
         "schema": MANIFEST_SCHEMA,
+        "engine_version": ENGINE_VERSION,
+        "kpi_contract_version": KPI_CONTRACT_VERSION,
+        "chain_enabled": bool(chain),
+        "chain_stage_seeds": {"phase1": [seed, 1], "verification": [seed, 2], "funded": [seed, 3]},
+        "funded_horizon_business_days": funded_horizon,
+        "funded_eligibility_calendar_days": FUNDED_ELIGIBILITY_CALENDAR_DAYS,
+        "payout_processing_business_days": PAYOUT_PROCESSING_BUSINESS_DAYS,
+        "credible_interval_batches": n_batches,
+        "economics": dict(economics) if economics else None,
         "roster_label": roster_label,
         "roster_source": roster_source,
         "source_risk_pct": SOURCE_RISK_PCT,
@@ -773,9 +1271,13 @@ def build(*, roster: Mapping[str, Any], rules: Mapping[str, Any], seed: int = DE
           n_paths: int = DEFAULT_N_PATHS, block_len: int = DEFAULT_BLOCK_LEN,
           horizon: int = DEFAULT_HORIZON,
           sensitivity: Sequence[tuple[float, float]] = DEFAULT_SENSITIVITY,
+          economics: Mapping[str, Any] | None = None, chain: bool = True,
+          funded_horizon: int = DEFAULT_FUNDED_HORIZON,
+          n_batches: int = DEFAULT_N_BATCHES,
           now: dt.datetime | None = None) -> dict[str, Any]:
     """Run the first-passage model for a resolved roster. Pure over its inputs."""
     now = now or dt.datetime.now(dt.timezone.utc)
+    economics = dict(economics) if economics else load_economics()
     tz = ZoneInfo(rules["timezone"])
     sleeves: list[SleeveInput] = list(roster.get("sleeves") or [])
     roster_label = roster.get("roster_label", MISSING)
@@ -784,12 +1286,16 @@ def build(*, roster: Mapping[str, Any], rules: Mapping[str, Any], seed: int = DE
     manifest = _manifest(sleeves, rules, seed=seed, n_paths=n_paths, block_len=block_len,
                          horizon=horizon, sensitivity=sensitivity,
                          roster_label=roster_label, roster_source=roster_source,
+                         economics=economics, chain=chain, funded_horizon=funded_horizon,
+                         n_batches=n_batches,
                          extra={k: roster[k] for k in ("manifest_git_commit",
                                 "manifest_frozen_at_utc", "roster_hash") if k in roster})
     manifest_sha = _canonical_sha256(manifest)
 
     base = {
         "schema": SCHEMA,
+        "engine_version": ENGINE_VERSION,
+        "kpi_contract_version": KPI_CONTRACT_VERSION,
         "generated_at_utc": _iso(now),
         "decision_role": "DECISION_SUPPORT_EVIDENCE",
         "label": "backtest-derived, gross-of-slippage; intraday equity = per-trade MAE proxy (conservative)",
@@ -801,7 +1307,11 @@ def build(*, roster: Mapping[str, Any], rules: Mapping[str, Any], seed: int = DE
         "rulepack": rules,
         "params": {"seed": seed, "n_paths": n_paths,
                    "block_len_business_days": block_len,
-                   "max_horizon_business_days": horizon},
+                   "max_horizon_business_days": horizon,
+                   "funded_horizon_business_days": funded_horizon,
+                   "credible_interval_batches": n_batches,
+                   "chain_enabled": bool(chain)},
+        "economics": economics,
         "input_manifest": manifest,
         "input_manifest_sha256": manifest_sha,
     }
@@ -842,6 +1352,35 @@ def build(*, roster: Mapping[str, Any], rules: Mapping[str, Any], seed: int = DE
         for (c, sl) in sensitivity
     ]
 
+    if chain:
+        chain_model = simulate_chain(
+            grid, rules, economics, seed=seed, n_paths=n_paths, block_len=block_len,
+            horizon=horizon, funded_horizon=funded_horizon, n_batches=n_batches,
+            cost_mult=1.0, slippage_usd_per_lot=0.0, phase1_idx=idx, detail=True)
+        # Same five cost/slippage scenarios as v1, now carried through the chain.
+        chain_model["sensitivity"] = []
+        for (c, sl) in sensitivity:
+            if (c, sl) == (1.0, 0.0):
+                scen = chain_model
+            else:
+                scen = simulate_chain(
+                    grid, rules, economics, seed=seed, n_paths=n_paths,
+                    block_len=block_len, horizon=horizon, funded_horizon=funded_horizon,
+                    n_batches=n_batches, cost_mult=c, slippage_usd_per_lot=sl,
+                    phase1_idx=idx, detail=False)
+            probs = scen["probabilities"]
+            chain_model["sensitivity"].append({
+                "cost_mult": round(float(c), 4),
+                "slippage_usd_per_lot": round(float(sl), 4),
+                "P_CHALLENGE_PASS": probs["P_CHALLENGE_PASS"],
+                "P_VERIFICATION_PASS_GIVEN_CHALLENGE": probs["P_VERIFICATION_PASS_GIVEN_CHALLENGE"],
+                "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": probs["P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD"],
+                "P_END_TO_END_FIRST_PAYOUT": probs["P_END_TO_END_FIRST_PAYOUT"],
+                "P_FIRST_NET_FTMO_PAYOUT": probs["P_FIRST_NET_FTMO_PAYOUT"],
+                "P_FIRST_NET_FTMO_PAYOUT_LCB": probs["P_FIRST_NET_FTMO_PAYOUT_LCB"],
+            })
+        base["chain"] = chain_model
+
     ttt = headline["time_to_target_business_days"]
     named = headline["pass_within_calendar_days"]
     base["status"] = "OK"
@@ -868,6 +1407,16 @@ def build(*, roster: Mapping[str, Any], rules: Mapping[str, Any], seed: int = DE
                         "resolving (pass-or-breach). Speed, not eventual pass, is the "
                         "binding constraint here.",
     }
+    if chain:
+        probs = base["chain"]["probabilities"]
+        base["compact_for_readiness"].update({
+            "p_challenge_pass": probs["P_CHALLENGE_PASS"],
+            "p_end_to_end_first_payout": probs["P_END_TO_END_FIRST_PAYOUT"],
+            "p_first_net_ftmo_payout": probs["P_FIRST_NET_FTMO_PAYOUT"],
+            "p_first_net_ftmo_payout_lcb": probs["P_FIRST_NET_FTMO_PAYOUT_LCB"],
+            "end_to_end_median_business_days":
+                base["chain"]["time_business_days"]["end_to_end"]["p50"],
+        })
     base["method"] = (
         "Seeded calendar-aligned block bootstrap over the all-active intersection "
         "window of the roster's per-sleeve daily-PnL streams (scaled to each "
@@ -907,15 +1456,20 @@ def build_and_write(*, out: Path = DEFAULT_OUT, manifest_out: Path = DEFAULT_MAN
                     recompose_label: str = "demo_8",
                     seed: int = DEFAULT_SEED, n_paths: int = DEFAULT_N_PATHS,
                     block_len: int = DEFAULT_BLOCK_LEN, horizon: int = DEFAULT_HORIZON,
+                    chain: bool = True, funded_horizon: int = DEFAULT_FUNDED_HORIZON,
+                    n_batches: int = DEFAULT_N_BATCHES, fee_usd: float | None = None,
                     write: bool = True, now: dt.datetime | None = None) -> dict[str, Any]:
     rules = load_rules(rulepack_path)
+    economics = load_economics(rulepack_path, fee_usd=fee_usd)
     tz = ZoneInfo(rules["timezone"])
     if recompose_manifest is not None:
         roster = roster_from_recompose_manifest(Path(recompose_manifest), tz, label=recompose_label)
     else:
         roster = roster_from_demo_cycle(Path(demo_cycle_path), tz)
     model = build(roster=roster, rules=rules, seed=seed, n_paths=n_paths,
-                  block_len=block_len, horizon=horizon, now=now)
+                  block_len=block_len, horizon=horizon, economics=economics,
+                  chain=chain, funded_horizon=funded_horizon, n_batches=n_batches,
+                  now=now)
     if write:
         out = Path(out)
         out.parent.mkdir(parents=True, exist_ok=True)
@@ -943,6 +1497,14 @@ def _main(argv: list[str] | None = None) -> int:
     p.add_argument("--n-paths", type=int, default=DEFAULT_N_PATHS)
     p.add_argument("--block-len", type=int, default=DEFAULT_BLOCK_LEN)
     p.add_argument("--horizon", type=int, default=DEFAULT_HORIZON)
+    p.add_argument("--funded-horizon", type=int, default=DEFAULT_FUNDED_HORIZON,
+                   help="business-day horizon for the funded stage (reward + payout lag)")
+    p.add_argument("--batches", type=int, default=DEFAULT_N_BATCHES,
+                   help="equal-size path batches for the 90%% credible interval")
+    p.add_argument("--fee-usd", type=float, default=None,
+                   help="paid evaluation fee; overrides the rulepack list fee")
+    p.add_argument("--no-chain", action="store_true",
+                   help="Phase-1 only (schema v1 fields); skips the payout chain")
     p.add_argument("--no-write", action="store_true")
     args = parser.parse_args(argv)
     if args.cmd == "build":
@@ -952,7 +1514,9 @@ def _main(argv: list[str] | None = None) -> int:
             recompose_manifest=Path(args.recompose_manifest) if args.recompose_manifest else None,
             demo_cycle_path=Path(args.demo_cycle), recompose_label=args.recompose_label,
             seed=args.seed, n_paths=args.n_paths, block_len=args.block_len,
-            horizon=args.horizon, write=not args.no_write)
+            horizon=args.horizon, chain=not args.no_chain,
+            funded_horizon=args.funded_horizon, n_batches=args.batches,
+            fee_usd=args.fee_usd, write=not args.no_write)
         summary = {"status": model.get("status"), "roster_label": model.get("roster_label"),
                    "sleeves": len(model.get("roster") or []),
                    "dropped": len(model.get("dropped_sleeves") or [])}
@@ -966,6 +1530,9 @@ def _main(argv: list[str] | None = None) -> int:
                 "median_days_to_target": h["time_to_target_business_days"]["p50"],
                 "window": model["window"],
             })
+            if model.get("chain"):
+                summary["chain"] = model["chain"]["probabilities"]
+                summary["chain_time_business_days"] = model["chain"]["time_business_days"]
         print(json.dumps(summary, indent=2))
     return 0
 
