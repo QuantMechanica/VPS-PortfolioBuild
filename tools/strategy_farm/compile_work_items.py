@@ -32,6 +32,48 @@ except ModuleNotFoundError:
         from include_mirror import running_terminal_names  # script-style import (sys.path = tools/strategy_farm)
 
 
+# Frozen at first import into this process. terminal_worker.py lazily
+# `import`s this module on every claimed COMPILE_EA row from inside a
+# long-lived per-terminal loop; once Python has this module in sys.modules,
+# later `import` statements bind the cached object rather than re-reading the
+# file, so a worker's authority evaluation (classify_candidate) can silently
+# keep running pre-change logic for the rest of the process lifetime after a
+# source edit lands on disk. _MODULE_LOADED_MTIME_NS captures the on-disk
+# mtime at that first import; comparing it against a fresh stat() of the same
+# path in evidence reveals whether a given evaluation ran stale code without
+# needing git-log archaeology (root cause of the T3/T10 QM5_41477
+# candidate_recheck divergence, 2026-09-18).
+_MODULE_FILE_PATH = Path(__file__).resolve()
+try:
+    _MODULE_LOADED_MTIME_NS: int | None = _MODULE_FILE_PATH.stat().st_mtime_ns
+except OSError:
+    _MODULE_LOADED_MTIME_NS = None
+
+
+def _module_staleness_diagnostics() -> dict[str, Any]:
+    try:
+        current_mtime_ns = _MODULE_FILE_PATH.stat().st_mtime_ns
+    except OSError:
+        current_mtime_ns = None
+    try:
+        registry_mtime_ns = COMPILE_FAIL_REPAIR_REGISTRY_PATH.stat().st_mtime_ns
+    except OSError:
+        registry_mtime_ns = None
+    stale = (
+        _MODULE_LOADED_MTIME_NS is not None
+        and current_mtime_ns is not None
+        and _MODULE_LOADED_MTIME_NS != current_mtime_ns
+    )
+    return {
+        "compile_work_items_module_path": str(_MODULE_FILE_PATH),
+        "compile_work_items_module_loaded_mtime_ns": _MODULE_LOADED_MTIME_NS,
+        "compile_work_items_module_current_disk_mtime_ns": current_mtime_ns,
+        "compile_work_items_module_stale": stale,
+        "source_repair_registry_path": str(COMPILE_FAIL_REPAIR_REGISTRY_PATH),
+        "source_repair_registry_mtime_ns": registry_mtime_ns,
+    }
+
+
 COMPILE_WORK_ITEM_KIND = "compile"
 COMPILE_EA_PHASE = "COMPILE_EA"
 COMPILE_CONTRACT_VERSION = "qm.compile-ea-work-item/v1"
@@ -4876,6 +4918,7 @@ def classify_candidate(
             else []
         ),
         "current_compile_ok_work_item_ids": current_compile_ok,
+        **_module_staleness_diagnostics(),
     }
 
 
