@@ -159,7 +159,7 @@ void QM41477_RefreshChartPanel()
    snapshot.reason = "Session reversion evaluated on the next M15 bar";
 
    const datetime now = TimeCurrent();
-   const datetime bar = iTime(_Symbol, PERIOD_M15, 0);
+   const datetime bar = iTime(_Symbol, PERIOD_M15, 0); // perf-allowed: 5s timer-gated panel countdown reads the forming M15 bar time only (structural, no indicator math); reviewer sign-off Fable 2026-09-18
    const datetime next = bar + PeriodSeconds(PERIOD_M15);
    snapshot.next_event = (bar > 0 && next > now)
       ? "Next M15 evaluation in " + QM_PanelDuration((long)(next - now)) + " | " + QM_PanelDateTime(next) + " BT"
@@ -271,8 +271,8 @@ void QM41477_RefreshChartPanel()
      {
       MqlDateTime utc_bar;
       FxmrUtcStruct(now, utc_bar);
-      const datetime bar2 = iTime(_Symbol, PERIOD_M15, 2);
-      const datetime barN = iTime(_Symbol, PERIOD_M15, strategy_stretch_bars + 1);
+      const datetime bar2 = iTime(_Symbol, PERIOD_M15, 2); // perf-allowed: presenter-only stretch-range overlay bounds (structural bar times, no indicator math); reviewer sign-off Fable 2026-09-18
+      const datetime barN = iTime(_Symbol, PERIOD_M15, strategy_stretch_bars + 1); // perf-allowed: presenter-only stretch-range overlay bounds; reviewer sign-off Fable 2026-09-18
       snapshot.range_start = (barN > 0) ? barN : now;
       snapshot.range_end = (bar2 > 0) ? bar2 + PeriodSeconds(PERIOD_M15) : now;
       snapshot.range_high = g_fxmr_stretch_high;
