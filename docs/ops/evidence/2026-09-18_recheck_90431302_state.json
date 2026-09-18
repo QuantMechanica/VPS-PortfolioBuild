@@ -1,0 +1,23 @@
+{
+  "task_id": "90431302-dfa8-4f27-ad0a-c826dbda77cf",
+  "blast_radius_csv_sha256": "85ce60dc0ef6fd3b3a3cd4668af709b3d7e7f46c27971ee475f8314edf6c65cd",
+  "q10_q14_pass_rows_total": 34,
+  "q10_q14_pass_rows_with_q09_news_pass_predecessor": 0,
+  "twelve_named_pairs_q09_news_latest_verdict": {
+    "QM5_10440/NDX": "pending",
+    "QM5_10692/NDX": "done/PENDING_RUNNER",
+    "QM5_10706/GBPUSD": "failed/INFRA_FAIL",
+    "QM5_10919/XTIUSD": "failed/INFRA_FAIL",
+    "QM5_10939/GBPUSD": "failed/INFRA_FAIL",
+    "QM5_11165/EURUSD": "failed/INFRA_FAIL",
+    "QM5_12969/USDJPY": "failed/INFRA_FAIL",
+    "QM5_12989/XAUUSD": "failed/INFRA_FAIL",
+    "QM5_13013/NDX": "pending",
+    "QM5_13128/NDX": "pending",
+    "QM5_13213/USDJPY": "failed/INFRA_FAIL",
+    "QM5_1567/EURUSD": "failed/INFRA_FAIL"
+  },
+  "e1_fullscope_calendar_seal_ingress_status": "REFUSED_SINCE_2026-09-07_NO_SUCCESSOR_ATTEMPT",
+  "e1c_optionb_scope_note": "b85f9d3084 (2026-09-16) released 91/99 NEWS_CALENDAR_TAINTED holds via per-row delta revalidation; this is a distinct hold class from the full-scope E1 calendar-seal ingress this ticket's 'after E1 lands' precondition refers to, and does not supply any new Q09_NEWS PASS predecessor for the 12 named pairs.",
+  "conclusion": "Both blocking preconditions unchanged in substance since 2026-09-13T23:12:34+02:00 (e7e08d10e5): 0/12 named pairs (0/34 blast-radius PASS rows) have a Q09_NEWS PASS predecessor, and the full-scope E1 calendar-seal ingress has not landed. Underlying work_item rows for 7 of the 12 pairs did change (2026-09-17 INFRA_FAIL Q09_NEWS attempts superseded the 2026-09-13 INVALID_EVIDENCE rows) but no pair crossed into PASS, so the task's own allowed_actions (calendar hold release + append-only rerun minting) remain not-yet-executable. No holds released, no reruns minted, no update-task call."
+}
