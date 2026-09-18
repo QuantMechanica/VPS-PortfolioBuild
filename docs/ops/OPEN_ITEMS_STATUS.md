@@ -1,5 +1,14 @@
 # OPEN_ITEMS_STATUS — vollständiges Bild aller beauftragten Punkte
 
+> **RESULT 2026-09-18 — Fable Wiederaufnahme unter OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917 (Stand ~00:45Z):**
+> - Autorität verankert: `decisions/2026-09-17_owner_fable_full_executive_authority.md` + verbatim Evidence; CLAUDE.md und Vault (START_HERE, Hard Rules, Stehende Vollmacht Annex 2026-09-17, Entscheidungsregister 09, Kimi/AI-Routing) annotiert. Einziges OWNER-Gate: Kauf einer bezahlten FTMO-Challenge.
+> - KPI-Kontrakt `docs/ftmo/FTMO_KPI_CONTRACT.md` (FTMO_NET_CASH_REALIZED = 0; Steuer-KPI definiert). Regel-Snapshot `docs/ftmo/FTMO_RULES_SNAPSHOT_2026-09-18.md` (Live-Refetch OK; Fee-Betrag GAP).
+> - First-Passage v2 (Phase 1 → Verification → Funded → erster Netto-Payout, 33 Tests grün) gemerged `ad2135f7c1`; Demo-Roster: E2E 0.70, LCB 0.657, Median 746 Geschäftstage → zu langsam.
+> - Critic-Welle H-CW/H-MR/H-FXMR: je ACCEPT_WITH_FIXES → Blocking-Fixes (Live-News nativ fail-closed; Signal-Bar-Entry-Fenster + Friday-Cutoff bei H1) angewandt, 0/0 kompiliert, agy Cross-Vendor APPROVE ×3, Seal/Verify ok, Prescreen KEEP ×3, COMPILE_EA ×3 enqueued + Rollout-Hold released 00:40:42Z. Receipt `docs/ops/evidence/2026-09-18_ftmo_candidate_critic_wave/RECEIPT.md`.
+> - Factory: Exclusive-Drain-Deadlock (44-GB-Zeile ohne D:-Card) diagnostiziert; 25 neue 44-GB-Rows geparkt (`2026-09-18_44gb_park_wave2/`; 17 News-Rows verweigert wegen inaktiver NEWS_CALENDAR_TAINTED-Holds). Offen: Ticket „Drain-Kandidat muss Claim-Precheck bestehen".
+> - Provider: Claude frisch; Codex bis 19.09. 08:29Z zu; Kimi CLI 403 weekly trotz Fetcher 0 % → Ticket d797e68f; agy ok (Flag gelöscht).
+> - Offen: FTMO_PORTFOLIO_GAP_CURRENT.md (Agent läuft), Smoke + intake-first-q02 nach COMPILE_OK, Second-Chance-Reviews, DXZ-Ceremony Fr 21:15Z, Codex-Probe Sa.
+
 > **RESULT 2026-09-15 — EDGE-2 Messung abgeschlossen (REFUTED):**
 > Pre-Release-Volatility-Compression und Post-Release-Expansion auf NDX und SP500 um die Top-5-US-Makroevents über `tools/strategy_farm/research/edge_lab_stats.py --hypothesis EDGE-2` abgeschlossen. Verdict: REFUTED.
 > Zwar ist die mittlere Range-Expansion hoch (NDX 2,40x, SP500 2,28x) und der Breakout-Trade hat positive Netto-Erwartung nach 1 Pt Kosten (NDX +10,45 Pts t=3,38; SP500 +2,07 Pts t=2,74), aber die versiegelte Konsistenz-Hürde (>= 1,8x Expansion in >= 70 % der Events) wird mit 47,62 % (NDX) bzw. 45,49 % (SP500) um über 22 Prozentpunkte verfehlt. Zeitstempel über Native Export `T_EXPORT_USD_HIGH_2018_2025_NATIVE.csv` kalibriert (Umgehung des bekannten 17h-Forex-Factory-Defekts). Tests: 105 passed. Evidence: `docs/ops/evidence/2026-09-15_edge2_indices_range_expansion_measurement.md` und `docs/research/edge_lab/20260915_r4/EDGE-2/`.
