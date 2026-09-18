@@ -1,0 +1,14 @@
+build_check.compile_guard={"detail": "terminal64 processes are alive; ad-hoc compile/build_check is refused. Use the governed pipeline path: python tools/strategy_farm/farmctl.py enqueue-compile <EA label>. No retry was attempted.", "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED", "ok": false, "pipeline_hint": "python tools/strategy_farm/farmctl.py enqueue-compile <EA label>", "retry_attempted": false}
+BUILD_CHECK_LIVE_FACTORY_COMPILE_REFUSED: {"detail": "terminal64 processes are alive; ad-hoc compile/build_check is 
+refused. Use the governed pipeline path: python tools/strategy_farm/farmctl.py enqueue-compile <EA label>. No retry 
+was attempted.", "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED", "ok": false, "pipeline_hint": "python 
+tools/strategy_farm/farmctl.py enqueue-compile <EA label>", "retry_attempted": false}
+At C:\QM\worktrees\kimi-hcw-20260915\framework\scripts\build_check.ps1:101 char:9
++         throw "BUILD_CHECK_LIVE_FACTORY_COMPILE_REFUSED: $($guardOutp ...
++         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (BUILD_CHECK_LIV...empted": false}:String) [], RuntimeException
+    + FullyQualifiedErrorId : BUILD_CHECK_LIVE_FACTORY_COMPILE_REFUSED: {"detail": "terminal64 processes are alive; ad 
+   -hoc compile/build_check is refused. Use the governed pipeline path: python tools/strategy_farm/farmctl.py enqueue  
+  -compile <EA label>. No retry was attempted.", "failure_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED", "ok": false   
+ , "pipeline_hint": "python tools/strategy_farm/farmctl.py enqueue-compile <EA label>", "retry_attempted": false}
+ 

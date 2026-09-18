@@ -1,0 +1,5 @@
+{
+  "reason": "resolver_regeneration_failed:[WARNING] 2 ea_id(s) in magic_numbers.csv dropped from resolver because their EA dir is missing under C:\\QM\\worktrees\\kimi-hcw-20260915\\framework\\EAs:\n  ea_id=11924  (expected: C:\\QM\\worktrees\\kimi-hcw-20260915\\framework\\EAs/QM5_11924_*)\n  ea_id=11941  (expected: C:\\QM\\worktrees\\kimi-hcw-20260915\\framework\\EAs/QM5_11941_*)\n[WARNING] Run update_magic_resolver.py from the canonical checkout (C:/QM/repo) where framework/EAs/ is fully materialised, or investigate whether the EA dir was deleted without retiring the magic.\n\n[strict-default] 2 active ea_id(s) would be dropped; refusing to generate or replace QM_MagicResolver.mqh. Use --allow-dropped only for an explicitly reviewed recovery.",
+  "schema": "qm.governed-magic-allocation/v1",
+  "status": "aborted"
+}

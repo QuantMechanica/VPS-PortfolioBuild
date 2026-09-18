@@ -1,0 +1,37 @@
+{
+  "armed": false,
+  "generated_at": "2026-09-15T20:40:40.760238+00:00",
+  "input_root": "D:\\QM\\strategy_farm\\artifacts\\cards_review",
+  "mode": "DRY_RUN",
+  "results": [
+    {
+      "action": "DRY_RUN",
+      "duplicate_of": null,
+      "ea_id": "QM5_41475",
+      "expected_dd_pct": 2.0,
+      "missing_feeds": [],
+      "missing_sections": [],
+      "path": "C:\\QM\\worktrees\\kimi-hcw-20260915\\artifacts\\cards_approved\\QM5_41475_cash-window-index-continuation-h1.md",
+      "reasons": [
+        "INTERNAL_SOURCE_UNRESOLVED:HASH_MISMATCH:lineage.json"
+      ],
+      "slug": "cash-window-index-continuation-h1",
+      "target_symbols": [
+        "GDAXI.DWX",
+        "NDX.DWX",
+        "SP500.DWX"
+      ],
+      "timeframe": "H1",
+      "verdict": "REJECT",
+      "warnings": []
+    }
+  ],
+  "schema": "qm.card-intake-prescreen/v1",
+  "summary": {
+    "cards": 1,
+    "keep": 0,
+    "mutated": 0,
+    "reject": 1
+  },
+  "symbol_matrix_sha256": "e7844d9a18db8723db2b31d839581d0cc348140cf883200524a1af26d465821d"
+}
