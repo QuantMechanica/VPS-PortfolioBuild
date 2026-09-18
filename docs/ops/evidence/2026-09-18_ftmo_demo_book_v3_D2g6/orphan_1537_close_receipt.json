@@ -1,0 +1,53 @@
+{
+ "ts_utc": "2026-09-18T04:50:42.513779+00:00",
+ "login": 1514536732,
+ "attempts": [
+  {
+   "fill": 0,
+   "retcode": 10009,
+   "comment": "Request executed",
+   "deal": 0
+  }
+ ],
+ "positions_after": [
+  {
+   "ticket": 545056207,
+   "magic": 15370001,
+   "symbol": "XAGUSD",
+   "volume": 0.01
+  }
+ ],
+ "positions_final": [],
+ "orders_final": [
+  [
+   545221577,
+   104030002,
+   "XAUUSD",
+   4
+  ],
+  [
+   545221578,
+   104030002,
+   "XAUUSD",
+   5
+  ],
+  [
+   545221579,
+   114220004,
+   "USDCAD",
+   4
+  ]
+ ],
+ "recent_deals": [
+  [
+   522542664,
+   545056207,
+   15370001,
+   "XAGUSD",
+   0.01,
+   36.7,
+   "QM D2g6 cutover close 1537"
+  ]
+ ],
+ "equity_after": 99848.17
+}
