@@ -22,7 +22,7 @@ from tools.strategy_farm.target_rulepacks import load_rulepack
 
 RULEPACK_HASHES = {
     "DXZ_BETTER_BOOK_V1": "9cd49385808f2d7b7041135c4f5aaf0d7b62a3020e31e51bee9f8b1904b6f284",
-    "FTMO_2S_100K_SWING_V2": "7e0b21d3768c78c69e28c390814948286736ecec4fd28490a86c647f3485dbd8",
+    "FTMO_2S_100K_SWING_V2": "068a2eeaea36427c64a3846ef132539ec5aac021de5343ff3e8bf871c6ad2c20",
 }
 
 

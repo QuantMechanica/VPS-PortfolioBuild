@@ -34,7 +34,7 @@ def test_loads_both_versioned_rulepacks_with_canonical_hashes() -> None:
         assert pack.rulepack_id.endswith(f"_V{pack.profile_version}")
         # The FTMO Standard pack was rebound to the 2026-09-15 official-rules snapshot
         # (OWNER-DEC-CBE-20260915 s63); the Swing pack still carries the 2026-09-04 snapshot.
-        expected_as_of = {"FTMO_2S_100K_STANDARD_V2": "2026-09-15", "FTMO_2S_100K_SWING_V2": "2026-09-04"}
+        expected_as_of = {"FTMO_2S_100K_STANDARD_V2": "2026-09-18", "FTMO_2S_100K_SWING_V2": "2026-09-18"}
         assert pack.as_of == expected_as_of.get(pack.rulepack_id, "2026-09-04" if pack.target == "FTMO" else "2026-07-29")
         assert len(pack.canonical_sha256) == 64
         assert pack.canonical_sha256 == hashlib.sha256(pack.canonical_payload).hexdigest()

@@ -45,11 +45,11 @@ def test_missing_snapshot_is_blocker():
     assert fb["freshness_days"] == "EVIDENCE_MISSING"
 
 
-def test_shipped_2026_09_15_snapshot_is_present_and_fresh_at_ship():
+def test_shipped_2026_09_18_snapshot_is_present_and_fresh_at_ship():
     snap = rs.load_latest_snapshot()
     assert snap is not None
     # the snapshot this slice shipped is the newest on disk
-    assert "2026-09-15" in Path(snap["_snapshot_path"]).name
+    assert "2026-09-18" in Path(snap["_snapshot_path"]).name
     # at its own retrieval instant it is fresh
     taken = rs.snapshot_datetime(snap)
     fb = rs.freshness_blocker(snap, taken + dt.timedelta(days=1))
