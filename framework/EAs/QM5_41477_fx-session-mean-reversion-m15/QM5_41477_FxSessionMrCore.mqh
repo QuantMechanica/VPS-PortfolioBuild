@@ -420,6 +420,23 @@ bool FxmrNewsBlackoutBlocks(const datetime broker_now)
    g_fxmr_news_cache_bucket = bucket;
    g_fxmr_news_cache_blocked = false;
 
+   // LIVE / real-time: the native MT5 economic calendar is the ONLY source
+   // (Hard Rule: a live EA never reads the factory backtest archive). The
+   // framework helper fails closed when the calendar is unreachable or
+   // unpopulated (out_ok=false -> block). Impact threshold follows the
+   // framework input qm_news_min_impact (default "high", card semantics).
+   // Fix 2026-09-18 (Fable critic, blocking finding B-NEWS).
+   if(MQLInfoInteger(MQL_TESTER) == 0 && MQLInfoInteger(MQL_OPTIMIZATION) == 0)
+     {
+      bool calendar_ok = false;
+      const bool in_window = QM_NewsLiveInWindow(_Symbol, TimeTradeServer(),
+                                                 strategy_news_blackout_minutes, 0,
+                                                 calendar_ok);
+      g_fxmr_news_cache_blocked = (!calendar_ok) || in_window;
+      return g_fxmr_news_cache_blocked;
+     }
+
+   // Strategy Tester: deterministic factory archive (gate-validated path).
    if(!QM_NewsIsLoaded() &&
       !QM_NewsInit("D:\\QM\\data\\news_calendar",
                    qm_news_stale_max_hours,

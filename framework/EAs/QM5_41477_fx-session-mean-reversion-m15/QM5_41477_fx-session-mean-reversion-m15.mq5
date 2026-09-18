@@ -15,11 +15,11 @@
 // below delegate to it). Everything else is framework wiring and MUST stay
 // intact.
 //
-// REGISTRY STATUS: identity/magic PENDING_ALLOCATION — planned magic values by
-// convention are slot 0 EURUSD.DWX = 414770000, slot 1 GBPUSD.DWX = 414770001,
-// slot 2 USDJPY.DWX = 414770002 (ea_id * 10000 + slot). No registry rows for
-// ea_id 41477 exist; do NOT pipeline or deploy before the governed allocator
-// completes (central allocation later; build_hash: pending).
+// REGISTRY STATUS: ALLOCATED — governed allocator wrote active
+// ea_id_registry.csv / magic_numbers.csv rows (magic = ea_id*10000 + slot,
+// slots per approved-card symbol order) and QM_MagicResolver.mqh carries the
+// tuples; the earlier PENDING_ALLOCATION note is historical (see the build
+// receipt under docs/ops/evidence/). Updated 2026-09-18 (Fable critic pass).
 //
 // Session hours are inputs in UTC (card semantics); broker time is mapped to
 // UTC through the shared QM_DSTAware include — no hand-rolled DST. Symbols
