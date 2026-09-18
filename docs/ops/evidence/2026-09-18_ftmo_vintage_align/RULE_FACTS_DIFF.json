@@ -1,0 +1,400 @@
+{
+  "schema": "qm.ftmo-rule-facts-diff/v1",
+  "generated_on": "2026-09-18",
+  "decision_id": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+  "question": "Does the 2026-09-15 official rule snapshot change any binding rule FACT consumed by tools/strategy_farm/portfolio/ftmo_book3_standalone_evaluator.py versus 2026-09-04?",
+  "inputs": {
+    "snapshot_2026_09_04": {
+      "path": "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json",
+      "sha256": "c199b8f5f528cce5a93f4751f63394de63e5fe832483ac9c4b9d0314732d2905",
+      "schema": "qm.ftmo-official-rules-snapshot/v1",
+      "profile": "FTMO Challenge 2-Step / USD 100000 / Swing",
+      "retrieved_at_utc": "2026-09-04T02:10:47Z"
+    },
+    "snapshot_2026_09_15": {
+      "path": "docs/ops/evidence/2026-09-15_ftmo_official_rules_snapshot.json",
+      "sha256": "5e25827b589125e7b77cd379453a234649f35983cf5a443ec6a70b77103a2a8c",
+      "schema": "qm.ftmo-official-rules-snapshot/v2",
+      "profile": "FTMO Challenge 2-Step / USD 100000 / Standard",
+      "retrieved_at_utc": "2026-09-15T13:59:31Z"
+    },
+    "rulepack_standard": {
+      "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
+      "as_of": "2026-09-15"
+    },
+    "rulepack_swing": {
+      "path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_SWING_V2.json",
+      "as_of": "2026-09-04"
+    },
+    "binding": {
+      "path": "tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json",
+      "rulepack_as_of": "2026-09-04"
+    },
+    "evaluator_constants": {
+      "OFFICIAL_RULE_SNAPSHOT_RELATIVE_PATH": "docs/ops/evidence/2026-09-04_ftmo_official_rules_snapshot.json",
+      "OFFICIAL_RULE_SNAPSHOT_SHA256": "c199b8f5f528cce5a93f4751f63394de63e5fe832483ac9c4b9d0314732d2905"
+    }
+  },
+  "fact_rows": [
+    {
+      "category": "targets",
+      "consumed_claim": "phase1_profit_target_percent",
+      "value_2026_09_04": "10",
+      "locator_2026_09_15": "fields.targets.phase1_profit_target_pct",
+      "value_2026_09_15": "10",
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "targets",
+      "consumed_claim": "verification_profit_target_percent",
+      "value_2026_09_04": "5",
+      "locator_2026_09_15": "fields.targets.verification_profit_target_pct",
+      "value_2026_09_15": "5",
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "targets",
+      "consumed_claim": "profit_target_operator",
+      "value_2026_09_04": "STRICTLY_GREATER_THAN_TARGET_WHILE_FLAT",
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "daily_loss",
+      "consumed_claim": "maximum_daily_loss_percent_of_initial",
+      "value_2026_09_04": "5",
+      "locator_2026_09_15": "fields.daily_loss.percent_of_initial",
+      "value_2026_09_15": "5",
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "daily_loss",
+      "consumed_claim": "maximum_daily_loss_reset_timezone",
+      "value_2026_09_04": "Europe/Prague",
+      "locator_2026_09_15": "fields.daily_loss.timezone",
+      "value_2026_09_15": "Europe/Prague",
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "daily_loss",
+      "consumed_claim": "maximum_daily_loss_reset_local_time",
+      "value_2026_09_04": "00:00:00",
+      "locator_2026_09_15": "fields.daily_loss.reset_local_time",
+      "value_2026_09_15": "00:00:00",
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "daily_loss",
+      "consumed_claim": "maximum_daily_loss_basis",
+      "value_2026_09_04": "MIDNIGHT_BALANCE_MINUS_FIXED_INITIAL_CAPITAL_AMOUNT",
+      "locator_2026_09_15": "fields.daily_loss.limit_basis",
+      "value_2026_09_15": "MIDNIGHT_BALANCE_MINUS_FIXED_AMOUNT",
+      "verdict": "SEMANTICALLY_EQUAL_LABEL_RECODED"
+    },
+    {
+      "category": "daily_loss",
+      "consumed_claim": "maximum_daily_loss_breach_operator",
+      "value_2026_09_04": "EQUITY_STRICTLY_BELOW_LIMIT",
+      "locator_2026_09_15": "fields.daily_loss.breach_operator",
+      "value_2026_09_15": "STRICTLY_BELOW_LIMIT",
+      "verdict": "SEMANTICALLY_EQUAL_LABEL_RECODED"
+    },
+    {
+      "category": "max_loss",
+      "consumed_claim": "maximum_loss_percent_of_initial",
+      "value_2026_09_04": "10",
+      "locator_2026_09_15": "fields.max_loss.percent_of_initial",
+      "value_2026_09_15": "10",
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "max_loss",
+      "consumed_claim": "maximum_loss_model",
+      "value_2026_09_04": "STATIC_INITIAL_CAPITAL",
+      "locator_2026_09_15": "fields.max_loss.model",
+      "value_2026_09_15": "STATIC_INITIAL",
+      "verdict": "SEMANTICALLY_EQUAL_LABEL_RECODED"
+    },
+    {
+      "category": "max_loss",
+      "consumed_claim": "maximum_loss_breach_operator",
+      "value_2026_09_04": "EQUITY_STRICTLY_BELOW_LIMIT",
+      "locator_2026_09_15": "fields.max_loss.breach_operator",
+      "value_2026_09_15": "STRICTLY_BELOW_LIMIT",
+      "verdict": "SEMANTICALLY_EQUAL_LABEL_RECODED"
+    },
+    {
+      "category": "trading_days",
+      "consumed_claim": "minimum_trading_days_per_phase",
+      "value_2026_09_04": 4,
+      "locator_2026_09_15": "fields.trading_day_requirement.minimum_trading_days",
+      "value_2026_09_15": "4",
+      "verdict": "IDENTICAL_VALUE_TYPE_RECODED"
+    },
+    {
+      "category": "trading_days",
+      "consumed_claim": "trading_day_qualifier",
+      "value_2026_09_04": "AT_LEAST_ONE_POSITION_OPENED_DURING_PRAGUE_LOCAL_DAY",
+      "locator_2026_09_15": "fields.trading_day_requirement.definition",
+      "value_2026_09_15": "Any CE(S)T calendar day 00:00:00-23:59:59 with at least one newly opened position",
+      "verdict": "SEMANTICALLY_EQUAL_LABEL_RECODED"
+    },
+    {
+      "category": "deadline",
+      "consumed_claim": "maximum_trading_period_days",
+      "value_2026_09_04": null,
+      "locator_2026_09_15": "fields.deadline.value",
+      "value_2026_09_15": "NONE",
+      "verdict": "IDENTICAL_VALUE_TYPE_RECODED"
+    },
+    {
+      "category": "execution_limits",
+      "consumed_claim": "expert_advisors_allowed_subject_to_rules",
+      "value_2026_09_04": true,
+      "locator_2026_09_15": "fields.execution_constraints.eas_allowed",
+      "value_2026_09_15": true,
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "execution_limits",
+      "consumed_claim": "simultaneous_order_limit",
+      "value_2026_09_04": 200,
+      "locator_2026_09_15": "fields.execution_constraints.max_simultaneous_orders",
+      "value_2026_09_15": "200",
+      "verdict": "IDENTICAL_VALUE_TYPE_RECODED"
+    },
+    {
+      "category": "execution_limits",
+      "consumed_claim": "position_limit_per_day",
+      "value_2026_09_04": 2000,
+      "locator_2026_09_15": "fields.execution_constraints.max_positions_per_day_hyperactive_threshold",
+      "value_2026_09_15": "2000",
+      "verdict": "IDENTICAL_VALUE_TYPE_RECODED"
+    },
+    {
+      "category": "execution_limits",
+      "consumed_claim": "hyperactive_server_request_threshold_per_day",
+      "value_2026_09_04": 2000,
+      "locator_2026_09_15": "fields.execution_constraints.max_positions_per_day_hyperactive_threshold",
+      "value_2026_09_15": "2000",
+      "verdict": "IDENTICAL_VALUE_TYPE_RECODED"
+    },
+    {
+      "category": "execution_limits",
+      "consumed_claim": "real_market_replicability_required",
+      "value_2026_09_04": true,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "evaluation_conditions",
+      "consumed_claim": "swing_news_restriction_during_evaluation",
+      "value_2026_09_04": false,
+      "locator_2026_09_15": "fields.news_rule.challenge_phase_restriction",
+      "value_2026_09_15": false,
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "evaluation_conditions",
+      "consumed_claim": "swing_overnight_or_weekend_restriction",
+      "value_2026_09_04": false,
+      "locator_2026_09_15": "fields.weekend_rule.challenge_phase_restriction",
+      "value_2026_09_15": false,
+      "verdict": "IDENTICAL"
+    },
+    {
+      "category": "leverage_profile_scoped",
+      "consumed_claim": "swing_fx_leverage",
+      "value_2026_09_04": "1:30",
+      "locator_2026_09_15": "fields.leverage.fx",
+      "value_2026_09_15": "1:100",
+      "verdict": "VALUE_CHANGED"
+    },
+    {
+      "category": "leverage_profile_scoped",
+      "consumed_claim": "swing_metals_and_oil_leverage",
+      "value_2026_09_04": "1:15",
+      "locator_2026_09_15": "fields.leverage.metals",
+      "value_2026_09_15": "1:30",
+      "verdict": "VALUE_CHANGED"
+    },
+    {
+      "category": "economics_and_scaling",
+      "consumed_claim": "usd_100000_2_step_list_price_usd",
+      "value_2026_09_04": 540,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "economics_and_scaling",
+      "consumed_claim": "evaluation_fee_refund_percent_with_first_reward",
+      "value_2026_09_04": 100,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "economics_and_scaling",
+      "consumed_claim": "base_reward_split_percent",
+      "value_2026_09_04": 80,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "economics_and_scaling",
+      "consumed_claim": "maximum_reward_split_percent",
+      "value_2026_09_04": 90,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "economics_and_scaling",
+      "consumed_claim": "account_balance_increase_percent",
+      "value_2026_09_04": 25,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "economics_and_scaling",
+      "consumed_claim": "minimum_months_between_scaleups",
+      "value_2026_09_04": 4,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    },
+    {
+      "category": "economics_and_scaling",
+      "consumed_claim": "scaled_reward_split_percent",
+      "value_2026_09_04": 90,
+      "locator_2026_09_15": "<ABSENT>",
+      "value_2026_09_15": "<ABSENT>",
+      "verdict": "DROPPED_NO_COUNTERPART"
+    }
+  ],
+  "fact_summary": {
+    "value_changes_in_named_categories": [],
+    "dropped_no_counterpart": [
+      "profit_target_operator",
+      "real_market_replicability_required",
+      "usd_100000_2_step_list_price_usd",
+      "evaluation_fee_refund_percent_with_first_reward",
+      "base_reward_split_percent",
+      "maximum_reward_split_percent",
+      "account_balance_increase_percent",
+      "minimum_months_between_scaleups",
+      "scaled_reward_split_percent"
+    ],
+    "label_or_type_recoded": [
+      "maximum_daily_loss_basis",
+      "maximum_daily_loss_breach_operator",
+      "maximum_loss_model",
+      "maximum_loss_breach_operator",
+      "minimum_trading_days_per_phase",
+      "trading_day_qualifier",
+      "maximum_trading_period_days",
+      "simultaneous_order_limit",
+      "position_limit_per_day",
+      "hyperactive_server_request_threshold_per_day"
+    ],
+    "identical": [
+      "phase1_profit_target_percent",
+      "verification_profit_target_percent",
+      "maximum_daily_loss_percent_of_initial",
+      "maximum_daily_loss_reset_timezone",
+      "maximum_daily_loss_reset_local_time",
+      "maximum_loss_percent_of_initial",
+      "expert_advisors_allowed_subject_to_rules",
+      "swing_news_restriction_during_evaluation",
+      "swing_overnight_or_weekend_restriction"
+    ],
+    "value_changed_profile_scoped": [
+      "swing_fx_leverage",
+      "swing_metals_and_oil_leverage"
+    ]
+  },
+  "structural_checks": [
+    {
+      "check": "snapshot.schema == qm.ftmo-official-rules-snapshot/v1",
+      "satisfiable_by_constant_change": false,
+      "detail": "2026-09-15 is 'qm.ftmo-official-rules-snapshot/v2' (schema generation change v1 -> v2)"
+    },
+    {
+      "check": "snapshot.profile == \"FTMO Challenge 2-Step / USD 100000 / Swing\"",
+      "satisfiable_by_constant_change": false,
+      "detail": "2026-09-15 is 'FTMO Challenge 2-Step / USD 100000 / Standard'; the evaluator hard-codes the Swing profile for BOTH rulepacks"
+    },
+    {
+      "check": "snapshot.freshness_max_age_days == 7",
+      "satisfiable_by_constant_change": true,
+      "detail": "both are 7"
+    },
+    {
+      "check": "snapshot age <= 7 days",
+      "satisfiable_by_constant_change": null,
+      "detail": "retrieved_at_utc 2026-09-15T13:59:31Z; age 3d at 2026-09-18; window expires 2026-09-22T13:59:31Z"
+    },
+    {
+      "check": "set(snapshot.sources) == EXPECTED_OFFICIAL_SOURCE_IDS",
+      "satisfiable_by_constant_change": false,
+      "detail": "v2 carries 5 source ids; 6 of the 7 pinned ids are absent: ftmo_2_step_challenge_official, ftmo_ea_official, ftmo_economic_terms_official, ftmo_forbidden_practices_official, ftmo_news_official, ftmo_weekend_official"
+    },
+    {
+      "check": "every snapshot source http_status == 200",
+      "satisfiable_by_constant_change": false,
+      "detail": "ftmo_trading_conditions http_status 404 (news/overnight/weekend page unresolvable on 2026-09-15)"
+    },
+    {
+      "check": "rulepack <-> snapshot url crosswalk",
+      "satisfiable_by_constant_change": false,
+      "detail": "rulepack official_sources still names the 7 v1 ids; only ftmo_trading_objectives_official crosswalks"
+    },
+    {
+      "check": "normalized_claims == EXPECTED (31 claims)",
+      "satisfiable_by_constant_change": false,
+      "detail": "v2 has no 'normalized_claims' key; facts live under 'fields' with a different shape"
+    },
+    {
+      "check": "claim_provenance == EXPECTED_OFFICIAL_CLAIM_PROVENANCE",
+      "satisfiable_by_constant_change": false,
+      "detail": "v2 has no 'claim_provenance' key (field-level provenance is null)"
+    },
+    {
+      "check": "official_sources[*].retrieved_on == \"2026-09-04\"",
+      "satisfiable_by_constant_change": true,
+      "detail": "rulepack rows already carry 2026-09-15; a constant flip alone fixes this one"
+    },
+    {
+      "check": "binding rulepack.as_of == rulepack file as_of",
+      "satisfiable_by_constant_change": true,
+      "detail": "binding says 2026-09-04, rulepack file says 2026-09-15; a config/constant flip fixes this one"
+    }
+  ],
+  "carried_over_fields": {
+    "news_rule": {
+      "carried_over_from": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json official_rules",
+      "challenge_phase_restriction": false
+    },
+    "overnight_rule": {
+      "carried_over_from": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json official_rules",
+      "challenge_phase_restriction": false
+    },
+    "weekend_rule": {
+      "carried_over_from": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json official_rules",
+      "challenge_phase_restriction": false
+    }
+  },
+  "observed_refusals": {
+    "load_binding()": "Refusal: wrong_rulepack (binding rulepack.as_of 2026-09-04 != rulepack file as_of 2026-09-15)",
+    "_validate_official_rule_sources(STANDARD, 2026-09-04 snapshot)": "rulepack:official_source_binding_invalid:ftmo_trading_objectives_official",
+    "_validate_official_rule_sources(STANDARD, 2026-09-15 snapshot, constants repinned)": "rule_snapshot:envelope_invalid",
+    "_validate_official_rule_sources(SWING, 2026-09-04 snapshot)": "PASS (unchanged baseline)",
+    "_validate_official_rule_sources(SWING, 2026-09-15 snapshot)": "rule_snapshot:envelope_invalid"
+  },
+  "verdict": "STOP_DO_NOT_ALIGN"
+}
