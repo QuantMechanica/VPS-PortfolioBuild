@@ -42,16 +42,15 @@
     "selection_mode": "EXPLICIT_M13_DEMO_BINDING",
     "rulepack_path": "tools/strategy_farm/config/target_rulepacks/FTMO_2S_100K_STANDARD_V2.json",
     "rulepack_file_sha256": "9db8fda733f5eab0b0733f7ab7eb1791e5a2e7810497e21d3060cf1e64c23733",
-    "rulepack_file_sha256_note": "Re-pinned 2026-09-15 after the OWNER-DEC-CBE-20260915 s63 official-rules refresh (commit 992c59d1af rebound FTMO_2S_100K_STANDARD_V2.json to the 2026-09-15 snapshot); previous pin dbec5494... (2026-09-06 snapshot)",
     "rulepack_canonical_sha256": "857e2d4baf481a079da8726606a5561a6f525b959803790b72f9aebe5f4dcda5"
   },
   "governor": {
     "ea_id": 13206,
     "policy_id": "FTMO_2S_P1_100K_V2",
     "bootstrap_preset_path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set",
-    "bootstrap_preset_sha256": "c189004f19e89fd83dd563cfd9334bc5b60c67cb9302b65217ad3ebbb7fb40f2",
+    "bootstrap_preset_sha256": "15c18dc439679b3482b321ac11a3711686fa73e78f50ba1379ad26a6ad7b8eeb",
     "active_preset_path": "framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set",
-    "active_preset_sha256": "8537309436144497e42ccdee94426eeb5d7bad95f3568f92ba01bf532dedb061"
+    "active_preset_sha256": "f73453412b51c25f4e6a84600f46f6602dc827aff9709b10ea7aca634cbe1361"
   },
   "authority_boundary": {
     "install_authorized": false,
@@ -59,5 +58,15 @@
     "autotrading_authorized": false,
     "purchase_authorized": false,
     "owner_signature_required": true
-  }
+  },
+  "notes": [
+    {
+      "subject": "evaluator.rulepack_file_sha256",
+      "note": "Re-pinned 2026-09-15 after the OWNER-DEC-CBE-20260915 s63 official-rules refresh (commit 992c59d1af rebound FTMO_2S_100K_STANDARD_V2.json to the 2026-09-15 snapshot); previous pin dbec5494... (2026-09-06 snapshot)"
+    },
+    {
+      "subject": "pin_basis",
+      "note": "Every sha256 in this binding is the digest of the LINE-ENDING-NORMALIZED bytes of the named file (tools/strategy_farm/ftmo/binding_hash.py, 2026-09-18, ticket a5cf99d0). Raw-byte pins are not portable: core.autocrlf gives the same committed content a different digest per checkout. Receipt: docs/ops/evidence/2026-09-18_ftmo_binding_repin/RECEIPT.md"
+    }
+  ]
 }

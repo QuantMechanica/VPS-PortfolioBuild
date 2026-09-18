@@ -357,3 +357,14 @@ docs/ops/evidence/*_ftmo_official_rules_snapshot.json -text
 # evidence_sha256 to the on-disk bytes, so a checkout must never re-smudge the
 # line endings (autocrlf would otherwise invalidate the binding per worktree).
 docs/ops/evidence/2026-09-18_compile_fail_repair_authority/*.json -text
+
+# FTMO M13 demo binding: every file whose sha256 load_binding() pins must keep
+# stable bytes per checkout. The pins are line-ending-invariant since 2026-09-18
+# (tools/strategy_farm/ftmo/binding_hash.py), and these entries stop autocrlf
+# from making the working tree disagree with the committed blob in the first
+# place. Ticket a5cf99d0: the terms evidence was LF-pinned and smudged to CRLF
+# in every worktree, while the two governor presets had been pinned over the
+# CRLF smudge and so could never verify on an LF checkout.
+docs/ops/evidence/2026-09-06_ftmo_demo_account_terms.md -text
+framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_bootstrap.set -text
+framework/EAs/QM5_13206_ftmo-account-governor/sets/QM5_13206_ftmo-account-governor_ACCOUNT_TIMER_M13_demo_active.set -text

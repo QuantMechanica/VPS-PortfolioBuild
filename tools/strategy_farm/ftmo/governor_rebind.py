@@ -38,6 +38,7 @@ import sys
 if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from tools.strategy_farm.ftmo import trial_setpath
+from tools.strategy_farm.ftmo.binding_hash import content_sha256
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 BINDING = REPO_ROOT / "tools/strategy_farm/config/ftmo_m13_standard_demo.v1.json"
@@ -52,6 +53,11 @@ class Refusal(RuntimeError):
 
 def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def pin(data: bytes) -> str:
+    """Line-ending-invariant digest, identical to trial_setpath.pin()."""
+    return content_sha256(data)
 
 
 def load_magic_registry(path: Path = MAGIC_REGISTRY) -> dict[int, dict[str, str]]:
@@ -145,11 +151,11 @@ def rebind(roster_path: Path, *, binding_path: Path = BINDING,
         if not path.is_file():
             raise Refusal(f"governor_preset_missing:{role}")
         raw = path.read_bytes()
-        if sha(raw) != governor[f"{role}_preset_sha256"]:
+        if pin(raw) != governor[f"{role}_preset_sha256"]:
             raise Refusal(f"{role}_preset_hash_drift_before_rebind")
         new_raw = rewrite_preset(raw, updates)
         presets[role] = {"path": path, "before": raw, "after": new_raw,
-                         "sha256_before": sha(raw), "sha256_after": sha(new_raw)}
+                         "sha256_before": pin(raw), "sha256_after": pin(new_raw)}
 
     new_binding = json.loads(binding_raw.decode("utf-8"))
     for role in ("bootstrap", "active"):

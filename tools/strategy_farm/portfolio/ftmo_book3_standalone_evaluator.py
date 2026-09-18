@@ -21,6 +21,7 @@ import ast
 import collections
 import datetime as dt
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -45,6 +46,21 @@ except ImportError:  # pragma: no cover - direct script execution
     from ftmo_q09_admission import ADMITTED_REASON, EVIDENCE_MISSING  # type: ignore
 
 reconcile_case = reconciliation.reconcile_case
+
+# The M13 demo binding pins the rulepack by the sha256 of its LINE-ENDING-
+# NORMALIZED bytes, so the digest identifies rule content rather than whichever
+# EOL convention core.autocrlf produced in this checkout (ticket a5cf99d0). This
+# module must use exactly the hasher trial_setpath.load_binding() uses; it is
+# loaded by path so the evaluator keeps working under flat-module execution,
+# where the tools.* package root is not importable.
+_binding_hash = importlib.util.module_from_spec(
+    importlib.util.spec_from_file_location(
+        "qm_ftmo_binding_hash",
+        Path(__file__).resolve().parents[1] / "ftmo" / "binding_hash.py",
+    )
+)
+_binding_hash.__spec__.loader.exec_module(_binding_hash)
+_binding_pin = _binding_hash.content_sha256
 
 
 MANIFEST_SCHEMA = "qm.ftmo-book3-standalone-evaluation-manifest/v1"
@@ -850,7 +866,7 @@ def resolve_m13_standard_rulepack(
     if not rulepack_path.is_file():
         raise StandaloneEvaluationError("m13_demo_binding:rulepack_missing")
     raw = rulepack_path.read_bytes()
-    if hashlib.sha256(raw).hexdigest() != contract.get("file_sha256"):
+    if _binding_pin(raw) != contract.get("file_sha256"):
         raise StandaloneEvaluationError("m13_demo_binding:rulepack_file_hash_drift")
     document = _load_json(rulepack_path, "m13_standard_rulepack")
     if (
