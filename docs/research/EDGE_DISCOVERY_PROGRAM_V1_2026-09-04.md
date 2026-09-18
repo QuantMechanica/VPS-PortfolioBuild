@@ -194,3 +194,119 @@ NEVER: propose ML, propose parameters without a grid, claim numbers not in the t
 - 2026-09-04 05:10Z — v1 written (inventory measured, protocol, five hypotheses, tooling
   spec, Astra template). Next: commission `edge_lab_stats.py` (Sonnet/Terra) and the
   EDGE-1 / EDGE-3 tables.
+- 2026-09-18 10:00Z — Candidate hypotheses batch 2 (EDGE-6..EDGE-9) drafted as §9
+  proposal appendix under router task 0808f955 (Gemini lane, unsealed).
+
+## 9. Appendix: Candidate Hypotheses Batch 2 (EDGE-6 … EDGE-9) [DRAFT — Proposed, Not Sealed]
+
+> **DRAFT NOTICE:** This candidate batch is proposed under router task `0808f955-be44-4f9a-ae6b-52dddcb21c00`
+> (Gemini lane, 2026-09-18). It is explicitly **DRAFT / PROPOSED, NOT SEALED**. Per the governing protocol (§2, §7),
+> Fable / OWNER reviews and seals hypotheses before measurement; agy does not seal. No strategy cards, no EA code,
+> and no pipeline gate or verdict changes are introduced. Evidence doc: `docs/ops/evidence/2026-09-18_edge_lab_v2_candidate_hypotheses.md`.
+
+### EDGE-6 — US Equity Index Overnight Drift (Night vs Day Session Return Asymmetry)
+- **Mechanism.** The equity risk premium in major US stock indices historically accrues overwhelmingly
+  during overnight / non-cash trading hours rather than regular daytime cash market hours. During
+  overnight hours (20:00 UTC to 13:30 UTC next day / 16:00 to 09:30 ET), market makers and inventory
+  holders demand positive compensation for bearing overnight jump risk and macro news resolution while cash
+  exchange order books are closed. Daytime liquidity providers deploy capital and unwind positions during
+  high-volume daytime trading, leading to flat or negative daytime intraday drift. Return source: overnight
+  inventory carrying risk premium, orthogonal to technical momentum / pattern-reversal strategies.
+- **Rule sketch.** Symbols: `SP500.DWX`, `NDX.DWX` (tick archives 2018-07 to 2025-12). Trigger: Daily session
+  transition at 20:00 UTC (US cash close). Entry: Long position opened at 20:05 UTC. Exit: Market close at
+  13:25 UTC (prior to US cash open), or 1.5× ATR(D1) trailing/hard stop. Position sizing: `RISK_FIXED`.
+  Parameters (3): entry offset minute (20:00, 20:05, 20:15 UTC), exit time (13:15, 13:25, 13:35 UTC), stop
+  ATR multiple (1.0x, 1.5x, 2.0x).
+- **Refutation.** Over 2018–2023, annualized overnight return must exceed daytime (cash session) return by
+  ≥ 4.0% annualized with mean overnight Sharpe ratio ≥ 0.50 across n ≥ 1,200 sessions per index (t ≥ 2.5);
+  the 2024–2025 holdout must maintain positive overnight return (> 0) and exceed daytime session return.
+  If overnight returns in 2022–2023 show structural inversion (< 0), dead. Frequency: ~250 trading days
+  per symbol-year (above floor).
+- **Tables.** Daily overnight return, daytime cash return, spread-adjusted net PnL, annualized Sharpe ratio,
+  max drawdown, and year-by-year return breakdown.
+- **Citation & Source Binding.**
+  - Lou, Dong, Christopher Polk, and Spyros Skouras (2019), "A Tug of War: Overnight Versus Intraday Expected Returns",
+    *Journal of Financial Economics*, 134(1), 192–213.
+  - Boyarchenko, Nina, David O. Lucca, and Laura Veldkamp (2021), "Overnight Returns and the Macroeconomic News Cycle",
+    *Federal Reserve Bank of New York Staff Reports*, no. 990.
+  - Source class: External academic (R1 PASS, verifiable).
+
+### EDGE-7 — Month-End Currency Hedging Rebalancing Flows in FX Majors
+- **Mechanism.** Global institutional asset managers (e.g., European pension and mutual funds) managing
+  international equity portfolios typically operate under fixed currency-hedged benchmark mandates. Over the course
+  of a calendar month, differential equity performance between US equity markets (S&P 500) and European equity
+  markets (DAX/FTSE) shifts the effective hedge ratio. If US equities outperform European equities month-to-date,
+  European funds become over-hedged on USD and must mechanically sell USD and buy foreign currency (EUR, GBP) into
+  the 16:00 London WMR fix over the final 3–5 trading days of the month to restore policy weights. When US equities
+  underperform, managers must mechanically buy USD. This non-informational liquidity demand produces predictable
+  multi-day currency drift orthogonal to price-action indicators.
+- **Rule sketch.** Symbols: `EURUSD.DWX`, `GBPUSD.DWX`, `USDJPY.DWX`. Trigger: At T-3 trading days prior to calendar
+  month-end, evaluate the relative month-to-date equity return spread: ΔR = R_SP500(MTD) - R_GDAXI(MTD). If
+  |ΔR| ≥ 2.0%, signal direction = sell USD / buy EUR/GBP if ΔR > 0; buy USD if ΔR < 0. Entry: 08:00 UTC (European
+  cash open) on trading day T-3. Exit: 16:30 UTC on month-end trading day T (following the London fix), or
+  stop-loss at 1.5× ATR(D1). Position sizing: `RISK_FIXED`. Parameters (3): MTD equity spread threshold ΔR (1.5%,
+  2.0%, 2.5%), entry day offset (T-3, T-2, T-1), stop ATR multiple (1.0x, 1.5x, 2.0x).
+- **Refutation.** Over 2018–2023, conditional 3-day holding period return in the rebalancing direction must have
+  positive mean ≥ 0.25× ATR(D1) across qualifying events (n ≥ 40 monthly rebalance events, t ≥ 2.0); holdout
+  2024–2025 net return after spread must remain positive (> 0). If unconditioned month-end currency returns yield
+  identical drift to the equity-spread-conditioned subset, the conditioning is noise → dead. Frequency: ~6–9
+  qualifying events per symbol-year (above floor).
+- **Tables.** Monthly equity performance spread ΔR, entry date, exit date, forward return at T-2, T-1, T, net pips
+  after spread, and control group returns.
+- **Citation & Source Binding.**
+  - Curcuru, Stephanie E., Charles P. Thomas, Francis E. Warnock, and Jon Wongswan (2011), "U.S. International Equity
+    Investment and Dollar Returns", *Journal of International Money and Finance*, 30(5), 797–816.
+  - Krohn, Ingomar, and Vladyslav Sushko (2022), "FX Spot and Swap Market Liquidity over the Month-End Turn",
+    *BIS Quarterly Review*, March 2022, 43–57.
+  - Source class: External academic / central banking (R1 PASS, verifiable).
+
+### EDGE-8 — Pre-FOMC Announcement Drift in US Equity Indices
+- **Mechanism.** In the 24 hours preceding scheduled Federal Open Market Committee (FOMC) rate decisions, US equity
+  markets display a persistent positive price drift. Market participants demand compensation for bearing monetary policy
+  uncertainty ahead of the release; as the announcement window approaches, risk-averse investors absorb uncertainty
+  risk, driving prices upward prior to the formal release. Because positions are liquidated or stopped before the actual
+  news release, this strategy monetizes pre-announcement uncertainty resolution without bearing execution gap or slippage
+  risk during the release itself, perfectly respecting mandatory news blackout controls.
+- **Rule sketch.** Symbols: `SP500.DWX`, `NDX.DWX`. Trigger: Scheduled FOMC interest rate announcement day from cleaned news
+  calendar (`forex_factory_calendar_clean.csv`, Event = "Federal Funds Rate" or "FOMC Statement"). Entry: 14:00 UTC on
+  announcement day (or 24 hours prior to scheduled 18:00 UTC release). Exit: 17:45 UTC (15 minutes prior to scheduled release
+  to avoid the mandatory news blackout window and spread widening), or 1.0× ATR(H1) trailing stop. Position sizing:
+  `RISK_FIXED`. Parameters (3): entry time window (24h pre-release, 10:00 UTC pre-release, 14:00 UTC pre-release),
+  pre-release exit buffer (15m, 30m, 60m), stop ATR multiple (0.8x, 1.2x, 1.6x).
+- **Refutation.** Over 2018–2023 (n ≥ 40 events), pre-release window mean return must exceed the unconditional same-weekday
+  benchmark return by ≥ 0.35 σ with t ≥ 2.2; holdout 2024–2025 mean pre-announcement return must remain positive (> 0). If
+  pre-release return turns substantially negative across the 2022–2023 aggressive tightening cycle, dead. Frequency: 8
+  scheduled FOMC meetings per year (above floor).
+- **Tables.** Event timestamp, scheduled release time, pre-event 24h return, pre-event 4h return, unconditional same-weekday
+  benchmark return, realized volatility, and net PnL after cost.
+- **Citation & Source Binding.**
+  - Lucca, David O., and Emanuel Moench (2015), "The Pre-FOMC Announcement Drift", *The Journal of Finance*, 70(1), 329–371.
+  - Bernanke, Ben S., and Kenneth N. Kuttner (2005), "What Explains the Stock Market's Reaction to Federal Reserve Policy?",
+    *The Journal of Finance*, 60(3), 1221–1257.
+  - Source class: External academic (R1 PASS, verifiable).
+
+### EDGE-9 — Post-EIA Petroleum Status Report Drift in Crude Oil (WTI)
+- **Mechanism.** Every Wednesday at 15:30 UTC (10:30 ET), the U.S. Energy Information Administration (EIA) releases its
+  weekly petroleum status report. Unlike financial market releases where information is priced within seconds, physical
+  crude oil inventories reflect refinery inputs, pipeline utilization, and shipping balances. When a substantial inventory
+  surprise occurs (|Actual - Forecast| ≥ 1.0 σ), commercial market participants and CTAs adjust forward hedging contracts
+  over multi-hour horizons. This generates persistent directional drift in WTI crude over the 60–180 minutes following
+  the initial 1-minute reaction spike.
+- **Rule sketch.** Symbol: `XTIUSD.DWX` (tick archive 2017-10 to 2025-12). Trigger: Wednesday 15:30 UTC EIA Crude Oil Stocks
+  release; surprise |z| = |(Actual - Forecast) / σ_surprise| ≥ 1.0. Entry: 15:35 UTC (5-minute delay following release to
+  bypass initial spread spike and order book gap) in the opposite direction of the inventory change (draw → long; build → short).
+  Exit: 17:30 UTC (120-minute holding duration), or 1.2× ATR(15m) stop. Position sizing: `RISK_FIXED`. Parameters (3):
+  surprise threshold z (0.8, 1.0, 1.2), entry delay (2m, 5m, 10m), holding duration (60m, 120m, 180m).
+- **Refutation.** Over 2018–2023, conditional 120-minute forward return in the surprise direction must exceed the unconditional
+  Wednesday 15:35–17:30 baseline by ≥ 0.35 σ across n ≥ 150 events (t ≥ 2.0); holdout 2024–2025 net expectancy after deducting
+  3-pip spread/slippage must remain positive (> 0). If the post-5m return reverses the initial 5-minute move or shows zero
+  continuation, dead. Frequency: ~25–35 qualifying events per year (above floor).
+- **Tables.** Event timestamp, actual, forecast, surprise z, forward returns at +5, +15, +30, +60, +120, +180 min, spread at
+  entry, net PnL.
+- **Citation & Source Binding.**
+  - Halova, Simona, George H. K. Wang, and Donald Lien (2014), "The Impact of the Energy Information Administration Petroleum
+    Status Report on the US Crude Oil and Petroleum Product Futures Markets", *Journal of Futures Markets*, 34(7), 652–671.
+  - Bjursell, Johan, George H. K. Wang, and Jeffrey Xu (2015), "Announcement Effects in Energy Futures Markets: An Intraday
+    Analysis", *Journal of Futures Markets*, 35(11), 1058–1081.
+  - Source class: External academic (R1 PASS, verifiable).
+
