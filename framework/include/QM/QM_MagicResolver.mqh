@@ -130,13 +130,20 @@ string QM_MagicRegistryHash()
   }
 
 // Canonical broker/custom-symbol identity. Registry rows retain DarwinexZero
-// names; broker suffixes are ignored and FTMO's oil alias maps to XTIUSD.
+// names; broker suffixes are ignored and FTMO's venue aliases map back to the
+// registry name (oil: USOIL.cash -> XTIUSD; Nasdaq: US100.cash -> NDX).
+// GAPS G7 (2026-09-18): without the US100 row the registry-symbol guard in
+// QM_MagicChecked fails closed for every index sleeve on an FTMO *.cash chart.
+// NOTE: EAs already compiled against this header keep the old table - the
+// compile lane must rebuild the affected EAs for this alias to take effect.
 string QM_MagicSymbolCanonical(const string symbol)
   {
    const int dot = StringFind(symbol, ".");
    const string base = (dot > 0 ? StringSubstr(symbol, 0, dot) : symbol);
    if(base == "USOIL")
       return "XTIUSD";
+   if(base == "US100")
+      return "NDX";
    return base;
   }
 
