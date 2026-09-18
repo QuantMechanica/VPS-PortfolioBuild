@@ -41,6 +41,80 @@ DEFAULT_TERMINAL = Path(
 _NON_SLEEVE_MARKERS = ("account-governor", "TrialTelemetry", "telemetry")
 _EA_ID_RE = re.compile(r"QM5?_(\d+)_")
 
+# GAPS G4.2: "attached" is not "trading". A sleeve that initialises and never
+# places an order still counts toward the ledger's roster and total_book_risk_pct,
+# so the reported book overstates the realised one (this is exactly how QM5_20048
+# and QM5_13054 inflate the live demo to a nominal 2.5 %). Flagging is an
+# OBSERVABILITY addition only: attached_dark never enters roster_hash, never
+# classifies as a material change, and never resets or extends the cycle.
+DARK_AFTER_TRADING_DAYS = 5
+_PLACEMENT_MARKERS = ("TM_OPEN", "ENTRY_ACCEPTED")
+_EA_LOG_RE = re.compile(r"QM5?_(\d+)_.*\.log$", re.IGNORECASE)
+
+
+def _trading_days_between(start: dt.datetime, end: dt.datetime) -> int:
+    """Whole Mon-Fri days elapsed. Deterministic, calendar-free, no holidays."""
+    if end <= start:
+        return 0
+    days = 0
+    cursor = start.date()
+    last = end.date()
+    while cursor < last:
+        cursor += dt.timedelta(days=1)
+        if cursor.weekday() < 5:
+            days += 1
+    return days
+
+
+def observe_placements(files_dir: Path) -> dict[int, int]:
+    """Count observed order placements per ea_id from the terminal's EA logs.
+
+    Read-only and tolerant: an unreadable or absent log contributes nothing and
+    the sleeve is then reported with placements_source EVIDENCE_MISSING rather
+    than being called dark on no evidence.
+    """
+    counts: dict[int, int] = {}
+    files_dir = Path(files_dir)
+    if not files_dir.is_dir():
+        return counts
+    for log in sorted(files_dir.glob("QM*_ea-*.log")):
+        match = _EA_ID_RE.search(log.name)
+        if not match:
+            continue
+        ea_id = int(match.group(1))
+        try:
+            text = log.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        counts[ea_id] = counts.get(ea_id, 0) + sum(
+            1 for line in text.splitlines() if any(m in line for m in _PLACEMENT_MARKERS)
+        )
+    return counts
+
+
+def flag_attached_dark(
+    roster: list[dict[str, Any]],
+    placements: dict[Any, int] | None,
+    trading_days: int,
+    *,
+    min_trading_days: int = DARK_AFTER_TRADING_DAYS,
+) -> list[dict[str, Any]]:
+    """Annotate each sleeve with placements / attached_dark. Pure; returns new rows."""
+    out: list[dict[str, Any]] = []
+    for sleeve in roster:
+        row = dict(sleeve)
+        ea_id = row.get("ea_id")
+        observed = None
+        if placements is not None and ea_id is not None:
+            observed = int(placements.get(ea_id, placements.get(str(ea_id), 0)) or 0)
+        row["placements_observed"] = observed if observed is not None else "EVIDENCE_MISSING"
+        row["trading_days_observed"] = trading_days
+        row["attached_dark"] = bool(
+            observed == 0 and trading_days >= min_trading_days
+        )
+        out.append(row)
+    return out
+
 
 def _now(now: dt.datetime | None = None) -> dt.datetime:
     return now or dt.datetime.now(dt.timezone.utc)
@@ -170,9 +244,13 @@ def observe_demo_terminal(terminal_dir: Path = DEFAULT_TERMINAL) -> dict[str, An
                     source = "ftmo_demo_attach_map"
             except (OSError, json.JSONDecodeError, ValueError, TypeError):
                 roster = []
+    files_dir = terminal_dir / "MQL5" / "Files" / "QM"
+    placements = observe_placements(files_dir)
     return {
         "roster": roster,
         "roster_source": source,
+        "placements": placements,
+        "placements_source": str(files_dir) if placements else "EVIDENCE_MISSING",
         "product": policy_config.DEFAULT_ACCOUNT_LABEL,
         "compliance": {"rulepack": "FTMO_2S_100K_STANDARD_V2"},
         "observed_at_utc": _iso(_now()),
@@ -447,6 +525,26 @@ def build_demo_cycle(
 
     representative = state in ("REPRESENTATIVE", "DECISION_PACKAGE")
 
+    # Observability only (G4.2): computed AFTER roster_hash, material changes and
+    # state, so a dark sleeve is surfaced without altering cycle semantics.
+    trading_days = 0
+    if isinstance(cycle_start, str) and cycle_start not in ("UNKNOWN",):
+        try:
+            start_dt = dt.datetime.fromisoformat(cycle_start.replace("Z", "+00:00"))
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=dt.timezone.utc)
+            trading_days = _trading_days_between(start_dt, now)
+        except ValueError:
+            trading_days = 0
+    placements = observation.get("placements")
+    annotated = flag_attached_dark(
+        roster, placements, trading_days,
+        min_trading_days=int(observation.get("dark_after_trading_days", DARK_AFTER_TRADING_DAYS)),
+    )
+    dark = [s["magic"] for s in annotated if s.get("attached_dark")]
+    dark_risk = round(sum(float(s.get("risk_pct") or 0.0) for s in annotated if s.get("attached_dark")), 6)
+    book_risk = round(_total_book_risk(roster), 6) if roster else "EVIDENCE_MISSING"
+
     return {
         "schema": SCHEMA,
         "generated_at_utc": _iso(now),
@@ -457,9 +555,17 @@ def build_demo_cycle(
         },
         "roster_source": observation.get("roster_source", "EVIDENCE_MISSING"),
         "roster_hash": r_hash,
-        "roster": roster,
+        "roster": annotated,
         "sleeve_count": len(roster),
-        "total_book_risk_pct": round(_total_book_risk(roster), 6) if roster else "EVIDENCE_MISSING",
+        "total_book_risk_pct": book_risk,
+        "placements_source": observation.get("placements_source", "EVIDENCE_MISSING"),
+        "trading_days_observed": trading_days,
+        "dark_after_trading_days": int(observation.get("dark_after_trading_days", DARK_AFTER_TRADING_DAYS)),
+        "attached_dark_magics": sorted(dark, key=str),
+        "attached_dark_count": len(dark),
+        "attached_dark_risk_pct": dark_risk,
+        "realised_book_risk_pct": (round(float(book_risk) - dark_risk, 6)
+                                   if isinstance(book_risk, (int, float)) else "EVIDENCE_MISSING"),
         "product": product,
         "compliance": compliance,
         "cycle_start_utc": cycle_start,
@@ -489,8 +595,10 @@ def build_and_write(
     out: Path = DEFAULT_OUT,
     terminal_dir: Path = DEFAULT_TERMINAL,
     now: dt.datetime | None = None,
+    dark_after_trading_days: int = DARK_AFTER_TRADING_DAYS,
 ) -> dict[str, Any]:
     observation = observe_demo_terminal(terminal_dir)
+    observation["dark_after_trading_days"] = int(dark_after_trading_days)
     prev = _load_json(out)
     ledger = build_demo_cycle(observation, prev, now)
     out = Path(out)
@@ -505,10 +613,14 @@ def _main(argv: list[str] | None = None) -> int:
     p_build = sub.add_parser("build", help="observe the demo terminal and update the ledger")
     p_build.add_argument("--out", default=str(DEFAULT_OUT))
     p_build.add_argument("--terminal", default=str(DEFAULT_TERMINAL))
+    p_build.add_argument("--dark-after-days", type=int, default=DARK_AFTER_TRADING_DAYS,
+                         help="trading days with zero placements before a sleeve is flagged attached_dark")
     args = parser.parse_args(argv)
     if args.cmd == "build":
-        ledger = build_and_write(Path(args.out), Path(args.terminal))
-        print(json.dumps({k: ledger[k] for k in ("schema", "state", "roster_hash", "cycle_start_utc", "validation_days", "sleeve_count")}, indent=2))
+        ledger = build_and_write(Path(args.out), Path(args.terminal), dark_after_trading_days=args.dark_after_days)
+        print(json.dumps({k: ledger[k] for k in (
+            "schema", "state", "roster_hash", "cycle_start_utc", "validation_days", "sleeve_count",
+            "attached_dark_count", "attached_dark_magics", "realised_book_risk_pct")}, indent=2))
     return 0
 
 

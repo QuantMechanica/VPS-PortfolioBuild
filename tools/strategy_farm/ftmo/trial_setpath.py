@@ -233,6 +233,12 @@ def derive(source: bytes, risk_percent: float) -> tuple[bytes, dict]:
 
 
 def sealed_source(conn: sqlite3.Connection, ea: int, symbol: str) -> tuple[bytes, dict]:
+    """Legacy hard-bound path: venue name comes from the module-level LANES map."""
+    raw, binding = sealed_source_raw(conn, ea, symbol)
+    return raw, dict(binding, native_symbol=LANES[symbol])
+
+
+def sealed_source_raw(conn: sqlite3.Connection, ea: int, symbol: str) -> tuple[bytes, dict]:
     row = conn.execute("SELECT id,setfile_path,evidence_path,setfile_sha256 FROM work_items WHERE ea_id=? AND symbol=? AND phase='Q10_NEWS' AND status='done' AND verdict='CONFIG_LOCKED' ORDER BY updated_at DESC LIMIT 1", (f'QM5_{ea}', symbol+'.DWX')).fetchone()
     if row is None:
         raise Refusal(f'unsealed_source:{ea}:{symbol}')
@@ -249,7 +255,7 @@ def sealed_source(conn: sqlite3.Connection, ea: int, symbol: str) -> tuple[bytes
     timeframe_match = re.search(r'_((?:M|H)\d+|D1|W1|MN1)(?:_|\.)', source_path.name)
     if not timeframe_match:
         raise Refusal('source_timeframe_unresolved')
-    return raw, {'ea_id':ea, 'symbol':symbol, 'native_symbol':LANES[symbol], 'timeframe':timeframe_match.group(1), 'seal_work_item_id':task, 'source_path':str(source_path), 'source_sha256':expected, 'seal_path':str(seal_path), 'seal_sha256':sha(seal_bytes), 'source_role':'SEALED_BASELINE_STRATEGY_PARAMETERS', 'original_selected_news_config':seal.get('chosen_config'), 'ex5_sha256':seal.get('identities', {}).get('ex5_sha256')}
+    return raw, {'ea_id':ea, 'symbol':symbol, 'timeframe':timeframe_match.group(1), 'seal_work_item_id':task, 'source_path':str(source_path), 'source_sha256':expected, 'seal_path':str(seal_path), 'seal_sha256':sha(seal_bytes), 'source_role':'SEALED_BASELINE_STRATEGY_PARAMETERS', 'original_selected_news_config':seal.get('chosen_config'), 'ex5_sha256':seal.get('identities', {}).get('ex5_sha256')}
 
 
 def output_path(run_name: str) -> Path:
@@ -294,14 +300,197 @@ def generate(run_name: str, risk_percent: float, *, database: Path = DATABASE, b
     return dict(manifest, directory=str(target))
 
 
+# --------------------------------------------------------------------------- #
+# Roster-driven derivation (G1/G2). The legacy CANDIDATES/LANES path above is
+# unchanged; a roster file replaces those two module constants with an explicit,
+# reviewable input so a new cycle never needs a code edit.
+# --------------------------------------------------------------------------- #
+ROSTER_SCHEMA = 'qm.ftmo-demo-roster/v1'
+ROSTER_FIELDS = ('ea_id', 'ea_label', 'dxz_symbol', 'ftmo_symbol', 'timeframe', 'slot', 'magic', 'risk_percent')
+# Any set key naming a symbol slot. Multi-symbol EAs carry one input per slot
+# (OWNER 2026-09-06); a slot left on a .DWX factory name is dark on a broker chart.
+SYMBOL_INPUT_RE = re.compile(r'^strategy_[A-Za-z0-9_]*symbol[A-Za-z0-9_]*$')
+FACTORY_SUFFIX = '.DWX'
+_TIMEFRAME_RE = re.compile(r'^(?:M|H)\d+$|^D1$|^W1$|^MN1$')
+
+
+def load_roster(path: Path) -> dict:
+    """Load and fully validate a qm.ftmo-demo-roster/v1 file. Fail-closed."""
+    roster = json.loads(Path(path).read_text(encoding='utf-8'))
+    if not isinstance(roster, dict) or roster.get('schema') != ROSTER_SCHEMA:
+        raise Refusal('invalid_roster_schema')
+    rows = roster.get('candidates')
+    if not isinstance(rows, list) or not rows:
+        raise Refusal('empty_roster')
+    seen_magic: dict[int, dict] = {}
+    seen_slot: set[tuple[int, int]] = set()
+    clean = []
+    for row in rows:
+        if not isinstance(row, dict) or any(field not in row for field in ROSTER_FIELDS):
+            raise Refusal('roster_row_incomplete')
+        ea_id, slot, magic = row['ea_id'], row['slot'], row['magic']
+        if not all(isinstance(v, int) and not isinstance(v, bool) for v in (ea_id, slot, magic)):
+            raise Refusal('roster_row_non_integer_identity')
+        if ea_id <= 0 or slot < 0 or magic != ea_id * 10000 + slot:
+            raise Refusal(f'roster_magic_formula_violation:{ea_id}:{slot}:{magic}')
+        if magic in seen_magic:
+            raise Refusal(f'roster_magic_collision:{magic}')
+        if (ea_id, slot) in seen_slot:
+            raise Refusal(f'roster_slot_collision:{ea_id}:{slot}')
+        seen_magic[magic] = row
+        seen_slot.add((ea_id, slot))
+        for field in ('ea_label', 'dxz_symbol', 'ftmo_symbol', 'timeframe'):
+            if not isinstance(row[field], str) or not row[field].strip():
+                raise Refusal(f'roster_row_blank_field:{field}')
+        if row['ftmo_symbol'].upper().endswith(FACTORY_SUFFIX):
+            raise Refusal(f'roster_ftmo_symbol_is_factory_name:{row["ftmo_symbol"]}')
+        if not _TIMEFRAME_RE.fullmatch(row['timeframe']):
+            raise Refusal(f'roster_timeframe_invalid:{row["timeframe"]}')
+        risk = row['risk_percent']
+        if not isinstance(risk, (int, float)) or isinstance(risk, bool) or not math.isfinite(float(risk)) or not 0 < float(risk) <= 1:
+            raise Refusal(f'roster_risk_percent_outside_cap:{risk}')
+        clean.append(dict(row, risk_percent=float(risk)))
+    return dict(roster, candidates=clean)
+
+
+def rebind_symbol_inputs(text: str, dxz_symbol: str, ftmo_symbol: str) -> tuple[str, dict]:
+    """Rewrite symbol-slot inputs from the .DWX factory name to the venue name.
+
+    Only a slot whose value is this row's own factory symbol is rewritten. Any
+    other .DWX-valued symbol slot is refused: its venue name is not knowable from
+    this roster row, and leaving it would make that leg silently dark (B1).
+    """
+    changes: dict[str, dict[str, str]] = {}
+    lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith(';') or '=' not in stripped:
+            lines.append(line)
+            continue
+        key, value = (part.strip() for part in stripped.split('=', 1))
+        if not SYMBOL_INPUT_RE.fullmatch(key) or not value.upper().endswith(FACTORY_SUFFIX):
+            lines.append(line)
+            continue
+        base = value[: -len(FACTORY_SUFFIX)]
+        if base != dxz_symbol:
+            raise Refusal(f'unmapped_symbol_slot_input:{key}={value}')
+        lines.append(key + '=' + ftmo_symbol)
+        changes[key] = {'before': value, 'after': ftmo_symbol}
+    return '\n'.join(lines) + ('\n' if text.endswith('\n') else ''), changes
+
+
+def derive_for_roster(source: bytes, risk_percent: float, dxz_symbol: str, ftmo_symbol: str) -> tuple[bytes, dict]:
+    """derive() plus the venue symbol-slot rebind, with both proofs recorded."""
+    derived, proof = derive(source, risk_percent)
+    text, symbol_changes = rebind_symbol_inputs(decode(derived), dxz_symbol, ftmo_symbol)
+    output = text.encode()
+    frozen = set(ALLOWED) | set(symbol_changes)
+    before, after = values(decode(derived)), values(text)
+    if {k: v for k, v in before.items() if k not in frozen} != {k: v for k, v in after.items() if k not in frozen}:
+        raise Refusal('symbol_rebind_changed_strategy_parameters')
+    return output, dict(
+        proof,
+        symbol_slot_changes=symbol_changes,
+        venue_symbol=ftmo_symbol,
+        factory_symbol=dxz_symbol + FACTORY_SUFFIX,
+    )
+
+
+def generate_from_roster(run_name: str, roster_path: Path, *, database: Path = DATABASE,
+                         binding_path: Path = BINDING, trial_root: Path | None = None) -> dict:
+    """Derive presets for exactly the roster's candidates and write the v2 manifest."""
+    roster = load_roster(roster_path)
+    target = output_path(run_name) if trial_root is None else Path(trial_root) / run_name
+    if trial_root is not None and target.exists():
+        raise Refusal('output_exists_or_escapes_trial_root')
+    binding, rule, rulepack, rule_bytes = load_binding(binding_path)
+    rules = {item['rule_id']: item for item in rule['official_rules']}
+    daily = float(rules['ftmo_2s_max_daily_loss']['parameters']['percent_of_initial_simulated_capital'])
+    total = float(rules['ftmo_2s_maximum_loss']['parameters']['percent_of_initial_simulated_capital'])
+    if not 0 < daily <= 5 or not 0 < total <= 10:
+        raise Refusal('rulepack_drawdown_limits_invalid')
+    planned = []
+    with sqlite3.connect(database.resolve().as_uri() + '?mode=ro', uri=True) as conn:
+        for row in roster['candidates']:
+            raw, source_binding = sealed_source_for(conn, row)
+            data, proof = derive_for_roster(raw, row['risk_percent'], row['dxz_symbol'], row['ftmo_symbol'])
+            observed = values(decode(data))
+            if observed.get('qm_ea_id') not in (None, str(row['ea_id'])):
+                raise Refusal(f'roster_ea_id_mismatch:{row["ea_id"]}')
+            if observed.get('qm_magic_slot_offset') not in (None, str(row['slot'])):
+                raise Refusal(f'roster_slot_mismatch:{row["ea_id"]}:{row["slot"]}')
+            filename = f'QM5_{row["ea_id"]}_{row["ftmo_symbol"]}_{row["timeframe"]}_live_trial.set'
+            planned.append((filename, data, dict(
+                source_binding, **proof,
+                ea_label=row['ea_label'], slot=row['slot'], magic=row['magic'],
+                risk_percent=row['risk_percent'],
+                output_path=filename, output_sha256=sha(data),
+                qm_ea_id=observed.get('qm_ea_id'),
+                qm_magic_slot_offset=observed.get('qm_magic_slot_offset'),
+            )))
+    risks = sorted({row['risk_percent'] for row in roster['candidates']})
+    manifest = {
+        'schema': 'qm.ftmo-trial-setpath/v2',
+        'status': 'INERT_REVIEW_ONLY', 'installed': False, 'installable': False, 'mode': 'DRY_RUN',
+        'ENV': 'live',
+        'risk_percent': risks[0] if len(risks) == 1 else risks,
+        'book_risk_percent': round(sum(r['risk_percent'] for r in roster['candidates']), 6),
+        'risk_authority': roster.get('risk_authority', 'ROSTER_DECLARED_AWAITING_OWNER'),
+        'roster_label': roster.get('label', run_name),
+        'roster_schema': ROSTER_SCHEMA,
+        'roster_source': str(Path(roster_path).resolve()),
+        'roster_sha256': sha(Path(roster_path).read_bytes()),
+        'account_variant': 'STANDARD_2STEP_100K_FREE_TRIAL',
+        'duration_cap_calendar_days': 14,
+        'binding': {'id': binding['binding_id'], 'path': str(binding_path.resolve())},
+        'rulepack': {'path': str(rulepack), 'sha256': sha(rule_bytes),
+                     'canonical_sha256': binding['rulepack']['canonical_sha256'],
+                     'id': rule['rulepack_id'], 'profile_version': rule['profile_version'], 'as_of': rule['as_of']},
+        'constraints': {
+            'max_daily_loss_percent': daily, 'max_total_loss_percent': total, 'timezone': 'Europe/Prague',
+            'observed_account_leverage': binding['account']['observed_leverage'],
+            'provider_evaluation_news_restricted': False, 'provider_evaluation_weekend_restricted': False,
+            'qm_news_blackout': 'PRE30_POST30_PLUS_FTMO_COMPLIANCE',
+            'qm_weekend_flat': 'FRIDAY_CLOSE_21_BROKER_WITH_5_MINUTE_LEAD',
+            'calendar_binding': 'NATIVE_MT5_CALENDAR_LIVE; seed health and execution must be verified before attachment',
+            'governor_enforcement': 'BOUND_TO_QM5_13206_PRESETS; ATTACHMENT_REQUIRES_OWNER_SIGNATURE',
+        },
+        'candidates': [item[2] for item in planned],
+    }
+    target.mkdir(parents=True)
+    for filename, data, _ in planned:
+        with (target / filename).open('xb') as handle:
+            handle.write(data)
+    (target / 'manifest.json').write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+    for filename, data, item in planned:
+        if sha((target / filename).read_bytes()) != item['output_sha256']:
+            raise Refusal('output_hash_mismatch')
+    return dict(manifest, directory=str(target))
+
+
+def sealed_source_for(conn: sqlite3.Connection, row: dict) -> tuple[bytes, dict]:
+    """sealed_source() for a roster row: no LANES lookup, timeframe cross-checked."""
+    raw, binding = sealed_source_raw(conn, int(row['ea_id']), str(row['dxz_symbol']))
+    if binding['timeframe'] != row['timeframe']:
+        raise Refusal(f'roster_timeframe_mismatch:{row["ea_id"]}:{binding["timeframe"]}!={row["timeframe"]}')
+    return raw, dict(binding, native_symbol=row['ftmo_symbol'])
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--run-name', required=True)
-    parser.add_argument('--risk-percent', type=float, required=True, help='Explicit dry-run example; not trading authority')
+    parser.add_argument('--risk-percent', type=float, help='Legacy hard-bound path: explicit dry-run example; not trading authority')
+    parser.add_argument('--roster', help='qm.ftmo-demo-roster/v1 file; risk_percent comes from each row')
     parser.add_argument('--dry-run', action='store_true', required=True)
     args = parser.parse_args()
-    result = generate(args.run_name, args.risk_percent)
-    print(json.dumps({'directory':result['directory'],'sets':len(result['candidates']),'status':result['status']}))
+    if bool(args.roster) == (args.risk_percent is not None):
+        parser.error('pass exactly one of --roster or --risk-percent')
+    if args.roster:
+        result = generate_from_roster(args.run_name, Path(args.roster))
+    else:
+        result = generate(args.run_name, args.risk_percent)
+    print(json.dumps({'directory': result['directory'], 'sets': len(result['candidates']),
+                      'schema': result['schema'], 'status': result['status']}))
     return 0
 
 if __name__ == '__main__':
