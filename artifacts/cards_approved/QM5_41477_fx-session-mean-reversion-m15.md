@@ -22,14 +22,14 @@ expected_trade_frequency: "Bounded by one entry per symbol per session window (2
 expected_trades_per_year_per_symbol: 280
 g0_status: APPROVED
 review_status: REVIEW_PENDING
-g0_approval_reasoning: "source_hash rebind after non-Kimi critic seal 2026-09-18 (Fable critic wave, OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917); mechanics unchanged; R-gate frontmatter re-synced to the card body"
+g0_approval_reasoning: "wording amendment only: build_gate_hardening loss-limit lint parsed the FTMO-rule mention as a card-declared limit (EA_CARD_LOSS_LIMIT_MISMATCH); mechanics and the -1.0% day breaker unchanged (Fable 2026-09-18)"
 r1_track_record: PASS
 r2_mechanical: PASS
 r3_data_available: PASS
 r4_ml_forbidden: PASS
 pipeline_phase: G0
 last_updated: 2026-09-18
-card_sha256: 2abe3d4e718392ce286195bba7f3145d4a48a6996677db7c65dd4aad4aa41b82
+card_sha256: 995578fff88df5a2ecf60b7542c6f6bd0f8266ff840cacaf7f560a8e1532b52f
 ---
 
 # H-FXMR: FX session mean reversion (session-flat, M15)
@@ -145,7 +145,7 @@ Killed if: OOS holdout net profit factor < 1.20 after costs or expectancy < +0.1
 Session-flat exposure removes overnight gap risk; the shock and spread filters and the fail-closed news blackout keep event windows closed. Q08 stress and Q11 full-history confirmation remain the judges before any book placement.
 
 ## FTMO fit
-Zero overnight exposure (swap ~ 0, no gap-through-stop), a hard daily loss breaker at -1.0% (one fifth of the FTMO 5% daily loss limit) and a weekly breaker at -2.0% (one fifth of the 10% total drawdown limit), bounded holding minutes, and a high but capped density target the probability of completing the challenge rather than standalone profit factor. The session-flat flatten and the fail-closed news blackout keep the event windows the 5%/10% limits protect closed — the opposite shape to the D1 gold/FX swing pocket whose overnight/swap tail produced the -10.26% demo breach.
+Zero overnight exposure (swap ~ 0, no gap-through-stop), a hard daily loss breaker at -1.0% (one fifth of the FTMO Maximum Daily Loss rule of 5 percent) and a weekly breaker at -2.0% (one fifth of the 10% total drawdown limit), bounded holding minutes, and a high but capped density target the probability of completing the challenge rather than standalone profit factor. The session-flat flatten and the fail-closed news blackout keep the event windows the 5%/10% limits protect closed — the opposite shape to the D1 gold/FX swing pocket whose overnight/swap tail produced the -10.26% demo breach.
 
 ## Concepts
 - [[concepts/session-flat-intraday]] - primary
