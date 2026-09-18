@@ -301,3 +301,18 @@ ticket a5cf99d0, being fixed), (2) package build with the merged roster-driven t
 `governor_rebind`, `demo_install --package`), (3) chart-profile switch with profile backup, then a NEW representative
 14-day cycle. Known caveats carried into the package: XAGUSD financing rate has no realised cross-check (21505 is the
 weakest-evidenced sleeve); 1537 XAGUSD in the incumbent is −149 % financed (another reason the incumbent must go).
+
+## Addendum 4 (2026-09-18 ~04:30Z) — final roster: D2g6
+
+D2f could not be packaged (21505/13054 binaries carry the `.DWX` gate, seals stale — ticket 57bfd3af).
+`docs/ftmo/FTMO_ALT_ROSTER_DEPLOYABLE2_2026-09-18.md`: the six clean D2f sleeves alone (**D2g6**, 13213 USDJPY @0.15625 %,
+10706 GBPUSD, 10700 XAUUSD, 11422 USDCAD, 10403 XAUUSD, 41219 XAUUSD @0.3125 %; book **1.71875 %**) give the best financed
+LCB of all deployable arms — full 0.8839 / P1 max-loss 0.0152 / p50 487 bd; 2023+ 0.9759 / 0.0003 / 339 bd — and pass
+`trial_setpath --roster --dry-run` 6/6. Adding the two qualifying replacements (11708, 11910; D2g, 2.34 %) lowers LCB to
+0.8556; rescaling the six to 2.34 % (D2g6r) buys speed (p50 341) at 3× the breach probability.
+
+**Fable decision (probability over speed, directive §1/§56):** FTMO demo book v3 = **D2g6 at 1.71875 % book risk**.
+Roster file `docs/ops/evidence/2026-09-18_ftmo_demo_book_v3_D2f/roster_D2g.json`. Package build and deployment follow the
+RUNBOOK discipline (profile backup, staged binaries/presets, governor rebind, verification, new representative cycle).
+Known GAPs carried: Friday-flat presets vs streams that held over weekends (10403/41219/11422); XAUUSD ×3 (measured
+|r| ≤ 0.09, 10403–41219 negative).
