@@ -115,12 +115,12 @@ $expectedServer = 'FTMO-Demo'
 # D2g6 sleeves. period_type=1 is "hours": H1 = 1/1, D1 = 1/24 (CHART_PLAN 2c).
 # See assumption (A) above for the `chart` column.
 $legs = @(
-    [pscustomobject]@{ chart='chart02.chr'; ea_id=10706; slug='tv-mon-ls'; symbol='GBPUSD'; period_type='1'; period_size='1';  expertmode='1'; slot='1'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_10706_GBPUSD_H1_live_trial.set'; preset_sha='31C37EC30421A51D7938EBFE911EF13E6615C678D0727DED9DEF09CB5CD1D140'; binary_sha='EAFFDA6F03C8B422896C0E9AB5EA0F3C7100F8546592353ED661F19D056B78CB' },
-    [pscustomobject]@{ chart='chart03.chr'; ea_id=11422; slug='williams-18ma-outside-bar-entry-d1'; symbol='USDCAD'; period_type='1'; period_size='24'; expertmode='1'; slot='4'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_11422_USDCAD_D1_live_trial.set'; preset_sha='215615B5DA7AE2F49DD3D9DAE7E85CBDFF522940F69892D04CDF3C0F61378EA5'; binary_sha='2B98E9E902313148BE78D88513FCBDA2476150B1A7605EB15A50B2CCA6B32D66' },
-    [pscustomobject]@{ chart='chart06.chr'; ea_id=13213; slug='balke-gmt3-range-breakout'; symbol='USDJPY'; period_type='1'; period_size='1';  expertmode='1'; slot='0'; risk_percent='0.15625'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_13213_USDJPY_H1_live_trial.set'; preset_sha='19C771FF8224DCFFA5E86DF0814F5C51ECAC8B2D7F5D898D1EE2E855C849A777'; binary_sha='8C99DEA16FBF758A4B2DA9F49A26DB26BFE7FED3589F2066BE5120314106A8F0' },
-    [pscustomobject]@{ chart='chart07.chr'; ea_id=10700; slug='tv-liq-break'; symbol='XAUUSD'; period_type='1'; period_size='1';  expertmode='1'; slot='3'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_10700_XAUUSD_H1_live_trial.set'; preset_sha='6E319D98E5EA7B6790B8C05A7CF2D3B24CB184C070576F20D906FCB0DCD69DD7'; binary_sha='5FBF2BA0048250041296DEDA0008FF6757F56DCE27E39EFEAD69F45838E5E6BE' },
-    [pscustomobject]@{ chart='chart08.chr'; ea_id=10403; slug='et-turtle20x'; symbol='XAUUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='2'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_10403_XAUUSD_D1_live_trial.set'; preset_sha='9D8414CE65912A6B75228717D9CF24CDD8329D2F31A8171851242E051132B1EF'; binary_sha='F927F07F46579BBB9A1BDCFDB7CAA9B246E9D7555935FBB878F7FC01AFBF7AB3' },
-    [pscustomobject]@{ chart='chart09.chr'; ea_id=41219; slug='cum-rsi2-commodity-requal8'; symbol='XAUUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='0'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_41219_XAUUSD_D1_live_trial.set'; preset_sha='BA8FFD63DB87DE12495A7536FF8F8FEF4E9447A9795C76D82EF2416F08D5F128'; binary_sha='E9670141E89249AFF7DF44A10A2402E2103AA4CECF8D0A35A8CD6D6BABEDF108' }
+    [pscustomobject]@{ chart='chart02.chr'; ea_id=10706; slug='tv-mon-ls'; symbol='GBPUSD'; period_type='1'; period_size='1';  expertmode='1'; slot='1'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_10706_GBPUSD_H1_live_trial.set'; preset_sha='31C37EC30421A51D7938EBFE911EF13E6615C678D0727DED9DEF09CB5CD1D140'; binary_sha='E6701607EF44E02733558BDE9CF096AED9AB8E83A57FEA4D64C84AD6259574E4' },
+    [pscustomobject]@{ chart='chart03.chr'; ea_id=11422; slug='williams-18ma-outside-bar-entry-d1'; symbol='USDCAD'; period_type='1'; period_size='24'; expertmode='1'; slot='4'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_11422_USDCAD_D1_live_trial.set'; preset_sha='215615B5DA7AE2F49DD3D9DAE7E85CBDFF522940F69892D04CDF3C0F61378EA5'; binary_sha='76E59831CA36C4BD55312686C56C1266F1F11C784B4942250E362B9A9A6C5BB1' },
+    [pscustomobject]@{ chart='chart04.chr'; ea_id=13213; slug='balke-gmt3-range-breakout'; symbol='USDJPY'; period_type='1'; period_size='1';  expertmode='1'; slot='0'; risk_percent='0.15625'; risk_fixed='0'; portfolio_weight='1'; preset='QM5_13213_USDJPY_H1_live_trial.set'; preset_sha='19C771FF8224DCFFA5E86DF0814F5C51ECAC8B2D7F5D898D1EE2E855C849A777'; binary_sha='85B5D4ED6443D77CC24DB2B8046A42473E9E0572407680731D0E60733AD9D2E8' },
+    [pscustomobject]@{ chart='chart05.chr'; ea_id=10700; slug='tv-liq-break'; symbol='XAUUSD'; period_type='1'; period_size='1';  expertmode='1'; slot='3'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_10700_XAUUSD_H1_live_trial.set'; preset_sha='6E319D98E5EA7B6790B8C05A7CF2D3B24CB184C070576F20D906FCB0DCD69DD7'; binary_sha='5DCB1A235F5B78CDFF274EAA32E48D4713D19F1415DA3A2153C98E48B501D6A1' },
+    [pscustomobject]@{ chart='chart06.chr'; ea_id=10403; slug='et-turtle20x'; symbol='XAUUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='2'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_10403_XAUUSD_D1_live_trial.set'; preset_sha='9D8414CE65912A6B75228717D9CF24CDD8329D2F31A8171851242E051132B1EF'; binary_sha='FBE198F7210B52853741AE3C987416B0B51EBD2A521C70FE18B71061DE27EBCC' },
+    [pscustomobject]@{ chart='chart07.chr'; ea_id=41219; slug='cum-rsi2-commodity-requal8'; symbol='XAUUSD'; period_type='1'; period_size='24'; expertmode='1'; slot='0'; risk_percent='0.3125';  risk_fixed='0'; portfolio_weight='1'; preset='QM5_41219_XAUUSD_D1_live_trial.set'; preset_sha='BA8FFD63DB87DE12495A7536FF8F8FEF4E9447A9795C76D82EF2416F08D5F128'; binary_sha='E00915B9AC7CBFFE177680863F77871262629A42DC64E5385E4580707B1D10AE' }
 )
 
 # The magics the book is supposed to carry (ea_id*10000+slot). Asserted against
@@ -139,7 +139,7 @@ $governorEaIdsCsv = '10403,10700,10706,11422,13213,41219'
 $governorSymbolsCsv = 'GBPUSD,USDCAD,USDJPY,XAUUSD'
 $governorChallengeId = 'M13_D2G6_20260918_1514536732'
 
-$telemetryChartName = 'chart04.chr'
+$telemetryChartName = 'chart08.chr'
 $telemetryPresetPath = Join-Path $presetDir 'QM_FTMO_TrialTelemetry_1514536732.set'
 $telemetryPresetSha = '9DE24D3D6B3EE4C46AA3F1D7A8F0B0FF56BACB830E4F200651EBF4E2E581E88C'
 $telemetryBinaryRel = 'MQL5\Experts\QM_FTMO\QM_FTMO_TrialTelemetry.ex5'
@@ -147,7 +147,7 @@ $telemetryBinarySha = '411638A1AE177326070C19B28C849FDA36594592279303CE7D96F36BF
 $telemetryTrialId = 'M13_D2G6_20260918_1514536732'
 $telemetryOutputDir = 'QM\ftmo_trial\FTMO_DEMO_BOOK_V3_D2G6_20260918'
 
-$blankChartName = 'chart05.chr'
+$blankChartName = 'chart09.chr'
 
 function Get-PresetAssignments {
     param([string]$Path)
