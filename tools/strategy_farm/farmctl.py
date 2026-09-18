@@ -1530,6 +1530,16 @@ RECOVERY_MARKER_LIKE = '%"recovery_class":%'
 UNIVERSE_EXPANSION_PAYLOAD_KEY = "universe_expansion"
 UNIVERSE_EXPANSION_MARKER_LIKE = '%"universe_expansion": true%'
 UNIVERSE_EXPANSION_OWNER_DECISION = "OWNER-DEC-13036-XAU"
+# 2026-09-18: the entry gate was hard-bound to the single decision id above, so a
+# later, broader OWNER authorization could not enqueue through this exact-row path
+# without either forging the older id or duplicating the whole function. Generalized
+# to a config list of every decision id this path accepts; existing behavior is
+# unchanged (the original id is still first and still the caller default in
+# universe_expansion.py) and new decisions are added here, not by ID substitution.
+UNIVERSE_EXPANSION_ACCEPTED_OWNER_DECISIONS = (
+    UNIVERSE_EXPANSION_OWNER_DECISION,
+    "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+)
 # Rolling idle-cap semantics (documented in the decision record):
 #   * worker-set = ALL terminal workers claiming against this one farm DB; they
 #     share ONE global ledger, so the cap is a fleet-wide rolling cap on SUCCESSFUL
@@ -26434,11 +26444,11 @@ def enqueue_universe_expansion_q02(
     ea_id = _normalise_ea_label(ea_id)
     symbol = str(target_symbol or "").strip().upper()
     timeframe = str(target_timeframe or "").strip().upper()
-    if owner_decision != UNIVERSE_EXPANSION_OWNER_DECISION:
+    if owner_decision not in UNIVERSE_EXPANSION_ACCEPTED_OWNER_DECISIONS:
         return {
             "enqueued": False,
             "reason": "universe_expansion_owner_decision_mismatch",
-            "expected": UNIVERSE_EXPANSION_OWNER_DECISION,
+            "expected": list(UNIVERSE_EXPANSION_ACCEPTED_OWNER_DECISIONS),
             "actual": owner_decision,
         }
     if factory_is_off(root):
@@ -35010,18 +35020,6 @@ Q02_CANARY_TRANSIENT_INFRA_TOKENS = (
     "COLD_CACHE",
 )
 
-Q02_CANARY_SYMBOL_PRIORITY = (
-    "EURUSD.DWX",
-    "USDJPY.DWX",
-    "GBPUSD.DWX",
-    "XAUUSD.DWX",
-    "SP500.DWX",
-    "NDX.DWX",
-    "GDAXI.DWX",
-    "XTIUSD.DWX",
-    "XNGUSD.DWX",
-)
-
 
 def _q02_symbol_bucket(symbol: str) -> str:
     """Coarse asset-class bucket for stage-1 symbol diversity."""
@@ -35119,27 +35117,52 @@ def _q02_canary_revival(
     }
 
 
-def _q02_canary_symbol_rank(symbol: str) -> tuple[int, str]:
-    """Prefer a liquid host while remaining deterministic for every universe."""
-    normalized = str(symbol or "").upper()
+def _q02_canary_ram_reservation_gb(symbol: str, ea_id: str = "") -> float:
+    """Physical-RAM launch reservation terminal_worker would charge this candidate.
+
+    Delegates to the same admission-lane resolver terminal_worker uses to reserve
+    RAM at claim time, instead of a hand-maintained liquidity priority list. The
+    prior list (``Q02_CANARY_SYMBOL_PRIORITY``, retired here) ranked SP500 ahead of
+    other index bases and silently drifted from terminal_worker's calibration table
+    (``INDEX_TICK_RESERVATION_GB_BY_BASE``), which is revised on measured evidence
+    (e.g. 2026-09-16 moved NDX/GDAXI back to the 44GB exclusive-drain-lane class
+    alongside SP500). A stale table entry could pick a 44GB single_index_tick canary
+    over an available cheap one, and the 44GB class only runs on an empty fleet, so
+    first evidence was delayed by hours-to-days (2026-09-18, QM5_41476/SP500.DWX).
+    Reading the live resolver keeps the two from ever diverging again.
+    """
     try:
-        return Q02_CANARY_SYMBOL_PRIORITY.index(normalized), normalized
-    except ValueError:
-        return len(Q02_CANARY_SYMBOL_PRIORITY), normalized
+        import terminal_worker as _terminal_worker  # type: ignore
+    except ModuleNotFoundError:
+        from tools.strategy_farm import terminal_worker as _terminal_worker  # type: ignore
+    item = {"phase": "Q02", "ea_id": ea_id, "symbol": symbol}
+    _ram_class, reservation_gb, _source = _terminal_worker._ram_reservation_detail_for_candidate(
+        item, {}, False, apply_phase_floor=False,
+    )
+    return float(reservation_gb)
 
 
-def _stage_q02_setfiles(parsed: list[tuple[Any, str, str]]) -> tuple[list, list]:
-    """Select one liquid Q02 canary and defer the remaining symbol cohort.
+def _q02_canary_symbol_rank(symbol: str, ea_id: str = "") -> float:
+    """RAM-reservation GB this candidate would charge (ascending = preferred)."""
+    return _q02_canary_ram_reservation_gb(str(symbol or "").upper(), ea_id)
+
+
+def _stage_q02_setfiles(
+    parsed: list[tuple[Any, str, str]], ea_id: str = "",
+) -> tuple[list, list]:
+    """Select one cheap-RAM Q02 canary and defer the remaining symbol cohort.
 
     MNT-038 supersedes the former three-symbol/spare-capacity wave. Fanout is
     now evidence-driven by ``_q02_canary_fanout_decision``; a deterministic
-    defect consumes one canary slot instead of every symbol slot.
+    defect consumes one canary slot instead of every symbol slot. The canary
+    is the candidate with the lowest RAM-reservation class/GB
+    (``_q02_canary_symbol_rank``); ties keep the incoming (card) order.
     """
     if len(parsed) <= Q02_STAGE1_MAX_SYMBOLS:
         return parsed, []
     canary_index = min(
         range(len(parsed)),
-        key=lambda index: (_q02_canary_symbol_rank(parsed[index][1]), index),
+        key=lambda index: (_q02_canary_symbol_rank(parsed[index][1], ea_id), index),
     )
     return [parsed[canary_index]], [
         item for index, item in enumerate(parsed) if index != canary_index
@@ -35637,7 +35660,7 @@ def _first_q02_setfile_plan(
             path, timeframe = matches[0]
             parsed.append((path, symbol, timeframe, {}))
 
-    stage1, deferred = _stage_q02_setfiles(parsed)
+    stage1, deferred = _stage_q02_setfiles(parsed, ea_id)
     if len(stage1) != 1:
         return None, {"reason": "q02_canary_selection_empty", "eligible_setfiles": len(parsed)}
     return {
@@ -36193,7 +36216,7 @@ def _auto_enqueue_q02_for_build(root: Path, build_result: dict[str, Any]) -> dic
 
     # OWNER gate-acceleration #2 (2026-06-10): diverse stage-1 wave, rest
     # deferred to the sidecar (promoted on any stage-1 PASS / spare capacity).
-    stage1, deferred = _stage_q02_setfiles(parsed)
+    stage1, deferred = _stage_q02_setfiles(parsed, str(ea_id))
     build_task_id = str(build_result.get("task_id") or "").strip() or None
     cohort_size = len(parsed)
     if deferred:

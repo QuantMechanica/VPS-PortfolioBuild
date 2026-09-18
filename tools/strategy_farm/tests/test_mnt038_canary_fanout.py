@@ -2,6 +2,8 @@
 
 import json
 
+import pytest
+
 from tools.strategy_farm import farmctl
 
 
@@ -23,7 +25,20 @@ def _row(
     }
 
 
-def test_staging_selects_one_liquid_canary_before_fanout() -> None:
+@pytest.fixture(autouse=True)
+def _no_measured_ram_ledger(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Keep the RAM-reservation lookup this module exercises pinned to the flat
+    # class table; a live D:/QM tester-memory ledger must never make this suite
+    # non-deterministic (2026-09-18, MNT-0xx canary RAM ranking).
+    monkeypatch.setenv("QM_TESTER_MEMORY_ADMISSION", "0")
+
+
+def test_staging_selects_cheapest_ram_class_canary_before_fanout() -> None:
+    # 2026-09-18 (MNT-0xx): the canary is now the lowest RAM-reservation
+    # candidate, not a hand-maintained liquidity list. AUDUSD/XAUUSD/EURUSD are
+    # all "ordinary" (8GB, terminal_worker.ORDINARY_COMMIT_RESERVATION_GB) and
+    # tie; NDX is a single_index_tick candidate (44GB) and loses regardless of
+    # card position. The tie among the 8GB candidates keeps card order.
     parsed = [
         ("aud.set", "AUDUSD.DWX", "D1"),
         ("xau.set", "XAUUSD.DWX", "D1"),
@@ -33,8 +48,40 @@ def test_staging_selects_one_liquid_canary_before_fanout() -> None:
 
     canary, deferred = farmctl._stage_q02_setfiles(parsed)
 
-    assert canary == [("eur.set", "EURUSD.DWX", "D1")]
-    assert deferred == [parsed[0], parsed[1], parsed[3]]
+    assert canary == [("aud.set", "AUDUSD.DWX", "D1")]
+    assert deferred == [parsed[1], parsed[2], parsed[3]]
+
+
+def test_staging_prefers_the_cheaper_index_base_over_the_44gb_exclusive_class() -> None:
+    # The bug this ticket fixes: an intake canary landed on a 44GB
+    # single_index_tick host (SP500) instead of an available candidate at a
+    # lower reservation class in the same cohort (UK100, 24GB per
+    # terminal_worker.INDEX_TICK_RESERVATION_GB_BY_BASE). The 44GB class only
+    # runs on an empty fleet via the exclusive drain lane, delaying first
+    # evidence by hours-to-days.
+    parsed = [
+        ("sp500.set", "SP500.DWX", "H1"),
+        ("uk100.set", "UK100.DWX", "H1"),
+    ]
+
+    canary, deferred = farmctl._stage_q02_setfiles(parsed)
+
+    assert canary == [("uk100.set", "UK100.DWX", "H1")]
+    assert deferred == [parsed[0]]
+
+
+def test_staging_tie_break_is_card_order_not_alphabetical() -> None:
+    # USDJPY sorts after GBPUSD alphabetically but is listed first here; both
+    # are "ordinary" class and tie on RAM GB, so the first-listed candidate
+    # (card order) wins, not the alphabetically-first symbol.
+    parsed = [
+        ("jpy.set", "USDJPY.DWX", "H1"),
+        ("gbp.set", "GBPUSD.DWX", "H1"),
+    ]
+
+    canary, _deferred = farmctl._stage_q02_setfiles(parsed)
+
+    assert canary == [("jpy.set", "USDJPY.DWX", "H1")]
 
 
 def test_deterministic_infra_canary_stops_the_cohort() -> None:

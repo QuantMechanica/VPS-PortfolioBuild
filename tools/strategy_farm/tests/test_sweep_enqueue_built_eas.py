@@ -321,10 +321,14 @@ def test_apply_preserves_new_deferral_when_sidecar_was_already_nonempty(
     assert ea_id in deferred_state
     assert deferred_state[ea_id]["priority_track"] is True
     assert deferred_state[ea_id]["q02_cohort_size"] == 5
+    # 2026-09-18 (MNT-0xx): the canary is the lowest RAM-reservation candidate
+    # (ties keep card order), not a hand-maintained liquidity list. All five
+    # are the same "ordinary" 8GB class, so the first one in sorted setfile
+    # order (AUDUSD.DWX) wins the tie, not EURUSD.DWX.
     assert {
         row["symbol"] for row in deferred_state[ea_id]["setfiles"]
-    } == {"AUDUSD.DWX", "GBPJPY.DWX", "GBPUSD.DWX", "USDJPY.DWX"}
-    assert deferred_state[ea_id]["canary_symbols"] == ["EURUSD.DWX"]
+    } == {"EURUSD.DWX", "GBPJPY.DWX", "GBPUSD.DWX", "USDJPY.DWX"}
+    assert deferred_state[ea_id]["canary_symbols"] == ["AUDUSD.DWX"]
 
 
 @pytest.mark.parametrize("canonical", [True, False])

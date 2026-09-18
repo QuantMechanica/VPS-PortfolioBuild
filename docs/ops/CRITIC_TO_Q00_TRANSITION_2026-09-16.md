@@ -291,3 +291,39 @@ Base fact: the H-MR/H-FXMR branches were cut from `c9dcd9b5fa` (watchdog NO_RUNN
 - The `.ex5` files stay **uncommitted** in the agent worktrees (EX5_COMMIT_GUARD); the governed COMPILE_EA lane rebuilds and binds the canonical ex5 on main.
 - After the critic-era store edits (§2a), commit the updated `strategy-seeds/sources/<id>/` (receipt, re-sealed `source.md`) on the respective branch **before** merging, so main carries a verifiable store.
 - Registry (`ea_id_registry.csv`, `magic_numbers.csv`) already contains all rows on main — no registry merge needed.
+
+---
+
+## 6. Addendum 2026-09-18 — §2f.3 canary selection is now RAM-aware
+
+`intake-first-q02`'s canary pick (§2f step 3, planner at `farmctl.py:35565-35684`) used a
+hand-maintained liquidity priority list (`Q02_CANARY_SYMBOL_PRIORITY`, retired) that ranked
+`SP500.DWX` ahead of `NDX.DWX`/`GDAXI.DWX` regardless of RAM cost. It silently drifted from
+`terminal_worker`'s admission-lane RAM calibration table (`INDEX_TICK_RESERVATION_GB_BY_BASE`),
+which is revised on measured evidence — the 2026-09-16 recalibration moved NDX and GDAXI back
+to the 44GB exclusive-drain-lane class alongside SP500. QM5_41476 (H-MR)'s first-intake canary
+landed on `SP500.DWX` (2026-09-18, receipt
+`D:\QM\strategy_farm\artifacts\receipts\first_q02_intake\07087e86-8a5a-4638-b3aa-3d56edc55780_96e5f16f-8d18-4ace-8318-a0c26ea6b9cf.json`);
+its candidate set was `{SP500.DWX, GDAXI.DWX, NDX.DWX}` — under the *current* calibration table
+all three are already 44GB, so this specific canary's cost is unchanged by the fix below.
+
+**Fix (this session):** `_q02_canary_symbol_rank` now delegates to
+`terminal_worker._ram_reservation_detail_for_candidate` (the same resolver `terminal_worker`
+uses to reserve RAM at claim time) instead of the static list, ranking candidates by RAM
+class/GB ascending with ties broken by card order. This closes the drift permanently — a future
+recalibration (e.g. if `UK100`/`WS30` regain a sub-44GB table entry) is picked up automatically,
+with no second place to edit. H-CW (QM5_41475) has the identical `{SP500, GDAXI, NDX}` candidate
+set and will see the same "no change today, but no future drift" outcome once it reaches §2f.3.
+
+Also fixed in the same change: `enqueue_universe_expansion_q02`'s owner-decision gate
+(`farmctl.py:26426`) was hard-bound to the single literal `OWNER-DEC-13036-XAU`. It now checks
+membership in `UNIVERSE_EXPANSION_ACCEPTED_OWNER_DECISIONS`, which also accepts
+`OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917` — unrelated to this doc's three EAs (they
+use the compile→smoke→`intake-first-q02` lane, not universe-expansion), noted here only because
+both fixes shipped together per the routing ticket that cited this doc.
+
+Tests: `tools/strategy_farm/tests/test_q02_canary_ram_ranking.py`,
+`tools/strategy_farm/tests/test_mnt038_canary_fanout.py`,
+`tools/strategy_farm/tests/test_universe_expansion_owner_decision.py`; two pre-existing tests
+that encoded the retired priority list's tie-break (`test_mnt038_canary_fanout.py`,
+`test_sweep_enqueue_built_eas.py`) were updated to the new card-order tie-break.
