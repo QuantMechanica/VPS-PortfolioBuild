@@ -283,3 +283,21 @@ all 8 variants keep the verdict. Breach concentration on 13213 USDJPY confirmed 
 `docs/ops/evidence/2026-09-18_ftmo_demo_recompose_R2/`), (b) swap/weekend financing scenario for the four overnight
 gold/oil sleeves (10700, 10145, 20266, 12710) with FTMO venue rates, (c) a current Q08 PASS / evidence path per sleeve.
 The demo cycle stays unchanged until (a)–(c) are closed; the switch, when made, starts a new representative cycle.
+
+## Addendum 3 (2026-09-18 ~02:40Z) — deployable roster decision
+
+`docs/ftmo/FTMO_ALT_ROSTER_DEPLOYABLE_2026-09-18.md` (evidence `…/fable_alt_rosters_20260918/deployable/`): of the 24 measured
+W38 streams, 8 are class B (exact `.DWX` symbol gate → silently dark on FTMO venue names), 2 class C (alias needed), 14 class A.
+R2_capped carries 3 class-B sleeves and is therefore not deployable. Best deployable roster with financing applied:
+
+**D2f** = 13213 USDJPY @0.15625 % · 10706 GBPUSD · 10700 XAUUSD · 11422 USDCAD · 10403 XAUUSD · 21505 XAGUSD · 41219 XAUUSD ·
+13054 USOIL.cash @0.3125 % each (book 2.34375 %). Financed: LCB **0.8808** (demo_8 0.5287), 2023+ holdout **0.9779** (0.3239),
+p50 492 / 369 bd (815 / 857), P1 max-loss 0.019 (0.049), cost-stressed E2E 0.83 (0.49), USD-ENB 4.81, max |r| 0.114; cap warning
+XAUUSD ×3 (advisory). All eight sleeves are class A: no recompile, no new identity, no alias, no Q02 re-entry.
+
+**Fable decision:** the FTMO demo book v3 target is **D2f at 2.34 % book risk**. Deployment proceeds under production discipline
+once the three roster-independent blockers are closed: (1) governor binding hash drift (`load_binding()` refuses at HEAD —
+ticket a5cf99d0, being fixed), (2) package build with the merged roster-driven tooling (`trial_setpath --roster`,
+`governor_rebind`, `demo_install --package`), (3) chart-profile switch with profile backup, then a NEW representative
+14-day cycle. Known caveats carried into the package: XAGUSD financing rate has no realised cross-check (21505 is the
+weakest-evidenced sleeve); 1537 XAGUSD in the incumbent is −149 % financed (another reason the incumbent must go).
