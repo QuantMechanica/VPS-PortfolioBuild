@@ -1,0 +1,54 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260918:QM5_41475_cash-window-index-continuation-h1:ceff396d",
+  "created_at_local": "2026-09-18T00:00:00+02:00",
+  "ea_id": "QM5_41475",
+  "ea_label": "QM5_41475_cash-window-index-continuation-h1",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+    "branch": "agents/board-advisor",
+    "repair_commit": "90b828d6066caad3d48da07acd97cfd43fe50a82",
+    "repair_commit_short": "90b828d606",
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "BUILD_CHECK_HARDENING_LINT_ON_PRESENTER_ONLY_SERIES_READ",
+    "findings": [
+      "build_check hardening class EA_FRAMEWORK_RAW_SERIES_CALL fired on raw iTime() reads that exist only inside the chart-panel presenter (timer-gated countdown and overlay bounds), not in the decision engine.",
+      "The reads are structural bar-time lookups with no indicator math and no influence on entry, exit, sizing or risk; the hardening lint has no presenter exemption, so it failed the build governed by work item a1740a37-b63e-4e9a-9257-aaa6f364ffdd."
+    ],
+    "predecessor_compile_work_item_id": "a1740a37-b63e-4e9a-9257-aaa6f364ffdd",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "EA_FRAMEWORK_RAW_SERIES_CALL",
+    "predecessor_compile_result": "PASS",
+    "predecessor_build_check_result": "FAIL",
+    "predecessor_failure_classes": [
+      "EA_FRAMEWORK_RAW_SERIES_CALL"
+    ],
+    "predecessor_mq5_sha256": "7712e5f952745a12ba510d3b8f2e827a945723ec96b913fc70ea219de26ca47b",
+    "predecessor_ex5_sha256": "4a185acd1081825a6b691802d8495da87017ddb69d9fd5bff15714952e62ae8c",
+    "predecessor_evidence_path": "D:/QM/reports/work_items/a1740a37-b63e-4e9a-9257-aaa6f364ffdd/QM5_41475/COMPILE_EA/compile_evidence.json"
+  },
+  "repair": {
+    "current_mq5_sha256": "ceff396deaf3e1cc8d6c1123c8a6e177b38ab506db8e7b1958ff26fc11cf0081",
+    "changes": [
+      "Add reviewer-signed `// perf-allowed:` sign-off comments to the presenter-only iTime() reads, naming the presenter scope and the reviewer (Fable 2026-09-18).",
+      "No change to the signal, entry, exit, stop, sizing, risk or news-blackout code paths."
+    ],
+    "strategy_mechanics_changed": false,
+    "mq5_path": "framework/EAs/QM5_41475_cash-window-index-continuation-h1/QM5_41475_cash-window-index-continuation-h1.mq5"
+  },
+  "expected_failure_classes": [
+    "EA_FRAMEWORK_RAW_SERIES_CALL"
+  ],
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

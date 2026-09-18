@@ -1,0 +1,60 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260918:QM5_41477_fx-session-mean-reversion-m15:512aa887",
+  "created_at_local": "2026-09-18T00:00:00+02:00",
+  "ea_id": "QM5_41477",
+  "ea_label": "QM5_41477_fx-session-mean-reversion-m15",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+    "branch": "agents/board-advisor",
+    "repair_commit": "921d2227e8ef7ed997823167722702857342300b",
+    "repair_commit_short": "921d2227e8",
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "BUILD_CHECK_HARDENING_LINT_ON_PRESENTER_ONLY_SERIES_READ_AND_CARD_WORDING",
+    "findings": [
+      "build_check hardening class EA_FRAMEWORK_RAW_SERIES_CALL fired on raw iTime() reads that exist only inside the chart-panel presenter (timer-gated countdown, stretch-range overlay bounds), not in the decision engine.",
+      "build_check hardening class EA_CARD_LOSS_LIMIT_MISMATCH fired because the approved card's FTMO-fit prose ('one fifth of the FTMO 5% daily loss limit') parsed as a second card-declared daily loss limit next to the real -1.0% day breaker."
+    ],
+    "predecessor_compile_work_item_id": "f1e55914-b3ca-4d76-bb1c-53430adf1c74",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "EA_FRAMEWORK_RAW_SERIES_CALL;EA_CARD_LOSS_LIMIT_MISMATCH",
+    "predecessor_compile_result": "PASS",
+    "predecessor_build_check_result": "FAIL",
+    "predecessor_failure_classes": [
+      "EA_FRAMEWORK_RAW_SERIES_CALL",
+      "EA_CARD_LOSS_LIMIT_MISMATCH"
+    ],
+    "predecessor_mq5_sha256": "ed247ce2bb18d06ae40e10b403adb820f624c8a52dc6b692d6b780fdf2ad68bc",
+    "predecessor_ex5_sha256": "d9ea2db4a6949fcd3c6730fc7e9787a8090943fbe69c61c3671f6a0be9b6414c",
+    "predecessor_evidence_path": "D:/QM/reports/work_items/f1e55914-b3ca-4d76-bb1c-53430adf1c74/QM5_41477/COMPILE_EA/compile_evidence.json"
+  },
+  "repair": {
+    "current_mq5_sha256": "512aa88779f506ed545625a4cbe90d63a8ac0948cab5bc0d5df3d11c9c16217e",
+    "changes": [
+      "Add reviewer-signed `// perf-allowed:` sign-off comments to the presenter-only iTime() reads, naming the presenter scope and the reviewer (Fable 2026-09-18).",
+      "Rephrase the card's FTMO-fit sentence so the FTMO rule reference reads as a rule name ('FTMO Maximum Daily Loss rule of 5 percent') instead of parsing as a declared card limit; the -1.0% day breaker and -2.0% week breaker are unchanged.",
+      "No change to the signal, entry, exit, stop, sizing, risk or news-blackout code paths."
+    ],
+    "strategy_mechanics_changed": false,
+    "mq5_path": "framework/EAs/QM5_41477_fx-session-mean-reversion-m15/QM5_41477_fx-session-mean-reversion-m15.mq5",
+    "card_path": "artifacts/cards_approved/QM5_41477_fx-session-mean-reversion-m15.md",
+    "card_wording_amendment_only": true,
+    "card_amendment_commit_state": "uncommitted in the canonical checkout at authority-grant time; must be committed before the successor COMPILE_EA is claimed or EA_CARD_LOSS_LIMIT_MISMATCH recurs"
+  },
+  "expected_failure_classes": [
+    "EA_FRAMEWORK_RAW_SERIES_CALL",
+    "EA_CARD_LOSS_LIMIT_MISMATCH"
+  ],
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "schema": "qm.compile-fail-repair-authority/v1",
+  "description": "Evidence-bound, append-only COMPILE_EA successor authorities for EAs whose first governed compile ended FAILED/COMPILE_FAIL and whose source has since been repaired. One entry authorizes exactly one successor row for exactly one (ea_id, repaired source hash) pair, bound to the exact failed predecessor row and its failure classes. Grants no strategy, backtest, gate, portfolio, deployment or live authority.",
+  "authorities": [
+    {
+      "authority": "compile_fail_repair:20260918:QM5_41475_cash-window-index-continuation-h1:ceff396d",
+      "ea_id": "41475",
+      "ea_label": "QM5_41475_cash-window-index-continuation-h1",
+      "predecessor_work_item_id": "a1740a37-b63e-4e9a-9257-aaa6f364ffdd",
+      "rejected_mq5_sha256": "7712e5f952745a12ba510d3b8f2e827a945723ec96b913fc70ea219de26ca47b",
+      "repaired_mq5_sha256": "ceff396deaf3e1cc8d6c1123c8a6e177b38ab506db8e7b1958ff26fc11cf0081",
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL"
+      ],
+      "evidence_path": "docs/ops/evidence/2026-09-18_compile_fail_repair_authority/QM5_41475.json",
+      "evidence_sha256": "0cabc20ac74981b838d12b9ff5b19b39b07fb181d394862e7edcd6a701b0d518",
+      "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+      "granted_at_utc": "2026-09-18T00:00:00Z",
+      "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
+    },
+    {
+      "authority": "compile_fail_repair:20260918:QM5_41477_fx-session-mean-reversion-m15:512aa887",
+      "ea_id": "41477",
+      "ea_label": "QM5_41477_fx-session-mean-reversion-m15",
+      "predecessor_work_item_id": "f1e55914-b3ca-4d76-bb1c-53430adf1c74",
+      "rejected_mq5_sha256": "ed247ce2bb18d06ae40e10b403adb820f624c8a52dc6b692d6b780fdf2ad68bc",
+      "repaired_mq5_sha256": "512aa88779f506ed545625a4cbe90d63a8ac0948cab5bc0d5df3d11c9c16217e",
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_CARD_LOSS_LIMIT_MISMATCH"
+      ],
+      "evidence_path": "docs/ops/evidence/2026-09-18_compile_fail_repair_authority/QM5_41477.json",
+      "evidence_sha256": "230d6875104dc8cecaeb4c7de69f629cb7d0be8fc0593fa24148c58d827d2721",
+      "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+      "granted_at_utc": "2026-09-18T00:00:00Z",
+      "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
+    }
+  ]
+}
