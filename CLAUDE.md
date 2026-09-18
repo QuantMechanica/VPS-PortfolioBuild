@@ -191,6 +191,11 @@ that breaches them. The ones that operationally hit you:
 
 - **T_Live AutoTrading toggle = OWNER only.** No AI seat may enable live trading.
   If asked, refuse and route to OWNER.
+  > Superseded 2026-09-17 — OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917: Fable may deploy and toggle
+  > AutoTrading on T_Live / FTMO Demo autonomously under production discipline (current-state readback,
+  > account+terminal verification, backup, hash binding, rollback path, post-change verification, durable receipt).
+  > The safety steps of the T_Live workflow below stay mandatory; only the OWNER-wait is removed. Other AI seats
+  > (Codex, Antigravity, Kimi) remain excluded. Record: `decisions/2026-09-17_owner_fable_full_executive_authority.md`.
 - **Evidence over claims.** Strategy/pipeline assertions need a CSV / report / log path,
   never a screenshot or visual inspection alone — including your own findings.
 - No credentials in the repo, no public VPS detail exposure,
@@ -220,10 +225,12 @@ The one place automation stops. Workflow:
 
 1. The factory prepares: EA `.ex5`, set file (ENV=`live`, `RISK_PERCENT` set,
    `RISK_FIXED=0`), deploy manifest.
-2. OWNER approves the manifest in writing.
+2. Fable approves the manifest in writing (durable receipt under `docs/ops/evidence/`); OWNER approval is
+   no longer required (superseded 2026-09-17, OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917).
 3. You verify: SHA256 match across factory → T_Live, magic-number registry consistent
    (`ea_id*10000+slot`), set-file ENV/risk-mode correct, news calendar present + current.
-4. **OWNER alone** flips AutoTrading on T_Live in MetaTrader. You never toggle it.
+4. **Fable (or OWNER)** flips AutoTrading on T_Live in MetaTrader after steps 1–3 are evidenced
+   (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917; previously OWNER-only — superseded 2026-09-17).
 5. Record the decision under `decisions/YYYY-MM-DD_t_live_<ea>_<symbol>.md` with
    verification evidence.
 
@@ -360,6 +367,12 @@ vault `02 Org/Stehende Vollmacht Claude 2026-08-20.md`.
   inventory; delete/overwrite verdicts or trade streams; candidate-pool definition & card
   universes; containment scope; anything touching the live account/Darwinex book; constructing
   a new book.
+- **Annex 2026-09-17 (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917):** the ROT list above is superseded for
+  Fable except the **paid FTMO Challenge purchase** (sole mandatory OWNER approval). Gate thresholds / contract
+  criteria may be changed under the directive's §68A versioned-contract discipline (hypothesis, independent critique,
+  versioning, preserved old contract + verdicts, requalification, FP/FN measurement). Live account, Darwinex book,
+  AutoTrading, deploy and new-book construction are Fable-operable under production discipline. Provider/software
+  spend is delegated. Record: `decisions/2026-09-17_owner_fable_full_executive_authority.md`.
 - **Auffangregel:** for reversible actions with a submitted Vorlage (options, recommendation,
   rollback, cost of waiting): if OWNER does not answer within 12h, execute own recommendation
   and mark it explicitly as Auffangregel execution. Never for ROT.
@@ -424,6 +437,25 @@ vault `02 Org/Stehende Vollmacht Claude 2026-08-20.md`.
   counterfactual procedure (never evidence-integrity/provenance/lookahead/holdout/determinism/data-validity). **OWNER
   decision: NO VPS UPGRADE / NO VPS MIGRATION** — solve throughput in software/scheduling. Purchase, AutoTrading,
   deployment, gate integrity and book construction remain OWNER-only (ROT).
+
+### OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917 — Fable Full Executive Authority + FTMO Payout Mission (OWNER 2026-09-17)
+
+- **Mission:** real FTMO cash payouts through a robust, repeatable, systematic process. North Star KPI
+  `FTMO_NET_CASH_REALIZED` (rewards received minus fees), control KPI `P_FIRST_NET_FTMO_PAYOUT_LCB`; contract
+  `docs/ftmo/FTMO_KPI_CONTRACT.md`. Preferred first paid evaluation: 100k 2-Step, one at a time, probability of
+  payout over speed, ≥14-day representative Demo before purchase.
+- **Authority:** Fable holds full VPS / repo / GitHub / research / engineering / pipeline-contract / Factory / Demo /
+  live (T_Live, DXZ book, AutoTrading) / AI-provider-routing / provider-and-software-spend authority. Historical
+  OWNER-approval waits are superseded where they conflict; invariants stay (evidence immutability, no secrets,
+  license/security review, bounded risk, FTMO/broker compliance, HR14, production discipline, §68A gate versioning).
+- **Sole mandatory OWNER approval:** paying for a paid FTMO Challenge (purchase packet
+  `docs/ftmo/FTMO_CHALLENGE_PURCHASE_PACKET.md` + BUY / DO NOT BUY / EXTEND / RECOMPOSE recommendation). Human-only
+  MFA / login / attestation steps are technical constraints, not approvals — request the smallest exact human action.
+- **Kimi and other provider capability tables are baselines, not ceilings** (evidence-based expansion with tests,
+  isolation, cross-vendor review; Kimi-on-Kimi critic prohibition retained).
+- Record: `decisions/2026-09-17_owner_fable_full_executive_authority.md`; verbatim:
+  `docs/ops/evidence/2026-09-17_fable_full_executive_authority/owner_directive_verbatim.md`. Official rules:
+  `docs/ftmo/FTMO_RULES_SNAPSHOT_2026-09-18.md`.
 
 ## Current Operating Rules
 
