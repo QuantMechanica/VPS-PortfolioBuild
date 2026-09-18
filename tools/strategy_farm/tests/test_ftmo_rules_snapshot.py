@@ -84,10 +84,79 @@ def test_rebind_updates_pointer_not_gate_thresholds(tmp_path):
     snap = tmp_path / "2026-09-15_ftmo_official_rules_snapshot.json"
     snap.write_text(json.dumps(_snap(0, NOW)), encoding="utf-8")
 
-    binding = rs.rebind_rulepack(rulepack, snap, NOW)
+    binding = rs.rebind_rulepack(
+        rulepack, snap, NOW, freshness_state_path=tmp_path / "freshness.json"
+    )
     after = json.loads(rulepack.read_text(encoding="utf-8"))
     # go-criteria threshold untouched (RED boundary)
     assert after["evaluation_profile"]["go_criteria"][0]["parameters"]["maximum_age_days"] == 7
     # pointer + freshness metadata updated
     assert after["official_sources"][0]["snapshot_sha256"] == binding["bound_snapshot_sha256"]
     assert after["rule_snapshot_binding"]["readiness_blocker_age_days"] == policy_config.RULE_SNAPSHOT_BLOCKER_AGE_DAYS
+
+
+def test_rebind_is_noop_on_pinned_rulepack_when_snapshot_unchanged(tmp_path):
+    """A routine freshness check must not drift a hash-pinned rulepack (router
+    ticket 41d46b03: `refresh` was rewriting `rebound_at_utc` into the pinned
+    FTMO_2S_100K_STANDARD_V2.json on every run, tripping
+    `rulepack_file_hash_drift` in tools/strategy_farm/ftmo/trial_setpath.py
+    even though the bound snapshot never changed)."""
+    snap = tmp_path / "2026-09-15_ftmo_official_rules_snapshot.json"
+    snap.write_text(json.dumps(_snap(0, NOW)), encoding="utf-8")
+    snap_sha = rs.sha256_file(snap)
+    retrieved = json.loads(snap.read_text(encoding="utf-8"))["retrieved_at_utc"]
+    # rebind_rulepack relativizes the snapshot pointer against REPO_ROOT when the
+    # snapshot lives under it (pytest's tmp_path can land under the repo tree);
+    # the fixture must already carry whatever pointer form rebind_rulepack would
+    # compute, or the "already bound" comparison spuriously reports a change.
+    snap_ref = snap.as_posix()
+    repo_root_posix = str(rs.REPO_ROOT.as_posix())
+    if repo_root_posix in snap_ref:
+        snap_ref = snap_ref.split(repo_root_posix + "/", 1)[-1]
+
+    go = [{"criterion_id": "ftmo_rule_snapshot_fresh", "parameters": {"maximum_age_days": 7}}]
+    rulepack = tmp_path / "rp.json"
+    rulepack.write_text(
+        json.dumps(
+            {
+                "as_of": retrieved[:10],
+                "official_sources": [
+                    {
+                        "snapshot_path": snap_ref,
+                        "snapshot_sha256": snap_sha,
+                        "retrieved_at_utc": retrieved,
+                    }
+                ],
+                "evaluation_profile": {"go_criteria": go},
+                "rule_snapshot_binding": {
+                    "bound_snapshot_path": snap_ref,
+                    "bound_snapshot_sha256": snap_sha,
+                    "bound_snapshot_retrieved_at_utc": retrieved,
+                    "rebound_at_utc": "2026-09-15T14:00:00Z",
+                    "freshness_max_age_days": policy_config.RULE_SNAPSHOT_MAX_AGE_DAYS,
+                    "readiness_blocker_age_days": policy_config.RULE_SNAPSHOT_BLOCKER_AGE_DAYS,
+                    "note": "Freshness tracking only; go-criteria thresholds unchanged (OWNER-only).",
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+    before = rulepack.read_bytes()
+
+    freshness_state = tmp_path / "freshness.json"
+    binding = rs.rebind_rulepack(
+        rulepack,
+        snap,
+        NOW + dt.timedelta(hours=6),
+        freshness_state_path=freshness_state,
+    )
+
+    after = rulepack.read_bytes()
+    assert after == before, "pinned rulepack must stay byte-identical when the bound snapshot is unchanged"
+    # rebound_at_utc is not silently advanced on a no-op check
+    assert binding["rebound_at_utc"] == "2026-09-15T14:00:00Z"
+    # the freshness check outcome is still observable, just off the pinned file
+    state = json.loads(freshness_state.read_text(encoding="utf-8"))
+    assert state["rebound_this_check"] is False
+    assert state["binding"]["bound_snapshot_sha256"] == snap_sha

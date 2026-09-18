@@ -36,6 +36,12 @@ DEFAULT_RULEPACK = (
     / "target_rulepacks"
     / "FTMO_2S_100K_STANDARD_V2.json"
 )
+# Freshness/rebind bookkeeping lives here, never inside a hash-pinned rulepack
+# (tools/strategy_farm/ftmo/binding_hash.py; consumers like trial_setpath.py
+# pin rulepack_file_hash/canonical_hash against a governed binding contract).
+# A routine `refresh` whose bound snapshot hasn't changed must leave the
+# rulepack byte-identical, or every freshness check trips rulepack_file_hash_drift.
+FRESHNESS_STATE_PATH = Path("D:/QM/reports/state/ftmo_rules_freshness.json")
 
 # Official Standard-profile sources verified read-only on 2026-09-15.
 OFFICIAL_SOURCES = {
@@ -195,18 +201,62 @@ def fetch_current_rules(
     return {"fetched_utc": ts, "sources": results, "any_ok": any_ok}
 
 
+def _bound_pointer(data: dict[str, Any]) -> tuple[str | None, str | None, str | None]:
+    """Return the (path, sha256, retrieved_at_utc) an official_sources entry is bound to."""
+    for entry in data.get("official_sources", []):
+        if isinstance(entry, dict) and entry.get("snapshot_path"):
+            return (
+                entry.get("snapshot_path"),
+                entry.get("snapshot_sha256"),
+                entry.get("retrieved_at_utc"),
+            )
+    return (None, None, None)
+
+
+def _write_freshness_state(
+    state_path: Path,
+    rulepack_path: Path,
+    checked_at: str,
+    binding: dict[str, Any],
+    *,
+    rebound: bool,
+) -> None:
+    state_path = Path(state_path)
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "schema": "qm.ftmo_rules_freshness_state.v1",
+        "rulepack_path": str(rulepack_path),
+        "last_checked_utc": checked_at,
+        "rebound_this_check": rebound,
+        "binding": binding,
+    }
+    state_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
 def rebind_rulepack(
     rulepack_path: Path,
     snapshot_path: Path,
     now: dt.datetime | None = None,
+    *,
+    freshness_state_path: Path = FRESHNESS_STATE_PATH,
 ) -> dict[str, Any]:
-    """Point a rulepack at `snapshot_path` and record freshness.
+    """Point a rulepack at `snapshot_path`, recording freshness in a sidecar.
 
     Format-preserving: only the snapshot pointer values (path, sha256,
     retrieved_at_utc) shared by the official_sources entries, the top-level
-    `as_of`, and the `rule_snapshot_binding` block are rewritten. Go-criteria
-    thresholds and every other field keep their exact text (RED boundary,
-    focused diff). Returns the binding block written.
+    `as_of`, and the `rule_snapshot_binding` block are rewritten, and only
+    when the bound snapshot actually differs from what is already on disk
+    (a governed re-pin). Go-criteria thresholds and every other field keep
+    their exact text (RED boundary, focused diff).
+
+    The rulepack is a hash-pinned governed artifact (downstream consumers such
+    as `ftmo/trial_setpath.py` pin its exact bytes against a binding
+    contract), so a routine freshness check whose snapshot pointer is
+    unchanged must leave the file byte-identical rather than rewriting a
+    `rebound_at_utc` timestamp into it every run. That per-check bookkeeping
+    is written instead to `freshness_state_path`, which is never hash-pinned.
+    Returns the binding block that is current after the call (written to the
+    rulepack only on an actual re-pin).
     """
     import re
 
@@ -220,6 +270,23 @@ def rebind_rulepack(
     rel = snapshot_path.as_posix()
     if str(REPO_ROOT.as_posix()) in rel:
         rel = rel.split(str(REPO_ROOT.as_posix()) + "/", 1)[-1]
+
+    checked_at = _now(now).strftime("%Y-%m-%dT%H:%M:%SZ")
+    existing_binding = data.get("rule_snapshot_binding", {}) or {}
+    unchanged = _bound_pointer(data) == (rel, sha, retrieved)
+
+    if unchanged:
+        binding = {
+            "bound_snapshot_path": rel,
+            "bound_snapshot_sha256": sha,
+            "bound_snapshot_retrieved_at_utc": retrieved,
+            "rebound_at_utc": existing_binding.get("rebound_at_utc"),
+            "freshness_max_age_days": policy_config.RULE_SNAPSHOT_MAX_AGE_DAYS,
+            "readiness_blocker_age_days": policy_config.RULE_SNAPSHOT_BLOCKER_AGE_DAYS,
+            "note": "Freshness tracking only; go-criteria thresholds unchanged (OWNER-only).",
+        }
+        _write_freshness_state(freshness_state_path, rulepack_path, checked_at, binding, rebound=False)
+        return binding
 
     # The official_sources entries all carry the same old pointer values; replace
     # those exact JSON string literals globally (safe within this file).
@@ -242,7 +309,7 @@ def rebind_rulepack(
         "bound_snapshot_path": rel,
         "bound_snapshot_sha256": sha,
         "bound_snapshot_retrieved_at_utc": retrieved,
-        "rebound_at_utc": _now(now).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "rebound_at_utc": checked_at,
         "freshness_max_age_days": policy_config.RULE_SNAPSHOT_MAX_AGE_DAYS,
         "readiness_blocker_age_days": policy_config.RULE_SNAPSHOT_BLOCKER_AGE_DAYS,
         "note": "Freshness tracking only; go-criteria thresholds unchanged (OWNER-only).",
@@ -267,6 +334,7 @@ def rebind_rulepack(
         text = head + f'\n  "rule_snapshot_binding": {binding_block.lstrip()}\n}}\n'
 
     rulepack_path.write_text(text, encoding="utf-8")
+    _write_freshness_state(freshness_state_path, rulepack_path, checked_at, binding, rebound=True)
     return binding
 
 
@@ -277,6 +345,7 @@ def refresh(
     fetcher: Callable[[str], tuple[int | None, str, str]] = _urllib_fetch,
     rebind: bool = True,
     now: dt.datetime | None = None,
+    freshness_state_path: Path = FRESHNESS_STATE_PATH,
 ) -> dict[str, Any]:
     """Verify freshness and rebind. Live-fetch is a connectivity probe only; the
     normalized §63 snapshot is authored/reviewed by hand, so `refresh` never
@@ -295,7 +364,10 @@ def refresh(
     }
     if rebind and snapshot is not None:
         outcome["rebind"] = rebind_rulepack(
-            rulepack_path, Path(snapshot["_snapshot_path"]), now
+            rulepack_path,
+            Path(snapshot["_snapshot_path"]),
+            now,
+            freshness_state_path=freshness_state_path,
         )
     return outcome
 
