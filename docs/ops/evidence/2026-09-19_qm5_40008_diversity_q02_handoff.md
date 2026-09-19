@@ -17,12 +17,16 @@ without ML or adaptive weights.
   `7758dddc-d549-40b0-8dff-4e4e73ecc402`, pending under
   `COMPILE_EA_WORKER_ROLLOUT_PENDING`
 - Q02 canary: `ae097631-37a2-4c41-be60-d1546a88ea64`,
-  `XTIUSD.DWX`, D1
-- Deferred fanout after canary: `SP500.DWX`, `NDX.DWX`, `EURUSD.DWX`
+  `XTIUSD.DWX`, D1, terminal verdict `ZERO_TRADES`
+- Deferred fanout retained after the failed canary: `SP500.DWX`, `NDX.DWX`,
+  `EURUSD.DWX`
 
 The build task transitioned from `pending` to `active` with an exact CAS claim,
 then to `done` through `farmctl record-build`. The terminal worker claimed the
-Q02 canary on T4 after enqueue.
+Q02 canary on T4 after enqueue and wrote
+`D:/QM/reports/work_items/ae097631-37a2-4c41-be60-d1546a88ea64/QM5_40008/20260919_085416/summary.json`.
+The canary ended `ZERO_TRADES`; no economic PASS is claimed and the staged
+three-symbol fanout remains closed.
 
 ## Capacity and PACER guard
 
@@ -58,6 +62,7 @@ hold; this unit did not release the hold or perform a factory restart.
 | Compile log | `framework/build/compile/20260919_085047/QM5_40008_aqr-value-and-momentum-everywhere.compile.log` |
 | Q01 smoke dispatch | Deferred before launch: terminal resolver `status=no_capacity` |
 | Build record | PASS; staged Q02 canary enqueued |
+| Q02 canary | `ZERO_TRADES`; deferred fanout not released |
 | Current-source COMPILE_EA successor | Pending; activation hold preserved |
 
 The four `EA_SYMBOL_HARDCODED` advisories are the card-authorized, fixed
