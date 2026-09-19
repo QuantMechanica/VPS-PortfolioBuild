@@ -14154,8 +14154,27 @@ def _fail_item_after_worker_crash(root: Path, item: sqlite3.Row, terminal: str, 
     Uses the EVIDENCE_UNAVAILABLE sentinel so the MNT-009 evidence trigger
     accepts the row (the bare write without it is exactly what killed T10).
     The traceback is preserved in the payload for forensics.
+
+    2026-09-19 (ticket c73ed341): the inline 6-line tail alone lost the
+    original throw site for every one of the 72 INFRA_FAIL rows in the
+    oos-2026-confirmation-v1 diagnostic-backfill campaign -- the tail is
+    always the same generic ``_write``/IntegrityError frames because that
+    *is* the catch site, not the cause. The full traceback is now also
+    persisted to a durable file so the next occurrence carries the real
+    origin frames; this is additive forensics only and does not change the
+    verdict, taxonomy, or evidence_path sentinel contract below.
     """
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    traceback_path: str | None = None
+    try:
+        crash_dir = root / "artifacts" / "ops" / "worker_crash_traceback"
+        crash_dir.mkdir(parents=True, exist_ok=True)
+        stamp = now.replace(":", "").replace("+00:00", "Z")
+        crash_file = crash_dir / f"{item['id']}_{terminal}_{stamp}.txt"
+        crash_file.write_text(tb, encoding="utf-8")
+        traceback_path = str(crash_file)
+    except OSError:
+        traceback_path = None
     with farmctl.connect(root) as conn:
         row = conn.execute(
             "SELECT payload_json FROM work_items WHERE id=? AND status='active'",
@@ -14165,6 +14184,7 @@ def _fail_item_after_worker_crash(root: Path, item: sqlite3.Row, terminal: str, 
             return
         payload = _json_loads(row["payload_json"])
         payload["worker_crash_traceback_tail"] = tb.strip().splitlines()[-6:]
+        payload["worker_crash_traceback_path"] = traceback_path
         payload["verdict_reason"] = "worker_crashed_handling_item"
         payload["verdict_taxonomy"] = "infra"
         cur = conn.execute(
