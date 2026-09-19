@@ -126,3 +126,20 @@ Actions:
   claimable and crashed at run_item without evidence (5× INFRA_FAIL); six siblings parked
   (`Q09_NEWS_RUNNER_CRASH_NO_EVIDENCE_20260919`), disposition = migrate/supersede to v4 `Q10_NEWS`
   (`q09news_legacy_phase_note.md`, ticket c73ed341).
+
+## Addendum 12:10–12:45Z — autonomous follow-through
+
+- T2/T6 reloaded after their runs (all 10 workers on HEAD incl. the 8 GB measured floor and smoke fallback `6573e3290b`).
+- Index results: NDX 1355 and 11294 Q10_NEWS → CONFIG_LOCKED → **Q11 PASS** (peaks 10.5 GB vs 20 GB reserved);
+  10599 NDX Q04 PASS_SOFT → Q05 FAIL_DD_PORTFOLIO_REVIEW; 10855 GDAXI Q04 FAIL. Baskets 41226/41413/41414/41416 Q02 PASS.
+- 9973 Q10_NEWS REVIEW_REQUIRED = infra (`qm_news_calendar_bundle_id mismatch`, bundle refreshed 10:15Z mid-run);
+  `enqueue-backtest --append-only-rerun-of` refuses (Q09 setfile identity differs) → left for the news-lane owner.
+- Ticket 7b2c1bc7 reviewed → APPROVED, merged (`2888287760`), applied: SP500 canaries of 41475/41476 superseded
+  (`SUPERSEDED_CANARY_RAM_CLASS`), **GDAXI Q02 canaries active** on both FTMO candidates.
+- Q12 blocker for the new Q11 PASS pairs: `dl089_matrix_service` needs an approved `_opt` measurement sibling per
+  pair ("expected one approved _opt sibling … found 0"); 70 other declarations are duplicates of adjudicated programs.
+  11294/NDX: sibling 41347 card amended (+NDX.DWX, mirrored), NDX setfile drafted+validated and **staged** (not in
+  discovery until slot 1 is registered and the binary rebuilt) → ticket 0f99d9ea? no: ticket for 41347 = see table;
+  1355/NDX: full sibling build commissioned (ticket 0f99d9ea).
+- Stale Codex build output (QM5_12351) committed by pathspec (`0f2e251571`) — it blocked guard and allocator.
+- RECYCLE leftovers closed: 42a437a4 PASSED (superseded by D2g6), 29c7dd22 BLOCKED (obsolete), 787ab0aa FAILED (malformed).
