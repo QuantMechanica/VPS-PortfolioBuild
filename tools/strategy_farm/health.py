@@ -574,9 +574,17 @@ def _build_lane_block_reason(con) -> tuple[str | None, str]:
         if dirty.get("blocked"):
             entries = dirty.get("entries") or []
             n = dirty.get("count", len(entries))
+            labeled = []
+            for e in entries[:3]:
+                try:
+                    _status, path = farmctl._parse_porcelain_v1_entry(e)
+                except (TypeError, ValueError):
+                    path = None
+                generator = farmctl._known_generator_for_path(path) if path else None
+                labeled.append(f"{e.strip()} (generator: {generator})" if generator else e.strip())
             return "dirty_guard", (
                 f"repo_dirty_build_guard blocked by {n} uncommitted file(s): "
-                f"{', '.join(e.strip() for e in entries[:3])}")
+                f"{', '.join(labeled)}")
     except Exception:
         pass
     try:

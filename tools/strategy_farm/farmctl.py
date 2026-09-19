@@ -995,6 +995,76 @@ def _generated_ea_artifact_kind(status: str, path: str) -> str | None:
     return None
 
 
+# Non-EA-scoped recurring generator outputs. Each entry is (regex over the
+# repo-relative forward-slash path, classification kind, generator script)
+# for a doc/evidence file a deterministic tool regenerates on its own cadence
+# (hourly heartbeat, daily sweep, monthly research snapshot) with no human
+# editing step. Exact patterns only -- ops_issue 237837be-dffe-4687-a3f1-
+# 763c88715473 (2026-09-19): these 5 paths re-dirtied the tree ~20min after
+# a manual unblock commit (fbc9284107) and re-blocked repo_dirty_build_guard
+# because neither _repo_dirty_status's blocking classifier nor
+# _is_auto_committable_factory_artifact recognized them, unlike the
+# framework/EAs/** outputs _generated_ea_artifact_kind already covers. Scoped
+# to these literal generator outputs only -- NOT a blanket docs/ or
+# docs/ops/evidence/ exemption, which would swallow human-authored ops notes
+# and evidence docs (see test_human_source_tree_closes_build_gate_in_both_required_roots).
+_GENERATED_RECURRING_DOC_PATTERNS: tuple[tuple[re.Pattern[str], str, str], ...] = (
+    (
+        re.compile(r"docs/ops/FTMO_CHALLENGE_READINESS\.md"),
+        "generated_ftmo_readiness_doc",
+        "tools/strategy_farm/ftmo/challenge_readiness.py",
+    ),
+    (
+        re.compile(r"docs/research/RESEARCH_PROGRAMME_ROI_\d{4}-\d{2}\.md"),
+        "generated_research_roi_doc",
+        "tools/strategy_farm/research/external_roi.py",
+    ),
+    (
+        re.compile(r"docs/research/STRATEGY_LINEAGE_MAP_\d{4}-\d{2}\.md"),
+        "generated_lineage_map_doc",
+        "tools/strategy_farm/lineage_map.py",
+    ),
+    (
+        re.compile(r"docs/research/STRATEGY_UNIVERSE_MAP_\d{4}-\d{2}\.md"),
+        "generated_universe_map_doc",
+        "tools/strategy_farm/research/universe_map.py",
+    ),
+    (
+        re.compile(
+            r"docs/ops/evidence/\d{4}-\d{2}-\d{2}_stranded_infra_sweep_triage(?:\.targeted)?\.json"
+        ),
+        "generated_stranded_infra_triage",
+        "tools/strategy_farm/sweep_enqueue_built_eas.py",
+    ),
+)
+
+
+def _generated_recurring_doc_kind(path: str) -> str | None:
+    """Classify the fixed set of non-EA-scoped recurring generator outputs.
+
+    Sibling to ``_generated_ea_artifact_kind`` for paths outside
+    ``framework/EAs/**``. Deliberately a closed set of exact regexes, not a
+    directory prefix, so a genuine human edit anywhere else under docs/
+    still blocks the build guard.
+    """
+    normalized = path.replace("\\", "/")
+    for pattern, kind, _generator in _GENERATED_RECURRING_DOC_PATTERNS:
+        if pattern.fullmatch(normalized):
+            return kind
+    return None
+
+
+def _known_generator_for_path(path: str) -> str | None:
+    """Return the generator script that owns ``path``, if it is a known
+    recurring generated doc -- used to name the offending generator in
+    health-check detail strings instead of a bare 'uncommitted file(s)'."""
+    normalized = path.replace("\\", "/")
+    for pattern, _kind, generator in _GENERATED_RECURRING_DOC_PATTERNS:
+        if pattern.fullmatch(normalized):
+            return generator
+    return None
+
+
 def _blocking_repo_path_class(path: str) -> str:
     """Stable diagnostic class for content which remains build-blocking."""
     normalized = path.replace("\\", "/")
@@ -1063,7 +1133,7 @@ def _repo_dirty_status(root_path: Path = REPO_ROOT) -> dict[str, Any]:
     for line in entries:
         try:
             status, path = _parse_porcelain_v1_entry(line)
-            generated_kind = _generated_ea_artifact_kind(status, path)
+            generated_kind = _generated_ea_artifact_kind(status, path) or _generated_recurring_doc_kind(path)
         except (TypeError, ValueError):
             blocking.append(line)
             _increment_count(blocking_by_class, "invalid_git_status")
@@ -21712,6 +21782,8 @@ def _is_auto_committable_factory_artifact(status: str, path: str) -> bool:
         "generated_spec",
         "generated_ea_scaffold",
     }:
+        return True
+    if _generated_recurring_doc_kind(pu):
         return True
     for allowed in ARTIFACT_COMMIT_ALLOWLIST:
         if allowed.endswith("/") and pu.startswith(allowed):

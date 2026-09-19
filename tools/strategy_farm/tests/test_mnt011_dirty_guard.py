@@ -121,3 +121,72 @@ def test_modified_tracked_ea_source_is_not_scaffold_and_holds_its_binary() -> No
     assert plan["commit_paths"] == []
     assert plan["rejected_dirty_paths"] == [f"{EA}/{LABEL}.mq5"]
     assert plan["skipped_source_dirty_paths"] == [f"{EA}/{LABEL}.ex5"]
+
+
+# ops_issue 237837be-dffe-4687-a3f1-763c88715473 (2026-09-19): these 5 exact
+# recurring generator outputs re-dirtied the tree ~20min after a manual
+# unblock commit and re-blocked repo_dirty_build_guard because neither the
+# guard's blocking classifier nor the auto-commit sweeper recognized them.
+RECURRING_DOCS = [
+    " M docs/ops/FTMO_CHALLENGE_READINESS.md",
+    " M docs/research/RESEARCH_PROGRAMME_ROI_2026-09.md",
+    " M docs/research/STRATEGY_LINEAGE_MAP_2026-09.md",
+    " M docs/research/STRATEGY_UNIVERSE_MAP_2026-09.md",
+    "?? docs/ops/evidence/2026-09-19_stranded_infra_sweep_triage.json",
+]
+
+
+def test_recurring_generator_docs_leave_build_gate_open() -> None:
+    result, _ = _guard_for("\n".join(RECURRING_DOCS) + "\n")
+
+    assert result["blocked"] is False
+    assert result["count"] == 0
+    assert result["generated_count"] == 5
+    assert result["generated_by_class"] == {
+        "generated_ftmo_readiness_doc": 1,
+        "generated_lineage_map_doc": 1,
+        "generated_research_roi_doc": 1,
+        "generated_stranded_infra_triage": 1,
+        "generated_universe_map_doc": 1,
+    }
+
+
+def test_recurring_generator_doc_allowlist_is_exact_not_a_docs_prefix() -> None:
+    # Regression guard: the fix must stay scoped to the 5 literal generator
+    # outputs, never widen to a docs/ or docs/ops/evidence/ prefix exemption
+    # -- that would swallow human-authored ops notes and evidence docs.
+    lookalikes = [
+        " M docs/ops/FTMO_CHALLENGE_READINESS_v2.md",
+        " M docs/research/RESEARCH_PROGRAMME_ROI.md",
+        " M docs/research/STRATEGY_LINEAGE_MAP_2026-09.md.bak",
+        "?? docs/ops/evidence/2026-09-19_stranded_infra_sweep_triage_notes.md",
+        " M docs/ops/human_note.md",
+    ]
+    result, _ = _guard_for("\n".join(lookalikes) + "\n")
+
+    assert result["blocked"] is True
+    assert result["count"] == len(lookalikes)
+    assert result["generated_count"] == 0
+
+
+def test_auto_commit_batches_recurring_generator_docs() -> None:
+    plan = farmctl._plan_artifact_auto_commit(RECURRING_DOCS, active_eas=set())
+
+    assert plan["valid"] is True
+    assert plan["rejected_dirty_paths"] == []
+    assert plan["commit_paths"] == sorted(
+        [
+            "docs/ops/FTMO_CHALLENGE_READINESS.md",
+            "docs/research/RESEARCH_PROGRAMME_ROI_2026-09.md",
+            "docs/research/STRATEGY_LINEAGE_MAP_2026-09.md",
+            "docs/research/STRATEGY_UNIVERSE_MAP_2026-09.md",
+            "docs/ops/evidence/2026-09-19_stranded_infra_sweep_triage.json",
+        ]
+    )
+
+
+def test_known_generator_for_path_names_the_generator() -> None:
+    assert farmctl._known_generator_for_path("docs/ops/FTMO_CHALLENGE_READINESS.md") == (
+        "tools/strategy_farm/ftmo/challenge_readiness.py"
+    )
+    assert farmctl._known_generator_for_path("docs/ops/human_note.md") is None
