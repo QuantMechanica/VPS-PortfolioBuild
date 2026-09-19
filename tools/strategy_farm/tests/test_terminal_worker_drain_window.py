@@ -96,6 +96,40 @@ def test_postprocess_abandons_census_drain_deadlock(tmp_path, monkeypatch):
     assert result["cooldown_until_epoch"] > now
 
 
+def test_postprocess_abandons_immediately_when_nothing_releasable(tmp_path, capsys, monkeypatch):
+    """2026-09-18 ticket c9cff1f2 (QM5_20260 09:05Z-09:35Z): an ACTIVE drain
+    beside a long run with releasable_short_ram_gb=0 held the fleet parked for
+    the full DRAIN_WINDOW_MAX_MIN window because the grace-based reeval waited
+    DRAIN_REEVAL_GRACE_SECONDS before abandoning, tolerating a "dip" that could
+    never recover (nothing running would ever free RAM).  A single postprocess
+    pass must abandon it at once -- no second pass, no grace."""
+    root = tmp_path / "farm"
+    farmctl.init_db(root)
+    now = 20_000_000.0
+    state = {
+        "version": 1, "tracker": {}, "cooldown_until_epoch": 0,
+        "active": {"item_id": "row20260", "ea_id": "QM5_20260", "reservation_gb": 24.0,
+                   "floor_gb": 14.0, "opened_epoch": now - 60.0,
+                   "long_run_ids_at_open": ["q03row"]},
+    }
+    assert tw._write_drain_state_atomic(root, state)
+    monkeypatch.setattr(tw, "_drain_active_ram_facts", lambda *a, **kw: {
+        "long_run_active_ids": ["q03row"], "armed_row_pending": True,
+        "releasable_short_ram_gb": 0.0, "long_run_ram_gb": 12.6,
+    })
+    tw._drain_run_postprocess(
+        root, "T2", {"claimed": False},
+        now_epoch=now, free_ram_gb=28.0, host_total_gb=80.0, multisym_ids=_FZ,
+    )
+    result = tw._load_drain_state(root)
+    assert result["active"] is None
+    assert result["cooldown_until_epoch"] == pytest.approx(now + tw.DRAIN_COOLDOWN_MIN * 60.0)
+    assert result["plateau_memory"]["reason"] == "no_releasable_ram"
+    abandoned = [e for e in _emitted_events(capsys) if e.get("event") == "drain_window_abandoned"]
+    assert len(abandoned) == 1
+    assert abandoned[0]["reason"] == "no_longer_winnable:no_releasable_ram"
+
+
 # --- pure qualification predicate ----------------------------------------
 
 def test_predicate_winnable_heavy_priority_qualifies():
@@ -927,6 +961,28 @@ def test_winnable_boundary_exact_need_is_winnable():
     assert (ok, reason) == (False, "insufficient_releasable_ram")
 
 
+def test_winnable_distinguishes_zero_releasable_from_insufficient():
+    """2026-09-18 ticket c9cff1f2 (QM5_20260): nothing running can ever free RAM
+    for this candidate when releasable is exactly 0, a structural impossibility
+    distinct from "insufficient_releasable_ram" (some releasable RAM exists,
+    just not enough) -- callers use the distinct reason to skip dip-tolerance
+    grace, since waiting cannot change a zero into something positive."""
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=24.0), free_ram_gb=28.0, releasable_short_ram_gb=0.0,
+    )
+    assert (ok, reason) == (False, "no_releasable_ram")   # need 31 > free 28
+    # any positive releasable, even if still insufficient, keeps the ordinary tag
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=24.0), free_ram_gb=28.0, releasable_short_ram_gb=0.1,
+    )
+    assert (ok, reason) == (False, "insufficient_releasable_ram")
+    # free RAM alone already covering the need is never "no_releasable_ram"
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=24.0), free_ram_gb=31.0, releasable_short_ram_gb=0.0,
+    )
+    assert (ok, reason) == (True, "")
+
+
 # --- WINNABILITY: evaluate does not arm when not winnable, keeps tracking -
 
 def test_evaluate_not_winnable_does_not_arm_but_keeps_tracking():
@@ -1248,6 +1304,7 @@ def test_postprocess_not_armed_beside_long_runs_when_arithmetic_short(
     # 2026-09-05: same host total as the arming test above so the long-run
     # ceiling (100-14-24 = 62 >= 51) is NOT the binding constraint -- this test
     # is about releasable RAM: free 12 + 3 * 8 = 36 < need 51.
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(3, gb_each=8.0))
     tw._drain_run_postprocess(
         root, "T1", {"claimed": False},
         now_epoch=now, free_ram_gb=12.0, host_total_gb=100.0, multisym_ids=_FZ,
@@ -1294,7 +1351,7 @@ def test_postprocess_arms_when_short_rows_release_enough(tmp_path, capsys, monke
     )
 
 
-def test_postprocess_not_armed_when_releasable_ram_insufficient(tmp_path, capsys):
+def test_postprocess_not_armed_when_releasable_ram_insufficient(tmp_path, capsys, monkeypatch):
     trig = tw.DRAIN_WINDOW_TRIGGER_MIN * 60.0
     now = 10_200_000.0
     root = tmp_path / "farm"
@@ -1306,6 +1363,7 @@ def test_postprocess_not_armed_when_releasable_ram_insufficient(tmp_path, capsys
             _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active",
                        payload={"claimed_by_worker_pid": 200 + i})
         conn.commit()
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(3, gb_each=8.0))
     tw._write_drain_state_atomic(root, {
         "version": 1,
         "active": None,
@@ -1363,18 +1421,26 @@ def test_postprocess_abandons_active_drain_on_new_long_run(tmp_path, capsys):
     )
 
 
-def test_postprocess_does_not_abandon_on_preexisting_long_run(tmp_path, capsys):
+def test_postprocess_does_not_abandon_on_preexisting_long_run(tmp_path, capsys, monkeypatch):
     # The drain opened WHILE l1 was already running (recorded in
     # long_run_ids_at_open).  l1 is still the only long-run row and the armed row
     # is still pending, so nothing NEW appeared -> the drain stays open, not
-    # abandoned.
+    # abandoned.  Five real releasable short rows (5 * 8 = 40) beside free 12
+    # cover the need (51) so this test isolates the "pre-existing long run does
+    # not itself abandon" concern from the separate no_releasable_ram path
+    # (2026-09-18 ticket c9cff1f2, see test_postprocess_abandons_immediately_
+    # when_nothing_releasable for the releasable=0 beside-a-long-run case).
     now = 11_050_000.0
     root = tmp_path / "farm"
     farmctl.init_db(root)
     with farmctl.connect(root) as conn:
         _insert_pending_priority_index(conn, "idx")  # armed row still pending
         _insert_wi(conn, "l1", "Q10_NEWS", symbol="EURUSD.DWX", status="active")
+        for i in range(5):
+            _insert_wi(conn, f"q{i}", "Q02", symbol="EURUSD.DWX", status="active",
+                       payload={"claimed_by_worker_pid": 200 + i})
         conn.commit()
+    monkeypatch.setattr(tw, "_process_private_snapshot", lambda: _q_rows_snapshot(5, gb_each=8.0))
     tw._write_drain_state_atomic(root, {
         "version": 1,
         "active": {
@@ -1459,6 +1525,35 @@ def test_winnable_refuses_a_fresh_plateau_memory():
         plateau_memory=mem, now_epoch=now + tw.DRAIN_PLATEAU_MEMORY_MIN * 60.0 + 1.0,
     )
     assert (ok, reason) == (True, "")
+
+
+def test_plateau_memory_is_keyed_by_observed_capacity_not_the_original_need():
+    """2026-09-18 ticket c9cff1f2: a 51 GB memory (row 13301) that plateaued at
+    a 31 GB ceiling (free 31 + releasable 0) must also refuse a much smaller
+    24 GB row (need 31) at that same ceiling -- scoping the memory to "need >=
+    the original 51" let a lighter row re-arm against a ceiling already known
+    to be too low.  A candidate whose need fits under the observed ceiling is
+    still let through (the ceiling need not be the failure mode for it)."""
+    now = 20_000_000.0
+    mem = {
+        "need_gb": 51.0, "free_gb": 31.0, "releasable_short_ram_gb": 0.0,
+        "epoch": now - 300.0,
+    }
+    # row 20260: reservation 24 -> need 24 + 4 + 3 = 31, exactly the observed
+    # ceiling -- current arithmetic alone (free 30 + releasable 2 = 32) would
+    # call this winnable, but the fresh memory says the ceiling maxes at 31.
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=24.0), free_ram_gb=30.0, releasable_short_ram_gb=2.0,
+        plateau_memory=mem, now_epoch=now,
+    )
+    assert (ok, reason) == (False, "plateau_memory")
+    # a candidate whose need comfortably fits under the observed 31 GB ceiling
+    # is not blocked by a memory that never proved that ceiling insufficient.
+    ok, reason = tw._drain_candidate_is_winnable(
+        _cand(reservation=17.0), free_ram_gb=15.0, releasable_short_ram_gb=10.0,
+        plateau_memory=mem, now_epoch=now,
+    )
+    assert (ok, reason) == (True, "")   # need 17+4+3=24 <= 31 ceiling; 15+10=25 >= 24
 
 
 def test_open_event_carries_the_arithmetic_facts():

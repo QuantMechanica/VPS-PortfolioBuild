@@ -2435,22 +2435,40 @@ def _drain_candidate_is_winnable(
         ceiling = host_total - DRAIN_HOST_BASELINE_GB - max(0.0, long_run)
         if need > ceiling:
             return False, "long_run_ceiling"
+    # 2026-09-18 (ticket c9cff1f2): a candidate with nothing releasable cannot
+    # be made winnable by waiting -- there is no running short row whose exit
+    # would ever raise free RAM, so this is a structural impossibility, not
+    # measurement noise.  Named separately from "insufficient_releasable_ram"
+    # (releasable > 0 but still short) so callers can skip dip-tolerance grace
+    # for this case: QM5_20260 armed 09:05Z 2026-09-18 with releasable=0 GB and
+    # held the full DRAIN_WINDOW_MAX_MIN window instead of releasing at once.
+    if releasable <= 0.0 and free_now < need:
+        return False, "no_releasable_ram"
     # 2026-09-04 (CEO): a drain that was abandoned because the parked fleet
-    # plateaued below its need leaves a memory; while it is fresh, no candidate
-    # needing at least that much may arm on arithmetic alone -- only free RAM
-    # that already covers the need (no drain required) overrides the evidence.
+    # plateaued below its need leaves a memory of the RAM ceiling actually
+    # observed (free + releasable at the moment of abandon).  While it is
+    # fresh, no candidate whose need exceeds that observed ceiling may arm on
+    # arithmetic alone -- only free RAM that already covers the need (no drain
+    # required) overrides the evidence.  Keyed by the observed capacity rather
+    # than the original blocked row's need_gb (2026-09-18, ticket c9cff1f2) so
+    # a 51 GB memory (e.g. row 13301) also covers a smaller 31 GB candidate
+    # (e.g. row 20260) whenever the same ceiling could not have satisfied it
+    # either -- a memory scoped to "need >= original need" silently let a
+    # lighter row re-arm against a ceiling already known to be too low.
     if isinstance(plateau_memory, dict) and plateau_memory and now_epoch is not None:
         try:
-            mem_need = float(plateau_memory.get("need_gb"))
+            mem_free = float(plateau_memory.get("free_gb"))
+            mem_releasable = float(plateau_memory.get("releasable_short_ram_gb") or 0.0)
             mem_epoch = float(plateau_memory.get("epoch"))
             now_f = float(now_epoch)
         except (TypeError, ValueError):
-            mem_need = None
+            mem_free = None
         if (
-            mem_need is not None
-            and math.isfinite(mem_need)
+            mem_free is not None
+            and math.isfinite(mem_free)
+            and math.isfinite(mem_releasable)
             and 0.0 <= now_f - mem_epoch <= DRAIN_PLATEAU_MEMORY_MIN * 60.0
-            and need >= mem_need - 0.05
+            and need >= (mem_free + mem_releasable) - 0.05
             and free_now < need
         ):
             return False, "plateau_memory"
@@ -3509,18 +3527,8 @@ def _drain_run_postprocess(
                         since = float(since_raw) if since_raw is not None else None
                     except (TypeError, ValueError):
                         since = None
-                    if still:
-                        if since is not None:
-                            cleared = dict(active)
-                            cleared.pop("not_winnable_since_epoch", None)
-                            cleared.pop("not_winnable_reason", None)
-                            new_state = {**new_state, "active": cleared}
-                    elif since is None:
-                        marked = dict(active)
-                        marked["not_winnable_since_epoch"] = now_epoch
-                        marked["not_winnable_reason"] = str(still_reason or "")
-                        new_state = {**new_state, "active": marked}
-                    elif now_epoch - since >= DRAIN_REEVAL_GRACE_SECONDS:
+
+                    def _reeval_plateau_memory() -> dict[str, Any]:
                         try:
                             need_gb = (
                                 float(active.get("reservation_gb") or 0.0)
@@ -3529,7 +3537,7 @@ def _drain_run_postprocess(
                             )
                         except (TypeError, ValueError):
                             need_gb = 0.0
-                        memory = {
+                        return {
                             "item_id": active_item_id,
                             "ea_id": active.get("ea_id"),
                             "need_gb": round(need_gb, 1),
@@ -3543,6 +3551,36 @@ def _drain_run_postprocess(
                             "reason": str(still_reason or ""),
                             "epoch": now_epoch,
                         }
+
+                    if still:
+                        if since is not None:
+                            cleared = dict(active)
+                            cleared.pop("not_winnable_since_epoch", None)
+                            cleared.pop("not_winnable_reason", None)
+                            new_state = {**new_state, "active": cleared}
+                    elif still_reason == "no_releasable_ram":
+                        # 2026-09-18 (ticket c9cff1f2, QM5_20260 09:05Z-09:35Z):
+                        # nothing running would ever free RAM for this row, so
+                        # the DRAIN_REEVAL_GRACE_SECONDS dip-tolerance (meant for
+                        # noisy measurements that may recover) does not apply --
+                        # abandon on the very first observation instead of
+                        # idling short rows for up to the full bounded window.
+                        memory = _reeval_plateau_memory()
+                        new_state, events = _drain_abandon(
+                            new_state,
+                            now_epoch=now_epoch,
+                            reason=f"no_longer_winnable:{still_reason}",
+                            plateau_memory=memory,
+                        )
+                        for event in events:
+                            event["arithmetic"] = dict(memory)
+                    elif since is None:
+                        marked = dict(active)
+                        marked["not_winnable_since_epoch"] = now_epoch
+                        marked["not_winnable_reason"] = str(still_reason or "")
+                        new_state = {**new_state, "active": marked}
+                    elif now_epoch - since >= DRAIN_REEVAL_GRACE_SECONDS:
+                        memory = _reeval_plateau_memory()
                         new_state, events = _drain_abandon(
                             new_state,
                             now_epoch=now_epoch,

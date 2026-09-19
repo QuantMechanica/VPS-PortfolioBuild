@@ -84,6 +84,50 @@ def census_stall_alert(
     )
 
 
+def drain_unwinnable_alert(
+    idle_terminals,
+    drain_window,
+    now_epoch,
+    *,
+    min_idle=DRAIN_STALL_MIN_IDLE_TERMINALS,
+):
+    """Return an ALERT string for an ACTIVE drain the arming-side reeval has
+    marked arithmetically unwinnable.
+
+    2026-09-18 (ticket c9cff1f2): QM5_20260 (24 GB) armed 09:05Z beside a Q03
+    long run with releasable_short_ram_gb=0, held the fleet drained for the
+    full DRAIN_WINDOW_MAX_MIN window, and this watch stayed silent throughout
+    because ``census_stall_alert`` only reads ``pre_drain``/``tracker`` --
+    both empty once a drain has armed (``tracker`` is consumed at open, an
+    ordinary bounded drain never sets ``pre_drain``).  terminal_worker's
+    continuous reeval marks a no-longer-winnable ``active`` drain with
+    ``not_winnable_since_epoch``/``not_winnable_reason``; surface that here
+    under a distinct ``DRAIN_UNWINNABLE`` label instead of the CENSUS STALL
+    text so an operator does not mistake this for the pre-drain/tracker class.
+    """
+    drain_window = drain_window or {}
+    active = drain_window.get("active")
+    if not isinstance(active, dict) or not active:
+        return None
+    reason = active.get("not_winnable_reason")
+    since_raw = active.get("not_winnable_since_epoch")
+    if not reason or since_raw is None:
+        return None
+    if int(idle_terminals or 0) < min_idle:
+        return None
+    try:
+        waited = max(0.0, float(now_epoch) - float(since_raw))
+    except (TypeError, ValueError):
+        return None
+    return (
+        f"DRAIN_UNWINNABLE: active drain ea_id={active.get('ea_id')} "
+        f"item={active.get('item_id')} reservation_gb={active.get('reservation_gb')} "
+        f"reason={reason} unwinnable_for={waited/60:.0f}min "
+        f"idle_terminals={idle_terminals} "
+        f"(census_stall_alert cannot see this -- active, not pre_drain/tracker)"
+    )
+
+
 def main():
     U = datetime.datetime.utcnow
     now = U(); print('WATCH', now.strftime('%Y-%m-%dT%H:%MZ'))
@@ -120,9 +164,13 @@ def main():
         dw = json.load(open('D:/QM/strategy_farm/state/drain_window.json'))
         stall = census_stall_alert(c60, idle_terms, dw, time.time())
         pd = dw.get('pre_drain') or {}
+        active = dw.get('active') or {}
         print(f'drain census-stall probe: idle_factory_terminals={idle_terms} '
-              f'pre_drain_ea={pd.get("ea_id")} tracker_open={bool(dw.get("tracker"))}')
+              f'pre_drain_ea={pd.get("ea_id")} tracker_open={bool(dw.get("tracker"))} '
+              f'active_not_winnable={bool(active.get("not_winnable_reason"))}')
         if stall: al.append(stall)
+        unwinnable = drain_unwinnable_alert(idle_terms, dw, time.time())
+        if unwinnable: al.append(unwinnable)
     except Exception as e: print('drain census-stall err', e)
     print('tasks', q("select state,count(*) from agent_tasks where state in ('TODO','IN_PROGRESS','REVIEW','BLOCKED') group by state"))
     for f,k in (('ftmo_trial_pulse.json',('verdict','terminal_up','effective_state','magics_seen')),('live_book_pulse.json',('effective_state','expected_state','generated_at_utc'))):

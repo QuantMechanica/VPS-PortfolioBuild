@@ -71,3 +71,51 @@ def test_census_stall_alert_silent_when_healthy() -> None:
     # no drain window entry at all -> not a stall
     assert watch.census_stall_alert(0, 6, {}, now) is None
     assert watch.census_stall_alert(0, 6, {"pre_drain": {}, "tracker": {}}, now) is None
+
+
+def _active_unwinnable_window(now_epoch: float, *, unwinnable_for_s: float = 900.0) -> dict:
+    return {
+        "active": {
+            "ea_id": "QM5_20260",
+            "item_id": "e2622f78-aaaa-bbbb-cccc-000000000000",
+            "reservation_gb": 24.0,
+            "opened_epoch": now_epoch - 1800.0,
+            "not_winnable_since_epoch": now_epoch - unwinnable_for_s,
+            "not_winnable_reason": "no_releasable_ram",
+        },
+        "tracker": {},
+    }
+
+
+def test_drain_unwinnable_alert_fires_and_names_the_active_row() -> None:
+    """2026-09-18 ticket c9cff1f2: census_stall_alert cannot see an ACTIVE
+    drain (tracker is consumed at open) -- drain_unwinnable_alert must."""
+    now = 1_789_792_358.0
+    alert = watch.drain_unwinnable_alert(6, _active_unwinnable_window(now), now)
+    assert alert is not None
+    assert "DRAIN_UNWINNABLE" in alert
+    assert "QM5_20260" in alert
+    assert "e2622f78-aaaa-bbbb-cccc-000000000000" in alert
+    assert "reservation_gb=24.0" in alert
+    assert "reason=no_releasable_ram" in alert
+
+
+def test_census_stall_alert_is_silent_for_the_same_active_window() -> None:
+    """The gap this closes: an armed (active) drain leaves pre_drain/tracker
+    empty, so the older check reads healthy while the fleet is fully blocked."""
+    now = 1_789_792_358.0
+    assert watch.census_stall_alert(0, 6, _active_unwinnable_window(now), now) is None
+
+
+def test_drain_unwinnable_alert_silent_when_not_marked_or_understaffed() -> None:
+    now = 1_789_792_358.0
+    # no not_winnable marker yet (still within grace, or still winnable)
+    dw = _active_unwinnable_window(now)
+    dw["active"].pop("not_winnable_reason")
+    dw["active"].pop("not_winnable_since_epoch")
+    assert watch.drain_unwinnable_alert(6, dw, now) is None
+    # too few idle terminals
+    assert watch.drain_unwinnable_alert(2, _active_unwinnable_window(now), now) is None
+    # no active drain at all
+    assert watch.drain_unwinnable_alert(6, {"tracker": {}}, now) is None
+    assert watch.drain_unwinnable_alert(6, {}, now) is None
