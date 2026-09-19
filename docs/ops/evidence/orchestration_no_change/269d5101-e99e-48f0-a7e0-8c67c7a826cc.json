@@ -1,0 +1,23 @@
+{
+  "artifact_bindings": [
+    {
+      "path": "docs/ops/evidence/2026-09-14_q08-context-repair-v2-20260914_3415f6c0_execution.md",
+      "sha256": "b8e01daf94ca05e6917da368b2b7f9d5796788108604797d0a991f36dec36d10"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-14_q08_context_repair/dispositions_receipt.json",
+      "sha256": "ae92e15d89233b540f72cd0028e36541c07089590dbc1d0846f06102b9d22006"
+    }
+  ],
+  "decision_ids": [
+    "OWNER-DEC-Q08-CONTEXT-REPAIR-V2-20260914",
+    "OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914"
+  ],
+  "disposition": "superseded_by_owner_decision_execution",
+  "execution_task_id": "3ec11996-eca1-5e03-b2ba-660246ea410d",
+  "execution_task_state": "PASSED",
+  "followup_task_id": "67dfadf6-7549-5411-9409-31defb996817",
+  "followup_task_state": "PASSED",
+  "original_task_id": "269d5101-e99e-48f0-a7e0-8c67c7a826cc",
+  "schema": "qm.orchestration-stable-disposition.v1"
+}
