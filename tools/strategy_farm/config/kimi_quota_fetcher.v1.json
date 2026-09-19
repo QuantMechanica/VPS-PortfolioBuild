@@ -1,6 +1,6 @@
 {
   "schema": "qm.kimi-quota-fetcher.v1",
-  "_doc": "Config for tools/strategy_farm/kimi_quota_fetcher.py (OWNER directive 2026-09-15, OWNER-DEC-CBE-20260915 sec30-33). One read-only GET to the SAME managed usage endpoint the official Kimi Code CLI usage panel calls, normalized into state_path. Live-verified 2026-09-15 (docs/ops/evidence/2026-09-15_continuous_book_evolution/design/c2_kimi_quota_fetcher_report.md). Every value here is OWNER/Fable-adjustable; the fetcher hardcodes nothing that lives here. NEVER logs/prints/persists the OAuth token. Kill switch: env QM_KIMI_QUOTA_FETCH=0 -> fetch_status 'disabled' without any network call.",
+  "_doc": "Config for tools/strategy_farm/kimi_quota_fetcher.py (OWNER directive 2026-09-15, OWNER-DEC-CBE-20260915 sec30-33). One read-only GET to the managed /usages endpoint, normalized into state_path. Live schema re-verified 2026-09-19: top-level usage and limits are the Kimi Code enforcement buckets; sibling usages.limit_* values can describe a different dashboard bucket and are not used for rolling Code capacity. Every value here is OWNER/Fable-adjustable; the fetcher hardcodes nothing that lives here. NEVER logs/prints/persists the OAuth token. Kill switch: env QM_KIMI_QUOTA_FETCH=0 -> fetch_status 'disabled' without any network call.",
   "enabled": true,
   "kill_switch_env": "QM_KIMI_QUOTA_FETCH",
   "base_url": "https://api.kimi.com/coding/v1",
@@ -18,7 +18,7 @@
   "skew_s": 60,
   "state_path": "D:/QM/reports/state/kimi_quota_state.json",
   "ledger_path": "D:/QM/reports/state/kimi_usage_ledger.jsonl",
-  "raw_schema_version": "coding/v1/usages@2026-09-15",
+  "raw_schema_version": "coding/v1/usages@2026-09-19-code-capacity",
   "subscription_period": {
     "start": "2026-09-15",
     "end": "2026-10-15"

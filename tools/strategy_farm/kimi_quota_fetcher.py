@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """QuantMechanica - Kimi real quota / usage fetcher (OWNER-DEC-CBE-20260915 sec30-33).
 
-A single read-only GET to the SAME managed usage endpoint the official Kimi Code
-CLI usage panel calls - ``GET {base_url}/usages`` with an ``Authorization: Bearer
-<oauth access_token>`` read at runtime from the credential file the CLI itself uses
-(``C:/Users/Administrator/.kimi-code/credentials/kimi-code.json``). The result is
-normalized into ``D:/QM/reports/state/kimi_quota_state.json`` with the directive
-sec32 fields and consumed by ``kimi_governor.compute_state`` (real ratios drive
-NORMAL/CONSERVE/EXHAUSTED; the local call caps become runaway guards only).
+A single read-only GET to the managed Kimi Code endpoint - ``GET
+{base_url}/usages`` with an ``Authorization: Bearer <oauth access_token>`` read at
+runtime from the credential file the CLI itself uses
+(``C:/Users/Administrator/.kimi-code/credentials/kimi-code.json``). Kimi Code's
+enforced rolling windows are represented by top-level ``usage`` (7-day) and
+``limits`` (including the 300-minute/5-hour window). The sibling ``usages.limit_*``
+objects are a different dashboard bucket and MUST NOT drive Code capacity. The
+result is normalized into ``D:/QM/reports/state/kimi_quota_state.json`` with the
+directive sec32 fields and consumed by ``kimi_governor.compute_state`` (real ratios
+drive NORMAL/CONSERVE/EXHAUSTED; the local call caps become runaway guards only).
 
 SECRET HYGIENE (directive sec32, mirrors kimi_adapter.py):
   * The OAuth ``access_token`` / ``refresh_token`` are read at runtime ONLY.
@@ -306,6 +309,62 @@ def _window(entry: Any) -> dict[str, Any] | None:
     return {"used_ratio": _ratio(entry.get("used_ratio")), "reset_at": entry.get("reset_time")}
 
 
+def _capacity_window(entry: Any) -> dict[str, Any] | None:
+    """Map a Kimi Code capacity object to the normalized window shape.
+
+    The current endpoint expresses the enforced 7-day bucket as
+    ``usage.{limit,used,resetTime}`` and the enforced 5-hour bucket as a
+    ``limits[].detail.{limit,remaining,resetTime}`` object. Values are strings in
+    the live response. Preserve ratios above 1.0 so the governor can still observe
+    an over-limit state; only impossible negative usage is floored at zero.
+    """
+    if not isinstance(entry, dict):
+        return None
+    limit = _ratio(entry.get("limit"))
+    if limit is None or limit <= 0:
+        return None
+    used = _ratio(entry.get("used"))
+    if used is None:
+        remaining = _ratio(entry.get("remaining"))
+        if remaining is None:
+            return None
+        used = limit - remaining
+    return {
+        "used_ratio": max(0.0, used / limit),
+        "reset_at": entry.get("resetTime") or entry.get("reset_time"),
+    }
+
+
+def _window_minutes(window: Any) -> float | None:
+    """Return a ``limits[].window`` duration in minutes when recognizable."""
+    if not isinstance(window, dict):
+        return None
+    duration = _ratio(window.get("duration"))
+    if duration is None or duration < 0:
+        return None
+    unit = str(window.get("timeUnit") or window.get("time_unit") or "").upper()
+    if unit in {"TIME_UNIT_MINUTE", "MINUTE", "MINUTES"}:
+        return duration
+    if unit in {"TIME_UNIT_HOUR", "HOUR", "HOURS"}:
+        return duration * 60.0
+    if unit in {"TIME_UNIT_SECOND", "SECOND", "SECONDS"}:
+        return duration / 60.0
+    return None
+
+
+def _code_5h_window(entries: Any) -> dict[str, Any] | None:
+    """Select the enforced 300-minute Kimi Code limit from top-level ``limits``."""
+    if not isinstance(entries, list):
+        return None
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        minutes = _window_minutes(entry.get("window"))
+        if minutes is not None and abs(minutes - 300.0) < 1e-9:
+            return _capacity_window(entry.get("detail"))
+    return None
+
+
 def normalize(usages_payload: dict[str, Any] | None, me_plan: dict[str, Any] | None,
               cfg: dict[str, Any], *, fetch_status: str, error: str | None = None,
               now: dt.datetime | None = None) -> dict[str, Any]:
@@ -324,10 +383,16 @@ def normalize(usages_payload: dict[str, Any] | None, me_plan: dict[str, Any] | N
 
     if isinstance(usages_payload, dict):
         observed_keys = sorted(usages_payload.keys())
+        # These are the buckets actually enforced for kimi-code/kimi-for-coding.
+        # Live 2026-09-19 evidence: top-level usage was 100/100 when the model
+        # returned its weekly-limit 403, while usages.limit_7d was 0.000011.
+        rolling_5h = _code_5h_window(usages_payload.get("limits"))
+        rolling_7d = _capacity_window(usages_payload.get("usage"))
+
         usages = usages_payload.get("usages")
         if isinstance(usages, dict):
-            rolling_5h = _window(usages.get("limit_5h"))
-            rolling_7d = _window(usages.get("limit_7d"))
+            # ``usages.limit_5h`` / ``limit_7d`` are a distinct dashboard bucket.
+            # Keep only the monthly total/breakdown fields from this family.
             monthly = _window(usages.get("limit_month_total"))
             # Kimi-vs-Code monthly breakdown, if the account exposes it.
             month_total = _ratio((usages.get("limit_month_total") or {}).get("used_ratio")) \

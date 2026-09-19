@@ -21,14 +21,16 @@ import kimi_quota_fetcher as kqf  # noqa: E402
 NOW = dt.datetime(2026, 9, 20, 12, 0, 0, tzinfo=dt.timezone.utc)
 SECRET = "SECRET_ACCESS_TOKEN_MUST_NOT_LEAK"
 
-# A fixture /usages payload shaped exactly like the live 2026-09-15 response.
+# A fixture /usages payload shaped exactly like the live 2026-09-19 response. The
+# root usage/limits family is the enforced Kimi Code quota; usages.limit_* is a
+# different dashboard bucket and intentionally disagrees in this regression case.
 USAGES_FIXTURE = {
-    "usage": {"limit": "100", "remaining": "80", "resetTime": "2026-09-22T09:31:53.7Z"},
+    "usage": {"limit": "100", "used": "100", "resetTime": "2026-09-22T09:31:53.7Z"},
     "limits": [{"window": {"duration": 300, "timeUnit": "TIME_UNIT_MINUTE"},
-                "detail": {"limit": "100", "remaining": "15", "resetTime": "2026-09-20T14:31:53Z"}}],
+                "detail": {"limit": "100", "remaining": "100", "resetTime": "2026-09-20T14:31:53Z"}}],
     "usages": {
-        "limit_5h": {"used_ratio": 0.85, "reset_time": "2026-09-20T14:31:53Z"},
-        "limit_7d": {"used_ratio": 0.10, "reset_time": "2026-09-22T09:31:53Z"},
+        "limit_5h": {"used_ratio": 0.0, "reset_time": "2026-09-20T14:31:53Z"},
+        "limit_7d": {"used_ratio": 0.000011, "reset_time": "2026-09-22T09:31:53Z"},
     },
 }
 ME_FIXTURE = {
@@ -109,12 +111,45 @@ def test_normalize_parses_live_schema(tmp_path: Path) -> None:
     assert state["fetch_status"] == "ok"
     assert state["source"] == "api.kimi.com/coding/v1/usages"
     assert state["plan"] == "Allegro"
-    assert state["rolling_5h"]["used_ratio"] == 0.85
-    assert state["rolling_7d"]["used_ratio"] == 0.10
+    assert state["rolling_5h"]["used_ratio"] == 0.0
+    assert state["rolling_7d"]["used_ratio"] == 1.0
+    assert state["rolling_5h"]["reset_at"] == "2026-09-20T14:31:53Z"
+    assert state["rolling_7d"]["reset_at"] == "2026-09-22T09:31:53.7Z"
     assert state["monthly"] is None  # absent on this account -> honest null
     assert state["extra_quota_active"] is False
     assert state["raw_schema_version"] == "coding/v1/usages@test"
     assert state["observed_top_keys"] == ["limits", "usage", "usages"]
+
+
+def test_normalize_code_windows_ignore_misleading_dashboard_bucket(tmp_path: Path) -> None:
+    payload = json.loads(json.dumps(USAGES_FIXTURE))
+    payload["usage"] = {"limit": "200", "used": "198", "resetTime": "weekly-code-reset"}
+    payload["limits"][0]["detail"] = {
+        "limit": "80", "remaining": "20", "resetTime": "five-hour-code-reset"
+    }
+    payload["usages"]["limit_5h"]["used_ratio"] = 0.01
+    payload["usages"]["limit_7d"]["used_ratio"] = 0.02
+    state = kqf.normalize(payload, None, _cfg(tmp_path, tmp_path / "c.json"),
+                          fetch_status="ok", now=NOW)
+    assert state["rolling_5h"] == {
+        "used_ratio": 0.75, "reset_at": "five-hour-code-reset"
+    }
+    assert state["rolling_7d"] == {
+        "used_ratio": 0.99, "reset_at": "weekly-code-reset"
+    }
+
+
+def test_normalize_code_5h_selects_duration_not_array_position(tmp_path: Path) -> None:
+    payload = json.loads(json.dumps(USAGES_FIXTURE))
+    payload["limits"].insert(0, {
+        "window": {"duration": 60, "timeUnit": "TIME_UNIT_MINUTE"},
+        "detail": {"limit": "100", "remaining": "1", "resetTime": "not-five-hour"},
+    })
+    state = kqf.normalize(payload, None, _cfg(tmp_path, tmp_path / "c.json"),
+                          fetch_status="ok", now=NOW)
+    assert state["rolling_5h"] == {
+        "used_ratio": 0.0, "reset_at": "2026-09-20T14:31:53Z"
+    }
 
 
 def test_normalize_kimi_vs_code_breakdown_when_present(tmp_path: Path) -> None:
@@ -158,7 +193,7 @@ def test_fetch_ok_writes_state_and_no_token_leak(tmp_path: Path,
     on_disk = Path(cfg["state_path"]).read_text(encoding="utf-8")
     # The secret token must NEVER appear in the persisted state.
     assert SECRET not in on_disk and "refresh-secret" not in on_disk
-    assert json.loads(on_disk)["rolling_5h"]["used_ratio"] == 0.85
+    assert json.loads(on_disk)["rolling_5h"]["used_ratio"] == 0.0
 
 
 def test_fetch_sends_bearer_header_but_never_persists_it(tmp_path: Path,
