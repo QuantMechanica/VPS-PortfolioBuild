@@ -3341,6 +3341,111 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_13054_STALE_BINARY_REBUILD_AUTHORITY] = 
 }
 
 
+# 2026-09-19/20 (task 340b228c, Fable successor of fa45d828, QM5_41347/NDX):
+# classify_candidate's USABLE_CURRENT_COMPILE_VERDICT_EXISTS check compares
+# only (mq5_sha256, ex5_sha256). A COMPILE_OK's .ex5 statically bakes in the
+# magic-lookup arrays from framework/include/QM/QM_MagicResolver.mqh (itself
+# regenerated from framework/registry/magic_numbers.csv by
+# framework/scripts/update_magic_resolver.py) at compile time. A registry
+# regen after that compile — e.g. adding a second symbol slot to an EA whose
+# .mq5 did not need to change — can leave an unchanged-hash binary unable to
+# resolve the newly registered magic number at runtime
+# (framework/include/QM/QM_Common.mqh QM_MagicChecked/QM_FrameworkMagic walk
+# the compiled-in arrays). The identity model had no visibility into the
+# shared include tree, so it treated the stale binary as still "current" and
+# refused any rebuild.
+#
+# STALE_INCLUDE_CLOSURE_REGISTRATIONS is an append-only, per-EA data
+# registration (parallel to BACKLOG_SOURCE_REPAIR_REGISTRATIONS) naming
+# exactly which prior COMPILE_OK work-item ids no longer count as "current"
+# for one (ea_label, ea_id, source_sha256) triple. Registering an entry only
+# ever narrows current_compile_ok for the named EA; it grants no other
+# authority (no gate-verdict, live, or portfolio authority; see
+# classify_candidate's source_repair_authorized wiring below).
+#
+# Going forward this is self-describing and needs no new registration:
+# enqueue_compile_eas now stamps each COMPILE_EA row's payload with the
+# include_closure_sha256 in effect at enqueue time (the current
+# QM_MAGIC_REGISTRY_SHA256), and classify_candidate auto-excludes any row
+# whose recorded value no longer matches the live resolver — see
+# _current_include_closure_sha256 below. Registration is needed only to
+# backfill rows compiled before this contract existed (no recorded value to
+# compare).
+STALE_INCLUDE_CLOSURE_REGISTRATIONS: dict[str, dict[str, Any]] = {}
+
+QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY = (
+    "router_ops_issue:340b228c-5d85-4980-826a-243fd95bcae8:QM5_41347"
+)
+STALE_INCLUDE_CLOSURE_REGISTRATIONS[QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY] = {
+    "ea_id": "41347",
+    "ea_label": "QM5_41347_cs-ichi-cloud-opt",
+    "source_sha256": "64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f",
+    "stale_compile_ok_work_item_ids": [
+        "245ee112-e9b1-4346-a5b0-82ae91cd039c",
+    ],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-20_qm5_41347_stale_include_closure/"
+        "RECEIPT.json"
+    ),
+    "evidence_sha256": (
+        "4b4c2aa5652076f06a53d05ab5660d25d68792e7473d899b3b81031a05c190b3"
+    ),
+}
+
+
+def _current_include_closure_sha256(repo_root: Path) -> str | None:
+    """QM_MAGIC_REGISTRY_SHA256 baked into QM_MagicResolver.mqh right now.
+
+    This is the sha256 of framework/registry/magic_numbers.csv as of the last
+    resolver regen (framework/scripts/update_magic_resolver.py) — the part of
+    the shared, statically-#included framework tree that actually changes
+    when the magic registry is edited, standing in for an EA-independent
+    "include closure" identity.
+    """
+    path = repo_root / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
+    try:
+        text = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return None
+    match = re.search(
+        r'#define\s+QM_MAGIC_REGISTRY_SHA256\s+"([0-9A-Fa-f]{16,})"', text
+    )
+    return match.group(1).upper() if match else None
+
+
+def _stale_include_closure_artifact_bindings(
+    authority: str | None,
+) -> list[dict[str, str]]:
+    binding = STALE_INCLUDE_CLOSURE_REGISTRATIONS.get(authority or "", {})
+    return [{
+        "path": binding.get("evidence_path", ""),
+        "sha256": binding.get("evidence_sha256", ""),
+    }]
+
+
+def _stale_include_closure_authorized(
+    ea_label: str, authority: str | None, *, repo_root: Path | None,
+    ea_id: str | None, source_sha: str | None,
+) -> bool:
+    binding = STALE_INCLUDE_CLOSURE_REGISTRATIONS.get(authority or "")
+    if (
+        not binding
+        or repo_root is None
+        or ea_label != binding["ea_label"]
+        or ea_id != binding["ea_id"]
+        or str(source_sha or "").lower() != binding["source_sha256"]
+    ):
+        return False
+    try:
+        for artifact in _stale_include_closure_artifact_bindings(authority):
+            if sha256_file(repo_root / artifact["path"]).lower() != artifact["sha256"]:
+                return False
+    except OSError:
+        return False
+    return True
+
+
 def _backlog_source_repair_artifact_bindings(authority: str | None = None) -> list[dict[str, str]]:
     binding = BACKLOG_SOURCE_REPAIR_REGISTRATIONS.get(authority or "", {})
     return [{"path": binding.get("evidence_path", BACKLOG_SOURCE_REPAIR_EVIDENCE),
@@ -3503,6 +3608,11 @@ def _source_repair_authorized(
             ea_label, authority, repo_root=repo_root, ea_id=ea_id,
             source_sha=source_sha, inventory=inventory,
             current_work_item_id=current_work_item_id,
+        )
+    if authority in STALE_INCLUDE_CLOSURE_REGISTRATIONS:
+        return _stale_include_closure_authorized(
+            ea_label, authority, repo_root=repo_root, ea_id=ea_id,
+            source_sha=source_sha,
         )
     if authority in load_compile_fail_repair_authorities():
         return _generic_compile_fail_repair_authorized(
@@ -4725,6 +4835,7 @@ def classify_candidate(
         and str(row.get("id")) != str(current_work_item_id or "")
     ]
     current_compile_ok = []
+    compile_ok_payloads: dict[str, dict[str, Any]] = {}
     for row in prior_compile_rows:
         prior_payload = _json_object(row.get("payload_json"))
         if (
@@ -4736,7 +4847,57 @@ def classify_candidate(
             and str(row.get("ex5_sha256") or prior_payload.get("ex5_sha256") or "").lower()
             == ex5_sha.lower()
         ):
-            current_compile_ok.append(str(row.get("id")))
+            row_id = str(row.get("id"))
+            current_compile_ok.append(row_id)
+            compile_ok_payloads[row_id] = prior_payload
+
+    # STALE_INCLUDE_CLOSURE: a COMPILE_OK whose baked-in resolver/registry
+    # identity no longer matches the current include tree does not count as
+    # "current" even though its own (mq5_sha256, ex5_sha256) pair is
+    # unchanged. Two ways a row can be excluded here: (1) auto-detect — the
+    # row itself recorded an include_closure_sha256 at enqueue time (see
+    # enqueue_compile_eas) and it no longer matches the live resolver, which
+    # needs no registered authority since it is self-evidencing; (2) a named
+    # STALE_INCLUDE_CLOSURE_REGISTRATIONS entry backfills rows compiled
+    # before that field existed, scoped to the exact (ea_label, ea_id,
+    # source_sha256) triple and an explicit work-item id list.
+    stale_include_closure_ids: list[str] = []
+    if current_compile_ok:
+        current_include_closure_sha256 = _current_include_closure_sha256(repo_root)
+        retained_compile_ok: list[str] = []
+        for row_id in current_compile_ok:
+            recorded_closure = compile_ok_payloads[row_id].get("include_closure_sha256")
+            if (
+                recorded_closure
+                and current_include_closure_sha256
+                and str(recorded_closure).upper() != current_include_closure_sha256
+            ):
+                stale_include_closure_ids.append(row_id)
+            else:
+                retained_compile_ok.append(row_id)
+        current_compile_ok = retained_compile_ok
+        stale_binding = STALE_INCLUDE_CLOSURE_REGISTRATIONS.get(source_repair_authority or "")
+        if (
+            stale_binding
+            and canonical_label == stale_binding["ea_label"]
+            and ea_id == stale_binding["ea_id"]
+            and source_sha
+            and source_sha.lower() == stale_binding["source_sha256"]
+        ):
+            registered_stale_ids = set(stale_binding.get("stale_compile_ok_work_item_ids", ()))
+            newly_stale = [
+                row_id for row_id in current_compile_ok if row_id in registered_stale_ids
+            ]
+            if newly_stale:
+                stale_include_closure_ids.extend(newly_stale)
+                current_compile_ok = [
+                    row_id for row_id in current_compile_ok
+                    if row_id not in registered_stale_ids
+                ]
+        stale_include_closure_ids = sorted(set(stale_include_closure_ids))
+    else:
+        current_include_closure_sha256 = _current_include_closure_sha256(repo_root)
+
     open_rows = [
         row for row in inventory["open_compile"].get(ea_id, [])
         if str(row.get("id")) != str(current_work_item_id or "")
@@ -4966,12 +5127,18 @@ def classify_candidate(
             _backlog_source_repair_artifact_bindings(source_repair_authority) if backlog_binding else
             _compile_fail_repair_artifact_bindings(source_repair_authority)
             if compile_fail_binding else
+            _stale_include_closure_artifact_bindings(source_repair_authority)
+            if repair_authorized
+            and source_repair_authority in STALE_INCLUDE_CLOSURE_REGISTRATIONS
+            else
             _hma_cata_requal_artifact_bindings()
             if repair_authorized
             and source_repair_authority == HMA_CATA_REQUAL_SOURCE_REPAIR_AUTHORITY
             else []
         ),
         "current_compile_ok_work_item_ids": current_compile_ok,
+        "include_closure_sha256": current_include_closure_sha256,
+        "stale_include_closure_work_item_ids": stale_include_closure_ids,
         **_module_staleness_diagnostics(),
     }
 
@@ -5750,6 +5917,7 @@ def enqueue_compile_eas(
                     "ea_dir": candidate["ea_dir"],
                     "mq5_path": candidate["mq5_path"],
                     "mq5_sha256": candidate["mq5_sha256"],
+                    "include_closure_sha256": candidate.get("include_closure_sha256"),
                     "symbols": candidate["symbols"],
                     "timeframe": candidate["timeframe"],
                     "risk_contract": {"RISK_FIXED": 1000.0, "RISK_PERCENT": 0.0},
@@ -6238,6 +6406,7 @@ def enqueue_recheck_successor(
             "ea_dir": candidate["ea_dir"],
             "mq5_path": candidate["mq5_path"],
             "mq5_sha256": candidate["mq5_sha256"],
+            "include_closure_sha256": candidate.get("include_closure_sha256"),
             "symbols": candidate["symbols"],
             "timeframe": candidate["timeframe"],
             "risk_contract": {"RISK_FIXED": 1000.0, "RISK_PERCENT": 0.0},

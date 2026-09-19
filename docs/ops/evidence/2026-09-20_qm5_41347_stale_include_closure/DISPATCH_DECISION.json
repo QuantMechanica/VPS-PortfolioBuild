@@ -1,0 +1,60 @@
+{
+  "schema": "qm.compile-ea-stale-include-closure-dispatch-decision/v1",
+  "task_id": "340b228c-5d85-4980-826a-243fd95bcae8",
+  "companion_receipt": "docs/ops/evidence/2026-09-20_qm5_41347_stale_include_closure/RECEIPT.json",
+  "note": "kept in a separate file so RECEIPT.json stays byte-identical to the content whose sha256 is pinned as evidence_sha256 in STALE_INCLUDE_CLOSURE_REGISTRATIONS[QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY] (tools/strategy_farm/compile_work_items.py)",
+  "verification_performed": {
+    "unit_tests": "python -m pytest tools/strategy_farm/tests/test_compile_work_items.py -q -> 97 passed, 1 pre-existing unrelated failure (test_compile_profile_stdlib_failure_is_persisted_as_infra_not_compile_fail, VerdictTaxonomyContractError on a stale SH-3 fixture DB schema; reproduced identically on the unmodified file via a checkout/reapply round-trip, so it predates and is independent of this change)",
+    "related_suites": "python -m pytest tools/strategy_farm/tests/test_governed_magic_allocator.py tools/strategy_farm/tests/test_magic_allocation_precheck.py framework/scripts/tests/test_magic_resolver_strict_default.py -q -> 23 passed",
+    "live_dry_run_classify_candidate": {
+      "command": "classify_candidate(root=D:/QM/strategy_farm, repo_root=C:/QM/repo, 'QM5_41347_cs-ichi-cloud-opt', _inventory(...), source_repair_authority=QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY)",
+      "result_summary": {
+        "eligible": true,
+        "source_repair_authorized": true,
+        "current_compile_ok_work_item_ids": [],
+        "stale_include_closure_work_item_ids": ["245ee112-e9b1-4346-a5b0-82ae91cd039c"],
+        "include_closure_sha256": "FF35E42D5E886E2E7D1D36C3EABEE51BDCB3FF677FEEBFF32E95B3A09794676A",
+        "source_repair_waived_reasons": ["BOUND_SETFILE_HASH_EXISTS", "EX5_ALREADY_PRESENT", "WORK_ITEMS_EXIST"],
+        "source_repair_predecessor_work_item_ids": ["245ee112-e9b1-4346-a5b0-82ae91cd039c"]
+      },
+      "conclusion": "the exact blocker from the predecessor receipt (fa45d828) is resolved: classify_candidate against the live farm_state.sqlite now reports eligible=true for the same EA/source that previously returned USABLE_CURRENT_COMPILE_VERDICT_EXISTS. This ran as a read-only Python check; it wrote nothing to the DB."
+    },
+    "dl089_matrix_dry_run": {
+      "command": "python tools/strategy_farm/farmctl.py service-dl089-matrix (no --apply; read-only, uses a mode=ro sqlite connection with PRAGMA query_only=ON per tools/strategy_farm/farmctl.py service_dl089_matrix apply=False path)",
+      "result": {
+        "applied": false,
+        "deferred_entry_for_ff3325b3": {
+          "ea_id": "QM5_11294",
+          "symbol": "NDX.DWX",
+          "work_item_id": "ff3325b3-24da-5c0b-992b-9e758606d759",
+          "machine_reason": "measurement sibling source_base_setfile missing: C:\\QM\\repo\\framework\\EAs\\QM5_41347_cs-ichi-cloud-opt\\sets\\QM5_41347_cs-ichi-cloud-opt_NDX.DWX_H4_backtest.set"
+        }
+      },
+      "conclusion": "ff3325b3 is still deferred as of this check: dl089_matrix_service wants QM5_41347's NDX.DWX setfile present in framework/EAs/QM5_41347_cs-ichi-cloud-opt/sets/, which is correctly still absent because the governed rebuild below has not been dispatched yet (moving the staged setfile before a real .ex5 exists would bind a build_hash header to a nonexistent binary, per the predecessor receipt's own reasoning). This is the expected pre-dispatch state, not a new finding."
+    }
+  },
+  "decision": {
+    "outcome": "code fix + tests + evidence committed to agents/board-advisor and left for review; the live rebuild (farmctl enqueue-compile --source-repair-authority ... + the governed release-on-restart ceremony via release_compile_wave.py) is deliberately NOT dispatched in this session",
+    "reasoning": [
+      "CLAUDE.md's Stehende Vollmacht (OWNER 2026-08-20) lists 'recompile in active inventory' under ROT: never autonomous. QM5_41347 carries live Q02/census evidence (XAUUSD.DWX 1089 MEASURED cells per the predecessor receipt) and is exactly this case: a rebuilt .ex5 is a new identity that requires Q02 re-entry and voids the current Q10_NEWS seals, per the established stale-EX5 doctrine used for the QM5_21505/QM5_13054 precedents.",
+      "compile_work_items.py is a shared module every resident terminal worker keeps cached in a long-lived process (documented at the top of the file as the root cause of a prior T3/T10 candidate_recheck divergence, 2026-09-18); dispatching a compile before the reviewed code has reached the whole fleet through the existing COMPILE_EA_WORKER_ROLLOUT_PENDING hold / governed release-on-restart ceremony risks exactly that class of incident, or a CANDIDATE_RECHECK_REFUSED failure from a stale-cached worker.",
+      "the immediate predecessor (fa45d828) explicitly recommended this land as 'a Codex-reviewed code change, not an ad hoc Claude-side bypass' before any live dispatch; this task implements that fix but review has not yet happened.",
+      "the router's own task state machine (IN_PROGRESS -> REVIEW -> APPROVED -> PIPELINE) exists to gate exactly this: this task's job is to produce the durable artifact and leave it in REVIEW, not to self-approve a live factory mutation."
+    ],
+    "recommended_next_step": [
+      "OWNER/Codex reviews tools/strategy_farm/compile_work_items.py's STALE_INCLUDE_CLOSURE_REGISTRATIONS mechanism and the 4 new tests",
+      "once approved: farmctl.py enqueue-compile --source-repair-authority router_ops_issue:340b228c-5d85-4980-826a-243fd95bcae8:QM5_41347 QM5_41347_cs-ichi-cloud-opt",
+      "run the governed release-on-restart ceremony (confirm the full terminal fleet has reimported the reviewed compile_work_items.py, then release_compile_wave.py --apply) so COMPILE_ACTIVATION_HOLD_CODE=COMPILE_EA_WORKER_ROLLOUT_PENDING lifts for this row without exposing any other held row to unreviewed logic",
+      "on COMPILE_OK: move docs/ops/evidence/2026-09-19_factory_unblock/staged_41347_ndx/QM5_41347_cs-ichi-cloud-opt_NDX.DWX_H4_backtest.set into framework/EAs/QM5_41347_cs-ichi-cloud-opt/sets/ with a build_hash header refreshed to the new ex5_sha256",
+      "re-run farmctl.py service-dl089-matrix (dry-run) and confirm the ff3325b3 deferral clears (machine_reason no longer fires because the sibling setfile now exists)"
+    ]
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "terminal_untouched": true,
+    "no_verdict_mutation": true,
+    "no_db_writes_this_session": true,
+    "no_recompile_dispatched_this_session": true
+  }
+}

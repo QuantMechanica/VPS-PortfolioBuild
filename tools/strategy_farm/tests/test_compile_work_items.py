@@ -331,6 +331,165 @@ def test_source_repair_refuses_current_compile_ok(
     assert repair["refused"][0]["reason"] == "USABLE_CURRENT_COMPILE_VERDICT_EXISTS"
 
 
+def test_qm5_41347_stale_include_closure_authority_is_source_and_evidence_bound() -> None:
+    authority = compile_work_items.QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY
+    binding = compile_work_items.STALE_INCLUDE_CLOSURE_REGISTRATIONS[authority]
+    repo = Path(__file__).resolve().parents[3]
+    inventory = {"work_rows": {"41347": []}}
+
+    assert binding["ea_label"] == "QM5_41347_cs-ichi-cloud-opt"
+    assert compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41347",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        binding["ea_label"],
+        authority,
+        repo_root=repo,
+        ea_id="41347",
+        source_sha="0" * 64,
+        inventory=inventory,
+    )
+    assert not compile_work_items._source_repair_authorized(
+        "QM5_41348_unrelated",
+        authority,
+        repo_root=repo,
+        ea_id="41347",
+        source_sha=binding["source_sha256"],
+        inventory=inventory,
+    )
+
+
+def test_stale_include_closure_registration_excludes_named_predecessor_from_current(
+    tmp_path: Path, monkeypatch,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    source_sha = compile_work_items.sha256_file(source)
+
+    first = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    predecessor_id = first["enqueued"][0]["work_item_id"]
+    binary = source.with_suffix(".ex5")
+    binary.write_bytes(b"stale-include-closure binary")
+    ex5_sha = compile_work_items.sha256_file(binary)
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',ex5_sha256=? WHERE id=?",
+            (ex5_sha, predecessor_id),
+        )
+        conn.commit()
+
+    baseline = compile_work_items.classify_candidate(
+        root, repo, label, compile_work_items._inventory(root, repo),
+    )
+    assert baseline["current_compile_ok_work_item_ids"] == [predecessor_id]
+    assert baseline["stale_include_closure_work_item_ids"] == []
+
+    evidence = repo / "docs" / "ops" / "evidence" / "stale_include_closure_repair.json"
+    evidence.parent.mkdir(parents=True, exist_ok=True)
+    evidence.write_text('{"scope":"test-only"}\n', encoding="utf-8")
+    authority = "router_ops_issue:test-stale-include-closure:QM5_1001"
+    monkeypatch.setitem(
+        compile_work_items.STALE_INCLUDE_CLOSURE_REGISTRATIONS,
+        authority,
+        {
+            "ea_id": "1001",
+            "ea_label": label,
+            "source_sha256": source_sha,
+            "stale_compile_ok_work_item_ids": [predecessor_id],
+            "evidence_path": "docs/ops/evidence/stale_include_closure_repair.json",
+            "evidence_sha256": compile_work_items.sha256_file(evidence),
+        },
+    )
+
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, compile_work_items._inventory(root, repo),
+        source_repair_authority=authority,
+    )
+    assert candidate["eligible"] is True
+    assert candidate["source_repair_authorized"] is True
+    assert candidate["current_compile_ok_work_item_ids"] == []
+    assert candidate["stale_include_closure_work_item_ids"] == [predecessor_id]
+    assert "USABLE_CURRENT_COMPILE_VERDICT_EXISTS" not in candidate["reasons"]
+
+
+def test_include_closure_auto_detects_staleness_without_registration(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    resolver = repo / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
+    resolver.parent.mkdir(parents=True, exist_ok=True)
+    resolver.write_text(
+        '#define QM_MAGIC_REGISTRY_SHA256 "' + ("B" * 64) + '"\n',
+        encoding="utf-8",
+    )
+
+    enqueued = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    work_item_id = enqueued["enqueued"][0]["work_item_id"]
+    binary = source.with_suffix(".ex5")
+    binary.write_bytes(b"pre-regen binary")
+    ex5_sha = compile_work_items.sha256_file(binary)
+    with farmctl.connect(root) as conn:
+        payload = json.loads(conn.execute(
+            "SELECT payload_json FROM work_items WHERE id=?", (work_item_id,)
+        ).fetchone()[0])
+        # Simulate a row enqueued before today's registry regen: its own
+        # recorded include_closure_sha256 predates the live resolver value.
+        payload["include_closure_sha256"] = "A" * 64
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',"
+            "ex5_sha256=?,payload_json=? WHERE id=?",
+            (ex5_sha, json.dumps(payload), work_item_id),
+        )
+        conn.commit()
+
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, compile_work_items._inventory(root, repo),
+    )
+    assert candidate["include_closure_sha256"] == "B" * 64
+    assert candidate["current_compile_ok_work_item_ids"] == []
+    assert candidate["stale_include_closure_work_item_ids"] == [work_item_id]
+
+
+def test_include_closure_matching_recorded_hash_stays_current(
+    tmp_path: Path,
+) -> None:
+    label = "QM5_1001_compile-fixture-h1"
+    repo, root = _fixture(tmp_path, [label])
+    source = repo / "framework" / "EAs" / label / f"{label}.mq5"
+    resolver = repo / "framework" / "include" / "QM" / "QM_MagicResolver.mqh"
+    resolver.parent.mkdir(parents=True, exist_ok=True)
+    resolver.write_text(
+        '#define QM_MAGIC_REGISTRY_SHA256 "' + ("C" * 64) + '"\n',
+        encoding="utf-8",
+    )
+
+    enqueued = compile_work_items.enqueue_compile_eas(root, repo, [label])
+    work_item_id = enqueued["enqueued"][0]["work_item_id"]
+    binary = source.with_suffix(".ex5")
+    binary.write_bytes(b"current binary")
+    ex5_sha = compile_work_items.sha256_file(binary)
+    with farmctl.connect(root) as conn:
+        conn.execute(
+            "UPDATE work_items SET status='done',verdict='COMPILE_OK',ex5_sha256=? WHERE id=?",
+            (ex5_sha, work_item_id),
+        )
+        conn.commit()
+
+    candidate = compile_work_items.classify_candidate(
+        root, repo, label, compile_work_items._inventory(root, repo),
+    )
+    assert candidate["current_compile_ok_work_item_ids"] == [work_item_id]
+    assert candidate["stale_include_closure_work_item_ids"] == []
+
+
 def test_rollout_reconciliation_authority_requires_stale_hold_and_supersession(
     tmp_path: Path,
 ) -> None:
