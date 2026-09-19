@@ -1,0 +1,55 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260919:QM5_41482_williams-vix-fix-fx-h4-opt:e0549fbd",
+  "created_at_local": "2026-09-19T14:47:00+02:00",
+  "ea_id": "QM5_41482",
+  "ea_label": "QM5_41482_williams-vix-fix-fx-h4-opt",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+    "branch": "agents/board-advisor",
+    "repair_commit": null,
+    "repair_commit_short": null,
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "Q08_MAE_HOOK_ABSENT_IN_PRE_HARDENING_PARENT",
+    "findings": [
+      "The parent QM5_1355_williams-vix-fix-fx-h4.mq5 (last built 2026-08-16) predates the current-build Q08 MAE hook contract (build_gate_hardening.py EA_Q08_MAE_HOOK_MISSING): its OnTick never calls QM_FrameworkTrackOpenPositionMae(), because the parent's existing .ex5 was never recompiled under the newer hardening rule.",
+      "The DL-089 opt-sibling derivation (docs/ops/evidence/2026-09-19_opt_sibling_1355/derive_sibling_source.py) replayed the parent's OnTick verbatim, so the first governed compile of the new QM5_41482 EA inherited the same absence and failed BUILD_CHECK_FAIL/EA_Q08_MAE_HOOK_MISSING under work item 25c1060f-db46-4bc3-804e-c1f5e9eff31e.",
+      "Verified fix: add QM_FrameworkTrackOpenPositionMae() as the first OnTick statement, exactly as already present in the newer-generation parent QM5_10911_grimes-complex-pb.mq5:435 and its governed opt sibling QM5_41478_grimes-complex-pb-opt.mq5:535. Pure telemetry hook; no entry/exit/sizing/risk/news change."
+    ],
+    "predecessor_compile_work_item_id": "25c1060f-db46-4bc3-804e-c1f5e9eff31e",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "EA_Q08_MAE_HOOK_MISSING",
+    "predecessor_compile_result": "PASS",
+    "predecessor_build_check_result": "FAIL",
+    "predecessor_failure_classes": [
+      "EA_Q08_MAE_HOOK_MISSING"
+    ],
+    "predecessor_mq5_sha256": "3bdff5a6a5416f14eafa7d38bf4336603272cde945659ed6cb54a2623979509e",
+    "predecessor_ex5_sha256": "0f555295e233d368228d24264eee6634b2e8fc34f97151e03ae3183a9603a615",
+    "predecessor_evidence_path": "D:/QM/reports/work_items/25c1060f-db46-4bc3-804e-c1f5e9eff31e/QM5_41482/COMPILE_EA/compile_evidence.json"
+  },
+  "repair": {
+    "current_mq5_sha256": "e0549fbd938288d42e5ceb47497ecab7936c8a18c9cc5f9f95e64d389f74ff25",
+    "changes": [
+      "Add QM_FrameworkTrackOpenPositionMae(); as the first statement of OnTick, with the same explanatory comment already carried by QM5_10911/QM5_41478 (docs/ops/evidence/2026-09-19_opt_sibling_1355/derive_sibling_source.py, hunk 8).",
+      "No change to the signal, entry, exit, stop, sizing, risk or news-blackout code paths; no change to the DL-089 pattern-permission measurement surface (hunks 1-7, unchanged)."
+    ],
+    "strategy_mechanics_changed": false,
+    "mq5_path": "framework/EAs/QM5_41482_williams-vix-fix-fx-h4-opt/QM5_41482_williams-vix-fix-fx-h4-opt.mq5"
+  },
+  "expected_failure_classes": [
+    "EA_Q08_MAE_HOOK_MISSING"
+  ],
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

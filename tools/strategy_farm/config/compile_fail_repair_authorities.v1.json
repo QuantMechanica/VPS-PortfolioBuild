@@ -34,6 +34,22 @@
       "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
       "granted_at_utc": "2026-09-18T00:00:00Z",
       "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
+    },
+    {
+      "authority": "compile_fail_repair:20260919:QM5_41482_williams-vix-fix-fx-h4-opt:e0549fbd",
+      "ea_id": "41482",
+      "ea_label": "QM5_41482_williams-vix-fix-fx-h4-opt",
+      "predecessor_work_item_id": "25c1060f-db46-4bc3-804e-c1f5e9eff31e",
+      "rejected_mq5_sha256": "3bdff5a6a5416f14eafa7d38bf4336603272cde945659ed6cb54a2623979509e",
+      "repaired_mq5_sha256": "e0549fbd938288d42e5ceb47497ecab7936c8a18c9cc5f9f95e64d389f74ff25",
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
+      "evidence_path": "docs/ops/evidence/2026-09-19_compile_fail_repair_authority/QM5_41482.json",
+      "evidence_sha256": "018cb27ec82a74cc4cda1c779dea657c4b05501b850df0c1b4fbcae30769d57c",
+      "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+      "granted_at_utc": "2026-09-19T12:47:00Z",
+      "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
     }
   ]
 }
