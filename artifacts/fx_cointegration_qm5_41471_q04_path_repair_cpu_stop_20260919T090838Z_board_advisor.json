@@ -1,0 +1,94 @@
+{
+  "schema": "qm.fx_cointegration_q04_path_repair_cpu_stop/v1",
+  "generated_at_utc": "2026-09-19T09:08:38Z",
+  "branch": "agents/board-advisor",
+  "repair_commit": "259d82d65d42dfe1310f57230488bdae376d1d54",
+  "selection": {
+    "frozen_66_pair_frontier_exhausted": true,
+    "unbuilt_eligible_pair_found": false,
+    "anchor_q02_blocker_found": false,
+    "qm5_12532_state": "Q02_PASS_Q04_PASS_Q05_FAIL",
+    "qm5_12533_state": "Q02_PASS_Q04_FAIL",
+    "fallback_ea_id": "QM5_41471",
+    "fallback_pair": [
+      "AUDUSD.DWX",
+      "EURJPY.DWX"
+    ],
+    "logical_symbol": "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1"
+  },
+  "pipeline_state": {
+    "q02": {
+      "work_item_id": "26aaec94-02ee-4a71-9eed-68b624b45adc",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q03": {
+      "work_item_id": "29572952-d18f-4efe-8e74-5fe5d16398b3",
+      "status": "done",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "fd6c5f93-f638-4307-b41a-ccb4599e9e32",
+      "status": "done",
+      "verdict": "INFRA_FAIL",
+      "fold_reason": "FOLD_ERROR_FILENOTFOUNDERROR",
+      "open_successor_count_after_cpu_stop": 0
+    }
+  },
+  "repair": {
+    "file": "framework/scripts/q04_walkforward.py",
+    "test_file": "framework/scripts/tests/test_q04_walkforward.py",
+    "cause": "duplicated durable logical-symbol/work-item leaf exceeded legacy Windows MAX_PATH before tester launch",
+    "old_production_shaped_injected_setfile_path_length": 275,
+    "new_production_shaped_injected_setfile_path_length": 209,
+    "durable_evidence_identity_changed": false,
+    "focused_tests": {
+      "passed": 34,
+      "failed": 0
+    },
+    "broader_tests": {
+      "passed": 42,
+      "failed": 1,
+      "unrelated_failure": "test_q02_completed_strategy_fail_is_not_retried: temporary SH-3 fixture does not admit taxonomy strategy"
+    }
+  },
+  "pacer_build_guard": {
+    "mq5_generated_or_edited": false,
+    "compile_enqueued": false,
+    "audit_command": "python C:/QM/repo/tools/strategy_farm/audit_framework_input_pins.py --check-source C:/QM/repo/framework/EAs/QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix/QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix.mq5",
+    "audit_exit_code": 0,
+    "ea_framework_input_pinned_findings": 0,
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "portfolio_weight": 1
+  },
+  "artifact_sha256": {
+    "mq5": "16ea2f16fc5675a077e207aec0d0626150ffb6f481670b37c87a3f8b4271f783",
+    "ex5": "cdfb4f0212bf6e50d7e8a402877d185e184664c168167afd28970fbd2456de43",
+    "basket_manifest": "5f625eda561429d434f53e25201f380a66b42c19d56f74296bda86815910e887",
+    "logical_backtest_setfile": "d78f0820bfcc6ddb0c83d0ed78b5f4a99032f60db1fbc6312ef790927bacfef6"
+  },
+  "cpu_guard": {
+    "ceiling_pct": 97.0,
+    "samples_pct": [
+      82.531484,
+      99.611995,
+      91.635728,
+      77.785338,
+      83.525684
+    ],
+    "average_pct": 87.018046,
+    "maximum_pct": 99.611995,
+    "blocked": true
+  },
+  "actions": {
+    "q04_successor_enqueued": false,
+    "priority_mutated": false,
+    "dispatch_tick_run": false,
+    "tester_launched": false,
+    "terminal_reserved": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_gate_touched": false
+  }
+}
