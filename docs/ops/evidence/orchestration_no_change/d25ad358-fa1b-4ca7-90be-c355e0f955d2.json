@@ -1,0 +1,17 @@
+{
+  "artifact_binding": {
+    "path": "docs/ops/evidence/2026-09-14_oos_2026_lane_migration/FINDINGS_AND_RECOMMENDATION.md",
+    "sha256": "6abe65377201518c4f6926653e5461e6fa1aba0014583e494e76199a0cc4f2e4"
+  },
+  "blocker_facts": {
+    "append_only_phase_trigger": "trg_work_items_phase_immutable",
+    "diagnostic_q10_successor_contract_decided": false,
+    "in_place_phase_rewrite_allowed": false
+  },
+  "disposition": "superseded_by_passed_successor",
+  "original_task_id": "d25ad358-fa1b-4ca7-90be-c355e0f955d2",
+  "reviewed_commit": "9fa3628c1f",
+  "schema": "qm.orchestration-stable-disposition.v1",
+  "successor_state": "PASSED",
+  "successor_task_id": "53d15c01-db62-4a81-8c09-9d4751d239c8"
+}
