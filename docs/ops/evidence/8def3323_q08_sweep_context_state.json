@@ -1,0 +1,78 @@
+{
+  "ablation_blocker": {
+    "ablate_source": {
+      "path": "tools/strategy_farm/ablate.py",
+      "sha256": "af6b9b83dd7bf26b08a9673743f4ee97e42058eca43b145cc368491b66d9eee8"
+    },
+    "approved_cards": [
+      {
+        "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10163_tv-rsi-macd-long.md",
+        "sha256": "a7fc626614ad407b587b39422e84cfcd6a162fb1436eab56830ec34538d0fd8d"
+      },
+      {
+        "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10932_grimes-volshock.md",
+        "sha256": "463b3dd3e20584b3530c94014788399689be567fba196e2764d3576493f33b63"
+      }
+    ],
+    "ea_ids": [
+      "QM5_10163",
+      "QM5_10932"
+    ],
+    "sealed_ledger_paths": [],
+    "stable_fact": "ablate.py has no ledger, seal, or authenticated arm-history contract; both rows remain INVALID rather than being declared single configurations"
+  },
+  "decision_id": "OWNER-DEC-Q08-SWEEP-ARM-CONTEXT-20260914",
+  "existing_artifacts": [
+    {
+      "path": "docs/ops/evidence/2026-09-14_q08_context_repair/sweep_arm_replay.md",
+      "sha256": "1d3a190d663570668e2cc1e627b2fe142e5bf1cdc79d81fc41a1242ed7b7b8a4"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-14_q08-sweep-arm-context-20260914_9e6ddd6b_execution.md",
+      "sha256": "29d9c32a986f57748e43a7de56fd11a3ad5b0bbadfe5a5c3226e38a47cd65d65"
+    }
+  ],
+  "landed_partial": {
+    "implementation_commit": "cc333007820957813e289aa2144cd58b2c7bd875",
+    "prescreen_skip_authorities": [
+      {
+        "program_id": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+        "receipt_sha256": "4a70c074eef2cd20775bc7311f20863c994d9da952a6aad23fc565180ab6d52f",
+        "work_item_id": "2c1a2b99-61e9-521d-8916-9eb2fcd12c91"
+      },
+      {
+        "program_id": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+        "receipt_sha256": "a1be25f19a72127e350aa9339b467bbc58417a687434201c2d54010de07f669b",
+        "work_item_id": "12bb82a8-cb07-521c-8867-eb686e2f208a"
+      }
+    ],
+    "source": {
+      "path": "tools/strategy_farm/dsr_cohort.py",
+      "sha256": "ef72f10eedf0c3055ffc9d6d53e5aa2407b3982c3cb2885bc98dc8d957ed7f8a"
+    },
+    "test_source": {
+      "path": "tools/strategy_farm/tests/test_dsr_cohort_prescreen_skip.py",
+      "sha256": "ed6c92befdf2781c9ae2b231d35d152dd1df4577813d6ad47b6d430f910322a5"
+    }
+  },
+  "required_resolution": "OWNER must either select way 2 for the affected standalone Q08 rows or commission a real governed window-sweep program that produces an authenticated ledger and native arm reports",
+  "schema": "qm.orchestration-blocker-state/v1",
+  "task_id": "8def3323-4f8d-4d1f-9565-4f1cdf5e8791",
+  "window_sweep_blocker": {
+    "approved_card_paths": [],
+    "candidate_ea_ids": [
+      "QM5_12115",
+      "QM5_41115",
+      "QM5_41131",
+      "QM5_41158",
+      "QM5_41176",
+      "QM5_41381",
+      "QM5_41423"
+    ],
+    "expected_schema": "qm.window-sweep.v1",
+    "ledger_paths": [],
+    "opt_census_direct_work_item_ids": [],
+    "opt_census_payload_mention_work_item_ids": [],
+    "stable_fact": "no governed sweep work item or authenticated ledger exists from which dsr_cohort can assemble the requested search history; QM5_41115 and QM5_41158 therefore cannot be replayed as sweep arms"
+  }
+}
