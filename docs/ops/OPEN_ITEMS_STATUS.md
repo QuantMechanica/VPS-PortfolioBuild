@@ -4999,6 +4999,10 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 
 - RECYCLE / REVIEW HOLD: the MAE-hook source repair is correct and focused source checks pass, but the canonical EX5 SHA-256 `aa7985...` does not match the repaired-source governed compile receipt (`7a9ff6...`). Gemini code was not approved and no pipeline state changed. Evidence: `docs/ops/evidence/2026-09-19_qm5_12951_codex_re_review.md`.
 
+### 2026-09-19 — RESULT: winsweep-arm compile-path recheck
+
+- PARTIAL / OWNER-BLOCKED: 41135, 41138, 41179, and 41189 now have source-current `COMPILE_OK` rows from separately authorized work; the remaining seven arms still have no approved card/open build path. Governed dry-run: 0 eligible successors, bounded release count 0. QM5_20042/20053 remain excluded. Evidence: `docs/ops/evidence/2026-09-19_winsweep_arm_compile_path_recheck/README.md`.
+
 ### 2026-09-17 — RESULT: QM5_1627 / QM5_1628 governed identity precondition
 
 - PASS: exact-card orphan-identity recovery was added to the governed allocator, gated to explicit cards and exact active magic rows; focused allocator/resolver tests pass (23/23).

@@ -1,0 +1,157 @@
+{
+  "schema": "qm.winsweep-arm-compile-path-recheck/v1",
+  "task_id": "be23fb25-a212-4946-85ea-136a1893eea9",
+  "superseded_execution_task_id": "11eff123-53b9-4153-ad40-c1e44b76ac4e",
+  "prior_plan_sha256": "ecaa44d2e652684a8b8c9089874549ec0d8dc1b4c4a921249361cc6b3b3677fa",
+  "repair_successor_dry_run_plan_sha256": "8fae8c9c93d31c58e21af5c966f9409154476a81a4d9f31411c83885be2b8684",
+  "path_a_available": false,
+  "apply_authorized": false,
+  "release_compile_wave_max_items_1_count": 0,
+  "excluded_not_in_scope": [
+    "QM5_20042",
+    "QM5_20053"
+  ],
+  "arms": [
+    {
+      "ea_id": "QM5_41113",
+      "ea_label": "QM5_41113_xauxag-mhalfagree-rv",
+      "ondisk_mq5_sha256": "20faafb2f1f4a8d7f496e78367ba57bc788d20c0ed8ac435c95fc10ed93ac013",
+      "compile_lineage": [
+        "f29ebccb-c2ce-49dd-8031-6d24760b0ecc",
+        "d62f097c-fedc-4643-a671-968a667a4f42"
+      ],
+      "current_source_compile_work_item_id": null,
+      "approved_card": false,
+      "open_build_task_id": null,
+      "dry_run_disposition": "FLAG_NEEDS_FRESH_BUILD_EA",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "ea_id": "QM5_41123",
+      "ea_label": "QM5_41123_xauxag-mpath-eff-rv",
+      "ondisk_mq5_sha256": "69aa644a3837ca7c4b05557914da03469251c5272be6980f90a4803a5136c64b",
+      "compile_lineage": [
+        "96d25526-218a-434f-95eb-36d80f1016b8",
+        "f1c50421-67c4-473f-b089-27e05acdd621"
+      ],
+      "current_source_compile_work_item_id": null,
+      "approved_card": false,
+      "open_build_task_id": null,
+      "dry_run_disposition": "FLAG_NEEDS_FRESH_BUILD_EA",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "ea_id": "QM5_41135",
+      "ea_label": "QM5_41135_xauxag-mdaily-iqrmean-rv",
+      "ondisk_mq5_sha256": "0c0b17b527ed2ebad49fde93ef93af7bb7aa0ef5cc61af93154c4651e96a759c",
+      "compile_lineage": [
+        "1e509ca3-c912-4670-8ba9-ea40602f142d"
+      ],
+      "current_source_compile_work_item_id": "1e509ca3-c912-4670-8ba9-ea40602f142d",
+      "compile_verdict": "COMPILE_OK",
+      "ex5_sha256": "4dac90efaff7b34ec516c850bd129f356d8d25e924f975cbbd1ed8224883f5ef",
+      "verdict": "RESOLVED_OUTSIDE_THIS_TICKET"
+    },
+    {
+      "ea_id": "QM5_41138",
+      "ea_label": "QM5_41138_xauxag-mdaily-hl-rv",
+      "ondisk_mq5_sha256": "4be1f5189355ec976d9d67469d874c4e077cb06c60835683d6a1c25dcaea49d2",
+      "compile_lineage": [
+        "3af0b6a2-8bbd-482c-b815-9c62b33d3485"
+      ],
+      "current_source_compile_work_item_id": "3af0b6a2-8bbd-482c-b815-9c62b33d3485",
+      "compile_verdict": "COMPILE_OK",
+      "ex5_sha256": "9974b019063a890761c883c36aa46ce288b8dd16488edc8dfd520a8678644d7d",
+      "verdict": "RESOLVED_OUTSIDE_THIS_TICKET"
+    },
+    {
+      "ea_id": "QM5_41157",
+      "ea_label": "QM5_41157_xauxag-mtheilsen-rv",
+      "ondisk_mq5_sha256": "9be2f4840d88b6bf33332075ebfdd7acc0921bbdc491483441495c7b80ec01f7",
+      "compile_lineage": [],
+      "current_source_compile_work_item_id": null,
+      "approved_card": false,
+      "open_build_task_id": null,
+      "dry_run_disposition": "FLAG_NEEDS_FRESH_BUILD_EA",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "ea_id": "QM5_41160",
+      "ea_label": "QM5_41160_xauxag-mlad-rv",
+      "ondisk_mq5_sha256": "aa2b54ba4cf944b549ccdaf77a4e6181fb1e931582d894e491ccd79a388409bb",
+      "compile_lineage": [],
+      "current_source_compile_work_item_id": null,
+      "approved_card": false,
+      "open_build_task_id": null,
+      "dry_run_disposition": "FLAG_NEEDS_FRESH_BUILD_EA",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "ea_id": "QM5_41179",
+      "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+      "ondisk_mq5_sha256": "ed6f54885c9455bcd5f9c5d7c45125fc59d1a4acc02213ddcb5ad801609e7412",
+      "compile_lineage": [
+        "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82",
+        "e85dbceb-9c97-4a37-b2a7-6831b5ff2628",
+        "3f0de0a8-5302-4310-864d-ae2782f72f9f",
+        "263c348b-24a9-4562-9d9c-0f79ce4f6483"
+      ],
+      "current_source_compile_work_item_id": "263c348b-24a9-4562-9d9c-0f79ce4f6483",
+      "compile_verdict": "COMPILE_OK",
+      "ex5_sha256": "7dc7bbf08195f41c8e22e9c035e0abdf507c57cb9baa5061990b0fdf84eb525b",
+      "verdict": "RESOLVED_BY_TASK_5a98a339"
+    },
+    {
+      "ea_id": "QM5_41181",
+      "ea_label": "QM5_41181_xauxag-mkendall-rv",
+      "ondisk_mq5_sha256": "cd757bac0be273382ebaa6449e692eb637a5b85344d2da5dd1b77f8bdfe06283",
+      "compile_lineage": [],
+      "current_source_compile_work_item_id": null,
+      "approved_card": false,
+      "open_build_task_id": null,
+      "dry_run_disposition": "FLAG_NEEDS_FRESH_BUILD_EA",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "ea_id": "QM5_41187",
+      "ea_label": "QM5_41187_xauxag-mks-rv",
+      "ondisk_mq5_sha256": "7c21ac9ad730808bbf027a32ba4504971bdb33d3f611d9f868a1389c1ce59f70",
+      "compile_lineage": [
+        "37dbc847-cf01-47cf-b89d-9ab761262f8c"
+      ],
+      "current_source_compile_work_item_id": null,
+      "approved_card": false,
+      "open_build_task_id": null,
+      "dry_run_disposition": "FLAG_NEEDS_OPEN_BUILD_TASK",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "ea_id": "QM5_41188",
+      "ea_label": "QM5_41188_xtixng-mrepmedian-rv",
+      "ondisk_mq5_sha256": "7fc514b19ad6a620a9103a7fef551a6abe42dc229d25ce93d15a18675b7676b2",
+      "compile_lineage": [
+        "e4e80a23-5cee-4bf1-b06d-b542ea886cb4"
+      ],
+      "current_source_compile_work_item_id": null,
+      "approved_card": false,
+      "open_build_task_id": null,
+      "dry_run_disposition": "FLAG_NEEDS_OPEN_BUILD_TASK",
+      "verdict": "OWNER_BLOCKED_CARD"
+    },
+    {
+      "ea_id": "QM5_41189",
+      "ea_label": "QM5_41189_xtixng-mlad-rv",
+      "ondisk_mq5_sha256": "b6c0052a0fae01e86abd1e9766da99c705197159cd25f0bfdbb2e4c3ec971efe",
+      "compile_lineage": [
+        "e5505264-01c4-4102-b3cd-9a275a6839ee",
+        "0c9615ab-51f9-4a51-97e7-0938217ee64e",
+        "81687a5b-1c4d-43f8-88bc-45b76ed3743d",
+        "62639587-7b80-4842-89b7-d14c6787412d"
+      ],
+      "current_source_compile_work_item_id": "62639587-7b80-4842-89b7-d14c6787412d",
+      "compile_verdict": "COMPILE_OK",
+      "ex5_sha256": "f579dc0c9181a0cf4c80c711a7f618c4d8240f1ca457a5c85f761ddc7ff09b7f",
+      "verdict": "RESOLVED_BY_TASK_5a98a339"
+    }
+  ]
+}
