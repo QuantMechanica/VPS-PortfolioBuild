@@ -1,0 +1,22 @@
+{
+  "artifact_bindings": [
+    {
+      "path": "docs/ops/evidence/2026-09-15_artifact_binding_drift_census2/README.md",
+      "sha256": "e84dab7d1fd9fc133b1683870b1563dd7cd4d15f8e041f242669b7d3d5552615"
+    },
+    {
+      "path": "docs/ops/evidence/2026-09-15_c2a_rebind_planner_tool/c2a_rebind_plan_dryrun.json",
+      "sha256": "9d43ab33b6bfb9119701082738e3a1778ebfb401e8349fae6e771c6f81d7847f"
+    }
+  ],
+  "disposition": "superseded_by_passed_successor",
+  "original_task_id": "2fd7e9b4-0229-4ce8-a07b-1a4bd6de0363",
+  "reviewed_commits": [
+    "bdb2b7f6d6000974b63bdecbe2d53df142983264",
+    "f26343889ea039500398794e44f973169bc932c8",
+    "571affb4f7"
+  ],
+  "schema": "qm.orchestration-stable-disposition.v1",
+  "successor_state": "PASSED",
+  "successor_task_id": "42ff3c7a-faf8-4be4-9dea-192cfc6e78e6"
+}
