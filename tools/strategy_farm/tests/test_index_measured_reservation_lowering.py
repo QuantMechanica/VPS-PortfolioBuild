@@ -151,3 +151,9 @@ def test_smoke_falls_back_to_class_backtest_key():
     assert got == (18.0, tw.RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED)
     # SP500 stays excluded from class evidence even via the fallback
     assert tw._index_measured_flat_reservation_gb(data, "QM5_41475", "index", "H1", "smoke", 44.0, host_base="SP500") is None
+
+
+def test_recovery_kind_falls_back_to_class_backtest_key():
+    data = {"index|H1|backtest": {"n": 127, "p95_gb": 10.616, "max_gb": 10.735}}
+    got = tw._index_measured_flat_reservation_gb(data, "QM5_41475", "index", "H1", "recovery", 44.0, host_base="NDX")
+    assert got == (18.0, tw.RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED)

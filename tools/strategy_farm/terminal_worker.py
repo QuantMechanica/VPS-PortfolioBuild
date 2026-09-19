@@ -1773,7 +1773,9 @@ def _index_measured_flat_reservation_gb(
     if not isinstance(data, dict) or not data:
         return None
     kinds = [run_kind]
-    if run_kind in ("news", "smoke"):
+    if run_kind in ("news", "smoke", "recovery"):
+        # "recovery" also covers universe-expansion / append-only reruns of the
+        # same backtest (farmctl.is_recovery_payload); footprint == backtest.
         # A news matrix cell replays the same EA/window/tick set as its backtest;
         # a first-canary smoke covers a SHORTER window than the class backtest,
         # so the backtest cohort is an upper-bound prior for both (2026-09-19:
