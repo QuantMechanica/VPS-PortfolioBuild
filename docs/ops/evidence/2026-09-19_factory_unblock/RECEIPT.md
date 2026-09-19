@@ -103,3 +103,26 @@ Actions:
 `compile_wave_release*.json`, `compile_rollout_reconcile_dryrun.json`, `hold_*.json`,
 `../2026-09-19_binding_drift/{census,plan,rebind_plan,unheld_rows}.json`,
 `../2026-09-19_q02_stranded_pairs/q02_stranded_20260919.{json,csv}`, commit `fbc9284107`.
+
+## Addendum 09:20–09:55Z — OWNER "44-GB-Klasse: dann räum mehr frei" → index lane unlocked
+
+- **RAM inventory (63.1 GB host):** metatester 10 GB (basket) + Chrome 7.6 GB (27 procs) + Firefox 2.4 GB +
+  pythonw 2.8 + claude 1.5 + FTMO terminal 0.9 + OS. Closed Chrome/Firefox (both idle in the disconnected
+  session-1 desktop, no factory role): free 30.0 → 37.2 GB.
+- **Root cause of the dead index frontier:** `_resolve_ram_reservation` = max(flat, measured, floor). The tester
+  memory ledger (20,418 runs) shows full-window index long runs at ~10 GB (NDX Q08 n=11 max 10.4; Q09 n=3 max 10.5;
+  GDAXI Q08 n=4 max 9.3; index|H1|backtest n=127 p95 10.6/max 10.7), but the 44 GB flat (NDX/GDAXI reverted to 44 on
+  2026-09-16 after two D1 monsters at 39.5 GB and one GDAXI D1 smoke at 35.4) could never be lowered by evidence.
+- **Fix (commit `cadfb48731`, tests 84 pass):** single_index_tick rows take `ceil(max(p95·1.5+2, max+2))` clamped
+  to [12, flat] from the per-EA key (n≥3, same TF) or the class key (n≥30); news rows fall back to the backtest key;
+  SP500 lowers on per-EA evidence only; D1 monsters stay 42–44. Rollback `QM_INDEX_EA_MEASURED_LOWERS=0`.
+  **Fix 2 (commit `40a6a738e1`):** evidence-reserved index rows clear at an 8 GB post-reservation floor (OPT_CENSUS
+  rule of 2026-09-03) instead of 14 GB. Fleet reloaded staggered (T10/T4 → T1/T2/T5 → T7/T9/T8, then again after fix 2).
+- **Result within 20 min:** QM5_10855 GDAXI Q04 → FAIL (genuine verdict, peak 1.3 GB), QM5_10599 NDX Q04 →
+  PASS_SOFT (cascaded into Q05, running), NDX Q10_NEWS 1355 + 11294 running in parallel beside a basket
+  (free 34.9 GB). 5 RAM44 holds released per row by evidence (`release_44gb_holds_0919.py`, journal
+  `ram44_release_journal.jsonl`); 41 formerly unheld index rows (Q04/Q08/Q10_NEWS) are now claimable.
+- **Side finding:** legacy-phase `Q09_NEWS` index rows (v3 storage phase, `avoid_terminals` T6–T10) became
+  claimable and crashed at run_item without evidence (5× INFRA_FAIL); six siblings parked
+  (`Q09_NEWS_RUNNER_CRASH_NO_EVIDENCE_20260919`), disposition = migrate/supersede to v4 `Q10_NEWS`
+  (`q09news_legacy_phase_note.md`, ticket c73ed341).
