@@ -1,0 +1,16 @@
+{
+  "active_hold_count": 0,
+  "at_utc": "2026-09-19T18:47:42+00:00",
+  "classification_counts": {},
+  "manual_review_count": 0,
+  "mode": "dry_run",
+  "needs_successor_count": 0,
+  "ready_to_supersede_count": 0,
+  "rows": [],
+  "schema_version": "qm.compile-rollout-stale-reconciliation/v1",
+  "source_fresh_hold_count": 0,
+  "stale_hold_count": 0,
+  "status": "ok",
+  "task_id": "e9944090-1e0f-4dea-af90-e74f8079d1c8",
+  "terminal_result_hold_count": 0
+}

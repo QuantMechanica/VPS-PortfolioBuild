@@ -3,16 +3,16 @@
 ; ea_id:        41189
 ; ea_slug:      xtixng-mlad-rv
 ; ea_version:   v5.0
-; set_version:  s20260905-001
+; set_version:  s20260919-001
 ; symbol:       XNGUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f2f51e5af447856beb1bb9ae453f8f3f7da86fd845b80e275802a84174b8189b
+; build_hash:   eedae30504008b295edef7d14758cced72275006a389e1ac7eea0c58e7e8ea9e
 ; author:       Development
-; date:         2026-09-05
+; date:         2026-09-19
 ;==========================================================
 qm_ea_id=41189
 qm_magic_slot_offset=1
@@ -21,6 +21,7 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=ea_input_defaults
+strategy_xti_symbol=XTIUSD.DWX
 strategy_xng_symbol=XNGUSD.DWX
 strategy_month_end_count=13
 strategy_history_bars_d1=900

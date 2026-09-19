@@ -1,0 +1,65 @@
+{
+  "applied": 3,
+  "applied_work_item_ids": [
+    "263c348b-24a9-4562-9d9c-0f79ce4f6483",
+    "62639587-7b80-4842-89b7-d14c6787412d",
+    "dfbc514f-c183-49aa-afb4-a7bf78fdbce1"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260919T184013_364657Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260919T183622Z_cfd74b38.sqlite",
+    "reused": false,
+    "sha256": "3a0e46e5c9bb8e555201cf34d6fd15b115dd1f298e158e18001ad9b0267cddd9"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 600.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 3,
+  "max_items": 3,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "ed6f54885c9455bcd5f9c5d7c45125fc59d1a4acc02213ddcb5ad801609e7412",
+      "ea_id": "QM5_41179",
+      "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+      "expected_mq5_sha256": "ed6f54885c9455bcd5f9c5d7c45125fc59d1a4acc02213ddcb5ad801609e7412",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41179_xtixng-mcoxstuart-rv\\QM5_41179_xtixng-mcoxstuart-rv.mq5",
+      "work_item_id": "263c348b-24a9-4562-9d9c-0f79ce4f6483"
+    },
+    {
+      "actual_mq5_sha256": "b6c0052a0fae01e86abd1e9766da99c705197159cd25f0bfdbb2e4c3ec971efe",
+      "ea_id": "QM5_41189",
+      "ea_label": "QM5_41189_xtixng-mlad-rv",
+      "expected_mq5_sha256": "b6c0052a0fae01e86abd1e9766da99c705197159cd25f0bfdbb2e4c3ec971efe",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41189_xtixng-mlad-rv\\QM5_41189_xtixng-mlad-rv.mq5",
+      "work_item_id": "62639587-7b80-4842-89b7-d14c6787412d"
+    },
+    {
+      "actual_mq5_sha256": "bd65d86feafb660aee79a9e4e483f62679788383595d6a80bbd5204db50d23f0",
+      "ea_id": "QM5_41142",
+      "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+      "expected_mq5_sha256": "bd65d86feafb660aee79a9e4e483f62679788383595d6a80bbd5204db50d23f0",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow\\QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+      "work_item_id": "dfbc514f-c183-49aa-afb4-a7bf78fdbce1"
+    }
+  ],
+  "release_count": 3,
+  "released_at": "2026-09-19T18:40:13+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": null,
+  "work_item_id_selectors": [
+    "263c348b-24a9-4562-9d9c-0f79ce4f6483",
+    "62639587-7b80-4842-89b7-d14c6787412d",
+    "dfbc514f-c183-49aa-afb4-a7bf78fdbce1"
+  ]
+}
