@@ -1,0 +1,56 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "status": "REGISTRY_STEP_DONE_COMPILE_STEP_BLOCKED",
+  "authority_candidate": "router_ops_issue:fa45d828-8424-45bb-ba61-83cae7e24f82:QM5_41347",
+  "created_at_local": "2026-09-19T17:10:00+02:00",
+  "ea_id": "QM5_41347",
+  "ea_label": "QM5_41347_cs-ichi-cloud-opt",
+  "mission_priority": 86,
+  "scope": "diagnostic + registry-data record for task fa45d828-8424-45bb-ba61-83cae7e24f82; no strategy, source-mechanics, economic-verdict, pipeline-gate, live, portfolio-gate, or cross-EA authority is claimed or exercised",
+  "step_1_registry_row_done": {
+    "card_amendment": "2026-09-19 (Fable, OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917): framework/EAs/QM5_41347_cs-ichi-cloud-opt/docs/strategy_card.md target_symbols amended to [XAUUSD.DWX, NDX.DWX]",
+    "registry_gap_observed": "governed_magic_allocator.py --card exact_card dry-run refused with active_magic_contract_mismatch:active_magic_row_count_mismatch:expected=2:actual=1 (docs/ops/evidence/2026-09-19_factory_unblock/allocator_dryrun_41347_ndx.json) because framework/registry/magic_numbers.csv carried only the slot-0 XAUUSD.DWX row (413470000, 2026-09-05)",
+    "registry_row_added": "41347,cs-ichi-cloud-opt,1,NDX.DWX,413470001,2026-09-19,claude governed slot add,active (inserted directly after the existing slot-0 row in framework/registry/magic_numbers.csv, per the exact row the task payload specified)",
+    "resolver_regen": "framework/scripts/update_magic_resolver.py run after the CSV edit: wrote framework/include/QM/QM_MagicResolver.mqh, 18362 rows kept, 0 dropped, sha=2F23DBE01C5E1FF8...",
+    "verification_tests": "python -m pytest tools/strategy_farm/tests/test_governed_magic_allocator.py tools/strategy_farm/tests/test_magic_allocation_precheck.py framework/scripts/tests/test_magic_resolver_strict_default.py -q -> 23 passed (re-verified after the compile_work_items.py revert below)",
+    "files_touched": [
+      "framework/registry/magic_numbers.csv",
+      "framework/include/QM/QM_MagicResolver.mqh"
+    ]
+  },
+  "step_2_governed_rebuild_blocked": {
+    "attempted_action": "registered a BACKLOG_SOURCE_REPAIR_REGISTRATIONS entry in tools/strategy_farm/compile_work_items.py under authority router_ops_issue:fa45d828-8424-45bb-ba61-83cae7e24f82:QM5_41347, mirroring the exact pattern used for QM5_21505/QM5_13054 (docs/ops/evidence/2026-09-18_qm5_21505_stale_binary_rebuild_authority.json)",
+    "dry_run_check": "ran classify_candidate(...) directly (no DB writes) via compile_work_items._inventory + classify_candidate for QM5_41347_cs-ichi-cloud-opt with the candidate authority",
+    "result": "eligible=false, reason=USABLE_CURRENT_COMPILE_VERDICT_EXISTS (source_repair_authorized computed as false because classify_candidate's line `source_repair_authorized = repair_authorized and not current_compile_ok` short-circuits whenever a prior COMPILE_EA row already has verdict=COMPILE_OK for the identical (mq5_sha256, ex5_sha256) pair, regardless of the registered authority)",
+    "prior_compile_ok_row": "work_item 245ee112-e9b1-4346-a5b0-82ae91cd039c, mq5_sha256=64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f, ex5_sha256=3e475c8b7b6bf1596233768fc6b5852c0881f5c020d6ca08ec9b6f55abaa517d (this is the 2026-09-05 original build; both hashes are unchanged today, unlike the QM5_21505 precedent where the .mq5 content itself changed and had no prior COMPILE_OK row)",
+    "root_cause_of_the_gap": "classify_candidate's identity/staleness model is keyed only on (ea_dir mq5 sha256, ea_dir ex5 sha256). It has no notion of the shared framework/include/QM/QM_MagicResolver.mqh file's content or hash, so it cannot distinguish 'source and binary already correctly match, nothing to do' from our actual situation: the .mq5 is genuinely unchanged, but the *shared, statically-#included* resolver table baked into the .ex5 at compile time predates the new NDX.DWX/413470001 row and therefore cannot resolve it at runtime (framework/include/QM/QM_Common.mqh QM_MagicChecked/QM_FrameworkMagic walks the compiled-in QM_MAGIC_REG_* arrays, which the 2026-09-05 binary lacks for slot 1)",
+    "action_taken": "reverted the compile_work_items.py edit (git checkout --) rather than ship an inert/misleading registration, and did not attempt any alternate bypass (e.g. adding QM5_41347 to one of the existing force_rebuild_ea_ids allowlists such as DL089_FORCE_REBUILD_EA_IDS/MAE_HOOK_FORCE_REBUILD_EA_IDS/PRE0803_FORCE_REBUILD_EA_IDS) because those are each pinned to a specific, already-closed named OWNER decision that does not cover this EA, and extending or generalizing that bypass mechanism ad hoc reads as a gate-criteria change rather than a data-registration operating action",
+    "not_performed": [
+      "no farmctl.py enqueue-compile was run (would have failed classify_candidate with USABLE_CURRENT_COMPILE_VERDICT_EXISTS / EX5_ALREADY_PRESENT / WORK_ITEMS_EXIST / BOUND_SETFILE_HASH_EXISTS, none of which were actually waived)",
+      "no release_compile_wave.py --apply was run (nothing was enqueued to release)",
+      "the staged measurement setfile docs/ops/evidence/2026-09-19_factory_unblock/staged_41347_ndx/QM5_41347_cs-ichi-cloud-opt_NDX.DWX_H4_backtest.set was left in place, NOT moved into framework/EAs/QM5_41347_cs-ichi-cloud-opt/sets/, because its header build_hash is meant to bind to the rebuilt .ex5, which does not yet exist",
+      "farmctl.py service-dl089-matrix dry-run for ff3325b3 was not re-checked post-rebuild since the rebuild did not happen"
+    ]
+  },
+  "recommended_next_step": {
+    "summary": "a proper fix belongs in compile_work_items.py's classify_candidate identity model, not in an ad-hoc Claude-side bypass",
+    "options": [
+      "extend classify_candidate to fold the current QM_MagicResolver.mqh sha256 (or just its QM_MAGIC_REGISTRY_SHA256 constant) into the identity check that gates USABLE_CURRENT_COMPILE_VERDICT_EXISTS, so a resolver regen correctly invalidates a same-source COMPILE_OK verdict; this is a Codex-reviewed code change, not a registration edit",
+      "or: mint a new named, OWNER-referenced force-rebuild allowlist entry (parallel to DL089_FORCE_REBUILD_EA_IDS) scoped to exactly QM5_41347, if OWNER/Codex judges the ad hoc route acceptable for this one EA"
+    ],
+    "not_recommended": "do not weaken or remove the USABLE_CURRENT_COMPILE_VERDICT_EXISTS guard generally; it correctly prevents redundant/needless rebuilds in the overwhelmingly common case"
+  },
+  "coordination": {
+    "router_task_id": "fa45d828-8424-45bb-ba61-83cae7e24f82",
+    "claimed_by": "claude",
+    "branch": "agents/board-advisor",
+    "owner_authority_cited": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917"
+  },
+  "safety": {
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "terminal_untouched": true,
+    "no_verdict_mutation": true,
+    "xauusd_census_evidence_untouched": "the XAUUSD.DWX 1089 MEASURED-cell census evidence stays bound to the unchanged ex5_sha256 3e475c8b7b6bf1596233768fc6b5852c0881f5c020d6ca08ec9b6f55abaa517d; nothing in this session touched it"
+  }
+}
