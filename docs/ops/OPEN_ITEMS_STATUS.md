@@ -4995,6 +4995,10 @@ moved to REVIEW (`review_required: INDEPENDENT_ORCHESTRATOR_CLOSEOUT`).
 - PASS: terminal completion and stranded-claim recovery now catch `VerdictTaxonomyContractError`, land a clean `INFRA_FAIL` with `verdict_reason=verdict_taxonomy_contract`, preserve the offending taxonomy, and place the exact `VERDICT_TAXONOMY_CONTRACT` hold without terminating the daemon.
 - PASS: farm health now exposes active taxonomy-contract holds with row, phase, `verdict_reason`, and offending taxonomy; focused worker/schema verification passed 7/7. No verdict-selection logic changed and no live row was manufactured. Evidence: `docs/ops/evidence/2026-09-13_prescreen_model_marker_gate_repair.md`.
 
+### 2026-09-19 — RESULT: QM5_12951 mandatory Codex re-review
+
+- RECYCLE / REVIEW HOLD: the MAE-hook source repair is correct and focused source checks pass, but the canonical EX5 SHA-256 `aa7985...` does not match the repaired-source governed compile receipt (`7a9ff6...`). Gemini code was not approved and no pipeline state changed. Evidence: `docs/ops/evidence/2026-09-19_qm5_12951_codex_re_review.md`.
+
 ### 2026-09-17 — RESULT: QM5_1627 / QM5_1628 governed identity precondition
 
 - PASS: exact-card orphan-identity recovery was added to the governed allocator, gated to explicit cards and exact active magic rows; focused allocator/resolver tests pass (23/23).
