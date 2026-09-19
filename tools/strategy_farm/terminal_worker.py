@@ -1674,6 +1674,30 @@ RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED = "index_class_measured"
 # asset-class key (dominated by NDX/GDAXI) must not speak for it.  Per-EA
 # evidence on SP500 still lowers.
 INDEX_MEASURED_CLASS_LOWERING_EXCLUDED_BASES = frozenset({"SP500"})
+# Post-reservation admission floor for evidence-reserved index rows.  The
+# reservation already carries 1.5x p95 + 2 GB (or max + 2 GB) of the same
+# cohort, so the generic 14 GB latch on top double-counts the margin and, at
+# 27-33 GB free beside one basket, keeps the second index run out (T1 claim
+# scan 2026-09-19 09:41Z: QM5_10599 @20 GB skipped at 33 GB free).  Same
+# rationale as OPT_CENSUS_POST_RESERVATION_FLOOR_GB (2026-09-03): measured
+# cohort, reaper backstop.  Flat / index-table rows keep the class floor.
+INDEX_MEASURED_POST_RESERVATION_FLOOR_GB = 8.0
+_INDEX_MEASURED_SOURCES = frozenset(
+    {RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED, RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED}
+)
+
+
+def _index_measured_admission_floor_gb(
+    ram_class: str, reservation_source: str, class_floor_gb: float
+) -> float:
+    """Pure: the admission floor for one candidate given its reservation source."""
+    if (
+        ram_class == COMMIT_CLASS_SINGLE_INDEX_TICK
+        and str(reservation_source or "") in _INDEX_MEASURED_SOURCES
+        and _index_measured_lowering_active()
+    ):
+        return min(float(class_floor_gb), INDEX_MEASURED_POST_RESERVATION_FLOOR_GB)
+    return float(class_floor_gb)
 
 
 def _index_measured_lowering_active() -> bool:
@@ -6684,6 +6708,14 @@ def claim_atomic(root: Path, terminal: str) -> dict[str, Any]:
                         multisym_free_ram_snapshot - ram_reservation_gb
                     )
                     ram_floor_gb = _ram_floor_for_class(ram_class)
+                    if ram_class == COMMIT_CLASS_SINGLE_INDEX_TICK:
+                        # 2026-09-19 evidence-reserved index rows clear at the
+                        # measured-cohort floor (INDEX_MEASURED_POST_RESERVATION_FLOOR_GB).
+                        ram_floor_gb = _index_measured_admission_floor_gb(
+                            ram_class,
+                            _ram_reservation_source_label(item, payload, item_is_multisym),
+                            ram_floor_gb,
+                        )
                     # DRAINED-FLEET admission floor (2026-09-03; audit
                     # docs/ops/evidence/2026-09-03_index_tick_admission_audit.md):
                     # the class floor protects OTHER running testers.  When THIS

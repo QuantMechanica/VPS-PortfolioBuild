@@ -125,3 +125,18 @@ def test_sp500_class_key_excluded_but_per_ea_allowed():
         18.0, tw.RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED)
     assert tw._index_measured_flat_reservation_gb(data, "QM5_1098", "index", "H1", "backtest", 44.0, host_base="SP500") == (
         18.0, tw.RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED)
+
+
+def test_admission_floor_lowered_only_for_measured_index_rows(monkeypatch):
+    monkeypatch.delenv("QM_INDEX_EA_MEASURED_LOWERS", raising=False)
+    monkeypatch.delenv("QM_INDEX_TICK_RESERVATION_TABLE", raising=False)
+    idx = tw.COMMIT_CLASS_SINGLE_INDEX_TICK
+    assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED, 14.0) == 8.0
+    assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED, 14.0) == 8.0
+    assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_FLAT, 14.0) == 14.0
+    assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_INDEX_TABLE, 14.0) == 14.0
+    assert tw._index_measured_admission_floor_gb("ordinary", tw.RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED, 14.0) == 14.0
+    # a floor already below 8 is never raised
+    assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED, 4.0) == 4.0
+    monkeypatch.setenv("QM_INDEX_EA_MEASURED_LOWERS", "0")
+    assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED, 14.0) == 14.0
