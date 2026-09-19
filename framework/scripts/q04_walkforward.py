@@ -180,6 +180,21 @@ def _safe_path_component(value: str, fallback: str) -> str:
     return cleaned or fallback
 
 
+def _scratch_identity_component(value: str) -> str:
+    """Return a stable, bounded scratch leaf for one durable evidence identity.
+
+    The durable Q04 directory keeps the full logical-symbol/work-item identity.
+    Repeating that long leaf below the already UUID-qualified work-item scratch
+    root can push the injected setfile beyond the legacy Windows MAX_PATH limit
+    before ``run_smoke.ps1`` is launched.  Scratch data is private to one work
+    item, so a short content-derived component preserves isolation without
+    weakening the durable evidence name.
+    """
+    safe = _safe_path_component(value, "evidence")
+    digest = hashlib.sha256(safe.encode("utf-8")).hexdigest()[:12]
+    return f"q04_{digest}"
+
+
 def q04_evidence_leaf(symbol: str, evidence_key: str) -> str:
     """Unique one-level Q04 leaf compatible with the existing aggregate ingester."""
     return (
@@ -997,7 +1012,7 @@ def run_fold_via_smoke(*, ea_id: int, ea_expert: str, symbol: str,
         scratch
         / f"QM5_{ea_id}"
         / "Q04"
-        / _safe_path_component(durable_dir.name, "evidence")
+        / _scratch_identity_component(durable_dir.name)
         / str(fold["id"])
     )
     fold_dir.mkdir(parents=True, exist_ok=True)

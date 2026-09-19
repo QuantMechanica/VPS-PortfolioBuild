@@ -381,6 +381,71 @@ class Q04WalkForwardTests(unittest.TestCase):
             )
             self.assertTrue(Path(result["log_path"]).exists())
 
+    def test_run_fold_bounds_long_work_item_scratch_path(self) -> None:
+        mod = _load_module()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            setfile = root / (
+                "QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix_"
+                "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1_D1_backtest.set"
+            )
+            setfile.write_text("InpFoo=1\n", encoding="utf-8")
+            summary = root / "summary.json"
+            summary.write_text("{}", encoding="utf-8")
+            repo_root, mt5_root = self._prepare_fold_preflight(
+                root,
+                expert=r"QM\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix",
+                terminal="T4",
+                symbol="AUDUSD.DWX",
+            )
+            scratch_root = (
+                root
+                / "work_items"
+                / "fd6c5f93-f638-4307-b41a-ccb4599e9e32"
+            )
+            evidence_dir = root / (
+                "QM5_12778_AUDUSD_EURJPY_COINTEGRATION_D1__"
+                "fd6c5f93-f638-4307-b41a-ccb4599e9e32"
+            )
+            captured = {}
+
+            def fake_run(args, **kwargs):
+                captured["args"] = args
+                kwargs["stdout"].write(f"run_smoke.summary={summary}\n")
+                return subprocess.CompletedProcess(args, 1)
+
+            with mock.patch.object(subprocess, "run", side_effect=fake_run):
+                result = mod.run_fold_via_smoke(
+                    ea_id=41471,
+                    ea_expert=(
+                        r"QM\QM5_41471_edgelab-audusd-eurjpy-cointegration-symfix"
+                    ),
+                    symbol="AUDUSD.DWX",
+                    setfile=setfile,
+                    fold={
+                        "id": "F1",
+                        "dev_start": "2017-01-01",
+                        "dev_end": "2022-12-31",
+                        "oos_start": "2023-01-01",
+                        "oos_end": "2023-12-31",
+                    },
+                    report_root=root / "reports",
+                    scratch_root=scratch_root,
+                    evidence_dir=evidence_dir,
+                    terminal="T4",
+                    period="D1",
+                    timeout_sec=60,
+                    repo_root=repo_root,
+                    mt5_root=mt5_root,
+                )
+
+            args = captured["args"]
+            injected_set = Path(args[args.index("-SetFile") + 1])
+            self.assertRegex(injected_set.parent.parent.name, r"^q04_[0-9a-f]{12}$")
+            self.assertNotIn(evidence_dir.name, str(injected_set))
+            self.assertLess(len(str(injected_set)), 260)
+            self.assertTrue(Path(result["summary_path"]).is_file())
+
     def test_run_fold_retries_windows_launch_fault_before_grading(self) -> None:
         mod = _load_module()
         with tempfile.TemporaryDirectory() as tmp:
