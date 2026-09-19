@@ -1,0 +1,59 @@
+{
+  "schema_version": "qm.build-q02-handoff/v1",
+  "ea_id": "QM5_41483",
+  "ea_label": "QM5_41483_wti-tsmom11-h1",
+  "compile_work_item_id": "2969169d-f11b-4b69-aaf3-dc37d3f5ba02",
+  "compile_verdict": "COMPILE_OK",
+  "mq5_sha256": "29c1d6a18d8117d22a7bb587d5ae95b7dae604e0b55a0307c2f5f5082697cd04",
+  "ex5_sha256": "3d67a36290dc708118925e718d197b46fce2697463a57cafad81f72e40117809",
+  "setfile_sha256_at_q02_intake": "e332bef808157ddfa9c042889d8781295b907b866943c4a78ef1a8f904e600fd",
+  "framework_input_pin_audit": {
+    "ok": true,
+    "finding_count": 0
+  },
+  "smoke": {
+    "attempted": true,
+    "launched": false,
+    "status": "no_capacity",
+    "terminal": "any"
+  },
+  "cpu_windows": [
+    {
+      "purpose": "pre_smoke",
+      "sampled_at": "2026-09-19T18:33:23.4628518Z",
+      "samples_percent": [42.37325, 32.345932, 45.707007, 25.809531, 34.482219],
+      "average_percent": 36.143588,
+      "maximum_percent": 45.707007,
+      "ceiling_percent": 97.0,
+      "admitted": true
+    },
+    {
+      "purpose": "immediate_pre_q02_enqueue",
+      "sampled_at": "2026-09-19T18:33:54.9330476Z",
+      "samples_percent": [40.558481, 47.074774, 40.154033, 39.669441, 46.293512],
+      "average_percent": 42.750048,
+      "maximum_percent": 47.074774,
+      "ceiling_percent": 97.0,
+      "admitted": true
+    }
+  ],
+  "q02": {
+    "work_item_id": "134fa3fc-5ad3-4437-b69b-89a0c21df0a4",
+    "symbol": "XTIUSD.DWX",
+    "timeframe": "D1",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0,
+    "receipt_path": "D:\\QM\\strategy_farm\\artifacts\\receipts\\first_q02_intake\\2969169d-f11b-4b69-aaf3-dc37d3f5ba02_134fa3fc-5ad3-4437-b69b-89a0c21df0a4.json",
+    "receipt_sha256": "4a2e4a8338c32ac1ecba5a42e5eec947079d58d297671e5c1e20e4b4ade1bea5",
+    "status_when_verified": "active",
+    "claimed_by_when_verified": "T5"
+  },
+  "safety": {
+    "t_live_touched": false,
+    "autotrading_changed": false,
+    "portfolio_gate_touched": false,
+    "live_manifest_touched": false,
+    "economic_verdict_claimed": false,
+    "correlation_claimed": false
+  }
+}

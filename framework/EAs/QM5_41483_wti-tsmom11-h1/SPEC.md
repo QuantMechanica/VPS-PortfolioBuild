@@ -92,10 +92,13 @@ or correlation waiver.
 | Version | Date | Reason | Notes |
 |---|---|---|---|
 | v1 | 2026-09-19 | Initial build from approved card | PACER guarded build |
+| v1.1 | 2026-09-19 | Governed compile and Q02 handoff | COMPILE_OK; one Q02 canary enqueued |
 
 ## 11. Q01 And Q02 Status
 
-Q01 is pending the mandatory source-fresh PACER pin audit, deterministic
-reference vectors, and governed strict compile. Q02 is not authorized until
-Q01 passes and a fresh five-sample host-CPU window remains strictly below the
-97% ceiling on both average and maximum. No manual tester launch is permitted.
+Q01 passed the mandatory source-fresh PACER pin audit (zero findings),
+deterministic reference vectors, and governed strict compile with zero compiler
+errors or warnings. The build-smoke resolver returned `no_capacity` before any
+tester launch. After a fresh five-sample host-CPU window remained strictly
+below the 97% ceiling on both average and maximum, the canonical intake path
+enqueued one `XTIUSD.DWX` D1 Q02 canary. Q02 owns the first economic verdict.

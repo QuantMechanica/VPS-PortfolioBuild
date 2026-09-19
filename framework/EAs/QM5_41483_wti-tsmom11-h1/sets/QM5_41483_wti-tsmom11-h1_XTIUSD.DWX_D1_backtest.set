@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   9203fc323061780709092f48be2ce9198df760cf36ae56a6af92e22ab8165d8e
 ; author:       Development
 ; date:         2026-09-19
 ;==========================================================
@@ -29,4 +29,3 @@ strategy_atr_period_d1=20
 strategy_atr_sl_mult=3.5
 strategy_max_hold_days=40
 strategy_max_spread_points=1500
-
