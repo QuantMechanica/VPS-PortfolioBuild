@@ -41,13 +41,17 @@ DEFAULT_DISABLED_TERMINALS = Path(
 
 CANONICAL_FACTORY_ON_PATH = Path(r"C:\QM\repo\tools\strategy_farm\Factory_ON.ps1")
 CANONICAL_OWNER_DECISION_RELATIVE_PATH = Path(
-    "docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json"
+    "docs/ops/evidence/2026-09-19_fable_q12_rollout_hold_release_owner_decision.json"
 )
 CANONICAL_OWNER_DECISION_SHA256 = (
-    "9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4"
+    "bab3b02d32bb2936145b7f3814a1a6d9e342b1efca089063dafcd943f281c386"
 )
-CANONICAL_OWNER_DECISION_COMMIT = "ecbd911628e0850cbbfd8ab3ed1eb3c0b0b911b3"
-CANONICAL_OWNER_DECISION_BLOB = "2247ace7ec310bfb0c76dfdc455193e209683463"
+CANONICAL_OWNER_DECISION_COMMIT = "c965eea5f0dd9974bded1a3a28811f8487edf509"
+CANONICAL_OWNER_DECISION_BLOB = "1d5a6601c5fbef2b13877b2b95d5b34848221077"
+# Prior pin (2026-08-11 standing preparation, authorized zero restart-hold
+# releases) superseded 2026-09-19 by decisions/2026-09-19_fable_q12_rollout_hold_release.md
+# under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917; history preserved at
+# docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json.
 CANONICAL_WORKER_TERMINALS = (
     "T1",
     "T2",
@@ -470,7 +474,7 @@ def _validate_canonical_restart_owner_decision() -> dict[str, Any]:
         raise RuntimeError("canonical OWNER decision must be a JSON object")
 
     expected_scalar = {
-        "decision_id": "FACTORY_PREPARATION_20260811_STANDING_UNLIMITED",
+        "decision_id": "OWNER_DEC_FABLE_Q12_ROLLOUT_RELEASE_20260919",
         "authority": "OWNER",
         "status": "APPROVED",
     }

@@ -1,0 +1,27 @@
+{
+  "expected_work_item_ids": [
+    "19761d0c-3877-587d-a5cd-a8e48291cdf7",
+    "2dad5730-30ed-5ab1-ace1-d5db4ede60db",
+    "5cf3ea75-2fe0-5420-97c6-650678c52b31",
+    "73063ec5-3abe-5e11-8497-8df833e3ec4c",
+    "779da760-42c2-50ed-80c3-263ef3366edb",
+    "897169ba-9b8f-53ef-8c43-3013f3c7f2e8",
+    "ba724ef2-22eb-54fa-b155-a793ef54b5c1",
+    "f364ed13-9f09-5fa6-b7df-d414e8a13d77"
+  ],
+  "mode": "dry_run",
+  "owner_decision_blob": "1d5a6601c5fbef2b13877b2b95d5b34848221077",
+  "owner_decision_commit": "c965eea5f0dd9974bded1a3a28811f8487edf509",
+  "owner_decision_sha256": "bab3b02d32bb2936145b7f3814a1a6d9e342b1efca089063dafcd943f281c386",
+  "release_count": 8,
+  "work_item_ids": [
+    "19761d0c-3877-587d-a5cd-a8e48291cdf7",
+    "2dad5730-30ed-5ab1-ace1-d5db4ede60db",
+    "5cf3ea75-2fe0-5420-97c6-650678c52b31",
+    "73063ec5-3abe-5e11-8497-8df833e3ec4c",
+    "779da760-42c2-50ed-80c3-263ef3366edb",
+    "897169ba-9b8f-53ef-8c43-3013f3c7f2e8",
+    "ba724ef2-22eb-54fa-b155-a793ef54b5c1",
+    "f364ed13-9f09-5fa6-b7df-d414e8a13d77"
+  ]
+}
