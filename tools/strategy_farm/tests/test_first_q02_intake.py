@@ -424,3 +424,204 @@ def test_archive_admission_failure_is_explicit(
     )
     result = _plan(fixture)
     assert result["reason"] == "custom_history_archive_admission_failed"
+
+
+# --- intake-first-q02 --supersede-pending-canary ---------------------------
+
+EXCLUSIVE_RAM_GB = 44.0
+CHEAP_RAM_GB = 8.0
+
+
+def _set_ram_gb(
+    monkeypatch: pytest.MonkeyPatch, by_symbol: dict[str, float],
+) -> None:
+    def fake(symbol: str, ea_id: str = "") -> float:
+        return by_symbol[str(symbol).upper()]
+
+    monkeypatch.setattr(farmctl, "_q02_canary_ram_reservation_gb", fake)
+
+
+def _insert_existing_q02(
+    fixture: dict[str, object],
+    *,
+    work_item_id: str = "existing",
+    symbol: str = "EURUSD.DWX",
+    status: str = "pending",
+    claimed_by: str | None = None,
+    verdict: str | None = None,
+) -> None:
+    now = "2026-09-06T00:00:00+00:00"
+    evidence_path = (
+        f"{farmctl.EVIDENCE_UNAVAILABLE_PREFIX}fixture" if verdict else None
+    )
+    _db_execute(
+        fixture,
+        "INSERT INTO work_items "
+        "(id,kind,phase,ea_id,symbol,setfile_path,status,verdict,claimed_by,"
+        "evidence_path,attempt_count,payload_json,created_at,updated_at) VALUES "
+        "(?,'backtest','Q02',?,?,'fixture.set',?,?,?,?,0,'{}',?,?)",
+        (work_item_id, EA_ID, symbol, status, verdict, claimed_by, evidence_path, now, now),
+    )
+
+
+def _supersede(
+    fixture: dict[str, object], *, apply: bool = False,
+) -> dict[str, object]:
+    return farmctl.intake_first_q02_supersede_pending_canary(
+        fixture["root"],  # type: ignore[arg-type]
+        COMPILE_ID,
+        apply=apply,
+        repo_root=fixture["repo"],  # type: ignore[arg-type]
+    )
+
+
+def _q02_rows(fixture: dict[str, object]) -> list[sqlite3.Row]:
+    root = fixture["root"]
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:  # type: ignore[operator]
+        conn.row_factory = sqlite3.Row
+        return conn.execute(
+            "SELECT * FROM work_items WHERE phase='Q02' ORDER BY created_at,id"
+        ).fetchall()
+
+
+def test_supersede_dry_run_eligible_with_cheaper_replan(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = _fixture(tmp_path)
+    _insert_existing_q02(fixture, symbol="EURUSD.DWX")
+    _set_ram_gb(monkeypatch, {"EURUSD.DWX": EXCLUSIVE_RAM_GB, "GBPUSD.DWX": CHEAP_RAM_GB})
+
+    result = _supersede(fixture)
+
+    assert result["eligible"] is True
+    assert result["would_enqueue"] is True
+    assert result["applied"] is False
+    assert result["dry_run"] is True
+    assert result["canary"]["symbol"] == "GBPUSD.DWX"  # type: ignore[index]
+    predecessors = result["predecessors"]  # type: ignore[index]
+    assert len(predecessors) == 1
+    assert predecessors[0]["work_item_id"] == "existing"
+    assert predecessors[0]["supersede_eligible"] is True
+    assert len(_q02_rows(fixture)) == 1  # unchanged: only the predecessor exists
+
+
+def test_supersede_apply_parks_predecessor_and_appends_successor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = _fixture(tmp_path)
+    _insert_existing_q02(fixture, symbol="EURUSD.DWX")
+    _set_ram_gb(monkeypatch, {"EURUSD.DWX": EXCLUSIVE_RAM_GB, "GBPUSD.DWX": CHEAP_RAM_GB})
+
+    result = _supersede(fixture, apply=True)
+
+    assert result["applied"] is True
+    assert result["dry_run"] is False
+    successor_id = result["work_item_id"]
+    receipt_path = Path(result["receipt_path"])  # type: ignore[arg-type]
+    assert receipt_path.is_file()
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["schema"] == farmctl.FIRST_Q02_SUPERSEDE_RECEIPT_SCHEMA
+    assert receipt["hold_code"] == farmctl.Q02_SUPERSEDED_CANARY_RAM_CLASS_HOLD_CODE
+
+    rows = _q02_rows(fixture)
+    assert len(rows) == 2
+    predecessor = next(row for row in rows if row["id"] == "existing")
+    successor = next(row for row in rows if row["id"] == successor_id)
+    # Append-only: the predecessor row itself is never touched.
+    assert predecessor["status"] == "pending"
+    assert predecessor["verdict"] is None
+    assert successor["symbol"] == "GBPUSD.DWX"
+    assert successor["status"] == "pending"
+
+    root = fixture["root"]
+    with sqlite3.connect(root / farmctl.DB_REL) as conn:  # type: ignore[operator]
+        conn.row_factory = sqlite3.Row
+        hold = conn.execute(
+            "SELECT * FROM work_item_holds WHERE work_item_id='existing'"
+        ).fetchone()
+        supersedes = conn.execute(
+            "SELECT * FROM work_item_supersedes WHERE work_item_id='existing'"
+        ).fetchone()
+    assert hold is not None
+    assert hold["hold_code"] == farmctl.Q02_SUPERSEDED_CANARY_RAM_CLASS_HOLD_CODE
+    assert hold["active"] == 1
+    assert supersedes is not None
+    assert supersedes["superseded_by_work_item_id"] == successor_id
+
+    # A plain (non-supersede) intake attempt still sees both rows and refuses.
+    plain = _plan(fixture)
+    assert plain["reason"] == "existing_q02_row"
+
+
+def test_supersede_refuses_when_replan_is_also_exclusive_class(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = _fixture(tmp_path)
+    _insert_existing_q02(fixture, symbol="EURUSD.DWX")
+    _set_ram_gb(monkeypatch, {"EURUSD.DWX": EXCLUSIVE_RAM_GB, "GBPUSD.DWX": EXCLUSIVE_RAM_GB})
+
+    result = _supersede(fixture, apply=True)
+
+    assert result["eligible"] is False
+    assert result["applied"] is False
+    assert result["reason"] == "replan_canary_also_exclusive_class"
+    assert len(_q02_rows(fixture)) == 1  # no successor, no mutation
+
+
+@pytest.mark.parametrize(
+    ("kwargs",),
+    [
+        ({"claimed_by": "worker-1"},),
+        ({"verdict": "INFRA_FAIL", "status": "failed"},),
+    ],
+)
+def test_supersede_refuses_when_predecessor_not_fresh_pending(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, kwargs: dict[str, object],
+) -> None:
+    fixture = _fixture(tmp_path)
+    _insert_existing_q02(fixture, symbol="EURUSD.DWX", **kwargs)  # type: ignore[arg-type]
+    _set_ram_gb(monkeypatch, {"EURUSD.DWX": EXCLUSIVE_RAM_GB, "GBPUSD.DWX": CHEAP_RAM_GB})
+
+    result = _supersede(fixture, apply=True)
+
+    assert result["eligible"] is False
+    assert result["applied"] is False
+    assert result["reason"] == "existing_q02_row_not_supersede_eligible"
+    assert len(_q02_rows(fixture)) == 1
+
+
+def test_supersede_refuses_when_predecessor_below_exclusive_threshold(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fixture = _fixture(tmp_path)
+    _insert_existing_q02(fixture, symbol="EURUSD.DWX")
+    _set_ram_gb(monkeypatch, {"EURUSD.DWX": CHEAP_RAM_GB, "GBPUSD.DWX": CHEAP_RAM_GB})
+
+    result = _supersede(fixture, apply=True)
+
+    assert result["eligible"] is False
+    assert result["reason"] == "existing_q02_row_not_supersede_eligible"
+    assert result["predecessors"][0]["supersede_eligible"] is False  # type: ignore[index]
+
+
+def test_supersede_passes_through_when_nothing_to_supersede(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    result = _supersede(fixture)
+
+    assert result["reason"] == "ELIGIBLE"
+    assert result["eligible"] is True
+    assert result["applied"] is False
+    assert result["supersede_pending_canary"] is True
+
+
+def test_supersede_passes_through_unrelated_refusal(tmp_path: Path) -> None:
+    fixture = _fixture(tmp_path)
+    result = farmctl.intake_first_q02_supersede_pending_canary(
+        fixture["root"],  # type: ignore[arg-type]
+        "not-present",
+        repo_root=fixture["repo"],  # type: ignore[arg-type]
+    )
+
+    assert result["reason"] == "compile_work_item_not_found"
+    assert result["eligible"] is False
+    assert result["applied"] is False
