@@ -1,0 +1,9 @@
+{
+  "expected_work_item_ids": [],
+  "mode": "dry_run",
+  "owner_decision_blob": "2247ace7ec310bfb0c76dfdc455193e209683463",
+  "owner_decision_commit": "ecbd911628e0850cbbfd8ab3ed1eb3c0b0b911b3",
+  "owner_decision_sha256": "9d77f78ffb9ba5b263cf2e29ade0cf79b938ad34ab14ad2ab4ad5efd5153c4e4",
+  "release_count": 0,
+  "work_item_ids": []
+}

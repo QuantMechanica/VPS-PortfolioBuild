@@ -1,0 +1,95 @@
+[
+  {
+    "ea_id": "QM5_41179",
+    "predecessor_work_item_id": "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82",
+    "predecessor_row": {
+      "id": "9ced0252-9ceb-4fe7-a2c5-d7a8d0b30a82",
+      "status": "pending",
+      "verdict": null,
+      "mq5_sha256": "74e7f100f5d59c4e089971a4ddb1392ed219eb1be942d9a444bf2a133ddd27d3",
+      "created_at": "2026-08-27T04:16:17+00:00"
+    },
+    "current_on_disk_mq5_sha256": "ed6f54885c9455bcd5f9c5d7c45125fc59d1a4acc02213ddcb5ad801609e7412",
+    "existing_supersede_edge": {
+      "superseded_by_work_item_id": "3f0de0a8-5302-4310-864d-ae2782f72f9f",
+      "recorded_at": "2026-09-13T21:01:40+00:00",
+      "reason": "current-source compile supersedes stale rollout-held compile",
+      "source_encoding": "router_ops_issue:e9944090-1e0f-4dea-af90-e74f8079d1c8"
+    },
+    "existing_successor_row": {
+      "id": "3f0de0a8-5302-4310-864d-ae2782f72f9f",
+      "status": "failed",
+      "verdict": "COMPILE_FAIL",
+      "mq5_sha256": "6110e1969bf009ad0e83779f02357df51b31da6c1e6fff887ed4a2fb92435e8a",
+      "created_at": "2026-09-13T21:01:40+00:00"
+    },
+    "successor_bound_sha_matches_current_disk": false
+  },
+  {
+    "ea_id": "QM5_41189",
+    "predecessor_work_item_id": "e5505264-01c4-4102-b3cd-9a275a6839ee",
+    "predecessor_row": {
+      "id": "e5505264-01c4-4102-b3cd-9a275a6839ee",
+      "status": "pending",
+      "verdict": null,
+      "mq5_sha256": "3d0ba8910acab5ac7b206184912c3a95b935a28ea520975c95f9a606be8048c1",
+      "created_at": "2026-08-27T23:14:24+00:00"
+    },
+    "current_on_disk_mq5_sha256": "b6c0052a0fae01e86abd1e9766da99c705197159cd25f0bfdbb2e4c3ec971efe",
+    "existing_supersede_edge": {
+      "superseded_by_work_item_id": "81687a5b-1c4d-43f8-88bc-45b76ed3743d",
+      "recorded_at": "2026-09-13T21:01:40+00:00",
+      "reason": "current-source compile supersedes stale rollout-held compile",
+      "source_encoding": "router_ops_issue:e9944090-1e0f-4dea-af90-e74f8079d1c8"
+    },
+    "existing_successor_row": {
+      "id": "81687a5b-1c4d-43f8-88bc-45b76ed3743d",
+      "status": "pending",
+      "verdict": null,
+      "mq5_sha256": null,
+      "created_at": "2026-09-13T21:01:40+00:00"
+    },
+    "successor_bound_sha_matches_current_disk": false
+  },
+  {
+    "ea_id": "QM5_41189",
+    "predecessor_work_item_id": "81687a5b-1c4d-43f8-88bc-45b76ed3743d",
+    "predecessor_row": {
+      "id": "81687a5b-1c4d-43f8-88bc-45b76ed3743d",
+      "status": "pending",
+      "verdict": null,
+      "mq5_sha256": null,
+      "created_at": "2026-09-13T21:01:40+00:00"
+    },
+    "current_on_disk_mq5_sha256": "b6c0052a0fae01e86abd1e9766da99c705197159cd25f0bfdbb2e4c3ec971efe",
+    "existing_supersede_edge": null,
+    "existing_successor_row": null,
+    "successor_bound_sha_matches_current_disk": false
+  },
+  {
+    "ea_id": "QM5_41142",
+    "predecessor_work_item_id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc",
+    "predecessor_row": {
+      "id": "07a09214-86ba-4946-9e0b-c9e7baa8b6fc",
+      "status": "pending",
+      "verdict": null,
+      "mq5_sha256": "1bb336bbbd3b9e06730ea830b94a7c3bff9c4387f88920c43754757be5fe3c0f",
+      "created_at": "2026-09-02T16:45:26+00:00"
+    },
+    "current_on_disk_mq5_sha256": "bd65d86feafb660aee79a9e4e483f62679788383595d6a80bbd5204db50d23f0",
+    "existing_supersede_edge": {
+      "superseded_by_work_item_id": "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85",
+      "recorded_at": "2026-09-02T18:47:16+00:00",
+      "reason": "current-source compile supersedes stale rollout-held compile",
+      "source_encoding": "router_ops_issue:e9944090-1e0f-4dea-af90-e74f8079d1c8"
+    },
+    "existing_successor_row": {
+      "id": "9adcc3f5-939f-48bd-a5c7-03c08c1c0d85",
+      "status": "done",
+      "verdict": "COMPILE_OK",
+      "mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+      "created_at": "2026-09-02T18:47:16+00:00"
+    },
+    "successor_bound_sha_matches_current_disk": false
+  }
+]
