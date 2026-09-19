@@ -1,0 +1,33 @@
+{
+  "schema": "qm.orchestration-stable-blocker/v1",
+  "task_id": "44e0209e-61f7-452b-aa8d-229f03cb0c15",
+  "duplicate_disposition": {
+    "successor_task_id": "70a31d19-343d-456d-a4f1-1fce14fac7ea",
+    "successor_state": "PASSED",
+    "artifact_path": "docs/ops/evidence/2026-09-14_qm5_13013_exit_surgery/DIAGNOSIS_AND_REFUSAL.md",
+    "artifact_commit": "c927e444a3"
+  },
+  "bindings": {
+    "artifact_sha256": "9e53a324cded673daf923586e7ab34c6fba1c7c85c7f2448d80422fedaa2763d",
+    "per_trade_csv_sha256": "96b9cb1f2b00f0c0020bd37af555d18f5eda944742e8b7c90fc2c7c57dc6f11c",
+    "source_path": "framework/EAs/QM5_13013_grimes-trendday-v2/QM5_13013_grimes-trendday-v2.mq5",
+    "source_sha256": "7a0a59213ff83c4bbf35ce021de704b4a16f0ae9e2e7534f98493edf7509bf73",
+    "source_last_commit": "3d853ab6b2c1d93251f951be0f100dd7d3750085"
+  },
+  "stable_facts": {
+    "early_exit_trade_count": 26,
+    "generic_qm_tm_close_count": 24,
+    "stop_loss_count": 2,
+    "session_close_count": 0,
+    "fixed_time_stop_present": false,
+    "no_progress_exit_present": false,
+    "actual_strategy_exit": "g_close_inside_range failed-breakout invalidation",
+    "strategy_min_session_hold_h_role": "pending-entry placement gate, not position-duration exit"
+  },
+  "disposition": {
+    "verdict": "WRITTEN_REFUSAL_STRUCTURAL_STRATEGY_EXIT",
+    "q14_lever_card_created": false,
+    "variant_ea_created": false,
+    "qm5_13013_modified_or_recompiled": false
+  }
+}
