@@ -14,21 +14,16 @@
 ; author:       Development
 ; date:         2026-06-13
 ;==========================================================
+qm_ea_id=10505
 qm_magic_slot_offset=3
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
-; core filter library params; filter-on/off variants must be pre-declared
-qm_filter_news_enabled=1
-qm_filter_news_mode=3
-qm_filter_regime_enabled=0
-qm_filter_regime_lookback_bars=100
-qm_filter_regime_bull_return_pct=2.0
-qm_filter_regime_bear_return_pct=2.0
-qm_filter_volatility_enabled=0
-qm_filter_volatility_atr_period=14
-qm_filter_volatility_lookback_bars=50
-qm_filter_volatility_compression_ratio=0.75
-qm_filter_volatility_expansion_ratio=1.25
+; 2026-09-20 hygiene fix (task 0ceeea69, successor of 4216dd75): removed nine
+; orphaned qm_filter_* keys that do not correspond to any input declared in
+; QM5_10505_mql5-macd-sar.mq5 (residue from a source refactor that dropped the
+; filter-library group). All other undeclared inputs keep the .mq5 source
+; defaults unchanged; this edit is a pure key removal + explicit qm_ea_id, not
+; a re-derivation from card defaults, so no economics value changes.
 ; strategy-specific params from card must be appended below this line
 ; card_defaults_source=not_found

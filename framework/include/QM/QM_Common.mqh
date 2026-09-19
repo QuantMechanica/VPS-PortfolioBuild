@@ -306,7 +306,11 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
    // backtests remain bit-identical to the historical gate evidence.
    const double risk_cap_money = AccountInfoDouble(ACCOUNT_EQUITY) * 0.01;
    if(!QM_RiskSizerConfigure(mode, risk_percent, risk_fixed, portfolio_weight, risk_cap_money))
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"risk_sizer_configure_failed\"}");
       return false;
+     }
    QM_RiskSizerSetCapPct(1.0);
 
    // FW7 2026-05-23 — News lazy-init (OWNER call after Q02 hang triage).
@@ -350,7 +354,11 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
    if(!QM_EntryPatternConfigure(opt_pp_buy1, opt_pp_buy2, opt_pp_buy3,
                                 opt_pp_sell1, opt_pp_sell2, opt_pp_sell3,
                                 (ENUM_TIMEFRAMES)_Period, 1))
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"entry_pattern_configure_failed\"}");
       return false;
+     }
 #else
    QM_EntryPatternDisable();
 #endif
@@ -366,7 +374,11 @@ bool QM_FrameworkInitCoreAfterRuntimeStateArmed(const int ea_id,
    g_qm_fw_friday_close_hour_broker = MathMin(23, MathMax(0, friday_close_hour_broker));
 
    if(!g_qm_fw_chartui_suppressed && !QM_ChartUI_Init(ea_id, slug))
+     {
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"chartui_init_failed\"}");
       return false;
+     }
 
    // FW6 2026-05-23 — initialise equity snapshot stream (Q08 sub-gate input).
    QM_EquityStreamInit();

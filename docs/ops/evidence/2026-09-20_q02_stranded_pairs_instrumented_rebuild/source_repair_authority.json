@@ -1,0 +1,58 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "authority": "router_q02_stranded_instrumented_rebuild:0ceeea69-43dd-4b3a-a189-fa893a58a5e7",
+  "router_task_id": "0ceeea69-43dd-4b3a-a189-fa893a58a5e7",
+  "predecessor_task_id": "4216dd75-6430-4ccb-b545-6c6cf6f3fd4b",
+  "repair_class": "SHARED_FRAMEWORK_SELF_DESCRIBING_INIT_LOGGING",
+  "affected_shared_files": [
+    {
+      "path": "framework/include/QM/QM_Common.mqh",
+      "sha256": "1ac4d8b9d2b509234675230aa51cab77a3f28cbac6cb7ac47e4d1c97b8f1f9e0"
+    },
+    {
+      "path": "framework/include/QM/QM_RuntimeExecutionContract.mqh",
+      "sha256": "d95263d582b6473d5eea556e92f05329518b2c73f41bdda09d2a3348e38726a8"
+    }
+  ],
+  "repair_summary": [
+    "QM_FrameworkInitCoreAfterRuntimeStateArmed already logged 5 of 8 internal rejection branches via QM_LogEvent(QM_ERROR,\"FRAMEWORK_INIT_FAILED\",...): runtime_state_not_armed, ea_id_non_positive, portfolio_weight_out_of_range, risk_inputs_invalid, magic_resolution_failed. The rootcause doc (oninit_rootcause_4216dd75.md) undercounted this; static reading of the current source found 3 further return-false branches in the SAME function that were still silent: QM_RiskSizerConfigure failure, QM_EntryPatternConfigure failure (both affected EAs lack QM_PATTERN_PERMISSION_EA_MANAGED, so this branch is live for them), and QM_ChartUI_Init failure. Each now emits the same reason-tagged QM_LogEvent before returning false.",
+    "QM_RuntimeExecutionBeginLegacyInitialization() (QM_RuntimeExecutionContract.mqh) had one bare return false (LEGACY_INIT_AFTER_CONTRACT_REFUSED) with no Print/QM_LogEvent at all; it now logs the same way. This file previously relied on include order for QM_LogEvent visibility (only safe because every current caller happens to include QM_Logger.mqh first); added an explicit #include \"QM_Logger.mqh\" inside its own header guard so the file is self-sufficient and does not silently break a caller that includes it directly (e.g. framework/tests/unit/runtime_execution_contract_smoke.mq5, which previously included only this file).",
+    "All changes are additive logging only (QM_LogEvent lines placed immediately before each existing return false). No control-flow, threshold, gate, risk, or economics logic was changed. No behavior changes for any already-passing EA."
+  ],
+  "scope": {
+    "compile_ea": false,
+    "backtest": false,
+    "pipeline_verdict": false,
+    "live": false,
+    "cross_ea": true,
+    "note": "cross_ea=true because the two edited files are shared includes used by every V5 EA; compile_ea=false because no COMPILE_EA work item was enqueued this cycle -- see README.md for why, and the recommended follow-up."
+  },
+  "target_eas_this_repair_is_for": [
+    {
+      "ea_id": "QM5_12582",
+      "ea_label": "QM5_12582_chan-ng-spring",
+      "symbol": "XNGUSD.DWX",
+      "mq5_sha256_unchanged": "1e0128d5b6745cbbe5d18a99dbd659061f8145907a632509481bbe48898e308a"
+    },
+    {
+      "ea_id": "QM5_10505",
+      "ea_label": "QM5_10505_mql5-macd-sar",
+      "symbol": "XAUUSD.DWX",
+      "mq5_sha256_unchanged": "557f88a1f1359f3a9de6e991d924e8fa6d3d781fd9dc8e627989fe4081bf5e28",
+      "additional_fix": "sets/QM5_10505_mql5-macd-sar_XAUUSD.DWX_H1_backtest.set hygiene repair, see README.md"
+    }
+  ],
+  "not_addressed_by_this_repair": [
+    {
+      "ea_id": "QM5_10369",
+      "symbols": ["GDAXI.DWX", "NDX.DWX"],
+      "reason": "Tester-log signature is 'OnInit reports incorrect input parameters' with zero logger files written, which is the signature of MT5's own .set-to-.ex5 parameter binder refusing before OnInit() is ever called -- upstream of QM_FrameworkInitCoreAfterRuntimeStateArmed entirely. Adding logging inside that function cannot surface this class of rejection. See README.md."
+    },
+    {
+      "ea_id": "QM5_10327",
+      "symbols": ["GDAXI.DWX"],
+      "reason": "Most recent real evidence is a TIMEOUT (reason_classes=[TIMEOUT, INCOMPLETE_RUNS], oninit_failure_detected=false), not an OnInit rejection at all. Predecessor task already dispositioned this as out of the ONINIT_FAILED batch; reaffirmed, no action."
+    }
+  ],
+  "created_at_utc": "2026-09-20T00:00:00Z"
+}

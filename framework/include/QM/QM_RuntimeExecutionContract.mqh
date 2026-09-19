@@ -1,6 +1,8 @@
 #ifndef QM_RUNTIME_EXECUTION_CONTRACT_MQH
 #define QM_RUNTIME_EXECUTION_CONTRACT_MQH
 
+#include "QM_Logger.mqh"
+
 // Additive V3 execution identity. Legacy EAs remain explicitly classified as
 // LEGACY_UNDECLARED while the Card-v3 fleet migrates in compile-tested cohorts.
 // An EA that opts into V3 is fail-closed until one immutable contract matches
@@ -118,6 +120,8 @@ bool QM_RuntimeExecutionBeginLegacyInitialization()
    if(g_qm_runtime_execution_state != QM_RUNTIME_EXECUTION_LEGACY_UNDECLARED)
      {
       QM_RuntimeExecutionBlock("LEGACY_INIT_AFTER_CONTRACT_REFUSED");
+      QM_LogEvent(QM_ERROR, "FRAMEWORK_INIT_FAILED",
+                  "{\"reason\":\"legacy_init_after_contract_refused\"}");
       return false;
      }
    g_qm_runtime_execution_initialization_started = true;
