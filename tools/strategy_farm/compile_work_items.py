@@ -478,6 +478,13 @@ REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY = (
     "router_review_ea:cd6442dd-4ad9-4845-862a-2ef6e3ec0172"
 )
 REVIEW_REWORK_SOURCE_REPAIR_AUTHORITIES = {
+    # Review 4f626c91 rejected only the stale/unbound binary package and named
+    # a governed current-source COMPILE_EA as the narrow repair.  Keep the
+    # authority exact to this EA/review pair; it grants no gate or backtest
+    # verdict authority.
+    "QM5_40008_aqr-value-and-momentum-everywhere": (
+        "router_review_ea:4f626c91-ebe2-4df1-b689-d2d30bbfb24d"
+    ),
     "QM5_9468_connors-rsi4-3day-d1": REVIEW_REWORK_SOURCE_REPAIR_AUTHORITY,
     "QM5_9909_bandy-lrchannel-breakout-trend": (
         "router_review_ea:d6ea3abe-d44b-4861-b466-475a28899eaa"

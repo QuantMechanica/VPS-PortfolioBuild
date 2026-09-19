@@ -1,12 +1,12 @@
 {
-  "task_id": "3e8438fe-884f-4337-974d-7c8c2a1dd459",
+  "task_id": "6a0458e1-55e7-434e-b7b8-731bb0595e3d",
   "ea_id": "QM5_40008",
   "slug": "aqr-value-and-momentum-everywhere",
   "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere",
   "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\QM5_40008_aqr-value-and-momentum-everywhere.mq5",
-  "mq5_sha256": "0d91c717347a8a7ee537ac0850b7fa91cbb1b090983d8fea47b3955ee6f131d7",
+  "mq5_sha256": "900401439318642b52ea1b407ecf0b55baac599554cfa10719bf95b076dca834",
   "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_40008_aqr-value-and-momentum-everywhere\\QM5_40008_aqr-value-and-momentum-everywhere.ex5",
-  "ex5_sha256": "1e1cbe5582c9f2b3cf523e0c9350ca44cd5762dbf87424797326c5f63db2b66f",
+  "ex5_sha256": "c3dc62237bae2c66184d38fe125210db028a1d8bf2ccec3f29f579645f0e5c84",
   "magic_base": 400080000,
   "symbols_registered": [
     "SP500.DWX",
@@ -25,7 +25,9 @@
   "compile_succeeded": true,
   "smoke_result": "deferred_p2_smoke",
   "smoke_report_path": null,
-  "smoke_skipped_reason": "backtest_cpu_ceiling: live MT5 terminals active; Q02 will provide runtime evidence",
-  "blocked_reason": null,
-  "open_questions": []
+  "smoke_skipped_reason": "terminal_dispatch_capacity_waiver: run_smoke terminal resolver returned status=no_capacity before tester launch",
+  "blocked_reason": "capacity_deferred: Terminal resolution returned no terminal; status=no_capacity; error_code=none; no tester launched",
+  "open_questions": [
+    "Q01 smoke was not launched because terminal dispatch returned status=no_capacity; Q02 worker execution remains required."
+  ]
 }
