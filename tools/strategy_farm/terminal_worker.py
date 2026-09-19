@@ -1773,7 +1773,13 @@ def _index_measured_flat_reservation_gb(
     if not isinstance(data, dict) or not data:
         return None
     kinds = [run_kind]
-    if run_kind == "news":
+    if run_kind in ("news", "smoke"):
+        # A news matrix cell replays the same EA/window/tick set as its backtest;
+        # a first-canary smoke covers a SHORTER window than the class backtest,
+        # so the backtest cohort is an upper-bound prior for both (2026-09-19:
+        # index|H1|smoke has n=6, index|H1|backtest n=127 p95 10.6 GB -- without
+        # this fallback every fresh index EA's first Q02 canary stays at 44 GB
+        # and can never earn per-EA evidence).
         kinds.append("backtest")
     for kind in kinds:
         if ea_id:

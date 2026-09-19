@@ -140,3 +140,14 @@ def test_admission_floor_lowered_only_for_measured_index_rows(monkeypatch):
     assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED, 4.0) == 4.0
     monkeypatch.setenv("QM_INDEX_EA_MEASURED_LOWERS", "0")
     assert tw._index_measured_admission_floor_gb(idx, tw.RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED, 14.0) == 14.0
+
+
+def test_smoke_falls_back_to_class_backtest_key():
+    data = {
+        "index|H1|smoke": {"n": 6, "p95_gb": 6.271, "max_gb": 6.964},
+        "index|H1|backtest": {"n": 127, "p95_gb": 10.616, "max_gb": 10.735},
+    }
+    got = tw._index_measured_flat_reservation_gb(data, "QM5_41475", "index", "H1", "smoke", 44.0, host_base="NDX")
+    assert got == (18.0, tw.RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED)
+    # SP500 stays excluded from class evidence even via the fallback
+    assert tw._index_measured_flat_reservation_gb(data, "QM5_41475", "index", "H1", "smoke", 44.0, host_base="SP500") is None
