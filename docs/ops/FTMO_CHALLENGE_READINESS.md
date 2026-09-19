@@ -1,6 +1,6 @@
 # FTMO Challenge Readiness (living)
 
-Generated 2026-09-19T08:37:02Z by `tools/strategy_farm/ftmo/challenge_readiness.py`.
+Generated 2026-09-19T09:07:02Z by `tools/strategy_farm/ftmo/challenge_readiness.py`.
 OWNER-DEC-CBE-20260915 (directive 2026-09-15 sections 62-63). Read-model: `D:/QM/reports/state/ftmo_challenge_readiness.json`.
 
 This is not one number. Readiness is a multi-axis picture; the paid decision is OWNER-only and cannot be taken by automation.
@@ -16,7 +16,7 @@ a demo cycle realized a >=10% total-loss breach
 ## Demo cycle
 
 - Roster under validation: `5432d3db11b02c64a3c5357d94d9f59b425c270e600b87ad65ddf42310771e53` (chart_profile), 6 sleeves
-- Cycle start: 2026-09-18T04:50:00Z  ·  validation days: 1.158 (min 14)  ·  state: RUNNING  ·  representative: False
+- Cycle start: 2026-09-18T04:50:00Z  ·  validation days: 1.178 (min 14)  ·  state: RUNNING  ·  representative: False
 - Material changes this cycle: 0
 
 ## Metrics (latest demo cycle)
@@ -43,7 +43,7 @@ Speed, not eventual pass, is the binding constraint on the current book. Full ti
 
 ## Rules snapshot
 
-- Source: EVIDENCE_MISSING  ·  fetched: 2026-09-18T02:37:46Z  ·  freshness: 1.249 days (OK)
+- Source: EVIDENCE_MISSING  ·  fetched: 2026-09-18T02:37:46Z  ·  freshness: 1.27 days (OK)
 
 ## How it is computed
 
