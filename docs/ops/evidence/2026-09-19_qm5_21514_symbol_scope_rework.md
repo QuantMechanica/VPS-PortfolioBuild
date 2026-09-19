@@ -3,7 +3,7 @@
 Router task: `b8c2e67c-773b-4698-913b-9de744f6317e`  
 EA: `QM5_21514_qs-klinger-vol-osc-xag`  
 Source repair commit: `ba7181fa1c`  
-Disposition: **REVIEW — source repaired; governed compile authority required**
+Disposition: **BLOCKED — source repaired; governed compile authority and fresh build identity required**
 
 ## Result
 
@@ -55,4 +55,11 @@ can occur only after Claude/OWNER supplies an exact compile-only authority for
 this task/source binding. The historical compile verdict is not presented as a
 verdict on the repaired source.
 
-RESULT: `REVIEW_SOURCE_REPAIRED_COMPILE_AUTHORITY_REQUIRED`.
+The required router transition to `REVIEW` was attempted and independently
+refused by D6 as `build_identity_json_missing_review_dispatch_refused`. D6
+requires a JSON packet binding a committed current MQ5, freshly compiled EX5,
+setfiles, and strict-build PASS. Those facts do not yet exist and were not
+fabricated. The truthful terminal router disposition for this cycle is
+therefore `BLOCKED`.
+
+RESULT: `BLOCKED_COMPILE_AUTHORITY_AND_BUILD_IDENTITY_REQUIRED`.
