@@ -1,0 +1,136 @@
+{
+  "schema": "qm.binding-drift-provenance-review.v1",
+  "ticket": "42877794-d26b-441e-b87c-fe85dbf29c67",
+  "reviewed_at_utc": "2026-09-19T12:40:00Z",
+  "reviewed_by": "claude",
+  "input_census": "docs/ops/evidence/2026-09-19_binding_drift/census.json",
+  "method": [
+    "For each of the 42 census rows, read git log provenance of the current mq5/ex5/setfile vs the row-bound (expected) sha256.",
+    "Cross-checked D:/QM/strategy_farm/state/farm_state.sqlite work_item_supersedes for an existing governed successor (the census generator does NOT do this join -- see defect note).",
+    "For rows with an ex5 finding (binary actually drifted), queried work_items WHERE kind='compile' AND phase='COMPILE_EA' AND status='done' AND verdict='COMPILE_OK' AND ex5_sha256=<current actual sha256>, cross-checked mq5_sha256 in the same receipt (this is the exact predicate tools/strategy_farm/validate_ex5_commit_guard.py enforces pre-commit, so a match is authoritative 'committed governed rebuild with COMPILE_OK evidence').",
+    "For rows without an ex5 finding, verified directly (hash the on-disk .ex5, compare to payload_json.expected_ex5_sha256) that the bound EX5 is byte-identical to what dispatch already tests -- only the mq5/setfile source text drifted, so there is no compiled successor artifact to bind.",
+    "For the LINE_ENDINGS_ONLY setfile finding (row 8be76d81), computed CRLF->LF normalization of the current bytes and confirmed it reproduces the bound sha256 exactly (validate_ex5_commit_guard.py-style proof)."
+  ],
+  "defect_found": {
+    "summary": "census.json (and pending_binding_rebind_plan.py's rebind_plan.json) do not consult work_item_supersedes before flagging GOVERNED_BUILD_SUCCESSOR_REQUIRED. 23 of the 42 flagged rows already have a recorded supersession (most via farmctl.requalify-q02 or DL-089/july-cohort/orphan-lane dispositions dated 2026-08-24 through 2026-09-18). The census disposition on those 23 rows is stale as of 2026-09-19. Separately, rebind_plan.json's C2A_COMMITTED_REGENERATION_STALE_BINDING filter found 0 rows because plan.json's row shape (work_item_id/ea_id keys) does not match what pending_binding_rebind_plan.py expects (id/ea/cause_cluster) -- rebind_eligible_count=0 is a schema-mismatch no-op, not a real finding. Recommend: (1) add a work_item_supersedes join to the census generator so resolved rows stop re-alerting; (2) fix or retire pending_binding_rebind_plan.py's input contract."
+  },
+  "groups": {
+    "A_already_superseded_no_action": {
+      "count": 23,
+      "note": "Resolved before this review. Old row kept as evidence per policy; successor already recorded in work_item_supersedes. Listed for completeness only.",
+      "rows": [
+        {"work_item_id": "824ca951-5d8d-58c7-adc3-c5b810c5587c", "ea_id": "QM5_20181", "symbol": "USDJPY.DWX", "phase": "Q02", "superseded_by": "407f23c8-b759-5fa8-b264-13f0e13589a6", "disposition": "july_cohort_park (PASS-family evidence ages never)"},
+        {"work_item_id": "a0d6400a-4f31-5855-a876-e6192e961ecd", "ea_id": "QM5_20181", "symbol": "USDJPY.DWX", "phase": "Q02", "superseded_by": "407f23c8-b759-5fa8-b264-13f0e13589a6", "disposition": "july_cohort_park"},
+        {"work_item_id": "256846e2-edce-4354-a346-0a428dafcc1b", "ea_id": "QM5_20096", "symbol": "USDCHF.DWX", "phase": "Q02", "superseded_by": "41a774ad-2429-42de-8714-52822c225513", "disposition": "july_cohort_retire (terminal ZERO_TRADES, never requalified)"},
+        {"work_item_id": "7dd70134-a2a0-4ecf-a706-5f4609a094be", "ea_id": "QM5_10717", "symbol": "FX8_BASKET_D1", "phase": "Q02", "superseded_by": null, "disposition": "operator:record 2026-09-02 -- COMPILE_OK 9f797114 rebuilt MQ5/EX5 before this seed was claimed; row marked obsolete, no explicit successor id"},
+        {"work_item_id": "0be0a1d1-6aa2-4d1b-ae24-50a6c21b93a9", "ea_id": "QM5_10269", "symbol": "NDX.DWX", "phase": "Q02", "superseded_by": "127aab04-5d60-4200-a573-3d3fb7287be6", "disposition": "farmctl.requalify-q02 2026-09-12"},
+        {"work_item_id": "64604d7a-9bbe-561c-a70c-44667cdb2e12", "ea_id": "QM5_10706", "symbol": "GBPUSD.DWX", "phase": "Q14", "superseded_by": "b5e18759-1377-5af7-9634-9f66bd293d0c", "disposition": "orphan_q13_q14_chain_minted_from_generic_q12_pass"},
+        {"work_item_id": "f81a14df-14ef-5f15-b808-d19b8c13348c", "ea_id": "QM5_11421", "symbol": "EURUSD.DWX", "phase": "Q14", "superseded_by": "ff733cf6-52a1-5aad-9bff-4f8c31ef4dc6", "disposition": "orphan_q13_q14_chain_minted_from_generic_q12_pass"},
+        {"work_item_id": "2dad5730-30ed-5ab1-ace1-d5db4ede60db", "ea_id": "QM5_10706", "symbol": "GBPUSD.DWX", "phase": "Q12", "superseded_by": "1a92b33e-e34f-532e-80b3-e0144f3b3755", "disposition": "DL-089 ablation-duplicate -> confirmation-sourced lineage"},
+        {"work_item_id": "3815515b-db22-439c-8603-a988b0bf0867", "ea_id": "QM5_10700", "symbol": "XAUUSD.DWX", "phase": "Q07", "superseded_by": null, "disposition": "OWNER-DEC-PRE0803-RECOMPILE-SLOTORDER-AMENDB-20260903"},
+        {"work_item_id": "19761d0c-3877-587d-a5cd-a8e48291cdf7", "ea_id": "QM5_11421", "symbol": "EURUSD.DWX", "phase": "Q12", "superseded_by": "aab9dba5-692d-54bd-a6fa-9ed1eea2f343", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "00cf2ac1-4083-4c6b-9de5-d14e841b411e", "ea_id": "QM5_41359", "symbol": "QM5_41359_XTI_XNG_WACCEL_RV_D1", "phase": "Q02", "superseded_by": "12184077-45c5-4621-964c-4028fe668e88", "disposition": "farmctl.requalify-q02 2026-09-07 (CEO-reviewed task 9d8ad690 APPROVED)"},
+        {"work_item_id": "8f4c4610-bbe8-4de3-aa83-c433e9b6145e", "ea_id": "QM5_41360", "symbol": "QM5_41360_XTI_XNG_WRETR_RV_D1", "phase": "Q02", "superseded_by": "bf0b4f12-00f9-4f4d-af0a-ae8e6c5e5dfd", "disposition": "farmctl.requalify-q02 2026-09-07"},
+        {"work_item_id": "ecc8e269-5a19-4cda-8c4e-0906d4f93791", "ea_id": "QM5_41361", "symbol": "QM5_41361_XTI_XNG_COMMONSHOCK_RV_D1", "phase": "Q02", "superseded_by": "d56450a8-517e-469f-a384-2eaea325535b", "disposition": "farmctl.requalify-q02 2026-09-07"},
+        {"work_item_id": "00f26e21-a0ad-5fcf-945f-9c7cd1711c7e", "ea_id": "QM5_10706", "symbol": "GBPUSD.DWX", "phase": "Q12", "superseded_by": "73c8d9c8-d3fa-5618-8191-bd21c798aa99", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "47ce8c3d-a911-53d9-88f5-ef7ed0dbe19b", "ea_id": "QM5_21505", "symbol": "XAGUSD.DWX", "phase": "Q12", "superseded_by": "ae6163d5-5656-5fc5-b710-013dc3942723", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "6697e79b-3d42-579c-8632-30d2614737fd", "ea_id": "QM5_13054", "symbol": "XTIUSD.DWX", "phase": "Q12", "superseded_by": "69ef0b0e-c1d0-515c-883a-864a4dee7508", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "03392b1f-05a0-5fe1-807a-ea9bafa0a4bd", "ea_id": "QM5_11421", "symbol": "EURUSD.DWX", "phase": "Q12", "superseded_by": "e18747f1-b993-5687-bae8-fa648e8d6538", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "6d307198-f1ef-561c-82a7-3c15c3a82a8d", "ea_id": "QM5_10706", "symbol": "GBPUSD.DWX", "phase": "Q12", "superseded_by": "8a6493ba-be78-58fe-88e3-4d2661643b69", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "9ca7760d-7a93-53cf-8aa5-b84e1210b748", "ea_id": "QM5_10706", "symbol": "GBPUSD.DWX", "phase": "Q12", "superseded_by": "5542bdb1-6db0-5c1a-ae00-747b7cd5f3d8", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "d1300053-2bcd-53f6-a342-058dd25f5500", "ea_id": "QM5_21505", "symbol": "XAGUSD.DWX", "phase": "Q12", "superseded_by": "a27bb8b1-0bd0-5881-a76b-3afaed9cac10", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "082fb2d2-96ce-5953-845d-bee393478638", "ea_id": "QM5_13054", "symbol": "XTIUSD.DWX", "phase": "Q12", "superseded_by": "1383ba24-1dfc-5199-973a-defbcdcd5757", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "0840d7a5-299f-5720-a0f9-9ca6e4c7c5ab", "ea_id": "QM5_11421", "symbol": "EURUSD.DWX", "phase": "Q12", "superseded_by": "a4134f6d-304d-53ad-aca1-d3bc9d3beca8", "disposition": "DL-089 zombie disposition apply 2026-09-18"},
+        {"work_item_id": "cb81c67c-801d-5e69-a8da-6cd881de3404", "ea_id": "QM5_10706", "symbol": "GBPUSD.DWX", "phase": "Q12", "superseded_by": "34dd8f59-7b8f-5529-aa0c-b566b687eb8a", "disposition": "DL-089 zombie disposition apply 2026-09-18"}
+      ]
+    },
+    "B_verified_eligible_successor_not_yet_created": {
+      "count": 3,
+      "note": "Ex5 genuinely drifted; the current on-disk ex5+mq5 sha256 pair matches an exact work_items compile receipt (kind=compile, phase=COMPILE_EA, status=done, verdict=COMPILE_OK) -- the same predicate validate_ex5_commit_guard.py enforced at commit time. This is 'committed governed rebuild with COMPILE_OK evidence' per the acceptance criteria. Not yet superseded. Attempted the governed successor path live (safe no-op tooling, refused cleanly, nothing mutated) and identified the exact corrected next command.",
+      "rows": [
+        {
+          "work_item_id": "c65a8b39-224e-431a-a9ea-e54161686b94",
+          "ea_id": "QM5_10718", "symbol": "USDCHF.DWX", "phase": "Q03",
+          "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+          "rebuild_commit": "ba5a522e20816bf3ce4fde8b660255fb2bde7fb4 2026-09-02 \"fx: rebuild QM5_10718 basket for Q02\"",
+          "compile_receipt": "0ce7af66-266c-4117-8952-6d3f9b2611ee COMPILE_OK 2026-09-02T01:48:21Z ex5=10358a8d.. mq5=92fa06a2.. (both exact-match current on-disk)",
+          "attempted_command": "farmctl.py enqueue-backtest --ea QM5_10718 --phase Q03 --from-work-item-id b4eeb738-e698-468a-a938-bae29eeda7ac --expected-current-ex5-sha256 10358a8d... --rerun-reason ...",
+          "attempt_result": "REFUSED reason=q03_predecessor_not_bound_to_current_execution -- the Q02 PASS predecessor (b4eeb738, 2026-08-09) is itself still bound to the OLD mq5 (a1c670d3..), not the current one (92fa06a2..). Q03 cascade requires a Q02 PASS achieved on the CURRENT binary first.",
+          "recommended_next_command": "farmctl.py requalify-q02 --old-work-item-id <the row's own or a Q02-phase sibling identity for QM5_10718/USDCHF.DWX> --expected-current-ex5-sha256 10358a8dd852cd495265fc4099dfb7d9fecc711a047d98a4ff5eafbba51a91cc --reason \"ticket 42877794: committed rebuild ba5a522e2, COMPILE_OK 0ce7af66\" --apply -- mint a fresh Q02 identity on the current binary, let it run to PASS/FAIL, THEN cascade to Q03. No QM5_10718/USDCHF Q02-phase row exists in this census to requalify directly -- Codex should confirm whether a fresh Q02 seed (seed-fresh-q02) is the correct predecessor mint path here rather than requalify-q02."
+        },
+        {
+          "work_item_id": "cbfb5a62-9a53-43a4-a98e-cb13a730a001",
+          "ea_id": "QM5_20202", "symbol": "QM5_20202_XAU_XAG_REV18_D1", "phase": "Q03",
+          "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+          "rebuild_commit": "df8310c0a7e409ec69eae72e3d6d84fa23f50039 2026-09-06 \"fix: repair framework input pins wave 2\"",
+          "compile_receipt": "147b9f42-73b9-4fae-a080-9d59f6246ca7 COMPILE_OK 2026-09-06T15:29:24Z ex5=b650ad82.. mq5=62e321cd.. (both exact-match current on-disk)",
+          "q02_pass_predecessor_bound_to_old_binary": "a070ff3f-aec1-4d32-b2c4-3444a42a4d54 (2026-08-21, ex5=fe082541.. = old/stale)",
+          "recommended_next_command": "same pattern as QM5_10718: requalify-q02 (or seed-fresh-q02) to mint a current-binary Q02 identity before any Q03 cascade; give --expected-current-ex5-sha256 b650ad829dac2abb18eb52fce7f6443596753d5cd795073148390f6bda9b8d9a"
+        },
+        {
+          "work_item_id": "c5ff6aa2-b0e1-4e96-9d4e-71123d832591",
+          "ea_id": "QM5_20275", "symbol": "QM5_20275_XAU_XAG_RUNFADE_D1", "phase": "Q03",
+          "hold_code": "ARTIFACT_BINDING_Q02_REQUALIFICATION_REQUIRED",
+          "rebuild_commit": "df8310c0a7e409ec69eae72e3d6d84fa23f50039 2026-09-06 \"fix: repair framework input pins wave 2\"",
+          "compile_receipt": "6411538e-3eab-4e03-9ff0-05211f3934a1 COMPILE_OK 2026-09-06T16:44:26Z ex5=5583f594.. mq5=d079a78c.. (both exact-match current on-disk)",
+          "q02_pass_predecessor_bound_to_old_binary": "2384e96c-5240-4c0c-8829-c2fab47702b3 (2026-08-11, ex5=0b91aa55.. = old/stale)",
+          "recommended_next_command": "same pattern; --expected-current-ex5-sha256 5583f594d0d0bf2358c965194a84ff58e2f71f630643a08324c43372c900c2a0"
+        }
+      ]
+    },
+    "C_ex5_unchanged_source_only_drift_keep_hold": {
+      "count": 13,
+      "note": "Verified directly: current on-disk .ex5 sha256 == payload_json.expected_ex5_sha256 for every row in this group -- the artifact dispatch actually tests is byte-identical to what was originally bound. Only the mq5 (and for 8be76d81 also the setfile, see below) source text in the repo has since been edited by a later committed fix, without a corresponding recompile+commit of a new ex5. There is no compiled successor binary to bind, so per the acceptance criteria ('if provenance is unclear -> keep the hold and list it') these stay held as-is. No dispatch risk: the pinned/tested binary has not moved.",
+      "rows": [
+        {"work_item_id": "8abafefb-53b8-45a5-992f-32dba3685495", "ea_id": "QM5_10203", "symbol": "XAUUSD.DWX", "phase": "Q02", "mq5_fix_commit": "3d853ab6b 2026-08-17 fix: normalize stop comparisons before modify"},
+        {"work_item_id": "8084f025-361f-42cc-9595-55c5d8087f2a", "ea_id": "QM5_10593", "symbol": "XAUUSD.DWX", "phase": "Q04", "mq5_fix_commit": "8922c5a1a 2026-08-26 fix: repair HMA requalification build guards"},
+        {"work_item_id": "48f156eb-87b1-4d39-b18d-f8c9914cb2c5", "ea_id": "QM5_1443", "symbol": "EURUSD.DWX", "phase": "Q04", "mq5_fix_commit": "3d853ab6b 2026-08-17 fix: normalize stop comparisons before modify"},
+        {"work_item_id": "61f887b7-2b73-4471-ab36-0944b65dedfb", "ea_id": "QM5_35005", "symbol": "EURJPY.DWX", "phase": "Q02", "mq5_fix_commit": "82755f48a 2026-08-24 rework(35005): repair card fidelity and compile handoff"},
+        {"work_item_id": "62156a75-50ce-4679-bce2-6127615cd89d", "ea_id": "QM5_35005", "symbol": "EURUSD.DWX", "phase": "Q02", "mq5_fix_commit": "82755f48a 2026-08-24 rework(35005): repair card fidelity and compile handoff"},
+        {"work_item_id": "ee0914f4-cede-4007-9b5b-8fb64bddaa53", "ea_id": "QM5_35005", "symbol": "GBPUSD.DWX", "phase": "Q02", "mq5_fix_commit": "82755f48a 2026-08-24 rework(35005): repair card fidelity and compile handoff"},
+        {"work_item_id": "869ea74a-dec7-4542-a583-bea9c719a6d4", "ea_id": "QM5_35004", "symbol": "GBPUSD.DWX", "phase": "Q02", "mq5_fix_commit": "40d335473 2026-08-24 rework(35004): restore realized loss and sticky close"},
+        {"work_item_id": "87cbb87c-b6d1-4259-ac70-69dc29459cf7", "ea_id": "QM5_35004", "symbol": "USDCHF.DWX", "phase": "Q02", "mq5_fix_commit": "40d335473 2026-08-24 rework(35004): restore realized loss and sticky close"},
+        {"work_item_id": "8d9f6d2a-cbf1-438e-9b70-ab6089eb4bec", "ea_id": "QM5_35004", "symbol": "EURUSD.DWX", "phase": "Q02", "mq5_fix_commit": "40d335473 2026-08-24 rework(35004): restore realized loss and sticky close"},
+        {"work_item_id": "90f77b53-a02c-4a7f-a71d-096f17418888", "ea_id": "QM5_10116", "symbol": "USDCHF.DWX", "phase": "Q02", "mq5_fix_commit": "b07ee5119 2026-09-09 fix(factory): queue QM5_10116 FX resolver recovery"},
+        {"work_item_id": "83ac79f0-daee-4c96-9625-c23f4d9b6109", "ea_id": "QM5_10116", "symbol": "USDJPY.DWX", "phase": "Q02", "mq5_fix_commit": "b07ee5119 2026-09-09 fix(factory): queue QM5_10116 FX resolver recovery"},
+        {"work_item_id": "6de52a30-72d0-4ec3-bb76-1b3d92c58889", "ea_id": "QM5_12919", "symbol": "USDJPY.DWX", "phase": "Q02", "mq5_fix_commit": "77d5dfaa5 2026-09-13 fix(qm5-12919): defer basket history readiness past init"},
+        {
+          "work_item_id": "8be76d81-2983-4acb-a733-0b653b244be2", "ea_id": "QM5_20143", "symbol": "GBPUSD.DWX", "phase": "Q02",
+          "hold_code": "ARTIFACT_BINDING_REBUILD_IN_PROGRESS",
+          "mq5_fix_commit": "2b155a5a1 2026-09-10 farm: repair QM5_20143 stale Q02 binary (real CONTENT_CHANGED, ex5 unchanged -- same class as the rest of this group)",
+          "setfile_line_endings_proof": {
+            "path": "framework/EAs/QM5_20143_macd-bb-campaign-m5/sets/QM5_20143_macd-bb-campaign-m5_GBPUSD.DWX_M5_backtest.set",
+            "current_sha256_crlf": "e26559fcf804bbcf3daea45b2c7109c0364efbff4b0bafff086f49aa26d6a41d",
+            "lf_normalized_sha256": "07a0e73612727d485e2c0dccd3652333742ab5fbdbf85dd4d3a1e4d6f3e7e8bb",
+            "expected_bound_sha256": "07a0e73612727d485e2c0dccd3652333742ab5fbdbf85dd4d3a1e4d6f3e7e8bb",
+            "result": "PROVEN: CRLF->LF normalization of the current bytes reproduces the bound sha256 exactly (byte-identical content, line-ending convention only)."
+          },
+          "note": "hold_code says REBUILD_IN_PROGRESS -- someone is actively working this row. Not rebound: (1) ex5 is unchanged so there is no compiled successor to bind yet, (2) an active in-progress rebuild should not be interrupted by a parallel governed-successor mint. The setfile line-ending proof is recorded for whoever closes the in-progress rebuild -- the setfile binding can be corrected via the normal successor path with zero content risk once the mq5/ex5 side is also ready."
+        }
+      ]
+    },
+    "D_provenance_unclear_keep_hold_flag": {
+      "count": 3,
+      "note": "Ex5 genuinely drifted, and no work_items compile receipt (kind=compile, phase=COMPILE_EA, status=done, verdict=COMPILE_OK) matches the current on-disk ex5_sha256. Per acceptance criteria: keep the hold, list it -- not eligible for an autonomous governed successor.",
+      "rows": [
+        {
+          "work_item_id": "c2ce418a-1597-436e-8420-07d1618cac5e", "ea_id": "QM5_10649", "symbol": "XAUUSD.DWX", "phase": "Q04",
+          "commit": "92e590b3b 2026-08-16 23:52 \"fix(ea-battery): repair and verify 8 blocked EAs from 2026-08-16 battery\"",
+          "finding": "No COMPILE_EA receipt at all for QM5_10649 in the ledger. Commit predates the EX5 commit guard (35c4d29b49, 2026-08-24 18:08) -- the guard was not yet enforcing at commit time, so absence of a receipt is expected rather than a violation, but it also means there is no mechanical proof the committed ex5 matches a governed compile. Keep hold."
+        },
+        {
+          "work_item_id": "8322d8c7-5c40-49d7-b8c9-84cbf100d102", "ea_id": "QM5_33007", "symbol": "SP500.DWX", "phase": "Q02",
+          "commit": "d8edc18a2 2026-08-24 14:46:51 +0200 \"rework(33007): restore card risk and entry gating\"",
+          "finding": "Commit lands ~3h20m BEFORE the EX5 commit guard went live same day (18:08:20 +0200), so again pre-dates enforcement. More concerning: the one COMPILE_EA receipt on record for this EA (11d80226-b739-4d53-8256-134513b3bb82, updated 2026-08-24T17:46:09Z = 19:46 CEST, i.e. AFTER the rework commit) is verdict=COMPILE_FAIL with ex5_sha256=null. A compile attempt against this EA failed later the same day. This raises real doubt about the current on-disk ex5's reproducibility -- recommend a Codex ticket to attempt a fresh governed recompile and confirm COMPILE_OK before any successor is considered. Keep hold."
+        },
+        {
+          "work_item_id": "a126c45e-3153-4c9f-a35b-67f153d8d709", "ea_id": "QM5_41362", "symbol": "QM5_41362_XTI_XNG_WDECEL_CONT_D1", "phase": "Q02",
+          "hold_code": "ARTIFACT_BINDING_SOURCE_SET_UNRECOVERABLE",
+          "commit": "9b9305f4d 2026-09-06 14:06 (seven-EA framework-input-pin wave, includes 41362) / 74caca8f4 2026-09-06 05:39 build",
+          "finding": "Its four sibling pacer EAs from the same wave (41359, 41360, 41361) all already have exact-match COMPILE_OK receipts and are already superseded (group A). QM5_41362 alone has no matching receipt and carries a distinct hold_code naming the source set itself unrecoverable -- a pre-existing, more specific block than ordinary content drift. Do not touch; this needs whoever holds SOURCE_SET_UNRECOVERABLE context (Codex/build lane), not a binding rebind."
+        }
+      ]
+    }
+  },
+  "totals": {"A": 23, "B": 3, "C": 13, "D": 3, "sum": 42}
+}
