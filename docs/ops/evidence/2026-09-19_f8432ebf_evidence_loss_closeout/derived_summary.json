@@ -1,0 +1,71 @@
+{
+  "current_watch_snapshot": {
+    "missing_rows": 177,
+    "original_rows": 172,
+    "post_cutoff_pass_rows": 0,
+    "post_cutoff_rows": 5,
+    "post_cutoff_verdicts": {
+      "FAIL": 2,
+      "FAIL_PORTFOLIO": 3
+    }
+  },
+  "mutations": {
+    "database_written": false,
+    "terminal_started": false,
+    "watcher_baseline_rewritten": false,
+    "work_enqueued": false
+  },
+  "original_cohort": {
+    "all_pass_rows_exactly_receipt_deleted": true,
+    "outcomes": {
+      "IRRECOVERABLE_LOCAL": 129,
+      "RECOVERABLE_D_QUARANTINE": 16,
+      "RECOVERED_COPY": 27
+    },
+    "process_classes": {
+      "DL090_REPORT_RETENTION_QUARANTINE": 16,
+      "DL090_REPORT_RETENTION_QUARANTINE_THEN_C_RELOCATION": 27,
+      "OWNER_BACKUP_RETENTION_PHASE2_DELETE_NONRETAINED": 129
+    },
+    "rows": 172,
+    "verdicts": {
+      "FAIL": 61,
+      "FAIL_HARD": 6,
+      "FAIL_SOFT": 2,
+      "PASS": 95,
+      "ZERO_TRADES": 8
+    }
+  },
+  "regeneration_plan": {
+    "enqueued": false,
+    "estimate_basis": {
+      "Q03_minutes_each": 3.0,
+      "Q05_Q06_Q07_minutes_each": 11.1,
+      "source": "2026-09-14 plan's bound health latency proxy (p50/p90)"
+    },
+    "estimated_tester_hours": 7.97,
+    "estimated_tester_minutes": 477.9,
+    "excluded_rows_with_same_ea_symbol_phase_and_known_equal_window": 14,
+    "lost_pass_rows": 95,
+    "null_window_bounds_fail_closed": true,
+    "phase_mix": {
+      "Q03": 52,
+      "Q05": 17,
+      "Q06": 9,
+      "Q07": 3
+    },
+    "planned_measurement_cells": 81
+  },
+  "schema": "qm.f8432ebf-evidence-loss-closeout/v1",
+  "source_bindings": {
+    "backup_retention_execution_commit": "99143f421feccc325778dce4ef685b3c9616e6db",
+    "baseline_path": "C:\\QM\\repo\\artifacts\\evidence_cohort_baseline.json",
+    "baseline_sha256": "d85590fe0cab73c067b8601f34762a1a7aea7e0cbc727d809c03c36f85d0b358",
+    "m05_forensics_path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-05_m05_recovery\\per_path_forensics.json",
+    "m05_forensics_sha256": "79967aeaf9e834a5b573d9943995c86b1091f198b8d1df32ddab0a90bd52b13c",
+    "m05_recovery_commit": "80a577273df55b6797d318f7034f06314cd57862",
+    "relevant_pass_db_projection_sha256": "9a01d440c37662d83102cea6c32e33be9f5d4728b525e2c9c335e8af0fa702b3",
+    "selected_report_retention_receipts_sha256": "4522b9e43442fecf22acc6c5ac962342fe1ada74206bb64cab53c10db7eedaf3"
+  },
+  "task_id": "f8432ebf-7f91-422f-8fd6-628c2f86e46c"
+}
