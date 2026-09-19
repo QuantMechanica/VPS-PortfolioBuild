@@ -1,0 +1,38 @@
+{
+  "schema": "qm.codex-build-identity/v1",
+  "task_id": "5fa16349-5252-448a-8f5d-8a7d77306f9b",
+  "ea_id": "QM5_38003",
+  "ea_label": "QM5_38003_codetrading-bollinger-engulfing-reversal",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_38003_codetrading-bollinger-engulfing-reversal.md",
+  "g0_status": "APPROVED",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/QM5_38003_codetrading-bollinger-engulfing-reversal.mq5",
+  "mq5_sha256": "4e7c155014e3def5823acfac1bbb13a0f4655464fffebf4098f8adb3cbddcb72",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/QM5_38003_codetrading-bollinger-engulfing-reversal.ex5",
+  "ex5_sha256": "51142c0ff08a6b890d192d86ef83daf2150e1cb335c496f66c188ce77329207a",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/sets/QM5_38003_codetrading-bollinger-engulfing-reversal_AUDUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/sets/QM5_38003_codetrading-bollinger-engulfing-reversal_EURUSD.DWX_H1_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_38003_codetrading-bollinger-engulfing-reversal/sets/QM5_38003_codetrading-bollinger-engulfing-reversal_GBPJPY.DWX_H1_backtest.set"
+  ],
+  "compile_evidence_path": "D:/QM/reports/work_items/e78e5d37-e10f-4366-99af-707a94a587e1/QM5_38003/COMPILE_EA/compile_evidence.json",
+  "compile_work_item_id": "e78e5d37-e10f-4366-99af-707a94a587e1",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "verification": {
+    "registry_preflight": "PASS",
+    "build_guardrails_max_news_stale_336": "PASS",
+    "build_gate_hardening": "PASS",
+    "spec_validation": "PASS",
+    "focused_tests": "10 passed",
+    "backtest_risk": "RISK_FIXED=1000; RISK_PERCENT=0"
+  },
+  "safety": {
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "verdict": "REVIEW_READY_EXISTING_GOVERNED_BUILD_IDENTITY_VERIFIED"
+}

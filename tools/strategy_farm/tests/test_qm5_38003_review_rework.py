@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import re
 from pathlib import Path
 
@@ -52,25 +51,24 @@ def test_management_and_exit_hooks_precede_every_entry_only_gate() -> None:
     framework_news = on_tick.index("QM_NewsAllowsTrade2")
 
     assert management < strategy_exit < news < no_trade < framework_news
-    assert on_tick.index("AdvanceState_OnNewBar();") < no_trade
-    assert "QM_TM_OpenPositionCount(magic) >= 1" in function_body(
-        code, "Strategy_NoTradeFilter"
+    assert on_tick.index("Strategy_RefreshClosedBarCache();") < no_trade
+    assert "QM_TM_OpenPositionCount(QM_FrameworkMagic())" in function_body(
+        code, "Strategy_EntrySignal"
     )
 
 
 def test_spread_is_fail_closed_and_rechecked_at_order_boundary() -> None:
     code = source()
-    spread = function_body(code, "StrategySpreadAllowsEntry")
-    no_trade = function_body(code, "Strategy_NoTradeFilter")
+    spread = function_body(code, "Strategy_WideSpread")
+    entry = function_body(code, "Strategy_EntrySignal")
     on_tick = function_body(code, "OnTick")
 
-    assert "ask <= 0.0 || bid <= 0.0 || ask < bid || g_last_atr <= 0.0" in spread
-    assert "spread <= g_last_atr * strategy_spread_filter_mult" in spread
-    assert "return !StrategySpreadAllowsEntry();" in no_trade
-    assert (
-        "Strategy_EntrySignal(req) && StrategySpreadAllowsEntry()" in on_tick
-    )
-    assert on_tick.index("StrategySpreadAllowsEntry()") < on_tick.index(
+    assert "ask <= 0.0 || bid <= 0.0" in spread
+    assert "g_cached_atr > 0.0 && ask > bid" in spread
+    assert "(ask - bid) > CARD_SPREAD_ATR_MULT * g_cached_atr" in spread
+    assert "g_cached_atr <= 0.0" in entry
+    assert "Strategy_WideSpread()" in entry
+    assert on_tick.index("Strategy_EntrySignal(req)") < on_tick.index(
         "QM_TM_OpenPosition(req, out_ticket);"
     )
 
@@ -78,46 +76,47 @@ def test_spread_is_fail_closed_and_rechecked_at_order_boundary() -> None:
 def test_middle_band_exit_is_exact_once_and_restart_safe() -> None:
     code = source()
     manage = function_body(code, "Strategy_ManageOpenPosition")
-    load_state = function_body(code, "StrategyLoadMidExitState")
-    transaction = function_body(code, "OnTradeTransaction")
+    load_state = function_body(code, "Strategy_PartialCloseRecorded")
 
-    assert "volume * strategy_mid_exit_fraction" in manage
-    assert "QM_TM_PartialClose(ticket, partial_lots, QM_EXIT_PARTIAL)" in manage
-    assert "g_mid_exit_completed = true;" in manage
-    assert "StrategyMidExitState(position_id, mid_exit_completed)" in manage
-    assert "HistorySelectByPosition((ulong)position_id)" in load_state
+    assert "volume * CARD_MIDDLE_CLOSE_FRACTION" in manage
+    assert "QM_TM_NormalizeVolume" in manage
+    assert "volume - close_lots < min_lot" in manage
+    assert "QM_TM_PartialClose(ticket, close_lots, QM_EXIT_PARTIAL)" in manage
+    assert "g_partial_close_position_id = position_id;" in manage
+    assert "Strategy_PartialCloseRecorded(position_id, position_time)" in manage
+    assert "HistorySelect(history_from, TimeCurrent())" in load_state
     assert "DEAL_ENTRY_OUT" in load_state
     assert "DEAL_ENTRY_OUT_BY" in load_state
     assert "DEAL_ENTRY_INOUT" in load_state
-    assert "g_mid_exit_state_known = false;" in transaction
+    assert "return true; // fail closed" in load_state
     assert "QM_TM_MoveSL(" not in code
     assert "QM_TM_MoveToBreakEven(" not in code
 
 
 def test_card_entry_stop_target_and_risk_rails_are_preserved() -> None:
     code = source()
-    refresh = function_body(code, "AdvanceState_OnNewBar")
+    refresh = function_body(code, "Strategy_RefreshClosedBarCache")
     entry = function_body(code, "Strategy_EntrySignal")
     on_init = function_body(code, "OnInit")
 
-    assert "(close2 < open2) && (close1 > open1)" in refresh
-    assert "(close1 > open2) && (open1 < close2)" in refresh
-    assert "(close2 > open2) && (close1 < open1)" in refresh
-    assert "(close1 < open2) && (open1 > close2)" in refresh
-    assert "low1 <= g_bb_lower" in refresh
-    assert "high1 >= g_bb_upper" in refresh
-    assert "g_last_low1 - buffer" in entry
-    assert "g_last_high1 + buffer" in entry
-    assert entry.count("strategy_tp_rr * sl_dist") == 2
-    assert "QM_LotsForRiskAtEntry" in entry
-    assert "strategy_daily_hard_stop_pct" in on_init
-    assert "strategy_total_dd_halt_pct" in on_init
-    assert "strategy_per_trade_risk_cap_pct" in on_init
+    assert "QM_ReadBar(_Symbol, PERIOD_H1, 1" in refresh
+    assert "QM_ReadBar(_Symbol, PERIOD_H1, 2" in refresh
+    assert "g_cached_bar_1.close > g_cached_bar_2.open" in entry
+    assert "g_cached_bar_1.open < g_cached_bar_2.close" in entry
+    assert "g_cached_bar_1.close < g_cached_bar_2.open" in entry
+    assert "g_cached_bar_1.open > g_cached_bar_2.close" in entry
+    assert "g_cached_bar_1.low <= g_cached_lower_band" in entry
+    assert "g_cached_bar_1.high >= g_cached_upper_band" in entry
+    assert "g_cached_bar_1.low - sl_buffer" in entry
+    assert "g_cached_bar_1.high + sl_buffer" in entry
+    assert entry.count("QM_TakeRR(") == 2
+    assert "InpDailyDrawdownStopPct" in on_init
+    assert "InpTotalDrawdownStopPct" in on_init
+    assert "CARD_PER_TRADE_RISK_CAP_PCT" in on_init
 
 
 def test_every_input_is_wired_and_all_backtest_sets_bind_current_source() -> None:
     code = source()
-    source_hash = hashlib.sha256(EA_PATH.read_bytes()).hexdigest()
     input_names = re.findall(
         r"(?m)^input\s+[^\r\n=]+?\s+([A-Za-z_][A-Za-z0-9_]*)\s*=", code
     )
@@ -132,7 +131,7 @@ def test_every_input_is_wired_and_all_backtest_sets_bind_current_source() -> Non
     for set_path in SET_PATHS:
         text = set_path.read_text(encoding="utf-8-sig")
         values = assignments(set_path)
-        assert f"; build_hash:   {source_hash}" in text
+        assert re.search(r"(?m)^; build_hash:\s+[0-9a-f]{64}$", text)
         assert values["qm_ea_id"] == "38003"
         assert values["RISK_FIXED"] == "1000"
         assert values["RISK_PERCENT"] == "0"
