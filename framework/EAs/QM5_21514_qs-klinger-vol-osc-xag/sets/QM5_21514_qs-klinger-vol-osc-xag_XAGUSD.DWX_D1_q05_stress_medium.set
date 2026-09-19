@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   0ced3190a5d37a7d3ea7caf6b7c031264b2e340c3fda87e7a40e5a98ba7167b3
+; build_hash:   pending
 ; author:       Development
 ; date:         2026-08-19
 ;==========================================================
@@ -24,7 +24,9 @@ qm_news_stale_max_hours=336
 qm_friday_close_enabled=1
 qm_friday_close_hour_broker=21
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=artifacts/cards_approved/QM5_21514_qs-klinger-vol-osc-xag.md
+; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21514_qs-klinger-vol-osc-xag.md
+; symbol inputs (Hard Rule OWNER 2026-09-06): factory .DWX defaults; live presets carry bare broker names
+strategy_host_symbol=XAGUSD.DWX
 strategy_kvo_fast_period=34
 strategy_kvo_slow_period=55
 strategy_kvo_signal_period=13

@@ -16,6 +16,7 @@ On each completed XAGUSD D1 bar, the EA derives Klinger Volume Force from the ba
 
 | Parameter | Default | Range | Meaning |
 |---|---:|---|---|
+| `strategy_host_symbol` | `XAGUSD.DWX` | deployment-bound | Preserves the approved single-XAG scope while allowing bare broker names in live/FTMO presets. |
 | `strategy_kvo_fast_period` | 34 | 21, 34, 45 | Fast EMA period applied to Volume Force. |
 | `strategy_kvo_slow_period` | 55 | 45, 55, 75 | Slow EMA period applied to Volume Force. |
 | `strategy_kvo_signal_period` | 13 | 9, 13, 21 | Signal EMA period applied to KVO. |

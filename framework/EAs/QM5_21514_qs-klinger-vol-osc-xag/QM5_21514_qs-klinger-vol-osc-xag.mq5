@@ -74,6 +74,10 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Hard Rule (OWNER 2026-09-06): symbols are inputs, never code literals. The
+// factory default carries .DWX; live/FTMO presets use the bare broker name.
+// Canonical-name comparison keeps the approved single-XAG scope in both.
+input string strategy_host_symbol        = "XAGUSD.DWX";
 input int    strategy_kvo_fast_period    = 34;
 input int    strategy_kvo_slow_period    = 55;
 input int    strategy_kvo_signal_period  = 13;
@@ -93,7 +97,7 @@ bool Strategy_NoTradeFilter()
   {
    // Card scope is deliberately single-symbol and D1-only. The spread cap is
    // applied in Strategy_EntrySignal so it never suspends position exits.
-   if(_Symbol != "XAGUSD.DWX")
+   if(QM_MagicSymbolCanonical(_Symbol) != QM_MagicSymbolCanonical(strategy_host_symbol))
       return true;
    if((ENUM_TIMEFRAMES)_Period != PERIOD_D1)
       return true;
