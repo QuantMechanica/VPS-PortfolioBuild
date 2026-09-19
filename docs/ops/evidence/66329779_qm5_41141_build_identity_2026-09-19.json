@@ -1,0 +1,36 @@
+{
+  "schema": "qm.codex-build-identity/v1",
+  "task_id": "66329779-aa43-4905-97da-7fabc11823d3",
+  "ea_id": "QM5_41141",
+  "ea_label": "QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.md",
+  "g0_status": "APPROVED",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.mq5",
+  "mq5_sha256": "4da20e18a9638da1162fbe8f6d9d6817945fd9e791aa77156ac894305f51489e",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.ex5",
+  "ex5_sha256": "172dbdfd832d6876470d0e1844b421320694bf63bdb298f5a69770e62b7223f4",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/sets/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow_GBPUSD.DWX_M15_backtest.set"
+  ],
+  "compile_evidence_path": "D:/QM/reports/work_items/92314586-2b57-4b67-a7d2-e29404f9e175/QM5_41141/COMPILE_EA/compile_evidence.json",
+  "compile_work_item_id": "92314586-2b57-4b67-a7d2-e29404f9e175",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "verification": {
+    "registry_preflight": "PASS",
+    "build_guardrails_max_news_stale_336": "PASS",
+    "build_gate_hardening": "PASS",
+    "spec_validation": "PASS",
+    "focused_tests": "6 passed",
+    "backtest_risk": "RISK_FIXED=1000; RISK_PERCENT=0"
+  },
+  "safety": {
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "verdict": "REVIEW_READY_EXISTING_GOVERNED_BUILD_IDENTITY_VERIFIED"
+}
