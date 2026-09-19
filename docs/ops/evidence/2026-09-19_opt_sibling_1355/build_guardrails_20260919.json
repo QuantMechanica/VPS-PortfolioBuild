@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-09-19T12:37:30.018601Z",
+  "results": [
+    {
+      "checked_at": "2026-09-19T12:37:30.015593Z",
+      "entry_grace_margin_minutes": 5.0,
+      "files_checked": 1,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "docs\\ops\\evidence\\2026-09-19_opt_sibling_1355\\staged\\QM5_41482_williams-vix-fix-fx-h4-opt.mq5",
+      "session_offset_registry_path": "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv",
+      "verdict": "PASS"
+    },
+    {
+      "checked_at": "2026-09-19T12:37:30.018601Z",
+      "entry_grace_margin_minutes": 5.0,
+      "files_checked": 1,
+      "findings": [],
+      "max_news_stale_hours": 336,
+      "path": "docs\\ops\\evidence\\2026-09-19_opt_sibling_1355\\staged\\QM5_41482_williams-vix-fix-fx-h4-opt_NDX.DWX_H4_backtest.set",
+      "session_offset_registry_path": "C:\\QM\\repo\\framework\\registry\\session_offset_minutes.csv",
+      "verdict": "PASS"
+    }
+  ],
+  "verdict": "PASS"
+}

@@ -1,0 +1,54 @@
+{
+  "neutral_matrix_setfile": {
+    "ok": true,
+    "len": 1241
+  },
+  "validate_base_setfile": {
+    "ok": true,
+    "value": {
+      "qm_ea_id": "41482",
+      "qm_magic_slot_offset": "0",
+      "RISK_FIXED": "1000",
+      "RISK_PERCENT": "0",
+      "PORTFOLIO_WEIGHT": "1",
+      "strategy_wvf_lookback": "22",
+      "strategy_wvf_ma_period": "20",
+      "strategy_wvf_devs": "2.0",
+      "strategy_wvf_range_pct": "0.85",
+      "strategy_atr_period": "14",
+      "strategy_ema_filter_period": "200",
+      "strategy_sl_atr_mult": "1.5",
+      "strategy_tp1_atr_mult": "1.5",
+      "strategy_tp2_atr_mult": "3.0",
+      "strategy_time_stop_bars": "24",
+      "strategy_spread_mult": "1.5",
+      "strategy_warmup_h4_bars": "250",
+      "opt_pp_buy1": "0",
+      "opt_pp_buy2": "0",
+      "opt_pp_buy3": "0",
+      "opt_pp_sell1": "0",
+      "opt_pp_sell2": "0",
+      "opt_pp_sell3": "0"
+    }
+  },
+  "pattern_measurement_readiness": {
+    "ready": true,
+    "status": "READY",
+    "blocker_code": null,
+    "blockers": [],
+    "missing_source_inputs": [],
+    "missing_setfile_inputs": [],
+    "pattern_permission_wired": true,
+    "risk_contract": {
+      "RISK_FIXED": 1000.0,
+      "RISK_PERCENT": 0.0,
+      "qm_news_stale_max_hours": null,
+      "required": "RISK_FIXED > 0; RISK_PERCENT = 0; qm_news_stale_max_hours <= 336"
+    },
+    "resolution_template": [
+      "Build a governed _opt sibling with all six opt_pp_* inputs and symmetric permission vetoes.",
+      "Compile and clear its build/Q02 prerequisites without changing this declaration.",
+      "Materialize the declared annual matrix through opt_census.py; adjudicate only after all sealed WF cells are measured."
+    ]
+  }
+}

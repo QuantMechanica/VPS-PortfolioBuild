@@ -1,0 +1,45 @@
+{
+  "applied": 1,
+  "applied_work_item_ids": [
+    "56887ed0-93d6-47af-b4da-0c73a9101a1e"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260919T124751_403506Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260919T124725Z_a59c0c44.sqlite",
+    "reused": false,
+    "sha256": "85239cbce4e19e770f8d2c4827730b7609f45df8f70203aa0dd7e55e094adaef"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 1,
+  "max_items": 1,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "e0549fbd938288d42e5ceb47497ecab7936c8a18c9cc5f9f95e64d389f74ff25",
+      "ea_id": "QM5_41482",
+      "ea_label": "QM5_41482_williams-vix-fix-fx-h4-opt",
+      "expected_mq5_sha256": "e0549fbd938288d42e5ceb47497ecab7936c8a18c9cc5f9f95e64d389f74ff25",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41482_williams-vix-fix-fx-h4-opt\\QM5_41482_williams-vix-fix-fx-h4-opt.mq5",
+      "work_item_id": "56887ed0-93d6-47af-b4da-0c73a9101a1e"
+    }
+  ],
+  "release_count": 1,
+  "released_at": "2026-09-19T12:47:51+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": "56887ed0-93d6-47af-b4da-0c73a9101a1e",
+  "work_item_id_selectors": [
+    "56887ed0-93d6-47af-b4da-0c73a9101a1e"
+  ]
+}
