@@ -1,0 +1,55 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260919:QM5_41189_xtixng-mlad-rv:b6c0052a",
+  "created_at_local": "2026-09-19T20:27:50+02:00",
+  "ea_id": "QM5_41189",
+  "ea_label": "QM5_41189_xtixng-mlad-rv",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "router_ops_issue:5a98a339-2368-41c9-813b-e12f22fd2759",
+    "branch": "agents/board-advisor",
+    "repair_commit": "14d548c87a96582cde7366c59d3778e32925bc6b",
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "LEGACY_BUILD_CHECK_FAILURE_THEN_FRAMEWORK_PHASE_INPUT_PIN_REPAIR",
+    "findings": [
+      "The available terminal compile-failure predecessor is the exact governed EA_INDICATOR_BUFFER_UNBOUNDED row; its immutable source hash predates the current source.",
+      "The later rollout successor never compiled and is now source-stale. Commit 14d548c87a completes the remaining current-source framework-input repair; the reference suite and current static guards pass."
+    ],
+    "predecessor_compile_work_item_id": "0c9615ab-51f9-4a51-97e7-0938217ee64e",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "EA_INDICATOR_BUFFER_UNBOUNDED",
+    "predecessor_compile_result": "PASS",
+    "predecessor_build_check_result": "FAIL",
+    "predecessor_failure_classes": [
+      "EA_INDICATOR_BUFFER_UNBOUNDED"
+    ],
+    "predecessor_mq5_sha256": "e401421c63ff2c5933099b834835469faddabe3cf8efe756a94a6eb8d16a54b2",
+    "predecessor_ex5_sha256": "e8b6bf04e457354edd149963f052ec43ffd6c7eba3ba7a78d8c1db188e0034d0",
+    "predecessor_evidence_path": "D:/QM/reports/work_items/0c9615ab-51f9-4a51-97e7-0938217ee64e/QM5_41189/COMPILE_EA/compile_evidence.json",
+    "predecessor_evidence_sha256": "d3b1a25129cb6db766d58d358304ef26d5539e40a16397132845d1175a343e0e"
+  },
+  "repair": {
+    "current_mq5_sha256": "b6c0052a0fae01e86abd1e9766da99c705197159cd25f0bfdbb2e4c3ec971efe",
+    "mq5_path": "framework/EAs/QM5_41189_xtixng-mlad-rv/QM5_41189_xtixng-mlad-rv.mq5",
+    "strategy_mechanics_changed": false,
+    "verification": {
+      "ea_reference_tests": "PASS",
+      "framework_input_pin_hits": 0,
+      "validate_build_guardrails": "PASS"
+    }
+  },
+  "expected_failure_classes": [
+    "EA_INDICATOR_BUFFER_UNBOUNDED"
+  ],
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

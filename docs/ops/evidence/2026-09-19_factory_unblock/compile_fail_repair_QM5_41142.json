@@ -1,0 +1,55 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260919:QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow:bd65d86f",
+  "created_at_local": "2026-09-19T20:27:50+02:00",
+  "ea_id": "QM5_41142",
+  "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "router_ops_issue:5a98a339-2368-41c9-813b-e12f22fd2759",
+    "branch": "agents/board-advisor",
+    "repair_commit": "d0433c1c1d16234b53e50e06c25205ba016c6b9b",
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "STALE_COMPILE_LINEAGE_AFTER_SYMBOL_LITERAL_DEBT_REPAIR",
+    "findings": [
+      "The exact terminal failure predecessor is the governed candidate-recheck refusal for the prior source hash; a later compile of that old hash passed, but it predates the current natural-rebuild repair.",
+      "Commit d0433c1c1d makes the host symbol an input and canonicalizes both comparisons, eliminating EA_SYMBOL_LITERAL_REBUILD_REQUIRES_FIX without changing signal, exit, sizing or risk logic."
+    ],
+    "predecessor_compile_work_item_id": "b04fb953-6a35-42b1-afdc-a39dcdcd0fa3",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "CANDIDATE_RECHECK_REFUSED",
+    "predecessor_compile_result": null,
+    "predecessor_build_check_result": null,
+    "predecessor_failure_classes": [
+      "CANDIDATE_RECHECK_REFUSED"
+    ],
+    "predecessor_mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+    "predecessor_ex5_sha256": null,
+    "predecessor_evidence_path": "D:/QM/reports/work_items/b04fb953-6a35-42b1-afdc-a39dcdcd0fa3/QM5_41142/COMPILE_EA/compile_evidence.json",
+    "predecessor_evidence_sha256": "4a407396641fc7b73d37e2e9f6a7a29908dc902f2bd28649116eea6b1653ebab"
+  },
+  "repair": {
+    "current_mq5_sha256": "bd65d86feafb660aee79a9e4e483f62679788383595d6a80bbd5204db50d23f0",
+    "mq5_path": "framework/EAs/QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow/QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow.mq5",
+    "strategy_mechanics_changed": false,
+    "verification": {
+      "ea_reference_tests": "PASS",
+      "symbol_literal_violations": 0,
+      "validate_build_guardrails": "PASS"
+    }
+  },
+  "expected_failure_classes": [
+    "CANDIDATE_RECHECK_REFUSED"
+  ],
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

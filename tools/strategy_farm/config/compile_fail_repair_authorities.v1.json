@@ -50,6 +50,54 @@
       "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
       "granted_at_utc": "2026-09-19T12:47:00Z",
       "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
+    },
+    {
+      "authority": "compile_fail_repair:20260919:QM5_41179_xtixng-mcoxstuart-rv:ed6f5488",
+      "ea_id": "41179",
+      "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+      "predecessor_work_item_id": "3f0de0a8-5302-4310-864d-ae2782f72f9f",
+      "rejected_mq5_sha256": "6110e1969bf009ad0e83779f02357df51b31da6c1e6fff887ed4a2fb92435e8a",
+      "repaired_mq5_sha256": "ed6f54885c9455bcd5f9c5d7c45125fc59d1a4acc02213ddcb5ad801609e7412",
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_INPUT_PINNED"
+      ],
+      "evidence_path": "docs/ops/evidence/2026-09-19_factory_unblock/compile_fail_repair_QM5_41179.json",
+      "evidence_sha256": "8f5ee8fe065b3a80611e68790bbb3f6517965e72ce20d83794afa026bd118596",
+      "granted_by": "router_ops_issue:5a98a339-2368-41c9-813b-e12f22fd2759",
+      "granted_at_utc": "2026-09-19T18:27:50Z",
+      "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
+    },
+    {
+      "authority": "compile_fail_repair:20260919:QM5_41189_xtixng-mlad-rv:b6c0052a",
+      "ea_id": "41189",
+      "ea_label": "QM5_41189_xtixng-mlad-rv",
+      "predecessor_work_item_id": "0c9615ab-51f9-4a51-97e7-0938217ee64e",
+      "rejected_mq5_sha256": "e401421c63ff2c5933099b834835469faddabe3cf8efe756a94a6eb8d16a54b2",
+      "repaired_mq5_sha256": "b6c0052a0fae01e86abd1e9766da99c705197159cd25f0bfdbb2e4c3ec971efe",
+      "expected_failure_classes": [
+        "EA_INDICATOR_BUFFER_UNBOUNDED"
+      ],
+      "evidence_path": "docs/ops/evidence/2026-09-19_factory_unblock/compile_fail_repair_QM5_41189.json",
+      "evidence_sha256": "48a71d6babb79a09ed830bc61347a70294aa00458aff65fdd78ba898c3b1d074",
+      "granted_by": "router_ops_issue:5a98a339-2368-41c9-813b-e12f22fd2759",
+      "granted_at_utc": "2026-09-19T18:27:50Z",
+      "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
+    },
+    {
+      "authority": "compile_fail_repair:20260919:QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow:bd65d86f",
+      "ea_id": "41142",
+      "ea_label": "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow",
+      "predecessor_work_item_id": "b04fb953-6a35-42b1-afdc-a39dcdcd0fa3",
+      "rejected_mq5_sha256": "cb33049fcc851c1bd83762abe1aee72768bf38d55d73097de08e48c1ba177d9a",
+      "repaired_mq5_sha256": "bd65d86feafb660aee79a9e4e483f62679788383595d6a80bbd5204db50d23f0",
+      "expected_failure_classes": [
+        "CANDIDATE_RECHECK_REFUSED"
+      ],
+      "evidence_path": "docs/ops/evidence/2026-09-19_factory_unblock/compile_fail_repair_QM5_41142.json",
+      "evidence_sha256": "5734467658b6ea6bc5040dbdeeb9a8d0af26cf6e2cb091a1765b5e5d72a9e538",
+      "granted_by": "router_ops_issue:5a98a339-2368-41c9-813b-e12f22fd2759",
+      "granted_at_utc": "2026-09-19T18:27:50Z",
+      "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
     }
   ]
 }

@@ -22,6 +22,30 @@ QM5_41477_AUTHORITY = (
     "compile_fail_repair:20260918:"
     "QM5_41477_fx-session-mean-reversion-m15:512aa887"
 )
+QM5_41482_AUTHORITY = (
+    "compile_fail_repair:20260919:"
+    "QM5_41482_williams-vix-fix-fx-h4-opt:e0549fbd"
+)
+QM5_41179_AUTHORITY = (
+    "compile_fail_repair:20260919:"
+    "QM5_41179_xtixng-mcoxstuart-rv:ed6f5488"
+)
+QM5_41189_AUTHORITY = (
+    "compile_fail_repair:20260919:"
+    "QM5_41189_xtixng-mlad-rv:b6c0052a"
+)
+QM5_41142_AUTHORITY = (
+    "compile_fail_repair:20260919:"
+    "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow:bd65d86f"
+)
+EXPECTED_AUTHORITIES = {
+    QM5_41475_AUTHORITY,
+    QM5_41477_AUTHORITY,
+    QM5_41482_AUTHORITY,
+    QM5_41179_AUTHORITY,
+    QM5_41189_AUTHORITY,
+    QM5_41142_AUTHORITY,
+}
 
 
 def _registry() -> dict[str, dict[str, Any]]:
@@ -64,7 +88,7 @@ def _arguments(entry: dict[str, Any]) -> dict[str, Any]:
 
 def test_registry_loads_and_validates() -> None:
     registry = _registry()
-    assert set(registry) == {QM5_41475_AUTHORITY, QM5_41477_AUTHORITY}
+    assert set(registry) == EXPECTED_AUTHORITIES
     for authority, entry in registry.items():
         assert entry["authority"] == authority
         assert entry["scope"] == compile_work_items.COMPILE_FAIL_REPAIR_SCOPE
@@ -86,7 +110,7 @@ def test_registry_loads_and_validates() -> None:
 
 
 @pytest.mark.parametrize(
-    "authority", [QM5_41475_AUTHORITY, QM5_41477_AUTHORITY]
+    "authority", sorted(EXPECTED_AUTHORITIES)
 )
 def test_authorizer_accepts_registered_happy_path(authority: str) -> None:
     entry = _registry()[authority]

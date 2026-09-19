@@ -1,0 +1,55 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260919:QM5_41179_xtixng-mcoxstuart-rv:ed6f5488",
+  "created_at_local": "2026-09-19T20:27:50+02:00",
+  "ea_id": "QM5_41179",
+  "ea_label": "QM5_41179_xtixng-mcoxstuart-rv",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "router_ops_issue:5a98a339-2368-41c9-813b-e12f22fd2759",
+    "branch": "agents/board-advisor",
+    "repair_commit": "14d548c87a96582cde7366c59d3778e32925bc6b",
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "FRAMEWORK_PHASE_INPUTS_PINNED_IN_STRATEGY_VALIDATOR",
+    "findings": [
+      "The last current-lineage compile successor failed build_check with EA_FRAMEWORK_INPUT_PINNED because Strategy_InputsValid hard-pinned framework-controlled seed, news, Friday-close and stress inputs.",
+      "Commit 14d548c87a removes those framework pins and retains the EA identity, magic slot, symbols, strategy parameters and fixed-risk contract; stress rejection remains bounded to the sanctioned 0..1 domain."
+    ],
+    "predecessor_compile_work_item_id": "3f0de0a8-5302-4310-864d-ae2782f72f9f",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "EA_FRAMEWORK_INPUT_PINNED",
+    "predecessor_compile_result": "PASS",
+    "predecessor_build_check_result": "FAIL",
+    "predecessor_failure_classes": [
+      "EA_FRAMEWORK_INPUT_PINNED"
+    ],
+    "predecessor_mq5_sha256": "6110e1969bf009ad0e83779f02357df51b31da6c1e6fff887ed4a2fb92435e8a",
+    "predecessor_ex5_sha256": "75e037477af83fdc88632f80a1fb87ca932217ffb4244a64c77714b2c67b3e48",
+    "predecessor_evidence_path": "D:/QM/reports/work_items/3f0de0a8-5302-4310-864d-ae2782f72f9f/QM5_41179/COMPILE_EA/compile_evidence.json",
+    "predecessor_evidence_sha256": "828efec224fd0e95f2d1d88459d828f813af0616c7821f6a4b18950da5350208"
+  },
+  "repair": {
+    "current_mq5_sha256": "ed6f54885c9455bcd5f9c5d7c45125fc59d1a4acc02213ddcb5ad801609e7412",
+    "mq5_path": "framework/EAs/QM5_41179_xtixng-mcoxstuart-rv/QM5_41179_xtixng-mcoxstuart-rv.mq5",
+    "strategy_mechanics_changed": false,
+    "verification": {
+      "ea_reference_tests": "PASS",
+      "framework_input_pin_hits": 0,
+      "validate_build_guardrails": "PASS"
+    }
+  },
+  "expected_failure_classes": [
+    "EA_FRAMEWORK_INPUT_PINNED"
+  ],
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}
