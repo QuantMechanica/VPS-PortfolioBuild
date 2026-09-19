@@ -1,0 +1,5 @@
+{
+  "reason": "ReconciliationError: predecessor_rows_not_ready:needs_successor=4,manual_review=0,terminal_result_holds=0",
+  "schema_version": "qm.compile-rollout-stale-reconciliation/v1",
+  "status": "aborted"
+}

@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789808466432313300,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1297948672,
+      "source_wal_size": 5665032
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260919T090241Z_21a295c0.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260919T090241Z_21a295c0.sqlite.identity.json",
+    "sha256": "ebb76b6a157a49342cdc145dff0deba6dc774f5a39b5e72ae219511c2d8eecfc"
+  },
+  "hold_code": "Q09_FAIL_TERMINAL_NO_SEALED_PLAN_20260919",
+  "inserted": 0,
+  "mode": "apply",
+  "reason": "Q09 FAIL x2 (fae2b8eb 2026-08-29, 2a7e17b7 2026-08-24, ex5 034179dc); no Q09 PASS source exists, autoseal derive-lineage fails on lost Q08 aggregate (43c9d9d7); sealed plan impossible for this lineage (q09_pass_anchor_binder census 2026-09-19)",
+  "release_condition": "a new Q09 PASS row for QM5_11476/USDJPY.DWX under the current build identity exists; then re-bind via q09_pass_anchor_binder --apply",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-08-23T16:25:13+00:00",
+        "hold_code": "Q09_FAIL_TERMINAL_NO_SEALED_PLAN_20260919",
+        "reason": "Q09 FAIL x2 (fae2b8eb 2026-08-29, 2a7e17b7 2026-08-24, ex5 034179dc); no Q09 PASS source exists, autoseal derive-lineage fails on lost Q08 aggregate (43c9d9d7); sealed plan impossible for this lineage (q09_pass_anchor_binder census 2026-09-19)",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-19T09:03:34+00:00",
+        "work_item_id": "08fe4173-07d9-47e1-97e9-a76b1159ad94"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-23T16:25:13+00:00",
+        "ea_id": "QM5_11476",
+        "id": "08fe4173-07d9-47e1-97e9-a76b1159ad94",
+        "kind": "backtest",
+        "phase": "Q10_NEWS",
+        "status": "pending",
+        "symbol": "USDJPY.DWX",
+        "updated_at": "2026-09-19T09:02:59+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": "Q09_AWAITING_SEALED_PLAN",
+  "superseded": 1
+}

@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": null,
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789808466432313300,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1297948672,
+      "source_wal_size": 5665032
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260919T090241Z_21a295c0.sqlite",
+    "reused": true,
+    "reused_from_sidecar": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260919T090241Z_21a295c0.sqlite.identity.json",
+    "sha256": "ebb76b6a157a49342cdc145dff0deba6dc774f5a39b5e72ae219511c2d8eecfc"
+  },
+  "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+  "inserted": 1,
+  "mode": "apply",
+  "reason": "pending_artifact_binding_drift 2026-09-19: bound mq5/setfile sha256 no longer match disk (CONTENT_CHANGED); census docs/ops/evidence/2026-09-19_binding_drift/census.json; row is not dispatchable against its pinned identity",
+  "release_condition": "governed successor row from the final build (rebind/enqueue with expected-current-ex5-sha256) supersedes this row; verdict evidence never overwritten",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-19T09:03:34+00:00",
+        "hold_code": "ARTIFACT_BINDING_CONTENT_CHANGED",
+        "reason": "pending_artifact_binding_drift 2026-09-19: bound mq5/setfile sha256 no longer match disk (CONTENT_CHANGED); census docs/ops/evidence/2026-09-19_binding_drift/census.json; row is not dispatchable against its pinned identity",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-19T09:03:34+00:00",
+        "work_item_id": "64604d7a-9bbe-561c-a70c-44667cdb2e12"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-08-29T08:10:44.470185+00:00",
+        "ea_id": "QM5_10706",
+        "id": "64604d7a-9bbe-561c-a70c-44667cdb2e12",
+        "kind": "analytic",
+        "phase": "Q14",
+        "status": "pending",
+        "symbol": "GBPUSD.DWX",
+        "updated_at": "2026-08-29T08:10:44.470185+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": null,
+  "superseded": 0
+}

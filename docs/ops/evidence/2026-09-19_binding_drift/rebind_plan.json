@@ -1,0 +1,11 @@
+{
+  "schema": "qm.pending-binding-rebind-plan.v1",
+  "mode": "DRY_RUN_ONLY_NOT_APPLIED",
+  "source_plan": "docs\\ops\\evidence\\2026-09-19_binding_drift\\plan.json",
+  "database": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+  "cluster": "C2A_COMMITTED_REGENERATION_STALE_BINDING",
+  "c2a_rows_total": 0,
+  "rebind_eligible_count": 0,
+  "entries": [],
+  "plan_sha256": "d2b5fc69c7f924f55490a0dab2bd93c1005508c9103c1b2ec1cda34c0cdb3f69"
+}
