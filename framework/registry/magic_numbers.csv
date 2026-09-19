@@ -18506,3 +18506,4 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41476,cash-open-mean-reversion-h1,1,GDAXI.DWX,414760001,2026-09-16,Codex governed allocator,active
 41476,cash-open-mean-reversion-h1,2,SP500.DWX,414760002,2026-09-16,Codex governed allocator,active
 41478,grimes-complex-pb-opt,0,GDAXI.DWX,414780000,2026-09-16,Codex governed allocator,active
+41482,williams-vix-fix-fx-h4-opt,0,NDX.DWX,414820000,2026-09-19,Codex governed allocator,active
