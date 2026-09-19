@@ -1,0 +1,56 @@
+{
+  "all_unclaimable": true,
+  "already_held": 0,
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_governed_hold_20260919T094324_804500Z.json",
+    "identity": {
+      "schema_version": 1404071,
+      "source_mtime_ns": 1789810986465047300,
+      "source_path": "D:\\QM\\strategy_farm\\state\\farm_state.sqlite",
+      "source_size": 1298788352,
+      "source_wal_size": 6027592
+    },
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_governed_hold_20260919T094306Z_3ba8ab31.sqlite",
+    "reused": false,
+    "reused_from_sidecar": null,
+    "sha256": "84a37d0bbbb0bf38e32aecd2b6562b15f9ca23acd1cf7d826ed8dd2099e5ccea"
+  },
+  "hold_code": "Q09_NEWS_RUNNER_CRASH_NO_EVIDENCE_20260919",
+  "inserted": 0,
+  "mode": "apply",
+  "reason": "2026-09-19 09:35-09:37Z: five sibling Q09_NEWS index rows (13301, 10911, 13128, 10440, 11294) claimed by T4 after the index reservation lowering and crashed at run_item within seconds: IntegrityError 'terminal work_item requires evidence_path or EVIDENCE_UNAVAILABLE sentinel' -> INFRA_FAIL without evidence; same signature 11x in terminal_worker_T4.log history. Parked to stop the churn until the runner defect is fixed (ticket c73ed341)",
+  "release_condition": "Q09_NEWS runner defect fixed with a passing governed smoke on one sibling row; then append-only reruns of the five INFRA_FAIL rows and release",
+  "rows": [
+    {
+      "claimable": false,
+      "hold": {
+        "active": 1,
+        "created_at": "2026-09-04T21:36:18+00:00",
+        "hold_code": "Q09_NEWS_RUNNER_CRASH_NO_EVIDENCE_20260919",
+        "reason": "2026-09-19 09:35-09:37Z: five sibling Q09_NEWS index rows (13301, 10911, 13128, 10440, 11294) claimed by T4 after the index reservation lowering and crashed at run_item within seconds: IntegrityError 'terminal work_item requires evidence_path or EVIDENCE_UNAVAILABLE sentinel' -> INFRA_FAIL without evidence; same signature 11x in terminal_worker_T4.log history. Parked to stop the churn until the runner defect is fixed (ticket c73ed341)",
+        "release_note": null,
+        "release_on_restart": 0,
+        "released_at": null,
+        "updated_at": "2026-09-19T09:43:24+00:00",
+        "work_item_id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa"
+      },
+      "work_item": {
+        "claimed_by": null,
+        "created_at": "2026-09-02T10:10:35.641002+00:00",
+        "ea_id": "QM5_10142",
+        "id": "eaf6fe05-7807-5e13-9031-5b6b01019aaa",
+        "kind": "backtest",
+        "phase": "Q09_NEWS",
+        "status": "pending",
+        "symbol": "SP500.DWX",
+        "updated_at": "2026-09-13T21:06:00+00:00",
+        "verdict": null
+      }
+    }
+  ],
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "ok",
+  "supersede_hold_code": "NEWS_CALENDAR_TAINTED",
+  "superseded": 1
+}

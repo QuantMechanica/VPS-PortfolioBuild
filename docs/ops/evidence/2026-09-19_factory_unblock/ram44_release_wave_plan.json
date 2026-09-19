@@ -1,0 +1,128 @@
+[
+ {
+  "id": "f7d0eaa3-026f-4bee-b7bd-a17647b3ed99",
+  "ea_id": "QM5_1104",
+  "symbol": "GDAXI.DWX",
+  "phase": "Q04",
+  "reservation_gb": 18.0,
+  "source": "index_class_measured",
+  "tf": "H1"
+ },
+ {
+  "id": "a04a0ba3-399f-42c1-bafc-e54603f47aed",
+  "ea_id": "QM5_10855",
+  "symbol": "GDAXI.DWX",
+  "phase": "Q04",
+  "reservation_gb": 12.0,
+  "source": "index_ea_measured",
+  "tf": "M5"
+ },
+ {
+  "id": "1890918d-19c0-44a2-89f8-3ebf3c7d83b9",
+  "ea_id": "QM5_1255",
+  "symbol": "NDX.DWX",
+  "phase": "Q04",
+  "reservation_gb": 18.0,
+  "source": "index_class_measured",
+  "tf": "H1"
+ },
+ {
+  "id": "d936733f-96e0-4c6f-b905-09b6c1fe50fe",
+  "ea_id": "QM5_1059",
+  "symbol": "UK100.DWX",
+  "phase": "Q04",
+  "reservation_gb": 18.0,
+  "source": "index_class_measured",
+  "tf": "H1"
+ },
+ {
+  "id": "d551ec84-6493-4e14-9bbf-596e4869c568",
+  "ea_id": "QM5_10310",
+  "symbol": "NDX.DWX",
+  "phase": "Q04",
+  "reservation_gb": 17.0,
+  "source": "index_class_measured",
+  "tf": "M15"
+ },
+ {
+  "id": "fbf92e95-3357-417d-905f-3eba50fa05fd",
+  "ea_id": "QM5_10309",
+  "symbol": "NDX.DWX",
+  "phase": "Q04",
+  "reservation_gb": 17.0,
+  "source": "index_class_measured",
+  "tf": "M15"
+ },
+ {
+  "id": "c1697d90-c94f-4776-b8b0-4bc838a5e82b",
+  "ea_id": "QM5_1059",
+  "symbol": "NDX.DWX",
+  "phase": "Q04",
+  "reservation_gb": 18.0,
+  "source": "index_class_measured",
+  "tf": "H1"
+ },
+ {
+  "id": "944f50f3-1cb5-4b9a-bfbe-612d09556906",
+  "ea_id": "QM5_12507",
+  "symbol": "WS30.DWX",
+  "phase": "Q04",
+  "reservation_gb": 18.0,
+  "source": "index_class_measured",
+  "tf": "H1"
+ },
+ {
+  "id": "ff27700d-0e21-4d2d-a99a-a082f9fd868a",
+  "ea_id": "QM5_12396",
+  "symbol": "WS30.DWX",
+  "phase": "Q04",
+  "reservation_gb": 18.0,
+  "source": "index_class_measured",
+  "tf": "H1"
+ },
+ {
+  "id": "ece14be9-0b75-4444-8578-33421782a24e",
+  "ea_id": "QM5_1106",
+  "symbol": "NDX.DWX",
+  "phase": "Q04",
+  "reservation_gb": 19.0,
+  "source": "index_class_measured",
+  "tf": "M5"
+ },
+ {
+  "id": "6a9f78bd-ac17-4a64-823f-c5cc5a84ea30",
+  "ea_id": "QM5_10599",
+  "symbol": "NDX.DWX",
+  "phase": "Q04",
+  "reservation_gb": 20.0,
+  "source": "index_class_measured",
+  "tf": "H4"
+ },
+ {
+  "id": "e4fabf66-d902-45bf-9ffd-12e3289d172c",
+  "ea_id": "QM5_11294",
+  "symbol": "NDX.DWX",
+  "phase": "Q10_NEWS",
+  "reservation_gb": 20.0,
+  "source": "index_class_measured",
+  "tf": "H4"
+ },
+ {
+  "id": "dbd984be-792d-4759-a5ac-bfd75b423917",
+  "ea_id": "QM5_1355",
+  "symbol": "NDX.DWX",
+  "phase": "Q10_NEWS",
+  "reservation_gb": 20.0,
+  "source": "index_class_measured",
+  "tf": "H4"
+ },
+ {
+  "id": "564c7e0e-9f1f-446b-918a-1a2cb9d1ab0f",
+  "ea_id": "QM5_9973",
+  "symbol": "NDX.DWX",
+  "phase": "Q10_NEWS",
+  "reservation_gb": 18.0,
+  "source": "index_ea_measured",
+  "tf": "D1"
+ }
+]
