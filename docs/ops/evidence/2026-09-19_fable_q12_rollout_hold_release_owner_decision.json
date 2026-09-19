@@ -1,0 +1,74 @@
+{
+ "schema_version": "qm.factory-restart-owner-preparation-decision/v1",
+ "decision_id": "OWNER_DEC_FABLE_Q12_ROLLOUT_RELEASE_20260919",
+ "status": "APPROVED",
+ "authority": "OWNER",
+ "recorded_at_utc": "2026-09-19T23:19:53Z",
+ "authorized_at_utc": "2026-09-19T23:19:53Z",
+ "authorization_expires_at_utc": "2026-10-19T00:00:00Z",
+ "decision_channel": "delegated_authority_owner_dec_fable_full_executive_authority_20260917",
+ "authorized_by": "Fable, under delegated executive authority OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+ "decision_ref": "docs/ops/evidence/2026-09-19_fable_q12_rollout_hold_release_owner_decision.json",
+ "source_head_observed_before_implementation": "85f77c0d30062eafdd683d4e095aa3e26bbcd41a",
+ "verbatim_owner_authorization": "decisions/2026-09-17_owner_fable_full_executive_authority.md section 2, 'Factory / MT5' row: 'start/stop/restart workers, scheduling, resource classes, enqueue/requeue/supersede via governed paths, tester orchestration, T1-T10, new lanes, concurrency, pause programmes, Demo and live terminals'; and section 7 item 5: 'Enforcement code/config that would otherwise stop Fable (T_Live launcher guards, book_build_guard OWNER-artifact requirement, router Kimi caps) - reviewed case by case when first encountered; each change gets its own receipt.' The maintenance_control.py canonical restart-hold pin is exactly this class of enforcement code/config; this decision is that case-by-case review and its receipt.",
+ "authorization_transcription_note": "Successor of router tickets 23ccce7a-ed43-4afe-b9c7-dd4880719c48 (found the 08-11 preparation pin authorizes zero Q12 releases; flagged as an OWNER-decision gap, not GRUEN-closeable) and 221e4e91-a0ab-494a-85d4-9134e035f503 (this ticket: re-pin under Fable full-executive-authority and prepare governed release). Precondition verified live, not merely claimed: docs/ops/evidence/2026-09-19_factory_unblock/RECEIPT.md line ~132 records 'all 10 workers on HEAD' as of 2026-09-19 (staggered restart onto terminal_worker.py HEAD, T10/T4 -> T1/T2/T5 -> T7/T9/T8, then T2/T6); the DL-089 matrix-service routing guard (dl089_matrix_service.py, ROLLOUT_HOLD_CODE, introduced commit 5475aed8ea 2026-08-26) has been on HEAD since well before that reload, so every currently-resident worker process has it. Read-only farm_state.sqlite query at authorship time (2026-09-19T23:19:53Z) found exactly 8 active release_on_restart=1 holds, all hold_code=Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING (work items 2dad5730-30ed-5ab1-ace1-d5db4ede60db QM5_10706/GBPUSD, f364ed13-9f09-5fa6-b7df-d414e8a13d77 QM5_11422/USDCAD, 19761d0c-3877-587d-a5cd-a8e48291cdf7 QM5_11421/EURUSD, 73063ec5-3abe-5e11-8497-8df833e3ec4c QM5_13013/NDX, 5cf3ea75-2fe0-5420-97c6-650678c52b31 / 897169ba-9b8f-53ef-8c43-3013f3c7f2e8 / 779da760-42c2-50ed-80c3-263ef3366edb QM5_10911/GDAXI x3, ba724ef2-22eb-54fa-b155-a793ef54b5c1 QM5_1355/NDX) - the predecessor ticket's snapshot of 7 rows had already drifted to 8 by the time this decision was authored (DL-089 matrix service keeps applying this hold to newly-declared candidates as routine, transitional policy; this is expected steady-state behaviour, not evidence of a broken guard). All 8 authorized ids are included so the current queue fully drains. This decision only re-pins maintenance_control.py's CANONICAL_OWNER_DECISION_{RELATIVE_PATH,SHA256,COMMIT,BLOB} constants (and the decision_id it checks for) to this file; it grants no runtime authority itself (explicit_exclusions.hold_release_now stays false, matching the 08-11 preparation's own invariant, enforced by _validate_canonical_restart_owner_decision). Actual release additionally requires: (1) a freshly minted runtime-activation decision via build_runtime_activation_decision.py whose restart_hold_ids exactly equals this decision's authorized_work_item_ids at mint time, and (2) a real Factory_OFF -> Factory_ON cycle with post-start health-gate pass (maintenance_control.py release-on-restart --apply). Neither is executed under this decision or this router ticket: Factory_OFF/ON stops all T1-T10 backtests, and the launcher's hard rule for this task explicitly forbids interrupting active backtests without explicit OWNER go-ahead. Subset-authorization semantics (_require_exact_restart_hold_set, fixed 2026-08-22 after a DoS incident) mean any Q12 rollout-pending row created between now and the actual restart stays safely held and does not block release of these 8 (an authorized id that later stops being actively held is instead a hard error, so re-verify the live hold set immediately before minting the runtime-activation decision and drop any id no longer active). Old preparation pin docs/ops/evidence/2026-08-11_factory_preparation_owner_decision_standing_unlimited.json is left untouched as history; it is simply no longer the canonical pin. Transcribed by Claude (session task 221e4e91-a0ab-494a-85d4-9134e035f503).",
+ "restore_intent": {
+  "manifest_creation_authorized_after_prerequisites": false,
+  "runtime_flag_upgrade_authorized": false,
+  "legacy_flag_upgrade_executed": false,
+  "factory_on_authorized": false
+ },
+ "worker_policy": {
+  "t5_quarantine_ratified": false,
+  "t5_quarantine_lifted": true,
+  "t5_reactivation_evidence": "docs/ops/evidence/2026-07-31_t5_reactivation.md",
+  "expected_worker_count": 10,
+  "expected_terminals": [
+   "T1",
+   "T2",
+   "T3",
+   "T4",
+   "T5",
+   "T6",
+   "T7",
+   "T8",
+   "T9",
+   "T10"
+  ]
+ },
+ "restart_holds": {
+  "release_policy": "ONLY_AFTER_POST_START_HEALTH_GATE_PASS",
+  "authorized_release_count": 8,
+  "authorized_work_item_ids": [
+   "19761d0c-3877-587d-a5cd-a8e48291cdf7",
+   "2dad5730-30ed-5ab1-ace1-d5db4ede60db",
+   "5cf3ea75-2fe0-5420-97c6-650678c52b31",
+   "73063ec5-3abe-5e11-8497-8df833e3ec4c",
+   "779da760-42c2-50ed-80c3-263ef3366edb",
+   "897169ba-9b8f-53ef-8c43-3013f3c7f2e8",
+   "ba724ef2-22eb-54fa-b155-a793ef54b5c1",
+   "f364ed13-9f09-5fa6-b7df-d414e8a13d77"
+  ],
+  "non_releasing_hold_count": 0,
+  "all_other_holds_must_remain_active": true,
+  "release_executed": false,
+  "generation_note": "Authorizes release-on-restart for all 8 currently-active Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING transitional dispatch-guard holds (DL-089 matrix service), verified live via read-only farm_state.sqlite query at authorship time; 0 other release_on_restart holds are currently active. Subset-authorization semantics (maintenance_control.py _require_exact_restart_hold_set): any hold not in this list stays held; every listed id must still be actively held at apply time or the release aborts as a hard error (never a ghost release). This decision does not itself release anything (release_executed=false, explicit_exclusions.hold_release_now=false) - it only repoints the canonical preparation pin so a subsequent freshly-minted runtime-activation decision plus a real Factory_OFF->Factory_ON cycle with post-start health-gate pass can release these 8. Re-verify the live active hold set immediately before minting that runtime-activation decision."
+ },
+ "explicit_exclusions": {
+  "factory_on": false,
+  "scheduled_task_mutation": false,
+  "factory_off_flag_mutation": false,
+  "hold_release_now": false,
+  "nonlisted_hold_release": false,
+  "process_or_terminal_start_stop": false,
+  "database_mutation": false,
+  "autotrading_toggle": false,
+  "t_live_mutation": false,
+  "live_or_ftmo_task_contract_apply": false,
+  "mnt007_wave_apply": false,
+  "ftmo_paid_challenge": false,
+  "paid_purchase_or_money_action": false,
+  "deployment": false,
+  "draft_pr_merge": false
+ }
+}
