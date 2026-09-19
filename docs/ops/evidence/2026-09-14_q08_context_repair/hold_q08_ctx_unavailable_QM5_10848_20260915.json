@@ -1,0 +1,5 @@
+{
+  "reason": "conflicting_inactive_hold:c8d8c2c7-7287-41d8-98ab-57606bec09f5:RAM_RESERVATION_44GB_NOT_WINNABLE_20260914",
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "aborted"
+}

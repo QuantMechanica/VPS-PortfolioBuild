@@ -3525,6 +3525,8 @@ QM5_1621,mql5-ma2-slope,external_source,slug:default_external,0
 QM5_1623,hopwood-bermaui-dss-h4,external_source,card:external_source,1
 QM5_1624,ehlers-adaptive-cg-h4,external_source,card:external_source,1
 QM5_1626,hopwood-bermaui-stoch-h4,external_source,card:external_source,1
+QM5_1627,hopwood-bermaui-cci-h4,external_source,card:external_source,1
+QM5_1628,carney-5-0-pattern-h4,external_source,card:external_source,1
 QM5_1629,ehlers-cybernetic-cycle-h4,external_source,card:external_source,1
 QM5_1634,mql5-consolid-break,external_source,card:external_source,1
 QM5_1635,mql5-donchian-break,external_source,card:external_source,1
@@ -4450,6 +4452,7 @@ QM5_41474,xag-weekly-lowvol-momentum-symfix,external_source,slug:default_externa
 QM5_41475,cash-window-index-continuation-h1,internal_discovery,card:internal_marker,1
 QM5_41476,cash-open-mean-reversion-h1,internal_discovery,card:internal_marker,1
 QM5_41477,fx-session-mean-reversion-m15,internal_discovery,card:internal_marker,1
+QM5_41478,grimes-complex-pb-opt,external_source,slug:default_external,1
 QM5_9001,chan-at-roll-arb-etf,external_source,slug:default_external,0
 QM5_9002,chan-at-vx-es-roll-mom,external_source,slug:default_external,0
 QM5_9003,chan-at-spy-arb,external_source,slug:default_external,0

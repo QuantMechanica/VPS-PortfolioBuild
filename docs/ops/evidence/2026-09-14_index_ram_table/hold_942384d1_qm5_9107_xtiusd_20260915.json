@@ -1,0 +1,5 @@
+{
+  "reason": "conflicting_active_hold:942384d1-4ebc-4a08-9cff-5ddd4c9765f3:DISK_BOMB_DIAGNOSIS_PENDING",
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "aborted"
+}

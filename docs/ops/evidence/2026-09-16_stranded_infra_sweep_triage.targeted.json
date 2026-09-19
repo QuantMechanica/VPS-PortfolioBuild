@@ -1,0 +1,20 @@
+{
+ "apply": true,
+ "count": 0,
+ "generated_at": "2026-09-16T12:22:08+00:00",
+ "retry_policy": {
+  "deterministic_rows_enqueued": 0,
+  "infra_attempt_cap_unchanged": 12,
+  "unlisted_and_transient_classes_unchanged": true
+ },
+ "rows": [],
+ "schema": "qm.stranded-infra-sweep-triage/v1",
+ "scope": {
+  "complete_fleet": false,
+  "target_eas": [
+   "QM5_11731"
+  ],
+  "target_symbols": []
+ },
+ "source_sweep_report": "D:\\QM\\reports\\state\\claude_sweep_enqueue_2026-06-10.json"
+}

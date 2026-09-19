@@ -1,6 +1,6 @@
 # FTMO Challenge Readiness (living)
 
-Generated 2026-09-15T21:04:26Z by `tools/strategy_farm/ftmo/challenge_readiness.py`.
+Generated 2026-09-19T08:37:02Z by `tools/strategy_farm/ftmo/challenge_readiness.py`.
 OWNER-DEC-CBE-20260915 (directive 2026-09-15 sections 62-63). Read-model: `D:/QM/reports/state/ftmo_challenge_readiness.json`.
 
 This is not one number. Readiness is a multi-axis picture; the paid decision is OWNER-only and cannot be taken by automation.
@@ -15,8 +15,8 @@ a demo cycle realized a >=10% total-loss breach
 
 ## Demo cycle
 
-- Roster under validation: `6c5383d8777728ba17abd1a836858b9db87c306d2931445ac642762075ac9bf2` (chart_profile), 8 sleeves
-- Cycle start: 2026-09-15T14:12:11Z  ·  validation days: 0.278 (min 14)  ·  state: RUNNING  ·  representative: False
+- Roster under validation: `5432d3db11b02c64a3c5357d94d9f59b425c270e600b87ad65ddf42310771e53` (chart_profile), 6 sleeves
+- Cycle start: 2026-09-18T04:50:00Z  ·  validation days: 1.158 (min 14)  ·  state: RUNNING  ·  representative: False
 - Material changes this cycle: 0
 
 ## Metrics (latest demo cycle)
@@ -35,15 +35,15 @@ a demo cycle realized a >=10% total-loss breach
 
 Seeded calendar-aligned block-bootstrap path simulation over the representative intended Demo portfolio (per-sleeve daily-PnL streams scaled to each sleeve's risk), official parameters from the bound rulepack, breaches on a conservative per-trade-MAE intraday-low proxy, no time limit. Read-model: `D:/QM/reports/state/ftmo_first_passage.json` (`tools/strategy_farm/ftmo/first_passage.py`). Not one number:
 
-- P(profit target hit, within horizon): 0.8163  ·  conditional on resolution: 0.971
-- P(daily-loss breach): 0.0  ·  P(max-loss breach): 0.0244  ·  censored (still live at horizon): 0.1593
-- P(pass within 30 cal-days): 0.0  ·  within 60 cal-days: 0.0004  ·  median business days to target: 439.0
+- P(profit target hit, within horizon): 0.9634  ·  conditional on resolution: 0.9845
+- P(daily-loss breach): 0.0  ·  P(max-loss breach): 0.0152  ·  censored (still live at horizon): 0.0214
+- P(pass within 30 cal-days): 0.0001  ·  within 60 cal-days: 0.0019  ·  median business days to target: 286.0
 
 Speed, not eventual pass, is the binding constraint on the current book. Full time distribution (p10/p50/p90), cost/slippage sensitivity and conditional failure modes (dominant breach sleeve/symbol/weekday) are in the read-model.
 
 ## Rules snapshot
 
-- Source: https://ftmo.com/en/trading-objectives/  ·  fetched: 2026-09-15T13:59:31Z  ·  freshness: 0.295 days (OK)
+- Source: EVIDENCE_MISSING  ·  fetched: 2026-09-18T02:37:46Z  ·  freshness: 1.249 days (OK)
 
 ## How it is computed
 

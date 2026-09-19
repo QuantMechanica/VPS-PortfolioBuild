@@ -751,6 +751,44 @@
       "stub_created_at": "2026-07-20T14:52:07+00:00",
       "stub_source": "farmctl_pump_p5_calibration_autostub"
     },
+    "QM5_20012_XAU_XAG_CMTAR_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-09-17T13:28:43+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
+    "QM5_20057_XAU_XAG_XMOM1_D1": {
+      "auto_stub": true,
+      "commission_cents_per_lot": 700.0,
+      "derive_from": "",
+      "latency_ms": {
+        "avg": 50.0,
+        "p95": 120.0
+      },
+      "slippage_points": {
+        "avg": 1.0,
+        "p95": 3.0
+      },
+      "spread_points": {
+        "median": 20.0,
+        "p95": 60.0
+      },
+      "stub_created_at": "2026-09-17T13:59:33+00:00",
+      "stub_source": "farmctl_pump_p5_calibration_autostub"
+    },
     "QM5_20211_GBPJPY_EURAUD_COINTEGRATION_D1": {
       "auto_stub": true,
       "commission_cents_per_lot": 700.0,

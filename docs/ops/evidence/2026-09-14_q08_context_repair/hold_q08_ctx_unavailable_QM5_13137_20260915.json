@@ -1,0 +1,5 @@
+{
+  "reason": "conflicting_inactive_hold:15f2ecb0-97dd-4a7b-91d7-ff540857adb6:Q08_DSR_CONTEXT_UNAVAILABLE",
+  "schema": "qm.governed-work-item-hold/v1",
+  "status": "aborted"
+}
