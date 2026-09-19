@@ -113,3 +113,20 @@ to complete as evidence; no fan-out, no RISK_FIXED=250 rerun. Durable lessons �
 before build; cost-to-target floor; no-op-filter lint; `ENTRY_REJECTED` reason logging). The remaining candidates' density
 claims (H-CW 18–22/month, H-MR 2–5/month) rest on the same unmeasured pilot basis and are treated as unverified until their
 SP500 canaries report.
+
+## Disposition update 2026-09-19 — QM5_41475 H-CW and QM5_41476 H-MR: RETIRE (lineage v1)
+
+Once the index reservation lowering (commits `cadfb48731`…`62836bbc5d`) made index canaries runnable, both candidates
+were tested on their two index targets within one day (SP500 rows superseded as unwinnable, ticket 7b2c1bc7):
+
+| EA | GDAXI Q02 | GDAXI Q04 (3-fold WF, pf_net) | NDX Q02 | NDX Q04 (pf_net) |
+|---|---|---|---|---|
+| 41475 H-CW | PASS | FAIL — 0.785 / 0.707 / 1.634 | PASS | FAIL — 1.415 / 1.148 / 0.695 |
+| 41476 H-MR | PASS | FAIL — 0.753 / 0.511 / 0.489 | PASS | FAIL — 1.025 / 0.529 / 1.233 |
+
+Q04 walk-forward fails on both symbols for both EAs (folds with PF < 1; no fold pattern that a parameter change could
+rescue without the §33 "polishing a dead hypothesis" trap). **Fable decision: RETIRE both lineage-v1 hypotheses.**
+No fan-out, no RISK_FIXED=250 rerun, no SP500 exclusive window. The M-DST follow-up (exchange-local anchoring) stays
+a preregistered v2 hypothesis for a possible new lineage; it is not a fix of these rows. The FTMO demo book v3 (D2g6)
+is unaffected (none of the three Kimi candidates were in it). All three Kimi interim candidates are now retired by
+pipeline evidence (H-FXMR 2026-09-18, H-CW/H-MR 2026-09-19).
