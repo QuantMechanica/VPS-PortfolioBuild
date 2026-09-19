@@ -1,0 +1,5 @@
+{
+  "reason": "dirty_registry_abort: M framework/include/QM/QM_MagicResolver.mqh| M framework/registry/magic_numbers.csv",
+  "schema": "qm.governed-magic-allocation/v1",
+  "status": "aborted"
+}
