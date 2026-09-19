@@ -1645,6 +1645,142 @@ def _tester_memory_key_max_gb(
     return max_gb
 
 
+# 2026-09-19 (Fable, OWNER "44-GB-Klasse: dann raeum mehr frei", full executive
+# authority 2026-09-17): EVIDENCE-BOUND LOWERING for single_index_tick rows.
+# _resolve_ram_reservation is max(flat, measured, floor), so the 44 GB index
+# flat could never be lowered by the ledger: QM5_1230 NDX D1 Q08 reserved 44 GB
+# against a per-EA expectation of 11.5 GB (n=11); index|H1|backtest sits at
+# p95 10.6 / max 10.7 GB (n=127).  On the 63 GB host a 44 GB row needs 48 GB
+# free even drained (plateau 2026-09-19: 42.5 GB), so the whole index long-run
+# frontier (Q08/Q09_NEWS/Q10_NEWS on NDX/GDAXI/SP500, 487 held rows) was dead.
+# Rule (only COMMIT_CLASS_SINGLE_INDEX_TICK, only DOWN, never above the flat):
+#   per-EA key  ea:<id>|<tf>|<kind> with n >= TESTER_MEMORY_MIN_SAMPLES  -> wins
+#   else class key <class>|<tf>|<kind> with n >= INDEX_MEASURED_CLASS_MIN_SAMPLES
+#   news rows without news samples fall back to the same EA/class backtest key
+#   proposed = ceil(max(p95 * 1.5 + 2, max + 2)), clamped to [12, flat]
+# The D1 monsters keep their evidence (QM5_10280 max 39.5 -> 42; the class
+# index|D1|backtest max 39.5 -> 42) and stay behind the drain.  Phase floors
+# still only raise; the RAM emergency reaper (2x reference) is the backstop.
+# Rollback: QM_INDEX_EA_MEASURED_LOWERS=0 and idle-reload the workers.
+INDEX_MEASURED_LOWERS_ENV = "QM_INDEX_EA_MEASURED_LOWERS"
+INDEX_MEASURED_MIN_GB = 12.0
+INDEX_MEASURED_SAFETY_FACTOR = 1.5
+INDEX_MEASURED_LAUNCH_MARGIN_GB = 2.0
+INDEX_MEASURED_CLASS_MIN_SAMPLES = 30
+RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED = "index_ea_measured"
+RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED = "index_class_measured"
+# SP500 is the one base with a contradicting direct measurement (45.7 GB private
+# on a Q02 full window, 2026-08-15) and no ledger sample in the window: the
+# asset-class key (dominated by NDX/GDAXI) must not speak for it.  Per-EA
+# evidence on SP500 still lowers.
+INDEX_MEASURED_CLASS_LOWERING_EXCLUDED_BASES = frozenset({"SP500"})
+
+
+def _index_measured_lowering_active() -> bool:
+    """Default on; "0" restores raise-only semantics.  The index-table rollback
+    switch (QM_INDEX_TICK_RESERVATION_TABLE=0, "every index base back to the flat
+    44 GB") also disables it, so one rollback restores the pre-09-14 state."""
+    if str(os.environ.get(INDEX_MEASURED_LOWERS_ENV, "")).strip() == "0":
+        return False
+    return _index_tick_reservation_table_active()
+
+
+def _tester_memory_expectations_keys() -> dict[str, Any]:
+    """Cached ``keys`` dict of the compiled expectations file ({} when absent)."""
+    path = _tester_memory_expectations_path()
+    if not path.is_file():
+        return {}
+    mtime = path.stat().st_mtime
+    now = time.monotonic()
+    cache = _TESTER_MEMORY_EXPECTATIONS_CACHE
+    if (
+        cache["path"] != str(path)
+        or cache["mtime"] != mtime
+        or (now - cache["at"]) >= _TESTER_MEMORY_EXPECTATIONS_TTL_SECONDS
+    ):
+        with open(path, "r", encoding="utf-8") as handle:
+            document = json.load(handle)
+        keys = document.get("keys") if isinstance(document, dict) else None
+        cache["data"] = keys if isinstance(keys, dict) else {}
+        cache["path"] = str(path)
+        cache["mtime"] = mtime
+        cache["at"] = now
+    data = cache["data"]
+    return data if isinstance(data, dict) else {}
+
+
+def _index_measured_proposal_gb(entry: Any, flat_gb: float) -> float | None:
+    """ceil(max(p95*1.5+2, max+2)) clamped to [INDEX_MEASURED_MIN_GB, flat]."""
+    if not isinstance(entry, dict):
+        return None
+    try:
+        p95 = float(entry.get("p95_gb"))
+        max_gb = float(entry.get("max_gb"))
+    except (TypeError, ValueError):
+        return None
+    if not (math.isfinite(p95) and math.isfinite(max_gb)):
+        return None
+    proposed = math.ceil(
+        max(
+            p95 * INDEX_MEASURED_SAFETY_FACTOR + INDEX_MEASURED_LAUNCH_MARGIN_GB,
+            max_gb + INDEX_MEASURED_LAUNCH_MARGIN_GB,
+        )
+    )
+    return float(min(max(float(proposed), INDEX_MEASURED_MIN_GB), float(flat_gb)))
+
+
+def _index_measured_flat_reservation_gb(
+    data: dict[str, Any],
+    ea_id: str | None,
+    symbol_class: str,
+    timeframe: str,
+    run_kind: str,
+    flat_gb: float,
+    host_base: str = "",
+) -> tuple[float, str] | None:
+    """Pure: evidence-bound flat for one single-index row, or None (keep flat).
+
+    Returns (reservation_gb, source_label) only when the evidence lowers the
+    reservation strictly below ``flat_gb``.  Per-EA evidence (same timeframe,
+    n >= TESTER_MEMORY_MIN_SAMPLES) wins; otherwise the asset-class key needs
+    n >= INDEX_MEASURED_CLASS_MIN_SAMPLES.  A ``news`` run falls back to the
+    ``backtest`` key of the same EA / class (same EA, window and tick set).
+    """
+    if not isinstance(data, dict) or not data:
+        return None
+    kinds = [run_kind]
+    if run_kind == "news":
+        kinds.append("backtest")
+    for kind in kinds:
+        if ea_id:
+            entry = data.get(_tester_memory_ea_lookup_key(str(ea_id), timeframe, kind))
+            if isinstance(entry, dict):
+                try:
+                    n = int(entry.get("n") or 0)
+                except (TypeError, ValueError):
+                    n = 0
+                if n >= TESTER_MEMORY_MIN_SAMPLES:
+                    gb = _index_measured_proposal_gb(entry, flat_gb)
+                    if gb is not None and gb < float(flat_gb):
+                        return gb, RAM_RESERVATION_SOURCE_INDEX_EA_MEASURED
+                    return None
+    if str(host_base or "").strip().upper() in INDEX_MEASURED_CLASS_LOWERING_EXCLUDED_BASES:
+        return None
+    for kind in kinds:
+        entry = data.get(_tester_memory_lookup_key(symbol_class, timeframe, kind))
+        if isinstance(entry, dict):
+            try:
+                n = int(entry.get("n") or 0)
+            except (TypeError, ValueError):
+                n = 0
+            if n >= INDEX_MEASURED_CLASS_MIN_SAMPLES:
+                gb = _index_measured_proposal_gb(entry, flat_gb)
+                if gb is not None and gb < float(flat_gb):
+                    return gb, RAM_RESERVATION_SOURCE_INDEX_CLASS_MEASURED
+                return None
+    return None
+
+
 def _measured_ram_expectation_gb(
     symbol_class: str, timeframe: str, run_kind: str, *, ea_id: str | None = None
 ) -> float | None:
@@ -1846,6 +1982,7 @@ def _ram_reservation_detail_for_candidate(
     )
     measured_gb = None
     phase_floor_gb = None
+    index_evidence_source: str | None = None
     if not multisymbol:
         # Both the measured lookup and the phase floor key off the same coarse
         # symbol class; classify once, and only when at least one of them is
@@ -1859,18 +1996,46 @@ def _ram_reservation_detail_for_candidate(
         )
         if memory_active or phase_floored:
             symbol_class = _tester_memory_symbol_class(item, payload, multisymbol)
+            timeframe = _normalize_timeframe(item, payload)
+            run_kind = _tester_memory_run_kind(item, payload)
+            ea_id = str(_work_item_value(item, "ea_id", "") or "") or None
             if phase_floored:
                 phase_floor_gb = _phase_ram_floor_gb(phase_upper, symbol_class)
+            if (
+                memory_active
+                and ram_class == COMMIT_CLASS_SINGLE_INDEX_TICK
+                and _index_measured_lowering_active()
+            ):
+                # 2026-09-19 evidence-bound lowering (see INDEX_MEASURED_LOWERS_ENV).
+                try:
+                    lowered = _index_measured_flat_reservation_gb(
+                        _tester_memory_expectations_keys(),
+                        ea_id,
+                        symbol_class,
+                        timeframe,
+                        run_kind,
+                        flat_gb,
+                        host_base=str(_work_item_test_symbol(item, payload) or "")
+                        .strip()
+                        .upper()
+                        .split(".")[0],
+                    )
+                except Exception:
+                    lowered = None
+                if lowered is not None and float(lowered[0]) < float(flat_gb):
+                    flat_gb, index_evidence_source = float(lowered[0]), lowered[1]
             if memory_active:
                 measured_gb = _measured_ram_expectation_gb(
                     symbol_class,
-                    _normalize_timeframe(item, payload),
-                    _tester_memory_run_kind(item, payload),
-                    ea_id=str(_work_item_value(item, "ea_id", "") or "") or None,
+                    timeframe,
+                    run_kind,
+                    ea_id=ea_id,
                 )
     reservation_gb, source = _resolve_ram_reservation(
         ram_class, flat_gb, measured_gb, phase_floor_gb, multisymbol=multisymbol
     )
+    if index_evidence_source is not None and source == RAM_RESERVATION_SOURCE_FLAT:
+        source = index_evidence_source  # facts-only label
     if (
         ram_class == COMMIT_CLASS_SINGLE_INDEX_TICK
         and source == RAM_RESERVATION_SOURCE_FLAT
