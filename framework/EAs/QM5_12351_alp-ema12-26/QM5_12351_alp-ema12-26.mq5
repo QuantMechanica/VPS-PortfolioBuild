@@ -42,7 +42,7 @@ bool   g_signal_ready = false;
 
 bool Strategy_InputsValid()
   {
-   if(qm_ea_id != 12351 || qm_magic_slot_offset < 0 || qm_magic_slot_offset > 6)
+   if(qm_ea_id != 12351 || qm_magic_slot_offset < 0 || qm_magic_slot_offset > 7)
       return false;
    if(RISK_FIXED <= 0.0 || RISK_PERCENT != 0.0)
       return false;

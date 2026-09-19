@@ -4,7 +4,7 @@
 **Slug:** `alp-ema12-26`
 **Source:** `72f9fcfa-6c75-5544-80c4-31e15c9817ab`
 **Author of this spec:** Codex
-**Last revised:** 2026-09-11
+**Last revised:** 2026-09-19
 
 ---
 
@@ -40,6 +40,8 @@ two-ATR hard stop; equality between the EMAs leaves the current state unchanged.
 - `GDAXI.DWX` — canonical DWX DAX mapping for the card's legacy GER40 label.
 - `NDX.DWX` — Nasdaq-100 index trend sleeve.
 - `WS30.DWX` — Dow-30 index trend sleeve.
+- `SP500.DWX` — S&P 500 index trend sleeve; the current matrix confirms the
+  `SP500` live-order route and supersedes the card's stale backtest-only note.
 
 **Explicitly NOT for:**
 
@@ -96,4 +98,4 @@ ENV→mode validation is enforced by `QM_FrameworkInit`
 
 | Version | Date | Reason | Notes |
 |---|---|---|---|
-| v1 | 2026-09-11 | Initial build from card | `b63e991a-cf37-4a8d-a884-a3ef1bb5a90e` |
+| v1 | 2026-09-19 | Initial build from card | `b63e991a-cf37-4a8d-a884-a3ef1bb5a90e` |
