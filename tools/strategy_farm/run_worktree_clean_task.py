@@ -161,6 +161,90 @@ def _commit_and_push(completed_dirs: list[str]) -> str | None:
     return message
 
 
+def _sha256_file(path: Path) -> str:
+    import hashlib
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _compile_receipt_exists(ea_id: str, ex5_sha256: str, db_path: Path = DB_PATH) -> bool:
+    """A governed COMPILE_OK receipt binding exactly this on-disk binary."""
+    if not db_path.exists():
+        return False
+    con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
+    try:
+        row = con.execute(
+            """
+            SELECT 1 FROM work_items
+            WHERE kind='compile' AND phase='COMPILE_EA' AND ea_id=?
+              AND status='done' AND verdict='COMPILE_OK' AND ex5_sha256=?
+            LIMIT 1
+            """,
+            (ea_id, ex5_sha256.lower()),
+        ).fetchone()
+    finally:
+        con.close()
+    return row is not None
+
+
+def _receipted_tracked_ex5(status: list[str], repo_root: Path = REPO_ROOT,
+                           db_path: Path = DB_PATH) -> list[str]:
+    """Modified tracked .ex5 files whose bytes are bound by a COMPILE_OK receipt.
+
+    2026-09-20 (Fable): ``_cleanup_volatile`` restores EVERY modified tracked
+    .ex5 to HEAD every 30 minutes (``clean_repo_worktree.ps1 -RestoreTrackedEx5``).
+    A governed rebuild whose binary was not committed within that window was
+    silently reverted to the previous build: QM5_41347's 08:01Z rebuild
+    (COMPILE_OK 20cce28d, ex5 862045c6) was replaced by the 2026-09-05
+    slot-0-only binary at 08:30:14Z and the running DL-089 census failed 8
+    cells with EA_MAGIC_NOT_REGISTERED before the poison-pill breaker tripped.
+    Such binaries are exactly what the ex5 commit guard admits, so the janitor
+    now commits them (with their EA's restamped setfiles) before it cleans.
+    """
+    out: list[str] = []
+    for line in status:
+        if len(line) < 4 or line.startswith("?? "):
+            continue
+        rel = line[3:].strip().replace("\\", "/")
+        m = re.match(r"^framework/EAs/(QM5_\d+)_[^/]+/[^/]+\.ex5$", rel)
+        if not m:
+            continue
+        path = repo_root / rel
+        if not path.is_file():
+            continue
+        try:
+            digest = _sha256_file(path)
+        except OSError:
+            continue
+        if _compile_receipt_exists(m.group(1), digest, db_path):
+            out.append(rel)
+    return out
+
+
+def _commit_receipted_tracked_ex5(status: list[str]) -> list[str]:
+    receipted = _receipted_tracked_ex5(status)
+    if not receipted:
+        return []
+    stage = list(receipted)
+    ea_dirs = {rel.rsplit("/", 1)[0] for rel in receipted}
+    for line in status:
+        if len(line) < 4 or line.startswith("?? "):
+            continue
+        rel = line[3:].strip().replace("\\", "/")
+        if rel.endswith(".set") and any(rel.startswith(d + "/sets/") for d in ea_dirs):
+            stage.append(rel)
+    _run(["git", "add", "--", *stage], timeout=120).check_returncode()
+    ea_ids = sorted({Path(rel).name.split("_", 2)[0] + "_" + Path(rel).name.split("_", 2)[1] for rel in receipted})
+    message = ("build: commit receipted rebuilt binaries " + ", ".join(ea_ids) + "\n\n"
+               "COMPILE_OK receipt binds each .ex5; committed by the worktree clean task "
+               "so -RestoreTrackedEx5 can no longer revert a governed rebuild (2026-09-20).")
+    _run(["git", "commit", "-m", message, "--", *stage], timeout=180).check_returncode()
+    return receipted
+
+
 def _cleanup_volatile() -> None:
     script = REPO_ROOT / "tools" / "strategy_farm" / "clean_repo_worktree.ps1"
     if not script.exists():
@@ -220,12 +304,14 @@ def main() -> int:
         status = _git_status()
         completed = _stage_completed_builds(status)
         message = _commit_and_push(completed)
+        receipted = _commit_receipted_tracked_ex5(_git_status())
         _cleanup_volatile()
         final_status = _git_status()
         payload = {
             "checked_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
             "committed": message,
             "completed_dirs": completed,
+            "receipted_ex5_committed": receipted,
             "dirty_after": final_status,
         }
         _write_result_log(log_path, payload)
