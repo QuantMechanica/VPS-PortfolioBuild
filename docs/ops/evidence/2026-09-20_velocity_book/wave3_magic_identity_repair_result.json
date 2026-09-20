@@ -1,0 +1,219 @@
+{
+  "schema": "qm.velocity-wave3-registry-repair-result/v1",
+  "task_id": "de9d8271-a820-4783-b456-017581e2f813",
+  "scope_note": "The task title says 20 EAs, while its authoritative details enumerate 22. This report disposes all 22 named EAs.",
+  "branch": "agents/board-advisor",
+  "result": "PASS_WITH_3_POLICY_BLOCKS",
+  "counts": {
+    "named": 22,
+    "repaired": 19,
+    "allocator_pass": 19,
+    "compile_rows_enqueued_held": 19,
+    "blocked": 3
+  },
+  "controls": {
+    "strategy_logic_changed": false,
+    "verdict_rows_modified": false,
+    "compile_wave_released": false,
+    "terminal_started": false,
+    "autotrading_changed": false,
+    "activation_hold_code": "COMPILE_EA_WORKER_ROLLOUT_PENDING"
+  },
+  "registry_hashes_sha256": {
+    "framework/registry/ea_id_registry.csv": "C57C6ACDC513B121D3C6E79F96D53A925B88E7A79F29754E54E2A7481749008E",
+    "framework/registry/magic_numbers.csv": "540A4E7518A3E85E61764477C1782383301D4FD6E417FD3D1383810B5B0344F5",
+    "framework/include/QM/QM_MagicResolver.mqh": "F5E2A700B04A32052509B4C2BA1B0C67F9BD2D70836743A7E97E700B3827B632",
+    "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12351_alp-ema12-26.md": "BBC4E0F1DB6A48BA88A8EA8171710709BA5FF19E063AA47B1EBB843BD7D4BF26"
+  },
+  "evidence": {
+    "verification": "docs/ops/evidence/2026-09-20_velocity_book/wave3_magic_identity_repair_verification.json",
+    "allocation_batches": [
+      "docs/ops/evidence/2026-09-20_velocity_book/wave3_magic_repair_batch1.json",
+      "docs/ops/evidence/2026-09-20_velocity_book/wave3_magic_repair_batch2.json",
+      "docs/ops/evidence/2026-09-20_velocity_book/wave3_magic_repair_batch3.json"
+    ],
+    "force_rebuild_authority": "docs/ops/evidence/2026-09-20_velocity_book/FABLE-DEC-VELOCITY-INTAKE-20260920_force_rebuild.md"
+  },
+  "commits": [
+    "1fab715f7fa614801c5c2379cf5e4a2913ae9a06",
+    "753e8960419e87f230dfd5178d089005e6d27c72",
+    "69314a459e4ea8ea0f9036e274884486666ba0ac",
+    "d1a714e0d69fe3f4ef8de683358253feff0ab50d",
+    "98467c75beda1260a6d021ecb02dd9cb78f6c54d",
+    "9c85ba7e9343a30f68263bcd6097a3648273a32d"
+  ],
+  "verification_runs": [
+    {
+      "command": "governed_magic_allocator.py --dry-run --max-eas 0 --card <19 exact approved cards>",
+      "result": "19/19 PASS"
+    },
+    {
+      "command": "pytest allocator, precheck, resolver binary-search/hash/strict/symbol suites",
+      "result": "33 passed"
+    },
+    {
+      "command": "pytest velocity force-rebuild, allocator, precheck suites",
+      "result": "22 passed"
+    },
+    {
+      "command": "farmctl work-items --status pending",
+      "result": "19/19 listed COMPILE_EA rows remain pending"
+    }
+  ],
+  "ea_dispositions": [
+    {
+      "ea": "QM5_9165_tv-joovier-london-session-breakout",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Rebound the numeric identity to the approved card slug and strategy_id; allocated exact card-ordered active magic rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "cd7a529f-d737-4223-be73-7a9edd79a7b8"
+    },
+    {
+      "ea": "QM5_11467_duplooy-multiMA-knot-straddle-h1",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Reconciled case-sensitive slug, superseded never-active reservations, and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "bc5bc1f8-ad17-444e-a3d7-be232f807515"
+    },
+    {
+      "ea": "QM5_11473_carter-t-smma55-channel-wpr-stoch-h1",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "9062574e-8658-4791-9bcb-fa2467774026"
+    },
+    {
+      "ea": "QM5_11495_carter-t-ema3-8-macd-stoch-psar-sd-m5",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "4c1f25a5-4777-4f81-8c20-7e3543c3209c"
+    },
+    {
+      "ea": "QM5_11530_carter-t-h1-sma9-100-cross",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the canonical identity, superseded stale reservation history, and allocated exact card rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "d1087378-8d78-4d71-a762-95d8ae6e466b"
+    },
+    {
+      "ea": "QM5_11531_carter-t-h1-ema6-23-stoch-macd",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the canonical identity; retained the already exact active magic row.",
+      "allocator": "PASS",
+      "compile_work_item_id": "4cd883e1-e281-4f18-8101-c827026710c7"
+    },
+    {
+      "ea": "QM5_11532_carter-t-h1-ema5-15-60-pullback",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the canonical identity; retained the already exact active magic rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "93d319c4-a275-4391-be71-517eba573fed"
+    },
+    {
+      "ea": "QM5_11540_carter-t-h1-ema5-13-62-macd3060-sep",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the canonical identity, superseded stale reservation history, and allocated exact card rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "1e5607eb-c9e0-4a59-89b9-496243b6d42a"
+    },
+    {
+      "ea": "QM5_11543_carter-t-h1-ema100-smma28-macd3060",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the canonical identity, superseded stale reservation history, and allocated exact card rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "fe288e9c-1a3e-488b-996d-479435b72a6e"
+    },
+    {
+      "ea": "QM5_11544_carter-t-h1-psar02-adx50",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the canonical identity, superseded stale reservation history, and allocated exact card rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "b57b5d47-eb6c-46b3-8d24-820f0d31c8d8"
+    },
+    {
+      "ea": "QM5_11558_carter-t-m5-psar-macd64128-ema100",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the numeric canonical identity and removed the malformed duplicate QM5_-prefixed identity row.",
+      "allocator": "PASS",
+      "compile_work_item_id": "00987e07-af88-45e0-8e75-2219bb0fc24a"
+    },
+    {
+      "ea": "QM5_11573_robo-ema200-awesome-h1",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "5ce8beca-e236-4a0f-9d9d-b100a9fb8f9a"
+    },
+    {
+      "ea": "QM5_11574_robo-ichi-awesome-h1",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "57fa3969-ae56-4f54-b623-0d5fffbcd3e9"
+    },
+    {
+      "ea": "QM5_11865_ema5-15-60-pullback-h1",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "bbb50b7c-7235-44b5-8b9a-bd19f90a5cba"
+    },
+    {
+      "ea": "QM5_11872_rsi-80-20-fade-m15",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "302abbf5-a7ab-47a6-80bc-18af9bb89e90"
+    },
+    {
+      "ea": "QM5_11873_trix-signal-line-cross",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "46e89d97-f0f5-4cbc-987b-0b34b0b39083"
+    },
+    {
+      "ea": "QM5_11880_continuation-method-ema50-williams",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Superseded reviewed never-active reservations and allocated exact card-ordered active rows.",
+      "allocator": "PASS",
+      "compile_work_item_id": "ca28310e-9021-4443-8358-bb610ddbdc49"
+    },
+    {
+      "ea": "QM5_12351_alp-ema12-26",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Removed the non-card SP500 active row and changed the approved card's GER40 alias to canonical GDAXI, preserving the seven evidenced symbols.",
+      "allocator": "PASS",
+      "compile_work_item_id": "a567c2bd-2780-4a02-8384-fa12698c1b44"
+    },
+    {
+      "ea": "QM5_20053_xcu-weekend-prem",
+      "disposition": "REPAIRED_COMPILE_HELD",
+      "repair": "Activated the canonical identity; retained the exact XCUUSD active magic row.",
+      "allocator": "PASS",
+      "compile_work_item_id": "980fdb8c-5b56-46f6-a7a7-125c83c95076"
+    },
+    {
+      "ea": "QM5_41010",
+      "disposition": "BLOCKED_POLICY",
+      "repair": null,
+      "allocator": "NOT_RUN",
+      "reason": "The governing card is G0 REJECTED as an invented d-POC strategy. Reactivation would violate card authority and the mechanical-source intake contract."
+    },
+    {
+      "ea": "QM5_30001",
+      "disposition": "BLOCKED_POLICY",
+      "repair": null,
+      "allocator": "NOT_RUN",
+      "reason": "The governing card is G0 REJECTED for prohibited grid/martingale mechanics under the active Edge Lab charter."
+    },
+    {
+      "ea": "QM5_38007",
+      "disposition": "BLOCKED_POLICY",
+      "repair": null,
+      "allocator": "NOT_RUN",
+      "reason": "The governing card is G0 REJECTED for prohibited grid/averaging mechanics under the active Edge Lab charter."
+    }
+  ]
+}
