@@ -1,0 +1,612 @@
+{
+  "schema": "qm.velocity-wave3-compile-modernization-result/v1",
+  "generated_at_utc": "2026-09-20T22:31:30Z",
+  "task_id": "3c44384d-3efe-4cf0-b02e-82cb6be52e54",
+  "authority": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+  "branch": "agents/board-advisor",
+  "source_table": {
+    "path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/compile_fail_table_wave3.json",
+    "sha256": "01659313e14139441c9e0bc8e5289cd55f2257a8d2389f45fb08c3f39342f7e4",
+    "ea_count": 18
+  },
+  "scope": "Mechanical framework-plumbing modernization, governed COMPILE_EA, binary receipt binding, and intake-first Q02 canary creation only. No pipeline verdict was inferred outside pipeline evidence.",
+  "attestation": {
+    "statement": "No strategy logic changed.",
+    "strategy_logic_changed": false,
+    "entry_exit_signal_rules_changed": false,
+    "risk_parameters_changed": false,
+    "news_controls_changed": false,
+    "qm_news_stale_max_hours_weakened": false,
+    "t_live_changed": false,
+    "autotrading_changed": false
+  },
+  "summary": {
+    "requested_eas": 18,
+    "source_plumbing_repairs": 15,
+    "compile_ok": 15,
+    "compile_fail": 1,
+    "policy_or_mechanics_blocked_without_compile": 2,
+    "q02_rows_appended_via_intake_first_q02": 14,
+    "q02_review_gate_blocked": 1,
+    "q02_not_attempted_due_compile_or_policy_block": 3,
+    "sp500_q02_canaries": 0,
+    "q02_pass_at_capture": 7,
+    "q02_zero_trades_at_capture": 1,
+    "q02_fail_at_capture": 1,
+    "q02_active_or_pending_at_capture": 5
+  },
+  "commits": {
+    "framework_plumbing": "554a3bb702",
+    "initial_authority_and_registry": "bc167b99d8",
+    "compiler_safe_initialization": "10c6e301f6",
+    "hash_bound_followup_authority_and_registry": "43b14b5273",
+    "qm5_12351_binary_janitor_receipt": "8d25913c23",
+    "fourteen_repaired_binary_janitor_receipts": "7d9c8bb8ee"
+  },
+  "evidence_index": [
+    {
+      "purpose": "initial mechanical source-repair authority",
+      "path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
+      "sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf"
+    },
+    {
+      "purpose": "compiler-safe follow-up authority",
+      "path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
+      "sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589"
+    },
+    {
+      "purpose": "initial fast release; retained as diagnostic evidence for seven compiler-rejected aggregate initializers and the valid QM5_12351 compile",
+      "path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_release_fast.json",
+      "sha256": "354290c5f6423a5a71f2525950de6e16c5e4d5d98e6c0fc808a0271b448e95c9"
+    },
+    {
+      "purpose": "compiler-safe M1/M5/M15/M30 release",
+      "path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_release_fast_v2.json",
+      "sha256": "c0039ee9a06164c0663da2e8a41dd2ab359fd7053e700bf5b44536b85aa42cda"
+    },
+    {
+      "purpose": "compiler-safe H1 release",
+      "path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_release_h1_v2.json",
+      "sha256": "9ca7d4a236e6a486c2e24f5f26488190486293786600c326ebcb7882a20fab0d"
+    }
+  ],
+  "verification": [
+    {
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_build_gate_hardening.py",
+      "result": "37 passed"
+    },
+    {
+      "command": "python -m pytest -q tools/strategy_farm/tests/test_compile_fail_repair_registry.py",
+      "result": "45 passed"
+    },
+    {
+      "check": "MQL5 aggregate QM_EntryRequest initializer occurrences after follow-up",
+      "result": 0
+    },
+    {
+      "check": "binary pre-commit receipt validation",
+      "result": "PASS for all 15 COMPILE_OK binaries"
+    }
+  ],
+  "rollout_safety": {
+    "batch_order": [
+      "M1/M5/M15/M30",
+      "H1"
+    ],
+    "batch_size_max": 10,
+    "q02_created_only_after_compile_ok": true,
+    "q02_created_with": "farmctl intake-first-q02 --compile-work-item-id <id> --apply",
+    "sp500_canary_forbidden_and_not_used": true,
+    "stale_source_hash_compile_rows_left_held": [
+      "a9c177c5-eb79-4258-a8eb-75003254c473",
+      "9caa3dde-08a2-492e-ab40-464590618882",
+      "6bc4c579-c4dc-496a-bf26-4c0df3ccd0eb",
+      "8ac65e4e-5f2e-4c6b-9414-c7571036e432",
+      "55002cdb-c04c-434c-b055-0b8901fada8a",
+      "6fc58f81-1bbf-4269-b9ee-32b33d7d5468",
+      "0ae55fbf-6666-486b-8fc0-1304d356dae8",
+      "1e01a21d-c1f6-40f0-9e97-0ff9c67c6d00"
+    ]
+  },
+  "per_ea": [
+    {
+      "ea_id": "QM5_10474",
+      "ea_label": "QM5_10474_mql5-tdsglobal",
+      "diff_summary": "Added the Q08 telemetry hook, initialized the framework request with declaration plus ZeroMemory, and replaced a comment-only URL token with its CodeBase article identifier.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "de1e13ac-c9d0-4515-8767-5b25e7e3b0eb",
+        "mq5_sha256": "86789323ff2f4089a4e5d1e82e249fd8b0d7e844420dac40ce17f9c12084ce20",
+        "ex5_sha256": "f549a245e1e411e68a7fb975cc2ad8a21923c4fb3e23847a6805e124cda170ea",
+        "receipt": "D:/QM/reports/work_items/de1e13ac-c9d0-4515-8767-5b25e7e3b0eb/QM5_10474/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "48504dca-89b7-442a-96c6-4e41812f4316",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "H1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/de1e13ac-c9d0-4515-8767-5b25e7e3b0eb_48504dca-89b7-442a-96c6-4e41812f4316.json",
+        "intake_receipt_sha256": "a791ea402324e6e17367ea69bacdf07c07d72485f0bf814f52b879b524352fa9",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "PASS",
+        "pipeline_evidence": "D:/QM/reports/work_items/48504dca-89b7-442a-96c6-4e41812f4316/QM5_10474/20260920_221832/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_10475",
+      "ea_label": "QM5_10475_mql5-puria",
+      "diff_summary": "Added the Q08 telemetry hook, initialized the framework request with declaration plus ZeroMemory, and replaced a comment-only URL token with its CodeBase article identifier.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "15186697-f270-45f8-ae52-66a9010a7bb8",
+        "mq5_sha256": "04284f6e5d0d6bedee200a0b84027f5c0bcc73da99eeaa80f84a84b867684e7f",
+        "ex5_sha256": "c7314dac6480e2d935528d7cf7fa50b609a91c7857e4e788f2af8205fdd78f7d",
+        "receipt": "D:/QM/reports/work_items/15186697-f270-45f8-ae52-66a9010a7bb8/QM5_10475/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "cef61494-2dd3-4797-9bb0-c51e50da767d",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "M30",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/15186697-f270-45f8-ae52-66a9010a7bb8_cef61494-2dd3-4797-9bb0-c51e50da767d.json",
+        "intake_receipt_sha256": "b361b1ba97db41663666ec520d5f17d419bb0bfe1700dd7238016a32d10ed03b",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "PASS",
+        "pipeline_evidence": "D:/QM/reports/work_items/cef61494-2dd3-4797-9bb0-c51e50da767d/QM5_10475/20260920_220456/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_10479",
+      "ea_label": "QM5_10479_mql5-lbs-atr",
+      "diff_summary": "Added Q08 telemetry, initialized both requests with declaration plus ZeroMemory, routed unchanged OHLC/time reads through QM_ReadBar, and removed a comment-only URL token.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "89819faf-d5fe-4dad-9226-f0e97768998d",
+        "mq5_sha256": "50a3b9221868b9b4c18443bb2f94d4c1f8c67e7234f62abb3c4ea328855cee5f",
+        "ex5_sha256": "752428e002093774c7d00cf953405e14001cb5ae33eb0540242636766a19e996",
+        "receipt": "D:/QM/reports/work_items/89819faf-d5fe-4dad-9226-f0e97768998d/QM5_10479/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "bee5543e-568c-477a-a8e8-46d776946f99",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "H1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/89819faf-d5fe-4dad-9226-f0e97768998d_bee5543e-568c-477a-a8e8-46d776946f99.json",
+        "intake_receipt_sha256": "1a39ec228beff96c0ed3781355c83b3cbaed647c93aac93270a55e6622813266",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "ZERO_TRADES",
+        "pipeline_evidence": "D:/QM/reports/work_items/bee5543e-568c-477a-a8e8-46d776946f99/QM5_10479/20260920_221853/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_10783",
+      "ea_label": "QM5_10783_tv-bos-forex",
+      "diff_summary": "Added the Q08 telemetry hook and initialized the framework request with declaration plus ZeroMemory.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "04d66db1-6bfe-43c0-ad45-87ad7394d1ca",
+        "mq5_sha256": "77c79017b47f8ece1a75a009f193219e4cdac72be4057bc66bb2f04c991dd235",
+        "ex5_sha256": "688d8c32c7c128b34e37f159e40bc3b6164b0cd2128a1db47e85ef75f9916304",
+        "receipt": "D:/QM/reports/work_items/04d66db1-6bfe-43c0-ad45-87ad7394d1ca/QM5_10783/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "3fcc820f-d9eb-41af-9ac8-5bc451aafa2b",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "M15",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/04d66db1-6bfe-43c0-ad45-87ad7394d1ca_3fcc820f-d9eb-41af-9ac8-5bc451aafa2b.json",
+        "intake_receipt_sha256": "20e38c4014451136089c40974a9840d4a5e4554b88d15df6d4638ec3485663f4",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "PASS",
+        "pipeline_evidence": "D:/QM/reports/work_items/3fcc820f-d9eb-41af-9ac8-5bc451aafa2b/QM5_10783/20260920_220627/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_10798",
+      "ea_label": "QM5_10798_tv-ema9-full",
+      "diff_summary": "Added the Q08 telemetry hook and initialized the framework request with declaration plus ZeroMemory.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "a8d63009-8c9f-41f2-9283-6dab4555582e",
+        "mq5_sha256": "1bed470820beded14ecf801d2570d64e8319b98a7d7a2295893d323559fc5c87",
+        "ex5_sha256": "fc5d61b492b047a4efbd5dd4d584f84a68a2181475489493e0a82a537564e1ab",
+        "receipt": "D:/QM/reports/work_items/a8d63009-8c9f-41f2-9283-6dab4555582e/QM5_10798/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "85346f0c-8d0e-4142-a62b-6e5c20f3de6f",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "M5",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/a8d63009-8c9f-41f2-9283-6dab4555582e_85346f0c-8d0e-4142-a62b-6e5c20f3de6f.json",
+        "intake_receipt_sha256": "1044d52594cf6ad03bd83c2ce885e16debf336e824db2d75459ea1b70dc9d916",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "PASS",
+        "pipeline_evidence": "D:/QM/reports/work_items/85346f0c-8d0e-4142-a62b-6e5c20f3de6f/QM5_10798/20260920_220934/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_10827",
+      "ea_label": "QM5_10827_tv-vol-exp",
+      "diff_summary": "Added Q08 telemetry, initialized three requests with declaration plus ZeroMemory, routed unchanged bar reads through QM_ReadBar, and made the existing BUY_STOP/SELL_STOP parameter mapping explicit.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "a042c3cc-86e0-492b-9997-a1fa6490dae6",
+        "mq5_sha256": "685fcc7c6158bbddd257209536fdcc8ac7247d4a6064fdfc7ad92b7eb006a195",
+        "ex5_sha256": "1b4b10db5628ab8cc5666dd626506d29feb9b78cf5ec69f39abcbb78d9ec79b9",
+        "receipt": "D:/QM/reports/work_items/a042c3cc-86e0-492b-9997-a1fa6490dae6/QM5_10827/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "b6d60851-6ec7-4ddc-8411-f6ffe83baf76",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "M15",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/a042c3cc-86e0-492b-9997-a1fa6490dae6_b6d60851-6ec7-4ddc-8411-f6ffe83baf76.json",
+        "intake_receipt_sha256": "547fc23fec05c9dba926df8a5f2a3a7b440f66bb29705f3c17b099640b5c3886",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "FAIL",
+        "pipeline_reason_classes": [
+          "MIN_TRADES_NOT_MET"
+        ],
+        "pipeline_metrics": {
+          "total_trades": 1,
+          "minimum_required": 5
+        },
+        "pipeline_evidence": "D:/QM/reports/work_items/b6d60851-6ec7-4ddc-8411-f6ffe83baf76/QM5_10827/20260920_220755/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_11304",
+      "ea_label": "QM5_11304_kathy-lien-double-bollinger-trend",
+      "diff_summary": "Added the Q08 telemetry hook and initialized the framework request with declaration plus ZeroMemory.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "dc4b8f2f-d026-4244-bbda-cb8e1c492127",
+        "mq5_sha256": "f91f4500860f64c76001996e4199ed706b7dbab74ef7eee45f190a8bb59ce502",
+        "ex5_sha256": "1d81b8589d6d0e84a5eb356164a93adc774352c29168a24856c3ba432f4a9e2b",
+        "receipt": "D:/QM/reports/work_items/dc4b8f2f-d026-4244-bbda-cb8e1c492127/QM5_11304/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "0c42a167-b0a6-462a-8f22-cce830610c4b",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "H1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/dc4b8f2f-d026-4244-bbda-cb8e1c492127_0c42a167-b0a6-462a-8f22-cce830610c4b.json",
+        "intake_receipt_sha256": "f9fa63ef73bd0cab4da2a7a47cda462342148a15e381d31093a991a5245d95f9",
+        "state_at_capture": "active",
+        "pipeline_verdict_at_capture": null
+      }
+    },
+    {
+      "ea_id": "QM5_11305",
+      "ea_label": "QM5_11305_alp-sma20-scalp",
+      "diff_summary": "Added the Q08 telemetry hook and initialized the framework request with declaration plus ZeroMemory.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "2d275328-e866-4ecc-b143-90fa9ab8b5e4",
+        "mq5_sha256": "ffba9c38363bdc12a52d7f2f3268f0f3b97c75540fd1316de1aded8014bc3e61",
+        "ex5_sha256": "e2262d3f4849cc5b2d7bf5ec987f481c6cfdd336d51d1e20aae0ce04dcc5c7eb",
+        "receipt": "D:/QM/reports/work_items/2d275328-e866-4ecc-b143-90fa9ab8b5e4/QM5_11305/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "685da219-2a75-4acf-9a20-c08c13014c29",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "M1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/2d275328-e866-4ecc-b143-90fa9ab8b5e4_685da219-2a75-4acf-9a20-c08c13014c29.json",
+        "intake_receipt_sha256": "ae879c5dd89ffd6467d28b8a0f557a1f3951dd492e494ff10302183dc4e5a853",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "PASS",
+        "pipeline_evidence": "D:/QM/reports/work_items/685da219-2a75-4acf-9a20-c08c13014c29/QM5_11305/20260920_221240/summary.json",
+        "sp500_deferred_not_enqueued": true
+      }
+    },
+    {
+      "ea_id": "QM5_11343",
+      "ea_label": "QM5_11343_triad-session-breakout",
+      "diff_summary": "Added the Q08 telemetry hook and initialized the framework request with declaration plus ZeroMemory.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "eb299fa2-9abb-4c55-8b4a-9d5b516526fc",
+        "mq5_sha256": "c18e11eb40b2700725acf159e289f91ebdac60dc760a1cda1644d93216c54e92",
+        "ex5_sha256": "e7cf04a3188e8cb0344f6d70f00b76c07b0e05b644c31a2d3785ebd69699b11d",
+        "receipt": "D:/QM/reports/work_items/eb299fa2-9abb-4c55-8b4a-9d5b516526fc/QM5_11343/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "ec5dda9a-0187-41ae-b173-186e584b3f03",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "H1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/eb299fa2-9abb-4c55-8b4a-9d5b516526fc_ec5dda9a-0187-41ae-b173-186e584b3f03.json",
+        "intake_receipt_sha256": "79231b0d0b0f3e731c63a124a9ed6a4ed69da1d29f4de5ba92510c354cf8df49",
+        "state_at_capture": "active",
+        "pipeline_verdict_at_capture": null
+      }
+    },
+    {
+      "ea_id": "QM5_11438",
+      "ea_label": "QM5_11438_td-ema9ema30-momentum-h1",
+      "diff_summary": "Added Q08 telemetry, initialized the request with declaration plus ZeroMemory, and routed unchanged swing-bar reads through QM_ReadBar. The market-entry implementation was deliberately not converted to card-required pending stops.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_FAIL",
+        "work_item_id": "5ec78d89-41c6-4aff-aa32-46afec610a58",
+        "compiler_result": "PASS",
+        "compiler_errors": 0,
+        "compiler_warnings": 0,
+        "build_check_result": "FAIL",
+        "failure_classes": [
+          "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"
+        ],
+        "mq5_sha256": "a7616b4e8a1ef529200705164ea182f973e94837ee3f22c3946fc1c6512757f2",
+        "uncommitted_rejected_ex5_sha256": "47c640e713be0b2f18eac0981dc3bc6af52bdb5161c4e831df3db38ce5656347",
+        "receipt": "D:/QM/reports/work_items/5ec78d89-41c6-4aff-aa32-46afec610a58/QM5_11438/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "created": false,
+        "reason": "Governed compile verdict is COMPILE_FAIL."
+      }
+    },
+    {
+      "ea_id": "QM5_11443",
+      "ea_label": "QM5_11443_burke-day3-breakout-trap-m5",
+      "diff_summary": "Added Q08 telemetry, initialized the request with declaration plus ZeroMemory, and routed unchanged bounded OHLC reads through QM_ReadBar.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "296571eb-4861-4252-9bf2-1a1f4618de6f",
+        "mq5_sha256": "d1429e5086c54789e2cb7878c2fa6b6be79b6eb609055ac7a02a5da60930e282",
+        "ex5_sha256": "46d1235e7efdbc7f65d73aa122f499a4c72fb44017a886fc36d6192191e847c4",
+        "receipt": "D:/QM/reports/work_items/296571eb-4861-4252-9bf2-1a1f4618de6f/QM5_11443/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "3ec6a22a-d73c-4649-9e90-d8da4b132a65",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "M5",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/296571eb-4861-4252-9bf2-1a1f4618de6f_3ec6a22a-d73c-4649-9e90-d8da4b132a65.json",
+        "intake_receipt_sha256": "1293d0cc0a36dde261abfb6852c439570d9b4d940e7a076a77f7373f40df4c5e",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "PASS",
+        "pipeline_evidence": "D:/QM/reports/work_items/3ec6a22a-d73c-4649-9e90-d8da4b132a65/QM5_11443/20260920_221152/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_11454",
+      "ea_label": "QM5_11454_davey-session-open-bracket-breakout",
+      "diff_summary": "Added Q08 telemetry, initialized three requests with declaration plus ZeroMemory, routed the unchanged opening-bar read through QM_ReadBar, and made the existing BUY_STOP/SELL_STOP mapping explicit.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "47445604-6853-4050-9044-1daa3dfd2e9b",
+        "mq5_sha256": "58bbef5cf313b53277a3350a590f2d20917db2d51724096a57cde2d032acd5f0",
+        "ex5_sha256": "44f0a5e6d8573b30680b551140456bae1a37ec2f09f177a463f67816ec752885",
+        "receipt": "D:/QM/reports/work_items/47445604-6853-4050-9044-1daa3dfd2e9b/QM5_11454/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "1cbd874c-3414-487f-8f6c-af42c51e8fc8",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "H1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/47445604-6853-4050-9044-1daa3dfd2e9b_1cbd874c-3414-487f-8f6c-af42c51e8fc8.json",
+        "intake_receipt_sha256": "fc84331beff20066641be4b403a867ecf96b323d320735c0859a42df9a99147d",
+        "state_at_capture": "pending",
+        "pipeline_verdict_at_capture": null
+      }
+    },
+    {
+      "ea_id": "QM5_11459",
+      "ea_label": "QM5_11459_blade-macd-stoch-divergence-h1",
+      "diff_summary": "Added the Q08 telemetry hook and initialized the framework request with declaration plus ZeroMemory.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "e083fe98-84d5-478a-9451-6c6fdd7cc1e1",
+        "mq5_sha256": "230937a6156e58caa7c016eb8d0ff78f4026b752fbb308ad60705786d45c8bd0",
+        "ex5_sha256": "9d732aa4746a2d6dda707f5bca8c0b195dcd5151bc209167ef94b87cc414bafd",
+        "receipt": "D:/QM/reports/work_items/e083fe98-84d5-478a-9451-6c6fdd7cc1e1/QM5_11459/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "33e879ed-16a1-4131-acad-4c08a13e5be6",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "H1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/e083fe98-84d5-478a-9451-6c6fdd7cc1e1_33e879ed-16a1-4131-acad-4c08a13e5be6.json",
+        "intake_receipt_sha256": "59f9a489994928a4d8f24067011b4ced722f2e9ad990accbbee6a7bedca4cc78",
+        "state_at_capture": "active",
+        "pipeline_verdict_at_capture": null
+      }
+    },
+    {
+      "ea_id": "QM5_11559",
+      "ea_label": "QM5_11559_carter-t-m5-ema3-bb203-macd",
+      "diff_summary": "Added the Q08 telemetry hook and initialized the framework request with declaration plus ZeroMemory.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "2d0417c6-0840-4e56-9ae0-802ef4d4cde4",
+        "mq5_sha256": "9da05f978ae81e780aab2b47b8577c8418a041d82fa939b520a05da6e5abfab3",
+        "ex5_sha256": "61ed917e3a47116bdad343b757a15278610842fd8e8fc371e8824aec527a33e0",
+        "receipt": "D:/QM/reports/work_items/2d0417c6-0840-4e56-9ae0-802ef4d4cde4/QM5_11559/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "281a9f35-d217-4ebd-8df8-c693e13529c2",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "M5",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/2d0417c6-0840-4e56-9ae0-802ef4d4cde4_281a9f35-d217-4ebd-8df8-c693e13529c2.json",
+        "intake_receipt_sha256": "f5f423a81bc1d0e4a33ecb2e0ee8075c429d5478052e904238f6e19b2ccd08a9",
+        "state_at_capture": "done",
+        "pipeline_verdict_at_capture": "PASS",
+        "pipeline_evidence": "D:/QM/reports/work_items/281a9f35-d217-4ebd-8df8-c693e13529c2/QM5_11559/20260920_221640/summary.json"
+      }
+    },
+    {
+      "ea_id": "QM5_11867",
+      "ea_label": "QM5_11867_psar-adx50-di-h1",
+      "diff_summary": "Added Q08 telemetry, initialized the request with declaration plus ZeroMemory, and removed an ineffective ArraySetAsSeries call on a static array; physical array semantics remain unchanged.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "ad39e9b7-4acf-4fea-abfa-8cfc26791590",
+        "mq5_sha256": "45e9d0fa47a68232f22fe61984f2d741a051af979e9a23fa0a00c3cd16da416b",
+        "ex5_sha256": "bc232176102ef91abfb6ca19b17c0fcd0fe72f4d363ffdf57449f01030488af6",
+        "receipt": "D:/QM/reports/work_items/ad39e9b7-4acf-4fea-abfa-8cfc26791590/QM5_11867/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "work_item_id": "33b023be-6a69-456e-afba-b617952ab1aa",
+        "symbol": "AUDUSD.DWX",
+        "timeframe": "H1",
+        "intake_receipt": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/ad39e9b7-4acf-4fea-abfa-8cfc26791590_33b023be-6a69-456e-afba-b617952ab1aa.json",
+        "intake_receipt_sha256": "f29bcb55ecd5dd34a73db0cae0c836bf51386511f3a0c0b423d9dbf53125075f",
+        "state_at_capture": "active",
+        "pipeline_verdict_at_capture": null
+      }
+    },
+    {
+      "ea_id": "QM5_12351",
+      "ea_label": "QM5_12351_alp-ema12-26",
+      "diff_summary": "No EA source edit was required. The untracked SP500 setfile was removed after the approved card and active magic universe had been corrected to the seven non-SP500 symbols.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "verdict": "COMPILE_OK",
+        "work_item_id": "a567c2bd-2780-4a02-8384-fa12698c1b44",
+        "mq5_sha256": "5fbeaa80540d7c09f35683faef099bdea7bcf8a3b23f0c809257ec0242b7b3ca",
+        "ex5_sha256": "301c1f539c8daee41e963a045d9389fb70853b85bd12f646264e102607f09887",
+        "receipt": "D:/QM/reports/work_items/a567c2bd-2780-4a02-8384-fa12698c1b44/QM5_12351/COMPILE_EA/compile_evidence.json"
+      },
+      "q02": {
+        "created": false,
+        "attempted_via_intake_first_q02": true,
+        "blocker_class": "review_entry_gate_blocked",
+        "blocker_reason": "review_not_completed",
+        "open_build_task_id": "e561d846-23ed-4265-9f18-4a5cf4acd450",
+        "open_build_task_state": "PIPELINE",
+        "bypass_attempted": false
+      }
+    },
+    {
+      "ea_id": "QM5_30006",
+      "ea_label": "QM5_30006_adx-ma-trend-grid-dark-kronos",
+      "diff_summary": "No source change was made because the strategy's grid mechanics are prohibited by the active Edge Lab charter.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "created": false,
+        "failure_classes_at_static_review": [
+          "EA_Q08_MAE_HOOK_MISSING",
+          "EA_TRADE_REQUEST_UNINITIALIZED",
+          "EA_CARD_LOSS_LIMIT_MISMATCH"
+        ],
+        "failure_occurrences": {
+          "EA_CARD_LOSS_LIMIT_MISMATCH": 3
+        },
+        "policy_block": "GRID_FORBIDDEN_BY_EDGE_LAB_CHARTER"
+      },
+      "q02": {
+        "created": false,
+        "reason": "No eligible governed compile."
+      }
+    },
+    {
+      "ea_id": "QM5_40005",
+      "ea_label": "QM5_40005_tradingview-multitimeframe-supertrend-atr",
+      "diff_summary": "No speculative source change was made; repairing pip conversion, loss limits, and broker-time session semantics would alter risk or session mechanics.",
+      "attestation": "No strategy logic changed.",
+      "compile": {
+        "created": false,
+        "predecessor_failure_class": "SETFILE_GENERATION_FAILED",
+        "failure_classes_at_static_review": [
+          "EA_PIP_DOUBLE_CONVERSION",
+          "EA_CARD_LOSS_LIMIT_MISMATCH",
+          "EA_BROKER_TIME_USED_FOR_GMT_WINDOW"
+        ],
+        "failure_occurrences": {
+          "EA_PIP_DOUBLE_CONVERSION": 2,
+          "EA_CARD_LOSS_LIMIT_MISMATCH": 3,
+          "EA_BROKER_TIME_USED_FOR_GMT_WINDOW": 1
+        },
+        "policy_block": "MECHANICS_CHANGE_REQUIRES_SEPARATE_AUTHORITY"
+      },
+      "q02": {
+        "created": false,
+        "reason": "No eligible governed compile."
+      }
+    }
+  ],
+  "zero_trades_recovery": {
+    "ea_id": "QM5_10479",
+    "q02_work_item_id": "bee5543e-568c-477a-a8e8-46d776946f99",
+    "classification": "DETERMINISTIC_IMPLEMENTATION_DEFECT_ORDER_MANAGEMENT",
+    "repair_attempted": false,
+    "repair_status": "NOT_ATTEMPTED_OUT_OF_SCOPE",
+    "identity": {
+      "symbol": "AUDUSD.DWX",
+      "timeframe": "H1",
+      "model": 4,
+      "window_from": "2018.07.02",
+      "window_to": "2022.12.31",
+      "source_sha256": "50a3b9221868b9b4c18443bb2f94d4c1f8c67e7234f62abb3c4ea328855cee5f",
+      "required_and_deployed_ex5_sha256": "752428e002093774c7d00cf953405e14001cb5ae33eb0540242636766a19e996",
+      "source_and_deployed_setfile_sha256": "017bb636bb245e6de93c1f01aa4c653a6106d89233f6b13f2a2a0f2a5439823a",
+      "report_sha256": "132533a6f212218db2bb12807cea2eb583e23a71c3edb1158549caf1e3588214",
+      "report_size_bytes": 3666020,
+      "summary_path": "D:/QM/reports/work_items/bee5543e-568c-477a-a8e8-46d776946f99/QM5_10479/20260920_221853/summary.json",
+      "logger_sample_path": "D:/QM/reports/work_items/bee5543e-568c-477a-a8e8-46d776946f99/QM5_10479/20260920_221853/logger_sample.jsonl",
+      "logger_sample_sha256": "502396c09ee8161d567568837766921c8b97eab81ea5aeb6490f7a1834092785"
+    },
+    "setup_checks": {
+      "oninit_failure": false,
+      "log_bomb_detected": false,
+      "news_calendar_status": "OK",
+      "news_calendar_age_hours": 42,
+      "news_calendar_max_age_hours": 336,
+      "execution_identity_stable": true
+    },
+    "event_counts": {
+      "total_logger_events": 20799,
+      "ENTRY_ACCEPTED": 6462,
+      "TM_REMOVE_PENDING": 6462,
+      "TRADE_OPEN": 0,
+      "report_total_trades": 0,
+      "minimum_trades_required": 25
+    },
+    "representative_sequence": [
+      "2018-07-02T08:00:00.906Z: SELL_STOP and BUY_STOP accepted",
+      "2018-07-02T08:00:02.906Z: both pending orders removed with LBS_ATR_NEXT_SETUP_CANCEL"
+    ],
+    "card_contract": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_10479_mql5-lbs-atr.md",
+      "line": 48,
+      "requirement": "Cancel unfilled pending orders at the next configured setup hour or at day end."
+    },
+    "source_cause": {
+      "path": "C:/QM/repo/framework/EAs/QM5_10479_mql5-lbs-atr/QM5_10479_mql5-lbs-atr.mq5",
+      "management_lines": "381-390",
+      "tick_flow_lines": "482-518",
+      "finding": "The pending-order branch cancels whenever Strategy_IsSetupHour() is true and stores no placement setup-hour identity. On the tick after placement, the clock is still inside the same setup hour, so per-tick management treats that same hour as the next setup hour and cancels both orders before they can fill."
+    },
+    "required_next_action": "Route a separate same-lineage implementation repair that preserves the card rule by distinguishing the placement setup hour from the next configured setup hour, then run governed COMPILE_EA and rerun the same-bound Q02 canary."
+  },
+  "eas_left_failing_or_blocked": [
+    {
+      "ea_id": "QM5_11438",
+      "class": "EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
+      "disposition": "COMPILE_FAIL; pending-stop conversion would change strategy mechanics."
+    },
+    {
+      "ea_id": "QM5_30006",
+      "class": "GRID_FORBIDDEN_BY_EDGE_LAB_CHARTER",
+      "static_classes": [
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED",
+        "EA_CARD_LOSS_LIMIT_MISMATCH"
+      ],
+      "disposition": "No source repair or compile."
+    },
+    {
+      "ea_id": "QM5_40005",
+      "class": "MECHANICS_CHANGE_REQUIRES_SEPARATE_AUTHORITY",
+      "static_classes": [
+        "EA_PIP_DOUBLE_CONVERSION",
+        "EA_CARD_LOSS_LIMIT_MISMATCH",
+        "EA_BROKER_TIME_USED_FOR_GMT_WINDOW"
+      ],
+      "disposition": "No speculative source repair or compile."
+    }
+  ]
+}

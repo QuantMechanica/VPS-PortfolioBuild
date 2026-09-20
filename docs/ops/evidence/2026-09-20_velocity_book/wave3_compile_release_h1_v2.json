@@ -1,0 +1,115 @@
+{
+  "applied": 8,
+  "applied_work_item_ids": [
+    "de1e13ac-c9d0-4515-8767-5b25e7e3b0eb",
+    "89819faf-d5fe-4dad-9226-f0e97768998d",
+    "dc4b8f2f-d026-4244-bbda-cb8e1c492127",
+    "eb299fa2-9abb-4c55-8b4a-9d5b516526fc",
+    "5ec78d89-41c6-4aff-aa32-46afec610a58",
+    "47445604-6853-4050-9044-1daa3dfd2e9b",
+    "e083fe98-84d5-478a-9451-6c6fdd7cc1e1",
+    "ad39e9b7-4acf-4fea-abfa-8cfc26791590"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260920T221411_507697Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260920T221351Z_a714902c.sqlite",
+    "reused": false,
+    "sha256": "1752187d2bdbe1c185dfef295ab91ceabb8dc51ded7adc436ecc94dc6aaa261c"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 180.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 8,
+  "max_items": 8,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "86789323ff2f4089a4e5d1e82e249fd8b0d7e844420dac40ce17f9c12084ce20",
+      "ea_id": "QM5_10474",
+      "ea_label": "QM5_10474_mql5-tdsglobal",
+      "expected_mq5_sha256": "86789323ff2f4089a4e5d1e82e249fd8b0d7e844420dac40ce17f9c12084ce20",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10474_mql5-tdsglobal\\QM5_10474_mql5-tdsglobal.mq5",
+      "work_item_id": "de1e13ac-c9d0-4515-8767-5b25e7e3b0eb"
+    },
+    {
+      "actual_mq5_sha256": "50a3b9221868b9b4c18443bb2f94d4c1f8c67e7234f62abb3c4ea328855cee5f",
+      "ea_id": "QM5_10479",
+      "ea_label": "QM5_10479_mql5-lbs-atr",
+      "expected_mq5_sha256": "50a3b9221868b9b4c18443bb2f94d4c1f8c67e7234f62abb3c4ea328855cee5f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10479_mql5-lbs-atr\\QM5_10479_mql5-lbs-atr.mq5",
+      "work_item_id": "89819faf-d5fe-4dad-9226-f0e97768998d"
+    },
+    {
+      "actual_mq5_sha256": "f91f4500860f64c76001996e4199ed706b7dbab74ef7eee45f190a8bb59ce502",
+      "ea_id": "QM5_11304",
+      "ea_label": "QM5_11304_kathy-lien-double-bollinger-trend",
+      "expected_mq5_sha256": "f91f4500860f64c76001996e4199ed706b7dbab74ef7eee45f190a8bb59ce502",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11304_kathy-lien-double-bollinger-trend\\QM5_11304_kathy-lien-double-bollinger-trend.mq5",
+      "work_item_id": "dc4b8f2f-d026-4244-bbda-cb8e1c492127"
+    },
+    {
+      "actual_mq5_sha256": "c18e11eb40b2700725acf159e289f91ebdac60dc760a1cda1644d93216c54e92",
+      "ea_id": "QM5_11343",
+      "ea_label": "QM5_11343_triad-session-breakout",
+      "expected_mq5_sha256": "c18e11eb40b2700725acf159e289f91ebdac60dc760a1cda1644d93216c54e92",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11343_triad-session-breakout\\QM5_11343_triad-session-breakout.mq5",
+      "work_item_id": "eb299fa2-9abb-4c55-8b4a-9d5b516526fc"
+    },
+    {
+      "actual_mq5_sha256": "a7616b4e8a1ef529200705164ea182f973e94837ee3f22c3946fc1c6512757f2",
+      "ea_id": "QM5_11438",
+      "ea_label": "QM5_11438_td-ema9ema30-momentum-h1",
+      "expected_mq5_sha256": "a7616b4e8a1ef529200705164ea182f973e94837ee3f22c3946fc1c6512757f2",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11438_td-ema9ema30-momentum-h1\\QM5_11438_td-ema9ema30-momentum-h1.mq5",
+      "work_item_id": "5ec78d89-41c6-4aff-aa32-46afec610a58"
+    },
+    {
+      "actual_mq5_sha256": "58bbef5cf313b53277a3350a590f2d20917db2d51724096a57cde2d032acd5f0",
+      "ea_id": "QM5_11454",
+      "ea_label": "QM5_11454_davey-session-open-bracket-breakout",
+      "expected_mq5_sha256": "58bbef5cf313b53277a3350a590f2d20917db2d51724096a57cde2d032acd5f0",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11454_davey-session-open-bracket-breakout\\QM5_11454_davey-session-open-bracket-breakout.mq5",
+      "work_item_id": "47445604-6853-4050-9044-1daa3dfd2e9b"
+    },
+    {
+      "actual_mq5_sha256": "230937a6156e58caa7c016eb8d0ff78f4026b752fbb308ad60705786d45c8bd0",
+      "ea_id": "QM5_11459",
+      "ea_label": "QM5_11459_blade-macd-stoch-divergence-h1",
+      "expected_mq5_sha256": "230937a6156e58caa7c016eb8d0ff78f4026b752fbb308ad60705786d45c8bd0",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11459_blade-macd-stoch-divergence-h1\\QM5_11459_blade-macd-stoch-divergence-h1.mq5",
+      "work_item_id": "e083fe98-84d5-478a-9451-6c6fdd7cc1e1"
+    },
+    {
+      "actual_mq5_sha256": "45e9d0fa47a68232f22fe61984f2d741a051af979e9a23fa0a00c3cd16da416b",
+      "ea_id": "QM5_11867",
+      "ea_label": "QM5_11867_psar-adx50-di-h1",
+      "expected_mq5_sha256": "45e9d0fa47a68232f22fe61984f2d741a051af979e9a23fa0a00c3cd16da416b",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11867_psar-adx50-di-h1\\QM5_11867_psar-adx50-di-h1.mq5",
+      "work_item_id": "ad39e9b7-4acf-4fea-abfa-8cfc26791590"
+    }
+  ],
+  "release_count": 8,
+  "released_at": "2026-09-20T22:14:11+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": null,
+  "work_item_id_selectors": [
+    "de1e13ac-c9d0-4515-8767-5b25e7e3b0eb",
+    "89819faf-d5fe-4dad-9226-f0e97768998d",
+    "dc4b8f2f-d026-4244-bbda-cb8e1c492127",
+    "eb299fa2-9abb-4c55-8b4a-9d5b516526fc",
+    "5ec78d89-41c6-4aff-aa32-46afec610a58",
+    "47445604-6853-4050-9044-1daa3dfd2e9b",
+    "e083fe98-84d5-478a-9451-6c6fdd7cc1e1",
+    "ad39e9b7-4acf-4fea-abfa-8cfc26791590"
+  ]
+}

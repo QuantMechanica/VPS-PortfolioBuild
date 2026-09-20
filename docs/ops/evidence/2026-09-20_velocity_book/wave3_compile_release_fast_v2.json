@@ -1,0 +1,105 @@
+{
+  "applied": 7,
+  "applied_work_item_ids": [
+    "15186697-f270-45f8-ae52-66a9010a7bb8",
+    "04d66db1-6bfe-43c0-ad45-87ad7394d1ca",
+    "a8d63009-8c9f-41f2-9283-6dab4555582e",
+    "a042c3cc-86e0-492b-9997-a1fa6490dae6",
+    "2d275328-e866-4ecc-b143-90fa9ab8b5e4",
+    "296571eb-4861-4252-9bf2-1a1f4618de6f",
+    "2d0417c6-0840-4e56-9ae0-802ef4d4cde4"
+  ],
+  "backup": {
+    "cap_receipt": "D:\\QM\\strategy_farm\\state\\backups\\receipts\\tool_backup_cap_compile_wave_20260920T220127_992149Z.json",
+    "identity_established": true,
+    "path": "D:\\QM\\strategy_farm\\state\\backups\\farm_state_before_compile_wave_20260920T220108Z_c2275391.sqlite",
+    "reused": false,
+    "sha256": "2df1f077a4e2bf50932f432f314c864b7d8eab7d6f49c9ae9ec06d46d225abf0"
+  },
+  "backup_reuse_max_age_minutes": 0.0,
+  "backup_timeout_seconds": 60.0,
+  "backup_write_guard": {
+    "attempts": 1,
+    "transaction": "BEGIN IMMEDIATE / validated / backed up / released / COMMIT",
+    "wait_seconds": 0.0
+  },
+  "deferred": [],
+  "factory_mutation_lock": {
+    "path": "D:\\QM\\strategy_farm\\state\\FACTORY_MUTATION.lock",
+    "release_status": "released"
+  },
+  "held_pending_count": 7,
+  "max_items": 7,
+  "mode": "apply",
+  "release": [
+    {
+      "actual_mq5_sha256": "04284f6e5d0d6bedee200a0b84027f5c0bcc73da99eeaa80f84a84b867684e7f",
+      "ea_id": "QM5_10475",
+      "ea_label": "QM5_10475_mql5-puria",
+      "expected_mq5_sha256": "04284f6e5d0d6bedee200a0b84027f5c0bcc73da99eeaa80f84a84b867684e7f",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10475_mql5-puria\\QM5_10475_mql5-puria.mq5",
+      "work_item_id": "15186697-f270-45f8-ae52-66a9010a7bb8"
+    },
+    {
+      "actual_mq5_sha256": "77c79017b47f8ece1a75a009f193219e4cdac72be4057bc66bb2f04c991dd235",
+      "ea_id": "QM5_10783",
+      "ea_label": "QM5_10783_tv-bos-forex",
+      "expected_mq5_sha256": "77c79017b47f8ece1a75a009f193219e4cdac72be4057bc66bb2f04c991dd235",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10783_tv-bos-forex\\QM5_10783_tv-bos-forex.mq5",
+      "work_item_id": "04d66db1-6bfe-43c0-ad45-87ad7394d1ca"
+    },
+    {
+      "actual_mq5_sha256": "1bed470820beded14ecf801d2570d64e8319b98a7d7a2295893d323559fc5c87",
+      "ea_id": "QM5_10798",
+      "ea_label": "QM5_10798_tv-ema9-full",
+      "expected_mq5_sha256": "1bed470820beded14ecf801d2570d64e8319b98a7d7a2295893d323559fc5c87",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10798_tv-ema9-full\\QM5_10798_tv-ema9-full.mq5",
+      "work_item_id": "a8d63009-8c9f-41f2-9283-6dab4555582e"
+    },
+    {
+      "actual_mq5_sha256": "685fcc7c6158bbddd257209536fdcc8ac7247d4a6064fdfc7ad92b7eb006a195",
+      "ea_id": "QM5_10827",
+      "ea_label": "QM5_10827_tv-vol-exp",
+      "expected_mq5_sha256": "685fcc7c6158bbddd257209536fdcc8ac7247d4a6064fdfc7ad92b7eb006a195",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_10827_tv-vol-exp\\QM5_10827_tv-vol-exp.mq5",
+      "work_item_id": "a042c3cc-86e0-492b-9997-a1fa6490dae6"
+    },
+    {
+      "actual_mq5_sha256": "ffba9c38363bdc12a52d7f2f3268f0f3b97c75540fd1316de1aded8014bc3e61",
+      "ea_id": "QM5_11305",
+      "ea_label": "QM5_11305_alp-sma20-scalp",
+      "expected_mq5_sha256": "ffba9c38363bdc12a52d7f2f3268f0f3b97c75540fd1316de1aded8014bc3e61",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11305_alp-sma20-scalp\\QM5_11305_alp-sma20-scalp.mq5",
+      "work_item_id": "2d275328-e866-4ecc-b143-90fa9ab8b5e4"
+    },
+    {
+      "actual_mq5_sha256": "d1429e5086c54789e2cb7878c2fa6b6be79b6eb609055ac7a02a5da60930e282",
+      "ea_id": "QM5_11443",
+      "ea_label": "QM5_11443_burke-day3-breakout-trap-m5",
+      "expected_mq5_sha256": "d1429e5086c54789e2cb7878c2fa6b6be79b6eb609055ac7a02a5da60930e282",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11443_burke-day3-breakout-trap-m5\\QM5_11443_burke-day3-breakout-trap-m5.mq5",
+      "work_item_id": "296571eb-4861-4252-9bf2-1a1f4618de6f"
+    },
+    {
+      "actual_mq5_sha256": "9da05f978ae81e780aab2b47b8577c8418a041d82fa939b520a05da6e5abfab3",
+      "ea_id": "QM5_11559",
+      "ea_label": "QM5_11559_carter-t-m5-ema3-bb203-macd",
+      "expected_mq5_sha256": "9da05f978ae81e780aab2b47b8577c8418a041d82fa939b520a05da6e5abfab3",
+      "source_path": "C:\\QM\\repo\\framework\\EAs\\QM5_11559_carter-t-m5-ema3-bb203-macd\\QM5_11559_carter-t-m5-ema3-bb203-macd.mq5",
+      "work_item_id": "2d0417c6-0840-4e56-9ae0-802ef4d4cde4"
+    }
+  ],
+  "release_count": 7,
+  "released_at": "2026-09-20T22:01:27+00:00",
+  "schema_version": "qm.compile-ea-rollout-wave/v1",
+  "work_item_id_selector": null,
+  "work_item_id_selectors": [
+    "15186697-f270-45f8-ae52-66a9010a7bb8",
+    "04d66db1-6bfe-43c0-ad45-87ad7394d1ca",
+    "a8d63009-8c9f-41f2-9283-6dab4555582e",
+    "a042c3cc-86e0-492b-9997-a1fa6490dae6",
+    "2d275328-e866-4ecc-b143-90fa9ab8b5e4",
+    "296571eb-4861-4252-9bf2-1a1f4618de6f",
+    "2d0417c6-0840-4e56-9ae0-802ef4d4cde4"
+  ]
+}
