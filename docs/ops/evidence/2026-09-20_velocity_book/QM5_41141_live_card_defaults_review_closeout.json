@@ -1,0 +1,80 @@
+{
+  "schema": "qm.codex-build-review-closeout/v1",
+  "orchestration_task_id": "690be249-5ca9-4311-97ff-4eae40602e42",
+  "task_id": "66329779-aa43-4905-97da-7fabc11823d3",
+  "ea_id": "QM5_41141",
+  "ea_label": "QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.md",
+  "card_sha256": "6d36821e663865f087fa1d0f260947d57bcbcfc69fef06130482900ca6a1d01f",
+  "g0_status": "APPROVED",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.mq5",
+  "mq5_sha256": "4da20e18a9638da1162fbe8f6d9d6817945fd9e791aa77156ac894305f51489e",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.ex5",
+  "ex5_sha256": "172dbdfd832d6876470d0e1844b421320694bf63bdb298f5a69770e62b7223f4",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/sets/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow_GBPUSD.DWX_M15_backtest.set"
+  ],
+  "setfile_sha256": "f8722d89dbed50087f275b12db6d6d36915b5cd1f74d0e5034f6e66520f8fd9b",
+  "additional_guarded_setfile": {
+    "path": "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/sets/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow_QM5_41141_GBPUSD_QUARTEREND_FIX_M15_M15_backtest.set",
+    "sha256": "fc6c54ba5eb73220eb8a41315aa7f96ec1c6579b04abf134d74bd3c098cf3ffe"
+  },
+  "live_card_defaults_binding": {
+    "status": "BOUND",
+    "source": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.md",
+    "strategy_defaults": {
+      "strategy_entry_lead_minutes": 120,
+      "strategy_atr_period_h1": 14,
+      "strategy_hard_stop_atr": 2.0
+    },
+    "not_found_marker_present": false
+  },
+  "guardrail_verification": {
+    "command": "python C:/QM/repo/tools/strategy_farm/validate_build_guardrails.py C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow",
+    "verdict": "PASS",
+    "files_checked": 3,
+    "findings": [],
+    "max_news_stale_hours": 336,
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0
+    }
+  },
+  "compile_work_item_id": "92314586-2b57-4b67-a7d2-e29404f9e175",
+  "compile_evidence_path": "D:/QM/reports/work_items/92314586-2b57-4b67-a7d2-e29404f9e175/QM5_41141/COMPILE_EA/compile_evidence.json",
+  "compile_evidence_sha256": "d0d56cb5d009d64c91320a950ca810338b8cd87adba5b6ed10a472ef5712e196",
+  "compile_result": "COMPILE_OK",
+  "review_close": {
+    "build_task_state": "APPROVED",
+    "build_task_verdict": "APPROVED: live-card defaults source bound; build identity and guardrails PASS",
+    "review_task_id": "51a10bc8-fdf1-4b69-8555-c2c0ee1ef810",
+    "review_task_state": "APPROVED",
+    "review_task_verdict": "APPROVED_FOR_Q02: card defaults bound; governed compile identity and build guardrails PASS; no strategy logic changed"
+  },
+  "q02_intake": {
+    "state": "ENQUEUED",
+    "dry_run": "ELIGIBLE",
+    "work_item_id": "f6e9e133-65e0-409e-89bf-3c8c7b47e286",
+    "status": "pending",
+    "symbol": "QM5_41141_GBPUSD_QUARTEREND_FIX_M15",
+    "timeframe": "M15",
+    "setfile_path": "C:/QM/repo/framework/EAs/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow/sets/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow_QM5_41141_GBPUSD_QUARTEREND_FIX_M15_M15_backtest.set",
+    "setfile_sha256": "fc6c54ba5eb73220eb8a41315aa7f96ec1c6579b04abf134d74bd3c098cf3ffe",
+    "receipt_path": "D:/QM/strategy_farm/artifacts/receipts/first_q02_intake/92314586-2b57-4b67-a7d2-e29404f9e175_f6e9e133-65e0-409e-89bf-3c8c7b47e286.json",
+    "receipt_sha256": "9392c9e95a44ea92cefd3c12fd33e2265960152ee69318dc42a1a5648f79f05f"
+  },
+  "scope_correction": {
+    "old_artifact_path": "C:/QM/repo/docs/ops/evidence/66329779_qm5_41141_build_identity_2026-09-19.json",
+    "old_parent_scope": "C:/QM/repo/docs/ops/evidence",
+    "reason": "The close guard recursively evaluated the old artifact parent and encountered unrelated legacy setfiles. The task-scoped artifact parent contains no setfiles and prevents cross-EA evidence contamination; the EA directory itself independently passes all guardrails."
+  },
+  "no_strategy_logic_changed": true,
+  "safety": {
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "verdict": "PASS_REVIEW_CLOSED_Q02_CANARY_ENQUEUED"
+}
