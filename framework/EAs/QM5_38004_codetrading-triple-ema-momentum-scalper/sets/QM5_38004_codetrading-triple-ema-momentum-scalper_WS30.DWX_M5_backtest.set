@@ -3,16 +3,16 @@
 ; ea_id:        38004
 ; ea_slug:      codetrading-triple-ema-momentum-scalper
 ; ea_version:   v5.0
-; set_version:  s20260817-001
+; set_version:  s20260920-001
 ; symbol:       WS30.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   67a7d6723f38ac7108e7f256c830052dcb37fee89184e297c6dffc00af91ca99
+; build_hash:   dd460d7747cd4194b5e9bf3661b64a1b29cb42f2d84c4b434239d7f695582023
 ; author:       Development
-; date:         2026-08-17
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=38004
 qm_magic_slot_offset=1

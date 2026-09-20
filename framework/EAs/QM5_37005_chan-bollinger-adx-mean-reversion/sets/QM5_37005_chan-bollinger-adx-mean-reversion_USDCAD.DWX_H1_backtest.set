@@ -3,16 +3,16 @@
 ; ea_id:        37005
 ; ea_slug:      chan-bollinger-adx-mean-reversion
 ; ea_version:   v5.0
-; set_version:  s20260818-001
+; set_version:  s20260920-001
 ; symbol:       USDCAD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   f989880e7dfd9a88d7e9f1c2d3cc285074cdcaf95ccfaba6aa44396113b549fb
-; author:       Gemini
-; date:         2026-08-18
+; build_hash:   f1b393eb9f5c02d4ef8ce16e70eaaff6ffeb3e25a0c162e8008efde8a0e54edb
+; author:       Development
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=37005
 qm_magic_slot_offset=1
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_37005_chan-bollinger-adx-mean-reversion.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_37005_chan-bollinger-adx-mean-reversion.md
 strategy_bb_period=20
 strategy_bb_dev=2.00
 strategy_adx_period=14
