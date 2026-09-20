@@ -418,6 +418,24 @@ def long_path(path: "str | Path") -> str:
     return LONG_PATH_PREFIX + os.path.abspath(text)
 
 
+# 2026-09-20 (Fable): a directory that lists fine by its plain name can still
+# contain FILES whose full path exceeds MAX_PATH (Q09 contract-v2 pass-anchor
+# cells: ...\runs\selection\QM5_1567\20260917_005027\raw\run_01\logger_sample.jsonl).
+# stat()/GetFileAttributes on such a plain path raise WinError 3 and every
+# scheduled run since 2026-09-17 failed closed again (backups grew to 53.6 GB,
+# D: fell to 81 GB, the cold-restart worker cap dropped to 5).  Long file
+# paths are therefore yielded with the extended-length prefix as well, and the
+# per-file consumer skips a file it still cannot open instead of aborting.
+LONG_PATH_YIELD_THRESHOLD = 240
+
+
+def yieldable_path(entry_path: str) -> str:
+    """Plain path when short enough for Win32 calls, else the prefixed form."""
+    if os.name == "nt" and len(entry_path) >= LONG_PATH_YIELD_THRESHOLD:
+        return long_path(entry_path)
+    return entry_path
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -464,7 +482,7 @@ def iter_old_files(root: Path, cutoff_epoch: float) -> Iterable[Path]:
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(entry.path)
                         elif entry.is_file(follow_symlinks=False) and entry.stat().st_mtime < cutoff_epoch:
-                            yield Path(entry.path)
+                            yield Path(yieldable_path(entry.path))
                     except OSError:
                         continue
 
@@ -474,9 +492,14 @@ def iter_old_files(root: Path, cutoff_epoch: float) -> Iterable[Path]:
 def iter_evidence_candidates(root: Path, cutoff_epoch: float,
                              open_ids: set[str], open_paths: set[Path]) -> Iterable[Path]:
     for path in iter_old_files(root, cutoff_epoch):
-        if is_open_bound(path, open_ids, open_paths):
+        try:
+            if is_open_bound(path, open_ids, open_paths):
+                continue
+            attributes = file_attributes(path)
+        except OSError:
+            # Unreadable by name (MAX_PATH / transient lock): leave untouched,
+            # exactly like an unlistable directory; never abort the run.
             continue
-        attributes = file_attributes(path)
         if attributes & (COMPRESSED_ATTRIBUTE | REPARSE_ATTRIBUTE):
             continue
         yield path

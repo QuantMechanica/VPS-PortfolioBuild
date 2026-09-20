@@ -323,3 +323,34 @@ def test_state_journal_archive_exports_before_delete_and_vacuums(tmp_path: Path)
     con = sqlite3.connect(db)
     assert con.execute("SELECT id FROM events ORDER BY id").fetchall() == [(3,)]
     con.close()
+
+
+
+def test_long_file_paths_are_yielded_with_prefix_and_unreadable_files_are_skipped(tmp_path, monkeypatch):
+    """2026-09-20: MAX_PATH files under a listable directory must not fail the run closed."""
+    import os as _os
+    short = str(tmp_path / "a.json")
+    assert runner.yieldable_path(short) == short
+    long_name = str(tmp_path / ("x" * (runner.LONG_PATH_YIELD_THRESHOLD + 20)))
+    got = runner.yieldable_path(long_name)
+    if _os.name == "nt":
+        assert got.startswith(runner.LONG_PATH_PREFIX)
+    else:
+        assert got == long_name
+    # consumer: a file whose attributes cannot be read is skipped, the rest flows
+    good = tmp_path / "good.json"
+    bad = tmp_path / "bad.json"
+    good.write_text("{}", encoding="utf-8")
+    bad.write_text("{}", encoding="utf-8")
+    monkeypatch.setattr(runner, "iter_old_files", lambda root, cutoff: [bad, good])
+    monkeypatch.setattr(runner, "is_open_bound", lambda path, ids, paths: False)
+    original = runner.file_attributes
+
+    def flaky(path):
+        if path.name == "bad.json":
+            raise FileNotFoundError(3, "The system cannot find the path specified")
+        return original(path)
+
+    monkeypatch.setattr(runner, "file_attributes", flaky)
+    out = list(runner.iter_evidence_candidates(tmp_path, 10**12, set(), set()))
+    assert out == [good]
