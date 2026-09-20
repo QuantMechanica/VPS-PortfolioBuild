@@ -31,3 +31,14 @@ def test_archived_duplicate_failed_row_is_ignored_but_real_fail_blocks():
     assert gate.blocked(idx, "QM5_38002")["reason"] == "review_fail_or_blocked"
     # only an archived row and no accepted review: the EA is simply unknown to the gate (exempt)
     assert gate.blocked(idx, "QM5_38003") is None
+
+
+def test_parked_legacy_build_row_is_ignored():
+    con = _conn([
+        ("t1", "build_ea", "BLOCKED", "PARK (n/a): legacy_build_backlog_pre_CBE: volume-era build (age>30d, prio<50)", {"ea_id": "11537"}),
+        ("t2", "review_ea", "APPROVED", "APPROVED", {"ea_id": "11537"}),
+        ("t3", "build_ea", "BLOCKED", "BLOCKED (Fable): build guardrails fail with live_card_defaults_source_not_found", {"ea_id": "41141"}),
+    ])
+    idx = gate.build_index(con)
+    assert gate.blocked(idx, "QM5_11537") is None
+    assert gate.blocked(idx, "QM5_41141")["reason"] == "review_fail_or_blocked"

@@ -73,10 +73,16 @@ def _verdict_is_fail(value: Any) -> bool:
 #: ignored here as if the row did not exist; every genuine FAIL/BLOCKED row
 #: still blocks.
 ARCHIVED_VERDICT_PREFIX = "ARCHIVED ("
+#: Parked rows ("PARK (n/a): legacy_build_backlog_pre_CBE ...", "PARK (owner): awaiting ...")
+#: are explicit Orchestrator/OWNER parking decisions with a reason, not review
+#: outcomes either; 226 such build_ea rows sat in BLOCKED after the 2026-09-15 CBE
+#: backlog triage and blocked Q02 intake for the Velocity wave (QM5_11537).
+BOOKKEEPING_VERDICT_PREFIXES = (ARCHIVED_VERDICT_PREFIX, "PARK (")
 
 
 def _is_archived_bookkeeping_row(row: Any) -> bool:
-    return str(row["verdict"] or "").strip().upper().startswith(ARCHIVED_VERDICT_PREFIX)
+    verdict = str(row["verdict"] or "").strip().upper()
+    return verdict.startswith(BOOKKEEPING_VERDICT_PREFIXES)
 
 
 def build_index(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
