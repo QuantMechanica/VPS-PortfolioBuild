@@ -34,3 +34,20 @@ def test_receipted_modified_ex5_is_selected_and_unreceipted_is_not(tmp_path):
     assert task._receipted_tracked_ex5(status, repo_root=repo, db_path=db) == []
     # untracked and non-ex5 lines are ignored
     assert task._receipted_tracked_ex5(["?? framework/EAs/QM5_1_x/QM5_1_x.ex5", " M tools/x.py"], repo_root=repo, db_path=db) == []
+
+
+def test_untracked_receipted_ex5_is_selected(tmp_path):
+    """First compile of a tracked EA dir: the new binary is untracked ('??') and must be committed too."""
+    repo = tmp_path / "repo"
+    d = repo / "framework" / "EAs" / "QM5_39004_forexfactory-thv-cobra-trix-scalper"
+    d.mkdir(parents=True)
+    ex5 = d / "QM5_39004_forexfactory-thv-cobra-trix-scalper.ex5"
+    ex5.write_bytes(b"first-binary")
+    db = _db(tmp_path, "QM5_39004", task._sha256_file(ex5))
+    status = ["?? framework/EAs/QM5_39004_forexfactory-thv-cobra-trix-scalper/QM5_39004_forexfactory-thv-cobra-trix-scalper.ex5"]
+    assert task._receipted_tracked_ex5(status, repo_root=repo, db_path=db) == [
+        "framework/EAs/QM5_39004_forexfactory-thv-cobra-trix-scalper/QM5_39004_forexfactory-thv-cobra-trix-scalper.ex5"
+    ]
+    # an untracked binary WITHOUT a receipt is still left alone
+    ex5.write_bytes(b"unreceipted")
+    assert task._receipted_tracked_ex5(status, repo_root=repo, db_path=db) == []

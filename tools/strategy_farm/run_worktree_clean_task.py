@@ -206,8 +206,14 @@ def _receipted_tracked_ex5(status: list[str], repo_root: Path = REPO_ROOT,
     """
     out: list[str] = []
     for line in status:
-        if len(line) < 4 or line.startswith("?? "):
+        if len(line) < 4:
             continue
+        # 2026-09-20 (Fable, addendum): a FIRST governed compile of an EA whose
+        # directory is tracked but never carried a binary leaves the .ex5 as an
+        # untracked "??" file (QM5_38001/39002/39004 in the Velocity intake
+        # wave); it is receipted exactly like a rebuilt tracked binary and is
+        # committed here as well, otherwise the Q02 canary claims against a
+        # binary that only exists in the working tree.
         rel = line[3:].strip().replace("\\", "/")
         m = re.match(r"^framework/EAs/(QM5_\d+)_[^/]+/[^/]+\.ex5$", rel)
         if not m:
