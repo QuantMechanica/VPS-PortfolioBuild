@@ -6,6 +6,18 @@
   "ea_label": "QM5_21509_qs-emv-trend-ndx",
   "result": "PASS",
   "result_line": "RESULT: PASS — governed COMPILE_EA 93b11351-c661-4755-9bb6-f27cd2ab20ee returned COMPILE_OK; build_check PASS; MetaEditor 0 errors / 0 warnings; binary and setfile committed by the receipt-validated janitor helper.",
+  "build_check_passed": true,
+  "build_check": {
+    "result": "PASS",
+    "exit_code": 0
+  },
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_21509_qs-emv-trend-ndx/QM5_21509_qs-emv-trend-ndx.mq5",
+  "mq5_sha256": "a6048a52c50760205296a4b91065e8da9b8a4b7340d2e9913ee62ea0ca1db8dc",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_21509_qs-emv-trend-ndx/QM5_21509_qs-emv-trend-ndx.ex5",
+  "ex5_sha256": "85e57fc1ca273da9169d10cb042defb643fed194fbdef3882982db4e47222c1e",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_21509_qs-emv-trend-ndx/sets/QM5_21509_qs-emv-trend-ndx_NDX.DWX_D1_backtest.set"
+  ],
   "preflight": {
     "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_21509_qs-emv-trend-ndx.md",
     "g0_status": "APPROVED",
