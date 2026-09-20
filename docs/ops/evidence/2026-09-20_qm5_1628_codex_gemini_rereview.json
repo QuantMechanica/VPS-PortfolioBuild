@@ -1,0 +1,111 @@
+{
+  "schema": "qm.codex-gemini-ea-review/v1",
+  "review_task_id": "3c46e814-d8b2-429c-9a15-d7660a3376d1",
+  "source_task_id": "c1c715e2-d00f-4bfe-b82b-ff12ddc65b3e",
+  "ea_id": "QM5_1628",
+  "ea_label": "QM5_1628_carney-5-0-pattern-h4",
+  "reviewer": "codex",
+  "review_date": "2026-09-20",
+  "repository_head_reviewed": "e3954d3858063a6882bc0a8a82d9bd294f82fe15",
+  "inputs": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1628_carney-5-0-pattern-h4.md",
+    "approved_card_sha256": "c1449f41e592e4ed4cfb772d1af30721289380a0acd1d15c566a03f961838130",
+    "source": "C:/QM/repo/framework/EAs/QM5_1628_carney-5-0-pattern-h4/QM5_1628_carney-5-0-pattern-h4.mq5",
+    "source_sha256": "625605c4c0c8e070f8892b8b7eab0f4e5e2084fab0187e1a0f19c110f1e1b051",
+    "source_last_commit": "aa3ba5a9255db45b92001b90d4833f71cca64a48",
+    "source_build_artifact": "D:/QM/strategy_farm/artifacts/builds/c1c715e2-d00f-4bfe-b82b-ff12ddc65b3e.json",
+    "source_build_artifact_sha256": "56a9491e48407371c41d59bfaf5bbea55dd9d380a6fa615481fee94a4722b796",
+    "identity_registry_row": "1628,carney-5-0-pattern-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-09-16,,,",
+    "active_magic_rows": [
+      "1628,carney-5-0-pattern-h4,0,EURUSD.DWX,16280000,2026-08-10,Gemini,active",
+      "1628,carney-5-0-pattern-h4,1,GBPUSD.DWX,16280001,2026-08-10,Gemini,active",
+      "1628,carney-5-0-pattern-h4,2,USDJPY.DWX,16280002,2026-08-10,Gemini,active",
+      "1628,carney-5-0-pattern-h4,3,XAUUSD.DWX,16280003,2026-08-10,Gemini,active"
+    ]
+  },
+  "changed_precondition": {
+    "status": "PASS",
+    "detail": "The missing EA identity blocker recorded on 2026-09-12 was repaired by governed registry commit d8bc40d0c3dde0c324229bd2ce7f03bb44232f37. Identity, slug, source_id and four active magic tuples now agree with the approved card."
+  },
+  "verification": [
+    {
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_1628_carney-5-0-pattern-h4 -RepoRoot C:/QM/repo -SkipCompile -SkipSetValidation",
+      "exit_code": 1,
+      "result": "FAIL",
+      "failures": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL at source lines 193 and 200",
+        "EA_Q08_MAE_HOOK_MISSING at OnTick line 507"
+      ],
+      "warnings": [
+        "EA_PERF_UNGATED_BAR_DATA for CopyRates at source line 377; upstream OnTick has a new-bar gate, so this requires explicit reviewer-safe structure or annotation rather than silent acceptance"
+      ]
+    },
+    {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_1628_carney-5-0-pattern-h4",
+      "exit_code": 1,
+      "result": "FAIL: SPEC.md missing"
+    },
+    {
+      "check": "backtest risk contract",
+      "result": "PASS",
+      "detail": "All four H4 backtest setfiles use RISK_FIXED=1000 and RISK_PERCENT=0."
+    },
+    {
+      "check": "setfile build binding",
+      "result": "FAIL",
+      "detail": "All four setfile headers still contain build_hash: pending."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "BLOCK",
+      "code": "STRUCTURAL_STOP_WRONG_PIVOT",
+      "location": "QM5_1628_carney-5-0-pattern-h4.mq5:204-219; approved card:94-96",
+      "detail": "The source receives c_price but anchors the stop beyond d_price. The approved structural invalidation is beyond the C pivot by 0.5 ATR, subject to the 3.5 ATR distance cap."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "BREAKEVEN_TRIGGER_MISSING",
+      "location": "QM5_1628_carney-5-0-pattern-h4.mq5:413-448; approved card:88-92",
+      "detail": "The independent +1.5 ATR break-even trigger is absent. Break-even is incorrectly coupled to the C-D 50% partial-profit target."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "REVERSE_PATTERN_EXIT_MISSING",
+      "location": "QM5_1628_carney-5-0-pattern-h4.mq5:451-464; approved card:92",
+      "detail": "Strategy_ExitSignal implements only the time stop and never closes on a new opposite-direction 5-0 completion."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "POSITION_MANAGEMENT_BEHIND_ENTRY_BLACKOUT",
+      "location": "QM5_1628_carney-5-0-pattern-h4.mq5:515-529",
+      "detail": "A news blackout returns before partial-profit, break-even and time-stop handling. Mandatory news blackout must suppress entries without suspending risk-reducing management of an existing position."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "RESTART_STATE_NOT_RECONSTRUCTED",
+      "location": "QM5_1628_carney-5-0-pattern-h4.mq5:76-79,243-245,491-494",
+      "detail": "On restart, g_active_tp1_price and g_tp1_done are reset and are not reconstructed for an existing position, disabling the approved partial-profit and break-even management or allowing a repeated partial close."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "COOLDOWN_SEMANTICS_MISMATCH",
+      "location": "QM5_1628_carney-5-0-pattern-h4.mq5:355-356,398-405; approved card:107",
+      "detail": "Cooldown starts when the entry signal is generated, applies to both directions, and can expire while the trade remains open. The card requires no same-direction re-entry for 12 H4 bars after the prior trade."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "BUILD_GUARD_FAIL",
+      "location": "QM5_1628_carney-5-0-pattern-h4.mq5:193,200,506-508",
+      "detail": "The deterministic build guard rejects two unapproved raw series calls and the missing QM_FrameworkTrackOpenPositionMae hook."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "SPEC_AND_BUILD_BINDING_MISSING",
+      "detail": "SPEC.md is absent and every setfile build_hash is pending. The old source build artifact predates the governed identity repair and explicitly generated no setfiles; it is not fresh closure evidence."
+    }
+  ],
+  "verdict": "NEEDS_REWORK",
+  "disposition": "Leave the Gemini review task in REVIEW. Repair card fidelity and restart-safe management, add SPEC/tests, bind the setfiles, then compile only through the governed COMPILE_EA path and return fresh evidence to Codex. Do not enqueue a pipeline phase from this review.",
+  "result_line": "RESULT: NEEDS_REWORK — registry precondition repaired, but structural-stop, exit, management, restart-state, build-guard, SPEC and setfile-binding gates remain open."
+}

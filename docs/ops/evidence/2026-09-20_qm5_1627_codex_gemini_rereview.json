@@ -1,0 +1,89 @@
+{
+  "schema": "qm.codex-gemini-ea-review/v1",
+  "review_task_id": "6ec40513-d44b-4b71-babc-91c725bce7fb",
+  "source_task_id": "932cb7ee-a445-41c4-9fbf-a9650d0155be",
+  "ea_id": "QM5_1627",
+  "ea_label": "QM5_1627_hopwood-bermaui-cci-h4",
+  "reviewer": "codex",
+  "review_date": "2026-09-20",
+  "repository_head_reviewed": "e3954d3858063a6882bc0a8a82d9bd294f82fe15",
+  "inputs": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1627_hopwood-bermaui-cci-h4.md",
+    "approved_card_sha256": "0fdf8bf308de7edf3742fbe0b85d7919bf123c0b4f277b211ef0e8b69e601bf1",
+    "source": "C:/QM/repo/framework/EAs/QM5_1627_hopwood-bermaui-cci-h4/QM5_1627_hopwood-bermaui-cci-h4.mq5",
+    "source_sha256": "70bbbafe6d46120624ebd1c2bdf82d7b80d3935e2226bdc04a62cfdf80fed952",
+    "source_last_commit": "3d853ab6b2c1d93251f951be0f100dd7d3750085",
+    "identity_registry_row": "1627,hopwood-bermaui-cci-h4,6e967762-b26d-59a3-b076-35c17f2e7c36,active,Research,2026-09-16,,,",
+    "active_magic_rows": [
+      "1627,hopwood-bermaui-cci-h4,0,EURUSD.DWX,16270000,2026-08-10,Gemini,active",
+      "1627,hopwood-bermaui-cci-h4,1,GBPUSD.DWX,16270001,2026-08-10,Gemini,active",
+      "1627,hopwood-bermaui-cci-h4,2,USDJPY.DWX,16270002,2026-08-10,Gemini,active",
+      "1627,hopwood-bermaui-cci-h4,3,XAUUSD.DWX,16270003,2026-08-10,Gemini,active"
+    ]
+  },
+  "changed_precondition": {
+    "status": "PASS",
+    "detail": "The missing EA identity blocker recorded on 2026-09-12 was repaired by governed registry commit d8bc40d0c3dde0c324229bd2ce7f03bb44232f37. Identity, slug, source_id and four active magic tuples now agree with the approved card."
+  },
+  "verification": [
+    {
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File framework/scripts/build_check.ps1 -EALabel QM5_1627_hopwood-bermaui-cci-h4 -RepoRoot C:/QM/repo -SkipCompile -SkipSetValidation",
+      "exit_code": 1,
+      "result": "FAIL",
+      "failures": [
+        "EA_Q08_MAE_HOOK_MISSING at OnTick line 426"
+      ],
+      "warnings": 0
+    },
+    {
+      "command": "python framework/scripts/validate_spec_doc.py framework/EAs/QM5_1627_hopwood-bermaui-cci-h4",
+      "exit_code": 1,
+      "result": "FAIL: SPEC.md missing"
+    },
+    {
+      "check": "backtest risk contract",
+      "result": "PASS",
+      "detail": "All four H4 backtest setfiles use RISK_FIXED=1000 and RISK_PERCENT=0."
+    }
+  ],
+  "findings": [
+    {
+      "severity": "BLOCK",
+      "code": "BUILD_GUARD_FAIL",
+      "location": "QM5_1627_hopwood-bermaui-cci-h4.mq5:425-427",
+      "detail": "OnTick does not call QM_FrameworkTrackOpenPositionMae(); the current deterministic build guard fails."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "MANDATORY_NEWS_BLACKOUT_DISABLED",
+      "location": "QM5_1627_hopwood-bermaui-cci-h4.mq5:23-27,431-436; approved card:92",
+      "detail": "Both current news axes and the legacy mode default OFF, while the approved card and active Edge Lab contract require the standard mandatory news blackout. The setfiles do not override those defaults."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "POSITION_MANAGEMENT_BEHIND_ENTRY_BLACKOUT",
+      "location": "QM5_1627_hopwood-bermaui-cci-h4.mq5:431-436,498-500",
+      "detail": "A news blackout returns before break-even, partial-profit, reverse-signal and time-stop handling. The blackout must suppress entries without suspending risk-reducing management of an existing position."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "RESTART_STATE_NOT_RECONSTRUCTED",
+      "location": "QM5_1627_hopwood-bermaui-cci-h4.mq5:52-60,449-483",
+      "detail": "ATR-at-entry, partial-close completion, bars-in-trade and cooldown state are process-local. After restart the EA substitutes current ATR, restarts the time stop and can repeat a prior partial close."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "SPEC_MISSING",
+      "location": "framework/EAs/QM5_1627_hopwood-bermaui-cci-h4/SPEC.md",
+      "detail": "The required card-locked SPEC is absent and validate_spec_doc.py fails."
+    },
+    {
+      "severity": "BLOCK",
+      "code": "NO_FRESH_GOVERNED_BUILD",
+      "detail": "The source has not received the requested mechanical rework since the 2026-09-12 review, and the static guard currently fails. The existing EX5 is not accepted as post-repair compile evidence."
+    }
+  ],
+  "verdict": "NEEDS_REWORK",
+  "disposition": "Leave the Gemini review task in REVIEW. Repair source and restart-safe state, add SPEC/tests, then compile only through the governed COMPILE_EA path and return fresh evidence to Codex. Do not enqueue a pipeline phase from this review.",
+  "result_line": "RESULT: NEEDS_REWORK — registry precondition repaired, but mandatory news, Q08 MAE, management-order, restart-state, SPEC and governed-build gates remain open."
+}
