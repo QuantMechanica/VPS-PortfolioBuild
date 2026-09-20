@@ -1,0 +1,51 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "pacer_build_guard:52183b38-98c0-402b-aabd-a78712ddaafd:QM5_41355",
+  "created_at_utc": "2026-09-20T09:07:30+00:00",
+  "ea_id": "QM5_41355",
+  "ea_label": "QM5_41355_xauxag-mtrim2-rv",
+  "scope": "One append-only governed COMPILE_EA source-repair successor for the approved monthly XAU/XAG fixed-trim reversion EA; no Q02, live, portfolio-gate, or cross-EA authority.",
+  "governance": {
+    "owner_decision": "OWNER-DEC-BACKLOG-20260912",
+    "canonical_build_task_id": "8c04e456-4522-4bd4-a289-4fe6a50577ef",
+    "agent_task_id": "52183b38-98c0-402b-aabd-a78712ddaafd",
+    "historical_compile_work_item_id": "b3f8e831-9a0f-44cf-b7dd-d50b44304fd8",
+    "historical_compile_status": "done",
+    "historical_compile_verdict": "COMPILE_OK",
+    "historical_source_sha256": "b1f24be5cde52f631447647a15b467551745684201f2f8dca5b898b81d2eff51"
+  },
+  "repair": {
+    "current_mq5_sha256": "5b68d1e3076941916d2326ead8e83c62c80648d2cd7be6c7dce95b835f3658f5",
+    "changes": [
+      "Remove equality/default comparisons against qm_rng_seed, all qm_news_* inputs, and all qm_friday_close_* inputs.",
+      "Validate backtest risk mode as RISK_FIXED greater than zero and RISK_PERCENT equal to zero.",
+      "Stop pinning PORTFOLIO_WEIGHT to its default.",
+      "Constrain qm_stress_reject_probability to the inclusive zero-to-one range."
+    ],
+    "strategy_mechanics_changed": false,
+    "instrument_scope": [
+      "XAUUSD.DWX",
+      "XAGUSD.DWX"
+    ]
+  },
+  "validation": {
+    "framework_input_pin_audit": {
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "ok": true,
+      "hit_count": 0
+    },
+    "focused_tests": "22 passed",
+    "build_guardrails": "PASS",
+    "build_gate_hardening": "PASS"
+  },
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "max_news_stale_hours": 336,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "q02_authorized": false,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}
