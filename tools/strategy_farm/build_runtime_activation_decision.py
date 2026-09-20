@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 import factory_runtime_activation as fra
+import farmctl
 import gate_manifest
 
 
@@ -335,8 +336,29 @@ def build_runtime_activation_decision(
     )
     top_level = Path(_git(repo_root, "rev-parse", "--show-toplevel")).resolve()
     _require(top_level == repo_root, f"repo-root is not the Git top level: {repo_root}")
-    dirty = _git(repo_root, "status", "--porcelain", "--untracked-files=all")
-    _require(dirty == "", f"repository is dirty before binding: {dirty!r}")
+    # 2026-09-20 (Fable/Claude, successor of 221e4e91): the prior raw
+    # `git status --porcelain` requirement treated the factory's own continuous
+    # generated-artifact churn (.ex5/.set builds, SPEC.md/card mirrors, the
+    # recurring generator docs MNT-011 already classifies) as "dirty," so this
+    # fail-closed gate almost never opened and Factory_ON ->
+    # maintenance_control release-on-restart stayed wedged behind the
+    # Q12_DL089_MATRIX_WORKER_ROLLOUT_PENDING holds. Reuse the same
+    # qm-repo-dirty-classification/v2 the pump's build-spawn dirty guard
+    # already relies on (farmctl._repo_dirty_status): known-generated outputs
+    # never block, every other change (source, tools/, registries, untracked
+    # human work) still does. Rollback: revert this hunk (and the matching
+    # post-normalization hunk below) to restore the raw porcelain check; no
+    # state migration needed, since the classification is computed fresh on
+    # every call.
+    dirty_status = farmctl._repo_dirty_status(repo_root)
+    _require(
+        not dirty_status.get("blocked"),
+        "repository is dirty before binding (source/tools/registry changes "
+        "block, classification-v2 generated artifacts do not): "
+        f"{dirty_status.get('entries')!r} "
+        f"(generated_count={dirty_status.get('generated_count', 0)}, "
+        f"blocking_by_class={dirty_status.get('blocking_by_class', {})})",
+    )
 
     try:
         fra._verify_committed_file(
@@ -424,8 +446,22 @@ def build_runtime_activation_decision(
     source_bindings = _source_bindings(repo_root, head=head)
     # A raw LF rewrite under core.autocrlf=true can leave Git's cached
     # worktree-size metadata reporting " M" even though the clean-filtered
-    # content is byte-identical to the index.  Content diffs are authoritative
-    # here; the initial porcelain check already rejected staged/untracked work.
+    # content is byte-identical to the index. `git diff`/`git diff --cached`
+    # compute a real content diff and stay accurate for that case, unlike
+    # `git status --porcelain` (used by the dirty-status classifier above),
+    # which can false-positive on it -- so this stays on the raw three-call
+    # form rather than re-running farmctl._repo_dirty_status. The initial
+    # dirty-status check already rejected non-generated staged/untracked
+    # work; apply the same qm-repo-dirty-classification/v2 generated-path
+    # allowance here too (by bare path, not porcelain XY) so pre-existing
+    # generated-artifact churn it already let through does not re-trip this
+    # gate.
+    def _is_generated_bare_path(path: str, *, status: str) -> bool:
+        return bool(
+            farmctl._generated_ea_artifact_kind(status, path)
+            or farmctl._generated_recurring_doc_kind(path)
+        )
+
     dirty_after_normalization = _git(repo_root, "diff", "--name-only")
     staged_after_normalization = _git(
         repo_root,
@@ -439,14 +475,21 @@ def build_runtime_activation_decision(
         "--others",
         "--exclude-standard",
     )
+    blocking_after_normalization = sorted(
+        {
+            path
+            for path, status in (
+                *((p, "M ") for p in dirty_after_normalization.splitlines() if p.strip()),
+                *((p, "M ") for p in staged_after_normalization.splitlines() if p.strip()),
+                *((p, "??") for p in untracked_after_normalization.splitlines() if p.strip()),
+            )
+            if not _is_generated_bare_path(path, status=status)
+        }
+    )
     _require(
-        dirty_after_normalization == ""
-        and staged_after_normalization == ""
-        and untracked_after_normalization == "",
+        not blocking_after_normalization,
         "repository content changed while normalizing source-binding bytes: "
-        f"worktree={dirty_after_normalization!r} "
-        f"index={staged_after_normalization!r} "
-        f"untracked={untracked_after_normalization!r}",
+        f"{blocking_after_normalization!r}",
     )
 
     payload = template

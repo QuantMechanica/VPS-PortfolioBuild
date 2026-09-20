@@ -323,6 +323,61 @@ def test_builder_carries_empty_declared_plan_forward(
     }
 
 
+def test_builder_ignores_generated_artifact_churn_but_blocks_source_dirt(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, flag_path = _seed_repo(tmp_path, monkeypatch)
+
+    # Commit the EA build artifacts first so the churn below shows up as
+    # tracked "M" entries (matching real factory behavior: the pump commits
+    # completed builds, then continuously recompiles/regenerates them) rather
+    # than an untracked new EA directory, which git only reports one level
+    # deep ("?? framework/") and would not exercise the per-file classifier.
+    ea_dir = repo / "framework" / "EAs" / "QM5_99999_synthetic-churn-h1" / "sets"
+    ea_dir.mkdir(parents=True)
+    ex5_path = ea_dir.parent / "QM5_99999_synthetic-churn-h1.ex5"
+    set_path = ea_dir / "QM5_99999_synthetic-churn-h1_EURUSD.DWX_H1_backtest.set"
+    ex5_path.write_bytes(b"binary-v1\n")
+    set_path.write_text("churn-v1\n", encoding="utf-8")
+    _git(repo, "add", "--all")
+    _git(repo, "commit", "-q", "-m", "seed synthetic EA build artifacts")
+
+    ex5_path.write_bytes(b"binary-v2\n")
+    set_path.write_text("churn-v2\n", encoding="utf-8")
+
+    # Generated .ex5/.set churn alone (qm-repo-dirty-classification/v2) must
+    # not trip the fail-closed gate: the factory recompiles/regenerates these
+    # continuously, and the prior raw porcelain check wedged Factory_ON behind
+    # that permanent artifact churn.
+    result = builder.build_runtime_activation_decision(
+        repo_root=repo,
+        flag_path=flag_path,
+        decision_id="OWNER_GO_ARTIFACT_CHURN",
+        now_utc=NOW,
+    )
+    assert result["built"] is True
+
+    (repo / "tools" / "strategy_farm" / "synthetic_source_edit.py").parent.mkdir(
+        parents=True, exist_ok=True
+    )
+    (repo / "tools" / "strategy_farm" / "synthetic_source_edit.py").write_text(
+        "# dirty source\n", encoding="utf-8"
+    )
+
+    with pytest.raises(builder.DecisionBuildError) as error:
+        builder.build_runtime_activation_decision(
+            repo_root=repo,
+            flag_path=flag_path,
+            decision_id="OWNER_GO_SOURCE_DIRTY",
+            now_utc=NOW,
+        )
+
+    assert error.value.exit_code == builder.EXIT_PRECONDITION
+    assert "repository is dirty" in str(error.value)
+    assert "synthetic_source_edit.py" in str(error.value)
+
+
 def test_builder_rejects_dirty_repository_before_writing_artifacts(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
