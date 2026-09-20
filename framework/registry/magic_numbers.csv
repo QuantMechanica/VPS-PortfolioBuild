@@ -18509,3 +18509,15 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41478,grimes-complex-pb-opt,0,GDAXI.DWX,414780000,2026-09-16,Codex governed allocator,active
 41482,williams-vix-fix-fx-h4-opt,0,NDX.DWX,414820000,2026-09-19,Codex governed allocator,active
 41483,wti-tsmom11-h1,0,XTIUSD.DWX,414830000,2026-09-19,Codex governed allocator,active
+11375,kathy-lien-double-bb-1-2sigma-m15,0,EURUSD.DWX,113750000,2026-09-20,Codex governed allocator,active
+11375,kathy-lien-double-bb-1-2sigma-m15,1,GBPUSD.DWX,113750001,2026-09-20,Codex governed allocator,active
+11375,kathy-lien-double-bb-1-2sigma-m15,2,USDJPY.DWX,113750002,2026-09-20,Codex governed allocator,active
+11375,kathy-lien-double-bb-1-2sigma-m15,3,GBPJPY.DWX,113750003,2026-09-20,Codex governed allocator,active
+11380,macd12-stoch8-extreme-m1m5,0,EURUSD.DWX,113800000,2026-09-20,Codex governed allocator,active
+11380,macd12-stoch8-extreme-m1m5,1,GBPUSD.DWX,113800001,2026-09-20,Codex governed allocator,active
+20175,alpha-inst-magnet-r1-recovery,0,EURUSD.DWX,201750000,2026-09-20,Codex governed allocator,active
+20175,alpha-inst-magnet-r1-recovery,1,GBPUSD.DWX,201750001,2026-09-20,Codex governed allocator,active
+20175,alpha-inst-magnet-r1-recovery,2,USDJPY.DWX,201750002,2026-09-20,Codex governed allocator,active
+20175,alpha-inst-magnet-r1-recovery,3,XAUUSD.DWX,201750003,2026-09-20,Codex governed allocator,active
+20175,alpha-inst-magnet-r1-recovery,4,NDX.DWX,201750004,2026-09-20,Codex governed allocator,active
+20175,alpha-inst-magnet-r1-recovery,5,WS30.DWX,201750005,2026-09-20,Codex governed allocator,active
