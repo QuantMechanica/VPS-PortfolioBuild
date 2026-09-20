@@ -1,0 +1,21 @@
+{
+  "authority": "router_ops_issue:14a9cbf1-94bf-412c-8b8d-ae6ee3766594:QM5_41347",
+  "authorized_by": "Fable, OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+  "created_at_utc": "2026-09-20T16:05:00Z",
+  "diagnosis": {
+    "committed_ex5_sha256": "3e475c8b7b6bf1596233768fc6b5852c0881f5c020d6ca08ec9b6f55abaa517d",
+    "evidence": "docs/ops/evidence/2026-09-20_dl089_11294_ndx_census_stall/README.md",
+    "lost_ex5_sha256": "862045c620d20dcea6715aa82cf56e1c18e5f622ca978bfe780a42a39bfdf31b",
+    "router_task_id": "14a9cbf1-94bf-412c-8b8d-ae6ee3766594",
+    "summary": "COMPILE_OK 20cce28d (2026-09-20T08:01Z) produced ex5 862045c6 (Q02 PASS bbbed20e + 18 MEASURED census cells), but the binary was never committed; at 08:30:14Z the canonical working tree was restored to HEAD (git blob e75101ec12 = the 2026-09-05 slot-0-only build, sha 3e475c8b), so every later census claim deployed a binary without the NDX.DWX slot-1 magic (EA_MAGIC_NOT_REGISTERED ea_id=41347 slot=1) -> 8x INFRA_FAIL and poison-pill quarantine of the remaining 1059 cells. The 862045c6 artifact is not preserved anywhere on disk; a governed rebuild against the current include tree is required, and the resulting ex5 must be committed (guard: COMPILE_OK receipt binds it) before any census claim."
+  },
+  "ea_id": "QM5_41347",
+  "ea_label": "QM5_41347_cs-ichi-cloud-opt",
+  "schema": "qm.compile-ea-stale-include-closure-rebuild-authority-evidence/v1",
+  "scope": "one append-only governed COMPILE_EA successor; no strategy change, no verdict, gate, live or portfolio authority",
+  "source_sha256": "64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f",
+  "stale_compile_ok_work_item_ids": [
+    "245ee112-e9b1-4346-a5b0-82ae91cd039c",
+    "20cce28d-23d8-4f54-8b96-b3f983e24586"
+  ]
+}

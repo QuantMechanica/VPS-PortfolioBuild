@@ -3481,6 +3481,35 @@ STALE_INCLUDE_CLOSURE_REGISTRATIONS[QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY] =
     ),
 }
 
+# 2026-09-20 (task 14a9cbf1, Fable): the 340b228c rebuild's binary (862045c6)
+# was never committed and the canonical tree was restored to HEAD at 08:30Z,
+# redeploying the 2026-09-05 slot-0-only binary into the running census
+# (8x EA_MAGIC_NOT_REGISTERED slot=1, poison-pill quarantine of 1059 cells).
+# Second append-only rebuild authority; the resulting .ex5 is committed under
+# its COMPILE_OK receipt immediately after the wave.
+QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY_2 = (
+    "router_ops_issue:14a9cbf1-94bf-412c-8b8d-ae6ee3766594:QM5_41347"
+)
+STALE_INCLUDE_CLOSURE_REGISTRATIONS[QM5_41347_STALE_INCLUDE_CLOSURE_AUTHORITY_2] = {
+    "ea_id": "41347",
+    "ea_label": "QM5_41347_cs-ichi-cloud-opt",
+    "source_sha256": "64f3369a67fa212629f3bec4cc6b7a84e81ee6b44a2c80119f2cc6ed97d0ac2f",
+    "stale_compile_ok_work_item_ids": [
+        # 2026-09-05 slot-0-only build; its ex5 (3e475c8b) is what HEAD restored
+        # over the lost 862045c6, so it reads as "usable current" again.
+        "245ee112-e9b1-4346-a5b0-82ae91cd039c",
+        "20cce28d-23d8-4f54-8b96-b3f983e24586",
+    ],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-20_dl089_11294_ndx_census_stall/"
+        "rebuild_authority_14a9cbf1.json"
+    ),
+    "evidence_sha256": (
+        "b4c0cca56a08bd0ea907921afefd28946b30340f5071fb4f947bae9bd603f6b2"
+    ),
+}
+
 
 def _current_include_closure_sha256(repo_root: Path) -> str | None:
     """QM_MAGIC_REGISTRY_SHA256 baked into QM_MagicResolver.mqh right now.

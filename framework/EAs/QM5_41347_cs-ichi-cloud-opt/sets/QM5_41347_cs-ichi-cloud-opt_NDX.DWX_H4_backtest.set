@@ -3,24 +3,24 @@
 ; ea_id:        41347
 ; ea_slug:      cs-ichi-cloud-opt
 ; ea_version:   v5.0
-; set_version:  s20260919-001
+; set_version:  s20260920-001
 ; symbol:       NDX.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   862045c620d20dcea6715aa82cf56e1c18e5f622ca978bfe780a42a39bfdf31b
+; build_hash:   c7654b537877a917e05035e578913776de00e195fd5840d49ff20d8efd685db5
 ; author:       Development
-; date:         2026-09-19
+; date:         2026-09-20
 ;==========================================================
-; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41347_cs-ichi-cloud-opt.md
 qm_ea_id=41347
 qm_magic_slot_offset=1
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
+; strategy-specific params from card/input defaults must be appended below this line
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41347_cs-ichi-cloud-opt.md
 strategy_tenkan_period=9
 strategy_kijun_period=26
 strategy_senkou_b_period=52
