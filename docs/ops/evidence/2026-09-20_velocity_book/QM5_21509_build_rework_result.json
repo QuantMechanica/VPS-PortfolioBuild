@@ -1,0 +1,60 @@
+{
+  "schema": "qm.router-task-result/v1",
+  "task_id": "78f0cdff-f4af-4f31-af04-4d3b00e17584",
+  "task_type": "build_ea",
+  "ea_id": "QM5_21509",
+  "ea_label": "QM5_21509_qs-emv-trend-ndx",
+  "result": "PASS",
+  "result_line": "RESULT: PASS — governed COMPILE_EA 93b11351-c661-4755-9bb6-f27cd2ab20ee returned COMPILE_OK; build_check PASS; MetaEditor 0 errors / 0 warnings; binary and setfile committed by the receipt-validated janitor helper.",
+  "preflight": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_21509_qs-emv-trend-ndx.md",
+    "g0_status": "APPROVED",
+    "ea_registry_status": "active",
+    "active_magic_rows": 1,
+    "symbol": "NDX.DWX",
+    "timeframe": "D1"
+  },
+  "repair": {
+    "cause": "The first natural rebuild exposed a pre-cutover hardcoded NDX.DWX trading-logic literal.",
+    "changes": [
+      "Added input string strategy_host_symbol=NDX.DWX.",
+      "Compared canonical base symbols through QM_MagicSymbolCanonical so factory .DWX and bare broker symbols preserve the same NDX-only contract.",
+      "Restored the never-compiled setfile from a stale 64-hex binding to pending before governed compile; the successful worker then sealed it to the repaired source."
+    ],
+    "no_strategy_logic_changed": true,
+    "attestation": "No strategy logic changed: EMV computation, zero-cross entries, SMA confirmation, ATR stop, trend-failure exit, max-hold exit, spread cap, sizing, risk and news behavior are unchanged.",
+    "source_sha256": "a6048a52c50760205296a4b91065e8da9b8a4b7340d2e9913ee62ea0ca1db8dc",
+    "source_commit": "44319cfeee"
+  },
+  "verification": {
+    "symbol_literal_lint": "PASS",
+    "build_gate_hardening": "PASS with one pre-existing non-blocking SMA prose-parser warning",
+    "validate_build_guardrails": "PASS",
+    "compile_repair_registry_tests": "15 passed",
+    "compile_work_item_id": "93b11351-c661-4755-9bb6-f27cd2ab20ee",
+    "compile_verdict": "COMPILE_OK",
+    "compile_result": "PASS",
+    "build_check_result": "PASS",
+    "compile_errors": 0,
+    "compile_warnings": 0,
+    "failure_classes": [],
+    "compile_evidence_path": "D:/QM/reports/work_items/93b11351-c661-4755-9bb6-f27cd2ab20ee/QM5_21509/COMPILE_EA/compile_evidence.json",
+    "ex5_sha256": "85e57fc1ca273da9169d10cb042defb643fed194fbdef3882982db4e47222c1e",
+    "binary_commit": "0fe822579f"
+  },
+  "failed_predecessor": {
+    "work_item_id": "8747592a-03f6-42bc-b8b8-12b8a7c1f1b4",
+    "failure_class": "EA_SYMBOL_LITERAL_REBUILD_REQUIRES_FIX",
+    "repair_authority": "compile_fail_repair:20260920:QM5_21509_qs-emv-trend-ndx:a6048a52",
+    "authority_commit": "85d977484e"
+  },
+  "safety": {
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "news_stale_max_hours": 336,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "backtest_started": false,
+    "gate_or_verdict_overwritten": false
+  }
+}
