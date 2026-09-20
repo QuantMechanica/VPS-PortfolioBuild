@@ -18521,3 +18521,13 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 20175,alpha-inst-magnet-r1-recovery,3,XAUUSD.DWX,201750003,2026-09-20,Codex governed allocator,active
 20175,alpha-inst-magnet-r1-recovery,4,NDX.DWX,201750004,2026-09-20,Codex governed allocator,active
 20175,alpha-inst-magnet-r1-recovery,5,WS30.DWX,201750005,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,0,USDJPY.DWX,414840000,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,1,EURJPY.DWX,414840001,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,2,GBPJPY.DWX,414840002,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,3,AUDJPY.DWX,414840003,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,4,CHFJPY.DWX,414840004,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,5,EURUSD.DWX,414840005,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,6,GBPUSD.DWX,414840006,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,7,USDCHF.DWX,414840007,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,8,USDCAD.DWX,414840008,2026-09-20,Codex governed allocator,active
+41484,balke-range-breakout-fx-fanout,9,AUDUSD.DWX,414840009,2026-09-20,Codex governed allocator,active
