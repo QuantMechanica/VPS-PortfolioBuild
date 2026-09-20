@@ -10,7 +10,7 @@
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   27b3c778032cab42d36fadec090025557ee33a96038f6ef007fe618c0086f5f0
 ; author:       Development
 ; date:         2026-09-20
 ;==========================================================
@@ -21,7 +21,6 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21509_qs-emv-trend-ndx.md
-strategy_host_symbol=NDX.DWX
 strategy_volume_divisor=10000
 strategy_atr_period=14
 strategy_emv_smooth_period=14
@@ -29,3 +28,4 @@ strategy_max_hold_bars=50
 strategy_atr_sl_mult=2.5
 strategy_max_spread_points=500
 strategy_trend_period=50
+strategy_host_symbol=NDX.DWX
