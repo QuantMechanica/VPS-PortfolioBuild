@@ -3,16 +3,16 @@
 ; ea_id:        11518
 ; ea_slug:      carter-t-ema5-100-mtf-m15-h1
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260920-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a205839204ebe913db11711fd3feaefeab20f6ca31cef90dcc858ba5e3867729
+; build_hash:   0bee5c2678d5a83c610976369589a15e94104a7d127b591e1d555976934169ca
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=11518
 qm_magic_slot_offset=0

@@ -3,16 +3,16 @@
 ; ea_id:        11292
 ; ea_slug:      trix14-signal-cross
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260920-001
 ; symbol:       USDJPY.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   5515881180c7c7423dfd044aca5b18f90b860fca6dab047c463ce56369fefbef
+; build_hash:   a6c8312a17e74659a6745f92cb1a550ea822ea2e0853f90d8b08f526b99301fd
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=11292
 qm_magic_slot_offset=2

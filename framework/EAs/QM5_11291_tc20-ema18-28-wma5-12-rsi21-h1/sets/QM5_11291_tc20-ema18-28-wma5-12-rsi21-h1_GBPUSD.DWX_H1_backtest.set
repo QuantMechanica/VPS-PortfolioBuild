@@ -3,16 +3,16 @@
 ; ea_id:        11291
 ; ea_slug:      tc20-ema18-28-wma5-12-rsi21-h1
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260920-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a4a5c840c2e3ee528dbc0b958c1e76cd7b074d4bd6c118e95487367736458476
+; build_hash:   4395c63de10730150ee923b3cc2bda892344a2009b521e26e9cecfcbe587844b
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=11291
 qm_magic_slot_offset=1

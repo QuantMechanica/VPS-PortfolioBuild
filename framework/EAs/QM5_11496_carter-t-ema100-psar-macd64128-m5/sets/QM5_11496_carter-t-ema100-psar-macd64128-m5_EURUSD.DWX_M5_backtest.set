@@ -3,16 +3,16 @@
 ; ea_id:        11496
 ; ea_slug:      carter-t-ema100-psar-macd64128-m5
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260920-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   e9da951451463311b14ed7a172bed9703f5e0f126d07d663a2df92cc9cfa9835
+; build_hash:   6699e9c37c93be5e8c587112710a3ec9ffe059a6b848ec7c4ec6036a16e2ee14
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=11496
 qm_magic_slot_offset=0
