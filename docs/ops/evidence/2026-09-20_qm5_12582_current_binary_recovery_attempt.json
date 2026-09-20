@@ -1,0 +1,94 @@
+{
+  "schema": "qm.q02-current-binary-recovery-attempt/v1",
+  "router_task_id": "d9c3f4a8-dbae-4955-ac36-ef0d166f14e0",
+  "ea_id": "QM5_12582",
+  "ea_label": "QM5_12582_chan-ng-spring",
+  "symbol": "XNGUSD.DWX",
+  "timeframe": "D1",
+  "review_date": "2026-09-20",
+  "source_bindings": {
+    "approved_card": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12582_chan-ng-spring_card.md",
+    "approved_card_sha256": "278d1afeab5bf11317489ff6d11c950737ec5b54ba3940fb46eb6c6ee63b6239",
+    "mq5_sha256": "1e0128d5b6745cbbe5d18a99dbd659061f8145907a632509481bbe48898e308a",
+    "setfile_sha256": "8086d4ce75a79b2d96f93dab1640e918ae25a25ed12e5858aa42a6e197b5e602",
+    "setfile_build_hash": "807a79fdf91a3c9008c46aa644a38c228b6de37429049b522432b69112a8ee75",
+    "risk_fixed": 1000,
+    "risk_percent": 0,
+    "source_pin_audit_ok": true,
+    "source_pin_audit_hit_count": 0
+  },
+  "prior_governed_compile": {
+    "work_item_id": "82d760a8-5c7a-40c7-bdcd-1658b3ee4c3c",
+    "verdict": "COMPILE_OK",
+    "build_check_result": "PASS",
+    "compiled_ex5_sha256": "33f055611c9857540d3f31daf7930a70e2a4f681595ba6d65e749872d5773138",
+    "evidence_path": "D:/QM/reports/work_items/82d760a8-5c7a-40c7-bdcd-1658b3ee4c3c/QM5_12582/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "73bd1294a16dabb3bdb0597adcb7a0b2f8f40076221f0bfe53df0e0b198f510e"
+  },
+  "current_binary_mismatch": {
+    "canonical_ex5_path": "C:/QM/repo/framework/EAs/QM5_12582_chan-ng-spring/QM5_12582_chan-ng-spring.ex5",
+    "canonical_ex5_sha256": "c6d66c602ce572cea369b92353aba0c6a814476733dbf536e9c3db1673786974",
+    "matches_prior_governed_compile": false,
+    "dry_run_command": "python tools/strategy_farm/farmctl.py requalify-q02 --old-work-item-id ae468d0f-2d3c-4595-9d49-6b5b00a25f75 --expected-current-ex5-sha256 33f055611c9857540d3f31daf7930a70e2a4f681595ba6d65e749872d5773138 --reason <task-bound reason> --dry-run",
+    "dry_run_result": "REFUSED",
+    "dry_run_reason": "canonical_ex5_sha256_mismatch",
+    "would_enqueue": false
+  },
+  "governed_rebuild_attempt": {
+    "source_repair_authority": "router_ops_issue:0ceeea69-43dd-4b3a-a189-fa893a58a5e7:QM5_12582",
+    "source_repair_authority_evidence": "C:/QM/repo/docs/ops/evidence/2026-09-20_qm5_12582_10505_compile_authority_registration.json",
+    "source_repair_authority_evidence_sha256": "8eb9a8115dadd1507dcec2d388566031a55816d5fbf51c2ea60664195e03b9f4",
+    "work_item_id": "6cc4a9ac-a430-4265-ac4b-b5b3426bcbf2",
+    "enqueue_result": "ENQUEUED_WITH_ACTIVATION_HOLD",
+    "release_result": "RELEASED",
+    "terminal_claim": "T10",
+    "status": "failed",
+    "verdict": "COMPILE_FAIL",
+    "failure_class": "CANDIDATE_RECHECK_REFUSED",
+    "compile_started": false,
+    "metaeditor_started_by_this_attempt": false,
+    "evidence_path": "D:/QM/reports/work_items/6cc4a9ac-a430-4265-ac4b-b5b3426bcbf2/QM5_12582/COMPILE_EA/compile_evidence.json",
+    "evidence_sha256": "0a28dcc552b98f8d445305fd6c68682bed11060e185a73fb6ff179da83bf126b",
+    "backup_receipt": "D:/QM/strategy_farm/state/backups/receipts/tool_backup_cap_compile_wave_20260920T130212_736107Z.json",
+    "backup_receipt_sha256": "c7421e4ed65115ae45cabf79acd57b56f5b0afc37f1f6c7bd23899896c3c83dc"
+  },
+  "root_cause": {
+    "classification": "RESIDENT_WORKER_MODULE_STALE",
+    "worker_loaded_compile_work_items_mtime_ns": 1789891161367288300,
+    "worker_current_disk_compile_work_items_mtime_ns": 1789895333939592800,
+    "worker_module_stale": true,
+    "worker_recheck_reason": "SOURCE_REPAIR_AUTHORITY_INVALID",
+    "fresh_process_recheck": {
+      "eligible": true,
+      "reason": "ELIGIBLE",
+      "source_repair_authorized": true,
+      "source_repair_artifact_sha256": "8eb9a8115dadd1507dcec2d388566031a55816d5fbf51c2ea60664195e03b9f4",
+      "compile_work_items_module_stale": false
+    },
+    "interpretation": "The router-side enqueue used current code and admitted the exact hash-bound authority. The resident worker had imported an older compile_work_items module, detected the mtime mismatch, and failed closed before setfile generation or compilation. This row is infrastructure evidence, not an EA compiler verdict."
+  },
+  "capacity_boundary": {
+    "cpu_samples_percent": [
+      97,
+      100,
+      93,
+      96,
+      97
+    ],
+    "cpu_average_percent": 96.6,
+    "cpu_maximum_percent": 100,
+    "q02_enqueued": false,
+    "reason": "No current governed binary exists, and the observed maximum CPU also exceeded the paced 97 percent boundary."
+  },
+  "required_unblock": "Allow the resident compile worker lifecycle to reload the current compile_work_items module, then enqueue exactly one governed repair successor under the same source hash and authority. Require COMPILE_OK with a canonical EX5 hash equal to its evidence before a dry-run Q02 requalification. Do not manually start a terminal or bypass provenance.",
+  "safety": {
+    "manual_terminal_start": false,
+    "active_backtest_interrupted": false,
+    "q02_enqueued": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_surface_touched": false
+  },
+  "verdict": "BLOCKED_INFRA_WORKER_REFRESH",
+  "result_line": "RESULT: BLOCKED_INFRA — current EX5 does not match COMPILE_OK evidence; one governed rebuild was admitted but the resident worker failed closed on its stale authority module before compilation."
+}
