@@ -1313,6 +1313,27 @@ REQUEUE_LIFT_D4_FORCE_REBUILD_NUMERIC_EA_IDS = frozenset(
     for value in REQUEUE_LIFT_D4_FORCE_REBUILD_EA_IDS
 )
 
+# Velocity intake wave (FABLE-DEC-VELOCITY-INTAKE-20260920, Fable under
+# OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917): intraday cards whose
+# 2026-08-26 COMPILE_OK binary is no longer on disk (janitor revert / never
+# committed), so intake-first-q02 refuses with compile_ex5_sha256_mismatch or
+# canonical_ex5_not_exactly_one while the compile guard refuses the rebuild
+# with WORK_ITEMS_EXIST / EX5_ALREADY_PRESENT. Same fail-closed shape as the
+# D4 lift: the code list AND the decision document must both name the EA.
+# This is NOT a general .ex5-overwrite path.
+VELOCITY_INTAKE_FORCE_REBUILD_OWNER_REFERENCE = "FABLE-DEC-VELOCITY-INTAKE-20260920"
+VELOCITY_INTAKE_FORCE_REBUILD_DECISION_DOC = (
+    "docs/ops/evidence/2026-09-20_velocity_book/"
+    "FABLE-DEC-VELOCITY-INTAKE-20260920_force_rebuild.md"
+)
+VELOCITY_INTAKE_FORCE_REBUILD_EA_IDS = frozenset({
+    "QM5_11299", "QM5_11496", "QM5_11516", "QM5_11518", "QM5_11291", "QM5_11292",
+})
+VELOCITY_INTAKE_FORCE_REBUILD_NUMERIC_EA_IDS = frozenset(
+    value.split("_", 1)[1] if value.upper().startswith("QM5_") else value
+    for value in VELOCITY_INTAKE_FORCE_REBUILD_EA_IDS
+)
+
 
 def dl089_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
     """Return the numeric EA ids authorized for a COMPILE_EA force-rebuild.
@@ -1426,16 +1447,43 @@ def requeue_lift_d4_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
     return frozenset(authorized)
 
 
+def velocity_intake_force_rebuild_allowlist(repo_root: Path) -> frozenset[str]:
+    """Numeric EA ids authorized by FABLE-DEC-VELOCITY-INTAKE-20260920.
+
+    Fail-closed like requeue_lift_d4_force_rebuild_allowlist: the hardcoded
+    VELOCITY_INTAKE_FORCE_REBUILD_EA_IDS name AND the decision document must
+    agree; removing an EA from the document revokes it without a code change.
+    """
+    try:
+        text = (repo_root / VELOCITY_INTAKE_FORCE_REBUILD_DECISION_DOC).read_text(
+            encoding="utf-8-sig"
+        )
+    except OSError:
+        return frozenset()
+    if VELOCITY_INTAKE_FORCE_REBUILD_OWNER_REFERENCE not in text:
+        return frozenset()
+    authorized: set[str] = set()
+    for numeric_ea_id in VELOCITY_INTAKE_FORCE_REBUILD_NUMERIC_EA_IDS:
+        if not numeric_ea_id.isdigit():
+            continue
+        if re.search(rf"QM5_{numeric_ea_id}(?![0-9])", text):
+            authorized.add(numeric_ea_id)
+    return frozenset(authorized)
+
+
 def force_rebuild_allowlist(root: Path, repo_root: Path) -> frozenset[str]:
     return (
         dl089_force_rebuild_allowlist(repo_root)
         | mae_hook_force_rebuild_allowlist(root)
         | pre0803_force_rebuild_allowlist(repo_root)
         | requeue_lift_d4_force_rebuild_allowlist(repo_root)
+        | velocity_intake_force_rebuild_allowlist(repo_root)
     )
 
 
 def force_rebuild_owner_reference(ea_id: str) -> str:
+    if ea_id in VELOCITY_INTAKE_FORCE_REBUILD_NUMERIC_EA_IDS:
+        return VELOCITY_INTAKE_FORCE_REBUILD_OWNER_REFERENCE
     if ea_id in REQUEUE_LIFT_D4_FORCE_REBUILD_NUMERIC_EA_IDS:
         return REQUEUE_LIFT_D4_FORCE_REBUILD_OWNER_REFERENCE
     if ea_id in MAE_HOOK_FORCE_REBUILD_EA_IDS:
@@ -1451,6 +1499,8 @@ def force_rebuild_evidence_note(ea_id: str) -> str | None:
     Returns None for the DL-089 and MAE-hook waves so their compile payloads
     stay byte-identical to what they were before the pre-0803 wave existed.
     """
+    if ea_id in VELOCITY_INTAKE_FORCE_REBUILD_NUMERIC_EA_IDS:
+        return VELOCITY_INTAKE_FORCE_REBUILD_DECISION_DOC
     if ea_id in REQUEUE_LIFT_D4_FORCE_REBUILD_NUMERIC_EA_IDS:
         return REQUEUE_LIFT_D4_FORCE_REBUILD_DECISION_DOC
     if ea_id in PRE0803_FORCE_REBUILD_NUMERIC_EA_IDS:
