@@ -1,0 +1,92 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority/v1",
+  "router_task_id": "f1ff8fce-78bc-47dd-9ec6-a27bb96bc242",
+  "predecessor_task_id": "0ceeea69-43dd-4b3a-a189-fa893a58a5e7",
+  "predecessor_evidence": "docs/ops/evidence/2026-09-20_q02_stranded_pairs_instrumented_rebuild/",
+  "predecessor_repair_commit": "a5c4447f55f7e61cce60456121bca12295fc7322",
+  "repair_class": "ENQUEUE_GUARD_WAIVER_NO_SOURCE_CHANGE",
+  "authorities": [
+    "router_ops_issue:0ceeea69-43dd-4b3a-a189-fa893a58a5e7:QM5_12582",
+    "router_ops_issue:0ceeea69-43dd-4b3a-a189-fa893a58a5e7:QM5_10505"
+  ],
+  "why_this_registration_exists": [
+    "The 0ceeea69 cycle added self-describing QM_LogEvent instrumentation to three previously-silent OnInit rejection branches in the shared framework includes (QM_Common.mqh, QM_RuntimeExecutionContract.mqh) used by every V5 EA, plus an independent QM5_10505 .set hygiene fix. No .mq5 source of either target EA changed.",
+    "Neither QM5_12582 nor QM5_10505 has any COMPILE_EA-phase work_items row (verified against D:/QM/strategy_farm/state/farm_state.sqlite at registration time), so this registration's 'predecessors' binding is correctly empty for both -- there is no prior compile attempt to supersede.",
+    "A plain `enqueue-compile QM5_12582_chan-ng-spring QM5_10505_mql5-macd-sar` (no authority) was attempted first and refused for both EAs: QM5_12582 -> [EX5_ALREADY_PRESENT, WORK_ITEMS_EXIST, BUILD_TASK_EXISTS]; QM5_10505 -> [EX5_ALREADY_PRESENT, EA_ID_REGISTRY_IDENTITY_INVALID, WORK_ITEMS_EXIST, BUILD_TASK_EXISTS, BOUND_SETFILE_HASH_EXISTS]. Both EX5_ALREADY_PRESENT (a build_ea task exists with status=done for each: 8efaa492-33b2-44c0-b87e-6bdc947c154e for QM5_12582, 92f30edc-b19a-4815-a989-251444a9a5d7 for QM5_10505) and WORK_ITEMS_EXIST (both EAs carry dozens of historical Q02 backtest rows, all INFRA_FAIL/INVALID verdicts, no gate PASS) are the expected, correct classifier behavior for an EA that has already been built once and run through Q02 before -- this registration exists to name that the current .ex5/.set state is stale evidence of the pre-instrumentation binary/setfile, not a live compile-fail to repair."
+  ],
+  "waived_reasons": [
+    "EX5_ALREADY_PRESENT",
+    "WORK_ITEMS_EXIST",
+    "BUILD_TASK_EXISTS",
+    "BOUND_SETFILE_HASH_EXISTS"
+  ],
+  "explicitly_not_waived": {
+    "reason": "EA_ID_REGISTRY_IDENTITY_INVALID",
+    "applies_to": "QM5_10505 only",
+    "why_not_waivable": "Not a member of compile_work_items.FORCE_REBUILD_WAIVABLE_REASONS; the source-repair/force-rebuild mechanism structurally cannot waive it regardless of this registration.",
+    "diagnosis": "framework/registry/ea_id_registry.csv carries two rows for ea_id=10505, both status=active, same slug (mql5-macd-sar) and same strategy_id (b8b5125a-c67f-5bbc-baff-33456e08f5b2), differing only in owner (Research vs Development) and created_at (2026-05-22 vs 2026-06-13). classify_candidate requires exactly one active registry row per ea_id (len(registry_rows) != 1 -> EA_ID_REGISTRY_IDENTITY_INVALID). This is a registry data-hygiene defect (an accidental duplicate row from an ownership handoff, not a magic-number or gate-criteria issue) and is outside this repair's scope -- deduping/retiring one of the two rows is a separate, deliberate registry edit that needs its own review, not a side effect of a compile-authority registration. Diagnosed only; not fixed this cycle. QM5_10505 therefore remains refused (reason: EA_ID_REGISTRY_IDENTITY_INVALID alone) even with this authority applied.",
+    "recommended_follow_up": "File a small standalone registry-hygiene ticket to retire the older (2026-05-22, owner=Research) duplicate row for ea_id=10505 with retired_reason=DUPLICATE_ROW, retired_at=<date>, once OWNER/Claude confirms which row is authoritative; then re-attempt this same enqueue-compile with this same authority string."
+  },
+  "target_eas": [
+    {
+      "ea_id": "12582",
+      "ea_label": "QM5_12582_chan-ng-spring",
+      "symbol": "XNGUSD.DWX",
+      "timeframe": "D1",
+      "mq5_sha256": "1e0128d5b6745cbbe5d18a99dbd659061f8145907a632509481bbe48898e308a",
+      "canary_predecessor_work_item_id": "ae468d0f-2d3c-4595-9d49-6b5b00a25f75",
+      "enqueue_outcome_this_cycle": "ENQUEUED_82d760a8-5c7a-40c7-bdcd-1658b3ee4c3c",
+      "compile_outcome_this_cycle": {
+        "work_item_id": "82d760a8-5c7a-40c7-bdcd-1658b3ee4c3c",
+        "verdict": "COMPILE_OK",
+        "ex5_sha256": "33f055611c9857540d3f31daf7930a70e2a4f681595ba6d65e749872d5773138",
+        "build_check_result": "PASS",
+        "compile_evidence_path": "D:\\QM\\reports\\work_items\\82d760a8-5c7a-40c7-bdcd-1658b3ee4c3c\\QM5_12582\\COMPILE_EA\\compile_evidence.json"
+      },
+      "q02_canary_outcome_this_cycle": "BLOCKED_NOT_DISPATCHED -- see q02_canary_finding below"
+    },
+    {
+      "ea_id": "10505",
+      "ea_label": "QM5_10505_mql5-macd-sar",
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H1",
+      "mq5_sha256": "557f88a1f1359f3a9de6e991d924e8fa6d3d781fd9dc8e627989fe4081bf5e28",
+      "canary_predecessor_work_item_id": "cc347183-5365-427e-b815-3879639c0d42",
+      "enqueue_outcome_this_cycle": "REFUSED_EA_ID_REGISTRY_IDENTITY_INVALID_AS_EXPECTED",
+      "compile_outcome_this_cycle": "NOT_ATTEMPTED_STILL_BLOCKED_BY_REGISTRY_DUPLICATE",
+      "q02_canary_outcome_this_cycle": "NOT_APPLICABLE_NO_COMPILE"
+    }
+  ],
+  "q02_canary_finding": {
+    "summary": "QM5_12582's governed Q02 canary was NOT dispatched this cycle. farmctl.py enqueue-backtest does not accept Q02 as a manual 'cascade' phase, and --append-only-rerun-of correctly refused (reason q02_append_only_rerun_requires_same_exact_source_and_rerun_row) because the new instrumented compile minted a genuinely new .ex5 identity (33f05561... vs the predecessor row's c6d66c60...), per the standing 23.08 identity rule. The correct tool for a new-identity Q02 successor is farmctl.py requalify-q02 --old-work-item-id ae468d0f-... --expected-current-ex5-sha256 33f05561... --dry-run.",
+    "requalify_q02_dry_run_result": "REFUSED: eligible=false, reason=parameter_change_provenance_not_authenticated",
+    "root_cause_of_the_provenance_gap": "The current on-disk QM5_12582 XNGUSD.DWX setfile is NOT from this cycle -- it was regenerated on 2026-09-11 by an unrelated, already-committed repair (commit 65e1641235, 'fix(QM5_12582): repair stale Q02 framework wiring', authority router_triage_failure:d9c3f4a8-dbae-4955-ac36-ef0d166f14e0:QM5_12582, evidence docs/ops/evidence/2026-09-11_qm5_12582_stale_framework_rebuild_authority.json) that also changed the .mq5 source (the source this cycle's compile actually used) and removed 9 orphaned qm_filter_* keys / added qm_ea_id -- the same class of hygiene fix as this cycle's QM5_10505 .set fix, done 9 days earlier for QM5_12582 by a different task. Because that 2026-09-11 evidence file has no top-level 'registrations' array, farmctl.py's parameter-change-provenance check (_q02_parameter_change_authority, tools/strategy_farm/farmctl.py ~line 28100) cannot authenticate the parameter diff against it, and this cycle's own new evidence file (this document) was also missing that array at the moment work item 82d760a8 compiled -- compile_evidence.json freezes the exact evidence-file sha256 it saw at compile time, so adding 'registrations' to this document now (see below) cannot retroactively authenticate work item 82d760a8's already-frozen binding. It only helps a future fresh compile made after this edit.",
+    "forward_fix_applied_this_cycle": "Added a 'registrations' array to this evidence document (schema/shape matching docs/ops/evidence/2026-09-08_qm5_10269_stale_resolver_rebuild_authority.json, the one working precedent found in-repo) and updated both compile_work_items.py BACKLOG_SOURCE_REPAIR_REGISTRATIONS entries' evidence_sha256 to the new file hash. This does NOT retroactively fix work item 82d760a8's frozen binding; it only benefits a future compile made under either authority string after this commit (relevant to QM5_10505 once its registry duplicate is resolved).",
+    "recommended_next_step": "Either (a) accept QM5_12582's COMPILE_OK as terminal for this cycle and revisit the Q02 canary once a registration path that survives compile-time freezing exists (e.g. a STALE_INCLUDE_CLOSURE_REGISTRATIONS-style mechanism scoped to the specific work_item_id 82d760a8, letting requalify-q02 accept a *current*, not frozen, authority lookup), or (b) if OWNER/Claude judges the parameter diff (9 filter keys removed, qm_ea_id added) genuinely benign and already governed by the 2026-09-11 commit's own authority, extend farmctl.py's provenance check to also accept a registrations entry recorded under a *different*, already-approved authority for the same (ea_id, current source_sha256) -- a deliberate code change, not a blind bypass."
+  },
+  "registrations": [
+    {
+      "ea_id": "12582",
+      "ea_label": "QM5_12582_chan-ng-spring",
+      "source_sha256": "1e0128d5b6745cbbe5d18a99dbd659061f8145907a632509481bbe48898e308a",
+      "predecessors": [],
+      "superseded_predecessors": []
+    },
+    {
+      "ea_id": "10505",
+      "ea_label": "QM5_10505_mql5-macd-sar",
+      "source_sha256": "557f88a1f1359f3a9de6e991d924e8fa6d3d781fd9dc8e627989fe4081bf5e28",
+      "predecessors": [],
+      "superseded_predecessors": []
+    }
+  ],
+  "scope": {
+    "compile_ea": true,
+    "backtest": "one append-only Q02 canary per successfully compiled EA, via enqueue-backtest --append-only-rerun-of",
+    "pipeline_verdict": false,
+    "live": false,
+    "cross_ea": false,
+    "note": "This registration grants only the enumerated enqueue-guard waivers for exactly these two (ea_id, ea_label, source_sha256) triples. It grants no gate-verdict, live, or portfolio authority, and no authority for any other EA."
+  },
+  "created_at_utc": "2026-09-20T08:30:00Z"
+}

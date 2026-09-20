@@ -3340,6 +3340,54 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_13054_STALE_BINARY_REBUILD_AUTHORITY] = 
     ),
 }
 
+# 2026-09-20 (task f1ff8fce, successor of 0ceeea69 / 4216dd75 -- the Q02
+# ONINIT_FAILED stranded-pairs instrumented rebuild). 0ceeea69 added
+# self-describing QM_LogEvent instrumentation to three previously-silent
+# OnInit rejection branches in the shared framework includes (QM_Common.mqh,
+# QM_RuntimeExecutionContract.mqh) plus an independent QM5_10505 .set hygiene
+# fix; no .mq5 source of either target EA changed. Neither EA has any
+# COMPILE_EA-phase work_items row, so predecessors is correctly empty for
+# both. Waives only EX5_ALREADY_PRESENT / WORK_ITEMS_EXIST / BUILD_TASK_EXISTS
+# / BOUND_SETFILE_HASH_EXISTS (stale evidence of the pre-instrumentation
+# binary/setfile); does NOT and structurally cannot waive
+# EA_ID_REGISTRY_IDENTITY_INVALID (not in FORCE_REBUILD_WAIVABLE_REASONS) --
+# QM5_10505 carries a duplicate active ea_id_registry.csv row (diagnosed, not
+# fixed, in the evidence file) and stays refused on that reason alone.
+QM5_12582_ONINIT_INSTRUMENTED_REBUILD_AUTHORITY = (
+    "router_ops_issue:0ceeea69-43dd-4b3a-a189-fa893a58a5e7:QM5_12582"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_12582_ONINIT_INSTRUMENTED_REBUILD_AUTHORITY] = {
+    "ea_id": "12582",
+    "ea_label": "QM5_12582_chan-ng-spring",
+    "source_sha256": "1e0128d5b6745cbbe5d18a99dbd659061f8145907a632509481bbe48898e308a",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-20_qm5_12582_10505_compile_authority_registration.json"
+    ),
+    "evidence_sha256": (
+        "8eb9a8115dadd1507dcec2d388566031a55816d5fbf51c2ea60664195e03b9f4"
+    ),
+}
+QM5_10505_ONINIT_INSTRUMENTED_REBUILD_AUTHORITY = (
+    "router_ops_issue:0ceeea69-43dd-4b3a-a189-fa893a58a5e7:QM5_10505"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[QM5_10505_ONINIT_INSTRUMENTED_REBUILD_AUTHORITY] = {
+    "ea_id": "10505",
+    "ea_label": "QM5_10505_mql5-macd-sar",
+    "source_sha256": "557f88a1f1359f3a9de6e991d924e8fa6d3d781fd9dc8e627989fe4081bf5e28",
+    "predecessors": {},
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-20_qm5_12582_10505_compile_authority_registration.json"
+    ),
+    "evidence_sha256": (
+        "8eb9a8115dadd1507dcec2d388566031a55816d5fbf51c2ea60664195e03b9f4"
+    ),
+}
+
 
 # 2026-09-19/20 (task 340b228c, Fable successor of fa45d828, QM5_41347/NDX):
 # classify_candidate's USABLE_CURRENT_COMPILE_VERDICT_EXISTS check compares
