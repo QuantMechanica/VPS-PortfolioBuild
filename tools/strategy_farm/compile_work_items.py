@@ -3020,6 +3020,46 @@ BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
     ),
 }
 
+# PACER build guard (2026-09-20): QM5_41355 compiled before the framework-input
+# pin audit became binding. Bind one append-only rebuild to the exact repaired
+# source, all three historical compile rows, and immutable evidence. This
+# grants no Q02, strategy, economic, live, portfolio-gate, or cross-EA authority.
+QM5_41355_FRAMEWORK_INPUT_PIN_REPAIR_AUTHORITY = (
+    "pacer_build_guard:52183b38-98c0-402b-aabd-a78712ddaafd:QM5_41355"
+)
+BACKLOG_SOURCE_REPAIR_REGISTRATIONS[
+    QM5_41355_FRAMEWORK_INPUT_PIN_REPAIR_AUTHORITY
+] = {
+    "ea_id": "41355",
+    "ea_label": "QM5_41355_xauxag-mtrim2-rv",
+    "source_sha256": "5b68d1e3076941916d2326ead8e83c62c80648d2cd7be6c7dce95b835f3658f5",
+    "predecessors": {
+        "e7523248-067b-42cd-9c8c-d0de975600b0": {
+            "source_sha256": "4ab9b867ac3eb2bfb906a774d3f62f1533e1fe6a701aa2cb1e07ef152a4b6df0",
+            "status": "failed",
+            "verdict": "COMPILE_FAIL",
+        },
+        "a4ab4290-8cdd-476b-8da8-7147e510cc22": {
+            "source_sha256": "5702a3bee95604adf71e2c687bb8725a4a11f1914da0c0dc021f23d38e4e7c5e",
+            "status": "failed",
+            "verdict": "COMPILE_FAIL",
+        },
+        "b3f8e831-9a0f-44cf-b7dd-d50b44304fd8": {
+            "source_sha256": "b1f24be5cde52f631447647a15b467551745684201f2f8dca5b898b81d2eff51",
+            "status": "done",
+            "verdict": "COMPILE_OK",
+        },
+    },
+    "superseded_predecessors": [],
+    "evidence_path": (
+        "docs/ops/evidence/"
+        "2026-09-20_qm5_41355_framework_input_pin_repair_authority.json"
+    ),
+    "evidence_sha256": (
+        "ce7373696c7825617ba86167f8d5abd9e0fbd3774c1f321cdd8a02a404a577ff"
+    ),
+}
+
 # PACER mission (2026-09-12): QM5_20291's three Q02 attempts all used the
 # original August binary and ended in tester infrastructure failures.  Bind one
 # governed compile to the exact low-frequency hot-path repair and its latest
