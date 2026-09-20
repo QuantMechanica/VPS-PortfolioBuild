@@ -453,7 +453,7 @@ def test_include_closure_auto_detects_staleness_without_registration(
     candidate = compile_work_items.classify_candidate(
         root, repo, label, compile_work_items._inventory(root, repo),
     )
-    assert candidate["include_closure_sha256"] == "B" * 64
+    assert candidate["include_closure_sha256"] == "b" * 64
     assert candidate["current_compile_ok_work_item_ids"] == []
     assert candidate["stale_include_closure_work_item_ids"] == [work_item_id]
 

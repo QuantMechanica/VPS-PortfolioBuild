@@ -3411,7 +3411,14 @@ def _current_include_closure_sha256(repo_root: Path) -> str | None:
     match = re.search(
         r'#define\s+QM_MAGIC_REGISTRY_SHA256\s+"([0-9A-Fa-f]{16,})"', text
     )
-    return match.group(1).upper() if match else None
+    if not match:
+        return None
+    # work_items.include_closure_sha256 is materialized from payload_json by
+    # trg_work_items_sh3_materialize_* and CHECK-constrained to lowercase 64-hex;
+    # an upper-case or short value makes every enqueue fail with IntegrityError
+    # (Fable 2026-09-20, first live enqueue after 340b228c).
+    digest = match.group(1).lower()
+    return digest if len(digest) == 64 else None
 
 
 def _stale_include_closure_artifact_bindings(
@@ -4870,7 +4877,7 @@ def classify_candidate(
             if (
                 recorded_closure
                 and current_include_closure_sha256
-                and str(recorded_closure).upper() != current_include_closure_sha256
+                and str(recorded_closure).lower() != str(current_include_closure_sha256).lower()
             ):
                 stale_include_closure_ids.append(row_id)
             else:
