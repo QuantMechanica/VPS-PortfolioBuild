@@ -40,6 +40,9 @@ input group "Stress"
 input double qm_stress_reject_probability = 0.0;
 
 input group "Strategy"
+// Symbols are runtime inputs. The canonical comparison keeps the card's
+// NDX-only contract valid for both factory .DWX and bare broker symbols.
+input string strategy_host_symbol         = "NDX.DWX";
 input int    strategy_emv_smooth_period   = 14;
 input double strategy_volume_divisor      = 10000.0;
 input int    strategy_trend_period        = 50;
@@ -240,7 +243,8 @@ void AdvanceState_OnNewBar()
 
 bool Strategy_NoTradeFilter()
   {
-   if(_Symbol != "NDX.DWX" || _Period != PERIOD_D1)
+   if(QM_MagicSymbolCanonical(_Symbol) != QM_MagicSymbolCanonical(strategy_host_symbol) ||
+      _Period != PERIOD_D1)
       return true;
    if(qm_ea_id != 21509 || qm_magic_slot_offset != 0)
       return true;

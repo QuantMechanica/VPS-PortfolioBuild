@@ -3,7 +3,7 @@
 ; ea_id:        21509
 ; ea_slug:      qs-emv-trend-ndx
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260920-001
 ; symbol:       NDX.DWX
 ; timeframe:    D1
 ; environment:  backtest
@@ -12,7 +12,7 @@
 ; portfolio_weight: 1
 ; build_hash:   pending
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=21509
 qm_magic_slot_offset=0
@@ -21,10 +21,11 @@ RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
 ; card_defaults_source=D:\QM\strategy_farm\artifacts\cards_approved\QM5_21509_qs-emv-trend-ndx.md
-strategy_emv_smooth_period=14
-strategy_volume_divisor=10000.0
-strategy_trend_period=50
+strategy_host_symbol=NDX.DWX
+strategy_volume_divisor=10000
 strategy_atr_period=14
-strategy_atr_sl_mult=2.5
+strategy_emv_smooth_period=14
 strategy_max_hold_bars=50
+strategy_atr_sl_mult=2.5
 strategy_max_spread_points=500
+strategy_trend_period=50
