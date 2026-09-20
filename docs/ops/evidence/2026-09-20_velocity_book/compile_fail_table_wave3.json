@@ -1,0 +1,380 @@
+{
+ "schema": "qm.velocity-intake-compile-fail-table/v1",
+ "generated_at_utc": "2026-09-20T17:05Z",
+ "ea_count": 18,
+ "class_counts": {
+  "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN": 3,
+  "EA_Q08_MAE_HOOK_MISSING": 16,
+  "EA_TRADE_REQUEST_UNINITIALIZED": 9,
+  "SETFILE_GENERATION_FAILED": 1,
+  "EA_SYMBOL_NOT_IN_CARD_UNIVERSE": 1,
+  "EA_CARD_LOSS_LIMIT_MISMATCH": 1,
+  "EA_FRAMEWORK_RAW_SERIES_CALL": 5,
+  "EA_CARD_PENDING_ORDER_TYPE_MISMATCH": 3,
+  "BUILD_CHECK_STRICT_WARNINGS": 1
+ },
+ "rows": {
+  "QM5_10474": {
+   "work_item_id": "3ddd58f1-c8b2-4804-b17e-02e726c1bd81",
+   "verdict_reason": "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN;EA_Q08_MAE_HOOK_MISSING",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "source": "mq5_period_literal",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "GDAXI.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:44:47+00:00"
+  },
+  "QM5_11304": {
+   "work_item_id": "1915f1b3-db77-4af1-bbdc-eae79303b4bf",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11304_kathy-lien-double-bollinger-trend.md",
+    "source": "card_explicit_host_timeframe",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:45:46+00:00"
+  },
+  "QM5_11305": {
+   "work_item_id": "24301226-c425-4373-a962-0ac7ed169c53",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED",
+   "timeframe": {
+    "candidates": [
+     "M1"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11305_alp-sma20-scalp.md",
+    "source": "card_frontmatter:period",
+    "timeframe": "M1"
+   },
+   "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "NDX.DWX",
+    "SP500.DWX"
+   ],
+   "updated_at": "2026-09-20T16:46:21+00:00"
+  },
+  "QM5_40005": {
+   "work_item_id": "0823dc50-cdd7-471b-b466-f01c357a0d3d",
+   "verdict_reason": "SETFILE_GENERATION_FAILED",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "source": "existing_setfiles",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "XAUUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:47:27+00:00"
+  },
+  "QM5_12351": {
+   "work_item_id": "7f71f012-2028-42da-811b-83e362222b1d",
+   "verdict_reason": "EA_SYMBOL_NOT_IN_CARD_UNIVERSE",
+   "timeframe": {
+    "candidates": [
+     "M15"
+    ],
+    "source": "existing_setfiles",
+    "timeframe": "M15"
+   },
+   "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "SP500.DWX",
+    "USDJPY.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:52:14+00:00"
+  },
+  "QM5_30006": {
+   "work_item_id": "66764968-aecd-4719-90f4-0cf5558b2905",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED;EA_CARD_LOSS_LIMIT_MISMATCH",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "source": "existing_setfiles",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "AUDCHF.DWX",
+    "EURCHF.DWX",
+    "GBPCHF.DWX",
+    "NZDCHF.DWX"
+   ],
+   "updated_at": "2026-09-20T16:52:23+00:00"
+  },
+  "QM5_11454": {
+   "work_item_id": "733976de-6835-421a-badc-0c816354ba1f",
+   "verdict_reason": "EA_FRAMEWORK_RAW_SERIES_CALL;EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED;EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11454_davey-session-open-bracket-breakout.md",
+    "source": "card_frontmatter:period",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCAD.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:53:25+00:00"
+  },
+  "QM5_10479": {
+   "work_item_id": "91d21844-fe44-499f-b6d9-296c0323b50c",
+   "verdict_reason": "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN;EA_FRAMEWORK_RAW_SERIES_CALL;EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "source": "mq5_period_literal",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "NZDUSD.DWX",
+    "SP500.DWX",
+    "UK100.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX",
+    "XTIUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:56:24+00:00"
+  },
+  "QM5_11343": {
+   "work_item_id": "ad036a74-4f03-4ea9-9aa0-0ff471c6532e",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11343_triad-session-breakout.md",
+    "source": "card_frontmatter:period",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "EURUSD.DWX",
+    "GBPJPY.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:56:26+00:00"
+  },
+  "QM5_11438": {
+   "work_item_id": "8198f77b-2aa3-4bc8-add6-4cbfc947ac6a",
+   "verdict_reason": "EA_FRAMEWORK_RAW_SERIES_CALL;EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED;EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11438_td-ema9ema30-momentum-h1.md",
+    "source": "card_frontmatter:period",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCAD.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:57:06+00:00"
+  },
+  "QM5_11443": {
+   "work_item_id": "a7b7aec2-cf9e-4863-9519-22be12c9b7a2",
+   "verdict_reason": "EA_FRAMEWORK_RAW_SERIES_CALL;EA_Q08_MAE_HOOK_MISSING",
+   "timeframe": {
+    "candidates": [
+     "M5"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11443_burke-day3-breakout-trap-m5.md",
+    "source": "card_frontmatter:period",
+    "timeframe": "M5"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCAD.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:57:17+00:00"
+  },
+  "QM5_11459": {
+   "work_item_id": "9fce7cec-7931-4151-bf77-d47db9c1d898",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11459_blade-macd-stoch-divergence-h1.md",
+    "source": "card_frontmatter:period",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCAD.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:57:25+00:00"
+  },
+  "QM5_11559": {
+   "work_item_id": "88ed93bc-5995-4f36-b8e1-8f7d58d4d9b5",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING",
+   "timeframe": {
+    "candidates": [
+     "M5"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11559_carter-t-m5-ema3-bb203-macd.md",
+    "source": "card_frontmatter:period",
+    "timeframe": "M5"
+   },
+   "symbols": [
+    "EURUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:57:27+00:00"
+  },
+  "QM5_11867": {
+   "work_item_id": "98de9049-78a7-4e0b-8bb9-56e0eed5e83b",
+   "verdict_reason": "BUILD_CHECK_STRICT_WARNINGS;EA_Q08_MAE_HOOK_MISSING",
+   "timeframe": {
+    "candidates": [
+     "H1"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11867_psar-adx50-di-h1.md",
+    "source": "card_frontmatter:timeframe",
+    "timeframe": "H1"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:57:41+00:00"
+  },
+  "QM5_10475": {
+   "work_item_id": "af230093-51ab-4b87-ac7a-d7a23accd5f7",
+   "verdict_reason": "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN;EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED",
+   "timeframe": {
+    "candidates": [
+     "M30"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10475_mql5-puria.md",
+    "source": "card_explicit_host_timeframe",
+    "timeframe": "M30"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX"
+   ],
+   "updated_at": "2026-09-20T16:58:39+00:00"
+  },
+  "QM5_10783": {
+   "work_item_id": "def68cc5-8eea-4b29-8222-e885e509116c",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED",
+   "timeframe": {
+    "candidates": [
+     "M15"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10783_tv-bos-forex.md",
+    "source": "card_explicit_host_timeframe",
+    "timeframe": "M15"
+   },
+   "symbols": [
+    "AUDUSD.DWX",
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDCAD.DWX",
+    "USDJPY.DWX",
+    "XAUUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:58:54+00:00"
+  },
+  "QM5_10798": {
+   "work_item_id": "ad8dcc1d-0a9d-4dab-86ce-65c9c84dd85e",
+   "verdict_reason": "EA_Q08_MAE_HOOK_MISSING",
+   "timeframe": {
+    "candidates": [
+     "M5"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10798_tv-ema9-full.md",
+    "source": "card_explicit_host_timeframe",
+    "timeframe": "M5"
+   },
+   "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "USDJPY.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:59:10+00:00"
+  },
+  "QM5_10827": {
+   "work_item_id": "c132e226-78bf-4604-8ef1-e721433e7242",
+   "verdict_reason": "EA_FRAMEWORK_RAW_SERIES_CALL;EA_Q08_MAE_HOOK_MISSING;EA_TRADE_REQUEST_UNINITIALIZED;EA_CARD_PENDING_ORDER_TYPE_MISMATCH",
+   "timeframe": {
+    "candidates": [
+     "M15"
+    ],
+    "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10827_tv-vol-exp.md",
+    "source": "card_explicit_host_timeframe",
+    "timeframe": "M15"
+   },
+   "symbols": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "GDAXI.DWX",
+    "NDX.DWX",
+    "WS30.DWX",
+    "XAUUSD.DWX"
+   ],
+   "updated_at": "2026-09-20T16:59:28+00:00"
+  }
+ }
+}
