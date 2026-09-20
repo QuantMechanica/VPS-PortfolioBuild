@@ -112,3 +112,9 @@ COMPILE_OK rows → next tranche → status table).
   AUDUSD −0.003R, GBPUSD −0.015R, CHFJPY −0.097R, EURUSD −0.082R, USDCAD −0.088R vs parent USDJPY +0.053R / PF 1.12.
   The Balke 03–06 GMT+3 window does not carry over to non-JPY majors; EURJPY / GBPJPY / USDCHF and the USDJPY control
   still running.
+- 21:23Z — QM5_41484 fan-out COMPLETE (10/10): USDJPY control reproduced the parent byte-exactly (+46,637 / PF 1.12 /
+  0.76 trades/bd — validates the new build identity), the nine other symbols are flat to negative (AUDJPY +0.005R,
+  GBPJPY −0.001R, AUDUSD −0.003R, GBPUSD −0.015R, EURJPY −0.024R, EURUSD −0.082R, USDCHF −0.087R, USDCAD −0.088R,
+  CHFJPY −0.097R). Card falsification rule met (fewer than two survivors besides USDJPY) → **lineage RETIRED**; pending
+  successors parked under `VELOCITY_LINEAGE_RETIRED_20260920`. Lesson: the Balke Tokyo-range window is a USDJPY-specific
+  edge, not a transferable mechanism; the next fan-outs must pair each mechanism with its own session structure.
