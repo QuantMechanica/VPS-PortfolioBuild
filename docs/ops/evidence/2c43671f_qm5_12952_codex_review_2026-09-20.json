@@ -1,0 +1,23 @@
+{
+  "review_task_id": "2c43671f-aabb-4ca5-8cf8-857505375ce2",
+  "build_task_id": "83f3bde2-3bfe-44cf-998d-ca623626a6d5",
+  "ea_id": "QM5_12952",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The original Gemini build result (sha256=1ee8a68505b57666b92f972363f1b03529e8bb392234424d26e201b54309d1eb) binds mq5_sha256=f891223db2dc839f5f64a1645735afb884d9e757f05116c28e3ce3c69b40cce0 and GER40.DWX, while the reviewed source is sha256=9134487ecbe7eb2635181e5c55776f8c046983be5ec966720ebf82f01fbc2bbd and the repaired universe is EURUSD.DWX, USDJPY.DWX, GDAXI.DWX; that result does not prove the current delivery.",
+    "Governed COMPILE_EA 489c1599-0351-4515-9d23-320b1b623b24 passed with 0 errors/0 warnings and bound the current source, but its receipt binds ex5_sha256=c3ef85799521da16f6db5c7c262e3c40eff187adb4857f1a09723e2948ee0729 while the canonical EX5 is sha256=516597a261863fa8db4879431c09306ab6b1fd62010493c6ce41d79b98178f56; the delivered binary is not the PASS-bound binary.",
+    "Smoke evidence is missing. The original build result says smoke_result=deferred_p2_smoke with blocked_reason=null, which does not contain the durable tester-fleet saturation evidence required for the deferred-smoke build-result waiver.",
+    "Static guardrails, symbol scope, the three active magic rows, and all three backtest risk contracts passed: qm_news_stale_max_hours=336, RISK_FIXED=1000, RISK_PERCENT=0, and no framework/forbidden-code violation was found.",
+    "[ONTICK-ORDER-ADVISORY] The active news gate returns before Friday-close and Strategy_ManageOpenPosition; every entry receives a non-zero server-side SL, so this remains advisory under the review contract."
+  ],
+  "reviewed_at": "2026-09-20T14:57:32Z"
+}

@@ -1,0 +1,22 @@
+{
+  "review_task_id": "fb52c402-7c79-4bf8-bcf2-aed1536117da",
+  "build_task_id": "5d5cc9f6-e096-44a3-af78-99abc2d9e7ed",
+  "ea_id": "QM5_41002",
+  "reviewer": "codex",
+  "verdict": "FAIL",
+  "sections": {
+    "framework_corset": "PASS",
+    "intraday_discipline": "UNKNOWN",
+    "magic_registry": "PASS",
+    "smoke_sanity": "UNKNOWN",
+    "build_result": "FAIL",
+    "forbidden_grep": "PASS"
+  },
+  "findings": [
+    "The build result (sha256=49ae936caeaec78d8ad3a4d8110fcb07e9a1124d5dd3015ee843e055d8525d31) reports smoke_result=deferred_p2_smoke, smoke_report_path=null, and blocked_reason=\"\". The custom-history skip text is not durable tester-fleet saturation evidence, so smoke_sanity is UNKNOWN and build_result fails the saturation-only waiver.",
+    "Mandatory input-use/filter-effect review passed for source sha256=5db2d150331f4349202103ec0c5adc63eb797581692361e73bcc0a3aaee02363: all 15 strategy_* inputs reach validation and their intended signal cache, rollover/spread/position filters, SL/TP construction, slippage configuration, daily-entry halt, or kill-switch controls; no declared strategy input is inert.",
+    "Framework and forbidden-pattern review passed: QM_Common/QM indicator wrappers/QM_IsNewBar/QM_TM/QM_FrameworkMagic are used, no raw indicator, CopyBuffer, OrderSend, Sleep, or ML path exists, and entry requests receive server-side SL and TP before QM_TM_OpenPosition.",
+    "Registry and preset review passed: the only active rows are EURUSD.DWX/410020000, GBPUSD.DWX/410020001, and USDJPY.DWX/410020002; the resolver dry-run retained all rows with zero drops; all three H4 backtest sets use RISK_FIXED=1000 and RISK_PERCENT=0; qm_news_stale_max_hours remains 336."
+  ],
+  "reviewed_at": "2026-09-20T14:57:32Z"
+}
