@@ -1,0 +1,133 @@
+diff --git a/framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/QM5_41154_eurjpy-carry-unwind-crisis-momentum.mq5 b/framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/QM5_41154_eurjpy-carry-unwind-crisis-momentum.mq5
+index b3130a4b96..d332f1e777 100644
+--- a/framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/QM5_41154_eurjpy-carry-unwind-crisis-momentum.mq5
++++ b/framework/EAs/QM5_41154_eurjpy-carry-unwind-crisis-momentum/QM5_41154_eurjpy-carry-unwind-crisis-momentum.mq5
+@@ -55,7 +55,6 @@ string   g_breadth_symbols[4] =
+    "CADJPY.DWX",
+    "EURJPY.DWX"
+   };
+-datetime g_last_exit_completed_bar = 0;
+ 
+ bool Strategy_InputsValid()
+   {
+@@ -318,8 +317,7 @@ bool Strategy_LoadBreadthReturn(const datetime signal_time,
+    return MathIsValidNumber(breadth_return);
+   }
+ 
+-bool Strategy_ChannelMidpoint(const datetime signal_time,
+-                              double &completed_close,
++bool Strategy_ChannelMidpoint(double &completed_close,
+                               double &midpoint)
+   {
+    completed_close = 0.0;
+@@ -330,7 +328,7 @@ bool Strategy_ChannelMidpoint(const datetime signal_time,
+    const int copied =
+       CopyRates(_Symbol, PERIOD_D1, 1, requested, rates); // perf-allowed: bounded completed-bar exit channel, evaluated at most once per D1 bar.
+    if(copied != requested || ArraySize(rates) != requested ||
+-      rates[0].time != signal_time || rates[0].close <= 0.0)
++      rates[0].time <= 0 || rates[0].close <= 0.0)
+       return false;
+ 
+    double highest = -DBL_MAX;
+@@ -455,12 +453,6 @@ bool Strategy_ExitSignal()
+       !integrity_ok)
+       return false;
+ 
+-   const datetime completed_time =
+-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: completed-bar exit gate.
+-   if(completed_time <= 0 || completed_time == g_last_exit_completed_bar)
+-      return false;
+-   g_last_exit_completed_bar = completed_time;
+-
+    const int entry_shift =
+       iBarShift(_Symbol, PERIOD_D1, opened_at, false); // perf-allowed: one bounded completed-D1 holding-period lookup.
+    if(entry_shift >= max_hold_bars)
+@@ -468,7 +460,7 @@ bool Strategy_ExitSignal()
+ 
+    double completed_close = 0.0;
+    double midpoint = 0.0;
+-   if(!Strategy_ChannelMidpoint(completed_time, completed_close, midpoint))
++   if(!Strategy_ChannelMidpoint(completed_close, midpoint))
+       return false;
+    return (completed_close > midpoint);
+   }
+@@ -554,7 +546,8 @@ void OnTick()
+       return;
+ 
+    Strategy_ManageOpenPosition();
+-   if(Strategy_ExitSignal())
++   const bool is_new_d1_bar = QM_IsNewBar(_Symbol, PERIOD_D1);
++   if(is_new_d1_bar && Strategy_ExitSignal())
+      {
+       const int magic = QM_FrameworkMagic();
+       for(int index = PositionsTotal() - 1; index >= 0; --index)
+@@ -582,7 +575,7 @@ void OnTick()
+    if(!news_allows)
+       return;
+ 
+-   if(!QM_IsNewBar(_Symbol, PERIOD_D1))
++   if(!is_new_d1_bar)
+       return;
+    QM_EquityStreamOnNewBar();
+ 
+@@ -612,4 +605,3 @@ double OnTester()
+    QM_ChartUI_Refresh();
+    return QM_DefaultObjective();
+   }
+-
+diff --git a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5 b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5
+index c7a15a819c..00eaf2d084 100644
+--- a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5
++++ b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5
+@@ -55,8 +55,6 @@ string   g_breadth_symbols[4] =
+    "CADJPY.DWX",
+    "EURJPY.DWX"
+   };
+-datetime g_last_exit_completed_bar = 0;
+-
+ bool Strategy_InputsValid()
+   {
+    return (qm_ea_id == 41155 && qm_magic_slot_offset == 0 &&
+@@ -318,9 +316,8 @@ bool Strategy_LoadBreadthReturn(const datetime signal_time,
+    return MathIsValidNumber(breadth_return);
+   }
+ 
+-bool Strategy_ChannelMidpoint(const datetime signal_time,
+-                              double &completed_close,
+-                              double &midpoint)
++bool Strategy_ChannelMidpoint(double &completed_close,
++                               double &midpoint)
+   {
+    completed_close = 0.0;
+    midpoint = 0.0;
+@@ -330,7 +327,7 @@ bool Strategy_ChannelMidpoint(const datetime signal_time,
+    const int copied =
+       CopyRates(_Symbol, PERIOD_D1, 1, requested, rates); // perf-allowed: bounded completed-bar exit channel, evaluated at most once per D1 bar.
+    if(copied != requested || ArraySize(rates) != requested ||
+-      rates[0].time != signal_time || rates[0].close <= 0.0)
++      rates[0].time <= 0 || rates[0].close <= 0.0)
+       return false;
+ 
+    double highest = -DBL_MAX;
+@@ -455,11 +452,8 @@ bool Strategy_ExitSignal()
+       !integrity_ok)
+       return false;
+ 
+-   const datetime completed_time =
+-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: completed-bar exit gate.
+-   if(completed_time <= 0 || completed_time == g_last_exit_completed_bar)
++   if(!QM_IsNewCalendarPeriod(PERIOD_D1, _Symbol))
+       return false;
+-   g_last_exit_completed_bar = completed_time;
+ 
+    const int entry_shift =
+       iBarShift(_Symbol, PERIOD_D1, opened_at, false); // perf-allowed: one bounded completed-D1 holding-period lookup.
+@@ -468,7 +462,7 @@ bool Strategy_ExitSignal()
+ 
+    double completed_close = 0.0;
+    double midpoint = 0.0;
+-   if(!Strategy_ChannelMidpoint(completed_time, completed_close, midpoint))
++   if(!Strategy_ChannelMidpoint(completed_close, midpoint))
+       return false;
+    return (completed_close > midpoint);
+   }
