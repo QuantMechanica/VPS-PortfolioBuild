@@ -9,11 +9,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import run_worktree_clean_task as task  # noqa: E402
 
 
-def _db(tmp_path, ea_id, sha):
+def _db(tmp_path, ea_id, sha, mq5_sha=None):
     db = tmp_path / "farm_state.sqlite"
     con = sqlite3.connect(db)
-    con.execute("CREATE TABLE work_items (id TEXT, kind TEXT, phase TEXT, ea_id TEXT, status TEXT, verdict TEXT, ex5_sha256 TEXT)")
-    con.execute("INSERT INTO work_items VALUES ('r1','compile','COMPILE_EA',?,'done','COMPILE_OK',?)", (ea_id, sha))
+    con.execute("CREATE TABLE work_items (id TEXT, kind TEXT, phase TEXT, ea_id TEXT, status TEXT, verdict TEXT, ex5_sha256 TEXT, mq5_sha256 TEXT)")
+    con.execute("INSERT INTO work_items VALUES ('r1','compile','COMPILE_EA',?,'done','COMPILE_OK',?,?)", (ea_id, sha, mq5_sha))
     con.commit(); con.close()
     return db
 
@@ -50,4 +50,19 @@ def test_untracked_receipted_ex5_is_selected(tmp_path):
     ]
     # an untracked binary WITHOUT a receipt is still left alone
     ex5.write_bytes(b"unreceipted")
+    assert task._receipted_tracked_ex5(status, repo_root=repo, db_path=db) == []
+
+
+def test_binary_whose_source_changed_after_the_receipt_is_not_staged(tmp_path):
+    """Guard rule: receipt must bind ex5 AND mq5 digests (QM5_12351 case, 2026-09-20)."""
+    repo = tmp_path / "repo"
+    d = repo / "framework" / "EAs" / "QM5_12351_alp-ema12-26"
+    d.mkdir(parents=True)
+    ex5 = d / "QM5_12351_alp-ema12-26.ex5"; ex5.write_bytes(b"binary")
+    mq5 = d / "QM5_12351_alp-ema12-26.mq5"; mq5.write_bytes(b"source-v1")
+    db = _db(tmp_path, "QM5_12351", task._sha256_file(ex5), task._sha256_file(mq5))
+    status = ["?? framework/EAs/QM5_12351_alp-ema12-26/QM5_12351_alp-ema12-26.ex5"]
+    assert task._receipted_tracked_ex5(status, repo_root=repo, db_path=db) == [
+        "framework/EAs/QM5_12351_alp-ema12-26/QM5_12351_alp-ema12-26.ex5"]
+    mq5.write_bytes(b"source-v2-edited-after-receipt")
     assert task._receipted_tracked_ex5(status, repo_root=repo, db_path=db) == []

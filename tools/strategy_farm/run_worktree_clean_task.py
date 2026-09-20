@@ -170,21 +170,40 @@ def _sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _compile_receipt_exists(ea_id: str, ex5_sha256: str, db_path: Path = DB_PATH) -> bool:
-    """A governed COMPILE_OK receipt binding exactly this on-disk binary."""
+def _compile_receipt_exists(ea_id: str, ex5_sha256: str, db_path: Path = DB_PATH,
+                            mq5_sha256: str | None = None) -> bool:
+    """A governed COMPILE_OK receipt binding exactly this on-disk binary.
+
+    2026-09-20 addendum: the ex5 commit guard additionally requires the receipt's
+    ``mq5_sha256`` to match the on-disk source (QM5_12351: binary receipted, source
+    edited afterwards -> NO_GOVERNED_COMPILE_EA_RECEIPT). When the caller supplies
+    the source digest it is bound here too, so the janitor never stages a binary
+    the guard will refuse (one refused file failed the whole commit).
+    """
     if not db_path.exists():
         return False
     con = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True)
     try:
-        row = con.execute(
-            """
-            SELECT 1 FROM work_items
-            WHERE kind='compile' AND phase='COMPILE_EA' AND ea_id=?
-              AND status='done' AND verdict='COMPILE_OK' AND ex5_sha256=?
-            LIMIT 1
-            """,
-            (ea_id, ex5_sha256.lower()),
-        ).fetchone()
+        if mq5_sha256:
+            row = con.execute(
+                """
+                SELECT 1 FROM work_items
+                WHERE kind='compile' AND phase='COMPILE_EA' AND ea_id=?
+                  AND status='done' AND verdict='COMPILE_OK' AND ex5_sha256=? AND mq5_sha256=?
+                LIMIT 1
+                """,
+                (ea_id, ex5_sha256.lower(), mq5_sha256.lower()),
+            ).fetchone()
+        else:
+            row = con.execute(
+                """
+                SELECT 1 FROM work_items
+                WHERE kind='compile' AND phase='COMPILE_EA' AND ea_id=?
+                  AND status='done' AND verdict='COMPILE_OK' AND ex5_sha256=?
+                LIMIT 1
+                """,
+                (ea_id, ex5_sha256.lower()),
+            ).fetchone()
     finally:
         con.close()
     return row is not None
@@ -223,9 +242,11 @@ def _receipted_tracked_ex5(status: list[str], repo_root: Path = REPO_ROOT,
             continue
         try:
             digest = _sha256_file(path)
+            mq5 = path.with_suffix(".mq5")
+            mq5_digest = _sha256_file(mq5) if mq5.is_file() else None
         except OSError:
             continue
-        if _compile_receipt_exists(m.group(1), digest, db_path):
+        if _compile_receipt_exists(m.group(1), digest, db_path, mq5_sha256=mq5_digest):
             out.append(rel)
     return out
 
