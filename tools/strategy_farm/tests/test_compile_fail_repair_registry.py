@@ -42,6 +42,41 @@ QM5_21509_AUTHORITY = (
     "compile_fail_repair:20260920:"
     "QM5_21509_qs-emv-trend-ndx:a6048a52"
 )
+VELOCITY_WAVE3_AUTHORITIES = {
+    "compile_fail_repair:20260920:QM5_10474_mql5-tdsglobal:e8a96639",
+    "compile_fail_repair:20260920:QM5_10475_mql5-puria:6dd61f16",
+    "compile_fail_repair:20260920:QM5_10479_mql5-lbs-atr:92245abe",
+    "compile_fail_repair:20260920:QM5_10783_tv-bos-forex:b07c86b7",
+    "compile_fail_repair:20260920:QM5_10798_tv-ema9-full:3cd04f73",
+    "compile_fail_repair:20260920:QM5_10827_tv-vol-exp:56916a90",
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11304_kathy-lien-double-bollinger-trend:19ed62df"
+    ),
+    "compile_fail_repair:20260920:QM5_11305_alp-sma20-scalp:9732af91",
+    "compile_fail_repair:20260920:QM5_11343_triad-session-breakout:b075beba",
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11438_td-ema9ema30-momentum-h1:4b6cade6"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11443_burke-day3-breakout-trap-m5:0cc6adea"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11454_davey-session-open-bracket-breakout:faa69914"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11459_blade-macd-stoch-divergence-h1:24675876"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11559_carter-t-m5-ema3-bb203-macd:969781dc"
+    ),
+    "compile_fail_repair:20260920:QM5_11867_psar-adx50-di-h1:6c2f1696",
+}
 EXPECTED_AUTHORITIES = {
     QM5_41475_AUTHORITY,
     QM5_41477_AUTHORITY,
@@ -50,7 +85,7 @@ EXPECTED_AUTHORITIES = {
     QM5_41189_AUTHORITY,
     QM5_41142_AUTHORITY,
     QM5_21509_AUTHORITY,
-}
+} | VELOCITY_WAVE3_AUTHORITIES
 
 
 def _registry() -> dict[str, dict[str, Any]]:

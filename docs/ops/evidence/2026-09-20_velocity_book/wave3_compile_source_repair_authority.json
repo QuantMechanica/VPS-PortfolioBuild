@@ -1,0 +1,223 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "task_id": "3c44384d-3efe-4cf0-b02e-82cb6be52e54",
+  "cohort": "VELOCITY_WAVE3_FRAMEWORK_PLUMBING",
+  "authority": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
+  "branch": "agents/board-advisor",
+  "repair_commit": "554a3bb702",
+  "scope": "append-only COMPILE_EA successors; no strategy/backtest/live/gate authority",
+  "attestation": {
+    "strategy_logic_changed": false,
+    "entry_exit_signal_rules_changed": false,
+    "risk_parameters_changed": false,
+    "news_controls_changed": false,
+    "t_live_changed": false,
+    "autotrading_changed": false
+  },
+  "verification": {
+    "static_gate_command": "python tools/strategy_farm/build_gate_hardening.py --repo-root C:/QM/repo --ea-label <label>",
+    "static_gate_clean": 14,
+    "static_gate_residual": 1,
+    "residual_label": "QM5_11438_td-ema9ema30-momentum-h1",
+    "test_command": "python -m pytest -q tools/strategy_farm/tests/test_build_gate_hardening.py",
+    "test_result": "37 passed"
+  },
+  "registrations": [
+    {
+      "ea_id": "10474",
+      "ea_label": "QM5_10474_mql5-tdsglobal",
+      "predecessor_work_item_id": "3ddd58f1-c8b2-4804-b17e-02e726c1bd81",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/3ddd58f1-c8b2-4804-b17e-02e726c1bd81/QM5_10474/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "3fbe03888ed903ba1ae425c55c7f0fe4e43559c9a5b7e2b04cd5a37c9dc0b268",
+      "repaired_mq5_sha256": "e8a9663921fef31523ac4862c8496db99676ec705430abb4895b61e1f1291c98",
+      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_Q08_MAE_HOOK_MISSING"],
+      "diff_summary": "Added the Q08 telemetry hook, aggregate-zeroed the framework entry request, and replaced a comment-only URL token with its CodeBase article identifier.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "10475",
+      "ea_label": "QM5_10475_mql5-puria",
+      "predecessor_work_item_id": "af230093-51ab-4b87-ac7a-d7a23accd5f7",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/af230093-51ab-4b87-ac7a-d7a23accd5f7/QM5_10475/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "18e616c604d23e8a2debdf65a773ef46eff4dab41073cca949eab7b9421717b7",
+      "repaired_mq5_sha256": "6dd61f162511ec21f4e7e13ecef50700ca0885ff3b543358fb0b0e5ce0983178",
+      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "diff_summary": "Added the Q08 telemetry hook, aggregate-zeroed the framework entry request, and replaced a comment-only URL token with its CodeBase article identifier.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "10479",
+      "ea_label": "QM5_10479_mql5-lbs-atr",
+      "predecessor_work_item_id": "91d21844-fe44-499f-b6d9-296c0323b50c",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/91d21844-fe44-499f-b6d9-296c0323b50c/QM5_10479/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "40fd5e38a3b44d26c8cfd4e8f8e7da3403360b9e494b1ee4afdbde9969fbab50",
+      "repaired_mq5_sha256": "92245abec6d679111b6defa8584fe035f454ba13659a85dff649b1877bd884f3",
+      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "diff_summary": "Added Q08 telemetry, zero-initialized both requests, routed unchanged OHLC/time reads through QM_ReadBar, and removed a comment-only URL token.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "10783",
+      "ea_label": "QM5_10783_tv-bos-forex",
+      "predecessor_work_item_id": "def68cc5-8eea-4b29-8222-e885e509116c",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/def68cc5-8eea-4b29-8222-e885e509116c/QM5_10783/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "2381200fe088cccf38448fad3bfac90f549cd60417b5254b1e3701d4cd8c6afd",
+      "repaired_mq5_sha256": "b07c86b7d8076866dc47b07d8bad2648075db3646913260f5926b832cb576f52",
+      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "diff_summary": "Added the Q08 telemetry hook and aggregate-zeroed the framework entry request.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "10798",
+      "ea_label": "QM5_10798_tv-ema9-full",
+      "predecessor_work_item_id": "ad8dcc1d-0a9d-4dab-86ce-65c9c84dd85e",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/ad8dcc1d-0a9d-4dab-86ce-65c9c84dd85e/QM5_10798/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "5bd48ff6d0a60816e4b466fd7eaa14ac2d9e705580ea6d3b47e903d194439c96",
+      "repaired_mq5_sha256": "3cd04f73434d5344cf23d429fa0ce7d4bf75c23d95e23f511730ef0b2b7c35b3",
+      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "diff_summary": "Added the Q08 telemetry hook and defensively aggregate-zeroed the framework entry request.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "10827",
+      "ea_label": "QM5_10827_tv-vol-exp",
+      "predecessor_work_item_id": "c132e226-78bf-4604-8ef1-e721433e7242",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/c132e226-78bf-4604-8ef1-e721433e7242/QM5_10827/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "3f44c609eefe5cacfe4d077790eb23a5f41283da325b16670cd65f488b222cea",
+      "repaired_mq5_sha256": "56916a90ec7532aaa0c81d38aad840c82b82a2872d0b1c68764cb16084f60257",
+      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "diff_summary": "Added Q08 telemetry, zero-initialized requests, routed unchanged bar reads through QM_ReadBar, and made the existing BUY_STOP/SELL_STOP parameter mapping explicit without changing the accepted order types.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11304",
+      "ea_label": "QM5_11304_kathy-lien-double-bollinger-trend",
+      "predecessor_work_item_id": "1915f1b3-db77-4af1-bbdc-eae79303b4bf",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/1915f1b3-db77-4af1-bbdc-eae79303b4bf/QM5_11304/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "88fc932eaa589c76491fb40a0e2c1bca614fa4f32e93a9e3773e54b167873243",
+      "repaired_mq5_sha256": "19ed62df8f702e09e069a23dd794fc9aa97f51dac91a117c9c15d096bd964c26",
+      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "diff_summary": "Added the Q08 telemetry hook and aggregate-zeroed the framework entry request.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11305",
+      "ea_label": "QM5_11305_alp-sma20-scalp",
+      "predecessor_work_item_id": "24301226-c425-4373-a962-0ac7ed169c53",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/24301226-c425-4373-a962-0ac7ed169c53/QM5_11305/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "2c2aa404eb5521c6df5d041b1724a1e80fbab3290116778022d5c56da033c338",
+      "repaired_mq5_sha256": "9732af91930e9f959468524decaf2c024ae334940ff9ced3d433f9d9d8d07b11",
+      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "diff_summary": "Added the Q08 telemetry hook and aggregate-zeroed the framework entry request.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11343",
+      "ea_label": "QM5_11343_triad-session-breakout",
+      "predecessor_work_item_id": "ad036a74-4f03-4ea9-9aa0-0ff471c6532e",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/ad036a74-4f03-4ea9-9aa0-0ff471c6532e/QM5_11343/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "8716465d8666ff2a596ffc3aca5af1ac0af04830594f9ae0af1e67fe22a87347",
+      "repaired_mq5_sha256": "b075bebae512db8358ac0e5e4092505aff4ea30accbdd396b349748ddd2133c7",
+      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "diff_summary": "Added the Q08 telemetry hook and defensively aggregate-zeroed the framework entry request.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11438",
+      "ea_label": "QM5_11438_td-ema9ema30-momentum-h1",
+      "predecessor_work_item_id": "8198f77b-2aa3-4bc8-add6-4cbfc947ac6a",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/8198f77b-2aa3-4bc8-add6-4cbfc947ac6a/QM5_11438/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "69c6642e3f5d1da2a5dd0d8da5c420071cd880d7f1043f79bc5e768b47e82198",
+      "repaired_mq5_sha256": "4b6cade64b8ff1fd2989c1894be01da4d9aa53f37a478d3fa4d8e480c3a304d9",
+      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "diff_summary": "Added Q08 telemetry, zero-initialized the request, and routed unchanged swing-bar reads through QM_ReadBar. Market entry was deliberately not converted to the card-required pending stops because that would change strategy mechanics.",
+      "static_gate_after": "REFUSED",
+      "residual_failure_classes": ["EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11443",
+      "ea_label": "QM5_11443_burke-day3-breakout-trap-m5",
+      "predecessor_work_item_id": "a7b7aec2-cf9e-4863-9519-22be12c9b7a2",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/a7b7aec2-cf9e-4863-9519-22be12c9b7a2/QM5_11443/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "513c141026c876f4a6132dec4398f77daf0be6f0d19b3f99304f07a58aed87f5",
+      "repaired_mq5_sha256": "0cc6adea034f0fb9a2c9e59259015f4b62a304b146bdfb7a6e86c3bb249fb8a2",
+      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING"],
+      "diff_summary": "Added Q08 telemetry, zero-initialized the request, and routed unchanged bounded OHLC reads through QM_ReadBar.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11454",
+      "ea_label": "QM5_11454_davey-session-open-bracket-breakout",
+      "predecessor_work_item_id": "733976de-6835-421a-badc-0c816354ba1f",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/733976de-6835-421a-badc-0c816354ba1f/QM5_11454/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "f8daad463840a9c63bcb3b489477e4da131d40420b85d1deba4e5af2d0128df1",
+      "repaired_mq5_sha256": "faa6991434b73aeeae571def3c2d8386dff48120281ce75cb2a7f5c6bd203f2f",
+      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "diff_summary": "Added Q08 telemetry, zero-initialized requests, routed the unchanged opening-bar read through QM_ReadBar, and made the existing BUY_STOP/SELL_STOP parameter mapping explicit.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11459",
+      "ea_label": "QM5_11459_blade-macd-stoch-divergence-h1",
+      "predecessor_work_item_id": "9fce7cec-7931-4151-bf77-d47db9c1d898",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/9fce7cec-7931-4151-bf77-d47db9c1d898/QM5_11459/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "02cdab89556f2002f3a949eecfc078deb44693a111b5fd18c8d1b841eadc09b3",
+      "repaired_mq5_sha256": "2467587655aff46198e254661733a61cac266089720fd390ce154d36d2c9a209",
+      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "diff_summary": "Added the Q08 telemetry hook and defensively aggregate-zeroed the framework entry request.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11559",
+      "ea_label": "QM5_11559_carter-t-m5-ema3-bb203-macd",
+      "predecessor_work_item_id": "88ed93bc-5995-4f36-b8e1-8f7d58d4d9b5",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/88ed93bc-5995-4f36-b8e1-8f7d58d4d9b5/QM5_11559/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "75d6efffe10c1219a43b7b09e83cbf67368f72222849521fb71bd6f468e29cfc",
+      "repaired_mq5_sha256": "969781dce724dfe86ac3078d0b0482bcdf35ac1b6032c187ae41ec3dd9ebaf35",
+      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "diff_summary": "Added the Q08 telemetry hook and defensively aggregate-zeroed the framework entry request.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    },
+    {
+      "ea_id": "11867",
+      "ea_label": "QM5_11867_psar-adx50-di-h1",
+      "predecessor_work_item_id": "98de9049-78a7-4e0b-8bb9-56e0eed5e83b",
+      "predecessor_evidence_path": "D:/QM/reports/work_items/98de9049-78a7-4e0b-8bb9-56e0eed5e83b/QM5_11867/COMPILE_EA/compile_evidence.json",
+      "rejected_mq5_sha256": "d6300abc5d5527fc7f93a46d23729974173234957cd0b37cf5e1b97222a0b562",
+      "repaired_mq5_sha256": "6c2f1696851a5f1db3e8d751a3d9cd7f5085b87256815b0a815dffac48aaadb8",
+      "expected_failure_classes": ["BUILD_CHECK_STRICT_WARNINGS", "EA_Q08_MAE_HOOK_MISSING"],
+      "diff_summary": "Added Q08 telemetry, zero-initialized the request, and removed an ineffective ArraySetAsSeries call on a static array that generated warning 63; physical array semantics remain unchanged.",
+      "static_gate_after": "PASS",
+      "strategy_mechanics_changed": false
+    }
+  ],
+  "blocked_without_source_repair": [
+    {
+      "ea_label": "QM5_30006_adx-ma-trend-grid-dark-kronos",
+      "reason": "Grid mechanics are prohibited by the active Edge Lab charter; wiring card loss limits would not make the strategy eligible and no source change was made."
+    },
+    {
+      "ea_label": "QM5_40005_tradingview-multitimeframe-supertrend-atr",
+      "reason": "The predecessor stopped at setfile generation, while the current static gate exposes pip conversion, loss-limit and broker-time defects whose repair changes risk/session mechanics; no speculative source change was made."
+    }
+  ],
+  "non_source_repair": {
+    "ea_label": "QM5_12351_alp-ema12-26",
+    "action": "Removed the untracked SP500 setfile after the approved card and active magic universe were corrected to seven non-SP500 symbols.",
+    "strategy_mechanics_changed": false
+  }
+}
