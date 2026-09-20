@@ -3,16 +3,16 @@
 ; ea_id:        11516
 ; ea_slug:      carter-t-sma7-21-cci5-m15
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260920-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   bc00f396e4e7e5f59877379ff1ae6375ae2e7a965c34d6414f93904f2f03ab62
+; build_hash:   6d40487123cdd946efbf479acd4954ff8dccbb1159bcb25ba8bf5160581d5367
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=11516
 qm_magic_slot_offset=1

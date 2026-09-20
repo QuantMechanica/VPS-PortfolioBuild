@@ -3,16 +3,16 @@
 ; ea_id:        40008
 ; ea_slug:      aqr-value-and-momentum-everywhere
 ; ea_version:   v5.0
-; set_version:  s20260912-001
+; set_version:  s20260919-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   3
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8336a4e95d8620c58b9d0954b56f4bd18c01aab08177cc53755ef4886be4f51a
+; build_hash:   f41171a6e64c6f520138f16f7493a92d740370c683aebf59ceac17a59f4194c3
 ; author:       Development
-; date:         2026-09-12
+; date:         2026-09-19
 ;==========================================================
 qm_ea_id=40008
 qm_magic_slot_offset=3

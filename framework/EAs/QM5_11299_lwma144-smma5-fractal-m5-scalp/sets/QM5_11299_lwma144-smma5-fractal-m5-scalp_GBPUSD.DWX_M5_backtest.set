@@ -3,16 +3,16 @@
 ; ea_id:        11299
 ; ea_slug:      lwma144-smma5-fractal-m5-scalp
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260920-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   a65b2290d2d92b5efe70d838ccda3f6b4c9abe1086bf6e32e02384ea0da55ce4
+; build_hash:   b881fe853a97949c51d58d1bccd83b13e28cdf3c2536ac70b0c204c927537660
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=11299
 qm_magic_slot_offset=1

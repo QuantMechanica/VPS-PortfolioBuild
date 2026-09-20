@@ -3,16 +3,16 @@
 ; ea_id:        40008
 ; ea_slug:      aqr-value-and-momentum-everywhere
 ; ea_version:   v5.0
-; set_version:  s20260912-001
+; set_version:  s20260919-001
 ; symbol:       XTIUSD.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   2
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   8ec1805984c1e1439dac16862bcbb383966517fcda06fc85ad111b9e82ec3e40
+; build_hash:   2e815ee41ba591f2c377053bf3d7a3d36f528d9d5b7a075c61936d41aa6de786
 ; author:       Development
-; date:         2026-09-12
+; date:         2026-09-19
 ;==========================================================
 qm_ea_id=40008
 qm_magic_slot_offset=2

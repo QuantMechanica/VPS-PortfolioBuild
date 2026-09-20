@@ -3,16 +3,16 @@
 ; ea_id:        40008
 ; ea_slug:      aqr-value-and-momentum-everywhere
 ; ea_version:   v5.0
-; set_version:  s20260912-001
+; set_version:  s20260919-001
 ; symbol:       SP500.DWX
 ; timeframe:    D1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   044b3ddff0f85d5d7822beba3a4fcf20f055aa4f4927a84ab88d105ffb99c0ec
+; build_hash:   3258b1a453d31810c187ace9402f39593ec0cb6cef76c9614e6e1866dcbba03c
 ; author:       Development
-; date:         2026-09-12
+; date:         2026-09-19
 ;==========================================================
 qm_ea_id=40008
 qm_magic_slot_offset=0

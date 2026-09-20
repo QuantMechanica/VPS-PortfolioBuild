@@ -3,16 +3,16 @@
 ; ea_id:        11299
 ; ea_slug:      lwma144-smma5-fractal-m5-scalp
 ; ea_version:   v5.0
-; set_version:  s20260826-001
+; set_version:  s20260920-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   64d4f0b0c53f9e61b09ba663960af9514d579f484cc1a6f932a73ea7bf6f467b
+; build_hash:   c76ff1d74bda5cb1aff2737ec71cf6727ad161a73437ae7b053f3a498ee34ab0
 ; author:       Development
-; date:         2026-08-26
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=11299
 qm_magic_slot_offset=0

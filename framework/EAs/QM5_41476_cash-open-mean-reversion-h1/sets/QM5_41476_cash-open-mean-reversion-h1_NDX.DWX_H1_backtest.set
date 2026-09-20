@@ -3,28 +3,24 @@
 ; ea_id:        41476
 ; ea_slug:      cash-open-mean-reversion-h1
 ; ea_version:   v5.0
-; set_version:  s20260916-001
+; set_version:  s20260918-001
 ; symbol:       NDX.DWX
 ; timeframe:    H1
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
-; author:       Development (Kimi interim build)
-; date:         2026-09-16
+; build_hash:   2b6eee9f0f67649fc9932945d43c104745a44d4d25f1c0fd4c1fd2c79d909842
+; author:       Development
+; date:         2026-09-18
 ;==========================================================
-; REGISTRY STATUS: identity/magic PENDING_ALLOCATION (allocation is
-; centralized after this build; see docs/ops/evidence/2026-09-16_kimi_hmr/).
-; magic_slot per approved card symbol order (slot = card symbol index);
-; magic = 41476*10000 + slot. Do NOT pipeline or deploy before allocation.
 qm_ea_id=41476
 qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\worktrees\kimi-hmr-20260916\artifacts\cards_approved\QM5_41476_cash-open-mean-reversion-h1.md
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41476_cash-open-mean-reversion-h1.md
 strategy_symbol_slot0=NDX.DWX
 strategy_symbol_slot1=GDAXI.DWX
 strategy_symbol_slot2=SP500.DWX

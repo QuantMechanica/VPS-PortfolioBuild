@@ -3,16 +3,16 @@
 ; ea_id:        41477
 ; ea_slug:      fx-session-mean-reversion-m15
 ; ea_version:   v5.0
-; set_version:  s20260916-001
+; set_version:  s20260918-001
 ; symbol:       GBPUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   1
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   dccd298ec6095b43d6dd5232710a6e9b248d4cd4003d7ab4aba6923c50a2436d
 ; author:       Development
-; date:         2026-09-16
+; date:         2026-09-18
 ;==========================================================
 qm_ea_id=41477
 qm_magic_slot_offset=1
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\worktrees\kimi-fxmr-20260916\artifacts\cards_approved\QM5_41477_fx-session-mean-reversion-m15.md
+; card_defaults_source=C:\QM\repo\artifacts\cards_approved\QM5_41477_fx-session-mean-reversion-m15.md
 strategy_symbol_slot0=EURUSD.DWX
 strategy_symbol_slot1=GBPUSD.DWX
 strategy_symbol_slot2=USDJPY.DWX
