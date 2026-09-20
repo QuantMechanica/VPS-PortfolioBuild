@@ -3,16 +3,16 @@
 ; ea_id:        41347
 ; ea_slug:      cs-ichi-cloud-opt
 ; ea_version:   v5.0
-; set_version:  s20260905-001
+; set_version:  s20260920-001
 ; symbol:       XAUUSD.DWX
 ; timeframe:    H4
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   acd61dba9dade9d13769c8dea0fa10b236ad283f510ecda7808d9687e3b48165
+; build_hash:   75ff0e4bb496dfa40f19c2a8ff7ddcf4577a919f90834a11f185c65972073b99
 ; author:       Development
-; date:         2026-09-05
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=41347
 qm_magic_slot_offset=0
