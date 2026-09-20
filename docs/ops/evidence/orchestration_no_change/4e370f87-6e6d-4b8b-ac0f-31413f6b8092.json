@@ -1,0 +1,56 @@
+{
+  "bindings": {
+    "approved_card": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_12955_mql5-aroon-cross-card.md",
+      "sha256": "cd8994bb02f171a4817575555f4242b9bdf0d8ee47c385681690b0a80081c85b"
+    },
+    "detailed_review": {
+      "path": "C:/QM/repo/docs/ops/evidence/4e370f87_qm5_12955_gemini_build_claude_review_2026-08-22.md",
+      "sha256": "f046b56d92596adab56a831d0ff48ed1a54356398e517c673fef19f43dbcd7b1"
+    },
+    "ex5_sha256": "87e6c2da26127b5fb8bdfadda67204f1cb03aa324ae63b2cb61bf82357d21a8e",
+    "mq5_sha256": "1ea60257401d33226ee078e3777d042d11bcb6c9a0207f673571ed0ef3aa177f",
+    "source_artifact": {
+      "path": "C:/QM/repo/artifacts/builds/4f5b3b2b-7c8d-4da1-ad62-7577640ddce5.json",
+      "sha256": "ffe4cca2ac6f8a1f6877ed60857474c31fbc3ffde2b48041c09487533d015d63"
+    },
+    "source_task_id": "4f5b3b2b-7c8d-4da1-ad62-7577640ddce5"
+  },
+  "blockers": [
+    {
+      "code": "MAE_HOOK_MISSING",
+      "facts": ["build_gate_hardening D7 fails", "mq5:233 OnTick does not call QM_FrameworkTrackOpenPositionMae"]
+    },
+    {
+      "code": "NONCANONICAL_DWX_SYMBOL",
+      "facts": ["GER40.DWX is bound in card, magic row 12955:2, and one setfile", "GER40.DWX is absent from dwx_symbol_matrix.csv", "canonical DAX house symbol is GDAXI.DWX"]
+    },
+    {
+      "code": "PRODUCER_RESULT_SCHEMA_INCOMPLETE",
+      "facts": ["source artifact lacks magic_base and symbols_registered", "source artifact lacks spec_md_path", "source artifact lacks smoke_result and smoke_report_path"]
+    },
+    {
+      "code": "SMOKE_EVIDENCE_MISSING",
+      "facts": ["no smoke summary is referenced", "no saturation-only deferred-smoke waiver is recorded"]
+    }
+  ],
+  "checks": {
+    "build_gate_hardening": {"failures": ["EA_Q08_MAE_HOOK_MISSING", "EA_SYMBOL_NOT_IN_DWX_MATRIX:GER40.DWX"], "verdict": "FAIL"},
+    "build_guardrails": {"max_news_stale_hours": 336, "verdict": "PASS"},
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK"
+  },
+  "ea_id": "QM5_12955",
+  "ea_label": "QM5_12955_mql5-aroon-cross-card",
+  "registry_rows": [
+    "12955:0:EURUSD.DWX:129550000:active",
+    "12955:1:GBPUSD.DWX:129550001:active",
+    "12955:2:GER40.DWX:129550002:active"
+  ],
+  "schema": "qm.codex-gemini-review-no-change-state/v1",
+  "setfiles": {"count": 3, "risk_contract": "PASS:RISK_FIXED>0;RISK_PERCENT=0", "strategy_param_counts": [6, 6, 6]},
+  "state_disposition": "REVIEW",
+  "task_id": "4e370f87-6e6d-4b8b-ac0f-31413f6b8092",
+  "task_type": "review_ea",
+  "verdict": "FAIL"
+}

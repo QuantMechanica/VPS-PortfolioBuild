@@ -1,0 +1,60 @@
+{
+  "bindings": {
+    "approved_card": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11496_carter-t-ema100-psar-macd64128-m5.md",
+      "sha256": "867a0d6606be78103d64bdf286fb8c5f131f9fecc6bd5e62b1be4ff13b4ccf4b"
+    },
+    "detailed_review": {
+      "path": "C:/QM/repo/docs/ops/evidence/2026-08-24_greview_11496.md",
+      "sha256": "de82caf93fcde70eee3012a62bd5283fca3f21aeaafbd1666bb4f883d319508d"
+    },
+    "ex5_sha256": "e380760609fd1925b76e655b6de1c8a495fa604b1cc5d851170f740d276dede9",
+    "mq5_sha256": "34a32e0b82e299b390391de88e54c7c34c6d80ac6be92e85f5daf66619c23949",
+    "source_artifact": {
+      "path": "C:/QM/repo/docs/ops/evidence/f1331db1_QM5_11496_carter-t-ema100-psar-macd64128-m5_build_identity.json",
+      "sha256": "c0db07aeca3c08cafb832556ae65569de424e8ebc085d4f7e1e306037c2ad168"
+    },
+    "source_task_id": "f1331db1-b26e-462f-9710-b9f47f677828"
+  },
+  "blockers": [
+    {
+      "code": "CARD_NO_FRIDAY_ENTRY_NOT_IMPLEMENTED",
+      "facts": ["card:89 requires no Friday entry", "mq5:95 returns false unconditionally", "mq5:222 is only the configured Friday-close handler"]
+    },
+    {
+      "code": "CARD_ENTRY_BAR_PSAR_STOP_NOT_IMPLEMENTED",
+      "facts": ["card:72,77-78 requires PSAR shift 0 at entry", "mq5:113 reads only shift 1", "mq5:151,159 reuse shift-1 PSAR for the stop"]
+    },
+    {
+      "code": "NEWS_BLACKOUT_DEFAULTS_UNAUTHORIZED_OFF",
+      "facts": ["mq5:22-26 sets all news modes OFF/NONE", "approved card contains no news-off exemption"]
+    },
+    {
+      "code": "SPEC_MISSING",
+      "facts": ["framework/EAs/QM5_11496_carter-t-ema100-psar-macd64128-m5/SPEC.md does not exist", "validate_spec_doc exits 1"]
+    },
+    {
+      "code": "PRODUCER_RESULT_SCHEMA_INCOMPLETE",
+      "facts": ["source artifact lacks compile_succeeded", "source artifact lacks spec_md_path", "source artifact lacks smoke_result and smoke_report_path"]
+    }
+  ],
+  "checks": {
+    "build_gate_hardening": {"failures": [], "verdict": "PASS"},
+    "build_guardrails": {"max_news_stale_hours": 336, "verdict": "PASS"},
+    "spec_doc": "FAIL:SPEC_MISSING",
+    "symbol_scope": "SINGLE_SYMBOL_OK"
+  },
+  "ea_id": "QM5_11496",
+  "ea_label": "QM5_11496_carter-t-ema100-psar-macd64128-m5",
+  "registry_rows": [
+    "11496:0:EURUSD.DWX:114960000:active",
+    "11496:1:GBPUSD.DWX:114960001:active",
+    "11496:2:AUDUSD.DWX:114960002:active"
+  ],
+  "schema": "qm.codex-gemini-review-no-change-state/v1",
+  "setfiles": {"count": 3, "risk_contract": "PASS:RISK_FIXED>0;RISK_PERCENT=0", "strategy_param_counts": [11, 11, 11]},
+  "state_disposition": "REVIEW",
+  "task_id": "0de901bc-58f8-4ccd-bc84-227ab710f2b7",
+  "task_type": "review_ea",
+  "verdict": "FAIL"
+}

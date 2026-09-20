@@ -1,0 +1,74 @@
+{
+  "bindings": {
+    "approved_card": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_1345_chan-cot-spec-momo.md",
+      "sha256": "cf80d0b8f0240216b819afb45e9bb7401e6ae28e79ff792bc606444258e9619e"
+    },
+    "detailed_review": {
+      "path": "C:/QM/repo/docs/ops/evidence/5e67fc01_qm5_1345_gemini_build_claude_review_2026-08-22.md",
+      "sha256": "fc1c38c1c488cff08c10b53d913c9c3b4ac291328ef5a6890b58cb351772974e"
+    },
+    "ex5_sha256": "06a253b7f2cfd6af61100c3cd12383b3d10d1ae78c0aaef1ba1a35b8edb708c8",
+    "mq5_sha256": "99cf42d0a60d3857be1189c14429b9f71649b7f512851add410016de37b94dbf",
+    "source_artifact": {
+      "path": "C:/QM/repo/artifacts/builds/c7b9c56d-2270-4512-bfa3-bd5d8ff982af.json",
+      "sha256": "faa5171d3c56e083d0bbf1c7aa336e2439c36d5b7fd459e430da83589df32263"
+    },
+    "source_task_id": "c7b9c56d-2270-4512-bfa3-bd5d8ff982af"
+  },
+  "blockers": [
+    {
+      "code": "CARD_SIGNAL_SUBSTITUTION",
+      "facts": ["card:38-47 requires released CFTC non-commercial long/short COT data", "mq5:60-86 computes a 60-bar price-displacement ratio", "no CFTC ingestion or weekly-release gate exists"]
+    },
+    {
+      "code": "CARD_UNIVERSE_NOT_AUTHORIZED",
+      "facts": ["card body names XAUUSD.DWX and/or OIL.DWX", "build registers 13 symbols", "OIL/XTIUSD is absent from the build universe"]
+    },
+    {
+      "code": "PER_TICK_FULL_WINDOW_RECOMPUTE",
+      "facts": ["mq5:179-211 calls Strategy_CalculateRatio from Strategy_ExitSignal", "mq5:253 calls Strategy_ExitSignal before QM_IsNewBar at mq5:265", "ratio loop performs 120 iClose reads per tick at the default lookback"]
+    },
+    {
+      "code": "MAE_HOOK_MISSING",
+      "facts": ["build_gate_hardening D7 fails", "mq5:236 OnTick does not call QM_FrameworkTrackOpenPositionMae"]
+    },
+    {
+      "code": "PRODUCER_RESULT_SCHEMA_INCOMPLETE",
+      "facts": ["source artifact lacks magic_base and symbols_registered", "source artifact lacks spec_md_path", "source artifact lacks smoke_result and smoke_report_path"]
+    },
+    {
+      "code": "SMOKE_EVIDENCE_MISSING",
+      "facts": ["no smoke summary is referenced", "no saturation-only deferred-smoke waiver is recorded"]
+    }
+  ],
+  "checks": {
+    "build_gate_hardening": {"failures": ["EA_Q08_MAE_HOOK_MISSING"], "verdict": "FAIL"},
+    "build_guardrails": {"max_news_stale_hours": 336, "verdict": "PASS"},
+    "spec_doc": "PASS",
+    "symbol_scope": "SINGLE_SYMBOL_OK"
+  },
+  "ea_id": "QM5_1345",
+  "ea_label": "QM5_1345_chan-cot-spec-momo",
+  "registry_rows": [
+    "1345:0:GDAXI.DWX:13450000:active",
+    "1345:1:NDX.DWX:13450001:active",
+    "1345:2:SP500.DWX:13450002:active",
+    "1345:3:UK100.DWX:13450003:active",
+    "1345:4:WS30.DWX:13450004:active",
+    "1345:5:XAUUSD.DWX:13450005:active",
+    "1345:6:EURUSD.DWX:13450006:active",
+    "1345:7:GBPUSD.DWX:13450007:active",
+    "1345:8:USDJPY.DWX:13450008:active",
+    "1345:9:USDCHF.DWX:13450009:active",
+    "1345:10:AUDUSD.DWX:13450010:active",
+    "1345:11:USDCAD.DWX:13450011:active",
+    "1345:12:NZDUSD.DWX:13450012:active"
+  ],
+  "schema": "qm.codex-gemini-review-no-change-state/v1",
+  "setfiles": {"count": 13, "risk_contract": "PASS:RISK_FIXED>0;RISK_PERCENT=0", "strategy_param_counts": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8]},
+  "state_disposition": "REVIEW",
+  "task_id": "5e67fc01-4a0d-43c5-ad23-68a6b6e0ce69",
+  "task_type": "review_ea",
+  "verdict": "FAIL"
+}

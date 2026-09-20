@@ -1,0 +1,61 @@
+{
+  "bindings": {
+    "approved_card": {
+      "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11300_macd-psar-atr-trender-h4.md",
+      "sha256": "ace0c6b8ae9f45c8e63675d02edbe58cd2442de77cc2845fb1f3927d300bd75d"
+    },
+    "detailed_review": {
+      "path": "C:/QM/repo/docs/ops/evidence/2026-08-24_greview_11300.md",
+      "sha256": "7ac53945c5a9bf076d8e45a0a91112405ea55e5b4bf1ee6879f3d2f05a62a51e"
+    },
+    "ex5_sha256": "272e3f06bd4e04f1280665368a263fac4b2ede156610cd080276b968c6cd642a",
+    "mq5_sha256": "83ef727b80d9010706c7faddc8d1eea90a933a3bf37226a2bccd140af7504b53",
+    "source_artifact": {
+      "path": "C:/QM/repo/docs/ops/evidence/03dbc26e_QM5_11300_macd-psar-atr-trender-h4_build_identity.json",
+      "sha256": "f5a00aacf2168a4c3eefb6c271f7c71e5c6be821045249a8dbba39b4e0a0a72d"
+    },
+    "source_task_id": "03dbc26e-174f-4879-bbbc-ac69b07ec692"
+  },
+  "blockers": [
+    {
+      "code": "CARD_PARTIAL_EXITS_NOT_IMPLEMENTED",
+      "facts": ["card:72-75 and card:122-124 require one-third exits at 1x/2x/3x ATR", "mq5:152,160 provides one 2x ATR TP", "mq5:275-280 sends one entry request"]
+    },
+    {
+      "code": "CARD_PSAR_FLIP_CLOSE_NOT_IMPLEMENTED",
+      "facts": ["card:70-75 requires close on PSAR reversal", "mq5:218-221 always returns false", "mq5:203-213 only trails while PSAR remains on the protective side"]
+    },
+    {
+      "code": "CARD_TOO_WIDE_PSAR_REJECTION_NOT_IMPLEMENTED",
+      "facts": ["card:76,91 requires skipping when PSAR distance exceeds 1.5 ATR", "mq5:146-160 clamps to an ATR stop and still admits the trade"]
+    },
+    {
+      "code": "SPEC_MISSING",
+      "facts": ["framework/EAs/QM5_11300_macd-psar-atr-trender-h4/SPEC.md does not exist", "validate_spec_doc exits 1"]
+    },
+    {
+      "code": "PRODUCER_RESULT_SCHEMA_INCOMPLETE",
+      "facts": ["source artifact lacks compile_succeeded", "source artifact lacks spec_md_path", "source artifact lacks smoke_result and smoke_report_path"]
+    }
+  ],
+  "checks": {
+    "build_gate_hardening": {"failures": [], "verdict": "PASS"},
+    "build_guardrails": {"max_news_stale_hours": 336, "verdict": "PASS"},
+    "spec_doc": "FAIL:SPEC_MISSING",
+    "symbol_scope": "SINGLE_SYMBOL_OK"
+  },
+  "ea_id": "QM5_11300",
+  "ea_label": "QM5_11300_macd-psar-atr-trender-h4",
+  "registry_rows": [
+    "11300:0:EURUSD.DWX:113000000:active",
+    "11300:1:GBPUSD.DWX:113000001:active",
+    "11300:2:USDJPY.DWX:113000002:active",
+    "11300:3:AUDUSD.DWX:113000003:active"
+  ],
+  "schema": "qm.codex-gemini-review-no-change-state/v1",
+  "setfiles": {"count": 4, "risk_contract": "PASS:RISK_FIXED>0;RISK_PERCENT=0", "strategy_param_counts": [10, 10, 10, 10]},
+  "state_disposition": "REVIEW",
+  "task_id": "72cb14ec-664d-41c9-a9c0-a0047d593eb3",
+  "task_type": "review_ea",
+  "verdict": "FAIL"
+}
