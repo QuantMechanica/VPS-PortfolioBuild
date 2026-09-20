@@ -1,0 +1,81 @@
+{
+  "schema": "qm.dl089_ndx_census_stall_diagnosis/v1",
+  "task_id": "14a9cbf1-94bf-412c-8b8d-ae6ee3766594",
+  "ea_id": "QM5_41347",
+  "ea_label": "QM5_41347_cs-ichi-cloud-opt",
+  "predecessor_ea": "QM5_11294_cs-ichi-cloud",
+  "symbol": "NDX.DWX",
+  "phase": "OPT_CENSUS",
+  "batch_created_at": "2026-09-20T08:08:41.396889+00:00",
+  "measured_count": 18,
+  "infra_fail_count": 8,
+  "pending_count": 1059,
+  "infra_fail_work_item_ids": [
+    "a714d062-7bbe-55a7-a77d-9a82b4a58278",
+    "9326c580-de6e-5e6e-850e-ceb395e5f93a",
+    "e437391f-bcb4-5ac2-8274-2638ff97ae2a",
+    "2233671b-f4f9-555c-a30d-b777481e6131",
+    "88b687d4-92c5-5fd9-bc52-e962f6970e91",
+    "a89b49a8-b54f-590f-8e0c-ec8bfa8acaa4",
+    "eade8a6f-d670-5a42-9d1a-efbe77d3728f",
+    "910c695a-4f59-55af-bb8a-c220e79ee8fe"
+  ],
+  "failure_signature": "EA_MAGIC_NOT_REGISTERED: ea_id=41347 slot=1 magic=413470001",
+  "root_cause": "stale_include_closure_dispatch_race",
+  "root_cause_detail": {
+    "magic_registry_csv_rows": [
+      "41347,cs-ichi-cloud-opt,0,XAUUSD.DWX,413470000,2026-09-05,Codex governed allocator,active",
+      "41347,cs-ichi-cloud-opt,1,NDX.DWX,413470001,2026-09-19,claude governed slot add,active"
+    ],
+    "canonical_resolver_array_indices_for_ea_41347": [18179, 18180],
+    "canonical_resolver_regen_utc": "2026-09-19T18:20:57Z",
+    "release_hold_ledger_entry": {
+      "ts": "2026-09-20T08:00:14+00:00",
+      "work_item_id": "20cce28d-23d8-4f54-8b96-b3f983e24586",
+      "action": "release_hold",
+      "reason": "Fable 2026-09-20: QM5_41347 STALE_INCLUDE_CLOSURE rebuild (authority router_ops_issue:340b228c) for the NDX.DWX measurement slot"
+    },
+    "stale_include_closure_authority": "router_ops_issue:340b228c-5d85-4980-826a-243fd95bcae8:QM5_41347",
+    "authority_source_ref": "tools/strategy_farm/compile_work_items.py:3464-3482",
+    "deployed_ex5": {
+      "path": "D:\\QM\\mt5\\T1\\MQL5\\Experts\\QM\\QM5_41347_cs-ichi-cloud-opt.ex5",
+      "sha256": "3e475c8b7b6bf1596233768fc6b5852c0881f5c020d6ca08ec9b6f55abaa517d",
+      "last_write_utc": "2026-09-20T08:30:14.0282881Z"
+    },
+    "t1_local_include_sync_completed_utc": "2026-09-20T09:04:02Z",
+    "include_sha256_now_matching": {
+      "t1_local": "1ede6377f740f18c86858a60b5081e480185995fae639efeadce093d27878e66",
+      "canonical_repo": "1ede6377f740f18c86858a60b5081e480185995fae639efeadce093d27878e66",
+      "note": "identical as of this diagnosis; the already-deployed .ex5 above predates this sync by 34 minutes and still has the stale table baked in"
+    },
+    "last_measured_cell_completed_utc": "2026-09-20T08:31:35+00:00",
+    "first_infra_fail_started_utc": "2026-09-20T08:31:49+00:00",
+    "gap_seconds": 14
+  },
+  "claim_order_block": {
+    "mechanism": "poison_pill_quarantine",
+    "row": {
+      "ea_id": "QM5_41347",
+      "symbol": "NDX.DWX",
+      "phase": "OPT_CENSUS",
+      "active": 1,
+      "verdict_reason": "run_smoke_fail:ONINIT_FAILED;INCOMPLETE_RUNS",
+      "consecutive_failures": 8,
+      "successes_ever": 0,
+      "quarantined_at": "2026-09-20T14:34:03+00:00",
+      "released_at": null,
+      "evidence_path": "D:\\QM\\reports\\work_items\\910c695a-4f59-55af-bb8a-c220e79ee8fe\\QM5_41347\\20260920_083413\\summary.json"
+    },
+    "not_a_freeze": true,
+    "per_row_holds_found": 0
+  },
+  "recommended_recovery": [
+    "OWNER/Codex-governed recompile of QM5_41347_cs-ichi-cloud-opt (ROT: recompile in active inventory is never autonomous for Claude)",
+    "verify SHA256 match of QM_MagicResolver.mqh on every OPT_CENSUS dispatch-pool terminal before resuming dispatch to that terminal",
+    "single-cell OnInit smoke check for ea_id=41347 slot=1 before resuming volume",
+    "append-only reruns of the 8 infra_fail_work_item_ids via farmctl enqueue-backtest --append-only-rerun-of <id>",
+    "release poison_pill_quarantine row (QM5_41347, NDX.DWX, OPT_CENSUS) only after smoke check passes",
+    "census resumes to next level (L=2) once quarantine is released"
+  ],
+  "verdict_mutation_performed": false
+}
