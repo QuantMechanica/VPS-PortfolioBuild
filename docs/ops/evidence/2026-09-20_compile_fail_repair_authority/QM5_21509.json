@@ -1,0 +1,64 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260920:QM5_21509_qs-emv-trend-ndx:a6048a52",
+  "created_at_local": "2026-09-20T22:26:00+02:00",
+  "ea_id": "QM5_21509",
+  "ea_label": "QM5_21509_qs-emv-trend-ndx",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "OWNER-DEC-BACKLOG-20260912 via router build_ea:78f0cdff-f4af-4f31-af04-4d3b00e17584",
+    "branch": "agents/board-advisor",
+    "repair_commit": "44319cfeee",
+    "precompile_unbind_commit": "19435cf45b",
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "SYMBOL_LITERAL_AT_NATURAL_REBUILD",
+    "findings": [
+      "The first governed compile passed MetaEditor with zero errors and zero warnings, then build_check failed only because Strategy_NoTradeFilter compared _Symbol to the hardcoded trading-logic literal NDX.DWX.",
+      "The EA predates the OWNER 2026-09-06 symbols-as-inputs rule; its first natural rebuild therefore correctly required migration to an input-backed canonical symbol comparison.",
+      "Before the first compile, the never-compiled setfile also carried a stale 64-hex build binding. It was restored to the canonical pending state because the farm database had no prior work item for QM5_21509 and no canonical EX5 existed."
+    ],
+    "predecessor_compile_work_item_id": "8747592a-03f6-42bc-b8b8-12b8a7c1f1b4",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "EA_SYMBOL_LITERAL_REBUILD_REQUIRES_FIX",
+    "predecessor_compile_result": "PASS",
+    "predecessor_build_check_result": "FAIL",
+    "predecessor_failure_classes": [
+      "EA_SYMBOL_LITERAL_REBUILD_REQUIRES_FIX"
+    ],
+    "predecessor_mq5_sha256": "484f7cf6a7c49ec0e6b9e64097bcbbced969552bb28be13e8db8345283332dc2",
+    "predecessor_ex5_sha256": "204b54727e0b4a9f5ad2bb733c42db4c3f735ca7a32492bfd85195625b8620e5",
+    "predecessor_evidence_path": "D:/QM/reports/work_items/8747592a-03f6-42bc-b8b8-12b8a7c1f1b4/QM5_21509/COMPILE_EA/compile_evidence.json"
+  },
+  "repair": {
+    "current_mq5_sha256": "a6048a52c50760205296a4b91065e8da9b8a4b7340d2e9913ee62ea0ca1db8dc",
+    "changes": [
+      "Added strategy_host_symbol with the card-authorized default NDX.DWX.",
+      "Replaced the hardcoded _Symbol comparison with QM_MagicSymbolCanonical(_Symbol) versus QM_MagicSymbolCanonical(strategy_host_symbol), preserving the NDX-only contract across factory and bare broker names.",
+      "Added the same host-symbol value to the backtest setfile and retained RISK_FIXED=1000, RISK_PERCENT=0."
+    ],
+    "strategy_mechanics_changed": false,
+    "strategy_logic_attestation": "No strategy logic changed: EMV computation, zero-cross entries, SMA confirmation, ATR stop, trend exit, max-hold exit, spread cap, sizing, and news behavior are byte-identical outside the host-symbol plumbing hunk.",
+    "mq5_path": "framework/EAs/QM5_21509_qs-emv-trend-ndx/QM5_21509_qs-emv-trend-ndx.mq5"
+  },
+  "verification": {
+    "symbol_literal_lint": "PASS: zero hardcoded .DWX symbol literals",
+    "build_gate_hardening": "PASS: zero failures; one pre-existing non-blocking SMA prose-parser warning",
+    "validate_build_guardrails": "PASS",
+    "compile_predecessor": "MetaEditor PASS, build_check FAIL only on expected class"
+  },
+  "expected_failure_classes": [
+    "EA_SYMBOL_LITERAL_REBUILD_REQUIRES_FIX"
+  ],
+  "safety": {
+    "risk_fixed_required_positive": true,
+    "risk_percent_required_zero": true,
+    "news_stale_max_hours": 336,
+    "t_live_untouched": true,
+    "autotrading_untouched": true,
+    "portfolio_gate_authorized": false,
+    "live_manifest_authorized": false
+  }
+}

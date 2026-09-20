@@ -38,6 +38,10 @@ QM5_41142_AUTHORITY = (
     "compile_fail_repair:20260919:"
     "QM5_41142_eurusd-month-end-benchmark-fix-hedge-flow:bd65d86f"
 )
+QM5_21509_AUTHORITY = (
+    "compile_fail_repair:20260920:"
+    "QM5_21509_qs-emv-trend-ndx:a6048a52"
+)
 EXPECTED_AUTHORITIES = {
     QM5_41475_AUTHORITY,
     QM5_41477_AUTHORITY,
@@ -45,6 +49,7 @@ EXPECTED_AUTHORITIES = {
     QM5_41179_AUTHORITY,
     QM5_41189_AUTHORITY,
     QM5_41142_AUTHORITY,
+    QM5_21509_AUTHORITY,
 }
 
 
