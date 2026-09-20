@@ -3,16 +3,16 @@
 ; ea_id:        39004
 ; ea_slug:      forexfactory-thv-cobra-trix-scalper
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260920-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M5
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   42f4e4e17ae90a1f84b37fd749f9127b6dad5ad48ae2b6c6e710acb1660e53c9
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=39004
 qm_magic_slot_offset=0
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\worktrees\rework-slot-18\strategy-seeds\cards\QM5_39004_forexfactory-thv-cobra-trix-scalper.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_39004_forexfactory-thv-cobra-trix-scalper.md
 InpCoralPeriod=20
 InpFastTrix=9
 InpSlowTrix=18

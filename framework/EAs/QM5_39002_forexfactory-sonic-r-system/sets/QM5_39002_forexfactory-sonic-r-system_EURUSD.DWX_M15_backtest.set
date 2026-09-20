@@ -3,16 +3,16 @@
 ; ea_id:        39002
 ; ea_slug:      forexfactory-sonic-r-system
 ; ea_version:   v5.0
-; set_version:  s20260824-001
+; set_version:  s20260920-001
 ; symbol:       EURUSD.DWX
 ; timeframe:    M15
 ; environment:  backtest
 ; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
-; build_hash:   pending
+; build_hash:   8f8fa5f42a4dfe9330b53332152a06ca6eea572a71e4c0a9ec9a61bb1a892582
 ; author:       Development
-; date:         2026-08-24
+; date:         2026-09-20
 ;==========================================================
 qm_ea_id=39002
 qm_magic_slot_offset=0
@@ -20,7 +20,7 @@ RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
 ; strategy-specific params from card/input defaults must be appended below this line
-; card_defaults_source=C:\QM\worktrees\rework-slot-15\strategy-seeds\cards\QM5_39002_forexfactory-sonic-r-system.md
+; card_defaults_source=C:\QM\repo\strategy-seeds\cards\QM5_39002_forexfactory-sonic-r-system.md
 strategy_signal_tf=15
 strategy_dragon_period=34
 strategy_trendwave_period=89
