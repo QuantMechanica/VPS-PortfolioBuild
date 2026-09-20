@@ -18,6 +18,7 @@ import os
 import random
 import re
 import sqlite3
+import shutil
 import subprocess
 import sys
 import threading
@@ -1035,6 +1036,23 @@ _GENERATED_RECURRING_DOC_PATTERNS: tuple[tuple[re.Pattern[str], str, str], ...] 
         ),
         "generated_stranded_infra_triage",
         "tools/strategy_farm/sweep_enqueue_built_eas.py",
+    ),
+    # 2026-09-20 (Fable): the build lane's review-fail rework archives the
+    # build_result (`.codex_review_fail_attempt_N.json`) and rewrites the
+    # original; the daily evidence-cohort watch appends to its baseline. Both
+    # re-blocked the guard within an hour of every manual commit
+    # (49 -> 5 -> 3 -> 1 entries on 2026-09-19; 41255/41257/41261/41262).
+    (
+        re.compile(
+            r"artifacts/qm5_\d+_build_result_\d{8}(?:\.codex_review_fail_attempt_\d+)?\.json"
+        ),
+        "generated_build_result_archive",
+        "tools/strategy_farm/farmctl.py:_archive_rework_artifacts",
+    ),
+    (
+        re.compile(r"artifacts/evidence_cohort_baseline\.json"),
+        "generated_evidence_cohort_baseline",
+        "tools/strategy_farm/evidence_cohort_watch.py",
     ),
 )
 
@@ -16241,7 +16259,10 @@ def _archive_rework_artifacts(root: Path, build_task_id: str, payload: dict[str,
     if brp_path.exists() and brp_path.stat().st_size > 0:
         archive = brp_path.with_suffix(f".codex_review_fail_attempt_{attempt}.json")
         try:
-            brp_path.replace(archive)
+            # 2026-09-20 (Fable): copy, never move -- the build_result is
+            # committed evidence; a rename showed up as a tracked deletion and
+            # blocked repo_dirty_build_guard on every rework cycle.
+            shutil.copy2(brp_path, archive)
         except OSError:
             pass
     live_log = root / "logs" / f"codex_build_{build_task_id}.live.log"
