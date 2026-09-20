@@ -77,6 +77,41 @@ VELOCITY_WAVE3_AUTHORITIES = {
     ),
     "compile_fail_repair:20260920:QM5_11867_psar-adx50-di-h1:6c2f1696",
 }
+VELOCITY_WAVE3_COMPILER_FOLLOWUP_AUTHORITIES = {
+    "compile_fail_repair:20260920:QM5_10474_mql5-tdsglobal:86789323",
+    "compile_fail_repair:20260920:QM5_10475_mql5-puria:04284f6e",
+    "compile_fail_repair:20260920:QM5_10479_mql5-lbs-atr:50a3b922",
+    "compile_fail_repair:20260920:QM5_10783_tv-bos-forex:77c79017",
+    "compile_fail_repair:20260920:QM5_10798_tv-ema9-full:1bed4708",
+    "compile_fail_repair:20260920:QM5_10827_tv-vol-exp:685fcc7c",
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11304_kathy-lien-double-bollinger-trend:f91f4500"
+    ),
+    "compile_fail_repair:20260920:QM5_11305_alp-sma20-scalp:ffba9c38",
+    "compile_fail_repair:20260920:QM5_11343_triad-session-breakout:c18e11eb",
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11438_td-ema9ema30-momentum-h1:a7616b4e"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11443_burke-day3-breakout-trap-m5:d1429e50"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11454_davey-session-open-bracket-breakout:58bbef5c"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11459_blade-macd-stoch-divergence-h1:230937a6"
+    ),
+    (
+        "compile_fail_repair:20260920:"
+        "QM5_11559_carter-t-m5-ema3-bb203-macd:9da05f97"
+    ),
+    "compile_fail_repair:20260920:QM5_11867_psar-adx50-di-h1:45e9d0fa",
+}
 EXPECTED_AUTHORITIES = {
     QM5_41475_AUTHORITY,
     QM5_41477_AUTHORITY,
@@ -85,7 +120,7 @@ EXPECTED_AUTHORITIES = {
     QM5_41189_AUTHORITY,
     QM5_41142_AUTHORITY,
     QM5_21509_AUTHORITY,
-} | VELOCITY_WAVE3_AUTHORITIES
+} | VELOCITY_WAVE3_AUTHORITIES | VELOCITY_WAVE3_COMPILER_FOLLOWUP_AUTHORITIES
 
 
 def _registry() -> dict[str, dict[str, Any]]:
@@ -140,13 +175,18 @@ def test_registry_loads_and_validates() -> None:
             compile_work_items.sha256_file(evidence).lower()
             == entry["evidence_sha256"]
         )
+    for ea_label in {entry["ea_label"] for entry in registry.values()}:
+        entries = [
+            entry for entry in registry.values()
+            if entry["ea_label"] == ea_label
+        ]
         source = (
-            REPO_ROOT / "framework" / "EAs" / entry["ea_label"]
-            / f"{entry['ea_label']}.mq5"
+            REPO_ROOT / "framework" / "EAs" / ea_label
+            / f"{ea_label}.mq5"
         )
-        assert compile_work_items.sha256_file(source).lower() == (
-            entry["repaired_mq5_sha256"]
-        )
+        assert compile_work_items.sha256_file(source).lower() in {
+            entry["repaired_mq5_sha256"] for entry in entries
+        }
 
 
 @pytest.mark.parametrize(
