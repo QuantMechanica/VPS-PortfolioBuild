@@ -18601,3 +18601,17 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11574,robo-ichi-awesome-h1,8,WS30.DWX,115740008,2026-09-20,Codex governed allocator,active
 11574,robo-ichi-awesome-h1,9,GDAXI.DWX,115740009,2026-09-20,Codex governed allocator,active
 11574,robo-ichi-awesome-h1,10,UK100.DWX,115740010,2026-09-20,Codex governed allocator,active
+11865,ema5-15-60-pullback-h1,0,EURUSD.DWX,118650000,2026-09-20,Codex governed allocator,active
+11865,ema5-15-60-pullback-h1,1,GBPUSD.DWX,118650001,2026-09-20,Codex governed allocator,active
+11872,rsi-80-20-fade-m15,0,EURUSD.DWX,118720000,2026-09-20,Codex governed allocator,active
+11872,rsi-80-20-fade-m15,1,GBPUSD.DWX,118720001,2026-09-20,Codex governed allocator,active
+11872,rsi-80-20-fade-m15,2,USDJPY.DWX,118720002,2026-09-20,Codex governed allocator,active
+11872,rsi-80-20-fade-m15,3,AUDUSD.DWX,118720003,2026-09-20,Codex governed allocator,active
+11873,trix-signal-line-cross,0,EURUSD.DWX,118730000,2026-09-20,Codex governed allocator,active
+11873,trix-signal-line-cross,1,GBPUSD.DWX,118730001,2026-09-20,Codex governed allocator,active
+11873,trix-signal-line-cross,2,USDJPY.DWX,118730002,2026-09-20,Codex governed allocator,active
+11873,trix-signal-line-cross,3,AUDUSD.DWX,118730003,2026-09-20,Codex governed allocator,active
+11880,continuation-method-ema50-williams,0,EURUSD.DWX,118800000,2026-09-20,Codex governed allocator,active
+11880,continuation-method-ema50-williams,1,GBPUSD.DWX,118800001,2026-09-20,Codex governed allocator,active
+11880,continuation-method-ema50-williams,2,USDJPY.DWX,118800002,2026-09-20,Codex governed allocator,active
+11880,continuation-method-ema50-williams,3,AUDUSD.DWX,118800003,2026-09-20,Codex governed allocator,active
