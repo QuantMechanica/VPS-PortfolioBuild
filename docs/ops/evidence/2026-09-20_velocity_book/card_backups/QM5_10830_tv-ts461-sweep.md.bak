@@ -1,0 +1,110 @@
+---
+ea_id: QM5_10830
+slug: tv-ts461-sweep
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "Fran_Pineda, Strategy 461 - TS M15, TradingView open-source strategy, May 7, https://www.tradingview.com/script/8Evzyktw/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/liquidity-sweep]]"
+  - "[[concepts/reversal]]"
+  - "[[concepts/trend-filter]]"
+indicators:
+  - "[[indicators/ema]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 180
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 URL+author cited; R2 mechanical one-candle sweep reversal with stop/RR target and ~180 trades/year/symbol; R3 DWX XAUUSD/FX/indices testable; R4 fixed-rule no ML/grid/martingale, one-position compatible."
+---
+
+# TradingView Strategy 461 TS M15 Sweep
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `Strategy 461 - TS M15`, author handle `Fran_Pineda`, open-source strategy, accessed 2026-05-22, page shows May 7, https://www.tradingview.com/script/8Evzyktw/
+
+## Mechanics
+
+### Entry
+Use M15 baseline, source market XAUUSD.
+
+- Long setup:
+  - Previous candle is bearish.
+  - Current candle trades below the previous candle low.
+  - Current candle does not trade above the previous candle high.
+  - Current candle closes bullish.
+  - Current close is back above the previous candle low.
+  - Optional EMA(200) filter enabled: close is above EMA(200).
+- Short setup:
+  - Previous candle is bullish.
+  - Current candle trades above the previous candle high.
+  - Current candle does not trade below the previous candle low.
+  - Current candle closes bearish.
+  - Current close is back below the previous candle high.
+  - Optional EMA(200) filter enabled: close is below EMA(200).
+
+### Exit
+- Take profit: selected RR multiple of stop distance.
+- Baseline RR: 1.5R.
+- Exit only by stop or take profit.
+
+### Stop Loss
+- Long stop: below the sweep candle low plus configurable tick buffer.
+- Short stop: above the sweep candle high plus configurable tick buffer.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- Session filter optional; baseline tests London+NY active windows on XAUUSD and major indices.
+- Skip signals where sweep candle range is less than 0.25 * ATR(14) or greater than 2.5 * ATR(14).
+
+## Concepts (what kind of strategy is this)
+- [[concepts/liquidity-sweep]] - entry requires a one-candle stop-run through the prior candle extreme.
+- [[concepts/reversal]] - candle must close back with opposite directional strength.
+- [[concepts/trend-filter]] - optional EMA(200) prevents counter-trend entries.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `Fran_Pineda` are cited. |
+| R2 Mechanical | PASS | Source gives complete bullish/bearish sweep conditions, EMA bias option, stop beyond sweep wick, tick buffer, RR target, and stop/TP-only exits. |
+| R3 Data Available | PASS | Uses OHLC candles and EMA available on DWX XAUUSD, FX, and index CFDs. |
+| R4 ML Forbidden | PASS | Fixed price-action rules; no ML, no grid, no martingale, one-position compatible. |
+
+## R3
+Primary P2 basket: XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GER40.DWX, NDX.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says this is a short-term XAUUSD M15 liquidity sweep / TS pattern.
+- Source says bullish setups sweep the previous low, close bullish, and close back above the previous low.
+- Source says positions close automatically by stop loss or RR take profit.
+
+## Parameters To Test
+- Timeframe: M5, M15, M30.
+- EMA filter: off, EMA(200) on.
+- RR target: 1.0R, 1.5R, 2.0R.
+- Stop buffer: 0, 2, 5, 10 ticks.
+- Session: full day, London, New York, London+New York.
+- Sweep candle ATR bounds: none, 0.25-2.5 ATR, 0.5-2.0 ATR.
+
+## Initial Risk Profile
+High-cadence sweep reversal model. Main risks are spread sensitivity on one-candle stops and repeated false reversals in strong directional sessions.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView mechanical strategy source.
+
+## Related strategies
+- QM5_10824 tv-ny3h-sweep
+- QM5_10210 tv-turtle-ny-sweep
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

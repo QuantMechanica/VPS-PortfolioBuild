@@ -1,0 +1,123 @@
+---
+ea_id: QM5_11292
+slug: trix14-signal-cross
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/trend-following]]"
+  - "[[concepts/oscillator-crossover]]"
+  - "[[concepts/triple-smoothing]]"
+indicators:
+  - "[[indicators/trix]]"
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 30
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX]
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "TRIX(14)/Signal(9) triple-EMA ROC crossover with explicit next-bar-open entry, ATR-based SL/TP and BE rule is fully deterministic and Codex-implementable."
+r3_reasoning: "target_symbols EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX are all DWX FX pairs with H1/H4 data available."
+r4_reasoning: "Fixed-period EMA/ROC arithmetic only, no ML, one position per magic with fixed-percent live sizing."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11292_trix14-signal-cross.md"
+source_citation: ""
+g0_approval_reasoning: "R1 lineage recorded; R2 deterministic TRIX/signal cross entries with reverse/ATR exits and conservative 30 trades/year; R3 portable to listed FX .DWX symbols; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 18.0
+---
+
+# QM5_11292 TRIX(14) Signal-Line Cross (Triple Smoothed EMA Oscillator) (H1/H4)
+
+## Source
+- Source: "Trix Strategy Trading System" — ForexStrategiesResources.com (PDF, archived web article)
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\180983809-Trix-Strategy-Trading-System-Forex-Strategies-Forex-Resources-Forex-Trading-Free-Forex-Trading-Signals-and-FX-Forecast.pdf`
+- Author: Jack Hutson (original TRIX indicator, Technical Analysis of Stocks & Commodities magazine, early 1980s). Article documents the indicator and its mechanized trading rules.
+- R1: Named developer (Jack Hutson, TASC), published methodology. R1 PASS.
+
+## Mechanics
+
+TRIX = triple-smoothed Exponential Moving Average, expressed as a rate-of-change (today/yesterday − 1). A signal line (slower TRIX version) is used for crossovers — visually similar to MACD but with more smoothing and thus fewer false signals. Four methods documented; Method 1 (signal-line cross) and Method 2 (zero-line cross) are both fully mechanical.
+
+**Method 1 (primary card): Signal Line Cross**
+
+TRIX(14) = ROC of triple-EMA(14). Signal line = EMA(9) of TRIX(14) (standard setting).
+
+### Entry
+**LONG**: TRIX(14) crosses **above** its Signal Line (EMA(9) of TRIX(14)) from below. Enter BUY at next bar open.
+
+**SHORT**: TRIX(14) crosses **below** its Signal Line from above. Enter SELL at next bar open.
+
+**Method 2 (P3 sweep variant): Zero-Line Cross**
+- LONG: TRIX(14) crosses above zero. SHORT: TRIX(14) crosses below zero.
+
+### Exit
+- Method 1: Hold until reverse signal (TRIX crosses back through signal line in opposite direction). Close at bar open after signal.
+- Stop Loss: ATR(14) × 1.5 from entry.
+- Take Profit: ATR(14) × 2.5 (hold-to-signal alternative; TP only as safety net).
+- Break-even: Move to BE at +1× risk.
+
+### Stop Loss
+- ATR(14) × 1.5 from entry.
+- BE at +1× risk.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2 (HR4).
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1 primary; H4 alternative.
+- Spread cap: 20 pips.
+- News filter: off in P2.
+- Trend context (P3 sweep): add EMA(200) direction filter.
+
+## Concepts
+- [[concepts/triple-smoothing]] — primary (TRIX = triple EMA ROC, reduces noise)
+- [[concepts/oscillator-crossover]] — primary (TRIX vs Signal Line)
+- [[concepts/trend-following]] — secondary
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Jack Hutson, TASC magazine. Specific named developer with published methodology. R1 PASS. |
+| R2 Mechanical | PASS | TRIX = 3× EMA(14) ROC, signal = EMA(9) of TRIX. Cross detection deterministic. Entry on next bar open. Codex implements TRIX manually (not natively in MT5 indicator list). |
+| R3 Data Available | PASS | H1/H4 data on DWX all major FX. P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX. |
+| R4 No ML | PASS | Fixed-period EMAs, ROC. No ML. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from TRIX Strategy PDF (ForexStrategiesResources.com archive)
+
+## Implementation Notes for Codex (P1)
+- Timeframe: H1
+- DWX symbols: **EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX**
+- TRIX(14) computation (manual, MT5 has no native TRIX):
+  1. EMA1 = EMA(14) of Close
+  2. EMA2 = EMA(14) of EMA1
+  3. EMA3 = EMA(14) of EMA2
+  4. TRIX = (EMA3[0] − EMA3[1]) / EMA3[1] × 100  (percent ROC)
+- Signal line = EMA(9) of TRIX series.
+- LONG: `trix[1] <= signal[1] && trix[0] > signal[0]`.
+- SHORT: `trix[1] >= signal[1] && trix[0] < signal[0]`.
+- Entry: next bar open.
+- Pre-allocate circular buffers for EMA1, EMA2, EMA3, TRIX on OnCalculate.
+- SL: `iATR(NULL, 0, 14, 0) * 1.5`; TP: `iATR(NULL, 0, 14, 0) * 2.5`.
+- P3 sweeps: TRIX period (9, 14, 18, 21); signal period (5, 9, 13); Method 1 vs Method 2 (zero-cross).
+
+## Related strategies
+- Related: QM5_11219_ft-macdx-cci — similar oscillator approach but uses MACD + CCI
+- Differentiator: TRIX uses triple smoothing → fewer whipsaws vs standard MACD; signal period affects lag tradeoff.
+
+## Lessons learned (during the pipeline run)
+- *(populated as pipeline progresses)*

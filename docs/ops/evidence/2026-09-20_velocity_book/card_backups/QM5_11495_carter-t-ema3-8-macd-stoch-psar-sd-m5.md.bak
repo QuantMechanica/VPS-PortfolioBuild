@@ -1,0 +1,133 @@
+---
+ea_id: QM5_11495
+slug: carter-t-ema3-8-macd-stoch-psar-sd-m5
+type: strategy
+source_id: b3b11449-1e72-5140-917b-c35b6253f1e7
+sources:
+  - "[[sources/carter-thomas-20-forex-m5]]"
+concepts:
+  - "[[concepts/ema-crossover-fast]]"
+  - "[[concepts/macd-zero-cross]]"
+  - "[[concepts/stochastic-signal-cross]]"
+  - "[[concepts/parabolic-sar-trend]]"
+  - "[[concepts/volatility-filter-sd]]"
+indicators:
+  - EMA(3)
+  - EMA(8)
+  - MACD(12,26,9)
+  - Stochastic(10,15,15)
+  - ParabolicSAR(0.02,0.2)
+  - StdDev(20)
+period: M5
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (5 Minute Time Frame)', self-published 2014 (System #17). R1 CONDITIONAL — named individual, self-published ebook."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id present (Carter self-published ebook source record); R1 requires exactly one source, type is open — lineage traceable."
+r2_mechanical: PASS
+r2_reasoning: "EMA(3/8) comparison, PSAR position, MACD zero-cross, Stochastic signal cross, and per-symbol SD threshold are all deterministic MT5 primitives."
+r3_data_available: PASS
+r3_reasoning: "M5 DWX FX symbols available; iMA, iSAR, iMACD, iStochastic, iStdDev are all MT5-native."
+r4_ml_forbidden: PASS
+r4_reasoning: "Threshold comparisons on five standard indicators with fixed per-symbol SD values; no ML, no adaptive refit, one position per magic."
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 60
+g0_approval_reasoning: "R1 single source_id; R2 mechanical M5 multi-indicator rules with plausible >2 trades/year/symbol; R3 DWX FX testable; R4 deterministic no ML."
+---
+
+# QM5_11495 Carter-T — EMA3/8 + MACD + Stoch + PSAR + SD Volatility Filter (M5)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)", System #17, self-published 2014. URL/source record: [[sources/carter-thomas-20-forex-m5]].
+- R1: CONDITIONAL — named author, self-published ebook.
+
+## Mechanics
+
+**Concept**: Five independent trend/momentum signals must align before entering. EMA(3) vs EMA(8) gives the fastest direction. SAR confirms it structurally. MACD > 0 confirms momentum direction. Stochastic gives a crossover trigger. Standard Deviation (SD) filters out low-volatility/ranging periods — only trade when the market is "moving" (medium or strong SD). Exit when the fast EMA pair reverses.
+
+**Logic**: Five-indicator stack creates a high-selectivity filter. SD thresholds are pair-specific (different for AUD/NZD, JPY, and other pairs) to account for per-symbol volatility levels. The SD(20) threshold effectively prevents trading in dead/flat markets at this timeframe.
+
+### Entry
+
+**LONG (all conditions must hold on bar close):**
+1. `EMA(3) > EMA(8)`: `iMA(NULL,PERIOD_M5,3,0,MODE_EMA,PRICE_CLOSE,1) > iMA(NULL,PERIOD_M5,8,0,MODE_EMA,PRICE_CLOSE,1)`
+2. **Parabolic SAR below price**: `iSAR(NULL,PERIOD_M5,0.02,0.2,1) < iLow(NULL,PERIOD_M5,1)`
+3. **MACD > 0**: `iMACD(NULL,PERIOD_M5,12,26,9,PRICE_CLOSE,MODE_MAIN,1) > 0`
+4. **Stochastic blue crosses up red**: `iStochastic(NULL,PERIOD_M5,10,15,15,MODE_SMA,STO_LOWHIGH,MODE_MAIN,1) > iStochastic(...,MODE_SIGNAL,1)` AND was below on previous bar
+5. **SD in medium or strong range**: `iStdDev(NULL,PERIOD_M5,20,0,MODE_SMA,PRICE_CLOSE,1)` meets pair-specific threshold (see below)
+6. Enter BUY at open of bar[0]
+
+**SHORT (mirror):**
+1. `EMA(3) < EMA(8)`
+2. SAR above price
+3. `MACD < 0`
+4. Stochastic blue crosses DOWN red
+5. SD in medium/strong range
+6. Enter SELL
+
+**Close (for long):**
+- `EMA(3) < EMA(8)` — fast MA reversal; close position at next bar open
+- Or SL hit
+
+### Exit
+- **SL**: most recent swing low (for long) — `iLowest(NULL,PERIOD_M5,MODE_LOW,5,2)` bars back
+- **TP**: No source-specified TP; QM adds: `entry + 2 * iATR(NULL,PERIOD_M5,14,0)`
+- P2 cap: 20 pips SL
+
+### Stop Loss
+- Prior swing low/high (5-bar lookback from entry) — QM-defined
+- P2 cap: 20 pips
+
+### Standard Deviation Thresholds (pair-specific)
+| Symbol family | Weak | Medium | Strong |
+|---|---|---|---|
+| AUD, NZD pairs | < 0.0001 | 0.0001–0.0005 | ≥ 0.0005 |
+| JPY pairs | < 0.05 | 0.05–0.10 | ≥ 0.10 |
+| All others (EUR, GBP, CHF) | < 0.005 | 0.005–0.010 | ≥ 0.010 |
+
+Enter only in MEDIUM or STRONG range. P2: test both medium+ and strong-only filters.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5
+- Instruments: EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX, USDJPY.DWX
+- Spread cap: 15 pips
+- No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Thomas Carter, self-published ebook, no verifiable credentials. |
+| R2 Mechanical | PASS | EMA: iMA(3/8,EMA). SAR: iSAR(0.02,0.2). MACD: iMACD(12,26,9). Stochastic: iStochastic(10,15,15). SD: iStdDev(20,SMA). Per-symbol SD thresholds from source. All MT5-native. |
+| R3 Data Available | PASS | M5 DWX FX. All MT5-native. |
+| R4 No ML | PASS | Threshold comparisons only. No ML. |
+
+G0 APPROVE eligible with CONDITIONAL R1 note. Five-indicator stack may overfit M5 noise — P2 backtest critical.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Thomas Carter, System #17
+
+## Implementation Notes for Codex (P1)
+- `double ema3 = iMA(NULL,PERIOD_M5,3,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double ema8 = iMA(NULL,PERIOD_M5,8,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double sar = iSAR(NULL,PERIOD_M5,0.02,0.2,1)`
+- `double macd = iMACD(NULL,PERIOD_M5,12,26,9,PRICE_CLOSE,MODE_MAIN,1)`
+- `double stoch_main = iStochastic(NULL,PERIOD_M5,10,15,15,MODE_SMA,STO_LOWHIGH,MODE_MAIN,1)`
+- `double stoch_sig = iStochastic(NULL,PERIOD_M5,10,15,15,MODE_SMA,STO_LOWHIGH,MODE_SIGNAL,1)`
+- `double stoch_main_prev = iStochastic(...,2)`, `double stoch_sig_prev = iStochastic(...,MODE_SIGNAL,2)`
+- Stoch cross up: `stoch_main > stoch_sig && stoch_main_prev <= stoch_sig_prev`
+- `double sd = iStdDev(NULL,PERIOD_M5,20,0,MODE_SMA,PRICE_CLOSE,1)`
+- SD threshold per symbol: detect instrument family from _Symbol, apply appropriate medium threshold
+- SL: `iLowest(NULL,PERIOD_M5,MODE_LOW,5,2)` bar → SL at that low
+- TP: `entry + 2.0 * iATR(NULL,PERIOD_M5,14,0)`
+- P3 sweeps: SD filter on/off, SD threshold (medium vs strong), ATR SL multiplier, MACD threshold (0 vs negative/positive confirmation)
+
+## Related strategies
+- Related: QM5_11486 (carter-t-20ema-macd-zero-m5) — same source, EMA+MACD M5
+- Related: QM5_11485 (carter-t-cci100-macd-momentum-m5) — same source
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

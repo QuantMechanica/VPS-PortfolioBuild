@@ -1,0 +1,113 @@
+---
+ea_id: QM5_10861
+slug: tv-fli-stc
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "wikitrader1, FLI + STC + MACD + EMA Strategy v1, TradingView open-source strategy, Apr 3, https://www.tradingview.com/script/xlNwG5Ho-FLI-STC-MACD-EMA-Strategy-v1/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/trend-following]]"
+  - "[[concepts/momentum-confirmation]]"
+  - "[[concepts/confluence-filter]]"
+indicators:
+  - "[[indicators/follow-line]]"
+  - "[[indicators/stc]]"
+  - "[[indicators/macd]]"
+  - "[[indicators/ema]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+r1_reasoning: "Single source_id present with exact TradingView URL and author handle cited."
+r2_reasoning: "Follow Line flip plus at least two of three confirmations (STC, MACD, EMA) in Balanced mode are specified; V5 ATR stop/target and time exit fill the source's native exit gap."
+r3_reasoning: "Bollinger Bands, ATR, STC, MACD, and EMA are all implementable on DWX FX, metals, and index CFDs."
+r4_reasoning: "Fixed indicator confluence; one position per magic, no ML, no adaptive PnL learning, no grid, no martingale."
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 70
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 PASS TradingView URL/author cited; R2 PASS deterministic Follow Line/STC/MACD/EMA confluence with V5 ATR/time/opposite-signal exits, est 70 trades/year/symbol; R3 PASS indicators testable on DWX; R4 PASS fixed rules no ML/grid/martingale one-position compatible."
+---
+
+# TradingView Follow Line STC MACD EMA
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `FLI + STC + MACD + EMA Strategy v1`, author handle `wikitrader1`, open-source strategy, accessed 2026-05-22, page shows Apr 3, https://www.tradingview.com/script/xlNwG5Ho-FLI-STC-MACD-EMA-Strategy-v1/
+
+## Mechanics
+
+### Entry
+Use H1 baseline:
+
+- Compute Follow Line Indicator from Bollinger Band structure with ATR filtering enabled.
+- Compute Schaff Trend Cycle.
+- Compute MACD line, signal, and histogram.
+- Compute EMA bias, default EMA(200).
+- P2 baseline uses Balanced mode: Follow Line bullish flip plus at least two enabled bullish confirmations.
+- Long confirmations: STC bullish threshold cross or positive slope, MACD bullish cross or positive histogram slope, close > EMA(200).
+- Short confirmations: Follow Line bearish flip plus at least two bearish confirmations from STC, MACD, and close < EMA(200).
+- Enter on confirmed bar close only.
+
+### Exit
+- Source visible text is entry/alert focused and does not publish full native exits.
+- V5 baseline exits: opposite Follow Line flip, ATR stop/target, and time exit.
+- Close long on bearish Follow Line flip or MACD bearish cross; close short on bullish Follow Line flip or MACD bullish cross.
+
+### Stop Loss
+- Initial stop = ATR(14) * 1.5 from entry.
+- Target = ATR(14) * 2.5 from entry.
+- Time exit after 36 H1 bars if no stop/target/opposite flip occurs.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- Freeze confirmation mode to Balanced for P2; do not optimize entry mode inside a single run.
+- EMA bias defaults to price above/below EMA(200).
+- Disable debug/alert-only pathways; EA trades only closed-bar confirmed signals.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/trend-following]] - Follow Line and EMA define directional trend.
+- [[concepts/momentum-confirmation]] - STC and MACD confirm timing.
+- [[concepts/confluence-filter]] - Balanced mode requires multiple confirmations.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `wikitrader1` are cited. |
+| R2 Mechanical | UNKNOWN | Source gives clear confluence entry modes but visible page omits native stop/target; V5 exits are supplied. |
+| R3 Data Available | PASS | Bollinger Bands, ATR, STC, MACD, EMA, and OHLC are implementable on DWX symbols. |
+| R4 ML Forbidden | PASS | Fixed indicator confluence, no ML, no adaptive PnL learning, no grid, no martingale, one-position compatible. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says Follow Line is the main trend-flip engine.
+- Source says Balanced mode requires a Follow Line flip plus at least two enabled confirmations.
+- Source says STC, MACD, and EMA can be used as stricter confirmation filters.
+
+## Parameters To Test
+- Timeframe: M30, H1, H4.
+- Entry mode: Balanced, Strict.
+- EMA length: 50, 100, 200.
+- STC mode: threshold cross, slope only.
+- MACD mode: cross only, cross or slope.
+- ATR stop/target: 1.0/2.0, 1.5/2.5, 2.0/3.0.
+
+## Initial Risk Profile
+Medium-cadence confluence trend strategy. Main risks are over-filtering and source-visible lack of native management detail.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView mechanical strategy source.
+
+## Related strategies
+- QM5_10825 tv-macd-mtf
+- QM5_10858 tv-qing-sqz
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

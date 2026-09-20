@@ -1,0 +1,87 @@
+---
+id: QM5_11867
+ea_id: QM5_11867
+slug: psar-adx50-di-h1
+title: "PSAR + ADX(50) Directional Index"
+version: 1
+status: draft
+created_at: 2026-05-24
+author: claude
+
+source_id: 3c77a80c-f428-57eb-a720-51347dd823b3
+source_citation: "Thomas Carter, 20 Forex Trading Strategies (1 Hour Time Frame), 2014. URL: local PDF archive"
+r1_verdict: PASS
+r2_verdict: PASS
+
+timeframe: H1
+asset_class: forex
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX]
+direction: both
+entry_type: market
+
+indicators:
+  - name: PSAR
+    step: 0.02
+    maximum: 0.2
+  - name: ADX
+    period: 50
+  - name: DI_Plus
+    period: 50
+  - name: DI_Minus
+    period: 50
+
+strategy_params:
+  bull_condition: "+DI > -DI AND PSAR dot below current candle"
+  bear_condition: "-DI > +DI AND PSAR dot above current candle"
+  entry_trigger: "Both conditions align on same bar close"
+  sl_type: "2×ATR(14)"
+  tp_type: "4×ATR(14)"
+  risk_reward: 2.0
+
+risk:
+  sl_type: atr_multiple
+  sl_atr_period: 14
+  sl_atr_multiplier: 2.0
+  tp_type: atr_multiple
+  tp_atr_period: 14
+  tp_atr_multiplier: 4.0
+  risk_fixed: 1000
+  risk_percent: 0.5
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+card_body_incomplete: false
+card_body_missing: ""
+g0_status: APPROVED
+g0_approval_reasoning: "R1 source_id+citation single local PDF; R2 mechanical PSAR/DI entries plus ATR/PSAR exits with plausible H1 cadence >2/year/symbol; R3 forex DWX-testable; R4 deterministic no ML/HR14 issue."
+last_updated: 2026-05-24
+expected_trades_per_year_per_symbol: 20
+---
+
+## Strategy: PSAR + ADX(50) Directional Index
+
+Combines PSAR trend direction with ADX(50) directional index confirmation.
+
+Source: Thomas Carter, 20 Forex Trading Strategies (1 Hour Time Frame), 2014. URL: local PDF archive.
+Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX.
+Period: H1.
+Expected trade frequency: approximately 20 trades per year per symbol, because PSAR/DI trend alignment can recur multiple times per quarter on H1 majors.
+
+### Entry Conditions
+
+**Long**: +DI > -DI (ADX period 50) AND PSAR dot is below the current candle.  
+**Short**: -DI > +DI AND PSAR dot is above the current candle.
+
+Enter at close of the bar where both conditions first align.
+
+### Exit
+
+- **SL**: 2×ATR(14) from entry
+- **TP**: 4×ATR(14) from entry (R:R = 2.0)
+
+Exit also on PSAR flip (whichever comes first: TP, SL, or PSAR reversal).
+
+### Notes
+
+ADX(50) is a slow-period setting that filters out noise — this is a trend-following entry, not a reversal. PSAR provides the real-time trailing stop signal in addition to serving as the filter.

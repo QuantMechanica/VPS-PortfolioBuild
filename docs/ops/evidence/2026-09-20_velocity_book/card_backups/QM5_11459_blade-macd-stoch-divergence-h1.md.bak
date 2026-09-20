@@ -1,0 +1,113 @@
+---
+ea_id: QM5_11459
+slug: blade-macd-stoch-divergence-h1
+type: strategy
+source_id: ea67ad76-751d-576b-a28a-4efb99691dad
+sources:
+  - "[[sources/saunders-blade-forex]]"
+concepts:
+  - "[[concepts/macd-divergence]]"
+  - "[[concepts/stochastic-overbought]]"
+  - "[[concepts/divergence]]"
+  - "[[concepts/reversal]]"
+indicators:
+  - "[[indicators/macd]]"
+  - "[[indicators/stochastic]]"
+period: H1
+source_citation: "Dean Saunders, Blade Forex Strategies (online/self-published). R1 CONDITIONAL — named individual, no verifiable major-publisher credentials."
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 30
+g0_approval_reasoning: "R1 single Saunders source_id; R2 mechanical MACD/Stoch divergence rules with H1 cadence ~30 trades/year plausible; R3 DWX FX H1 testable; R4 deterministic no ML."
+---
+
+# QM5_11459 Saunders Blade — MACD + Stochastic Divergence (H1)
+
+## Source
+- Source: "Blade Forex Strategies" by Dean Saunders (online/self-published)
+- Source citation: Dean Saunders, Blade Forex Strategies, online/self-published, 2026 source review; URL lineage captured in source_id.
+- R1: CONDITIONAL — named individual author, self-published, no major-publisher verification.
+
+## Mechanics
+
+**Concept**: A dual-indicator divergence reversal. MACD makes a lower high (bearish divergence) while price makes a higher high — indicating weakening momentum behind the new price high. Simultaneously, Stochastic rises above 80 (overbought) and the fast K line crosses back below 80 (exits overbought zone). Both indicators signal the same reversal. Entry is taken at the next bar's open after the confirmation bar's close.
+
+**Key rule**: Both the MACD divergence AND the Stochastic overbought exit must occur on the same bar (or within 2 bars of each other) to constitute a signal. Isolated divergence without Stochastic confirmation is skipped.
+
+### Divergence Definition (Bearish — SHORT setup)
+
+**MACD bearish divergence:**
+1. Find a prior MACD histogram peak (local maximum within past 20 bars): `macd_peak_1`
+2. Current MACD histogram forms a new local peak: `macd_peak_2 < macd_peak_1` (lower MACD peak)
+3. Simultaneously, price forms a higher high: `High[1] > price_high_at_macd_peak_1`
+4. This is confirmed divergence
+
+**Stochastic overbought exit:**
+1. `Stoch_K[2] > 80` — Stochastic K was above 80 (overbought)
+2. `Stoch_K[1] < 80` — Stochastic K crossed below 80 on bar[1] (exiting overbought)
+3. Both MACD divergence and Stoch exit must occur within 2 bars of each other
+
+**SHORT entry:**
+1. MACD bearish divergence confirmed
+2. Stoch K exits overbought zone on bar[1]
+3. `Close[1] < Open[1]` (optional confirmation: bar[1] is bearish) — increases signal quality
+4. Enter SELL at open of bar[0]
+
+**LONG (bullish divergence — mirror):**
+1. MACD makes a higher trough while price makes a lower low
+2. Stochastic exits oversold (K crosses above 20)
+3. Enter BUY at open of bar[0]
+
+### Exit
+- **TP**: `entry - ATR(14)[1] × 2.0` (short) / `entry + ATR(14)[1] × 2.0` (long)
+- **MACD histogram cross**: exit when MACD histogram reverses direction from the trade direction
+
+### Stop Loss
+- SHORT: `High[1] + 5 pips` (above the divergence peak bar's high)
+- LONG: `Low[1] - 5 pips`
+- P2 cap: 80 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1 (primary) — also tested on H4
+- Lookback for divergence: 20 bars
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+- Spread cap: 20 pips
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Dean Saunders, named author, self-published Blade Forex. |
+| R2 Mechanical | PASS | MACD histogram peak comparison (rolling local max over 20 bars) and Stochastic threshold — pure arithmetic. Both MT5-native. |
+| R3 Data Available | PASS | H1 DWX FX. iMACD, iStochastic MT5-native. |
+| R4 No ML | PASS | Fixed periods (MACD 12/26/9, Stoch K9/D3, lookback 20). |
+
+G0 APPROVE eligible with CONDITIONAL R1 note.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Saunders Blade Forex Strategies
+
+## Implementation Notes for Codex (P1)
+- MACD: `iMACD(NULL,PERIOD_H1,12,26,9,PRICE_CLOSE,MODE_MAIN,i)` for bars i=1..20
+- Peak detection: scan bars 1..20 for local max (hist[i] > hist[i-1] && hist[i] > hist[i+1]); store first peak `macd_peak_1_val` and its bar index
+- Current peak: detect on bar[1] — new local peak if `hist[1] > hist[2] && hist[1] > hist[0]`
+- Divergence: `macd_peak_2_val < macd_peak_1_val && iHigh(H1,1) > iHigh(H1, peak1_bar)` 
+- Stoch: `iStochastic(NULL,PERIOD_H1,9,3,3,MODE_SMA,STO_LOWHIGH,MODE_MAIN,1)` — K line
+- Overbought exit: `K[2] > 80 && K[1] < 80`
+- Window: divergence and Stoch exit within 2 bars: `abs(divergence_bar - stoch_exit_bar) <= 2`
+- P3 sweeps: MACD (8/12/19, 17/26/39, 9), Stoch (5/9/14, K/D), divergence lookback (10/20/30)
+
+## Related strategies
+- Related: QM5_11449 (macd-psar-atr-trend-h4) — also MACD-based; H4 trend-following vs. H1 divergence reversal
+- Related: QM5_11431 (lien-xtreme-fade-bb-adx-m15) — also a reversal setup using oscillator extreme; BB+ADX vs. MACD+Stoch divergence
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

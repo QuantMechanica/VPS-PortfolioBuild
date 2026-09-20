@@ -1,0 +1,117 @@
+---
+ea_id: QM5_11518
+slug: carter-t-ema5-100-mtf-m15-h1
+type: strategy
+source_id: 8794b680-f6f4-5142-b12c-e5e0057e7bcf
+sources:
+  - "[[sources/carter-thomas-20-forex-trend-following-systems]]"
+concepts:
+  - "[[concepts/mtf-filter]]"
+  - "[[concepts/ema-dual-filter]]"
+  - "[[concepts/ema-cross-entry]]"
+indicators:
+  - EMA(5)
+  - EMA(100)
+period: M15
+target_symbols: [EURUSD.DWX, GBPUSD.DWX]
+source_citation: "Thomas Carter, 'Forex Trend Following Strategies: 20 Trend Following Systems', self-published 2014 (System #15). R1 CONDITIONAL — named individual, self-published ebook."
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 15
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "Fully mechanical H1-filter/M15-cross EMA(5/100) MTF rules with explicit iMA calls and fixed 15/30-pip SL/TP; no discretion."
+r3_reasoning: "M15 and H1 EURUSD.DWX/GBPUSD.DWX bar data are present and MT5-native for MTF iMA reads."
+r4_reasoning: "Deterministic threshold/cross comparisons only, no ML or adaptive re-fitting, compatible with one-position-per-magic."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11518_carter-t-ema5-100-mtf-m15-h1.md"
+g0_approval_reasoning: "R1 lineage retained; R2 deterministic M15 EMA cross with closed-H1 EMA regime filter and explicit SL/TP, conservatively estimated at 15 trades/year/symbol; R3 testable on EURUSD.DWX and GBPUSD.DWX; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 18.0
+---
+
+# QM5_11518 Carter-T — EMA(5/100) MTF: H1 Filter + M15 Entry
+
+## Source
+- Source: Thomas Carter, "Forex Trend Following Strategies: 20 Trend Following Systems", System #15, self-published 2014.
+- R1: CONDITIONAL — named author, self-published ebook.
+
+## Mechanics
+
+**Concept**: Multi-timeframe EMA strategy using same indicator pair (EMA5/EMA100) on two timeframes. H1 filter: EMA(5) > EMA(100) on H1 = bullish higher-timeframe trend. M15 entry: EMA(5) crosses up EMA(100) on M15 = local momentum confirms higher-TF direction. TP: 30 pips.
+
+**Logic**: The same EMA gap (5 vs 100) on H1 provides a structural filter: H1 EMA5 > EMA100 means the multi-hour trend is bullish. When M15 EMA5 then crosses up EMA100, the intraday momentum aligns with the H1 structure. The cross happens when the local range is also confirming the upside.
+
+**Note**: Source specifies EUR/USD. QM expands to GBP/USD.
+
+### Entry
+
+**LONG:**
+1. **H1 filter (bullish)**: `iMA(NULL,PERIOD_H1,5,...,0) > iMA(NULL,PERIOD_H1,100,...,0)` (read H1 EMA from M15 chart using explicit timeframe)
+2. **M15 EMA cross**: `iMA(NULL,PERIOD_M15,5,...,1) > iMA(NULL,PERIOD_M15,100,...,1)` AND crossed up within last 3 bars
+3. Enter BUY at open of next bar
+
+**SHORT:**
+1. H1: EMA(5) < EMA(100) on H1
+2. M15: EMA(5) crosses below EMA(100)
+3. Enter SELL at next bar
+
+### Exit
+- **TP**: 30 pips (source-specified)
+- **SL**: Source unspecified. QM P2: 15 pips (= 1:2 risk for 30-pip TP)
+- P2 cap: 20 pips SL
+
+### Stop Loss
+- `SL_long = entry - 15*pip`
+- `SL_short = entry + 15*pip`
+- P2 cap: 20 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M15 (entry chart; H1 filter read from same chart via iMA with PERIOD_H1)
+- Instruments: EURUSD.DWX (source-specified), GBPUSD.DWX (QM expansion)
+- Spread cap: 12 pips
+- No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Thomas Carter, self-published ebook. No verifiable credentials. |
+| R2 Mechanical | PASS | EMA(5/100) on PERIOD_H1 and PERIOD_M15: iMA with explicit timeframe. All MT5-native. |
+| R3 Data Available | PASS | M15 + H1 DWX FX. MT5-native. |
+| R4 No ML | PASS | Threshold comparisons only. No ML. |
+
+G0 APPROVE eligible with CONDITIONAL R1 note. MTF EMA using iMA with explicit PERIOD_H1 from M15 chart is MT5-native. Bar-synchronization note: H1 bar must be fully closed when reading — use shift 0 with care or read H1 at shift 1 (previous completed H1 bar). P1 must handle MTF bar alignment correctly.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Thomas Carter, "Forex Trend Following Strategies", System #15, 2014
+
+## Implementation Notes for Codex (P1)
+- H1 filter: `double h1_ema5 = iMA(NULL,PERIOD_H1,5,0,MODE_EMA,PRICE_CLOSE,1)` — use shift 1 (last completed H1 bar)
+- H1 filter: `double h1_ema100 = iMA(NULL,PERIOD_H1,100,0,MODE_EMA,PRICE_CLOSE,1)`
+- M15 entry: `double m15_ema5_1 = iMA(NULL,PERIOD_M15,5,0,MODE_EMA,PRICE_CLOSE,1)`
+- M15 entry: `double m15_ema100_1 = iMA(NULL,PERIOD_M15,100,0,MODE_EMA,PRICE_CLOSE,1)`
+- H1 condition: `h1_ema5 > h1_ema100` (bullish H1)
+- M15 cross: detect up cross on bar[1] vs bar[2]
+- SL: 15 pips; TP: 30 pips
+- P3 sweeps: EMA periods (5/100 vs 8/100 vs 5/50), H1 filter strict (EMA5 > EMA100 by ≥5 pips), SL/TP (10/20 vs 15/30 pips)
+
+## Related strategies
+- Related: QM5_11517 (carter-t-ema5-15-50-100-macd-h4) — same source, EMA5 with long EMAs H4
+- Related: QM5_11519 (carter-t-ema7-21-pullback) — same source, EMA-based entries
+- Related: QM5_11487 (carter-t-50-100-ema-macd-breakout-m5) — Carter M5 book, EMA50/100 MTF
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

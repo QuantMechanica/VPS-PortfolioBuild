@@ -1,0 +1,83 @@
+---
+ea_id: QM5_11872
+slug: rsi-80-20-fade-m15
+title: "RSI(80/20) Overbought/Oversold Fade"
+version: 1
+status: draft
+created_at: 2026-05-24
+author: claude
+
+source_id: 182e6755-015a-50ff-a0c9-b5507c5308b4
+source_citation: "Unknown author, My Top Three Scalping Trading Strategies, ~2020. URL: local PDF archive"
+r1_verdict: FAIL
+r2_verdict: PASS
+
+timeframe: M15
+asset_class: forex
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX]
+expected_trade_frequency: "M15 RSI(14) 80/20 closes on major FX pairs should occur repeatedly in ranging and trending regimes; conservative estimate 20-80 trades/year/symbol."
+expected_trades_per_year_per_symbol: 40
+direction: both
+entry_type: market
+
+indicators:
+  - name: RSI
+    period: 14
+    apply_to: close
+    overbought: 80
+    oversold: 20
+
+strategy_params:
+  short_trigger: "M15 candle closes with RSI above 80"
+  long_trigger: "M15 candle closes with RSI below 20"
+  entry: "Market order on close of the triggering bar"
+  sl_pips: 5
+  tp_pips: 5
+  risk_reward: 1.0
+
+risk:
+  sl_type: fixed_pips
+  sl_value: 5
+  tp_type: fixed_pips
+  tp_value: 5
+  risk_fixed: 1000
+  risk_percent: 0.5
+r1_track_record: PASS
+r1_reasoning: "Single source_id present; local PDF with title satisfies lineage requirement under current R1 criteria (prior r1_verdict FAIL was under pre-2026-05-15 strict criteria)."
+r2_mechanical: PASS
+r2_reasoning: "RSI > 80 short trigger and RSI < 20 long trigger with fixed 5-pip SL/TP are fully mechanical."
+r3_data_available: PASS
+r3_reasoning: "EURUSD, GBPUSD, USDJPY, AUDUSD are directly available DWX forex instruments."
+r4_ml_forbidden: PASS
+r4_reasoning: "Deterministic RSI threshold rules with fixed SL/TP; no ML, no adaptive parameters, 1-pos-per-magic compatible."
+card_body_incomplete: true
+card_body_missing: "source_citation,target_symbols,expected_trade_frequency"
+g0_status: APPROVED
+g0_approval_reasoning: "R1 single source_id/local PDF attribution; R2 mechanical RSI 80/20 M15 fade with fixed SL/TP and plausible >2 trades/year/symbol; R3 DWX forex majors testable; R4 deterministic no-ML one-position compatible."
+last_updated: 2026-05-24
+---
+
+## Strategy: RSI(80/20) Overbought/Oversold Fade
+
+Source citation: Unknown author, "My Top Three Scalping Trading Strategies", ~2020, URL/local PDF archive.
+
+Counter-trend scalp triggered when RSI reaches extreme overbought or oversold readings on M15.
+
+Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX. Timeframe: M15.
+Expected trade frequency: conservative estimate 20-80 trades/year/symbol on M15 FX majors.
+
+### Entry Conditions
+
+- **Short**: M15 bar closes with RSI > 80 → sell at market on close of that bar
+- **Long**: M15 bar closes with RSI < 20 → buy at market on close of that bar
+
+Levels are set tighter than the standard 70/30 to reduce false signals at the cost of fewer total trades.
+
+### Exit
+
+- **SL**: 5 pips
+- **TP**: 5 pips (R:R = 1.0)
+
+### Notes
+
+This is a pure counter-trend strategy — it fades the current momentum. Works best in ranging / oscillating markets; dangerous in strong sustained trends where RSI can remain above 80 for extended periods. Avoid during major news events. Tight SL/TP makes spread a significant factor; suitable only on low-spread majors.

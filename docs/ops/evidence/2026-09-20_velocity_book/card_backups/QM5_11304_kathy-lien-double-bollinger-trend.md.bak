@@ -1,0 +1,111 @@
+---
+ea_id: QM5_11304
+slug: kathy-lien-double-bollinger-trend
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/trend-following]]"
+  - "[[concepts/bollinger-band-zone]]"
+  - "[[concepts/volatility-regime]]"
+indicators:
+  - "[[indicators/bollinger-bands]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 60
+g0_approval_reasoning: "R1 source PDF/title/path cited; R2 deterministic double-Bollinger zone entry/exit with plausible H1 cadence above 2 trades/year/symbol; R3 testable on DWX FX majors; R4 fixed-rule no ML/grid/martingale and one-position compatible."
+---
+
+# QM5_11304 Kathy Lien Double Bollinger Bands — Trend Zone Entry (H1/H4)
+
+## Source
+- Source citation: 2008 URL/local PDF reference, "Battle Tested Forex Trading Strategies" by Kathy Lien (PDF presentation)
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\142364071-Battle-Tested-Forex-Trading-Strategies.pdf`
+- Author: Kathy Lien — Director of Currency Research at BK Forex/GFT. Established practitioner with published track record (multiple books, FX Week award winner, former JP Morgan FX trader). R1 PASS.
+
+## Mechanics
+
+Two Bollinger Band pairs on the same period (20) but different standard deviations (1σ and 2σ). This creates four zones:
+- **BUY Zone**: Price between +1σ and +2σ upper bands → trend up.
+- **SELL Zone**: Price between −1σ and −2σ lower bands → trend down.
+- **No Trade Zone**: Price between +1σ and −1σ (choppy/no trend).
+- **Extreme Zone**: Price beyond ±2σ (overextended, not chased).
+
+### Entry
+**LONG**:
+1. Price (Close) is **in the Buy Zone**: `bb1_upper[0] < Close[0] <= bb2_upper[0]` (between 1σ and 2σ upper band).
+2. HOLD the position as long as price remains in the Buy Zone.
+3. Add on pullbacks that stay within the Buy Zone.
+
+**SHORT**:
+1. Price is **in the Sell Zone**: `bb2_lower[0] <= Close[0] < bb1_lower[0]` (between 1σ and 2σ lower band).
+2. HOLD while price stays in Sell Zone.
+
+**Exit signals**:
+- Exit LONG: Price moves back into No-Trade Zone (drops below +1σ upper band) OR touches the middle band (SMA(20)).
+- Exit SHORT: Price moves back into No-Trade Zone (rises above −1σ lower band) OR touches middle band.
+- Extended target: Price reaching the ±2σ outer band → consider partial close.
+
+### Exit
+- Primary exit: Price re-enters No-Trade Zone (crosses back through the 1σ band).
+- SL: Price closes in No-Trade Zone OR reaches ±2σ outer band (excess zone).
+- For P2: SL = ATR(14) × 2.0; no TP (hold to zone-exit signal).
+
+### Stop Loss
+- Zone-exit SL: Price close below BB1_upper for LONG → close.
+- Hard SL for P2: ATR(14) × 2.0 from entry.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2 (HR4).
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1 primary; H4 secondary.
+- Entry: Enter on FIRST bar closing in the Buy/Sell Zone after being in No-Trade Zone.
+- No entry if price immediately enters 2σ band (too extended).
+- Spread cap: 20 pips.
+- News filter: off in P2.
+
+## Concepts
+- [[concepts/bollinger-band-zone]] — primary (four zones defined by two BB pairs)
+- [[concepts/trend-following]] — primary (trade in zone direction)
+- [[concepts/volatility-regime]] — secondary (1σ/2σ delineates trend vs chop)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Kathy Lien — Director of Currency Research, former JP Morgan FX trader, published author (FX books, Bloomberg, CNBC contributor). Strong R1. |
+| R2 Mechanical | PASS | Zone membership is a price vs BB level comparison — fully deterministic. Entry on first bar in zone. Exit on zone departure. No discretion required. |
+| R3 Data Available | PASS | H1 DWX all major FX. P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX. |
+| R4 No ML | PASS | Two fixed-period BB pairs. No ML, no adaptive. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Kathy Lien "Battle Tested Forex Trading Strategies" presentation
+
+## Implementation Notes for Codex (P1)
+- Timeframe: H1
+- DWX symbols: **EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX**
+- BB1 (1σ): `iBands(NULL, 0, 20, 1, 0, PRICE_CLOSE, ...)` — inner bands.
+- BB2 (2σ): `iBands(NULL, 0, 20, 2, 0, PRICE_CLOSE, ...)` — outer bands.
+- Buy Zone LONG entry: `Close[0] > bb1_upper[0] && Close[0] <= bb2_upper[0]` AND `Close[1] <= bb1_upper[1]` (first bar entering zone).
+- Sell Zone SHORT entry: `Close[0] < bb1_lower[0] && Close[0] >= bb2_lower[0]` AND `Close[1] >= bb1_lower[1]`.
+- Zone exit LONG: `Close[0] <= bb1_upper[0]` → close LONG.
+- Zone exit SHORT: `Close[0] >= bb1_lower[0]` → close SHORT.
+- Hard SL: ATR(14) × 2.0 from entry (safety net only).
+- P3 sweeps: BB period (20 vs 14), deviation pairs (1/2 vs 1.5/2.5), H1 vs H4.
+
+## Related strategies
+- Related: QM5_11302, QM5_11303 (TC-M5 BB strategies — same indicator, different approach)
+- Differentiator: Double BB uses ZONES (no oscillator needed). Entry on zone entry, not price cross. Pure price-location trade.
+- Published: Also in Kathy Lien's book "Millionaire Traders" and Bloomberg FX columns.
+
+## Lessons learned (during the pipeline run)
+- *(populated as pipeline progresses)*

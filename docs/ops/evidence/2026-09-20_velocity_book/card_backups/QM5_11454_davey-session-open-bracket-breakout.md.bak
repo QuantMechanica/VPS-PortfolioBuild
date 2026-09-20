@@ -1,0 +1,121 @@
+---
+ea_id: QM5_11454
+slug: davey-session-open-bracket-breakout
+type: strategy
+source_id: 3831c272-c52f-57c3-a857-2ab252e33bb0
+sources:
+  - "[[sources/davey-5-favorite-trading-entries]]"
+concepts:
+  - "[[concepts/opening-range-breakout]]"
+  - "[[concepts/stop-order-entry]]"
+  - "[[concepts/oco-bracket]]"
+  - "[[concepts/session-timing]]"
+indicators:
+  - "[[indicators/atr]]"
+period: H1
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX]
+source_citation: "Kevin J. Davey, My 5 Favorite Entries, KJ Trading Systems. Local PDF: 374755020-My-5-Favorite-Entries.pdf."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id present; Kevin J. Davey is a World Cup of Futures Trading champion and Wiley-published author — credible named source."
+r2_mechanical: PASS
+r2_reasoning: "Opening-bar H/L BUYSTOP/SELLSTOP with OCO cancel, ATR TP, EOD time-stop — fully mechanical."
+r3_data_available: PASS
+r3_reasoning: "H1 DWX FX pairs; iHigh/iLow MT5-native — data available."
+r4_ml_forbidden: PASS
+r4_reasoning: "OCO bracket fills exactly 1 live position per magic; fixed ATR TP; no ML, no adaptive parameters."
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 250
+card_body_incomplete: true
+card_body_missing: "source_citation"
+g0_approval_reasoning: "R1 one source_id with Davey local PDF attribution; R2 mechanical session-open OCO bracket entry/exit/stop and plausible daily cadence; R3 DWX FX testable; R4 deterministic non-ML one-position after OCO fill."
+---
+
+# QM5_11454 Davey — Session Open Bracket Breakout (H1)
+
+## Source
+- Source: "My 5 Favorite Entries" by Kevin J. Davey (KJ Trading Systems)
+- Citation: Kevin J. Davey, "My 5 Favorite Entries", KJ Trading Systems; 2026 local PDF reference, file `374755020-My-5-Favorite-Entries.pdf`.
+- R1: PASS — Kevin J. Davey, World Cup of Futures Trading champion; Wiley-published author.
+
+## Mechanics
+
+**Concept**: At a fixed session open time (e.g., 03:00 ET = London open equivalent, or 09:30 ET = NY open), the High and Low of the opening bar define a "bracket." A BUYSTOP is placed 1 tick above the opening bar's High, and a SELLSTOP is placed 1 tick below the opening bar's Low. Whichever order fills first determines the trade direction; the opposite order is immediately cancelled. This is Davey's "Entry #2" — the simplest breakout entry in his portfolio.
+
+**Key parameter**: The choice of session open time is the primary parameter. Davey tests multiple session opens to find the most directional one for each market.
+
+**Note**: Davey originally developed this for futures (ES, CL, etc.). The logic maps directly to FX with a chosen session open time.
+
+### Session Open Definition
+- **Primary session**: London open = 08:00 GMT = 03:00 ET (broker GMT+2: 10:00)
+  OR NY open = 13:30 GMT = 09:30 ET (broker GMT+2: 15:30)
+- **Opening bar**: the first completed H1 bar at or after the session open time
+- `open_bar_high = iHigh(NULL, PERIOD_H1, bar_index_of_opening_bar)`
+- `open_bar_low  = iLow(NULL, PERIOD_H1, bar_index_of_opening_bar)`
+
+### Entry
+
+**LONG:**
+- BUYSTOP at `open_bar_high + 1 pip`
+- Valid for the current trading day only (cancel at session close)
+
+**SHORT:**
+- SELLSTOP at `open_bar_low - 1 pip`
+- OCO pair: first fill cancels the other
+
+### Exit
+- **TP**: `entry + ATR(14,D1)[1] × 1.5` — use Daily ATR for FX context
+- **EOD time stop**: cancel/close any unfilled or open positions at session end (17:00 ET / 21:00 GMT)
+
+### Stop Loss
+- LONG: `open_bar_low - 1 pip` (the opposite bracket level — if the low breaks after a long fill, exit)
+- SHORT: `open_bar_high + 1 pip`
+- P2 cap: 60 pips; if bracket > 60 pips → skip the day
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1 (opening bar definition)
+- Session: London (08:00 GMT) or NY (13:30 GMT) — test separately
+- Bracket width filter: skip if `open_bar_high - open_bar_low > 60 pips` (too wide = no edge)
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+- Spread cap: 20 pips
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Kevin J. Davey, verified World Cup Futures champion, Wiley-published. |
+| R2 Mechanical | PASS | Opening bar H/L from OHLC. BUYSTOP/SELLSTOP at fixed pip offset. Pure arithmetic. |
+| R3 Data Available | PASS | H1 DWX FX. iHigh/iLow MT5-native. |
+| R4 No ML | PASS | Single time parameter (session open). |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Davey, My 5 Favorite Entries (Entry #2)
+
+## Implementation Notes for Codex (P1)
+- Detect opening bar: on each H1 bar, check `iTime(NULL,PERIOD_H1,0) == session_open_time`
+  where `session_open_time` is a time constant (e.g., 08:00 GMT → convert to broker time)
+- Store `bracket_high = iHigh(H1,0); bracket_low = iLow(H1,0)` once at opening bar
+- Place BUYSTOP and SELLSTOP as pending orders immediately
+- OCO: on OrderFill, loop pending orders and delete opposite
+- Bracket filter: `if (bracket_high - bracket_low > 60 * pip_size) skip;`
+- EOD cancel: `if (TimeCurrent() > eod_time) { close all; cancel pending; }`
+- P3 sweeps: session open (London/NY/both), ATR TP (1.0/1.5/2.0), bracket cap (40/60/80 pips)
+
+## Related strategies
+- Related: QM5_11440 (janus-100pips-daily-range-layered) — also OCO bracket breakout; daily range vs. opening bar bracket
+- Related: QM5_11450 (london-breakfast-asian-range-m15) — also London open breakout; M15 Asian range vs. H1 opening-bar bracket
+
+## Lessons Learned
+- *(populated as pipeline progresses)*
+
+## Symbol Universe (amendment 2026-09-20, Velocity intake)
+
+Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+
+Symbols follow the EA's active magic-registry rows in slot order (or the OWNER 2026-09-01 default universe when no rows existed); `.DWX` is the factory custom-symbol name only. Amendment authority: FABLE-DEC-VELOCITY-INTAKE-20260920.

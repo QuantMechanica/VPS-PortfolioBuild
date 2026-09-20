@@ -1,0 +1,93 @@
+---
+ea_id: QM5_11532
+slug: carter-t-h1-ema5-15-60-pullback
+type: strategy
+source_id: 3001a121-97a0-5db0-b6ff-69b89a0fc07d
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-1h]]"
+concepts:
+  - "[[concepts/ema-ribbon-trend-filter]]"
+  - "[[concepts/pullback-to-ma]]"
+indicators:
+  - EMA(5)
+  - EMA(15)
+  - EMA(60)
+period: H1
+target_symbols: [EURUSD.DWX, GBPUSD.DWX]
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (1 Hour Time Frame)', self-published 2014 (System #6). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 12
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "Fully mechanical H1 EMA(5/15/60) trend alignment plus explicit EMA60-touch pullback trigger with fixed 30/50-pip SL/TP; no discretion."
+r3_reasoning: "H1 EURUSD.DWX/GBPUSD.DWX bar data is present and MT5-native for iMA/iLow reads."
+r4_reasoning: "Deterministic threshold/touch comparisons only, no ML or adaptive re-fitting, compatible with one-position-per-magic."
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11532_carter-t-h1-ema5-15-60-pullback.md"
+g0_approval_reasoning: "R1 lineage retained; R2 deterministic H1 EMA alignment/slope and EMA60-touch pullback with explicit SL/TP, conservatively estimated at 12 trades/year/symbol; R3 testable on EURUSD.DWX and GBPUSD.DWX; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 20.0
+---
+
+# QM5_11532 Carter-T H1 — EMA(5/15/60) Pullback to EMA60 (H1)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", System #6, self-published 2014.
+
+## Mechanics
+
+**Concept**: Uptrend: EMA60 rising, EMA15 rising, EMA5 > EMA15 > EMA60. Wait for pullback to EMA60 (price touches EMA60). Enter at that touch. SL=30, TP=50.
+
+### Entry
+**LONG**: `EMA5 > EMA15 > EMA60` AND EMA60 rising AND price pulls back to touch EMA60: `iLow[1] <= EMA60_1` Enter BUY at next bar
+**SHORT**: `EMA5 < EMA15 < EMA60` AND EMA60 falling AND price touches EMA60 from below
+
+### Exit
+- **SL**: 30 pips; **TP**: 50 pips
+
+### Stop Loss
+- `SL = 30*pip`; P2 cap: 35 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1; Instruments: EURUSD.DWX, GBPUSD.DWX; Spread cap: 15p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | EMA(5/15/60): iMA. Pullback touch: iLow <= EMA60 comparison. MT5-native. |
+| R3 Data Available | PASS | H1 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter H1 book, System #6
+
+## Implementation Notes for Codex (P1)
+- `double ema5 = iMA(NULL,PERIOD_H1,5,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double ema15_1 = iMA(NULL,PERIOD_H1,15,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double ema60_1 = iMA(NULL,PERIOD_H1,60,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double ema60_3 = iMA(NULL,PERIOD_H1,60,0,MODE_EMA,PRICE_CLOSE,3)` (for rising check)
+- Trend: `ema5 > ema15_1 && ema15_1 > ema60_1 && ema60_1 > ema60_3`
+- Pullback: `iLow(NULL,PERIOD_H1,1) <= ema60_1`
+- SL: 30 pips; TP: 50 pips
+- P3 sweeps: EMA periods (5/20/60 vs 5/15/60), SL/TP (20/30/50 pips), add BuyStop above bar high
+
+## Related strategies
+- Related: QM5_11519 (carter-t-ema7-21-pullback) — same TF variant, EMA7/21 pullback
+- Related: QM5_11517 (carter-t-ema5-15-50-100-macd-h4) — same EMA5/15 cross H4
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

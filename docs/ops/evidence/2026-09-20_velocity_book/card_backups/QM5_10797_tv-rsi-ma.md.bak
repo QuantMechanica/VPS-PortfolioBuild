@@ -1,0 +1,111 @@
+---
+ea_id: QM5_10797
+slug: tv-rsi-ma
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "The-4xdev-company, RSI + MA Strategy, TradingView open-source strategy, published 2021-11-23, https://www.tradingview.com/script/EZTODAmX-RSI-MA-Strategy/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/oscillator-crossover]]"
+  - "[[concepts/mean-reversion]]"
+  - "[[concepts/signal-reversal-exit]]"
+indicators:
+  - "[[indicators/rsi]]"
+  - "[[indicators/moving-average]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 90
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 exact TradingView URL/author cited; R2 RSI/MA crossover entries with opposite-signal exits and estimated 90 trades/year/symbol; R3 portable to DWX CFDs; R4 fixed-rule non-ML single-position strategy."
+---
+
+# TradingView RSI MA Cross
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `RSI + MA Strategy`, author handle `The-4xdev-company`, open-source strategy, published 2021-11-23, accessed 2026-05-22, https://www.tradingview.com/script/EZTODAmX-RSI-MA-Strategy/
+
+## Mechanics
+
+### Entry
+Use H1 baseline.
+
+- Compute RSI on selected source, default close.
+- Compute moving average of RSI with fixed length.
+- Long setup:
+  - RSI line crosses below its moving average.
+  - Reverse-trade input is off.
+  - Optional pivot-trading mode is disabled in baseline.
+  - No existing position.
+- Short setup:
+  - RSI line crosses above its moving average.
+  - Reverse-trade input is off.
+  - No existing position.
+- If `Use Reverse Trade` is enabled in P3, swap the long and short conditions as an ablation only.
+
+### Exit
+- Exit long on short setup.
+- Exit short on long setup.
+- V5 safety stop: ATR(14) * 2.0 hard stop because source-visible text says it has position-management functions but does not publish a hard stop formula.
+
+### Stop Loss
+- V5 baseline hard stop: ATR(14) * 2.0.
+- Optional time stop: 24 H1 bars.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- RSI upper/lower bounds are visual/reference only in baseline.
+- Resolution input can be fixed to chart timeframe or H4 as P3 axis.
+- Pivot trading disabled in baseline to keep the first EA deterministic and narrow.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/oscillator-crossover]] - RSI crossing its own moving average generates entries.
+- [[concepts/mean-reversion]] - source long/short mapping is contrarian around RSI moving average.
+- [[concepts/signal-reversal-exit]] - opposite crossover closes the current position.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `The-4xdev-company` are cited. |
+| R2 Mechanical | PASS | Source gives RSI/MA crossing rules for long and short entries; V5 supplies a safety stop. |
+| R3 Data Available | PASS | RSI, moving averages, OHLC, and ATR safety stop are available on DWX CFDs. |
+| R4 ML Forbidden | PASS | Fixed oscillator strategy; no ML, grid, martingale, or adaptive online parameters. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD, GER40.DWX, NDX.DWX, WS30.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says the strategy combines RSI and moving-average indicators.
+- Source says a long position is opened when the RSI crosses the MA from top to bottom.
+- Source says a short position is opened when RSI crosses the MA from bottom to top.
+
+## Parameters To Test
+- Timeframe: M30, H1, H4.
+- RSI length: 7, 14, 21.
+- RSI MA length: 5, 9, 14.
+- Reverse trade: off/on.
+- Higher/lower resolution input: chart timeframe, H4.
+- Safety stop: 1.5, 2.0, 3.0 ATR.
+- Time stop: off, 24 bars, 48 bars.
+
+## Initial Risk Profile
+Oscillator crossover can overtrade in choppy markets. Keep pivot and reverse modes separate from the P2 baseline.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView script page.
+
+## Related strategies
+- QM5_10787 tv-ema-rsi-adx
+- QM5_10777 tv-rsi-bb-mr
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

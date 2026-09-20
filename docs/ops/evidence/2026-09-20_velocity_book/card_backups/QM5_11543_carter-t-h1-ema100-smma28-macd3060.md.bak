@@ -1,0 +1,86 @@
+---
+ea_id: QM5_11543
+slug: carter-t-h1-ema100-smma28-macd3060
+type: strategy
+source_id: 3001a121-97a0-5db0-b6ff-69b89a0fc07d
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-1h]]"
+concepts:
+  - "[[concepts/smma-ema-cross]]"
+  - "[[concepts/macd-zero-cross]]"
+indicators:
+  - EMA(100)
+  - SMMA(28)
+  - MACD(30,60,30)
+period: H1
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (1 Hour Time Frame)', self-published 2014 (System #17). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id 3001a121 present; self-published book is a valid source type; author track record not required per R1."
+r2_mechanical: PASS
+r2_reasoning: "SMMA(28) vs EMA(100) cross with MACD(30,60,30) zero-confirm and fixed pip SL/TP — fully mechanical MT5-native."
+r3_data_available: PASS
+r3_reasoning: "EURUSD.DWX H1 available on DWX."
+r4_ml_forbidden: PASS
+r4_reasoning: "Fixed MA and MACD parameters; no ML, no adaptive logic, no grid/martingale."
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 30
+card_body_incomplete: true
+card_body_missing: "source_citation"
+g0_approval_reasoning: "R1 one source_id/source; R2 mechanical SMMA/EMA cross + MACD with plausible H1 cadence >2/yr/symbol; R3 DWX FX H1 testable; R4 deterministic no ML/HR14 OK"
+---
+
+# QM5_11543 Carter-T H1 — SMMA(28) Cross EMA(100) + MACD(30,60,30) (H1)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", System #17, self-published 2014.
+- URL/source record: [[sources/carter-thomas-20-forex-strategies-1h]]
+
+## Mechanics
+
+**Concept**: SMMA(28) (Smoothed Moving Average, 28 periods) crosses EMA(100). MACD(30,60,30) > 0 confirms. SL=50, TP=70-100.
+
+**Note**: SMMA = MODE_SMMA in MT5 iMA. Standard MT5 parameter.
+
+### Entry
+**LONG**: `iMA(PERIOD_H1,28,0,MODE_SMMA,...,1) > iMA(PERIOD_H1,100,0,MODE_EMA,...,1)` AND just crossed AND MACD(30,60,30) > 0
+**SHORT**: SMMA(28) crosses below EMA(100) AND MACD < 0
+
+### Exit
+- **SL**: 50 pips; **TP**: 85 pips (P2 midpoint of 70-100)
+
+### Stop Loss
+- `SL = 50*pip`; P2 cap: 55 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1; Instruments: EURUSD.DWX; Spread cap: 15p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | SMMA(28): iMA(MODE_SMMA). EMA(100): iMA(MODE_EMA). MACD(30,60,30): iMACD. All MT5-native. |
+| R3 Data Available | PASS | H1 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter H1 book, System #17
+
+## Implementation Notes for Codex (P1)
+- `double smma28_1 = iMA(NULL,PERIOD_H1,28,0,MODE_SMMA,PRICE_CLOSE,1)`
+- `double ema100_1 = iMA(NULL,PERIOD_H1,100,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double macd = iMACD(NULL,PERIOD_H1,30,60,30,PRICE_CLOSE,MODE_MAIN,1)`
+- Cross: `smma28_1 > ema100_1 && smma28_2 <= ema100_2` AND macd > 0
+- SL: 50 pips; TP: 85 pips
+- P3 sweeps: SMMA period (21/28/34), MACD (30,60 vs 12,26), TP (70/85/100 pips)
+
+## Related strategies
+- Related: QM5_11518 (carter-t-ema5-100-mtf-m15-h1) — same EMA100 structure
+- Related: QM5_11517 (carter-t-ema5-15-50-100-macd-h4) — same MACD confirmation pattern
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

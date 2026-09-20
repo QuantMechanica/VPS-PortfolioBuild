@@ -1,0 +1,108 @@
+---
+ea_id: QM5_11508
+slug: carter-t-ema50-100-macd-breakout
+type: strategy
+source_id: 8794b680-f6f4-5142-b12c-e5e0057e7bcf
+sources:
+  - "[[sources/carter-thomas-20-forex-trend-following-systems]]"
+concepts:
+  - "[[concepts/ema-dual-filter]]"
+  - "[[concepts/macd-zero-cross]]"
+  - "[[concepts/breakout-entry-stop-order]]"
+  - "[[concepts/partial-exit-breakeven]]"
+indicators:
+  - EMA(50)
+  - EMA(100)
+  - MACD(12,26,9)
+period: H1
+source_citation: "Thomas Carter, 'Forex Trend Following Strategies: 20 Trend Following Systems', self-published 2014 (System #3). R1 CONDITIONAL — named individual, self-published ebook."
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 80
+g0_approval_reasoning: "R1 single source_id and one source; R2 mechanical H1 EMA/MACD breakout with exits and plausible cadence; R3 DWX FX testable; R4 deterministic no ML."
+---
+
+# QM5_11508 Carter-T — EMA(50/100) + MACD Breakout with Partial Exit (H1)
+
+## Source
+- Source: Thomas Carter, "Forex Trend Following Strategies: 20 Trend Following Systems", System #3, self-published 2014. URL: local source record [[sources/carter-thomas-20-forex-trend-following-systems]].
+- R1: CONDITIONAL — named author, self-published ebook.
+
+## Mechanics
+
+**Concept**: Price above both EMA(50) and EMA(100) confirms bullish trend. A 10-pip breakout above the closest EMA with MACD confirming positive momentum triggers entry. Exit management: close half at 2×risk (move SL to breakeven), trail remainder until price drops 10 pips below EMA(50).
+
+**Logic**: The dual EMA structure (50+100) provides two trend layers. The 10-pip breakout filter prevents EMA-touch noise. The partial-exit + BE trail preserves capital on winning trades while allowing larger winners to develop.
+
+**QM note**: Source says "any TF ≥ 5min". QM assigns H1 as primary build TF. P3 sweeps on H4 and D1.
+
+### Entry
+
+**LONG:**
+1. **Both EMAs bullish**: `iClose(NULL,PERIOD_H1,1) > iMA(NULL,PERIOD_H1,50,...,1)` AND `iClose(NULL,PERIOD_H1,1) > iMA(NULL,PERIOD_H1,100,...,1)`
+2. **MACD positive within 5 bars**: `iMACD(NULL,PERIOD_H1,12,26,9,PRICE_CLOSE,MODE_MAIN,1) > 0` AND crossed zero within last 5 bars
+3. **Breakout**: current bar closes > closer EMA + 10 pips: `iClose(NULL,PERIOD_H1,1) > iMA(NULL,PERIOD_H1,50,...,1) + 10*pip`
+4. Enter BUY at open of next bar
+
+**SHORT:**
+1. Price below both EMA(50) and EMA(100)
+2. MACD negative, recently crossed below zero
+3. Close < EMA(50) - 10 pips
+4. Enter SELL at open of next bar
+
+### Exit
+- **TP1**: Close 50% of position at `entry + 2*risk` (2×SL distance); move SL to breakeven
+- **TP2**: Close remaining 50% when price drops 10 pips below EMA(50): `price < iMA(NULL,PERIOD_H1,50,...,0) - 10*pip`
+- **SL initial**: 5-bar low (for long): `iLowest(NULL,PERIOD_H1,MODE_LOW,5,1)`
+- P2 cap: SL ≤ 40 pips
+
+### Stop Loss
+- `SL_long = iLowest(NULL,PERIOD_H1,MODE_LOW,5,1)` — 5-bar low
+- `SL_short = iHighest(NULL,PERIOD_H1,MODE_HIGH,5,1)` — 5-bar high
+- P2 cap: 40 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1 (default QM build TF)
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX
+- Spread cap: 15 pips
+- No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Thomas Carter, self-published ebook. No verifiable credentials. |
+| R2 Mechanical | PASS | EMA(50/100): iMA. MACD(12,26,9): iMACD. 5-bar iLowest. All MT5-native. |
+| R3 Data Available | PASS | H1 DWX FX. MT5-native. |
+| R4 No ML | PASS | Threshold comparisons only. No ML. |
+
+G0 APPROVE eligible with CONDITIONAL R1 note. Partial-exit mechanics add complexity to the build but are mechanically well-defined. The 5-bar SL is adaptive and reasonable for H1.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Thomas Carter, "Forex Trend Following Strategies", System #3, 2014
+
+## Implementation Notes for Codex (P1)
+- `double ema50 = iMA(NULL,PERIOD_H1,50,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double ema100 = iMA(NULL,PERIOD_H1,100,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double macd = iMACD(NULL,PERIOD_H1,12,26,9,PRICE_CLOSE,MODE_MAIN,1)`
+- MACD recent cross: loop bars[1..5] to detect sign change
+- SL: `iLowest(NULL,PERIOD_H1,MODE_LOW,5,1)` capped at 40 pips
+- Partial exit: track open lots, close 50% at TP1 and move SL to BE via `OrderModify`
+- TP2: monitor EMA(50) trail condition on each bar
+- P3 sweeps: EMA periods (20/50 vs 50/100), MACD lookback (3/5/7 bars), TF (H1/H4/D1)
+
+## Related strategies
+- Related: QM5_11506 (carter-t-ema10-25-50-psar-m30) — same source, triple EMA
+- Related: QM5_11517 (carter-t-ema5-15-50-100-macd-h4) — same source, 4-EMA + MACD H4
+- Related: QM5_11519 (carter-t-ema7-21-pullback) — same source, EMA pullback entry
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

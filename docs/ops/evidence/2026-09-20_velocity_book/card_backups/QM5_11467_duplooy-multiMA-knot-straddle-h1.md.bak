@@ -1,0 +1,114 @@
+---
+ea_id: QM5_11467
+slug: duplooy-multiMA-knot-straddle-h1
+type: strategy
+source_id: df7a4891-bfda-5815-bf43-67b503eac619
+sources:
+  - "[[sources/duplooy-expert4x-multi-ma-course]]"
+concepts:
+  - "[[concepts/ma-convergence]]"
+  - "[[concepts/volatility-breakout]]"
+  - "[[concepts/oco-straddle]]"
+  - "[[concepts/stop-order-entry]]"
+indicators:
+  - "[[indicators/sma]]"
+period: H1
+source_citation: "Alex du Plooy, Multi-MA Convergence Strategy, Expert4x.com (~2015). R1 CONDITIONAL — named Founder of Expert4x, self-published online course. Local PDF: 312323316-Multi-MA-Forex-Trading-Strategy-pdf.pdf."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id present; named author Alex du Plooy (Founder Expert4x.com) with local PDF — self-published online sources valid per R1."
+r2_mechanical: PASS
+r2_reasoning: "6× iMA arithmetic, knot spread max/min calculation, OCO BUYSTOP/SELLSTOP at cluster extremes — fully mechanical."
+r3_data_available: PASS
+r3_reasoning: "H1 DWX FX pairs; 6× iMA (SMA) MT5-native — data available."
+r4_ml_forbidden: PASS
+r4_reasoning: "Fixed MA periods (4/8/12/16/20/24), fixed KNOT_PIPS/KNOT_BARS thresholds, OCO ensures 1 live position per magic — no ML."
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 50
+g0_approval_reasoning: "R1 one source_id/source; R2 H1 SMA-knot OCO straddle entry/exit mechanical with plausible ~50 trades/year/symbol; R3 DWX FX H1 testable; R4 deterministic no ML/HR14 issues."
+---
+
+# QM5_11467 du Plooy — Multi-MA Knot Straddle (H1)
+
+## Source
+- Source: Alex du Plooy, Expert4x Multi-MA Convergence Course (~2015)
+- Source citation: Alex du Plooy, Multi-MA Convergence Strategy, Expert4x.com course PDF (~2015). URL/source handle: Expert4x.com; local PDF `312323316-Multi-MA-Forex-Trading-Strategy-pdf.pdf`.
+- R1: CONDITIONAL — named Founder of Expert4x.com; self-published forex education website; no independent performance verification.
+
+## Mechanics
+
+**Concept**: Multiple moving averages of different periods normally spread out as they track price in trending markets. When all MAs converge into a tight cluster — the "Knot" — the market is in a compressed, indecisive equilibrium. This compression precedes an expansion/breakout. A straddle entry (BUYSTOP above + SELLSTOP below the cluster) captures the breakout in whichever direction price moves. The knot functions as a mechanical volatility squeeze: it replaces visual pattern recognition with an objective MA-spread threshold.
+
+### Indicators
+- `SMA4 = iMA(NULL, PERIOD_H1, 4, 0, MODE_SMA, PRICE_CLOSE)`
+- `SMA8 = iMA(NULL, PERIOD_H1, 8, 0, MODE_SMA, PRICE_CLOSE)`
+- `SMA12 = iMA(NULL, PERIOD_H1, 12, 0, MODE_SMA, PRICE_CLOSE)`
+- `SMA16 = iMA(NULL, PERIOD_H1, 16, 0, MODE_SMA, PRICE_CLOSE)`
+- `SMA20 = iMA(NULL, PERIOD_H1, 20, 0, MODE_SMA, PRICE_CLOSE)`
+- `SMA24 = iMA(NULL, PERIOD_H1, 24, 0, MODE_SMA, PRICE_CLOSE)`
+- `knot_spread = max(SMA4,SMA8,SMA12,SMA16,SMA20,SMA24) - min(SMA4,SMA8,SMA12,SMA16,SMA20,SMA24)` — range of MA cluster
+
+### Knot Condition
+- `knot_spread[1] < KNOT_PIPS` for `KNOT_BARS` consecutive bars — cluster tight for minimum N bars
+- Default parameters: `KNOT_PIPS = 10`, `KNOT_BARS = 3`
+- Cluster center: `cluster_mid = (max_MA + min_MA) / 2`
+
+### Entry
+
+**After knot confirmed:**
+1. Compute `cluster_top = max(SMA4,SMA8,SMA12,SMA16,SMA20,SMA24)[1]`
+2. Compute `cluster_bottom = min(SMA4,SMA8,SMA12,SMA16,SMA20,SMA24)[1]`
+3. Place `BUYSTOP` at `cluster_top + 1pip`; SL at `cluster_bottom - 1pip`
+4. Place `SELLSTOP` at `cluster_bottom - 1pip`; SL at `cluster_top + 1pip`
+5. When one order fills, **immediately cancel** the other (OCO logic)
+6. Orders valid for `ORDER_EXPIRY_BARS` bars (default: 5); cancel both if neither fills
+
+### Exit
+- **TP**: `SL_distance × 2` — 2:1 R:R (fixed ratio; du Plooy recommends trailing but doesn't specify mechanism)
+- **Trail (after 1:1 R:R)**: trail SL to the outermost MA in the direction of trade — `SMA4[0]` for long (fastest, closest to price), `SMA24[0]` for short
+- **Alternative**: close at end of session
+
+### Stop Loss
+- Opposite side of the knot + 1 pip
+- P2 cap: 30 pips (if knot spread + 2×offset > 30 pips, skip)
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+- Spread cap: 15 pips
+- Minimum knot compression: 3 bars (to avoid false positives during brief MA crossings)
+- No concurrent open trades per symbol (OCO mechanism)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Alex du Plooy, named Founder of Expert4x.com; self-published online course; no independent performance verification or track record. |
+| R2 Mechanical | PASS | MA values: iMA arithmetic. Knot spread: max/min arithmetic on MA array. BUYSTOP/SELLSTOP at cluster extremes: pure arithmetic. OCO logic: standard order management. |
+| R3 Data Available | PASS | H1 DWX FX. 6× iMA (SMA) MT5-native. |
+| R4 No ML | PASS | Fixed periods (4/8/12/16/20/24), fixed knot threshold (KNOT_PIPS), fixed R:R. |
+
+G0 APPROVE eligible with CONDITIONAL R1 note. **Key caveat**: KNOT_PIPS and KNOT_BARS parameters are not specified by du Plooy — must be determined empirically in P3 sweeps.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from du Plooy, Expert4x Multi-MA Course; mechanized the visual "knot" concept
+
+## Implementation Notes for Codex (P1)
+- Compute 6 SMAs each bar; find `ma_high = MathMax(sma4,MathMax(sma8,MathMax(sma12,MathMax(sma16,MathMax(sma20,sma24)))))` and `ma_low = MathMin(...)` — chain of MathMax/MathMin
+- `knot_spread = ma_high - ma_low`; store history for KNOT_BARS check
+- Knot trigger: `for(i=1; i<=KNOT_BARS; i++) { if(spread[i] > KNOT_PIPS*pip_size) return false; } return true;`
+- On knot trigger: place BUYSTOP at `ma_high[1] + pip_offset`, SELLSTOP at `ma_low[1] - pip_offset`; track both order tickets
+- OCO: on `OnTradeTransaction`, when one ticket fills, call `OrderDelete()` on the other ticket
+- Trail: after 1:1 profit, move SL to SMA4 (long) or SMA24 (short) on each bar; update if new SMA value is more favorable
+- P3 sweeps: MA periods (4-24 step 4 / 5-30 step 5 / 8-48 step 8), KNOT_PIPS (5/10/15/20), KNOT_BARS (2/3/5), TP ratio (1.5/2.0/3.0×risk)
+
+## Related strategies
+- Related: QM5_11437 (carter-t-ema18-adx-pullback-h1) — also uses single EMA as dynamic level; multi-MA cluster vs. single EMA; both H1 trend entries
+- Related: QM5_11438 (td-ema9ema30-momentum-h1) — also EMA-based; 2-MA crossover vs. 6-MA convergence
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

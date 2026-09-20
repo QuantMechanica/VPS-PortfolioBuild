@@ -1,0 +1,126 @@
+---
+id: QM5_11880
+ea_id: QM5_11880
+slug: continuation-method-ema50-williams
+title: "EMA(50) Trend + Williams %R Pullback Continuation"
+version: 1
+status: draft
+created_at: 2026-05-24
+author: claude
+
+source_id: f0c55de1-dfde-56a4-b052-5d4c37f36ed1
+source_citation: "Unknown author, The Secret to Winning Forex Trades — Continuation Method, ~2012. URL: local PDF archive"
+r1_verdict: FAIL
+r2_verdict: PASS
+
+timeframe: H1
+asset_class: forex
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX]
+expected_trade_frequency: "H1 trend-pullback continuation signals should occur multiple times per year on major FX pairs; estimate 20-50 trades/year/symbol."
+expected_trades_per_year_per_symbol: 30
+direction: both
+entry_type: stop
+
+indicators:
+  - name: EMA
+    period: 50
+    apply_to: close
+    timeframe: H4
+  - name: EMA
+    period: 50
+    apply_to: close
+    timeframe: H1
+  - name: SMA
+    period: 5
+    apply_to: close
+    timeframe: H1
+  - name: Williams Percent Range
+    period: 14
+    timeframe: H1
+
+strategy_params:
+  trend_filter: "EMA50 on H4; bull if EMA50[0] > EMA50[10]; bear if EMA50[0] < EMA50[10]"
+  pullback_condition: "H1 bar closes below EMA50(H1) in bull trend (above EMA50 in bear)"
+  entry_trigger_bull: "Williams %R(14) on H1 drops below -80, then bar closes above -80 → BuyStop above that bar's high"
+  entry_trigger_bear: "Williams %R(14) on H1 rises above -20, then bar closes below -20 → SellStop below that bar's low"
+  sl_placement: "Below nearest H1 swing low (bull) / above nearest H1 swing high (bear)"
+  tp_trail_activation: "After 2:1 R:R achieved, activate SMA(5) trail"
+  tp_trail_exit: "Two consecutive H1 bar closes below SMA5 (bull) / above SMA5 (bear)"
+  risk_reward: 2.0
+
+risk:
+  sl_type: swing_structure
+  tp_type: trailing_sma
+  tp_trail_period: 5
+  tp_trail_closes: 2
+  risk_fixed: 1000
+  risk_percent: 0.5
+g0_status: APPROVED
+g0_approval_reasoning: "R1 PASS single source_id with local PDF attribution; R2 PASS mechanical H4/H1 EMA50 Williams %R pullback with swing SL/SMA exit and plausible H1 cadence >2 trades/year/symbol; R3 PASS forex symbols DWX-testable; R4 PASS deterministic ML-free 1-pos-compatible."
+last_updated: 2026-05-24
+r1_track_record: PASS
+r1_reasoning: "Single source_id (f0c55de1) with local PDF citation — anonymous local PDFs are valid per criteria; one canonical lineage anchor."
+r2_mechanical: PASS
+r2_reasoning: "Fully mechanical: H4 EMA50 slope comparison, H1 Williams %R threshold crossings, stop-entry, swing-low SL, SMA5 trailing exit after 2:1 R:R."
+r3_data_available: PASS
+r3_reasoning: "EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX are standard DWX H1/H4 forex instruments."
+r4_ml_forbidden: PASS
+r4_reasoning: "No ML; all parameters are price-history derived (EMA, Williams %R, swing pivots, SMA5); 1-position-per-magic compatible with stop-entry structure."
+---
+
+## Strategy: EMA(50) Trend + Williams %R Pullback Continuation
+
+Multi-timeframe trend continuation. H4 EMA(50) slope defines trend direction; H1 pullback into the EMA(50) followed by a Williams %R recovery through the extreme zone triggers a stop-entry in the trend direction. Exit trails via SMA(5) after 2:1 R:R is banked.
+
+Source citation: Unknown author, The Secret to Winning Forex Trades - Continuation Method, local PDF archive, ~2012 URL/local PDF archive.
+
+Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX.
+
+Expected trade frequency: H1 EMA50 pullbacks with Williams %R recovery are expected to produce approximately 20-50 trades/year/symbol on major FX pairs; use 30 trades/year/symbol as the G0 estimate.
+
+### Indicator Setup
+
+- **EMA(50) on H4**: trend filter — slope (current vs. 10 bars ago)
+- **EMA(50) on H1**: pullback reference level on entry TF
+- **Williams %R(14) on H1**: pullback entry trigger (-80 for bull, -20 for bear)
+- **SMA(5) on H1**: trailing exit mechanism
+
+### Trend Filter
+
+Compare `H4_EMA50[current]` to `H4_EMA50[10 bars ago]`:
+- Bullish if current > 10-bar-ago value
+- Bearish if current < 10-bar-ago value
+
+No signal if EMA50 is flat (values within 5 pips).
+
+### Entry Conditions
+
+**Bull setup:**
+1. H4 trend is bullish
+2. H1 bar closes below the H1 EMA(50) — pullback into trend
+3. Williams %R(14) on H1 penetrates below -80 (oversold)
+4. Next H1 bar closes back above -80 → **BuyStop above that bar's high**
+
+**Bear setup:**
+1. H4 trend is bearish
+2. H1 bar closes above the H1 EMA(50) — pullback into trend
+3. Williams %R(14) on H1 penetrates above -20 (overbought)
+4. Next H1 bar closes back below -20 → **SellStop below that bar's low**
+
+Cancel the pending stop order if not triggered within 3 H1 bars.
+
+### Stop Loss
+
+Place SL:
+- **Bull**: below the most recent H1 swing low (lowest low of the last 5 bars before signal)
+- **Bear**: above the most recent H1 swing high (highest high of the last 5 bars before signal)
+
+### Exit
+
+1. Hold until 2:1 R:R is reached (TP = 2 × initial risk distance)
+2. At 2:1, activate SMA(5) trail: exit on **two consecutive H1 bar closes** below SMA(5) (bull) or above SMA(5) (bear)
+3. Hard SL remains active throughout
+
+### Notes
+
+The 10-bar EMA50 slope comparison on H4 is the mechanized version of "eyeballing the trend" — it rejects flat/ranging conditions cleanly. The Williams %R recovery trigger filters out premature pullback entries. The two-consecutive-close exit prevents getting shaken out by single-bar spikes against the trail.

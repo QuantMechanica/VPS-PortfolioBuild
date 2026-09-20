@@ -1,0 +1,101 @@
+---
+ea_id: QM5_11574
+slug: robo-ichi-awesome-h1
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/reversal]]"
+  - "[[concepts/momentum-confirmation]]"
+indicators:
+  - "[[indicators/ichimoku]]"
+  - "[[indicators/awesome-oscillator]]"
+period: H1
+source_citation: "RoboForex strategy collection, Strategy with the use of the indicators Ichimoku and Awesome Oscillator, pages 57-58, local PDF: C:\\Users\\Administrator\\Dropbox\\Finanzen\\Forex\\###  Forex to read\\362359657-Robo-forex-strategy.pdf"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 35
+g0_approval_reasoning: "R1 single RoboForex local PDF source_id; R2 mechanical Senkou B close plus AO confirm, swing SL and 1R TP with plausible H1 cadence >=2 trades/year/symbol; R3 FX H1 testable on DWX symbols; R4 deterministic no ML/martingale."
+---
+
+# QM5_11574 RoboForex Ichimoku Senkou B + Awesome Oscillator Reversal (H1)
+
+## Source
+- Source: RoboForex strategy collection, "Strategy with the use of the indicators Ichimoku and Awesome Oscillator"
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\362359657-Robo-forex-strategy.pdf`
+- Source citation: local PDF archive entry accessed 2026-05-23; URL: local file path above.
+- Location: pages 57-58
+- Author/institution: RoboForex
+
+## Concept
+
+Use an H1 close through Ichimoku Senkou Span B as a structural reversal trigger, then require Awesome Oscillator to confirm momentum in the breakout direction. Risk is placed beyond the nearest swing and target is the same risk distance or nearest opposing level.
+
+## Markets & Timeframes
+
+- Source instruments: all currency pairs
+- DWX targets: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, GBPJPY.DWX
+- Timeframe: H1 or higher; baseline H1
+
+## Entry Rules
+
+**LONG**
+1. H1 candle closes above Ichimoku Senkou Span B.
+2. Awesome Oscillator histogram is green and above zero.
+3. Enter buy at the next H1 bar open.
+
+**SHORT**
+1. H1 candle closes below Ichimoku Senkou Span B.
+2. Awesome Oscillator histogram is red and below zero.
+3. Enter sell at the next H1 bar open.
+
+## Exit Rules
+
+- LONG SL: 5 points below nearest support/swing low.
+- SHORT SL: 5 points above nearest resistance/swing high.
+- TP: 1R from entry for P2 baseline.
+- Optional P3 variant: target nearest deterministic support/resistance level.
+
+## Filters
+
+- Define nearest swing low/high as fractal-style 2-left/2-right confirmed swing on closed bars; if absent in the last 20 bars, use highest/lowest of prior 10 bars.
+- One position per magic number.
+- Spread cap: 3 pips.
+
+## Parameters To Test
+
+- Ichimoku default 9/26/52.
+- Swing definition: 2/2 fractal, 3/3 fractal, 10-bar high/low.
+- TP multiple: 1R, 1.5R, 2R.
+- Require close outside full cloud versus Senkou B only.
+
+## Author Claims
+
+- "The reversal is determined with the help of the indicators Ichimoku Kinko Hyo and Awesome Oscillator."
+- "the candlestick has closed above the line Senkou Span B"
+- "histogram of Awesome oscillator is of the green color and is located above the zero level"
+- "the candlestick has closed below the line Senkou Span B"
+
+## R1-R4
+
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| R1 | PASS | Single local PDF source with named institutional author and page location. |
+| R2 | PASS | Senkou B close, AO state, and swing stop can be deterministic. |
+| R3 | PASS | Standard MT5 indicators on DWX FX H1. |
+| R4 | PASS | Fixed rules; no ML/adaptive/grid/martingale. |
+
+## Initial Risk Profile
+
+Swing SL and 1R target for P2. P2 uses `RISK_FIXED = 1000 USD`; live default remains `RISK_PERCENT = 0.25`.
+
+## Implementation Notes
+
+- Use Senkou Span B value aligned to the current closed bar as provided by MT5 Ichimoku buffers.
+- Avoid entering while a prior position for this magic is open.

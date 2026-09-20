@@ -1,0 +1,118 @@
+---
+ea_id: QM5_11496
+slug: carter-t-ema100-psar-macd64128-m5
+type: strategy
+source_id: b3b11449-1e72-5140-917b-c35b6253f1e7
+sources:
+  - "[[sources/carter-thomas-20-forex-m5]]"
+concepts:
+  - "[[concepts/ema-trend-filter]]"
+  - "[[concepts/parabolic-sar-trend]]"
+  - "[[concepts/macd-zero-cross]]"
+indicators:
+  - EMA(100)
+  - ParabolicSAR(0.01,0.01)
+  - MACD(64,128,9)
+period: M5
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX]
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (5 Minute Time Frame)', self-published 2014 (System #19). R1 CONDITIONAL — named individual, self-published ebook."
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+r2_reasoning: "Entry (EMA100 trend filter + SAR flip + MACD sign) and exit (SAR-dot SL, 2:1 TP) are fully specified with explicit MT5 indicator calls (iMA, iSAR, iMACD); no discretionary judgment required."
+r3_reasoning: "EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX are canonical_name_verified rows in dwx_symbol_matrix.csv with native M5 history; all three target symbols are testable."
+r4_reasoning: "Pure threshold/crossover logic on EMA/PSAR/MACD, single directional position per signal, no ML, no grid or martingale sizing."
+pipeline_phase: G0
+last_updated: 2026-07-27
+expected_trades_per_year_per_symbol: 12
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11496_carter-t-ema100-psar-macd64128-m5.md"
+g0_approval_reasoning: "R1 lineage retained; R2 deterministic EMA100+PSAR+MACD entry and SAR/2R exit with conservative 12 trades/year estimate; R3 testable on listed DWX FX symbols; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 18.0
+---
+
+# QM5_11496 Carter-T — EMA100 + PSAR + MACD(64,128,9) Trend Confirmation (M5)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)", System #19, self-published 2014.
+- R1: CONDITIONAL — named author, self-published ebook.
+
+## Mechanics
+
+**Concept**: Three slow/structural trend indicators must agree before entering. EMA(100) defines the long-term trend on M5. Parabolic SAR (set slow: 0.01 step, 0.01 max — much slower than default 0.02/0.2) provides entry timing within the trend. MACD(64,128,9) — very long periods — confirms the slow trend is sustained, not a short-term noise flip.
+
+**Logic**: The extremely slow PSAR settings (0.01/0.01 vs default 0.02/0.2) means SAR flips are rare and only occur on sustained reversals, reducing false signals. The MACD(64,128,9) uses very long EMA periods — this is essentially a structural trend indicator, not a short-term momentum signal. Together, these three slow filters produce a conservative entry system with fewer but potentially cleaner signals.
+
+**Note**: MACD(64,128,9) is non-standard — short EMA(64) and long EMA(128). On M5, EMA(64) = ~5 hours, EMA(128) = ~10 hours. This behaves as a multi-session trend confirmation.
+
+### Entry
+
+**LONG:**
+1. **EMA(100) trend filter**: `iClose(NULL,PERIOD_M5,1) > iMA(NULL,PERIOD_M5,100,0,MODE_EMA,PRICE_CLOSE,1)` (price above EMA100)
+2. **SAR bullish**: `iSAR(NULL,PERIOD_M5,0.01,0.01,1) < iLow(NULL,PERIOD_M5,1)` (SAR below price)
+3. **MACD positive**: `iMACD(NULL,PERIOD_M5,64,128,9,PRICE_CLOSE,MODE_MAIN,1) > 0`
+4. Enter BUY at open of next bar
+
+**SHORT:**
+1. Price below EMA(100)
+2. SAR above price: `iSAR(NULL,PERIOD_M5,0.01,0.01,1) > iHigh(NULL,PERIOD_M5,1)`
+3. MACD negative: `iMACD(...,MODE_MAIN,1) < 0`
+4. Enter SELL at open of next bar
+
+### Exit
+- **SL**: 3 pips below/above the first SAR dot at entry: `iSAR(NULL,PERIOD_M5,0.01,0.01,0) ± 3*pip`
+- **TP**: Source: 7–12 pips. QM P2: `2 * SL distance` (2:1 R/R)
+- P2 cap: SL derived from SAR dot, typically 5–15 pips on M5
+
+### Stop Loss
+- `SL_long = iSAR(NULL,PERIOD_M5,0.01,0.01,0) - 3*pip` (SAR dot minus 3 pips)
+- `SL_short = iSAR(NULL,PERIOD_M5,0.01,0.01,0) + 3*pip`
+- P2 cap: 20 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5
+- Instruments: EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX
+- Spread cap: 15 pips
+- No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Thomas Carter, self-published ebook, no verifiable credentials. |
+| R2 Mechanical | PASS | EMA(100): iMA(100,EMA). SAR: iSAR(0.01,0.01). MACD(64,128,9): iMACD(64,128,9). All MT5-native. |
+| R3 Data Available | PASS | M5 DWX FX. All MT5-native. |
+| R4 No ML | PASS | Threshold comparisons only. No ML. |
+
+G0 APPROVE eligible with CONDITIONAL R1 note. Slow PSAR + long MACD periods make this a structural trend filter — may produce very few signals on M5. Verify expected trade frequency in P2.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Thomas Carter, System #19
+
+## Implementation Notes for Codex (P1)
+- `double ema100 = iMA(NULL,PERIOD_M5,100,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double sar = iSAR(NULL,PERIOD_M5,0.01,0.01,1)` — note slow step (0.01) and max (0.01)
+- `double macd = iMACD(NULL,PERIOD_M5,64,128,9,PRICE_CLOSE,MODE_MAIN,1)` — non-standard periods
+- LONG: `iClose[1] > ema100 && sar < iLow[1] && macd > 0`
+- SL: `iSAR(NULL,PERIOD_M5,0.01,0.01,0) - 3*pip` for long
+- TP: `entry + 2*(entry - sl_price)` (2:1 R/R, QM-added)
+- P3 sweeps: SAR step (0.01/0.02), MACD periods (64,128 vs 12,26), EMA period (50/100/200), TP ratio (1.5R/2R/3R)
+
+## Related strategies
+- Related: QM5_11487 (carter-t-50-100-ema-macd-breakout-m5) — same source, EMA+MACD M5
+- Related: QM5_11436 (carter-t-sma150-rsi3-stoch-d1) — Carter SAR-based system on D1
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

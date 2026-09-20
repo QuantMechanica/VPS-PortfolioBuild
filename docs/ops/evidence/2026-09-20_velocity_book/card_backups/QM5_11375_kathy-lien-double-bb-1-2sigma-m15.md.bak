@@ -1,0 +1,134 @@
+---
+ea_id: QM5_11375
+slug: kathy-lien-double-bb-1-2sigma-m15
+type: strategy
+source_id: 3d831560-f01a-5df3-8843-6d61fd78902f
+sources:
+  - "[[sources/battle-tested-kathy-lien]]"
+concepts:
+  - "[[concepts/bollinger-band-trend]]"
+  - "[[concepts/mean-reversion]]"
+  - "[[concepts/double-bollinger-bands]]"
+indicators:
+  - "[[indicators/bollinger-bands]]"
+period: M15
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, GBPJPY.DWX]
+source_citation: "Kathy Lien & Boris Schlossberg, Battle-Tested Forex Trading Strategies, BKForexAdvisors.com, local PDF: C:\Users\Administrator\Dropbox\Finanzen\Forex\### Forex to read\142364071-Battle-Tested-Forex-Trading-Strategies.pdf"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 120
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "Zone membership from two fixed-sigma Bollinger Bands, the 2-consecutive-bar confirmation, and the neutral-zone exit are all binary, deterministic comparisons Codex can implement directly."
+r3_reasoning: "EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX and GBPJPY.DWX all carry M15 DWX data, and both BB(20,1sigma) and BB(20,2sigma) are native MT5 indicator calls."
+r4_reasoning: "Fixed period (20) and sigma multipliers (1.0/2.0) with no PnL-dependent or adaptive logic; one-position-per-magic compatible."
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11375_kathy-lien-double-bb-1-2sigma-m15.md"
+g0_approval_reasoning: "R1 single canonical book lineage retained; R2 deterministic double-Bollinger zone/pullback entries and explicit exits with conservative 120 trades/year cadence; R3 testable on four FX .DWX symbols; R4 fixed-rule, ML-free and one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 18.0
+---
+
+# QM5_11375 Kathy Lien Double BB — BB(20,2σ/1σ) Trend + Range (M15)
+
+## Source
+- Source: "Battle-Tested Forex Trading Strategies" by Kathy Lien & Boris Schlossberg, BKForexAdvisors.com
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\### Forex to read\142364071-Battle-Tested-Forex-Trading-Strategies.pdf`
+- Also documented in: "Day Trading and Swing Trading the Currency Market" by Kathy Lien (Wiley)
+- Author: Kathy Lien. R1 PASS.
+
+## Mechanics
+
+Two Bollinger Bands with the same period (20) but different standard deviations (2σ outer, 1σ inner). The four bands create three zones:
+- **Trend-UP zone**: close between 1σ upper and 2σ upper bands → strong upward momentum.
+- **Neutral zone**: close between 1σ lower and 1σ upper bands → no clear signal.
+- **Trend-DOWN zone**: close between 1σ lower and 2σ lower bands → strong downward momentum.
+
+LONG: price closes in the trend-UP zone and remains there for 2+ bars → enter on the 2nd bar.
+SHORT: price closes in the trend-DOWN zone for 2+ bars → enter on the 2nd bar.
+Exit: price returns to the neutral zone (close between 1σ bands).
+
+Additionally: "Buy at value" = in established uptrend, pullback to or below 1σ lower band → buy; "Enter new trend" = close above 2σ upper (breakout) → buy.
+
+### Entry
+
+**LONG — Trend-following version**:
+1. Close > BB(20,1σ) upper AND Close < BB(20,2σ) upper → **in trend-UP zone**.
+2. Two consecutive closes in trend-UP zone (bar[2] and bar[1] both in zone).
+3. Enter BUY at open of bar[0].
+4. SL: BB(20,1σ) middle (SMA20) or entry − 20 pips.
+5. Exit: close returns below BB(20,1σ) upper (back in neutral zone).
+
+**SHORT — Trend-following version**:
+1. Close < BB(20,1σ) lower AND Close > BB(20,2σ) lower → **in trend-DOWN zone**.
+2. Two consecutive closes in trend-DOWN zone.
+3. Enter SELL at next open.
+4. SL: BB(20,1σ) middle or entry + 20 pips.
+5. Exit: close above BB(20,1σ) lower.
+
+**LONG — "Buy at Value" mean-reversion version**:
+1. Price is in established uptrend (SMA20 sloping up, or 5+ recent bars in trend-UP zone).
+2. Price pulls back: close ≤ BB(20,1σ) **lower** band.
+3. Enter BUY at next bar open.
+4. SL: BB(20,2σ) lower − 2 pips.
+5. TP: BB(20,1σ) upper or BB(20,2σ) upper.
+
+### Exit
+- Trend-following: close re-enters neutral zone → exit at market.
+- Mean-reversion: TP at 1σ upper or 2σ upper.
+- Stop: as above per variant.
+
+### Stop Loss
+- Trend-following: BB(20,1σ) middle (SMA20) at exit bar.
+- Fixed P2 cap: 25 pips.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M15 (also valid on H1, H4, D1 per Kathy Lien's book)
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, GBPJPY.DWX
+- Spread cap: 20 pips
+- Confirm zone for 2 bars before entry — prevents entering on a spike through the band
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Kathy Lien, professional researcher, published in Wiley book and used in BKForex advisory service. |
+| R2 Mechanical | PASS | Band zone membership is a binary comparison; consecutive-bar rule deterministic. Zone exit is binary. |
+| R3 Data Available | PASS | M15 DWX data; BB(20,1σ) and BB(20,2σ) both MT5-native. |
+| R4 No ML | PASS | Fixed periods and σ levels. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Kathy Lien Battle-Tested presentation; core rules from published Double BB methodology
+
+## Implementation Notes for Codex (P1)
+- BB 1σ upper: `iBands(NULL, PERIOD_M15, 20, 1.0, 0, PRICE_CLOSE, MODE_UPPER, i)`
+- BB 1σ lower: `iBands(NULL, PERIOD_M15, 20, 1.0, 0, PRICE_CLOSE, MODE_LOWER, i)`
+- BB 2σ upper: `iBands(NULL, PERIOD_M15, 20, 2.0, 0, PRICE_CLOSE, MODE_UPPER, i)`
+- BB 2σ lower: `iBands(NULL, PERIOD_M15, 20, 2.0, 0, PRICE_CLOSE, MODE_LOWER, i)`
+- Trend-UP zone: `Close[i] > bb1_upper[i] && Close[i] < bb2_upper[i]`
+- Trend-DOWN zone: `Close[i] < bb1_lower[i] && Close[i] > bb2_lower[i]`
+- LONG entry: `in_trend_up[1] && in_trend_up[2]` → buy at bar[0] open
+- LONG exit: `Close[0] < bb1_upper[0]` (back in neutral)
+- Implement both variants (trend-follow and buy-at-value) as sub-strategies; P2 tests both
+- P3 sweeps: BB period (15/20/25), variant (trend-follow only / buy-at-value only / both), consecutive bars (1/2/3), exit (neutral zone / SMA20 cross)
+
+## Related strategies
+- Related: QM5_11374 (kathy-lien-xtreme-fade-bb3sigma-adx-m15) — same author, same BB basis, different extreme threshold (3σ vs 2σ)
+- Differentiator: Double BB uses zone membership rather than extreme touch; catches more trades but earlier in the move; 1σ/2σ vs 2σ/3σ is the key parameter difference
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

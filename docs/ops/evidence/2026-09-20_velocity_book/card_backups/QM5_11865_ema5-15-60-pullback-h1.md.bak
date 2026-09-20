@@ -1,0 +1,85 @@
+---
+ea_id: QM5_11865
+id: QM5_11865
+slug: ema5-15-60-pullback-h1
+title: "EMA(5/15/60) Pullback-to-EMA60"
+version: 1
+status: draft
+created_at: 2026-05-24
+author: claude
+
+source_id: 3c77a80c-f428-57eb-a720-51347dd823b3
+source_citation: "Thomas Carter, 20 Forex Trading Strategies (1 Hour Time Frame), 2014. URL: local PDF archive"
+r1_verdict: PASS
+r2_verdict: PASS
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+expected_trades_per_year_per_symbol: 24
+
+timeframe: H1
+asset_class: forex
+target_symbols: [EURUSD.DWX, GBPUSD.DWX]
+direction: both
+entry_type: limit
+
+indicators:
+  - name: EMA
+    period: 5
+    apply_to: close
+  - name: EMA
+    period: 15
+    apply_to: close
+  - name: EMA
+    period: 60
+    apply_to: close
+
+strategy_params:
+  trend_condition: "EMA5 > EMA15 > EMA60 (bull) or EMA5 < EMA15 < EMA60 (bear)"
+  entry_trigger: "Price retraces to touch EMA60"
+  entry_direction: "Long in bull stack; Short in bear stack"
+  sl_pips: 30
+  tp_pips: 50
+  risk_reward: 1.67
+
+risk:
+  sl_type: fixed_pips
+  sl_value: 30
+  tp_type: fixed_pips
+  tp_value: 50
+  risk_fixed: 1000
+  risk_percent: 0.5
+g0_status: APPROVED
+g0_approval_reasoning: "R1 one source_id/local PDF lineage; R2 mechanical EMA stack pullback with plausible recurring cadence >2 trades/year/symbol; R3 forex DWX symbols testable; R4 deterministic no ML 1-position."
+last_updated: 2026-05-24
+---
+
+## Strategy: EMA(5/15/60) Pullback-to-EMA60
+
+Three-EMA stack trend filter with pullback entry to the slowest EMA.
+
+Source: Thomas Carter, 20 Forex Trading Strategies (1 Hour Time Frame), 2014. URL: local PDF archive.
+
+Target symbols: EURUSD.DWX, GBPUSD.DWX. Timeframe: H1.
+
+Expected trade frequency: H1 EMA-stack pullbacks to EMA60 are recurring trend-continuation setups; conservatively about 24 trades per year per symbol.
+
+### Setup
+
+**Bull**: EMA5 > EMA15 > EMA60, both EMA60 and EMA15 sloping upward.  
+**Bear**: EMA5 < EMA15 < EMA60, both sloping downward.
+
+### Entry
+
+Wait for price to pull back and touch (or come within 1-2 pips of) EMA60.  
+Enter Long (bull) or Short (bear) at market on the touch.
+
+### Exit
+
+- **SL**: 30 pips from entry
+- **TP**: 50 pips from entry (R:R ≈ 1.67)
+
+### Notes
+
+No re-entry if stop is hit. If EMA stack breaks during the pullback (EMA5 crosses EMA15), the setup is invalidated — skip the trade.

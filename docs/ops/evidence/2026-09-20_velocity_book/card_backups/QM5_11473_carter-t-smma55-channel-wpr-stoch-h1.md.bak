@@ -1,0 +1,116 @@
+---
+ea_id: QM5_11473
+slug: carter-t-smma55-channel-wpr-stoch-h1
+type: strategy
+source_id: a7bd19cd-cae9-5c58-8b7c-a411bac7598a
+sources:
+  - "[[sources/carter-t-20-forex-strategies-1h-collection]]"
+concepts:
+  - "[[concepts/smma-channel]]"
+  - "[[concepts/williams-percent-r]]"
+  - "[[concepts/stochastic]]"
+  - "[[concepts/trend-following]]"
+indicators:
+  - "[[indicators/smma]]"
+  - "[[indicators/williams-percent-r]]"
+  - "[[indicators/stochastic]]"
+period: H1
+source_citation: "Thomas Carter, 20 Forex Trading Strategies (1 Hour Time Frame), Strategy #5 (self-published, 2014). R1 CONDITIONAL — named individual, self-published. Local PDF: 376863900-20-Forex-Trading-Strategies-Collection.pdf."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: Single source_id present (Carter H1 collection); self-published named author with local PDF satisfies R1 — track record not a gate under current criteria.
+r2_mechanical: PASS
+r2_reasoning: SMMA55 channel cross, WPR55 threshold, and Stochastic level conditions are fully mechanical MT5-native rules with no discretionary gaps.
+r3_data_available: PASS
+r3_reasoning: H1 EURUSD.DWX and GBPUSD.DWX are directly testable DWX FX symbols.
+r4_ml_forbidden: PASS
+r4_reasoning: Fixed period-55 SMMA, fixed WPR thresholds (-25/-75), fixed Stoch(5,5,5); no ML, no PnL-adaptive parameters.
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 35
+card_body_incomplete: true
+card_body_missing: "source_citation"
+g0_approval_reasoning: "R1 single source_id/source; R2 mechanical H1 SMMA/WPR/Stoch channel entry+exit with plausible 35 trades/year/symbol; R3 DWX FX testable; R4 fixed deterministic no ML/HR14 issue."
+---
+
+# QM5_11473 Carter-T — SMMA55 High/Low Channel + Williams%R(55) + Stochastic (H1)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies" (self-published, 2014; URL/local PDF: 376863900-20-Forex-Trading-Strategies-Collection.pdf) — Strategy #5
+- R1: CONDITIONAL — named self-published author.
+
+## Mechanics
+
+**Concept**: A Smoothed Moving Average of period 55 applied to the HIGH of each bar creates an upper dynamic channel, and the same period SMMA applied to the LOW creates a lower channel. Price must cross above/below this channel to qualify for entry. Williams %R(55) and Stochastic(5,5,5) provide oscillator confirmation — both must agree with the breakout direction. The period 55 is Fibonacci-derived.
+
+**Smoothed MA (SMMA)**: In MT5, SMMA = `iMA(NULL, PERIOD_H1, 55, 0, MODE_SMMA, PRICE_HIGH)`. SMMA is a built-in MT5 mode (MODE_SMMA = 3). This is equivalent to an exponential smoothing with alpha = 1/period.
+
+### Indicators
+- `SMMA55_HIGH = iMA(NULL, PERIOD_H1, 55, 0, MODE_SMMA, PRICE_HIGH)` — upper channel
+- `SMMA55_LOW = iMA(NULL, PERIOD_H1, 55, 0, MODE_SMMA, PRICE_LOW)` — lower channel
+- `WPR55 = iWPR(NULL, PERIOD_H1, 55, i)` — Williams %R period 55
+- `STOCH = iStochastic(NULL, PERIOD_H1, 5, 5, 5, 0, STO_LOWHIGH, 1)` — fast stochastic %K
+
+### Entry
+
+**LONG:**
+1. Price crosses above SMMA55_HIGH: `Close[1] > SMMA55_HIGH[1]` (close above upper channel)
+2. Williams %R above -25 (not oversold): `WPR55[1] > -25` (approaching overbought = momentum up)
+3. Stochastic %K crosses upward or is above 50: `STOCH_K[1] > 50`
+4. Enter BUY at market (bar[0] open); OR place BUYSTOP at `High[1] + 1pip` for safer entry
+5. SL = `SMMA55_LOW[1]` (below the lower channel = full invalidation)
+
+**SHORT:**
+1. `Close[1] < SMMA55_LOW[1]` — close below lower channel
+2. WPR below -75: `WPR55[1] < -75`
+3. Stochastic %K below 50: `STOCH_K[1] < 50`
+4. Enter SELL at market; SL = `SMMA55_HIGH[1]`
+
+### Exit
+- **TP**: fixed 60 pips (Carter does not specify; use 1.5× average channel width as estimate)
+- **Trailing SL**: trail to SMMA55_LOW (for long) once trade is 1:1 in profit — move SL up if SMMA55_LOW rises
+- **Close signal**: Close falls back below SMMA55_HIGH (for long) → exit
+
+### Stop Loss
+- SMMA55 opposite channel
+- P2 cap: 80 pips (if SMMA55 channel width > 80 pips, skip)
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1
+- Instruments: EURUSD.DWX, GBPUSD.DWX (Carter's specified pairs)
+- Spread cap: 20 pips
+- Do not enter if WPR and Stochastic disagree
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Thomas Carter, named self-published author (2014 eBook). No institutional credentials. |
+| R2 Mechanical | PASS | SMMA55(High/Low): iMA with MODE_SMMA (MT5-native). WPR55: iWPR (MT5-native). Stochastic: iStochastic (MT5-native). All arithmetic. |
+| R3 Data Available | PASS | H1 DWX FX. All indicators MT5-native. |
+| R4 No ML | PASS | Fixed period 55, fixed WPR thresholds (-25/-75), fixed Stoch(5,5,5). |
+
+G0 APPROVE eligible with CONDITIONAL R1 note.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Carter, 20 Forex Trading Strategies (2014), Strategy #5
+
+## Implementation Notes for Codex (P1)
+- `SMMA55_HIGH = iMA(NULL, PERIOD_H1, 55, 0, 3, PRICE_HIGH, shift)` — MODE_SMMA = 3 in MQL5
+- `SMMA55_LOW = iMA(NULL, PERIOD_H1, 55, 0, 3, PRICE_LOW, shift)`
+- `WPR55 = iWPR(NULL, PERIOD_H1, 55, 1)` — shift=1 for previous completed bar
+- `STOCH_K = iStochastic(NULL, PERIOD_H1, 5, 5, 5, 0, STO_LOWHIGH, 1, 1)` — shift=1, 6th param=0 (no smoothing)
+- Long entry: `iClose(H1,1) > SMMA55_HIGH[1]` AND `iWPR(H1,55,1) > -25` AND `iStoch(H1,5,5,5,...,1) > 50`
+- SL for long: `SMMA55_LOW[1]` at time of entry — compute in pips, apply P2 cap
+- Trail: on each new bar, update SL to `SMMA55_LOW[0]` if it has moved up (for long)
+- P3 sweeps: SMMA period (34/55/89), WPR threshold (overbought -25/-20; oversold -75/-80), Stoch period (5/8/14), entry method (market/BUYSTOP), TP method (trail/fixed-60/fixed-100)
+
+## Related strategies
+- Related: QM5_11434 (carter-t-sma32hl-psar-sma200-h1) — same author class; SMA32(High/Low) channel vs. SMMA55 channel; PSAR vs. WPR/Stoch confirmation
+- Related: QM5_11464 (robles-continuation-ema50-williams-h4d1) — both use Williams %R as confirmation; EMA50 vs. SMMA55 channel
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

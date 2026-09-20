@@ -1,0 +1,103 @@
+---
+ea_id: QM5_10827
+slug: tv-vol-exp
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "AHTISHAM_EE, Decoded Volatility Expansion [Ahtisham], TradingView open-source strategy, May 9, https://www.tradingview.com/script/qgLu0K0v-Decoded-Volatility-Expansion-Ahtisham/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/volatility-breakout]]"
+  - "[[concepts/consolidation-box]]"
+  - "[[concepts/atr-filter]]"
+indicators:
+  - "[[indicators/atr]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 120
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 URL/handle cited; R2 consolidation box ATR breakout plus midline/RR exits mechanical with plausible M15 cadence >2/year; R3 DWX OHLC/ATR available; R4 fixed rules no ML/grid/martingale."
+---
+
+# TradingView Decoded Volatility Expansion
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `Decoded Volatility Expansion [Ahtisham]`, author handle `AHTISHAM_EE`, open-source strategy, accessed 2026-05-22, page shows May 9, https://www.tradingview.com/script/qgLu0K0v-Decoded-Volatility-Expansion-Ahtisham/
+
+## Mechanics
+
+### Entry
+Use M15 baseline.
+
+- Build a rolling consolidation box over `LookbackBars`:
+  - `boxHigh = highest(high, LookbackBars)`.
+  - `boxLow = lowest(low, LookbackBars)`.
+  - `zoneMid = (boxHigh + boxLow) / 2`.
+- Compute ATR(14).
+- Long stop trigger = `boxHigh + OutlierMultiplier * ATR(14)`.
+- Short stop trigger = `boxLow - OutlierMultiplier * ATR(14)`.
+- Place passive buy-stop/sell-stop style orders only when the box exists and no open position exists.
+- Baseline cancels stale orders after 12 bars or when box range expands above 2.5 * ATR(14).
+
+### Exit
+- Take profit = RR * risk distance, source default RR = 2.0.
+- Close long if price closes back below `zoneMid`; close short if price closes back above `zoneMid`.
+
+### Stop Loss
+- Long stop: `zoneMid`.
+- Short stop: `zoneMid`.
+- V5 safety guard: minimum stop distance 0.5 * ATR(14), maximum 3.0 * ATR(14).
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- Disable entries inside scheduled P8 high-impact news pause once P8 is active.
+- Use confirmed bar close order processing for P2 comparability.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/volatility-breakout]] - enters only when price exceeds an ATR outlier threshold.
+- [[concepts/consolidation-box]] - recent range defines equilibrium and stop geometry.
+- [[concepts/atr-filter]] - ATR multiplier separates expansion from normal noise.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `AHTISHAM_EE` are cited. |
+| R2 Mechanical | PASS | Source gives consolidation box, ATR outlier trigger, stop orders, midline stop, RR target, and default outlier multiplier. |
+| R3 Data Available | PASS | OHLC and ATR are available on DWX FX, metals, and index CFDs. |
+| R4 ML Forbidden | PASS | Fixed ATR/range rules; no ML, no grid, no martingale, one-position compatible. |
+
+## R3
+Primary P2 basket: XAUUSD.DWX, EURUSD.DWX, GBPUSD.DWX, GER40.DWX, NDX.DWX, WS30.DWX.
+
+## Author Claims
+- Source says the engine is built on "Market Compression vs. Expansion."
+- Source says the outlier multiplier default is 1.5.
+- Source says default RR is 2.0.
+
+## Parameters To Test
+- LookbackBars: 12, 20, 32.
+- OutlierMultiplier: 1.0, 1.5, 2.0.
+- RR target: 1.5, 2.0, 2.5.
+- Midline stop: on/off; ATR hard stop fallback: 1.5, 2.0, 2.5 * ATR.
+- Order stale timeout: 6, 12, 24 bars.
+- Timeframe: M15, H1.
+
+## Initial Risk Profile
+Volatility expansion breakout strategy. Main risks are false breakouts during news spikes and overfitting the consolidation lookback to gold/crypto source markets.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView mechanical strategy source.
+
+## Related strategies
+- QM5_10654 tv-orb-width
+- QM5_10714 tv-inside-day
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

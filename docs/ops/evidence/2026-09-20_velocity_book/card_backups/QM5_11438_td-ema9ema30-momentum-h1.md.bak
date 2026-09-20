@@ -1,0 +1,104 @@
+---
+ea_id: QM5_11438
+slug: td-ema9ema30-momentum-h1
+type: strategy
+source_id: fb2ae527-c7ef-5765-a09d-9eb8157e55a0
+sources:
+  - "[[sources/daytradeforex-9-systems]]"
+concepts:
+  - "[[concepts/ema-cross]]"
+  - "[[concepts/momentum]]"
+  - "[[concepts/trendline-break]]"
+  - "[[concepts/stop-order-entry]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/momentum]]"
+period: H1
+source_citation: "DayTradeForex.com, 9 Profitable Trading Systems (online/commercial). R1 CONDITIONAL — commercial website, no named individual author."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: Single source_id present; commercial website source is explicitly permitted under relaxed R1 criteria (anonymous handles and commercial resources are valid).
+r2_mechanical: PASS
+r2_reasoning: EMA9/EMA30 sign, Momentum(10) vs 100, and N-bar high/low break are all deterministic OHLC arithmetic; BUYSTOP placement is parameterized.
+r3_data_available: PASS
+r3_reasoning: H1 DWX FX pairs available; iMA EMA and iMomentum are MT5-native indicators.
+r4_ml_forbidden: PASS
+r4_reasoning: Fixed periods (EMA 9/30, Momentum 10); no ML, no adaptive params.
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 55
+g0_approval_reasoning: "R1 PASS single source_id/attribution; R2 PASS mechanical EMA9/EMA30 Momentum H1 breakout entries/exits with plausible >=2 trades/year/symbol; R3 PASS DWX FX H1 testable; R4 PASS deterministic no ML."
+---
+
+# QM5_11438 DayTradeForex — EMA9/EMA30 + Momentum(10) H1
+
+## Source
+- Source: "9 Profitable Trading Systems" by DayTradeForex.com (System #6)
+- Citation: DayTradeForex.com, "9 Forex Systems", local PDF archive reviewed 2026; URL/source lineage tracked by `source_id: fb2ae527-c7ef-5765-a09d-9eb8157e55a0`.
+- R1: CONDITIONAL — commercial website resource; no individual named author.
+
+## Mechanics
+
+**Concept**: EMA9/EMA30 identifies the short-to-medium trend. Momentum(10) above 100 confirms that closing price is higher than it was 10 bars ago (positive momentum). The entry trigger is a TD (Tom DeMark-style) trendline break — a manual concept approximated here as a break of the recent N-bar swing high/low. Entry via BUYSTOP above the trendline break level.
+
+**Note on TD trendline**: True TD trendlines are drawn from pivot peaks to pivot peaks. The mechanical approximation is: use the highest high of the past 3 bars as the breakout level (long) or lowest low of the past 3 bars (short). This captures the spirit of breaking above recent resistance.
+
+### Entry
+
+**LONG:**
+1. `EMA9[1] > EMA30[1]` — short-term EMA above medium-term EMA (uptrend)
+2. `Momentum(10)[1] > 100` — close is above close 10 bars ago
+3. `High[1] > High[2] AND High[1] > High[3]` — bar[1] breaks above a recent local resistance (TD trendline break approximation)
+4. Place BUYSTOP at `High[1] + 1 pip`; valid for bar[0] only
+
+**SHORT:**
+1. `EMA9[1] < EMA30[1]` — downtrend
+2. `Momentum(10)[1] < 100` — close below close 10 bars ago
+3. `Low[1] < Low[2] AND Low[1] < Low[3]` — bar[1] breaks below local support
+4. Place SELLSTOP at `Low[1] - 1 pip`; valid for bar[0] only
+
+### Exit
+- **TP**: entry + 40 pips minimum; up to 150 pips if trend continues (use ATR(14) × 2.0 as primary target)
+- **EMA9 cross back**: exit when EMA9 crosses back below EMA30 (long) or above (short) — trend reversal exit
+
+### Stop Loss
+- LONG: `entry - 40 pips` (fixed)
+- SHORT: `entry + 40 pips`
+- P2 cap: 50 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+- Spread cap: 20 pips
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | DayTradeForex.com commercial resource, no individual author named. |
+| R2 Mechanical | PASS | EMA9, EMA30, Momentum(10) — MT5-native. Trendline break approximated as N-bar high break — pure OHLC. |
+| R3 Data Available | PASS | H1 DWX FX. All indicators MT5-native. |
+| R4 No ML | PASS | Fixed periods (9, 30, 10). |
+
+G0 APPROVE eligible with CONDITIONAL R1 note.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from DayTradeForex.com, 9 Systems (System #6)
+
+## Implementation Notes for Codex (P1)
+- EMA9: `iMA(NULL,PERIOD_H1,9,0,MODE_EMA,PRICE_CLOSE,1)`
+- EMA30: `iMA(NULL,PERIOD_H1,30,0,MODE_EMA,PRICE_CLOSE,1)`
+- Momentum(10): `iMomentum(NULL,PERIOD_H1,10,PRICE_CLOSE,1)` — compare to 100.0
+- Trendline break: `iHigh(NULL,PERIOD_H1,1) > iHigh(NULL,PERIOD_H1,2) && iHigh(NULL,PERIOD_H1,1) > iHigh(NULL,PERIOD_H1,3)`
+- BUYSTOP: `iHigh(NULL,PERIOD_H1,1) + pip_offset`
+- P3 sweeps: EMA fast/slow (5/9/13, 20/30/50), Momentum period (5/10/20), SL (30/40/60 pips)
+
+## Related strategies
+- Related: QM5_11439 (pivot9level-macd-ema-m5) — same DayTradeForex source; M5 vs. H1 TF
+- Related: QM5_11430 (carter-cci21-ema4080-zero-cross-m5) — EMA cross momentum, M5 vs H1
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

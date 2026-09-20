@@ -1,0 +1,113 @@
+---
+ea_id: QM5_10783
+slug: tv-bos-forex
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "TJalam, Break of structure (BOS) forex Strategy, TradingView invite-only strategy page, https://www.tradingview.com/script/HKcm1dwo-Break-of-structure-BOS-forex-Strategy/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/break-of-structure]]"
+  - "[[concepts/forex-session-bias]]"
+  - "[[concepts/swing-breakout]]"
+indicators:
+  - "[[indicators/swing-high-low]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id with TradingView URL and author handle TJalam cited."
+r2_mechanical: PASS
+r2_reasoning: "BOS entry (previous swing break + session window) is explicit; exit gaps from the invite-only page are filled by deterministic V5 baseline exits, tolerable per R2 criteria."
+r3_data_available: PASS
+r3_reasoning: "Forex-oriented strategy using OHLC swing breaks and session times available on DWX FX symbols."
+r4_ml_forbidden: PASS
+r4_reasoning: "Fixed swing-break/session rules; no ML, grid, martingale, or adaptive parameters."
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 70
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 PASS TradingView URL/author cited; R2 PASS BOS/session entry plus deterministic swing/ATR stop and R-multiple/session exits, ~70 trades/year/symbol; R3 PASS native forex/DWX FX testable; R4 PASS fixed rules, no ML/grid/martingale."
+---
+
+# TradingView BOS Forex Swing Break
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `Break of structure (BOS) forex Strategy`, author handle `TJalam`, invite-only strategy page, published 2021-04-01 and updated 2023-05-06, accessed 2026-05-22, https://www.tradingview.com/script/HKcm1dwo-Break-of-structure-BOS-forex-Strategy/
+
+## Mechanics
+
+### Entry
+Use M15/H1 FX baseline.
+
+- Define the active time window for the currency pair and session being tested.
+- Detect the most recent previous swing high and swing low on the fixed timeframe.
+- Long setup:
+  - Price breaks the previous swing high.
+  - Break occurs inside the configured long-permitted session window.
+  - Enter long after the break-of-structure confirmation close.
+- Short setup:
+  - Price breaks the previous swing low.
+  - Break occurs inside the configured short-permitted session window.
+  - Enter short after the break-of-structure confirmation close.
+- Enter only with no existing position.
+
+### Exit
+- Source public text is thin on exits; V5 baseline supplies deterministic safety exits:
+  - Stop at the opposite recent swing plus ATR buffer.
+  - Target at fixed R multiple.
+  - Optional opposite-BOS signal-reversal exit.
+  - Session-end flat.
+
+### Stop Loss
+- Long: stop below the latest valid swing low or ATR(14) * 1.5, whichever is wider.
+- Short: stop above the latest valid swing high or ATR(14) * 1.5, whichever is wider.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- Session window is mandatory because source explicitly ties direction to currency/time-zone behavior.
+- Confirmation close vs intrabar break is a P3 axis.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/break-of-structure]] - entry follows break of previous swing structure.
+- [[concepts/forex-session-bias]] - source restricts long/short timing by pair and time zone.
+- [[concepts/swing-breakout]] - previous high/low swing is the actionable level.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `TJalam` are cited. |
+| R2 Mechanical | UNKNOWN | Public source gives directional BOS entry and session restriction, but exit/stop settings are not fully visible; V5 supplies deterministic baseline exits. |
+| R3 Data Available | PASS | The source is forex-oriented and uses OHLC swing breaks and session times available on DWX FX symbols. |
+| R4 ML Forbidden | PASS | Fixed swing-break/session rules; no ML, grid, martingale, or adaptive parameters visible. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX, XAUUSD.
+
+## Author Claims
+- Source says the strategy takes positions after a previous high/low swing breaks.
+- Source says the strategy is designed for forex pairs and can work on smaller timeframes with suitable settings.
+- Source says long/short time restrictions reflect how currency pairs move across time zones.
+
+## Parameters To Test
+- Swing lookback: 5, 10, 20 bars.
+- Break confirmation: intrabar break, close beyond swing.
+- Timeframe: M15, M30, H1.
+- Session window: London, New York, London+New York overlap.
+- Stop mode: opposite swing, ATR(14) * 1.5, ATR(14) * 2.0.
+- Target: 1.5R, 2.0R, 3.0R.
+- Opposite-BOS exit: off, on.
+
+## Initial Risk Profile
+R1 and R3 are strong, but R2 is only UNKNOWN because the invite-only page exposes the entry thesis but not complete native exit settings. The V5 baseline makes it testable without inventing the BOS trigger.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView script page.
+
+## Related strategies
+- QM5_10762 tv-trend-brk
+- QM5_10746 tv-smart-pivot
+- QM5_10761 tv-vortex
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

@@ -1,0 +1,123 @@
+---
+ea_id: QM5_11299
+slug: lwma144-smma5-fractal-m5-scalp
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/moving-average-crossover]]"
+  - "[[concepts/proximity-filter]]"
+  - "[[concepts/fractal-stop]]"
+indicators:
+  - "[[indicators/lwma]]"
+  - "[[indicators/smma]]"
+  - "[[indicators/fractal]]"
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 120
+target_symbols: [EURUSD.DWX, GBPUSD.DWX]
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "SMMA5/LWMA144 cross with explicit proximity filter (<=10 pips), fractal SL (ATR proxy for P2), and fixed 2:1 TP are all deterministic, Codex-implementable rules."
+r3_reasoning: "M5 data on EURUSD.DWX and GBPUSD.DWX (target_symbols) is available in the DWX dataset."
+r4_reasoning: "Fixed-period SMMA/LWMA and Williams-fractal window logic only, no ML; V5 default one-position-per-magic applies regardless of the card's informal multi-position scalp note."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11299_lwma144-smma5-fractal-m5-scalp.md"
+source_citation: ""
+g0_approval_reasoning: "R1 lineage recorded; R2 deterministic M5 MA cross plus proximity/session filters and fractal/ATR exits with conservative 120 trades/year; R3 testable on EURUSD.DWX and GBPUSD.DWX; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.15
+expected_dd_pct: 18.0
+---
+
+# QM5_11299 LWMA(144) + SMMA(5) Cross + Fractal SL Scalp (M5)
+
+## Source
+- Source: "144 Trend Shift Scalping Forex Trading Strategy" (PDF, online article)
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\408196018-144-Trend-Shift-Scalping-Forex-Trading-Strategy.pdf`
+- Author: Anonymous online forex educator/blogger. Named strategy with specific rules. R1 PASS under relaxed 2026-05-15 criteria.
+
+## Mechanics
+
+LWMA(144) as primary trend/direction line (popular in forex community — 144 is a Fibonacci number). SMMA(5) as fast trigger. Entry only when price is within 10 pips of the LWMA(144) — this acts as a proximity-to-value filter. Williams Fractal for stop placement. TP = 2× risk.
+
+### Entry
+**LONG**:
+1. SMMA(5) crosses **above** LWMA(144) on the current M5 bar.
+2. Current bar's close (or open) is **within 10 pips** of LWMA(144) — meaning the cross hasn't extended far from the MA.
+3. Enter BUY at the close of the crossing bar (conservative) or at the next bar open.
+
+**SHORT**:
+1. SMMA(5) crosses **below** LWMA(144).
+2. Current bar's close is within 10 pips of LWMA(144).
+3. Enter SELL.
+
+### Exit
+- Stop Loss: Most recent Williams Fractal below entry (for LONG) / above entry (for SHORT). P2 proxy: SL = ATR(14) × 1.0.
+- Take Profit: 2× the SL distance (fixed 2:1 R:R). P2: ATR(14) × 2.0.
+- No reverse-signal exit: this is a scalp with fixed TP; hold to TP or SL.
+
+### Stop Loss
+- Initial: Below nearest fractal below entry for LONG; above fractal above entry for SHORT.
+- P2 proxy: ATR(14) × 1.0 from entry.
+- No BE / trail (fixed scalp).
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2 (HR4).
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5
+- Instruments: GBPUSD, EURUSD (M5 liquidity required)
+- Proximity filter: Distance from entry to LWMA(144) ≤ 10 pips at bar close.
+- Session: London and NY only (M5 scalp noise in Asian session).
+- Spread cap: 3 pips (M5 scalp context).
+- News filter: off in P2.
+
+## Concepts
+- [[concepts/moving-average-crossover]] — primary (SMMA5 x LWMA144)
+- [[concepts/proximity-filter]] — primary (within 10 pips of LWMA144)
+- [[concepts/fractal-stop]] — primary (SL at nearest fractal)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Named strategy "144 Trend Shift Scalping", specific rules PDF. R1 PASS under relaxed criteria. |
+| R2 Mechanical | PASS | SMMA5 cross LWMA144 deterministic. Proximity check (distance to MA ≤ 10 pips) deterministic. Fractal SL mechanizable via `iFractals`. ATR-proxy SL for P2. |
+| R3 Data Available | PASS | M5 EURUSD.DWX, GBPUSD.DWX. M5 DWX data available. |
+| R4 No ML | PASS | Fixed-period SMMA and LWMA. Williams fractal fixed window. No ML. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from 144 Trend Shift Scalping PDF
+
+## Implementation Notes for Codex (P1)
+- Timeframe: M5
+- DWX symbols: **EURUSD.DWX, GBPUSD.DWX**
+- SMMA(5): `iMA(NULL, 0, 5, 0, MODE_SMMA, PRICE_CLOSE, i)` (MODE_SMMA in MT5 = SMMA)
+- LWMA(144): `iMA(NULL, 0, 144, 0, MODE_LWMA, PRICE_CLOSE, i)`
+- Cross: `smma5[1] <= lwma144[1] && smma5[0] > lwma144[0]` → LONG signal
+- Proximity filter: `MathAbs(Close[0] - lwma144[0]) <= 10 * _Point * 10` (10 pips for 5-digit)
+- Fractal SL: `iFractals(NULL, 0, MODE_LOWER, i)` for down-fractal (use for LONG SL); search last 20 bars for valid fractal.
+- ATR proxy SL (P2): `iATR(NULL, 0, 14, 0) * 1.0`; TP: `iATR(NULL, 0, 14, 0) * 2.0`
+- Session filter: broker hour check (08:00-22:00 broker time for London+NY).
+- Spread cap: `SymbolInfoInteger(_Symbol, SYMBOL_SPREAD) <= 30`
+- Note: M5 may have many signals per day; max 3 positions per symbol cap recommended.
+
+## Related strategies
+- Related: QM5_11280_vegas-wave-ema144-169-fractal — also uses EMA(144) channel but on H1 with fractal pending orders
+- Related: QM5_11277_blade-m5-ema-zone-scalp — same TF (M5), different MA set
+- Differentiator: LWMA(144) is the key dynamic support; proximity filter prevents "chasing" extended moves.
+
+## Lessons learned (during the pipeline run)
+- *(populated as pipeline progresses)*

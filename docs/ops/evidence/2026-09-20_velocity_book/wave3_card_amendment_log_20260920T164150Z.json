@@ -1,0 +1,25 @@
+[
+ {
+  "ea": "QM5_11343_triad-session-breakout",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "GBPJPY.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11454_davey-session-open-bracket-breakout",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ }
+]

@@ -1,0 +1,120 @@
+---
+ea_id: QM5_11516
+slug: carter-t-sma7-21-cci5-m15
+type: strategy
+source_id: 8794b680-f6f4-5142-b12c-e5e0057e7bcf
+sources:
+  - "[[sources/carter-thomas-20-forex-trend-following-systems]]"
+concepts:
+  - "[[concepts/sma-cross-entry]]"
+  - "[[concepts/cci-zero-cross]]"
+  - "[[concepts/partial-exit-breakeven]]"
+  - "[[concepts/mtf-ma-filter]]"
+indicators:
+  - SMA(7)
+  - SMA(21)
+  - SMA(84)
+  - SMA(336)
+  - CCI(5)
+period: M15
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX]
+source_citation: "Thomas Carter, 'Forex Trend Following Strategies: 20 Trend Following Systems', self-published 2014 (System #12). R1 CONDITIONAL — named individual, self-published ebook."
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+r2_reasoning: "SMA7/21 cross plus CCI(5) zero-cross with an explicit +/-1-bar synchronization rule, partial TP1/TP2 exits, and a fixed 15-pip SL are all deterministic and codable with no discretionary steps."
+r3_reasoning: "EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX are canonical_name_verified rows in dwx_symbol_matrix.csv with native M15 history; all three target symbols are testable."
+r4_reasoning: "Pure SMA/CCI threshold and crossover logic, single directional position with partial-close/breakeven management, no ML, no grid or martingale sizing."
+pipeline_phase: G0
+last_updated: 2026-07-27
+expected_trades_per_year_per_symbol: 15
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11516_carter-t-sma7-21-cci5-m15.md"
+g0_approval_reasoning: "R1 lineage retained; R2 deterministic synchronized SMA7/21 and CCI5 crosses with explicit partial/trailing exits and conservative 15 trades/year estimate; R3 testable on listed DWX FX symbols; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 17.0
+---
+
+# QM5_11516 Carter-T — SMA(7/21/84/336) + CCI(5) MTF Structure (M15)
+
+## Source
+- Source: Thomas Carter, "Forex Trend Following Strategies: 20 Trend Following Systems", System #12, self-published 2014.
+- R1: CONDITIONAL — named author, self-published ebook.
+
+## Mechanics
+
+**Concept**: Four SMA periods on M15 create a multi-timeframe structure: SMA(7) ≈ M15 fast, SMA(21) ≈ M15 medium, SMA(84) ≈ H1 equivalent (84×15min = 1260min = 21h ≈ daily), SMA(336) ≈ H4×4 equivalent (336×15min = 5040min = 84h ≈ weekly). SMA(7) crossing SMA(21) with CCI(5) crossing zero within ±1 candle triggers entry. Partial exit: 50% at 25–30 pips (move to BE), rest when price closes below SMA(7) for long.
+
+**Logic**: The four SMAs provide structural context from M15 through pseudo-weekly. CCI(5) is fast — it crosses zero frequently but the SMA cross confirms the structural alignment. Close timing requirement (CCI zero cross within ±1 bar of SMA cross) prevents stale signals.
+
+**QM note**: SMA(84) on M15 = 21 hours. SMA(336) on M15 = 84 hours ≈ 3.5 days. These are MT5-native SMA calculations, just with non-standard periods — valid.
+
+### Entry
+
+**LONG:**
+1. **SMA cross**: `iMA(NULL,PERIOD_M15,7,...,1) > iMA(NULL,PERIOD_M15,21,...,1)` AND crossed within last 2 bars
+2. **CCI(5) zero cross**: `iCCI(NULL,PERIOD_M15,5,PRICE_TYPICAL,1) > 0` AND crossed zero within ±1 bar of SMA cross
+3. Enter BUY at open of next bar
+
+**SHORT:**
+1. SMA(7) crosses below SMA(21)
+2. CCI(5) crosses below zero within ±1 bar
+3. Enter SELL at next bar
+
+### Exit
+- **TP1**: Close 50% of position at `entry + 25*pip` (long); move SL to breakeven
+- **TP2**: Close remaining 50% when `iClose(NULL,PERIOD_M15,0) < iMA(NULL,PERIOD_M15,7,...,0)` (price closes below SMA7 for long)
+- **SL initial**: 15 pips below entry (QM P2: fixed 15 pip SL)
+
+### Stop Loss
+- `SL_long = entry - 15*pip`
+- `SL_short = entry + 15*pip`
+- P2 cap: 20 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M15
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX
+- Spread cap: 12 pips
+- No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Thomas Carter, self-published ebook. No verifiable credentials. |
+| R2 Mechanical | PASS | SMA(7/21/84/336): iMA(MODE_SMA). CCI(5): iCCI(PRICE_TYPICAL). All MT5-native. |
+| R3 Data Available | PASS | M15 DWX FX. MT5-native. |
+| R4 No ML | PASS | Threshold comparisons only. No ML. |
+
+G0 APPROVE eligible with CONDITIONAL R1 note. SMA(336) and SMA(84) are non-standard periods but fully valid MT5-native calculations. Partial exit logic adds build complexity but is well-defined. CCI(5) ±1-bar synchronization is a mechanical rule that can be implemented exactly.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Thomas Carter, "Forex Trend Following Strategies", System #12, 2014
+
+## Implementation Notes for Codex (P1)
+- `double sma7_1 = iMA(NULL,PERIOD_M15,7,0,MODE_SMA,PRICE_CLOSE,1)`
+- `double sma21_1 = iMA(NULL,PERIOD_M15,21,0,MODE_SMA,PRICE_CLOSE,1)`
+- `double cci1 = iCCI(NULL,PERIOD_M15,5,PRICE_TYPICAL,1)`
+- SMA cross: bar[1] cross up AND bar[2] was below (track last 2 bars)
+- CCI zero cross: within ±1 bar of SMA cross (track sma_cross_bar, cci_cross_bar — accept if |diff| ≤ 1)
+- Partial exit: track open lots; close 50% at TP1=entry+25pip; then monitor SMA7 trail for remainder
+- SMA(84) and SMA(336) are structural context only — not used in entry signal directly; can be added as P3 filter
+- P3 sweeps: SMA periods (5/7/10 cross 15/20/25), CCI period (3/5/8), TP1 (20/25/30 pips), add SMA84/336 trend filter
+
+## Related strategies
+- Related: QM5_11507 (carter-t-ema20-macd-buystop-m15) — same TF M15, EMA approach
+- Related: QM5_11510 (carter-t-wma10-sma20-stoch-rsi-macd-m5) — same source, multi-indicator M5
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

@@ -1,0 +1,88 @@
+---
+ea_id: QM5_11305
+slug: alp-sma20-scalp
+type: strategy
+source_id: 72f9fcfa-6c75-5544-80c4-31e15c9817ab
+sources:
+  - "[[sources/github-topic-algorithmic-trading-python]]"
+concepts:
+  - "[[concepts/scalping]]"
+  - "[[concepts/moving-average-crossover]]"
+  - "[[concepts/intraday-mean-reversion]]"
+indicators:
+  - "[[indicators/sma]]"
+period: M1
+source_citation: "alpacahq/example-scalping, README and main.py, https://github.com/alpacahq/example-scalping"
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id present; Alpaca institution GitHub repository (alpacahq/example-scalping) with verifiable README and main.py URLs."
+r2_mechanical: PASS
+r2_reasoning: "SMA(20) cross entry, immediate limit exit, 2-minute cancel, and session-end flatten are all deterministic, reproducible rules."
+r3_data_available: PASS
+r3_reasoning: "M1 OHLC and session timing available on DWX FX majors and indices; long-only stock logic ports cleanly to liquid CFDs."
+r4_ml_forbidden: PASS
+r4_reasoning: "Fixed SMA period with deterministic limit-order management; no ML, no adaptive logic, no grid or martingale."
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 120
+last_updated: 2026-05-23
+card_body_incomplete: true
+card_body_missing: "source_citation,target_symbols"
+g0_approval_reasoning: "R1 GitHub repo/README/main.py URLs cited; R2 deterministic SMA20 M1 cross entry, limit exit, cancellation and session flatten with plausible intraday cadence above 2 trades/year/symbol; R3 OHLC/session logic portable to DWX FX/indices; R4 fixed-rule no ML/grid/martingale and one-position compatible."
+---
+
+# Alpaca SMA20 Minute Scalper
+
+## Source
+- Source citation: 2026 URL reference, `alpacahq/example-scalping` README and `main.py`, https://github.com/alpacahq/example-scalping
+- Source: [[sources/github-topic-algorithmic-trading-python]]
+- Topic URL: https://github.com/topics/algorithmic-trading?l=python
+- Repository: `alpacahq/example-scalping`, institution `Alpaca`
+- Repo URL: https://github.com/alpacahq/example-scalping
+- README: https://github.com/alpacahq/example-scalping/blob/master/README.md
+- Strategy file: https://github.com/alpacahq/example-scalping/blob/master/main.py
+
+## Mechanics
+
+### Entry
+- Timeframe: M1 bars, completed-bar evaluation.
+- Calculate SMA(20) of close using current session bars.
+- Open long when prior close is below prior SMA(20) and current close crosses above current SMA(20).
+- Source is long-only stock scalping; V5 port tests long-only first on liquid DWX indices and FX majors. Target symbols: EURUSD.DWX, GBPUSD.DWX, NDX.DWX, SP500.DWX backtest-only.
+
+### Exit
+- Immediately after buy fill, submit a sell limit at `max(entry_price + one tick, current_price)`.
+- Cancel unfilled buy orders after 2 minutes.
+- Force-close any open position at 15:55 New York time in the source; V5 should use configured session-end flatten for the tested DWX venue.
+
+### Stop Loss
+- Source explicitly says risk control can be improved and leaves sell orders outstanding. V5 build should add a catastrophic stop of `1.5 * ATR(14)` on M1 or a max 0.35% adverse move, whichever is tighter after symbol normalization.
+
+### Position Sizing
+- Source uses a fixed dollar `lot` per symbol. V5 baseline uses fixed $1,000 risk per trade and one position per magic.
+
+### Additional filters
+- Trade only during liquid sessions; skip Friday close window and major news blackout.
+- Use limit entries; if market has moved more than 0.3% from signal close before entry, skip.
+
+## Concepts
+- [[concepts/scalping]] - primary
+- [[concepts/moving-average-crossover]] - SMA20 trigger
+- [[concepts/session-flatten]] - source end-of-day liquidation
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|-------------|
+| R1 Track Record | PASS | Verifiable GitHub topic URL plus Alpaca repository README and exact `main.py` URL. |
+| R2 Mechanical | PASS | SMA20 cross entry, two-minute buy cancellation, immediate limit exit, and session flatten are deterministic. |
+| R3 Data Available | PASS | Uses M1 OHLC and session time; port from US equities to liquid DWX indices/FX is testable, with scalping execution risk flagged. |
+| R4 ML Forbidden | PASS | Fixed-parameter rule; no ML, online learning, grid, martingale, or multi-slot requirement. |
+
+## Pipeline history
+- G0: 2026-05-23, PENDING, drafted from GitHub Python topic resume batch.
+
+## Related strategies
+- [[strategies/QM5_11272_iaf-ema-x]] - slower EMA crossover.
+- [[strategies/QM5_11309_bf-triple-ema]] - same batch, EMA crossover family.
+
+## Lessons Learned
+- TBD

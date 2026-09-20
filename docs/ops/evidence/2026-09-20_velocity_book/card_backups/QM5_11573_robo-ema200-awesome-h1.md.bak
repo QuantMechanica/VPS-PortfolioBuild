@@ -1,0 +1,103 @@
+---
+ea_id: QM5_11573
+slug: robo-ema200-awesome-h1
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/trend-following]]"
+  - "[[concepts/momentum-confirmation]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/awesome-oscillator]]"
+period: H1
+source_citation: "RoboForex strategy collection, Strategy with the use of EMA and Awesome Oscillator, pages 52-53, local PDF: C:\\Users\\Administrator\\Dropbox\\Finanzen\\Forex\\###  Forex to read\\362359657-Robo-forex-strategy.pdf"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+r1_reasoning: "Single source_id present (RoboForex local PDF, named institutional author, page 52-53); lineage established."
+r2_reasoning: "EMA200 trend direction, AO histogram color and zero-side, and deterministic 5-bar swing-based stop are fully mechanical."
+r3_reasoning: "H1 FX pairs EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX available on DWX."
+r4_reasoning: "Fixed indicator thresholds; no ML, no PnL-adaptive parameters, one position per magic."
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 45
+g0_approval_reasoning: "R1 single RoboForex source_id; R2 mechanical EMA200/AO entries and swing/1R exits with H1 cadence ~45/y/symbol plausible; R3 DWX FX H1; R4 deterministic no ML."
+---
+
+# QM5_11573 RoboForex EMA200 + Awesome Oscillator Trend Pull (H1)
+
+## Source
+- Source: RoboForex strategy collection, "Strategy with the use of EMA and Awesome Oscillator"
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\362359657-Robo-forex-strategy.pdf`
+- Location: pages 52-53
+- Source citation: 2026 local PDF archive URL/file reference, RoboForex strategy collection, "Strategy with the use of EMA and Awesome Oscillator".
+- Author/institution: RoboForex
+
+## Concept
+
+Trade only in the direction of the H1 EMA200 trend and require Awesome Oscillator to confirm same-side momentum. The source frames the setup as buying an upward trend and selling a downward trend with risk anchored beyond the prior swing.
+
+## Markets & Timeframes
+
+- Source instruments: any currency pair
+- DWX targets: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+- Timeframe: H1 or higher; baseline H1
+
+## Entry Rules
+
+**LONG**
+1. Close is above EMA(200).
+2. Awesome Oscillator histogram is green and above zero.
+3. Enter at next H1 bar open.
+
+**SHORT**
+1. Close is below EMA(200).
+2. Awesome Oscillator histogram is red and below zero.
+3. Enter at next H1 bar open.
+
+## Exit Rules
+
+- LONG SL: 5 points below the previous swing low.
+- SHORT SL: 5 points above the previous swing high.
+- TP: 1R from entry by source default; source also allows trader discretion, but P2 fixes 1R.
+- Close early if close crosses EMA200 against the trade.
+
+## Filters
+
+- Define swing low/high deterministically as the lowest low/highest high over the prior 5 completed H1 bars.
+- One position per magic number.
+- Spread cap: 3 pips.
+
+## Parameters To Test
+
+- Swing lookback: 3, 5, 8 bars.
+- TP multiple: 1.0R, 1.5R, 2.0R.
+- AO color strictness: current bar color only versus two consecutive same-color bars.
+
+## Author Claims
+
+- "The basic concept of this strategy is to buy in the upward trend and sell in the downtrend with the minimal risk."
+- "the price is above EMA 200 (uptrend signal); Histogram lines of the Awesome Oscillator are green and above the zero line"
+- "the price is below EMA 200 (downtrend signal); Histogram lines of the Awesome Oscillator are red and below the zero line"
+
+## R1-R4
+
+| Criterion | Status | Notes |
+|-----------|--------|-------|
+| R1 | PASS | Single local PDF source with named institutional author and page location. |
+| R2 | PASS | EMA/AO rules are deterministic; swing stop definition is fixed for implementation. |
+| R3 | PASS | FX-native OHLC indicator strategy. |
+| R4 | PASS | Fixed indicators and one-position-compatible exits. |
+
+## Initial Risk Profile
+
+Source stop is swing-based, TP is 1R. P2 uses `RISK_FIXED = 1000 USD`; live default remains `RISK_PERCENT = 0.25`.
+
+## Implementation Notes
+
+- Use closed H1 bars for EMA200 and AO state.
+- AO green means current closed AO value is greater than the previous closed AO value.

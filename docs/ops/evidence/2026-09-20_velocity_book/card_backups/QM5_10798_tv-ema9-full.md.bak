@@ -1,0 +1,106 @@
+---
+ea_id: QM5_10798
+slug: tv-ema9-full
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "myttthew, 9 EMA First Full Candle Entry + EMA Cross Exit (Strategy), TradingView open-source strategy, 2026-02-10, https://www.tradingview.com/script/zTbBxN70-9-EMA-First-Full-Candle-Entry-EMA-Cross-Exit-Strategy/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/intraday-trend-continuation]]"
+  - "[[concepts/moving-average-filter]]"
+  - "[[concepts/scalping]]"
+indicators:
+  - "[[indicators/ema]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 220
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 exact TradingView URL/author cited; R2 full-candle EMA entry with EMA-cross exit and estimated 220 trades/year/symbol; R3 portable to DWX CFDs; R4 fixed-rule non-ML single-position strategy."
+---
+
+# TradingView 9 EMA Full Candle
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `9 EMA First Full Candle Entry + EMA Cross Exit (Strategy)`, author handle `myttthew`, open-source strategy, page shows Feb 10, accessed 2026-05-22, https://www.tradingview.com/script/zTbBxN70-9-EMA-First-Full-Candle-Entry-EMA-Cross-Exit-Strategy/
+
+## Mechanics
+
+### Entry
+Use M5 baseline.
+
+- Compute EMA(9).
+- Long setup:
+  - Current candle closes fully above EMA(9): low > EMA(9).
+  - This is the first qualifying candle after price was not fully above EMA(9).
+  - No existing position.
+- Short setup:
+  - Current candle closes fully below EMA(9): high < EMA(9).
+  - This is the first qualifying candle after price was not fully below EMA(9).
+  - No existing position.
+
+### Exit
+- Exit long when price crosses back below EMA(9).
+- Exit short when price crosses back above EMA(9).
+- V5 safety stop: ATR(14) * 1.5 or recent swing beyond entry candle.
+
+### Stop Loss
+- Source-visible text uses EMA cross exit only.
+- V5 baseline hard stop: min of 1.5 * ATR(14) and entry-candle opposite extreme plus 0.25 ATR buffer.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- Session-time gate: liquid session only for scalping baseline.
+- Optional trend filter with EMA(50) can be tested later, not baseline.
+- Friday close flatten and news blackout from V5 framework.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/intraday-trend-continuation]] - requires full candle clearance of EMA(9).
+- [[concepts/moving-average-filter]] - EMA(9) defines both entry and exit state.
+- [[concepts/scalping]] - source is designed for 5-minute intraday execution.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `myttthew` are cited. |
+| R2 Mechanical | PASS | Source gives explicit full-candle EMA entry and EMA-cross exit rules. |
+| R3 Data Available | PASS | EMA, OHLC, ATR safety stop, sessions, and tick data are available on DWX CFDs. |
+| R4 ML Forbidden | PASS | Single fixed-indicator strategy; no ML, grid, martingale, or adaptive online parameters. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD, GER40.DWX, NDX.DWX, WS30.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says a long enters when the candle low is above EMA(9).
+- Source says a short enters when the candle high is below EMA(9).
+- Source says exits occur when price crosses back through EMA(9).
+
+## Parameters To Test
+- Timeframe: M5, M15.
+- EMA length: 9, 13, 21.
+- Session gate: London, NY, London+NY.
+- Safety stop: 1.0, 1.5, 2.0 ATR.
+- Entry debounce: first candle only, allow re-entry after 3 bars, allow re-entry after opposite touch.
+- Optional EMA(50) trend filter: off/on.
+
+## Initial Risk Profile
+High-cadence intraday trend-continuation strategy. P5b latency and slippage stress will matter if it survives P2/P3.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView script page.
+
+## Related strategies
+- QM5_10754 tv-sma-5-9
+- QM5_10796 tv-sma-atr
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

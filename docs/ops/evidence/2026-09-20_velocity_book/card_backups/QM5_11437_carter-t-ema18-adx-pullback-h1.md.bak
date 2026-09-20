@@ -1,0 +1,105 @@
+---
+ea_id: QM5_11437
+slug: carter-t-ema18-adx-pullback-h1
+type: strategy
+source_id: b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0
+sources:
+  - "[[sources/carter-20-tf-systems]]"
+concepts:
+  - "[[concepts/pullback-entry]]"
+  - "[[concepts/adx-filter]]"
+  - "[[concepts/trend-following]]"
+  - "[[concepts/stop-order-entry]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/adx]]"
+period: H1
+source_citation: "Thomas Carter, 20 Multi-Timeframe Trading Systems (online/self-published). R1 CONDITIONAL — named author, unverified credentials."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: Single source_id present; named individual author (Thomas Carter) with self-published attribution — author track record is not required under relaxed R1 criteria.
+r2_mechanical: PASS
+r2_reasoning: EMA18, ADX(12), and first-touch OHLC logic are all bar-by-bar arithmetic; BUYSTOP and ATR-based exit are fully parameterized.
+r3_data_available: PASS
+r3_reasoning: H1 DWX FX pairs available; iMA EMA and iADXWilder are MT5-native indicators.
+r4_ml_forbidden: PASS
+r4_reasoning: Fixed EMA period (18) and ADX threshold (25); no ML, no adaptive params.
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 35
+g0_approval_reasoning: "R1 PASS single source_id/attribution; R2 PASS mechanical EMA18 ADX H1 pullback stop-order entries/exits with plausible >=2 trades/year/symbol; R3 PASS DWX FX H1 testable; R4 PASS deterministic no ML."
+---
+
+# QM5_11437 Carter-T — EMA18 Pullback + ADX Trend Filter (H1)
+
+## Source
+- Source: "20 Multi-Timeframe Trading Systems" by Thomas Carter (online/self-published)
+- Citation: Thomas Carter, "20 Trend Following Systems", 2014 self-published Blogspot/Amazon source note; URL/source lineage tracked by `source_id: b20a1c94-74f8-58a3-aeac-bfab2f1dbbf0`.
+- R1: CONDITIONAL — named individual, no major-publisher verification.
+
+## Mechanics
+
+**Concept**: In a strong trend (ADX > 25), price periodically pulls back to the EMA18. The first touch of EMA18 after a confirmed trend bar is the entry trigger — entered via BUYSTOP/SELLSTOP at the prior bar's extreme, so the trade only fires if price immediately resumes trend direction after touching EMA18. The stop trails to EMA18 to lock in profit as the trend extends.
+
+**Key nuance**: "First touch" means the first bar where `Low[bar] <= EMA18[bar]` (long) or `High[bar] >= EMA18[bar]` (short) after a run of bars where price was clearly above/below EMA18. Subsequent touches in the same leg are skipped.
+
+### Entry
+
+**LONG:**
+1. `ADX(12)[1] > 25` — strong trend confirmed
+2. `Low[1] <= EMA18[1] AND Close[1] > EMA18[1]` — bar[1] touched EMA18 but closed above it (first touch)
+3. This is the first EMA18 touch in the current upleg (no prior touch in last 3 bars)
+4. Place BUYSTOP at `High[1] + 1 pip`; valid for bar[0] only
+
+**SHORT:**
+1. `ADX(12)[1] > 25` — strong trend
+2. `High[1] >= EMA18[1] AND Close[1] < EMA18[1]` — bar[1] touched EMA18 but closed below it
+3. First touch in current downleg
+4. Place SELLSTOP at `Low[1] - 1 pip`; valid for bar[0] only
+
+**Order management**: Cancel unfilled stop order at close of bar[0] if not triggered.
+
+### Exit
+- **TP**: `entry + ATR(14)[1] × 2.0` (long) / `entry - ATR(14)[1] × 2.0` (short)
+- **Trail stop**: trail SL to EMA18 once trade has 1×ATR in profit
+
+### Stop Loss
+- Initial: below EMA18[1] for long, above EMA18[1] for short (use `EMA18 - ATR(14)[1] × 0.5`)
+- P2 cap: 60 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+- Spread cap: 20 pips
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Thomas Carter, named author, no verified credentials or major-publisher backtest. |
+| R2 Mechanical | PASS | EMA18, ADX(12) — MT5-native. First-touch logic is pure bar-by-bar OHLC comparison. |
+| R3 Data Available | PASS | H1 DWX FX. iMA EMA, iADXWilder MT5-native. |
+| R4 No ML | PASS | Fixed EMA period (18), ADX threshold (25). |
+
+G0 APPROVE eligible with CONDITIONAL R1 note.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Carter, 20 Multi-TF Systems (Strategy #17)
+
+## Implementation Notes for Codex (P1)
+- EMA18: `iMA(NULL,PERIOD_H1,18,0,MODE_EMA,PRICE_CLOSE,1)`
+- ADX: `iADXWilder(NULL,PERIOD_H1,12,PRICE_CLOSE,MODE_MAIN,1)` > 25
+- First-touch: track a bool `in_pullback_zone`; set true when `Low[1] <= EMA18[1]`; reset when price > EMA18 by >5 pips for 2+ bars; only enter on FIRST bar where condition is true
+- BUYSTOP: `iHigh(NULL,PERIOD_H1,1) + 1*_Point` (adjust for 5-digit brokers)
+- Trail: once `iClose(NULL,PERIOD_H1,0) - entry > ATR`, move SL to EMA18[0] - small buffer
+- P3 sweeps: EMA period (13/18/21), ADX threshold (20/25/30), ATR TP (1.5/2.0/3.0)
+
+## Related strategies
+- Related: QM5_11434 (carter-t-sma32hl-psar-sma200-h1) — same source, channel breakout vs. pullback approach
+- Related: QM5_11430 (carter-cci21-ema4080-zero-cross-m5) — Carter EMA filter; M5 vs H1 TF
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

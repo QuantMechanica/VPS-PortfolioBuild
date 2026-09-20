@@ -1,0 +1,111 @@
+---
+ea_id: QM5_11343
+slug: triad-session-breakout
+type: strategy
+source_id: 581facd5-aecc-5b86-8121-1eaa3eaf1a45
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/session-breakout]]"
+  - "[[concepts/opening-range-breakout]]"
+  - "[[concepts/session-time-filter]]"
+indicators:
+  - "[[indicators/session-high-low]]"
+period: H1
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, GBPJPY.DWX, USDJPY.DWX]
+source_citation: 'Jason Fielder, Triad Cheat Sheets, Cheat Sheet #2 - Session Open Breakout Scalping, local PDF: C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\254938836-TriadCheatSheets-pdf.pdf'
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 300
+g0_approval_reasoning: "R1 local PDF/title/author cited; R2 deterministic multi-session H/L breakout with fixed TP/SL/bar-close exit and plausible frequent session cadence; R3 H1 DWX FX symbols listed; R4 fixed-rule no ML/grid/martingale."
+---
+
+# QM5_11343 Triad Session Open Breakout Scalping — Session H/L Breakout (H1)
+
+## Source
+- Source: "Triad Cheat Sheets" by Jason Fielder
+- Section: Cheat Sheet #2 — Session Open Breakout Scalping
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\254938836-TriadCheatSheets-pdf.pdf`
+- 2026 reviewed local PDF URL/file reference: archived local source file above.
+- Author: Jason Fielder. R1 PASS.
+
+## Mechanics
+
+At each major session open (Asian, European, London, NY), record the session's established H/L. Trade a breakout of that range. Two variants: (a) conservative — use the session's cumulative H/L from open; (b) aggressive — use prev-bar's H/L as breakout level. TP=10–15 pips, SL=10 pips (or 1 pip beyond the signal bar's opposing extreme). Exit at end of bar regardless.
+
+### Entry
+
+**Session Opens (EST):**
+- Asian: 7pm EST
+- European: 2am EST
+- London: 3am EST
+- NY: 8am EST
+
+**Conservative variant** (implemented in P2):
+- Record `sess_high` = highest H since session open; `sess_low` = lowest L since session open.
+- LONG: current bar breaks above `sess_high` → BUY at market.
+- SHORT: current bar breaks below `sess_low` → SELL at market.
+
+**Aggressive variant** (P3 sweep):
+- Use `prev_high` = High[1], `prev_low` = Low[1] as breakout levels instead of session H/L.
+
+Maximum 1 trade per session per direction. Signal valid for first 3 bars of each session only.
+
+### Exit
+- TP: 12 pips.
+- SL: 10 pips (or 1 pip beyond signal bar's opposing extreme, whichever is smaller).
+- Hard exit: close position at end of bar where entry occurred (bar-close rule).
+
+### Stop Loss
+- Fixed 10 pips or signal-bar opposing-extreme + 1 pip (whichever closer to entry).
+- P2: use fixed 10 pips for simplicity.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1
+- Instruments: EURUSD.DWX, GBPUSD.DWX, GBPJPY.DWX, USDJPY.DWX
+- Active sessions: all four opens (parameterisable — start with London + NY)
+- Spread cap: 3 pips
+- Skip if session H/L range < 5 pips at time of signal
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Jason Fielder named; commercially published cheat sheet. |
+| R2 Mechanical | PASS | Session H/L recorded, breakout on bar-cross, fixed TP/SL, bar-close exit — all deterministic. |
+| R3 Data Available | PASS | H1 DWX data; session time mapping from broker time. |
+| R4 No ML | PASS | Pure price arithmetic. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Triad Cheat Sheets PDF, Cheat Sheet #2
+
+## Implementation Notes for Codex (P1)
+- Session detection: array of session-start broker hours; parameterise DST offset
+- `sess_high`: rolling max of iHigh from session-start bar index down to current bar
+- Breakout detect: `High[0] > sess_high_prev_bar` for conservative; `High[0] > High[1]` for aggressive
+- Bar-close exit: use OnTick with TimeToClose(TimeLocalToServer(bar_end)) < 30s check, or OnBarClose
+- P3 sweeps: conservative vs aggressive, session subset (London+NY vs all four), TP (10/12/15 pips)
+
+## Related strategies
+- Related: QM5_11342 (triad-offhours-watermark) — same source; counter-trend fade in dead-time
+- Related: QM5_11314 (tc-m5-7-london-open-box-breakout) — similar ORB logic on M5 with box construction
+- Differentiator: Applies to multiple session opens; minimal indicator overhead; pure opening-range logic
+
+## Lessons Learned
+- *(populated as pipeline progresses)*
+
+## Symbol Universe (amendment 2026-09-20, Velocity intake)
+
+Target symbols: EURUSD.DWX, GBPUSD.DWX, GBPJPY.DWX, USDJPY.DWX
+
+Symbols follow the EA's active magic-registry rows in slot order (or the OWNER 2026-09-01 default universe when no rows existed); `.DWX` is the factory custom-symbol name only. Amendment authority: FABLE-DEC-VELOCITY-INTAKE-20260920.

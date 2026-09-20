@@ -1,0 +1,127 @@
+---
+ea_id: QM5_11291
+slug: tc20-ema18-28-wma5-12-rsi21-h1
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/moving-average-crossover]]"
+  - "[[concepts/trend-following]]"
+  - "[[concepts/ema-tunnel]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/wma]]"
+  - "[[indicators/rsi]]"
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX]
+period: H1
+expected_trade_frequency: "H1 tunnel compression plus dual-WMA crossing and RSI confirmation is a multi-filter confluence; conservative joint estimate 8-18 trades/year/symbol."
+expected_trades_per_year_per_symbol: 12
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "EMA18/28 tunnel-width threshold, WMA5/12 crossover, and RSI21 midline filter are deterministic bar-close conditions paired with fixed-pip SL/TP and a defined reverse-cross exit."
+r3_reasoning: "EURUSD.DWX, GBPUSD.DWX, and USDJPY.DWX are standard DWX major-pair instruments with full H1 tick history."
+r4_reasoning: "Fixed-period EMA/WMA/RSI indicators only, single entry with reverse-cross exit, no ML, grid, or unbounded sizing."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11291_tc20-ema18-28-wma5-12-rsi21-h1.md"
+source_citation: ""
+g0_approval_reasoning: "R1 lineage recorded; R2 mechanical EMA tunnel, dual-WMA crossing, RSI filter and fixed/ATR exits with conservative 12/year joint cadence; R3 testable on EURUSD/GBPUSD/USDJPY.DWX; R4 deterministic, ML-free, one-position-per-magic compatible."
+expected_pf: 1.2
+expected_dd_pct: 18.0
+---
+
+# QM5_11291 TC20 Strategy #20 — EMA(18/28) Tunnel + WMA(5/12) Cross + RSI(21) Filter (H1)
+
+## Source
+- Source: "20 Forex Trading Strategies (1 Hour Time Frame)" by Thomas Carter, 2014 (PDF)
+- Section: Forex Trading Strategy #20
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\376863900-20-Forex-Trading-Strategies-Collection.pdf`
+- Author: Thomas Carter. R1 PASS.
+- Note: Very similar to the Sidus Method (QM5_1052: WMA5/8 + EMA18/28 tunnel). This uses WMA(5/12) instead of WMA(5/8), and adds RSI(21) > 50 as a trend filter. Counts as a distinct variant worth testing.
+
+## Mechanics
+
+EMA(18) and EMA(28) form a "red tunnel" (both colored red). WMA(5) and WMA(12) are fast crossover MAs. The tunnel narrows when the market is compressing — that's the setup signal. Entry occurs when WMA(5) and WMA(12) both cross the tunnel in the trend direction, confirmed by RSI(21) > or < 50.
+
+### Entry
+**LONG** (all):
+1. EMA(18) and EMA(28) tunnel is **narrow or crossed** (EMA(18) very close to EMA(28), within ATR(14) × 0.1).
+2. WMA(5) crosses above the EMA(28) tunnel from below.
+3. WMA(12) also crosses above EMA(28).
+4. RSI(21) > 50.
+5. Extra strong signal: WMA(5) also crosses above WMA(12) simultaneously.
+6. Enter BUY at bar close confirming all conditions.
+
+**SHORT** (mirror):
+1. Tunnel narrow or crossed.
+2. WMA(5) and WMA(12) cross below EMA(18) tunnel.
+3. RSI(21) < 50.
+4. Enter SELL.
+
+### Exit
+- Take Profit: 50 pips (fixed).
+- Stop Loss: 50 pips (fixed).
+- Reverse exit: WMA(5) and WMA(12) cross back through tunnel in opposite direction.
+
+### Stop Loss
+- Fixed 50 pips initial SL.
+- For P2/P3: ATR(14) × 2.0.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2 (HR4).
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1
+- Instruments: EURUSD primary
+- Tunnel-width check: Only enter when tunnel is "extremely narrow" (EMA18−EMA28 < ATR(14) × 0.2 in absolute pips).
+- Spread cap: 20 pips.
+- News filter: off in P2.
+
+## Concepts
+- [[concepts/ema-tunnel]] — primary (EMA18/28 as dynamic S/R zone)
+- [[concepts/moving-average-crossover]] — primary (WMA5/12 trigger)
+- [[concepts/trend-following]] — secondary (RSI(21) midline filter)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Thomas Carter named author, 2014. R1 PASS. |
+| R2 Mechanical | PASS | Tunnel-width threshold mechanizable (EMA18 − EMA28 < threshold). WMA cross deterministic. RSI level check deterministic. Entry on bar close. |
+| R3 Data Available | PASS | H1 EURUSD.DWX. P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX. |
+| R4 No ML | PASS | Fixed-period indicators only. No ML. |
+
+G0 APPROVE eligible (pending duplicate check vs QM5_1052 Sidus).
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from TC20 PDF, Strategy #20. Note: Sidus (QM5_1052) uses WMA(5/8), not WMA(5/12). Tunnel threshold and RSI(21) filter are unique to this variant.
+
+## Implementation Notes for Codex (P1)
+- Timeframe: H1
+- DWX symbols: **EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX**
+- EMA(18): `iMA(NULL, 0, 18, 0, MODE_EMA, PRICE_CLOSE, i)`
+- EMA(28): `iMA(NULL, 0, 28, 0, MODE_EMA, PRICE_CLOSE, i)`
+- WMA(5): `iMA(NULL, 0, 5, 0, MODE_LWMA, PRICE_CLOSE, i)`
+- WMA(12): `iMA(NULL, 0, 12, 0, MODE_LWMA, PRICE_CLOSE, i)`
+- Tunnel narrow: `MathAbs(ema18[0] - ema28[0]) < iATR(NULL, 0, 14, 0) * 0.2`
+- LONG signal: tunnel narrow AND wma5[0] > ema28[0] AND wma12[0] > ema28[0] AND RSI(21) > 50
+- Fixed SL/TP: 50 pips.
+- P3 sweeps: WMA params (5/8 vs 5/12 vs 5/15), RSI period (14 vs 21), tunnel threshold.
+
+## Related strategies
+- Most similar: QM5_1052_sidus-ema-method-v2 — same EMA18/28 tunnel, WMA(5/8) trigger. This uses WMA(5/12) + RSI(21) as a distinct variant.
+- Key difference from Sidus: WMA(12) instead of WMA(8), RSI(21) added, tunnel-compression trigger.
+
+## Lessons learned (during the pipeline run)
+- *(populated as pipeline progresses)*

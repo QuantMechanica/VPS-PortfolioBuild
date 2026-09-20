@@ -1,0 +1,116 @@
+---
+ea_id: QM5_11443
+slug: burke-day3-breakout-trap-m5
+type: strategy
+source_id: 04305b6c-b4ce-522b-87b5-71708b6b8327
+sources:
+  - "[[sources/burke-stacey-playbook]]"
+concepts:
+  - "[[concepts/false-breakout]]"
+  - "[[concepts/multi-day-pattern]]"
+  - "[[concepts/ema-close-back]]"
+  - "[[concepts/trap-reversal]]"
+indicators:
+  - "[[indicators/ema]]"
+period: M5
+source_citation: "Stacey Burke, The Stacey Burke Trading Playbook (online/self-published). R1 CONDITIONAL — named individual, no verifiable major-publisher credentials."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: Single source_id present; Stacey Burke self-published Playbook is a valid attribution under updated R1 criteria.
+r2_mechanical: PASS
+r2_reasoning: Three-bar D1 close-vs-high comparisons and M5 EMA20 cross-back trigger are pure OHLC arithmetic and fully deterministic.
+r3_data_available: PASS
+r3_reasoning: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX on M5/D1 are DWX instruments with adequate history.
+r4_ml_forbidden: PASS
+r4_reasoning: Fixed EMA(20), fixed bar count (3), single position per Day 4 direction — no ML or adaptive parameters.
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 30
+card_body_incomplete: true
+card_body_missing: "source_citation"
+g0_approval_reasoning: "R1 PASS single source_id; R2 PASS mechanical D1 3-bar trap plus M5 EMA entry/SL/TP with plausible >2 trades/year/symbol; R3 PASS DWX FX M5/D1; R4 PASS deterministic no ML."
+---
+
+# QM5_11443 Burke — 3-Day Breakout Trap → M5 EMA20 Reversal (M5+D1)
+
+## Source
+- Source: Stacey Burke, Tradesmint.com, 2022, URL/local PDF: `707586131-1-Stacey-Burke-Best-Trade-Setups-Playbook-Notes-Part-2.pdf` (Part 2, pages 51-106).
+- R1: CONDITIONAL — named individual author, self-published.
+
+## Mechanics
+
+**Concept**: Three consecutive D1 bars each close beyond the prior day's extreme in the same direction (three consecutive higher highs and higher closes, or three consecutive lower lows and lower closes). This represents a short-term trending push that has likely exhausted the directional move. On Day 4 (trade day), when M5 price closes back inside EMA20 in the opposite direction, it signals that the trap is springing — fade the 3-day trend.
+
+**Key insight**: Three bars in the same direction is statistically unusual and often precedes a mean-reversion snap. The M5 EMA20 close-back provides the mechanical timing trigger.
+
+**News caveat**: Burke requires "no major red news." Not mechanically implementable in MT5.
+
+### D1 Pattern Detection (3-Day Extension)
+
+**Bearish trap (3 higher closes → expect DOWN on Day 4):**
+1. `Close[D1,1] > High[D1,2]` — Day 3 close above Day 2 High
+2. `Close[D1,2] > High[D1,3]` — Day 2 close above Day 3 High (counting from current)
+3. `Close[D1,3] > High[D1,4]` — Day 1 close above Day 4 High
+4. All three bars are bullish (Close > Open) and each closed above prior day's High
+
+**Bullish trap (3 lower closes → expect UP on Day 4):**
+1. `Close[D1,1] < Low[D1,2]`
+2. `Close[D1,2] < Low[D1,3]`
+3. `Close[D1,3] < Low[D1,4]`
+
+### M5 Entry (Day 4 execution)
+
+**SHORT (bearish trap activated):**
+1. Trap pattern confirmed at Day 4 open
+2. Session window: London (07:00-12:00 GMT) or NY (13:00-17:00 GMT)
+3. Price pops above EMA20 M5 and then a bar closes back below EMA20: `Close[M5,0] < EMA20[M5,0] AND Close[M5,1] >= EMA20[M5,1]`
+4. Enter SELL at close of the cross-back bar
+
+**LONG (bullish trap):**
+- Mirror: close above EMA20 after being below it
+
+### Exit
+- **TP**: entry - 50 pips (short) / entry + 50 pips (long)
+- **Extended target**: entry - 75 pips if momentum strong (assess at TP1)
+
+### Stop Loss
+- SHORT: entry + 20 pips
+- LONG: entry - 20 pips
+- P2 cap: 25 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5 (entry), D1 (pattern)
+- Session window: London + NY
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, USDCAD.DWX
+- Spread cap: 15 pips
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Stacey Burke, named author, self-published. |
+| R2 Mechanical | PASS | 3-bar D1 close-vs-high comparisons pure OHLC. M5 EMA20 MT5-native. |
+| R3 Data Available | PASS | M5/D1 DWX FX. |
+| R4 No ML | PASS | Fixed EMA(20), fixed bar count (3). |
+
+G0 APPROVE eligible with CONDITIONAL R1 note. **Known limitation**: news filter not implementable.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Burke Playbook (3-Day Breakout Trap)
+
+## Implementation Notes for Codex (P1)
+- 3-bar check: `iClose(D1,1)>iHigh(D1,2) && iClose(D1,2)>iHigh(D1,3) && iClose(D1,3)>iHigh(D1,4)` for bearish trap
+- Set bool `bear_trap_day4 = true` at D1 bar open
+- M5 EMA20: `iMA(NULL,PERIOD_M5,20,0,MODE_EMA,PRICE_CLOSE,0)` and `...,1`
+- Entry condition: `Close[0] < EMA20[0] AND Close[1] >= EMA20[1]` — this bar closed below, prior bar was above
+- P3 sweeps: EMA period (13/20/34), pattern bars (2/3/4), TP (30/50/75), SL (15/20/25 pips)
+
+## Related strategies
+- Related: QM5_11442 (burke-frd-fgd-daily-pump-m5) — same source; pump-fade vs. consecutive-bar trap
+- Related: QM5_11444 (burke-inside-day-m5) — same EMA20 execution trigger; inside-day pattern vs. 3-bar extension
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

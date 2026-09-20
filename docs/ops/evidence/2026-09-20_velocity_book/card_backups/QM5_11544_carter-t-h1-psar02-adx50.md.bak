@@ -1,0 +1,79 @@
+---
+ea_id: QM5_11544
+slug: carter-t-h1-psar02-adx50
+type: strategy
+source_id: 3001a121-97a0-5db0-b6ff-69b89a0fc07d
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-1h]]"
+concepts:
+  - "[[concepts/parabolic-sar-entry]]"
+  - "[[concepts/adx-directional-filter]]"
+indicators:
+  - ParabolicSAR(0.02,0.2)
+  - ADX(50)
+period: H1
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (1 Hour Time Frame)', self-published 2014 (System #19). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 50
+g0_approval_reasoning: "R1 one source_id/source attribution; R2 mechanical PSAR + ADX/DI rules with SL/TP/DI-cross exit and plausible H1 cadence >=2 trades/year/symbol; R3 EURUSD/GBPUSD.DWX H1 testable; R4 deterministic ML-free 1-position compatible."
+---
+
+# QM5_11544 Carter-T H1 — PSAR(0.02,0.2) + ADX(50) Directional (H1)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", System #19, self-published 2014.
+- URL/local source: [[sources/carter-thomas-20-forex-strategies-1h]]; source_id 3001a121-97a0-5db0-b6ff-69b89a0fc07d.
+
+## Mechanics
+
+**Concept**: ADX(50) — very long period — provides a stable structural directional signal. +DI > -DI AND PSAR below price = buy. ADX(50) is much smoother than standard ADX(14) — slower to turn, fewer whipsaws. SL=50, TP=50 or DI cross.
+
+### Entry
+**LONG**: `ADX(50) +DI > -DI` AND `iSAR(H1,0.02,0.2,1) < iLow[1]`
+**SHORT**: ADX -DI > +DI AND SAR above price
+
+### Exit
+- **SL**: 50 pips; **TP**: 50 pips OR when +DI and -DI cross again (indicator-driven exit)
+- P2: test both fixed TP and DI-cross exit
+
+### Stop Loss
+- `SL = 50*pip`; P2 cap: 55 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1; Instruments: EURUSD.DWX, GBPUSD.DWX; Spread cap: 15p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | PSAR: iSAR. ADX(50): iADX (non-standard period but valid). MT5-native. |
+| R3 Data Available | PASS | H1 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter H1 book, System #19
+
+## Implementation Notes for Codex (P1)
+- `double plusdi = iADX(NULL,PERIOD_H1,50,PRICE_CLOSE,MODE_PLUSDI,1)`
+- `double minusdi = iADX(NULL,PERIOD_H1,50,PRICE_CLOSE,MODE_MINUSDI,1)`
+- `double sar = iSAR(NULL,PERIOD_H1,0.02,0.2,1)`
+- LONG: plusdi > minusdi AND sar < iLow[1]
+- DI-cross exit: monitor plusdi vs minusdi reversal each bar
+- SL: 50 pips; TP: 50 pips (1:1 R/R), also test indicator exit
+- P3 sweeps: ADX period (14/28/50), TP (50/75/100 pips vs indicator exit)
+
+## Related strategies
+- Related: QM5_11520 (carter-t-ema18-adx12-pullback) — same source, ADX shorter period
+- Related: QM5_11522 (carter-t-ema4-10-adx28-macd5104-h4) — ADX + EMA H4
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

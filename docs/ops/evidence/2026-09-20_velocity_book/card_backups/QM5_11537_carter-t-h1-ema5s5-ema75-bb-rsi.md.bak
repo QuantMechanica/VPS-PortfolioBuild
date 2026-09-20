@@ -1,0 +1,98 @@
+---
+ea_id: QM5_11537
+slug: carter-t-h1-ema5s5-ema75-bb-rsi
+type: strategy
+source_id: 3001a121-97a0-5db0-b6ff-69b89a0fc07d
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-1h]]"
+concepts:
+  - "[[concepts/ema-trend-filter]]"
+  - "[[concepts/bollinger-band-breakout]]"
+  - "[[concepts/rsi-trend-filter]]"
+indicators:
+  - EMA(5,shift5)
+  - EMA(75)
+  - BollingerBands(20,2)
+  - RSI(14)
+period: H1
+target_symbols: [EURUSD.DWX, GBPUSD.DWX]
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (1 Hour Time Frame)', self-published 2014 (System #11). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 20
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "Fully mechanical EMA(75)/Bollinger-middle/RSI(14) state entry with swing-low or fixed-cap stop and 2R target, implementable with stock iMA/iBands/iRSI calls and no discretion."
+r3_reasoning: "EURUSD.DWX and GBPUSD.DWX H1 both have full DWX tick history and are directly testable in the P2 backtest harness."
+r4_reasoning: "Deterministic threshold/state logic only, no ML/adaptive components, single position per magic compatible."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11537_carter-t-h1-ema5s5-ema75-bb-rsi.md"
+g0_approval_reasoning: "R1 lineage retained; R2 deterministic H1 EMA75/BB/RSI state entry with explicit swing/fixed-cap stop and 2R target, conservatively estimated at 20 joint-filter trades/year/symbol; R3 testable on EURUSD.DWX and GBPUSD.DWX; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 18.0
+---
+
+# QM5_11537 Carter-T H1 — EMA(5,shift5) + EMA(75) + BB + RSI (H1)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", System #11, self-published 2014.
+
+## Mechanics
+
+**Concept**: Close above EMA(75) AND Bollinger middle line (SMA20) + RSI(14) > 50. The EMA(5,shift5) is displaced 5 bars forward — it's used as a visual aid for future direction (SL is placed relative to it, but entry is based on EMA75+BB+RSI).
+
+**QM note**: The SL rule "2 pips below the middle of EMA75, signal candle high, and EMA5-shift5 swing high" is complex. P2 simplifies: SL = swing low (iLowest H1 5 bars) or EMA75, capped at 40 pips.
+
+### Entry
+**LONG**: `iClose[1] > iMA(PERIOD_H1,75,...,1)` AND `iClose[1] > BB_middle[1]` AND `RSI(14)[1] > 50`
+**SHORT**: Close < EMA75 AND close < BB_middle AND RSI < 50
+
+### Exit
+- **SL**: 40 pips (P2 cap; source: 2 pips below the nearest of EMA75/swing/EMA5-shift)
+- **TP**: same as SL or double SL. P2: 2:1
+
+### Stop Loss
+- `SL_long = iLowest(NULL,PERIOD_H1,MODE_LOW,5,1)` capped at 40 pips
+- P2 cap: 40 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1; Instruments: EURUSD.DWX, GBPUSD.DWX; Spread cap: 15p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | EMA(5,shift5): iMA with shift=5. EMA(75): iMA. BB: iBands. RSI: iRSI. All MT5-native. |
+| R3 Data Available | PASS | H1 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter H1 book, System #11
+
+## Implementation Notes for Codex (P1)
+- EMA(5,shift5): `iMA(NULL,PERIOD_H1,5,5,MODE_EMA,PRICE_CLOSE,1)` — 3rd param is shift
+- `double ema75 = iMA(NULL,PERIOD_H1,75,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double bb_mid = iBands(NULL,PERIOD_H1,20,2,0,PRICE_CLOSE,MODE_MAIN,1)`
+- `double rsi = iRSI(NULL,PERIOD_H1,14,PRICE_CLOSE,1)`
+- LONG: `iClose[1] > ema75 && iClose[1] > bb_mid && rsi > 50`
+- SL: swing-5bar-low capped 40 pips; TP: 2×SL
+- P3 sweeps: EMA75 period (50/75/100), BB deviation (2/2.5), SL approach (EMA75 vs 5-bar low vs fixed 30p)
+
+## Related strategies
+- Related: QM5_11534 (carter-t-h1-bb20-ema3-macd617-rsi14) — same source, BB+RSI structure
+- Related: QM5_11519 (carter-t-ema7-21-pullback) — EMA pullback entry
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

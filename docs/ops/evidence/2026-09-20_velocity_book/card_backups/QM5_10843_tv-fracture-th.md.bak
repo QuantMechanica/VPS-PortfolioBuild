@@ -1,0 +1,126 @@
+---
+ea_id: QM5_10843
+slug: tv-fracture-th
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "officialjackofalltrades, Fracture Threshold Strategy [JOAT], TradingView open-source strategy, Apr 26, https://www.tradingview.com/script/NwMwuyA5-Fracture-Threshold-Strategy-JOAT/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/trend-following]]"
+  - "[[concepts/confluence-score]]"
+  - "[[concepts/session-filter]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/sma]]"
+  - "[[indicators/rsi]]"
+  - "[[indicators/volume]]"
+  - "[[indicators/atr]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 180
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 URL+author cited; R2 deterministic M15 score/volume/session/EMA-cross rules with ATR stop and 3R exit, >2 trades/year/symbol plausible despite filters; R3 DWX FX/metals/indices testable; R4 fixed thresholds, no ML/grid/martingale, one-position compatible."
+---
+
+# TradingView Fracture Threshold EMA Score
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `Fracture Threshold Strategy [JOAT]`, author handle `officialjackofalltrades`, open-source strategy, accessed 2026-05-22, Apr 26, https://www.tradingview.com/script/NwMwuyA5-Fracture-Threshold-Strategy-JOAT/
+
+## Mechanics
+
+### Entry
+Use M15 baseline on liquid DWX FX/index CFDs.
+
+- Compute seven-condition MasterTrend bull/bear score:
+  - EMA(4) above/below EMA(5).
+  - RSI(14) above/below 50.
+  - Close above/below EMA(21).
+  - EMA(21) above/below SMA(50).
+  - SMA(50) above/below EMA(55).
+  - EMA(55) above/below EMA(89).
+  - Close above/below EMA(750).
+- Compute relative volume regime:
+  - volRatio = EMA(short volume MA / long volume MA, smoothing length).
+  - Default threshold: volRatio >= 0.90.
+  - On DWX, use tick volume with the same formula.
+- Session filter:
+  - London 08:00-17:00.
+  - New York 14:00-21:00.
+- Long setup:
+  - Bull MasterTrend score >= 5 of 7.
+  - Volume regime passes.
+  - Session is active.
+  - EMA(4) crosses above EMA(5) on confirmed bar.
+- Short setup:
+  - Bear MasterTrend score >= 5 of 7.
+  - Volume regime passes.
+  - Session is active.
+  - EMA(4) crosses below EMA(5) on confirmed bar.
+
+### Exit
+- Fixed take profit at 3.0R from initial stop distance.
+- No trailing stop in baseline.
+- Entry and exit orders execute on next bar open after confirmed signal.
+
+### Stop Loss
+- Initial stop = 1.5 * ATR(14) from entry.
+- V5 spread guard: skip if spread > 15% of stop distance.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic. Source default says pyramiding 0.
+
+### Zusatzliche Filter
+- Require at least 750 warmup bars before taking signals because EMA(750) is part of the score.
+- P3 can test minimum score 4/5/6 and volume gate on/off.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/trend-following]] - trades fast EMA crossover only when the broader EMA stack and RSI agree.
+- [[concepts/confluence-score]] - seven conditions produce bull/bear score.
+- [[concepts/session-filter]] - London and New York windows gate entries.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `officialjackofalltrades` are cited. |
+| R2 Mechanical | PASS | Source gives seven score conditions, volume ratio formula, session windows, EMA(4/5) trigger, 1.5 ATR stop, 3R target, confirmed bars, and pyramiding 0. |
+| R3 Data Available | PASS | EMA/SMA, RSI, tick volume ratio, ATR, OHLC, and session clocks are available on DWX FX, metals, and index CFDs. |
+| R4 ML Forbidden | PASS | Fixed confluence score and fixed thresholds; no ML, no grid, no martingale, one-position compatible. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says entry requires MasterTrend score, volume regime, and session filter to align.
+- Source says the default minimum MasterTrend score is 5 of 7.
+- Source says stop loss is 1.5 * ATR from entry and take profit is 3 * the stop distance.
+- Source says pyramiding is 0 and entries are based on confirmed bars.
+
+## Parameters To Test
+- Timeframe: M5, M15, H1.
+- Minimum score: 4, 5, 6.
+- Volume ratio threshold: off, 0.80, 0.90, 1.00.
+- Session filter: London only, New York only, both.
+- ATR stop: 1.0, 1.5, 2.0.
+- RR target: 2.0R, 3.0R.
+
+## Initial Risk Profile
+Dense trend-confluence strategy with many fixed filters. Main risks are high indicator collinearity, long EMA warmup, and DWX tick-volume mismatch versus exchange volume.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView mechanical strategy source.
+
+## Related strategies
+- QM5_10786 tv-daily-bias
+- QM5_10825 tv-macd-mtf
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

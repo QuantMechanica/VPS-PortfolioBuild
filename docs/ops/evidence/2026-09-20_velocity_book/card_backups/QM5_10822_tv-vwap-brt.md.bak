@@ -1,0 +1,107 @@
+---
+ea_id: QM5_10822
+slug: tv-vwap-brt
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "AIScripts, VWAP Breakout Retest Trend Strategy, TradingView open-source strategy, https://www.tradingview.com/script/zYIRkvHS-VWAP-Breakout-Retest-Trend-Strategy/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/vwap-breakout]]"
+  - "[[concepts/retest-confirmation]]"
+  - "[[concepts/trend-filter-ma]]"
+indicators:
+  - "[[indicators/vwap]]"
+  - "[[indicators/ema]]"
+  - "[[indicators/atr]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 90
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 PASS TradingView URL+handle; R2 PASS mechanical VWAP breakout/retest/ATR exits with ~90 trades/year/symbol; R3 PASS DWX OHLC/session indicators testable; R4 PASS fixed non-ML one-position rules."
+---
+
+# TradingView VWAP Breakout Retest Trend
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `VWAP Breakout Retest Trend Strategy`, author handle `AIScripts`, open-source strategy, page shows 2026-03-09, accessed 2026-05-22, https://www.tradingview.com/script/zYIRkvHS-VWAP-Breakout-Retest-Trend-Strategy/
+
+## Mechanics
+
+### Entry
+Use M15/M30 intraday baseline. Compute session VWAP, trend EMA, and ATR.
+
+- Long setup:
+  - Price crosses above VWAP.
+  - Price later pulls back toward VWAP within the configured retest buffer.
+  - Price remains above trend EMA.
+  - Enter on bullish confirmation after the retest.
+- Short setup:
+  - Price crosses below VWAP.
+  - Price later pulls back toward VWAP from below within the configured retest buffer.
+  - Price remains below trend EMA.
+  - Enter on bearish confirmation after the retest.
+
+### Exit
+- Exit at ATR-based stop-loss or ATR-based take-profit.
+- Optional signal exit: close if price crosses back through VWAP against the position before target.
+
+### Stop Loss
+Source uses ATR-based dynamic risk management. V5 baseline: stop = 1.5 * ATR(14), target = 2.5 * ATR(14), with P3 sweep.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- VWAP must be session-anchored and available for at least 8 bars.
+- Retest buffer defaults to 0.25 * ATR(14) around VWAP.
+- Confirmation candle defaults to close in breakout direction after retest.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/vwap-breakout]] - initial cross away from session fair value defines directional interest.
+- [[concepts/retest-confirmation]] - waits for VWAP to hold as support/resistance.
+- [[concepts/trend-filter-ma]] - EMA trend alignment suppresses counter-trend retests.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `AIScripts` are cited. |
+| R2 Mechanical | PASS | Source gives VWAP breakout, retest, EMA trend alignment, and ATR stop/target components. |
+| R3 Data Available | PASS | VWAP, EMA, ATR, OHLC, and session clocks are available on DWX FX, metals, and indices. |
+| R4 ML Forbidden | PASS | Fixed indicator rules; no ML, no grid, no martingale, no adaptive online parameters. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD, GER40.DWX, NDX.DWX, WS30.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says the first step is identifying when price moves above or below VWAP.
+- Source says the strategy waits for price to pull back toward VWAP to confirm support or resistance.
+- Source says a trend EMA reduces counter-trend trades and ATR-based stop-loss/take-profit manages risk.
+
+## Parameters To Test
+- Timeframe: M15, M30, H1.
+- Trend EMA: 50, 100, 200.
+- Retest buffer: 0.10, 0.25, 0.50 * ATR(14).
+- Retest lookback: 5, 10, 20 bars.
+- Stop/target: 1.2/2.0 ATR, 1.5/2.5 ATR, 2.0/3.0 ATR.
+- VWAP exit: on/off.
+
+## Initial Risk Profile
+Intraday continuation strategy. Main failure mode is chop around VWAP; minimum session age, retest buffer, and EMA trend filter are the important anti-whipsaw controls.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView script page.
+
+## Related strategies
+- QM5_10241 tv-vwap-retest
+- QM5_10240 tv-vwap-orb-pull
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

@@ -1,0 +1,80 @@
+---
+ea_id: QM5_11540
+slug: carter-t-h1-ema5-13-62-macd3060-sep
+type: strategy
+source_id: 3001a121-97a0-5db0-b6ff-69b89a0fc07d
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-1h]]"
+concepts:
+  - "[[concepts/ema-ribbon-trend-filter]]"
+  - "[[concepts/macd-zero-cross]]"
+  - "[[concepts/ema-separation-filter]]"
+indicators:
+  - EMA(5)
+  - EMA(13)
+  - EMA(62)
+  - MACD(30,60,30)
+period: H1
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (1 Hour Time Frame)', self-published 2014 (System #14). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 50
+g0_approval_reasoning: "R1 one source_id/source attribution; R2 mechanical EMA alignment + MACD + separation with fixed SL/TP and plausible H1 trend-continuation cadence >=2 trades/year/symbol; R3 EURUSD.DWX H1 testable; R4 deterministic ML-free 1-position compatible."
+---
+
+# QM5_11540 Carter-T H1 — EMA(5/13/62) + MACD + Separation Filter (H1)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", System #14, self-published 2014.
+- URL/local source: [[sources/carter-thomas-20-forex-strategies-1h]]; source_id 3001a121-97a0-5db0-b6ff-69b89a0fc07d.
+
+## Mechanics
+
+**Concept**: Triple EMA alignment (5>13>62) + MACD(30,60,30) > 0 AND EMA13 is at least 30–40 pips away from EMA62 (trend strength filter — prevents entries in weak/narrow trends). SL=30, TP=50.
+
+**Note**: EMA separation filter: `MathAbs(EMA13 - EMA62) >= 30*pip`. This is pure arithmetic.
+
+### Entry
+**LONG**: `EMA5 > EMA13 > EMA62` AND `MACD(30,60,30) > 0` AND `EMA13 - EMA62 >= 30*pip` (separation ≥30 pips)
+**SHORT**: `EMA5 < EMA13 < EMA62` AND MACD < 0 AND `EMA62 - EMA13 >= 30*pip`
+
+### Exit
+- **SL**: 30 pips; **TP**: 50 pips
+
+### Stop Loss
+- `SL = 30*pip`; P2 cap: 35 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1; Instruments: EURUSD.DWX; Spread cap: 15p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | EMA: iMA. MACD(30,60,30): iMACD (non-standard but valid). Separation: MathAbs arithmetic. All MT5-native. |
+| R3 Data Available | PASS | H1 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter H1 book, System #14
+
+## Implementation Notes for Codex (P1)
+- `double sep = MathAbs(ema13 - ema62)` → filter: `sep >= 30*pip_size`
+- LONG: ema5 > ema13 && ema13 > ema62 && macd > 0 && sep >= 30*pip
+- SL: 30 pips; TP: 50 pips
+- P3 sweeps: separation threshold (20/30/40 pips), MACD periods (30,60 vs 12,26), EMA62 vs 55 vs 50
+
+## Related strategies
+- Related: QM5_11532 (carter-t-h1-ema5-15-60-pullback) — same source, EMA5/15/60 H1
+- Related: QM5_11517 (carter-t-ema5-15-50-100-macd-h4) — same MACD confirmation pattern H4
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

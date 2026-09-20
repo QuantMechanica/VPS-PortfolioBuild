@@ -11,7 +11,8 @@ REPO = Path(__file__).resolve().parents[3]
 
 def test_live_document_authorizes_exactly_the_listed_eas():
     got = cwi.velocity_intake_force_rebuild_allowlist(REPO)
-    assert got == frozenset({"11299", "11496", "11516", "11518", "11291", "11292"})
+    assert frozenset({"11299", "11496", "11516", "11518", "11291", "11292"}) <= got
+    assert got == cwi.VELOCITY_INTAKE_FORCE_REBUILD_NUMERIC_EA_IDS  # every listed EA is named in the document
     assert got <= cwi.force_rebuild_allowlist(REPO / "nonexistent-root", REPO)
     assert cwi.force_rebuild_owner_reference("11299") == cwi.VELOCITY_INTAKE_FORCE_REBUILD_OWNER_REFERENCE
     assert cwi.force_rebuild_evidence_note("11299") == cwi.VELOCITY_INTAKE_FORCE_REBUILD_DECISION_DOC

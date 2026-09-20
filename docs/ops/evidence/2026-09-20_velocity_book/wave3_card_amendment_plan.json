@@ -1,0 +1,1457 @@
+[
+ {
+  "ea_label": "QM5_10474_mql5-tdsglobal",
+  "ea_id": "10474",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10474_mql5-tdsglobal.md"
+ },
+ {
+  "ea_label": "QM5_10475_mql5-puria",
+  "ea_id": "10475",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 7,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "USDCHF.DWX",
+   "USDCAD.DWX",
+   "AUDUSD.DWX",
+   "NZDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10475_mql5-puria.md"
+ },
+ {
+  "ea_label": "QM5_10479_mql5-lbs-atr",
+  "ea_id": "10479",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 14,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "USDCHF.DWX",
+   "USDCAD.DWX",
+   "AUDUSD.DWX",
+   "NZDUSD.DWX",
+   "XAUUSD.DWX",
+   "XTIUSD.DWX",
+   "SP500.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10479_mql5-lbs-atr.md"
+ },
+ {
+  "ea_label": "QM5_10783_tv-bos-forex",
+  "ea_id": "10783",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 6,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "XAUUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10783_tv-bos-forex.md"
+ },
+ {
+  "ea_label": "QM5_10797_tv-rsi-ma",
+  "ea_id": "10797",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 7,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10797_tv-rsi-ma.md"
+ },
+ {
+  "ea_label": "QM5_10798_tv-ema9-full",
+  "ea_id": "10798",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 7,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10798_tv-ema9-full.md"
+ },
+ {
+  "ea_label": "QM5_10812_tv-bb-atrtrail",
+  "ea_id": "10812",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 7,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10812_tv-bb-atrtrail.md"
+ },
+ {
+  "ea_label": "QM5_10819_tv-dema-vwap",
+  "ea_id": "10819",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 7,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10819_tv-dema-vwap.md"
+ },
+ {
+  "ea_label": "QM5_10822_tv-vwap-brt",
+  "ea_id": "10822",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 7,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10822_tv-vwap-brt.md"
+ },
+ {
+  "ea_label": "QM5_10827_tv-vol-exp",
+  "ea_id": "10827",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 6,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "XAUUSD.DWX",
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10827_tv-vol-exp.md"
+ },
+ {
+  "ea_label": "QM5_10830_tv-ts461-sweep",
+  "ea_id": "10830",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "XAUUSD.DWX",
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10830_tv-ts461-sweep.md"
+ },
+ {
+  "ea_label": "QM5_10831_tv-ref-st-tsl",
+  "ea_id": "10831",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "XAUUSD.DWX",
+   "EURUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10831_tv-ref-st-tsl.md"
+ },
+ {
+  "ea_label": "QM5_10843_tv-fracture-th",
+  "ea_id": "10843",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10843_tv-fracture-th.md"
+ },
+ {
+  "ea_label": "QM5_10861_tv-fli-stc",
+  "ea_id": "10861",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10861_tv-fli-stc.md"
+ },
+ {
+  "ea_label": "QM5_10862_tv-mtf-trend-bo",
+  "ea_id": "10862",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "GDAXI.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_10862_tv-mtf-trend-bo.md"
+ },
+ {
+  "ea_label": "QM5_11276_iaf-donchian",
+  "ea_id": "11276",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11276_iaf-donchian.md"
+ },
+ {
+  "ea_label": "QM5_11279_blade-macd-stoch-divergence",
+  "ea_id": "11279",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "EURJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11279_blade-macd-stoch-divergence.md"
+ },
+ {
+  "ea_label": "QM5_11291_tc20-ema18-28-wma5-12-rsi21-h1",
+  "ea_id": "11291",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11291_tc20-ema18-28-wma5-12-rsi21-h1.md"
+ },
+ {
+  "ea_label": "QM5_11292_trix14-signal-cross",
+  "ea_id": "11292",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11292_trix14-signal-cross.md"
+ },
+ {
+  "ea_label": "QM5_11299_lwma144-smma5-fractal-m5-scalp",
+  "ea_id": "11299",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 2,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11299_lwma144-smma5-fractal-m5-scalp.md"
+ },
+ {
+  "ea_label": "QM5_11304_kathy-lien-double-bollinger-trend",
+  "ea_id": "11304",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11304_kathy-lien-double-bollinger-trend.md"
+ },
+ {
+  "ea_label": "QM5_11305_alp-sma20-scalp",
+  "ea_id": "11305",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "NDX.DWX",
+   "SP500.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11305_alp-sma20-scalp.md"
+ },
+ {
+  "ea_label": "QM5_11315_tc-m5-8-triple-bb50-rsi3-stoch",
+  "ea_id": "11315",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11315_tc-m5-8-triple-bb50-rsi3-stoch.md"
+ },
+ {
+  "ea_label": "QM5_11330_tc-m5-16-wma5-sma11-psar-adx",
+  "ea_id": "11330",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX",
+   "USDCHF.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11330_tc-m5-16-wma5-sma11-psar-adx.md"
+ },
+ {
+  "ea_label": "QM5_11343_triad-session-breakout",
+  "ea_id": "11343",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "GBPJPY.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11343_triad-session-breakout.md"
+ },
+ {
+  "ea_label": "QM5_11371_tom-demark-ema9-30-momentum-h1",
+  "ea_id": "11371",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11371_tom-demark-ema9-30-momentum-h1.md"
+ },
+ {
+  "ea_label": "QM5_11375_kathy-lien-double-bb-1-2sigma-m15",
+  "ea_id": "11375",
+  "magic_classification": "never_allocated",
+  "magic_action": "GOVERNED_ALLOCATE",
+  "active_rows": 0,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11375_kathy-lien-double-bb-1-2sigma-m15.md"
+ },
+ {
+  "ea_label": "QM5_11380_macd12-stoch8-extreme-m1m5",
+  "ea_id": "11380",
+  "magic_classification": "never_allocated",
+  "magic_action": "GOVERNED_ALLOCATE",
+  "active_rows": 0,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11380_macd12-stoch8-extreme-m1m5.md"
+ },
+ {
+  "ea_label": "QM5_11394_paul-langer-m5-bb20-scalper",
+  "ea_id": "11394",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11394_paul-langer-m5-bb20-scalper.md"
+ },
+ {
+  "ea_label": "QM5_11432_carter-multitf-candle-color-h1",
+  "ea_id": "11432",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11432_carter-multitf-candle-color-h1.md"
+ },
+ {
+  "ea_label": "QM5_11437_carter-t-ema18-adx-pullback-h1",
+  "ea_id": "11437",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11437_carter-t-ema18-adx-pullback-h1.md"
+ },
+ {
+  "ea_label": "QM5_11438_td-ema9ema30-momentum-h1",
+  "ea_id": "11438",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11438_td-ema9ema30-momentum-h1.md"
+ },
+ {
+  "ea_label": "QM5_11442_burke-frd-fgd-daily-pump-m5",
+  "ea_id": "11442",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11442_burke-frd-fgd-daily-pump-m5.md"
+ },
+ {
+  "ea_label": "QM5_11443_burke-day3-breakout-trap-m5",
+  "ea_id": "11443",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11443_burke-day3-breakout-trap-m5.md"
+ },
+ {
+  "ea_label": "QM5_11454_davey-session-open-bracket-breakout",
+  "ea_id": "11454",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11454_davey-session-open-bracket-breakout.md"
+ },
+ {
+  "ea_label": "QM5_11459_blade-macd-stoch-divergence-h1",
+  "ea_id": "11459",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 5,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11459_blade-macd-stoch-divergence-h1.md"
+ },
+ {
+  "ea_label": "QM5_11467_duplooy-multiMA-knot-straddle-h1",
+  "ea_id": "11467",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 5,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11467_duplooy-multiMA-knot-straddle-h1.md"
+ },
+ {
+  "ea_label": "QM5_11473_carter-t-smma55-channel-wpr-stoch-h1",
+  "ea_id": "11473",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 2,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11473_carter-t-smma55-channel-wpr-stoch-h1.md"
+ },
+ {
+  "ea_label": "QM5_11495_carter-t-ema3-8-macd-stoch-psar-sd-m5",
+  "ea_id": "11495",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 4,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11495_carter-t-ema3-8-macd-stoch-psar-sd-m5.md"
+ },
+ {
+  "ea_label": "QM5_11496_carter-t-ema100-psar-macd64128-m5",
+  "ea_id": "11496",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11496_carter-t-ema100-psar-macd64128-m5.md"
+ },
+ {
+  "ea_label": "QM5_11508_carter-t-ema50-100-macd-breakout",
+  "ea_id": "11508",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11508_carter-t-ema50-100-macd-breakout.md"
+ },
+ {
+  "ea_label": "QM5_11516_carter-t-sma7-21-cci5-m15",
+  "ea_id": "11516",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11516_carter-t-sma7-21-cci5-m15.md"
+ },
+ {
+  "ea_label": "QM5_11518_carter-t-ema5-100-mtf-m15-h1",
+  "ea_id": "11518",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 2,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11518_carter-t-ema5-100-mtf-m15-h1.md"
+ },
+ {
+  "ea_label": "QM5_11530_carter-t-h1-sma9-100-cross",
+  "ea_id": "11530",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 1,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11530_carter-t-h1-sma9-100-cross.md"
+ },
+ {
+  "ea_label": "QM5_11531_carter-t-h1-ema6-23-stoch-macd",
+  "ea_id": "11531",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 1,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11531_carter-t-h1-ema6-23-stoch-macd.md"
+ },
+ {
+  "ea_label": "QM5_11532_carter-t-h1-ema5-15-60-pullback",
+  "ea_id": "11532",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 2,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11532_carter-t-h1-ema5-15-60-pullback.md"
+ },
+ {
+  "ea_label": "QM5_11537_carter-t-h1-ema5s5-ema75-bb-rsi",
+  "ea_id": "11537",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 2,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11537_carter-t-h1-ema5s5-ema75-bb-rsi.md"
+ },
+ {
+  "ea_label": "QM5_11540_carter-t-h1-ema5-13-62-macd3060-sep",
+  "ea_id": "11540",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 1,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11540_carter-t-h1-ema5-13-62-macd3060-sep.md"
+ },
+ {
+  "ea_label": "QM5_11543_carter-t-h1-ema100-smma28-macd3060",
+  "ea_id": "11543",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 1,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11543_carter-t-h1-ema100-smma28-macd3060.md"
+ },
+ {
+  "ea_label": "QM5_11544_carter-t-h1-psar02-adx50",
+  "ea_id": "11544",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 2,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11544_carter-t-h1-psar02-adx50.md"
+ },
+ {
+  "ea_label": "QM5_11558_carter-t-m5-psar-macd64128-ema100",
+  "ea_id": "11558",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11558_carter-t-m5-psar-macd64128-ema100.md"
+ },
+ {
+  "ea_label": "QM5_11559_carter-t-m5-ema3-bb203-macd",
+  "ea_id": "11559",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 1,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11559_carter-t-m5-ema3-bb203-macd.md"
+ },
+ {
+  "ea_label": "QM5_11573_robo-ema200-awesome-h1",
+  "ea_id": "11573",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 5,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11573_robo-ema200-awesome-h1.md"
+ },
+ {
+  "ea_label": "QM5_11574_robo-ichi-awesome-h1",
+  "ea_id": "11574",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 4,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11574_robo-ichi-awesome-h1.md"
+ },
+ {
+  "ea_label": "QM5_11865_ema5-15-60-pullback-h1",
+  "ea_id": "11865",
+  "magic_classification": "non_active_magic_history",
+  "magic_action": "REVIEW_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 2,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11865_ema5-15-60-pullback-h1.md"
+ },
+ {
+  "ea_label": "QM5_11867_psar-adx50-di-h1",
+  "ea_id": "11867",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11867_psar-adx50-di-h1.md"
+ },
+ {
+  "ea_label": "QM5_11872_rsi-80-20-fade-m15",
+  "ea_id": "11872",
+  "magic_classification": "non_active_magic_history",
+  "magic_action": "REVIEW_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 4,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11872_rsi-80-20-fade-m15.md"
+ },
+ {
+  "ea_label": "QM5_11873_trix-signal-line-cross",
+  "ea_id": "11873",
+  "magic_classification": "non_active_magic_history",
+  "magic_action": "REVIEW_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 4,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11873_trix-signal-line-cross.md"
+ },
+ {
+  "ea_label": "QM5_11880_continuation-method-ema50-williams",
+  "ea_id": "11880",
+  "magic_classification": "non_active_magic_history",
+  "magic_action": "REVIEW_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 4,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_11880_continuation-method-ema50-williams.md"
+ },
+ {
+  "ea_label": "QM5_11926_rb-rsi-ma-filter",
+  "ea_id": "11926",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 1,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11926_rb-rsi-ma-filter.md"
+ },
+ {
+  "ea_label": "QM5_11927_rb-atr-candle-break",
+  "ea_id": "11927",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 1,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "XAUUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11927_rb-atr-candle-break.md"
+ },
+ {
+  "ea_label": "QM5_11933_ff-holo-tooslow",
+  "ea_id": "11933",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 1,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_11933_ff-holo-tooslow.md"
+ },
+ {
+  "ea_label": "QM5_12351_alp-ema12-26",
+  "ea_id": "12351",
+  "magic_classification": "active_magic_contract_mismatch",
+  "magic_action": "REVIEW_REQUIRED",
+  "active_rows": 8,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "SP500.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_12351_alp-ema12-26.md"
+ },
+ {
+  "ea_label": "QM5_1320_vwap-sigma-band-fade-intraday",
+  "ea_id": "1320",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 8,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_1320_vwap-sigma-band-fade-intraday.md"
+ },
+ {
+  "ea_label": "QM5_20053_xcu-weekend-prem",
+  "ea_id": "20053",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 1,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "XCUUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20053_xcu-weekend-prem.md"
+ },
+ {
+  "ea_label": "QM5_20175_alpha-inst-magnet-r1-recovery",
+  "ea_id": "20175",
+  "magic_classification": "never_allocated",
+  "magic_action": "GOVERNED_ALLOCATE",
+  "active_rows": 0,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_20175_alpha-inst-magnet-r1-recovery.md"
+ },
+ {
+  "ea_label": "QM5_30001_bollinger-bands-grid-waka-waka",
+  "ea_id": "30001",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "AUDCAD.DWX",
+   "AUDNZD.DWX",
+   "NZDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_30001_bollinger-bands-grid-waka-waka.md"
+ },
+ {
+  "ea_label": "QM5_30005_bollinger-bands-grid-dark-venus",
+  "ea_id": "30005",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_30005_bollinger-bands-grid-dark-venus.md"
+ },
+ {
+  "ea_label": "QM5_30006_adx-ma-trend-grid-dark-kronos",
+  "ea_id": "30006",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 4,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "AUDCHF.DWX",
+   "GBPCHF.DWX",
+   "EURCHF.DWX",
+   "NZDCHF.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_30006_adx-ma-trend-grid-dark-kronos.md"
+ },
+ {
+  "ea_label": "QM5_34008_multicurrency-basket-dispersion-hedger",
+  "ea_id": "34008",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 7,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX",
+   "NZDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_34008_multicurrency-basket-dispersion-hedger.md"
+ },
+ {
+  "ea_label": "QM5_37001_ernest-chan-ornstein-uhlenbeck-statarb",
+  "ea_id": "37001",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "NZDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_37001_ernest-chan-ornstein-uhlenbeck-statarb.md"
+ },
+ {
+  "ea_label": "QM5_37005_chan-bollinger-adx-mean-reversion",
+  "ea_id": "37005",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "USDCAD.DWX",
+   "AUDCAD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_37005_chan-bollinger-adx-mean-reversion.md"
+ },
+ {
+  "ea_label": "QM5_38001_codetrading-vwap-bollinger-rsi-scalper",
+  "ea_id": "38001",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_38001_codetrading-vwap-bollinger-rsi-scalper.md"
+ },
+ {
+  "ea_label": "QM5_38004_codetrading-triple-ema-momentum-scalper",
+  "ea_id": "38004",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_38004_codetrading-triple-ema-momentum-scalper.md"
+ },
+ {
+  "ea_label": "QM5_38005_codetrading-ascending-triangle-breakout",
+  "ea_id": "38005",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "XAUUSD.DWX",
+   "SP500.DWX",
+   "EURUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_38005_codetrading-ascending-triangle-breakout.md"
+ },
+ {
+  "ea_label": "QM5_38007_codetrading-python-atr-grid-engine",
+  "ea_id": "38007",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "AUDCAD.DWX",
+   "NZDCAD.DWX",
+   "EURCHF.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_38007_codetrading-python-atr-grid-engine.md"
+ },
+ {
+  "ea_label": "QM5_39001_forexfactory-trading-made-simple-tms",
+  "ea_id": "39001",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_39001_forexfactory-trading-made-simple-tms.md"
+ },
+ {
+  "ea_label": "QM5_39002_forexfactory-sonic-r-system",
+  "ea_id": "39002",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_39002_forexfactory-sonic-r-system.md"
+ },
+ {
+  "ea_label": "QM5_39004_forexfactory-thv-cobra-trix-scalper",
+  "ea_id": "39004",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "USDJPY.DWX",
+   "GBPUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_39004_forexfactory-thv-cobra-trix-scalper.md"
+ },
+ {
+  "ea_label": "QM5_40005_tradingview-multitimeframe-supertrend-atr",
+  "ea_id": "40005",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 3,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPJPY.DWX",
+   "XAUUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_40005_tradingview-multitimeframe-supertrend-atr.md"
+ },
+ {
+  "ea_label": "QM5_41010_developing-poc-migration-scalper",
+  "ea_id": "41010",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 2,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "NDX.DWX",
+   "SP500.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41010_developing-poc-migration-scalper.md"
+ },
+ {
+  "ea_label": "QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow",
+  "ea_id": "41141",
+  "magic_classification": null,
+  "magic_action": null,
+  "active_rows": 1,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "GBPUSD.DWX"
+  ],
+  "symbol_policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "card_path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow.md"
+ },
+ {
+  "ea_label": "QM5_9165_tv-joovier-london-session-breakout",
+  "ea_id": "9165",
+  "magic_classification": "card_target_symbols_missing_or_invalid",
+  "magic_action": "CARD_AMENDMENT_REQUIRED",
+  "active_rows": 0,
+  "other_status_rows": 0,
+  "target_symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "symbol_policy": "DEFAULT_UNIVERSE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_9165_tv-joovier-london-session-breakout.md"
+ }
+]

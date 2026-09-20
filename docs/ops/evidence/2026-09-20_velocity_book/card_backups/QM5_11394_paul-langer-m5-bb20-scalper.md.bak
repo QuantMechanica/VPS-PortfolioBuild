@@ -1,0 +1,121 @@
+---
+ea_id: QM5_11394
+slug: paul-langer-m5-bb20-scalper
+type: strategy
+source_id: 4852552c-8446-5986-ac32-e63fd176f84a
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/bollinger-band-reversal]]"
+  - "[[concepts/scalping]]"
+  - "[[concepts/mean-reversion]]"
+indicators:
+  - "[[indicators/bollinger-bands]]"
+period: M5
+source_citation: "Paul Langer, The Black Book of Forex Trading (Alura Publishing, 2015), Scalping Strategy, local PDF: C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\559219887-The-Black-Book-of-Forex-Trading.pdf"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 500
+g0_approval_reasoning: "R1 PASS source_id plus single book PDF attribution; R2 PASS deterministic BB re-entry/session/pending-stop rules with M5 cadence plausibly >2 trades/year/symbol; R3 PASS DWX M5 FX symbols; R4 PASS deterministic no ML."
+---
+
+# QM5_11394 Paul Langer M5 Scalper — BB(20,2) Pierce + Re-Entry Pending Stop (M5)
+
+## Source
+
+- Source: "The Black Book of Forex Trading" by Paul Langer (Alura Publishing, 2015)
+  — Scalping Strategy
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\559219887-The-Black-Book-of-Forex-Trading.pdf`
+- Source citation: Paul Langer, 2015 book PDF; URL/path: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\559219887-The-Black-Book-of-Forex-Trading.pdf`
+- Author: Paul Langer, named individual, 2015. R1 PASS.
+
+## Mechanics
+
+M5 Bollinger Band(20,2) mean-reversion scalper. Trade at London and NY opens only.
+Daily trend direction set at start of session (optional D1 check). Price pierces the outer
+BB band → wait for first re-entry candle → place pending stop entry beyond that candle's
+extreme. TP 20 pips fixed. SL: above/below the signal candle.
+
+### Entry (Session-based)
+
+Trade during: London open (08:00–12:00 GMT) and NY open (13:00–17:00 GMT).
+
+**SHORT** (after BB upper pierce):
+1. Prior bar Close > BB(20,2) upper band: `Close[1] > upper_bb[1]`.
+2. Current bar closes back inside the band: `Close[0] < upper_bb[0]` (first re-entry bar).
+3. Place SELL STOP at `Low[0] - 5*Point` (pending entry below the re-entry candle's Low).
+4. SL: `High[0] + 5*Point` (above the re-entry candle's High).
+5. Valid for current bar only (expire if not triggered by next bar open).
+
+**LONG** (after BB lower pierce):
+1. `Close[1] < lower_bb[1]` — prior close outside lower band.
+2. `Close[0] > lower_bb[0]` — current bar re-enters band.
+3. Place BUY STOP at `High[0] + 5*Point`.
+4. SL: `Low[0] - 5*Point`.
+
+### Exit
+
+- TP: 20 pips fixed (source: "20 pips is a constant hit").
+- Alternative: trail with 3rd-to-last bar Low/High as trailing SL.
+- BE: move to breakeven at +10 pips.
+
+### Stop Loss
+
+- Signal candle opposite extreme ± 5 pips.
+- P2 cap: 25 pips max.
+
+### Position Sizing
+
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+
+- Timeframe: M5
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX
+- Session: London open 08:00–12:00 GMT + NY open 13:00–17:00 GMT only
+- Daily trend context: optional — trade only SHORT setups if D1 close < SMA(200); LONG if above
+- Spread cap: 15 pips
+
+## R1-R4 assessment
+
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Paul Langer, named individual, published book (Alura Publishing, 2015). |
+| R2 Mechanical | PASS | BB pierce detection fully deterministic (close beyond band). Re-entry candle detection (close back inside band) deterministic. Pending stop 5 pips beyond signal candle fully deterministic. Session time filter deterministic. |
+| R3 Data Available | PASS | M5 DWX data available. |
+| R4 No ML | PASS | Bollinger Bands only. No ML. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+
+- G0: 2026-05-23 — drafted from Paul Langer "The Black Book of Forex Trading" (2015)
+
+## Implementation Notes for Codex (P1)
+
+- Timeframe: M5
+- DWX symbols: **EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX**
+- BB(20,2): `iBands(NULL,0,20,2,0,PRICE_CLOSE,MODE_UPPER/LOWER,i)`
+- SHORT setup: `Close[1] > upper[1] && Close[0] < upper[0]` → signal bar = bar[0]
+- Pending SELLSTOP at `Low[0] - 5*Point`; expiry = current bar open + period (expire on next tick if bar[0] has already closed)
+- Note: pending order must be placed AFTER bar[0] closes, at the next bar's open
+- SL SHORT: `High[0] + 5*Point`; TP: `entry - 20*Point` (20 pips)
+- BE: move SL to entry when profit >= 10*Point
+- Session filter: `Hour(Time[0]) >= 8 && Hour(Time[0]) <= 11` (London) or `Hour(Time[0]) >= 13 && Hour(Time[0]) <= 16` (NY) — broker time GMT+2/+3
+- Cancel pending if new BB pierce signals opposite direction
+- P3 sweeps: BB period (14 vs 20 vs 30), TP (10 vs 20 vs 30 pips), session filter (with vs without D1 trend).
+
+## Related strategies
+
+- Related: QM5_11315 (tc-m5-8-triple-bb50-rsi3-stoch) — also BB reversal on M5 but different params + RSI/Stoch
+- Differentiator: BB(20,2) only, no oscillator confirmation; entry via pending stop below re-entry candle (not market); 20 pip fixed TP; session-restricted.
+
+## Lessons Learned
+
+- *(populated as pipeline progresses)*

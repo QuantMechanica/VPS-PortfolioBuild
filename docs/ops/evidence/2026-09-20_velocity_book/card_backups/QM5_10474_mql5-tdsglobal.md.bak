@@ -1,0 +1,96 @@
+---
+ea_id: QM5_10474
+slug: mql5-tdsglobal
+type: strategy
+source_id: b8b5125a-c67f-5bbc-baff-33456e08f5b2
+sources:
+  - "[[sources/mql5-codebase-mt5-strategies]]"
+concepts:
+  - "[[concepts/pending-order-reversal]]"
+  - "[[concepts/momentum-confirmation]]"
+indicators:
+  - "[[indicators/macd]]"
+  - "[[indicators/osma]]"
+  - "[[indicators/force-index]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id present; full MQL5 CodeBase URL with title, idea/code attribution, and publish date — lineage complete."
+r2_mechanical: PASS
+r2_reasoning: "Directional entry rules (MACD/OsMA/Force bullish/bearish) with pending-limit placement, 2R TP, opposite-signal close, and order expiry — all implementable from cited source code."
+r3_data_available: PASS
+r3_reasoning: "Target basket (EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX) is fully DWX-available for H1 backtest."
+r4_ml_forbidden: PASS
+r4_reasoning: "MACD/OsMA/Force are fixed deterministic indicators; no ML, grid, martingale, or multi-position per magic."
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 45
+last_updated: 2026-05-22
+card_body_incomplete: true
+card_body_missing: "target_symbols"
+g0_approval_reasoning: "R1 MQL5 CodeBase URL cited; R2 mechanical H1 MACD/OsMA/Force pending-limit entry with ATR/2R/opposite/expiry exits and ~45 trades/year/symbol; R3 DWX FX/index testable; R4 no ML/grid/martingale and one-position bounded pending orders."
+---
+
+# MQL5 TDSGlobal Pending Limit Momentum
+
+## Source
+- Source: [[sources/mql5-codebase-mt5-strategies]]
+- Page / Timestamp: MQL5 CodeBase, "TDSGlobal - expert for MetaTrader 5", idea by Scriptor, code by Vladimir Karputov / barabashkakvn, published 2019-01-02, https://www.mql5.com/en/code/23255
+
+## Mechanics
+
+### Entry
+- Target symbols: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX.
+- Baseline symbols: liquid DWX FX majors and index CFDs.
+- Timeframe: H1 baseline; Work TimeFrame can be swept M15-D1 as in the source.
+- Signals are based on iMACD, iOsMA, and iForce on the selected Work TimeFrame.
+- Long setup:
+  - Momentum confirmation from the source indicators is bullish.
+  - Place a Buy Limit order using the source engine's limit-order distance logic.
+  - Cancel stale/opposite pending orders before placing a new order.
+- Short setup:
+  - Momentum confirmation from the source indicators is bearish.
+  - Place a Sell Limit order using the source engine's limit-order distance logic.
+  - Cancel stale/opposite pending orders before placing a new order.
+- Build review should confirm exact indicator comparison directions from `TDSGlobal.mq5`.
+
+### Exit
+- Baseline TP = 2R.
+- Close/cancel on opposite setup.
+- Expire unfilled pending orders after the configured bar window.
+
+### Stop Loss
+- V5 baseline: SL = 1.5 x ATR(14), unless source-code fixed SL default is adopted during build review.
+
+### Position Sizing
+- V5 baseline: fixed-risk $1,000 per backtest trade.
+- Live sizing deferred to V5 risk conventions.
+
+### Additional filters
+- One-position-per-magic.
+- At most one active pending order per side, with opposite pending orders cancelled.
+- V5 default spread guard.
+- No grid, martingale, or averaging.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/pending-order-reversal]] - primary
+- [[concepts/momentum-confirmation]] - secondary
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Verifiable MQL5 CodeBase page with title, idea/code attribution, publish date, and URL. |
+| R2 Mechanical | PASS/UNKNOWN | Source gives pending Buy/Sell Limit operation and the indicator set; exact comparisons need code confirmation. |
+| R3 Data Available | PASS | MACD, OsMA, Force Index, OHLC, and pending-order simulation are available for DWX tests. |
+| R4 ML Forbidden | PASS | No ML, online adaptation, grid, or martingale; V5 restricts to one position and bounded pending orders. |
+
+## Pipeline history
+- G0: Pending batch review.
+
+## Related strategies
+- [[strategies/QM5_10461_mql5-lazy-dbrk]] - prior pending-order breakout card.
+
+## Lessons learned (during the pipeline run)
+- TBD
+
+---
+
+*Research note: expected cadence assumes H1 momentum-confirmed limit orders across liquid symbols.*

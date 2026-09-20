@@ -1,0 +1,79 @@
+---
+ea_id: QM5_11559
+slug: carter-t-m5-ema3-bb203-macd
+type: strategy
+source_id: 42530cb3-0265-534a-89cc-150f80733ff5
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-5min]]"
+concepts:
+  - "[[concepts/ema-bb-midband-cross]]"
+  - "[[concepts/macd-zero-cross]]"
+indicators:
+  - EMA(3)
+  - BollingerBands(20,3)
+  - MACD(12,26,9)
+period: M5
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (5 Minute Time Frame)', self-published 2014 (System #20). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 300
+g0_approval_reasoning: "R1 single source_id/source attribution; R2 deterministic M5 EMA3/BB mid cross plus MACD filter with SL/TP and plausible high M5 cadence >=2 trades/year/symbol; R3 EURUSD.DWX M5 testable; R4 deterministic no ML."
+---
+
+# QM5_11559 Carter-T M5 — EMA(3) Cross BB(20,3) Middle + MACD(12,26,9) (M5)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)", System #20, self-published 2014. URL/source note: [[sources/carter-thomas-20-forex-strategies-5min]].
+
+## Mechanics
+
+**Concept**: EMA(3) crossing up through the BB(20,3) middle band signals momentum resumption. MACD should be approaching or crossing zero (same direction) at the same time. BB deviation=3σ (wider bands reduce false signals at 2σ; entries trigger at the middle). SL: 10–15 pips; TP: 10–15 pips (1:1).
+
+### Entry
+**LONG**: `iMA(M5,3,EMA,1) > iBands(M5,20,3,MIDDLE,1)` AND `iMA(M5,3,EMA,2) <= iBands(M5,20,3,MIDDLE,2)` (just crossed) AND `iMACD(12,26,9,MAIN,1) > -0.0001` (approaching or at zero, within 1 pip)
+**SHORT**: EMA3 crosses below BB(20,3) middle AND MACD approaching or crossing zero downward
+
+### Exit
+- **SL**: 12 pips; **TP**: 12 pips (1:1)
+
+### Stop Loss
+- `SL = 12*pip`; P2 cap: 15 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5; Instruments: EURUSD.DWX; Spread cap: 5p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | EMA(3): iMA(MODE_EMA). BB(20,3): iBands with dev=3. MACD: iMACD. All MT5-native. |
+| R3 Data Available | PASS | M5 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter M5 book, System #20
+
+## Implementation Notes for Codex (P1)
+- `double ema3_1 = iMA(NULL,PERIOD_M5,3,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double ema3_2 = iMA(NULL,PERIOD_M5,3,0,MODE_EMA,PRICE_CLOSE,2)`
+- `double bb_mid1 = iBands(NULL,PERIOD_M5,20,3,0,PRICE_CLOSE,MODE_MAIN,1)`
+- `double bb_mid2 = iBands(NULL,PERIOD_M5,20,3,0,PRICE_CLOSE,MODE_MAIN,2)`
+- `double macd = iMACD(NULL,PERIOD_M5,12,26,9,PRICE_CLOSE,MODE_MAIN,1)`
+- LONG: ema3_1 > bb_mid1 && ema3_2 <= bb_mid2 && macd > -pip_size (approaching zero from below)
+- SL: 12 pips; TP: 12 pips
+- P3 sweeps: BB deviation (2/3/4), MACD "approaching zero" threshold (0.5/1.0/2.0 pips), SL/TP (8/12/15)
+
+## Related strategies
+- Related: QM5_11534 (carter-t-h1-bb20-ema3-macd617-rsi14) — same EMA3+BB+MACD concept H1
+- Related: QM5_11547 (carter-t-m5-bb20-midband-pullback) — BB midband entry M5
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

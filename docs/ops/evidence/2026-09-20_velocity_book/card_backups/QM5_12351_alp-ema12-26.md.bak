@@ -1,0 +1,106 @@
+---
+ea_id: QM5_12351
+slug: alp-ema12-26
+type: strategy
+source_id: 72f9fcfa-6c75-5544-80c4-31e15c9817ab
+source_citation: "alpacahq/pylivetrader, examples/MACD/macd_example.py, EMA12/EMA26 MACD example, https://github.com/alpacahq/pylivetrader/blob/master/examples/MACD/macd_example.py"
+sources:
+  - "[[sources/github-topic-algorithmic-trading-python]]"
+concepts:
+  - "[[concepts/macd-zero-line]]"
+indicators:
+  - "[[indicators/exponential-moving-average]]"
+  - "[[indicators/macd]]"
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX, WS30.DWX]
+period: M15
+expected_trade_frequency: "EMA(12)/EMA(26) positive/negative MACD state; conservative estimate 50-140 completed trades/year/symbol on M15."
+expected_trades_per_year_per_symbol: 90
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-23
+strategy_type_flags: [trend-following, macd-zero-line, ema-crossover, long-only, signal-reversal-exit, atr-hard-stop]
+card_body_incomplete: false
+card_body_missing: ""
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: APPROVED
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+legacy_contract_repair: false
+g0_recovery_reason: "Source-only rejection recovered; audited card body documents R2-R4 PASS."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_12351_alp-ema12-26.md"
+g0_approval_reasoning: "OWNER 2026-07-23 retroactive source-only recovery; body audit documents R2-R4 PASS and original rejection is retained."
+---
+
+# Pylivetrader EMA12/26 MACD State
+
+## Source
+- Source: [[sources/github-topic-algorithmic-trading-python]]
+- Topic URL: https://github.com/topics/algorithmic-trading?l=python
+- Repository: https://github.com/alpacahq/pylivetrader
+- Primary file: https://github.com/alpacahq/pylivetrader/blob/master/examples/MACD/macd_example.py
+- Author / institution: Alpaca / `alpacahq`.
+- Source location: `examples/MACD/macd_example.py`.
+
+## Mechanics
+
+### Entry
+- Evaluate once per completed M15 bar after warmup.
+- Compute EMA(12) and EMA(26) from close.
+- Define MACD as `EMA(12) - EMA(26)`.
+- Enter long when MACD is greater than zero.
+
+### Exit
+- Close long when MACD is less than zero.
+- If MACD is exactly zero, hold current state.
+
+### Stop Loss
+- Source does not define a protective stop.
+- P2 baseline: `2.0 * ATR(14)` hard stop from entry.
+
+### Position Sizing
+- P2 baseline: `RISK_FIXED = 1000`.
+- Live: `RISK_PERCENT = 0.25`.
+- One open position per symbol/magic.
+
+### Additional Filters
+- Minimum warmup: 100 M15 bars.
+- Optional P3 gate: require MACD to cross zero this bar rather than merely remain positive.
+- Friday close flatten uses V5 framework defaults.
+
+## Concepts
+- [[concepts/macd-zero-line]] - source trades long while the fast EMA is above the slow EMA, expressed as a positive EMA spread.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|-------------|
+| R1 Source-Link | PASS | Single source_id with public GitHub topic, Alpaca repository/institution, and exact source file URL. |
+| R2 Mechanical | PASS | Fixed EMA periods, positive-MACD entry, and negative-MACD exit are specified. |
+| R3 DWX-testbar | PASS | Uses close-derived EMA values portable from equity example data to DWX FX, metals, and index CFDs. |
+| R4 No ML | PASS | Deterministic fixed-rule EMA/MACD state; no ML, online learning, grid, martingale, or multiple positions per magic. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, GER40.DWX, NDX.DWX, WS30.DWX. SP500.DWX is optional backtest-only. Live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source uses `short_periods = 12` and `long_periods = 26`.
+- Source computes `macd = short_ema - long_ema`.
+- Source buys when `macd > 0`.
+- Source closes the position when `macd < 0`.
+
+## Parameters To Test
+- Fast EMA: `8`, `12`, `15`.
+- Slow EMA: `21`, `26`, `34`.
+- Timeframe: `M5`, `M15`, `H1`.
+- Stop: `1.5`, `2.0`, `2.5 * ATR(14)`.
+
+## Initial Risk Profile
+Intraday long-only trend state with frequent flips around the zero line. Main risks are spread drag and false positive MACD states; P3 should test zero-cross-only entry and ATR filters.
+
+## Pipeline history
+- G0: 2026-05-26, PENDING, drafted from `alpacahq/pylivetrader`.
+
+## Lessons Learned
+- TBD during pipeline run.

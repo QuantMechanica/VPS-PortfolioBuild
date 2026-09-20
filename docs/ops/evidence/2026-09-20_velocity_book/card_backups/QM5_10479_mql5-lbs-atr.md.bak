@@ -1,0 +1,88 @@
+---
+ea_id: QM5_10479
+slug: mql5-lbs-atr
+type: strategy
+source_id: b8b5125a-c67f-5bbc-baff-33456e08f5b2
+sources:
+  - "[[sources/mql5-codebase-mt5-strategies]]"
+concepts:
+  - "[[concepts/atr-breakout]]"
+  - "[[concepts/pending-order-breakout]]"
+  - "[[concepts/session-breakout]]"
+indicators:
+  - "[[indicators/atr]]"
+  - "[[indicators/price-action]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 70
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 PASS MQL5 CodeBase URL/attribution cited; R2 PASS mechanical scheduled ATR stop breakout with exits and ~70 trades/year/symbol; R3 PASS DWX OHLC/ATR-portable; R4 PASS fixed non-ML one-position rules."
+---
+
+# MQL5 LBS ATR Scheduled Stop Breakout
+
+## Source
+- Source: [[sources/mql5-codebase-mt5-strategies]]
+- Page / Timestamp: MQL5 CodeBase, "LBS - expert for MetaTrader 5", idea by Scriptor, code by Vladimir Karputov / barabashkakvn, published 2018-12-28, updated 2019-01-17, https://www.mql5.com/en/code/22884
+
+## Mechanics
+
+### Entry
+- Baseline symbols: liquid DWX FX majors, XAUUSD.DWX, oil, and liquid index CFDs.
+- Timeframe: M15 or H1; baseline H1 for lower noise.
+- At each new bar, allow setup only when current hour equals one of three configured source hours.
+- Compute ATR(14) on bar #0.
+- Define recent maximum and minimum from bars #0 and #1.
+- Place Buy Stop at max(bar #0, bar #1) + ATR(14).
+- Place Sell Stop at min(bar #0, bar #1) - ATR(14).
+- When one pending order is filled, cancel all remaining sibling pending orders.
+
+### Exit
+- Baseline TP = 2R.
+- Time stop: close open position after 12 H1 bars or at end of trading day, whichever comes first.
+- Cancel unfilled pending orders at the next configured setup hour or at day end.
+
+### Stop Loss
+- V5 baseline: SL = ATR(14) from entry, fixed at order placement.
+- Source says trailing is applied; V5 baseline disables trailing for first build and can test fixed-step trailing as a later parameter variant.
+
+### Position Sizing
+- V5 baseline: fixed-risk $1,000 per backtest trade.
+- Source supports fixed lot or risk percent; V5 uses standard fixed-risk backtest conventions.
+
+### Additional filters
+- One-position-per-magic.
+- Do not place new orders if spread exceeds V5 default threshold.
+- No simultaneous opposing positions after fill; sibling pending orders are cancelled.
+- No grid, martingale, averaging, or adaptive sizing.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/atr-breakout]] - primary
+- [[concepts/pending-order-breakout]] - implementation
+- [[concepts/session-breakout]] - timing filter
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Verifiable MQL5 CodeBase page with title, author/code attribution, publish/update dates, and URL. |
+| R2 Mechanical | PASS | Source gives exact scheduled ATR stop-order placement and sibling-order cancellation mechanics. |
+| R3 Data Available | PASS | ATR and OHLC are available on DWX symbols. |
+| R4 ML Forbidden | PASS | No ML, grid, martingale, adaptive parameter logic, or required multi-position operation. |
+
+## Pipeline history
+- G0: Pending batch review.
+
+## Related strategies
+- [[strategies/QM5_10461_mql5-lazy-dbrk]] - daily pending breakout.
+- [[strategies/QM5_10477_mql5-yday-today]] - prior-day breakout.
+
+## Lessons learned (during the pipeline run)
+- TBD
+
+---
+
+*Research note: expected cadence assumes three scheduled breakout opportunities per symbol per day, filtered by order fill probability and one-position constraints.*

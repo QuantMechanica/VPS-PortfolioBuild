@@ -1,0 +1,103 @@
+---
+ea_id: QM5_10819
+slug: tv-dema-vwap
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "shiner_trading, dEMA w/ VWAP filter, TradingView open-source strategy, published 2021-03-26, https://www.tradingview.com/script/d5I7yUXY-dEMA-w-VWAP-filter/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/vwap-filter]]"
+  - "[[concepts/ema-slope]]"
+  - "[[concepts/intraday-trend]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/vwap]]"
+  - "[[indicators/atr]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 120
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 PASS TradingView URL/author cited; R2 PASS mechanical EMA/VWAP slope entries and exits, expected ~120 trades/year/symbol; R3 PASS indicators/session data available on DWX symbols; R4 PASS fixed rules no ML/grid/martingale."
+---
+
+# TradingView dEMA VWAP Slope Filter
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `dEMA w/ VWAP filter`, author handle `shiner_trading`, open-source strategy, published 2021-03-26, accessed 2026-05-22, https://www.tradingview.com/script/d5I7yUXY-dEMA-w-VWAP-filter/
+
+## Mechanics
+
+### Entry
+Use M15/H1 baseline. Compute session VWAP and EMA with source length exposed for P3.
+
+- Long setup:
+  - EMA is below VWAP.
+  - EMA slope turns positive versus the previous closed bar.
+  - No existing position.
+- Short setup:
+  - EMA is above VWAP.
+  - EMA slope turns negative versus the previous closed bar.
+  - No existing position.
+
+### Exit
+- Exit long when EMA rises above VWAP and then turns down, or when close crosses below VWAP after entry.
+- Exit short when EMA falls below VWAP and then turns up, or when close crosses above VWAP after entry.
+- Reverse only after closing the active position.
+
+### Stop Loss
+Source gives signal exits but no hard stop. Add V5 emergency stop at 1.8 * ATR(14) from entry and a same-session flat for intraday builds.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- Trade only when session VWAP is defined and at least 8 bars have accumulated after session open.
+- Skip if spread exceeds 15% of emergency stop distance.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/vwap-filter]] - VWAP defines fair-value side and suppresses same-side slope noise.
+- [[concepts/ema-slope]] - EMA slope turn is the direct trigger.
+- [[concepts/intraday-trend]] - best tested on liquid intraday DWX FX, gold, and index symbols.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `shiner_trading` are cited. |
+| R2 Mechanical | PASS | Source gives directional buy/sell rules using EMA position versus VWAP and EMA slope direction. |
+| R3 Data Available | PASS | EMA, VWAP using broker tick volume, ATR, OHLC, and session clocks are available on DWX symbols. |
+| R4 ML Forbidden | PASS | Fixed indicator rules, no ML, no grid, no martingale, one-position compatible. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD, GER40.DWX, NDX.DWX, WS30.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says: "Buy when EMA is below VWAP and starts sloping up."
+- Source says: "Sell when EMA is above VWAP and starts sloping down."
+
+## Parameters To Test
+- EMA length: 9, 13, 21, 34.
+- VWAP anchor: broker day, London session, NY session.
+- Slope confirmation: 1 bar, 2 consecutive bars.
+- Stop: ATR(14) * 1.5, 1.8, 2.2.
+- Timeframe: M15, M30, H1.
+
+## Initial Risk Profile
+VWAP/EMA slope trigger is sparse enough for intraday testing but can whipsaw around VWAP in balanced markets. Main P3 risk control is minimum VWAP session age plus ATR/spread gating.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView script page.
+
+## Related strategies
+- QM5_10159 tv-vwap-sma-cross
+- QM5_10800 tv-ema-vwap
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

@@ -1,0 +1,111 @@
+---
+ea_id: QM5_11315
+slug: tc-m5-8-triple-bb50-rsi3-stoch
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/bollinger-band-reversal]]"
+  - "[[concepts/mean-reversion]]"
+  - "[[concepts/oscillator-reversal]]"
+indicators:
+  - "[[indicators/bollinger-bands]]"
+  - "[[indicators/rsi]]"
+  - "[[indicators/stochastic]]"
+period: M5
+source_citation: "Thomas Carter, 20 Forex Trading Strategies (5 Minute Time Frame), 5 Min Trading System #8, local PDF: C:\\Users\\Administrator\\Dropbox\\Finanzen\\Forex\\###  Forex to read\\367145560-20-forex-trading-strategies-5-minute-time-frame-pdf.pdf"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-31
+expected_trades_per_year_per_symbol: 140
+g0_approval_reasoning: "R1 PASS single source_id/local PDF attribution; R2 PASS deterministic M5 BB/RSI/Stoch reversal with plausible intraday cadence >=2 trades/year/symbol; R3 PASS DWX FX M5 testable; R4 PASS deterministic non-ML one-position compatible."
+---
+
+# QM5_11315 TC-M5 System #8 — Triple BB(50) Red-Band Reversal + RSI(3) + Stoch (M5)
+
+## Source
+- Source: "20 Forex Trading Strategies (5 Minute Time Frame)" by Thomas Carter, 2014; URL/local PDF path below.
+- Section: 5 Min Trading System #8
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\367145560-20-forex-trading-strategies-5-minute-time-frame-pdf.pdf`
+- Author: Thomas Carter. R1 PASS.
+
+## Mechanics
+
+Three Bollinger Bands on SMA(50): 2σ (red), 3σ (yellow), 4σ (orange). Wait for price to touch/penetrate the 2σ band with RSI(3) exhausted and Stoch in extreme zone. Enter on next bar when price retraces back through 2σ band and oscillators confirm reversal. TP = SMA50 middle band.
+
+### Entry
+
+**LONG** (reversal from lower band):
+1. Prior candle touches or closes **below** BB(50,2) lower band.
+2. RSI(3) **below 20** on touch candle.
+3. Stoch(6,3,3) **below 20** on touch candle.
+4. Next candle closes **above** BB(50,2) lower band (back into band).
+5. RSI(3) crosses **above** 20.
+6. Stoch crosses upward (near or above 40).
+7. Enter BUY at open of confirmation bar.
+
+**SHORT** (reversal from upper band):
+1. Prior candle touches/closes **above** BB(50,2) upper.
+2. RSI(3) **above 80**.
+3. Stoch(6,3,3) **above 80**.
+4. Next candle closes **below** BB(50,2) upper.
+5. RSI(3) crosses **below** 80.
+6. Stoch crosses downward (near or below 60).
+7. Enter SELL.
+
+### Exit
+- TP: SMA(50) middle band.
+- SL: BB(50,3) yellow band (one band out from entry).
+- If already beyond BB(50,3): use BB(50,4) as SL.
+
+### Stop Loss
+- LONG: BB(50,3) lower at entry time.
+- If entry candle extends below BB(50,3): BB(50,4).
+- P2 cap: 25 pips max.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX
+- Session: London + NY (13:00–22:00 GMT); avoid Asian
+- Spread cap: 15 pips
+- Skip if BB(50,2) width < 1.5 × spread (dead-band filter)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Thomas Carter named. |
+| R2 Mechanical | PASS | Band touch, band recapture, RSI thresholds, Stoch cross — all deterministic. |
+| R3 Data Available | PASS | M5 DWX data; standard BB with any σ is MT5-native. |
+| R4 No ML | PASS | Fixed indicators and thresholds. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from TC-M5 PDF, System #8
+
+## Implementation Notes for Codex (P1)
+- BB2: iBands(NULL,0,50,2,0,PRICE_CLOSE,MODE_LOWER,i)
+- BB3: iBands(NULL,0,50,3,0,PRICE_CLOSE,MODE_LOWER,i)
+- BB4: iBands(NULL,0,50,4,0,PRICE_CLOSE,MODE_LOWER,i)
+- RSI(3): iRSI(NULL,0,3,PRICE_CLOSE,0)
+- Stoch(6,3,3): iStochastic(NULL,0,6,3,3,MODE_SMA,0,MODE_MAIN/SIGNAL,0)
+- State: ARMED on touch (bar[1] touched band) → ENTRY on retrace-back (bar[0] closes above band + oscillator confirm)
+- SL: bb3_lower[0]; if Low[0]<bb3_lower[0] use bb4_lower[0]
+- TP: iBands middle (SMA50)
+- P3 sweeps: BB period (50 vs 20 vs 100), σ levels (2/3/4 vs 1.5/2/3), lookback (1 vs 2 vs 3 bars)
+
+## Related strategies
+- Related: QM5_11302 (tc-m5-bb-stoch-extreme-reversal) — earlier Carter M5 BB+Stoch reversal variant
+- Differentiator: Triple-deviation bands (2/3/4σ) on SMA50 grades signal strength by penetration depth
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

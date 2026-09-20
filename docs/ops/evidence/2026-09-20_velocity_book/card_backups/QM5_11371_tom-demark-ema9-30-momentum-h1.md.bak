@@ -1,0 +1,111 @@
+---
+ea_id: QM5_11371
+slug: tom-demark-ema9-30-momentum-h1
+type: strategy
+source_id: becda36b-263f-5989-b5fa-f1e945c0d4bd
+sources:
+  - "[[sources/9-forex-systems-anonymous]]"
+concepts:
+  - "[[concepts/moving-average-crossover]]"
+  - "[[concepts/momentum-filter]]"
+  - "[[concepts/trend-line-break]]"
+  - "[[concepts/td-points]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/momentum]]"
+period: H1
+source_citation: "Anonymous (DayTradeForex.com compilation), 9 Forex Systems, Tom Demark FX System, local PDF: C:\Users\Administrator\Dropbox\Finanzen\Forex\### Forex to read\452915895-9-Forex-Systems-pdf.pdf"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 50
+g0_approval_reasoning: "R1 single source_id plus local PDF citation; R2 deterministic EMA/momentum/TD-line entries and fixed/trailing exits with plausible H1 cadence >2 trades/year/symbol; R3 DWX forex H1 testable; R4 deterministic no ML/HR14 issues."
+---
+
+# QM5_11371 Tom Demark FX — EMA(9/30) + Momentum(14) + TD Trend Line Break (H1)
+
+## Source
+- Source: "9 Forex Systems" — Tom Demark FX System, DayTradeForex.com compilation
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\### Forex to read\452915895-9-Forex-Systems-pdf.pdf`
+- 2026-05-23 URL: local Dropbox PDF archive citation.
+- Author: Anonymous (references Tom DeMark methodology). R1 CONDITIONAL.
+
+## Mechanics
+
+EMA(9) and EMA(30) provide the trend cross signal. Momentum(14) at the 100 level acts as a momentum filter (above 100 = bullish momentum, below = bearish). The key filter is a Tom DeMark trend line break: connect at least 3 swing TD High Points (for downtrend line) or TD Low Points (for uptrend line). Entry only when price breaks through this line AND the EMA cross confirms. Entry at open of the next H1 candle after conditions align.
+
+**TD Points** (algorithmically definable):
+- **TD Low Point**: bar[i] where `Low[i+1] > Low[i]` AND `Low[i-1] > Low[i]` — a local minimum with higher lows on both sides.
+- **TD High Point**: bar[i] where `High[i+1] < High[i]` AND `High[i-1] < High[i]` — a local maximum with lower highs on both sides.
+- Minimum 3 consecutive TD High Points with decreasing Highs → downtrend line.
+
+### Entry
+
+**LONG**:
+1. EMA(9) crosses **above** EMA(30).
+2. Momentum(14) > 100 (positive momentum).
+3. Price **closes above** a downtrend line constructed from ≥3 consecutive TD High Points.
+4. The EMA cross and trend line break may occur in either order (EMA cross first, then line break, or vice versa).
+5. Enter BUY at **open of next H1 candle** after all three conditions are met.
+
+**SHORT** (mirror):
+1. EMA(9) crosses below EMA(30).
+2. Momentum(14) < 100.
+3. Price closes below an uptrend line from ≥3 TD Low Points.
+4. Enter SELL at open of next H1 candle.
+
+### Exit
+- **SL**: 40 pips fixed from entry. Must be respected.
+- **Trailing**: Move SL in direction of trade in **10-pip steps** as trade progresses.
+- **Tighten at 75% of daily ATR**: When unrealized profit approaches 75% of the day's average range → tighten stop aggressively.
+- **Reversal signal**: Close at market on any clear reversal signs.
+- **TP range**: 40–150 pips depending on pair volatility (no fixed TP; trail to capture full move).
+
+### Stop Loss
+- Fixed 40 pips initial.
+- P2: ATR(14,H1) × 1.5 as alternative if 40 pips too narrow.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1
+- Instruments: All major pairs (EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX)
+- Trend line must connect ≥3 TD Points (not 2 — source specifies "at least 3 swing high/low")
+- Avoid steep-angle trend lines (source specifies "avoid steep angles")
+- Spread cap: 20 pips
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Anonymous retail compilation referencing Tom DeMark methodology. |
+| R2 Mechanical | PASS | EMA cross deterministic; Momentum > 100 binary; TD Low/High Points algorithmically definable (local min/max with flanking bars confirming). Trend line break = close beyond the projected line through TD Points. |
+| R3 Data Available | PASS | H1 DWX data; EMA and Momentum are MT5-native; TD lines computed from price bars. |
+| R4 No ML | PASS | Fixed indicator periods and price-level comparisons. |
+
+G0 APPROVE eligible. Note: TD trend line construction is mechanical but complex to implement — see Implementation Notes.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from DayTradeForex 9-Forex-Systems, Tom Demark FX System chapter
+
+## Implementation Notes for Codex (P1)
+- EMA(9): `iMA(NULL, PERIOD_H1, 9, 0, MODE_EMA, PRICE_CLOSE, i)`
+- EMA(30): `iMA(NULL, PERIOD_H1, 30, 0, MODE_EMA, PRICE_CLOSE, i)`
+- Momentum: `iMomentum(NULL, PERIOD_H1, 14, PRICE_CLOSE, i)` — MT5 returns ratio × 100 (default); level 100 = zero-change baseline
+- TD High Point scan: for each bar[i] check `High[i+1] < High[i] && High[i-1] < High[i]`; collect last 3+ such bars with monotonically decreasing High
+- TD trendline through 3 TD High Points: compute slope from first to last TD High Point; project line; break condition: `Close[0] > projected_line_value`
+- For P1 (MVP): simplify to pivot-based trend line using ZigZag(13,5,3) turning points rather than strict TD Points — note this simplification in LESSONS LEARNED when built
+- SL: 40 pips fixed; trailing: update SL every 10 pips in profit direction
+- P3 sweeps: EMA periods (7/9/12 vs 25/30/34), Momentum period (10/14/21), TP cap (40/100/150 pips), trail step (5/10/20 pips)
+
+## Related strategies
+- Related: QM5_11310 (tc20-h1-7-ema-cascade-rsi21) — also H1 EMA cross with momentum filter
+- Differentiator: TD trend line break is a unique filter that confirms the broader price structure has changed — significantly more selective than pure EMA cross
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

@@ -1,0 +1,112 @@
+---
+ea_id: QM5_11432
+slug: carter-multitf-candle-color-h1
+type: strategy
+source_id: 96b1d6a2-d0af-5fa2-abbc-865a08f82ef2
+sources:
+  - "[[sources/carter-20-strategies-collection-h1]]"
+concepts:
+  - "[[concepts/multi-timeframe-confluence]]"
+  - "[[concepts/candle-color-alignment]]"
+  - "[[concepts/momentum-entry]]"
+indicators: []
+period: H1
+source_citation: "John Carter, 20 Strategies Collection (H1), local PDF in strategy archive."
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: Single source_id present; named professional author (John Carter, McGraw-Hill published) with local PDF reference satisfies lineage requirement.
+r2_mechanical: PASS
+r2_reasoning: Candle color (Close vs Open) on four timeframes is pure OHLC arithmetic; 3-pip confirmation buffer is a fixed parameterized threshold with no discretion.
+r3_data_available: PASS
+r3_reasoning: H1 DWX FX pairs available; MT5 can access lower-TF (M5/M15/M30) OHLC data natively via iClose/iOpen with period constants.
+r4_ml_forbidden: PASS
+r4_reasoning: No ML or adaptive parameters; pure close-vs-open comparison across four fixed timeframes.
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 150
+card_body_incomplete: true
+card_body_missing: "source_citation"
+g0_approval_reasoning: "R1 single source_id/source attribution; R2 mechanical multi-TF candle-color alignment with SL/TP and plausible H1 cadence >2 trades/year/symbol; R3 DWX FX multi-timeframe OHLC testable; R4 deterministic no ML/HR14 conflict."
+---
+
+# QM5_11432 Carter — Multi-TF Candle Color Confluence (H1)
+
+## Source
+- Source: John/Thomas Carter, "20 Strategies Collection (H1)" (self-published, 2014; URL/local PDF archive).
+- R1: PASS — John Carter, professional trader, author of "Mastering the Trade" (McGraw-Hill).
+
+## Mechanics
+
+**Concept**: When the most recently closed candle on four timeframes (M5, M15, M30, H1) all show the
+same color (all bullish = green, all bearish = red), short-term momentum is perfectly aligned across
+timeframes. The 3-pip confirmation filter avoids entry into a move that has already exhausted immediately.
+This is a pure price-action alignment system — no indicators, only OHLC close vs open comparison.
+
+**Note**: "Candle color" = Close > Open (bullish) or Close < Open (bearish) of the most recently completed
+bar on each timeframe.
+
+### Indicators
+None — pure OHLC candle-color check across timeframes.
+
+### Entry
+
+**LONG (all-green alignment):**
+1. `iClose(NULL,PERIOD_M5,1)  > iOpen(NULL,PERIOD_M5,1)`  — last M5 bar is bullish
+2. `iClose(NULL,PERIOD_M15,1) > iOpen(NULL,PERIOD_M15,1)` — last M15 bar is bullish
+3. `iClose(NULL,PERIOD_M30,1) > iOpen(NULL,PERIOD_M30,1)` — last M30 bar is bullish
+4. `iClose(NULL,PERIOD_H1,1)  > iOpen(NULL,PERIOD_H1,1)`  — last H1 bar is bullish
+5. `Close[0] > iClose(NULL,PERIOD_H1,1) + 3*Point*10` — current price is 3 pips above H1 close
+   (3 pips = 30 points on 5-decimal pair)
+6. Enter BUY (market order)
+
+**SHORT (all-red alignment):**
+1. All four timeframes' last bar is bearish (Close < Open on each)
+2. Current price is 3 pips below H1 close (downward follow-through confirmed)
+3. Enter SELL
+
+### Exit
+- **TP**: 30–40 pips (P2 default: 35 pips)
+- **SL**: 20 pips
+- Alternatively: exit when any higher-TF candle (M30 or H1) flips color (early exit signal)
+
+### Stop Loss
+- LONG: entry − 20 pips
+- SHORT: entry + 20 pips
+- P2 cap: 20 pips (same as SL, cap does not bind)
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1 (signal timeframe; internally checks M5/M15/M30/H1)
+- Instruments: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX
+- Spread cap: 15 pips
+- No signal if any of the 4 bars is a doji (Close ≈ Open within 1 pip): `|Close-Open| < 1*Point*10`
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | John Carter, published professional trader. |
+| R2 Mechanical | PASS | Candle color = Close vs Open on 4 TFs — pure arithmetic. 3-pip confirmation buffer is parameterizable. |
+| R3 Data Available | PASS | MT5 can access lower TF data from an H1 EA using iClose/iOpen with PERIOD_M5/M15/M30. |
+| R4 No ML | PASS | No parameters except confirmation pip buffer. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Carter, 20 Strategies Collection (H1)
+
+## Implementation Notes for Codex (P1)
+- Check all 4 TFs using `iClose(NULL,PERIOD_M5,1)>iOpen(NULL,PERIOD_M5,1)` etc.
+- MT5 multi-TF data: ensure `CopyRates` or direct iClose/iOpen is called per-TF; MT5 loads lower-TF data independently
+- Confirmation: `Ask - iClose(NULL,PERIOD_H1,1) > 30*Point` for long (30 points = 3 pips on 5-decimal)
+- Doji filter: `MathAbs(iClose(NULL,PERIOD_H1,1) - iOpen(NULL,PERIOD_H1,1)) < 10*Point` → skip
+- P3 sweeps: confirmation buffer (1/3/5 pips), SL (15/20/25 pips), TP (25/35/45 pips), TF set (add/remove M5)
+
+## Related strategies
+- Related: QM5_11430 (carter-cci21-ema4080-zero-cross-m5) — same Carter author family; oscillator-based vs pure price color
+- Related: QM5_11416 (ichimoku-tenkan-kijun-cross-cloud-h4) — also multi-condition confluence with TF filtering
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

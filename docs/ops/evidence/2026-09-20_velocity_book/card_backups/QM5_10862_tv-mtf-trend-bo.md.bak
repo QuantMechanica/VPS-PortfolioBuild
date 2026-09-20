@@ -1,0 +1,107 @@
+---
+ea_id: QM5_10862
+slug: tv-mtf-trend-bo
+type: strategy
+source_id: d11962d5-19ca-5b8b-b5fc-e3bd0a620ed7
+source_citation: "shitholed, Simple Trend & Breakout System v6, TradingView open-source strategy, Apr 10 / updated May 2, https://www.tradingview.com/script/plDp6ZIw/"
+sources:
+  - "[[sources/tradingview-mechanical-strategy-scripts]]"
+concepts:
+  - "[[concepts/breakout]]"
+  - "[[concepts/trend-following]]"
+  - "[[concepts/trailing-stop]]"
+indicators:
+  - "[[indicators/ema]]"
+  - "[[indicators/trailing-stop]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+expected_trades_per_year_per_symbol: 45
+last_updated: 2026-05-22
+g0_approval_reasoning: "R1 PASS TradingView URL/author cited; R2 PASS deterministic D1 EMA trend, consecutive-close breakout stop orders, 2.5 percent trailing exit, est 45 trades/year/symbol; R3 PASS OHLC/EMA/stop/trailing logic testable on DWX; R4 PASS fixed rules no ML/grid/martingale one-position compatible."
+---
+
+# TradingView Simple MTF Trend Breakout
+
+## Source
+- Source: [[sources/tradingview-mechanical-strategy-scripts]]
+- Page / Timestamp: TradingView script `Simple Trend & Breakout System v6`, author handle `shitholed`, open-source strategy, accessed 2026-05-22, page shows Apr 10 and updated May 2, https://www.tradingview.com/script/plDp6ZIw/
+
+## Mechanics
+
+### Entry
+Use H4/D1 baseline:
+
+- Compute EMA(240) anchored to D1 as the MTF trend filter.
+- Long context: close > D1 EMA(240).
+- Short context: close < D1 EMA(240).
+- Bullish momentum signal: configurable number of consecutive higher closes, P2 default 3.
+- Bearish momentum signal: configurable number of consecutive lower closes, P2 default 3.
+- Long stop order = signal candle high * 1.001.
+- Short stop order = signal candle low * 0.999.
+- Cancel pending order if not filled within 3 bars or if trend context flips.
+
+### Exit
+- Source exit is a dynamic percentage trailing stop.
+- P2 baseline trailing stop distance = 2.5%.
+- Close long when price crosses below trailing stop.
+- Close short when price crosses above trailing stop.
+
+### Stop Loss
+- Initial stop is the same 2.5% trailing stop from entry, then trails only in the favorable direction.
+- V5 fallback hard stop = ATR(14) * 2.5 if 2.5% is wider than 3 ATR.
+- No fixed target; exit is trail-only.
+
+### Position Sizing
+V5 default: fixed-risk $1,000 for P2 baseline, one position per symbol/magic.
+
+### Zusatzliche Filter
+- Use closed bars for higher/lower close sequence.
+- Daily EMA must use non-repainting HTF data.
+- Disable date-range/stat-table features; they are report utilities, not trading rules.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/breakout]] - enters on stop order beyond the signal candle.
+- [[concepts/trend-following]] - trades only with D1 EMA trend context.
+- [[concepts/trailing-stop]] - management uses a dynamic trailing stop.
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | Exact TradingView URL and author handle `shitholed` are cited. |
+| R2 Mechanical | PASS | Source gives MTF EMA filter, breakout stop-entry, momentum sequence, and 2.5% trailing-stop exit. |
+| R3 Data Available | PASS | EMA, HTF bars, OHLC stop orders, and percentage trailing stops are available on DWX symbols. |
+| R4 ML Forbidden | PASS | Fixed breakout and trailing-stop rules, no ML, no grid, no martingale, one-position compatible. |
+
+## R3
+Primary P2 basket: EURUSD.DWX, GBPUSD.DWX, XAUUSD.DWX, NDX.DWX, GER40.DWX.
+
+If this is later tested primarily on SP500.DWX, live promotion T6 gate: SP500.DWX is not broker-routable. If the EA passes P0-P9 on SP500.DWX only, T6 deploy requires a parallel-validation on NDX.DWX or WS30.DWX before AutoTrading enable.
+
+## Author Claims
+- Source says the MTF filter uses a 240-period EMA anchored to D1.
+- Source says breakout orders are placed 0.1% beyond the signal candle high or low.
+- Source says exits use a dynamic trailing stop set to 2.5% by default.
+
+## Parameters To Test
+- Timeframe: H1, H4, D1.
+- EMA length: 120, 200, 240.
+- Consecutive closes: 2, 3, 4.
+- Breakout offset: 0.05%, 0.10%, 0.20%.
+- Trailing stop: 1.5%, 2.5%, 3.5%.
+
+## Initial Risk Profile
+Low-to-moderate cadence breakout trend follower. Main risks are gap/slippage on stop orders and trail-only exits giving back open profit.
+
+## Pipeline history
+- G0: 2026-05-22, PENDING, drafted from TradingView mechanical strategy source.
+
+## Related strategies
+- QM5_10846 tv-growth-bo
+- QM5_10785 tv-momo-200
+
+## Lessons Learned (wahrend Pipeline-Lauf)
+- TBD

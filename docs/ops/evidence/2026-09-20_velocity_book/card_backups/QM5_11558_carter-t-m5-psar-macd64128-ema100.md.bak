@@ -1,0 +1,85 @@
+---
+ea_id: QM5_11558
+slug: carter-t-m5-psar-macd64128-ema100
+type: strategy
+source_id: 42530cb3-0265-534a-89cc-150f80733ff5
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-5min]]"
+concepts:
+  - "[[concepts/ema-trend-filter]]"
+  - "[[concepts/parabolic-sar-entry]]"
+  - "[[concepts/macd-zero-cross]]"
+indicators:
+  - EMA(100)
+  - ParabolicSAR(0.01,0.1)
+  - MACD(64,128,9)
+period: M5
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (5 Minute Time Frame)', self-published 2014 (System #19). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: PASS
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+r1_reasoning: "Single source_id present (Carter self-published 2014 PDF); lineage established; author track record not required under current R1 criteria."
+r2_reasoning: "Three-condition entry (EMA100 trend, PSAR position, MACD zero-side) with fixed pip TP and PSAR-offset SL are fully mechanical."
+r3_reasoning: "M5 EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX available on DWX."
+r4_reasoning: "Fixed indicator thresholds only; no ML, no PnL-adaptive parameters, one position per magic."
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 200
+g0_approval_reasoning: "R1 PASS single source_id/source attribution; R2 PASS deterministic M5 EMA+PSAR+MACD entry/SL/TP with plausible intraday cadence; R3 PASS DWX M5 FX testable; R4 PASS deterministic no ML and 1-pos-per-magic compatible"
+---
+
+# QM5_11558 Carter-T M5 — PSAR + MACD(64,128,9) + EMA(100) (M5)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (5 Minute Time Frame)", System #19, self-published 2014. URL/local PDF: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\367145560-20-forex-trading-strategies-5-minute-time-frame-pdf.pdf`
+
+## Mechanics
+
+**Concept**: EMA(100) defines trend bias. PSAR confirms directional momentum. MACD(64,128,9) uses doubled periods from standard (64=2×32, 128=2×64) for a slower, smoother signal on M5. All three must align. TP: 7–12 pips; SL: 3 pips beyond first PSAR dot (tight stop).
+
+**PSAR parameter note**: Source lists "(0.01-0.01)" which appears to mean step=0.01, max=0.01 — physically unlikely (PSAR wouldn't accelerate). P2 assumes (0.01, 0.1): slow PSAR (slow to accelerate). P3 sweeps include (0.02, 0.2).
+
+### Entry
+**LONG**: `iClose[1] > iMA(100)[1]` AND `iSAR(0.01,0.1,1) < iLow[1]` AND `iMACD(64,128,9,MAIN,1) > 0`
+**SHORT**: `iClose[1] < iMA(100)[1]` AND `iSAR > iHigh[1]` AND `iMACD(...,MAIN,1) < 0`
+
+### Exit
+- **SL**: 3 pips below/above the first PSAR dot after entry
+- **TP**: 9 pips (midpoint of 7-12 range)
+
+### Stop Loss
+- `SL = 3*pip + MathAbs(iClose[entry] - iSAR[entry])`; P2 cap: 15 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5; Instruments: EURUSD.DWX, GBPUSD.DWX, AUDUSD.DWX; Spread cap: 5p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | EMA(100): iMA(MODE_EMA). PSAR: iSAR. MACD(64,128,9): iMACD (non-standard periods but valid). All MT5-native. |
+| R3 Data Available | PASS | M5 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter M5 book, System #19
+
+## Implementation Notes for Codex (P1)
+- `double ema100 = iMA(NULL,PERIOD_M5,100,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double sar = iSAR(NULL,PERIOD_M5,0.01,0.1,1)` (P2 default)
+- `double macd = iMACD(NULL,PERIOD_M5,64,128,9,PRICE_CLOSE,MODE_MAIN,1)`
+- SL: 3*pip + distance from close to PSAR, capped at 15 pips
+- TP: 9 pips fixed
+- P3 sweeps: PSAR (0.01,0.1) vs (0.02,0.2), MACD (64,128,9) vs (32,64,9) vs (12,26,9), TP (7/9/12 pips)
+
+## Related strategies
+- Related: QM5_11544 (carter-t-h1-psar02-adx50) — PSAR-based H1
+- Related: QM5_11535 (carter-t-h1-psar01-ema5-12-34) — PSAR+EMA H1
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

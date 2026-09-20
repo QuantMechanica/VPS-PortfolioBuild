@@ -1,0 +1,96 @@
+---
+ea_id: QM5_11531
+slug: carter-t-h1-ema6-23-stoch-macd
+type: strategy
+source_id: 3001a121-97a0-5db0-b6ff-69b89a0fc07d
+sources:
+  - "[[sources/carter-thomas-20-forex-strategies-1h]]"
+concepts:
+  - "[[concepts/ema-cross-entry]]"
+  - "[[concepts/stochastic-trend-confirmation]]"
+  - "[[concepts/macd-zero-cross]]"
+indicators:
+  - EMA(6)
+  - EMA(23)
+  - Stochastic(5,3,3)
+  - MACD(30,60,30)
+period: H1
+target_symbols: [EURUSD.DWX]
+source_citation: "Thomas Carter, '20 Forex Trading Strategies (1 Hour Time Frame)', self-published 2014 (System #3). R1 CONDITIONAL."
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 10
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "Fully mechanical H1 EMA(6/23) cross gated by explicit MACD(30,60,30) sign and Stochastic(5,3,3) main/signal comparison, with fixed 25/55-pip SL/TP; no discretion."
+r3_reasoning: "H1 EURUSD.DWX bar data is present and MT5-native for iMA/iMACD/iStochastic reads."
+r4_reasoning: "Deterministic threshold/cross comparisons only, no ML or adaptive re-fitting, compatible with one-position-per-magic."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11531_carter-t-h1-ema6-23-stoch-macd.md"
+g0_approval_reasoning: "R1 lineage retained; R2 deterministic H1 EMA cross plus MACD/Stochastic confluence with explicit SL/TP, conservatively estimated at 10 trades/year/symbol; R3 testable on EURUSD.DWX; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 20.0
+---
+
+# QM5_11531 Carter-T H1 — EMA(6/23) + Stoch + MACD(30,60,30) (H1)
+
+## Source
+- Source: Thomas Carter, "20 Forex Trading Strategies (1 Hour Time Frame)", System #3, self-published 2014.
+
+## Mechanics
+
+**Concept**: EMA(6) crosses EMA(23) → entry trigger. MACD(30,60,30) must confirm uptrend (positive). Stochastic(5,3,3) must confirm direction (crossing upward). Entry "as close to EMA6 as possible" = at next bar open when all conditions met.
+
+### Entry
+**LONG**: EMA(6) > EMA(23) AND MACD(30,60,30) main > 0 AND Stoch(5,3,3) heading up (main > signal)
+**SHORT**: EMA(6) < EMA(23) AND MACD < 0 AND Stoch heading down
+
+### Exit
+- **SL**: 20–30 pips. P2 default: 25 pips
+- **TP**: 50–60 pips. P2 default: 55 pips
+
+### Stop Loss
+- `SL = 25*pip`; P2 cap: 30 pips
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2. `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1; Instruments: EURUSD.DWX; Spread cap: 15p; No Friday entry
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Self-published. |
+| R2 Mechanical | PASS | EMA: iMA. MACD(30,60,30) non-standard but valid iMACD. Stoch: iStochastic. MT5-native. |
+| R3 Data Available | PASS | H1 DWX. |
+| R4 No ML | PASS | Threshold only. |
+
+## Pipeline history
+- G0: 2026-05-23 — from Carter H1 book, System #3
+
+## Implementation Notes for Codex (P1)
+- `double ema6 = iMA(NULL,PERIOD_H1,6,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double ema23 = iMA(NULL,PERIOD_H1,23,0,MODE_EMA,PRICE_CLOSE,1)`
+- `double macd = iMACD(NULL,PERIOD_H1,30,60,30,PRICE_CLOSE,MODE_MAIN,1)` (non-std periods)
+- `double stoch_m = iStochastic(NULL,PERIOD_H1,5,3,3,MODE_SMA,0,MODE_MAIN,1)`
+- `double stoch_s = iStochastic(NULL,PERIOD_H1,5,3,3,MODE_SMA,0,MODE_SIGNAL,1)`
+- LONG: cross_up(ema6,ema23) AND macd > 0 AND stoch_m > stoch_s
+- SL: 25 pips; TP: 55 pips
+- P3 sweeps: EMA (5/20 vs 6/23), MACD (12,26,9 vs 30,60,30), SL/TP (20-30/50-60)
+
+## Related strategies
+- Related: QM5_11521 (carter-t-ema6-13-macd-psar-h4-gbp) — same source, EMA6 + MACD H4
+- Related: QM5_11509 (carter-t-ema5-10-stoch-rsi) — EMA cross + Stoch
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

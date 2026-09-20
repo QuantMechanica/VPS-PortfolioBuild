@@ -1,0 +1,70 @@
+---
+ea_id: QM5_20175
+name: The Institutional Magnet
+priority: high
+trigger: MANUAL_ADVISOR
+created_at: 2026-05-19
+r1_track_record: TIER_C
+r1_reasoning: "existing card attribution is canonical source lineage; R1 is informational and non-gating (2026-07-23)."
+r2_mechanical: PASS
+r2_reasoning: "Directional entry (50 EMA > 200 EMA + price pulls back to Daily VWAP) and exit (Daily High) are deterministic and implementable; VWAP is a standard MT5-computable indicator."
+r3_data_available: PASS
+r3_reasoning: "EMA and Daily VWAP are computable from tick/OHLC data on all DWX instruments."
+r4_ml_forbidden: PASS
+r4_reasoning: "Pure EMA crossover and price-level rules; no ML, no adaptive parameters, no martingale."
+status: draft
+g0_status: APPROVED
+source_id: d2171cdf-db69-54b2-9455-fba27dddfb7e
+target_symbols: [EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, NDX.DWX, WS30.DWX]
+period: H1
+expected_trade_frequency: "H1 pullback to daily VWAP within an EMA50/EMA200 trend regime; estimate 20-50 trades/year/symbol."
+expected_trades_per_year_per_symbol: 30
+card_body_incomplete: true
+card_body_missing: "entry,stop,target_symbols"
+legacy_contract_repair: true
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_3005_alpha-inst-magnet.md"
+last_updated: 2026-07-26
+source_citation: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+identity_repair_required: false
+identity_repair_conflicts: ""
+recovered_from_ea_id: "QM5_3005"
+slug: alpha-inst-magnet-r1-recovery
+identity_repair_resolved: true
+identity_repair_resolved_at: "2026-07-26T17:40:32+00:00"
+recovery_status: IDENTITY_REPAIRED
+g0_approval_reasoning: "R1 lineage repaired to Fabian Grabner (OWNER); R2 PASS deterministic EMA50/200 trend plus daily-VWAP pullback entry and daily-high exit with conservative H1 cadence; R3 PASS on DWX OHLC/tick symbols; R4 PASS fixed non-ML one-position rules."
+expected_pf: 1.15
+expected_dd_pct: 22.0
+source_lineage_recovery: "Canonical source lineage repaired on 2026-07-23 from recovered_citation; source reputation is informational."
+---
+
+# The Institutional Magnet (QM5_3005)
+
+VWAP Pullback with Macro Trend Filter.
+
+Timeframe: H1.
+
+## Rules
+
+### Entry
+
+On H1, enter long when EMA(50) is above EMA(200) and price pulls back to the current session's Daily VWAP.
+
+### Baseline
+Long if 50 EMA > 200 EMA
+
+### Confirmation
+Price pulls back to Daily VWAP
+
+### Exit
+Daily High.
+
+### Stop Loss
+
+The source gives no explicit stop. The V5 build should add a conservative catastrophic `2.0 * ATR(14)` stop.
+
+### Target Symbols
+
+EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, XAUUSD.DWX, NDX.DWX, and WS30.DWX.

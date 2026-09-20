@@ -1,0 +1,1042 @@
+[
+ {
+  "ea": "QM5_10474_mql5-tdsglobal",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10475_mql5-puria",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "USDCHF.DWX",
+   "USDCAD.DWX",
+   "AUDUSD.DWX",
+   "NZDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10479_mql5-lbs-atr",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "USDCHF.DWX",
+   "USDCAD.DWX",
+   "AUDUSD.DWX",
+   "NZDUSD.DWX",
+   "XAUUSD.DWX",
+   "XTIUSD.DWX",
+   "SP500.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10783_tv-bos-forex",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "XAUUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10797_tv-rsi-ma",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10798_tv-ema9-full",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10812_tv-bb-atrtrail",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10819_tv-dema-vwap",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10822_tv-vwap-brt",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10827_tv-vol-exp",
+  "d_card": "AMENDED",
+  "symbols": [
+   "XAUUSD.DWX",
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10830_tv-ts461-sweep",
+  "d_card": "AMENDED",
+  "symbols": [
+   "XAUUSD.DWX",
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10831_tv-ref-st-tsl",
+  "d_card": "AMENDED",
+  "symbols": [
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "XAUUSD.DWX",
+   "EURUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10843_tv-fracture-th",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10861_tv-fli-stc",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_10862_tv-mtf-trend-bo",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "GDAXI.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11276_iaf-donchian",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11279_blade-macd-stoch-divergence",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "EURJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11291_tc20-ema18-28-wma5-12-rsi21-h1",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11292_trix14-signal-cross",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11299_lwma144-smma5-fractal-m5-scalp",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11304_kathy-lien-double-bollinger-trend",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11305_alp-sma20-scalp",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "NDX.DWX",
+   "SP500.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11315_tc-m5-8-triple-bb50-rsi3-stoch",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11330_tc-m5-16-wma5-sma11-psar-adx",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX",
+   "USDCHF.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11343_triad-session-breakout",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "GBPJPY.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11371_tom-demark-ema9-30-momentum-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11375_kathy-lien-double-bb-1-2sigma-m15",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11380_macd12-stoch8-extreme-m1m5",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11394_paul-langer-m5-bb20-scalper",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11432_carter-multitf-candle-color-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11437_carter-t-ema18-adx-pullback-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11438_td-ema9ema30-momentum-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11442_burke-frd-fgd-daily-pump-m5",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11443_burke-day3-breakout-trap-m5",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11454_davey-session-open-bracket-breakout",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11459_blade-macd-stoch-divergence-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11467_duplooy-multiMA-knot-straddle-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11473_carter-t-smma55-channel-wpr-stoch-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11495_carter-t-ema3-8-macd-stoch-psar-sd-m5",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11496_carter-t-ema100-psar-macd64128-m5",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11508_carter-t-ema50-100-macd-breakout",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11516_carter-t-sma7-21-cci5-m15",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11518_carter-t-ema5-100-mtf-m15-h1",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11530_carter-t-h1-sma9-100-cross",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11531_carter-t-h1-ema6-23-stoch-macd",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11532_carter-t-h1-ema5-15-60-pullback",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11537_carter-t-h1-ema5s5-ema75-bb-rsi",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11540_carter-t-h1-ema5-13-62-macd3060-sep",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11543_carter-t-h1-ema100-smma28-macd3060",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11544_carter-t-h1-psar02-adx50",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11558_carter-t-m5-psar-macd64128-ema100",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11559_carter-t-m5-ema3-bb203-macd",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11573_robo-ema200-awesome-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11574_robo-ichi-awesome-h1",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11865_ema5-15-60-pullback-h1",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11867_psar-adx50-di-h1",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_11872_rsi-80-20-fade-m15",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11873_trix-signal-line-cross",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11880_continuation-method-ema50-williams",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_11926_rb-rsi-ma-filter",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "repo_mirror": "ALREADY_HAS_TARGET_SYMBOLS"
+ },
+ {
+  "ea": "QM5_11927_rb-atr-candle-break",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "XAUUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "repo_mirror": "ALREADY_HAS_TARGET_SYMBOLS"
+ },
+ {
+  "ea": "QM5_11933_ff-holo-tooslow",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER",
+  "repo_mirror": "ALREADY_HAS_TARGET_SYMBOLS"
+ },
+ {
+  "ea": "QM5_12351_alp-ema12-26",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "XAUUSD.DWX",
+   "GDAXI.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "SP500.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_1320_vwap-sigma-band-fade-intraday",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_20053_xcu-weekend-prem",
+  "result": "CARD_MISSING",
+  "path": "D:/QM/strategy_farm/artifacts/cards_approved/QM5_20053_xcu-weekend-prem.md"
+ },
+ {
+  "ea": "QM5_20175_alpha-inst-magnet-r1-recovery",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ },
+ {
+  "ea": "QM5_30001_bollinger-bands-grid-waka-waka",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "AUDCAD.DWX",
+   "AUDNZD.DWX",
+   "NZDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_30005_bollinger-bands-grid-dark-venus",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_30006_adx-ma-trend-grid-dark-kronos",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "AUDCHF.DWX",
+   "GBPCHF.DWX",
+   "EURCHF.DWX",
+   "NZDCHF.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_34008_multicurrency-basket-dispersion-hedger",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX",
+   "NZDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_37001_ernest-chan-ornstein-uhlenbeck-statarb",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "NZDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_37005_chan-bollinger-adx-mean-reversion",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "USDCAD.DWX",
+   "AUDCAD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_38001_codetrading-vwap-bollinger-rsi-scalper",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_38004_codetrading-triple-ema-momentum-scalper",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_38005_codetrading-ascending-triangle-breakout",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "XAUUSD.DWX",
+   "SP500.DWX",
+   "EURUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_38007_codetrading-python-atr-grid-engine",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "AUDCAD.DWX",
+   "NZDCAD.DWX",
+   "EURCHF.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_39001_forexfactory-trading-made-simple-tms",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "AUDUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_39002_forexfactory-sonic-r-system",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_39004_forexfactory-thv-cobra-trix-scalper",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "USDJPY.DWX",
+   "GBPUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_40005_tradingview-multitimeframe-supertrend-atr",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPJPY.DWX",
+   "XAUUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_41010_developing-poc-migration-scalper",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "NDX.DWX",
+   "SP500.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_41141_gbpusd-quarter-end-benchmark-fix-hedge-flow",
+  "d_card": "ALREADY_HAS_TARGET_SYMBOLS",
+  "symbols": [
+   "GBPUSD.DWX"
+  ],
+  "policy": "REGISTRY_ACTIVE_ROWS_SLOT_ORDER"
+ },
+ {
+  "ea": "QM5_9165_tv-joovier-london-session-breakout",
+  "d_card": "AMENDED",
+  "symbols": [
+   "EURUSD.DWX",
+   "GBPUSD.DWX",
+   "USDJPY.DWX",
+   "AUDUSD.DWX",
+   "USDCAD.DWX",
+   "USDCHF.DWX",
+   "XAUUSD.DWX",
+   "NDX.DWX",
+   "WS30.DWX",
+   "GDAXI.DWX",
+   "UK100.DWX"
+  ],
+  "policy": "DEFAULT_UNIVERSE"
+ }
+]

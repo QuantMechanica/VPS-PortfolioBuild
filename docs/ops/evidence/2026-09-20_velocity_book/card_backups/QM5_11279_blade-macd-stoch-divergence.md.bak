@@ -1,0 +1,113 @@
+---
+ea_id: QM5_11279
+slug: blade-macd-stoch-divergence
+type: strategy
+source_id: e78a9f1f-4e6a-563c-a080-915133d6ed28
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/divergence]]"
+  - "[[concepts/mean-reversion]]"
+indicators:
+  - "[[indicators/macd]]"
+  - "[[indicators/stochastic]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: "Single source_id present; named Blade Forex Strategies PDF with local file path and section cited."
+r2_mechanical: PASS
+r2_reasoning: "Swing detection and oscillator divergence comparison fully mechanizable via fixed lookback and buffer comparison."
+r3_data_available: PASS
+r3_reasoning: "MACD and Stochastic computed from standard price data available on DWX H1/H4 bars."
+r4_ml_forbidden: PASS
+r4_reasoning: "Fixed-period MACD(12,26,9) and Stochastic(14,3,3) with deterministic divergence detection; no ML or adaptive logic."
+pipeline_phase: G0
+last_updated: 2026-05-23
+expected_trades_per_year_per_symbol: 80
+card_body_incomplete: true
+card_body_missing: "source_citation"
+g0_approval_reasoning: "R1 single PDF source_id; R2 mechanical MACD/Stoch divergence entries/exits with plausible >2 trades/year/symbol; R3 FX DWX symbols testable; R4 deterministic no ML/grid/martingale."
+---
+
+# QM5_11279 Blade MACD + Stochastic Divergence Reversal
+
+## Source
+- Source: "The Blade Forex Strategies" — ForexSuccessSecrets.com (PDF, 71 pages)
+- Source citation: 2026 local PDF archive, URL/file `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\219755537-Blade-Forex-Strategies.pdf`
+- Section: "The Divergence System" (pages 51–63)
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\219755537-Blade-Forex-Strategies.pdf`
+- Author: Anonymous (ForexSuccessSecrets.com handle, UK-based). R1 PASS under relaxed criteria.
+
+## Mechanics
+
+Divergence between price and oscillator (MACD or Stochastic) as a reversal signal. Either MACD divergence alone OR Stochastic divergence alone triggers an entry; dual confirmation (both diverging simultaneously) is a higher-conviction variant.
+
+**MACD settings**: Default (12, 26, 9) or tunable. MACD line divergence vs price.
+**Stochastic settings**: (14, 3, 3) standard. Stochastic %K divergence vs price.
+
+### Entry
+**BEARISH DIVERGENCE (SELL)** — all of:
+1. Price makes a **higher high** (swing high 2 > swing high 1, separated by ≥5 bars).
+2. MACD histogram or MACD line makes a **lower high** at the same swing points (bearish divergence confirmed).
+3. OR: Stochastic %K makes a **lower high** at the same swing highs.
+4. Entry: SELL on the bar that closes at or after the second lower-high oscillator peak, OR on the break of the trough between the two price highs (whichever is first).
+
+**BULLISH DIVERGENCE (BUY)** — mirror:
+1. Price makes a **lower low** (swing low 2 < swing low 1).
+2. MACD makes a **higher low** at the same swings.
+3. OR: Stochastic %K makes a **higher low**.
+4. Entry: BUY on bar closing at/after second higher-low oscillator.
+
+Dual signal (both MACD + Stochastic diverging): Enter immediately on close of the confirmation bar.
+
+### Exit
+- Take Profit: Next significant swing high/low, OR ATR(14) × 2.0 fixed target.
+- Stop Loss: ATR(14) × 1.5 beyond the swing high/low that formed the divergence.
+- Trail: After 1R profit, trail SL by ATR(14) × 1.0 behind bars.
+
+### Stop Loss
+- Initial SL: ATR(14) × 1.5 beyond the second price extreme (swing high for sells, swing low for buys).
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2 (HR4).
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: H1 or H4 (divergence systems work poorly on M5 due to noise).
+- Swing detection: swing high = bar whose high is highest among 5 bars on each side; swing low = mirror.
+- Minimum divergence gap: MACD/Stoch reading at peak 2 must be ≥5% lower/higher than at peak 1 (avoid trivial divergences).
+- Spread cap: 20 pips.
+- News filter: off in P2 (standard gate).
+
+## Concepts
+- [[concepts/divergence]] — primary
+- [[concepts/mean-reversion]] — secondary (fade extended moves)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PASS | ForexSuccessSecrets.com named source. R1 PASS under relaxed 2026-05-15 criteria. |
+| R2 Mechanical | PASS | Swing-detection + oscillator peak comparison is fully mechanizable with `iHighest`/`iLowest` lookback. Entry on bar close is deterministic. Codex fills lookback params. |
+| R3 Data Available | PASS | H1/H4 data on DWX. P2 basket: EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, EURJPY.DWX. |
+| R4 No ML | PASS | Fixed-period MACD and Stochastic. Swing detection via fixed lookback. No ML, no adaptive. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 — drafted from Blade Forex Strategies PDF, Divergence System section
+
+## Implementation Notes for Codex (P1)
+- Timeframe: H1 (primary). Also test H4.
+- DWX symbols: **EURUSD.DWX, GBPUSD.DWX, USDJPY.DWX, AUDUSD.DWX, EURJPY.DWX**
+- Swing detection: `iHighest(NULL, 0, MODE_HIGH, 11, i-5)` for swing highs (5 bars on each side). Compare swings within last 50 bars.
+- MACD divergence: compare MACD Main buffer values at swing bar indices. Bullish divergence: `price_low2 < price_low1 && macd_main[low2_bar] > macd_main[low1_bar]`.
+- Stochastic: `iStochastic` %K buffer divergence check, same logic.
+- Minimum divergence: `abs(macd_main[peak2] - macd_main[peak1]) >= 0.0001` or expressed as % of range.
+- ATR-based SL/TP: `iATR(NULL, 0, 14, 0)`.
+- In P3 sweeps: try MACD-only vs Stoch-only vs dual modes.
+
+## Related strategies
+- Related: Blade M5 EMA Zone Scalp (QM5_11277) — same author.
+- Related: QM5_10046_ff-momentum-div-h4 — FF-sourced MACD divergence system.
+
+## Lessons learned (during the pipeline run)
+- *(populated as pipeline progresses)*

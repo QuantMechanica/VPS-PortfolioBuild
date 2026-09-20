@@ -1,0 +1,110 @@
+---
+ea_id: QM5_11380
+slug: macd12-stoch8-extreme-m1m5
+type: strategy
+source_id: be645940-9d45-534c-ba3d-405365e3e9a8
+sources:
+  - "[[sources/dropbox-forex-pdf-archive]]"
+concepts:
+  - "[[concepts/trend-filter]]"
+  - "[[concepts/oscillator-pullback]]"
+  - "[[concepts/mean-reversion]]"
+indicators:
+  - "[[indicators/macd]]"
+  - "[[indicators/stochastic]]"
+period: M5
+target_symbols: [EURUSD.DWX, GBPUSD.DWX]
+source_citation: "Anonymous, M1/M5 Forex Scalping Strategy (MACD + Stochastic), local PDF"
+g0_status: APPROVED
+r1_track_record: TIER_C
+r2_mechanical: PASS
+r3_data_available: PASS
+r4_ml_forbidden: PASS
+pipeline_phase: G0
+last_updated: 2026-07-26
+expected_trades_per_year_per_symbol: 120
+card_body_incomplete: true
+card_body_missing: "legacy_contract_repair"
+g0_rejection_reason: "SUPERSEDED: source-only rejection recovered under OWNER R1 policy on 2026-07-23; original retained in cards_rejected."
+status: draft
+r1_reasoning: "Existing attribution retained; R1 is informational and non-gating under OWNER policy 2026-07-23."
+r2_reasoning: "MACD histogram sign combined with a Stochastic %K cross back through a fixed extreme threshold (20/80) is a deterministic entry trigger; fixed 25/15-pip TP/SL are mechanical."
+r3_reasoning: "Both target symbols (EURUSD.DWX, GBPUSD.DWX) are standard DWX forex pairs with native MACD/Stochastic support on M5."
+r4_reasoning: "Uses only MACD and Stochastic threshold/cross comparisons with fixed pip targets; no ML, no PnL-adaptive sizing, one position per signal."
+legacy_contract_repair: true
+g0_recovery_reason: "Source-only rejection recovered; fresh semantic R2-R4 G0 review required."
+g0_recovery_origin: "D:/QM/strategy_farm/artifacts/cards_rejected/QM5_11380_macd12-stoch8-extreme-m1m5.md"
+g0_approval_reasoning: "R1 lineage retained; R2 deterministic MACD-regime plus Stochastic-extreme cross with fixed TP/SL and conservative 120 trades/year/symbol; R3 testable on EURUSD.DWX and GBPUSD.DWX M5; R4 deterministic, ML-free, one-position compatible."
+expected_pf: 1.2
+expected_dd_pct: 20.0
+---
+
+# QM5_11380 MACD Trend + Stoch Extreme Pullback Scalper (M5)
+
+## Source
+- Source: "M1/M5 Forex Scalping Strategy" (anonymous, XM-broker promotional ebook)
+- File: `C:\Users\Administrator\Dropbox\Finanzen\Forex\###  Forex to read\412362945-M1-M5-Forex-Scalping-Trading-Strategy-pdf.pdf`
+- Author: Anonymous. R1 CONDITIONAL.
+
+## Mechanics
+
+Use MACD(12,26,9) histogram to establish short-term trend direction. Use Stochastic(8,3,3) to time entry on pullbacks from extreme zones. Enter long when MACD > 0 and Stochastic crosses back above 20; enter short when MACD < 0 and Stochastic crosses back below 80.
+
+### Entry
+
+**LONG**:
+1. MACD(12,26,9) histogram is **positive** (above zero line) at entry bar.
+2. Stochastic(8,3,3) %K crossed **above** 20 from below (previous bar %K < 20, current bar %K > 20).
+3. Enter BUY at close of signal candle (or open of next).
+
+**SHORT**:
+1. MACD(12,26,9) histogram is **negative** (below zero line).
+2. Stochastic(8,3,3) %K crossed **below** 80 from above.
+3. Enter SELL at close of signal candle.
+
+### Exit
+- TP: fixed 25 pips (M5 chart).
+- SL: fixed 15 pips.
+
+### Stop Loss
+- Fixed 15 pips from entry.
+- P2 cap: 20 pips max.
+
+### Position Sizing
+- `RISK_FIXED = $1000` for P2.
+- `RISK_PERCENT = 0.5%` for live.
+
+### Additional filters
+- Timeframe: M5 primary (original also specifies M1 with 15-pip TP / 10-pip SL)
+- Instruments: EURUSD.DWX, GBPUSD.DWX
+- Spread cap: 15 pips
+- Session: London + NY (avoid low-liquidity Asian session for scalper)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | CONDITIONAL | Anonymous broker promotional ebook; no named individual. |
+| R2 Mechanical | PASS | MACD histogram sign + Stochastic cross from extreme — both fully deterministic from bar data. |
+| R3 Data Available | PASS | M5 DWX EURUSD, GBPUSD available. |
+| R4 No ML | PASS | Standard indicators + fixed pip targets. |
+
+G0 APPROVE eligible.
+
+## Pipeline history
+- G0: 2026-05-23 -- drafted from M1/M5 Forex Scalping Strategy PDF
+
+## Implementation Notes for Codex (P1)
+- MACD(12,26,9): `iMACD(NULL,0,12,26,9,PRICE_CLOSE,MODE_MAIN,0)` — histogram (not signal line); positive = MAIN > 0
+- Stochastic(8,3,3): `iStochastic(NULL,0,8,3,3,MODE_SMA,0,MODE_MAIN,0)` for %K
+- Cross above 20: `stoch_k[1] < 20 && stoch_k[0] >= 20` (bar[1] below, bar[0] at or above)
+- Cross below 80: `stoch_k[1] > 80 && stoch_k[0] <= 80`
+- Fixed SL = 15 pips, fixed TP = 25 pips (5-digit: multiply by 10)
+- P3 sweeps: MACD fast (8 vs 12), Stoch periods (5,3,3 vs 8,3,3 vs 14,3,3), TP/SL (20/12 vs 25/15 vs 30/20)
+
+## Related strategies
+- Related: QM5_11368 (macd-psar-atr-h4) -- MACD on H4 with PSAR exit; this is M5 scalper with Stochastic pullback
+- Related: QM5_11372 (micro-trading-bb18-ema3-macd-m1) -- also M1 scalper with MACD; different entry trigger
+- Differentiator: Stochastic extreme pullback entry into MACD trend direction -- "buy the dip in an uptrend"
+
+## Lessons Learned
+- *(populated as pipeline progresses)*

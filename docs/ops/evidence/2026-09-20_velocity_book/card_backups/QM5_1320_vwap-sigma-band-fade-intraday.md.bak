@@ -1,0 +1,119 @@
+---
+ea_id: QM5_1320
+slug: vwap-sigma-band-fade-intraday
+type: strategy
+source_id: 6e967762-b26d-59a3-b076-35c17f2e7c36
+sources:
+  - "[[sources/forexfactory-trading-systems]]"
+concepts:
+  - "[[concepts/volume-weighted-mean-deviation]]"
+  - "[[concepts/intraday-mean-reversion]]"
+indicators:
+  - "[[indicators/vwap]]"
+  - "[[indicators/std-dev]]"
+  - "[[indicators/rsi]]"
+g0_status: APPROVED
+r1_track_record: PASS
+r1_reasoning: Single source_id present; Berkowitz/Logue/Noser JoF 1988 plus Brian Shannon AVWAP book plus FF VWAP cluster is a valid single-source attribution under the same lineage as approved sibling QM5_1314.
+r2_mechanical: PASS
+r2_reasoning: VWAP/σ-band construction, RSI-14, EMA-200, ATR, wick-touch-plus-close-inside entry, dynamic VWAP TP, and hard SL are all deterministic MQL5-native operations with no discretionary steps.
+r3_data_available: PASS
+r3_reasoning: FX majors, XAUUSD.DWX, and index CFDs on the Darwinex M15 feed support tick-volume-proxy VWAP construction as established for sibling QM5_1314.
+r4_ml_forbidden: PASS
+r4_reasoning: Fixed σ multiplier (2.0), fixed RSI/EMA periods, dynamic VWAP TP is price-conditional (not PnL-conditional), no ML or online learning, single position per magic.
+pipeline_phase: G0
+last_updated: 2026-05-19
+g0_approval_reasoning: "R1 PASS: Berkowitz/Logue/Noser JoF 43:1 1988 canonical VWAP + Brian Shannon AVWAP CreateSpace 2008/2019 fade methodology (same R1 chain as approved sibling QM5_1314 breakout) + FF cluster - citations added before approve; R2 PASS: VWAP/sigma/RSI/EMA/ATR MQL5-standard + 2-arithmetic-comparison entry "
+---
+
+# VWAP ±2σ standard-deviation band FADE (M15 intraday)
+
+## Source
+- Source: [[sources/forexfactory-trading-systems]]
+- Academic primary: Berkowitz/Logue/Noser, "The Total Cost of Transactions on the NYSE" (*Journal of Finance* 43:1, Mar 1988) — canonical VWAP definition used as execution-benchmark; same R1 reference as sibling card QM5_1314 (breakout branch).
+- Practitioner primary: Brian Shannon, *Maximum Trading Gains with Anchored VWAP* (CreateSpace 2008 / 2nd ed. 2019) — VWAP σ-band methodology and the fade-back-to-mean variant explicitly discussed in chapters on intraday mean-reversion against an anchored VWAP.
+- FF cluster URL: FF Trading Systems forum search "VWAP bands fade" / "VWAP mean reversion" / "VWAP standard deviation reversal"
+- The FF Trading-Systems VWAP cluster has two main mechanical branches: a **breakout** branch (closing breach of the σ-band = trend acceleration entry, cardified as QM5_1314) and a **fade** branch (touch/spike of the σ-band with momentum reversal = mean-reversion entry back to VWAP). Both branches have multiple named-handle threads in the cluster. This card extracts the **fade** branch as the explicit mean-reversion sibling to QM5_1314.
+- Distinct from QM5_1314 (breakout): opposite-direction edge on the same indicator pair. QM5_1314 enters on a *closing* breach above the band (momentum continues); QM5_1320 enters on a *wick-spike* touch of the band followed by a *closing back inside the band* with reversal momentum (mean-reversion). Same author cluster, opposite-side play — useful as an ensemble pair where regime determines which branch dominates.
+
+## Mechanics
+
+Session-anchored VWAP and σ-bands (re-anchored each session at session open broker-time 06:00) — identical construction to QM5_1314:
+- `TP = (high + low + close) / 3` (typical price per M15 bar)
+- `Vol = tick_volume`
+- Running sums since session-anchor: `Σ(TP × Vol)`, `Σ(Vol)`, `Σ(TP² × Vol)`
+- `VWAP_t = Σ(TP × Vol) / Σ(Vol)`
+- `Var_t = Σ(TP² × Vol) / Σ(Vol) − VWAP_t²`
+- `σ_t = sqrt(max(Var_t, 0))`
+- `UpperBand = VWAP_t + 2.0 × σ_t` (P3-sweep multiplier 1.8–2.5)
+- `LowerBand = VWAP_t − 2.0 × σ_t`
+
+Auxiliary:
+- `RSI14_M15 = RSI(close, 14)` on M15 — momentum-reversal confirmation
+- `EMA200_H1 = EMA(close, 200)` on H1 — *bias-CONSISTENCY* check (different role from QM5_1314 — see Entry rule 4)
+
+Timeframe: M15 only (M30 reduces the spike-and-revert touch population below P2-significance).
+
+### Entry — SELL (fade upper band)
+On M15 bar close:
+1. **Upper-band wick-touch + close-back-inside**: `high[0] >= UpperBand[0] AND close[0] < UpperBand[0]` — the bar spiked into/through the upper band but closed back inside the band (the rejection candle, not the breakout candle).
+2. **Bearish bar agreement**: `close[0] < open[0]` (close below open within the same bar — confirms the reversal). For a doji-style very-narrow body where `|close - open| < 0.1 × (high - low)`, also require `close[0] < (open[0]+close[0])/2 + 0.1 × (high[0]-low[0])` to lean bearish.
+3. **RSI confirmation**: `RSI14_M15[0] > 65` (P3-sweep 60–75). Confirms the wick happened from an overbought state — fade has momentum room to mean-revert.
+4. **Macro-bias CONSISTENCY (not opposition)**: `close > EMA200_H1` — fade ONLY against the band, NOT against the macro trend. If the macro trend is *down*, the upper-band wick is more likely the *start* of a leg in the macro-trend direction (i.e., a brief retracement against the macro trend that then resumes); fading those is loss-prone. Equivalently: only fade upper-band wicks during macro-uptrend (where the wick is a stretched pullback target inside the trend, not a counter-trend exhaustion of a downleg).
+5. **Minimum session age**: at least 8 M15 bars since session-anchor (2 hours) — same anti-noise gate as QM5_1314.
+6. **Band width is meaningful**: `(UpperBand[0] − LowerBand[0]) > 0.5 × ATR(20, M15)` — kills entries during early-session band-collapse where σ is still very small.
+7. **No open position on this symbol** (1-pos-per-magic, HR14).
+
+### Entry — BUY (fade lower band)
+Mirror — `low[0] <= LowerBand[0] AND close[0] > LowerBand[0]`, `close[0] > open[0]`, `RSI14_M15[0] < 35`, `close < EMA200_H1` (macro-downtrend bias), same age/width gates.
+
+### Exit
+- **Take Profit (primary)**: `close` reaches `VWAP_t` on a closing bar — the fade thesis is "back to the mean", the mean is VWAP. The TP-price is dynamic (VWAP moves intraday) — recompute at each M15 close.
+- **Take Profit (cap)**: hard TP cap at `1.5 × ATR(20, M15)` from entry — prevents the rare case where VWAP is many σ away from entry (e.g. early-session spike scenarios).
+- **Time-stop**: 12 M15 bars (= 3 hours) without VWAP-touch or SL — mean-reversion that doesn't pay within 3 hours is invalidated.
+- **Session close**: all open positions closed at session end broker-time 21:00 (intraday only, no overnight risk).
+
+### Stop Loss
+- SELL: `entry + 0.8 × ATR(20, M15)` (P3-sweep 0.5–1.2). Tight SL — fades by construction are tight-stop high-RR-low-WR plays.
+- BUY: mirror.
+- Hard SL — no widening. If the band-rejection candle is wrong, the breakout-branch (QM5_1314) is the right play, not a wider-SL fade.
+
+### Position Sizing
+- HR4: `RISK_FIXED = $1.000` per trade for P2 baseline.
+- Live: `RISK_PERCENT = 0.5%` of equity.
+
+### Additional filters
+- One open trade per symbol (1-pos-per-magic, HR14).
+- Session: 06:00–21:00 broker-time, intraday only (close all at 21:00). M15 fades outside this window are too thin-volume.
+- Spread guard: skip new entries if spread > 1.5 × 20-bar median spread (M15-rolling).
+- Re-arm: after entry+exit on one side, suppress same-side re-entry until `close` crosses VWAP (i.e. trades on the opposite side of VWAP). Prevents fade-pyramiding into a sustained directional move.
+- News guard: skip new entries in the 15 min before / 15 min after high-impact news on the traded symbol.
+
+## Concepts (what kind of strategy is this)
+- [[concepts/volume-weighted-mean-deviation]] — primary (same primitive as QM5_1314; the entry uses the σ-band as a stretch threshold not a breakout trigger)
+- [[concepts/intraday-mean-reversion]] — secondary (mean-reversion to a dynamic intraday mean; session-anchored, mandatory session-close exit; structurally different from rolling-window mean-reversion like CCI-fade or Williams%R-MR)
+
+## R1-R4 assessment
+| Criterion | Status | Rationale |
+|-----------|--------|------------|
+| R1 Track Record | PENDING | Berkowitz/Logue/Noser *Journal of Finance* 43:1 (1988) canonical VWAP definition + Brian Shannon *Maximum Trading Gains with Anchored VWAP* (CreateSpace 2008 / 2nd ed. 2019) AVWAP fade methodology + FF Trading-Systems VWAP cluster (same R1 chain as approved sibling QM5_1314) — relaxed-criteria PASS. |
+| R2 Mechanical | PENDING | VWAP, σ, RSI, EMA, ATR are all standard MQL5 primitives. Entry is two arithmetic comparisons (band-touch + close-inside) + RSI threshold + EMA200 bias. Dynamic TP (close-crosses-VWAP) is one closing-bar comparison per tick. |
+| R3 Data Available | PENDING | FX majors, XAUUSD, index CFDs (NDX.DWX/WS30.DWX/GDAXI.DWX) all on Darwinex feed. Tick-volume proxy is the CFD/FX-canonical VWAP-volume substitute (same as QM5_1314). |
+| R4 ML Forbidden | PENDING | No ML, fixed multipliers (P3 sweeps bounded ranges), no adaptive parameters tied to PnL, single position per magic. PASS. The dynamic VWAP TP is *time-conditional* (VWAP evolves with the session), NOT *PnL-conditional* — it's not an adaptive-parameter R4 violation. |
+
+## Pipeline history
+- G0: <date, verdict, rationale>
+- P1: <date, .ex5 path>
+- P2: <date, report.csv path, PASS symbols>
+
+## Related strategies
+- [[strategies/QM5_1314-vwap-sigma-band-breakout-intraday]] — VWAP-σ band BREAKOUT (closing breach = trend continuation). Direct sibling — same indicator pair, opposite trade direction. P2 will quantify regime where breakout wins vs regime where fade wins. Co-deploying both is a candidate ensemble idea pending P2 results.
+- [[strategies/QM5_1305-camarilla-vwap-confluence-intraday]] — Camarilla-pivot fade with VWAP-bias filter. Same fade-direction edge (mean-reversion intraday), but the trigger is a fixed-pivot level (Camarilla) not a dynamic-σ-band. P2 will show whether the σ-band trigger or the pivot trigger is cleaner.
+- [[strategies/QM5_1294-williams-r-ema200-mr-h1]] — Williams%R mean-reversion on H1 with EMA200 bias. Same family (overbought-fade with macro-bias-consistency) but H1 rolling-window (vs M15 session-anchored). Different temporal scale.
+- [[strategies/QM5_1290-classic-pivot-points-fade-break]] — classic-pivot fade is a *fixed-level* fade (one set of levels per day); QM5_1320 is a *continuously-evolving* statistical fade band. Different level construction.
+
+## Lessons learned (during the pipeline run)
+
+---
+
+*Node maintenance: update `pipeline_phase` + `last_updated` on every pipeline-phase change. On FAIL: `pipeline_phase: DEAD` + a lessons-learned entry.*
