@@ -1,0 +1,79 @@
+diff --git a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5 b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5
+index c7a15a819c..c11f17f023 100644
+--- a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5
++++ b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/QM5_41155_gbpjpy-carry-unwind-crisis-momentum.mq5
+@@ -55,7 +55,6 @@ string   g_breadth_symbols[4] =
+    "CADJPY.DWX",
+    "EURJPY.DWX"
+   };
+-datetime g_last_exit_completed_bar = 0;
+ 
+ bool Strategy_InputsValid()
+   {
+@@ -318,8 +317,7 @@ bool Strategy_LoadBreadthReturn(const datetime signal_time,
+    return MathIsValidNumber(breadth_return);
+   }
+ 
+-bool Strategy_ChannelMidpoint(const datetime signal_time,
+-                              double &completed_close,
++bool Strategy_ChannelMidpoint(double &completed_close,
+                               double &midpoint)
+   {
+    completed_close = 0.0;
+@@ -330,7 +328,7 @@ bool Strategy_ChannelMidpoint(const datetime signal_time,
+    const int copied =
+       CopyRates(_Symbol, PERIOD_D1, 1, requested, rates); // perf-allowed: bounded completed-bar exit channel, evaluated at most once per D1 bar.
+    if(copied != requested || ArraySize(rates) != requested ||
+-      rates[0].time != signal_time || rates[0].close <= 0.0)
++      rates[0].time <= 0 || rates[0].close <= 0.0)
+       return false;
+ 
+    double highest = -DBL_MAX;
+@@ -455,11 +453,8 @@ bool Strategy_ExitSignal()
+       !integrity_ok)
+       return false;
+ 
+-   const datetime completed_time =
+-      iTime(_Symbol, PERIOD_D1, 1); // perf-allowed: completed-bar exit gate.
+-   if(completed_time <= 0 || completed_time == g_last_exit_completed_bar)
++   if(!QM_IsNewCalendarPeriod(PERIOD_D1, _Symbol))
+       return false;
+-   g_last_exit_completed_bar = completed_time;
+ 
+    const int entry_shift =
+       iBarShift(_Symbol, PERIOD_D1, opened_at, false); // perf-allowed: one bounded completed-D1 holding-period lookup.
+@@ -468,7 +463,7 @@ bool Strategy_ExitSignal()
+ 
+    double completed_close = 0.0;
+    double midpoint = 0.0;
+-   if(!Strategy_ChannelMidpoint(completed_time, completed_close, midpoint))
++   if(!Strategy_ChannelMidpoint(completed_close, midpoint))
+       return false;
+    return (completed_close > midpoint);
+   }
+diff --git a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_GBPJPY.DWX_D1_backtest.set b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_GBPJPY.DWX_D1_backtest.set
+index 4c3eeda83a..de5755e9c8 100644
+--- a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_GBPJPY.DWX_D1_backtest.set
++++ b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_GBPJPY.DWX_D1_backtest.set
+@@ -10,7 +10,7 @@
+ ; magic_slot:   0
+ ; risk_mode:    FIXED
+ ; portfolio_weight: 1
+-; build_hash:   acb4e905c54a7279d5b83f26cceb6a5ad72fe5e7e2524d7eb2d077b6f40cdfbc
++; build_hash:   f850fc1b9965584dad9ef7440d91c3182105120a08f29627b590e88161660756
+ ; author:       Development
+ ; date:         2026-08-29
+ ;==========================================================
+diff --git a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set
+index 58e34ae699..7f4e068824 100644
+--- a/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set
++++ b/framework/EAs/QM5_41155_gbpjpy-carry-unwind-crisis-momentum/sets/QM5_41155_gbpjpy-carry-unwind-crisis-momentum_QM5_41155_GBPJPY_CARRY_UNWIND_CRISIS_MOMENTUM_D1_D1_backtest.set
+@@ -11,7 +11,7 @@
+ ; magic_slot:   0
+ ; risk_mode:    FIXED
+ ; portfolio_weight: 1
+-; build_hash:   f9d00248aad834766482e5b7ed9996ad352141417ff2caabdab7f42f3ba6ea80
++; build_hash:   287ee2acea9ead357b9d029b218c93d7b8f3b2e9a8bf78976261efae8b3ffea2
+ ; author:       Development
+ ; date:         2026-08-29
+ ;==========================================================
