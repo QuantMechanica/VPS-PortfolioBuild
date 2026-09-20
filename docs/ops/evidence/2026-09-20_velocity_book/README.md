@@ -103,3 +103,12 @@ COMPILE_OK rows → next tranche → status table).
   cohort mismatch, not economics.
 - Fable-originated Velocity hypotheses (QM-RESEARCH artifacts) on the profile that measured best: session-range breakouts
   with 0 % overnight (13213 template) on JPY crosses / gold / GDAXI, M15–H1 — cross-vendor critic = Codex.
+
+### Finds log (cron watch)
+
+- 20:23Z — QM5_11442 burke-frd-fgd-daily-pump M5: AUDUSD +11.5k / PF 1.27 / 0.12 trades/bd (R/bd +0.010) and GBPUSD +8.1k /
+  PF 1.12 / 0.10 trades/bd (R/bd +0.007). Real but slow; Q04 AUDUSD row 03934079 priority-tracked.
+- 20:23Z — QM5_41484 fan-out interim (6 of 9 new symbols measured, Q02 2018-07..2022-12): AUDJPY +0.005R (flat),
+  AUDUSD −0.003R, GBPUSD −0.015R, CHFJPY −0.097R, EURUSD −0.082R, USDCAD −0.088R vs parent USDJPY +0.053R / PF 1.12.
+  The Balke 03–06 GMT+3 window does not carry over to non-JPY majors; EURJPY / GBPJPY / USDCHF and the USDJPY control
+  still running.
