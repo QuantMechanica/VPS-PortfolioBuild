@@ -1,0 +1,57 @@
+{
+  "schema": "qm.codex-review-evidence/v1",
+  "review_task_id": "ce1b2ad8-e99a-49b3-96d1-581726dc3bdf",
+  "source_task_id": "33322516-1797-4d97-8a74-eb4fd7385953",
+  "ea_id": "QM5_38001",
+  "ea_label": "QM5_38001_codetrading-vwap-bollinger-rsi-scalper",
+  "reviewed_at_utc": "2026-09-20T13:13:00Z",
+  "approved_card_sha256": "184da71f67c438dffeaf1c1884b4b7ef4e1c5e43d8d32708bfaa951764741af6",
+  "source_sha256": "f7e8f55896b3e90ae9775a559829f4f2bc14c901b2ae9cae237289ff993e8e9f",
+  "canonical_ex5_present": false,
+  "source_review": {
+    "verdict": "PASS_STATIC_ONLY",
+    "focused_pytest": {
+      "command": "python -m pytest tools/strategy_farm/tests/test_qm5_38001_rework_static.py -q",
+      "result": "PASS",
+      "tests_passed": 5
+    },
+    "spec_validation": "PASS",
+    "build_check": {
+      "compile_skipped": true,
+      "result": "PASS",
+      "failures": 0,
+      "warnings": [
+        "EA_PERF_UNGATED_BAR_DATA at MQ5 line 160"
+      ],
+      "report": "D:/QM/reports/framework/21/build_check_20260920_131118.json"
+    },
+    "setfile_risk_contract": {
+      "setfile_count": 3,
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "bound_build_hash": "107c6c9b9bd609c0e3bbdde37e31db6c5a18be508d66f3467e022c687281115a"
+    }
+  },
+  "failed_predecessor": {
+    "work_item_id": "960f030f-5632-4e6c-a3e8-9dc39dfb0bde",
+    "verdict": "COMPILE_FAIL",
+    "failure_class": "CANDIDATE_RECHECK_REFUSED",
+    "reasons": [
+      "SOURCE_REPAIR_AUTHORITY_INVALID",
+      "BOUND_SETFILE_HASH_EXISTS"
+    ],
+    "source_repair_authority_in_evidence": ""
+  },
+  "governed_successor": {
+    "work_item_id": "7ceaddce-8eae-4686-84f9-1296f8e8e39f",
+    "source_repair_authority": "router_ops_issue:b63eaead-7890-4be4-b8e7-0edea3fe6a85",
+    "enqueue_result": "ELIGIBLE_AND_ENQUEUED",
+    "status": "pending",
+    "activation_hold": "COMPILE_EA_WORKER_ROLLOUT_PENDING",
+    "release_result": "NOT_RELEASED",
+    "release_blocker": "FACTORY_MUTATION.lock was actively held and unreadable on two bounded release attempts; no lock deletion or bypass was attempted."
+  },
+  "verdict": "BLOCKED_INFRA",
+  "verdict_reason": "The repaired source is statically acceptable, but review cannot accept a build while the canonical EX5 is absent. The valid-authority COMPILE_EA successor is pending behind its governed activation hold; no pipeline handoff is authorized.",
+  "required_next_action": "After the active factory mutation completes, release work item 7ceaddce-8eae-4686-84f9-1296f8e8e39f through the governed compile-wave ceremony, then return its source-hash-bound compile evidence and EX5 to Codex REVIEW."
+}
