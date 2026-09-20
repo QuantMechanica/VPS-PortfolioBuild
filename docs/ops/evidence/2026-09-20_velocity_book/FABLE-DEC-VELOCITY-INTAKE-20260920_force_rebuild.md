@@ -79,3 +79,32 @@ are waivable (`EX5_ALREADY_PRESENT` / `BOUND_SETFILE_HASH_EXISTS` / `WORK_ITEMS_
 | QM5_38004_codetrading-triple-ema-momentum-scalper | {'candidates': ['M5'], 'source': 'existing_setfiles', 'timeframe': 'M5'} | BOUND_SETFILE_HASH_EXISTS, EX5_ALREADY_PRESENT |
 | QM5_39001_forexfactory-trading-made-simple-tms | {'candidates': ['H1'], 'source': 'existing_setfiles', 'timeframe': 'H1'} | BOUND_SETFILE_HASH_EXISTS, EX5_ALREADY_PRESENT, WORK_ITEMS_EXIST |
 | QM5_40005_tradingview-multitimeframe-supertrend-atr | {'candidates': ['H1'], 'source': 'existing_setfiles', 'timeframe': 'H1'} | BOUND_SETFILE_HASH_EXISTS, EX5_ALREADY_PRESENT |
+
+## Wave 3 registry-repair follow-up (router task `de9d8271-a820-4783-b456-017581e2f813`)
+
+The following cards passed exact-card allocator verification after the task-scoped identity, magic-row,
+or symbol-universe repair. They are added only so their governed compile candidates can be appended and
+held; this extension grants no release, verdict, Q02, deployment, or live authority. `QM5_12351` was
+already listed above and is repeated here to bind its SP500-row removal to this repair cohort.
+
+| EA | repaired registry condition |
+|---|---|
+| QM5_9165_tv-joovier-london-session-breakout | identity slug and strategy binding reconciled |
+| QM5_11467_duplooy-multiMA-knot-straddle-h1 | identity slug casing reconciled; stale reservations superseded |
+| QM5_11473_carter-t-smma55-channel-wpr-stoch-h1 | stale reservations superseded by exact-card active rows |
+| QM5_11495_carter-t-ema3-8-macd-stoch-psar-sd-m5 | stale reservations superseded by exact-card active rows |
+| QM5_11530_carter-t-h1-sma9-100-cross | identity activated; stale reservations superseded |
+| QM5_11531_carter-t-h1-ema6-23-stoch-macd | identity activated |
+| QM5_11532_carter-t-h1-ema5-15-60-pullback | identity activated |
+| QM5_11540_carter-t-h1-ema5-13-62-macd3060-sep | identity activated; stale reservations superseded |
+| QM5_11543_carter-t-h1-ema100-smma28-macd3060 | identity activated; stale reservations superseded |
+| QM5_11544_carter-t-h1-psar02-adx50 | identity activated; stale reservations superseded |
+| QM5_11558_carter-t-m5-psar-macd64128-ema100 | malformed duplicate identity removed; canonical identity activated |
+| QM5_11573_robo-ema200-awesome-h1 | stale reservations superseded by exact-card active rows |
+| QM5_11574_robo-ichi-awesome-h1 | stale reservations superseded by exact-card active rows |
+| QM5_11865_ema5-15-60-pullback-h1 | stale reservations superseded by exact-card active rows |
+| QM5_11872_rsi-80-20-fade-m15 | stale reservations superseded by exact-card active rows |
+| QM5_11873_trix-signal-line-cross | stale reservations superseded by exact-card active rows |
+| QM5_11880_continuation-method-ema50-williams | stale reservations superseded by exact-card active rows |
+| QM5_12351_alp-ema12-26 | non-card SP500 active row removed; exact seven-symbol card restored |
+| QM5_20053_xcu-weekend-prem | identity activated |

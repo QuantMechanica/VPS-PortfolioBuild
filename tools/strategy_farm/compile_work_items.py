@@ -1337,6 +1337,10 @@ VELOCITY_INTAKE_FORCE_REBUILD_EA_IDS = frozenset({
     "QM5_11516", "QM5_11518", "QM5_11537", "QM5_11559", "QM5_11867", "QM5_12351",
     "QM5_30005", "QM5_30006", "QM5_37001", "QM5_37005", "QM5_38004", "QM5_39001",
     "QM5_40005",
+    # wave 3 allocator/identity repair follow-up (router task de9d8271)
+    "QM5_9165", "QM5_11467", "QM5_11473", "QM5_11495", "QM5_11530", "QM5_11531",
+    "QM5_11532", "QM5_11540", "QM5_11543", "QM5_11544", "QM5_11558", "QM5_11573",
+    "QM5_11574", "QM5_11865", "QM5_11872", "QM5_11873", "QM5_11880", "QM5_20053",
 })
 VELOCITY_INTAKE_FORCE_REBUILD_NUMERIC_EA_IDS = frozenset(
     value.split("_", 1)[1] if value.upper().startswith("QM5_") else value
