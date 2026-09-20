@@ -49,6 +49,7 @@ input string strategy_symbol_6            = "USDCHF.DWX"; // Slot 5
 input string strategy_symbol_7            = "USDJPY.DWX"; // Slot 6
 input int    strategy_lookback_hours      = 24;     // Basket mean rate-of-change lookback in hours
 input double strategy_dispersion_dev      = 1.20;   // Standard deviation threshold for extreme pairs
+input double strategy_package_risk_pct    = 0.50;   // Total live package risk; fixed-risk tests use RISK_FIXED
 input double strategy_target_profit_pct   = 1.5;    // Basket take-profit target in % of account balance
 input double strategy_hard_stop_loss_pct  = 1.5;    // Basket hard stop-loss cutoff in % of account balance
 input int    strategy_atr_period          = 14;     // ATR lookback period for SL/spread
@@ -102,11 +103,6 @@ bool Strategy_SymbolInputsValid()
       }
    }
    return true;
-}
-
-bool IsDirectUSDPair(const string sym)
-{
-   return (StringFind(sym, "USD") == 0);
 }
 
 int StrategyMaxDeviationPoints(const string sym)
@@ -167,17 +163,47 @@ bool Strategy_ValidateInputs()
 {
    if(!Strategy_SymbolInputsValid())
       return false;
+   if(!MathIsValidNumber(RISK_FIXED) || !MathIsValidNumber(RISK_PERCENT) ||
+      RISK_FIXED <= 0.0 || MathAbs(RISK_PERCENT) > 1e-9)
+      return false;
+   if(!MathIsValidNumber(qm_stress_reject_probability) ||
+      qm_stress_reject_probability < 0.0 || qm_stress_reject_probability > 1.0)
+      return false;
    if(MathAbs(strategy_daily_loss_halt_pct - 2.0) > 1e-9 ||
       MathAbs(strategy_daily_hard_stop_pct - 2.5) > 1e-9 ||
       MathAbs(strategy_total_dd_stop_pct - 5.0) > 1e-9)
       return false;
    if(strategy_lookback_hours < 12 || strategy_lookback_hours > 48 ||
       strategy_dispersion_dev < 0.8 || strategy_dispersion_dev > 2.0 ||
+      strategy_package_risk_pct < 0.20 || strategy_package_risk_pct > 1.00 ||
       strategy_target_profit_pct <= 0.0 || strategy_hard_stop_loss_pct <= 0.0 ||
       strategy_atr_period < 1 || strategy_spread_atr_mult <= 0.0 ||
       MathAbs(strategy_max_slippage_ticks - 3.0) > 1e-9)
       return false;
    return true;
+}
+
+bool Strategy_NewsAllowsLeg(const string sym, const datetime broker_time)
+{
+   if(qm_news_temporal != QM_NEWS_TEMPORAL_OFF ||
+      qm_news_compliance != QM_NEWS_COMPLIANCE_NONE)
+      return QM_NewsAllowsTrade2(sym, broker_time,
+                                 qm_news_temporal, qm_news_compliance);
+   return QM_NewsAllowsTrade(sym, broker_time, qm_news_mode_legacy);
+}
+
+double Strategy_LegLots(const string sym,
+                        const double sl_points,
+                        const QM_OrderType type,
+                        const double entry_price)
+{
+   const ENUM_ORDER_TYPE order_type = QM_OrderTypeIsBuy(type)
+                                      ? ORDER_TYPE_BUY : ORDER_TYPE_SELL;
+   if(RISK_FIXED > 0.0 && RISK_PERCENT == 0.0)
+      return QM_LotsForRiskAtEntry(sym, sl_points, order_type, entry_price,
+                                   QM_RISK_MODE_FIXED, RISK_FIXED * 0.5);
+   return QM_LotsForRiskAtEntry(sym, sl_points, order_type, entry_price,
+                                strategy_package_risk_pct * 0.5);
 }
 
 bool Strategy_DailyRealizedLossHalt()
@@ -252,7 +278,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    const int lb = MathMax(5, strategy_lookback_hours);
-   double usd_returns[BASKET_SIZE];
+   double pair_returns[BASKET_SIZE];
 
    for(int k = 0; k < BASKET_SIZE; ++k)
    {
@@ -263,16 +289,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
          return false;
 
       const double roc = (c1 - c0) / c0;
-      if(IsDirectUSDPair(sym))
-         usd_returns[k] = roc;
-      else
-         usd_returns[k] = -roc;
+      pair_returns[k] = roc;
    }
 
-   double sum_usd = 0.0;
+   double sum_returns = 0.0;
    for(int k = 0; k < BASKET_SIZE; ++k)
-      sum_usd += usd_returns[k];
-   const double mean_usd = sum_usd / (double)BASKET_SIZE;
+      sum_returns += pair_returns[k];
+   const double mean_return = sum_returns / (double)BASKET_SIZE;
 
    double delta[BASKET_SIZE];
    double sum_sq_dev = 0.0;
@@ -283,7 +306,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    for(int k = 0; k < BASKET_SIZE; ++k)
    {
-      delta[k] = usd_returns[k] - mean_usd;
+      delta[k] = pair_returns[k] - mean_return;
       sum_sq_dev += (delta[k] * delta[k]);
       if(delta[k] < min_delta)
       {
@@ -313,23 +336,34 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
 
    const string sym_a = g_basket_symbols[min_idx];
    const int slot_a = min_idx;
-   const QM_OrderType type_a = IsDirectUSDPair(sym_a) ? QM_BUY : QM_SELL;
+   const QM_OrderType type_a = QM_BUY;
 
    const string sym_b = g_basket_symbols[max_idx];
    const int slot_b = max_idx;
-   const QM_OrderType type_b = IsDirectUSDPair(sym_b) ? QM_SELL : QM_BUY;
+   const QM_OrderType type_b = QM_SELL;
+
+   const datetime broker_now = TimeCurrent();
+   if(!Strategy_NewsAllowsLeg(sym_a, broker_now) ||
+      !Strategy_NewsAllowsLeg(sym_b, broker_now))
+      return false;
 
    const double atr_a = QM_ATR(sym_a, PERIOD_H1, strategy_atr_period, 1);
    const double point_a = SymbolInfoDouble(sym_a, SYMBOL_POINT);
-   const double sl_pts_a = (atr_a > 0.0 && point_a > 0.0) ? (1.5 * atr_a / point_a) : 100.0;
-   const double lots_a = QM_LotsForRisk(sym_a, sl_pts_a) * 0.5;
+   const double entry_a = QM_BasketMarketPrice(sym_a, type_a);
+   const double sl_a = QM_StopATRFromValue(sym_a, type_a, entry_a, atr_a, 1.5);
+   const double sl_pts_a = QM_BasketSLPoints(sym_a, entry_a, sl_a);
+   const double lots_a = Strategy_LegLots(sym_a, sl_pts_a, type_a, entry_a);
 
    const double atr_b = QM_ATR(sym_b, PERIOD_H1, strategy_atr_period, 1);
    const double point_b = SymbolInfoDouble(sym_b, SYMBOL_POINT);
-   const double sl_pts_b = (atr_b > 0.0 && point_b > 0.0) ? (1.5 * atr_b / point_b) : 100.0;
-   const double lots_b = QM_LotsForRisk(sym_b, sl_pts_b) * 0.5;
+   const double entry_b = QM_BasketMarketPrice(sym_b, type_b);
+   const double sl_b = QM_StopATRFromValue(sym_b, type_b, entry_b, atr_b, 1.5);
+   const double sl_pts_b = QM_BasketSLPoints(sym_b, entry_b, sl_b);
+   const double lots_b = Strategy_LegLots(sym_b, sl_pts_b, type_b, entry_b);
 
-   if(lots_a <= 0.0 || lots_b <= 0.0)
+   if(point_a <= 0.0 || point_b <= 0.0 || atr_a <= 0.0 || atr_b <= 0.0 ||
+      entry_a <= 0.0 || entry_b <= 0.0 || sl_a <= 0.0 || sl_b <= 0.0 ||
+      sl_pts_a <= 0.0 || sl_pts_b <= 0.0 || lots_a <= 0.0 || lots_b <= 0.0)
       return false;
 
    const int deviation_a = StrategyMaxDeviationPoints(sym_a);
@@ -341,10 +375,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req_a.symbol = sym_a;
    req_a.type = type_a;
    req_a.price = 0.0;
-   req_a.sl = 0.0;
+   req_a.sl = sl_a;
    req_a.tp = 0.0;
    req_a.lots = lots_a;
-   req_a.reason = "Basket Dispersion Min-Delta Buy USD";
+   req_a.reason = "Basket Dispersion Min-Delta Pair Buy";
    req_a.symbol_slot = slot_a;
    req_a.expiration_seconds = 0;
 
@@ -352,10 +386,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    req_b.symbol = sym_b;
    req_b.type = type_b;
    req_b.price = 0.0;
-   req_b.sl = 0.0;
+   req_b.sl = sl_b;
    req_b.tp = 0.0;
    req_b.lots = lots_b;
-   req_b.reason = "Basket Dispersion Max-Delta Sell USD";
+   req_b.reason = "Basket Dispersion Max-Delta Pair Sell";
    req_b.symbol_slot = slot_b;
    req_b.expiration_seconds = 0;
 

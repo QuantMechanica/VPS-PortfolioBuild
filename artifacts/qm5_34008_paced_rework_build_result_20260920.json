@@ -1,0 +1,36 @@
+{
+  "task_id": "bc8b7e7e-9d73-459c-b322-d75ce7fc9e07",
+  "ea_id": "QM5_34008",
+  "ea_dir": "framework/EAs/QM5_34008_multicurrency-basket-dispersion-hedger",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\QM5_34008_multicurrency-basket-dispersion-hedger.mq5",
+  "ex5_path": null,
+  "magic_base": 340080000,
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "AUDUSD.DWX",
+    "NZDUSD.DWX",
+    "USDCAD.DWX",
+    "USDCHF.DWX",
+    "USDJPY.DWX"
+  ],
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\sets\\QM5_34008_multicurrency-basket-dispersion-hedger_EURUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\sets\\QM5_34008_multicurrency-basket-dispersion-hedger_GBPUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\sets\\QM5_34008_multicurrency-basket-dispersion-hedger_AUDUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\sets\\QM5_34008_multicurrency-basket-dispersion-hedger_NZDUSD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\sets\\QM5_34008_multicurrency-basket-dispersion-hedger_USDCAD.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\sets\\QM5_34008_multicurrency-basket-dispersion-hedger_USDCHF.DWX_H1_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\sets\\QM5_34008_multicurrency-basket-dispersion-hedger_USDJPY.DWX_H1_backtest.set"
+  ],
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_34008_multicurrency-basket-dispersion-hedger\\SPEC.md",
+  "build_check_passed": false,
+  "compile_succeeded": false,
+  "smoke_result": "build_check_failed",
+  "smoke_report_path": null,
+  "blocked_reason": "governed COMPILE_EA repair enqueue refused PREDECESSOR_BUILD_TASK_REBIND_FORBIDDEN: predecessor 1c77fcf2-39ef-47f6-a448-5dd1457bce03 is bound to exhausted build task c97b5cdc-8d55-404e-9ec0-47496d1a75f6; no compile work was enqueued",
+  "open_questions": [
+    "A compile-only authority is required to bind the repaired source hash 01f91ecdd747d2dab9df8b829d42febfa9979dc8051507a90cd3da8c36cae715 without violating the predecessor build-task binding.",
+    "framework/registry/dxz23_execution_contracts.json has no EA 34008 execution contract; execution_contract_lint remains fail-closed with contract_missing."
+  ]
+}
