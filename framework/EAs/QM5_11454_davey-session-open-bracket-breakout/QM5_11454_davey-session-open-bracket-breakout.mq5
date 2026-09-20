@@ -184,8 +184,12 @@ void RemoveOurPendingStopOrders(const string reason)
 
 bool CaptureOpeningBracketFromClosedBar()
   {
-   // perf-allowed: fixed-session structural OHLC read from one closed H1 bar.
-   const datetime bar_open_broker = iTime(_Symbol, PERIOD_H1, 1);
+   // Fixed-session structural OHLC read from one closed H1 bar through the
+   // framework series helper.
+   MqlRates opening_bar;
+   if(!QM_ReadBar(_Symbol, PERIOD_H1, 1, opening_bar))
+      return false;
+   const datetime bar_open_broker = opening_bar.time;
    if(bar_open_broker <= 0)
       return false;
 
@@ -199,8 +203,8 @@ bool CaptureOpeningBracketFromClosedBar()
    if(!IsOpeningBarClosed(bar_open_utc))
       return false;
 
-   const double high_price = iHigh(_Symbol, PERIOD_H1, 1); // perf-allowed
-   const double low_price = iLow(_Symbol, PERIOD_H1, 1);   // perf-allowed
+   const double high_price = opening_bar.high;
+   const double low_price = opening_bar.low;
    if(high_price <= 0.0 || low_price <= 0.0 || high_price <= low_price)
       return false;
 
@@ -224,7 +228,12 @@ bool BuildBracketOrder(const QM_OrderType order_type,
                        const string reason,
                        QM_EntryRequest &req)
   {
-   req.type = order_type;
+   if(order_type == QM_BUY_STOP)
+      req.type = QM_BUY_STOP;
+   else if(order_type == QM_SELL_STOP)
+      req.type = QM_SELL_STOP;
+   else
+      return false;
    req.price = QM_StopRulesNormalizePrice(_Symbol, entry_price);
    req.sl = QM_StopRulesNormalizePrice(_Symbol, sl_price);
    req.tp = QM_TakeATRFromValue(_Symbol, order_type, req.price, atr_value, strategy_tp_atr_mult);
@@ -261,8 +270,8 @@ bool PlaceDailyOCOBracket()
    if(offset <= 0.0 || atr_value <= 0.0)
       return false;
 
-   QM_EntryRequest buy_req;
-   QM_EntryRequest sell_req;
+   QM_EntryRequest buy_req = {};
+   QM_EntryRequest sell_req = {};
    if(!BuildBracketOrder(QM_BUY_STOP,
                          g_bracket_high + offset,
                          g_bracket_low - offset,
@@ -382,6 +391,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -425,7 +435,7 @@ void OnTick()
 
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

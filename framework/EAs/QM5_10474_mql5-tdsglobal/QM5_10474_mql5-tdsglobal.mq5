@@ -8,7 +8,7 @@
 // QM5_10474 - MQL5 TDSGlobal Pending Limit Momentum
 // -----------------------------------------------------------------------------
 // Source: MQL5 CodeBase "TDSGlobal" (idea Scriptor, code Vladimir Karputov /
-// barabashkakvn), https://www.mql5.com/en/code/23255. Card:
+// barabashkakvn), MQL5 CodeBase article 23255. Card:
 // artifacts/cards_approved/QM5_10474_mql5-tdsglobal.md (R1-R4 all PASS).
 //
 // Mechanic (H1 baseline, momentum-confirmed pending-limit reversal):
@@ -325,6 +325,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -365,7 +366,7 @@ void OnTick()
 
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

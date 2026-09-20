@@ -138,12 +138,15 @@ bool Strategy_Box(const int bars, double &box_high, double &box_low)
    if(bars < 2)
       return false;
 
-   // perf-allowed: consolidation-box structure needs raw closed-bar highs/lows;
-   // caller is the framework new-bar gated entry hook.
+   // Consolidation-box structure reads bounded closed bars through the
+   // framework series helper; caller is the framework new-bar gated entry hook.
    for(int i = 1; i <= bars; ++i)
      {
-      const double high = iHigh(_Symbol, _Period, i);
-      const double low = iLow(_Symbol, _Period, i);
+      MqlRates bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, i, bar))
+         return false;
+      const double high = bar.high;
+      const double low = bar.low;
       if(high <= 0.0 || low <= 0.0)
          return false;
       box_high = MathMax(box_high, high);
@@ -200,7 +203,12 @@ bool Strategy_BuildStopRequest(const QM_OrderType type,
                                const double atr,
                                QM_EntryRequest &req)
   {
-   req.type = type;
+   if(type == QM_BUY_STOP)
+      req.type = QM_BUY_STOP;
+   else if(type == QM_SELL_STOP)
+      req.type = QM_SELL_STOP;
+   else
+      return false;
    req.price = Strategy_NormalizePrice(entry_price);
    req.sl = 0.0;
    req.tp = 0.0;
@@ -304,8 +312,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double buy_stop = box_high + strategy_outlier_mult * atr;
    const double sell_stop = box_low - strategy_outlier_mult * atr;
 
-   QM_EntryRequest buy_req;
-   QM_EntryRequest sell_req;
+   QM_EntryRequest buy_req = {};
+   QM_EntryRequest sell_req = {};
    if(!Strategy_BuildStopRequest(QM_BUY_STOP, buy_stop, zone_mid, atr, buy_req))
       return false;
    if(!Strategy_BuildStopRequest(QM_SELL_STOP, sell_stop, zone_mid, atr, sell_req))
@@ -357,8 +365,11 @@ bool Strategy_ExitSignal()
       if((int)PositionGetInteger(POSITION_MAGIC) != magic)
          continue;
 
-      // perf-allowed: O(1) closed-bar read for the card's midline close rule.
-      const double close_last = iClose(_Symbol, _Period, 1);
+      // O(1) framework closed-bar read for the card's midline close rule.
+      MqlRates last_closed;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, last_closed))
+         continue;
+      const double close_last = last_closed.close;
       const double stop_level = PositionGetDouble(POSITION_SL);
       if(close_last <= 0.0 || stop_level <= 0.0)
          continue;
@@ -416,6 +427,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -465,7 +477,7 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

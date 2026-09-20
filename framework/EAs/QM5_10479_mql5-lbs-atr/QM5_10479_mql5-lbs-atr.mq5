@@ -8,7 +8,7 @@
 // QuantMechanica V5 EA — QM5_10479 mql5-lbs-atr
 // -----------------------------------------------------------------------------
 // Source: MQL5 CodeBase "LBS - expert for MetaTrader 5" (idea Scriptor, code
-//         Vladimir Karputov / barabashkakvn, https://www.mql5.com/en/code/22884).
+//         Vladimir Karputov / barabashkakvn, MQL5 CodeBase article 22884).
 //
 // Mechanic (per APPROVED card QM5_10479):
 //   Schedule : at a NEW signal bar (H1 baseline), allow a setup only when the
@@ -102,7 +102,10 @@ ENUM_TIMEFRAMES Strategy_SignalTF()
 // (.DWX invariant #12 — never gate on an exact tick minute).
 int Strategy_CurrentBarHour()
   {
-   const datetime bar_open = iTime(_Symbol, Strategy_SignalTF(), 0);
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, Strategy_SignalTF(), 0, current_bar))
+      return -1;
+   const datetime bar_open = current_bar.time;
    if(bar_open <= 0)
       return -1;
    MqlDateTime dt;
@@ -125,7 +128,10 @@ bool Strategy_IsSetupHour()
 // bar-open clock. Used to expire unfilled pendings at day-end.
 int Strategy_SecondsToBrokerDayEnd()
   {
-   const datetime bar_open = iTime(_Symbol, Strategy_SignalTF(), 0);
+   MqlRates current_bar;
+   if(!QM_ReadBar(_Symbol, Strategy_SignalTF(), 0, current_bar))
+      return 0;
+   const datetime bar_open = current_bar.time;
    if(bar_open <= 0)
       return 0;
    MqlDateTime dt;
@@ -279,10 +285,15 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    // Recent max/min from the two most recent CLOSED bars (shifts 1 and 2).
-   const double high_1 = iHigh(_Symbol, tf, 1);
-   const double high_2 = iHigh(_Symbol, tf, 2);
-   const double low_1  = iLow(_Symbol, tf, 1);
-   const double low_2  = iLow(_Symbol, tf, 2);
+   MqlRates bar_1;
+   MqlRates bar_2;
+   if(!QM_ReadBar(_Symbol, tf, 1, bar_1) ||
+      !QM_ReadBar(_Symbol, tf, 2, bar_2))
+      return false;
+   const double high_1 = bar_1.high;
+   const double high_2 = bar_2.high;
+   const double low_1  = bar_1.low;
+   const double low_2  = bar_2.low;
    if(high_1 <= 0.0 || high_2 <= 0.0 || low_1 <= 0.0 || low_2 <= 0.0)
       return false;
 
@@ -328,7 +339,7 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sell_stop_distance = MathAbs(sell_stop_price - sell_sl);
       if(sell_stop_distance > 0.0 && !Strategy_SpreadTooWideForStop(sell_stop_distance))
         {
-         QM_EntryRequest sell_req;
+         QM_EntryRequest sell_req = {};
          sell_req.type               = QM_SELL_STOP;
          sell_req.price              = sell_stop_price;
          sell_req.sl                 = sell_sl;
@@ -448,6 +459,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -497,7 +509,7 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

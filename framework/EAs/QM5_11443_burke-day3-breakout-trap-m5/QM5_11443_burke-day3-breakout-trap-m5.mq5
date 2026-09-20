@@ -131,14 +131,19 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    if(n < 1)
       return false;
 
-   // perf-allowed: fixed closed-bar OHLC reads for bespoke multi-day trap
-   // structure; bounded by strategy_pattern_bars (default 3, P3 sweep max 4).
+   // Fixed framework closed-bar reads for bespoke multi-day trap structure;
+   // bounded by strategy_pattern_bars (default 3, P3 sweep max 4).
    bool bear = true;
    for(int k = 1; k <= n; ++k)
      {
-      const double c = iClose(_Symbol, PERIOD_D1, k);
-      const double o = iOpen(_Symbol, PERIOD_D1, k);
-      const double hi_prev = iHigh(_Symbol, PERIOD_D1, k + 1);
+      MqlRates bar;
+      MqlRates prior_bar;
+      if(!QM_ReadBar(_Symbol, PERIOD_D1, k, bar) ||
+         !QM_ReadBar(_Symbol, PERIOD_D1, k + 1, prior_bar))
+         return false;
+      const double c = bar.close;
+      const double o = bar.open;
+      const double hi_prev = prior_bar.high;
       if(c <= 0.0 || o <= 0.0 || hi_prev <= 0.0 || !(c > o && c > hi_prev))
         {
          bear = false;
@@ -152,9 +157,14 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       bool bull = true;
       for(int k = 1; k <= n; ++k)
         {
-         const double c = iClose(_Symbol, PERIOD_D1, k);
-         const double o = iOpen(_Symbol, PERIOD_D1, k);
-         const double lo_prev = iLow(_Symbol, PERIOD_D1, k + 1);
+         MqlRates bar;
+         MqlRates prior_bar;
+         if(!QM_ReadBar(_Symbol, PERIOD_D1, k, bar) ||
+            !QM_ReadBar(_Symbol, PERIOD_D1, k + 1, prior_bar))
+            return false;
+         const double c = bar.close;
+         const double o = bar.open;
+         const double lo_prev = prior_bar.low;
          if(c <= 0.0 || o <= 0.0 || lo_prev <= 0.0 || !(c < o && c < lo_prev))
            {
             bull = false;
@@ -170,8 +180,13 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    // --- M5 EMA20 cross-back EVENT (single event on the just-closed bar) ---
    const double ema1 = QM_EMA(_Symbol, _Period, strategy_ema_period, 1);
    const double ema2 = QM_EMA(_Symbol, _Period, strategy_ema_period, 2);
-   const double close1 = iClose(_Symbol, _Period, 1);   // perf-allowed: closed-bar read
-   const double close2 = iClose(_Symbol, _Period, 2);   // perf-allowed: closed-bar read
+   MqlRates signal_bar;
+   MqlRates prior_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, signal_bar) ||
+      !QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 2, prior_bar))
+      return false;
+   const double close1 = signal_bar.close;
+   const double close2 = prior_bar.close;
    if(ema1 <= 0.0 || ema2 <= 0.0 || close1 <= 0.0 || close2 <= 0.0)
       return false;
 
@@ -267,6 +282,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -307,7 +323,7 @@ void OnTick()
 
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

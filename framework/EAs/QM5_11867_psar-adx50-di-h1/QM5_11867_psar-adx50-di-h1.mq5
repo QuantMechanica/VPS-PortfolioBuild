@@ -114,7 +114,6 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       return false;
 
    MqlRates bars[2];
-   ArraySetAsSeries(bars, true);
    const int copied = CopyRates(_Symbol, PERIOD_H1, 1, 2, bars); // perf-allowed: two closed H1 bars; EntrySignal is called only after QM_IsNewBar().
    if(copied != 2)
       return false;
@@ -257,6 +256,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -306,7 +306,7 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

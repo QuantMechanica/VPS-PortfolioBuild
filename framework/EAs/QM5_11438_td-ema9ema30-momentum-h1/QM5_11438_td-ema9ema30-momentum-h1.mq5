@@ -91,12 +91,18 @@ input int    strategy_max_spread_pips    = 20;    // skip only genuinely wide sp
 // strictly exceeds every high in shifts 2..lookback. Bounded closed-bar scan.
 bool SwingBreakUp(const int lookback)
   {
-   const double h1 = iHigh(_Symbol, _Period, 1); // perf-allowed: bounded swing scan, new-bar gated
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, signal_bar))
+      return false;
+   const double h1 = signal_bar.high;
    if(h1 <= 0.0)
       return false;
    for(int s = 2; s <= lookback; ++s)
      {
-      const double h = iHigh(_Symbol, _Period, s);
+      MqlRates prior_bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, s, prior_bar))
+         return false;
+      const double h = prior_bar.high;
       if(h <= 0.0)
          return false;
       if(!(h1 > h))
@@ -109,12 +115,18 @@ bool SwingBreakUp(const int lookback)
 // undercuts every low in shifts 2..lookback.
 bool SwingBreakDown(const int lookback)
   {
-   const double l1 = iLow(_Symbol, _Period, 1); // perf-allowed: bounded swing scan, new-bar gated
+   MqlRates signal_bar;
+   if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, 1, signal_bar))
+      return false;
+   const double l1 = signal_bar.low;
    if(l1 <= 0.0)
       return false;
    for(int s = 2; s <= lookback; ++s)
      {
-      const double l = iLow(_Symbol, _Period, s);
+      MqlRates prior_bar;
+      if(!QM_ReadBar(_Symbol, (ENUM_TIMEFRAMES)_Period, s, prior_bar))
+         return false;
+      const double l = prior_bar.low;
       if(l <= 0.0)
          return false;
       if(!(l1 < l))
@@ -308,6 +320,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -348,7 +361,7 @@ void OnTick()
 
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

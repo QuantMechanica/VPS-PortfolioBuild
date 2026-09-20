@@ -8,7 +8,7 @@
 // QuantMechanica V5 EA — QM5_10475 mql5-puria
 // -----------------------------------------------------------------------------
 // Source: MQL5 CodeBase "Puria method" (Sergey Deev / Vladimir Karputov),
-//   https://www.mql5.com/en/code/23250 — card QM5_10475_mql5-puria.
+//   MQL5 CodeBase article 23250 — card QM5_10475_mql5-puria.
 //
 // Mechanic (card ## Mechanik):
 //   Three MAs: one fast, two slow. The Puria method is CONTRARIAN — it SELLS
@@ -238,6 +238,7 @@ void OnDeinit(const int reason)
 
 void OnTick()
   {
+   QM_FrameworkTrackOpenPositionMae();
    if(!QM_KillSwitchCheck())
       return;
 
@@ -284,7 +285,7 @@ void OnTick()
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled.
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req;
+   QM_EntryRequest req = {};
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
