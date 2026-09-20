@@ -1,0 +1,401 @@
+{
+ "schema": "qm.census-frontier-holdout/v1",
+ "selection_years": [
+  "2019",
+  "2020",
+  "2021",
+  "2022"
+ ],
+ "validation_years": [
+  "2023",
+  "2024",
+  "2025"
+ ],
+ "rows": [
+  {
+   "program": "DL089_QM5_10700_XAUUSD_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "sell_057",
+   "best_sel_R_bd": 0.0265,
+   "best_val_R_bd": 0.0616,
+   "best_val_trades": 124,
+   "top5_val_R_bd_mean": 0.0586,
+   "baseline_sel_R_bd": 0.0149,
+   "baseline_val_R_bd": 0.0621
+  },
+  {
+   "program": "WINSWEEP_QM5_41405_USDJPY_DWX_2019_2025",
+   "arms": 50,
+   "best_arm": "c48",
+   "best_sel_R_bd": 0.0813,
+   "best_val_R_bd": 0.0557,
+   "best_val_trades": 696,
+   "top5_val_R_bd_mean": 0.0448,
+   "baseline_sel_R_bd": null,
+   "baseline_val_R_bd": null
+  },
+  {
+   "program": "WINSWEEP_QM5_41405_PRESCREEN_DRYRUN_2019_2025",
+   "arms": 37,
+   "best_arm": "c48",
+   "best_sel_R_bd": 0.0813,
+   "best_val_R_bd": 0.0557,
+   "best_val_trades": 696,
+   "top5_val_R_bd_mean": 0.0448,
+   "baseline_sel_R_bd": null,
+   "baseline_val_R_bd": null
+  },
+  {
+   "program": "DL089_QM5_10706_GBPUSD_DWX_2019_2025",
+   "arms": 16,
+   "best_arm": "buy_052",
+   "best_sel_R_bd": 0.0611,
+   "best_val_R_bd": 0.0389,
+   "best_val_trades": 85,
+   "top5_val_R_bd_mean": 0.0301,
+   "baseline_sel_R_bd": 0.0488,
+   "baseline_val_R_bd": 0.0329
+  },
+  {
+   "program": "WINSWEEP_QM5_41398_USDJPY_DWX_2019_2025",
+   "arms": 90,
+   "best_arm": "s1_l4_x20",
+   "best_sel_R_bd": 0.1082,
+   "best_val_R_bd": 0.0316,
+   "best_val_trades": 557,
+   "top5_val_R_bd_mean": 0.0256,
+   "baseline_sel_R_bd": null,
+   "baseline_val_R_bd": null
+  },
+  {
+   "program": "DL089_QM5_10911_GDAXI_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "sell_083",
+   "best_sel_R_bd": 0.0112,
+   "best_val_R_bd": 0.0288,
+   "best_val_trades": 143,
+   "top5_val_R_bd_mean": 0.0263,
+   "baseline_sel_R_bd": -0.0018,
+   "baseline_val_R_bd": 0.0272
+  },
+  {
+   "program": "DL089_QM5_21501_USDJPY_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "sell_081",
+   "best_sel_R_bd": 0.0665,
+   "best_val_R_bd": 0.0285,
+   "best_val_trades": 557,
+   "top5_val_R_bd_mean": 0.0429,
+   "baseline_sel_R_bd": 0.044,
+   "baseline_val_R_bd": 0.0341
+  },
+  {
+   "program": "DL089_QM5_13213_USDJPY_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "sell_081",
+   "best_sel_R_bd": 0.0665,
+   "best_val_R_bd": 0.0285,
+   "best_val_trades": 557,
+   "top5_val_R_bd_mean": 0.0429,
+   "baseline_sel_R_bd": 0.044,
+   "baseline_val_R_bd": 0.0341
+  },
+  {
+   "program": "DL089_QM5_11660_NDX_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "buy_058",
+   "best_sel_R_bd": 0.0203,
+   "best_val_R_bd": 0.0256,
+   "best_val_trades": 485,
+   "top5_val_R_bd_mean": 0.0229,
+   "baseline_sel_R_bd": 0.012,
+   "baseline_val_R_bd": 0.0184
+  },
+  {
+   "program": "DL089_QM5_10145_XAUUSD_DWX_2019_2025",
+   "arms": 112,
+   "best_arm": "buy_052",
+   "best_sel_R_bd": 0.0027,
+   "best_val_R_bd": 0.0165,
+   "best_val_trades": 123,
+   "top5_val_R_bd_mean": 0.0163,
+   "baseline_sel_R_bd": 0.0017,
+   "baseline_val_R_bd": 0.0162
+  },
+  {
+   "program": "DL089_QM5_21502_XAUUSD_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "sell_028",
+   "best_sel_R_bd": 0.0029,
+   "best_val_R_bd": 0.0146,
+   "best_val_trades": 142,
+   "top5_val_R_bd_mean": 0.0146,
+   "baseline_sel_R_bd": -0.0014,
+   "baseline_val_R_bd": 0.013
+  },
+  {
+   "program": "DL089_QM5_10403_XAUUSD_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "sell_080",
+   "best_sel_R_bd": 0.0051,
+   "best_val_R_bd": 0.0145,
+   "best_val_trades": 79,
+   "top5_val_R_bd_mean": 0.0153,
+   "baseline_sel_R_bd": 0.0011,
+   "baseline_val_R_bd": 0.0158
+  },
+  {
+   "program": "DL089_QM5_20086_EURUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0004,
+   "best_val_R_bd": 0.0141,
+   "best_val_trades": 170,
+   "top5_val_R_bd_mean": 0.0141,
+   "baseline_sel_R_bd": 0.0004,
+   "baseline_val_R_bd": 0.0141
+  },
+  {
+   "program": "DL089_QM5_11422_USDCAD_DWX_2019_2025",
+   "arms": 57,
+   "best_arm": "sell_081",
+   "best_sel_R_bd": 0.0138,
+   "best_val_R_bd": 0.0133,
+   "best_val_trades": 68,
+   "top5_val_R_bd_mean": 0.0149,
+   "baseline_sel_R_bd": 0.0049,
+   "baseline_val_R_bd": 0.0148
+  },
+  {
+   "program": "DL089_QM5_41097_USDJPY_DWX_2019_2025",
+   "arms": 89,
+   "best_arm": "sell_012",
+   "best_sel_R_bd": 0.0591,
+   "best_val_R_bd": 0.012,
+   "best_val_trades": 376,
+   "top5_val_R_bd_mean": 0.0142,
+   "baseline_sel_R_bd": 0.044,
+   "baseline_val_R_bd": 0.0341
+  },
+  {
+   "program": "DL089_QM5_21507_XAUUSD_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "buy_078",
+   "best_sel_R_bd": 0.0054,
+   "best_val_R_bd": 0.0119,
+   "best_val_trades": 180,
+   "top5_val_R_bd_mean": 0.0128,
+   "baseline_sel_R_bd": 0.003,
+   "baseline_val_R_bd": 0.0165
+  },
+  {
+   "program": "DL089_QM5_10513_XAUUSD_DWX_2019_2025",
+   "arms": 81,
+   "best_arm": "sell_084",
+   "best_sel_R_bd": 0.0056,
+   "best_val_R_bd": 0.0117,
+   "best_val_trades": 21,
+   "top5_val_R_bd_mean": 0.0086,
+   "baseline_sel_R_bd": 0.0047,
+   "baseline_val_R_bd": 0.0078
+  },
+  {
+   "program": "DL089_QM5_11294_XAUUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0004,
+   "best_val_R_bd": 0.0116,
+   "best_val_trades": 188,
+   "top5_val_R_bd_mean": 0.0116,
+   "baseline_sel_R_bd": 0.0004,
+   "baseline_val_R_bd": 0.0116
+  },
+  {
+   "program": "DL089_QM5_20266_XTIUSD_DWX_2019_2025",
+   "arms": 155,
+   "best_arm": "sell_012",
+   "best_sel_R_bd": 0.0053,
+   "best_val_R_bd": 0.0089,
+   "best_val_trades": 107,
+   "top5_val_R_bd_mean": 0.0103,
+   "baseline_sel_R_bd": 0.0024,
+   "baseline_val_R_bd": 0.0102
+  },
+  {
+   "program": "DL089_QM5_1355_NDX_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0001,
+   "best_val_R_bd": 0.0082,
+   "best_val_trades": 67,
+   "top5_val_R_bd_mean": 0.0082,
+   "baseline_sel_R_bd": 0.0001,
+   "baseline_val_R_bd": 0.0082
+  },
+  {
+   "program": "DL089_QM5_41219_XAUUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0002,
+   "best_val_R_bd": 0.0064,
+   "best_val_trades": 40,
+   "top5_val_R_bd_mean": 0.0064,
+   "baseline_sel_R_bd": 0.0002,
+   "baseline_val_R_bd": 0.0064
+  },
+  {
+   "program": "DL089_QM5_21505_XAGUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0007,
+   "best_val_R_bd": 0.0057,
+   "best_val_trades": 41,
+   "top5_val_R_bd_mean": 0.0057,
+   "baseline_sel_R_bd": 0.0007,
+   "baseline_val_R_bd": 0.0057
+  },
+  {
+   "program": "DL089_QM5_1537_XAGUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": -0.0008,
+   "best_val_R_bd": 0.0052,
+   "best_val_trades": 36,
+   "top5_val_R_bd_mean": 0.0052,
+   "baseline_sel_R_bd": -0.0008,
+   "baseline_val_R_bd": 0.0052
+  },
+  {
+   "program": "DL089_QM5_41221_EURUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": -0.0001,
+   "best_val_R_bd": 0.0037,
+   "best_val_trades": 33,
+   "top5_val_R_bd_mean": 0.0037,
+   "baseline_sel_R_bd": -0.0001,
+   "baseline_val_R_bd": 0.0037
+  },
+  {
+   "program": "DL089_QM5_13013_NDX_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.004,
+   "best_val_R_bd": 0.0035,
+   "best_val_trades": 21,
+   "top5_val_R_bd_mean": 0.0035,
+   "baseline_sel_R_bd": 0.004,
+   "baseline_val_R_bd": 0.0035
+  },
+  {
+   "program": "DL089_QM5_11881_GBPUSD_DWX_2019_2025",
+   "arms": 18,
+   "best_arm": "sell_087",
+   "best_sel_R_bd": 0.004,
+   "best_val_R_bd": 0.0032,
+   "best_val_trades": 47,
+   "top5_val_R_bd_mean": 0.003,
+   "baseline_sel_R_bd": 0.003,
+   "baseline_val_R_bd": 0.0032
+  },
+  {
+   "program": "DL089_QM5_12849_XTIUSD_DWX_2019_2025",
+   "arms": 117,
+   "best_arm": "sell_012",
+   "best_sel_R_bd": 0.0039,
+   "best_val_R_bd": 0.0031,
+   "best_val_trades": 32,
+   "top5_val_R_bd_mean": 0.0044,
+   "baseline_sel_R_bd": 0.003,
+   "baseline_val_R_bd": 0.0051
+  },
+  {
+   "program": "DL089_QM5_13054_XTIUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0034,
+   "best_val_R_bd": 0.0026,
+   "best_val_trades": 29,
+   "top5_val_R_bd_mean": 0.0026,
+   "baseline_sel_R_bd": 0.0034,
+   "baseline_val_R_bd": 0.0026
+  },
+  {
+   "program": "DL089_QM5_11910_NZDUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": -0.0013,
+   "best_val_R_bd": 0.0018,
+   "best_val_trades": 26,
+   "top5_val_R_bd_mean": 0.0018,
+   "baseline_sel_R_bd": -0.0013,
+   "baseline_val_R_bd": 0.0018
+  },
+  {
+   "program": "DL089_QM5_12855_XTIUSD_DWX_2019_2025",
+   "arms": 149,
+   "best_arm": "sell_060",
+   "best_sel_R_bd": 0.0028,
+   "best_val_R_bd": 0.0018,
+   "best_val_trades": 47,
+   "top5_val_R_bd_mean": 0.0019,
+   "baseline_sel_R_bd": -0.0004,
+   "baseline_val_R_bd": 0.0012
+  },
+  {
+   "program": "DL089_QM5_9641_WS30_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0016,
+   "best_val_R_bd": 0.0016,
+   "best_val_trades": 32,
+   "top5_val_R_bd_mean": 0.0016,
+   "baseline_sel_R_bd": 0.0016,
+   "baseline_val_R_bd": 0.0016
+  },
+  {
+   "program": "DL089_QM5_12710_XTIUSD_DWX_2019_2025",
+   "arms": 85,
+   "best_arm": "sell_027",
+   "best_sel_R_bd": 0.0042,
+   "best_val_R_bd": 0.0009,
+   "best_val_trades": 23,
+   "top5_val_R_bd_mean": 0.0018,
+   "baseline_sel_R_bd": 0.0036,
+   "baseline_val_R_bd": 0.0051
+  },
+  {
+   "program": "DL089_QM5_11708_EURUSD_DWX_2019_2025",
+   "arms": 151,
+   "best_arm": "sell_058",
+   "best_sel_R_bd": 0.0033,
+   "best_val_R_bd": 0.0007,
+   "best_val_trades": 41,
+   "top5_val_R_bd_mean": 0.0011,
+   "baseline_sel_R_bd": 0.0012,
+   "baseline_val_R_bd": 0.0018
+  },
+  {
+   "program": "DL089_QM5_20048_XTIUSD_DWX_2019_2025",
+   "arms": 1,
+   "best_arm": "baseline",
+   "best_sel_R_bd": 0.0014,
+   "best_val_R_bd": 0.0006,
+   "best_val_trades": 22,
+   "top5_val_R_bd_mean": 0.0006,
+   "baseline_sel_R_bd": 0.0014,
+   "baseline_val_R_bd": 0.0006
+  },
+  {
+   "program": "DL089_QM5_11421_EURUSD_DWX_2019_2025",
+   "arms": 10,
+   "best_arm": "strategy_entry_range_mult:0.5",
+   "best_sel_R_bd": 0.0147,
+   "best_val_R_bd": -0.0031,
+   "best_val_trades": 117,
+   "top5_val_R_bd_mean": 0.0016,
+   "baseline_sel_R_bd": -0.0001,
+   "baseline_val_R_bd": 0.0037
+  }
+ ]
+}

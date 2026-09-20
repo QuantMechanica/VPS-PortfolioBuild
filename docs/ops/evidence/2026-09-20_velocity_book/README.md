@@ -25,6 +25,42 @@ Per-stream statistics from the frozen W38 snapshot (26 qualified streams, Q08 tr
 at 0.25 %/trade). The Velocity book therefore needs new intraday candidates — 6–8 uncorrelated sleeves at ≥0.5 trades/bd and
 ≥+0.10R each — and the fastest way to find them is breadth: many cheap Q02 canaries on M5–H1, ranked by R/bd.
 
+### 1b. Census velocity frontier (4,752 measured configurations, 36 programmes, 7 years) — `census_velocity_frontier.json`
+
+Aggregating every measured OPT_CENSUS / WINSWEEP cell per configuration: the best cross-year configuration of any
+programme reaches **0.075 R/bd** (41398 USDJPY window sweep `s1_l4_x20`, 0.73 trades/bd, +0.103R); the incumbent
+baseline of the same EA is 0.040. No programme exceeds ≈0.08 R/bd in any configuration.
+
+### 1c. Holdout of the frontier (select 2019–2022, validate 2023–2025) — `census_frontier_holdout.json`
+
+| programme | best arm (selection R/bd) | same arm on validation | baseline on validation |
+|---|---|---|---|
+| 13213 USDJPY | sell_081 (0.067) | 0.029 | 0.034 |
+| 41398 USDJPY winsweep | s1_l4_x20 (0.108) | 0.032 | – |
+| 41405 USDJPY winsweep | c48 (0.081) | 0.056 | – |
+| 10706 GBPUSD | buy_052 (0.061) | 0.039 | 0.033 |
+| 10700 XAUUSD | sell_057 (0.026) | 0.062 | 0.062 |
+
+**Finding:** in-sample winners do not beat the baseline out of sample; the parameter/filter space of the existing EAs
+holds no reliable velocity uplift (the conservative DL-089 `NO_FILTER_CHANGE` verdicts are vindicated). The OOS ceiling
+per sleeve is ≈0.03–0.06 R/bd. Consequence: **the Velocity book is a breadth problem — more sleeves of the fastest
+measured profile on more instruments — not an optimisation problem.**
+
+## 2b. Velocity lineage QM5_41484 `balke-range-breakout-fx-fanout` (started 19:2xZ)
+
+Byte-identical copy of the qualified incumbent QM5_13213 (Balke GMT+3 session-range breakout, 0 % overnight) as a NEW
+build identity with ten FX magic slots (USDJPY control + EURJPY, GBPJPY, AUDJPY, CHFJPY, EURUSD, GBPUSD, USDCHF, USDCAD,
+AUDUSD). Card `D:/QM/strategy_farm/artifacts/cards_approved/QM5_41484_balke-range-breakout-fx-fanout.md`
+(falsification: <60 trades/yr or < +0.03R or PF < 1.05 per symbol retires the symbol; lineage retired if fewer than two
+symbols besides USDJPY survive Q04). Registry rows + resolver `02b5428b42`, COMPILE_OK 34fb5dd8 (ex5 bdf961c2…) committed
+`dbb24e8ec9`, first canary AUDUSD H1 `ff45d4ae` active 19:35Z; the remaining nine symbols seed automatically after it.
+
+## 2c. Canary results 16:30–19:35Z (Q02 2018-07..2022-12, RISK_FIXED 1000)
+
+24 canaries measured, **1 net-positive**: QM5_11442 burke-frd-fgd-daily-pump M5 AUDUSD (+11.5k, PF 1.27, 142 trades,
+0.12 trades/bd → 0.010 R/bd: real but slow). Everything else net-negative (PF 0.5–0.9). The legacy TradingView /
+ForexFactory intraday backlog is not a velocity source; Codex ticket 3c44384d was throttled accordingly.
+
 ## 2. Intake waves executed today
 
 | wave | what | result |
