@@ -1,0 +1,17 @@
+{
+  "schema": "qm.task-stable-state/v1",
+  "task_id": "9de2c519-2ca6-480b-a568-ac5f90611962",
+  "source_task_id": "c4f759a4-6be6-4465-aa92-a691fbbf5c68",
+  "source_agent": "gemini",
+  "ea_id": "QM5_12936",
+  "blocker": "REWORK_DELIVERY_NOT_IN_CANONICAL_HEAD",
+  "rework_commit": "1047b1f67810c4afa15f9835bd18da0dc690c264",
+  "rework_commit_is_ancestor": false,
+  "canonical_mq5_sha256": "7d78895d54b6868f5284d5f79826de219a38993609eb38db09dc8e395e570389",
+  "canonical_ex5_sha256": "b84346fc6bf6b7bdbd8f2656b35df6d4b5bef61c89ce67b104134a9beca28934",
+  "source_artifact": "framework/EAs/QM5_12936_demark-td-reverse-differential-h4/build_result.json",
+  "source_artifact_sha256": "d5d20d6ed583288d509bc440ccb318eb638aa3bd05ad1adba80a6e6bf665b5af",
+  "rework_diff_file_count": 3,
+  "guardrails": "PASS",
+  "required_action": "Land the reviewed rework in the canonical branch and prove the EX5 against that exact source via governed COMPILE_EA before another Codex review."
+}

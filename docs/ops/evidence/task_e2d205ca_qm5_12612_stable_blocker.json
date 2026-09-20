@@ -1,0 +1,17 @@
+{
+  "schema": "qm.task-stable-state/v1",
+  "task_id": "e2d205ca-3b70-4b7d-8d31-ff030c987b1e",
+  "source_task_id": "27fb255a-232e-4a06-9e12-f80e263f98e3",
+  "source_agent": "gemini",
+  "ea_id": "QM5_12612",
+  "blocker": "REWORK_DELIVERY_NOT_IN_CANONICAL_HEAD",
+  "rework_commit": "6a4debe549e3e56413f16ea58b1d2eeceeb3af4e",
+  "rework_commit_is_ancestor": false,
+  "canonical_mq5_sha256": "73081280b9a4e41982baffdbcd1e073c923396bc3a13e77ee0b17376824265eb",
+  "canonical_ex5_sha256": "d1395e74301d98cd86ad1afa4b05ee64e3bae954806530e41619944e70749960",
+  "source_artifact": "artifacts/builds/27fb255a-232e-4a06-9e12-f80e263f98e3.json",
+  "source_artifact_sha256": "5f68fcce58b54f8318cff06f56d6c4a096a8b9d15aedf29b35c9e8a11c5926d5",
+  "rework_diff_file_count": 2,
+  "guardrails": "PASS",
+  "required_action": "Land the reviewed rework in the canonical branch and prove the EX5 against that exact source via governed COMPILE_EA before another Codex review."
+}

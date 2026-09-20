@@ -1,0 +1,18 @@
+{
+  "schema": "qm.task-stable-state/v1",
+  "task_id": "c70f99bf-2ad7-46a6-a399-3fa8b0213fa9",
+  "source_task_id": "d9a93eb1-ac7a-489c-bf8d-5e45162142dd",
+  "source_agent": "gemini",
+  "ea_id": "QM5_12932",
+  "blocker": "REWORK_DELIVERY_NOT_IN_CANONICAL_HEAD",
+  "rework_commit": "480199f343998b853a8b641a1aa484596bd5d0d9",
+  "rework_commit_is_ancestor": false,
+  "canonical_mq5_sha256": "0cec68c791e172e0ebc9fc6a205483e714298b15eb8788600a08e2a0b56b962e",
+  "canonical_ex5_sha256": "b4fed9ffa6c40e8ecaec9ac5a68059edbc96f5100a0c4b690408dcfb0bb8e391",
+  "source_artifact": "framework/EAs/QM5_12932_wyckoff-phase-e-markdown-continuation-h4/build_result.json",
+  "source_artifact_sha256": "c51339f2842b163c8cd827f01e29b5770ff5abafc85bef1411f42607f8b71dfa",
+  "rework_diff_file_count": 17,
+  "guardrails": "PASS",
+  "hardening_failure": "EA_CARD_NEWS_WINDOW_MISMATCH",
+  "required_action": "Land the reviewed rework in the canonical branch, clear the card-required 480/480-minute news-window mismatch, and prove the EX5 via governed COMPILE_EA before another Codex review."
+}

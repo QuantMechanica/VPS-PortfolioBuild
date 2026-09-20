@@ -1,0 +1,28 @@
+{
+  "schema": "qm.task-stable-state/v1",
+  "task_id": "258526d6-acfd-4eba-9c3a-7d612109e959",
+  "ea_id": "QM5_10025",
+  "phase": "Q02",
+  "symbol": "USDJPY.DWX",
+  "timeframe": "H4",
+  "source_work_item": {
+    "id": "e49888a1-6dbe-45b7-bb4f-29461bbcfb0c",
+    "status": "failed",
+    "verdict": "INFRA_FAIL",
+    "evidence_path": "EVIDENCE_UNAVAILABLE:worker_crashed_handling_item",
+    "expected_setfile_sha256": "9567e0f91b1e6892eadc822a2f6ee4f06482a80ba30c50ccfbf4a205d2acda70"
+  },
+  "append_only_requalification": {
+    "id": "d16ec281-927d-4dba-a83d-700cd9caa9fa",
+    "status": "pending",
+    "verdict": null,
+    "requalification_of": "050dd2ea-e9d0-475f-b5ad-40c2206867ff",
+    "compile_work_item_id": "21c7d995-2fd6-44f6-b624-8c5f097c0961",
+    "mq5_sha256": "db7424efcba0a8df90184240e277e1a7546e8030672eec88a4c72a89c32a5a61",
+    "ex5_sha256": "49fcc59b5232531f5fd2e3ba7a0c71f0bac703f54e17f7c92c911e31944d91f1",
+    "setfile_sha256": "8fbc0a841fea34b345aa7494cc4d822c3ea1c2acfffad65596e2e7bacf8578c3",
+    "risk_fixed": 1000.0,
+    "risk_percent": 0.0
+  },
+  "disposition": "APPEND_ONLY_REQUALIFICATION_ALREADY_PENDING"
+}
