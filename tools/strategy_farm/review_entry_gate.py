@@ -64,6 +64,21 @@ def _verdict_is_fail(value: Any) -> bool:
     return str(value or "").strip().upper().startswith("FAIL")
 
 
+#: Verdict prefix of rows retired by the OWNER backlog archive
+#: (OWNER-DEC-BACKLOG-20260912): duplicate reworks / superseded tasks parked in
+#: state FAILED purely for bookkeeping. 2026-09-20 (Fable): 194 such rows over
+#: 131 EAs made this gate refuse Q02 intake for EAs whose real build/review had
+#: been APPROVED (QM5_38001: "ARCHIVED ... duplicate rework, kept ce1b2ad8").
+#: An archived duplicate is neither a review FAIL nor an open review, so it is
+#: ignored here as if the row did not exist; every genuine FAIL/BLOCKED row
+#: still blocks.
+ARCHIVED_VERDICT_PREFIX = "ARCHIVED ("
+
+
+def _is_archived_bookkeeping_row(row: Any) -> bool:
+    return str(row["verdict"] or "").strip().upper().startswith(ARCHIVED_VERDICT_PREFIX)
+
+
 def build_index(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
     """Return ``{ea_id: block}`` for every EA the task system knows about.
 
@@ -85,7 +100,7 @@ def build_index(conn: sqlite3.Connection) -> dict[str, dict[str, Any]]:
         except (ValueError, TypeError):
             payload = {}
         ea_id = _task_ea_id(payload)
-        if ea_id:
+        if ea_id and not _is_archived_bookkeeping_row(row):
             tasks.setdefault(ea_id, []).append(row)
 
     index: dict[str, dict[str, Any]] = {}
