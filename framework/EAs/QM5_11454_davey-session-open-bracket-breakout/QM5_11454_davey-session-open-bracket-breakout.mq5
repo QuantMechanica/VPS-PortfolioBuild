@@ -270,8 +270,10 @@ bool PlaceDailyOCOBracket()
    if(offset <= 0.0 || atr_value <= 0.0)
       return false;
 
-   QM_EntryRequest buy_req = {};
-   QM_EntryRequest sell_req = {};
+   QM_EntryRequest buy_req;
+   ZeroMemory(buy_req);
+   QM_EntryRequest sell_req;
+   ZeroMemory(sell_req);
    if(!BuildBracketOrder(QM_BUY_STOP,
                          g_bracket_high + offset,
                          g_bracket_low - offset,
@@ -435,7 +437,8 @@ void OnTick()
 
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req = {};
+   QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

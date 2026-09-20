@@ -312,8 +312,10 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
    const double buy_stop = box_high + strategy_outlier_mult * atr;
    const double sell_stop = box_low - strategy_outlier_mult * atr;
 
-   QM_EntryRequest buy_req = {};
-   QM_EntryRequest sell_req = {};
+   QM_EntryRequest buy_req;
+   ZeroMemory(buy_req);
+   QM_EntryRequest sell_req;
+   ZeroMemory(sell_req);
    if(!Strategy_BuildStopRequest(QM_BUY_STOP, buy_stop, zone_mid, atr, buy_req))
       return false;
    if(!Strategy_BuildStopRequest(QM_SELL_STOP, sell_stop, zone_mid, atr, sell_req))
@@ -477,7 +479,8 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req = {};
+   QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

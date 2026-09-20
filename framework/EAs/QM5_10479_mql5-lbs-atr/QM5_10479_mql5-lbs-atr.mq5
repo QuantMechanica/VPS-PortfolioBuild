@@ -339,7 +339,8 @@ bool Strategy_EntrySignal(QM_EntryRequest &req)
       const double sell_stop_distance = MathAbs(sell_stop_price - sell_sl);
       if(sell_stop_distance > 0.0 && !Strategy_SpreadTooWideForStop(sell_stop_distance))
         {
-         QM_EntryRequest sell_req = {};
+         QM_EntryRequest sell_req;
+         ZeroMemory(sell_req);
          sell_req.type               = QM_SELL_STOP;
          sell_req.price              = sell_stop_price;
          sell_req.sl                 = sell_sl;
@@ -509,7 +510,8 @@ void OnTick()
    // since last tick. Cheap: most calls early-return on same-day check.
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req = {};
+   QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;

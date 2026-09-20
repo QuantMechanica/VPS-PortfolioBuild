@@ -285,7 +285,8 @@ void OnTick()
    // FW6 2026-05-23 — emit end-of-day equity snapshot if the day rolled.
    QM_EquityStreamOnNewBar();
 
-   QM_EntryRequest req = {};
+   QM_EntryRequest req;
+   ZeroMemory(req);
    if(Strategy_EntrySignal(req))
      {
       ulong out_ticket = 0;
