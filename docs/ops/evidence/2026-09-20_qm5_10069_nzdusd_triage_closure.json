@@ -1,0 +1,73 @@
+{
+  "schema": "qm.triage-failure-closure/v1",
+  "router_task_id": "374ba9a6-478d-4df3-9881-4c99d143f967",
+  "ea_id": "QM5_10069",
+  "ea_label": "QM5_10069_mql5-hs-rev",
+  "symbol": "NZDUSD.DWX",
+  "timeframe": "H1",
+  "review_date": "2026-09-20",
+  "objective": "Append one current-binary fixed-risk Q02 requalification after the stale-resolver ONINIT failure.",
+  "bindings": {
+    "source_work_item_id": "727fd995-bf25-4943-bf14-422f59adab65",
+    "compile_work_item_id": "7deba014-7ca5-4e79-bd20-789bad639b69",
+    "compile_verdict": "COMPILE_OK",
+    "successor_q02_work_item_id": "1f5ada0e-2ffd-4289-b369-91201e44fe8d",
+    "mq5_sha256": "d6243b426c4290aae893cc64088aecc9cca6cbf696abfe8792859588a60ba77c",
+    "ex5_sha256": "4f474930fa4c53657df8252416dc55efa7f3bc974ca706d63faacd54b1db7c55",
+    "setfile_sha256": "9e52a5bfafe2585eb86f86c8f6bc8446596d45e79dacaefbf0ab53a975da3dd1",
+    "requalification_receipt": "D:/QM/strategy_farm/artifacts/receipts/q02_post_binding_requalification/727fd995-bf25-4943-bf14-422f59adab65_1f5ada0e-2ffd-4289-b369-91201e44fe8d.json",
+    "requalification_receipt_sha256": "d8211d19931d7d2f7bb162b259dc84e9a98ca0711494f49f0f8c179ce0f501f6"
+  },
+  "focused_verification": {
+    "source_pin_audit": {
+      "ok": true,
+      "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+      "hit_count": 0
+    },
+    "risk_contract": {
+      "RISK_FIXED": 1000,
+      "RISK_PERCENT": 0,
+      "PORTFOLIO_WEIGHT": 1,
+      "qm_magic_slot_offset": 7
+    },
+    "current_hashes_match_q02_evidence": true,
+    "q02_summary_path": "D:/QM/reports/work_items/1f5ada0e-2ffd-4289-b369-91201e44fe8d/QM5_10069/20260912_172927/summary.json",
+    "q02_summary_sha256": "68fe7c2987f0cbcb11307e6fe74cfd8aa5befda9d01d97a644302662fbee9cb1"
+  },
+  "pipeline_evidence": {
+    "q02": {
+      "status": "done",
+      "verdict": "PASS",
+      "result": "PASS",
+      "evidence_class": "REAL_TICKS",
+      "oninit_failure_detected": false,
+      "reason_classes": [
+        "OK"
+      ],
+      "total_trades": 53,
+      "profit_factor": 1.1,
+      "drawdown_percent": 21.21
+    },
+    "q03": {
+      "work_item_id": "6a9b6f9d-02e8-45aa-8d2d-41cf6f4fa267",
+      "verdict": "PASS"
+    },
+    "q04": {
+      "work_item_id": "7e0d0b72-4a94-4041-8e5a-d530d6460fbe",
+      "verdict": "FAIL",
+      "evidence_path": "D:/QM/reports/pipeline/QM5_10069/Q04/NZDUSD.DWX__7e0d0b72-4a94-4041-8e5a-d530d6460fbe/aggregate.json",
+      "evidence_sha256": "95538afa78cd86ac88ab17290e8bbb8acc128d52ceda21c3978dc09863fa914b"
+    }
+  },
+  "interpretation": "The routed infrastructure-recovery objective is already complete: the exact current-binary Q02 successor ran without ONINIT failure and received the pipeline's Q02 PASS. The later Q04 FAIL is preserved as the independent economic verdict; this triage review does not override or relabel it.",
+  "safety": {
+    "new_compile_enqueued": false,
+    "new_backtest_enqueued": false,
+    "terminal_controlled": false,
+    "t_live_touched": false,
+    "autotrading_toggled": false,
+    "portfolio_surface_touched": false
+  },
+  "verdict": "OBJECTIVE_ALREADY_SATISFIED",
+  "result_line": "RESULT: PASS — governed compile 7deba014 and fixed-risk NZDUSD Q02 successor 1f5ada0e completed; Q02 PASS is bound to the current MQ5/EX5/setfile hashes, with later Q04 FAIL left authoritative."
+}
