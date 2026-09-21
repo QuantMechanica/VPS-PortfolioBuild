@@ -8,6 +8,19 @@ a primary-table value, applies configurable spread/slippage stress, builds a
 Prague-midnight account path, and delegates block-bootstrap target/breach/payout
 probabilities to :mod:`first_passage` (it does not fork that engine).
 
+Base and candidate comparisons use one fixed calendar: the base book's common
+window.  This deliberately replaces the older roster-intersection rule.  Under
+that rule a short candidate changed the evidence window as well as the roster;
+for example, adding QM5_11910 ended the D2g comparison on 2025-06-05 and
+discarded later incumbent observations.  A candidate may now be inactive
+outside its own stream span, but it cannot move the comparison endpoints.
+
+Financing is explicit and fail-closed at the CLI.  Governed book evidence must
+use --financed-streams whose every trade carries qm_financing metadata, or the
+caller must opt into a visibly UNFINANCED research run with
+--allow-unfinanced. Missing financing can never silently receive a book-
+evidence label.
+
 Floating equity is necessarily a proxy because the frozen streams contain
 closed trades rather than tick paths.  The account path therefore uses the sum
 of every active trade's scaled MAE as a conservative simultaneous-open-P/L
@@ -27,6 +40,7 @@ import importlib.util
 import json
 import math
 import re
+import statistics
 import sys
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
@@ -53,6 +67,12 @@ DEFAULT_HUMAN_MIRROR = REPO_ROOT / "docs" / "ftmo" / "FTMO_BOOK_CURRENT.md"
 DEFAULT_STREAM_ROOT = Path(r"D:\QM\reports\book_evolution\2026-W38\ftmo\snapshot_r2\streams\QM\q08_trades")
 DEFAULT_STREAM_MANIFEST = Path(r"D:\QM\reports\book_evolution\2026-W38\ftmo\snapshot_r2\manifest.json")
 DEFAULT_WEIGHT_GRID = (0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.4375, 0.5)
+FINANCED = "FINANCED"
+UNFINANCED = "UNFINANCED"
+DEFAULT_MARGINAL_PATHS = 40000
+DEFAULT_MARGINAL_GRID_PATHS = 5000
+DEFAULT_MARGINAL_REPLICATES = 5
+DEFAULT_RESOLUTION_TARGET = 0.01
 SOURCE_RISK_PERCENT = 1.0
 PROXY_LABEL = "CONSERVATIVE_SIMULTANEOUS_ACTIVE_MAE_ENVELOPE_NOT_TICK_EXACT"
 
@@ -148,6 +168,7 @@ def _manifest_stream_hashes(path: Path | None) -> dict[str, str]:
 def load_roster_specs(
     roster_path: Path | str, *, stream_root: Path = DEFAULT_STREAM_ROOT,
     stream_manifest: Path | None = DEFAULT_STREAM_MANIFEST, require_sha: bool = True,
+    financed_stream_root: Path | None = None,
 ) -> tuple[dict[str, Any], list[SleeveSpec]]:
     payload = _load_json(roster_path)
     rows = payload.get("sleeves") or payload.get("candidates") or []
@@ -161,7 +182,11 @@ def load_roster_specs(
         symbol = _normalize_symbol(
             row.get("dwx_symbol") or row.get("dxz_symbol") or row.get("symbol")
         )
-        stream_path = Path(row.get("stream_path") or (stream_root / _stream_filename(ea_id, symbol)))
+        stream_path = (
+            financed_stream_root / _stream_filename(ea_id, symbol)
+            if financed_stream_root is not None
+            else Path(row.get("stream_path") or (stream_root / _stream_filename(ea_id, symbol)))
+        )
         key = f"{ea_id}:{symbol}"
         expected = str(row.get("stream_sha256") or manifest_hashes.get(key) or "").lower()
         if require_sha and not re.fullmatch(r"[0-9a-f]{64}", expected):
@@ -237,10 +262,32 @@ def _load_financing_module(path: Path) -> tuple[Any | None, str]:
 
 def _trade_swap(
     row: Mapping[str, Any], symbol: str, financing_module: Any | None,
+    financing_label: str,
 ) -> tuple[float, str]:
     embedded = float(row.get("swap") or 0.0)
     if financing_module is None:
-        return embedded, "STREAM_EMBEDDED_ACTUAL"
+        if financing_label == FINANCED:
+            proof = row.get("qm_financing")
+            if not isinstance(proof, Mapping):
+                raise ValueError(
+                    f"{symbol}: FINANCED stream row lacks qm_financing metadata"
+                )
+            required = {"status", "financing_usd", "units", "nights"}
+            missing = sorted(required - set(proof))
+            if missing:
+                raise ValueError(
+                    f"{symbol}: FINANCED stream row lacks fields {missing}"
+                )
+            exact = float(proof["financing_usd"])
+            # The governed stream serializes swap to account cents while
+            # retaining the unrounded table result in qm_financing.
+            if abs(embedded - round(exact, 2)) > 0.011:
+                raise ValueError(
+                    f"{symbol}: embedded swap {embedded} does not match "
+                    f"qm_financing.financing_usd {exact}"
+                )
+            return embedded, f"FINANCED_STREAM_QM_FINANCING:{proof['status']}"
+        return embedded, "UNFINANCED_STREAM_EMBEDDED_SWAP"
     result = financing_module.trade_financing_usd(dict(row), symbol=symbol)
     if isinstance(result, Mapping):
         return float(result["usd"]), str(result.get("source") or "PRIMARY_FINANCING_TABLE")
@@ -262,7 +309,7 @@ def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
 
 def prepare_sleeve(
     spec: SleeveSpec, *, commission_registry: Mapping[str, Any], cost: CostConfig,
-    financing_module: Any | None, financing_status: str,
+    financing_module: Any | None, financing_status: str, financing_label: str,
 ) -> dict[str, Any]:
     trades: list[dict[str, Any]] = []
     commission_sources: set[str] = set()
@@ -275,7 +322,9 @@ def prepare_sleeve(
             raise ValueError(f"{spec.id}: trade closes before entry")
         gross = float(row.get("profit", row.get("net") or 0.0))
         commission, commission_source = _commission_for_trade(row, spec.symbol, commission_registry)
-        swap, swap_source = _trade_swap(row, spec.symbol, financing_module)
+        swap, swap_source = _trade_swap(
+            row, spec.symbol, financing_module, financing_label
+        )
         volume = abs(float(row.get("volume") or 0.0))
         notional = abs(float(row.get("notional") or 0.0))
         spread = max(0.0, float(cost.spread_bps_rt)) / 10000.0 * notional
@@ -334,26 +383,61 @@ def prepare_sleeve(
         "commission_sources": sorted(commission_sources),
         "swap_sources": sorted(swap_sources),
         "financing_library_status": financing_status,
+        "financing_label": financing_label,
     }
 
 
 def prepare_book(
     specs: Sequence[SleeveSpec], *, commission_registry_path: Path = DEFAULT_COMMISSION_REGISTRY,
     financing_lib_path: Path = DEFAULT_FINANCING_LIB, cost: CostConfig = CostConfig(),
+    financing_label: str = UNFINANCED,
+    financed_stream_root: Path | None = None,
+    financing_manifest_path: Path | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    if financing_label not in {FINANCED, UNFINANCED}:
+        raise ValueError(f"unsupported financing label: {financing_label!r}")
     commission_registry = _load_commission_registry(commission_registry_path)
-    financing_module, financing_status = _load_financing_module(financing_lib_path)
+    if financing_label == FINANCED:
+        if financed_stream_root is None:
+            raise ValueError("FINANCED evaluation requires financed_stream_root")
+        financing_module = None
+        financing_status = "FINANCED_STREAMS_QM_FINANCING_EMBEDDED"
+    else:
+        financing_module, financing_status = _load_financing_module(financing_lib_path)
     sleeves = [
         prepare_sleeve(spec, commission_registry=commission_registry, cost=cost,
-                       financing_module=financing_module, financing_status=financing_status)
+                       financing_module=financing_module, financing_status=financing_status,
+                       financing_label=financing_label)
         for spec in specs
     ]
+    financing_manifest = None
+    financing_manifest_sha256 = None
+    if financing_manifest_path is not None:
+        if not financing_manifest_path.is_file():
+            raise FileNotFoundError(
+                f"financing manifest missing: {financing_manifest_path}"
+            )
+        financing_manifest = str(financing_manifest_path.resolve())
+        financing_manifest_sha256 = sha256_file(financing_manifest_path)
     provenance = {
         "commission_registry": str(commission_registry_path.resolve()),
         "commission_registry_sha256": sha256_file(commission_registry_path),
         "commission_model": commission_registry["model"],
         "financing_library": str(financing_lib_path.resolve()),
         "financing_library_status": financing_status,
+        "financing_label": financing_label,
+        "financed_stream_root": (
+            str(financed_stream_root.resolve())
+            if financed_stream_root is not None else None
+        ),
+        "financing_manifest": financing_manifest,
+        "financing_manifest_sha256": financing_manifest_sha256,
+        "financing_row_contract": (
+            "every TRADE_CLOSED row has qm_financing.status, financing_usd, "
+            "units and nights; cent-rounded financing_usd equals swap"
+            if financing_label == FINANCED else
+            "not asserted; output is research-only UNFINANCED"
+        ),
         "spread_slippage_stress": asdict(cost),
     }
     return sleeves, provenance
@@ -592,6 +676,7 @@ def _to_first_passage_roster(
 def first_passage_for_book(
     sleeves: Sequence[Mapping[str, Any]], *, start: dt.date, end: dt.date,
     n_paths: int, seed: int, block_len: int, horizon: int, as_of: dt.datetime,
+    lightweight: bool = False,
 ) -> dict[str, Any]:
     rules = fp.load_rules()
     economics = fp.load_economics()
@@ -601,7 +686,10 @@ def first_passage_for_book(
     return fp.build(
         roster=roster, rules=rules, economics=economics, seed=seed,
         n_paths=n_paths, block_len=block_len, horizon=horizon,
-        sensitivity=((1.0, 0.0), (1.5, 2.0)), chain=True,
+        sensitivity=(
+            ((1.0, 0.0),) if lightweight
+            else ((1.0, 0.0), (1.5, 2.0))
+        ),
         n_batches=min(20, max(2, n_paths // 100)), now=as_of,
     )
 
@@ -615,7 +703,7 @@ def _public_sleeves(sleeves: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]
                 "id", "ea_id", "label", "symbol", "timeframe", "risk_percent", "role",
                 "family", "session", "news_profile", "magic", "slot", "stream_path",
                 "stream_sha256", "commission_sources", "swap_sources",
-                "financing_library_status",
+                "financing_library_status", "financing_label",
             )
         } | {
             "trades": len(trades),
@@ -631,14 +719,21 @@ def evaluate_book(
     specs: Sequence[SleeveSpec], *, cost: CostConfig = CostConfig(),
     commission_registry_path: Path = DEFAULT_COMMISSION_REGISTRY,
     financing_lib_path: Path = DEFAULT_FINANCING_LIB,
+    financing_label: str = UNFINANCED,
+    financed_stream_root: Path | None = None,
+    financing_manifest_path: Path | None = None,
     fixed_window: tuple[dt.date, dt.date] | None = None,
     n_paths: int = 2000, seed: int = 20260921, block_len: int = 20,
     horizon: int = 756, as_of: dt.datetime | None = None,
+    lightweight: bool = False,
 ) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
     as_of = as_of or dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
     sleeves, provenance = prepare_book(
         specs, commission_registry_path=commission_registry_path,
         financing_lib_path=financing_lib_path, cost=cost,
+        financing_label=financing_label,
+        financed_stream_root=financed_stream_root,
+        financing_manifest_path=financing_manifest_path,
     )
     start, end = fixed_window or common_window(sleeves)
     sleeves = _clip_sleeves(sleeves, start, end)
@@ -649,6 +744,7 @@ def evaluate_book(
     passage = first_passage_for_book(
         sleeves, start=start, end=end, n_paths=n_paths, seed=seed,
         block_len=block_len, horizon=horizon, as_of=as_of,
+        lightweight=lightweight,
     )
     headline = passage.get("headline") or {}
     chain = passage.get("chain") or {}
@@ -673,16 +769,29 @@ def evaluate_book(
         "cost": asdict(cost), "seed": seed, "n_paths": n_paths,
         "block_len": block_len, "horizon": horizon,
         "provenance": provenance,
+        "financing_label": financing_label,
     }
     result = {
         "schema": SCHEMA,
         "generated_at_utc": as_of.isoformat(),
         "status": "OK",
         "label": (
-            "real chronological trades; registry commission; stream swap fallback when "
-            "primary financing table is unavailable; floating equity is a conservative "
-            "simultaneous-active-MAE proxy"
+            f"{financing_label}; real chronological trades; registry commission; "
+            + (
+                "qm_financing-bound embedded financing; "
+                if financing_label == FINANCED
+                else "unfinanced research input; "
+            )
+            + "floating equity is a conservative simultaneous-active-MAE proxy"
         ),
+        "financing": {
+            "label": financing_label,
+            "source": provenance["financing_library_status"],
+            "financed_stream_root": provenance["financed_stream_root"],
+            "manifest": provenance["financing_manifest"],
+            "manifest_sha256": provenance["financing_manifest_sha256"],
+            "book_evidence_eligible": financing_label == FINANCED,
+        },
         "input_manifest": manifest,
         "input_manifest_sha256": canonical_sha256(manifest),
         "sleeves": _public_sleeves(sleeves),
@@ -769,7 +878,8 @@ def _delta_row(reference: Mapping[str, Any], variant: Mapping[str, Any]) -> dict
 
 
 def _candidate_spec(
-    row: Mapping[str, Any], *, stream_root: Path, manifest_hashes: Mapping[str, str]
+    row: Mapping[str, Any], *, stream_root: Path, manifest_hashes: Mapping[str, str],
+    financed_stream_root: Path | None = None,
 ) -> SleeveSpec:
     sleeve = row.get("sleeve") or row
     ea_id = int(sleeve["ea_id"])
@@ -777,7 +887,11 @@ def _candidate_spec(
         sleeve.get("dwx_symbol") or sleeve.get("dxz_symbol") or sleeve.get("symbol")
     )
     key = f"{ea_id}:{symbol}"
-    path = Path(sleeve.get("stream_path") or stream_root / _stream_filename(ea_id, symbol))
+    path = (
+        financed_stream_root / _stream_filename(ea_id, symbol)
+        if financed_stream_root is not None
+        else Path(sleeve.get("stream_path") or stream_root / _stream_filename(ea_id, symbol))
+    )
     expected = str(sleeve.get("stream_sha256") or manifest_hashes.get(key) or "").lower()
     if not re.fullmatch(r"[0-9a-f]{64}", expected):
         raise ValueError(f"candidate {key}: manifest-bound stream sha256 required")
@@ -799,27 +913,134 @@ def _candidate_spec(
     )
 
 
+def _lcb_resolution(
+    deltas: Sequence[float], *, n_paths: int, target_delta: float
+) -> dict[str, Any]:
+    """Summarize seed-replicate uncertainty for one marginal LCB delta."""
+    if len(deltas) < 2:
+        raise ValueError("at least two seed replicates are required")
+    values = [float(value) for value in deltas]
+    mean = statistics.fmean(values)
+    sample_sd = statistics.stdev(values)
+    standard_error = sample_sd / math.sqrt(len(values))
+    minimum_resolvable = 2.0 * standard_error
+    return {
+        "replicates": len(values),
+        "paths_per_replicate": n_paths,
+        "lcb_delta_samples": [round(value, 6) for value in values],
+        "lcb_delta_mean": round(mean, 6),
+        "lcb_delta_sample_sd": round(sample_sd, 6),
+        "lcb_standard_error": round(standard_error, 6),
+        "minimum_resolvable_delta_2se": round(minimum_resolvable, 6),
+        "resolution_status": (
+            "RESOLVED" if abs(mean) >= minimum_resolvable else "UNRESOLVED"
+        ),
+        "resolution_target_delta": target_delta,
+        "target_delta_resolution_status": (
+            "RESOLVED" if target_delta >= minimum_resolvable else "UNRESOLVED"
+        ),
+    }
+
+
 def marginal_contributions(
     base_specs: Sequence[SleeveSpec], candidate_plan: Mapping[str, Any], *,
     stream_root: Path = DEFAULT_STREAM_ROOT,
     stream_manifest: Path | None = DEFAULT_STREAM_MANIFEST,
+    financing_label: str = UNFINANCED,
+    financed_stream_root: Path | None = None,
+    financing_manifest_path: Path | None = None,
     cost: CostConfig = CostConfig(), weight_grid: Sequence[float] = DEFAULT_WEIGHT_GRID,
-    n_paths: int = 1000, seed: int = 20260921, block_len: int = 20,
+    n_paths: int = DEFAULT_MARGINAL_PATHS, seed: int = 20260921,
+    grid_n_paths: int = DEFAULT_MARGINAL_GRID_PATHS,
+    replicate_count: int = DEFAULT_MARGINAL_REPLICATES,
+    resolution_target_delta: float = DEFAULT_RESOLUTION_TARGET,
+    block_len: int = 20,
     horizon: int = 504, as_of: dt.datetime | None = None,
 ) -> dict[str, Any]:
+    if replicate_count < 5:
+        raise ValueError("marginal resolution requires at least 5 seed replicates")
+    if n_paths <= 0 or grid_n_paths <= 0 or resolution_target_delta <= 0.0:
+        raise ValueError("marginal path count and resolution target must be positive")
     as_of = as_of or dt.datetime.now(dt.timezone.utc).replace(microsecond=0)
     manifest_hashes = _manifest_stream_hashes(stream_manifest)
     rows: list[dict[str, Any]] = []
-    base_prepared, _ = prepare_book(base_specs, cost=cost)
+    base_prepared, _ = prepare_book(
+        base_specs, cost=cost, financing_label=financing_label,
+        financed_stream_root=financed_stream_root,
+        financing_manifest_path=financing_manifest_path,
+    )
     base_window = common_window(base_prepared)
-    base_cache: dict[tuple[str, str], dict[str, Any]] = {}
+    base_cache: dict[tuple[str, str, int, int, bool], dict[str, Any]] = {}
 
-    def evaluate(specs: Sequence[SleeveSpec], window: tuple[dt.date, dt.date]) -> dict[str, Any]:
+    def evaluate(
+        specs: Sequence[SleeveSpec], window: tuple[dt.date, dt.date], run_seed: int,
+        path_count: int, *, lightweight: bool,
+    ) -> dict[str, Any]:
         result, _, _ = evaluate_book(
-            specs, cost=cost, fixed_window=window, n_paths=n_paths, seed=seed,
+            specs, cost=cost, financing_label=financing_label,
+            financed_stream_root=financed_stream_root,
+            financing_manifest_path=financing_manifest_path,
+            fixed_window=window, n_paths=path_count, seed=run_seed,
             block_len=block_len, horizon=horizon, as_of=as_of,
+            lightweight=lightweight,
         )
         return result
+
+    def cached_base(
+        window: tuple[dt.date, dt.date], run_seed: int, path_count: int, *,
+        lightweight: bool,
+    ) -> dict[str, Any]:
+        key = (
+            window[0].isoformat(), window[1].isoformat(), run_seed,
+            path_count, lightweight,
+        )
+        if key not in base_cache:
+            base_cache[key] = evaluate(
+                base_specs, window, run_seed, path_count, lightweight=lightweight
+            )
+        return base_cache[key]
+
+    replicate_seeds = [seed + offset for offset in range(replicate_count)]
+
+    def resolution(
+        reference_specs: Sequence[SleeveSpec],
+        variant_specs: Sequence[SleeveSpec],
+        window: tuple[dt.date, dt.date],
+        *,
+        reference_is_base: bool,
+    ) -> dict[str, Any]:
+        deltas: list[float] = []
+        for run_seed in replicate_seeds:
+            reference = (
+                cached_base(
+                    window, run_seed, n_paths, lightweight=True
+                )
+                if reference_is_base
+                else evaluate(
+                    reference_specs, window, run_seed, n_paths, lightweight=True
+                )
+            )
+            variant = (
+                cached_base(
+                    window, run_seed, n_paths, lightweight=True
+                )
+                if list(variant_specs) == list(base_specs)
+                else evaluate(
+                    variant_specs, window, run_seed, n_paths, lightweight=True
+                )
+            )
+            delta = _difference(
+                _metric_projection(variant)["P_FIRST_NET_FTMO_PAYOUT_LCB"],
+                _metric_projection(reference)["P_FIRST_NET_FTMO_PAYOUT_LCB"],
+            )
+            if delta is None:
+                raise ValueError("LCB delta unavailable during resolution run")
+            deltas.append(delta)
+        report = _lcb_resolution(
+            deltas, n_paths=n_paths, target_delta=resolution_target_delta
+        )
+        report["seeds"] = replicate_seeds
+        return report
 
     for plan_row in candidate_plan.get("candidates") or []:
         mode = str(plan_row.get("mode") or "add")
@@ -838,42 +1059,63 @@ def marginal_contributions(
             if len(matches) != 1:
                 raise ValueError(f"leave-one-out {ea_id}: expected one base sleeve, got {len(matches)}")
             without = [spec for spec in base_specs if spec.ea_id != ea_id]
-            reference = evaluate(without, base_window)
-            variant = evaluate(base_specs, base_window)
+            reference = evaluate(
+                without, base_window, seed, grid_n_paths, lightweight=False
+            )
+            variant = cached_base(
+                base_window, seed, grid_n_paths, lightweight=False
+            )
+            contribution = _delta_row(reference, variant)
+            contribution["resolution"] = resolution(
+                without, base_specs, base_window, reference_is_base=False
+            )
             rows.append({
                 "id": candidate_id, "mode": mode, "status": "OK",
                 "proposed_risk_percent": matches[0].risk_percent,
                 "comparison_window": [base_window[0].isoformat(), base_window[1].isoformat()],
-                "contribution_when_present": _delta_row(reference, variant),
+                "contribution_when_present": contribution,
             })
             continue
         if mode != "add":
             raise ValueError(f"unsupported candidate mode: {mode}")
-        candidate = _candidate_spec(plan_row, stream_root=stream_root,
-                                    manifest_hashes=manifest_hashes)
-        candidate_prepared, _ = prepare_book([candidate], cost=cost)
-        combined_window = common_window([*base_prepared, *candidate_prepared])
-        cache_key = (combined_window[0].isoformat(), combined_window[1].isoformat())
-        if cache_key not in base_cache:
-            base_cache[cache_key] = evaluate(base_specs, combined_window)
-        reference = base_cache[cache_key]
+        candidate = _candidate_spec(
+            plan_row, stream_root=stream_root, manifest_hashes=manifest_hashes,
+            financed_stream_root=financed_stream_root,
+        )
+        # The candidate's shorter stream must not truncate incumbent history.
+        # Both sides use the fixed base calendar; out-of-span candidate days
+        # are correctly represented as candidate inactivity.
+        comparison_window = base_window
+        reference = cached_base(
+            comparison_window, seed, grid_n_paths, lightweight=False
+        )
         grid_rows: list[dict[str, Any]] = []
         proposed_row: dict[str, Any] | None = None
         proposed = float(plan_row.get("proposed_risk_percent") or candidate.risk_percent)
         weights = sorted(set(float(value) for value in (*weight_grid, proposed)))
         for weight in weights:
             variant_spec = replace(candidate, risk_percent=weight)
-            variant = evaluate([*base_specs, variant_spec], combined_window)
+            variant = evaluate(
+                [*base_specs, variant_spec], comparison_window, seed,
+                grid_n_paths, lightweight=False,
+            )
             item = {"risk_percent": weight, **_delta_row(reference, variant)}
             grid_rows.append(item)
             if abs(weight - proposed) <= 1e-12:
                 proposed_row = item
+        if proposed_row is None:
+            raise AssertionError(f"{candidate_id}: proposed weight was not evaluated")
+        proposed_spec = replace(candidate, risk_percent=proposed)
+        proposed_row["resolution"] = resolution(
+            base_specs, [*base_specs, proposed_spec], comparison_window,
+            reference_is_base=True,
+        )
         rows.append({
             "id": candidate_id, "mode": mode, "status": "OK",
             "role": candidate.role, "symbol": candidate.symbol,
             "stream_sha256": candidate.stream_sha256,
             "proposed_risk_percent": proposed,
-            "comparison_window": [combined_window[0].isoformat(), combined_window[1].isoformat()],
+            "comparison_window": [comparison_window[0].isoformat(), comparison_window[1].isoformat()],
             "proposed": proposed_row,
             "weight_grid": grid_rows,
         })
@@ -881,11 +1123,21 @@ def marginal_contributions(
         "schema": MARGINAL_SCHEMA,
         "generated_at_utc": as_of.isoformat(),
         "method": (
-            "candidate and its paired base reference use the same all-active window, "
-            "seed, block bootstrap, cost model and first_passage engine; deltas are variant-reference"
+            "all candidates and paired base references use the fixed base-book common "
+            "window, identical seeds, block bootstrap, financing/cost model and "
+            "first_passage engine; a short candidate cannot truncate incumbent history; "
+            "deltas are variant-reference"
         ),
-        "params": {"seed": seed, "n_paths": n_paths, "block_len": block_len,
-                   "horizon": horizon, "weight_grid": list(weight_grid)},
+        "params": {"seed": seed, "n_paths": n_paths,
+                   "weight_grid_n_paths": grid_n_paths, "block_len": block_len,
+                   "horizon": horizon, "weight_grid": list(weight_grid),
+                   "replicate_count": replicate_count,
+                   "replicate_seeds": replicate_seeds,
+                   "resolution_target_delta": resolution_target_delta,
+                   "fixed_comparison_window": [
+                       base_window[0].isoformat(), base_window[1].isoformat()
+                   ],
+                   "financing_label": financing_label},
         "candidates": rows,
     }
 
@@ -915,22 +1167,31 @@ def _candidate_state_rows(marginal: Mapping[str, Any]) -> list[dict[str, Any]]:
             })
             continue
         delta = row.get("proposed") or row.get("contribution_when_present") or {}
-        lcb = delta.get("DELTA_P_FIRST_NET_FTMO_PAYOUT_LCB")
+        resolution = delta.get("resolution") or {}
+        lcb = resolution.get(
+            "lcb_delta_mean", delta.get("DELTA_P_FIRST_NET_FTMO_PAYOUT_LCB")
+        )
+        resolved = resolution.get("resolution_status") == "RESOLVED"
         daily = delta.get("DELTA_P_DAILY_LOSS_BREACH")
         maximum = delta.get("DELTA_P_MAX_LOSS_BREACH")
         if row.get("mode") == "leave_one_out":
             action = "KEEP" if lcb is not None and lcb >= 0.0 else "REVIEW_REMOVAL"
         else:
-            action = (
-                "CONSIDER_ADD" if lcb is not None and lcb > 0.0
+            if (
+                lcb is not None and lcb > 0.0 and resolved
                 and (daily is None or daily <= 0.0) and (maximum is None or maximum <= 0.0)
-                else "HOLD"
-            )
+            ):
+                action = "CONSIDER_ADD"
+            elif lcb is not None and lcb > 0.0:
+                action = "SHADOW_BOOK"
+            else:
+                action = "HOLD"
         out.append({
             "id": row.get("id"), "symbol": row.get("symbol"), "role": row.get("role"),
             "mode": row.get("mode"), "book_action": action,
             "proposed_risk_percent": row.get("proposed_risk_percent"),
             "marginal": {key: value for key, value in delta.items() if key.startswith("DELTA_")},
+            "resolution": copy.deepcopy(resolution),
         })
     return out
 
@@ -939,6 +1200,7 @@ def build_state(
     base: Mapping[str, Any], marginal: Mapping[str, Any], dependence: Mapping[str, Any], *,
     book_id: str, human_mirror: Path = DEFAULT_HUMAN_MIRROR,
     existing_state: Mapping[str, Any] | None = None,
+    evidence_path: str | None = None,
 ) -> dict[str, Any]:
     metrics = copy.deepcopy(base["book_metrics"])
     first = base.get("first_passage") or {}
@@ -963,16 +1225,52 @@ def build_state(
     daily_headroom = 5000.0 - abs(min(0.0, float(metrics["BOOK_WORST_DAILY_LOSS_MAE_PROXY"])))
     max_headroom = 10000.0 - float(metrics["BOOK_MAX_DD_ABS_USD"])
     top = dependence.get("summary", {}).get("top_fail_together_pair")
-    state = {
+    measured_candidates = _candidate_state_rows(marginal)
+    existing_candidates = {
+        str(row.get("id")): copy.deepcopy(row)
+        for row in (existing_state or {}).get("candidates") or []
+        if row.get("id") is not None
+    }
+    candidates = []
+    for row in measured_candidates:
+        merged = existing_candidates.get(str(row.get("id")), {})
+        merged.update(row)
+        candidates.append(merged)
+    demo_cycle = copy.deepcopy((existing_state or {}).get("demo_cycle") or {})
+    demo_cycle["state"] = demo_cycle.get("state", "UNMEASURED")
+    demo_cycle["rule_headroom"] = {
+        "daily_loss_headroom": f"{daily_headroom:.2f} USD (MAE proxy)",
+        "max_loss_headroom": f"{max_headroom:.2f} USD (drawdown proxy)",
+    }
+    financing = copy.deepcopy((existing_state or {}).get("financing") or {})
+    financing.update({
+        "label": (base.get("financing") or {}).get("label", UNFINANCED),
+        "source": (base.get("financing") or {}).get("source"),
+        "stream_root": (base.get("financing") or {}).get("financed_stream_root"),
+        "manifest": (base.get("financing") or {}).get("manifest"),
+        "manifest_sha256": (base.get("financing") or {}).get("manifest_sha256"),
+        "book_evidence_eligible": (base.get("financing") or {}).get(
+            "book_evidence_eligible", False
+        ),
+        "swap_usd_window": metrics.get("BOOK_COST_DRAG", {}).get("swap_usd"),
+        "commission_usd_window": metrics.get("BOOK_COST_DRAG", {}).get(
+            "commission_usd"
+        ),
+    })
+    if evidence_path:
+        financing["evidence"] = evidence_path
+    state = copy.deepcopy(existing_state or {})
+    state.update({
         "schema": STATE_SCHEMA,
         "generated_at_utc": base.get("generated_at_utc"),
-        "author": "Codex account-level simulator e5c49db2",
+        "author": "Codex account-level simulator v2 financed-confidence run",
         "decision": "OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921",
         "book_id": book_id,
         "book_risk_percent": round(sum(float(s["risk_percent"]) for s in sleeves), 6),
         "account": {"product": "FTMO Challenge 2-Step", "size_usd": 100000},
         "sleeves": sleeves,
-        "candidates": _candidate_state_rows(marginal),
+        "candidates": candidates,
+        "financing": financing,
         "book_metrics": metrics,
         "first_passage": {
             "P_CHALLENGE_PASS": probabilities.get("P_CHALLENGE_PASS"),
@@ -986,13 +1284,7 @@ def build_state(
             "median_end_to_end_bd": (times.get("end_to_end") or {}).get("p50"),
             "engine": "tools/strategy_farm/ftmo/first_passage.py",
         },
-        "demo_cycle": {
-            "state": (existing_state or {}).get("demo_cycle", {}).get("state", "UNMEASURED"),
-            "rule_headroom": {
-                "daily_loss_headroom": f"{daily_headroom:.2f} USD (MAE proxy)",
-                "max_loss_headroom": f"{max_headroom:.2f} USD (drawdown proxy)",
-            },
-        },
+        "demo_cycle": demo_cycle,
         "dependence_summary": {
             "top_fail_together_pair": top,
             "fail_together_clusters": dependence.get("summary", {}).get("fail_together_clusters") or [],
@@ -1006,7 +1298,7 @@ def build_state(
             "book_sim": base.get("input_manifest_sha256"),
             "first_passage": first.get("input_manifest_sha256"),
         },
-    }
+    })
     return state
 
 
@@ -1031,6 +1323,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--roster", required=True, type=Path)
     parser.add_argument("--stream-root", type=Path, default=DEFAULT_STREAM_ROOT)
     parser.add_argument("--stream-manifest", type=Path, default=DEFAULT_STREAM_MANIFEST)
+    parser.add_argument(
+        "--financed-streams", type=Path,
+        help="root containing qm_financing-bound q08 trade JSONL files",
+    )
+    parser.add_argument(
+        "--financing-manifest", type=Path,
+        help="optional manifest/provenance document for --financed-streams",
+    )
+    parser.add_argument(
+        "--allow-unfinanced", action="store_true",
+        help="explicit research-only opt-in; output is labelled UNFINANCED",
+    )
     parser.add_argument("--candidate-plan", type=Path)
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--marginal-out", type=Path)
@@ -1042,7 +1346,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--slippage-usd-per-lot-rt", type=float, default=0.0)
     parser.add_argument("--margin-rate", type=float, default=0.01)
     parser.add_argument("--n-paths", type=int, default=2000)
-    parser.add_argument("--marginal-n-paths", type=int, default=1000)
+    parser.add_argument(
+        "--marginal-n-paths", type=int, default=DEFAULT_MARGINAL_PATHS
+    )
+    parser.add_argument(
+        "--marginal-grid-n-paths", type=int,
+        default=DEFAULT_MARGINAL_GRID_PATHS,
+        help="paths for exploratory weight-grid rows; resolution uses --marginal-n-paths",
+    )
+    parser.add_argument(
+        "--marginal-replicates", type=int, default=DEFAULT_MARGINAL_REPLICATES
+    )
+    parser.add_argument(
+        "--resolution-target-delta", type=float,
+        default=DEFAULT_RESOLUTION_TARGET,
+    )
     parser.add_argument("--seed", type=int, default=20260921)
     parser.add_argument("--block-len", type=int, default=20)
     parser.add_argument("--horizon", type=int, default=756)
@@ -1050,15 +1368,26 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--as-of")
     parser.add_argument("--book-id")
     args = parser.parse_args(argv)
+    if args.financed_streams is not None and args.allow_unfinanced:
+        parser.error("--financed-streams and --allow-unfinanced are mutually exclusive")
+    if args.financed_streams is None and not args.allow_unfinanced:
+        parser.error(
+            "book evidence is financing-fail-closed: provide --financed-streams "
+            "or explicitly select research-only --allow-unfinanced"
+        )
+    financing_label = FINANCED if args.financed_streams is not None else UNFINANCED
 
     as_of = _parse_as_of(args.as_of)
     cost = CostConfig(args.spread_bps_rt, args.slippage_usd_per_lot_rt, args.margin_rate)
     roster_payload, specs = load_roster_specs(
         args.roster, stream_root=args.stream_root, stream_manifest=args.stream_manifest,
-        require_sha=True,
+        require_sha=True, financed_stream_root=args.financed_streams,
     )
     base, sleeves, dependence = evaluate_book(
-        specs, cost=cost, n_paths=args.n_paths, seed=args.seed,
+        specs, cost=cost, financing_label=financing_label,
+        financed_stream_root=args.financed_streams,
+        financing_manifest_path=args.financing_manifest,
+        n_paths=args.n_paths, seed=args.seed,
         block_len=args.block_len, horizon=args.horizon, as_of=as_of,
     )
     _write_json(args.out, base)
@@ -1073,7 +1402,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         marginal = marginal_contributions(
             specs, candidate_plan, stream_root=args.stream_root,
             stream_manifest=args.stream_manifest, cost=cost,
+            financing_label=financing_label,
+            financed_stream_root=args.financed_streams,
+            financing_manifest_path=args.financing_manifest,
             n_paths=args.marginal_n_paths, seed=args.seed,
+            grid_n_paths=args.marginal_grid_n_paths,
+            replicate_count=args.marginal_replicates,
+            resolution_target_delta=args.resolution_target_delta,
             block_len=args.block_len, horizon=args.marginal_horizon, as_of=as_of,
         )
     else:
@@ -1084,10 +1419,16 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     if args.state_out:
         existing = _load_existing_state(args.state_out)
+        try:
+            evidence_path = args.out.parent.resolve().relative_to(REPO_ROOT)
+            evidence_path_text = evidence_path.as_posix()
+        except ValueError:
+            evidence_path_text = str(args.out.parent.resolve())
         state = build_state(
             base, marginal, dependence,
             book_id=str(args.book_id or roster_payload.get("cycle_id") or roster_payload.get("label") or "FTMO_BOOK"),
             human_mirror=args.human_mirror, existing_state=existing,
+            evidence_path=evidence_path_text,
         )
         _write_json(args.state_out, state)
 
@@ -1096,6 +1437,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     top = (dependence.get("summary") or {}).get("top_fail_together_pair") or {}
     print(json.dumps({
         "status": "OK", "out": str(args.out),
+        "financing": financing_label,
         "BOOK_R_PER_DAY": metrics.get("BOOK_R_PER_DAY"),
         "BOOK_TRADES_PER_DAY": metrics.get("BOOK_TRADES_PER_DAY"),
         "P_FIRST_NET_FTMO_PAYOUT_LCB": probs.get("P_FIRST_NET_FTMO_PAYOUT_LCB"),

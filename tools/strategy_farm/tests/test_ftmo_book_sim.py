@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import dataclasses
 import hashlib
 import json
 from pathlib import Path
@@ -83,6 +84,20 @@ def _fixture(tmp_path: Path) -> tuple[Path, Path, Path, list[book_sim.SleeveSpec
     return registry, missing_financing, tmp_path, specs
 
 
+def _mark_financed(spec: book_sim.SleeveSpec) -> book_sim.SleeveSpec:
+    path = Path(spec.stream_path)
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    for row in rows:
+        row["qm_financing"] = {
+            "status": "FIXTURE",
+            "financing_usd": float(row.get("swap") or 0.0),
+            "units": 1.0,
+            "nights": 1,
+        }
+    sha = _write_stream(path, rows)
+    return dataclasses.replace(spec, stream_sha256=sha)
+
+
 def test_registry_commission_swap_fallback_and_scaling(tmp_path: Path) -> None:
     registry, financing, _, specs = _fixture(tmp_path)
     sleeves, provenance = book_sim.prepare_book(
@@ -158,6 +173,73 @@ def test_full_book_result_is_deterministic_at_fixed_as_of(tmp_path: Path) -> Non
     assert first["account_path_summary"]["equity_proxy"] == book_sim.PROXY_LABEL
 
 
+def test_financed_streams_are_validated_labelled_and_deterministic(
+    tmp_path: Path,
+) -> None:
+    registry, _, root, specs = _fixture(tmp_path)
+    financed = [_mark_financed(spec) for spec in specs]
+    kwargs = dict(
+        cost=book_sim.CostConfig(), commission_registry_path=registry,
+        financing_label=book_sim.FINANCED, financed_stream_root=root,
+        n_paths=100, seed=17, block_len=2, horizon=20, as_of=AS_OF,
+    )
+
+    first, _, _ = book_sim.evaluate_book(financed, **kwargs)
+    second, _, _ = book_sim.evaluate_book(financed, **kwargs)
+
+    assert first == second
+    assert first["financing"]["label"] == "FINANCED"
+    assert first["financing"]["book_evidence_eligible"] is True
+    assert first["input_manifest"]["provenance"]["financing_row_contract"].startswith(
+        "every TRADE_CLOSED row"
+    )
+
+
+def test_financed_streams_fail_closed_without_row_provenance(tmp_path: Path) -> None:
+    registry, _, root, specs = _fixture(tmp_path)
+
+    with pytest.raises(ValueError, match="lacks qm_financing metadata"):
+        book_sim.prepare_book(
+            [specs[0]], commission_registry_path=registry,
+            financing_label=book_sim.FINANCED, financed_stream_root=root,
+        )
+
+
+def test_lcb_resolution_fields_and_unresolved_positive_action() -> None:
+    resolution = book_sim._lcb_resolution(
+        [0.001, 0.011, -0.006, 0.008, -0.004],
+        n_paths=5000, target_delta=0.01,
+    )
+    assert resolution["replicates"] == 5
+    assert "lcb_standard_error" in resolution
+    assert "minimum_resolvable_delta_2se" in resolution
+    marginal = {
+        "candidates": [{
+            "id": "candidate", "mode": "add", "status": "OK",
+            "proposed_risk_percent": 0.25,
+            "proposed": {
+                "DELTA_P_FIRST_NET_FTMO_PAYOUT_LCB": 0.01,
+                "DELTA_P_DAILY_LOSS_BREACH": -0.001,
+                "DELTA_P_MAX_LOSS_BREACH": -0.001,
+                "resolution": {
+                    "lcb_delta_mean": 0.01,
+                    "resolution_status": "UNRESOLVED",
+                },
+            },
+        }]
+    }
+
+    row = book_sim._candidate_state_rows(marginal)[0]
+
+    assert row["book_action"] == "SHADOW_BOOK"
+    assert row["resolution"]["resolution_status"] == "UNRESOLVED"
+
+
+def test_cli_requires_explicit_financing_mode() -> None:
+    with pytest.raises(SystemExit):
+        book_sim.main(["--roster", "unused.json", "--out", "unused-out.json"])
+
+
 def test_state_writer_preserves_human_mirror_bytes(tmp_path: Path) -> None:
     mirror = tmp_path / "FTMO_BOOK_CURRENT.md"
     mirror.write_text(
@@ -179,7 +261,24 @@ def test_state_writer_preserves_human_mirror_bytes(tmp_path: Path) -> None:
                   "summary": {"top_fail_together_pair": None, "fail_together_clusters": []}}
     marginal = {"candidates": []}
 
-    state = book_sim.build_state(base, marginal, dependence, book_id="TEST", human_mirror=mirror)
+    base["financing"] = {
+        "label": "FINANCED", "source": "fixture",
+        "financed_stream_root": "fixture-root", "manifest": "fixture.json",
+        "manifest_sha256": "d" * 64, "book_evidence_eligible": True,
+    }
+    existing = {
+        "owner_directive": "preserve this prose",
+        "demo_cycle": {"classification": "PRE_SUNDAY_LIVE_TRIAL", "state": "RUNNING"},
+        "financing": {"evidence": "preserve-this-path"},
+    }
+    state = book_sim.build_state(
+        base, marginal, dependence, book_id="TEST", human_mirror=mirror,
+        existing_state=existing,
+    )
 
     assert state["strongest_missing_behavior"] == "A low-overlap NY sleeve."
     assert hashlib.sha256(mirror.read_bytes()).hexdigest() == before
+    assert state["owner_directive"] == "preserve this prose"
+    assert state["demo_cycle"]["classification"] == "PRE_SUNDAY_LIVE_TRIAL"
+    assert state["financing"]["label"] == "FINANCED"
+    assert state["financing"]["evidence"] == "preserve-this-path"

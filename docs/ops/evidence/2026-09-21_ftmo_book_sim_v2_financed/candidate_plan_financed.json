@@ -1,0 +1,81 @@
+{
+  "schema": "qm.ftmo-book-candidate-plan/v1",
+  "decision_id": "OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921",
+  "candidates": [
+    {
+      "id": "11708_EURUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11708,
+        "ea_label": "QM5_11708_anon-market-squeeze-d1",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1",
+        "role": "low-cost FX diversifier",
+        "family": "market_squeeze",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/fable_alt_rosters_20260918/deployable2/streams_fin_full/QM/q08_trades\\11708_EURUSD_DWX.jsonl",
+        "stream_sha256": "2295159df74dfb3c28857c6c8ed0c8fbae6243a46f73efc4dd23b446fa26bb70"
+      }
+    },
+    {
+      "id": "11910_NZDUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11910,
+        "ea_label": "QM5_11910_williams-18ma-2outside-bars-d1",
+        "symbol": "NZDUSD.DWX",
+        "timeframe": "D1",
+        "role": "FX diversifier",
+        "family": "outside_bar_trend",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/fable_alt_rosters_20260918/deployable2/streams_fin_full/QM/q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "stream_sha256": "3953a8bec7751d8b69c847eedbd00892d0e69df8213053df7729285415b7b5ea"
+      }
+    },
+    {
+      "id": "11421_EURUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11421,
+        "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1",
+        "role": "FX reversal candidate",
+        "family": "daily_squeeze_reversal",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/fable_alt_rosters_20260918/deployable2/streams_fin_full/QM/q08_trades\\11421_EURUSD_DWX.jsonl",
+        "stream_sha256": "09f68fa85f410c6fc5a35b09bb8ad970f3ecc8ad7a8f94eb2a030f43045d4ab1"
+      }
+    },
+    {
+      "id": "41219_XAUUSD_D1",
+      "mode": "leave_one_out",
+      "ea_id": 41219
+    },
+    {
+      "id": "10403_XAUUSD_D1",
+      "mode": "leave_one_out",
+      "ea_id": 10403
+    },
+    {
+      "id": "10700_XAUUSD_H1",
+      "mode": "leave_one_out",
+      "ea_id": 10700
+    },
+    {
+      "id": "H-V4 / QM5_41485",
+      "mode": "placeholder",
+      "symbol": "USDJPY (+ EURUSD C3 secondary)",
+      "role": "VELOCITY_SLEEVE",
+      "book_action": "TEST",
+      "reason": "Q08 trade stream pending; no marginal probability is measurable before tester evidence"
+    }
+  ],
+  "financing_note": "streams replaced by the 2026-09-18 financed streams (deployable2/streams_fin_full); swap = qm_financing.financing_usd folded into net"
+}
