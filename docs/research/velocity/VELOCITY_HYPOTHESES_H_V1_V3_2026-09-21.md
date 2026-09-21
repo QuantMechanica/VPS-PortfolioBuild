@@ -53,3 +53,47 @@ per Hard Rule), explicit Q02/Q04 falsification criteria including an out-of-samp
 check (per the `census_frontier_holdout.json` lesson that in-sample winners in this EA
 family do not generalize) and a joint-tail/correlation check against existing roster
 sleeves, and a "Distinct from" paragraph against QM5_13213/10706/10700/41475/41476/41477/41484.
+
+## Revision 2 (2026-09-21, Fable) — after cross-vendor critique 1614737c
+
+Critique verdict (Codex, verbatim in `../../ops/evidence/2026-09-20_velocity_book/hv1_hv3_critique_1614737c.md`):
+H-V1 REVISE, H-V2 REVISE, H-V3 REJECT, plus a confirmed provenance defect (the sealed manifests bound baseline
+hashes that did not match the stored files). Fable's response: build a 0-factory-hour measurement harness and
+replace every prior by a measurement, then reseal.
+
+**Harness.** `tools/strategy_farm/session_tools/hcc_m1_reader_0921.py` reads the terminals' `.hcc` M1 custom
+history read-only (validated against the terminal's own JSONL export: EURUSD 94,574 / 94,575 rows identical,
+GBPUSD 100,000 / 100,000). `velocity_hv_prescreen_0921.py` simulates the frozen mechanism closed-bar on M1
+(shift-1 contract, zoneinfo-mapped anchors, registry commission, `.DWX` spread = 0, selection 2018-07..2022-12
+/ validation 2023-25, floor / cap frozen from selection only). Output:
+`../../ops/evidence/2026-09-20_velocity_book/velocity_hv_prescreen_0921.json` and the sealed
+`prescreen_extract.json` in 0009 / 0010.
+
+**Measured (A15 arm, commission-only, R at RISK_FIXED 1000):**
+
+| hyp | symbol | period | trades | /bd | E[R] | PF | worst-yr DD | R/bd | cost_R median |
+|---|---|---|---|---|---|---|---|---|---|
+| H-V1 | EURUSD | SEL | 932 | 0.79 | −0.054 | 0.91 | 36.5 | −0.043 | 0.040 (+ spread GAP) |
+| H-V1 | EURUSD | VAL | 626 | 0.80 | +0.022 | 1.04 | 30.9 | +0.018 | |
+| H-V1 | GBPUSD | SEL | 935 | 0.80 | −0.068 | 0.89 | 50.0 | −0.054 | 0.031 (+ spread GAP) |
+| H-V1 | GBPUSD | VAL | 589 | 0.75 | +0.058 | 1.11 | 19.5 | +0.044 | |
+| H-V2 | XAUUSD | SEL | 682 | 0.58 | −0.050 | 0.91 | 27.8 | −0.029 | 0.018 + FTMO spread 0.087 |
+| H-V2 | XAUUSD | VAL | 447 | 0.57 | +0.038 | 1.07 | 19.7 | +0.022 | 0.018 + FTMO spread 0.067 |
+
+Floors / caps (× ATR(14,H1), p10 / p90 of SEL): EURUSD 0.86 / 1.93, GBPUSD 0.88 / 2.06, XAUUSD 0.85 / 2.19.
+The A20 arms and the H-V1 breakout-only / failure-only variants are all ≤ 0 on SEL (see the artifacts).
+
+**Outcome.** Both surviving hypotheses trip their own falsification criteria on the selection period
+(E[R] < +0.08 / +0.10, PF < 1.05; H-V2 additionally the DD kill bar). Density was never the problem
+(0.6-0.8 trades/bd); expectancy is, and the 60-minute pre-open ranges are too thin for the range-width stop
+to carry commission (0.03-0.04R) plus spread (H-V2: measured FTMO median 0.44 USD = 0.07-0.09R). The
+regime-dependent positive validation cells (EURUSD breakout 2024, GBPUSD 2023/25) are not a selection basis.
+**Disposition: 0009 / 0010 resealed as draft revision 2 with RETIRE recommended; 0011 sealed retired.** A
+second Codex critic round audits the prescreen simulator (anchor mapping, closed-bar contract, cost model)
+before Fable retires 0009 / 0010; no card, build or factory row from any of the three.
+
+**What carries forward.** The harness measures any session-anchored intraday hypothesis in ~30 s with zero
+factory time and should precede every future Velocity card; and the lesson generalises the 41484 finding —
+a one-hour pre-open range on FX majors / gold is a cost trap at RISK_FIXED sizing, so the next hypotheses
+must either use wider structural ranges (multi-hour, ATR-scaled stops) or mechanisms whose expectancy per
+trade is an order of magnitude above 0.05R.

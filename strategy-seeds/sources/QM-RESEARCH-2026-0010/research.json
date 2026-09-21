@@ -1,43 +1,74 @@
 {
   "author": "Claude",
-  "candidate_edge": "A single volatility-expansion signal per weekday on XAUUSD, gated strictly to the 13:30-14:30 UTC US cash/COMEX-linked open window, flat by 20:00 UTC (0% overnight). Bounded params: reference range = 12:30-13:30 UTC pre-open range, entry = M15-confirmed close beyond that range in the 13:30-14:30 UTC window, stop = reference-range width, target = 1.5x-2.0x reference-range width, hard time-stop flat at 20:00 UTC.",
+  "candidate_edge": "One pre-open-range breakout per weekday on XAUUSD anchored to 08:30 America/New_York (server time = New York + 7 h, constant): reference range = the four closed M15 bars before the anchor; first M15 bar in [anchor, anchor+60 min) CLOSING beyond the range triggers; entry at the next bar open, stop = range width W, frozen target arms A15 = 1.5 W / A20 = 2.0 W, floor / cap 0.85-2.19 x ATR(14,H1), flat at 16:00 America/New_York, DD kill bar 20R. PRESCREEN OUTCOME: FALSIFIED on the selection period (E[R] -0.050 R, PF 0.91, worst-year DD 27.8R) and the measured FTMO spread (0.44 USD = 0.087R at the median range) exceeds any plausible expectancy; RETIRE recommended.",
   "computed_outputs": [
     {
       "claim_ref": "hv2_baseline_extract",
       "file": "baseline_extract.json",
-      "sha256": "7426c6e94d560813826663f41a93d439280aec93d097eb7704d6c469819896e9"
+      "sha256": "c43a6cee75d54f5f4a02b7b30e369874e5d43dc44d105bb96970b6255cb213a0"
+    },
+    {
+      "claim_ref": "hv2_prescreen",
+      "file": "prescreen_extract.json",
+      "sha256": "2bf2642e666dd43542bc5e5ff65edeffb457578c71c23bb5a7118c58f55c6121"
     }
   ],
-  "confidence": "Low-to-moderate. Gold's elevated volatility around 13:30 UTC (many high-impact USD macro releases print at 08:30 ET) is a widely observed market microstructure fact, but the two existing always-on gold H1 EAs that already show high density+edge in the frozen screen (10423, 11690) both FAILED Q05 on drawdown -- so the open question is specifically whether session-gating (0% overnight, one signal/day) fixes the drawdown failure mode without destroying the edge, not whether gold has a tradeable edge at all. This is a narrower and more falsifiable claim than 'gold is volatile at the US open'.",
+  "confidence": "High that the frozen mechanism has no net expectancy on 2018-2022 .DWX history and that the FTMO spread makes it uneconomic in every period (n=682 SEL / 447 VAL). The spread figure is a 2026 venue harvest applied to 2018-2025 ranges, stated as such, not assumed; the news blackout would further cut density.",
   "confounders": [
-    "The 13:30 UTC window overlaps the mandatory news blackout for high-impact USD releases; if the tradeable move is driven by the same releases the blackout excludes, density could collapse well below the structural prior once the filter is applied.",
-    "Gold's point value and typical spread are materially different from FX majors; the qualitative cost-to-target check below is not a substitute for a real commission read from framework/registry/tester_defaults.json.",
-    "10700 XAUUSD (in the current demo roster) already carries 58% overnight exposure and a 19.7h hold at a healthy +0.165R/trade -- if H-V2's session-flat redesign simply captures a subset of the SAME underlying gold edge as 10700 rather than a genuinely distinct one, the two would be correlated day-to-day and should not both enter a book without the joint-tail check.",
-    "10423/11690's Q05 DD failures could stem from position sizing rather than from being always-on; if so, session-gating alone may not fix the DD axis and the falsification criterion below (DD reproduces the same failure) is designed to catch that."
+    "Zero spread in .DWX history; the FTMO spread sensitivity uses a 2026 harvest (100,000 M1 rows) against 2018-2025 range widths: the ratio is indicative, the direction is not in doubt.",
+    "News blackout not modelled: the 08:30 NY releases sit inside the entry window, so the framework filter would remove a large share of the fires (density upper bound).",
+    "Conservative same-bar stop-first resolution on M1 bars; no slippage modelled.",
+    "Floor/cap thresholds derived on the selection period only; validation applies them unchanged.",
+    "Dependence with 10700 (demo roster gold sleeve) not evaluated (moot after falsification)."
   ],
   "created_utc": "2026-09-21T04:34:40+00:00",
   "critic_receipt": "critic_receipt.json",
   "lineage": "lineage.json",
   "ml_method": null,
-  "model": "claude-sonnet-5",
-  "observations": "The two highest-density measured gold configurations in the frozen Q02 screen (10423: 0.82 trades/bd, +0.086R/trade; 11690: 1.84 trades/bd, +0.028R/trade) both show real edge but both FAILED Q05 on drawdown (41% and 59% respectively, per README.md's velocity table) -- they are always-on H1 signals, not gated to a specific session. The current demo-roster gold sleeve (10700) achieves +0.165R/trade but only at 0.18 trades/bd with 58% overnight exposure and a 19.7h hold. No measured configuration combines XAUUSD's demonstrated H1 edge with a session-flat (0% overnight), single-window structure the way 13213 does for USDJPY.",
+  "model": "claude-fable-5-1",
+  "observations": "Prescreen 2018-07-02..2025-12-31 (1,932 trading days): 1,129 breakout trades, 373 no-signal days, 271 floor- and 158 cap-excluded days. SEL A15 n=682, 0.58/bd, E[R] -0.050, PF 0.91, worst-year DD 27.8R; A20 -0.046 / 0.92 / 29.1R. VAL A15 n=447, 0.57/bd, +0.038, PF 1.07, DD 19.7R; A20 +0.030 / 1.05. Per-year A15: 2018 +3.6, 2019 -21.5, 2020 -18.0, 2021 +6.6, 2022 -5.1, 2023 +9.3, 2024 -10.2, 2025 +18.0. Commission median 0.018R (p90 0.028R). Measured FTMO XAUUSD spread median 44 points (0.44 USD) = 0.087R at the SEL median width (5.05 USD) and 0.067R at the VAL median width (6.53 USD). Frozen-screen comparators unchanged: 10423 0.82/bd +0.086R (Q05 FAIL dd 41%), 11690 1.84/bd +0.028R (dd 59%), 10700 0.18/bd +0.165R 58% overnight.",
   "originating_task_id": "31012467-dde7-4b74-995c-def2241b28c0",
-  "proposed_mechanism": "Gold is a global 23/5 OTC market whose volatility genuinely clusters around the US cash-equity/COMEX-linked open (13:30 UTC / 08:30 ET), a window in which a large share of high-impact USD macro data prints -- unlike the H-CW/H-MR index trio (41475/41476), whose 'cash-open' anchor is CORRECT for US-listed symbols but demonstrably mistimed for GDAXI (5-6h late per FTMO_PORTFOLIO_GAP_CURRENT.md section 7). XAUUSD has no such timing mismatch because it trades continuously and its own volatility genuinely concentrates at this window regardless of which exchange is 'open'. H-V2 asks whether capturing that expansion in a single session-gated (0% overnight) trade per day reproduces gold's already-measured H1 edge (10423/11690) while fixing the drawdown failure that killed both existing always-on configurations.",
+  "proposed_mechanism": "Session-gated redesign of the always-on XAUUSD H1 edge (10423 / 11690) as a single pre-open-range breakout at the 08:30 NY macro time, flat before the close. Revision 2 measured it directly: density 0.58 trades/bd is present, expectancy is not; the 60-minute pre-open range (median 5.05 USD) is too small relative to commission and, above all, to the measured FTMO spread.",
   "quantitative_claims": [
     {
-      "claim": "10423 and 11690 (always-on XAUUSD H1) show real density+edge but both failed Q05 on drawdown",
-      "value": "10423: 0.82 trades/bd, +0.086R, Q05 FAIL dd 41%; 11690: 1.84 trades/bd, +0.028R, Q05 FAIL dd 59%",
-      "computed_output_ref": "hv2_baseline_extract"
+      "claim": "selection-period expectancy of the frozen arms",
+      "computed_output_ref": "hv2_prescreen",
+      "value": "A15 n=682 E[R] -0.0504 PF 0.909 R/bd -0.0293 DD 27.8R; A20 -0.0459 PF 0.921 DD 29.1R"
     },
     {
-      "claim": "10700 (demo roster XAUUSD sleeve) profile used as the always-on comparison point",
-      "value": "0.18 trades/bd, +0.165R/trade, 19.7h hold, 58% overnight",
-      "computed_output_ref": "hv2_baseline_extract"
+      "claim": "validation-period expectancy of the frozen arms",
+      "computed_output_ref": "hv2_prescreen",
+      "value": "A15 n=447 E[R] +0.0382 PF 1.071 R/bd 0.0219; A20 +0.0301 PF 1.052"
     },
     {
-      "claim": "measured XAUUSD Q02 configuration ceiling/floor across all 70 configurations in the frozen screen",
-      "value": "see summary in baseline_extract.json",
-      "computed_output_ref": "hv2_baseline_extract"
+      "claim": "measured density and day states",
+      "computed_output_ref": "hv2_prescreen",
+      "value": "1,129 trades / 1,932 days; 0.5804 per bd SEL, 0.5716 VAL; 373 no-signal, 271 floor-, 158 cap-excluded"
+    },
+    {
+      "claim": "named floor / cap and range-width distribution",
+      "computed_output_ref": "hv2_prescreen",
+      "value": "0.85-2.19 x ATR(14,H1); W p10/50/90 2.312/5.05/9.482 USD (SEL), 3.35/6.525/14.444 (VAL)"
+    },
+    {
+      "claim": "commission cost per trade at RISK_FIXED 1000 (registry commodity class)",
+      "computed_output_ref": "hv2_prescreen",
+      "value": "median 0.0179R, p90 0.0284R"
+    },
+    {
+      "claim": "measured FTMO-venue spread sensitivity",
+      "computed_output_ref": "hv2_prescreen",
+      "value": "median 44 points = 0.44 USD; 0.0871R at SEL median width, 0.0674R at VAL median width"
+    },
+    {
+      "claim": "10423 and 11690 (always-on XAUUSD H1) comparators (frozen screen)",
+      "computed_output_ref": "hv2_baseline_extract",
+      "value": "10423: 0.82 trades/bd, +0.086R, Q05 FAIL dd 41%; 11690: 1.84 trades/bd, +0.028R, Q05 FAIL dd 59%"
+    },
+    {
+      "claim": "10700 (demo roster XAUUSD sleeve) comparator (frozen screen)",
+      "computed_output_ref": "hv2_baseline_extract",
+      "value": "0.18 trades/bd, +0.165R/trade, 19.7h hold, 58% overnight"
     }
   ],
   "related_strategies": [
@@ -49,15 +80,21 @@
     "QM5_41476"
   ],
   "research_id": "QM-RESEARCH-2026-0010",
-  "research_question": "Does gating XAUUSD's already-measured H1 volatility-expansion edge (10423/11690) to a single 13:30-14:30 UTC session window, flat by 20:00 UTC, reproduce comparable E[R] to the always-on configurations while fixing the Q05 drawdown failure that retired both of them?",
+  "research_question": "Does a single 08:30-America/New_York pre-open-range breakout on XAUUSD, flat by 16:00 NY, with frozen target arms and a named range floor/cap, carry positive net expectancy at ~0.6 trades/bd and a bounded drawdown on 2018-2022 .DWX history? Answer (revision 2 prescreen): no; E[R] -0.050 R before spread, worst-year DD 27.8R, and the measured FTMO spread costs 0.087R per trade.",
   "research_trial_count": 1,
+  "revision_note": "Revision 2 (2026-09-21, Fable, claude-fable-5-1) after cross-vendor critique 1614737c. Every prior replaced by the closed-bar M1 prescreen prescreen_extract.json (tools/strategy_farm/session_tools/velocity_hv_prescreen_0921.py over hcc_m1_reader_0921.py, .DWX custom history, 0 factory hours). Indicative simulation, commission-only (framework/registry/live_commission.json), .DWX spread = 0.",
   "schema": "qm.internal-research-source/v1",
   "search_history_ref": "N/A -- directed hypothesis authored against the 2026-09-20 velocity evidence cohort per task 31012467-dde7-4b74-995c-def2241b28c0, not a Kimi OBSERVE/DISCOVER search-ledger product.",
   "source_datasets": [
     {
       "dataset_id": "q02_velocity_screen_2026-09-20",
       "path": "baseline_extract.json",
-      "sha256": "7426c6e94d560813826663f41a93d439280aec93d097eb7704d6c469819896e9"
+      "sha256": "c43a6cee75d54f5f4a02b7b30e369874e5d43dc44d105bb96970b6255cb213a0"
+    },
+    {
+      "dataset_id": "dwx_custom_history_m1_XAUUSD_2018-2025_plus_ftmo_spread_harvest_2026",
+      "path": "prescreen_extract.json",
+      "sha256": "2bf2642e666dd43542bc5e5ff65edeffb457578c71c23bb5a7118c58f55c6121"
     }
   ]
 }

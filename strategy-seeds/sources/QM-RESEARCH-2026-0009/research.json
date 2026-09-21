@@ -1,43 +1,74 @@
 {
   "author": "Claude",
-  "candidate_edge": "A single opening-range breakout/failed-breakout signal per weekday per symbol on EURUSD and GBPUSD, gated strictly to the 07:00-08:00 UTC London cash-session open, flat by 16:00 UTC (0% overnight target). Bounded params: range window 07:00-08:00 UTC, entry = M15-confirmed close beyond range high/low (breakout) or M15-confirmed close back inside the range after a false break (failure/reversal variant, mutually exclusive per bar), stop = range width, target = 1.5x-2.0x range width, hard time-stop flat at 16:00 UTC.",
+  "candidate_edge": "One opening-range signal per weekday per symbol on EURUSD and GBPUSD anchored to 08:00 Europe/London (mapped deterministically to server time via America/New_York + 7 h): range = the four closed M15 bars before the anchor; first M15 bar in [anchor, anchor+4h) trading outside the range decides: close beyond => breakout arm B, wick-only => failure arm F against the wick; entry at the next bar open, stop = range width W, frozen target arms A15 = 1.5 W / A20 = 2.0 W, thin-range floor / wide-range cap 0.86-1.93 x ATR(14,H1) EURUSD and 0.88-2.06 GBPUSD, flat at 16:00 Europe/London. PRESCREEN OUTCOME: FALSIFIED on the selection period (E[R] -0.054 / -0.068 R, PF 0.91 / 0.89) with commission alone costing a median 0.040 / 0.031 R per trade; RETIRE recommended.",
   "computed_outputs": [
     {
       "claim_ref": "hv1_baseline_extract",
       "file": "baseline_extract.json",
-      "sha256": "c987e2d3280118ed9113a45fc74a473ea04bf03eeaf1c40340c56f6bbda19f73"
+      "sha256": "5b291bdfab5f220ff53323b27c8a1295e9c9ef6b94d4ec7c0b87a577d5d4b15f"
+    },
+    {
+      "claim_ref": "hv1_prescreen",
+      "file": "prescreen_extract.json",
+      "sha256": "aba9c5b52ae361bc850beabbadbb85d5170098ea6e84de4480e159e19eb0a864"
     }
   ],
-  "confidence": "Low-to-moderate. The density prior (0.6-0.7 trades/bd/symbol) is a structural inference from calendar mechanics (one opening range per weekday, discounting holidays/low-range days), not a measurement -- no existing measured configuration in the frozen Q02 screen gates entry to this specific 07:00-08:00 UTC window, so there is no direct historical R_bd for the mechanism itself. The E[R] prior (+0.10-0.15R) is anchored to the single best-measured session-flat profile in the whole inventory (13213 USDJPY Balke breakout, +0.064R, 0% overnight) scaled up for London's structurally higher realized-vol-at-open versus Tokyo's 03:00-06:00 GMT+3 window, which is itself an unverified transfer assumption and the primary thing the Q02 canary must falsify.",
+  "confidence": "High that the mechanism as frozen has no net expectancy on 2018-2022 .DWX history (n=932 / 935 per symbol, both arms, both variants negative or flat). Moderate on the absolute level because the simulation is closed-bar M1 with conservative same-bar stop-first resolution, no news filter and zero spread; each of these biases the result in a different direction but none plausibly by +0.10R. The 2023-25 positive cells are regime-dependent (single-year driven) and are not a selection basis.",
   "confounders": [
-    "London-open volatility is partly driven by the same macro calendar the news-blackout filter already excludes (Hard Rule mandatory news blackout) -- if the tradeable edge is concentrated on high-impact-news days, the news filter could remove most of the density before Q02 even measures it.",
-    "EURUSD and GBPUSD daily ranges are correlated (both GBP/EUR vs USD); if the mechanism fires on both symbols from the same market-wide opening shock, the two 'independent' sleeves may share tail risk on the same days -- must be checked against the FTMO_PORTFOLIO_GAP_CURRENT.md tail-dependence method (|r|>0.30 or >2x independence-baseline lower-decile co-occurrence) before either symbol enters a book alongside the other.",
-    "Range-breakout mechanisms are regime-dependent (trend vs chop); the 2018-2024 window mixes both regimes and a single aggregate E[R] could mask a strategy that only works in a sub-period, which is exactly the failure mode the census_frontier_holdout.json finding (in-sample winners do not beat baseline OOS) already demonstrated for this EA family generally.",
-    "M15 execution timeframe means the true entry price is subject to spread widening right at the 07:00 UTC open, which the .DWX tester models as zero spread (FTMO_PORTFOLIO_GAP_CURRENT.md section 1b) -- the cost-to-target check below is therefore commission-only and may be optimistic."
+    "Zero spread in .DWX history: the London open is where FX spread widens; the true cost is higher than the commission-only figure (GAP, no figure invented).",
+    "News blackout not modelled: the framework filter removes some of the 08:00-12:00 London fires; it lowers density and may change expectancy in either direction.",
+    "Conservative same-bar resolution (stop before target) on M1 bars slightly understates winners on volatile bars; the opposite bias (no slippage) overstates them.",
+    "Floor/cap thresholds were derived on the selection period; the validation period applies them unchanged (no re-selection).",
+    "EURUSD/GBPUSD daily P/L dependence not evaluated (moot after falsification); required before any two-symbol carding."
   ],
   "created_utc": "2026-09-21T04:34:39+00:00",
   "critic_receipt": "critic_receipt.json",
   "lineage": "lineage.json",
   "ml_method": null,
-  "model": "claude-sonnet-5",
-  "observations": "No measured Q02 configuration on EURUSD or GBPUSD (30 configurations in the frozen screen, see baseline_extract.json) gates entry to a fixed opening-range window; the best measured non-session-anchored config on either symbol tops out at R_bd well below the Balke 13213 template (0.048 R_bd, 0% overnight). All measured intraday sleeves that DO reach the fastest profile in the company (13213, 0.744 trades/bd) use a session-range-breakout mechanism, just on the wrong pair/session for this hypothesis (Tokyo, USDJPY) -- H-V1 asks whether the SAME mechanism class (opening-range breakout/failure), re-anchored to each symbol's OWN native cash-session open rather than transplanted verbatim (which is precisely the transplant that failed for AUDJPY/EURJPY/USDCAD/etc. in the 41484 fan-out, see baseline_extract.json balke_41484_fanout_reference), reproduces a comparable R/bd on EURUSD/GBPUSD.",
+  "model": "claude-fable-5-1",
+  "observations": "Prescreen 2018-07-02..2025-12-31 (1,929 / 1,930 trading days). EURUSD: 1,558 trades (818 B, 740 F); SEL A15 B+F n=932, 0.79/bd, E[R] -0.054, PF 0.91, worst-year DD 36.5R; VAL n=626, +0.022, PF 1.04 (breakout-only VAL +0.169 / PF 1.33 after -0.109 in SEL = regime flip, 2024 alone +55.6R). GBPUSD: 1,524 trades; SEL A15 B+F n=935, 0.80/bd, -0.068, PF 0.89, DD 50.0R; VAL n=589, +0.058, PF 1.11. A20 arms are worse than A15 in SEL on both symbols. Commission median 0.040R (EURUSD) / 0.031R (GBPUSD) per trade; spread unmeasured for FX majors (GAP). Frozen-screen baselines unchanged: 13213 0.74/bd +0.064R; 41484 transplant EURUSD -0.082R, GBPUSD -0.015R.",
   "originating_task_id": "31012467-dde7-4b74-995c-def2241b28c0",
-  "proposed_mechanism": "London-session opening-range establishment reflects the first price discovery after the Asia-session low-liquidity book closes and European institutional flow enters; a genuine directional breakout of that range is more likely to be information-driven (continuation) than a Tokyo-session range breakout on the same pair would be, because EURUSD/GBPUSD's natural liquidity center is London, not Tokyo. This is the same economic logic already validated for USDJPY at ITS native session (Tokyo AM, Balke/13213: 0% overnight, 7.2h hold, +0.064R) -- H-V1 pairs the identical mechanism class with EURUSD/GBPUSD's own native session instead of reusing USDJPY's window, directly responding to the README.md section 2c lesson: 'the next fan-outs must pair each mechanism with its own session structure.'",
+  "proposed_mechanism": "London-session opening-range breakout/failure as the native-session counterpart of the Balke Tokyo-range mechanism (13213) for EURUSD/GBPUSD, after the verbatim transplant of the Tokyo window failed (41484 fan-out). Revision 2 measured the mechanism directly: density 0.75-0.80 trades/bd per symbol is present, expectancy is not (the 60-minute pre-open range is too thin, median 14.5 / 22.1 pips, for the range-width stop to carry the registry commission, before any spread).",
   "quantitative_claims": [
     {
-      "claim": "no measured EURUSD/GBPUSD Q02 configuration (non-session-anchored) exceeds the stated R_bd ceiling",
-      "value": "see summary.R_bd_max in baseline_extract.json",
-      "computed_output_ref": "hv1_baseline_extract"
+      "claim": "selection-period expectancy of the frozen A15 B+F arm",
+      "computed_output_ref": "hv1_prescreen",
+      "value": "EURUSD n=932 E[R] -0.0541 PF 0.911 R/bd -0.0429; GBPUSD n=935 E[R] -0.0679 PF 0.888 R/bd -0.054"
     },
     {
-      "claim": "Balke 13213 USDJPY template profile (density, E[R], R_bd, hold, overnight) used as the scaling reference for the E[R] prior",
-      "value": "0.74 trades/bd, +0.064R, 0.048 R_bd, 7.2h hold, 0% overnight",
-      "computed_output_ref": "hv1_baseline_extract"
+      "claim": "validation-period expectancy of the frozen A15 B+F arm",
+      "computed_output_ref": "hv1_prescreen",
+      "value": "EURUSD n=626 E[R] +0.0224 PF 1.039; GBPUSD n=589 E[R] +0.0584 PF 1.106"
     },
     {
-      "claim": "the identical-trigger transplant of Balke's window onto non-JPY majors (including a GBPUSD leg) already measured flat/negative, motivating the native-session redesign here",
-      "value": "AUDJPY +0.005R, GBPUSD -0.015R (41484 fan-out)",
-      "computed_output_ref": "hv1_baseline_extract"
+      "claim": "measured density and fire counts",
+      "computed_output_ref": "hv1_prescreen",
+      "value": "EURUSD 1,558 trades / 1,929 days (0.79 per bd SEL, 0.80 VAL); GBPUSD 1,524 / 1,930 (0.80 SEL, 0.75 VAL)"
+    },
+    {
+      "claim": "named thin-range floor / wide-range cap and range-width distribution",
+      "computed_output_ref": "hv1_prescreen",
+      "value": "EURUSD 0.86-1.93 x ATR(14,H1), W p10/50/90 0.00079/0.00145/0.00276; GBPUSD 0.88-2.06, W 0.00132/0.00221/0.00408 (SEL)"
+    },
+    {
+      "claim": "commission cost per trade at RISK_FIXED 1000 (registry model)",
+      "computed_output_ref": "hv1_prescreen",
+      "value": "EURUSD median 0.040R p90 0.065R; GBPUSD median 0.0311R p90 0.0503R"
+    },
+    {
+      "claim": "worst simulated calendar-year drawdown (A15 B+F, SEL)",
+      "computed_output_ref": "hv1_prescreen",
+      "value": "EURUSD 36.51R; GBPUSD 50.0R"
+    },
+    {
+      "claim": "Balke 13213 USDJPY template profile (frozen screen)",
+      "computed_output_ref": "hv1_baseline_extract",
+      "value": "0.74 trades/bd, +0.064R, 0.048 R_bd, 7.2h hold, 0% overnight"
+    },
+    {
+      "claim": "41484 verbatim-transplant result on the H-V1 symbols (frozen screen)",
+      "computed_output_ref": "hv1_baseline_extract",
+      "value": "EURUSD -0.082R, GBPUSD -0.015R"
     }
   ],
   "related_strategies": [
@@ -50,15 +81,21 @@
     "QM5_41484"
   ],
   "research_id": "QM-RESEARCH-2026-0009",
-  "research_question": "Does an opening-range breakout/failure mechanism, re-anchored to EURUSD/GBPUSD's own native 07:00-08:00 UTC London cash-session open (instead of the Tokyo window that failed when transplanted onto non-JPY majors), reproduce a session-flat, ~0.5-0.7 trades/bd, >=+0.10R/trade profile comparable to the best measured sleeve (Balke 13213) in the inventory?",
+  "research_question": "Does an opening-range breakout/failure mechanism anchored to EURUSD/GBPUSD's own 08:00 Europe/London cash open, with frozen target arms and a named range floor/cap, carry positive net expectancy at 0.75-0.80 trades/bd on 2018-2022 .DWX history? Answer (revision 2 prescreen): no; E[R] -0.054 / -0.068 R after commission.",
   "research_trial_count": 1,
+  "revision_note": "Revision 2 (2026-09-21, Fable, claude-fable-5-1) after cross-vendor critique 1614737c. Every prior replaced by the closed-bar M1 prescreen prescreen_extract.json (tools/strategy_farm/session_tools/velocity_hv_prescreen_0921.py over hcc_m1_reader_0921.py, .DWX custom history, 0 factory hours). Indicative simulation, commission-only (framework/registry/live_commission.json), .DWX spread = 0.",
   "schema": "qm.internal-research-source/v1",
   "search_history_ref": "N/A -- this artifact is a directed hypothesis authored against the 2026-09-20 velocity evidence cohort per task 31012467-dde7-4b74-995c-def2241b28c0, not a Kimi OBSERVE/DISCOVER search-ledger product; no search_history_ledger.jsonl entry exists for this family (research_trial_count=1 reflects this single directed hypothesis, not a swept parameter search).",
   "source_datasets": [
     {
       "dataset_id": "q02_velocity_screen_2026-09-20",
       "path": "baseline_extract.json",
-      "sha256": "c987e2d3280118ed9113a45fc74a473ea04bf03eeaf1c40340c56f6bbda19f73"
+      "sha256": "5b291bdfab5f220ff53323b27c8a1295e9c9ef6b94d4ec7c0b87a577d5d4b15f"
+    },
+    {
+      "dataset_id": "dwx_custom_history_m1_EURUSD_GBPUSD_2018-2025",
+      "path": "prescreen_extract.json",
+      "sha256": "aba9c5b52ae361bc850beabbadbb85d5170098ea6e84de4480e159e19eb0a864"
     }
   ]
 }

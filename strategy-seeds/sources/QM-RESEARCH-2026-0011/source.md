@@ -13,6 +13,21 @@ source_artifact: QM-RESEARCH://2026-0011
 
 # Tokyo-session structure on JPY crosses AUDJPY/GBPJPY (H-V3, native Asia-session mechanism, non-Balke trigger)
 
+## Retired 2026-09-21 per critique 1614737c
+
+Cross-vendor critique `1614737c` (Codex, verbatim in
+`docs/ops/evidence/2026-09-20_velocity_book/hv1_hv3_critique_1614737c.md`) returned **REJECT** for this
+draft: entry price, gap-vs-spike definition, ATR multiple, reference side and closed-bar/shift-1 semantics
+were unspecified (a spike extreme read before the signal bar closes would look ahead); the 0.4-0.6/bd rate
+was a bare assumption; the combined R/bd arithmetic was wrong (two symbols imply 0.064-0.144, not
+0.032-0.072); negative breakout evidence does not establish a fade edge; thin-session spread was unmeasured.
+Fable accepted the critique and sealed this artifact with ledger status **retired**. Nothing below is
+buildable; a closed-bar, DST-aware re-authoring with a measured fire count (the
+`tools/strategy_farm/session_tools/velocity_hv_prescreen_0921.py` harness now exists for that) and per-leg
+kill rules would be a NEW artifact, not an edit of this one. The original text is preserved unchanged below
+as the evidence trail.
+
+
 ## Research provenance
 
 Authored by Claude under task `31012467-dde7-4b74-995c-def2241b28c0` (routed by Fable,
@@ -134,5 +149,5 @@ Retire this hypothesis if, on the full 2018-2024 `.DWX` history at RISK_FIXED:
 research.json:         6faf1fe9627a08f3ecde6eaead5dac0830b332c2e781fe470b698d94fd2a382a
 lineage.json:          7ca5d4c76c5b8d8d8e54b208264e6a7cd14f0ffa7f4365fb9bb0629c16fc45e5
 critic_receipt.json:   529e8710554d85fac62d435853a1c03f01bb3170f7efbc283a06b49d698cec14
-baseline_extract.json: cfcdde8342a6f135cef28b1e923db88cf31f61369f8f2398452805f8af2ede37
+baseline_extract.json: 1258bc6032a5ac175fd19ffc5fc4355baa468830a17050b5588eca9857bddc2c
 ```
