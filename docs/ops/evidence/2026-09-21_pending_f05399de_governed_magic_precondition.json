@@ -1,0 +1,26 @@
+{
+  "schema": "qm.governed_magic_precondition_evidence/v1",
+  "task_id": "a8177dca-635d-4597-a418-6d01165bcac7",
+  "ea_id": "PENDING_F05399DE",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_F05399DE_ft-binhv45.md",
+  "classification": "invalid_ea_id",
+  "required_action": "REFUSE",
+  "precheck": {
+    "ready": false,
+    "classification": "invalid_ea_id",
+    "action": "REFUSE",
+    "ea_id": "PENDING_F05399DE",
+    "slug": "ft-binhv45-v2",
+    "target_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX", "XAUUSD.DWX"]
+  },
+  "independent_verification": {
+    "method": "read card frontmatter directly (D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_F05399DE_ft-binhv45.md) in this session (agents/claude-orchestration-1 worktree, farmctl.py at commit fd5f2d41b4) and grepped the identity/magic registries for the placeholder id and slug",
+    "result": "classification=invalid_ea_id, action=REFUSE (matches router-supplied diagnosis)",
+    "registry_scan": "grep for 'PENDING_F05399DE' and 'ft-binhv45-v2' across framework/registry/ea_id_registry.csv and framework/registry/magic_numbers.csv returned zero rows; only match was the unrelated parent identity row (ea_id 11211, slug ft-binhv45, status=retired, 2026-08-21 OWNER-approved D1 disposition) which is a substring hit on 'ft-binhv45', not this v2 draft"
+  },
+  "finding": "The card's ea_id frontmatter value is a placeholder token ('PENDING_F05399DE'), not a QM5 numeric identity, so it does not match the (?:QM5_)?(\\d+) pattern the governed magic allocator and precheck require. The card is an append-only second-chance retest draft for origin strategy QM5_11211 (ft-binhv45, retired 2026-08-21), commissioned under the Strategy Second-Chance Programme (docs/research/STRATEGY_SECOND_CHANCE_PROGRAMME.md §5, Wave 2 style-supersession, task f05399de-2945-4ab3-8006-896e5b150b3a). g0_status is APPROVED with r1-r4 all PASS, and the card body itself states 'Numeric EA ID will be atomically minted via farmctl reserve-ea-ids by Codex/controller upon build task creation.' No numeric ea_id has been reserved for this strategy yet, so there is no identity or magic-number precondition to check or allocate. The governed allocator sequence (identity -> magic rows -> resolver) cannot begin without a real numeric ea_id.",
+  "action_taken": "REFUSE per action=REFUSE. No registry or resolver mutation attempted. No card edit attempted -- assigning a numeric ea_id is a G0/identity-reservation decision (farmctl reserve-ea-ids) outside this task's scope, not a magic-allocation precondition fix.",
+  "required_next_step": "Card needs a real numeric ea_id assigned through the standard identity-reservation path (farmctl reserve-ea-ids under the build/intake controller) before governed_magic_precondition or governed_magic_allocator can run against it. Left in cards_review with ea_id unchanged; original build (task f05399de-2945-4ab3-8006-896e5b150b3a lineage) stays blocked.",
+  "verdict": "REFUSE -- invalid_ea_id (placeholder PENDING_F05399DE), not eligible for governed magic allocation until a numeric identity is reserved",
+  "observed_at": "2026-09-21T20:55:00Z"
+}
