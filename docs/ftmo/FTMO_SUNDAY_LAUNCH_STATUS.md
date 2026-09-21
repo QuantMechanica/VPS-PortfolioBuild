@@ -21,7 +21,7 @@ Updated by Fable at every material change; last update **2026-09-21 19:2xZ**.
 | DAILY_LOSS_BREACH_PROB | 0.0 | |
 | MAX_LOSS_BREACH_PROB | 0.0202 (phase 1) | |
 | DEPENDENCE_HIGHEST_CLUSTER | {10403, 10700, 41219} XAUUSD — activity cluster (position overlap 39 %), not a tail cluster (lower-tail co-exceedance 0) | `FTMO_BOOK_DEPENDENCE_MATRIX_financed.md` |
-| KILL_SWITCH | **BLOCKED** — deployed D2g6 sleeves run anchor_offset 0 / raw equity / no book tag (diagnosis 4fd8222f); governed initializer = Codex `d6189118` IN_PROGRESS (prio 86, exempt) | `2026-09-21_4fd8222f_ftmo_d2g6_kill_switch_anchor_diagnosis.md` |
+| KILL_SWITCH | **BLOCKED** — deployed D2g6 sleeves run anchor_offset 0 / raw equity / no book tag (diagnosis 4fd8222f) **and** the day key froze over the weekend (TimeCurrent-based; Sunday restarts restored stale Friday anchors, retro audit 4505b206); governed initializer = Codex `d6189118` IN_PROGRESS (prio 86, exempt; weekend requirement 8 added) | `2026-09-21_4fd8222f_ftmo_d2g6_kill_switch_anchor_diagnosis.md` |
 | ROLLOVER | **BLOCKED** — Prague-calendar helper + KS_DAY_ROLLOVER event part of `d6189118`; runtime + rollover-event + Daily-Loss-anchor + book-generation-identity proofs after deployment | |
 | HARNESS_V2 | **IN_PROGRESS** — Codex `7088da77` (prio 84, exempt) incl. §L golden test vs MT5 Every Real Tick | |
 | NEWS_TIME_ARCHIVE | **IN_PROGRESS** — Codex `a36a5983` (prio 82, exempt); impact bound pending | |
@@ -42,7 +42,7 @@ Updated by Fable at every material change; last update **2026-09-21 19:2xZ**.
 | EXECUTION | spread/commission realistic, no unrealistic fill dependency, OCO verified, calendars/DST/news valid | AMBER — commission/financing modelled (financed run); news archive DST audit open (a36a5983); OCO not relevant to the six (no bracket EA in the roster) | a36a5983 |
 | PORTFOLIO | dependence matrix current, weights intentional, no duplicate exposure, XAU cluster understood, first-passage current | GREEN (financed re-run 2026-09-21) | Fable |
 | OPERATIONS | sleeve P&L attribution, logs, recovery procedure, demo account clean before attach, post-attach verification | RED (attribution 74c41987; account-clean + post-attach = launch-day steps) | Codex 74c41987 → Fable |
-| DEMO DAYS | retro-audit classification of the 2026-09-18..27 days (BEHAVIOR_IDENTICAL / POTENTIALLY_DIFFERENT / MATERIALLY_INVALID) | RED (4505b206 TODO) | Codex 4505b206 |
+| DEMO DAYS | retro-audit classification of the 2026-09-18..27 days (BEHAVIOR_IDENTICAL / POTENTIALLY_DIFFERENT / MATERIALLY_INVALID) | GREEN for 09-18..21 (1 INVALID / 2 POTENTIALLY_DIFFERENT / 1 IDENTICAL; 2 valid completed days; all PRE_SUNDAY_LIVE_TRIAL, not merged) — re-run for 09-22..26 before launch | Codex 4505b206 APPROVED (`2026-09-21_ftmo_demo_day_retro_audit/`) |
 
 ## Next five actions (ordered)
 
