@@ -189,3 +189,15 @@ COMPILE_OK rows → next tranche → status table).
   book-path LCB 0.9194, fail-together cluster {10403, 10700, 41219} XAU; marginal table: 11708 EURUSD CONSIDER_ADD (+0.020 LCB),
   11421 CONSIDER_ADD with +571 USD DD, 11910/10513 HOLD, all leave-one-out KEEP; H-V4 NOT_YET_MEASURABLE until its Q08 stream
   exists. Mission Control FTMO BOOK panel live (`8aa2d8c362`).
+- 15:23Z (21.09.) — **QM5_41485 first tester measurement (EURUSD C3, secondary arm): Q02 PASS but below its pre-registered
+  bars → arm retired; calibration alarm triggered.** First compile failed on two MQL5 initializer-list errors (Codex could not
+  compile behind the live-factory guard); Fable reproduced them with a scratchpad diagnostic compile, fixed (`b5dd72afee`),
+  registered the repair authority (`b360c10e08`), rebuilt via the governed lane (COMPILE_OK, `.ex5` committed). Canary
+  `b5ede908` EURUSD.DWX M30 2018-07..2022-12: 767 trades (0.65/bd), net +31,269 USD, **PF 1.08, DD 40.9R, E[R] +0.041R,
+  R/bd +0.027** vs harness SEL +0.076R / PF 1.18 / DD 24.7R. Pre-registered EURUSD-C3 bars: E[R] ≥ +0.04 (met, barely),
+  **PF ≥ 1.10 (failed)**, Q05 DD ≤ 25R (would fail at 40.9R) → **EURUSD C3 retired**. Calibration: tester − harness = −0.035R
+  E[R], −0.10 PF, +16R DD — well beyond the control cell's +0.018R, so the harness optimism is arm-specific and larger on this
+  session (news-dense 15:30 anchor, zero-spread fills). Consequence for USDJPY: the pre-registered C2 bars stay (trades ≥ 800,
+  E[R] ≥ +0.08R, PF ≥ 1.15); harness +0.141R minus a similar gap would still clear them, but this is now the open question.
+  USDJPY C2 row `ffe3a8dc` enqueued as universe expansion of the PASS canary and priority-tracked. Q03 2024 for EURUSD:
+  −0.049R (regime flip the sweep already flagged); Q04 FAIL.
