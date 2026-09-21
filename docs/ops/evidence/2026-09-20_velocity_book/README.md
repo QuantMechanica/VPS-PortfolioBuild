@@ -167,3 +167,14 @@ COMPILE_OK rows → next tranche → status table).
   (H-V4 "NY pre-open session-range breakout", 13213 mechanics on an M30 range grid, USDJPY C2 primary + C3 frozen
   arm, EURUSD C3 slot) → Codex critique → new EA identity cloned from 13213 with minute-resolution anchor inputs →
   USDJPY Q02 canary first. Everything else in the family closed as measured.
+- 11:4xZ (21.09.) — **H-V4 → build lane.** Codex critique round 1 (`d7ed93cd`, REVISE ×3: build contract not single-valued,
+  C2 25R bar conflict, "2× incumbent" not significant after a paired within-USDJPY test p≈0.16) answered by revision 2 (`9de5d9a43a`,
+  12 points resolved, no parameter change); round 2 (`afb38e9a`) = **APPROVE_BUILD on USDJPY C2, USDJPY C3, EURUSD C3**. Intake done:
+  critic receipt → `QM-RESEARCH-2026-0012` sealed `reviewed`, verify ok:true; card `QM5_41485_ny-preopen-range-breakout-jpy`
+  (D: + repo mirror, approve-card stamped) with `candidate_role: VELOCITY_SLEEVE`; magic 414850000 USDJPY / 414850001 EURUSD
+  (`f68f5ee158`); Codex build ticket `b56cb62c` (13213 clone, :30-aligned 60-min grid on M30, minute-resolution anchor inputs).
+  Open: (a) card-intake prescreen box excludes M30 (`TIMEFRAME_OUTSIDE_BOX:M30`, advisory) — Fable decides box amendment vs H1
+  chart + M30 gate; (b) the USDJPY C3 arm has no second magic slot yet — Q02 runs C2 first, C3 as a universe expansion after a
+  C2 PASS. **OWNER reframing 11:0xZ (OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921): H-V4 is a VELOCITY_SLEEVE candidate for FTMO_BOOK,
+  not an FTMO solution; its value = marginal book contribution (Δ LCB / Δ time-to-target / Δ dependence), measured by the
+  account-level simulator (Codex `e5c49db2`).** Book state v1: `docs/ftmo/FTMO_BOOK_CURRENT.md`.
