@@ -1,0 +1,17 @@
+{
+  "schema": "qm.agent-task.no-change-state/v1",
+  "task_id": "160843a0-687c-4c34-9a09-19ad32374591",
+  "blocker": "mandatory_approve_shadow_precondition_unsatisfied",
+  "payload_depends_on": "None",
+  "prerequisite_task_id": "75f27580-d59f-472d-b01a-76effb3b491d",
+  "prerequisite_task_state": "APPROVED",
+  "prerequisite_critique_verdict": "REVISE",
+  "prerequisite_text_anchor": "Not APPROVE_SHADOW, not REJECT.",
+  "enqueue_authorized": false,
+  "sealed_cohort_rows": 61,
+  "bound_files": {
+    "docs/ops/evidence/2026-09-21_q05_dd_ceiling_v2_independent_critique.md": "87d9267ea37a1889281db9bd3904092b284f060a93c7c9f5e70c7256301ba855",
+    "docs/research/Q05_DD_CEILING_V2_COHORT_2026.csv": "c136919a99cf229088081fa30f80a79f1da7f7e980553f2d4033d482c9367c58",
+    "docs/research/Q05_DD_CEILING_V2_PROPOSAL_2026-09.md": "366488a602441fd624522863e115bd9716fbddc5f3b9273a00d62acca52a1b39"
+  }
+}
