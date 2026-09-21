@@ -59,6 +59,7 @@ HYPOTHESES = {
     "H-B7": {"symbols": ["XAUUSD.DWX"], "grid": 900},
     "H-B8": {"symbols": ["EURUSD.DWX", "GBPUSD.DWX"], "grid": 900},
 }
+MIN_STOP_SPREADS = 5.0  # stop distance must be >= 5 x round-trip spread (added after the first run exposed a 1-tick stop on GBPUSD)
 SEL_RULE = {"n": 300, "E_R": 0.08, "PF": 1.15, "DD": 20.0, "density": 0.40, "chance": 0.002}
 VAL_RULE = {"E_R": 0.0, "PF": 1.05, "R_per_bd_share": 0.5, "DD_year": 25.0}
 
@@ -157,6 +158,8 @@ def simulate(sym: Sym, day, entry_t, direction, stop_px, target_px, flat_t, rate
     stop_dist = abs(entry - stop_px)
     if stop_dist <= 0:
         return "bad_stop"
+    if stop_dist < MIN_STOP_SPREADS * sym.spread:
+        return "stop_too_tight"  # pre-registered floor: a stop inside a few spreads is cost-dominated by construction
     lots, nl = F1.lot_and_notional(sym.symbol, entry, stop_dist, rates)
     cost = F1.commission_r(sym.symbol, lots, nl)
     jj = j

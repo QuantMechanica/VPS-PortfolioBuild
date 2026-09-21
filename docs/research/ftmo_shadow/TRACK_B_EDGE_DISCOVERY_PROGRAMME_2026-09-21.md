@@ -89,3 +89,46 @@ America/New_York and mapped through the DST table. Index cash sessions: NDX/SP50
 - Codex: harness v2 hardening (`7088da77`) in parallel; builds of survivors (`build_ea` from the mechanisation cards).
 - MT5: Q02 canaries of survivors (factory is idle — the candidate-supply bottleneck the OWNER named).
 - Reporting: OWNER §21 fields at every material report; funnel counts in `ftmo_edge_funnel.json`.
+
+## 8. Result of family B1 (run 2026-09-21 20:10–20:2xZ, `velocity_family_f2_cash_session_0921.json`, 0 factory hours)
+
+**0 of 22 cells pass the SEL bar; 0 survivors** (expected false survivors under the family null: 0.10). 15 cells `CLEAR_REJECT`,
+7 `UNKNOWN` (too few signals to judge). Three planned cells did not evaluate (no UK100 hypothesis; two GDAXI cells had no sampled
+window). Per-cell table in the JSON. One tool amendment after the first pass: a pre-registered **minimum stop of 5 x the round-trip
+spread** (`stop_too_tight` state) — the first pass had a one-tick stop on GBPUSD H-B8 that produced a nonsense lot size; the amended
+run is the recorded one.
+
+| Hypothesis | Cells | Best cell (SEL E[R], PF, n) | Reading |
+|---|---|---|---|
+| H-B1 cash-open MR | 4 | GDAXI −0.11 R / 0.71 / 196 | consistently negative on all four indices — fading the open gap after a 3-bar stall loses |
+| H-B2 post-open continuation | 3 | GDAXI **+0.10 R / 1.24 / 44**; NDX +0.04 / 1.12 / 67 (VAL +0.08 / 1.22 / 55) | the only positive mechanism, but the body filter leaves 0.04–0.06 trades/bd — density fails; a relaxed qualifier is new lineage (B2) |
+| H-B3 OR failure | 3 | NDX −0.27 / 0.53 / 669 | cost-destroyed: stops of a few index points vs 0.4–2 pt spread+slip; SP500/WS30 PF < 0.1 |
+| H-B4 pullback continuation | 2 | NDX −0.34 / 0.54 / 90 | negative and thin |
+| H-B5 compression release | 4 | all UNKNOWN (6–19 trades) | the 0.35 x median threshold almost never fires; calibrate density before mechanics (B2) |
+| H-B6 time-of-day reversal | 3 | all UNKNOWN (7–15 trades) | the 0.6 ATR first-half-hour move is rare; Antigravity also notes the European close is 11:30 ET, not 10:00 |
+| H-B7 XAU transition | 1 | **−0.18 R / 0.68 / 613 (VAL −0.17 / 0.70 / 468)** | a strongly and consistently wrong-signed rule at 0.5 trades/bd — the COMEX-open drift REVERSES; a reversed rule is a post-hoc hypothesis and enters B2 as new lineage with a stricter bar |
+| H-B8 FX NY session | 2 | GBPUSD −0.13 / 0.67 / 342 | negative; Antigravity: the flow is the 11:00 ET WMR fix, not 13:15 |
+
+Lessons carried into B2: (1) index intraday mechanics need ATR-based stops (≥ 0.3 x cash-session ATR) or they are cost-dominated at
+FTMO spreads; (2) pre-register density targets and calibrate thresholds on the SEL density only (never on P/L) before a mechanism is
+judged; (3) the conservative fill model is fit for purpose — nothing survived it that a real-tick tester would later kill.
+
+## 9. Family B2 — pre-registration (to run next; frozen here before any cell runs)
+
+Sources: Antigravity `2caa90f8` (`agy_edge_generation_2caa90f8.md`, specs verbatim per its §3) and the B1 lessons. Same execution
+model, SEL/VAL split, pass rule and family-level Bonferroni bar (0.05 / number of B2 cells). Cells:
+
+| Id | Mechanism | Symbols | Spec source |
+|---|---|---|---|
+| H-AG2 | post-initial-balance momentum (IB 09:30–10:00 break by ≥ 0.10 D1-ATR with body ≥ 60 %, stop IB midpoint, target 1.5 R, flat 15:45) | SP500, NDX | agy §3 H-AG2 |
+| H-AG1 | cash-open OR fade (gap ≥ 0.40 D1-ATR; bar-3 reversal; stop = 09:30–09:45 extreme + 0.2 H1-ATR; target 50 % retracement; flat 11:30) | NDX, SP500 | agy §3 H-AG1 |
+| H-AG4 | overnight-range failure rejection (globex 18:00–09:15 range; 09:30 bar breaches ≥ 15 pt, 09:45 bar closes back inside; stop = trap extreme + 20 pt; target overnight midpoint; flat 12:30) | WS30, NDX | agy §3 H-AG4 |
+| H-AG5 | COMEX pit-open liquidity sweep MR (03:00–08:15 range; 08:20–08:55 sweep ≥ 1 USD with ≥ 50 % wick close-back; release days skipped; stop sweep extreme + 1.5 USD; target London midpoint / 2 R; flat 11:00) | XAUUSD | agy §3 H-AG5 |
+| H-AG6 | equity-to-FX yield transmission (09:30–15:30 USDJPY following the first-hour equity direction) | USDJPY | agy §3 H-AG6 |
+| H-AG8 | WMR 16:00 London fix pre-hedge (10:15–11:05 ET) | GBPUSD, EURUSD | agy §3 H-AG8 |
+| H-B2r | post-open continuation, relaxed: bodies ≥ 40 %, second bar close beyond the first bar extreme, stop = max(bar-1 extreme, 0.3 x cash ATR), target 1.5 R, flat 15:45 | NDX, SP500, GDAXI | this doc (derived from B1 H-B2 — new lineage) |
+| H-B7r | XAU COMEX-open drift REVERSAL: same signal as H-B7, opposite direction, stop = 1.0 H1-ATR, target 1.0 R, flat 13:30; **post-hoc lineage** — bar raised to E[R] ≥ +0.12 R, PF ≥ 1.25 and chance ≤ 0.001 | XAUUSD | this doc (derived from B1 H-B7 — post-hoc, stricter bar) |
+
+15 cells; family bar 0.05 / 15 = 0.0033 (H-B7r 0.001). Antigravity H-AG3 (GDAXI European close), H-AG7 (post-lunch compression),
+H-AG9 (NYMEX open), H-AG10 (EURUSD VWAP pullback) are parked for B3 pending the B2 density readings.
+
