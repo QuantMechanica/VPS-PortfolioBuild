@@ -151,3 +151,19 @@ COMPILE_OK rows → next tranche → status table).
   the simulator (anchor mapping, closed-bar contract, cost model) before the retire seal. **Carry-forward:** every
   future Velocity hypothesis runs this prescreen before any card; next family = multi-hour / ATR-scaled ranges or
   ≥0.5R-class mechanisms, pre-registered selection rule, SEL/VAL discipline. KS-initializer ticket = `d6189118`.
+- 09:1xZ (21.09.) — **VELOCITY FIND (harness, 0 factory hours): USDJPY × NY pre-open range.** Pre-registered family-F1
+  sweep (`docs/research/velocity/VELOCITY_FAMILY_F1_SESSION_RANGE_SWEEP_2026-09-21.md`, registration commit
+  `60de323f25` before the run, results `270c9a4c98`, JSON `velocity_family_f1_sweep_0921.json`): 13213 mechanics
+  replicated (control cell USDJPY×Tokyo×3h reproduces Q02 652e0768 within +1.8 % trades / +0.018R, harness ≈ +0.02R
+  optimistic), 36 symbols × 3 anchors (Tokyo 06:00 server / London 08:00 / New York 08:30) × N∈{2,3,4} h = 314 cells,
+  SEL 2018-07..2022 / VAL 2023-25, per-cell block-bootstrap null. 27 SEL passes vs 17.4 by chance, 13 survivors vs
+  ≈5.5 (non-independent cells). The family does NOT transfer as a class (indices, EUR/CHF/CAD crosses negative; JPY-cross
+  and XAU SEL passes fail VAL). The edge is USDJPY's — positive in all 9 cells — and its best expression is NOT Balke's
+  Tokyo window: **USDJPY C2 (2-h range before 08:30 New York = 15:30 server, flat 16:00 NY): SEL n=998, 0.85/bd,
+  E[R] +0.141, PF 1.30, DD 20.8R, R/bd +0.120; VAL n=632, +0.144, PF 1.30, R/bd +0.116; every year positive**, ≈2× the
+  incumbent A3 (+0.054 / +0.077 R/bd in the same harness). C3 close behind (+0.123 / +0.141). EURUSD C3 (+0.076 /
+  +0.105, 0.62/bd) is the only other genuine survivor; GBPUSD B3, AUDJPY B2, CADJPY A4 pass the letter only (watch
+  cells). Harness holiday-exit edge from critique 9caac5c7 fixed in the same commit. Next: ONE QM-RESEARCH artifact
+  (H-V4 "NY pre-open session-range breakout", 13213 mechanics on an M30 range grid, USDJPY C2 primary + C3 frozen
+  arm, EURUSD C3 slot) → Codex critique → new EA identity cloned from 13213 with minute-resolution anchor inputs →
+  USDJPY Q02 canary first. Everything else in the family closed as measured.
