@@ -199,3 +199,27 @@ set `7636afc9`) rather than from further hand-written single-symbol session rule
 a genuine economic rejection, not signal starvation. Details in `docs/research/ftmo_intake/2026-09-21_br_nnfx/results/README.md`.
 Running total 2026-09-21: 5 families, 89 cells, 0 survivors under the conservative fill model.
 
+## 11. B4 pre-registration (2026-09-21T20:57:43Z) — cross-symbol / multi-condition family (Antigravity 7636afc9, APPROVED)
+
+Source: `docs/research/ftmo_shadow/agy_cross_symbol_hypotheses_7636afc9.md` (12 hypotheses; 5 killed on paper by their own attack:
+H-CS11 WMR basket cost trap, H-CS08 metals-ratio runaway, H-CS04 Globex data artefact, H-CS03 sector conflict, H-CS06 BoJ headline risk).
+The 7 paper survivors run as family B4 in the F2 engine, tool `tools/strategy_farm/session_tools/velocity_family_f6_cross_symbol_0921.py`,
+each with one control arm — 14 cells, family Bonferroni bar 0.05/14 = 0.00357, SEL/VAL rule and fill model unchanged from section 3/5:
+
+| Cell | Execution | Reference | Rule (closed data → market at next open) | Stop | Target / flat | Control arm |
+|---|---|---|---|---|---|---|
+| H-CS01 | SP500 | GDAXI | DAX 07:00-09:15 ET move ≥0.30 D1-ATR on the trending side of its 20-bar M15 SMA; SP500 09:30-09:45 bar same direction, body ≥40 % | max(bar extreme, 0.40 D1-ATR, 8 pt) | 1.75 R / 15:45 ET | noref: SP500 bar alone |
+| H-CS02 | NDX | SP500 | SP500 10:00-10:15 close beyond its 09:30-10:00 IB by 0.05 D1-ATR; NDX same bar closes beyond its IB, body ≥50 % | max(IB midpoint, 0.35 D1-ATR) | 1.75 R / 15:45 ET (no BE trail) | noref: NDX IB break alone |
+| H-CS05 | XAUUSD | XAGUSD | silver 08:15-08:30 close beyond its 03:00-08:00 range by 0.20 H1-ATR; gold same bar beyond its range | max(0.75 H1-ATR, 6 USD) | 1.5 R / 13:30 ET | noref: gold break alone |
+| H-CS07 | XAUUSD | (self) | London 03:00-10:00 drift ≥0.60 D1-ATR; 10:00-10:15 bar in drift direction | max(0.60 H1-ATR, 09:45-10:15 range, 8 USD) | 1.5 R / 13:30 ET | fade: against the drift (must lose) |
+| H-CS09 | USDJPY | SP500 | SP500 09:30-10:00 impulse ≥0.25 D1-ATR with 09:45-10:00 body ≥50 %; USDJPY 09:45-10:00 bar same direction | max(0.60 H1-ATR, 22 pips) | 1.5 R / 15:45 ET | noref: USDJPY bar alone |
+| H-CS10 | EURUSD | GBPUSD | both 03:00-08:15 moves ≥0.35 D1-ATR and aligned; EURUSD retrace ≤38.2 % into 08:30 (09:00 on release days) | max(0.65 H1-ATR, 20 pips) | 1.5 R / 16:00 ET | noref: EURUSD move alone |
+| H-CS12 | USDCAD | XTIUSD | WTI 09:00-10:00 move ≥0.50 H1-ATR → USDCAD opposite | max(0.65 H1-ATR, 20 pips) | 1.5 R / 16:00 ET | self: USDCAD own 09:00-10:00 impulse |
+
+Pass rule per cell unchanged (SEL n≥300, E[R]≥0.08, PF≥1.15, DD≤20 R, density≥0.40/bd, chance≤bar; VAL confirmation). The reference
+condition earns its keep only if the `ref` arm beats its control on SEL E[R] by ≥ +0.10 R (source falsification test); a `ref` cell that
+passes while its control also passes is a single-symbol finding, not a cross-symbol one. Recorded resolutions: entries at the open of the
+first bar after the last closed bar the rule reads; D1 ATR = mean of the previous 14 full server-day ranges; H1 ATR = simple 14-bar mean;
+engine stop floor 5 × round-trip spread on top of each rule floor; H-CS02 breakeven trail not modelled. Cost priors: USDCAD 1.5 pip RT,
+XTIUSD/XAGUSD reference-only priors. 0 factory hours; discovery 2018-07..2022, validation 2023..2025.
+
