@@ -122,7 +122,10 @@
       "predecessor_work_item_id": "3ddd58f1-c8b2-4804-b17e-02e726c1bd81",
       "rejected_mq5_sha256": "3fbe03888ed903ba1ae425c55c7f0fe4e43559c9a5b7e2b04cd5a37c9dc0b268",
       "repaired_mq5_sha256": "e8a9663921fef31523ac4862c8496db99676ec705430abb4895b61e1f1291c98",
-      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN",
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -136,7 +139,11 @@
       "predecessor_work_item_id": "af230093-51ab-4b87-ac7a-d7a23accd5f7",
       "rejected_mq5_sha256": "18e616c604d23e8a2debdf65a773ef46eff4dab41073cca949eab7b9421717b7",
       "repaired_mq5_sha256": "6dd61f162511ec21f4e7e13ecef50700ca0885ff3b543358fb0b0e5ce0983178",
-      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "expected_failure_classes": [
+        "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -150,7 +157,12 @@
       "predecessor_work_item_id": "91d21844-fe44-499f-b6d9-296c0323b50c",
       "rejected_mq5_sha256": "40fd5e38a3b44d26c8cfd4e8f8e7da3403360b9e494b1ee4afdbde9969fbab50",
       "repaired_mq5_sha256": "92245abec6d679111b6defa8584fe035f454ba13659a85dff649b1877bd884f3",
-      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "expected_failure_classes": [
+        "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN",
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -164,7 +176,10 @@
       "predecessor_work_item_id": "def68cc5-8eea-4b29-8222-e885e509116c",
       "rejected_mq5_sha256": "2381200fe088cccf38448fad3bfac90f549cd60417b5254b1e3701d4cd8c6afd",
       "repaired_mq5_sha256": "b07c86b7d8076866dc47b07d8bad2648075db3646913260f5926b832cb576f52",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -178,7 +193,9 @@
       "predecessor_work_item_id": "ad8dcc1d-0a9d-4dab-86ce-65c9c84dd85e",
       "rejected_mq5_sha256": "5bd48ff6d0a60816e4b466fd7eaa14ac2d9e705580ea6d3b47e903d194439c96",
       "repaired_mq5_sha256": "3cd04f73434d5344cf23d429fa0ce7d4bf75c23d95e23f511730ef0b2b7c35b3",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -192,7 +209,12 @@
       "predecessor_work_item_id": "c132e226-78bf-4604-8ef1-e721433e7242",
       "rejected_mq5_sha256": "3f44c609eefe5cacfe4d077790eb23a5f41283da325b16670cd65f488b222cea",
       "repaired_mq5_sha256": "56916a90ec7532aaa0c81d38aad840c82b82a2872d0b1c68764cb16084f60257",
-      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED",
+        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -206,7 +228,10 @@
       "predecessor_work_item_id": "1915f1b3-db77-4af1-bbdc-eae79303b4bf",
       "rejected_mq5_sha256": "88fc932eaa589c76491fb40a0e2c1bca614fa4f32e93a9e3773e54b167873243",
       "repaired_mq5_sha256": "19ed62df8f702e09e069a23dd794fc9aa97f51dac91a117c9c15d096bd964c26",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -220,7 +245,10 @@
       "predecessor_work_item_id": "24301226-c425-4373-a962-0ac7ed169c53",
       "rejected_mq5_sha256": "2c2aa404eb5521c6df5d041b1724a1e80fbab3290116778022d5c56da033c338",
       "repaired_mq5_sha256": "9732af91930e9f959468524decaf2c024ae334940ff9ced3d433f9d9d8d07b11",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -234,7 +262,9 @@
       "predecessor_work_item_id": "ad036a74-4f03-4ea9-9aa0-0ff471c6532e",
       "rejected_mq5_sha256": "8716465d8666ff2a596ffc3aca5af1ac0af04830594f9ae0af1e67fe22a87347",
       "repaired_mq5_sha256": "b075bebae512db8358ac0e5e4092505aff4ea30accbdd396b349748ddd2133c7",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -248,7 +278,12 @@
       "predecessor_work_item_id": "8198f77b-2aa3-4bc8-add6-4cbfc947ac6a",
       "rejected_mq5_sha256": "69c6642e3f5d1da2a5dd0d8da5c420071cd880d7f1043f79bc5e768b47e82198",
       "repaired_mq5_sha256": "4b6cade64b8ff1fd2989c1894be01da4d9aa53f37a478d3fa4d8e480c3a304d9",
-      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED",
+        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -262,7 +297,10 @@
       "predecessor_work_item_id": "a7b7aec2-cf9e-4863-9519-22be12c9b7a2",
       "rejected_mq5_sha256": "513c141026c876f4a6132dec4398f77daf0be6f0d19b3f99304f07a58aed87f5",
       "repaired_mq5_sha256": "0cc6adea034f0fb9a2c9e59259015f4b62a304b146bdfb7a6e86c3bb249fb8a2",
-      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -276,7 +314,12 @@
       "predecessor_work_item_id": "733976de-6835-421a-badc-0c816354ba1f",
       "rejected_mq5_sha256": "f8daad463840a9c63bcb3b489477e4da131d40420b85d1deba4e5af2d0128df1",
       "repaired_mq5_sha256": "faa6991434b73aeeae571def3c2d8386dff48120281ce75cb2a7f5c6bd203f2f",
-      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED",
+        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -290,7 +333,9 @@
       "predecessor_work_item_id": "9fce7cec-7931-4151-bf77-d47db9c1d898",
       "rejected_mq5_sha256": "02cdab89556f2002f3a949eecfc078deb44693a111b5fd18c8d1b841eadc09b3",
       "repaired_mq5_sha256": "2467587655aff46198e254661733a61cac266089720fd390ce154d36d2c9a209",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -304,7 +349,9 @@
       "predecessor_work_item_id": "88ed93bc-5995-4f36-b8e1-8f7d58d4d9b5",
       "rejected_mq5_sha256": "75d6efffe10c1219a43b7b09e83cbf67368f72222849521fb71bd6f468e29cfc",
       "repaired_mq5_sha256": "969781dce724dfe86ac3078d0b0482bcdf35ac1b6032c187ae41ec3dd9ebaf35",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -318,7 +365,10 @@
       "predecessor_work_item_id": "98de9049-78a7-4e0b-8bb9-56e0eed5e83b",
       "rejected_mq5_sha256": "d6300abc5d5527fc7f93a46d23729974173234957cd0b37cf5e1b97222a0b562",
       "repaired_mq5_sha256": "6c2f1696851a5f1db3e8d751a3d9cd7f5085b87256815b0a815dffac48aaadb8",
-      "expected_failure_classes": ["BUILD_CHECK_STRICT_WARNINGS", "EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "BUILD_CHECK_STRICT_WARNINGS",
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority.json",
       "evidence_sha256": "c8a92bf20bce9977cdcc100bc1753e5018114367bab03350a913a7f96fa9becf",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -332,7 +382,10 @@
       "predecessor_work_item_id": "3ddd58f1-c8b2-4804-b17e-02e726c1bd81",
       "rejected_mq5_sha256": "3fbe03888ed903ba1ae425c55c7f0fe4e43559c9a5b7e2b04cd5a37c9dc0b268",
       "repaired_mq5_sha256": "86789323ff2f4089a4e5d1e82e249fd8b0d7e844420dac40ce17f9c12084ce20",
-      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN",
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -346,7 +399,10 @@
       "predecessor_work_item_id": "8c8a5efb-c67f-4856-a3d0-9162c0eae44e",
       "rejected_mq5_sha256": "6dd61f162511ec21f4e7e13ecef50700ca0885ff3b543358fb0b0e5ce0983178",
       "repaired_mq5_sha256": "04284f6e5d0d6bedee200a0b84027f5c0bcc73da99eeaa80f84a84b867684e7f",
-      "expected_failure_classes": ["COMPILE_ERRORS", "BUILD_CHECK_COMPILE_FAILED"],
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -360,7 +416,12 @@
       "predecessor_work_item_id": "91d21844-fe44-499f-b6d9-296c0323b50c",
       "rejected_mq5_sha256": "40fd5e38a3b44d26c8cfd4e8f8e7da3403360b9e494b1ee4afdbde9969fbab50",
       "repaired_mq5_sha256": "50a3b9221868b9b4c18443bb2f94d4c1f8c67e7234f62abb3c4ea328855cee5f",
-      "expected_failure_classes": ["BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN", "EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "expected_failure_classes": [
+        "BUILD_CHECK_EXTERNAL_DATA_API_FORBIDDEN",
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -374,7 +435,10 @@
       "predecessor_work_item_id": "f4e14597-4454-4c4e-9526-9d9f65176481",
       "rejected_mq5_sha256": "b07c86b7d8076866dc47b07d8bad2648075db3646913260f5926b832cb576f52",
       "repaired_mq5_sha256": "77c79017b47f8ece1a75a009f193219e4cdac72be4057bc66bb2f04c991dd235",
-      "expected_failure_classes": ["COMPILE_ERRORS", "BUILD_CHECK_COMPILE_FAILED"],
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -388,7 +452,10 @@
       "predecessor_work_item_id": "cd242441-129c-4bed-b8be-d92bb84e0f90",
       "rejected_mq5_sha256": "3cd04f73434d5344cf23d429fa0ce7d4bf75c23d95e23f511730ef0b2b7c35b3",
       "repaired_mq5_sha256": "1bed470820beded14ecf801d2570d64e8319b98a7d7a2295893d323559fc5c87",
-      "expected_failure_classes": ["COMPILE_ERRORS", "BUILD_CHECK_COMPILE_FAILED"],
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -402,7 +469,10 @@
       "predecessor_work_item_id": "f97d7e9d-c31c-4e98-9e3e-87814ae7646f",
       "rejected_mq5_sha256": "56916a90ec7532aaa0c81d38aad840c82b82a2872d0b1c68764cb16084f60257",
       "repaired_mq5_sha256": "685fcc7c6158bbddd257209536fdcc8ac7247d4a6064fdfc7ad92b7eb006a195",
-      "expected_failure_classes": ["COMPILE_ERRORS", "BUILD_CHECK_COMPILE_FAILED"],
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -416,7 +486,10 @@
       "predecessor_work_item_id": "1915f1b3-db77-4af1-bbdc-eae79303b4bf",
       "rejected_mq5_sha256": "88fc932eaa589c76491fb40a0e2c1bca614fa4f32e93a9e3773e54b167873243",
       "repaired_mq5_sha256": "f91f4500860f64c76001996e4199ed706b7dbab74ef7eee45f190a8bb59ce502",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -430,7 +503,10 @@
       "predecessor_work_item_id": "f50ec726-c527-4991-8a83-c4899952361a",
       "rejected_mq5_sha256": "9732af91930e9f959468524decaf2c024ae334940ff9ced3d433f9d9d8d07b11",
       "repaired_mq5_sha256": "ffba9c38363bdc12a52d7f2f3268f0f3b97c75540fd1316de1aded8014bc3e61",
-      "expected_failure_classes": ["COMPILE_ERRORS", "BUILD_CHECK_COMPILE_FAILED"],
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -444,7 +520,9 @@
       "predecessor_work_item_id": "ad036a74-4f03-4ea9-9aa0-0ff471c6532e",
       "rejected_mq5_sha256": "8716465d8666ff2a596ffc3aca5af1ac0af04830594f9ae0af1e67fe22a87347",
       "repaired_mq5_sha256": "c18e11eb40b2700725acf159e289f91ebdac60dc760a1cda1644d93216c54e92",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -458,7 +536,12 @@
       "predecessor_work_item_id": "8198f77b-2aa3-4bc8-add6-4cbfc947ac6a",
       "rejected_mq5_sha256": "69c6642e3f5d1da2a5dd0d8da5c420071cd880d7f1043f79bc5e768b47e82198",
       "repaired_mq5_sha256": "a7616b4e8a1ef529200705164ea182f973e94837ee3f22c3946fc1c6512757f2",
-      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED",
+        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -472,7 +555,10 @@
       "predecessor_work_item_id": "989ab550-e7c7-4324-a967-ff58a4b313f4",
       "rejected_mq5_sha256": "0cc6adea034f0fb9a2c9e59259015f4b62a304b146bdfb7a6e86c3bb249fb8a2",
       "repaired_mq5_sha256": "d1429e5086c54789e2cb7878c2fa6b6be79b6eb609055ac7a02a5da60930e282",
-      "expected_failure_classes": ["COMPILE_ERRORS", "BUILD_CHECK_COMPILE_FAILED"],
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -486,7 +572,12 @@
       "predecessor_work_item_id": "733976de-6835-421a-badc-0c816354ba1f",
       "rejected_mq5_sha256": "f8daad463840a9c63bcb3b489477e4da131d40420b85d1deba4e5af2d0128df1",
       "repaired_mq5_sha256": "58bbef5cf313b53277a3350a590f2d20917db2d51724096a57cde2d032acd5f0",
-      "expected_failure_classes": ["EA_FRAMEWORK_RAW_SERIES_CALL", "EA_Q08_MAE_HOOK_MISSING", "EA_TRADE_REQUEST_UNINITIALIZED", "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"],
+      "expected_failure_classes": [
+        "EA_FRAMEWORK_RAW_SERIES_CALL",
+        "EA_Q08_MAE_HOOK_MISSING",
+        "EA_TRADE_REQUEST_UNINITIALIZED",
+        "EA_CARD_PENDING_ORDER_TYPE_MISMATCH"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -500,7 +591,9 @@
       "predecessor_work_item_id": "9fce7cec-7931-4151-bf77-d47db9c1d898",
       "rejected_mq5_sha256": "02cdab89556f2002f3a949eecfc078deb44693a111b5fd18c8d1b841eadc09b3",
       "repaired_mq5_sha256": "230937a6156e58caa7c016eb8d0ff78f4026b752fbb308ad60705786d45c8bd0",
-      "expected_failure_classes": ["EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -514,7 +607,10 @@
       "predecessor_work_item_id": "d993f213-210d-4a2e-aa8e-0620d3547613",
       "rejected_mq5_sha256": "969781dce724dfe86ac3078d0b0482bcdf35ac1b6032c187ae41ec3dd9ebaf35",
       "repaired_mq5_sha256": "9da05f978ae81e780aab2b47b8577c8418a041d82fa939b520a05da6e5abfab3",
-      "expected_failure_classes": ["COMPILE_ERRORS", "BUILD_CHECK_COMPILE_FAILED"],
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
@@ -528,11 +624,31 @@
       "predecessor_work_item_id": "98de9049-78a7-4e0b-8bb9-56e0eed5e83b",
       "rejected_mq5_sha256": "d6300abc5d5527fc7f93a46d23729974173234957cd0b37cf5e1b97222a0b562",
       "repaired_mq5_sha256": "45e9d0fa47a68232f22fe61984f2d741a051af979e9a23fa0a00c3cd16da416b",
-      "expected_failure_classes": ["BUILD_CHECK_STRICT_WARNINGS", "EA_Q08_MAE_HOOK_MISSING"],
+      "expected_failure_classes": [
+        "BUILD_CHECK_STRICT_WARNINGS",
+        "EA_Q08_MAE_HOOK_MISSING"
+      ],
       "evidence_path": "docs/ops/evidence/2026-09-20_velocity_book/wave3_compile_source_repair_authority_v2.json",
       "evidence_sha256": "a8cdb8278561bc5da6282670cfd2aba8f088032c6084fb8f548c2bbebe7d9589",
       "granted_by": "router_ops_issue:3c44384d-3efe-4cf0-b02e-82cb6be52e54 under OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917",
       "granted_at_utc": "2026-09-20T21:57:00Z",
+      "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
+    },
+    {
+      "authority": "compile_fail_repair:20260921:QM5_41485_ny-preopen-range-breakout-jpy:be665dc9",
+      "ea_id": "41485",
+      "ea_label": "QM5_41485_ny-preopen-range-breakout-jpy",
+      "predecessor_work_item_id": "27e941a2-a5fa-401f-b550-d1101bb6e675",
+      "rejected_mq5_sha256": "3a2907db5d75b8aa1c50f79fc48b554e364d71144de64d25f1f58d81074a480d",
+      "repaired_mq5_sha256": "be665dc9068b1a163b0253c14cbc8f08bf03622a58f77e1ec10cdf6764d90b76",
+      "expected_failure_classes": [
+        "COMPILE_ERRORS",
+        "BUILD_CHECK_COMPILE_FAILED"
+      ],
+      "evidence_path": "docs/ops/evidence/2026-09-21_compile_fail_repair_authority/QM5_41485.json",
+      "evidence_sha256": "fc7b70df27cbe66812c71cf88804f138a73d622e77bbcc6691becb4de1b78031",
+      "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+      "granted_at_utc": "2026-09-21T13:28:58Z",
       "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority"
     }
   ]

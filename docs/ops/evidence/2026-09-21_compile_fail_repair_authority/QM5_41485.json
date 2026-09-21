@@ -1,0 +1,43 @@
+{
+  "schema": "qm.compile-ea-source-repair-authority-evidence/v1",
+  "authority": "compile_fail_repair:20260921:QM5_41485_ny-preopen-range-breakout-jpy:be665dc9",
+  "created_at_local": "2026-09-21T15:28:58+02:00",
+  "ea_id": "QM5_41485",
+  "ea_label": "QM5_41485_ny-preopen-range-breakout-jpy",
+  "scope": "append-only COMPILE_EA successor; no strategy/backtest/live/gate authority",
+  "governance": {
+    "granted_by": "Fable (OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917)",
+    "branch": "agents/board-advisor",
+    "repair_commit": "b5dd72afeeaff30a822757abd12ccbc95993e00e",
+    "repair_commit_short": "b5dd72afee",
+    "registry_contract": "qm.compile-fail-repair-authority/v1"
+  },
+  "root_cause": {
+    "classification": "MQL5_STRUCT_INITIALIZER_LIST",
+    "findings": [
+      "MetaEditor error 242 (cannot be initialized with initializer list) at source lines 369-370: QM_EntryRequest buy_req = {}; / sell_req = {}; - MQL5 does not accept struct initializer lists; the builder (Codex b56cb62c) could not compile because the live-factory guard refused an ad-hoc build_check.",
+      "Diagnostic compile (scratchpad copy, T1 metaeditor64, no factory touch) reproduced 2 errors / 0 warnings on the rejected source and 0 / 0 on the repaired source."
+    ],
+    "predecessor_compile_work_item_id": "27e941a2-a5fa-401f-b550-d1101bb6e675",
+    "predecessor_status": "failed",
+    "predecessor_verdict": "COMPILE_FAIL",
+    "predecessor_verdict_reason": "COMPILE_ERRORS;BUILD_CHECK_COMPILE_FAILED",
+    "predecessor_compile_result": "FAIL",
+    "predecessor_build_check_result": "FAIL",
+    "predecessor_failure_classes": [
+      "COMPILE_ERRORS",
+      "BUILD_CHECK_COMPILE_FAILED"
+    ],
+    "predecessor_mq5_sha256": "3a2907db5d75b8aa1c50f79fc48b554e364d71144de64d25f1f58d81074a480d",
+    "predecessor_ex5_sha256": null,
+    "predecessor_evidence_path": "D:/QM/reports/work_items/27e941a2-a5fa-401f-b550-d1101bb6e675/QM5_41485/COMPILE_EA/compile_evidence.json"
+  },
+  "repair": {
+    "current_mq5_sha256": "be665dc9068b1a163b0253c14cbc8f08bf03622a58f77e1ec10cdf6764d90b76",
+    "changes": [
+      "Replace the two struct initializer-list declarations by plain declarations followed by ZeroMemory(); remove the now-duplicate ZeroMemory calls.",
+      "No change to the signal, entry, exit, stop, sizing, risk, news or OCO code paths."
+    ],
+    "strategy_mechanics_changed": false
+  }
+}
