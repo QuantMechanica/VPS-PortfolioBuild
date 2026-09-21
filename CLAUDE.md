@@ -526,3 +526,21 @@ For non-trivial work, return:
   one-time compile-fail taxonomy (REAL_EA_DEFECT / SHARED_FRAMEWORK_DEFECT / SETFILE_DEFECT / BUILD_BINDING_DEFECT /
   STALE_HISTORICAL / SUPERSEDED / INFRA / OTHER); repair systemic + FTMO-critical first. **§Y:** pre-Sunday status fields in
   `docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md`; launch autonomously when the critical preflight checks are green.
+
+### OWNER-DEC-FTMO-DUAL-TRACK-20260921 — Dual-track: Sunday incumbent readiness + continuous Shadow-Book edge discovery (OWNER 2026-09-21 ~20:00Z)
+
+- **Record:** `decisions/2026-09-21_owner_ftmo_dual_track_shadow_book_acceleration.md`; verbatim
+  `docs/ops/evidence/2026-09-21_ftmo_dual_track_correction/owner_directive_verbatim.md`. Correction of posture: "no unfinished
+  candidate into Sunday's incumbent" never means "stop originating strategies until Sunday".
+- **Track A** (Sunday readiness: KS/Prague rollover, genesis manifest, governor, venue cost fidelity, sleeve attribution, simulator
+  confidence, roster decision, deploy/attach/post-attach) is not compromised — but must not consume all AI capacity.
+- **Track B** (Shadow-Book acceleration, continuous): materially raise FTMO_BOOK velocity without destroying payout probability; new
+  strategies enter `FTMO_BOOK_SHADOW`; at least one active high-value edge-discovery programme at all times (process requirement, no
+  strategy-count target); several pre-registered hypotheses per missing role in parallel; cheap execution-aware prescreens that avoid
+  the harness-v1 fill fragility (conservative fills, spread widening, slippage, gap-through); independent critique of survivors; build
+  only the best; bounded pre-registered optimisation of validated EAs competes with new research; same symbol is fine if economically
+  independent. Funnel HYPOTHESES → PRESCREEN_SURVIVORS → CRITIQUED → MECHANIZED → COMPILED → Q02 → Q04 → Q08 → MARGINAL_POSITIVE →
+  SHADOW_BOOK with conversion rates; Pareto frontier (median first-payout days × payout LCB). Factory idleness = candidate-supply
+  bottleneck signal. Capacity posture: Fable direction/selection/integration, Codex implementation/simulation/MQL5/research tooling
+  (fresh capacity for BOTH tracks), Antigravity adversarial critique + alternative edge generation, Kimi when quota returns,
+  deterministic Python bulk prescreens, MT5 falsification. Report fields §21 at every material report.
