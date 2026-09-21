@@ -119,7 +119,7 @@ def test_three_setfiles_are_fixed_backtest_arms() -> None:
         assert "qm_news_stale_max_hours=336" in text
 
     assert observed == {
-        ("USDJPY.DWX", "0", "2"),
-        ("USDJPY.DWX", "1", "3"),
-        ("EURUSD.DWX", "2", "3"),
+        ("USDJPY.DWX", "0", "2"),  # canonical set, registry slot 0 (arm C2, primary)
+        ("USDJPY.DWX", "0", "3"),  # sets/arms second frozen arm C3, backtest-only, shares slot 0
+        ("EURUSD.DWX", "1", "3"),  # canonical set, registry slot 1 (arm C3)
     }
