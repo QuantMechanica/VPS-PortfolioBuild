@@ -85,6 +85,8 @@ ALIAS_PATH = Path(r"D:\QM\strategy_farm\dashboards\cockpit_v2.html")
 # the multi-count truth behind the Queue cell. Read fail-soft at render time;
 # when absent the cockpit renders exactly as before.
 FACTORY_POPULATION_PATH = Path(r"D:\QM\reports\state\factory_population.json")
+FTMO_BOOK_STATE_PATH = Path(r"D:\QM\reports\state\ftmo_book_current.json")
+FTMO_BOOK_STATE_SCHEMA = "qm.ftmo-book-current/v1"
 
 
 def load_factory_population(path: Path | None = None) -> dict | None:
@@ -95,6 +97,43 @@ def load_factory_population(path: Path | None = None) -> dict | None:
     except (OSError, ValueError, UnicodeDecodeError):
         return None
     return data if isinstance(data, dict) else None
+
+
+def load_ftmo_book_current(path: Path | None = None) -> dict:
+    """Read the canonical FTMO_BOOK v1 state without mutating its source.
+
+    The renderer is deliberately fail-visible: an absent, unreadable, or
+    schema-mismatched document becomes an EVIDENCE_MISSING panel rather than an
+    empty panel or a best-effort reinterpretation of another state file.
+    """
+
+    source = Path(path or FTMO_BOOK_STATE_PATH)
+    read_model = {
+        "present": False,
+        "source_path": str(source),
+        "payload": {},
+        "error": None,
+    }
+    try:
+        payload = json.loads(source.read_text(encoding="utf-8-sig"))
+    except FileNotFoundError:
+        read_model["error"] = "state file missing"
+        return read_model
+    except (OSError, ValueError, UnicodeDecodeError) as exc:
+        read_model["error"] = f"state file unreadable: {type(exc).__name__}"
+        return read_model
+    if not isinstance(payload, dict):
+        read_model["error"] = "state root is not an object"
+        return read_model
+    schema = payload.get("schema")
+    if schema != FTMO_BOOK_STATE_SCHEMA:
+        read_model["error"] = (
+            f"schema mismatch: expected {FTMO_BOOK_STATE_SCHEMA}, got {schema or 'MISSING'}"
+        )
+        return read_model
+    read_model["present"] = True
+    read_model["payload"] = payload
+    return read_model
 
 
 # ---------------------------------------------------------------------------
@@ -1325,6 +1364,222 @@ def _render_ftmo_challenge_readiness(contract: dict) -> str:
   </section>'''
 
 
+def _ftmo_first(mapping: Any, *keys: str) -> Any:
+    """Return the first explicitly present FTMO state field."""
+
+    if not isinstance(mapping, dict):
+        return None
+    for key in keys:
+        if key in mapping:
+            return mapping[key]
+    return None
+
+
+def _ftmo_value(value: Any, *, dec: int | None = None, suffix: str = "") -> str:
+    """Render one state value; absence is always explicit and never zero-filled."""
+
+    if value is None or value == "":
+        return '<span class="mc-ftmo-nym">NOT_YET_MEASURABLE</span>'
+    if isinstance(value, (int, float)) and not isinstance(value, bool) and dec is not None:
+        rendered = _de(value, dec)
+    elif isinstance(value, bool):
+        rendered = "JA" if value else "NEIN"
+    else:
+        rendered = e(value)
+    return f"{rendered}{e(suffix)}"
+
+
+def _ftmo_probability(value: Any) -> str:
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return f"{_de(float(value) * 100.0, 2)} %"
+    return _ftmo_value(value)
+
+
+def _render_ftmo_book(read_model: dict | None = None) -> str:
+    """Render the account-level FTMO_BOOK state as a first-class panel.
+
+    Only fields in ``qm.ftmo-book-current/v1`` are shown. Missing fields stay
+    visibly unmeasured; the renderer does not infer headroom, clusters, hashes,
+    or portfolio probabilities from nearby diagnostics.
+    """
+
+    rm = read_model if isinstance(read_model, dict) else load_ftmo_book_current()
+    if not rm.get("present"):
+        reason = rm.get("error") or "state file unavailable"
+        return f'''
+  <section class="mc-section mc-ftmo-book" id="ftmo-book">
+    <div class="mc-h2"><span>FTMO BOOK</span>
+      <span class="mc-h2-aux">{e(FTMO_BOOK_STATE_SCHEMA)} · account-level portfolio</span></div>
+    <div class="mc-be-missing"><b>EVIDENCE_MISSING:</b> {e(reason)} · {e(rm.get("source_path"))}</div>
+  </section>'''
+
+    p = rm.get("payload") or {}
+    sleeves = p.get("sleeves") if isinstance(p.get("sleeves"), list) else []
+    candidates = p.get("candidates") if isinstance(p.get("candidates"), list) else []
+    metrics = p.get("book_metrics") if isinstance(p.get("book_metrics"), dict) else {}
+    first_passage = p.get("first_passage") if isinstance(p.get("first_passage"), dict) else {}
+    demo = p.get("demo_cycle") if isinstance(p.get("demo_cycle"), dict) else {}
+    rule_headroom = _ftmo_first(demo, "rule_headroom", "ftmo_rule_headroom")
+    if not isinstance(rule_headroom, dict):
+        rule_headroom = p.get("rule_headroom") if isinstance(p.get("rule_headroom"), dict) else {}
+
+    sleeve_rows = []
+    for sleeve in sleeves:
+        if not isinstance(sleeve, dict):
+            continue
+        bound_hash = _ftmo_first(
+            sleeve, "hash", "sha256", "source_sha256", "ea_sha256", "artifact_sha256",
+            "set_sha256",
+        )
+        hash_text = str(bound_hash)[:12] if bound_hash else None
+        sleeve_rows.append(
+            "<tr>"
+            f'<td class="mc-mono">QM5_{e(sleeve.get("ea_id"))}</td>'
+            f'<td class="mc-mono">{_ftmo_value(sleeve.get("symbol"))}</td>'
+            f'<td class="mc-mono">{_ftmo_value(sleeve.get("timeframe"))}</td>'
+            f'<td>{_ftmo_value(sleeve.get("role"))}</td>'
+            f'<td class="mc-num">{_ftmo_value(sleeve.get("risk_percent"), dec=5, suffix=" %")}</td>'
+            f'<td class="mc-mono">{_ftmo_value(hash_text)}</td>'
+            "</tr>"
+        )
+    if not sleeve_rows:
+        sleeve_rows.append(
+            '<tr><td colspan="6" class="mc-ftmo-nym">NOT_YET_MEASURABLE · no sleeves</td></tr>'
+        )
+
+    candidate_rows = []
+    for candidate in candidates:
+        if not isinstance(candidate, dict):
+            continue
+        action = _ftmo_first(candidate, "book_action", "action")
+        action_token = str(action or "").strip().upper().split(" ", 1)[0]
+        action_class = (
+            "mc-ftmo-action-add" if action_token == "ADD" else
+            "mc-ftmo-action-test" if action_token == "TEST" else
+            "mc-ftmo-action-reject" if action_token == "REJECT" else
+            "mc-ftmo-action-hold"
+        )
+        candidate_rows.append(
+            "<tr>"
+            f'<td class="mc-mono">{_ftmo_value(_ftmo_first(candidate, "id", "ea_id"))}</td>'
+            f'<td class="mc-mono">{_ftmo_value(candidate.get("symbol"))}</td>'
+            f'<td>{_ftmo_value(candidate.get("role"))}</td>'
+            f'<td class="{action_class}">{_ftmo_value(action)}</td>'
+            "</tr>"
+        )
+    if not candidate_rows:
+        candidate_rows.append(
+            '<tr><td colspan="4" class="mc-ftmo-nym">NOT_YET_MEASURABLE · no candidates</td></tr>'
+        )
+
+    progress_usd = _ftmo_first(
+        metrics, "BOOK_EXPECTED_PROGRESS_USD_PER_DAY", "BOOK_USD_PER_DAY_at_roster_weights",
+        "BOOK_USD_PER_DAY",
+    )
+    progress_r = _ftmo_first(
+        metrics, "BOOK_R_PER_DAY", "BOOK_R_PER_DAY_sum_at_1pct", "BOOK_EXPECTANCY_R_PER_DAY",
+    )
+    expectancy = _ftmo_first(
+        metrics, "BOOK_EXPECTANCY", "BOOK_EXPECTANCY_R_per_trade_at_1pct",
+    )
+    trades_per_day = _ftmo_first(metrics, "BOOK_TRADES_PER_DAY", "BOOK_TRADES_PER_BD")
+    active_days = _ftmo_first(metrics, "BOOK_ACTIVE_DAYS", "BOOK_ACTIVE_DAYS_share")
+    no_opportunity = _ftmo_first(
+        metrics, "TIME_WITH_NO_OPPORTUNITY", "TIME_WITH_NO_OPPORTUNITY_share",
+    )
+    max_dd = _ftmo_first(
+        metrics, "BOOK_MAX_DD", "BOOK_MAX_DD_USD", "BOOK_MAX_DD_USD_closedPL_at_roster_weights",
+    )
+    daily_breach = _ftmo_first(metrics, "BOOK_DAILY_LOSS_BREACH_PROB")
+    max_breach = _ftmo_first(
+        metrics, "BOOK_MAX_LOSS_BREACH_PROB", "BOOK_MAX_LOSS_BREACH_PROB_phase1",
+    )
+    cost_drag = _ftmo_first(metrics, "BOOK_COST_DRAG")
+
+    daily_headroom = _ftmo_first(
+        rule_headroom, "daily_loss", "daily_loss_headroom", "daily_loss_headroom_percent",
+        "daily_loss_headroom_pct",
+    )
+    max_headroom = _ftmo_first(
+        rule_headroom, "max_loss", "max_loss_headroom", "max_loss_headroom_percent",
+        "max_loss_headroom_pct",
+    )
+
+    dep_summary = p.get("dependence_summary") if isinstance(p.get("dependence_summary"), dict) else {}
+    dep_pairs = p.get("dependence_pairs_top") if isinstance(p.get("dependence_pairs_top"), list) else []
+    top_pair = _ftmo_first(dep_summary, "top_fail_together_pair")
+    if top_pair is None and dep_pairs:
+        top_pair = dep_pairs[0]
+    if isinstance(top_pair, dict):
+        pair_name = _ftmo_first(top_pair, "pair", "pair_id")
+        pair_detail_bits = []
+        for key, label in (
+            ("loss_day_overlap_x_indep", "loss-day x indep"),
+            ("lower_decile_coexceed_x_indep", "lower-tail x indep"),
+            ("position_overlap", "position overlap"),
+        ):
+            if key in top_pair:
+                pair_detail_bits.append(f"{label} {_ftmo_value(top_pair[key], dec=2)}")
+        top_pair_html = _ftmo_value(pair_name)
+        if pair_detail_bits:
+            top_pair_html += f'<span class="mc-dim"> · {" · ".join(pair_detail_bits)}</span>'
+    else:
+        top_pair_html = _ftmo_value(top_pair)
+
+    clusters = _ftmo_first(dep_summary, "fail_together_clusters", "clusters")
+    cluster_count = _ftmo_first(dep_summary, "fail_together_cluster_count", "cluster_count")
+    if cluster_count is None and isinstance(clusters, list):
+        cluster_count = len(clusters)
+    tail = _ftmo_first(metrics, "BOOK_TAIL_DEPENDENCE")
+    if isinstance(tail, dict):
+        tail_text = _ftmo_first(
+            tail, "activity_clustering_flag", "summary", "max_lower_decile_coexceed_x_indep",
+        )
+    else:
+        tail_text = tail
+
+    p_challenge = _ftmo_first(first_passage, "P_CHALLENGE_PASS")
+    p_payout_lcb = _ftmo_first(first_passage, "P_FIRST_NET_FTMO_PAYOUT_LCB")
+    median_bd = _ftmo_first(
+        first_passage, "median_end_to_end_bd", "median_bd", "MEDIAN_END_TO_END_BD",
+    )
+
+    return f'''
+  <section class="mc-section mc-ftmo-book" id="ftmo-book">
+    <div class="mc-h2"><span>FTMO BOOK</span>
+      <span class="mc-h2-aux">{e(p.get("book_id"))} · risk {_ftmo_value(p.get("book_risk_percent"), dec=5, suffix=" %")} · {e(str(p.get("generated_at_utc") or "")[:19])}</span></div>
+    <div class="mc-ftmo-kpis">
+      <div class="mc-ftmo-kpi"><span>Expected progress</span><b>{_ftmo_value(progress_usd, dec=2, suffix=" USD/bd")}</b><small>{_ftmo_value(progress_r, dec=4, suffix=" R/bd")} · E[R] {_ftmo_value(expectancy, dec=4)}</small></div>
+      <div class="mc-ftmo-kpi"><span>Book density</span><b>{_ftmo_value(trades_per_day, dec=3, suffix=" trades/bd")}</b><small>active {_ftmo_probability(active_days)} · no opportunity {_ftmo_probability(no_opportunity)}</small></div>
+      <div class="mc-ftmo-kpi"><span>Book drawdown</span><b>{_ftmo_value(max_dd, dec=2)}</b><small>daily breach {_ftmo_probability(daily_breach)} · max breach {_ftmo_probability(max_breach)}</small></div>
+      <div class="mc-ftmo-kpi"><span>FTMO rule headroom</span><b>daily {_ftmo_value(daily_headroom)}</b><small>maximum {_ftmo_value(max_headroom)} · demo-cycle state only</small></div>
+      <div class="mc-ftmo-kpi"><span>Dependence risk</span><b>{top_pair_html}</b><small>fail-together clusters {_ftmo_value(cluster_count)} · {_ftmo_value(tail_text)}</small></div>
+      <div class="mc-ftmo-kpi"><span>First passage</span><b>P challenge {_ftmo_probability(p_challenge)}</b><small>payout LCB {_ftmo_probability(p_payout_lcb)} · median {_ftmo_value(median_bd, dec=1, suffix=" bd")}</small></div>
+    </div>
+    <div class="mc-ftmo-grid">
+      <div>
+        <div class="mc-sublabel">Sleeves · EA × symbol × timeframe × weight</div>
+        <div class="mc-ftmo-table-wrap"><table class="mc-table mc-ftmo-table">
+          <thead><tr><th>EA</th><th>Symbol</th><th>TF</th><th>Role</th><th class="mc-num">Risk</th><th>Hash</th></tr></thead>
+          <tbody>{''.join(sleeve_rows)}</tbody>
+        </table></div>
+      </div>
+      <div>
+        <div class="mc-sublabel">Active candidates · portfolio action</div>
+        <div class="mc-ftmo-table-wrap"><table class="mc-table mc-ftmo-table">
+          <thead><tr><th>Candidate</th><th>Symbol</th><th>Role</th><th>Book action</th></tr></thead>
+          <tbody>{''.join(candidate_rows)}</tbody>
+        </table></div>
+      </div>
+    </div>
+    <div class="mc-ftmo-missing"><b>Strongest missing behaviour</b>{_ftmo_value(p.get("strongest_missing_behavior"))}</div>
+    <div class="mc-foot">
+      <div class="mc-foot-line"><b>Cost drag:</b> {_ftmo_value(cost_drag)}</div>
+      <div class="mc-foot-line"><b>Source:</b> {e(rm.get("source_path"))} · schema {e(p.get("schema"))}</div>
+    </div>
+  </section>'''
+
+
 def _render_path_to_25(contract: dict) -> str:
     metrics = contract.get("path_to_25", {}) or {}
     if not metrics:
@@ -2016,6 +2271,36 @@ _PAGE_CSS = """
   .mc-be-missing{padding:var(--space-2) 0;font-size:var(--fs-xs);color:var(--text-3)}
   .mc-be-reco{display:flex;gap:var(--space-3);align-items:center;flex-wrap:wrap;
     margin-bottom:var(--space-3)}
+
+  /* FTMO_BOOK account-level product panel (OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921) */
+  .mc-ftmo-book{border-left:4px solid var(--pass)}
+  .mc-ftmo-book .mc-h2>span:first-child{color:var(--pass)}
+  .mc-ftmo-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:var(--space-3);margin-bottom:var(--space-5)}
+  .mc-ftmo-kpi{border:1px solid var(--border);background:var(--surface-2);
+    padding:var(--space-3);min-width:0}
+  .mc-ftmo-kpi>span{display:block;font-family:var(--font-mono);font-size:var(--fs-xs);
+    color:var(--text-3);letter-spacing:.08em;text-transform:uppercase}
+  .mc-ftmo-kpi>b{display:block;margin:var(--space-2) 0;color:var(--text-1);
+    font-family:var(--font-mono);font-size:var(--fs-md);overflow-wrap:anywhere}
+  .mc-ftmo-kpi>small{display:block;color:var(--text-3);line-height:var(--lh-normal);
+    overflow-wrap:anywhere}
+  .mc-ftmo-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:var(--space-5)}
+  .mc-ftmo-table-wrap{overflow-x:auto;border:1px solid var(--border)}
+  .mc-ftmo-table{margin:0;min-width:640px}
+  .mc-ftmo-table th{white-space:nowrap}
+  .mc-ftmo-nym{color:var(--warn);font-family:var(--font-mono);font-size:var(--fs-xs)}
+  .mc-ftmo-action-add{color:var(--pass)}
+  .mc-ftmo-action-test,.mc-ftmo-action-hold{color:var(--warn)}
+  .mc-ftmo-action-reject{color:var(--fail)}
+  .mc-ftmo-missing{margin-top:var(--space-5);padding:var(--space-4);
+    border:1px solid var(--signal);background:var(--surface-2);line-height:var(--lh-normal)}
+  .mc-ftmo-missing>b{display:block;margin-bottom:var(--space-2);color:var(--signal);
+    font-family:var(--font-mono);font-size:var(--fs-xs);letter-spacing:.08em;
+    text-transform:uppercase}
+  @media(max-width:1100px){.mc-ftmo-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .mc-ftmo-grid{grid-template-columns:1fr}}
+  @media(max-width:720px){.mc-ftmo-kpis{grid-template-columns:1fr}}
 """
 
 
@@ -2271,6 +2556,7 @@ def render(contract: dict, *, from_json: bool = False, source_path: str | None =
     body = "".join([
         _render_control_strip(contract),
         _render_book_evolution(contract),
+        _render_ftmo_book(),
         _render_ftmo_challenge_readiness(contract),
         _render_owner_todos(contract),
         _render_risk_freeze(contract),

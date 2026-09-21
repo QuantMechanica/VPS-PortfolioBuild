@@ -1,0 +1,73 @@
+{
+  "schema": "qm.ftmo-book-current/v1",
+  "generated_at_utc": "2026-09-21T11:01:35+00:00",
+  "book_id": "FTMO_DEMO_BOOK_V3_D2G6_FIXTURE",
+  "book_risk_percent": 1.71875,
+  "sleeves": [
+    {
+      "ea_id": 10403,
+      "symbol": "XAUUSD",
+      "timeframe": "D1",
+      "risk_percent": 0.3125,
+      "role": "Gold trend",
+      "sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+    },
+    {
+      "ea_id": 13213,
+      "symbol": "USDJPY",
+      "timeframe": "H1",
+      "risk_percent": 0.15625,
+      "role": "VELOCITY_SLEEVE"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "H-V4 / QM5_41485",
+      "symbol": "USDJPY",
+      "role": "VELOCITY_SLEEVE",
+      "book_action": "TEST"
+    },
+    {
+      "id": "11708 EURUSD",
+      "symbol": "EURUSD",
+      "role": "low-cost FX diversifier",
+      "book_action": "HOLD"
+    }
+  ],
+  "book_metrics": {
+    "BOOK_EXPECTANCY": 0.0965,
+    "BOOK_R_PER_DAY": 0.126,
+    "BOOK_EXPECTED_PROGRESS_USD_PER_DAY": 31.9,
+    "BOOK_TRADES_PER_DAY": 1.306,
+    "BOOK_ACTIVE_DAYS": 0.85,
+    "TIME_WITH_NO_OPPORTUNITY": 0.15,
+    "BOOK_MAX_DD": -5740.0,
+    "BOOK_DAILY_LOSS_BREACH_PROB": 0.0,
+    "BOOK_MAX_LOSS_BREACH_PROB": 0.0152,
+    "BOOK_TAIL_DEPENDENCE": "10403/41219 activity clustering",
+    "BOOK_COST_DRAG": "cost stress reduced end-to-end passage"
+  },
+  "first_passage": {
+    "P_CHALLENGE_PASS": 0.9634,
+    "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.8839,
+    "median_end_to_end_bd": 487.0
+  },
+  "demo_cycle": {
+    "state": "RUNNING",
+    "rule_headroom": {
+      "daily_loss_headroom": "4.71 % / 4710 USD",
+      "max_loss_headroom": "8.92 % / 8920 USD"
+    }
+  },
+  "dependence_summary": {
+    "top_fail_together_pair": {
+      "pair": "10403/41219",
+      "loss_day_overlap_x_indep": 2.69,
+      "lower_decile_coexceed_x_indep": 0.0
+    },
+    "fail_together_clusters": [
+      [10403, 41219]
+    ]
+  },
+  "strongest_missing_behavior": "A session-flat, low-overlap, high-density New-York sleeve."
+}
