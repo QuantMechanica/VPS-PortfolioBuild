@@ -141,6 +141,10 @@ always-on; different asset from 13213 / 10706 / 41477; 10700 (demo roster, 58 % 
 is the tail-test comparator; the 41475/41476 index trio's mistimed cash-open anchor does not apply to a
 continuous OTC instrument.
 
+## Retired 2026-09-21
+
+Retired by Fable after cross-vendor critique round 2 (`9caac5c7`, Codex): the prescreen simulator was audited with no sign-flipping defect, so the measured selection-period failure stands. No card, build or factory row was ever created.
+
 ## Source manifest
 
 ```qm-source-manifest

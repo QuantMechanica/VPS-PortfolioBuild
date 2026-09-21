@@ -167,6 +167,10 @@ corrective counterpart of the failed 41484 transplant; not competing with 10706'
 (46 % overnight) nor with 41477's continuous M15 EMA-reclaim trigger; different asset class from 10700 and
 the 41475/41476 index trio.
 
+## Retired 2026-09-21
+
+Retired by Fable after cross-vendor critique round 2 (`9caac5c7`, Codex): the prescreen simulator was audited with no sign-flipping defect, so the measured selection-period failure stands. No card, build or factory row was ever created.
+
 ## Source manifest
 
 ```qm-source-manifest
