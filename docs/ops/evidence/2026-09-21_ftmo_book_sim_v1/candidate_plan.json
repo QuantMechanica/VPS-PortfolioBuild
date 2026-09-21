@@ -1,0 +1,85 @@
+{
+  "schema": "qm.ftmo-book-candidate-plan/v1",
+  "decision_id": "OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921",
+  "candidates": [
+    {
+      "id": "11708_EURUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11708,
+        "ea_label": "QM5_11708_anon-market-squeeze-d1",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1",
+        "role": "low-cost FX diversifier",
+        "family": "market_squeeze",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/snapshot_r2/streams/QM/q08_trades/11708_EURUSD_DWX.jsonl",
+        "stream_sha256": "0fbccdfed14837c8b58e983f4367be08c9f8fef02d49377d3984b663e1e5d914"
+      }
+    },
+    {
+      "id": "11910_NZDUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11910,
+        "ea_label": "QM5_11910_williams-18ma-2outside-bars-d1",
+        "symbol": "NZDUSD.DWX",
+        "timeframe": "D1",
+        "role": "FX diversifier",
+        "family": "outside_bar_trend",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/snapshot_r2/streams/QM/q08_trades/11910_NZDUSD_DWX.jsonl",
+        "stream_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0"
+      }
+    },
+    {
+      "id": "10513_XAUUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 10513,
+        "ea_label": "QM5_10513_mql5-ichimoku",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1",
+        "role": "Gold trend candidate",
+        "family": "ichimoku_trend",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/snapshot_r2/streams/QM/q08_trades/10513_XAUUSD_DWX.jsonl",
+        "stream_sha256": "ff56dbcd2ba91e0f7f1270fd7011314f7b5dfc927c1e1400d0c8d73b954a48e4"
+      }
+    },
+    {
+      "id": "11421_EURUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11421,
+        "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1",
+        "role": "FX reversal candidate",
+        "family": "daily_squeeze_reversal",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/snapshot_r2/streams/QM/q08_trades/11421_EURUSD_DWX.jsonl",
+        "stream_sha256": "e9d0a9ef831f156f0f67e5bf1140d7e57702c3923a4ff47b5548847957d7c0c1"
+      }
+    },
+    {"id": "41219_XAUUSD_D1", "mode": "leave_one_out", "ea_id": 41219},
+    {"id": "10403_XAUUSD_D1", "mode": "leave_one_out", "ea_id": 10403},
+    {"id": "10700_XAUUSD_H1", "mode": "leave_one_out", "ea_id": 10700},
+    {
+      "id": "H-V4 / QM5_41485",
+      "mode": "placeholder",
+      "symbol": "USDJPY (+ EURUSD C3 secondary)",
+      "role": "VELOCITY_SLEEVE",
+      "book_action": "TEST",
+      "reason": "Q08 trade stream pending; no marginal probability is measurable before tester evidence"
+    }
+  ]
+}
