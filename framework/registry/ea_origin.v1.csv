@@ -4458,6 +4458,7 @@ QM5_41481,100pips-daily-range-bracket-usdjpy-v3,external_source,slug:default_ext
 QM5_41482,williams-vix-fix-fx-h4-opt,external_source,slug:default_external,1
 QM5_41483,wti-tsmom11-h1,owner_mission,owner:mission_label,0
 QM5_41484,balke-range-breakout-fx-fanout,external_source,card:external_source,1
+QM5_41485,ny-preopen-range-breakout-jpy,internal_discovery,card:internal_marker,1
 QM5_9001,chan-at-roll-arb-etf,external_source,slug:default_external,0
 QM5_9002,chan-at-vx-es-roll-mom,external_source,slug:default_external,0
 QM5_9003,chan-at-spy-arb,external_source,slug:default_external,0
