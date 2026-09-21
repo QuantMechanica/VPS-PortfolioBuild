@@ -18620,3 +18620,7 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 41486,connors-rsi2-sma200-mean-reversion-d1-v2,0,EURUSD.DWX,414860000,2026-09-21,Codex governed allocator,active
 41486,connors-rsi2-sma200-mean-reversion-d1-v2,1,GBPUSD.DWX,414860001,2026-09-21,Codex governed allocator,active
 41486,connors-rsi2-sma200-mean-reversion-d1-v2,2,USDJPY.DWX,414860002,2026-09-21,Codex governed allocator,active
+41487,ft-binhv45-v2,0,EURUSD.DWX,414870000,2026-09-21,Codex governed allocator,active
+41487,ft-binhv45-v2,1,GBPUSD.DWX,414870001,2026-09-21,Codex governed allocator,active
+41487,ft-binhv45-v2,2,USDJPY.DWX,414870002,2026-09-21,Codex governed allocator,active
+41487,ft-binhv45-v2,3,XAUUSD.DWX,414870003,2026-09-21,Codex governed allocator,active
