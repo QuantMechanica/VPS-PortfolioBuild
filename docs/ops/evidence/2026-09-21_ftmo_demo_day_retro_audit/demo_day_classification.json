@@ -1,0 +1,253 @@
+{
+  "schema": "qm.ftmo-demo-day-classification/v1",
+  "audit_task_id": "4505b206-3b25-4205-924b-560f4d7c4bb0",
+  "audit_cutoff_utc": "2026-09-21T18:42:39Z",
+  "trial_id": "FTMO_DEMO_BOOK_V3_D2G6_20260918",
+  "contract": {
+    "account_initial_balance_usd": 100000.0,
+    "ea_daily_loss_halt_fraction": 0.03,
+    "ftmo_daily_loss_amount_usd": 5000.0,
+    "ftmo_day_timezone": "Europe/Prague",
+    "server_utc_offset_hours_during_audit": 3,
+    "prague_utc_offset_hours_during_audit": 2,
+    "structurally_valid_count_rule": "complete day and class != MATERIALLY_INVALID"
+  },
+  "source_binding": {
+    "collector_path": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Files/QM/ftmo_trial/FTMO_DEMO_BOOK_V3_D2G6_20260918/trial_telemetry_raw.jsonl",
+    "captured_prefix_bytes": 324249149,
+    "captured_prefix_sha256": "402ead4eebded878a1071dcdd667769f78fb7269799765c7ab779ff4852f5bcc",
+    "captured_prefix_rows": 453275,
+    "captured_prefix_first_utc": "2026-09-18T04:39:24Z",
+    "captured_prefix_last_utc": "2026-09-21T18:42:39Z",
+    "collector_boundary_cadence_seconds": 1,
+    "ea_event_log_directory": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Files/QM",
+    "state_directory": "C:/Users/Administrator/AppData/Roaming/MetaQuotes/Terminal/81A933A9AFC5DE3C23B15CAB19C63850/MQL5/Files/QM/halt"
+  },
+  "summary": {
+    "days_classified": 4,
+    "class_counts": {
+      "BEHAVIOR_IDENTICAL": 1,
+      "POTENTIALLY_DIFFERENT": 2,
+      "MATERIALLY_INVALID": 1
+    },
+    "complete_days": 3,
+    "structurally_valid_complete_days": 2,
+    "minimum_days": 14,
+    "remaining_to_minimum": 12,
+    "hyperactive_days": 0,
+    "days_above_2000_server_requests": 0
+  },
+  "days": [
+    {
+      "day_prague": "2026-09-18",
+      "day_complete": true,
+      "class": "MATERIALLY_INVALID",
+      "prague_midnight_balance": null,
+      "prague_midnight_equity": null,
+      "broker_midnight_balance": null,
+      "broker_midnight_equity": null,
+      "ks_day_start_equity_by_magic": {
+        "104030002": 99847.04,
+        "107000003": 99847.04,
+        "107060001": 99811.51,
+        "114220004": 99811.51,
+        "132130000": 99847.04,
+        "412190000": 99847.04
+      },
+      "floating_pnl_at_boundaries": {
+        "broker_midnight_usd": null,
+        "prague_midnight_usd": null,
+        "first_observed_2026-09-18T04:39:24Z_usd": 32.35
+      },
+      "lowest_intraday_equity": 99812.09,
+      "lowest_intraday_equity_utc": "2026-09-18T17:46:10Z",
+      "realised_day_pnl_usd": null,
+      "observed_balance_change_from_2026-09-18T04:39:24Z_usd": 1.73,
+      "open_positions_across_boundary": {
+        "broker_midnight": null,
+        "prague_midnight": null,
+        "first_observed": 1,
+        "last_observed": 0
+      },
+      "pending_orders_at_first_and_last_observation": [1, 2],
+      "halt_or_kill_events": [],
+      "nearest_approach_to_daily_loss_guard_usd": 2960.46,
+      "nearest_approach_basis": "Observed-only headroom to the most restrictive deployed 3% EA floor, 96851.63, derived from the 99847.04 persisted anchor; the unobserved interval prevents a whole-day claim.",
+      "ftmo_floor_headroom_usd": null,
+      "server_requests_lower_bound": 11,
+      "server_request_events": {
+        "TM_OPEN": 7,
+        "TM_CLOSE": 1,
+        "TM_MODIFY": 0,
+        "TM_REMOVE_PENDING": 3
+      },
+      "collector_peak_open_positions": 1,
+      "collector_peak_pending_orders": 4,
+      "hyperactive_pattern": false,
+      "notes": "The collector starts 6h39m after Prague midnight, so neither mandatory boundary nor the true midnight balance anchor is recoverable. Two different persisted startup anchors and an already-open position make rule-headroom evidence non-reconstructable; the day is structurally invalid even though the observed-only low remained far from the 3% EA floor."
+    },
+    {
+      "day_prague": "2026-09-19",
+      "day_complete": true,
+      "class": "POTENTIALLY_DIFFERENT",
+      "prague_midnight_balance": 99813.22,
+      "prague_midnight_equity": 99813.22,
+      "broker_midnight_balance": 99813.22,
+      "broker_midnight_equity": 99813.22,
+      "ks_day_start_equity_by_magic": {
+        "104030002": 99847.04,
+        "107000003": 99847.04,
+        "107060001": 99811.51,
+        "114220004": 99811.51,
+        "132130000": 99847.04,
+        "412190000": 99847.04
+      },
+      "floating_pnl_at_boundaries": {
+        "broker_midnight_usd": 0.0,
+        "prague_midnight_usd": 0.0
+      },
+      "lowest_intraday_equity": 99813.22,
+      "lowest_intraday_equity_utc": "2026-09-18T22:00:00Z",
+      "realised_day_pnl_usd": 0.0,
+      "open_positions_across_boundary": {
+        "broker_midnight": 0,
+        "prague_midnight": 0,
+        "end_of_day": 0
+      },
+      "pending_orders_at_broker_prague_and_end": [2, 2, 2],
+      "halt_or_kill_events": [],
+      "nearest_approach_to_daily_loss_guard_usd": 2961.59,
+      "nearest_approach_basis": "Headroom to the most restrictive deployed 3% EA floor, 96851.63, from the stale 99847.04 sleeve anchors. The correct 99813.22 anchor would put the 3% floor at 96818.82. No trade request or account-value movement occurred in this Prague day.",
+      "ftmo_floor_headroom_usd": 5000.0,
+      "server_requests_lower_bound": 0,
+      "server_request_events": {
+        "TM_OPEN": 0,
+        "TM_CLOSE": 0,
+        "TM_MODIFY": 0,
+        "TM_REMOVE_PENDING": 0
+      },
+      "collector_peak_open_positions": 0,
+      "collector_peak_pending_orders": 2,
+      "hyperactive_pattern": false,
+      "notes": "Balance and equity matched at both clock boundaries, but the market had stopped before broker midnight and TimeCurrent remained on Friday. The state therefore retained two stale startup-anchor values instead of persisting 99813.22. Their maximum error was +33.82; with no requests, no positions and 2961.59 of minimum EA-guard headroom, it could not change a decision."
+    },
+    {
+      "day_prague": "2026-09-20",
+      "day_complete": true,
+      "class": "POTENTIALLY_DIFFERENT",
+      "prague_midnight_balance": 99813.22,
+      "prague_midnight_equity": 99813.22,
+      "broker_midnight_balance": 99813.22,
+      "broker_midnight_equity": 99813.22,
+      "ks_day_start_equity_by_magic": {
+        "104030002": {
+          "at_prague_midnight": 99847.04,
+          "after_first_post_open_check": 99813.22,
+          "reset_utc": "2026-09-20T22:05:00Z"
+        },
+        "107000003": {
+          "at_prague_midnight": 99847.04,
+          "after_first_post_open_check": 99813.22,
+          "reset_utc": "2026-09-20T22:05:00Z"
+        },
+        "107060001": {
+          "at_prague_midnight": 99811.51,
+          "after_first_post_open_check": 99813.22,
+          "reset_utc": "2026-09-20T21:05:02Z"
+        },
+        "114220004": {
+          "at_prague_midnight": 99811.51,
+          "after_first_post_open_check": 99813.22,
+          "reset_utc": "2026-09-20T21:05:13Z"
+        },
+        "132130000": {
+          "at_prague_midnight": 99847.04,
+          "after_first_post_open_check": 99813.22,
+          "reset_utc": "2026-09-20T21:05:00Z"
+        },
+        "412190000": {
+          "at_prague_midnight": 99847.04,
+          "after_first_post_open_check": 99813.22,
+          "reset_utc": "2026-09-20T22:05:00Z"
+        }
+      },
+      "floating_pnl_at_boundaries": {
+        "broker_midnight_usd": 0.0,
+        "prague_midnight_usd": 0.0
+      },
+      "lowest_intraday_equity": 99813.22,
+      "lowest_intraday_equity_utc": "2026-09-19T22:00:00Z",
+      "realised_day_pnl_usd": 0.0,
+      "open_positions_across_boundary": {
+        "broker_midnight": 0,
+        "prague_midnight": 0,
+        "end_of_day": 0
+      },
+      "pending_orders_at_broker_prague_and_end": [2, 2, 3],
+      "halt_or_kill_events": [],
+      "nearest_approach_to_daily_loss_guard_usd": 2961.59,
+      "nearest_approach_basis": "Minimum headroom to the most restrictive deployed 3% EA floor while stale weekend anchors remained. After the Sunday server-day rollover the 3% floor was 96818.82 and headroom was 2994.40.",
+      "ftmo_floor_headroom_usd": 5000.0,
+      "server_requests_lower_bound": 1,
+      "server_request_events": {
+        "TM_OPEN": 1,
+        "TM_CLOSE": 0,
+        "TM_MODIFY": 0,
+        "TM_REMOVE_PENDING": 0
+      },
+      "collector_peak_open_positions": 0,
+      "collector_peak_pending_orders": 3,
+      "hyperactive_pattern": false,
+      "notes": "The stale weekend anchors differed by at most +33.82 until Sunday market open. The single request was a pending-order open after the account was flat and the first active sleeves had reset to 99813.22; no equity movement or guard proximity could change its outcome. Slower sleeves persisted the same correct numeric anchor after Prague midnight, exposing the wrong timing but not a numeric decision difference."
+    },
+    {
+      "day_prague": "2026-09-21",
+      "day_complete": false,
+      "class": "BEHAVIOR_IDENTICAL",
+      "prague_midnight_balance": 99813.22,
+      "prague_midnight_equity": 99813.22,
+      "broker_midnight_balance": 99813.22,
+      "broker_midnight_equity": 99813.22,
+      "ks_day_start_equity_by_magic": {
+        "104030002": 99813.22,
+        "107000003": 99813.22,
+        "107060001": 99813.22,
+        "114220004": 99813.22,
+        "132130000": 99813.22,
+        "412190000": 99813.22
+      },
+      "floating_pnl_at_boundaries": {
+        "broker_midnight_usd": 0.0,
+        "prague_midnight_usd": 0.0
+      },
+      "lowest_intraday_equity": 99713.95,
+      "lowest_intraday_equity_utc": "2026-09-21T11:52:47Z",
+      "realised_day_pnl_usd": 118.88,
+      "realised_day_pnl_basis": "partial through audit cutoff",
+      "open_positions_across_boundary": {
+        "broker_midnight": 0,
+        "prague_midnight": 0,
+        "at_audit_cutoff": 1
+      },
+      "pending_orders_at_broker_prague_and_cutoff": [2, 3, 0],
+      "halt_or_kill_events": [],
+      "nearest_approach_to_daily_loss_guard_usd": 2895.13,
+      "nearest_approach_basis": "Headroom from the intraday low to the deployed 3% EA floor of 96818.82. The broker-midnight raw-equity anchor and FTMO Prague-midnight balance anchor were both exactly 99813.22 with zero floating P/L.",
+      "ftmo_floor_headroom_usd": 4900.73,
+      "server_requests_lower_bound": 4,
+      "server_request_events": {
+        "TM_OPEN": 2,
+        "TM_CLOSE": 1,
+        "TM_MODIFY": 0,
+        "TM_REMOVE_PENDING": 1
+      },
+      "collector_peak_open_positions": 2,
+      "collector_peak_pending_orders": 3,
+      "hyperactive_pattern": false,
+      "notes": "Numerically identical through the audit cutoff, but still an incomplete day and therefore not yet counted toward the completed-day minimum. This finding does not make anchor_offset=0 contract-correct."
+    }
+  ],
+  "evidence_scope": "PRE_SUNDAY_LIVE_TRIAL_ONLY",
+  "representative_demo_generation_start": "2026-09-27",
+  "merged_into_representative_generation": false
+}
