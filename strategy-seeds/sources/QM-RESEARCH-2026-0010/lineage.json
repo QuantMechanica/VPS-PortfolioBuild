@@ -1,0 +1,21 @@
+{
+  "discovery_sample": {
+    "dataset_ids": ["q02_velocity_screen_2026-09-20"],
+    "instruments": ["XAUUSD"],
+    "period": "2018-01-01..2022-12-31"
+  },
+  "mechanization": {
+    "codex_implementable": true,
+    "spec_section": "source.md#structural-cause (Mechanical spec, bounded, no ML)"
+  },
+  "parent_version_id": null,
+  "preregistration": null,
+  "research_id": "QM-RESEARCH-2026-0010",
+  "schema": "qm.research-lineage/v1",
+  "validation_sample": {
+    "dataset_ids": ["q02_velocity_screen_2026-09-20"],
+    "instruments": ["XAUUSD"],
+    "period": "2023-01-01..2025-12-31"
+  },
+  "version": 1
+}

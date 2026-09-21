@@ -1,0 +1,129 @@
+{
+  "demo_roster_10700_reference": {
+    "eR": 0.165,
+    "hold_h": 19.7,
+    "overnight_pct": 58,
+    "source": "FTMO_PORTFOLIO_GAP_CURRENT.md table 1a",
+    "trades_per_bd": 0.18
+  },
+  "hypothesis": "H-V2",
+  "measured_baseline_configs_XAUUSD_always_on": [
+    {
+      "R_bd": 0.2462971319148936,
+      "bd": 1175,
+      "dens": 0.033191489361702124,
+      "eR": 7.420490512820513,
+      "ea": "QM5_12485",
+      "n": 39,
+      "pf": 9.24,
+      "sym": "XAUUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.07057499361430396,
+      "bd": 783,
+      "dens": 0.8212005108556832,
+      "eR": 0.08594124416796267,
+      "ea": "QM5_10423",
+      "n": 643,
+      "pf": 1.22,
+      "sym": "XAUUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.052429617021276596,
+      "bd": 1175,
+      "dens": 1.84,
+      "eR": 0.02849435707678076,
+      "ea": "QM5_11690",
+      "n": 2162,
+      "pf": 1.08,
+      "sym": "XAUUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.04834169361702127,
+      "bd": 1175,
+      "dens": 0.6646808510638298,
+      "eR": 0.07272918053777208,
+      "ea": "QM5_10461",
+      "n": 781,
+      "pf": 1.11,
+      "sym": "XAUUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.039166238297872344,
+      "bd": 1175,
+      "dens": 0.22382978723404257,
+      "eR": 0.17498224334600762,
+      "ea": "QM5_11263",
+      "n": 263,
+      "pf": 1.41,
+      "sym": "XAUUSD.DWX",
+      "tf": "M1"
+    },
+    {
+      "R_bd": 0.02203708936170213,
+      "bd": 1175,
+      "dens": 0.03234042553191489,
+      "eR": 0.6814100000000001,
+      "ea": "QM5_10189",
+      "n": 38,
+      "pf": 1.93,
+      "sym": "XAUUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.018453948936170212,
+      "bd": 1175,
+      "dens": 0.6,
+      "eR": 0.030756581560283686,
+      "ea": "QM5_10316",
+      "n": 705,
+      "pf": 1.05,
+      "sym": "XAUUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.01576267234042553,
+      "bd": 1175,
+      "dens": 0.17106382978723406,
+      "eR": 0.09214497512437811,
+      "ea": "QM5_41333",
+      "n": 201,
+      "pf": 1.17,
+      "sym": "XAUUSD.DWX",
+      "tf": "H1"
+    }
+  ],
+  "q05_dd_failures_readme_table": {
+    "QM5_10423": {
+      "eR": 0.086,
+      "note": "Q05 FAIL dd 41% at 1%/trade (README.md table row)",
+      "trades_per_bd": 0.82
+    },
+    "QM5_11690": {
+      "eR": 0.028,
+      "note": "Q05 FAIL dd 59% (README.md table row)",
+      "trades_per_bd": 1.84
+    }
+  },
+  "schema": "qm.velocity-baseline-extract/v1",
+  "summary": {
+    "R_bd_max": 0.2462971319148936,
+    "R_bd_min": -0.08574301404853128,
+    "bd_window": [
+      783,
+      1175
+    ],
+    "dens_max": 2.980425531914894,
+    "dens_min": 0.029787234042553193,
+    "n_configs": 70
+  },
+  "upstream_sources": {
+    "FTMO_PORTFOLIO_GAP_CURRENT.md": "056ac321afad93b519754a88080cc02d4fec36d4900ba0c29af37f475bf1db42",
+    "README.md": "9cef61b59802cb16cf43a05240b1ebb3611bb020615dfbd1af89d14275eda2ec",
+    "q02_velocity_screen.json": "0c6e36e95e9bf1070f9b4389ad1af53799c4ff0614937e23eacbdbdcc0969611"
+  }
+}

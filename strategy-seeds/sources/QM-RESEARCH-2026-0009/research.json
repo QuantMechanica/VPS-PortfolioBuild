@@ -1,0 +1,64 @@
+{
+  "author": "Claude",
+  "candidate_edge": "A single opening-range breakout/failed-breakout signal per weekday per symbol on EURUSD and GBPUSD, gated strictly to the 07:00-08:00 UTC London cash-session open, flat by 16:00 UTC (0% overnight target). Bounded params: range window 07:00-08:00 UTC, entry = M15-confirmed close beyond range high/low (breakout) or M15-confirmed close back inside the range after a false break (failure/reversal variant, mutually exclusive per bar), stop = range width, target = 1.5x-2.0x range width, hard time-stop flat at 16:00 UTC.",
+  "computed_outputs": [
+    {
+      "claim_ref": "hv1_baseline_extract",
+      "file": "baseline_extract.json",
+      "sha256": "c987e2d3280118ed9113a45fc74a473ea04bf03eeaf1c40340c56f6bbda19f73"
+    }
+  ],
+  "confidence": "Low-to-moderate. The density prior (0.6-0.7 trades/bd/symbol) is a structural inference from calendar mechanics (one opening range per weekday, discounting holidays/low-range days), not a measurement -- no existing measured configuration in the frozen Q02 screen gates entry to this specific 07:00-08:00 UTC window, so there is no direct historical R_bd for the mechanism itself. The E[R] prior (+0.10-0.15R) is anchored to the single best-measured session-flat profile in the whole inventory (13213 USDJPY Balke breakout, +0.064R, 0% overnight) scaled up for London's structurally higher realized-vol-at-open versus Tokyo's 03:00-06:00 GMT+3 window, which is itself an unverified transfer assumption and the primary thing the Q02 canary must falsify.",
+  "confounders": [
+    "London-open volatility is partly driven by the same macro calendar the news-blackout filter already excludes (Hard Rule mandatory news blackout) -- if the tradeable edge is concentrated on high-impact-news days, the news filter could remove most of the density before Q02 even measures it.",
+    "EURUSD and GBPUSD daily ranges are correlated (both GBP/EUR vs USD); if the mechanism fires on both symbols from the same market-wide opening shock, the two 'independent' sleeves may share tail risk on the same days -- must be checked against the FTMO_PORTFOLIO_GAP_CURRENT.md tail-dependence method (|r|>0.30 or >2x independence-baseline lower-decile co-occurrence) before either symbol enters a book alongside the other.",
+    "Range-breakout mechanisms are regime-dependent (trend vs chop); the 2018-2024 window mixes both regimes and a single aggregate E[R] could mask a strategy that only works in a sub-period, which is exactly the failure mode the census_frontier_holdout.json finding (in-sample winners do not beat baseline OOS) already demonstrated for this EA family generally.",
+    "M15 execution timeframe means the true entry price is subject to spread widening right at the 07:00 UTC open, which the .DWX tester models as zero spread (FTMO_PORTFOLIO_GAP_CURRENT.md section 1b) -- the cost-to-target check below is therefore commission-only and may be optimistic."
+  ],
+  "created_utc": "2026-09-21T04:34:39+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "claude-sonnet-5",
+  "observations": "No measured Q02 configuration on EURUSD or GBPUSD (30 configurations in the frozen screen, see baseline_extract.json) gates entry to a fixed opening-range window; the best measured non-session-anchored config on either symbol tops out at R_bd well below the Balke 13213 template (0.048 R_bd, 0% overnight). All measured intraday sleeves that DO reach the fastest profile in the company (13213, 0.744 trades/bd) use a session-range-breakout mechanism, just on the wrong pair/session for this hypothesis (Tokyo, USDJPY) -- H-V1 asks whether the SAME mechanism class (opening-range breakout/failure), re-anchored to each symbol's OWN native cash-session open rather than transplanted verbatim (which is precisely the transplant that failed for AUDJPY/EURJPY/USDCAD/etc. in the 41484 fan-out, see baseline_extract.json balke_41484_fanout_reference), reproduces a comparable R/bd on EURUSD/GBPUSD.",
+  "originating_task_id": "31012467-dde7-4b74-995c-def2241b28c0",
+  "proposed_mechanism": "London-session opening-range establishment reflects the first price discovery after the Asia-session low-liquidity book closes and European institutional flow enters; a genuine directional breakout of that range is more likely to be information-driven (continuation) than a Tokyo-session range breakout on the same pair would be, because EURUSD/GBPUSD's natural liquidity center is London, not Tokyo. This is the same economic logic already validated for USDJPY at ITS native session (Tokyo AM, Balke/13213: 0% overnight, 7.2h hold, +0.064R) -- H-V1 pairs the identical mechanism class with EURUSD/GBPUSD's own native session instead of reusing USDJPY's window, directly responding to the README.md section 2c lesson: 'the next fan-outs must pair each mechanism with its own session structure.'",
+  "quantitative_claims": [
+    {
+      "claim": "no measured EURUSD/GBPUSD Q02 configuration (non-session-anchored) exceeds the stated R_bd ceiling",
+      "value": "see summary.R_bd_max in baseline_extract.json",
+      "computed_output_ref": "hv1_baseline_extract"
+    },
+    {
+      "claim": "Balke 13213 USDJPY template profile (density, E[R], R_bd, hold, overnight) used as the scaling reference for the E[R] prior",
+      "value": "0.74 trades/bd, +0.064R, 0.048 R_bd, 7.2h hold, 0% overnight",
+      "computed_output_ref": "hv1_baseline_extract"
+    },
+    {
+      "claim": "the identical-trigger transplant of Balke's window onto non-JPY majors (including a GBPUSD leg) already measured flat/negative, motivating the native-session redesign here",
+      "value": "AUDJPY +0.005R, GBPUSD -0.015R (41484 fan-out)",
+      "computed_output_ref": "hv1_baseline_extract"
+    }
+  ],
+  "related_strategies": [
+    "QM5_13213",
+    "QM5_10706",
+    "QM5_10700",
+    "QM5_41475",
+    "QM5_41476",
+    "QM5_41477",
+    "QM5_41484"
+  ],
+  "research_id": "QM-RESEARCH-2026-0009",
+  "research_question": "Does an opening-range breakout/failure mechanism, re-anchored to EURUSD/GBPUSD's own native 07:00-08:00 UTC London cash-session open (instead of the Tokyo window that failed when transplanted onto non-JPY majors), reproduce a session-flat, ~0.5-0.7 trades/bd, >=+0.10R/trade profile comparable to the best measured sleeve (Balke 13213) in the inventory?",
+  "research_trial_count": 1,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "N/A -- this artifact is a directed hypothesis authored against the 2026-09-20 velocity evidence cohort per task 31012467-dde7-4b74-995c-def2241b28c0, not a Kimi OBSERVE/DISCOVER search-ledger product; no search_history_ledger.jsonl entry exists for this family (research_trial_count=1 reflects this single directed hypothesis, not a swept parameter search).",
+  "source_datasets": [
+    {
+      "dataset_id": "q02_velocity_screen_2026-09-20",
+      "path": "baseline_extract.json",
+      "sha256": "c987e2d3280118ed9113a45fc74a473ea04bf03eeaf1c40340c56f6bbda19f73"
+    }
+  ]
+}

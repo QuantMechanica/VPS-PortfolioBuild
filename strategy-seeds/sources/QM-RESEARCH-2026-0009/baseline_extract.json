@@ -1,0 +1,119 @@
+{
+  "balke_13213_template_reference": {
+    "R_bd": 0.048,
+    "eR": 0.064,
+    "hold_h": 7.2,
+    "note": "cited only as the fastest measured session-flat profile in the inventory; not transplanted onto EURUSD/GBPUSD (that transplant already failed for non-JPY majors per the 41484 fan-out, see README.md section 2c).",
+    "overnight_pct": 0,
+    "source": "README.md table row 13213 USDJPY H1",
+    "trades_per_bd": 0.74
+  },
+  "hypothesis": "H-V1",
+  "measured_baseline_configs_EURUSD_GBPUSD_non_session_anchored": [
+    {
+      "R_bd": 0.04156013617021277,
+      "bd": 1175,
+      "dens": 0.12851063829787235,
+      "eR": 0.32339841059602653,
+      "ea": "QM5_41161",
+      "n": 151,
+      "pf": 1.56,
+      "sym": "GBPUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.04156013617021277,
+      "bd": 1175,
+      "dens": 0.12851063829787235,
+      "eR": 0.32339841059602653,
+      "ea": "QM5_10706",
+      "n": 151,
+      "pf": 1.56,
+      "sym": "GBPUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.010492331914893616,
+      "bd": 1175,
+      "dens": 0.033191489361702124,
+      "eR": 0.3161151282051282,
+      "ea": "QM5_1354",
+      "n": 39,
+      "pf": 1.83,
+      "sym": "GBPUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": 0.0012134382978723404,
+      "bd": 1175,
+      "dens": 0.7191489361702128,
+      "eR": 0.0016873254437869821,
+      "ea": "QM5_11463",
+      "n": 845,
+      "pf": 1.02,
+      "sym": "EURUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": -0.0032811744680851067,
+      "bd": 1175,
+      "dens": 0.02893617021276596,
+      "eR": -0.11339352941176471,
+      "ea": "QM5_1354",
+      "n": 34,
+      "pf": 0.8,
+      "sym": "EURUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": -0.008509131914893617,
+      "bd": 1175,
+      "dens": 0.3880851063829787,
+      "eR": -0.02192594298245614,
+      "ea": "QM5_41150",
+      "n": 456,
+      "pf": 0.97,
+      "sym": "GBPUSD.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": -0.01202983829787234,
+      "bd": 1175,
+      "dens": 0.26382978723404255,
+      "eR": -0.04559696774193548,
+      "ea": "QM5_41477",
+      "n": 310,
+      "pf": 0.91,
+      "sym": "GBPUSD.DWX",
+      "tf": "M15"
+    },
+    {
+      "R_bd": -0.016656587234042553,
+      "bd": 1175,
+      "dens": 0.3923404255319149,
+      "eR": -0.04245442516268981,
+      "ea": "QM5_10907",
+      "n": 461,
+      "pf": 0.87,
+      "sym": "EURUSD.DWX",
+      "tf": "H1"
+    }
+  ],
+  "note": "None of these measured configurations gates entry to the 07:00-08:00 UTC London-open range; they are the closest existing intraday evidence on the same two symbols and establish that no measured non-session-anchored EURUSD/GBPUSD H1/M15 configuration exceeds R_bd shown above (max 0.04156013617021277).",
+  "schema": "qm.velocity-baseline-extract/v1",
+  "summary": {
+    "R_bd_max": 0.04156013617021277,
+    "R_bd_min": -0.08507702127659575,
+    "bd_window": [
+      1175
+    ],
+    "dens_max": 2.4919148936170212,
+    "dens_min": 0.02893617021276596,
+    "n_configs": 30
+  },
+  "upstream_sources": {
+    "FTMO_PORTFOLIO_GAP_CURRENT.md": "056ac321afad93b519754a88080cc02d4fec36d4900ba0c29af37f475bf1db42",
+    "README.md": "9cef61b59802cb16cf43a05240b1ebb3611bb020615dfbd1af89d14275eda2ec",
+    "q02_velocity_screen.json": "0c6e36e95e9bf1070f9b4389ad1af53799c4ff0614937e23eacbdbdcc0969611"
+  }
+}

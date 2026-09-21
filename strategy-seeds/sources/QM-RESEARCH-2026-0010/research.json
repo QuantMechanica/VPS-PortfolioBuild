@@ -1,0 +1,63 @@
+{
+  "author": "Claude",
+  "candidate_edge": "A single volatility-expansion signal per weekday on XAUUSD, gated strictly to the 13:30-14:30 UTC US cash/COMEX-linked open window, flat by 20:00 UTC (0% overnight). Bounded params: reference range = 12:30-13:30 UTC pre-open range, entry = M15-confirmed close beyond that range in the 13:30-14:30 UTC window, stop = reference-range width, target = 1.5x-2.0x reference-range width, hard time-stop flat at 20:00 UTC.",
+  "computed_outputs": [
+    {
+      "claim_ref": "hv2_baseline_extract",
+      "file": "baseline_extract.json",
+      "sha256": "7426c6e94d560813826663f41a93d439280aec93d097eb7704d6c469819896e9"
+    }
+  ],
+  "confidence": "Low-to-moderate. Gold's elevated volatility around 13:30 UTC (many high-impact USD macro releases print at 08:30 ET) is a widely observed market microstructure fact, but the two existing always-on gold H1 EAs that already show high density+edge in the frozen screen (10423, 11690) both FAILED Q05 on drawdown -- so the open question is specifically whether session-gating (0% overnight, one signal/day) fixes the drawdown failure mode without destroying the edge, not whether gold has a tradeable edge at all. This is a narrower and more falsifiable claim than 'gold is volatile at the US open'.",
+  "confounders": [
+    "The 13:30 UTC window overlaps the mandatory news blackout for high-impact USD releases; if the tradeable move is driven by the same releases the blackout excludes, density could collapse well below the structural prior once the filter is applied.",
+    "Gold's point value and typical spread are materially different from FX majors; the qualitative cost-to-target check below is not a substitute for a real commission read from framework/registry/tester_defaults.json.",
+    "10700 XAUUSD (in the current demo roster) already carries 58% overnight exposure and a 19.7h hold at a healthy +0.165R/trade -- if H-V2's session-flat redesign simply captures a subset of the SAME underlying gold edge as 10700 rather than a genuinely distinct one, the two would be correlated day-to-day and should not both enter a book without the joint-tail check.",
+    "10423/11690's Q05 DD failures could stem from position sizing rather than from being always-on; if so, session-gating alone may not fix the DD axis and the falsification criterion below (DD reproduces the same failure) is designed to catch that."
+  ],
+  "created_utc": "2026-09-21T04:34:40+00:00",
+  "critic_receipt": "critic_receipt.json",
+  "lineage": "lineage.json",
+  "ml_method": null,
+  "model": "claude-sonnet-5",
+  "observations": "The two highest-density measured gold configurations in the frozen Q02 screen (10423: 0.82 trades/bd, +0.086R/trade; 11690: 1.84 trades/bd, +0.028R/trade) both show real edge but both FAILED Q05 on drawdown (41% and 59% respectively, per README.md's velocity table) -- they are always-on H1 signals, not gated to a specific session. The current demo-roster gold sleeve (10700) achieves +0.165R/trade but only at 0.18 trades/bd with 58% overnight exposure and a 19.7h hold. No measured configuration combines XAUUSD's demonstrated H1 edge with a session-flat (0% overnight), single-window structure the way 13213 does for USDJPY.",
+  "originating_task_id": "31012467-dde7-4b74-995c-def2241b28c0",
+  "proposed_mechanism": "Gold is a global 23/5 OTC market whose volatility genuinely clusters around the US cash-equity/COMEX-linked open (13:30 UTC / 08:30 ET), a window in which a large share of high-impact USD macro data prints -- unlike the H-CW/H-MR index trio (41475/41476), whose 'cash-open' anchor is CORRECT for US-listed symbols but demonstrably mistimed for GDAXI (5-6h late per FTMO_PORTFOLIO_GAP_CURRENT.md section 7). XAUUSD has no such timing mismatch because it trades continuously and its own volatility genuinely concentrates at this window regardless of which exchange is 'open'. H-V2 asks whether capturing that expansion in a single session-gated (0% overnight) trade per day reproduces gold's already-measured H1 edge (10423/11690) while fixing the drawdown failure that killed both existing always-on configurations.",
+  "quantitative_claims": [
+    {
+      "claim": "10423 and 11690 (always-on XAUUSD H1) show real density+edge but both failed Q05 on drawdown",
+      "value": "10423: 0.82 trades/bd, +0.086R, Q05 FAIL dd 41%; 11690: 1.84 trades/bd, +0.028R, Q05 FAIL dd 59%",
+      "computed_output_ref": "hv2_baseline_extract"
+    },
+    {
+      "claim": "10700 (demo roster XAUUSD sleeve) profile used as the always-on comparison point",
+      "value": "0.18 trades/bd, +0.165R/trade, 19.7h hold, 58% overnight",
+      "computed_output_ref": "hv2_baseline_extract"
+    },
+    {
+      "claim": "measured XAUUSD Q02 configuration ceiling/floor across all 70 configurations in the frozen screen",
+      "value": "see summary in baseline_extract.json",
+      "computed_output_ref": "hv2_baseline_extract"
+    }
+  ],
+  "related_strategies": [
+    "QM5_10423",
+    "QM5_11690",
+    "QM5_10700",
+    "QM5_13213",
+    "QM5_41475",
+    "QM5_41476"
+  ],
+  "research_id": "QM-RESEARCH-2026-0010",
+  "research_question": "Does gating XAUUSD's already-measured H1 volatility-expansion edge (10423/11690) to a single 13:30-14:30 UTC session window, flat by 20:00 UTC, reproduce comparable E[R] to the always-on configurations while fixing the Q05 drawdown failure that retired both of them?",
+  "research_trial_count": 1,
+  "schema": "qm.internal-research-source/v1",
+  "search_history_ref": "N/A -- directed hypothesis authored against the 2026-09-20 velocity evidence cohort per task 31012467-dde7-4b74-995c-def2241b28c0, not a Kimi OBSERVE/DISCOVER search-ledger product.",
+  "source_datasets": [
+    {
+      "dataset_id": "q02_velocity_screen_2026-09-20",
+      "path": "baseline_extract.json",
+      "sha256": "7426c6e94d560813826663f41a93d439280aec93d097eb7704d6c469819896e9"
+    }
+  ]
+}

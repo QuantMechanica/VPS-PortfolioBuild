@@ -1,0 +1,95 @@
+{
+  "balke_41484_fanout_reference": {
+    "AUDJPY_R": 0.005,
+    "GBPJPY_R": -0.001,
+    "USDJPY_control_R_bd": 0.053,
+    "note": "the Balke GMT+3 03-06 window + range-breakout-with-stop-bracket trigger, transplanted verbatim onto AUDJPY/GBPJPY, measured flat/flat; lineage QM5_41484 RETIRED 2026-09-20.",
+    "source": "README.md section 2c / finds log 20:23Z-21:23Z entries"
+  },
+  "hypothesis": "H-V3",
+  "measured_baseline_configs_JPY_crosses_breakout_style": [
+    {
+      "R_bd": -0.005775378723404255,
+      "bd": 1175,
+      "dens": 0.574468085106383,
+      "eR": -0.010053437037037037,
+      "ea": "QM5_37003",
+      "n": 675,
+      "pf": 0.98,
+      "sym": "GBPJPY.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": -0.008898621276595743,
+      "bd": 1175,
+      "dens": 0.0425531914893617,
+      "eR": -0.2091176,
+      "ea": "QM5_41011",
+      "n": 50,
+      "pf": 0.65,
+      "sym": "EURJPY.DWX",
+      "tf": "M15"
+    },
+    {
+      "R_bd": -0.015938170212765956,
+      "bd": 1175,
+      "dens": 0.294468085106383,
+      "eR": -0.05412528901734104,
+      "ea": "QM5_9940",
+      "n": 346,
+      "pf": 0.83,
+      "sym": "GBPJPY.DWX",
+      "tf": "H1"
+    },
+    {
+      "R_bd": -0.01977683404255319,
+      "bd": 1175,
+      "dens": 0.11574468085106383,
+      "eR": -0.1708660294117647,
+      "ea": "QM5_41011",
+      "n": 136,
+      "pf": 0.73,
+      "sym": "GBPJPY.DWX",
+      "tf": "M15"
+    },
+    {
+      "R_bd": -0.02656227234042553,
+      "bd": 1175,
+      "dens": 0.49872340425531914,
+      "eR": -0.05326052901023891,
+      "ea": "QM5_11314",
+      "n": 586,
+      "pf": 0.88,
+      "sym": "GBPJPY.DWX",
+      "tf": "M5"
+    },
+    {
+      "R_bd": -0.04466275744680851,
+      "bd": 1175,
+      "dens": 0.3880851063829787,
+      "eR": -0.11508495614035087,
+      "ea": "QM5_11481",
+      "n": 456,
+      "pf": 0.76,
+      "sym": "GBPJPY.DWX",
+      "tf": "M5"
+    }
+  ],
+  "note": "All measured breakout/momentum-continuation configurations on AUDJPY/GBPJPY/EURJPY/CHFJPY in the frozen Q02 screen are net-negative R_bd; this is the evidence base for excluding another breakout-family trigger and requiring a mean-reversion / fade trigger instead (task acceptance criterion).",
+  "schema": "qm.velocity-baseline-extract/v1",
+  "summary": {
+    "R_bd_max": -0.005775378723404255,
+    "R_bd_min": -0.04466275744680851,
+    "bd_window": [
+      1175
+    ],
+    "dens_max": 0.574468085106383,
+    "dens_min": 0.0425531914893617,
+    "n_configs": 6
+  },
+  "upstream_sources": {
+    "FTMO_PORTFOLIO_GAP_CURRENT.md": "056ac321afad93b519754a88080cc02d4fec36d4900ba0c29af37f475bf1db42",
+    "README.md": "9cef61b59802cb16cf43a05240b1ebb3611bb020615dfbd1af89d14275eda2ec",
+    "q02_velocity_screen.json": "0c6e36e95e9bf1070f9b4389ad1af53799c4ff0614937e23eacbdbdcc0969611"
+  }
+}
