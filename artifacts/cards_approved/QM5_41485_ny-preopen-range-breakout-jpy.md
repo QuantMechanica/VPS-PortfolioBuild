@@ -16,6 +16,8 @@ lineage_status: RETIRED
 retired_at: 2026-09-21
 retired_reason: pre-registered holdout bar failed (Q04 folds 2023-2025 pf_net 1.004/0.724/0.916); harness release-tick modelling artefact
 book_decision: OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921
+negative_lineage_tag: PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE
+negative_lineage_tag_source: OWNER 2026-09-21 FINAL MEGA PROMPT section J (docs/ops/evidence/2026-09-21_ftmo_final_mega_prompt/owner_directive_verbatim.md)
 concepts:
   - "[[concepts/session-range-breakout]]"
   - "[[concepts/session-flat-intraday]]"

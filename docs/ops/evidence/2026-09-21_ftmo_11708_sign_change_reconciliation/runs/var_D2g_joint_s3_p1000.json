@@ -1,0 +1,661 @@
+{
+  "account_path_summary": {
+    "daily_loss_anchor": "Europe/Prague midnight balance; fixed 5% initial-equity cap",
+    "equity_proxy": "CONSERVATIVE_SIMULTANEOUS_ACTIVE_MAE_ENVELOPE_NOT_TICK_EXACT",
+    "maximum_loss_floor": "static 90% of initial equity",
+    "rows": 1663
+  },
+  "book_metrics": {
+    "BOOK_ACTIVE_DAYS": 0.887553,
+    "BOOK_CONCENTRATION": {
+      "book_risk_percent": 2.34375,
+      "risk_by_family_percent": {
+        "liquidity_breakout": 0.3125,
+        "market_squeeze": 0.3125,
+        "outside_bar_trend": 0.625,
+        "price_action_swing": 0.3125,
+        "rsi_mean_reversion": 0.3125,
+        "session_range_breakout": 0.15625,
+        "turtle_trend": 0.3125
+      },
+      "risk_by_symbol_percent": {
+        "EURUSD.DWX": 0.3125,
+        "GBPUSD.DWX": 0.3125,
+        "NZDUSD.DWX": 0.3125,
+        "USDCAD.DWX": 0.3125,
+        "USDJPY.DWX": 0.15625,
+        "XAUUSD.DWX": 0.9375
+      },
+      "symbol_risk_hhi": 0.235556
+    },
+    "BOOK_COST_DRAG": {
+      "commission_usd": 9359.68734,
+      "slippage_stress_usd": 0.0,
+      "spread_stress_usd": 0.0,
+      "swap_usd": 8.609375
+    },
+    "BOOK_COST_DRAG_USD_PER_DAY": 5.623017,
+    "BOOK_DAILY_LOSS_BREACH_PROB": 0.0,
+    "BOOK_EXPECTANCY": 0.0972,
+    "BOOK_EXPECTED_PROGRESS_USD_PER_DAY": 32.886364,
+    "BOOK_EXPECTED_TIME_TO_CHALLENGE_TARGET": {
+      "mean": 245.9,
+      "n": 842,
+      "p10": 105.0,
+      "p50": 231.0,
+      "p90": 417.7
+    },
+    "BOOK_EXPECTED_TIME_TO_VERIFICATION_TARGET": {
+      "mean": 141.4,
+      "n": 810,
+      "p10": 36.9,
+      "p50": 108.5,
+      "p90": 314.2
+    },
+    "BOOK_FINAL_BALANCE": 154690.023597,
+    "BOOK_LOWEST_EQUITY_MAE_PROXY": 97769.916979,
+    "BOOK_MAX_DD": -6439.473161,
+    "BOOK_MAX_DD_ABS_USD": 6439.473161,
+    "BOOK_MAX_LOSS_BREACH_PROB": 0.008,
+    "BOOK_REALIZED_NET": 54690.023597,
+    "BOOK_RECOVERY_CENSORED": false,
+    "BOOK_RECOVERY_TIME_BD": 53,
+    "BOOK_R_PER_DAY": 0.120697,
+    "BOOK_TAIL_DEPENDENCE": {
+      "cluster_rule": "edge when correlation >=0.50 is corroborated by loss/tail overlap, loss and tail are both >=2x independence, or same-symbol position overlap is >=25% of smaller exposure",
+      "fail_together_clusters": [
+        [
+          "10403_XAUUSD_D1",
+          "10700_XAUUSD_H1",
+          "41219_XAUUSD_D1"
+        ]
+      ],
+      "max_abs_daily_correlation": 0.106597,
+      "max_loss_overlap_ratio": 3.52728,
+      "max_lower_tail_ratio": 4.194444,
+      "max_simultaneous_open_risk_usd_mae_proxy": 888.61,
+      "top_fail_together_pair": {
+        "business_days": 1649,
+        "common_family": false,
+        "common_news_window": true,
+        "common_session": true,
+        "common_symbol": true,
+        "daily_pnl_correlation": -0.089612,
+        "downside_correlation": -0.413199,
+        "left_id": "10403_XAUUSD_D1",
+        "loss_day_overlap_days": 2,
+        "loss_day_overlap_ratio_vs_independence": 1.629447,
+        "lower_tail_coexceed_days": 0,
+        "lower_tail_coexceed_ratio_vs_independence": 0.0,
+        "pair": "10403_XAUUSD_D1/41219_XAUUSD_D1",
+        "position_overlap_hours": 1705.268,
+        "position_overlap_share_of_smaller_exposure": 0.405828,
+        "proxy_notes": {
+          "direction_overlap": "same-side seconds divided by all raw pairwise overlap seconds",
+          "open_risk": "sum of scaled per-trade MAE magnitudes while both sleeves are open",
+          "position_overlap": "exact entry/close interval overlap from closed trades",
+          "tail": "bottom decile of each sleeve's strictly losing Prague close-days"
+        },
+        "right_id": "41219_XAUUSD_D1",
+        "same_direction_share_when_overlapping": 0.002112,
+        "same_symbol_entry_within_30m_share": 0.0,
+        "simultaneous_open_risk_max_usd_mae_proxy": 393.89,
+        "symbols": "XAUUSD.DWX/XAUUSD.DWX",
+        "trade_day_overlap_days": 12,
+        "trade_day_overlap_ratio_vs_independence": 1.703512,
+        "worst_20_day_overlap": 0,
+        "worst_20_day_overlap_ratio_vs_independence": 0.0
+      }
+    },
+    "BOOK_TRADES_PER_DAY": 1.456404,
+    "BOOK_WORST_DAILY_LOSS_MAE_PROXY": -1057.281551,
+    "HISTORICAL_CHALLENGE_TARGET_FIRST_DAY": "2020-10-28",
+    "HISTORICAL_DAILY_LOSS_BREACH_DAYS": 0,
+    "HISTORICAL_MAX_LOSS_BREACH_DAYS": 0,
+    "TIME_WITH_NO_OPPORTUNITY": 0.112447,
+    "equity_proxy": "CONSERVATIVE_SIMULTANEOUS_ACTIVE_MAE_ENVELOPE_NOT_TICK_EXACT",
+    "margin_proxy_note": "sum(abs(notional) * configured margin_rate) while positions overlap",
+    "max_margin_proxy_usd": 8497.52,
+    "max_simultaneous_positions": 7,
+    "window": {
+      "business_days": 1663,
+      "end": "2025-06-05",
+      "start": "2019-01-22"
+    }
+  },
+  "dependence_summary": {
+    "cluster_rule": "edge when correlation >=0.50 is corroborated by loss/tail overlap, loss and tail are both >=2x independence, or same-symbol position overlap is >=25% of smaller exposure",
+    "fail_together_clusters": [
+      [
+        "10403_XAUUSD_D1",
+        "10700_XAUUSD_H1",
+        "41219_XAUUSD_D1"
+      ]
+    ],
+    "max_abs_daily_correlation": 0.106597,
+    "max_loss_overlap_ratio": 3.52728,
+    "max_lower_tail_ratio": 4.194444,
+    "max_simultaneous_open_risk_usd_mae_proxy": 888.61,
+    "top_fail_together_pair": {
+      "business_days": 1649,
+      "common_family": false,
+      "common_news_window": true,
+      "common_session": true,
+      "common_symbol": true,
+      "daily_pnl_correlation": -0.089612,
+      "downside_correlation": -0.413199,
+      "left_id": "10403_XAUUSD_D1",
+      "loss_day_overlap_days": 2,
+      "loss_day_overlap_ratio_vs_independence": 1.629447,
+      "lower_tail_coexceed_days": 0,
+      "lower_tail_coexceed_ratio_vs_independence": 0.0,
+      "pair": "10403_XAUUSD_D1/41219_XAUUSD_D1",
+      "position_overlap_hours": 1705.268,
+      "position_overlap_share_of_smaller_exposure": 0.405828,
+      "proxy_notes": {
+        "direction_overlap": "same-side seconds divided by all raw pairwise overlap seconds",
+        "open_risk": "sum of scaled per-trade MAE magnitudes while both sleeves are open",
+        "position_overlap": "exact entry/close interval overlap from closed trades",
+        "tail": "bottom decile of each sleeve's strictly losing Prague close-days"
+      },
+      "right_id": "41219_XAUUSD_D1",
+      "same_direction_share_when_overlapping": 0.002112,
+      "same_symbol_entry_within_30m_share": 0.0,
+      "simultaneous_open_risk_max_usd_mae_proxy": 393.89,
+      "symbols": "XAUUSD.DWX/XAUUSD.DWX",
+      "trade_day_overlap_days": 12,
+      "trade_day_overlap_ratio_vs_independence": 1.703512,
+      "worst_20_day_overlap": 0,
+      "worst_20_day_overlap_ratio_vs_independence": 0.0
+    }
+  },
+  "first_passage": {
+    "engine_schema": "qm.ftmo-first-passage/v2",
+    "engine_version": "2.0.0",
+    "input_manifest_sha256": "7e758249e9c937df2230769e704203082fa02fe774397f5dcc102e1b3ea2daf0",
+    "method": "Pathwise chain over the SAME block-bootstrap sampler: Phase 1 (+10 %), Verification (+5 %) and the funded account each start on a fresh 100k balance anchor with a fresh static 90k Max-Loss floor and draw their own independent blocks. The funded stage has no profit target: it must reach the first reward-eligible day and survive the payout processing lag. End-to-end is counted per path, never as a product of marginals.",
+    "probabilities": {
+      "P_CHALLENGE_PASS": 0.842,
+      "P_END_TO_END_FIRST_PAYOUT": 0.787,
+      "P_END_TO_END_FIRST_PAYOUT_PRODUCT_OF_MARGINALS": 0.7857,
+      "P_FIRST_NET_FTMO_PAYOUT": 0.787,
+      "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.7245,
+      "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": 0.9716,
+      "P_VERIFICATION_PASS_GIVEN_CHALLENGE": 0.962
+    },
+    "sensitivity": [
+      {
+        "P_CHALLENGE_PASS": 0.842,
+        "P_END_TO_END_FIRST_PAYOUT": 0.787,
+        "P_FIRST_NET_FTMO_PAYOUT": 0.787,
+        "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.7245,
+        "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": 0.9716,
+        "P_VERIFICATION_PASS_GIVEN_CHALLENGE": 0.962,
+        "cost_mult": 1.0,
+        "slippage_usd_per_lot": 0.0
+      },
+      {
+        "P_CHALLENGE_PASS": 0.774,
+        "P_END_TO_END_FIRST_PAYOUT": 0.689,
+        "P_FIRST_NET_FTMO_PAYOUT": 0.689,
+        "P_FIRST_NET_FTMO_PAYOUT_LCB": 0.6235,
+        "P_FTMO_ACCOUNT_SURVIVAL_TO_FIRST_REWARD": 0.9569,
+        "P_VERIFICATION_PASS_GIVEN_CHALLENGE": 0.9302,
+        "cost_mult": 1.5,
+        "slippage_usd_per_lot": 2.0
+      }
+    ],
+    "stages": {
+      "funded": {
+        "conditional_on_reaching_stage": {
+          "n_paths_reaching": 810,
+          "p_censored": 0.0284,
+          "p_daily_loss_breach": 0.0,
+          "p_max_loss_breach": 0.0,
+          "p_survive_to_first_reward": 0.9716
+        },
+        "p_censored": 0.03,
+        "p_daily_loss_breach": 0.0,
+        "p_max_loss_breach": 0.0
+      },
+      "phase1": {
+        "p_censored": 0.15,
+        "p_daily_loss_breach": 0.0,
+        "p_max_loss_breach": 0.008,
+        "p_pass": 0.842
+      },
+      "verification": {
+        "conditional_on_reaching_stage": {
+          "n_paths_reaching": 842,
+          "p_censored": 0.0321,
+          "p_daily_loss_breach": 0.0,
+          "p_max_loss_breach": 0.0059,
+          "p_pass": 0.962
+        },
+        "p_censored": 0.031,
+        "p_daily_loss_breach": 0.0,
+        "p_max_loss_breach": 0.007,
+        "p_pass": 0.962
+      }
+    },
+    "time_business_days": {
+      "end_to_end": {
+        "mean": 408.7,
+        "n": 787,
+        "p10": 222.0,
+        "p50": 391.0,
+        "p90": 623.8
+      },
+      "first_payout": {
+        "mean": 23.2,
+        "n": 787,
+        "p10": 15.0,
+        "p50": 15.0,
+        "p90": 40.8
+      },
+      "phase1_target": {
+        "mean": 245.9,
+        "n": 842,
+        "p10": 105.0,
+        "p50": 231.0,
+        "p90": 417.7
+      },
+      "verification_target": {
+        "mean": 141.4,
+        "n": 810,
+        "p10": 36.9,
+        "p50": 108.5,
+        "p90": 314.2
+      }
+    }
+  },
+  "generated_at_utc": "2026-09-21T18:11:00+00:00",
+  "input_manifest": {
+    "block_len": 20,
+    "cost": {
+      "margin_rate": 0.01,
+      "slippage_usd_per_lot_rt": 0.0,
+      "spread_bps_rt": 0.0
+    },
+    "fixed_window": [
+      "2019-01-22",
+      "2025-06-05"
+    ],
+    "horizon": 504,
+    "n_paths": 1000,
+    "provenance": {
+      "commission_model": "max(pct_rate_rt*notional_acct, flat_per_lot_rt*volume)",
+      "commission_registry": "C:\\QM\\repo\\framework\\registry\\live_commission.json",
+      "commission_registry_sha256": "119f795cefce2f819f0c7aae3bddb87affbffa771f596df48d182cf89989e197",
+      "financing_library": "C:\\QM\\repo\\tools\\strategy_farm\\swap\\financing_lib.py",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "spread_slippage_stress": {
+        "margin_rate": 0.01,
+        "slippage_usd_per_lot_rt": 0.0,
+        "spread_bps_rt": 0.0
+      }
+    },
+    "schema": "qm.ftmo-book-sim-input/v1",
+    "seed": 3,
+    "sleeves": [
+      {
+        "ea_id": 13213,
+        "family": "session_range_breakout",
+        "id": "13213_USDJPY_H1",
+        "label": "QM5_13213_balke-gmt3-range-breakout",
+        "magic": 132130000,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.15625,
+        "role": "VELOCITY_SLEEVE",
+        "session": "TOKYO_LONDON_HANDOFF",
+        "slot": 0,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+        "stream_sha256": "d2d7b9f14aa05743fc8ff4f45c15bdb4c6000fe6541971cd455d09da9d867773",
+        "symbol": "USDJPY.DWX",
+        "timeframe": "H1"
+      },
+      {
+        "ea_id": 10706,
+        "family": "price_action_swing",
+        "id": "10706_GBPUSD_H1",
+        "label": "QM5_10706_tv-mon-ls",
+        "magic": 107060001,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "GBP swing alpha",
+        "session": "MULTI_SESSION_SWING",
+        "slot": 1,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+        "stream_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+        "symbol": "GBPUSD.DWX",
+        "timeframe": "H1"
+      },
+      {
+        "ea_id": 10700,
+        "family": "liquidity_breakout",
+        "id": "10700_XAUUSD_H1",
+        "label": "QM5_10700_tv-liq-break",
+        "magic": 107000003,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "Gold alpha",
+        "session": "MULTI_SESSION_SWING",
+        "slot": 3,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl",
+        "stream_sha256": "f8b1b3d00f162de8f7780e27b0ad5df184cc600f6f08dbd97e0fd7e637891632",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "H1"
+      },
+      {
+        "ea_id": 11422,
+        "family": "outside_bar_trend",
+        "id": "11422_USDCAD_D1",
+        "label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+        "magic": 114220004,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "stabilizer",
+        "session": "MULTIDAY_D1",
+        "slot": 4,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+        "stream_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+        "symbol": "USDCAD.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "ea_id": 10403,
+        "family": "turtle_trend",
+        "id": "10403_XAUUSD_D1",
+        "label": "QM5_10403_et-turtle20x",
+        "magic": 104030002,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "Gold trend",
+        "session": "MULTIDAY_D1",
+        "slot": 2,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+        "stream_sha256": "666dc6928bcb4b44086408527c7b9ebb95f179c06596a5c1200e24c94e104753",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "ea_id": 41219,
+        "family": "rsi_mean_reversion",
+        "id": "41219_XAUUSD_D1",
+        "label": "QM5_41219_cum-rsi2-commodity-requal8",
+        "magic": 412190000,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "Gold mean-reversion",
+        "session": "MULTIDAY_D1",
+        "slot": 0,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\41219_XAUUSD_DWX.jsonl",
+        "stream_sha256": "991a42ac6b38f9cb35537d232bdc221a50ac7983ec4489910e1331244299654b",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "ea_id": 11708,
+        "family": "market_squeeze",
+        "id": "11708_EURUSD_D1",
+        "label": "QM5_11708_anon-market-squeeze-d1",
+        "magic": 0,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "low-cost FX diversifier",
+        "session": "MULTIDAY_D1",
+        "slot": 9,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl",
+        "stream_sha256": "0fbccdfed14837c8b58e983f4367be08c9f8fef02d49377d3984b663e1e5d914",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1"
+      },
+      {
+        "ea_id": 11910,
+        "family": "outside_bar_trend",
+        "id": "11910_NZDUSD_D1",
+        "label": "QM5_11910_williams-18ma-2outside-bars-d1",
+        "magic": 0,
+        "news_profile": "PRE30_POST30_DXZ",
+        "risk_percent": 0.3125,
+        "role": "FX diversifier",
+        "session": "MULTIDAY_D1",
+        "slot": 9,
+        "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+        "stream_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0",
+        "symbol": "NZDUSD.DWX",
+        "timeframe": "D1"
+      }
+    ]
+  },
+  "input_manifest_sha256": "be7878392bf71073769409df554cab5a510b9a22a27de10d8090db7da1273b91",
+  "label": "real chronological trades; registry commission; stream swap fallback when primary financing table is unavailable; floating equity is a conservative simultaneous-active-MAE proxy",
+  "schema": "qm.ftmo-book-sim/v1",
+  "sleeves": [
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 13213,
+      "entry_span_utc": [
+        "2019-01-24T08:02:22+00:00",
+        "2025-06-05T06:57:18+00:00"
+      ],
+      "family": "session_range_breakout",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "13213_USDJPY_H1",
+      "label": "QM5_13213_balke-gmt3-range-breakout",
+      "magic": 132130000,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.15625,
+      "role": "VELOCITY_SLEEVE",
+      "session": "TOKYO_LONDON_HANDOFF",
+      "slot": 0,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\13213_USDJPY_DWX.jsonl",
+      "stream_sha256": "d2d7b9f14aa05743fc8ff4f45c15bdb4c6000fe6541971cd455d09da9d867773",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "USDJPY.DWX",
+      "timeframe": "H1",
+      "trades": 1243
+    },
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 10706,
+      "entry_span_utc": [
+        "2019-01-22T14:00:00+00:00",
+        "2025-06-04T22:00:00+00:00"
+      ],
+      "family": "price_action_swing",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "10706_GBPUSD_H1",
+      "label": "QM5_10706_tv-mon-ls",
+      "magic": 107060001,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "GBP swing alpha",
+      "session": "MULTI_SESSION_SWING",
+      "slot": 1,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10706_GBPUSD_DWX.jsonl",
+      "stream_sha256": "71fb35b8f8539356f511609a4d1dfb06571f85b19b60de6647e907ec891e34f7",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "GBPUSD.DWX",
+      "timeframe": "H1",
+      "trades": 282
+    },
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 10700,
+      "entry_span_utc": [
+        "2019-02-06T14:00:00+00:00",
+        "2025-06-04T18:00:00+00:00"
+      ],
+      "family": "liquidity_breakout",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "10700_XAUUSD_H1",
+      "label": "QM5_10700_tv-liq-break",
+      "magic": 107000003,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "Gold alpha",
+      "session": "MULTI_SESSION_SWING",
+      "slot": 3,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10700_XAUUSD_DWX.jsonl",
+      "stream_sha256": "f8b1b3d00f162de8f7780e27b0ad5df184cc600f6f08dbd97e0fd7e637891632",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "H1",
+      "trades": 298
+    },
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 11422,
+      "entry_span_utc": [
+        "2019-01-25T21:55:21+00:00",
+        "2025-05-30T16:44:36+00:00"
+      ],
+      "family": "outside_bar_trend",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "11422_USDCAD_D1",
+      "label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+      "magic": 114220004,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "stabilizer",
+      "session": "MULTIDAY_D1",
+      "slot": 4,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11422_USDCAD_DWX.jsonl",
+      "stream_sha256": "7ce6cc3ec2f1279c18e8601119e3319375d5d3fa1ce4cf95cf33e05eefc33198",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "USDCAD.DWX",
+      "timeframe": "D1",
+      "trades": 164
+    },
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 10403,
+      "entry_span_utc": [
+        "2019-01-25T17:23:57+00:00",
+        "2025-05-14T15:37:56+00:00"
+      ],
+      "family": "turtle_trend",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "10403_XAUUSD_D1",
+      "label": "QM5_10403_et-turtle20x",
+      "magic": 104030002,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "Gold trend",
+      "session": "MULTIDAY_D1",
+      "slot": 2,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\10403_XAUUSD_DWX.jsonl",
+      "stream_sha256": "666dc6928bcb4b44086408527c7b9ebb95f179c06596a5c1200e24c94e104753",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "trades": 177
+    },
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 41219,
+      "entry_span_utc": [
+        "2019-01-22T01:01:01+00:00",
+        "2025-05-05T01:01:00+00:00"
+      ],
+      "family": "rsi_mean_reversion",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "41219_XAUUSD_D1",
+      "label": "QM5_41219_cum-rsi2-commodity-requal8",
+      "magic": 412190000,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "Gold mean-reversion",
+      "session": "MULTIDAY_D1",
+      "slot": 0,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\41219_XAUUSD_DWX.jsonl",
+      "stream_sha256": "991a42ac6b38f9cb35537d232bdc221a50ac7983ec4489910e1331244299654b",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "XAUUSD.DWX",
+      "timeframe": "D1",
+      "trades": 66
+    },
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 11708,
+      "entry_span_utc": [
+        "2019-05-01T00:53:09+00:00",
+        "2025-05-28T04:08:15+00:00"
+      ],
+      "family": "market_squeeze",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "11708_EURUSD_D1",
+      "label": "QM5_11708_anon-market-squeeze-d1",
+      "magic": 0,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "low-cost FX diversifier",
+      "session": "MULTIDAY_D1",
+      "slot": 9,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11708_EURUSD_DWX.jsonl",
+      "stream_sha256": "0fbccdfed14837c8b58e983f4367be08c9f8fef02d49377d3984b663e1e5d914",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "EURUSD.DWX",
+      "timeframe": "D1",
+      "trades": 143
+    },
+    {
+      "commission_sources": [
+        "REGISTRY_MAX_PCT_NOTIONAL_FLAT"
+      ],
+      "ea_id": 11910,
+      "entry_span_utc": [
+        "2019-01-28T00:05:00+00:00",
+        "2025-06-02T00:05:00+00:00"
+      ],
+      "family": "outside_bar_trend",
+      "financing_library_status": "PRIMARY_FINANCING_TABLE_MISSING_STREAM_EMBEDDED_SWAP_FALLBACK",
+      "id": "11910_NZDUSD_D1",
+      "label": "QM5_11910_williams-18ma-2outside-bars-d1",
+      "magic": 0,
+      "news_profile": "PRE30_POST30_DXZ",
+      "risk_percent": 0.3125,
+      "role": "FX diversifier",
+      "session": "MULTIDAY_D1",
+      "slot": 9,
+      "stream_path": "D:\\QM\\reports\\book_evolution\\2026-W38\\ftmo\\snapshot_r2\\streams\\QM\\q08_trades\\11910_NZDUSD_DWX.jsonl",
+      "stream_sha256": "555bbee205432c62f06da96a0a291d14028dc5c88e3fa8b2792ad62bc5d885b0",
+      "swap_sources": [
+        "STREAM_EMBEDDED_ACTUAL"
+      ],
+      "symbol": "NZDUSD.DWX",
+      "timeframe": "D1",
+      "trades": 49
+    }
+  ],
+  "status": "OK"
+}

@@ -499,3 +499,30 @@ For non-trivial work, return:
   panel. H-V4 / QM5_41485 = `VELOCITY_SLEEVE` candidate, not `FTMO_SOLUTION`.
 - Record: `decisions/2026-09-21_owner_ftmo_book_portfolio_not_hero_ea.md`; verbatim
   `docs/ops/evidence/2026-09-21_ftmo_book_portfolio_directive/owner_directive_verbatim.md`.
+
+### OWNER-DEC-FTMO-FINAL-MEGA-20260921 — FINAL FTMO MEGA Master Prompt: Sunday 2026-09-27 Demo generation (OWNER 2026-09-21, highest precedence)
+
+- **Verbatim / record:** `docs/ops/evidence/2026-09-21_ftmo_final_mega_prompt/owner_directive_verbatim.md`;
+  `decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`. Its "CURRENT OWNER SUPERSEDING UPDATE" wins over every
+  older page; the §1–§95 body restates OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917. Sole mandatory OWNER approval stays
+  the paid FTMO Challenge purchase.
+- **Next FTMO Demo account starts Sunday 2026-09-27** = formal representative account-level experiment (launch date, not a
+  quality waiver; no OWNER approval for the launch). Freeze an immutable `FTMO_DEMO_GENESIS_MANIFEST`; Go/No-Go checklist §R;
+  the D2g6 Demo running since 2026-09-18 is `PRE_SUNDAY_LIVE_TRIAL` (its days are not merged); the 14-calendar-day clock starts
+  at the Sunday launch timestamp; extend on thin trade count / regime coverage / material change.
+- **Pre-Sunday priority order (§U):** 1 Kill-Switch / Prague rollover correctness (P0, `d6189118`) · 2 Codex quota/governor
+  refresh (done 2026-09-21: plan `pro`, weekly 0 %, reset 2026-09-28T17:57Z; budget line re-anchored; card-build fleet pacer
+  disabled until §O 1–9 are in REVIEW) · 3 Harness-v2 fidelity (`7088da77`, states CLEAR_REJECT / WORTH_MT5_TEST / UNKNOWN,
+  never ECONOMICALLY_VALIDATED; §L golden test vs MT5 Every Real Tick is acceptance-blocking) · 4 news/time archive audit
+  (`a36a5983`) · 5 account-simulator confidence · 6 book dependence + risk allocation · 7 sleeve-level P&L attribution ·
+  8 credible Shadow-Book candidates · 9 Genesis Manifest + deployment tooling · 10 non-critical backlog. Do not let census,
+  dashboard cosmetics or historical cleanup displace the critical path; do not manufacture work for idle terminals (§W).
+- **Book artifacts (§F/§G):** maintain `FTMO_BOOK_INCUMBENT` (frozen roster under Demo) and `FTMO_BOOK_SHADOW` (best
+  evidence-supported next composition); candidate actions `ADD_NOW / QUEUE_FOR_NEXT_DEMO / SHADOW_BOOK / HOLD / REJECT` with
+  `DEMO_RESET_COST`; `docs/ftmo/FTMO_BOOK_CURRENT.md` + `D:\QM\reports\state\ftmo_book_current.json` expose INCUMBENT, SHADOW,
+  `DELTA_SHADOW_VS_INCUMBENT`, `STRONGEST_MISSING_BOOK_BEHAVIOR`. **§V:** the 11708 marginal-sign change must be reconciled
+  (`EXPECTED_MODEL_IMPROVEMENT` vs `SIMULATOR_DEFECT`) before any roster action uses 11708.
+- **§J:** H-V4 / QM5_41485 = permanent negative lineage `PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE` (card tagged). **§X:** cheap
+  one-time compile-fail taxonomy (REAL_EA_DEFECT / SHARED_FRAMEWORK_DEFECT / SETFILE_DEFECT / BUILD_BINDING_DEFECT /
+  STALE_HISTORICAL / SUPERSEDED / INFRA / OTHER); repair systemic + FTMO-critical first. **§Y:** pre-Sunday status fields in
+  `docs/ftmo/FTMO_SUNDAY_LAUNCH_STATUS.md`; launch autonomously when the critical preflight checks are green.
