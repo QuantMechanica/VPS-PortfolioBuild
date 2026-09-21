@@ -201,3 +201,15 @@ COMPILE_OK rows → next tranche → status table).
   E[R] ≥ +0.08R, PF ≥ 1.15); harness +0.141R minus a similar gap would still clear them, but this is now the open question.
   USDJPY C2 row `ffe3a8dc` enqueued as universe expansion of the PASS canary and priority-tracked. Q03 2024 for EURUSD:
   −0.049R (regime flip the sweep already flagged); Q04 FAIL.
+- 16:23Z (21.09.) — **VELOCITY FIND CONFIRMED IN THE TESTER: QM5_41485 USDJPY C2 Q02 PASS `ffe3a8dc`** (2018-07-02..2022-12-31,
+  RISK_FIXED 1000): **875 trades (0.74/bd), net +132,340 USD, PF 1.31, max DD 18.3R, E[R] +0.151R, R/bd +0.113** — every
+  pre-registered bar cleared (trades ≥ 800, E[R] ≥ +0.08, PF ≥ 1.15, DD ≤ 25R) and the harness reproduced within +0.010R
+  (harness SEL +0.141R / PF 1.30 / DD 20.8R). Against the incumbent QM5_13213 on the same symbol and window (888 trades,
+  +46,637, PF 1.12, E[R] +0.053): ≈2.8× the net, ≈2.4× R/bd at equal density. **Open contradiction in the holdout:** Q03 2024
+  (`dc30f5ce`, single year) prints 148 trades, −23,456 USD, PF 0.73, DD 34.6R, whereas the harness had 2024 as the best
+  validation year (+59R); EURUSD C3 shows the same 2024 sign flip (tester −0.049R vs harness +33.5R). 2018–22 agree, 2024 does
+  not → something the tester does differently in 2024 (server-clock convention of the 2024 `.DWX` history, news-archive
+  density at the 15:30 anchor, Friday/holiday handling, or ATR/fill semantics) — reconciliation commissioned (Fable fork,
+  trade-by-trade, 0 factory hours) before any book statement. Q04 USDJPY `6b8574cc` FAIL (reason to be read), second Q04
+  `65ba3f5f` active. Duplicate Q02 `bae8cf20` = auto-seeding after the EURUSD PASS (identical result, harmless). Role
+  unchanged: VELOCITY_SLEEVE candidate; book value only via the account-level simulator once the Q08 stream exists.
