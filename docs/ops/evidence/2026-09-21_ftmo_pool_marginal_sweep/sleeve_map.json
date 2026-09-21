@@ -1,0 +1,158 @@
+{
+ "10145_XAUUSD_DWX": {
+  "ea_id": 10145,
+  "ea_label": "QM5_10145_tsm-meanret",
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "D1"
+ },
+ "10403_XAUUSD_DWX": {
+  "ea_id": 10403,
+  "ea_label": "QM5_10403_et-turtle20x",
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "D1"
+ },
+ "10513_XAUUSD_DWX": {
+  "ea_id": 10513,
+  "ea_label": "QM5_10513_mql5-ichimoku",
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "D1"
+ },
+ "10700_XAUUSD_DWX": {
+  "ea_id": 10700,
+  "ea_label": "QM5_10700_tv-liq-break",
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "H1"
+ },
+ "10706_GBPUSD_DWX": {
+  "ea_id": 10706,
+  "ea_label": "QM5_10706_tv-mon-ls",
+  "symbol": "GBPUSD.DWX",
+  "timeframe": "H1"
+ },
+ "11421_EURUSD_DWX": {
+  "ea_id": 11421,
+  "ea_label": "QM5_11421_ohlc-daily-squeeze-reversal-d1",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "D1"
+ },
+ "11422_USDCAD_DWX": {
+  "ea_id": 11422,
+  "ea_label": "QM5_11422_williams-18ma-outside-bar-entry-d1",
+  "symbol": "USDCAD.DWX",
+  "timeframe": "D1"
+ },
+ "11660_NDX_DWX": {
+  "ea_id": 11660,
+  "ea_label": "QM5_11660_pp-wedge",
+  "symbol": "NDX.DWX",
+  "timeframe": "H4"
+ },
+ "11708_EURUSD_DWX": {
+  "ea_id": 11708,
+  "ea_label": "QM5_11708_anon-market-squeeze-d1",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "D1"
+ },
+ "11881_GBPUSD_DWX": {
+  "ea_id": 11881,
+  "ea_label": "QM5_11881_connors-rsi2-mean-reversion",
+  "symbol": "GBPUSD.DWX",
+  "timeframe": "D1"
+ },
+ "11910_NZDUSD_DWX": {
+  "ea_id": 11910,
+  "ea_label": "QM5_11910_larry-williams-18ma-2outside-bars-d1",
+  "symbol": "NZDUSD.DWX",
+  "timeframe": "D1"
+ },
+ "12710_XTIUSD_DWX": {
+  "ea_id": 12710,
+  "ea_label": "QM5_12710_commodity-tsmom-12m-atr",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1"
+ },
+ "12849_XTIUSD_DWX": {
+  "ea_id": 12849,
+  "ea_label": "QM5_12849_brent-tsmom12m",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1"
+ },
+ "12855_XTIUSD_DWX": {
+  "ea_id": 12855,
+  "ea_label": "QM5_12855_brent-nov-fade",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1"
+ },
+ "13013_NDX_DWX": {
+  "ea_id": 13013,
+  "ea_label": "QM5_13013_grimes-trendday-v2",
+  "symbol": "NDX.DWX",
+  "timeframe": "M15"
+ },
+ "13054_XTIUSD_DWX": {
+  "ea_id": 13054,
+  "ea_label": "QM5_13054_brent-tom-mom",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1"
+ },
+ "13213_USDJPY_DWX": {
+  "ea_id": 13213,
+  "ea_label": "QM5_13213_balke-gmt3-range-breakout",
+  "symbol": "USDJPY.DWX",
+  "timeframe": "H1"
+ },
+ "1537_XAGUSD_DWX": {
+  "ea_id": 1537,
+  "ea_label": "QM5_1537_aa-vol-sma10",
+  "symbol": "XAGUSD.DWX",
+  "timeframe": "D1"
+ },
+ "20048_XTIUSD_DWX": {
+  "ea_id": 20048,
+  "ea_label": "QM5_20048_wti-preholiday",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1"
+ },
+ "20266_XTIUSD_DWX": {
+  "ea_id": 20266,
+  "ea_label": "QM5_20266_collins-66mom",
+  "symbol": "XTIUSD.DWX",
+  "timeframe": "D1"
+ },
+ "21501_USDJPY_DWX": {
+  "ea_id": 21501,
+  "ea_label": "QM5_21501_balke-gmt3-range-breakout-ppcensus",
+  "symbol": "USDJPY.DWX",
+  "timeframe": "H1"
+ },
+ "21505_XAGUSD_DWX": {
+  "ea_id": 21505,
+  "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+  "symbol": "XAGUSD.DWX",
+  "timeframe": "D1"
+ },
+ "21507_XAUUSD_DWX": {
+  "ea_id": 21507,
+  "ea_label": "QM5_21507_qs-kama-trend-xau",
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "D1"
+ },
+ "41219_XAUUSD_DWX": {
+  "ea_id": 41219,
+  "ea_label": "QM5_41219_cum-rsi2-commodity-requal8",
+  "symbol": "XAUUSD.DWX",
+  "timeframe": "D1"
+ },
+ "41221_EURUSD_DWX": {
+  "ea_id": 41221,
+  "ea_label": "QM5_41221_ohlc-daily-squeeze-reversal-d1-requal8",
+  "symbol": "EURUSD.DWX",
+  "timeframe": "D1"
+ },
+ "9641_WS30_DWX": {
+  "ea_id": 9641,
+  "ea_label": "QM5_9641_bandy-cci-extreme-fade-mr-index",
+  "symbol": "WS30.DWX",
+  "timeframe": "D1"
+ }
+}

@@ -1,0 +1,245 @@
+{
+  "schema": "qm.ftmo-book-candidate-plan/v1",
+  "decision_id": "OWNER-DEC-FTMO-FINAL-MEGA-20260921",
+  "note": "Fable pool sweep 2026-09-21",
+  "candidates": [
+    {
+      "id": "10145_XAUUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 10145,
+        "ea_label": "QM5_10145_tsm-meanret",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\10145_XAUUSD_DWX.jsonl",
+        "stream_sha256": "e18fa0025803953250782ee5ac697b18a0f50086bca7068c9d2fa97e2646cc2e"
+      }
+    },
+    {
+      "id": "10513_XAUUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 10513,
+        "ea_label": "QM5_10513_mql5-ichimoku",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\10513_XAUUSD_DWX.jsonl",
+        "stream_sha256": "6aca3b6a663cb84e4614673f2d5768fe0ab8fb7a6cd72f660ede2b9da86e57cc"
+      }
+    },
+    {
+      "id": "11660_NDX_H4",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11660,
+        "ea_label": "QM5_11660_pp-wedge",
+        "symbol": "NDX.DWX",
+        "timeframe": "H4",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_H4",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\11660_NDX_DWX.jsonl",
+        "stream_sha256": "8ce874af03c03e8fad115072506acfff26ebe5746be0912fe54fbbc8af76f775"
+      }
+    },
+    {
+      "id": "11881_GBPUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11881,
+        "ea_label": "QM5_11881_connors-rsi2-mean-reversion",
+        "symbol": "GBPUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\11881_GBPUSD_DWX.jsonl",
+        "stream_sha256": "43d8d3cd5f29a840517b11167aebf51cc81e27452ce1e62ac8cfc419cf77c64e"
+      }
+    },
+    {
+      "id": "12710_XTIUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 12710,
+        "ea_label": "QM5_12710_commodity-tsmom-12m-atr",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\12710_XTIUSD_DWX.jsonl",
+        "stream_sha256": "9fd323906b1026a2b5074c5bf84e91e8b7551ba3e103a4dd974cf604958874f9"
+      }
+    },
+    {
+      "id": "12849_XTIUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 12849,
+        "ea_label": "QM5_12849_brent-tsmom12m",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\12849_XTIUSD_DWX.jsonl",
+        "stream_sha256": "7d159f9d79400358c595400345028efaeafae4ecf3e91cf8479ed28e4dfeef42"
+      }
+    },
+    {
+      "id": "12855_XTIUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 12855,
+        "ea_label": "QM5_12855_brent-nov-fade",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\12855_XTIUSD_DWX.jsonl",
+        "stream_sha256": "159da20bab41c9476b7d0c471b1a793a5c7d5623245ca98b291131f2cc29a522"
+      }
+    },
+    {
+      "id": "13013_NDX_M15",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 13013,
+        "ea_label": "QM5_13013_grimes-trendday-v2",
+        "symbol": "NDX.DWX",
+        "timeframe": "M15",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_M15",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\13013_NDX_DWX.jsonl",
+        "stream_sha256": "6f6a6b5704dd1246bc794c408a1a150a345c28ad73480016306e2821ee9b8bfb"
+      }
+    },
+    {
+      "id": "13054_XTIUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 13054,
+        "ea_label": "QM5_13054_brent-tom-mom",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\13054_XTIUSD_DWX.jsonl",
+        "stream_sha256": "265c3b3ac1cf1896aca8be56782aef6a58a2e1fe473bd055aceb11b659f8e91f"
+      }
+    },
+    {
+      "id": "1537_XAGUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 1537,
+        "ea_label": "QM5_1537_aa-vol-sma10",
+        "symbol": "XAGUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\1537_XAGUSD_DWX.jsonl",
+        "stream_sha256": "c6c4afc548165fa9c442ea4d4d01485d6bd826cb134cd097bdf5b25f76b08b32"
+      }
+    },
+    {
+      "id": "20048_XTIUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 20048,
+        "ea_label": "QM5_20048_wti-preholiday",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\20048_XTIUSD_DWX.jsonl",
+        "stream_sha256": "2df12e4abcadae3863161c1dd5190396fbc198008dd3e27a4c589e8d425d6125"
+      }
+    },
+    {
+      "id": "20266_XTIUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 20266,
+        "ea_label": "QM5_20266_collins-66mom",
+        "symbol": "XTIUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\20266_XTIUSD_DWX.jsonl",
+        "stream_sha256": "a6d4a386ec944b1507b94c70266003c964a346901c14473028d0ea606d537534"
+      }
+    },
+    {
+      "id": "21505_XAGUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 21505,
+        "ea_label": "QM5_21505_xag-weekly-lowvol-momentum",
+        "symbol": "XAGUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\21505_XAGUSD_DWX.jsonl",
+        "stream_sha256": "36c04fe47bc166df39a39960a4d24b787180257fd3decedba2706e31b4a7d3ab"
+      }
+    },
+    {
+      "id": "21507_XAUUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 21507,
+        "ea_label": "QM5_21507_qs-kama-trend-xau",
+        "symbol": "XAUUSD.DWX",
+        "timeframe": "D1",
+        "role": "pool sweep candidate",
+        "family": "unknown",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\1\\claude\\C--QM-repo\\5a620033-f26a-41ac-a71b-5f2f4809a4dc\\scratchpad\\pool_sweep\\streams\\QM\\q08_trades\\21507_XAUUSD_DWX.jsonl",
+        "stream_sha256": "10eda09fab0a968aab08682f0932200b9a991fb6cc127badcf61e9c825f4bbae"
+      }
+    }
+  ]
+}
