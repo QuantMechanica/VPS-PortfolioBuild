@@ -24,6 +24,27 @@ v1 (quicklook + 2026-09-18 first-passage) is preserved in git history (`dfc697a2
 | STRONGEST_MISSING_BOOK_BEHAVIOR | session-flat, low-overlap, high-density NY / index cash-session sleeve (zero exposure today) - see section 5 |
 | 11708_SIGN_FLIP | EXPLAINED / EXPECTED_MODEL_IMPROVEMENT; delta unresolved -> SHADOW_BOOK |
 
+## 0a. Payout-speed frontier — primary KPI `P80_DAYS_TO_FIRST_NET_FTMO_PAYOUT` (Codex e5cc5e95, accepted 2026-09-21T21:27:32Z)
+
+Incumbent financed D2g6, first-passage engine 2.1.0, 40,000 pathwise Challenge→Verification→funded paths, seed 20260921
+(`docs/research/ftmo_intake/2026-09-21_br_nnfx/results/PAYOUT80.md`, diagnostic JSON sha256 `fb25ec50…aa708`). Calendar days are the engine's 5/7 conversion of business days.
+
+| Field | Value |
+|---|---:|
+| P_PAYOUT_WITHIN_30D / 45D / 60D / 90D | 0.000 / 0.000 / 0.000 / 0.000 |
+| **P80_DAYS_TO_FIRST_NET_PAYOUT** (first cutoff with 90 % batch LCB ≥ 0.80) | **1300 calendar days** (business day 929, LCB 0.8013) |
+| P_PAYOUT_EVER (full chain, positive net) | 0.8913 point, **0.8762** LCB90 |
+| Days to payout conditional on paying out, p10 / p50 / p90 | 352 / 682 / 1253 calendar (251 / 487 / 895 bd) |
+| Stress 1.5× costs + 2 USD/lot | LCB 0.8143; P80 1839 calendar days (1314 bd); conditional p50 / p90 748 / 1374 |
+| Failure mass | challenge max-loss 1.9 %, challenge unresolved 2.5 %, verification max-loss 1.8 %, funded unresolved 4.3 %, daily-loss breach 0 in all stages |
+
+Reading: the incumbent pays out with high probability but slowly — the 80 % crossing sits at about 3.6 years because the
+unconditional curve carries the failure and censoring mass; even the conditional median is 682 calendar days. Every Track B/C
+candidate is now judged by `DELTA_P80_DAYS` against this table. Caveats bind: not a bank-receipt t80 (administrative hand-offs,
+rejection probability, payment-method minimum and bank lag are unbound); venue costs are UNMEASURED (73434cab ABSTAIN —
+FTMO spreads measured, no matched Darwinex minutes, no request-vs-fill slippage), so the 0.8762 LCB is the financed reference,
+not a venue-adjusted headline.
+
 ## 1. INCUMBENT = demo roster D2g6 (frozen 2026-09-18; book risk 1.71875 %)
 
 | Sleeve | Symbol / TF | Risk % | Role | Trades (window) | /bd | E[R] | PF | med hold | Q08 stream sha (financed) |
