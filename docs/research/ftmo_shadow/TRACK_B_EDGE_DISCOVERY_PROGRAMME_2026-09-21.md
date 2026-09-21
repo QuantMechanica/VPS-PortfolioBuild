@@ -132,3 +132,24 @@ model, SEL/VAL split, pass rule and family-level Bonferroni bar (0.05 / number o
 15 cells; family bar 0.05 / 15 = 0.0033 (H-B7r 0.001). Antigravity H-AG3 (GDAXI European close), H-AG7 (post-lunch compression),
 H-AG9 (NYMEX open), H-AG10 (EURUSD VWAP pullback) are parked for B3 pending the B2 density readings.
 
+## 10. Family B3 — Codex intake break-and-retest hypotheses (pre-registration by reference; frozen before the run)
+
+Source: `docs/research/ftmo_intake/2026-09-21_br_nnfx/PLAN.md` (Codex, OWNER request OWNER-REQUEST-FTMO-BR-NNFX-20260921, cherry-picked
+ed3eef5a0d) — section "Three new Break & Retest hypotheses", rules implemented verbatim in
+`tools/strategy_farm/session_tools/velocity_family_f3_break_retest_0921.py` on the F2 conservative closed-bar engine. Two documented
+deviations: ATR(14) is the simple 14-bar mean of the M5 true range (MT5 iATR semantics, family-F1 convention) instead of Wilder
+smoothing; bid/ask is the per-symbol cost prior (spread + slippage round trip). The F2 minimum-stop floor (5 x round-trip spread) stays in
+force as the "executable under broker stop-distance constraints" rule of the PLAN.
+
+| Id | Markets / anchor | Arms (paired) | Entry / flat |
+|---|---|---|---|
+| BR1 | NDX, SP500, WS30; 09:30–09:45 NY opening range | `retest_peer` (peer index closed outside its own OR in the same direction at retest close: SP500 for NDX/WS30, NDX for SP500) vs `retest_nopeer` | entries 09:45–11:30 NY; flat 15:45 NY |
+| BR2 | EURUSD, GBPUSD, USDJPY; 00:00–07:00 London range | `retest_compressed` (range ≤ median of the preceding 20 same-window ranges) vs `retest_any` | entries 08:00–10:30 London; flat 12:00 London |
+| BR3 | XAUUSD, XAGUSD; 08:00–12:00 London range | `retest` (full retest package) vs `direct_breakout` (next open after the breakout, 1 ATR stop, 1.5 R target) | entries 08:00–11:00 NY after the London range closed; flat 13:00 NY |
+
+Common engine: breakout = M5 close > level + 0.10 ATR with the previous close at/below; retest within 6 later bars (low ≤ level + 0.10 ATR,
+low ≥ level − 0.25 ATR, close > level, close > open); invalidation on a close > 0.25 ATR through the wrong side, window expiry, or an entry
+open > 0.50 ATR past the retest close; stop = retest extreme ∓ 0.10 ATR, min 0.50 ATR, skip > 1.50 ATR or if the open already crossed it;
+target 1.5 R; exit at the next open after the first completed close back through the level; one entry per symbol/day; no re-arm.
+16 cells, family bar 0.05 / 16 = 0.0031; same SEL/VAL rule as B1/B2.
+
