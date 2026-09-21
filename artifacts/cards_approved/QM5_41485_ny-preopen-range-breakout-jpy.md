@@ -12,6 +12,9 @@ research_trial_count: 314
 parent_ea_id: QM5_13213
 parent_slug: balke-gmt3-range-breakout
 candidate_role: VELOCITY_SLEEVE
+lineage_status: RETIRED
+retired_at: 2026-09-21
+retired_reason: pre-registered holdout bar failed (Q04 folds 2023-2025 pf_net 1.004/0.724/0.916); harness release-tick modelling artefact
 book_decision: OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921
 concepts:
   - "[[concepts/session-range-breakout]]"
@@ -233,3 +236,13 @@ symbol and mechanism class are shared with the deployed sleeve QM5_13213, explic
 - A 60-minute pre-open range with a range-width stop cannot carry commission plus spread (H-V1/H-V2); the multi-hour range with no
   fixed target can. Every Velocity hypothesis now runs the 30-second M1 prescreen before a card; the tester remains the measurement
   of record and the book layer remains the judge of value.
+
+## Retired 2026-09-21 (Fable) - pre-registered holdout bar failed
+
+Tester Q02 2018-07..2022-12 (ffe3a8dc) cleared every pre-registered bar (875 trades, E[R] +0.151R, PF 1.31, DD 18.3R), but the
+out-of-sample folds failed: Q03 2024 PF 0.73 (-23.5R), Q04 folds 2023/2024/2025 pf_net 1.004 / 0.724 / 0.916 -> FAIL. The
+trade-by-trade reconciliation (`docs/ops/evidence/2026-09-20_velocity_book/qm5_41485_2024_reconciliation.md`) shows the harness
+validation numbers were a modelling artefact (bid-only M1 fills at the 15:30 release tick that a real-tick tester rejects or fills
+against the trader; 52 % of the 2024 gap), not an EA defect. Card action per OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921: RETIRE, no
+book value; the EURUSD C3 arm was retired earlier the same day (PF 1.08 < 1.10, DD 40.9R). The card_sha256 above binds the
+approved bytes before this note; no further intake is authorised.

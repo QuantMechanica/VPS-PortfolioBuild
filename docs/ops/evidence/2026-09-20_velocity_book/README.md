@@ -213,3 +213,15 @@ COMPILE_OK rows → next tranche → status table).
   trade-by-trade, 0 factory hours) before any book statement. Q04 USDJPY `6b8574cc` FAIL (reason to be read), second Q04
   `65ba3f5f` active. Duplicate Q02 `bae8cf20` = auto-seeding after the EURUSD PASS (identical result, harmless). Role
   unchanged: VELOCITY_SLEEVE candidate; book value only via the account-level simulator once the Q08 stream exists.
+- 17:0xZ (21.09.) - **H-V4 / QM5_41485 RETIRED after the trade-by-trade reconciliation** (`qm5_41485_2024_reconciliation.md`,
+  commit `2706a31725`): on common same-direction days tester and harness agree (median +0.015R/trade) - the EA implements the
+  frozen spec; the 2024 gap (82.7R) is 52 % release-tick order rejection + fail-closed OCO (11 days; the two CPI days 04-10 and
+  07-11 alone +36.9R in the harness), 16 % opposite-side-first fills at the release tick, 17 % slippage on the same days, 15 %
+  days the EA never placed (news blackout / half-bar filter). In 2018-22 those days netted out, which is why the SEL agreement
+  and the Tokyo control cell hid the bias. **Verdict: harness modelling gap on NY-anchored cells, not an EA defect; the
+  family-F1 VAL confirmation for anchors B/C is withdrawn; USDJPY C2 fails the pre-registered holdout bar and Q04 -> card
+  retired, artifact 0012 sealed retired.** Side finding: several 2024 summer rows of `news_calendar_2015_2025.csv` are one
+  hour early vs UTC (07-11 CPI, 07-25 GDP) -> Codex audit `a36a5983`. Harness v2 (tick-level validity, EA-identical OCO, gap
+  fills, release-day tagging) + sweep re-run -> Codex `7088da77`. Velocity book state after day 1 of the harness: three
+  hypothesis families measured and honestly falsified in about one factory hour total; the harness is now calibrated on its
+  own failure mode.

@@ -302,6 +302,13 @@ survivors.
 | 11 | "2× incumbent" not supported after dependent multiplicity | Claim downgraded to a pre-registered replacement hypothesis; critic's paired result quoted verbatim; criterion 8 pre-registers the paired Q02 test; absolute edge retained for the canary |
 | 12 | — | This table; title suffixed "— revision 2"; `critique_d7ed93cd_extract.json` sealed as a computed output |
 
+## Retired 2026-09-21
+
+Retired by Fable: tester Q02 cleared the pre-registered bars (875 trades, +0.151R, PF 1.31, DD 18.3R) but the holdout /
+build-regression bar and Q04 (folds 2023/2024/2025 pf_net 1.004 / 0.724 / 0.916) failed. Root cause of the harness-vs-tester
+divergence: bid-only M1 fills at the 15:30 release tick (see qm5_41485_2024_reconciliation.md) - a harness modelling gap, not
+an EA defect. The family-F1 VAL numbers for NY-anchored cells are overstated and are being re-run with a tick-level fill model.
+
 ## Source manifest
 
 ```qm-source-manifest

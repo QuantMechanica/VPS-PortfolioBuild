@@ -550,3 +550,17 @@ Velocity card.
 | WS30.DWX | C4 | -0.555 | 0.405 | -0.621 | 0.44 | 0 / 9 |
 | XAGUSD.DWX | A2 | +0.065 | 1.137 | -0.003 | 0.993 | 4 / 9 |
 | XAUUSD.DWX | B4 | +0.054 | 1.111 | -0.004 | 0.991 | 6 / 9 |
+
+## Addendum 2026-09-21 (tester reconciliation) - VAL numbers of NY-anchored cells are overstated
+
+QM5_41485 (USDJPY C2) was built and measured in the real-tick tester: Q02 2018-07..2022-12 reproduced the harness (875 trades,
++0.151R, PF 1.31, DD 18.3R vs harness +0.141R / PF 1.30), but the out-of-sample years did not: Q04 folds 2023 / 2024 / 2025
+pf_net 1.004 / 0.724 / 0.916 (harness VAL +0.144R). Reconciliation
+(`docs/ops/evidence/2026-09-20_velocity_book/qm5_41485_2024_reconciliation.md`): 52 % of the 2024 gap comes from release-tick
+days where the tester rejects one stop side (invalid price at the 15:30 tick) and the EA cancels the peer, while the bid-only M1
+harness fills the spike side at the exact level; a further 33 % from opposite-side-first fills and slippage on the same days.
+Consequences: (1) the survivor list above is NOT valid for anchor C (and to a lesser degree B); the USDJPY x A control cell was
+unaffected because Tokyo-anchor days do not coincide with US releases; (2) the "about 2x incumbent" reading is withdrawn;
+(3) the harness needs tick-level placement validity (bid+ask+stop level), EA-identical fail-closed OCO, gap fills and
+release-day tagging before any further anchor sweep (Codex ticket 7088da77), after which this sweep is re-run under the same
+registration. H-V4 / QM5_41485 retired.

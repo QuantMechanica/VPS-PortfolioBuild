@@ -58,7 +58,7 @@ Max |r| = 0.099, max worst-20-day overlap = 2 days, max lower-decile co-exceedan
 
 | Candidate | Standalone edge | Density | Tail | Dependence | Marginal payout probability | Book action |
 |---|---|---|---|---|---|---|
-| H-V4 / QM5_41485 | harness SEL +0.141R / PF 1.30 / 0.85 per bd (not tester-measured) | 0.85/bd | harness worst-year DD 20.8R SEL / 25.04R VAL | same symbol + same mechanism class as 13213 -> replacement candidate unless |r| < 0.5 at Q08 | NOT_YET_MEASURABLE | **TEST (revision 2 in Codex critique round 2 afb38e9a; build 41485 + USDJPY Q02 canary next)** |
+| H-V4 / QM5_41485 | harness SEL +0.141R / PF 1.30 / 0.85 per bd (not tester-measured) | 0.85/bd | harness worst-year DD 20.8R SEL / 25.04R VAL | same symbol + same mechanism class as 13213 -> replacement candidate unless |r| < 0.5 at Q08 | NOT_YET_MEASURABLE | **RETIRED 2026-09-21 - tester Q02 2018-22 PASS (+0.151R, PF 1.31) but Q04 folds 2023/24/25 pf_net 1.00/0.72/0.92 FAIL; harness release-tick artefact (`qm5_41485_2024_reconciliation.md`)** |
 | 11708 EURUSD (anon-market-squeeze-d1) | +0.015R / PF 1.15 / 0.088 per bd | - | - | genuine diversification (ENB 4.11 -> 4.68 with 11910) | NEGATIVE at +0.3125 %: LCB 0.8839 -> 0.8556 (with 11910) | **HOLD (does not pay for its risk on the full sample)** |
 | 11910 NZDUSD (larry-williams-18ma-2outside-bars-d1) | +0.039R / PF 1.17 / 0.033 per bd | - | - | genuine diversification | NEGATIVE at +0.3125 % (with 11708) | **HOLD** |
 | H-CW 41475 / H-MR 41476 / H-FXMR 41477 | UNMEASURED (0 work items) | - | - | - | NOT_YET_MEASURABLE | **HOLD until prescreened by the M1 harness (0 factory hours) - index M1 history exists for NDX/SP500/GDAXI/UK100/WS30** |
