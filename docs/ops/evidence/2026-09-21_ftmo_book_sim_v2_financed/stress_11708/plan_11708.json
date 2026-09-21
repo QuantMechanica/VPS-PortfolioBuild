@@ -1,0 +1,24 @@
+{
+  "schema": "qm.ftmo-book-candidate-plan/v1",
+  "decision_id": "OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921",
+  "candidates": [
+    {
+      "id": "11708_EURUSD_D1",
+      "mode": "add",
+      "proposed_risk_percent": 0.3125,
+      "sleeve": {
+        "ea_id": 11708,
+        "ea_label": "QM5_11708_anon-market-squeeze-d1",
+        "symbol": "EURUSD.DWX",
+        "timeframe": "D1",
+        "role": "low-cost FX diversifier",
+        "family": "market_squeeze",
+        "session": "MULTIDAY_D1",
+        "news_profile": "PRE30_POST30_DXZ",
+        "stream_path": "D:/QM/reports/book_evolution/2026-W38/ftmo/fable_alt_rosters_20260918/deployable2/streams_fin_full/QM/q08_trades\\11708_EURUSD_DWX.jsonl",
+        "stream_sha256": "2295159df74dfb3c28857c6c8ed0c8fbae6243a46f73efc4dd23b446fa26bb70"
+      }
+    }
+  ],
+  "financing_note": "streams replaced by the 2026-09-18 financed streams (deployable2/streams_fin_full); swap = qm_financing.financing_usd folded into net"
+}

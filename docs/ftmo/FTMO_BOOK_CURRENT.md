@@ -59,9 +59,9 @@ No candidate has a **resolved** positive marginal contribution, so the shadow co
 
 | Candidate | Book action | Marginal LCB (financed; resolution) | Δ trades/bd | Δ DD USD | Δ cost USD/bd | Why |
 |---|---|---|---|---|---|---|
-| 11708 EURUSD D1 (anon-market-squeeze) | **SHADOW_BOOK** | +0.002 (old params) / +0.012 (5k, 504 bd) / -0.015 (1k, 504 bd) / 5k replicates +0.013 +/- 0.010 -> **UNRESOLVED, ~0 to +0.01** (seed SD 0.007-0.020) | +0.084 | -42 | +0.10 | cheap, genuinely independent FX density; does not move survival or speed measurably; DEMO_RESET_COST irrelevant for Sunday (fresh generation) but no evidence to add |
-| 11421 EURUSD D1 | **HOLD** | -0.002 / -0.012 / 0.000 -> UNRESOLVED, ~0 | +0.045 | +580 | +0.30 | more drawdown and cost for no measurable LCB |
-| 11910 NZDUSD D1 | **REJECT** (FTMO book) | -0.068 (old params) / -0.076 (5k) -> RESOLVED negative | +0.029 | +664 | +0.13 | raises max-loss breach 0.019 -> 0.032 |
+| 11708 EURUSD D1 (anon-market-squeeze) | **SHADOW_BOOK** | **+0.0058 (SE 0.0016) RESOLVED** at 5 paired seeds x 40k paths (Codex 3fae43b2, reproduced by Fable) but below the +0.01 roster bar, and **-0.0056 RESOLVED under +1 bps / +2 USD/lot cost stress** (`stress_11708/`) | +0.084 | -42 | +0.10 | small, cost-fragile positive; genuinely independent FX density; not QUEUE_FOR_NEXT_DEMO for Sunday |
+| 11421 EURUSD D1 | **HOLD** | **-0.0079 (SE 0.0022) RESOLVED negative** at 5 x 40k | +0.045 | +580 | +0.30 | more drawdown and cost, negative LCB |
+| 11910 NZDUSD D1 | **REJECT** (FTMO book) | **-0.0759 (SE 0.0021) RESOLVED** at 5 x 40k | +0.029 | +664 | +0.13 | raises max-loss breach 0.019 -> 0.032; stream ends 2025-06-05 (re-open only with a coterminous financed stream) |
 | 10513 XAUUSD D1 | HOLD | -0.029 (Codex, unfinanced 1k) ; no financed stream on disk | +0.035 | +87 | +0.04 | third XAU D1 clone risk (cluster) |
 | H-V4 / QM5_41485 | RETIRED, negative lineage `PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE` | NOT_MEASURABLE | - | - | - | OWNER §J |
 | H-CW 41475 / H-MR 41476 / H-FXMR 41477 | HOLD until harness v2 (7088da77) prescreens the NY/index cash-session family | - | - | - | - | the missing behaviour, but the v1 harness is not trusted on NY-anchored cells |
@@ -99,3 +99,13 @@ WORTH_MT5_TEST survivors, MT5 Q02-Q04, then the financed account-level marginal 
 6-7. Build/MT5: none in flight. 8. Marginal contribution: simulator financed; resolution rule pending Codex 3fae43b2. 9-10. Add only on a resolved
 positive; conservative weights. **Sunday 2026-09-27:** genesis manifest + preflight (94a15624), kill-switch governed initializer (d6189118) deployed
 and proven, demo-day retro audit (4505b206), sleeve attribution (74c41987); roster = the six unless a resolved improvement appears.
+
+## 7. Cost sensitivity (2026-09-21 19:3xZ) — the strongest open economic uncertainty
+
+A uniform +1 bps round-trip spread + 2 USD/lot slippage stress on the financed incumbent moves the payout LCB 0.8668 -> **0.6072**,
+phase-1 max-loss breach 0.020 -> **0.102**, progress 27.5 -> 16.0 USD/bd, cost drag 12.6 -> 24.1 USD/bd
+(`docs/ops/evidence/2026-09-21_ftmo_book_sim_v2_financed/stress_11708/`). The Q08 streams carry Darwinex `.DWX` spreads; the FTMO
+venue spread is measured only for XAUUSD and GER40. Until the per-symbol FTMO-minus-Darwinex delta is measured and simulated
+(Codex `73434cab`, VENUE_ADJUSTED headline), the 0.8668 headline is an upper bound for the FTMO venue, and the representative Demo's
+observed spreads/fills (acceptance contract §2.4) are the binding evidence for the purchase packet.
+
