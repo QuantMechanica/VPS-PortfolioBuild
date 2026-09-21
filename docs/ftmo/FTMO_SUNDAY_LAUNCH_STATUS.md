@@ -28,8 +28,8 @@ Updated by Fable at every material change; last update **2026-09-21 20:0xZ** (ac
 | GENESIS_MANIFEST | **BLOCKED** — tooling ticket `94a15624` TODO (prio 72, exempt); procedure fixed in `docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md` v0 | |
 | DEMO_ACCOUNT_IDENTITY (runbook §1) | **DECIDED A** (OWNER 2026-09-21 ~19:55Z, receipt `46ea4491`, Claude execution task `90847e73`): fresh FTMO Free-Trial account. **Credentials arrive Sunday 2026-09-27 (OWNER creates the account that morning; needed by 12:00Z):** login/server/password into `.private/secrets/ftmo_demo_gen2_20260927.md` (git-ignored) | runbook §1, §3 timing |
 | FTMO_BOOK_INCUMBENT | D2g6 = PRE_SUNDAY_LIVE_TRIAL since 2026-09-18 04:50Z (3.5 validation days, not representative, pulse WARN ks_day_anchor_missing 0/6) | `D:/QM/reports/state/ftmo_demo_cycle.json`, `ftmo_trial_pulse.json` |
-| FTMO_BOOK_SHADOW | = incumbent (no resolved addition); shadow candidate 11708 EURUSD D1 | `FTMO_BOOK_CURRENT.md` §2 |
-| SHADOW_BOOK_BEST_PENDING_SLEEVE | 11708 EURUSD D1 — SHADOW_BOOK: +0.0058 resolved at 5×40k paths (below the +0.01 bar), −0.0056 under +1 bps/+2 USD/lot cost stress | `2026-09-21_ftmo_book_sim_v2_financed/stress_11708/` |
+| FTMO_BOOK_SHADOW | **D2g6 + 12710 + 20266 XTIUSD D1** (2.34 %): LCB 0.8805 vs 0.8648, first payout 460 vs 492 bd, max-loss 0.017 — pending symbol-input rebuild + identity proof (Codex `273f2de8`); Sunday only if the proof lands Saturday, else next generation | `FTMO_BOOK_CURRENT.md` §2, pool sweep evidence |
+| SHADOW_BOOK_BEST_PENDING_SLEEVE | 12710 XTIUSD D1 commodity-tsmom-12m-atr (+0.025 marginal, 7 of 8 years positive; class B rebuild pending) ahead of 20266; 11708 stays SHADOW_BOOK-neutral | pool sweep README |
 | 11708_SIGN_FLIP | **EXPLAINED** (EXPECTED_MODEL_IMPROVEMENT; the +0.020 was unfinanced 1k-path noise; old −0.028 was a joint add with 11910 on a shorter window) | same |
 
 ## Go / No-Go checklist (OWNER §R) — current state

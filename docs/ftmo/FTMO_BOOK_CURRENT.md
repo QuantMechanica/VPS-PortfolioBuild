@@ -1,4 +1,4 @@
-# FTMO_BOOK - current (v2, 2026-09-21 18:3xZ)
+# FTMO_BOOK - current (v2.1, 2026-09-21 20:1xZ - shadow composition from the pool sweep)
 
 **Authority:** OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`, sections A-Z) on top of
 OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921. **Machine mirror:** `D:/QM/reports/state/ftmo_book_current.json` (schema `qm.ftmo-book-current/v1`,
@@ -14,7 +14,7 @@ v1 (quicklook + 2026-09-18 first-passage) is preserved in git history (`dfc697a2
 | Field | Value |
 |---|---|
 | FTMO_BOOK_INCUMBENT | `FTMO_DEMO_BOOK_V3_D2G6_20260918` - six sleeves, 1.71875 % book risk, on the FTMO demo since 2026-09-18 04:50Z = **PRE_SUNDAY_LIVE_TRIAL** (OWNER §S) |
-| FTMO_BOOK_SHADOW | = incumbent + nothing resolved. Shadow candidates: 11708 EURUSD D1 (`SHADOW_BOOK`, neutral LCB, +6 % density), no `ADD_NOW` / `QUEUE_FOR_NEXT_DEMO` |
+| FTMO_BOOK_SHADOW | **D2g6 + 12710 XTIUSD D1 + 20266 XTIUSD D1 (2.34375 %)** - pending symbol-input rebuild + identity proof (Codex `273f2de8`): LCB 0.8805 vs 0.8648 (5 seeds), median first payout 460 vs 492 bd, max-loss 0.017 vs 0.020, 1.59 trades/bd, 30.0 USD/bd; cost-stressed 0.679 vs 0.629. Status `QUEUE_FOR_NEXT_DEMO` candidate, not Sunday unless the proof lands by Saturday |
 | SUNDAY_FTMO_BOOK (2026-09-27 generation, planned) | the six D2g6 sleeves with the kill-switch governed initializer (d6189118) applied; roster changes only on resolved evidence |
 | P_FIRST_NET_FTMO_PAYOUT_LCB (financed) | **0.8668** (P 0.8854; unfinanced would read 0.9194) |
 | P_CHALLENGE_PASS / P_VERIFICATION_PASS given challenge | 0.9516 / 0.9775 |
@@ -60,14 +60,34 @@ No candidate has a **resolved** positive marginal contribution, so the shadow co
 | Candidate | Book action | Marginal LCB (financed; resolution) | Δ trades/bd | Δ DD USD | Δ cost USD/bd | Why |
 |---|---|---|---|---|---|---|
 | 11708 EURUSD D1 (anon-market-squeeze) | **SHADOW_BOOK** | **+0.0058 (SE 0.0016) RESOLVED** at 5 paired seeds x 40k paths (Codex 3fae43b2, reproduced by Fable) but below the +0.01 roster bar, and **-0.0056 RESOLVED under +1 bps / +2 USD/lot cost stress** (`stress_11708/`) | +0.084 | -42 | +0.10 | small, cost-fragile positive; genuinely independent FX density; not QUEUE_FOR_NEXT_DEMO for Sunday |
+| 12710 XTIUSD D1 (commodity-tsmom-12m-atr) | **SHADOW_BOOK** (rebuild pending `273f2de8`) | +0.025 (SE 0.001) marginal; joint +0.013 base | +0.043 | +339 | +0.13 | most robust pool profile (7 of 8 years positive, top-3 share 53 %); class B symbol literal |
+| 20266 XTIUSD D1 (collins-66mom) | **SHADOW_BOOK** (rebuild pending `273f2de8`) | +0.025 (SE 0.001); with 12710 joint +0.016 | +0.211 | +725 | +0.50 | dense (0.21/bd), mixed years; second oil engine (66-day momentum) |
+| 13054 XTIUSD D1 (brent-tom-mom) | HOLD | +0.020 (SE 0.001) | +0.039 | -201 | +0.06 | class A but the same tail as 12710 (loss overlap 7.4x, tail 147x) - redundant |
+| 12855 XTIUSD D1 (brent-nov-fade) / 21505 XAGUSD D1 | HOLD (rare-winner) | +0.109 / +0.064 but top-3 trades = 134 % / 362 % of net; 12855 trades only in November | | | | seasonal / rare-winner artefacts; research notes only |
+| 11660 NDX H4 (pp-wedge) | REJECT | +0.048 | +0.726 | **+3,148** | +5.63 | +0.014 max-loss breach; class B+C |
 | 11421 EURUSD D1 | **HOLD** | **-0.0079 (SE 0.0022) RESOLVED negative** at 5 x 40k | +0.045 | +580 | +0.30 | more drawdown and cost, negative LCB |
 | 11910 NZDUSD D1 | **REJECT** (FTMO book) | **-0.0759 (SE 0.0021) RESOLVED** at 5 x 40k | +0.029 | +664 | +0.13 | raises max-loss breach 0.019 -> 0.032; stream ends 2025-06-05 (re-open only with a coterminous financed stream) |
 | 10513 XAUUSD D1 | HOLD | -0.029 (Codex, unfinanced 1k) ; no financed stream on disk | +0.035 | +87 | +0.04 | third XAU D1 clone risk (cluster) |
 | H-V4 / QM5_41485 | RETIRED, negative lineage `PRESCREEN_EXECUTION_MODEL_FALSE_POSITIVE` | NOT_MEASURABLE | - | - | - | OWNER §J |
 | H-CW 41475 / H-MR 41476 / H-FXMR 41477 | HOLD until harness v2 (7088da77) prescreens the NY/index cash-session family | - | - | - | - | the missing behaviour, but the v1 harness is not trusted on NY-anchored cells |
 
-**DELTA_SHADOW_VS_INCUMBENT = 0** on every §C metric (shadow == incumbent). The leave-one-out runs (unfinanced, Codex) keep every incumbent
-sleeve: removing 10700 would cost 0.24 LCB, 10403 0.03, 41219 0.005.
+**Pool sweep 2026-09-21 (`docs/ops/evidence/2026-09-21_ftmo_pool_marginal_sweep/`, 14 validated sleeves, financed, 5 x 40k):** seven resolved
+positive marginals, but the two largest (12855 XTIUSD brent-nov-fade +0.109, 21505 XAGUSD +0.064) are rare-winner artefacts (top-3 trades =
+134 % / 362 % of net; 12855 trades only in November) -> `HOLD`; 11660 NDX H4 +0.048 but +3,148 USD DD and +0.014 max-loss breach -> `REJECT`;
+the oil momentum sleeves 12710 / 13054 / 20266 are the serious additions (+0.02 each; 12710 and 13054 are the same tail, loss overlap 7.4x ->
+keep 12710 only). Joint runs (`joint/JOINT_TABLE.md`):
+
+| Roster | Risk | LCB (5 seeds) | p50 first payout bd | max-loss | trades/bd | USD/bd | stressed LCB |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| D2g6 (incumbent) | 1.72 % | 0.8648 | 492 | 0.020 | 1.34 | 27.5 | 0.629 |
+| **D2g6 + 12710 + 20266 (SHADOW)** | 2.34 % | **0.8805** | **460** | 0.017 | 1.59 | 30.0 | 0.679 |
+| D2g6 + 12710 + 13054 + 20266 | 2.66 % | 0.8907 | 446 | 0.015 | 1.63 | 31.0 | 0.698 |
+| D2g6 + 21505 + 13054 + 12855 | 2.66 % | 0.8549 | 493 | 0.025 | 1.52 | 28.9 | 0.624 |
+
+**DELTA_SHADOW_VS_INCUMBENT:** LCB +0.016, first payout -32 bd, max-loss -0.003, +0.25 trades/bd, +2.5 USD/bd, cost drag +0.6 USD/bd; dependence:
+12710/20266 form a second fail-together cluster (same-market momentum, loss overlap 5.5x), max daily |r| 0.09. The pool can buy roughly
++0.02 LCB and a month of speed - it cannot supply the missing NY-session role; velocity still has to come from Track B research.
+The leave-one-out runs (unfinanced, Codex) keep every incumbent sleeve: removing 10700 would cost 0.24 LCB, 10403 0.03, 41219 0.005.
 
 ## 3. Dependence summary (FTMO_BOOK_DEPENDENCE_MATRIX, financed re-run `FTMO_BOOK_DEPENDENCE_MATRIX_financed.md`)
 
