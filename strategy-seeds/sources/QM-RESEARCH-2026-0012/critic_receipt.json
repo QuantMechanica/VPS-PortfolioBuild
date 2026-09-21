@@ -1,23 +1,53 @@
 {
-  "chain_id": "",
-  "critic_fallback_used": false,
-  "critic_seat_final": "",
-  "critic_verdict": "",
-  "finding_counts": {},
-  "generated_at_utc": "",
+  "schema": "qm.agent-chain.receipt.v1",
+  "chain_id": "CRITIC-HV4-20260921-afb38e9a",
   "plan": {
     "creator": {
-      "model": "",
-      "vendor": ""
+      "vendor": "claude",
+      "model": "claude-fable-5-1 (Fable; revision 1 drafted by a Fable fork, revision 2 authored by a Fable fork after critique d7ed93cd)"
     },
     "critic": {
-      "model": "",
-      "vendor": ""
+      "vendor": "codex",
+      "model": "codex (router lane codex, agent_tasks d7ed93cd-c4f3-4329-adaf-14a8bca526ea round 1 and afb38e9a-eb76-4dab-b5e9-54efc87a260e round 2; read-only, no repo writes)"
     }
   },
-  "receipt_path": "",
+  "critic_verdict": "ROUND 1 (d7ed93cd, 2026-09-21T09:37Z): REVISE on USDJPY C2 / USDJPY C3 / EURUSD C3 (no sign-flipping defect; 12 build-contract points) -> revision 2 sealed 9de5d9a43a -> ROUND 2 (afb38e9a, 2026-09-21T11:00Z): APPROVE_BUILD on USDJPY C2, APPROVE_BUILD on USDJPY C3, APPROVE_BUILD on EURUSD C3; all twelve round-1 points RESOLVED; build-review verdict only, not a pipeline verdict, performance pass or live authorization",
+  "critic_seat_final": {
+    "vendor": "codex",
+    "model": "codex (agent_tasks afb38e9a-eb76-4dab-b5e9-54efc87a260e)"
+  },
+  "critic_fallback_used": false,
+  "cross_vendor": true,
+  "generated_at_utc": "2026-09-21T11:00:27Z",
   "repo_write": false,
-  "schema": "qm.agent-chain.receipt.v1",
   "scope_drift": false,
-  "stages": []
+  "finding_counts": {
+    "round1_revise_points": 12,
+    "round2_unresolved": 0,
+    "blocking": 0
+  },
+  "receipt_path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/hv4_critique_round2_afb38e9a.md",
+  "receipt_sha256": "9b66f3da27ab2f5a82f49d7293b264b4ea4c054919bbc90e4f98ec25b19ae1db",
+  "round1_receipt_path": "C:/QM/repo/docs/ops/evidence/2026-09-20_velocity_book/hv4_critique_d7ed93cd.md",
+  "bound_source_sha256_at_critique": "84362c84bffcc748953b32254bd13902226b2671a011c7363ba03d6714881984",
+  "bound_source_commit_at_critique": "9de5d9a43a05a79fc51eddbc251f2964265698bb",
+  "stages": [
+    {
+      "role": "critic",
+      "task_id": "d7ed93cd-c4f3-4329-adaf-14a8bca526ea",
+      "note": "Round 1: harness/execution audit (clock, shifted grid, stop fills, OCO, trail, news, Friday/holiday), control-cell calibration, dependent paired multiplicity test vs A3, buildability audit (6 contract items), falsification-bar audit; verdict REVISE x3."
+    },
+    {
+      "role": "revision",
+      "task_id": "fable-velocity-hv4-20260921",
+      "note": "Revision 2 by a Fable fork (creator side, outside the critic role): 12 points resolved as a bounded source revision, no parameter change, no new sweep; critic tables sealed as computed output critique_d7ed93cd_extract.json; resealed draft (commit 9de5d9a43a)."
+    },
+    {
+      "role": "critic",
+      "task_id": "afb38e9a-eb76-4dab-b5e9-54efc87a260e",
+      "note": "Round 2: twelve-point closure audit, all RESOLVED; verdict APPROVE_BUILD on USDJPY C2, USDJPY C3, EURUSD C3 with builder handoff boundaries (three separate frozen set-file arms; RISK_FIXED=1000; FTMO set gated on QM_SessionClock; C2 25.04R is a warning at the bar, C3 is the frozen fallback; no replacement of 13213 before criterion 8 / Q08)."
+    }
+  ],
+  "candidate_role": "VELOCITY_SLEEVE (OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921: evaluated by marginal contribution to FTMO_BOOK, not as an FTMO solution)",
+  "authority": "OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917"
 }
