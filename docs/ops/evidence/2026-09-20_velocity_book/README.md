@@ -137,3 +137,17 @@ COMPILE_OK rows → next tranche → status table).
   sleeves run anchor_offset 0 / raw equity, no book tag; the 21.09 baseline 99,813.22 is right only by coincidence, no
   rule breach) → Codex implementation ticket (governed FTMO initializer + Prague-calendar helper + KS_DAY_ROLLOVER event
   + pulse state check; no deploy), Fable deploys after review. No new Velocity find; 41484 successors stay parked.
+- 08:0xZ (21.09.) — **H-V1 / H-V2 measured and FALSIFIED in 0 factory hours.** Fable built a read-only `.hcc` M1
+  reader (`session_tools/hcc_m1_reader_0921.py`, validated bar-for-bar against the terminal's own JSONL harvest:
+  EURUSD 94,574/94,575, GBPUSD 100,000/100,000) and a closed-bar prescreen harness
+  (`session_tools/velocity_hv_prescreen_0921.py`, ~30 s per hypothesis, zoneinfo-mapped anchors, registry commission,
+  SEL 2018-07..2022-12 / VAL 2023-25, floor/cap frozen on SEL). Result (A15 arm, SEL): H-V1 EURUSD −0.054R / PF 0.91,
+  GBPUSD −0.068R / PF 0.89; H-V2 XAUUSD −0.050R / PF 0.91 and 28R worst-year DD; A20 and the breakout-only /
+  failure-only variants ≤ 0. Density was fine (0.6–0.8 trades/bd), expectancy is not: a 60-min pre-open range is too
+  thin for a range-width stop to carry commission (0.03–0.04R) plus spread (XAUUSD measured FTMO median 0.44 USD =
+  0.07–0.09R). 0009/0010 resealed as revision 2 (frozen arms, shift-1 contract, exact precedence, named floor/cap,
+  DST-aware anchor, computed cost_R) with RETIRE recommended; 0011 sealed `retired`; verify clean except ledger
+  status. Commit `8a96af63aa`, table in `velocity_hv_prescreen_0921.json`. Codex critic round 2 `9caac5c7` audits
+  the simulator (anchor mapping, closed-bar contract, cost model) before the retire seal. **Carry-forward:** every
+  future Velocity hypothesis runs this prescreen before any card; next family = multi-hour / ATR-scaled ranges or
+  ≥0.5R-class mechanisms, pre-registered selection rule, SEL/VAL discipline. KS-initializer ticket = `d6189118`.
