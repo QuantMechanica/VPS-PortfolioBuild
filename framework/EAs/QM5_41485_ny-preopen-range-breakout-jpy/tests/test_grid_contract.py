@@ -101,7 +101,7 @@ def test_source_locks_runtime_oco_news_and_current_sl_contracts() -> None:
 
 
 def test_three_setfiles_are_fixed_backtest_arms() -> None:
-    setfiles = sorted(SETS.glob("*.set"))
+    setfiles = sorted(SETS.rglob("*.set"))  # canonical sets + sets/arms (second frozen arm)
     assert len(setfiles) == 3
     observed: set[tuple[str, str, str]] = set()
     for path in setfiles:

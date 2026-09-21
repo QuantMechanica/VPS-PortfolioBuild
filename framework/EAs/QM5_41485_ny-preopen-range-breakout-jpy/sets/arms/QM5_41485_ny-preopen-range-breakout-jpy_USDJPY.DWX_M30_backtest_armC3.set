@@ -7,7 +7,7 @@
 ; symbol:       USDJPY.DWX
 ; timeframe:    M30
 ; environment:  backtest
-; magic_slot:   1
+; magic_slot:   0
 ; risk_mode:    FIXED
 ; portfolio_weight: 1
 ; build_hash:   pending
@@ -15,7 +15,7 @@
 ; date:         2026-09-21
 ;==========================================================
 qm_ea_id=41485
-qm_magic_slot_offset=1
+qm_magic_slot_offset=0
 RISK_FIXED=1000
 RISK_PERCENT=0
 PORTFOLIO_WEIGHT=1
