@@ -1,0 +1,26 @@
+{
+  "schema": "qm.governed_magic_precondition_evidence/v1",
+  "task_id": "35f8c652-59b2-43c2-91fb-b010d74640bf",
+  "ea_id": "PENDING_B0EF5D66",
+  "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\PENDING_B0EF5D66_connors-rsi2-sma200-mean-reversion-d1.md",
+  "classification": "invalid_ea_id",
+  "required_action": "REFUSE",
+  "precheck": {
+    "ready": false,
+    "classification": "invalid_ea_id",
+    "action": "REFUSE",
+    "ea_id": "PENDING_B0EF5D66",
+    "slug": "connors-rsi2-sma200-mean-reversion-d1-v2",
+    "target_symbols": ["EURUSD.DWX", "GBPUSD.DWX", "USDJPY.DWX"]
+  },
+  "independent_verification": {
+    "method": "reran farmctl.magic_allocation_precheck() against the card's parsed frontmatter from this session (agents/claude-orchestration-1 worktree, farmctl.py at commit fd5f2d41b4)",
+    "result": "classification=invalid_ea_id, action=REFUSE (matches router-supplied diagnosis)",
+    "registry_scan": "grep for 'connors-rsi2-sma200-mean-reversion-d1-v2' and 'PENDING_B0EF5D66' across framework/registry/ea_id_registry.csv and framework/registry/magic_numbers.csv returned zero rows"
+  },
+  "finding": "The card's ea_id frontmatter value is a placeholder token ('PENDING_B0EF5D66'), not a QM5 numeric identity, so it does not match the (?:QM5_)?(\\d+) pattern the governed magic allocator and precheck require. The card is an append-only second-chance retest draft for origin strategy QM5_11563 (connors-rsi2-sma200-mean-reversion-d1), commissioned under the Strategy Second-Chance Programme (task b0ef5d66-5947-4d79-ad72-02f2caee04cb), with g0_status: APPROVED and card_sha256 pinned in frontmatter. No numeric ea_id has been reserved for this strategy yet -- per the card body, 'A permanent numeric EA ID will be atomically minted via farmctl reserve-ea-ids by the build/intake controller upon card approval.' There is therefore no identity or magic-number precondition to check or allocate. The governed allocator sequence (identity -> magic rows -> resolver) cannot begin without a real numeric ea_id.",
+  "action_taken": "REFUSE per action=REFUSE. No registry or resolver mutation attempted. No card edit attempted -- assigning a numeric ea_id is a G0/identity-reservation decision (farmctl reserve-ea-ids) outside this task's scope, not a magic-allocation precondition fix.",
+  "required_next_step": "Card needs a real numeric ea_id assigned through the standard identity-reservation path (farmctl reserve-ea-ids under the build/intake controller) before governed_magic_precondition or governed_magic_allocator can run against it. Left in cards_review with ea_id unchanged; original build (task b0ef5d66-5947-4d79-ad72-02f2caee04cb lineage) stays blocked.",
+  "verdict": "REFUSE -- invalid_ea_id (placeholder PENDING_B0EF5D66), not eligible for governed magic allocation until a numeric identity is reserved",
+  "observed_at": "2026-09-21T21:15:00Z"
+}
