@@ -1,0 +1,61 @@
+{
+  "schema": "qm.orchestration.blocker-state/v1",
+  "task_id": "b56cb62c-4b5f-4a58-af76-1a49970e436d",
+  "ea_id": 41485,
+  "ea_label": "QM5_41485_ny-preopen-range-breakout-jpy",
+  "source_sha256": "a55be9bbfbfc64954a10b8850c9ab67b799bbf501bd2e1efb8546d8b1bf71575",
+  "implementation_commit": "f8e448ff31331a3a2f5f7d385be621649e7fbac5",
+  "build_check": {
+    "command_mode": "SkipCompile+SkipMagicCheck",
+    "status": "NOT_RUN_PAST_PREFLIGHT",
+    "failure_class": "BUILD_CHECK_LIVE_FACTORY_COMPILE_REFUSED",
+    "underlying_class": "LIVE_FACTORY_AD_HOC_COMPILE_REFUSED",
+    "receipt_sha256": null,
+    "reason": "The mandatory compile-pipeline guard runs before static checks even with SkipCompile and refuses while T1-T10 factory terminal64 processes are active."
+  },
+  "authorized_recovery": {
+    "interrupt_active_backtests": false,
+    "enqueue_compile": false,
+    "bypass_guard": false,
+    "retry_when_factory_quiescent": true
+  },
+  "independent_checks": {
+    "grid_contract_pytest": "6 passed",
+    "spec_validator": "PASS",
+    "build_gate_hardening_failures": 0,
+    "build_gate_hardening_warning": "EA_BROKER_TIME_WINDOW_OVERRIDE",
+    "build_guardrails": "PASS"
+  },
+  "canonical_magic_rows_observed": [
+    {
+      "symbol_slot": 0,
+      "symbol": "USDJPY.DWX",
+      "magic": 414850000,
+      "status": "active"
+    },
+    {
+      "symbol_slot": 1,
+      "symbol": "EURUSD.DWX",
+      "magic": 414850001,
+      "status": "active"
+    }
+  ],
+  "ticket_magic_contract": [
+    {
+      "symbol_slot": 0,
+      "symbol": "USDJPY.DWX",
+      "arm": "C2"
+    },
+    {
+      "symbol_slot": 1,
+      "symbol": "USDJPY.DWX",
+      "arm": "C3"
+    },
+    {
+      "symbol_slot": 2,
+      "symbol": "EURUSD.DWX",
+      "arm": "C3"
+    }
+  ],
+  "registry_note": "The two canonical magic rows appeared concurrently after this task branch was forked and do not match the ticket's three-slot mapping. This task did not edit either registry."
+}
