@@ -517,7 +517,11 @@ def _timeframe_allowed(value: str | None) -> bool:
     if not match:
         return False
     amount = int(match.group(2))
-    return 5 <= amount <= 15 if match.group(1) == "M" else 1 <= amount <= 24
+    # Box amendment 2026-09-21 (Fable, OWNER-DEC-FABLE-FULL-EXECUTIVE-AUTHORITY-20260917, section 30
+    # selection-box authority): M30 is a standard MT5 timeframe between the M15 and H1 bounds; its
+    # omission was a gap of the 2026-09 box, not a criterion. Evidence:
+    # docs/ops/evidence/2026-09-20_velocity_book/prescreen_box_m30_amendment_20260921.md
+    return 5 <= amount <= 30 if match.group(1) == "M" else 1 <= amount <= 24
 
 
 def _strip_provenance_section(text: str) -> str:
