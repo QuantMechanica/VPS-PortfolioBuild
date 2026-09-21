@@ -481,3 +481,21 @@ For non-trivial work, return:
 - Evidence files
 - Risks / blockers
 - Recommended next step
+
+### OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921 — FTMO is a book problem, not a hero-EA search (OWNER 2026-09-21)
+
+- **The FTMO_BOOK is the product.** Success unit = account-level portfolio; EAs are sleeves (`EA × symbol × timeframe ×
+  configuration × risk allocation`); many sleeves per symbol allowed; no arbitrary per-symbol / family / count caps —
+  measured dependence and account-level risk decide. **No hero-EA search**: no sleeve must pass FTMO alone.
+- **Primary question per candidate = marginal contribution to FTMO_BOOK** (ΔP_FIRST_NET_FTMO_PAYOUT_LCB, ΔP pass/breach,
+  Δtime-to-target, ΔDD, Δrecovery, Δdensity, Δtail dependence, Δcost drag). R/day is evidence, not the KPI.
+- **Account-level everything:** chronological book simulation from real trades, `FTMO_BOOK_DEPENDENCE_MATRIX` (never Pearson
+  alone — "do they fail together?"), joint sleeve selection + risk weights, account-level FTMO Governor as final risk
+  authority, representative Demo = the frozen BOOK, first-passage on the BOOK.
+- **Loop (CBE for FTMO):** book → strongest failure mode → missing behaviour (`docs/ftmo/FTMO_PORTFOLIO_GAP_CURRENT.md`) →
+  fewest hypotheses → cheap prescreen (M1/.hcc harness, pre-registered, SEL/VAL, costs, null tests) → build survivors →
+  MT5 → marginal contribution → add only if the book improves → conservative re-weighting.
+- **Artifacts:** `docs/ftmo/FTMO_BOOK_CURRENT.md`, `D:\QM\reports\state\ftmo_book_current.json`, Mission Control FTMO BOOK
+  panel. H-V4 / QM5_41485 = `VELOCITY_SLEEVE` candidate, not `FTMO_SOLUTION`.
+- Record: `decisions/2026-09-21_owner_ftmo_book_portfolio_not_hero_ea.md`; verbatim
+  `docs/ops/evidence/2026-09-21_ftmo_book_portfolio_directive/owner_directive_verbatim.md`.
