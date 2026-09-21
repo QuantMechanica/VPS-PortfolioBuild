@@ -1,4 +1,4 @@
-"""Tests for the FTMO first-passage CHAIN (schema v2, engine 2.0.0).
+"""Tests for the FTMO first-passage CHAIN (schema v2, engine 2.1.0).
 
 KPI contract `docs/ftmo/FTMO_KPI_CONTRACT.md` section 2: Phase 1 -> Verification ->
 funded account -> first net cash payout. Covers: degenerate always-win / always-lose
@@ -70,6 +70,13 @@ def test_always_winning_stream_passes_whole_chain():
     assert chain["time_business_days"]["phase1_target"]["p50"] == 4.0
     # funded payout: first trade day 1 + 10 business days eligibility + 4 processing
     assert chain["time_business_days"]["first_payout"]["p50"] == 15.0
+    frontier = chain["payout_frontier"]
+    assert frontier["payout_by_calendar_day"]["30"]["probability"] == 0.0
+    assert frontier["payout_by_calendar_day"]["45"]["lcb_90pct"] == 1.0
+    assert frontier["unconditional_t80"]["status"] == "REACHED_IN_MARKET_PATH_MODEL"
+    assert frontier["unconditional_t80"]["business_day"] == 23
+    assert frontier["conditional_on_positive_net_payout"]["business_days"]["p50"] == 23.0
+    assert frontier["outcome_partition_unconditional"]["positive_net_payout"]["probability"] == 1.0
 
 
 def test_always_losing_stream_fails_whole_chain():
@@ -84,6 +91,28 @@ def test_always_losing_stream_fails_whole_chain():
     assert chain["stages"]["phase1"]["p_daily_loss_breach"] == 0.0
     # the funded stage never reaches a positive closed balance -> no reward
     assert chain["stages"]["funded"]["p_survive_to_first_reward"] == 0.0
+    frontier = chain["payout_frontier"]
+    assert frontier["unconditional_t80"]["status"] == "NOT_REACHED"
+    assert frontier["outcome_partition_unconditional"]["phase1_max_loss_breach"]["probability"] == 1.0
+
+
+def test_reward_scenarios_keep_fee_refund_separate() -> None:
+    rows = fp._reward_scenarios(100000.0, fp.load_economics())
+    by_name = {row["scenario"]: row for row in rows}
+    first = by_name["ENGINE_FIRST_POSITIVE_NET_REWARD"]
+    assert first["payment_method_minimum_usd"] is None
+    assert first["status"] == "MODEL_THRESHOLD_ONLY_PAYMENT_METHOD_MINIMUM_UNBOUND"
+    assert by_name["FUNDED_GAIN_0.5PCT"] == {
+        "scenario": "FUNDED_GAIN_0.5PCT",
+        "funded_gain_fraction": 0.005,
+        "funded_profit_usd": 500.0,
+        "reward_usd": 400.0,
+        "fee_paid_usd": 540.0,
+        "fee_refund_usd": 540.0,
+        "net_cash_usd": 400.0,
+    }
+    assert by_name["FUNDED_GAIN_1PCT"]["net_cash_usd"] == 800.0
+    assert by_name["FUNDED_GAIN_2PCT"]["net_cash_usd"] == 1600.0
 
 
 def test_conditional_probability_is_none_when_no_path_reaches_the_stage():
@@ -257,7 +286,7 @@ def _model(tmp_path, **kw):
 def test_v1_fields_are_preserved_under_schema_v2(tmp_path):
     model = _model(tmp_path)
     assert model["schema"] == "qm.ftmo-first-passage/v2"
-    assert model["engine_version"] == "2.0.0"
+    assert model["engine_version"] == "2.1.0"
     assert model["kpi_contract_version"] == "v1"
     assert model["status"] == "OK"
     for key in ("p_target_hit", "p_daily_loss_breach", "p_max_loss_breach",
@@ -287,6 +316,7 @@ def test_chain_block_and_readiness_keys_are_additive(tmp_path):
                 "p_first_net_ftmo_payout", "p_first_net_ftmo_payout_lcb",
                 "end_to_end_median_business_days"):
         assert key in compact, key
+    assert chain["payout_frontier"]["schema"] == "qm.ftmo-payout-speed-frontier/v1"
     # Phase-1 headline and the chain's Phase-1 stage share the same draws.
     assert chain["probabilities"]["P_CHALLENGE_PASS"] == model["headline"]["p_target_hit"]
 

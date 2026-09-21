@@ -115,7 +115,7 @@ from tools.strategy_farm.portfolio.ftmo_rule_contract import load_two_step_contr
 
 SCHEMA = "qm.ftmo-first-passage/v2"
 MANIFEST_SCHEMA = "qm.ftmo-first-passage-manifest/v2"
-ENGINE_VERSION = "2.0.0"
+ENGINE_VERSION = "2.1.0"
 KPI_CONTRACT_VERSION = "v1"  # docs/ftmo/FTMO_KPI_CONTRACT.md
 REPO_ROOT = Path(__file__).resolve().parents[3]
 DEFAULT_OUT = Path(r"D:\QM\reports\state\ftmo_first_passage.json")
@@ -187,6 +187,8 @@ DEFAULT_FUNDED_HORIZON = 120
 DEFAULT_N_BATCHES = 20
 # Fallback evaluation fee when the bound rulepack carries none (USD 100k 2-Step).
 DEFAULT_FEE_USD = 540.0
+PAYOUT_FRONTIER_CALENDAR_DAYS = (30, 45, 60, 90)
+PAYOUT_FRONTIER_TARGET_LCB = 0.80
 
 
 def resolve_dwx_symbol(ftmo_symbol: str) -> str:
@@ -859,6 +861,163 @@ def _time_dist(days: np.ndarray) -> dict[str, Any]:
     }
 
 
+def _first_calendar_day_for_business_day(business_day: int) -> int:
+    """Invert the engine's documented 5/7 calendar-to-business-day mapping."""
+    if business_day <= 0:
+        return 0
+    calendar_day = max(1, int(math.floor(business_day * 7.0 / 5.0)) - 2)
+    while calendar_to_business_days(calendar_day) < business_day:
+        calendar_day += 1
+    return calendar_day
+
+
+def _reward_scenarios(
+    initial_equity: float, economics: Mapping[str, Any]
+) -> list[dict[str, Any]]:
+    """Cash-ledger projection at the requested funded-gain checkpoints."""
+    fee = float(economics["fee_usd"])
+    split = float(economics["reward_split_percent"]) / 100.0
+    refund = fee * float(economics["fee_refund_percent"]) / 100.0
+    rows: list[dict[str, Any]] = [{
+        "scenario": "ENGINE_FIRST_POSITIVE_NET_REWARD",
+        "funded_gain_fraction": None,
+        "funded_profit_usd": "STRICTLY_POSITIVE_AMOUNT_OBSERVED_ON_PATH",
+        "reward_usd": "reward_split x observed positive funded profit",
+        "fee_paid_usd": round(fee, 2),
+        "fee_refund_usd": round(refund, 2),
+        "net_cash_usd": "reward + fee_refund - fee; strictly positive under the bound 100% refund",
+        "payment_method_minimum_usd": None,
+        "status": "MODEL_THRESHOLD_ONLY_PAYMENT_METHOD_MINIMUM_UNBOUND",
+    }]
+    for fraction in (0.005, 0.01, 0.02):
+        profit = initial_equity * fraction
+        reward = split * profit
+        rows.append({
+            "scenario": f"FUNDED_GAIN_{fraction * 100:g}PCT",
+            "funded_gain_fraction": fraction,
+            "funded_profit_usd": round(profit, 2),
+            "reward_usd": round(reward, 2),
+            "fee_paid_usd": round(fee, 2),
+            "fee_refund_usd": round(refund, 2),
+            "net_cash_usd": round(reward + refund - fee, 2),
+        })
+    return rows
+
+
+def _payout_frontier(
+    success: np.ndarray,
+    total_business_days: np.ndarray,
+    *,
+    n_batches: int,
+    outcome_masks: Mapping[str, np.ndarray],
+    initial_equity: float,
+    economics: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Additive 80/20 speed view over the existing pathwise chain."""
+    success = np.asarray(success, dtype=bool)
+    total_business_days = np.asarray(total_business_days, dtype=np.int64)
+    by_day: dict[str, Any] = {}
+    for calendar_day in PAYOUT_FRONTIER_CALENDAR_DAYS:
+        business_cutoff = calendar_to_business_days(calendar_day)
+        mask = success & (total_business_days <= business_cutoff)
+        interval = _batch_ci(mask, None, n_batches)
+        by_day[str(calendar_day)] = {
+            "calendar_day": calendar_day,
+            "business_day_cutoff_5_over_7": business_cutoff,
+            "probability": _share(mask),
+            "lcb_90pct": interval["p05"],
+            "credible_interval_90pct": interval,
+        }
+
+    ultimate = _batch_ci(success, None, n_batches)
+    successful_days = np.unique(total_business_days[success])
+    t80: dict[str, Any] = {
+        "target_lcb": PAYOUT_FRONTIER_TARGET_LCB,
+        "status": "NOT_REACHED",
+        "business_day": None,
+        "calendar_day_5_over_7": None,
+        "lcb_90pct": None,
+    }
+    if (
+        successful_days.size
+        and ultimate.get("p05") is not None
+        and float(ultimate["p05"]) >= PAYOUT_FRONTIER_TARGET_LCB
+    ):
+        lo, hi = 0, int(successful_days.size) - 1
+        while lo < hi:
+            mid = (lo + hi) // 2
+            cutoff = int(successful_days[mid])
+            interval = _batch_ci(
+                success & (total_business_days <= cutoff), None, n_batches
+            )
+            if (
+                interval.get("p05") is not None
+                and float(interval["p05"]) >= PAYOUT_FRONTIER_TARGET_LCB
+            ):
+                hi = mid
+            else:
+                lo = mid + 1
+        cutoff = int(successful_days[lo])
+        interval = _batch_ci(
+            success & (total_business_days <= cutoff), None, n_batches
+        )
+        t80.update({
+            "status": "REACHED_IN_MARKET_PATH_MODEL",
+            "business_day": cutoff,
+            "calendar_day_5_over_7": _first_calendar_day_for_business_day(cutoff),
+            "lcb_90pct": interval["p05"],
+        })
+
+    conditional_business = total_business_days[success].astype(float)
+    conditional_calendar = np.ceil(conditional_business * 7.0 / 5.0)
+    partition: dict[str, Any] = {}
+    assigned = np.zeros(success.shape[0], dtype=np.int16)
+    for name, raw_mask in outcome_masks.items():
+        mask = np.asarray(raw_mask, dtype=bool)
+        assigned += mask.astype(np.int16)
+        partition[name] = {
+            "count": int(mask.sum()),
+            "probability": _share(mask),
+        }
+    if not np.all(assigned == 1):
+        raise AssertionError("payout outcome partition must assign every path exactly once")
+
+    return {
+        "schema": "qm.ftmo-payout-speed-frontier/v1",
+        "objective": "minimum calendar time with full-chain positive-net-payout LCB >= 0.80",
+        "payout_by_calendar_day": by_day,
+        "unconditional_t80": t80,
+        "conditional_on_positive_net_payout": {
+            "business_days": _time_dist(conditional_business),
+            "calendar_days_5_over_7": _time_dist(conditional_calendar),
+            "conditioning": "paths with a modeled positive net first payout only",
+        },
+        "outcome_partition_unconditional": partition,
+        "ultimate_positive_net_payout": {
+            "probability": _share(success),
+            "credible_interval_90pct": ultimate,
+        },
+        "reward_scenarios": _reward_scenarios(initial_equity, economics),
+        "time_contract": {
+            "market_path_unit": "business days",
+            "calendar_mapping": "diagnostic 5/7 mapping; not an exact dated calendar path",
+            "challenge_to_verification_administration_calendar_days": None,
+            "verification_to_funded_administration_calendar_days": None,
+            "funded_eligibility_calendar_days": FUNDED_ELIGIBILITY_CALENDAR_DAYS,
+            "payout_processing_business_days": PAYOUT_PROCESSING_BUSINESS_DAYS,
+            "payment_method_minimum_usd": None,
+            "bank_receipt_lag_calendar_days": None,
+            "administrative_rejection_probability": None,
+            "unmodeled_status": "UNRESOLVED_ADMINISTRATION_AND_BANK_RECEIPT",
+        },
+        "interpretation": (
+            "Day marks and t80 are unconditional modeled market-path quantities. "
+            "Unknown inter-phase administration, administrative rejection and actual "
+            "bank-receipt lag are not assigned invented probabilities or durations."
+        ),
+    }
+
+
 def _phase_stage_report(walk: Mapping[str, Any], outcome: Mapping[str, np.ndarray],
                         grid: Mapping[str, Any], idx: np.ndarray, *,
                         reached: np.ndarray | None, attribute: bool) -> dict[str, Any]:
@@ -1006,10 +1165,35 @@ def simulate_chain(grid: Mapping[str, Any], rules: Mapping[str, Any],
     days_p1 = (w1["pass_day"] + 1)[o1["passed"]].astype(float)
     days_p2 = (w2["pass_day"] + 1)[o2["passed"] & o1["passed"]].astype(float)
     days_payout = (w3["payout_day"] + 1)[end_to_end].astype(float)
-    days_total = (w1["pass_day"] + w2["pass_day"] + w3["payout_day"] + 3)[end_to_end].astype(float)
+    all_days_total = (
+        w1["pass_day"] + w2["pass_day"] + w3["payout_day"] + 3
+    ).astype(float)
+    days_total = all_days_total[end_to_end]
 
     profit_paid = w3["profit_at_reward"][net_positive]
     cash_paid = net_cash[net_positive]
+    total_days_for_frontier = np.where(net_positive, all_days_total, 0).astype(np.int64)
+    outcome_masks = {
+        "positive_net_payout": net_positive,
+        "phase1_daily_loss_breach": o1["is_daily"],
+        "phase1_max_loss_breach": o1["is_total"],
+        "phase1_censored": o1["censored"],
+        "verification_daily_loss_breach": o1["passed"] & o2["is_daily"],
+        "verification_max_loss_breach": o1["passed"] & o2["is_total"],
+        "verification_censored": o1["passed"] & o2["censored"],
+        "funded_daily_loss_breach": reached_funded & w3["is_daily"],
+        "funded_max_loss_breach": reached_funded & w3["is_total"],
+        "funded_censored": reached_funded & w3["censored"],
+        "reward_not_net_positive": end_to_end & ~net_positive,
+    }
+    payout_frontier = _payout_frontier(
+        net_positive,
+        total_days_for_frontier,
+        n_batches=n_batches,
+        outcome_masks=outcome_masks,
+        initial_equity=float(initial),
+        economics=economics,
+    )
 
     return {
         "kpi_contract_version": KPI_CONTRACT_VERSION,
@@ -1035,6 +1219,7 @@ def simulate_chain(grid: Mapping[str, Any], rules: Mapping[str, Any],
             "first_payout": _time_dist(days_payout),
             "end_to_end": _time_dist(days_total),
         },
+        "payout_frontier": payout_frontier,
         "net_condition": {
             "fee_usd": economics["fee_usd"],
             "fee_source": economics["fee_source"],
@@ -1378,6 +1563,7 @@ def build(*, roster: Mapping[str, Any], rules: Mapping[str, Any], seed: int = DE
                 "P_END_TO_END_FIRST_PAYOUT": probs["P_END_TO_END_FIRST_PAYOUT"],
                 "P_FIRST_NET_FTMO_PAYOUT": probs["P_FIRST_NET_FTMO_PAYOUT"],
                 "P_FIRST_NET_FTMO_PAYOUT_LCB": probs["P_FIRST_NET_FTMO_PAYOUT_LCB"],
+                "payout_frontier": scen["payout_frontier"],
             })
         base["chain"] = chain_model
 

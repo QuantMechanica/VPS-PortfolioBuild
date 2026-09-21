@@ -873,6 +873,8 @@ def evaluate_book(
                 for name, report in stages.items()
             },
             "time_business_days": chain.get("time_business_days"),
+            "payout_frontier": chain.get("payout_frontier"),
+            "net_condition": chain.get("net_condition"),
             "sensitivity": chain.get("sensitivity"),
             "method": chain.get("method") or passage.get("method"),
         },
