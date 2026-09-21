@@ -160,3 +160,36 @@ where it fires the M5-ATR stops are cost-dominated (index cells -0.6 to -2.2 R p
 Same class as B1 H-B3/H-B4. BR1-BR3 = CLEAR_REJECT for the velocity role; a D1-ATR-scale / hourly-window re-specification would be a new
 lineage (B4 candidate) only after a density calibration.
 
+### B2 result (2026-09-21T20:45:29Z, `velocity_family_f4_b2_0921.json`, tool `velocity_family_f4_b2_0921.py`)
+
+**0 of 14 evaluated cells pass the selection bar; 0 survivors** (expected false survivors 0.005; one cell, H-AG6 USDJPY, produced no
+qualifying day after the fix of the day-range ATR helper — its double confirmation with SP500 at 0.20 D1-ATR each never co-occurred with a
+closed-data 09:30-10:00 window on the .DWX history and it is UNKNOWN). Every index cell is CLEAR_REJECT; the two relaxed post-open
+continuation cells (H-B2r GDAXI / NDX) are marginally positive in SEL (+0.02 R, PF 1.05) with 0.10-0.16 trades/bd — density and edge both
+short of the bar; the XAU drift reversal H-B7r is negative after costs (−0.07 R at 0.52/bd) although its sign is the mirror of B1 H-B7 —
+the mechanism is a cost sink in both directions; H-AG5 (COMEX sweep) fires rarely and loses; H-AG8 (WMR fix) and H-AG6 fire too rarely.
+
+| Cell | State | SEL n | E[R] | PF | worst-year DD R | trades/bd | median hold min | VAL n | E[R] | PF | chance |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| H-B2r|GDAXI.DWX | CLEAR_REJECT | 117 | 0.0227 | 1.048 | 9.49 | 0.0996 | 300.0 | 94 | 0.0348 | 1.074 | None |
+| H-B2r|NDX.DWX | CLEAR_REJECT | 187 | 0.0219 | 1.055 | 12.05 | 0.1591 | 246.0 | 127 | -0.027 | 0.938 | None |
+| H-B7r|XAUUSD.DWX | CLEAR_REJECT | 613 | -0.0686 | 0.862 | 28.79 | 0.5217 | 24.0 | 468 | -0.0341 | 0.93 | 0.005 |
+| H-AG2|NDX.DWX | CLEAR_REJECT | 211 | -0.0865 | 0.827 | 13.0 | 0.1796 | 210.0 | 166 | 0.0487 | 1.11 | None |
+| H-AG8|GBPUSD.DWX | UNKNOWN | 40 | -0.1141 | 0.66 | 4.06 | 0.034 | 35.0 | 36 | -0.0626 | 0.817 | None |
+| H-AG4|NDX.DWX | CLEAR_REJECT | 114 | -0.1145 | 0.559 | 5.62 | 0.097 | 26.0 | 70 | -0.0996 | 0.641 | None |
+| H-AG6|USDJPY.DWX | CLEAR_REJECT | 58 | -0.1238 | 0.738 | 5.14 | 0.0494 | 168.5 | 26 | 0.2329 | 1.79 | None |
+| H-B2r|SP500.DWX | CLEAR_REJECT | 185 | -0.2669 | 0.543 | 17.62 | 0.1574 | 240.0 | 111 | -0.124 | 0.767 | None |
+| H-AG5|XAUUSD.DWX | CLEAR_REJECT | 58 | -0.2757 | 0.51 | 7.75 | 0.0494 | 21.0 | 68 | -0.1437 | 0.748 | None |
+| H-AG8|EURUSD.DWX | CLEAR_REJECT | 53 | -0.3046 | 0.339 | 7.0 | 0.0451 | 35.0 | 38 | -0.041 | 0.861 | None |
+| H-AG1|NDX.DWX | CLEAR_REJECT | 164 | -0.3697 | 0.259 | 24.81 | 0.1396 | 5.0 | 109 | -0.2414 | 0.444 | None |
+| H-AG2|SP500.DWX | CLEAR_REJECT | 212 | -0.4451 | 0.391 | 25.19 | 0.1804 | 153.0 | 156 | -0.1955 | 0.677 | None |
+| H-AG4|WS30.DWX | CLEAR_REJECT | 174 | -0.5538 | 0.173 | 35.82 | 0.1481 | 29.0 | 161 | -0.5307 | 0.145 | None |
+| H-AG1|SP500.DWX | CLEAR_REJECT | 180 | -1.2026 | 0.01 | 69.46 | 0.1532 | 4.0 | 103 | -0.9861 | 0.028 | None |
+
+Reading. Across four families (H-V1..V4, B1, B2, B3: 67 cells, six hand-written mechanism classes) nothing in the NY/index-cash-session
+role survives the conservative fill model on the .DWX history. The consistent pattern: (1) intraday index mechanics with M5/M15-scale
+stops are cost-dominated at FTMO spread priors; (2) the M15 continuation class shows the only positive SEL drift, but at 0.1-0.2 trades/bd;
+(3) fixed-time reversal/fade rules are wrong-signed or neutral. Consequence (OWNER full-throttle §12-15): the next families come from the
+systematic scanners (Codex cross-symbol scanner `35bbe0bc`, ML rule discovery `08d62fa7`, Kimi wave `9d7458f8`, Antigravity cross-symbol
+set `7636afc9`) rather than from further hand-written single-symbol session rules; Track C runs the N2 NNFX H1 family (`C1`) in parallel.
+
