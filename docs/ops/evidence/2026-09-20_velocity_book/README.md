@@ -178,3 +178,14 @@ COMPILE_OK rows → next tranche → status table).
   C2 PASS. **OWNER reframing 11:0xZ (OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921): H-V4 is a VELOCITY_SLEEVE candidate for FTMO_BOOK,
   not an FTMO solution; its value = marginal book contribution (Δ LCB / Δ time-to-target / Δ dependence), measured by the
   account-level simulator (Codex `e5c49db2`).** Book state v1: `docs/ftmo/FTMO_BOOK_CURRENT.md`.
+- 13:23Z (21.09.) — **QM5_41485 source delivered and in the governed compile lane.** Codex build `b56cb62c` (commit
+  `7702458d41` cherry-picked): 13213 clone with :30-aligned 60-min grid from M30 pairs, minute-resolution anchor inputs, OCO
+  fail-closed, current-SL trail, news retry [15:30,16:30), SPEC validated, 6 grid-contract tests (Friday + both US-DST weeks
+  match the reference simulator); ad-hoc build_check refused by the live-factory guard (correct) → compile via the governed lane.
+  Fable: sets renamed to canonical `<label>_<SYMBOL>_M30_backtest.set`, magic slots bound to the registry (USDJPY 0, EURUSD 1),
+  the second USDJPY arm C3 parked in `sets/arms/` for a universe expansion after the C2 PASS (`d243cbbb80`, `787b0be3c3`);
+  `enqueue-compile` + `release_compile_wave` → compile row `27e941a2` released 12:28Z; the pump seeds the USDJPY C2 canary on
+  COMPILE_OK. Book side: account-level simulator `e5c49db2` accepted (`a8df04a113`): D2g6 BOOK_R_PER_DAY 0.131, 1.34 trades/bd,
+  book-path LCB 0.9194, fail-together cluster {10403, 10700, 41219} XAU; marginal table: 11708 EURUSD CONSIDER_ADD (+0.020 LCB),
+  11421 CONSIDER_ADD with +571 USD DD, 11910/10513 HOLD, all leave-one-out KEEP; H-V4 NOT_YET_MEASURABLE until its Q08 stream
+  exists. Mission Control FTMO BOOK panel live (`8aa2d8c362`).
