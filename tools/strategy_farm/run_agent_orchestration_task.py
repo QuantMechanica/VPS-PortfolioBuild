@@ -119,6 +119,14 @@ CLAUDE_BUDGET_POLICY = FARM_ROOT / "CLAUDE_BUDGET_POLICY.json"
 # lane to one task per 15-min cycle. Override via CLAUDE_BUDGET_POLICY.json
 # ("max_tasks_per_session") or the QM_CLAUDE_MAX_TASKS_PER_SESSION env var.
 CLAUDE_MAX_TASKS_PER_SESSION_DEFAULT = 4
+# Codex pinned fan-out uses the same bounded sequential drain shape as Claude,
+# but its budget is independent of CLAUDE_BUDGET_POLICY.json.  The legacy Codex
+# --max-sessions 1 path does not consult this value and remains task-agnostic.
+CODEX_MAX_TASKS_PER_SESSION_DEFAULT = 4
+# A dirty/diverged legacy slot is never reset or overwritten.  Search a bounded
+# number of slot names for enough clean/current worktrees and fail closed if the
+# requested concurrency cannot be prepared safely.
+PINNED_WORKTREE_SLOT_SCAN_LIMIT = 32
 # Kimi Code CLI (OWNER-DEC-KIMI-INTEGRATION-20260915,
 # KIMI_INTEGRATION_ARCHITECTURE.md §1, §5.4). Pinned path: kimi.exe is NOT on
 # PATH and its auto-updater is on, so the pinned constant plus the adapter's
@@ -850,6 +858,269 @@ def ensure_worktree(agent: str, slot: int) -> dict[str, Any]:
         "returncode": add.returncode,
         "stdout": add.stdout.strip(),
         "stderr": add.stderr.strip(),
+    }
+
+
+def _git_at(path: Path, args: list[str], timeout: int = 60) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(path), *args],
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        creationflags=(subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0),
+    )
+
+
+def _current_canonical_head() -> tuple[str | None, str | None]:
+    proc = run_git(["rev-parse", "HEAD"])
+    head = proc.stdout.strip() if proc.returncode == 0 else ""
+    if not head:
+        return None, (proc.stderr.strip() or "canonical_head_unavailable")
+    return head, None
+
+
+def _repo_is_ancestor(ancestor: str, descendant: str) -> bool:
+    return run_git(["merge-base", "--is-ancestor", ancestor, descendant]).returncode == 0
+
+
+def ensure_current_pinned_worktree(
+    agent: str,
+    slot: int,
+    required_head: str,
+    *,
+    create: bool,
+) -> dict[str, Any]:
+    """Prepare one pinned-session worktree without discarding prior work.
+
+    Existing dirty, ahead, or diverged slots are rejected.  A clean slot may
+    only move by a fast-forward to the exact canonical launch commit. Missing
+    slots are created without ``-B`` so an existing branch is never reset.
+    ``create=False`` performs the same checks as a read-only dry-run.
+    """
+    path = worktree_path(agent, slot)
+    branch = branch_name(agent, slot)
+    base: dict[str, Any] = {
+        "slot": slot,
+        "path": str(path),
+        "branch": branch,
+        "required_head": required_head,
+        "create": create,
+    }
+
+    if path.exists():
+        check = _git_at(path, ["rev-parse", "--show-toplevel"], timeout=20)
+        if check.returncode != 0:
+            return {
+                **base,
+                "ok": False,
+                "reason": "path_exists_but_not_git_worktree",
+                "stderr": check.stderr.strip(),
+            }
+        status = _git_at(path, ["status", "--porcelain"], timeout=60)
+        if status.returncode != 0:
+            return {
+                **base,
+                "ok": False,
+                "reason": "worktree_status_failed",
+                "stderr": status.stderr.strip(),
+            }
+        dirty_rows = [row for row in status.stdout.splitlines() if row.strip()]
+        if dirty_rows:
+            return {
+                **base,
+                "ok": False,
+                "reason": "worktree_dirty_refuse_update",
+                "dirty_path_count": len(dirty_rows),
+            }
+        head_proc = _git_at(path, ["rev-parse", "HEAD"], timeout=20)
+        head = head_proc.stdout.strip() if head_proc.returncode == 0 else ""
+        if not head:
+            return {
+                **base,
+                "ok": False,
+                "reason": "worktree_head_unavailable",
+                "stderr": head_proc.stderr.strip(),
+            }
+        branch_proc = _git_at(path, ["branch", "--show-current"], timeout=20)
+        current_branch = branch_proc.stdout.strip() if branch_proc.returncode == 0 else ""
+        if current_branch != branch:
+            return {
+                **base,
+                "ok": False,
+                "reason": "worktree_branch_mismatch_refuse_update",
+                "head": head,
+                "current_branch": current_branch or None,
+            }
+        if head == required_head:
+            return {**base, "ok": True, "created": False, "head": head, "current": True}
+        if _repo_is_ancestor(required_head, head):
+            return {
+                **base,
+                "ok": False,
+                "reason": "worktree_ahead_refuse_reset",
+                "head": head,
+            }
+        if not _repo_is_ancestor(head, required_head):
+            return {
+                **base,
+                "ok": False,
+                "reason": "worktree_diverged_refuse_update",
+                "head": head,
+            }
+        if not create:
+            return {
+                **base,
+                "ok": True,
+                "created": False,
+                "head": head,
+                "current": False,
+                "would_fast_forward": True,
+            }
+        ff = _git_at(path, ["merge", "--ff-only", required_head], timeout=120)
+        if ff.returncode != 0:
+            return {
+                **base,
+                "ok": False,
+                "reason": "worktree_fast_forward_failed",
+                "head": head,
+                "stderr": ff.stderr.strip(),
+            }
+        advanced = _git_at(path, ["rev-parse", "HEAD"], timeout=20).stdout.strip()
+        return {
+            **base,
+            "ok": advanced == required_head,
+            "created": False,
+            "head": advanced,
+            "current": advanced == required_head,
+            "fast_forwarded": True,
+            "reason": None if advanced == required_head else "worktree_head_mismatch_after_ff",
+        }
+
+    branch_ref = f"refs/heads/{branch}"
+    branch_exists = run_git(["show-ref", "--verify", "--quiet", branch_ref]).returncode == 0
+    branch_head = ""
+    would_fast_forward = False
+    if branch_exists:
+        resolved = run_git(["rev-parse", branch_ref])
+        branch_head = resolved.stdout.strip() if resolved.returncode == 0 else ""
+        if not branch_head:
+            return {**base, "ok": False, "reason": "slot_branch_head_unavailable"}
+        if branch_head == required_head:
+            pass
+        elif _repo_is_ancestor(required_head, branch_head):
+            return {
+                **base,
+                "ok": False,
+                "reason": "slot_branch_ahead_refuse_reset",
+                "branch_head": branch_head,
+            }
+        elif _repo_is_ancestor(branch_head, required_head):
+            would_fast_forward = True
+        else:
+            return {
+                **base,
+                "ok": False,
+                "reason": "slot_branch_diverged_refuse_reset",
+                "branch_head": branch_head,
+            }
+
+    if not create:
+        return {
+            **base,
+            "ok": True,
+            "created": False,
+            "current": not would_fast_forward,
+            "would_create": True,
+            "would_fast_forward": would_fast_forward,
+            "branch_exists": branch_exists,
+            "branch_head": branch_head or None,
+        }
+
+    WORKTREE_ROOT.mkdir(parents=True, exist_ok=True)
+    if branch_exists:
+        added = run_git(["worktree", "add", str(path), branch], timeout=120)
+    else:
+        added = run_git(
+            ["worktree", "add", "-b", branch, str(path), required_head], timeout=120
+        )
+    if added.returncode != 0:
+        return {
+            **base,
+            "ok": False,
+            "reason": "worktree_create_failed",
+            "stderr": added.stderr.strip(),
+        }
+    if would_fast_forward:
+        ff = _git_at(path, ["merge", "--ff-only", required_head], timeout=120)
+        if ff.returncode != 0:
+            return {
+                **base,
+                "ok": False,
+                "reason": "new_worktree_fast_forward_failed",
+                "stderr": ff.stderr.strip(),
+            }
+    head = _git_at(path, ["rev-parse", "HEAD"], timeout=20).stdout.strip()
+    current = head == required_head
+    return {
+        **base,
+        "ok": current,
+        "created": True,
+        "head": head,
+        "current": current,
+        "fast_forwarded": would_fast_forward,
+        "reason": None if current else "new_worktree_missing_required_head",
+    }
+
+
+def prepare_pinned_worktree_slots(
+    agent: str,
+    requested: int,
+    *,
+    create: bool,
+) -> dict[str, Any]:
+    """Return up to ``requested`` safe/current slot ids, skipping legacy dirt."""
+    if requested <= 0:
+        return {
+            "ok": True,
+            "reason": "no_slots_requested",
+            "requested": requested,
+            "slot_ids": [],
+            "accepted": [],
+            "rejected": [],
+        }
+    required_head, error = _current_canonical_head()
+    if not required_head:
+        return {
+            "ok": False,
+            "reason": "canonical_head_unavailable",
+            "error": error,
+            "slot_ids": [],
+            "rejected": [],
+        }
+    accepted: list[dict[str, Any]] = []
+    rejected: list[dict[str, Any]] = []
+    for slot in range(1, PINNED_WORKTREE_SLOT_SCAN_LIMIT + 1):
+        result = ensure_current_pinned_worktree(
+            agent, slot, required_head, create=create
+        )
+        if result.get("ok"):
+            accepted.append(result)
+            if len(accepted) >= requested:
+                break
+        else:
+            rejected.append(result)
+    return {
+        "ok": len(accepted) >= requested,
+        "reason": (
+            "safe_slots_ready"
+            if len(accepted) >= requested
+            else "insufficient_safe_worktree_slots"
+        ),
+        "required_head": required_head,
+        "requested": requested,
+        "slot_ids": [int(row["slot"]) for row in accepted],
+        "accepted": accepted,
+        "rejected": rejected,
     }
 
 
@@ -1743,6 +2014,21 @@ def _task_exec_lease_key(task_id: str) -> str:
     return f"agent_task_exec:{task_id}"
 
 
+def _exec_lease_owner_alive(owner_host: str, owner_pid: int) -> bool | None:
+    """Return local liveness; ``None`` means the owner cannot be proved dead."""
+    if not owner_host or owner_host.casefold() != socket.gethostname().casefold():
+        return None
+    if owner_pid <= 0:
+        return None
+    try:
+        identity = get_process_identity(owner_pid)
+    except Exception:
+        return None
+    if identity is None:
+        return False
+    return bool(identity.get("is_running", True))
+
+
 def acquire_task_exec_lease(
     agent: str,
     task_id: str,
@@ -1755,9 +2041,9 @@ def acquire_task_exec_lease(
     """Atomically claim one task for one concrete worker session.
 
     Fail-closed: any storage error refuses the claim so a visibility incident
-    spawns FEWER sessions, never a duplicate. A crashed owner's lease is stolen
-    only after TTL expiry (``acquire_spawn_lease`` replaces solely when
-    ``expires_at <= now``), which is the crash fail-safe.
+    spawns FEWER sessions, never a duplicate. An expired owner-scoped lease is
+    reclaimed only when its local owner PID is proven dead. A live PID, remote
+    host, or unreadable owner identity remains held even after TTL expiry.
     """
     observed = (now or dt.datetime.now(dt.UTC)).astimezone(dt.UTC).replace(microsecond=0)
     token = session_token or uuid.uuid4().hex
@@ -1765,21 +2051,60 @@ def acquire_task_exec_lease(
     host = owner_host or socket.gethostname()
     task_key = _task_exec_lease_key(task_id)
     expires = observed + dt.timedelta(minutes=HEADLESS_SESSION_LEASE_TTL_MINUTES)
+    existing: dict[str, Any] | None = None
+    refusal_reason: str | None = None
     try:
         conn = agent_router.connect(FARM_ROOT)
         try:
             conn.execute("BEGIN IMMEDIATE")
-            acquired = agent_router.agent_scopes.acquire_spawn_lease(
-                conn,
-                task_key,
-                agent,
-                observed.isoformat(timespec="seconds"),
-                expires.isoformat(timespec="seconds"),
-                owner_token=token,
-                owner_pid=pid,
-                owner_host=host,
-                fail_open_on_error=False,
-            )
+            agent_router.agent_scopes._ensure_spawn_lease_schema(conn)
+            row = conn.execute(
+                """SELECT task_key, agent_id, acquired_at, expires_at,
+                          owner_token, owner_pid, owner_host, renewed_at
+                   FROM spawn_leases WHERE task_key=?""",
+                (task_key,),
+            ).fetchone()
+            if row is not None:
+                existing = dict(row)
+                existing_expiry = _parse_dt(str(existing.get("expires_at") or ""))
+                if existing_expiry is not None and existing_expiry <= observed:
+                    old_pid = int(existing.get("owner_pid") or 0)
+                    old_host = str(existing.get("owner_host") or "")
+                    old_token = str(existing.get("owner_token") or "")
+                    alive = _exec_lease_owner_alive(old_host, old_pid)
+                    if alive is False and old_token:
+                        removed = conn.execute(
+                            """DELETE FROM spawn_leases
+                               WHERE task_key=? AND owner_token=?
+                                 AND owner_pid=? AND owner_host=? AND expires_at=?""",
+                            (
+                                task_key,
+                                old_token,
+                                old_pid,
+                                old_host,
+                                str(existing.get("expires_at") or ""),
+                            ),
+                        )
+                        if not removed.rowcount:
+                            refusal_reason = "task_exec_lease_stale_release_raced"
+                    elif alive is True:
+                        refusal_reason = "task_exec_lease_expired_owner_pid_alive"
+                    else:
+                        refusal_reason = "task_exec_lease_stale_owner_unverifiable"
+            if refusal_reason is None:
+                acquired = agent_router.agent_scopes.acquire_spawn_lease(
+                    conn,
+                    task_key,
+                    agent,
+                    observed.isoformat(timespec="seconds"),
+                    expires.isoformat(timespec="seconds"),
+                    owner_token=token,
+                    owner_pid=pid,
+                    owner_host=host,
+                    fail_open_on_error=False,
+                )
+            else:
+                acquired = False
             conn.commit()
         finally:
             conn.close()
@@ -1801,7 +2126,9 @@ def acquire_task_exec_lease(
         "expires_at": expires.isoformat(timespec="seconds"),
     }
     if not acquired:
-        info["reason"] = "task_exec_lease_held_by_live_session"
+        info["reason"] = refusal_reason or "task_exec_lease_held_by_live_session"
+        if existing is not None:
+            info["existing"] = existing
     return bool(acquired), info
 
 
@@ -1988,6 +2315,20 @@ def _claude_max_tasks_per_session() -> int:
     return CLAUDE_MAX_TASKS_PER_SESSION_DEFAULT
 
 
+def _pinned_max_tasks_per_session(agent: str) -> int:
+    if agent == "claude":
+        return _claude_max_tasks_per_session()
+    if agent == "codex":
+        env_raw = os.environ.get("QM_CODEX_MAX_TASKS_PER_SESSION", "").strip()
+        if env_raw:
+            try:
+                return max(1, int(env_raw))
+            except ValueError:
+                pass
+        return CODEX_MAX_TASKS_PER_SESSION_DEFAULT
+    return 1
+
+
 def _claude_non_skipped_runs_today(now: dt.datetime, count_from: dt.datetime | None = None) -> list[dt.datetime]:
     local_now = now.astimezone()
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -2100,7 +2441,7 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
         governed_caps = agent_router._governed_routing_capabilities()
         rows = con.execute(
             """
-            SELECT id, task_type, priority, assigned_agent, budget_class,
+            SELECT id, state, task_type, priority, assigned_agent, budget_class,
                    required_capabilities_json, required_skills_json, payload_json
             FROM agent_tasks
             WHERE (assigned_agent=? AND state IN ('TODO','IN_PROGRESS'))
@@ -2155,6 +2496,7 @@ def _quota_lane_candidates(agent: str) -> tuple[list[dict[str, Any]], str]:
             candidates.append(
                 {
                     "task_id": row["id"],
+                    "state": str(row["state"]),
                     "task_type": row["task_type"],
                     "priority": int(row["priority"]),
                     "assigned": bool(assigned),
@@ -2237,8 +2579,11 @@ def _quota_lane_check(
         "candidate_count": len(candidates),
         "allowed_task_count": len(allowed),
         "blocked_task_count": len(denied),
+        "allowed_task_ids": [str(candidate.get("task_id") or "") for candidate, _ in allowed],
         "selected_task": {
-            key: value for key, value in selected_pair[0].items() if key != "payload"
+            key: value
+            for key, value in selected_pair[0].items()
+            if key not in {"payload", "state"}
         },
         "selected_decision": selected_pair[1],
         "allowed_invocations": [
@@ -2296,6 +2641,7 @@ def _run_agent_with_session_lease(
     max_sessions: int,
     session_lease: dict[str, Any] | None,
 ) -> dict[str, Any]:
+    codex_pinned_requested = agent == "codex" and max_sessions > 1
     if agent == "claude" and CLAUDE_DISABLED_FLAG.exists():
         return {
             "agent": agent,
@@ -2352,8 +2698,19 @@ def _run_agent_with_session_lease(
             max_sessions,
             max(1, int(quota_check.get("allowed_task_count") or 1)),
         )
+        if agent == "codex" and not codex_pinned_requested:
+            # The established --max-sessions 1 result contract predates pinned
+            # task ids. Keep that path byte-identical; only the new fan-out path
+            # consumes this internal eligibility detail.
+            quota_check = {
+                key: value
+                for key, value in quota_check.items()
+                if key != "allowed_task_ids"
+            }
     session_count = max(1, max_sessions)
-    if agent != "claude":
+    if agent not in ("claude", "codex"):
+        session_count = 1
+    if agent == "codex" and not codex_pinned_requested:
         session_count = 1
     if agent == "kimi":
         # Hard cap, explicit (belt to the non-claude rule above): the OAuth
@@ -2366,17 +2723,61 @@ def _run_agent_with_session_lease(
             return None
         return dict(slot_invocations[min(slot_index, len(slot_invocations) - 1)] or {})
 
-    # --- Claude fan-out + drain fix (OWNER-DEC-CBE-20260915 §35; review c1) ---
-    # Only the Claude lane can spawn >1 concurrent session. Each session binds to
-    # exactly one distinct task via a pid-owned exec-lease BEFORE spawning, so
-    # --max-sessions is an upper bound on CONCURRENT leased tasks, never an N*M
-    # multiplier over the shared task list (§35). M2 (review c1): after a session
-    # finishes its task it leases the NEXT eligible task and drains sequentially
-    # up to max_tasks_per_session / the run time budget, so --max-sessions 1 does
-    # not degrade the lane to one task per 15-min cycle. M1 (review c1): a
-    # candidate-query failure fails CLOSED (spawns nothing) rather than re-opening
-    # the unpinned fan-out. Codex/Gemini/Kimi keep their historical single
-    # task-agnostic session path untouched.
+    def task_invocation(task_id: str, slot_index: int) -> dict[str, Any] | None:
+        for invocation in slot_invocations:
+            if str(invocation.get("task_id") or "") == str(task_id):
+                return dict(invocation)
+        if codex_pinned_requested:
+            # Preserve task attribution even if an allowed gate decision did
+            # not need an explicit model override. Never reuse another task's
+            # invocation merely because it occupied the same worktree slot.
+            return {"task_id": str(task_id)}
+        return slot_invocation(slot_index)
+
+    # A Codex >1 dry-run is a read-only pinned plan: no exec lease, worktree
+    # creation, model booking or child process.  The legacy --max-sessions 1
+    # path below remains byte-for-byte prompt compatible and task-agnostic.
+    if codex_pinned_requested and dry_run:
+        candidates, candidate_status = _quota_lane_candidates("codex")
+        if candidate_status != "ok":
+            return {
+                "agent": "codex",
+                "ok": True,
+                "skipped": True,
+                "dry_run": True,
+                "reason": "codex_candidate_query_unavailable",
+                "candidate_status": candidate_status,
+                "planned_task_ids": [],
+            }
+        assigned_task_ids = [
+            str(candidate["task_id"])
+            for candidate in candidates
+            if candidate.get("assigned") and candidate.get("state") == "IN_PROGRESS"
+        ]
+        planned_count = min(session_count, len(assigned_task_ids))
+        worktree_plan = prepare_pinned_worktree_slots(
+            "codex", planned_count, create=False
+        )
+        planned_slots = list(worktree_plan.get("slot_ids") or [])[:planned_count]
+        planned_count = min(planned_count, len(planned_slots))
+        return {
+            "agent": "codex",
+            "ok": bool(worktree_plan.get("ok")) or planned_count == 0,
+            "returncode": 0 if (worktree_plan.get("ok") or planned_count == 0) else 1,
+            "dry_run": True,
+            "dry_run_verified": bool(worktree_plan.get("ok")) or planned_count == 0,
+            "reason": "codex_pinned_fanout_plan",
+            "requested_max_sessions": max_sessions,
+            "max_sessions": planned_count,
+            "planned_task_ids": assigned_task_ids[:planned_count],
+            "planned_slots": planned_slots,
+            "worktree_plan": worktree_plan,
+        }
+
+    # --- Pinned fan-out + bounded drain (Claude and Codex >1) ----------------
+    # Each concurrent session owns exactly one task exec-lease before spawn.
+    # After it exits, the same slot may lease the next quota-eligible assigned
+    # task, bounded by max_tasks_per_session and the controller deadline.
     if agent == "claude" and not dry_run:
         return _run_claude_session_chains(
             dry_run=dry_run,
@@ -2385,11 +2786,25 @@ def _run_agent_with_session_lease(
             session_count=session_count,
             session_lease=session_lease,
             slot_invocation=slot_invocation,
+            task_invocation=task_invocation,
             quota_check=quota_check,
         )
+    if codex_pinned_requested and not dry_run:
+        return _run_pinned_session_chains(
+            agent="codex",
+            dry_run=dry_run,
+            stale_minutes=stale_minutes,
+            timeout_minutes=timeout_minutes,
+            session_count=session_count,
+            session_lease=session_lease,
+            slot_invocation=slot_invocation,
+            task_invocation=task_invocation,
+            quota_check=quota_check,
+            require_current_worktrees=True,
+        )
 
-    # Non-claude lanes (and the claude dry-run preview) run task-agnostic
-    # sessions with no exec-lease pin - their historical behaviour, unchanged.
+    # Codex --max-sessions 1, Gemini/Kimi, and the Claude dry-run preview retain
+    # the historical task-agnostic single-session behavior.
     if session_count == 1:
         results = [
             run_agent_slot(
@@ -2442,67 +2857,139 @@ def _run_claude_session_chains(
     session_count: int,
     session_lease: dict[str, Any] | None,
     slot_invocation: Any,
+    task_invocation: Any | None = None,
     quota_check: dict[str, Any] | None,
 ) -> dict[str, Any]:
-    """Drive the Claude lane's concurrent, self-chaining sessions (review c1).
+    """Backward-compatible wrapper for the original Claude pinned path."""
+    return _run_pinned_session_chains(
+        agent="claude",
+        dry_run=dry_run,
+        stale_minutes=stale_minutes,
+        timeout_minutes=timeout_minutes,
+        session_count=session_count,
+        session_lease=session_lease,
+        slot_invocation=slot_invocation,
+        task_invocation=task_invocation,
+        quota_check=quota_check,
+        require_current_worktrees=False,
+    )
 
-    M1 — if the candidate query is unavailable (``db_missing``/``db_error:*``),
-    fail CLOSED: spawn nothing rather than an unpinned task-agnostic session (the
-    pre-fix bug re-opened the N*M fan-out on this branch when --max-sessions > 1).
 
-    M2 — seed up to ``session_count`` concurrent sessions with distinct tasks,
-    then let each session lease the NEXT eligible task after finishing its current
-    one and drain sequentially until no unpinned task remains,
-    ``max_tasks_per_session`` is reached, or the run time budget is spent. Every
-    task is leased at most once per launcher run (never two sessions on one task):
-    claiming is serialized under a lock and worked task-ids are excluded from
-    further claims.
+def _run_pinned_session_chains(
+    *,
+    agent: str,
+    dry_run: bool,
+    stale_minutes: int,
+    timeout_minutes: int,
+    session_count: int,
+    session_lease: dict[str, Any] | None,
+    slot_invocation: Any,
+    task_invocation: Any | None,
+    quota_check: dict[str, Any] | None,
+    require_current_worktrees: bool,
+) -> dict[str, Any]:
+    """Drive disjoint pid-owned task chains for one supported premium lane.
+
+    Candidate visibility failures fail closed.  Initial tasks are disjoint and
+    leased before any child spawn.  Claiming the next task is serialized, and
+    every task id is worked at most once per controller run.  Codex additionally
+    requires a clean worktree containing the canonical launch commit; dirty or
+    diverged legacy slots are skipped without reset or deletion.
     """
-    candidates, candidate_status = _quota_lane_candidates("claude")
-    if candidate_status != "ok":
-        # M1 fail-closed: a candidate visibility failure must never spawn an
-        # unpinned session. TTL-owned leases plus this guard keep the launcher
-        # from reintroducing the duplicate fan-out under a transient DB error.
+    prior_candidate_status = str((quota_check or {}).get("candidate_status") or "ok")
+    if prior_candidate_status != "ok":
         return {
-            "agent": "claude",
+            "agent": agent,
             "ok": True,
             "skipped": True,
-            "reason": "claude_candidate_query_unavailable",
+            "reason": f"{agent}_candidate_query_unavailable",
+            "candidate_status": prior_candidate_status,
+            "quota_gate_check": quota_check,
+        }
+    candidates, candidate_status = _quota_lane_candidates(agent)
+    if candidate_status != "ok":
+        return {
+            "agent": agent,
+            "ok": True,
+            "skipped": True,
+            "reason": f"{agent}_candidate_query_unavailable",
             "candidate_status": candidate_status,
             "quota_gate_check": quota_check,
         }
 
     owner_pid = os.getpid()
-    max_tasks_per_session = _claude_max_tasks_per_session()
+    max_tasks_per_session = _pinned_max_tasks_per_session(agent)
     deadline = time.monotonic() + max(1, timeout_minutes) * 60
     claimed_lock = threading.Lock()
     claimed_ids: set[str] = set()
     leased_task_ids: list[str] = []
+    quota_allowed_ids = {
+        str(task_id)
+        for task_id in ((quota_check or {}).get("allowed_task_ids") or [])
+        if str(task_id)
+    }
+
+    def _eligible_ids(rows: list[dict[str, Any]]) -> list[str]:
+        ids: list[str] = []
+        for candidate in rows:
+            if not candidate.get("assigned"):
+                continue
+            if agent == "codex" and candidate.get("state") != "IN_PROGRESS":
+                continue
+            task_id = str(candidate.get("task_id") or "")
+            if not task_id:
+                continue
+            if quota_allowed_ids and task_id not in quota_allowed_ids:
+                continue
+            ids.append(task_id)
+        return ids
+
+    assigned_task_ids = _eligible_ids(candidates)
+    if not assigned_task_ids:
+        return {
+            "agent": agent,
+            "ok": True,
+            "skipped": True,
+            "reason": f"no_quota_eligible_assigned_{agent}_task",
+            "candidate_status": candidate_status,
+            "quota_gate_check": quota_check,
+        }
+
+    worktree_plan: dict[str, Any] | None = None
+    if require_current_worktrees:
+        requested_slots = min(session_count, len(assigned_task_ids))
+        worktree_plan = prepare_pinned_worktree_slots(
+            agent, requested_slots, create=True
+        )
+        slot_ids = [int(slot) for slot in (worktree_plan.get("slot_ids") or [])]
+        if not slot_ids:
+            return {
+                "agent": agent,
+                "ok": True,
+                "skipped": True,
+                "reason": "no_safe_codex_worktree_slots",
+                "candidate_status": candidate_status,
+                "quota_gate_check": quota_check,
+                "worktree_plan": worktree_plan,
+            }
+    else:
+        slot_ids = list(range(1, session_count + 1))
 
     def _claim_next() -> dict[str, Any] | None:
-        # Serialize claiming so two concurrent sessions never take the same task
-        # and the claimed set stays consistent. Re-query candidates each call so
-        # tasks that became eligible mid-run are seen and worked ones drop out.
         with claimed_lock:
-            fresh, status = _quota_lane_candidates("claude")
+            fresh, status = _quota_lane_candidates(agent)
             if status != "ok":
                 return None
-            for cand in fresh:
-                if not cand.get("assigned"):
-                    continue
-                tid = str(cand.get("task_id") or "")
-                if not tid or tid in claimed_ids:
+            for tid in _eligible_ids(fresh):
+                if tid in claimed_ids:
                     continue
                 acquired, lease = acquire_task_exec_lease(
-                    "claude", tid, owner_pid=owner_pid
+                    agent, tid, owner_pid=owner_pid
                 )
                 if acquired:
                     claimed_ids.add(tid)
                     leased_task_ids.append(tid)
                     return lease
-                # tid is pinned by a foreign live session: skip it this cycle
-                # (do NOT mark it claimed - another launcher owns it, and it may
-                # free up on a later run).
             return None
 
     def _run_chain(slot: int, initial_lease: dict[str, Any]) -> list[dict[str, Any]]:
@@ -2510,13 +2997,18 @@ def _run_claude_session_chains(
         lease: dict[str, Any] | None = initial_lease
         while lease is not None:
             try:
+                invocation = (
+                    task_invocation(str(lease["task_id"]), max(0, slot - 1))
+                    if task_invocation is not None
+                    else slot_invocation(max(0, slot - 1))
+                )
                 res = run_agent_slot(
-                    "claude",
+                    agent,
                     slot,
                     dry_run,
                     stale_minutes,
                     timeout_minutes,
-                    slot_invocation(slot - 1),
+                    invocation,
                     session_lease,
                     lease["task_id"],
                     lease,
@@ -2534,54 +3026,51 @@ def _run_claude_session_chains(
             lease = _claim_next()
         return chain_results
 
-    # Seed each concurrent session with one distinct task (disjoint initial set),
-    # bounded by session_count; this also fixes the reported max_sessions to the
-    # real concurrent-session count rather than the requested cap.
-    assigned_task_ids = [str(c["task_id"]) for c in candidates if c.get("assigned")]
     initial_leases = claim_task_exec_leases(
-        "claude", assigned_task_ids, session_count, owner_pid=owner_pid
+        agent, assigned_task_ids, min(session_count, len(slot_ids)), owner_pid=owner_pid
     )
     for lease in initial_leases:
         claimed_ids.add(str(lease["task_id"]))
         leased_task_ids.append(str(lease["task_id"]))
 
     if not initial_leases:
-        # Every eligible task is already pinned by a live sibling/foreign session
-        # (or none is assigned): spawn nothing rather than a duplicate. This is a
-        # safe throughput failure, never a collision.
         return {
-            "agent": "claude",
+            "agent": agent,
             "ok": True,
             "skipped": True,
-            "reason": "no_unpinned_claude_task",
+            "reason": f"no_unpinned_{agent}_task",
             "candidate_status": candidate_status,
             "assigned_candidates": len(assigned_task_ids),
             "quota_gate_check": quota_check,
+            "worktree_plan": worktree_plan,
         }
 
     concurrent = len(initial_leases)
+    active_slots = slot_ids[:concurrent]
     results: list[dict[str, Any]] = []
     if concurrent == 1:
-        results = _run_chain(1, initial_leases[0])
+        results = _run_chain(active_slots[0], initial_leases[0])
     else:
         with ThreadPoolExecutor(max_workers=concurrent) as executor:
             futures = [
-                executor.submit(_run_chain, slot, initial_leases[slot - 1])
-                for slot in range(1, concurrent + 1)
+                executor.submit(_run_chain, slot, lease)
+                for slot, lease in zip(active_slots, initial_leases)
             ]
             for future in futures:
                 results.extend(future.result())
 
     ok = all(bool(r.get("ok")) for r in results)
     return {
-        "agent": "claude",
+        "agent": agent,
         "ok": ok,
         "returncode": 0 if ok else 1,
         "max_sessions": concurrent,
+        "slots": active_slots,
         "tasks_worked": len(leased_task_ids),
         "max_tasks_per_session": max_tasks_per_session,
         "leased_task_ids": leased_task_ids,
         "quota_gate_check": quota_check,
+        "worktree_plan": worktree_plan,
         "results": results,
     }
 
