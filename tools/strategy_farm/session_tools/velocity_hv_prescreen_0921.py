@@ -220,7 +220,10 @@ def simulate_day(spec, m1, times, m15, atr_keys, atr, day: dt.date, floor_cap):
                     break
             jj += 1
         if res is None:
-            px = m1[jj][1] if jj < len(times) else m1[-1][4]  # open of the first bar at/after the flat time
+            # Time-stop exit at the CLOSE of the final closed bar before the flat time (2026-09-21 fix
+            # after critique 9caac5c7: on holiday early closes the "first bar at/after flat" was the next
+            # session's open, i.e. an overnight exit the mechanism never allows).
+            px = m1[jj - 1][4]
             res = d * (px - entry) / w
         rec["arms"][arm] = {"gross_r": res, "net_r": res - c_r, "hold_min": (times[min(jj, len(times) - 1)] - entry_t) / 60}
     rec["state"] = "trade"
