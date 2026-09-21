@@ -2,7 +2,7 @@
 
 Authority: OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`). Fable launches
 autonomously when the critical preflight checks are green; the sole mandatory OWNER approval remains the paid FTMO Challenge purchase.
-Updated by Fable at every material change; last update **2026-09-21 20:0xZ** (account decision A recorded).
+Updated by Fable at every material change; last update **2026-09-21 20:4xZ** (genesis tooling delivered; shadow book; Track B B1 result).
 
 ## §Y fields
 
@@ -25,7 +25,7 @@ Updated by Fable at every material change; last update **2026-09-21 20:0xZ** (ac
 | ROLLOVER | **BLOCKED** — Prague-calendar helper + KS_DAY_ROLLOVER event part of `d6189118`; runtime + rollover-event + Daily-Loss-anchor + book-generation-identity proofs after deployment | |
 | HARNESS_V2 | **IN_PROGRESS** — Codex `7088da77` (prio 84, exempt) incl. §L golden test vs MT5 Every Real Tick | |
 | NEWS_TIME_ARCHIVE | **IN_PROGRESS** — Codex `a36a5983` (prio 82, exempt); impact bound pending | |
-| GENESIS_MANIFEST | **BLOCKED** — tooling ticket `94a15624` TODO (prio 72, exempt); procedure fixed in `docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md` v0 | |
+| GENESIS_MANIFEST | **TOOLING READY** (Codex `94a15624` APPROVED: `genesis_manifest.py build/verify/seal-launch`, `sunday_preflight.py`; D2g6 rehearsal verify PASS 0 drift, preflight NO_GO 17 GREEN / 8 RED / 3 NOT_CHECKABLE as expected for the pre-Sunday trial) — the Sunday manifest itself is built Saturday per the runbook | `docs/ftmo/genesis/`, `2026-09-21_ftmo_genesis_manifest_tooling/` |
 | DEMO_ACCOUNT_IDENTITY (runbook §1) | **DECIDED A** (OWNER 2026-09-21 ~19:55Z, receipt `46ea4491`, Claude execution task `90847e73`): fresh FTMO Free-Trial account. **Credentials arrive Sunday 2026-09-27 (OWNER creates the account that morning; needed by 12:00Z):** login/server/password into `.private/secrets/ftmo_demo_gen2_20260927.md` (git-ignored) | runbook §1, §3 timing |
 | FTMO_BOOK_INCUMBENT | D2g6 = PRE_SUNDAY_LIVE_TRIAL since 2026-09-18 04:50Z (3.5 validation days, not representative, pulse WARN ks_day_anchor_missing 0/6) | `D:/QM/reports/state/ftmo_demo_cycle.json`, `ftmo_trial_pulse.json` |
 | FTMO_BOOK_SHADOW | **D2g6 + 12710 + 20266 XTIUSD D1** (2.34 %): LCB 0.8805 vs 0.8648, first payout 460 vs 492 bd, max-loss 0.017 — pending symbol-input rebuild + identity proof (Codex `273f2de8`); Sunday only if the proof lands Saturday, else next generation | `FTMO_BOOK_CURRENT.md` §2, pool sweep evidence |
