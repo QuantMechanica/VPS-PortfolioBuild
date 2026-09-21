@@ -153,3 +153,10 @@ open > 0.50 ATR past the retest close; stop = retest extreme ∓ 0.10 ATR, min 0
 target 1.5 R; exit at the next open after the first completed close back through the level; one entry per symbol/day; no re-arm.
 16 cells, family bar 0.05 / 16 = 0.0031; same SEL/VAL rule as B1/B2.
 
+### B3 result (2026-09-21T20:23:25Z, `docs/research/ftmo_intake/2026-09-21_br_nnfx/results/`)
+
+**0 of 16 cells pass; 0 survivors.** The retest package rarely completes (invalidated/expired on 70-85 % of armed days, density <= 0.18/bd) and
+where it fires the M5-ATR stops are cost-dominated (index cells -0.6 to -2.2 R per trade, median hold 7-11 min; controls fail identically).
+Same class as B1 H-B3/H-B4. BR1-BR3 = CLEAR_REJECT for the velocity role; a D1-ATR-scale / hourly-window re-specification would be a new
+lineage (B4 candidate) only after a density calibration.
+
