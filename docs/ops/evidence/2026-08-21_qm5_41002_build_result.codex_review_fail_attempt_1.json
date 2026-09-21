@@ -1,0 +1,27 @@
+{
+  "ea_id": "QM5_41002",
+  "slug": "robert-pardo-checkmate-breakout-engine",
+  "ea_dir": "C:\\QM\\repo\\framework\\EAs\\QM5_41002_robert-pardo-checkmate-breakout-engine",
+  "mq5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41002_robert-pardo-checkmate-breakout-engine\\QM5_41002_robert-pardo-checkmate-breakout-engine.mq5",
+  "ex5_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41002_robert-pardo-checkmate-breakout-engine\\QM5_41002_robert-pardo-checkmate-breakout-engine.ex5",
+  "spec_md_path": "C:\\QM\\repo\\framework\\EAs\\QM5_41002_robert-pardo-checkmate-breakout-engine\\SPEC.md",
+  "setfiles_generated": [
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41002_robert-pardo-checkmate-breakout-engine\\sets\\QM5_41002_robert-pardo-checkmate-breakout-engine_EURUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41002_robert-pardo-checkmate-breakout-engine\\sets\\QM5_41002_robert-pardo-checkmate-breakout-engine_GBPUSD.DWX_H4_backtest.set",
+    "C:\\QM\\repo\\framework\\EAs\\QM5_41002_robert-pardo-checkmate-breakout-engine\\sets\\QM5_41002_robert-pardo-checkmate-breakout-engine_USDJPY.DWX_H4_backtest.set"
+  ],
+  "symbols_registered": [
+    "EURUSD.DWX",
+    "GBPUSD.DWX",
+    "USDJPY.DWX"
+  ],
+  "magic_base": 410020000,
+  "compile_succeeded": true,
+  "build_check_passed": true,
+  "build_check_report_path": "D:\\QM\\reports\\framework\\21\\build_check_20260821_172305.json",
+  "smoke_result": "deferred_p2_smoke",
+  "smoke_report_path": null,
+  "smoke_skipped_reason": "custom_history_isolation_requires_worker_bound_work_item",
+  "blocked_reason": "",
+  "open_questions": []
+}
