@@ -226,6 +226,32 @@ class SetfileIdIgnoredTest(unittest.TestCase):
             self.assertIn("qm_ea_id", ignored)
 
 
+class SymbolTransportInputTest(unittest.TestCase):
+    def test_new_matching_host_symbol_is_non_economic_transport_input(self):
+        with TemporaryDirectory() as td:
+            c = _Case(Path(td), _DEALS, list(_DEALS))
+            with c.reb_set.open("a", encoding="utf-8") as handle:
+                handle.write("strategy_host_symbol=EURUSD\n")
+            p = c.proof()
+            self.assertEqual(p["verdict"], iep.VERDICT_EXACT,
+                             p["not_equivalent_reasons"])
+            ignored = p["checks"]["setfile"]["ignored_transport_inputs"]
+            self.assertEqual([row["key"] for row in ignored],
+                             ["strategy_host_symbol"])
+            self.assertEqual(ignored[0]["tested_symbol"], "EURUSD.DWX")
+
+    def test_new_nonmatching_host_symbol_remains_disqualifying(self):
+        with TemporaryDirectory() as td:
+            c = _Case(Path(td), _DEALS, list(_DEALS))
+            with c.reb_set.open("a", encoding="utf-8") as handle:
+                handle.write("strategy_host_symbol=GBPUSD\n")
+            p = c.proof()
+            self.assertEqual(p["verdict"], iep.VERDICT_NOT)
+            mismatches = p["checks"]["setfile"]["mismatches"]
+            self.assertEqual([row["key"] for row in mismatches],
+                             ["strategy_host_symbol"])
+
+
 class VerifyTamperTest(unittest.TestCase):
     def test_verify_detects_tampered_report(self):
         with TemporaryDirectory() as td:

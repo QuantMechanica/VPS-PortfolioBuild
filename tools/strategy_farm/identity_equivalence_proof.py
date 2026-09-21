@@ -81,6 +81,14 @@ _INI_EXEMPT = {"expert", "report", "expertparameters"}
 # set-file parameter keys that carry the identity binding (expected to differ).
 _SETFILE_ID_KEYS = {"qm_ea_id"}
 
+# A hard-coded-symbol parent cannot carry this input: introducing it is the
+# required transport change that makes the rebuilt identity venue-portable.
+# It is non-economic for an identity canary only when its value names the exact
+# tester symbol after removing the framework's ``.DWX`` history suffix.  Keep
+# this exception deliberately narrower than the general parameter comparison;
+# every other newly added or changed strategy input remains disqualifying.
+_SETFILE_TRANSPORT_KEYS = {"strategy_host_symbol"}
+
 _EPS = 1e-9
 
 
@@ -251,20 +259,48 @@ def _is_id_bearing(key: str, val: str, tokens: List[str]) -> bool:
     return False
 
 
+def _history_symbol_base(value: Optional[str]) -> Optional[str]:
+    if value is None:
+        return None
+    normalized = value.strip().upper()
+    if normalized.endswith(".DWX"):
+        normalized = normalized[:-4]
+    return normalized or None
+
+
 def compare_setfiles(o: Dict[str, str], n: Dict[str, str],
-                     tokens: List[str]) -> Dict[str, Any]:
+                     tokens: List[str], *,
+                     tested_symbol: Optional[str] = None) -> Dict[str, Any]:
     mismatches = []
     ignored = []
+    ignored_transport = []
     keys = set(o) | set(n)
     for k in sorted(keys):
         ov, nv = o.get(k), n.get(k)
         if _is_id_bearing(k, ov or nv or "", tokens):
             ignored.append({"key": k, "original": ov, "rebuilt": nv})
             continue
+        if (
+            k.lower() in _SETFILE_TRANSPORT_KEYS
+            and ov is None
+            and _history_symbol_base(nv) == _history_symbol_base(tested_symbol)
+        ):
+            ignored_transport.append({
+                "key": k,
+                "original": ov,
+                "rebuilt": nv,
+                "tested_symbol": tested_symbol,
+                "reason": "required_symbol_transport_input_matches_tester_symbol",
+            })
+            continue
         if ov != nv:
             mismatches.append({"key": k, "original": ov, "rebuilt": nv})
-    return {"mismatches": mismatches, "ignored_id_bearing": ignored,
-            "match": not mismatches}
+    return {
+        "mismatches": mismatches,
+        "ignored_id_bearing": ignored,
+        "ignored_transport_inputs": ignored_transport,
+        "match": not mismatches,
+    }
 
 
 def compare_deals(od: List[Dict[str, str]], nd: List[Dict[str, str]]) -> Dict[str, Any]:
@@ -521,7 +557,12 @@ def build_proof(original: Dict[str, Any], rebuilt: Dict[str, Any],
                 tool_sha: Optional[str] = None) -> Dict[str, Any]:
     ini_r = compare_tester_ini(original["_ini"], rebuilt["_ini"])
     tokens = _id_tokens(original.get("ea_label", ""), rebuilt.get("ea_label", ""))
-    set_r = compare_setfiles(original["_setfile"], rebuilt["_setfile"], tokens)
+    set_r = compare_setfiles(
+        original["_setfile"],
+        rebuilt["_setfile"],
+        tokens,
+        tested_symbol=original["_ini"].get("Symbol"),
+    )
     deal_r = compare_deals(original["_deals"], rebuilt["_deals"])
     verdict, reasons = _decide(ini_r, set_r, deal_r)
 
