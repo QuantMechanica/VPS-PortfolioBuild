@@ -18617,3 +18617,6 @@ ea_id,ea_slug,symbol_slot,symbol,magic,reserved_at,reserved_by,status
 11880,continuation-method-ema50-williams,3,AUDUSD.DWX,118800003,2026-09-20,Codex governed allocator,active
 41485,ny-preopen-range-breakout-jpy,0,USDJPY.DWX,414850000,2026-09-21,Codex governed allocator,active
 41485,ny-preopen-range-breakout-jpy,1,EURUSD.DWX,414850001,2026-09-21,Codex governed allocator,active
+41486,connors-rsi2-sma200-mean-reversion-d1-v2,0,EURUSD.DWX,414860000,2026-09-21,Codex governed allocator,active
+41486,connors-rsi2-sma200-mean-reversion-d1-v2,1,GBPUSD.DWX,414860001,2026-09-21,Codex governed allocator,active
+41486,connors-rsi2-sma200-mean-reversion-d1-v2,2,USDJPY.DWX,414860002,2026-09-21,Codex governed allocator,active

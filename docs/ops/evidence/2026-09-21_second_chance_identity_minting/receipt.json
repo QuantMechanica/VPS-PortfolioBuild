@@ -1,0 +1,122 @@
+{
+ "generated_at_utc": "2026-09-21T20:59:19Z",
+ "cards": [
+  {
+   "pending": "PENDING_B0EF5D66_connors-rsi2-sma200-mean-reversion-d1.md",
+   "slug": "connors-rsi2-sma200-mean-reversion-d1-v2",
+   "strategy_id": "278c6e13-0726-5779-83fe-a38f5a2e480f",
+   "pf": "1.50",
+   "dd": "5.0",
+   "task": "35f8c652",
+   "reasoning": "Fable 2026-09-21 Track C RUN_NOW (OWNER-DEC-FTMO-FULL-THROTTLE-20260921 sections 4, 17): Second-Chance v2 of QM5_11563 under a NEW identity per the accepted revision b0ef5d66 (clean rerun, never reopen the old verdict); R1 PASS Connors-Alvarez 2009 book lineage; R2 PASS deterministic RSI(2)/SMA200/ATR rules; R3 PASS DWX FX majors D1; R4 PASS ML-free; governed build -> Q02 decides.",
+   "reserve": {
+    "rc": 0,
+    "stdout": "{\n  \"count\": 1,\n  \"registry\": \"C:\\\\QM\\\\repo\\\\framework\\\\registry\\\\ea_id_registry.csv\",\n  \"reserved\": true,\n  \"rows\": [\n    {\n      \"created_at\": \"2026-09-21\",\n      \"ea_id\": \"41486\",\n      \"owner\": \"Fable\",\n      \"slug\": \"connors-rsi2-sma200-mean-reversion-d1-v2\",\n      \"status\": \"active\",\n      \"strategy_id\": \"278c6e13-0726-5779-83fe-a38f5a2e480f\"\n    }\n  ]\n}\n",
+    "stderr": ""
+   },
+   "ea_id": "41486",
+   "approve": {
+    "rc": 0,
+    "stdout": "{\n  \"amended\": false,\n  \"approved\": true,\n  \"card_content_sha256\": \"3138b898f4aa3bc5e521f037878f827b90384e71dcb6f63a5b62a57cc1ce805b\",\n  \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\\\QM5_41486_connors-rsi2-sma200-mean-reversion-d1-v2.md\",\n  \"card_sha256\": \"67cf8ffc91e498cae98f7d093bdbc3a6b9338f76c099bce99620523f4c141f40\",\n  \"ea_id\": \"QM5_41486\",\n  \"next_action_hint\": \"Complete the governed identity/magic precondition task before build dispatch\",\n  \"prior_card_sha256\": \"55789b6642e286eb47560c3b6fe7caff361a2fbd1b8e70857cdc2623ca9d4cbb\",\n  \"reasoning\": \"Fable 2026-09-21 Track C RUN_NOW (OWNER-DEC-FTMO-FULL-THROTTLE-20260921 sections 4, 17): Second-Chance v2 of QM5_11563 under a NEW identity per the accepted revision b0ef5d66 (clean rerun, never reopen the old verdict); R1 PASS Connors-Alvarez 2009 book lineage; R2 PASS deterministic RSI(2)/SMA200/ATR rules; R3 PASS DWX FX majors D1; R4 PASS ML-free; governed build -> Q02 decides.\",\n  \"registry_precondition\": {\n    \"precheck\": {\n      \"action\": \"GOVERNED_ALLOCATE\",\n      \"active_magic_rows\": 0,\n      \"classification\": \"never_allocated\",\n      \"ea_directory_exists\": false,\n      \"ea_id\": \"QM5_41486\",\n      \"ea_id_numeric\": 41486,\n      \"identity_registry_rows\": 1,\n      \"invalid_target_symbols\": [],\n      \"other_status_magic_rows\": 0,\n      \"ready\": false,\n      \"retired_magic_rows\": 0,\n      \"slug\": \"connors-rsi2-sma200-mean-reversion-d1-v2\",\n      \"target_symbols\": [\n        \"EURUSD.DWX\",\n        \"GBPUSD.DWX\",\n        \"USDJPY.DWX\"\n      ],\n      \"target_symbols_valid\": true,\n      \"total_magic_rows\": 0\n    },\n    \"task\": {\n      \"enqueued\": true,\n      \"state\": \"TODO\",\n      \"task_id\": \"c572b6c2-363d-4227-bde6-a2768bbea535\",\n      \"task_type\": \"ops_issue\"\n    }\n  }\n}\n",
+    "stderr": ""
+   },
+   "approved": true,
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41486_connors-rsi2-sma200-mean-reversion-d1-v2.md",
+   "registry_precondition": {
+    "precheck": {
+     "action": "GOVERNED_ALLOCATE",
+     "active_magic_rows": 0,
+     "classification": "never_allocated",
+     "ea_directory_exists": false,
+     "ea_id": "QM5_41486",
+     "ea_id_numeric": 41486,
+     "identity_registry_rows": 1,
+     "invalid_target_symbols": [],
+     "other_status_magic_rows": 0,
+     "ready": false,
+     "retired_magic_rows": 0,
+     "slug": "connors-rsi2-sma200-mean-reversion-d1-v2",
+     "target_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX"
+     ],
+     "target_symbols_valid": true,
+     "total_magic_rows": 0
+    },
+    "task": {
+     "enqueued": true,
+     "state": "TODO",
+     "task_id": "c572b6c2-363d-4227-bde6-a2768bbea535",
+     "task_type": "ops_issue"
+    }
+   },
+   "mirror": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41486_connors-rsi2-sma200-mean-reversion-d1-v2.md",
+   "magic_alloc": {
+    "rc": 2,
+    "stdout": "{\n  \"reason\": \"dirty_registry_abort: M framework/registry/ea_id_registry.csv\",\n  \"schema\": \"qm.governed-magic-allocation/v1\",\n  \"status\": \"aborted\"\n}\n",
+    "stderr": ""
+   },
+   "pending_parked_to": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\superseded_by_v2_identity\\PENDING_B0EF5D66_connors-rsi2-sma200-mean-reversion-d1.md"
+  },
+  {
+   "pending": "PENDING_F05399DE_ft-binhv45.md",
+   "slug": "ft-binhv45-v2",
+   "strategy_id": "1580128f-e465-5454-bb97-a7572a6cfd6d",
+   "pf": "1.35",
+   "dd": "4.0",
+   "task": "a8177dca",
+   "reasoning": "Fable 2026-09-21 Track C RUN_NOW (OWNER-DEC-FTMO-FULL-THROTTLE-20260921 sections 4, 17): Second-Chance v2 of retired QM5_11211 under a NEW identity per the accepted revision f05399de (new lineage Q00->Q02, M1->M5); R1 PASS freqtrade BinHV45 public source with commit hash; R2 PASS deterministic Bollinger(40,2)/ATR rules; R3 PASS DWX FX majors + XAU M5; R4 PASS ML-free; governed build -> Q02 decides.",
+   "reserve": {
+    "rc": 0,
+    "stdout": "{\n  \"count\": 1,\n  \"registry\": \"C:\\\\QM\\\\repo\\\\framework\\\\registry\\\\ea_id_registry.csv\",\n  \"reserved\": true,\n  \"rows\": [\n    {\n      \"created_at\": \"2026-09-21\",\n      \"ea_id\": \"41487\",\n      \"owner\": \"Fable\",\n      \"slug\": \"ft-binhv45-v2\",\n      \"status\": \"active\",\n      \"strategy_id\": \"1580128f-e465-5454-bb97-a7572a6cfd6d\"\n    }\n  ]\n}\n",
+    "stderr": ""
+   },
+   "ea_id": "41487",
+   "approve": {
+    "rc": 0,
+    "stdout": "{\n  \"amended\": false,\n  \"approved\": true,\n  \"card_content_sha256\": \"8845a18f7fa99a68de7c26d79806f015b2fb32a44a80601764c03083ebeaf727\",\n  \"card_path\": \"D:\\\\QM\\\\strategy_farm\\\\artifacts\\\\cards_approved\\\\QM5_41487_ft-binhv45-v2.md\",\n  \"card_sha256\": \"90f821e25ce7c89d1887623c56fc6c8c9a6fbaa3e43efaeefc1e0a6c1fe1f7c6\",\n  \"ea_id\": \"QM5_41487\",\n  \"next_action_hint\": \"Complete the governed identity/magic precondition task before build dispatch\",\n  \"prior_card_sha256\": \"4c23b61ef5620dd12c4de9f0a1c2b8d05c178ed9cfeb5f93b9950fe798aff0b4\",\n  \"reasoning\": \"Fable 2026-09-21 Track C RUN_NOW (OWNER-DEC-FTMO-FULL-THROTTLE-20260921 sections 4, 17): Second-Chance v2 of retired QM5_11211 under a NEW identity per the accepted revision f05399de (new lineage Q00->Q02, M1->M5); R1 PASS freqtrade BinHV45 public source with commit hash; R2 PASS deterministic Bollinger(40,2)/ATR rules; R3 PASS DWX FX majors + XAU M5; R4 PASS ML-free; governed build -> Q02 decides.\",\n  \"registry_precondition\": {\n    \"precheck\": {\n      \"action\": \"GOVERNED_ALLOCATE\",\n      \"active_magic_rows\": 0,\n      \"classification\": \"never_allocated\",\n      \"ea_directory_exists\": false,\n      \"ea_id\": \"QM5_41487\",\n      \"ea_id_numeric\": 41487,\n      \"identity_registry_rows\": 1,\n      \"invalid_target_symbols\": [],\n      \"other_status_magic_rows\": 0,\n      \"ready\": false,\n      \"retired_magic_rows\": 0,\n      \"slug\": \"ft-binhv45-v2\",\n      \"target_symbols\": [\n        \"EURUSD.DWX\",\n        \"GBPUSD.DWX\",\n        \"USDJPY.DWX\",\n        \"XAUUSD.DWX\"\n      ],\n      \"target_symbols_valid\": true,\n      \"total_magic_rows\": 0\n    },\n    \"task\": {\n      \"enqueued\": true,\n      \"state\": \"TODO\",\n      \"task_id\": \"2f2f8190-f5b3-44ca-8346-06ed8e892224\",\n      \"task_type\": \"ops_issue\"\n    }\n  }\n}\n",
+    "stderr": ""
+   },
+   "approved": true,
+   "card_path": "D:\\QM\\strategy_farm\\artifacts\\cards_approved\\QM5_41487_ft-binhv45-v2.md",
+   "registry_precondition": {
+    "precheck": {
+     "action": "GOVERNED_ALLOCATE",
+     "active_magic_rows": 0,
+     "classification": "never_allocated",
+     "ea_directory_exists": false,
+     "ea_id": "QM5_41487",
+     "ea_id_numeric": 41487,
+     "identity_registry_rows": 1,
+     "invalid_target_symbols": [],
+     "other_status_magic_rows": 0,
+     "ready": false,
+     "retired_magic_rows": 0,
+     "slug": "ft-binhv45-v2",
+     "target_symbols": [
+      "EURUSD.DWX",
+      "GBPUSD.DWX",
+      "USDJPY.DWX",
+      "XAUUSD.DWX"
+     ],
+     "target_symbols_valid": true,
+     "total_magic_rows": 0
+    },
+    "task": {
+     "enqueued": true,
+     "state": "TODO",
+     "task_id": "2f2f8190-f5b3-44ca-8346-06ed8e892224",
+     "task_type": "ops_issue"
+    }
+   },
+   "mirror": "C:\\QM\\repo\\artifacts\\cards_approved\\QM5_41487_ft-binhv45-v2.md",
+   "magic_alloc": {
+    "rc": 2,
+    "stdout": "{\n  \"reason\": \"dirty_registry_abort: M framework/registry/ea_id_registry.csv\",\n  \"schema\": \"qm.governed-magic-allocation/v1\",\n  \"status\": \"aborted\"\n}\n",
+    "stderr": ""
+   },
+   "pending_parked_to": "D:\\QM\\strategy_farm\\artifacts\\cards_review\\superseded_by_v2_identity\\PENDING_F05399DE_ft-binhv45.md"
+  }
+ ]
+}
