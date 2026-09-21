@@ -2,7 +2,7 @@
 
 Authority: OWNER-DEC-FTMO-FINAL-MEGA-20260921 (`decisions/2026-09-21_owner_ftmo_final_mega_prompt_sunday_demo.md`). Fable launches
 autonomously when the critical preflight checks are green; the sole mandatory OWNER approval remains the paid FTMO Challenge purchase.
-Updated by Fable at every material change; last update **2026-09-21 18:4xZ**.
+Updated by Fable at every material change; last update **2026-09-21 19:2xZ**.
 
 ## §Y fields
 
@@ -25,7 +25,8 @@ Updated by Fable at every material change; last update **2026-09-21 18:4xZ**.
 | ROLLOVER | **BLOCKED** — Prague-calendar helper + KS_DAY_ROLLOVER event part of `d6189118`; runtime + rollover-event + Daily-Loss-anchor + book-generation-identity proofs after deployment | |
 | HARNESS_V2 | **IN_PROGRESS** — Codex `7088da77` (prio 84, exempt) incl. §L golden test vs MT5 Every Real Tick | |
 | NEWS_TIME_ARCHIVE | **IN_PROGRESS** — Codex `a36a5983` (prio 82, exempt); impact bound pending | |
-| GENESIS_MANIFEST | **BLOCKED** — tooling ticket `94a15624` TODO (prio 72, exempt) | |
+| GENESIS_MANIFEST | **BLOCKED** — tooling ticket `94a15624` TODO (prio 72, exempt); procedure fixed in `docs/ftmo/genesis/SUNDAY_LAUNCH_RUNBOOK_2026-09-27.md` v0 | |
+| DEMO_ACCOUNT_IDENTITY (runbook §1) | **OPEN — OWNER input by Friday 2026-09-25 12:00Z:** A = fresh FTMO Free-Trial account (client-area login = human MFA; hand Fable login + server, password via the secure channel) or B = same account 1514536732 as a new generation. Auffangregel default: B | runbook §1 |
 | FTMO_BOOK_INCUMBENT | D2g6 = PRE_SUNDAY_LIVE_TRIAL since 2026-09-18 04:50Z (3.5 validation days, not representative, pulse WARN ks_day_anchor_missing 0/6) | `D:/QM/reports/state/ftmo_demo_cycle.json`, `ftmo_trial_pulse.json` |
 | FTMO_BOOK_SHADOW | = incumbent (no resolved addition); shadow candidate 11708 EURUSD D1 | `FTMO_BOOK_CURRENT.md` §2 |
 | SHADOW_BOOK_BEST_PENDING_SLEEVE | 11708 EURUSD D1 — SHADOW_BOOK, financed marginal LCB ≈ 0 to +0.01 (unresolved) | `2026-09-21_ftmo_11708_sign_change_reconciliation/` |
