@@ -1,0 +1,46 @@
+{
+  "schema": "qm.codex-build-identity/v1",
+  "task_id": "8b09ed22-3d26-41a0-8eb3-d7df0bd66331",
+  "ea_id": "QM5_39007",
+  "ea_label": "QM5_39007_forexfactory-100-pips-early-bird-breakout",
+  "card_path": "C:/QM/repo/strategy-seeds/cards/approved/QM5_39007_forexfactory-100-pips-early-bird-breakout.md",
+  "g0_status": "APPROVED",
+  "build_check_passed": true,
+  "mq5_path": "C:/QM/repo/framework/EAs/QM5_39007_forexfactory-100-pips-early-bird-breakout/QM5_39007_forexfactory-100-pips-early-bird-breakout.mq5",
+  "mq5_sha256": "4279a0fd50827b6f54510a8a2a0168153656c60f15b969fbfee407519bc5389d",
+  "ex5_path": "C:/QM/repo/framework/EAs/QM5_39007_forexfactory-100-pips-early-bird-breakout/QM5_39007_forexfactory-100-pips-early-bird-breakout.ex5",
+  "ex5_sha256": "d35c8a62f75e51b05903401088d5a296e1ede3a3e8330388e0c849165e51538c",
+  "setfiles_generated": [
+    "C:/QM/repo/framework/EAs/QM5_39007_forexfactory-100-pips-early-bird-breakout/sets/QM5_39007_forexfactory-100-pips-early-bird-breakout_EURUSD.DWX_M15_backtest.set",
+    "C:/QM/repo/framework/EAs/QM5_39007_forexfactory-100-pips-early-bird-breakout/sets/QM5_39007_forexfactory-100-pips-early-bird-breakout_GBPUSD.DWX_M15_backtest.set"
+  ],
+  "compile_work_item_id": "fd0e0d66-03c4-4c16-9318-97bd10f42289",
+  "compile_evidence_path": "D:/QM/reports/work_items/fd0e0d66-03c4-4c16-9318-97bd10f42289/QM5_39007/COMPILE_EA/compile_evidence.json",
+  "compile_result": "PASS",
+  "compile_errors": 0,
+  "compile_warnings": 0,
+  "framework_input_pin_audit": {
+    "predicate": "EA_FRAMEWORK_INPUT_PINNED",
+    "ok": true,
+    "hit_count": 0
+  },
+  "risk_contract": {
+    "RISK_FIXED": 1000.0,
+    "RISK_PERCENT": 0.0
+  },
+  "verification": {
+    "approved_card_registry_magic_preflight": "PASS",
+    "start_hour_box_wiring": "PASS",
+    "focused_tests": "7 passed",
+    "build_guardrails_max_news_stale_336": "PASS",
+    "governed_compile": "COMPILE_OK",
+    "evidence_markdown": "C:/QM/repo/docs/ops/evidence/2026-09-21_qm5_39007_rework_closure.md"
+  },
+  "safety": {
+    "pipeline_phase_run": false,
+    "terminal_started_or_interrupted": false,
+    "t_live_touched": false,
+    "autotrading_touched": false
+  },
+  "verdict": "REVIEW_READY_GOVERNED_BUILD_IDENTITY_VERIFIED"
+}
