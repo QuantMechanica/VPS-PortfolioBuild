@@ -193,3 +193,9 @@ stops are cost-dominated at FTMO spread priors; (2) the M15 continuation class s
 systematic scanners (Codex cross-symbol scanner `35bbe0bc`, ML rule discovery `08d62fa7`, Kimi wave `9d7458f8`, Antigravity cross-symbol
 set `7636afc9`) rather than from further hand-written single-symbol session rules; Track C runs the N2 NNFX H1 family (`C1`) in parallel.
 
+### C1 (N2) result (2026-09-21T20:46:34Z) — Track C, NNFX H1 lean stack
+
+0 of 8 cells pass (session-flat and all-hours, EURUSD/GBPUSD/USDJPY/XAUUSD): E[R] −0.07 to −0.14 R after costs at 0.27-0.61 trades/bd —
+a genuine economic rejection, not signal starvation. Details in `docs/research/ftmo_intake/2026-09-21_br_nnfx/results/README.md`.
+Running total 2026-09-21: 5 families, 89 cells, 0 survivors under the conservative fill model.
+

@@ -38,3 +38,24 @@ trades — noise at that count. (4) Peer confirmation (BR1) removes ~45 % of ent
 Disposition: BR1/BR2/BR3 are CLEAR_REJECT for the FTMO velocity role at these mechanics; the Codex tickets a42aa6f7/2eba7ef7/ff6826f5 stay
 BACKLOG with this result attached; no mechanisation. A re-specification with ATR(D1)-scale stops and hourly retest windows would be a new
 lineage (B4 candidate), to be pre-registered only if the density calibration supports >= 0.4 trades/bd.
+
+## N2 (Track C family C1) result — NNFX H1 McGinley(14)/SSL(10)/WAE, session-flat vs all-hours (2026-09-21T20:46:34Z)
+
+Engine: `tools/strategy_farm/session_tools/velocity_family_f5_n2_0921.py` (F2 conservative fills; two-leg TP1 50 % at 1 ATR + breakeven;
+SSL-flip runner exit; all-hours arm charged with the 2026-09-18 financing rate table). N-GAPS section 5 rules verbatim; ATR(14,H1) = simple
+14-bar mean. Output sha256 `9a452c7fff005e7ef27fc86bad91b5febdce2ee61e017396233c8e3bd9b32cf9`. **0 of 8 cells pass; 0 survivors** (expected false survivors 0.17). The session-flat arm does not
+rescue the stack: every cell is negative after costs (E[R] −0.07 to −0.14 R, PF 0.69–0.82) on both arms and both periods; USDJPY all-hours
+VAL +0.007 R is noise. Density is adequate (0.27-0.61 trades/bd), so this is a genuine economic rejection of the lean NNFX H1 core, not a
+signal-starvation artefact. The N-RECOVERY packet (cd3b761c) keeps its value as component recovery, not as a sleeve expectation.
+
+| Cell | State | TP1 hit share | SEL n | E[R] | PF | worst-year DD R | trades/bd | median hold min | median cost R | VAL n | E[R] | PF |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| N2|H1_SESSION_FLAT|GBPUSD.DWX | CLEAR_REJECT | 0.473 | 345 | -0.0653 | 0.819 | 11.21 | 0.2936 | 120.0 | 0.0251 | 205 | -0.0914 | 0.783 |
+| N2|H1_ALL_HOURS|USDJPY.DWX | CLEAR_REJECT | 0.532 | 717 | -0.0794 | 0.811 | 31.77 | 0.6102 | 330.0 | 0.0335 | 435 | 0.0068 | 1.016 |
+| N2|H1_SESSION_FLAT|USDJPY.DWX | CLEAR_REJECT | 0.442 | 324 | -0.0816 | 0.796 | 17.34 | 0.2757 | 156.0 | 0.0359 | 187 | -0.0177 | 0.951 |
+| N2|H1_ALL_HOURS|EURUSD.DWX | CLEAR_REJECT | 0.512 | 662 | -0.1067 | 0.745 | 30.86 | 0.5634 | 268.5 | 0.0349 | 426 | -0.1817 | 0.599 |
+| N2|H1_SESSION_FLAT|EURUSD.DWX | CLEAR_REJECT | 0.491 | 320 | -0.1153 | 0.718 | 20.76 | 0.2723 | 111.0 | 0.0333 | 203 | -0.1005 | 0.757 |
+| N2|H1_SESSION_FLAT|XAUUSD.DWX | CLEAR_REJECT | 0.435 | 321 | -0.1188 | 0.726 | 24.16 | 0.2732 | 120.0 | 0.0166 | 226 | -0.1109 | 0.716 |
+| N2|H1_ALL_HOURS|GBPUSD.DWX | CLEAR_REJECT | 0.511 | 685 | -0.1319 | 0.688 | 31.43 | 0.583 | 279.0 | 0.0285 | 449 | -0.1276 | 0.711 |
+| N2|H1_ALL_HOURS|XAUUSD.DWX | CLEAR_REJECT | 0.506 | 698 | -0.1354 | 0.705 | 35.05 | 0.594 | 300.0 | 0.0183 | 497 | -0.1141 | 0.736 |
+
