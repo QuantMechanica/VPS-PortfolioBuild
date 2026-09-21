@@ -544,3 +544,24 @@ For non-trivial work, return:
   bottleneck signal. Capacity posture: Fable direction/selection/integration, Codex implementation/simulation/MQL5/research tooling
   (fresh capacity for BOTH tracks), Antigravity adversarial critique + alternative edge generation, Kimi when quota returns,
   deterministic Python bulk prescreens, MT5 falsification. Report fields §21 at every material report.
+
+### OWNER-DEC-FTMO-FULL-THROTTLE-20260921 — Full-throttle FTMO R&D; Sunday = checkpoint, not a research freeze (OWNER 2026-09-21 ~21:05Z)
+
+- **Record:** `decisions/2026-09-21_owner_ftmo_full_throttle_research.md`; verbatim
+  `docs/ops/evidence/2026-09-21_ftmo_full_throttle_override/owner_directive_verbatim.md`. Never park useful research because Sunday is
+  near; valid park reasons only: provider unavailable, missing data, invalid evidence, semantic defect, unsafe resource collision,
+  unsatisfied dependency, materially lower expected value than all running work. Classify parked items RUN_NOW / REAL_BLOCKER /
+  LOW_EXPECTED_VALUE / DUPLICATE / REJECT.
+- **Primary pre-payout KPI: `P80_DAYS_TO_FIRST_NET_FTMO_PAYOUT`** (earliest calendar day by which >= 80 percent of realistic
+  account-level paths have paid out; NOT_ACHIEVED if fewer ever do) + P50/P90 days, P_PAYOUT_WITHIN_30/45/60/90D, P_PAYOUT_EVER;
+  Pareto frontier x = P80 days, y = P_PAYOUT_EVER; every surviving sleeve reports DELTA_P80_DAYS + delta payout probability / max loss /
+  daily loss / cost stress. Push the payout-time distribution left while keeping payout probability high.
+- **Three continuous tracks:** A launch/production readiness (critical, never monopolising), B new edge discovery (cross-market P0,
+  session effects, complex multi-condition and multi-symbol rules, offline statistical/ML discovery -> fully mechanical rules, original
+  hypotheses), C existing-edge improvement/recovery (NNFX unresolved, Second-Chance, optimisation with objective DELTA_P80, session
+  variants, symbol expansion, risk weighting, recombination). Codex simultaneously on production and offensive research; Antigravity
+  generating + attacking; **Kimi discovery wave when it returns (~midday 2026-09-22, ticket 9d7458f8)**; full symbol universe; multiple
+  independent hypotheses per role; families continue (B4/B5...); data-mining discipline (count everything; holdouts, FDR, deflated
+  statistics, bootstrap, pre-registration, neighbouring robustness); fail fast (90-99 percent may die before MT5); section-28 hypothesis
+  format for every survivor; `ACTIVE_EDGE_DISCOVERY_PROGRAMMES = 0` with capacity and a slow book = orchestration failure; track
+  HYPOTHESIS_TO_CANARY_TIME. Sunday incumbent and shadow stay separate.
