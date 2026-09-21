@@ -126,3 +126,14 @@ COMPILE_OK rows → next tranche → status table).
   (`reconcile_compile_rollout_holds --apply`, 8/8). Build lane unblocked (origin registry, DRAFT DXZ add-10700 record,
   41002 review archive committed `2b4427a0a3`). Q05 v2: independent critique ab50ed9a (Claude seat, creator=Codex) +
   gated shadow-only 61-row RISK_FIXED=500 measurement 160843a0 (no gate change).
+- 07:23Z (21.09.) — Codex cross-vendor critique `1614737c` of the Fable hypotheses H-V1/H-V2/H-V3 returned: **H-V1 REVISE,
+  H-V2 REVISE, H-V3 REJECT (current draft)** plus a confirmed provenance defect (sealed manifests bind baseline hashes
+  that differ from the stored `baseline_extract.json` files → none of the three verifies, none is card-admissible).
+  Verbatim verdict + Fable verification: `hv1_hv3_critique_1614737c.md`. Disposition: Fable re-authors 0009/0010 with
+  frozen target arms (1.5x / 2.0x), explicit shift-1/new-bar contract, false-break precedence, named thin-range floor,
+  one America/New_York economic anchor mapped deterministically to server time, and a measured fire-count / range-width
+  / cost_R prescreen per symbol and arm from bar data (0 factory hours); 0011 → ledger `retired`. Second Codex critic
+  round before any card or build. FTMO demo: kill-switch day-anchor diagnosis `4fd8222f` = EA_CONFIG_DEFECT (six D2g6
+  sleeves run anchor_offset 0 / raw equity, no book tag; the 21.09 baseline 99,813.22 is right only by coincidence, no
+  rule breach) → Codex implementation ticket (governed FTMO initializer + Prague-calendar helper + KS_DAY_ROLLOVER event
+  + pulse state check; no deploy), Fable deploys after review. No new Velocity find; 41484 successors stay parked.
