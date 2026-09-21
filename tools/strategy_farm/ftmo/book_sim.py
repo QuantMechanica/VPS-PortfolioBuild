@@ -42,7 +42,7 @@ import math
 import re
 import statistics
 import sys
-from dataclasses import asdict, dataclass, replace
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 from zoneinfo import ZoneInfo
@@ -82,6 +82,51 @@ class CostConfig:
     spread_bps_rt: float = 0.0
     slippage_usd_per_lot_rt: float = 0.0
     margin_rate: float = 0.01
+    spread_bps_rt_by_symbol: Mapping[str, float] = field(default_factory=dict)
+    slippage_usd_per_lot_rt_by_symbol: Mapping[str, float] = field(default_factory=dict)
+
+
+def _validated_symbol_costs(value: Mapping[str, Any], label: str) -> dict[str, float]:
+    if not isinstance(value, Mapping):
+        raise ValueError(f"{label}: expected a JSON object")
+    costs: dict[str, float] = {}
+    for raw_symbol, raw_cost in value.items():
+        symbol = _normalize_symbol(raw_symbol)
+        if symbol in costs:
+            raise ValueError(f"{label}: duplicate normalized symbol {symbol}")
+        if isinstance(raw_cost, bool):
+            raise ValueError(f"{label}.{raw_symbol}: expected a non-negative finite number")
+        try:
+            cost = float(raw_cost)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"{label}.{raw_symbol}: expected a non-negative finite number"
+            ) from exc
+        if not math.isfinite(cost) or cost < 0.0:
+            raise ValueError(f"{label}.{raw_symbol}: expected a non-negative finite number")
+        costs[symbol] = cost
+    return dict(sorted(costs.items()))
+
+
+def _symbol_cost(configured: Mapping[str, float], symbol: str, uniform: float) -> float:
+    """Return one additive stress value without ever stacking table + uniform."""
+    if configured:
+        normalized = _validated_symbol_costs(configured, "symbol_cost_table")
+        return float(normalized.get(_normalize_symbol(symbol), 0.0))
+    return max(0.0, float(uniform))
+
+
+def _load_symbol_cost_argument(value: str | None, label: str) -> dict[str, float]:
+    if not value:
+        return {}
+    try:
+        # Parse an inline object before treating the value as a path.  On
+        # Windows, characters that are valid JSON (notably ``{`` and ``:``)
+        # can make ``Path.is_file`` fail before json.loads gets a chance.
+        payload = json.loads(value) if value.lstrip().startswith("{") else _load_json(Path(value))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"{label}: invalid JSON object or JSON file: {exc}") from exc
+    return _validated_symbol_costs(payload, label)
 
 
 @dataclass(frozen=True)
@@ -327,8 +372,16 @@ def prepare_sleeve(
         )
         volume = abs(float(row.get("volume") or 0.0))
         notional = abs(float(row.get("notional") or 0.0))
-        spread = max(0.0, float(cost.spread_bps_rt)) / 10000.0 * notional
-        slippage = max(0.0, float(cost.slippage_usd_per_lot_rt)) * volume
+        spread_rate = _symbol_cost(
+            cost.spread_bps_rt_by_symbol, spec.symbol, cost.spread_bps_rt
+        )
+        slippage_rate = _symbol_cost(
+            cost.slippage_usd_per_lot_rt_by_symbol,
+            spec.symbol,
+            cost.slippage_usd_per_lot_rt,
+        )
+        spread = spread_rate / 10000.0 * notional
+        slippage = slippage_rate * volume
         net = gross + swap - commission - spread - slippage
         raw_mae = min(float(row.get("mae_acct") or 0.0), 0.0)
         mae = min(net, raw_mae - commission - spread - slippage)
@@ -384,6 +437,10 @@ def prepare_sleeve(
         "swap_sources": sorted(swap_sources),
         "financing_library_status": financing_status,
         "financing_label": financing_label,
+        "additional_cost_contract": (
+            "configured spread/slippage is an additive venue delta only; "
+            "the source stream P&L already embeds Darwinex execution costs"
+        ),
     }
 
 
@@ -707,6 +764,12 @@ def _public_sleeves(sleeves: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]
             )
         } | {
             "trades": len(trades),
+            "additional_spread_stress_usd": round(
+                sum(float(t["spread_stress_scaled"]) for t in trades), 6
+            ),
+            "additional_slippage_stress_usd": round(
+                sum(float(t["slippage_stress_scaled"]) for t in trades), 6
+            ),
             "entry_span_utc": [
                 dt.datetime.fromtimestamp(min(t["entry_time"] for t in trades), dt.timezone.utc).isoformat(),
                 dt.datetime.fromtimestamp(max(t["entry_time"] for t in trades), dt.timezone.utc).isoformat(),
@@ -1344,6 +1407,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--human-mirror", type=Path, default=DEFAULT_HUMAN_MIRROR)
     parser.add_argument("--spread-bps-rt", type=float, default=0.0)
     parser.add_argument("--slippage-usd-per-lot-rt", type=float, default=0.0)
+    parser.add_argument(
+        "--spread-bps-rt-by-symbol",
+        help="JSON object or JSON-file path of additive FTMO-minus-Darwinex bps by symbol",
+    )
+    parser.add_argument(
+        "--slippage-usd-per-lot-rt-by-symbol",
+        help="JSON object or JSON-file path of additive FTMO-minus-Darwinex USD/lot by symbol",
+    )
     parser.add_argument("--margin-rate", type=float, default=0.01)
     parser.add_argument("--n-paths", type=int, default=2000)
     parser.add_argument(
@@ -1378,7 +1449,31 @@ def main(argv: Sequence[str] | None = None) -> int:
     financing_label = FINANCED if args.financed_streams is not None else UNFINANCED
 
     as_of = _parse_as_of(args.as_of)
-    cost = CostConfig(args.spread_bps_rt, args.slippage_usd_per_lot_rt, args.margin_rate)
+    try:
+        spread_by_symbol = _load_symbol_cost_argument(
+            args.spread_bps_rt_by_symbol, "spread_bps_rt_by_symbol"
+        )
+        slippage_by_symbol = _load_symbol_cost_argument(
+            args.slippage_usd_per_lot_rt_by_symbol,
+            "slippage_usd_per_lot_rt_by_symbol",
+        )
+    except ValueError as exc:
+        parser.error(str(exc))
+    if spread_by_symbol and args.spread_bps_rt != 0.0:
+        parser.error(
+            "--spread-bps-rt and --spread-bps-rt-by-symbol are mutually exclusive"
+        )
+    if slippage_by_symbol and args.slippage_usd_per_lot_rt != 0.0:
+        parser.error(
+            "--slippage-usd-per-lot-rt and --slippage-usd-per-lot-rt-by-symbol are mutually exclusive"
+        )
+    cost = CostConfig(
+        spread_bps_rt=args.spread_bps_rt,
+        slippage_usd_per_lot_rt=args.slippage_usd_per_lot_rt,
+        margin_rate=args.margin_rate,
+        spread_bps_rt_by_symbol=spread_by_symbol,
+        slippage_usd_per_lot_rt_by_symbol=slippage_by_symbol,
+    )
     roster_payload, specs = load_roster_specs(
         args.roster, stream_root=args.stream_root, stream_manifest=args.stream_manifest,
         require_sha=True, financed_stream_root=args.financed_streams,

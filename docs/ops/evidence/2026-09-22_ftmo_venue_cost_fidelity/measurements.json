@@ -1,0 +1,1665 @@
+{
+  "eligible_spread_bps_rt_by_symbol": {},
+  "generated_at_utc": "2026-09-22T00:00:00+00:00",
+  "method": {
+    "anti_double_charge": "Only an exact-minute FTMO-minus-Darwinex delta is eligible; Q08 profit already embeds Darwinex execution.",
+    "quantiles": [
+      "p50",
+      "p75",
+      "p90"
+    ],
+    "session_bucket": "UTC hour; 21Z, 22Z and 23Z are repeated under rollover_21_23z",
+    "unit": "round-trip additive bps; one quoted spread is the full open-to-close spread burden"
+  },
+  "schema": "qm.ftmo-venue-cost-fidelity/v1",
+  "slippage_coverage": "UNMEASURED_ALL_SYMBOLS",
+  "slippage_usd_per_lot_rt_by_symbol": {},
+  "spec": {
+    "path": "C:\\QM\\repo\\docs\\ops\\evidence\\2026-09-22_ftmo_venue_cost_fidelity\\measurement_spec.json",
+    "sha256": "a4e7c278642308e3f2e9a00d04ee43ec11f6579c158e693605a19f16fad4b254"
+  },
+  "status": "PARTIAL_ABSTAIN",
+  "symbols": [
+    {
+      "comparison": {
+        "additional_spread_bps_rt": null,
+        "charge_rule": "max(0, p90(FTMO_bps - DXZ_bps)) on exact matched minutes",
+        "descriptive_difference_is_not_charge_eligible": true,
+        "descriptive_independent_period_p90_difference_bps": null,
+        "matched_minute_count": 0,
+        "minimum_required": 60,
+        "status": "ABSTAIN_DXZ_SPREAD_UNMEASURED"
+      },
+      "darwinex": {
+        "measurement": {
+          "by_utc_hour": {},
+          "row_count": 0,
+          "status": "UNMEASURED"
+        },
+        "source": null
+      },
+      "ftmo": {
+        "measurement": {
+          "by_utc_hour": {
+            "00": {
+              "p50": 0.19237552,
+              "p75": 0.3121386,
+              "p90": 0.56208848,
+              "row_count": 4200
+            },
+            "01": {
+              "p50": 0.18827546,
+              "p75": 0.19521781,
+              "p90": 0.25614196,
+              "row_count": 4199
+            },
+            "02": {
+              "p50": 0.18821817,
+              "p75": 0.1954875,
+              "p90": 0.30907105,
+              "row_count": 4200
+            },
+            "03": {
+              "p50": 0.18824002,
+              "p75": 0.24444579,
+              "p90": 0.30899408,
+              "row_count": 4199
+            },
+            "04": {
+              "p50": 0.18863713,
+              "p75": 0.25252206,
+              "p90": 0.43800919,
+              "row_count": 4196
+            },
+            "05": {
+              "p50": 0.18871901,
+              "p75": 0.2526357,
+              "p90": 0.49298483,
+              "row_count": 4200
+            },
+            "06": {
+              "p50": 0.18830619,
+              "p75": 0.24791826,
+              "p90": 0.36687352,
+              "row_count": 4200
+            },
+            "07": {
+              "p50": 0.18833574,
+              "p75": 0.2510757,
+              "p90": 0.42772287,
+              "row_count": 4239
+            },
+            "08": {
+              "p50": 0.18830146,
+              "p75": 0.24952045,
+              "p90": 0.37101644,
+              "row_count": 4260
+            },
+            "09": {
+              "p50": 0.1883121,
+              "p75": 0.19529247,
+              "p90": 0.31414376,
+              "row_count": 4260
+            },
+            "10": {
+              "p50": 0.18844103,
+              "p75": 0.2443636,
+              "p90": 0.36938921,
+              "row_count": 4260
+            },
+            "11": {
+              "p50": 0.12612726,
+              "p75": 0.24630201,
+              "p90": 0.38809811,
+              "row_count": 4260
+            },
+            "12": {
+              "p50": 0.12604499,
+              "p75": 0.25206854,
+              "p90": 0.45306183,
+              "row_count": 4260
+            },
+            "13": {
+              "p50": 0.12589504,
+              "p75": 0.1926473,
+              "p90": 0.42754671,
+              "row_count": 4260
+            },
+            "14": {
+              "p50": 0.12570513,
+              "p75": 0.18470745,
+              "p90": 0.37742163,
+              "row_count": 4260
+            },
+            "15": {
+              "p50": 0.12558633,
+              "p75": 0.12967877,
+              "p90": 0.36621049,
+              "row_count": 4260
+            },
+            "16": {
+              "p50": 0.12550752,
+              "p75": 0.12748293,
+              "p90": 0.13019621,
+              "row_count": 4260
+            },
+            "17": {
+              "p50": 0.12545477,
+              "p75": 0.12738529,
+              "p90": 0.13011778,
+              "row_count": 4260
+            },
+            "18": {
+              "p50": 0.1254713,
+              "p75": 0.12760819,
+              "p90": 0.13033094,
+              "row_count": 4260
+            },
+            "19": {
+              "p50": 0.12547051,
+              "p75": 0.12759089,
+              "p90": 0.13016799,
+              "row_count": 4257
+            },
+            "20": {
+              "p50": 0.18968733,
+              "p75": 0.7953308,
+              "p90": 0.8172924,
+              "row_count": 3883
+            },
+            "21": {
+              "p50": 3.65503986,
+              "p75": 4.87203207,
+              "p90": 6.27502953,
+              "row_count": 3033
+            },
+            "22": {
+              "p50": 0.25082301,
+              "p75": 0.25913113,
+              "p90": 0.31702594,
+              "row_count": 4149
+            },
+            "23": {
+              "p50": 0.1888586,
+              "p75": 0.25350992,
+              "p90": 0.47868996,
+              "row_count": 4184
+            }
+          },
+          "first_minute_utc": "2026-06-15T07:21:00+00:00",
+          "last_minute_utc": "2026-09-21T20:40:00+00:00",
+          "rollover_21_23z": {
+            "21": {
+              "p50": 3.65503986,
+              "p75": 4.87203207,
+              "p90": 6.27502953,
+              "row_count": 3033
+            },
+            "22": {
+              "p50": 0.25082301,
+              "p75": 0.25913113,
+              "p90": 0.31702594,
+              "row_count": 4149
+            },
+            "23": {
+              "p50": 0.1888586,
+              "p75": 0.25350992,
+              "p90": 0.47868996,
+              "row_count": 4184
+            }
+          },
+          "row_count": 99999,
+          "spread_bps": {
+            "p50": 0.18679252,
+            "p75": 0.24968945,
+            "p90": 0.44212183
+          },
+          "status": "MEASURED"
+        },
+        "source": {
+          "account_login_masked": "*******732",
+          "autotrading_touched": false,
+          "clock_normalization": {
+            "latest_bar_lag_seconds_after_normalization": {
+              "EURUSD": 55,
+              "GBPUSD": 55,
+              "USDCAD": 55,
+              "USDJPY": 55,
+              "XAUUSD": 55
+            },
+            "method": "nearest whole-hour offset from each symbol's latest M1 bar to query wall-clock UTC",
+            "server_minus_utc_hours": 3,
+            "status": "PASS_LIVE_OFFSET_INFERENCE"
+          },
+          "mode": "RUNNING_MT5_READ_ONLY_COPYRATES_M1",
+          "orders_sent": 0,
+          "preexisting_process_ids": [
+            11756
+          ],
+          "queried_at_utc": "2026-09-21T20:40:55Z",
+          "query_sha256": "163aa71cf0428d2445e71dd6cdd057f71eae65baa726ceec484b5d05a9e9a526",
+          "requested_bars_per_symbol": 99999,
+          "server": "FTMO-Demo",
+          "symbols": {
+            "EURUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "GBPUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDCAD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDJPY": {
+              "digits": 3,
+              "point_size": 0.001,
+              "rows": 99999
+            },
+            "XAUUSD": {
+              "digits": 2,
+              "point_size": 0.01,
+              "rows": 99999
+            }
+          },
+          "terminal_executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe"
+        }
+      },
+      "slippage": {
+        "reason": "No request-price-to-fill-price evidence exists in the collector or frozen Q08 rows.",
+        "status": "UNMEASURED",
+        "usd_per_lot_rt": null
+      },
+      "symbol": "USDJPY"
+    },
+    {
+      "comparison": {
+        "additional_spread_bps_rt": null,
+        "charge_rule": "max(0, p90(FTMO_bps - DXZ_bps)) on exact matched minutes",
+        "descriptive_difference_is_not_charge_eligible": true,
+        "descriptive_independent_period_p90_difference_bps": 0.37637905,
+        "matched_minute_count": 0,
+        "minimum_required": 60,
+        "status": "ABSTAIN_NO_MATCHED_DXZ_MINUTES"
+      },
+      "darwinex": {
+        "measurement": {
+          "by_utc_hour": {
+            "00": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3701
+            },
+            "01": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4125
+            },
+            "02": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4135
+            },
+            "03": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4157
+            },
+            "04": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "05": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "06": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "07": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4197
+            },
+            "08": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "09": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "10": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4199
+            },
+            "11": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "12": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "13": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "14": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "15": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "16": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "17": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "18": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "19": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "20": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4199
+            },
+            "21": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4197
+            },
+            "22": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4197
+            },
+            "23": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4093
+            }
+          },
+          "first_minute_utc": "2026-01-19T03:43:00+00:00",
+          "last_minute_utc": "2026-04-24T23:54:00+00:00",
+          "rollover_21_23z": {
+            "21": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4197
+            },
+            "22": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4197
+            },
+            "23": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4093
+            }
+          },
+          "row_count": 100000,
+          "spread_bps": {
+            "p50": 0.0,
+            "p75": 0.0,
+            "p90": 0.0
+          },
+          "status": "MEASURED"
+        },
+        "source": {
+          "mode": "MQL5_COPYRATES_PERIOD_M1_SPREAD_SNAPSHOT",
+          "path": "D:\\QM\\mt5\\T7\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T050325Z_5ca3d91b_GBPUSD_DWX_M1.jsonl",
+          "point_size": 1e-05,
+          "sha256": "0678844cb57155710e550801ce585d0ea7dcd1bbbbfda3065b8483dadd10f12d",
+          "size_bytes": 11947655
+        }
+      },
+      "ftmo": {
+        "measurement": {
+          "by_utc_hour": {
+            "00": {
+              "p50": 0.22343456,
+              "p75": 0.22703451,
+              "p90": 0.44971478,
+              "row_count": 4200
+            },
+            "01": {
+              "p50": 0.22331398,
+              "p75": 0.22565383,
+              "p90": 0.30360278,
+              "row_count": 4200
+            },
+            "02": {
+              "p50": 0.22314372,
+              "p75": 0.22487913,
+              "p90": 0.22736074,
+              "row_count": 4200
+            },
+            "03": {
+              "p50": 0.22310307,
+              "p75": 0.22531826,
+              "p90": 0.22763833,
+              "row_count": 4200
+            },
+            "04": {
+              "p50": 0.22322757,
+              "p75": 0.22531572,
+              "p90": 0.22763194,
+              "row_count": 4200
+            },
+            "05": {
+              "p50": 0.22343872,
+              "p75": 0.22663617,
+              "p90": 0.51999415,
+              "row_count": 4200
+            },
+            "06": {
+              "p50": 0.1489353,
+              "p75": 0.15106311,
+              "p90": 0.22478662,
+              "row_count": 4200
+            },
+            "07": {
+              "p50": 0.14878904,
+              "p75": 0.15035813,
+              "p90": 0.22554882,
+              "row_count": 4200
+            },
+            "08": {
+              "p50": 0.14879956,
+              "p75": 0.15000066,
+              "p90": 0.15169443,
+              "row_count": 4200
+            },
+            "09": {
+              "p50": 0.14881285,
+              "p75": 0.15013691,
+              "p90": 0.22216709,
+              "row_count": 4200
+            },
+            "10": {
+              "p50": 0.14887377,
+              "p75": 0.15045965,
+              "p90": 0.22422698,
+              "row_count": 4211
+            },
+            "11": {
+              "p50": 0.1488638,
+              "p75": 0.14989807,
+              "p90": 0.15125046,
+              "row_count": 4260
+            },
+            "12": {
+              "p50": 0.14894916,
+              "p75": 0.14989245,
+              "p90": 0.15130997,
+              "row_count": 4260
+            },
+            "13": {
+              "p50": 0.14887432,
+              "p75": 0.14987223,
+              "p90": 0.1512928,
+              "row_count": 4260
+            },
+            "14": {
+              "p50": 0.14875252,
+              "p75": 0.1498161,
+              "p90": 0.15125412,
+              "row_count": 4260
+            },
+            "15": {
+              "p50": 0.14875197,
+              "p75": 0.14976225,
+              "p90": 0.15108502,
+              "row_count": 4260
+            },
+            "16": {
+              "p50": 0.14896525,
+              "p75": 0.1503118,
+              "p90": 0.22782001,
+              "row_count": 4260
+            },
+            "17": {
+              "p50": 0.14895693,
+              "p75": 0.15036576,
+              "p90": 0.22590702,
+              "row_count": 4256
+            },
+            "18": {
+              "p50": 0.14902019,
+              "p75": 0.15048286,
+              "p90": 0.29430332,
+              "row_count": 4259
+            },
+            "19": {
+              "p50": 0.14910129,
+              "p75": 0.15048003,
+              "p90": 0.30312997,
+              "row_count": 4257
+            },
+            "20": {
+              "p50": 0.2996322,
+              "p75": 0.88268395,
+              "p90": 0.89704871,
+              "row_count": 3887
+            },
+            "21": {
+              "p50": 5.30412826,
+              "p75": 7.91806271,
+              "p90": 10.93923698,
+              "row_count": 3269
+            },
+            "22": {
+              "p50": 0.37233686,
+              "p75": 0.37459076,
+              "p90": 0.37876779,
+              "row_count": 4126
+            },
+            "23": {
+              "p50": 0.22339546,
+              "p75": 0.22577101,
+              "p90": 0.3038567,
+              "row_count": 4174
+            }
+          },
+          "first_minute_utc": "2026-06-15T10:49:00+00:00",
+          "last_minute_utc": "2026-09-21T20:40:00+00:00",
+          "rollover_21_23z": {
+            "21": {
+              "p50": 5.30412826,
+              "p75": 7.91806271,
+              "p90": 10.93923698,
+              "row_count": 3269
+            },
+            "22": {
+              "p50": 0.37233686,
+              "p75": 0.37459076,
+              "p90": 0.37876779,
+              "row_count": 4126
+            },
+            "23": {
+              "p50": 0.22339546,
+              "p75": 0.22577101,
+              "p90": 0.3038567,
+              "row_count": 4174
+            }
+          },
+          "row_count": 99999,
+          "spread_bps": {
+            "p50": 0.15121273,
+            "p75": 0.22468039,
+            "p90": 0.37637905
+          },
+          "status": "MEASURED"
+        },
+        "source": {
+          "account_login_masked": "*******732",
+          "autotrading_touched": false,
+          "clock_normalization": {
+            "latest_bar_lag_seconds_after_normalization": {
+              "EURUSD": 55,
+              "GBPUSD": 55,
+              "USDCAD": 55,
+              "USDJPY": 55,
+              "XAUUSD": 55
+            },
+            "method": "nearest whole-hour offset from each symbol's latest M1 bar to query wall-clock UTC",
+            "server_minus_utc_hours": 3,
+            "status": "PASS_LIVE_OFFSET_INFERENCE"
+          },
+          "mode": "RUNNING_MT5_READ_ONLY_COPYRATES_M1",
+          "orders_sent": 0,
+          "preexisting_process_ids": [
+            11756
+          ],
+          "queried_at_utc": "2026-09-21T20:40:55Z",
+          "query_sha256": "163aa71cf0428d2445e71dd6cdd057f71eae65baa726ceec484b5d05a9e9a526",
+          "requested_bars_per_symbol": 99999,
+          "server": "FTMO-Demo",
+          "symbols": {
+            "EURUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "GBPUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDCAD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDJPY": {
+              "digits": 3,
+              "point_size": 0.001,
+              "rows": 99999
+            },
+            "XAUUSD": {
+              "digits": 2,
+              "point_size": 0.01,
+              "rows": 99999
+            }
+          },
+          "terminal_executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe"
+        }
+      },
+      "slippage": {
+        "reason": "No request-price-to-fill-price evidence exists in the collector or frozen Q08 rows.",
+        "status": "UNMEASURED",
+        "usd_per_lot_rt": null
+      },
+      "symbol": "GBPUSD"
+    },
+    {
+      "comparison": {
+        "additional_spread_bps_rt": null,
+        "charge_rule": "max(0, p90(FTMO_bps - DXZ_bps)) on exact matched minutes",
+        "descriptive_difference_is_not_charge_eligible": true,
+        "descriptive_independent_period_p90_difference_bps": null,
+        "matched_minute_count": 0,
+        "minimum_required": 60,
+        "status": "ABSTAIN_DXZ_SPREAD_UNMEASURED"
+      },
+      "darwinex": {
+        "measurement": {
+          "by_utc_hour": {},
+          "row_count": 0,
+          "status": "UNMEASURED"
+        },
+        "source": null
+      },
+      "ftmo": {
+        "measurement": {
+          "by_utc_hour": {
+            "00": {
+              "p50": 1.11512984,
+              "p75": 1.18161052,
+              "p90": 1.24815647,
+              "row_count": 4380
+            },
+            "01": {
+              "p50": 1.1181533,
+              "p75": 1.1903092,
+              "p90": 1.24931351,
+              "row_count": 4380
+            },
+            "02": {
+              "p50": 1.08128242,
+              "p75": 1.16182476,
+              "p90": 1.23643266,
+              "row_count": 4380
+            },
+            "03": {
+              "p50": 1.06693646,
+              "p75": 1.152915,
+              "p90": 1.22758151,
+              "row_count": 4380
+            },
+            "04": {
+              "p50": 1.0771753,
+              "p75": 1.15788359,
+              "p90": 1.23480694,
+              "row_count": 4393
+            },
+            "05": {
+              "p50": 1.1276089,
+              "p75": 1.1917368,
+              "p90": 1.24523309,
+              "row_count": 4440
+            },
+            "06": {
+              "p50": 0.93271758,
+              "p75": 1.00845387,
+              "p90": 1.06630994,
+              "row_count": 4440
+            },
+            "07": {
+              "p50": 0.93661479,
+              "p75": 1.01669535,
+              "p90": 1.06938485,
+              "row_count": 4440
+            },
+            "08": {
+              "p50": 0.93623039,
+              "p75": 1.01651212,
+              "p90": 1.07904236,
+              "row_count": 4440
+            },
+            "09": {
+              "p50": 0.94178423,
+              "p75": 1.01788242,
+              "p90": 1.08253146,
+              "row_count": 4440
+            },
+            "10": {
+              "p50": 0.93818946,
+              "p75": 1.01381204,
+              "p90": 1.06647487,
+              "row_count": 4440
+            },
+            "11": {
+              "p50": 1.01794913,
+              "p75": 1.08268723,
+              "p90": 1.15176468,
+              "row_count": 4440
+            },
+            "12": {
+              "p50": 1.02893479,
+              "p75": 1.09393631,
+              "p90": 1.15602131,
+              "row_count": 4440
+            },
+            "13": {
+              "p50": 1.03069171,
+              "p75": 1.10306044,
+              "p90": 1.16132487,
+              "row_count": 4440
+            },
+            "14": {
+              "p50": 1.00639304,
+              "p75": 1.06726175,
+              "p90": 1.12446532,
+              "row_count": 4440
+            },
+            "15": {
+              "p50": 1.00725567,
+              "p75": 1.07860509,
+              "p90": 1.14213455,
+              "row_count": 4440
+            },
+            "16": {
+              "p50": 0.96994771,
+              "p75": 1.03888266,
+              "p90": 1.10390845,
+              "row_count": 4440
+            },
+            "17": {
+              "p50": 0.96212713,
+              "p75": 1.03556594,
+              "p90": 1.1052644,
+              "row_count": 4320
+            },
+            "18": {
+              "p50": 0.96974136,
+              "p75": 1.03613044,
+              "p90": 1.104722,
+              "row_count": 4290
+            },
+            "19": {
+              "p50": 0.96991231,
+              "p75": 1.0408836,
+              "p90": 1.1098426,
+              "row_count": 4260
+            },
+            "20": {
+              "p50": 1.04177047,
+              "p75": 1.10941944,
+              "p90": 1.17532321,
+              "row_count": 3541
+            },
+            "21": {
+              "p50": null,
+              "p75": null,
+              "p90": null,
+              "row_count": 0
+            },
+            "22": {
+              "p50": 1.22237829,
+              "p75": 1.2964886,
+              "p90": 1.34490148,
+              "row_count": 4015
+            },
+            "23": {
+              "p50": 1.10920902,
+              "p75": 1.17721312,
+              "p90": 1.24220966,
+              "row_count": 4380
+            }
+          },
+          "first_minute_utc": "2026-06-10T04:47:00+00:00",
+          "last_minute_utc": "2026-09-21T20:40:00+00:00",
+          "rollover_21_23z": {
+            "21": {
+              "p50": null,
+              "p75": null,
+              "p90": null,
+              "row_count": 0
+            },
+            "22": {
+              "p50": 1.22237829,
+              "p75": 1.2964886,
+              "p90": 1.34490148,
+              "row_count": 4015
+            },
+            "23": {
+              "p50": 1.10920902,
+              "p75": 1.17721312,
+              "p90": 1.24220966,
+              "row_count": 4380
+            }
+          },
+          "row_count": 99999,
+          "spread_bps": {
+            "p50": 1.01911636,
+            "p75": 1.1116896,
+            "p90": 1.19974956
+          },
+          "status": "MEASURED"
+        },
+        "source": {
+          "account_login_masked": "*******732",
+          "autotrading_touched": false,
+          "clock_normalization": {
+            "latest_bar_lag_seconds_after_normalization": {
+              "EURUSD": 55,
+              "GBPUSD": 55,
+              "USDCAD": 55,
+              "USDJPY": 55,
+              "XAUUSD": 55
+            },
+            "method": "nearest whole-hour offset from each symbol's latest M1 bar to query wall-clock UTC",
+            "server_minus_utc_hours": 3,
+            "status": "PASS_LIVE_OFFSET_INFERENCE"
+          },
+          "mode": "RUNNING_MT5_READ_ONLY_COPYRATES_M1",
+          "orders_sent": 0,
+          "preexisting_process_ids": [
+            11756
+          ],
+          "queried_at_utc": "2026-09-21T20:40:55Z",
+          "query_sha256": "163aa71cf0428d2445e71dd6cdd057f71eae65baa726ceec484b5d05a9e9a526",
+          "requested_bars_per_symbol": 99999,
+          "server": "FTMO-Demo",
+          "symbols": {
+            "EURUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "GBPUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDCAD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDJPY": {
+              "digits": 3,
+              "point_size": 0.001,
+              "rows": 99999
+            },
+            "XAUUSD": {
+              "digits": 2,
+              "point_size": 0.01,
+              "rows": 99999
+            }
+          },
+          "terminal_executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe"
+        }
+      },
+      "slippage": {
+        "reason": "No request-price-to-fill-price evidence exists in the collector or frozen Q08 rows.",
+        "status": "UNMEASURED",
+        "usd_per_lot_rt": null
+      },
+      "symbol": "XAUUSD"
+    },
+    {
+      "comparison": {
+        "additional_spread_bps_rt": null,
+        "charge_rule": "max(0, p90(FTMO_bps - DXZ_bps)) on exact matched minutes",
+        "descriptive_difference_is_not_charge_eligible": true,
+        "descriptive_independent_period_p90_difference_bps": null,
+        "matched_minute_count": 0,
+        "minimum_required": 60,
+        "status": "ABSTAIN_DXZ_SPREAD_UNMEASURED"
+      },
+      "darwinex": {
+        "measurement": {
+          "by_utc_hour": {},
+          "row_count": 0,
+          "status": "UNMEASURED"
+        },
+        "source": null
+      },
+      "ftmo": {
+        "measurement": {
+          "by_utc_hour": {
+            "00": {
+              "p50": 0.29031368,
+              "p75": 0.42739304,
+              "p90": 0.49705318,
+              "row_count": 4199
+            },
+            "01": {
+              "p50": 0.28260263,
+              "p75": 0.36257961,
+              "p90": 0.49444491,
+              "row_count": 4200
+            },
+            "02": {
+              "p50": 0.21783724,
+              "p75": 0.35363242,
+              "p90": 0.43262825,
+              "row_count": 4200
+            },
+            "03": {
+              "p50": 0.21794723,
+              "p75": 0.35707336,
+              "p90": 0.49396655,
+              "row_count": 4200
+            },
+            "04": {
+              "p50": 0.28103801,
+              "p75": 0.35677462,
+              "p90": 0.49314181,
+              "row_count": 4200
+            },
+            "05": {
+              "p50": 0.28861487,
+              "p75": 0.43109023,
+              "p90": 0.49827916,
+              "row_count": 4226
+            },
+            "06": {
+              "p50": 0.21533161,
+              "p75": 0.21755723,
+              "p90": 0.28664342,
+              "row_count": 4260
+            },
+            "07": {
+              "p50": 0.21510156,
+              "p75": 0.21727007,
+              "p90": 0.2856186,
+              "row_count": 4260
+            },
+            "08": {
+              "p50": 0.21499982,
+              "p75": 0.21713837,
+              "p90": 0.28548162,
+              "row_count": 4260
+            },
+            "09": {
+              "p50": 0.21519105,
+              "p75": 0.21732713,
+              "p90": 0.28555539,
+              "row_count": 4260
+            },
+            "10": {
+              "p50": 0.21516713,
+              "p75": 0.2172449,
+              "p90": 0.28624691,
+              "row_count": 4260
+            },
+            "11": {
+              "p50": 0.21787125,
+              "p75": 0.28854252,
+              "p90": 0.3599028,
+              "row_count": 4260
+            },
+            "12": {
+              "p50": 0.21770129,
+              "p75": 0.35129196,
+              "p90": 0.4240013,
+              "row_count": 4260
+            },
+            "13": {
+              "p50": 0.2171702,
+              "p75": 0.29017205,
+              "p90": 0.42244864,
+              "row_count": 4260
+            },
+            "14": {
+              "p50": 0.21642601,
+              "p75": 0.28600489,
+              "p90": 0.42216151,
+              "row_count": 4260
+            },
+            "15": {
+              "p50": 0.21600138,
+              "p75": 0.28213022,
+              "p90": 0.35236852,
+              "row_count": 4260
+            },
+            "16": {
+              "p50": 0.2841343,
+              "p75": 0.35331132,
+              "p90": 0.42237816,
+              "row_count": 4260
+            },
+            "17": {
+              "p50": 0.21764364,
+              "p75": 0.2901368,
+              "p90": 0.42303869,
+              "row_count": 4257
+            },
+            "18": {
+              "p50": 0.28268951,
+              "p75": 0.35289551,
+              "p90": 0.4239983,
+              "row_count": 4255
+            },
+            "19": {
+              "p50": 0.28252378,
+              "p75": 0.35443648,
+              "p90": 0.42489487,
+              "row_count": 4247
+            },
+            "20": {
+              "p50": 0.3602578,
+              "p75": 0.70431339,
+              "p90": 0.72229806,
+              "row_count": 3886
+            },
+            "21": {
+              "p50": 3.80979771,
+              "p75": 5.46739092,
+              "p90": 7.8357405,
+              "row_count": 3060
+            },
+            "22": {
+              "p50": 0.36137873,
+              "p75": 0.42814634,
+              "p90": 0.44661894,
+              "row_count": 4059
+            },
+            "23": {
+              "p50": 0.28913642,
+              "p75": 0.4235187,
+              "p90": 0.49507471,
+              "row_count": 4150
+            }
+          },
+          "first_minute_utc": "2026-06-15T05:34:00+00:00",
+          "last_minute_utc": "2026-09-21T20:40:00+00:00",
+          "rollover_21_23z": {
+            "21": {
+              "p50": 3.80979771,
+              "p75": 5.46739092,
+              "p90": 7.8357405,
+              "row_count": 3060
+            },
+            "22": {
+              "p50": 0.36137873,
+              "p75": 0.42814634,
+              "p90": 0.44661894,
+              "row_count": 4059
+            },
+            "23": {
+              "p50": 0.28913642,
+              "p75": 0.4235187,
+              "p90": 0.49507471,
+              "row_count": 4150
+            }
+          },
+          "row_count": 99999,
+          "spread_bps": {
+            "p50": 0.28101728,
+            "p75": 0.35552016,
+            "p90": 0.43363254
+          },
+          "status": "MEASURED"
+        },
+        "source": {
+          "account_login_masked": "*******732",
+          "autotrading_touched": false,
+          "clock_normalization": {
+            "latest_bar_lag_seconds_after_normalization": {
+              "EURUSD": 55,
+              "GBPUSD": 55,
+              "USDCAD": 55,
+              "USDJPY": 55,
+              "XAUUSD": 55
+            },
+            "method": "nearest whole-hour offset from each symbol's latest M1 bar to query wall-clock UTC",
+            "server_minus_utc_hours": 3,
+            "status": "PASS_LIVE_OFFSET_INFERENCE"
+          },
+          "mode": "RUNNING_MT5_READ_ONLY_COPYRATES_M1",
+          "orders_sent": 0,
+          "preexisting_process_ids": [
+            11756
+          ],
+          "queried_at_utc": "2026-09-21T20:40:55Z",
+          "query_sha256": "163aa71cf0428d2445e71dd6cdd057f71eae65baa726ceec484b5d05a9e9a526",
+          "requested_bars_per_symbol": 99999,
+          "server": "FTMO-Demo",
+          "symbols": {
+            "EURUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "GBPUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDCAD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDJPY": {
+              "digits": 3,
+              "point_size": 0.001,
+              "rows": 99999
+            },
+            "XAUUSD": {
+              "digits": 2,
+              "point_size": 0.01,
+              "rows": 99999
+            }
+          },
+          "terminal_executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe"
+        }
+      },
+      "slippage": {
+        "reason": "No request-price-to-fill-price evidence exists in the collector or frozen Q08 rows.",
+        "status": "UNMEASURED",
+        "usd_per_lot_rt": null
+      },
+      "symbol": "USDCAD"
+    },
+    {
+      "comparison": {
+        "additional_spread_bps_rt": null,
+        "charge_rule": "max(0, p90(FTMO_bps - DXZ_bps)) on exact matched minutes",
+        "descriptive_difference_is_not_charge_eligible": true,
+        "descriptive_independent_period_p90_difference_bps": 0.08772699,
+        "matched_minute_count": 0,
+        "minimum_required": 60,
+        "status": "ABSTAIN_NO_MATCHED_DXZ_MINUTES"
+      },
+      "darwinex": {
+        "measurement": {
+          "by_utc_hour": {
+            "00": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3502
+            },
+            "01": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4012
+            },
+            "02": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4017
+            },
+            "03": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "04": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "05": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3958
+            },
+            "06": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3957
+            },
+            "07": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3956
+            },
+            "08": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3959
+            },
+            "09": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3959
+            },
+            "10": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "11": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "12": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "13": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3959
+            },
+            "14": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "15": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "16": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "17": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "18": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "19": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3960
+            },
+            "20": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3959
+            },
+            "21": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3955
+            },
+            "22": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3954
+            },
+            "23": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3868
+            }
+          },
+          "first_minute_utc": "2026-01-02T00:04:00+00:00",
+          "last_minute_utc": "2026-04-06T02:59:00+00:00",
+          "rollover_21_23z": {
+            "21": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3955
+            },
+            "22": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3954
+            },
+            "23": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 3868
+            }
+          },
+          "row_count": 94575,
+          "spread_bps": {
+            "p50": 0.0,
+            "p75": 0.0,
+            "p90": 0.0
+          },
+          "status": "MEASURED"
+        },
+        "source": {
+          "mode": "MQL5_COPYRATES_PERIOD_M1_SPREAD_SNAPSHOT",
+          "path": "D:\\QM\\mt5\\T7\\MQL5\\Files\\QM\\m1_harvest\\DXZ_FACTORY_20260905T050325Z_5ca3d91b_EURUSD_DWX_M1.jsonl",
+          "point_size": 1e-05,
+          "sha256": "f1a23056f78176be1f41fcc2f20a4521c9385b1d8043fa60a7ca3078a8e5ea34",
+          "size_bytes": 11280815
+        }
+      },
+      "ftmo": {
+        "measurement": {
+          "by_utc_hour": {
+            "00": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "01": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "02": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "03": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "04": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "05": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "06": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "07": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4200
+            },
+            "08": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4231
+            },
+            "09": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4260
+            },
+            "10": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4260
+            },
+            "11": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4260
+            },
+            "12": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.08758899,
+              "row_count": 4260
+            },
+            "13": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.08745616,
+              "row_count": 4260
+            },
+            "14": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.08719612,
+              "row_count": 4260
+            },
+            "15": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4260
+            },
+            "16": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4260
+            },
+            "17": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4260
+            },
+            "18": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4258
+            },
+            "19": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.0,
+              "row_count": 4256
+            },
+            "20": {
+              "p50": 0.08749978,
+              "p75": 0.51442534,
+              "p90": 0.52435269,
+              "row_count": 3869
+            },
+            "21": {
+              "p50": 2.4065527,
+              "p75": 3.66386643,
+              "p90": 5.26082479,
+              "row_count": 3089
+            },
+            "22": {
+              "p50": 0.08713989,
+              "p75": 0.08767162,
+              "p90": 0.08795694,
+              "row_count": 4167
+            },
+            "23": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.08603558,
+              "row_count": 4189
+            }
+          },
+          "first_minute_utc": "2026-06-15T08:29:00+00:00",
+          "last_minute_utc": "2026-09-21T20:40:00+00:00",
+          "rollover_21_23z": {
+            "21": {
+              "p50": 2.4065527,
+              "p75": 3.66386643,
+              "p90": 5.26082479,
+              "row_count": 3089
+            },
+            "22": {
+              "p50": 0.08713989,
+              "p75": 0.08767162,
+              "p90": 0.08795694,
+              "row_count": 4167
+            },
+            "23": {
+              "p50": 0.0,
+              "p75": 0.0,
+              "p90": 0.08603558,
+              "row_count": 4189
+            }
+          },
+          "row_count": 99999,
+          "spread_bps": {
+            "p50": 0.0,
+            "p75": 0.0,
+            "p90": 0.08772699
+          },
+          "status": "MEASURED"
+        },
+        "source": {
+          "account_login_masked": "*******732",
+          "autotrading_touched": false,
+          "clock_normalization": {
+            "latest_bar_lag_seconds_after_normalization": {
+              "EURUSD": 55,
+              "GBPUSD": 55,
+              "USDCAD": 55,
+              "USDJPY": 55,
+              "XAUUSD": 55
+            },
+            "method": "nearest whole-hour offset from each symbol's latest M1 bar to query wall-clock UTC",
+            "server_minus_utc_hours": 3,
+            "status": "PASS_LIVE_OFFSET_INFERENCE"
+          },
+          "mode": "RUNNING_MT5_READ_ONLY_COPYRATES_M1",
+          "orders_sent": 0,
+          "preexisting_process_ids": [
+            11756
+          ],
+          "queried_at_utc": "2026-09-21T20:40:55Z",
+          "query_sha256": "163aa71cf0428d2445e71dd6cdd057f71eae65baa726ceec484b5d05a9e9a526",
+          "requested_bars_per_symbol": 99999,
+          "server": "FTMO-Demo",
+          "symbols": {
+            "EURUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "GBPUSD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDCAD": {
+              "digits": 5,
+              "point_size": 1e-05,
+              "rows": 99999
+            },
+            "USDJPY": {
+              "digits": 3,
+              "point_size": 0.001,
+              "rows": 99999
+            },
+            "XAUUSD": {
+              "digits": 2,
+              "point_size": 0.01,
+              "rows": 99999
+            }
+          },
+          "terminal_executable": "C:\\Program Files\\FTMO Global Markets MT5 Terminal\\terminal64.exe"
+        }
+      },
+      "slippage": {
+        "reason": "No request-price-to-fill-price evidence exists in the collector or frozen Q08 rows.",
+        "status": "UNMEASURED",
+        "usd_per_lot_rt": null
+      },
+      "symbol": "EURUSD"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema": "qm.ftmo-venue-cost-measurement-spec/v1",
+  "symbols": {
+    "USDJPY": {
+      "dxz_raw_path": null,
+      "dxz_point_size": 0.001,
+      "reason": "No immutable M1 spread-bearing Darwinex snapshot was found; OHLC-only exports are not spread evidence."
+    },
+    "GBPUSD": {
+      "dxz_raw_path": "D:/QM/mt5/T7/MQL5/Files/QM/m1_harvest/DXZ_FACTORY_20260905T050325Z_5ca3d91b_GBPUSD_DWX_M1.jsonl",
+      "dxz_point_size": 0.00001
+    },
+    "XAUUSD": {
+      "dxz_raw_path": null,
+      "dxz_point_size": 0.01,
+      "reason": "No immutable M1 spread-bearing Darwinex snapshot was found; OHLC-only exports are not spread evidence."
+    },
+    "USDCAD": {
+      "dxz_raw_path": null,
+      "dxz_point_size": 0.00001,
+      "reason": "No immutable M1 spread-bearing Darwinex snapshot was found; OHLC-only exports are not spread evidence."
+    },
+    "EURUSD": {
+      "dxz_raw_path": "D:/QM/mt5/T7/MQL5/Files/QM/m1_harvest/DXZ_FACTORY_20260905T050325Z_5ca3d91b_EURUSD_DWX_M1.jsonl",
+      "dxz_point_size": 0.00001
+    }
+  }
+}

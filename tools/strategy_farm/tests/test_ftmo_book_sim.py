@@ -112,6 +112,51 @@ def test_registry_commission_swap_fallback_and_scaling(tmp_path: Path) -> None:
     assert "PRIMARY_FINANCING_TABLE_MISSING" in provenance["financing_library_status"]
 
 
+def test_symbol_cost_table_charges_only_matching_symbol_once(tmp_path: Path) -> None:
+    registry, financing, _, specs = _fixture(tmp_path)
+    cost = book_sim.CostConfig(
+        spread_bps_rt=0.0,
+        slippage_usd_per_lot_rt=0.0,
+        spread_bps_rt_by_symbol={"EURUSD": 2.0},
+        slippage_usd_per_lot_rt_by_symbol={"EURUSD.DWX": 3.0},
+    )
+    sleeves, _ = book_sim.prepare_book(
+        [specs[0], specs[2]],
+        commission_registry_path=registry,
+        financing_lib_path=financing,
+        cost=cost,
+    )
+
+    eur = sleeves[0]["trades"][0]
+    jpy = sleeves[1]["trades"][0]
+    assert eur["spread_stress_source_usd"] == pytest.approx(20.0)
+    assert eur["slippage_stress_source_usd"] == pytest.approx(3.0)
+    assert eur["net_source"] == pytest.approx(74.0)
+    assert jpy["spread_stress_source_usd"] == 0.0
+    assert jpy["slippage_stress_source_usd"] == 0.0
+
+
+def test_symbol_cost_table_validation_refuses_negative_and_duplicate_aliases() -> None:
+    with pytest.raises(ValueError, match="non-negative finite"):
+        book_sim._validated_symbol_costs({"EURUSD": -0.1}, "cost")
+    with pytest.raises(ValueError, match="duplicate normalized symbol"):
+        book_sim._validated_symbol_costs(
+            {"EURUSD": 1.0, "EURUSD.DWX": 2.0}, "cost"
+        )
+
+
+def test_symbol_cost_cli_argument_accepts_inline_json_and_file(tmp_path: Path) -> None:
+    assert book_sim._load_symbol_cost_argument(
+        '{"EURUSD.DWX": 1.25}', "cost"
+    ) == {"EURUSD.DWX": 1.25}
+
+    source = tmp_path / "costs.json"
+    source.write_text('{"USDJPY": 0.75}', encoding="utf-8")
+    assert book_sim._load_symbol_cost_argument(str(source), "cost") == {
+        "USDJPY.DWX": 0.75
+    }
+
+
 def test_sha_binding_refuses_tampered_stream(tmp_path: Path) -> None:
     _, _, root, specs = _fixture(tmp_path)
     roster = root / "roster.json"
