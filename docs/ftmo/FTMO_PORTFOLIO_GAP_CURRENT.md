@@ -6,6 +6,15 @@
 (rulepack `FTMO_2S_100K_STANDARD_V2`, sha `857e2d4b…dcda5`).
 **`FTMO_NET_CASH_REALIZED` = 0 USD** (ledger empty, no paid Challenge — KPI contract §1).
 
+> **Book-framing addendum (Fable, 2026-09-21, OWNER-DEC-FTMO-BOOK-PORTFOLIO-20260921).** The current FTMO_BOOK is the D2g6 demo
+> roster (six sleeves, 1.71875 %; `docs/ftmo/FTMO_BOOK_CURRENT.md`). Its strongest failure mode is **speed** (median 286 bd to the
+> Challenge target at ~32 USD/bd), not breach risk (daily-loss 0.0, max-loss 0.0152, max |r| 0.10). **Missing behaviour, stated the
+> OWNER way:** *we need a sleeve that earns, session-flat and with high opportunity density, during the New-York / index cash session,
+> when the current book is either flat (13213 after 18:00 server) or carrying overnight swing exposure (all five other sleeves)* -
+> plus a second XAUUSD engine that is not a D1 trend / mean-reversion clone of 10403/41219. Every candidate is now ranked by its
+> marginal book contribution (delta LCB, pass, breach, time-to-target, DD, density, tail dependence, cost), measured by the
+> account-level simulator (ticket e5c49db2), never by standalone R/day. The numbers below (2026-09-18) remain valid evidence.
+
 ## 0. Headline numbers (all from the frozen v2 preview)
 
 Source: `D:/QM/reports/state/ftmo_first_passage_v2_preview.json` (schema `qm.ftmo-first-passage/v2`, engine 2.0.0,
