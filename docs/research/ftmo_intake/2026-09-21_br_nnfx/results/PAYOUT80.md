@@ -126,7 +126,7 @@ a 0.8252 point estimate and 0.8143 LCB. Its modeled `t80` is business day 1314 /
 calendar day 1839 (LCB 0.8000); conditional calendar p50/p90 are 748/1374 days.
 
 This row is a sensitivity, not measured FTMO-vs-DarwinexZero execution evidence. Upstream task
-`73434cab-6f9f-4fa2-9fac-69f0cd680efe` is in REVIEW with
+`73434cab-cf1c-4c17-8a11-9ca52c11d99e` is in REVIEW with
 `ABSTAIN_NO_ELIGIBLE_VENUE_DELTA`: the available records have no exact-time cross-venue overlap
 and no request-to-fill slippage. Therefore no venue-calibrated numeric headline is substituted
 and zero slippage is not claimed as evidence.
@@ -163,7 +163,7 @@ attempt to turn a rejected intake cell into a book survivor.
 | Frozen plan | SHA-256 `e42d8770df11fcbbca9e5560a1280c352145b09d7cd1e2b30135d4bff1a9b57b` |
 | First-passage engine | `2.1.0`, SHA-256 `b2c56edf7327f5301eda5d1b5793cecf62466dd0e7db7052503f277af9ef6335` |
 | Book simulator | SHA-256 `50cc51606590206ae48b77850745194972b19c8df976c3cb7e6d8423e9c8dc3a` |
-| Venue-cost calibration | task `73434cab-6f9f-4fa2-9fac-69f0cd680efe`, REVIEW / abstain |
+| Venue-cost calibration | task `73434cab-cf1c-4c17-8a11-9ca52c11d99e`, REVIEW / abstain |
 | Simulator hygiene | task `bc00c556-7b6f-4de5-93a9-a6c41ac94ca2`, still TODO; coterminous-stream, gross-profit, and rare-winner checks not accepted |
 | Velocity harness v2 | task `7088da77-9e03-45cf-a568-581863f03ef1`, still IN_PROGRESS; existing F2 prescreens are not upgraded by this report |
 | News archive/time fidelity | task `a36a5983-9951-43f5-8afd-c313329dcce7`, still IN_PROGRESS; `PRE30_POST30_DXZ` tags do not independently prove current Standard-account news compliance |
